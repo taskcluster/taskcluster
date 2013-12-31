@@ -1,4 +1,4 @@
-taskhost
+Docker Taskhost
 ========
 
 Docker task host for linux.

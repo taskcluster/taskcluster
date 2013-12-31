@@ -1,5 +1,5 @@
 {
-  "name": "taskhost",
+  "name": "taskcluster-docker-taskhost",
   "version": "0.0.0",
   "description": "Taskcluster host",
   "main": "index.js",
@@ -8,12 +8,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/taskcluster/taskhost.git"
+    "url": "https://github.com/taskcluster/docker-taskhost.git"
   },
   "author": "James Lal <james@lightsofapollo.com>",
   "license": "Apache2",
   "bugs": {
-    "url": "https://github.com/taskcluster/taskhost/issues"
+    "url": "https://github.com/taskcluster/docker-taskhost/issues"
   },
   "dependencies": {
     "dockerode": "~1.0.0"
