@@ -29,3 +29,15 @@ importantly so we can run docker!
 In the tests we run docker over TCP (so you can run tests from your host
 if you like) but this is a _very_ bad idea generally speaking so don't
 do this in production.
+
+
+## Test TaskEnv
+
+We generate the test task env from the test/Dockerfile in this
+repo... There are two different tags.
+
+  - :pass - taskrunner-who will return whatever its argv is in stdout
+  - :fail - taskrunner-who will exit with 666
+
+Primarily these are for testing that we pull docker images correctly.
+The task env is tagged as `lightsofapollo/test-taskenv` or https://index.docker.io/u/lightsofapollo/test-taskenv/
