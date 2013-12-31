@@ -9,5 +9,5 @@ Vagrant.configure("2") do |config|
   
   # The host port seems to be the default for docker.. The guest is
   # random in the ephemeral range.
-  config.vm.network :forwarded_port, host: 4243, guest: 60034
+  config.vm.network :forwarded_port, guest: 4243, host: 60034
 end

@@ -16,6 +16,11 @@
     "url": "https://github.com/taskcluster/docker-taskhost/issues"
   },
   "dependencies": {
-    "dockerode": "~1.0.0"
+    "dockerode": "~1.0.0",
+    "promise": "~3.2.0"
+  },
+  "devDependencies": {
+    "mocha": "~1.16.2",
+    "mocha-as-promised": "~2.0.0"
   }
 }

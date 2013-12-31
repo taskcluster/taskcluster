@@ -1,0 +1,8 @@
+{
+  "command": ["exit", "0"],
+
+  "machine": {
+    "image": "ubuntu",
+    "docker": true
+  }
+}
