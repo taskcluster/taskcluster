@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "mocha": "~1.16.2",
-    "mocha-as-promised": "~2.0.0"
+    "mocha-as-promised": "~2.0.0",
+    "taskcluster-task-factory": "0.0.1"
   }
 }

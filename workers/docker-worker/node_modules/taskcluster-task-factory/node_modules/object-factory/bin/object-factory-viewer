@@ -1,0 +1,55 @@
+#! /usr/bin/env node
+
+var args = process.argv.slice(2),
+    path = require('path'),
+    tty = require('tty'),
+    util = require('util');
+
+
+// show pretty colors?
+var useColors = process.env.FACTORY_COLORS ||
+                (tty.isatty(1) && tty.isatty(2));
+
+function main(module, json) {
+  var modulePath = path.resolve(module);
+
+  if (process.env.DEBUG) console.log('DEBUG: load %s ', modulePath);
+
+  // validate module
+  try {
+    module = require(modulePath);
+  } catch (e) {
+    console.error('invalid program path given: ' + modulePath);
+    return process.exit(1);
+  }
+
+  // validate json
+  if (json) {
+    // verify it works
+    try {
+      json = JSON.parse(json);
+    } catch (e) {
+      console.error('invalid json given: ' + e.message);
+      return process.exit(1);
+    }
+  }
+
+
+  // and now the amazing colors!
+  var pretty = util.inspect(module.create(json || {}), {
+    // use colors where possible or indicated
+    colors: useColors,
+    // go forever
+    depth: null
+  });
+
+  console.log(pretty);
+}
+
+if (args[0] === '--help') {
+  console.log('Usage: <factory_module.js> ["{"json": true}"]');
+  process.exit();
+} else {
+  main(args.shift(), args.shift());
+}
+
