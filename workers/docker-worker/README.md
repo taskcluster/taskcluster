@@ -18,8 +18,8 @@ Docker has a bunch of awesome utilities for making this work well...
 Since the images are COW running any number of task hosts is plausible
 and we can manage their overall usage.
 
-We manipulate the docker hosts through the use of the (docker remote
-api)[http://docs.docker.io/en/latest/api/docker_remote_api_v1.8/]
+We manipulate the docker hosts through the use of the [docker remote
+api]([http://docs.docker.io/en/latest/api/docker_remote_api_v1.8/)
 
 # Development
 
