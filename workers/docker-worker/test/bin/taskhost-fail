@@ -1,4 +1,4 @@
 #! /bin/bash -v
 
 # uh what
-exit 666;
+exit 66;

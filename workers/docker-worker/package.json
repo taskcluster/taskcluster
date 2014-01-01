@@ -16,7 +16,7 @@
     "url": "https://github.com/taskcluster/docker-taskhost/issues"
   },
   "dependencies": {
-    "dockerode": "~1.0.0",
+    "dockerode": "git://github.com/lightsofapollo/dockerode.git#rollup",
     "promise": "~3.2.0"
   },
   "devDependencies": {
