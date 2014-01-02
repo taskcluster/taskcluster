@@ -90,9 +90,6 @@ TaskRunner.prototype = {
       this.command.join(' ')
     ];
 
-    var execTask = function() {
-    }.bind(this);
-
     var promise = docker.pull(this.image).then(
       function handleDownload(stream) {
         return new Promise(function(accept, reject) {
