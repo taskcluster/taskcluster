@@ -1,5 +1,4 @@
-var Promise = require('promise'),
-    dockerRun = Promise.denodeify(require('./lib/docker_run'));
+var Promise = require('promise');
 
 /**
 States for the task runner
@@ -85,25 +84,17 @@ TaskRunner.prototype = {
   result: null,
 
   execute: function(outputStream) {
-    var run = Promise.denodeify(this.docker.run.bind(this.docker));
-    var pull = Promise.denodeify(this.docker.pull.bind(this.docker));
-
+    var docker = this.docker;
     var command = [
       '/bin/bash', '-c',
       this.command.join(' ')
     ];
 
     var execTask = function() {
-      return dockerRun(
-        this.docker,
-        this.image,
-        command,
-        outputStream
-      );
     }.bind(this);
 
-    var promise = pull(this.image).then(
-      function(stream) {
+    var promise = docker.pull(this.image).then(
+      function handleDownload(stream) {
         return new Promise(function(accept, reject) {
           stream.once('error', reject);
           stream.once('end', accept);
@@ -116,7 +107,13 @@ TaskRunner.prototype = {
         });
       }
     ).then(
-      execTask
+      function execTask() {
+        return docker.run(
+          this.image,
+          command,
+          outputStream
+        );
+      }.bind(this)
     ).then(
       function assignContainer(output) {
         this.state = STATES.done;
@@ -134,6 +131,14 @@ TaskRunner.prototype = {
   },
 
   destroy: function() {
+    if (!this.container) return Promise.from(false);
+    this.state = STATES.destroyed;
+    return this.container.remove().then(
+      function(result) {
+        this.container = null;
+        return result;
+      }.bind(this)
+    );
   }
 };
 

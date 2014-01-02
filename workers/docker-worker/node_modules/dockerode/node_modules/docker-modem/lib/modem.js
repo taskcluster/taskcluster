@@ -105,18 +105,18 @@ Modem.prototype.dial = function(options, callback) {
 
 
 Modem.prototype.buildPayload = function(err, isStream, statusCodes, res, json, cb) {
-  if (err) {
-    cb(err, null);
+  if (err) return cb(err, null);
+
+  if (statusCodes[res.statusCode] !== true) {
+    var msg = new Error(
+      'HTTP code is ' + res.statusCode + ' which indicates error: ' + statusCodes[res.statusCode] + ' - ' + json
+    );
+    cb(msg, null);
   } else {
-    if (statusCodes[res.statusCode] !== true) {
-      var msg = 'HTTP code is ' + res.statusCode + ' which indicates error: ' + statusCodes[res.statusCode] + ' - ' + json;
-      cb(msg, null);
+    if (isStream) {
+      cb(null, res);
     } else {
-      if (isStream) {
-        cb(null, res);
-      } else {
-        cb(null, json);
-      }
+      cb(null, json);
     }
   }
 };
