@@ -4,7 +4,10 @@
   "description": "Taskcluster host",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha amqp_consumer_test.js"
+    "test": "./node_modules/.bin/mocha *_test.js"
+  },
+  "bin": {
+    "./bin/worker": "worker"
   },
   "repository": {
     "type": "git",

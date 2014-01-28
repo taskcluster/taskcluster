@@ -21,10 +21,14 @@ and we can manage their overall usage.
 We manipulate the docker hosts through the use of the [docker remote
 api]([http://docs.docker.io/en/latest/api/docker_remote_api_v1.8/)
 
-# Development
+## Usage
 
-The docker worker not only used docker to run tasks but it also is
-deployed via docker. 
+```
+# from the root of this repo)
+./docker_worker/bin/worker start $RABBIT_QUEUE_NAME
+
+# the command will fail if the queue is not already created;
+```
 
 ## Development
 
@@ -47,5 +51,4 @@ docker is recommended.
 make test
 ```
 
-This will build the docker image for the worker and run the entire suite
-of tests inside of the docker image.
+This will build the docker image for the tasks and run the entire suite.

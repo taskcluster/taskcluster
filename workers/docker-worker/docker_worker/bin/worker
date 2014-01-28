@@ -9,8 +9,6 @@ var os = require('os');
 var amqplib = require('amqplib');
 var dockerOpts = require('dockerode-options');
 
-console.log(process.env);
-
 var WORKER_CONFIG = {
   docker: new Docker(dockerOpts())
 };

@@ -13,8 +13,5 @@ taskenv_pass:
 	docker build -t taskcluster/test-taskenv:pass taskenv_pass
 
 .PHONY: test
-test: taskenv_fail taskenv_pass docker_worker
-	./docker_worker/node_modules/.bin/docker-services exec \
-		-v=/var/run/docker.sock:/docker.sock \
-		-e=DOCKER_PORT=/docker.sock \
-		app npm test
+test: taskenv_fail taskenv_pass
+	cd docker_worker && npm test
