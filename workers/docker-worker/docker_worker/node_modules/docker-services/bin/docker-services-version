@@ -1,0 +1,10 @@
+#! /usr/bin/env node
+
+exports.command = {
+  description: "Return the version of docker-services"
+};
+
+if (require.main === module) {
+  console.log(require('../package.json').version);
+  process.exit();
+}

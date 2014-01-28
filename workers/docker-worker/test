@@ -1,0 +1,15 @@
+#! /bin/bash -x
+
+# docker image to test
+docker_image=$1
+
+# service name of docker in docker
+service_name=taskcluster-docker
+echo $service_name
+
+# this can fail the main thing is we start the docker in docker instance
+# and its running at some point.
+docker run -name $service_name -privileged -d -p 4444 -e PORT=4444 lightsofapollo/dind
+
+# run the command in a docker container
+docker run -link $service_name:docker -i $docker_image /bin/bash -c 'npm test'

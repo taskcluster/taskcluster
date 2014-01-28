@@ -1,0 +1,4 @@
+#! /bin/bash -v
+
+# uh what
+echo 'fail';

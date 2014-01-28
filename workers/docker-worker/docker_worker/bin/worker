@@ -1,0 +1,54 @@
+#! /usr/bin/env node
+
+var Docker = require('dockerode-promise');
+var Consumer = require('../amqp_consumer');
+
+var program = require('commander');
+var debug = require('debug')('taskcluster-docker-worker:worker');
+var os = require('os');
+var amqplib = require('amqplib');
+var dockerOpts = require('dockerode-options');
+
+console.log(process.env);
+
+var WORKER_CONFIG = {
+  docker: new Docker(dockerOpts())
+};
+
+function bindConsumer(queue) {
+  debug('binding to queue', queue);
+  var queueConsumer = new Consumer(WORKER_CONFIG);
+
+  debug('worker is listening on %s', queue);
+
+  // begin consuming jobs off the queue
+  queueConsumer.consume(queue, {
+    // number of tasks that can run in parallel (one per core right now)
+    prefetch: os.cpus().length
+  });
+}
+
+function startWorker(queue) {
+  amqplib.connect().then(
+    function connectionStart(connection) {
+      debug('amqp ready');
+      WORKER_CONFIG.amqp = connection;
+      return bindConsumer(queue);
+    }
+  ).then(
+    null,
+    function startFailure(err) {
+      console.error('Failure starting worker');
+      console.log(err.stack);
+      process.exit();
+    }
+  );
+}
+
+program.
+  version(require('../package.json').version).
+  command('start <queue>').
+  description('bind worker to a particular amqp queue').
+  action(startWorker);
+
+program.parse(process.argv);

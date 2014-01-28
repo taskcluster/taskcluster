@@ -1,3 +1,0 @@
---ui tdd
---require test/helper
---timeout 10s

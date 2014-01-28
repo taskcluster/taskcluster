@@ -1,4 +1,4 @@
-Docker Taskhost
+Docker Worker
 ========
 
 Docker task host for linux.
@@ -23,21 +23,29 @@ api]([http://docs.docker.io/en/latest/api/docker_remote_api_v1.8/)
 
 # Development
 
-Vagrant is used to provide a consistent development environment and more
-importantly so we can run docker!
+The docker worker not only used docker to run tasks but it also is
+deployed via docker. 
 
-In the tests we run docker over TCP (so you can run tests from your host
-if you like) but this is a _very_ bad idea generally speaking so don't
-do this in production.
+## Development
 
+You need [vagrant](http://www.vagrantup.com/) so start with the usual
+`vagrant up` the vagrant image is very minimal and once its downloading
+creating/destroying the machines should be fast.
 
-## Test TaskEnv
+(All the below assume your in the vagrant vm)
 
-We generate the test task env from the test/Dockerfile in this
-repo... There are two different tags.
+### Running tests
 
-  - :pass - taskrunner-who will return whatever its argv is in stdout
-  - :fail - taskrunner-who will exit with 666
+Individual tests can be run from the `docker_worker/` folder as you
+would for any nodejs project using mocha but to run the entire test
+suite (and verify the whole project works) running the tests through
+docker is recommended.
 
-Primarily these are for testing that we pull docker images correctly.
-The task env is tagged as `lightsofapollo/test-taskenv` or https://index.docker.io/u/lightsofapollo/test-taskenv/
+```sh
+# from the top level
+
+make test
+```
+
+This will build the docker image for the worker and run the entire suite
+of tests inside of the docker image.

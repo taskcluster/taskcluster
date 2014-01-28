@@ -1,0 +1,117 @@
+#! /usr/bin/env node
+
+var spawn = require('child_process').spawn;
+var optimist = require('optimist');
+var fsPath = require('path');
+var uuid = require('uuid');
+var docker = require('../docker')();
+var dockerUtils = require('../docker_utils');
+
+var GroupContainers = require('../group_containers');
+
+var SERVICE_CONFIG_NAME = 'docker_services.json';
+
+exports.command = {
+  description: 'Start a group of dependencies and run a command in a service',
+  arguments: '[DOCKER OPTIONS] <service> [COMMAND...]'
+};
+
+/**
+Wrapper for running docker commands.
+*/
+function runDocker(argv) {
+  argv.unshift('run');
+  return spawn('docker', argv, { stdio: 'inherit' });
+}
+
+function main() {
+  var opts = optimist
+    .usage('Usage: docker-service exec [options] <service> [sevice args...]')
+    .option('services-config', {
+      default: fsPath.join(process.cwd(), SERVICE_CONFIG_NAME),
+      desc: 'docker service config file'
+    });
+
+  var argv = process.argv.slice(2);
+  var serviceConfigPath = fsPath.join(process.cwd(), SERVICE_CONFIG_NAME);
+
+  // XXX: The amazing ghetto CLI inheritance (seriously)
+  // no arguments or a help option is given (we only use optimist for the help
+  // output right now)
+  if (!argv.length || argv[0] === '--help') {
+    opts.showHelp();
+    // start and share file descriptors
+    runDocker(['--help']);
+    return;
+  }
+
+  // look for the service-config flag before processing argv
+  var serviceConfigIdx = argv.indexOf('--services-config');
+  if (serviceConfigIdx !== -1) {
+    // get the service config
+    serviceConfigPath = fsPath.resolve(argv.splice(serviceConfigIdx, 2).pop());
+  }
+
+  // build the group config
+  var groupContainers =
+    new GroupContainers(docker, require(serviceConfigPath), uuid.v4());
+
+  var groupConfig = groupContainers.config;
+
+  var service;
+  // read until we find something without a -dash
+  for (var idx = 0; idx < argv.length; idx++) {
+    service = argv[idx];
+    if (service[0] !== '-') break;
+  }
+
+  var serviceConfig = groupConfig.services[service];
+
+  // replace the service name with the image name
+  argv[idx] = serviceConfig.image;
+
+  // start the dependencies
+  var containerLinks;
+  groupContainers.startDependenciesFor(service).then(
+    function ensureImage(links) {
+      containerLinks = links;
+      return dockerUtils.ensureImage(docker, serviceConfig.image);
+    }
+  ).then(
+    function initializeDocker() {
+      // setup the start config
+      var startConfig = groupConfig.dockerStartConfig(service, containerLinks);
+      startConfig.Links.forEach(function(link) {
+        // prepend the links to the argv
+        argv.unshift(link);
+        argv.unshift('-link');
+      });
+
+      var dockerProc = runDocker(argv);
+
+      dockerProc.once('close', function(code, signal) {
+        // clean up the services
+        groupContainers.removeServices().then(
+          function() {
+            // kill the associate
+            return groupContainers.associate.delete();
+          }
+        ).then(
+          null,
+          function cleanupServiceError(err) {
+            console.error('Error cleaning up services', err);
+          }
+        );
+
+      });
+    },
+    function dependencyFailure(err) {
+      console.error('ERROR:', err);
+      process.exit(1);
+    }
+  );
+}
+
+if (require.main === module) {
+  main();
+}
