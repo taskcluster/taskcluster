@@ -1,0 +1,23 @@
+{
+  "name": "taskcluster-spot-provisioner",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express":                          "3.4.8",
+    "jade":                             "1.1.4",
+    "stylus":                           "0.42.0",
+    "aws-sdk":                          "2.0.0-rc8",
+    "nconf":                            "0.6.9",
+    "promise":                          "3.2.0",
+    "request":                          "2.31.0",
+    "lodash":                           "2.4.1",
+    "nodeunit":                         "0.8.2",
+    "passport":                         "0.1.18",
+    "passport-persona":                 "0.1.7",
+    "uuid":                             "1.4.1",
+    "debug":                            "0.7.4"
+  }
+}
