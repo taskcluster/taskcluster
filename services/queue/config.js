@@ -1,5 +1,6 @@
 var fs      = require('fs');
 var nconf   = require('nconf');
+var aws     = require('aws-sdk');
 
 /** Default configuration values */
 var DEFAULT_CONFIG_VALUES = {
@@ -31,6 +32,16 @@ var DEFAULT_CONFIG_VALUES = {
 
     // Database password
     'password':                     '42'
+  },
+
+  // AWS SDK Configuration
+  'aws': {
+    // Default AWS region, this is where the S3 bucket lives
+    region:                         'us-west-2',
+
+    // Lock API version to use the latest API from 2013, this is fuzzy locking,
+    // but it does the trick...
+    apiVersion:                     '2014-01-01'
   }
 };
 
@@ -53,4 +64,7 @@ exports.load = function(default_only) {
 
   // Load default configuration
   nconf.defaults(DEFAULT_CONFIG_VALUES);
+
+  // Set configuration for aws-sdk
+  aws.config.update(nconf.get('aws'));
 }
