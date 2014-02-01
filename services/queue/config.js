@@ -1,9 +1,14 @@
-var fs      = require('fs');
 var nconf   = require('nconf');
 var aws     = require('aws-sdk');
 
 /** Default configuration values */
 var DEFAULT_CONFIG_VALUES = {
+  // TaskCluster Queue configuration
+  'queue': {
+    // Name of S3 bucket where all task and artifacts will be stored
+    'task-bucket':                  'jonasfj-taskcluster-tasks'
+  },
+
   // Server (HTTP) configuration
   'server': {
     // Server hostname
@@ -37,21 +42,30 @@ var DEFAULT_CONFIG_VALUES = {
   // AMQP configuration as given to `amqp.createConnection`
   // See: https://github.com/postwait/node-amqp#connection-options-and-url
   'amqp': {
+    // AMQP hostname
     'host':                         'localhost',
+
+    // AMQP port
     'port':                         5672,
+
+    // AMQP user
     'login':                        'guest',
+
+    // AMQP password
     'password':                     'guest',
+
+    // AMQP authentication mechanism
     'authMechanism':                'AMQPLAIN',
+
+    // AMQP virtual host
     'vhost':                        '/',
+
+    // Use SSL, keys are required to enable this, refer to node-amqp
+    // documentation for details, see:
+    // https://github.com/postwait/node-amqp#connection-options-and-url
     'ssl': {
       'enable':                     false
     }
-  },
-
-  // TaskCluster Queue configuration
-  'queue': {
-    // Name of S3 bucket where all task and artifacts will be stored
-    'task-bucket':                  'jonasfj-taskcluster-tasks'
   },
 
   // AWS SDK configuration
