@@ -1,0 +1,11 @@
+{
+  "id":       "http://schemas.taskcluster.net/0.2.0/task_pending_v1.json#",
+  "$schema":  "http://json-schema.org/draft-04/schema#",
+  "type":               "object",
+  "properties": {
+    "version":   {"type": "string"},
+    "status":    {"$ref": "http://schemas.taskcluster.net/0.2.0/task-status-structure.json#"}
+  },
+  "additionalProperties":   false,
+  "required": ["version", "status"]
+}
