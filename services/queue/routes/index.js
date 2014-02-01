@@ -9,7 +9,6 @@ exports.index = function(req, res){
 
 // Include all modules
 [
-  'log',
   'api',
   'unauthorized'
 ].forEach(function(module) {
