@@ -1,0 +1,10 @@
+{
+  "id":           "http://schemas.taskcluster.net/0.2.0/identifier.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Common identifier restrictions",
+  "description":  "This is an identifier useful for routing, fits a uuid.",
+  "type":         "string",
+  "minLength":    1,
+  "maxLength":    36,
+  "pattern":      "^([a-zA-Z0-9-_]*)$"
+}

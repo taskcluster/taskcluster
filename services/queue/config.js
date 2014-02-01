@@ -6,7 +6,11 @@ var DEFAULT_CONFIG_VALUES = {
   // TaskCluster Queue configuration
   'queue': {
     // Name of S3 bucket where all task and artifacts will be stored
-    'task-bucket':                  'jonasfj-taskcluster-tasks'
+    'task-bucket':                  'jonasfj-taskcluster-tasks',
+
+    // Validate out-going messages, this can be disabled if we trust that we
+    // generate correct JSON internally and want more performance
+    'validate-outgoing:'            true
   },
 
   // Server (HTTP) configuration

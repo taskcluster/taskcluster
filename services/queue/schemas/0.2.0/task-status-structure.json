@@ -1,0 +1,26 @@
+{
+  "id":           "http://schemas.taskcluster.net/0.2.0/task-status-structure.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Task Status Structure",
+  "description":  "Structure holding the state of a task",
+  "type":               "object",
+  "properties": {
+    "task_id":          {"$ref": "http://schemas.taskcluster.net/0.2.0/uuid.json#"},
+    "provisioner_id":   {"$ref": "http://schemas.taskcluster.net/0.2.0/identifier.json#"},
+    "worker_type":      {"$ref": "http://schemas.taskcluster.net/0.2.0/identifier.json#"},
+    "runs":             {"type": "array"},
+    "state":            {"enum": ["pending", "running", "completed", "failed"]},
+    "reason":           {"type": "string"},
+    "routing":          {"type": "string", "maxLength": 64},
+    "retries":          {"type": "integer", "minimum": 0, "maximum": 999},
+    "priority":         {"type": "number"},
+    "created":          {"type": "string", "format": "date-time"},
+    "deadline":         {"type": "string", "format": "date-time"},
+    "taken_until":      {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties":   false,
+  "required": [
+    "task_id", "provisioner_id", "worker_type", "runs", "state", "reason",
+    "routing", "retries", "priority", "created", "deadline", "taken_until"
+  ]
+}
