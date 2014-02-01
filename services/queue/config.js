@@ -34,14 +34,34 @@ var DEFAULT_CONFIG_VALUES = {
     'password':                     '42'
   },
 
-  // AWS SDK Configuration
+  // AMQP configuration as given to `amqp.createConnection`
+  // See: https://github.com/postwait/node-amqp#connection-options-and-url
+  'amqp': {
+    'host':                         'localhost',
+    'port':                         5672,
+    'login':                        'guest',
+    'password':                     'guest',
+    'authMechanism':                'AMQPLAIN',
+    'vhost':                        '/',
+    'ssl': {
+      'enable':                     false
+    }
+  },
+
+  // TaskCluster Queue configuration
+  'queue': {
+    // Name of S3 bucket where all task and artifacts will be stored
+    'task-bucket':                  'jonasfj-taskcluster-tasks'
+  },
+
+  // AWS SDK configuration
   'aws': {
     // Default AWS region, this is where the S3 bucket lives
-    region:                         'us-west-2',
+    'region':                       'us-west-2',
 
     // Lock API version to use the latest API from 2013, this is fuzzy locking,
     // but it does the trick...
-    apiVersion:                     '2014-01-01'
+    'apiVersion':                   '2014-01-01'
   }
 };
 
