@@ -10,7 +10,7 @@ var DEFAULT_CONFIG_VALUES = {
 
     // Validate out-going messages, this can be disabled if we trust that we
     // generate correct JSON internally and want more performance
-    'validate-outgoing:'            true
+    'validate-outgoing':            true
   },
 
   // Server (HTTP) configuration

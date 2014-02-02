@@ -1,39 +1,43 @@
 var validate    = require('../../utils/validate');
-var misc        = require('../../utils/misc');
-var path        = require('path');
 var fs          = require('fs');
+var path        = require('path');
 
-// find test files
-var testFiles = misc.listFolder(__dirname).filter(function(filePath) {
-  return /\.json$/.test(filePath);
-});
+/**
+ * Test cases each defined with relative path, schema identifier and success as
+ * either true or false depending on whether or not validation should succeed
+ *
+ * Add your schema tests below...
+ */
+var testCases = [
+  {
+    path:     'events/v1/queue:task-pending.json',
+    schema:   'http://schemas.taskcluster.net/events/v1/queue:task-pending.json#',
+    success:  true,
+  }, {
+    path:     'api/0.2.0/uuid.json',
+    schema:   'http://schemas.taskcluster.net/api/0.2.0/uuid.json#',
+    success:  true,
+  }, {
+    path:     'api/0.2.0/task-status-structure.json',
+    schema:   'http://schemas.taskcluster.net/api/0.2.0/task-status-structure.json#',
+    success:  true,
+  },
+];
 
 // define a test for each test file
-testFiles.forEach(function(filePath) {
-  exports[filePath] = function(test) {
-    // Find relative path
-    var relPath = path.relative(__dirname, filePath);
-
-    // Split by dash, last -succ.json or -fail.json indicates failure or success
-    var parts = relPath.split('-');
-    var failure_or_success = parts.pop().split('.')[0];
-    test.ok(failure_or_success == "succ" || failure_or_success == "fail",
-            "Filename must end with -succ.<index>.json or " +
-            "-fail.<index>.json" + filePath);
-
-    // Construct schema from parts
-    var schema = "http://schemas.taskcluster.net/" + parts.join('-') + '.json';
-
+testCases.forEach(function(testCase) {
+  exports[testCase.path] = function(test) {
     // Load test data
+    var filePath = path.join(__dirname, testCase.path);
     var data = fs.readFileSync(filePath, {encoding: 'utf-8'});
     var json = JSON.parse(data);
 
     // Validate json
-    var errors = validate(json, schema);
+    var errors = validate(json, testCase.schema);
 
     // Test errors
-    if(failure_or_success == 'succ') {
-      test.ok(errors === null, "Schema doesn't match test for " + filePath);
+    if(testCase.success) {
+      test.ok(errors === null, "Schema doesn't match test for " + testCase.path);
       if (errors !== null) {
         console.log("Errors:");
         errors.forEach(function(error) {
@@ -41,7 +45,7 @@ testFiles.forEach(function(filePath) {
         });
       }
     } else {
-      test.ok(errors !== null, "Schema matches unexpectedly test for " + filePath);
+      test.ok(errors !== null, "Schema matches unexpectedly test for " + testCase.path);
     }
 
     test.done();
