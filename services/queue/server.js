@@ -5,6 +5,7 @@ var path                            = require('path');
 var nconf                           = require('nconf');
 var passport                        = require('passport');
 var PersonaStrategy                 = require('passport-persona').Strategy;
+var events                          = require('./queue/events');
 
 // Load configuration
 var config  = require('./config');
@@ -50,7 +51,6 @@ if ('production' == app.get('env')) {
 
 // Middleware for development
 if ('development' == app.get('env')) {
-  console.log("Launched in development-mode");
   app.use(express.errorHandler());
 }
 
@@ -108,9 +108,16 @@ app.get('/0.1.0/list-instances/:instance',                        routes.api.lis
 
 /** Run the server */
 exports.run = function() {
-  // Launch HTTP server
-  http.createServer(app).listen(app.get('port'), function(){
-    console.log('Express server listening on port ' + app.get('port'));
+  if ('development' == app.get('env')) {
+    console.log("Launching in development-mode");
+  }
+
+  // Setup amqp exchanges and connection
+  events.setup().then(function() {
+    // Launch HTTP server
+    http.createServer(app).listen(app.get('port'), function(){
+      console.log('Express server listening on port ' + app.get('port'));
+    });
   });
 };
 

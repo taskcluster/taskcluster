@@ -1,5 +1,5 @@
 {
-  "id":           "http://schemas.taskcluster.net/0.2.0/identifier.json#",
+  "id":           "http://schemas.taskcluster.net/api/0.2.0/identifier.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Common identifier restrictions",
   "description":  "This is an identifier useful for routing, fits a uuid.",
