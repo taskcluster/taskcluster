@@ -5,6 +5,9 @@ var validate  = require('../utils/validate');
 
 var debug   = require('debug')('queue:events');
 
+// AMQP connection created by events.setup()
+var _conn = null;
+
 // Exchanges setup by events.setup()
 var _exchanges = null;
 
@@ -18,14 +21,17 @@ var _exchanges = null;
  * matter to me.
  */
 exports.setup = function() {
-  debug('Connecting to AMQP server');
+  debug("Connecting to AMQP server");
+
+  // Connection created
+  var conn = null;
 
   // Get a promise that we'll be connected
   var connected = new Promise(function(accept, reject) {
     // Create connection
-    var conn = amqp.createConnection(nconf.get('amqp'));
+    conn = amqp.createConnection(nconf.get('amqp'));
     conn.on('ready', function() {
-      debug('Connection to AMQP is now ready for work');
+      debug("Connection to AMQP is now ready for work");
       accept();
     });
   });
@@ -34,17 +40,18 @@ exports.setup = function() {
   var exchanges = {};
 
   // When we're connected, let's defined exchanges
-  connected.then(function() {
+  var setup_completed = connected.then(function() {
     // For each desired exchange we create a promise that the exchange will be
     // declared (we just carry name to function below as name, enjoy)
     var exchanges_declared_promises = [
-      'task_pending_v1',
-      'task_running_v1',
-      'task_completed_v1',
-      'task_failed_v1'
+      'v1/queue:task-pending',
+      'v1/queue:task-running',
+      'v1/queue:task-completed',
+      'v1/queue:task-failed'
     ].map(function(name) {
       // Promise that exchange with `name` will be created
       return new Promise(function(accept, reject) {
+        debug("Declaring exchange: " + name);
         // For all intents and purposes these exchanges must be durable and
         // not auto deleted, they should never disappear!
         exchanges[name] = conn.exchange(name, {
@@ -53,31 +60,50 @@ exports.setup = function() {
           confirm:          true,
           autoDelete:       false
         }, function() {
+          debug("Declared exchange: " + name);
           accept();
         });
       });
     });
 
     // Return a promise that all exchanges have been configured
-    return Promise.all(exchanges_declared_promises).then(function() {
-      // Set exchange
-      _exchanges = exchanges;
-    });
+    return Promise.all(exchanges_declared_promises);
+  });
+
+  return setup_completed.then(function() {
+    // Set connection and exchange globally
+    _conn = conn;
+    _exchanges = exchanges;
   });
 };
 
-/** Publish a message to exchange with a given routing key */
-exports.publish = function(exchange, routingKey, message) {
+/**
+ * Disconnect from AMQP server, returns a promise of success
+ * Mainly used for testing...
+ */
+exports.disconnect = function() {
+  return new Promise(function(accept, reject) {
+    _conn.on('close', function() {
+      accept();
+    });
+    _conn.destroy();
+  });
+};
+
+/**
+ * Publish a message to exchange, routing key will be constructed from message
+ */
+exports.publish = function(exchange, message) {
   // Check if exchanges are created, don't give a promise if exchanges aren't
   // setup...
-  if (exchanges === null) {
+  if (_exchanges === null) {
     throw new Error("Exchanges are not setup yet, call events.setup()!");
   }
 
   return new Promise(function(accept, reject) {
     // Check if we're supposed to validate out-going messages
     if (nconf.get('queue:validate-outgoing')) {
-      var schema = 'http://schemas.taskcluster.net/0.2.0/' + exchange
+      var schema = 'http://schemas.taskcluster.net/events/' + exchange
                     + '.json#';
       var errors = validate(message, schema);
       // Reject message if there's any errors
@@ -86,8 +112,22 @@ exports.publish = function(exchange, routingKey, message) {
         return;
       }
     }
+
+    // Construct routing key from task status structure in message
+    // as well as run_id, worker_group and worker_id, which are present in the
+    // message if relevant.
+    var routingKey = [
+      message.status.task_id,
+      message.run_id        || '_',
+      message.worker_group  || '_',
+      message.worker_id     || '_',
+      message.status.provisioner_id,
+      message.status.worker_type,
+      message.status.routing
+    ].join('.');
+
     // Publish message to RabbitMQ
-    exchanges[exchange].publish(routingKey, message, {
+    _exchanges[exchange].publish(routingKey, message, {
       contentType:        'application/json',
       deliveryMode:       2,
     }, function(err) {
@@ -99,4 +139,3 @@ exports.publish = function(exchange, routingKey, message) {
     });
   });
 };
-
