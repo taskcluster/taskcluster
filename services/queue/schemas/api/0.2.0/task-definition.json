@@ -1,5 +1,5 @@
 {
-  "id":           "http://schemas.taskcluster.net/0.2.0/task-definition.json#",
+  "id":           "http://schemas.taskcluster.net/api/0.2.0/task-definition.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Task Definition",
   "description":  "Definition of a task that can be scheduled",
