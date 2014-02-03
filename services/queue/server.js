@@ -4,8 +4,10 @@ var http                            = require('http');
 var path                            = require('path');
 var nconf                           = require('nconf');
 var passport                        = require('passport');
+var Promise                         = require('promise');
 var PersonaStrategy                 = require('passport-persona').Strategy;
 var events                          = require('./queue/events');
+var debug                           = require('debug')('server');
 
 // Load configuration
 var config  = require('./config');
@@ -25,6 +27,10 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(express.favicon());
 app.use(express.logger('dev'));
+
+// Mount API for version 0.2.0
+require('./routes/api/0.2.0').mount(app, '/0.2.0');
+
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
@@ -60,7 +66,7 @@ passport.use(new PersonaStrategy({
                nconf.get('server:port')
   },
   function(email, done) {
-    console.log("Signed in with:" + email);
+    debug("Signed in with:" + email);
     if (/@mozilla\.com$/.test(email)) {
       done(null, {email: email});
     } else {
@@ -103,25 +109,29 @@ var ensureAuthenticated = function(req, res, next) {
 var routes = require('./routes');
 app.get('/',                                                      routes.index);
 app.get('/unauthorized',                                          routes.unauthorized);
-app.get('/0.1.0/kill-instance/:instance',                         routes.api.kill);
-app.get('/0.1.0/list-instances/:instance',                        routes.api.list);
 
-/** Run the server */
-exports.run = function() {
+/** Launch the server */
+exports.launch = function() {
+  debug("Launching server");
+
   if ('development' == app.get('env')) {
-    console.log("Launching in development-mode");
+    debug("Launching in development-mode");
   }
 
   // Setup amqp exchanges and connection
-  events.setup().then(function() {
-    // Launch HTTP server
-    http.createServer(app).listen(app.get('port'), function(){
-      console.log('Express server listening on port ' + app.get('port'));
+  return events.setup().then(function() {
+    return new Promise(function(accept, reject) {
+      // Launch HTTP server
+      var server = http.createServer(app);
+      server.listen(app.get('port'), function(){
+        debug('Express server listening on port ' + app.get('port'));
+        accept(server);
+      });
     });
   });
 };
 
 // If server.js is executed start the server
 if (!module.parent) {
-  exports.run();
+  exports.launch();
 }
