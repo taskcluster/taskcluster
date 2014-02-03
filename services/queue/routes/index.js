@@ -9,7 +9,6 @@ exports.index = function(req, res){
 
 // Include all modules
 [
-  'api',
   'unauthorized'
 ].forEach(function(module) {
   exports[module] = require('./' + module);
