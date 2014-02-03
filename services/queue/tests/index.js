@@ -2,6 +2,7 @@ var nodeunit = require('nodeunit');
 
 /** Test files to be executed, relative to the test/ folder */
 var test_files = [
+  'api',
   'validation',
   'events'
 ];
