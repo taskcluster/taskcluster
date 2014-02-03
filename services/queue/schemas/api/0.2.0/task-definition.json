@@ -5,10 +5,9 @@
   "description":  "Definition of a task that can be scheduled",
   "type":               "object",
   "properties": {
-    "version":          {"type": "string"},
-    "task_id":          {"$ref": "http://schemas.taskcluster.net/0.2.0/uuid.json#"},
-    "provisioner_id":   {"$ref": "http://schemas.taskcluster.net/0.2.0/identifier.json#"},
-    "worker_type":      {"$ref": "http://schemas.taskcluster.net/0.2.0/identifier.json#"},
+    "version":          {"enum": ["0.2.0"]},
+    "provisioner_id":   {"$ref": "http://schemas.taskcluster.net/api/0.2.0/identifier.json#"},
+    "worker_type":      {"$ref": "http://schemas.taskcluster.net/api/0.2.0/identifier.json#"},
     "routing":          {"type": "string", "maxLength": 64},
     "retries":          {"type": "integer", "minimum": 0, "maximum": 999},
     "priority":         {"type": "number"},
@@ -33,7 +32,7 @@
   },
   "additionalProperties":   false,
   "required": [
-    "version", "task_id", "provisioner_id", "worker_type", "routing", "retries",
+    "version", "provisioner_id", "worker_type", "routing", "retries",
     "priority", "created", "deadline", "payload", "metadata", "tags"
   ]
 }
