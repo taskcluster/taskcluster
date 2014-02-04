@@ -12,6 +12,11 @@ sudo echo 'export AWS_ACCESS_KEY_ID="#{ENV['AWS_ACCESS_KEY_ID']}";' >> /etc/prof
 sudo echo 'export AWS_SECRET_ACCESS_KEY="#{ENV['AWS_SECRET_ACCESS_KEY']}";' >> /etc/profile.d/aws.sh;
 sudo chmod a+x /etc/profile.d/aws.sh
 
+# Create postgres role for queue
+sudo -u postgres psql -c "CREATE ROLE queue PASSWORD '42'";
+sudo -u postgres psql -c "CREATE DATABASE queue_v1 OWNER queue";
+
+# Setup postgres for access over localhost with md5
 echo -ne "local all postgres peer\nlocal all all md5\n" | cat - /etc/postgresql/9.1/main/pg_hba.conf >> /tmp/pg_hba.conf;
 mv /tmp/pg_hba.conf /etc/postgresql/9.1/main/pg_hba.conf;
 sudo service postgresql restart;
