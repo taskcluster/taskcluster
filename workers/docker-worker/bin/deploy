@@ -1,0 +1,37 @@
+#! /bin/bash -e
+
+usage() {
+  echo
+  echo "  Usage: ./bin/deploy [command]"
+  echo
+  echo "  Package and deploy the worker with packer... Only git committed resources in the"
+  echo "  docker_worker folder."
+  echo
+  echo "  Commands:"
+  echo
+  echo "    build - do a dry run build the .tar.gz and output its name"
+  echo "    packer [packer opts] - build the image and hand off deploy to packer"
+}
+
+cmd_packer() {
+  packer build -var "docker_worker=$(cmd_build)" $@ packer/app.json
+}
+
+cmd_build() {
+  local version=$(git rev-parse HEAD)
+  local path='docker-worker-'$version'.tgz'
+  git archive --format tar.gz -9 HEAD . > $path
+  echo $path
+}
+
+case "$1" in
+"build")
+  cmd_build ${@:2}
+  ;;
+"packer")
+  cmd_packer ${@:2}
+  ;;
+*)
+  usage
+  ;;
+esac

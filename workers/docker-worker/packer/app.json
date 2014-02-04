@@ -1,0 +1,63 @@
+{
+  "description": "taskcluster docker worker vm",
+  "variables": {
+    "docker_worker": "",
+    "source_ami": "ami-7c4e2d4c",
+    "docker_worker_opts": "packer/app/etc/default/docker-worker"
+  },
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "{{user `docker_worker`}}",
+      "destination": "/tmp/{{user `docker_worker`}}"
+    },
+    {
+      "type": "file",
+      "source": "packer/app/scripts/deploy.sh",
+      "destination": "/tmp/deploy.sh"
+    },
+    {
+      "type": "file",
+      "source": "packer/app/docker-worker.conf",
+      "destination": "/tmp/docker-worker.conf"
+    },
+    {
+      "type": "file",
+      "source": "{{user `docker_worker_opts`}}",
+      "destination": "/tmp/docker-worker"
+    },
+    {
+      "type": "shell",
+      "inline": ["chmod u+x /tmp/deploy.sh"]
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "/tmp/deploy.sh /tmp/{{user `docker_worker`}} /tmp/docker-worker.conf /tmp/docker-worker"
+      ]
+    }
+  ],
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "region": "us-west-2",
+      "source_ami": "{{user `source_ami`}}",
+      "instance_type": "m3.large",
+      "ssh_username": "ubuntu",
+      "ami_name": "taskcluster-docker-worker {{timestamp}}",
+      "tags": {
+        "OS_Version": "Ubuntu",
+        "Release": "Latest"
+      }
+    }
+  ],
+
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "output": "packer/app.box",
+      "keep_input_artifact": true
+    }
+  ]
+}
+

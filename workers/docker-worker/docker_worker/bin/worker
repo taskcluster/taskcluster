@@ -26,8 +26,8 @@ function bindConsumer(queue) {
   });
 }
 
-function startWorker(queue) {
-  amqplib.connect().then(
+function startWorker(queue, cmd) {
+  amqplib.connect(cmd.amqp).then(
     function connectionStart(connection) {
       debug('amqp ready');
       WORKER_CONFIG.amqp = connection;
@@ -46,6 +46,7 @@ function startWorker(queue) {
 program.
   version(require('../package.json').version).
   command('start <queue>').
+  option('--amqp <url>', 'full amqp url', 'amqp://guest:guest@127.0.0.1/').
   description('bind worker to a particular amqp queue').
   action(startWorker);
 

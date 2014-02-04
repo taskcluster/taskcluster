@@ -1,0 +1,35 @@
+{
+  "description": "taskcluster worker system dependencies",
+  "provisioners": [
+    {
+      "type": "shell",
+      "scripts": [
+        "packer/base/scripts/docker.sh",
+        "packer/base/scripts/node.sh"
+      ]
+    }
+  ],
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "region": "us-west-2",
+      "source_ami": "ami-62e78652",
+      "instance_type": "m3.large",
+      "ssh_username": "ubuntu",
+      "ami_name": "taskcluster-docker-worker-base {{timestamp}}",
+      "tags": {
+        "OS_Version": "Ubuntu",
+        "Release": "Latest"
+      }
+    }
+  ],
+
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "output": "packer/base.box",
+      "keep_input_artifact": true
+    }
+  ]
+}
+

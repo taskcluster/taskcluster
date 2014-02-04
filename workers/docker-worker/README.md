@@ -1,5 +1,4 @@
-Docker Worker
-========
+# Docker Worker
 
 Docker task host for linux.
 
@@ -38,6 +37,14 @@ creating/destroying the machines should be fast.
 
 (All the below assume your in the vagrant vm)
 
+### Directory Structure
+
+  - [/bin - deployment and testing scripts](/bin)
+  - [/docker-worker - node module/server code for the worker](/docker_worker)
+  - [/packer - vm packaging scripts](/packer)
+  - [/taskenv_fail - docker image for testing failure](/taskenv_fail)
+  - [/taskenv_pass - docker image for testing success](/taskenv_pass)
+
 ### Running tests
 
 Individual tests can be run from the `docker_worker/` folder as you
@@ -52,3 +59,26 @@ make test
 ```
 
 This will build the docker image for the tasks and run the entire suite.
+
+### Deploying the worker
+
+This repo contains a deployment script `bin/deploy` (run `./bin/deploy
+--help` for all the options) which is a wrapper
+for the awesome [packer](www.packer.io) the worker is then packed up
+(currently only for AWS AMI) and managed via upstart... The default
+image does not have the required credentials for all worker operations.
+See [packer/app/etc/default-worker](packer/app/etc/default-worker) for
+the defaults...
+
+Overriding the defaults is easy:
+
+```
+# localconfig
+DOCKER_WORKER_OPTS="--amqp amqps://user:pass@host/vhost"
+```
+
+```sh
+# Additional packer flags can be added after "packer" sub command
+# local config is a relative path
+./bin/deploy packer -var "docker_worker_opts=localconfig"
+```
