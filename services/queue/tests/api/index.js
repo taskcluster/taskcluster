@@ -4,26 +4,40 @@ var server    = require('../../server');
 var events    = require('../../queue/events');
 var debug     = require('debug')('tests:api');
 var request   = require('request');
+var _         = require('lodash');
 
 var _server = null;
 
 /** Setup server.js */
 exports.setUp = function(callback)  {
-  debug("Launching server");
-  server.launch().then(function(server) {
-    _server = server;
-    debug("Server is running");
+  if (!_server) {
+    debug("Launching server");
+    server.launch().then(function(server) {
+      _server = server;
+      debug("Server is running");
+      callback();
+    });
+  } else {
     callback();
-  });
+  }
 }
+
+// Count tearDowns so we terminate server after last tear down
+// the server isn't exactly restartable, due to limitations in pg.js
+var tearDowns = 0;
 
 /** Close server application */
 exports.tearDown = function(callback) {
-  debug("Closing server");
-  _server.close(function() {
-    debug("Server closed");
-    events.disconnect().then(callback);
-  });
+  tearDowns += 1;
+  if(tearDowns == _.keys(exports).length) {
+    debug("Closing server");
+    _server.terminate().then(function() {
+      debug("Server terminated");
+      callback();
+    });
+  } else {
+    callback();
+  }
 }
 
 /** Test message publication */
@@ -109,3 +123,4 @@ exports['POST invalid task to 0.2.0/task/new'] = function(test) {
     test.done();
   });
 };
+

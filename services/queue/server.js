@@ -7,6 +7,7 @@ var passport                        = require('passport');
 var Promise                         = require('promise');
 var PersonaStrategy                 = require('passport-persona').Strategy;
 var events                          = require('./queue/events');
+var data                            = require('./queue/data');
 var debug                           = require('debug')('server');
 
 // Load configuration
@@ -17,6 +18,7 @@ config.load(module.parent);
 
 // Load a little monkey patching
 require('./utils/spread-promise').patch();
+require('./utils/aws-sdk-promise').patch();
 
 // Create expressjs application
 var app = exports.app = express();
@@ -120,9 +122,22 @@ exports.launch = function() {
 
   // Setup amqp exchanges and connection
   return events.setup().then(function() {
+    return data.setupDatabase();
+  }).then(function() {
     return new Promise(function(accept, reject) {
       // Launch HTTP server
       var server = http.createServer(app);
+
+      // Add a little method to help kill the server
+      server.terminate = function() {
+        return new Promise(function(accept, reject) {
+          server.close(function() {
+            accept(Promise.all(events.disconnect(), data.disconnect()));
+          });
+        });
+      };
+
+      // Listen
       server.listen(app.get('port'), function(){
         debug('Express server listening on port ' + app.get('port'));
         accept(server);
