@@ -31,10 +31,10 @@ var DEFAULT_CONFIG_VALUES = {
     'host':                         'localhost',
 
     // Database port
-    'port':                         1234,
+    'port':                         5432,
 
     // Database name
-    'name':                         'queue-v1',
+    'name':                         'queue_v1',
 
     // Database user
     'user':                         'queue',
