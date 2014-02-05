@@ -44,6 +44,8 @@ Things To Do
    and adding new properties is trivial. Essentially, `routes/api/` should only
    ensure that values returned by the API matches the schema requirements for
    the specific version of the API implemented.
+ * Handles errors in `routes/api/` in a better way, probably need to formalize
+   how errors are reported, also improve how schema errors are reported.
  * Look at how provisioners
  * Put a useful UI on the queue, or completely remove the entire UI, and just
    offer an API for making a UI. Consider that:
