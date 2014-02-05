@@ -188,7 +188,7 @@ api.declare({
         worker_group:   req.body.worker_group,
         worker_id:      req.body.worker_id,
         run_id:         run_id,
-        logs:           task_bucket_url(task_id + '/logs.json'),
+        logs:           task_bucket_url(task_id + '/' + run_id + '/logs.json'),
         status:         task_status
       });
 
@@ -213,7 +213,7 @@ api.declare({
         logs_url_signed,
         result_url_signed
       ).spread(function(logs_url, result_url) {
-        req.reply({
+        res.reply({
           worker_group:   req.body.worker_group,
           worker_id:      req.body.worker_id,
           run_id:         run_id,
@@ -242,7 +242,7 @@ api.declare({
 api.declare({
   method:   'post',
   route:    '/task/:task_id/artifact-urls',
-  input:    undefined,  // No input is accepted
+  input:    undefined,  // TODO: define schema later
   output:   undefined,  // TODO: define schema later
   title:    "Get artifact urls",
   desc: [
@@ -308,10 +308,225 @@ api.declare({
 });
 
 
+/** Report task as completed */
+api.declare({
+  method:   'post',
+  route:    '/task/:task_id/completed',
+  input:    undefined,  // TODO: define schema later
+  output:   undefined,  // TODO: define schema later
+  title:    "Report Completed Task",
+  desc: [
+    "Report task completed..."
+  ].join('\n')
+}, function(req, res) {
+  // Get input from posted JSON
+  var task_id       = req.param.task_id;
+  var run_id        = req.body.run_id;
+  var worker_group  = req.body.worker_group;
+  var worker_id     = req.body.worker_id;
+
+  var task_completed = data.completeTask(task_id);
+
+  task_completed.then(function(success) {
+    if (!success) {
+      res.json(404, {
+        message:    "Task not found"
+      });
+      return;
+    }
+    return data.loadTask(task_id).then(function(task_status) {
+      // Resolution to be uploaded to S3
+      var resolution = {
+        version:        '0.2.0',
+        status:         task_status,
+        result:         task_bucket_url(task_id + '/' + run_id + '/result.json'),
+        logs:           task_bucket_url(task_id + '/' + run_id + '/logs.json'),
+        worker_id:      worker_id,
+        worker_group:   worker_group
+      };
+
+      var uploaded_to_s3 = s3.putObject({
+        Bucket:               nconf.get('queue:task-bucket'),
+        Key:                  task_id + '/resolution.json',
+        Body:                 JSON.stringify(resolution),
+        ContentType:          'application/json'
+      }).promise();
+
+      var event_published = events.publish('v1/queue:task-completed', {
+        version:        '0.2.0',
+        status:         task_status,
+        result:         task_bucket_url(task_id + '/' + run_id + '/result.json'),
+        logs:           task_bucket_url(task_id + '/' + run_id + '/logs.json'),
+        run_id:         run_id,
+        worker_id:      worker_id,
+        worker_group:   worker_group
+      });
+
+      return Promise.all(uploaded_to_s3, event_published).then(function() {
+        res.reply({
+          status:     task_status
+        });
+      });
+    });
+  }).then(undefined, function(err) {
+    debug("Failed to complete task, error %s, as JSON: %j", err, err);
+    res.json(500, {
+      message:        "Internal Server Error"
+    });
+  });
+});
 
 
-/*
-    POST  /task/<task-id>/completed
-    GET   /claim-work/<provisioner-id>/<worker-type>
-    GET   /pending-tasks/<provisioner-id>
-*/
+/** Fetch work for a worker */
+api.declare({
+  method:   'get',
+  route:    '/claim-work/:provisioner-id/:worker-type',
+  input:    undefined,  // TODO: define schema later
+  output:   undefined,  // TODO: define schema later
+  title:    "Claim work for a worker",
+  desc: [
+    "Documented later..."
+  ].join('\n')
+}, function(req, res) {
+  // Get input
+  var provisioner_id  = req.param.provisioner_id;
+  var worker_type     = req.param.worker_type;
+  var worker_group    = req.body.worker_group;
+  var worker_id       = req.body.worker_id;
+
+  // Load pending tasks
+  var task_loaded = data.queryTasks(provisioner_id, worker_type);
+
+  // When loaded let's pick a pending task
+  task_loaded.then(function(tasks) {
+    // if there is no tasks available, report 204
+    if (tasks.length == 0) {
+      // Ask worker to sleep for 3 min before polling again
+      res.json(204, {
+        sleep:        3 * 60
+      });
+      return;
+    }
+
+    // Pick the first task
+    var task_id = tasks[0].task_id;
+
+    ///////////// Warning: Code duplication from /task/:task_id/claim
+    /////////////          This needs to be refactored, all logic like this
+    /////////////          should live in queue/... so it can be reused for new
+    /////////////          api versions....
+
+    // Set taken_until to now + 20 min
+    var taken_until = new Date();
+    var timeout = 20 * 60;
+    taken_until.setSeconds(taken_until.getSeconds() + timeout);
+
+    // Claim task without run_id if this is a new claim
+    var task_claimed = data.claimTask(task_id, taken_until, {
+      worker_group:   worker_group,
+      worker_id:      worker_id,
+      run_id:         undefined
+    });
+
+    // When claimed
+    task_claimed.then(function(run_id) {
+      // If task wasn't claimed, report 404
+      if(run_id === null) {
+        res.json(404, {
+          message: "Task not found, or already taken"
+        });
+        return;
+      }
+
+      // Load task status structure
+      return data.loadTask(task_id).then(function(task_status) {
+        // Fire event
+        var event_sent = events.publish('v1/queue:task-running', {
+          version:        '0.2.0',
+          worker_group:   worker_group,
+          worker_id:      worker_id,
+          run_id:         run_id,
+          logs:           task_bucket_url(task_id + '/' + run_id + '/logs.json'),
+          status:         task_status
+        });
+
+        // Sign urls for the reply
+        var logs_url_signed = sign_put_url({
+          Bucket:         nconf.get('queue:task-bucket'),
+          Key:            task_id + '/logs.json',
+          ContentType:    'application/json',
+          Expires:        timeout
+        });
+
+        // Sign url for uploading task result
+        var result_url_signed = sign_put_url({
+          Bucket:         nconf.get('queue:task-bucket'),
+          Key:            task_id + '/result.json',
+          ContentType:    'application/json',
+          Expires:        timeout
+        });
+
+        // Send reply client
+        var reply_sent = Promise.all(
+          logs_url_signed,
+          result_url_signed
+        ).spread(function(logs_url, result_url) {
+          res.reply({
+            worker_group:   worker_group,
+            worker_id:      worker_id,
+            run_id:         run_id,
+            logs_url:       logs_url,
+            result_url:     result_url,
+            status:         task_status
+          });
+        }, function(err) {
+          debug("Failed to reply to claim, error: %s as JSON: %j", err, err);
+          res.json(500, {
+            message:        "Internal Server Error"
+          });
+        });
+
+        // If either of these fails, then I have no idea what to do... so we'll
+        // just do them in parallel... a better strategy might developed in the
+        // future, this is just a prototype
+        return Promise.all(reply_sent, event_sent);
+      });
+    });
+  }, function(err) {
+    debug("Failed to complete task, error %s, as JSON: %j", err, err);
+    res.json(500, {
+      message:        "Internal Server Error"
+    });
+  });
+});
+
+
+
+/** Fetch pending tasks */
+api.declare({
+  method:   'get',
+  route:    '/pending-tasks/:provisioner-id',
+  input:    undefined,  // TODO: define schema later
+  output:   undefined,  // TODO: define schema later
+  title:    "Fetch pending tasks for provisioner",
+  desc: [
+    "Documented later..."
+  ].join('\n')
+}, function(req, res) {
+  // Get input
+  var provisioner_id  = req.param.provisioner_id;
+
+  // Load pending tasks
+  var task_loaded = data.queryTasks(provisioner_id);
+
+  // When loaded reply
+  task_loaded.then(function(tasks) {
+    res.reply(tasks);
+  }, function(err) {
+    debug("Failed to complete task, error %s, as JSON: %j", err, err);
+    res.json(500, {
+      message:        "Internal Server Error"
+    });
+  });
+});
+
