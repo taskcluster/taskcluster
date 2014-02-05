@@ -177,6 +177,50 @@ exports['Create, claim and delete task'] = function(test) {
 
 
 
+/** Test that we can create, complete and delete tasks */
+exports['Create, claim, complete and delete task'] = function(test) {
+  test.expect(3);
 
+  // Task structure to insert
+  var task = {
+    "task_id":            uuid.v4(),
+    "provisioner_id":     "jonasfj-test-aws-provisioner",
+    "worker_type":        "map-this-to-my-cool-ami",
+    "runs":               [], // This will be ignored by createTask
+    "state":              "pending",
+    "reason":             "none",
+    "routing":            "jonasfjs-precious-tasks.stupid-test.aws",
+    "retries":            0,
+    "priority":           2.6,
+    "created":            "2014-02-01T03:22:36.356Z",
+    "deadline":           "2014-03-01T03:22:36.356Z",
+    "taken_until":        "1970-01-01T00:00:00.000Z"
+  };
 
+  data.createTask(task).then(function() {
+    test.ok(true);
+  }, function(err) {
+    debug("Failed to create task, error: %s as JSON: %j", err, err);
+    test.ok(false, "Failed to create task");
+    test.done();
+  }).then(function() {
+    return data.claimTask(task.task_id, new Date(), {
+      worker_id:    'my-worker',
+      worker_group: 'my-cluster'
+    });
+  }).then(function() {
+    return data.completeTask(task.task_id);
+  }).then(function(result) {
+    test.ok(result);
+  }).then(function() {
+    return data.deleteTask(task.task_id);
+  }).then(function() {
+    test.ok(true);
+    test.done();
+  }, function(err) {
+    debug("Failed to delete task, error: %s as JSON: %j", err, err);
+    test.ok(false, "Failed to delete task");
+    test.done();
+  });
+};
 
