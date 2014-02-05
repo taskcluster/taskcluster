@@ -154,6 +154,35 @@ var disconnect = function() {
 exports.disconnect = disconnect;
 
 
+
+
+
+
+
+/** Create new task status structure from json object */
+/*  // Let's implement this in the future, but not right now... Just need
+    // something that works reasonably well...
+exports.Task = function(status) {
+  // Clone status arguments
+  this.status = _.cloneDeep(status);
+
+  // Parse datetime strings to Date objects
+  var dates = ['created', 'deadline', 'taken_until'];
+};
+
+exports.Task.prototype.persist = function() {};
+exports.Task.prototype.completed = function() {};
+exports.Task.prototype.claimUntil = function(datetime, run) {};
+exports.Task.prototype.toJSON = function() {};
+
+exports.Task.query = function() {};
+exports.Task.load = function() {};
+*/
+
+
+
+
+
 /**
  * Create new entry in tasks table from task status object
  * This will not create any runs entries...
@@ -351,24 +380,49 @@ exports.claimTask = function(task_id, taken_until, run) {
 };
 
 
-/** Create new task status structure from json object */
-/*  // Let's implement this in the future, but not right now... Just need
-    // something that works reasonably well...
-exports.Task = function(status) {
-  // Clone status arguments
-  this.status = _.cloneDeep(status);
-
-  // Parse datetime strings to Date objects
-  var dates = ['created', 'deadline', 'taken_until'];
+/** Set a task a completed */
+exports.completeTask = function(task_id) {
+  return connect().then(function(client) {
+    // Update state to completed
+    // TODO: Include and validate existence of run_id with worker_id and
+    //       worker_group before we let this happen...
+    var sql = 'UPDATE tasks SET state = \'completed\' WHERE task_id = $1 AND ' +
+              'state = \'running\'';
+    return client.promise(sql, [task_id]).then(function(result) {
+      client.release();
+      return result.rowCount != 0;
+    });
+  });
 };
 
-exports.Task.prototype.persist = function() {};
-exports.Task.prototype.completed = function() {};
-exports.Task.prototype.claimUntil = function(datetime, run) {};
-exports.Task.prototype.toJSON = function() {};
 
-exports.Task.query = function() {};
-exports.Task.load = function() {};
-*/
+/** Query pending tasks by provisioner_id and worker_type, if given */
+exports.queryTasks = function(provisioner_id, worker_type) {
+  return connect().then(function(client) {
+    // Sql statement to select all tasks for provisioner id
+    var sql = 'SELECT task_id FROM tasks WHERE provisioner_id = $1';
+    var params = [provisioner_id];
+
+    // Append worker_type contraint if defined
+    if (worker_type !== undefined) {
+      sql += ' AND worker_type = $2';
+      params.push(worker_type);
+    }
+
+    // List task_ids then load them in parallel, we can optimize this later
+    client.promise(sql, params).then(function(result) {
+      client.release();
+      // For each task_id load the task status object
+      var task_statuses_loaded = result.rows.map(function(row) {
+        return exports.loadTask(row.task_id);
+      });
+      // Return a promise that all tasks will be loaded
+      return Promise.all(task_statuses_loaded);
+    }, function(err) {
+      client.release();
+      return err;
+    });
+  });
+};
 
 
