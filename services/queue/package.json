@@ -1,5 +1,5 @@
 {
-  "name": "taskcluster-spot-provisioner",
+  "name": "taskcluster-queue",
   "version": "0.1.0",
   "private": true,
   "scripts": {
