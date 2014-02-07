@@ -1,7 +1,8 @@
-var pg      = require('pg.js');
-var nconf   = require('nconf');
-var Promise = require('promise');
-var debug   = require('debug')('queue:data');
+var pg        = require('pg.js');
+var nconf     = require('nconf');
+var Promise   = require('promise');
+var debug     = require('debug')('queue:data');
+var debugSql  = require('debug')('queue:data:sql');
 
 var _connString = null;
 
@@ -13,6 +14,7 @@ var _connString = null;
 pg.Client.prototype.promise = function() {
   var params = Array.prototype.slice.call(arguments);
   var that   = this;
+  debugSql(params[0]);
   return new Promise(function(accept, reject) {
     params.push(function(err, result) {
       if (err) {
@@ -103,8 +105,19 @@ var setupDatabase = function() {
     return client.promise('BEGIN');
   });
 
+  var ready_for_setup = got_client;
+  // drop tables if requested
+  if (nconf.get('database:drop-tables')) {
+    debug('Dropping database tables');
+    ready_for_setup = ready_for_setup.then(function() {
+      return client.promise('DROP TABLE IF EXISTS tasks CASCADE');
+    }).then(function() {
+      return client.promise('DROP TABLE IF EXISTS runs CASCADE');
+    });
+  }
+
   // Create the tasks table
-  var created_tasks_table = got_client.then(function() {
+  var created_tasks_table = ready_for_setup.then(function() {
     // Create columns from definition
     var cols = tasks_table_definition.map(function(col) {
       return col.join(' ');
@@ -400,7 +413,7 @@ exports.completeTask = function(task_id) {
 exports.queryTasks = function(provisioner_id, worker_type) {
   return connect().then(function(client) {
     // Sql statement to select all tasks for provisioner id
-    var sql = 'SELECT task_id FROM tasks WHERE provisioner_id = $1';
+    var sql = 'SELECT task_id FROM tasks WHERE tasks.provisioner_id = $1';
     var params = [provisioner_id];
 
     // Append worker_type contraint if defined
@@ -410,7 +423,7 @@ exports.queryTasks = function(provisioner_id, worker_type) {
     }
 
     // List task_ids then load them in parallel, we can optimize this later
-    client.promise(sql, params).then(function(result) {
+    return client.promise(sql, params).then(function(result) {
       client.release();
       // For each task_id load the task status object
       var task_statuses_loaded = result.rows.map(function(row) {
