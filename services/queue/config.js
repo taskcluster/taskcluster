@@ -6,7 +6,7 @@ var DEFAULT_CONFIG_VALUES = {
   // TaskCluster Queue configuration
   'queue': {
     // Name of S3 bucket where all task and artifacts will be stored
-    'task-bucket':                  'jonasfj-taskcluster-tasks',
+    'task-bucket':                  'tasks.taskcluster.net',
 
     // Validate out-going messages, this can be disabled if we trust that we
     // generate correct JSON internally and want more performance
@@ -40,7 +40,11 @@ var DEFAULT_CONFIG_VALUES = {
     'user':                         'queue',
 
     // Database password
-    'password':                     '42'
+    'password':                     'secret',
+
+    // Drop database table if they already exist, this is mainly useful for
+    // debugging when given as command-line argument: --database:drop-tables
+    'drop-tables':                  false
   },
 
   // AMQP configuration as given to `amqp.createConnection`
@@ -86,7 +90,7 @@ var DEFAULT_CONFIG_VALUES = {
 /** Load configuration */
 exports.load = function(default_only) {
 
-  if (!default_only || true) {
+  if (!default_only) {
     // Load configuration from command line arguments, if requested
     nconf.argv();
 
