@@ -121,7 +121,7 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   // Load task
-  var task_loaded = data.loadTask(req.param.task_id)
+  var task_loaded = data.loadTask(req.params.task_id)
 
   // When loaded reply with task status structure, if found
   task_loaded.then(function(task_status) {
@@ -156,7 +156,7 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   // Get the task_id
-  var task_id = req.param.task_id;
+  var task_id = req.params.task_id;
 
   // Set taken_until to now + 20 min
   var taken_until = new Date();
@@ -195,7 +195,7 @@ api.declare({
       // Sign urls for the reply
       var logs_url_signed = sign_put_url({
         Bucket:         nconf.get('queue:task-bucket'),
-        Key:            task_id + '/logs.json',
+        Key:            task_id + '/runs/' + run_id + '/logs.json',
         ContentType:    'application/json',
         Expires:        timeout
       });
@@ -203,7 +203,7 @@ api.declare({
       // Sign url for uploading task result
       var result_url_signed = sign_put_url({
         Bucket:         nconf.get('queue:task-bucket'),
-        Key:            task_id + '/result.json',
+        Key:            task_id + '/runs/' + run_id + '/result.json',
         ContentType:    'application/json',
         Expires:        timeout
       });
@@ -233,6 +233,11 @@ api.declare({
       // future, this is just a prototype
       return Promise.all(reply_sent, event_sent);
     });
+  }).then(undefined, function(err) {
+    debug("Failed to claim task, error %s, as JSON: %j", err, err);
+    res.json(500, {
+      message:        "Internal Server Error"
+    });
   });
 });
 
@@ -250,9 +255,9 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   // Get input from posted JSON
-  var task_id       = req.param.task_id;
-  var run_id        = req.param.run_id;
-  var artifacts     = req.param.artifacts;
+  var task_id       = req.params.task_id;
+  var run_id        = req.body.run_id;
+  var artifacts     = req.body.artifacts;
   var artifact_list = _.keys(artifacts);
 
   // Load task
@@ -263,11 +268,13 @@ api.declare({
   var expires = new Date();
   expires.setSeconds(expires.getSeconds() + timeout);
 
+  debug("Signing URLs for artifacts: %j", artifacts);
+
   // Get signed urls
   var urls_signed = artifact_list.map(function(artifact) {
     return sign_put_url({
       Bucket:         nconf.get('queue:task-bucket'),
-      Key:            task_id + '/' + run_id + '/artifacts/' + artifact,
+      Key:            task_id + '/runs/' + run_id + '/artifacts/' + artifact,
       ContentType:    artifacts[artifact],
       Expires:        timeout
     });
@@ -320,7 +327,7 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   // Get input from posted JSON
-  var task_id       = req.param.task_id;
+  var task_id       = req.params.task_id;
   var run_id        = req.body.run_id;
   var worker_group  = req.body.worker_group;
   var worker_id     = req.body.worker_id;
@@ -389,8 +396,8 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   // Get input
-  var provisioner_id  = req.param.provisioner_id;
-  var worker_type     = req.param.worker_type;
+  var provisioner_id  = req.params.provisioner_id;
+  var worker_type     = req.params.worker_type;
   var worker_group    = req.body.worker_group;
   var worker_id       = req.body.worker_id;
 
@@ -453,7 +460,7 @@ api.declare({
         // Sign urls for the reply
         var logs_url_signed = sign_put_url({
           Bucket:         nconf.get('queue:task-bucket'),
-          Key:            task_id + '/logs.json',
+          Key:            task_id + '/runs/' + run_id + '/logs.json',
           ContentType:    'application/json',
           Expires:        timeout
         });
@@ -461,7 +468,7 @@ api.declare({
         // Sign url for uploading task result
         var result_url_signed = sign_put_url({
           Bucket:         nconf.get('queue:task-bucket'),
-          Key:            task_id + '/result.json',
+          Key:            task_id + '/runs/' + run_id + '/result.json',
           ContentType:    'application/json',
           Expires:        timeout
         });
@@ -505,7 +512,7 @@ api.declare({
 /** Fetch pending tasks */
 api.declare({
   method:   'get',
-  route:    '/pending-tasks/:provisioner-id',
+  route:    '/pending-tasks/:provisioner_id',
   input:    undefined,  // TODO: define schema later
   output:   undefined,  // TODO: define schema later
   title:    "Fetch pending tasks for provisioner",
@@ -514,14 +521,16 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   // Get input
-  var provisioner_id  = req.param.provisioner_id;
+  var provisioner_id  = req.params.provisioner_id;
 
   // Load pending tasks
   var task_loaded = data.queryTasks(provisioner_id);
 
   // When loaded reply
   task_loaded.then(function(tasks) {
-    res.reply(tasks);
+    res.reply({
+      tasks: tasks
+    });
   }, function(err) {
     debug("Failed to complete task, error %s, as JSON: %j", err, err);
     res.json(500, {
