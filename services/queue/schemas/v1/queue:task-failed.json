@@ -1,0 +1,13 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/queue:task-failed.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Failed Task Message",
+  "description":  "Message reporting that a task have failed",
+  "type":         "object",
+  "properties": {
+    "version":    {"$ref": "http://schemas.taskcluster.net/v1/common.json#message-version"},
+    "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"}
+  },
+  "additionalProperties":   true,
+  "required": ["version", "status"]
+}

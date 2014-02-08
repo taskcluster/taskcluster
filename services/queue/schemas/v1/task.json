@@ -1,0 +1,61 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/task.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Task Definition",
+  "description":  "Definition of a task that can be scheduled",
+  "type":               "object",
+  "properties": {
+    "version": {
+      "description":    "Task definition version",
+      "enum":           ["0.2.0"]
+    },
+    "provisionerId":    {"$ref": "http://schemas.taskcluster.net/v1/common.json#identifier"},
+    "workerType":       {"$ref": "http://schemas.taskcluster.net/v1/common.json#identifier"},
+    "routing":          {"$ref": "http://schemas.taskcluster.net/v1/common.json#routing"},
+    "retries":          {"$ref": "http://schemas.taskcluster.net/v1/common.json#retries"},
+    "priority":         {"$ref": "http://schemas.taskcluster.net/v1/common.json#priority"},
+    "created":          {"$ref": "http://schemas.taskcluster.net/v1/common.json#created"},
+    "deadline":         {"$ref": "http://schemas.taskcluster.net/v1/common.json#deadline"},
+    "payload":          {"type": "object"},
+    "metadata": {
+      "description":            "Required task metadata",
+      "type":                   "object",
+      "properties": {
+        "name": {
+          "description":        "Human readable name of task",
+          "type":               "string",
+          "maxLength":          255
+        },
+        "description": {
+          "description":        "Human readable description of task, **explain** what it does!",
+          "type":               "string",
+          "maxLength":          32768
+        },
+        "owner": {
+          "description":        "E-mail of person who caused this task, e.g. the person who did `hg push`",
+          "type":               "string",
+          "format":             "email",
+          "maxLength":          255
+        },
+        "source": {
+          "description":        "Link to source of this task, should specify file, revision and repository",
+          "type":               "string",
+          "format":             "uri",
+          "maxLength":          4096
+        }
+      },
+      "additionalProperties":   false,
+      "required": ["name", "owner", "source"]
+    },
+    "tags": {
+      "description":            "Arbitrary key-value tags",
+      "type":                   "object",
+      "additionalProperties":   {"type": "string", "maxLength": 4096}
+    }
+  },
+  "additionalProperties":   false,
+  "required": [
+    "version", "provisionerId", "workerType", "routing", "retries",
+    "priority", "created", "deadline", "payload", "metadata", "tags"
+  ]
+}
