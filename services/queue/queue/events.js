@@ -114,15 +114,15 @@ exports.publish = function(exchange, message) {
     }
 
     // Construct routing key from task status structure in message
-    // as well as run_id, worker_group and worker_id, which are present in the
+    // as well as runId, workerGroup and workerId, which are present in the
     // message if relevant.
     var routingKey = [
-      message.status.task_id,
-      message.run_id        || '_',
-      message.worker_group  || '_',
-      message.worker_id     || '_',
-      message.status.provisioner_id,
-      message.status.worker_type,
+      message.status.taskId,
+      message.runId         || '_',
+      message.workerGroup   || '_',
+      message.workerId      || '_',
+      message.status.provisionerId,
+      message.status.workerType,
       message.status.routing
     ].join('.');
 

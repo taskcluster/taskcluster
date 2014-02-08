@@ -46,17 +46,17 @@ api.declare({
   title:    "Create new task",
   desc: [
     "Create a new task, the `status` of the resulting JSON is a task status",
-    "structure, you can find the `task_id` in this structure, enjoy."
+    "structure, you can find the `taskId` in this structure, enjoy."
   ].join('\n')
 }, function(req, res) {
   // Create task identifier
-  var task_id = uuid.v4();
+  var taskId = uuid.v4();
 
   // Task status structure to reply with in case of success
   var task_status = {
-    task_id:              task_id,
-    provisioner_id:       req.body.provisioner_id,
-    worker_type:          req.body.worker_type,
+    taskId:               taskId,
+    provisionerId:        req.body.provisionerId,
+    workerType:           req.body.workerType,
     runs:                 [],
     state:                'pending',
     reason:               'none',
@@ -65,13 +65,13 @@ api.declare({
     priority:             req.body.priority,
     created:              req.body.created,
     deadline:             req.body.deadline,
-    taken_until:          (new Date(0)).toJSON()
+    takenUntil:           (new Date(0)).toJSON()
   };
 
   // Upload to S3, notice that the schema is validated by middleware
   var uploaded_to_s3 = s3.putObject({
     Bucket:               nconf.get('queue:task-bucket'),
-    Key:                  task_id + '/task.json',
+    Key:                  taskId + '/task.json',
     Body:                 JSON.stringify(req.body),
     ContentType:          'application/json'
   }).promise();
@@ -112,16 +112,16 @@ api.declare({
 /** Get task status */
 api.declare({
   method:   'get',
-  route:    '/task/:task_id/status',
+  route:    '/task/:taskId/status',
   input:    undefined,  // No input is accepted
   output:   undefined,  // TODO: define schema later
   title:    "Get task status",
   desc: [
-    "Get task status structure from `task_id`"
+    "Get task status structure from `taskId`"
   ].join('\n')
 }, function(req, res) {
   // Load task
-  var task_loaded = data.loadTask(req.params.task_id)
+  var task_loaded = data.loadTask(req.params.taskId)
 
   // When loaded reply with task status structure, if found
   task_loaded.then(function(task_status) {
@@ -146,34 +146,34 @@ api.declare({
 /** Claim task */
 api.declare({
   method:   'post',
-  route:    '/task/:task_id/claim',
+  route:    '/task/:taskId/claim',
   input:    undefined,  // TODO: define schema later
   output:   undefined,  // TODO: define schema later
   title:    "Claim task",
   desc: [
-    "Claim task, takes worker_group, worker_id and optionally run_id as input",
-    "returns task status structure, run_id, result_url and logs_url"
+    "Claim task, takes workerGroup, workerId and optionally runId as input",
+    "returns task status structure, runId, resultPutUrl and logsPutUrl"
   ].join('\n')
 }, function(req, res) {
-  // Get the task_id
-  var task_id = req.params.task_id;
+  // Get the taskId
+  var taskId = req.params.taskId;
 
-  // Set taken_until to now + 20 min
-  var taken_until = new Date();
+  // Set takenUntil to now + 20 min
+  var takenUntil = new Date();
   var timeout = 20 * 60;
-  taken_until.setSeconds(taken_until.getSeconds() + timeout);
+  takenUntil.setSeconds(takenUntil.getSeconds() + timeout);
 
-  // Claim task without run_id if this is a new claim
-  var task_claimed = data.claimTask(task_id, taken_until, {
-    worker_group:   req.body.worker_group,
-    worker_id:      req.body.worker_id,
-    run_id:         req.body.run_id || undefined
+  // Claim task without runId if this is a new claim
+  var task_claimed = data.claimTask(taskId, takenUntil, {
+    workerGroup:    req.body.workerGroup,
+    workerId:       req.body.workerId,
+    runId:          req.body.runId || undefined
   });
 
   // When claimed
-  task_claimed.then(function(run_id) {
+  task_claimed.then(function(runId) {
     // If task wasn't claimed, report 404
-    if(run_id === null) {
+    if(runId === null) {
       res.json(404, {
         message: "Task not found, or already taken"
       });
@@ -181,21 +181,21 @@ api.declare({
     }
 
     // Load task status structure
-    return data.loadTask(task_id).then(function(task_status) {
+    return data.loadTask(taskId).then(function(task_status) {
       // Fire event
       var event_sent = events.publish('v1/queue:task-running', {
         version:        '0.2.0',
-        worker_group:   req.body.worker_group,
-        worker_id:      req.body.worker_id,
-        run_id:         run_id,
-        logs:           task_bucket_url(task_id + '/' + run_id + '/logs.json'),
+        workerGroup:    req.body.workerGroup,
+        workerId:       req.body.workerId,
+        runId:          runId,
+        logsUrl:        task_bucket_url(taskId + '/' + runId + '/logs.json'),
         status:         task_status
       });
 
       // Sign urls for the reply
       var logs_url_signed = sign_put_url({
         Bucket:         nconf.get('queue:task-bucket'),
-        Key:            task_id + '/runs/' + run_id + '/logs.json',
+        Key:            taskId + '/runs/' + runId + '/logs.json',
         ContentType:    'application/json',
         Expires:        timeout
       });
@@ -203,7 +203,7 @@ api.declare({
       // Sign url for uploading task result
       var result_url_signed = sign_put_url({
         Bucket:         nconf.get('queue:task-bucket'),
-        Key:            task_id + '/runs/' + run_id + '/result.json',
+        Key:            taskId + '/runs/' + runId + '/result.json',
         ContentType:    'application/json',
         Expires:        timeout
       });
@@ -214,11 +214,11 @@ api.declare({
         result_url_signed
       ).spread(function(logs_url, result_url) {
         res.reply({
-          worker_group:   req.body.worker_group,
-          worker_id:      req.body.worker_id,
-          run_id:         run_id,
-          logs_url:       logs_url,
-          result_url:     result_url,
+          workerGroup:    req.body.workerGroup,
+          workerId:       req.body.workerId,
+          runId:          runId,
+          logsPutUrl:     logs_url,
+          resultPutUrl:   result_url,
           status:         task_status
         });
       }, function(err) {
@@ -246,7 +246,7 @@ api.declare({
 /** Get artifact urls */
 api.declare({
   method:   'post',
-  route:    '/task/:task_id/artifact-urls',
+  route:    '/task/:taskId/artifact-urls',
   input:    undefined,  // TODO: define schema later
   output:   undefined,  // TODO: define schema later
   title:    "Get artifact urls",
@@ -255,13 +255,13 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   // Get input from posted JSON
-  var task_id       = req.params.task_id;
-  var run_id        = req.body.run_id;
+  var taskId        = req.params.taskId;
+  var runId         = req.body.runId;
   var artifacts     = req.body.artifacts;
   var artifact_list = _.keys(artifacts);
 
   // Load task
-  var task_loaded = data.loadTask(task_id)
+  var task_loaded = data.loadTask(taskId)
 
   // Let urls timeout after 20 min
   var timeout = 20 * 60;
@@ -274,8 +274,8 @@ api.declare({
   var urls_signed = artifact_list.map(function(artifact) {
     return sign_put_url({
       Bucket:         nconf.get('queue:task-bucket'),
-      Key:            task_id + '/runs/' + run_id + '/artifacts/' + artifact,
-      ContentType:    artifacts[artifact],
+      Key:            taskId + '/runs/' + runId + '/artifacts/' + artifact,
+      ContentType:    artifacts[artifact].contentType,
       Expires:        timeout
     });
   });
@@ -297,7 +297,7 @@ api.declare({
     if (task_status) {
       res.reply({
         status:         task_status,
-        run_id:         run_id,
+        runId:          runId,
         expires:        expires.toJSON(),
         artifact_urls:  url_map
       });
@@ -318,7 +318,7 @@ api.declare({
 /** Report task as completed */
 api.declare({
   method:   'post',
-  route:    '/task/:task_id/completed',
+  route:    '/task/:taskId/completed',
   input:    undefined,  // TODO: define schema later
   output:   undefined,  // TODO: define schema later
   title:    "Report Completed Task",
@@ -327,12 +327,12 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   // Get input from posted JSON
-  var task_id       = req.params.task_id;
-  var run_id        = req.body.run_id;
-  var worker_group  = req.body.worker_group;
-  var worker_id     = req.body.worker_id;
+  var taskId        = req.params.taskId;
+  var runId         = req.body.runId;
+  var workerGroup   = req.body.workerGroup;
+  var workerId      = req.body.workerId;
 
-  var task_completed = data.completeTask(task_id);
+  var task_completed = data.completeTask(taskId);
 
   task_completed.then(function(success) {
     if (!success) {
@@ -341,20 +341,20 @@ api.declare({
       });
       return;
     }
-    return data.loadTask(task_id).then(function(task_status) {
+    return data.loadTask(taskId).then(function(task_status) {
       // Resolution to be uploaded to S3
       var resolution = {
         version:        '0.2.0',
         status:         task_status,
-        result:         task_bucket_url(task_id + '/' + run_id + '/result.json'),
-        logs:           task_bucket_url(task_id + '/' + run_id + '/logs.json'),
-        worker_id:      worker_id,
-        worker_group:   worker_group
+        resultUrl:      task_bucket_url(taskId + '/' + runId + '/result.json'),
+        logsUrl:        task_bucket_url(taskId + '/' + runId + '/logs.json'),
+        workerId:       workerId,
+        workerGroup:    workerGroup
       };
 
       var uploaded_to_s3 = s3.putObject({
         Bucket:               nconf.get('queue:task-bucket'),
-        Key:                  task_id + '/resolution.json',
+        Key:                  taskId + '/resolution.json',
         Body:                 JSON.stringify(resolution),
         ContentType:          'application/json'
       }).promise();
@@ -362,11 +362,11 @@ api.declare({
       var event_published = events.publish('v1/queue:task-completed', {
         version:        '0.2.0',
         status:         task_status,
-        result:         task_bucket_url(task_id + '/' + run_id + '/result.json'),
-        logs:           task_bucket_url(task_id + '/' + run_id + '/logs.json'),
-        run_id:         run_id,
-        worker_id:      worker_id,
-        worker_group:   worker_group
+        resultUrl:      task_bucket_url(taskId + '/' + runId + '/result.json'),
+        logsUrl:        task_bucket_url(taskId + '/' + runId + '/logs.json'),
+        runId:          runId,
+        workerId:       workerId,
+        workerGroup:    workerGroup
       });
 
       return Promise.all(uploaded_to_s3, event_published).then(function() {
@@ -387,7 +387,7 @@ api.declare({
 /** Fetch work for a worker */
 api.declare({
   method:   'get',
-  route:    '/claim-work/:provisioner-id/:worker-type',
+  route:    '/claim-work/:provisionerId/:workerType',
   input:    undefined,  // TODO: define schema later
   output:   undefined,  // TODO: define schema later
   title:    "Claim work for a worker",
@@ -396,13 +396,13 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   // Get input
-  var provisioner_id  = req.params.provisioner_id;
-  var worker_type     = req.params.worker_type;
-  var worker_group    = req.body.worker_group;
-  var worker_id       = req.body.worker_id;
+  var provisionerId   = req.params.provisionerId;
+  var workerType      = req.params.workerType;
+  var workerGroup     = req.body.workerGroup;
+  var workerId        = req.body.workerId;
 
   // Load pending tasks
-  var task_loaded = data.queryTasks(provisioner_id, worker_type);
+  var task_loaded = data.queryTasks(provisionerId, workerType);
 
   // When loaded let's pick a pending task
   task_loaded.then(function(tasks) {
@@ -416,29 +416,29 @@ api.declare({
     }
 
     // Pick the first task
-    var task_id = tasks[0].task_id;
+    var taskId = tasks[0].taskId;
 
-    ///////////// Warning: Code duplication from /task/:task_id/claim
+    ///////////// Warning: Code duplication from /task/:taskId/claim
     /////////////          This needs to be refactored, all logic like this
     /////////////          should live in queue/... so it can be reused for new
     /////////////          api versions....
 
-    // Set taken_until to now + 20 min
-    var taken_until = new Date();
+    // Set takenUntil to now + 20 min
+    var takenUntil = new Date();
     var timeout = 20 * 60;
-    taken_until.setSeconds(taken_until.getSeconds() + timeout);
+    takenUntil.setSeconds(takenUntil.getSeconds() + timeout);
 
-    // Claim task without run_id if this is a new claim
-    var task_claimed = data.claimTask(task_id, taken_until, {
-      worker_group:   worker_group,
-      worker_id:      worker_id,
-      run_id:         undefined
+    // Claim task without runId if this is a new claim
+    var task_claimed = data.claimTask(taskId, takenUntil, {
+      workerGroup:    workerGroup,
+      workerId:       workerId,
+      runId:          undefined
     });
 
     // When claimed
-    task_claimed.then(function(run_id) {
+    task_claimed.then(function(runId) {
       // If task wasn't claimed, report 404
-      if(run_id === null) {
+      if(runId === null) {
         res.json(404, {
           message: "Task not found, or already taken"
         });
@@ -446,21 +446,21 @@ api.declare({
       }
 
       // Load task status structure
-      return data.loadTask(task_id).then(function(task_status) {
+      return data.loadTask(taskId).then(function(task_status) {
         // Fire event
         var event_sent = events.publish('v1/queue:task-running', {
           version:        '0.2.0',
-          worker_group:   worker_group,
-          worker_id:      worker_id,
-          run_id:         run_id,
-          logs:           task_bucket_url(task_id + '/' + run_id + '/logs.json'),
+          workerGroup:    workerGroup,
+          workerId:       workerId,
+          runId:          runId,
+          logsUrl:        task_bucket_url(taskId + '/' + runId + '/logs.json'),
           status:         task_status
         });
 
         // Sign urls for the reply
         var logs_url_signed = sign_put_url({
           Bucket:         nconf.get('queue:task-bucket'),
-          Key:            task_id + '/runs/' + run_id + '/logs.json',
+          Key:            taskId + '/runs/' + runId + '/logs.json',
           ContentType:    'application/json',
           Expires:        timeout
         });
@@ -468,7 +468,7 @@ api.declare({
         // Sign url for uploading task result
         var result_url_signed = sign_put_url({
           Bucket:         nconf.get('queue:task-bucket'),
-          Key:            task_id + '/runs/' + run_id + '/result.json',
+          Key:            taskId + '/runs/' + runId + '/result.json',
           ContentType:    'application/json',
           Expires:        timeout
         });
@@ -479,11 +479,11 @@ api.declare({
           result_url_signed
         ).spread(function(logs_url, result_url) {
           res.reply({
-            worker_group:   worker_group,
-            worker_id:      worker_id,
-            run_id:         run_id,
-            logs_url:       logs_url,
-            result_url:     result_url,
+            workerGroup:    workerGroup,
+            workerId:       workerId,
+            runId:          runId,
+            logsPutUrl:     logs_url,
+            resultPutUrl:   result_url,
             status:         task_status
           });
         }, function(err) {
@@ -512,7 +512,7 @@ api.declare({
 /** Fetch pending tasks */
 api.declare({
   method:   'get',
-  route:    '/pending-tasks/:provisioner_id',
+  route:    '/pending-tasks/:provisionerId',
   input:    undefined,  // TODO: define schema later
   output:   undefined,  // TODO: define schema later
   title:    "Fetch pending tasks for provisioner",
@@ -521,10 +521,10 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   // Get input
-  var provisioner_id  = req.params.provisioner_id;
+  var provisionerId  = req.params.provisionerId;
 
   // Load pending tasks
-  var task_loaded = data.queryTasks(provisioner_id);
+  var task_loaded = data.queryTasks(provisionerId);
 
   // When loaded reply
   task_loaded.then(function(tasks) {
