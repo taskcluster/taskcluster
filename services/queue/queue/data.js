@@ -51,9 +51,9 @@ var connect = function() {
 /** Tasks table definition */
 var tasks_table_definition = [
   //Name:                Datatype:                 Constraint:
-  ['task_id',           'uuid',                   'PRIMARY KEY'   ],
-  ['provisioner_id',    'varchar(36)',            'NOT NULL'      ],
-  ['worker_type',       'varchar(36)',            'NOT NULL'      ],
+  ['taskId',            'uuid',                   'PRIMARY KEY'   ],
+  ['provisionerId',     'varchar(36)',            'NOT NULL'      ],
+  ['workerType',        'varchar(36)',            'NOT NULL'      ],
   ['state',             'varchar(255)',           'NOT NULL'      ],
   ['reason',            'varchar(255)',           'NOT NULL'      ],
   ['routing',           'varchar(64)',            'NOT NULL'      ],
@@ -61,18 +61,18 @@ var tasks_table_definition = [
   ['priority',          'double precision',       'NOT NULL'      ],
   ['created',           'timestamp',              'NOT NULL'      ],
   ['deadline',          'timestamp',              'NOT NULL'      ],
-  ['taken_until',       'timestamp',              'NOT NULL'      ]
+  ['takenUntil',        'timestamp',              'NOT NULL'      ]
 ];
 
 
 /** Runs table definition */
 var runs_table_definition = [
   //Name:                Datatype:                 Constraint:
-  ['task_id',           'uuid',                   'REFERENCES tasks ON DELETE CASCADE'],
-  ['run_id',            'integer',                'NOT NULL'      ],
-  ['worker_group',      'varchar(36)',            'NOT NULL'      ],
-  ['worker_id',         'varchar(36)',            'NOT NULL'      ],
-  ['PRIMARY KEY (task_id, run_id)'                                ]
+  ['taskId',            'uuid',                   'REFERENCES tasks ON DELETE CASCADE'],
+  ['runId',             'integer',                'NOT NULL'      ],
+  ['workerGroup',       'varchar(36)',            'NOT NULL'      ],
+  ['workerId',          'varchar(36)',            'NOT NULL'      ],
+  ['PRIMARY KEY (taskId, runId)'                                  ]
 ];
 
 
@@ -168,34 +168,6 @@ exports.disconnect = disconnect;
 
 
 
-
-
-
-
-/** Create new task status structure from json object */
-/*  // Let's implement this in the future, but not right now... Just need
-    // something that works reasonably well...
-exports.Task = function(status) {
-  // Clone status arguments
-  this.status = _.cloneDeep(status);
-
-  // Parse datetime strings to Date objects
-  var dates = ['created', 'deadline', 'taken_until'];
-};
-
-exports.Task.prototype.persist = function() {};
-exports.Task.prototype.completed = function() {};
-exports.Task.prototype.claimUntil = function(datetime, run) {};
-exports.Task.prototype.toJSON = function() {};
-
-exports.Task.query = function() {};
-exports.Task.load = function() {};
-*/
-
-
-
-
-
 /**
  * Create new entry in tasks table from task status object
  * This will not create any runs entries...
@@ -205,8 +177,8 @@ exports.Task.load = function() {};
 exports.createTask = function(task) {
   return connect().then(function(client) {
     var properties = [
-      'task_id', 'provisioner_id', 'worker_type', 'state', 'reason', 'routing',
-      'retries', 'priority', 'created', 'deadline', 'taken_until'
+      'taskId', 'provisionerId', 'workerType', 'state', 'reason', 'routing',
+      'retries', 'priority', 'created', 'deadline', 'takenUntil'
     ];
 
     // Construct string of columns
@@ -240,10 +212,10 @@ exports.createTask = function(task) {
 };
 
 /** Delete task by with given task identifier, returns a promise of success */
-exports.deleteTask = function(task_id) {
+exports.deleteTask = function(taskId) {
   return connect().then(function(client) {
-    var sql = 'DELETE FROM tasks WHERE task_id = $1';
-    return client.promise(sql, [task_id]).then(function() {
+    var sql = 'DELETE FROM tasks WHERE taskId = $1';
+    return client.promise(sql, [taskId]).then(function() {
       client.release();
       return;
     }, function(err) {
@@ -255,25 +227,25 @@ exports.deleteTask = function(task_id) {
 };
 
 /**
- * Load task status structure by task_id, includes all runs.
+ * Load task status structure by taskId, includes all runs.
  *
- * Returns a promise for the task status structure, or null if task_id isn't
+ * Returns a promise for the task status structure, or null if taskId isn't
  * found in the database.
  */
-exports.loadTask = function(task_id) {
+exports.loadTask = function(taskId) {
   return connect().then(function(client) {
     // Columns we want from tasks
     var task_cols = [
-      'provisioner_id', 'worker_type', 'state', 'reason', 'routing', 'retries',
-      'priority', 'created', 'deadline', 'taken_until',
+      'provisionerId', 'workerType', 'state', 'reason', 'routing', 'retries',
+      'priority', 'created', 'deadline', 'takenUntil',
     ];
 
     // Dates, which will be returned as javascript data objects, they should
-    var dates = ['created', 'deadline', 'taken_until'];
+    var dates = ['created', 'deadline', 'takenUntil'];
 
     // Columns we want from runs
     var run_cols = [
-      'run_id', 'worker_group', 'worker_id'
+      'runId', 'workerGroup', 'workerId'
     ];
 
     // Columns we want... as comma separated list
@@ -281,22 +253,22 @@ exports.loadTask = function(task_id) {
 
     // SQL statement for selecting tasks and all runs if any..
     var sql = 'SELECT ' + cols + ' FROM tasks LEFT OUTER JOIN runs ' +
-              'ON (tasks.task_id = runs.task_id) WHERE ' +
-              'tasks.task_id = $1 ORDER BY run_id';
+              'ON (tasks.taskId = runs.taskId) WHERE ' +
+              'tasks.taskId = $1 ORDER BY runId';
 
-    return client.promise(sql, [task_id]).then(function(result) {
+    return client.promise(sql, [taskId]).then(function(result) {
       // Free the client so others can use it
       client.release();
 
       // Return null if there is no rows
       if (result.rows.length == 0) {
-        debug('Failed to fetch task with task_id: %s', task_id);
+        debug('Failed to fetch task with taskId: %s', taskId);
         return null;
       }
 
       // Task status
       var task_status = {
-        task_id:            task_id,
+        taskId:            taskId,
         runs:               []
       };
 
@@ -308,7 +280,7 @@ exports.loadTask = function(task_id) {
       // For each row make a run and add it to the runs list
       result.rows.forEach(function(row) {
         // Skip null rows
-        if (row.run_id == null) {
+        if (row.runId == null) {
           return;
         }
 
@@ -337,36 +309,36 @@ exports.loadTask = function(task_id) {
 };
 
 /**
- * Claim a task given by `task_id` until `taken_until`, where `run` is an object
- * with keys `worker_group`, `worker_id` and optionally `run_id`.
+ * Claim a task given by `taskId` until `takenUntil`, where `run` is an object
+ * with keys `workerGroup`, `workerId` and optionally `runId`.
  *
- * Return a promise of run_id if successful, or null if task not found or taken
+ * Return a promise of runId if successful, or null if task not found or taken
  * by somebody else...
  */
-exports.claimTask = function(task_id, taken_until, run) {
+exports.claimTask = function(taskId, takenUntil, run) {
   return connect().then(function(client) {
-    if (run.run_id !== undefined) {
-      // Update taken_until for an existing run...
+    if (run.runId !== undefined) {
+      // Update takenUntil for an existing run...
       // TODO: Check that the run also exists
-      var sql = 'UPDATE tasks SET taken_until = $2 WHERE task_id = $1 AND ' +
+      var sql = 'UPDATE tasks SET takenUntil = $2 WHERE taskId = $1 AND ' +
                 'state = \'running\'';
-      return client.promise(sql, [task_id, taken_until]).then(function(result) {
+      return client.promise(sql, [taskId, takenUntil]).then(function(result) {
         client.release();
         if(result.rowCount == 0) {
           // We didn't update any task, so this failed
           return null;
         } else {
-          return run.run_id;
+          return run.runId;
         }
       });
     } else {
       return client.promise('BEGIN').then(function() {
         // Claim task
         return client.promise(
-          'UPDATE tasks SET taken_until = $2, retries = retries - 1, ' +
+          'UPDATE tasks SET takenUntil = $2, retries = retries - 1, ' +
           'state = \'running\' ' +
-          'WHERE task_id = $1 AND state = \'pending\'',
-          [task_id, taken_until]
+          'WHERE taskId = $1 AND state = \'pending\'',
+          [taskId, takenUntil]
         ).then(function(result) {
           // We didn't take the task return null
           if(result.rowCount == 0) {
@@ -374,12 +346,12 @@ exports.claimTask = function(task_id, taken_until, run) {
           }
           // Add new run
           return client.promise(
-            'INSERT INTO runs (task_id, run_id, worker_group, worker_id) ' +
-            'SELECT $1, COUNT(rs.run_id) + 1, $2, $3 FROM runs AS rs WHERE ' +
-            'rs.task_id = $1 RETURNING run_id',
-            [task_id, run.worker_group, run.worker_id]
+            'INSERT INTO runs (taskId, runId, workerGroup, workerId) ' +
+            'SELECT $1, COUNT(rs.runId) + 1, $2, $3 FROM runs AS rs WHERE ' +
+            'rs.taskId = $1 RETURNING runId',
+            [taskId, run.workerGroup, run.workerId]
           ).then(function(result) {
-            return result.rows[0].run_id;
+            return result.rows[0].runId;
           });
         });
       }).then(function(retval) {
@@ -394,14 +366,14 @@ exports.claimTask = function(task_id, taken_until, run) {
 
 
 /** Set a task a completed */
-exports.completeTask = function(task_id) {
+exports.completeTask = function(taskId) {
   return connect().then(function(client) {
     // Update state to completed
-    // TODO: Include and validate existence of run_id with worker_id and
-    //       worker_group before we let this happen...
-    var sql = 'UPDATE tasks SET state = \'completed\' WHERE task_id = $1 AND ' +
+    // TODO: Include and validate existence of runId with workerId and
+    //       workerGroup before we let this happen...
+    var sql = 'UPDATE tasks SET state = \'completed\' WHERE taskId = $1 AND ' +
               'state = \'running\'';
-    return client.promise(sql, [task_id]).then(function(result) {
+    return client.promise(sql, [taskId]).then(function(result) {
       client.release();
       return result.rowCount != 0;
     });
@@ -409,25 +381,25 @@ exports.completeTask = function(task_id) {
 };
 
 
-/** Query pending tasks by provisioner_id and worker_type, if given */
-exports.queryTasks = function(provisioner_id, worker_type) {
+/** Query pending tasks by provisionerId and workerType, if given */
+exports.queryTasks = function(provisionerId, workerType) {
   return connect().then(function(client) {
     // Sql statement to select all tasks for provisioner id
-    var sql = 'SELECT task_id FROM tasks WHERE tasks.provisioner_id = $1';
-    var params = [provisioner_id];
+    var sql = 'SELECT taskId FROM tasks WHERE tasks.provisionerId = $1';
+    var params = [provisionerId];
 
-    // Append worker_type contraint if defined
-    if (worker_type !== undefined) {
-      sql += ' AND worker_type = $2';
-      params.push(worker_type);
+    // Append workerType contraint if defined
+    if (workerType !== undefined) {
+      sql += ' AND workerType = $2';
+      params.push(workerType);
     }
 
-    // List task_ids then load them in parallel, we can optimize this later
+    // List taskIds then load them in parallel, we can optimize this later
     return client.promise(sql, params).then(function(result) {
       client.release();
-      // For each task_id load the task status object
+      // For each taskId load the task status object
       var task_statuses_loaded = result.rows.map(function(row) {
-        return exports.loadTask(row.task_id);
+        return exports.loadTask(row.taskId);
       });
       // Return a promise that all tasks will be loaded
       return Promise.all(task_statuses_loaded);
@@ -439,3 +411,31 @@ exports.queryTasks = function(provisioner_id, worker_type) {
 };
 
 
+
+
+
+/** Create new task status structure from json object */
+/*  // Let's implement this in the future, but not right now... Just need
+    // something that works reasonably well...
+exports.Task = function(status) {
+  // Clone status arguments
+  this.status = status;
+
+  // Parse datetime strings to Date objects
+  var dates = ['created', 'deadline', 'takenUntil'];
+};
+
+
+exports.Task.prototype.create = function() {
+
+};
+
+exports.Task.prototype.resolve = function(resolution, reason) {};
+exports.Task.prototype.claimUntil = function(takenUntil, workeGroup, workerId,
+                                             runId) {};
+exports.Task.prototype.toJSON = function() {};
+
+exports.Task.query = function() {};
+exports.Task.load = function(taskId) {};
+exports.Task.recoverExpired = function() {};
+ //*/
