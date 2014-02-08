@@ -1,0 +1,71 @@
+{
+  "id":       "http://schemas.taskcluster.net/v1/common.json#",
+  "$schema":  "http://json-schema.org/draft-04/schema#",
+  "uuid": {
+    "id":           "#uuid",
+    "description":  "Universally Unique Identifier",
+    "type":         "string",
+    "pattern":      "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+  },
+  "identifier": {
+    "id":           "#identifier",
+    "description":  "Identifier suitable for routing and fit a UUID",
+    "type":         "string",
+    "minLength":    1,
+    "maxLength":    36,
+    "pattern":      "^([a-zA-Z0-9-_]*)$"
+  },
+  "run-id": {
+    "id":           "#run-id",
+    "description":  "Id of a task run, always starting from 1",
+    "type":         "integer",
+    "minimum":      1,
+    "maximum":      1000
+  },
+  "state": {
+    "id":           "#state",
+    "description":  "Possible task state, this enum is **frozen**.",
+    "enum":         ["pending", "running", "completed", "failed"]
+  },
+  "routing": {
+    "id":           "#routing",
+    "description":  "Task specific routing key, may contain dots (`.`) for arbitrary sub-routes",
+    "type":         "string",
+    "maxLength":    64
+  },
+  "retries": {
+    "id":           "#retries",
+    "description":  "Number of task retries allowed/remaining",
+    "type":         "integer",
+    "minimum":      0,
+    "maximum":      999
+  },
+  "priority": {
+    "id":           "#priority",
+    "description":  "Task priority",
+    "type":         "number"
+  },
+  "created": {
+    "id":           "#created",
+    "description":  "Creation time of task",
+    "type":         "string",
+    "format":       "date-time"
+  },
+  "deadline": {
+    "id":           "#deadline",
+    "description":  "Deadline of the task, if not resolved before the deadline a task is **failed**",
+    "type":         "string",
+    "format":       "date-time"
+  },
+  "taken-until": {
+    "id":           "#taken-until",
+    "description":  "Time until which a task is claimed by a worker",
+    "type":         "string",
+    "format":       "date-time"
+  },
+  "message-version": {
+    "id":           "message-version",
+    "description":  "Message version",
+    "enum":         ["0.2.0"]
+  }
+}

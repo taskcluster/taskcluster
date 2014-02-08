@@ -1,0 +1,43 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/task-status.json",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Task Status Structure",
+  "description":  "A representation of **task status** as known by the queue",
+  "type":               "object",
+  "properties": {
+    "taskId":           {"$ref": "http://schemas.taskcluster.net/v1/common.json#uuid"},
+    "provisionerId":    {"$ref": "http://schemas.taskcluster.net/v1/common.json#identifier"},
+    "workerType":       {"$ref": "http://schemas.taskcluster.net/v1/common.json#identifier"},
+    "runs":             {
+      "type":               "array",
+      "items": {
+        "type":             "object",
+        "properties": {
+          "runId":                {"$ref": "http://schemas.taskcluster.net/v1/common.json#run-id"},
+          "workerGroup":          {"$ref": "http://schemas.taskcluster.net/v1/common.json#identifier"},
+          "workerId":             {"$ref": "http://schemas.taskcluster.net/v1/common.json#identifier"}
+        },
+        "additionalProperties":   false,
+        "required":               ["runId", "workerGroup", "workerId"]
+      }
+    },
+    "state":            {"$ref": "http://schemas.taskcluster.net/v1/common.json#state"},
+    "reason":           {
+      "description":    "Reason for the current state, **more reasons will be added in the future**.",
+      "enum": [
+        "none", "deadline-exceeded", "retries-exhausted", "canceled"
+      ]
+    },
+    "routing":          {"$ref": "http://schemas.taskcluster.net/v1/common.json#routing"},
+    "retries":          {"$ref": "http://schemas.taskcluster.net/v1/common.json#retries"},
+    "priority":         {"$ref": "http://schemas.taskcluster.net/v1/common.json#priority"},
+    "created":          {"$ref": "http://schemas.taskcluster.net/v1/common.json#created"},
+    "deadline":         {"$ref": "http://schemas.taskcluster.net/v1/common.json#deadline"},
+    "takenUntil":       {"$ref": "http://schemas.taskcluster.net/v1/common.json#taken-until"}
+  },
+  "additionalProperties":   false,
+  "required": [
+    "taskId", "provisionerId", "workerType", "runs", "state", "reason",
+    "routing", "retries", "priority", "created", "deadline", "takenUntil"
+  ]
+}
