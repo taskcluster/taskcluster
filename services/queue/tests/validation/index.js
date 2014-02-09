@@ -10,16 +10,16 @@ var path        = require('path');
  */
 var testCases = [
   {
-    path:     'events/v1/queue:task-pending.json',
-    schema:   'http://schemas.taskcluster.net/events/v1/queue:task-pending.json#',
+    path:     'v1/queue:task-pending.json',
+    schema:   'http://schemas.taskcluster.net/v1/queue:task-pending.json#',
     success:  true,
   }, {
-    path:     'api/0.2.0/uuid.json',
-    schema:   'http://schemas.taskcluster.net/api/0.2.0/uuid.json#',
+    path:     'v1/uuid.json',
+    schema:   'http://schemas.taskcluster.net/v1/common.json#uuid',
     success:  true,
   }, {
-    path:     'api/0.2.0/task-status-structure.json',
-    schema:   'http://schemas.taskcluster.net/api/0.2.0/task-status-structure.json#',
+    path:     'v1/task-status.json',
+    schema:   'http://schemas.taskcluster.net/v1/task-status.json#',
     success:  true,
   },
 ];
