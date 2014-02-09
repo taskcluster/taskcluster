@@ -12,7 +12,7 @@ var events  = require('../../queue/events');
 // Create S3 instance
 var s3 = new aws.S3();
 
-/** API end-point for version 0.2.0 */
+/** API end-point for version v1/ */
 var api = module.exports = new utils.API({
   limit:          '10mb'
 });
@@ -41,8 +41,8 @@ var sign_put_url = function(options) {
 api.declare({
   method:   'post',
   route:    '/task/new',
-  input:    'http://schemas.taskcluster.net/api/0.2.0/task-definition.json#',
-  output:   'http://schemas.taskcluster.net/api/0.2.0/create-task-response.json#',
+  input:    'http://schemas.taskcluster.net/v1/task.json#',
+  output:   'http://schemas.taskcluster.net/v1/create-task-response.json#',
   title:    "Create new task",
   desc: [
     "Create a new task, the `status` of the resulting JSON is a task status",
