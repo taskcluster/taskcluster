@@ -43,9 +43,9 @@ exports['Create and delete task'] = function(test) {
 
   // Task structure to insert
   var task = {
-    "task_id":            uuid.v4(),
-    "provisioner_id":     "jonasfj-test-aws-provisioner",
-    "worker_type":        "map-this-to-my-cool-ami",
+    "taskId":             uuid.v4(),
+    "provisionerId":      "jonasfj-test-aws-provisioner",
+    "workerType":         "map-this-to-my-cool-ami",
     "runs":               [], // This will be ignored by createTask
     "state":              "pending",
     "reason":             "none",
@@ -54,7 +54,7 @@ exports['Create and delete task'] = function(test) {
     "priority":           2.6,
     "created":            "2014-02-01T03:22:36.356Z",
     "deadline":           "2014-03-01T03:22:36.356Z",
-    "taken_until":        "1970-01-01T00:00:00.000Z"
+    "takenUntil":         "1970-01-01T00:00:00.000Z"
   };
 
   data.createTask(task).then(function() {
@@ -63,7 +63,7 @@ exports['Create and delete task'] = function(test) {
     debug("Failed to create task, error: %s as JSON: %j", err, err);
     test.ok(false, "Failed to create task");
   }).then(function() {
-    data.deleteTask(task.task_id).then(function() {
+    data.deleteTask(task.taskId).then(function() {
       test.ok(true);
       test.done();
     }, function(err) {
@@ -81,9 +81,9 @@ exports['Create, load and delete task'] = function(test) {
 
   // Task structure to insert
   var task = {
-    "task_id":            "c4a88130-d9ac-421e-beae-7139d11472a4",
-    "provisioner_id":     "jonasfj-test-aws-provisioner",
-    "worker_type":        "map-this-to-my-cool-ami",
+    "taskId":             "c4a88130-d9ac-421e-beae-7139d11472a4",
+    "provisionerId":      "jonasfj-test-aws-provisioner",
+    "workerType":         "map-this-to-my-cool-ami",
     "runs":               [], // This will be ignored by createTask
     "state":              "pending",
     "reason":             "none",
@@ -92,7 +92,7 @@ exports['Create, load and delete task'] = function(test) {
     "priority":           2.6,
     "created":            "2014-02-01T03:22:36.356Z",
     "deadline":           "2014-03-01T03:22:36.356Z",
-    "taken_until":        "1970-01-01T00:00:00.000Z"
+    "takenUntil":         "1970-01-01T00:00:00.000Z"
   };
 
   data.createTask(task).then(function() {
@@ -102,7 +102,7 @@ exports['Create, load and delete task'] = function(test) {
     test.ok(false, "Failed to create task");
     test.done();
   }).then(function() {
-    return data.loadTask(task.task_id);
+    return data.loadTask(task.taskId);
   }).then(function(task_status) {
     test.ok(task_status);
     // Validate the result, this should match our schema
@@ -117,7 +117,7 @@ exports['Create, load and delete task'] = function(test) {
     }
 
   }).then(function() {
-    return data.deleteTask(task.task_id);
+    return data.deleteTask(task.taskId);
   }).then(function() {
     test.ok(true);
     test.done();
@@ -136,9 +136,9 @@ exports['Create, claim and delete task'] = function(test) {
 
   // Task structure to insert
   var task = {
-    "task_id":            uuid.v4(),
-    "provisioner_id":     "jonasfj-test-aws-provisioner",
-    "worker_type":        "map-this-to-my-cool-ami",
+    "taskId":             uuid.v4(),
+    "provisionerId":      "jonasfj-test-aws-provisioner",
+    "workerType":         "map-this-to-my-cool-ami",
     "runs":               [], // This will be ignored by createTask
     "state":              "pending",
     "reason":             "none",
@@ -147,7 +147,7 @@ exports['Create, claim and delete task'] = function(test) {
     "priority":           2.6,
     "created":            "2014-02-01T03:22:36.356Z",
     "deadline":           "2014-03-01T03:22:36.356Z",
-    "taken_until":        "1970-01-01T00:00:00.000Z"
+    "takenUntil":        "1970-01-01T00:00:00.000Z"
   };
 
   data.createTask(task).then(function() {
@@ -157,14 +157,14 @@ exports['Create, claim and delete task'] = function(test) {
     test.ok(false, "Failed to create task");
     test.done();
   }).then(function() {
-    return data.claimTask(task.task_id, new Date(), {
-      worker_id:    'my-worker',
-      worker_group: 'my-cluster'
+    return data.claimTask(task.taskId, new Date(), {
+      workerId:    'my-worker',
+      workerGroup: 'my-cluster'
     });
   }).then(function(result) {
     test.ok(result != null);
   }).then(function() {
-    return data.deleteTask(task.task_id);
+    return data.deleteTask(task.taskId);
   }).then(function() {
     test.ok(true);
     test.done();
@@ -183,9 +183,9 @@ exports['Create, claim, complete and delete task'] = function(test) {
 
   // Task structure to insert
   var task = {
-    "task_id":            uuid.v4(),
-    "provisioner_id":     "jonasfj-test-aws-provisioner",
-    "worker_type":        "map-this-to-my-cool-ami",
+    "taskId":             uuid.v4(),
+    "provisionerId":      "jonasfj-test-aws-provisioner",
+    "workerType":         "map-this-to-my-cool-ami",
     "runs":               [], // This will be ignored by createTask
     "state":              "pending",
     "reason":             "none",
@@ -194,7 +194,7 @@ exports['Create, claim, complete and delete task'] = function(test) {
     "priority":           2.6,
     "created":            "2014-02-01T03:22:36.356Z",
     "deadline":           "2014-03-01T03:22:36.356Z",
-    "taken_until":        "1970-01-01T00:00:00.000Z"
+    "takenUntil":         "1970-01-01T00:00:00.000Z"
   };
 
   data.createTask(task).then(function() {
@@ -204,16 +204,16 @@ exports['Create, claim, complete and delete task'] = function(test) {
     test.ok(false, "Failed to create task");
     test.done();
   }).then(function() {
-    return data.claimTask(task.task_id, new Date(), {
-      worker_id:    'my-worker',
-      worker_group: 'my-cluster'
+    return data.claimTask(task.taskId, new Date(), {
+      workerId:     'my-worker',
+      workerGroup:  'my-cluster'
     });
   }).then(function() {
-    return data.completeTask(task.task_id);
+    return data.completeTask(task.taskId);
   }).then(function(result) {
     test.ok(result);
   }).then(function() {
-    return data.deleteTask(task.task_id);
+    return data.deleteTask(task.taskId);
   }).then(function() {
     test.ok(true);
     test.done();

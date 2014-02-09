@@ -41,7 +41,7 @@ exports.tearDown = function(callback) {
 }
 
 /** Test message publication */
-exports['POST new task to 0.2.0/task/new'] = function(test) {
+exports['POST new task to v1/task/new'] = function(test) {
   test.expect(1);
 
   // Create datetime for created and deadline as 3 days later
@@ -54,11 +54,11 @@ exports['POST new task to 0.2.0/task/new'] = function(test) {
   request({
     method: 'POST',
     url:    'http://' + nconf.get('server:hostname') + ':' +
-            nconf.get('server:port') + '/0.2.0/task/new',
+            nconf.get('server:port') + '/v1/task/new',
     json:   {
       version:          '0.2.0',
-      provisioner_id:   'jonasfj-provisioner',
-      worker_type:      'my-ami',
+      provisionerId:    'jonasfj-provisioner',
+      workerType:      'my-ami',
       routing:          'jonasfj-test.what-a-hack',
       retries:          5,
       priority:         1,
@@ -69,7 +69,7 @@ exports['POST new task to 0.2.0/task/new'] = function(test) {
         name:           "Unit testing task",
         description:    "Task created during unit tests",
         owner:          'jonsafj@mozilla.com',
-        maintainer:     'jonsafj@mozilla.com'
+        source:         'https://github.com/taskcluster/taskcluster-queue'
       },
       tags: {
         purpose:        'taskcluster-testing'
@@ -83,7 +83,7 @@ exports['POST new task to 0.2.0/task/new'] = function(test) {
 };
 
 /** Test message publication */
-exports['POST invalid task to 0.2.0/task/new'] = function(test) {
+exports['POST invalid task to v1/task/new'] = function(test) {
   test.expect(1);
 
   // Create datetime for created and deadline as 3 days later
@@ -96,11 +96,11 @@ exports['POST invalid task to 0.2.0/task/new'] = function(test) {
   request({
     method: 'POST',
     url:    'http://' + nconf.get('server:hostname') + ':' +
-            nconf.get('server:port') + '/0.2.0/task/new',
+            nconf.get('server:port') + '/v1/task/new',
     json:   {
       version:          '0.0.0',
-      provisioner_id:   'jonasfj-provisioner',
-      worker_type:      'my-ami',
+      provisionerId:    'jonasfj-provisioner',
+      workerType:       'my-ami',
       routing:          'jonasfj-test.what-a-hack',
       retries:          5,
       priority:         1,
@@ -111,7 +111,7 @@ exports['POST invalid task to 0.2.0/task/new'] = function(test) {
         name:           "Unit testing task",
         description:    "Task created during unit tests",
         owner:          'jonsafj@mozilla.com',
-        maintainer:     'jonsafj@mozilla.com'
+        source:         'https://github.com/taskcluster/taskcluster-queue'
       },
       tags: {
         purpose:        'taskcluster-testing'

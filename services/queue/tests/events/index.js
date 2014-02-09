@@ -32,9 +32,9 @@ exports['v1/queue:task-pending'] = function(test) {
   events.publish('v1/queue:task-pending', {
     "version":              "0.2.0",
     "status": {
-      "task_id":            "70f8926b-c4be-4604-9c33-4e9628bc31f6",
-      "provisioner_id":     "jonasfj-test-aws-provisioner",
-      "worker_type":        "map-this-to-my-cool-ami",
+      "taskId":             "70f8926b-c4be-4604-9c33-4e9628bc31f6",
+      "provisionerId":      "jonasfj-test-aws-provisioner",
+      "workerType":         "map-this-to-my-cool-ami",
       "runs":               [],
       "state":              "pending",
       "reason":             "none",
@@ -43,7 +43,7 @@ exports['v1/queue:task-pending'] = function(test) {
       "priority":           2.6,
       "created":            "2014-02-01T03:22:36.356Z",
       "deadline":           "2014-03-01T03:22:36.356Z",
-      "taken_until":        "1970-01-01T00:00:00.000Z"
+      "takenUntil":         "1970-01-01T00:00:00.000Z"
     }
   }).then(function() {
     test.ok(true, "Message was sent, how nice");
@@ -63,9 +63,9 @@ exports['v1/queue:task-pending validation test'] = function(test) {
   events.publish('v1/queue:task-pending', {
     "version":              "0.2.0",
     "status": {
-      "task_id":            "70f8926b-c4be-4604-9c33-4e9628bc31f6",
-      "provisioner_id":     "jonasfj-test-aws-provisioner",
-      "worker_type":        "map-this-to-my-cool-ami",
+      "taskId":             "70f8926b-c4be-4604-9c33-4e9628bc31f6",
+      "provisionerId":      "jonasfj-test-aws-provisioner",
+      "workerType":         "map-this-to-my-cool-ami",
       "runs":               [],
       "state":              "pending",
       "reason":             "none",
@@ -74,7 +74,7 @@ exports['v1/queue:task-pending validation test'] = function(test) {
       "priority":           2.6,
       "created":            "2014-02-01T03:22:36.356Z",
       "deadline":           "2014-03-01T03:22:36.356Z",
-      "taken_until":        null
+      "takenUntil":         null
     }
   }).then(function() {
     test.ok(false, "Invalid message was sent, this is bad!");
@@ -111,7 +111,7 @@ exports['v1/queue:task-pending receive test'] = function(test) {
       }, function() {
         debug('Subscribe to messages on queue');
         queue.subscribe(function(message) {
-          test.ok(message.status.task_id == '70f8926b-c4be-4604-9c33-4e9628bc31f6',
+          test.ok(message.status.taskId == '70f8926b-c4be-4604-9c33-4e9628bc31f6',
                   "Didn't get the expected message");
           queue.destroy();
           conn.destroy();
@@ -135,9 +135,9 @@ exports['v1/queue:task-pending receive test'] = function(test) {
     events.publish('v1/queue:task-pending', {
       "version":              "0.2.0",
       "status": {
-        "task_id":            "70f8926b-c4be-4604-9c33-4e9628bc31f6",
-        "provisioner_id":     "jonasfj-test-aws-provisioner",
-        "worker_type":        "map-this-to-my-cool-ami",
+        "taskId":             "70f8926b-c4be-4604-9c33-4e9628bc31f6",
+        "provisionerId":      "jonasfj-test-aws-provisioner",
+        "workerType":         "map-this-to-my-cool-ami",
         "runs":               [],
         "state":              "pending",
         "reason":             "none",
@@ -146,7 +146,7 @@ exports['v1/queue:task-pending receive test'] = function(test) {
         "priority":           2.6,
         "created":            "2014-02-01T03:22:36.356Z",
         "deadline":           "2014-03-01T03:22:36.356Z",
-        "taken_until":        "1970-01-01T00:00:00.000Z"
+        "takenUntil":         "1970-01-01T00:00:00.000Z"
       }
     }).then(function() {
       test.ok(true);
