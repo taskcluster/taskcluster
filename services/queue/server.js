@@ -30,8 +30,8 @@ app.set('view engine', 'jade');
 app.use(express.favicon());
 app.use(express.logger('dev'));
 
-// Mount API for version 0.2.0
-require('./routes/api/0.2.0').mount(app, '/0.2.0');
+// Mount API for version v1
+require('./routes/api/v1').mount(app, '/v1');
 
 app.use(express.json());
 app.use(express.urlencoded());
