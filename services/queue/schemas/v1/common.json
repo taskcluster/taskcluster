@@ -64,7 +64,7 @@
     "format":       "date-time"
   },
   "message-version": {
-    "id":           "message-version",
+    "id":           "#message-version",
     "description":  "Message version",
     "enum":         ["0.2.0"]
   }
