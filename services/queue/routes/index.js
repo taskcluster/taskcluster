@@ -4,7 +4,7 @@
  */
 
 exports.index = function(req, res){
-  res.render('index', { title: null });
+  res.render('index', { title: "Task Cluste Queue - Deploy Test" });
 };
 
 // Include all modules
