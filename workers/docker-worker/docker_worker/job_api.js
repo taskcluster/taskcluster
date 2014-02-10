@@ -33,12 +33,16 @@ JobAPI.prototype = {
   /**
   Send a claim to the requester.
 
+  @param {Object} claim payload to send.
   @return Promise
   */
-  sendClaim: function() {
-    debug('send claim', this.claim);
+  sendClaim: function(claim) {
+    claim = claim || {};
+    debug('send claim', this.claim, claim);
     // post with no content
-    return request('POST', this.claim).end();
+    return request('POST', this.claim)
+      .send(claim)
+      .end();
   },
 
   /**

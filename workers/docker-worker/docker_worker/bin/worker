@@ -1,52 +1,55 @@
 #! /usr/bin/env node
-
 var Docker = require('dockerode-promise');
-var Consumer = require('../amqp_consumer');
-
+var Capacity = require('../capacity');
+var Consumer = require('../ironmq_consumer');
 var program = require('commander');
-var debug = require('debug')('taskcluster-docker-worker:worker');
 var os = require('os');
-var amqplib = require('amqplib');
 var dockerOpts = require('dockerode-options');
+var debug = require('debug')('taskcluster-docker-worker:cli');
 
-var WORKER_CONFIG = {
-  docker: new Docker(dockerOpts())
-};
+// one GB in bytes
+var DEFAULT_RAM_PER_WORKER = 1073741824;
+// default interval to poll for more work when not at capcity (5s)
+var DEFAULT_INTERVAL = 5000;
 
-function bindConsumer(queue) {
-  debug('binding to queue', queue);
-  var queueConsumer = new Consumer(WORKER_CONFIG);
+/**
+Determine the overall capacity of the worker based on the RAM of this machine.
 
-  debug('worker is listening on %s', queue);
-
-  // begin consuming jobs off the queue
-  queueConsumer.consume(queue, {
-    // number of tasks that can run in parallel (one per core right now)
-    prefetch: os.cpus().length
-  });
+XXX: This has a major flaw of getting available memory from the node process
+     instead of the docker host which may be on a different machine in the
+     future.
+*/
+function determineCapacity(perWorker) {
+  // free memory on startup conditions _should_ be a decent guess as to how
+  // many parallel tasks we can run. We always need at least one.
+  return Math.max(Math.ceil(os.freemem() / perWorker), 1);
 }
 
 function startWorker(queue, cmd) {
-  amqplib.connect(cmd.amqp).then(
-    function connectionStart(connection) {
-      debug('amqp ready');
-      WORKER_CONFIG.amqp = connection;
-      return bindConsumer(queue);
-    }
-  ).then(
-    null,
-    function startFailure(err) {
-      console.error('Failure starting worker');
-      console.log(err.stack);
-      process.exit();
-    }
+  var capacity = new Capacity(cmd.capacity || determineCapacity(cmd.memory));
+
+  var consumer = new Consumer({
+    capacity: capacity,
+    docker: new Docker(dockerOpts()),
+    queue: queue,
+    interval: parseInt(cmd.interval, 10)
+  });
+
+  console.log(
+    'starting worker with %s parallel tasks polling at %s ms intervals',
+    capacity.maximumSize,
+    consumer.interval
   );
+
+  consumer.poll();
 }
 
 program.
   version(require('../package.json').version).
   command('start <queue>').
-  option('--amqp <url>', 'full amqp url', 'amqp://guest:guest@127.0.0.1/').
+  option('-m, --memory <value>', 'memory per task in bytes', DEFAULT_RAM_PER_WORKER).
+  option('-i, --interval <value>', 'interval to poll for new work when not at capcity in ms', DEFAULT_INTERVAL).
+  option('-c, --capacity <value>', 'override all other capacity options').
   description('bind worker to a particular amqp queue').
   action(startWorker);
 

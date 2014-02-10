@@ -1,3 +1,5 @@
 /.vagrant
 /packer_cache
 /docker-worker-*
+/.env
+/worker_config

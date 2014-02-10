@@ -23,11 +23,13 @@ suite('job api', function() {
 
   suite('sendClaim', function() {
     test('issue a claim to the server', function(done) {
+      var sentJSON = { woot: true };
       var ranServer = false;
       var claimURL = server.endpoint(
         'post',
         function(req, res) {
           ranServer = true;
+          assert.deepEqual(req.body, sentJSON);
           res.send(200, {});
         }
       );
@@ -37,7 +39,7 @@ suite('job api', function() {
         claim: claimURL,
       });
 
-      return subject.sendClaim().then(
+      return subject.sendClaim(sentJSON).then(
         function(res) {
           assert.ok(ranServer);
           assert.deepEqual(res.body, {});

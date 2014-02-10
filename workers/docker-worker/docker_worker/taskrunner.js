@@ -1,144 +1,85 @@
-var Promise = require('promise');
+var JobAPI = require('./job_api');
+var Task = require('./task');
+var DockerProc = require('dockerode-process');
+var Middleware = require('middleware-object-hooks');
 
-/**
-States for the task runner
-*/
-var STATES = {
-  // off indicates we don't have a container yet.
-  off: 0,
-
-  // we are running when the container has been created and the task has
-  // begun.
-  running: 1,
-
-  // we are done when the task has finished running.
-  done: 2,
-
-  // and finally destroyed when the container has been removed (via
-  // .destroy).
-  destroyed: 3
+var MIDDLEWARES = {
+  times: require('./middleware/times'),
+  bufferLog: require('./middleware/buffer_log'),
+  azureLiveLog: require('./middleware/azure_livelog'),
+  containerMetrics: require('./middleware/container_metrics')
 };
 
-/**
-Primary module which deals with docker (images / containers)
-*/
+var debug = require('debug')('taskcluster-docker-worker:taskrunner');
 
 /**
-@param {Docker} docker credentials (see dockerode).
-@param {Object} task structure.
+@param {Object} request task.
+@return Promise
 */
-function TaskRunner(docker, task) {
-  // credentials for the docker instance.
-  this.docker = docker;
+function runTask(docker, request) {
+  // task result/output
+  var output = {
+    artifacts: {},
+    extra_info: {}
+  };
 
-  // we save the entire task though we only need a few parts of it for
-  // this operation.
-  this.task = task;
+  // details to send during the claim.
+  var claim = {};
 
-  // machine specs
-  var image = task.parameters &&
-              task.parameters.docker &&
-              task.parameters.docker.image;
+  var api = new JobAPI(request);
+  var task = new Task(api.job);
+  var middleware = new Middleware();
 
-  if (!image) {
-    throw new Error('cannot run docker task without .machine.image type');
+  // always turn on times
+  middleware.use(MIDDLEWARES.times());
+
+  // this is mostly a debugging middleware so its off by default
+  if (task.feature('buffer_log', false)) {
+    middleware.use(MIDDLEWARES.bufferLog());
   }
 
-  this.image = image;
-
-  if (!task.command) {
-    throw new Error('cannot run docker task without .command');
+  // live logging should always be on
+  if (task.feature('azure_livelog', true)) {
+    middleware.use(MIDDLEWARES.azureLiveLog());
   }
-  this.command = task.command;
+
+  if (task.feature('metrics', false)) {
+    middleware.use(MIDDLEWARES.containerMetrics('tasks'));
+  }
+
+  var dockerProcess = new DockerProc(docker, {
+    start: task.startContainerConfig(),
+    create: task.createContainerConfig()
+  });
+
+  debug('run task', api.job);
+  return middleware.run('start', claim, task, dockerProcess).then(
+    function(claimPayload) {
+      debug('claim payload', claimPayload);
+      return api.sendClaim(claimPayload);
+    }
+  ).then(
+    function initiateExecute(value) {
+      return dockerProcess.run();
+    }
+  ).then(
+    function processRun(code) {
+
+      output.task_result = {
+        exit_status: code
+      };
+
+      return middleware.run('end', output, task, dockerProcess);
+    }
+  ).then(
+    function sendFinish(output) {
+      return api.sendFinish(output).then(
+        function() {
+          return dockerProcess.remove();
+        }
+      );
+    }
+  );
 }
 
-TaskRunner.STATES = STATES;
-
-TaskRunner.prototype = {
-  state: STATES.off,
-
-  /**
-  The docker image to use for running this task.
-
-  @type String
-  */
-  image: null,
-
-  /**
-  The command to execute in the container.
-
-  @type Array
-  */
-  command: null,
-
-  /**
-  Docker container instance (see dockerode Container).
-  */
-  container: null,
-
-  /**
-  @type Object representing the result of the task run
-
-      {
-        statusCode: 1
-      }
-  */
-  result: null,
-
-  execute: function(outputStream) {
-    var docker = this.docker;
-    var command = [
-      '/bin/sh', '-c',
-      this.command.join(' ')
-    ];
-
-    var promise = docker.pull(this.image).then(
-      function handleDownload(stream) {
-        return new Promise(function(accept, reject) {
-          stream.once('error', reject);
-          stream.once('end', accept);
-
-          if (outputStream) {
-            // don't end the outputStream because of this.
-            // XXX: This stream output is super ugly right now.
-            stream.pipe(outputStream, { end: false });
-          }
-        });
-      }
-    ).then(
-      function execTask() {
-        return docker.run(
-          this.image,
-          command,
-          outputStream
-        );
-      }.bind(this)
-    ).then(
-      function assignContainer(output) {
-        this.state = STATES.done;
-        this.container = output.container;
-        this.result = {
-          statusCode: output.result.StatusCode
-        };
-        return this.result;
-      }.bind(this)
-    );
-
-    this.state = STATES.running;
-
-    return promise;
-  },
-
-  destroy: function() {
-    if (!this.container) return Promise.from(false);
-    this.state = STATES.destroyed;
-    return this.container.remove().then(
-      function(result) {
-        this.container = null;
-        return result;
-      }.bind(this)
-    );
-  }
-};
-
-module.exports = TaskRunner;
+module.exports = runTask;

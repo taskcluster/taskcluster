@@ -1,0 +1,114 @@
+#! /usr/bin/env node
+
+var Promise = require('promise');
+var IronMQ = require('../ironmq');
+var ngrok = require('ngrok');
+var serverFactory = require('../test/server');
+var logStream = require('taskcluster-logstream');
+var ngrokConnect = Promise.denodeify(ngrok.connect);
+var program = require('commander');
+
+// raw args to pass to docker
+var cliArgs = process.argv.slice(0, 4);
+var dockerArgs = process.argv.slice(4);
+
+program.
+  command('run <docker_image> [options]').
+  description('run a docker image on a taskcluster worker').
+  action(function(image, cmd) {
+    var task = {
+      command: dockerArgs,
+      features: {
+        metrics: false
+      },
+      parameters: {
+        docker: {
+          image: image
+        }
+      }
+    };
+
+    main(task);
+  });
+
+program.parse(cliArgs);
+
+function initializeHttp(http) {
+  // start ngrok on the port
+  var port = http.address().port;
+  var reader;
+
+  return ngrokConnect(port).then(function(host) {
+    // create the http endpoints used in testing
+    var claim = http.endpoint('post', host, function onClaim(req, res) {
+      console.log('claim', req.body);
+      reader = logStream(req.body.log, {
+        intervalMS: 10,
+        headers: { 'x-ms-version': '2013-08-15' }
+      });
+
+      reader.pipe(process.stdout);
+      res.send(200);
+    });
+
+    var finish = http.endpoint('post', host, function onFinish(req, res) {
+      console.log('finish', req.body);
+      var pending = 2;
+      var result = req.body.result;
+
+      function next(type) {
+        if (--pending === 0) {
+          process.exit(result.task_result.exit_status);
+        }
+      }
+
+      res.once('finish', next.bind(this, 'finish'));
+      if (!reader._readableState.ended) {
+        reader.once('end', next.bind(this, 'reader end'));
+      } else {
+        next();
+      }
+
+      res.send(200);
+    });
+
+    return {
+      claim: claim,
+      finish: finish
+    };
+  });
+}
+
+function main(task) {
+  var queue = new IronMQ('aws-docker');
+
+  serverFactory().then(
+    function initialize(http) {
+      return initializeHttp(http);
+    }
+  ).then(
+    function postMessage(endpoints) {
+      var message = {
+        claim: endpoints.claim,
+        finish: endpoints.finish,
+        job: task
+      };
+
+      return queue.post({
+        // 30 minutes
+        timeout: 60 * 60 * 30,
+        // one day
+        expires_in: 60 * 60 * 24,
+        body: JSON.stringify(message)
+      });
+    }
+  ).then(
+    function(value) {
+      console.log('sent?', value);
+    },
+    function error(err) {
+      console.error(err.stack);
+      process.exit(1);
+    }
+  );
+}

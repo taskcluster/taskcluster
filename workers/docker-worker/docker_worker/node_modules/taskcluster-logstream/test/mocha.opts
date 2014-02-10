@@ -1,0 +1,2 @@
+--require test/helper
+--ui tdd

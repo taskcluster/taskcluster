@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 
 # Add the Docker repository to your apt sources list.

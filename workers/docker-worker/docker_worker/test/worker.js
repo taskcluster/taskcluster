@@ -1,11 +1,14 @@
 var spawn = require('child_process').spawn;
+var uuid = require('uuid');
+var IronMQ = require('../ironmq');
 
 /**
 Rather then test the interface we test through the amqp queue.
 */
 function startConsumer() {
+  var id = uuid.v4();
   var binary = __dirname + '/../bin/worker';
-  var result = {};
+  var result = { id: id };
 
   function earlyExit() {
     throw new Error('process exited early');
@@ -15,7 +18,7 @@ function startConsumer() {
     var envs = {};
     for (var key in process.env) envs[key] = process.env[key];
 
-    result.proc = spawn(binary, ['start', 'tasks'], {
+    result.proc = spawn(binary, ['start', id], {
       env: envs,
       // share all the file descriptors so we see pretty debug output
       stdio: 'inherit'
@@ -26,6 +29,11 @@ function startConsumer() {
   teardown(function() {
     result.proc.removeListener('exit', earlyExit);
     result.proc.kill();
+  });
+
+  teardown(function() {
+    var mq = new IronMQ(id);
+    return mq.del_queue();
   });
 
   return result;

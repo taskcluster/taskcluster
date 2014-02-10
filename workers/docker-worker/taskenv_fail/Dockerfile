@@ -1,4 +1,4 @@
-from ubuntu
+from ubuntu:13.10
 maintainer James Lal <james@lightsofapollo.com>
 
 # This docker file is a test image for the host to target.
