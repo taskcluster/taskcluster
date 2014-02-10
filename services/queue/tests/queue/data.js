@@ -108,7 +108,7 @@ exports['Create, load and delete task'] = function(test) {
     // Validate the result, this should match our schema
     var errors = validate(
       task_status,
-      'http://schemas.taskcluster.net/api/0.2.0/task-status-structure.json#'
+      'http://schemas.taskcluster.net/v1/task-status.json#'
     );
     // test for errors
     test.equal(errors, null, "Validation of loaded task status structure failed");
@@ -147,7 +147,7 @@ exports['Create, claim and delete task'] = function(test) {
     "priority":           2.6,
     "created":            "2014-02-01T03:22:36.356Z",
     "deadline":           "2014-03-01T03:22:36.356Z",
-    "takenUntil":        "1970-01-01T00:00:00.000Z"
+    "takenUntil":         "1970-01-01T00:00:00.000Z"
   };
 
   data.createTask(task).then(function() {
