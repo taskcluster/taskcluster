@@ -51,9 +51,9 @@ var connect = function() {
 /** Tasks table definition */
 var tasks_table_definition = [
   //Name:                Datatype:                 Constraint:
-  ['taskId',            'uuid',                   'PRIMARY KEY'   ],
-  ['provisionerId',     'varchar(36)',            'NOT NULL'      ],
-  ['workerType',        'varchar(36)',            'NOT NULL'      ],
+  ['taskid',            'uuid',                   'PRIMARY KEY'   ],
+  ['provisionerid',     'varchar(36)',            'NOT NULL'      ],
+  ['workertype',        'varchar(36)',            'NOT NULL'      ],
   ['state',             'varchar(255)',           'NOT NULL'      ],
   ['reason',            'varchar(255)',           'NOT NULL'      ],
   ['routing',           'varchar(64)',            'NOT NULL'      ],
@@ -61,18 +61,18 @@ var tasks_table_definition = [
   ['priority',          'double precision',       'NOT NULL'      ],
   ['created',           'timestamp',              'NOT NULL'      ],
   ['deadline',          'timestamp',              'NOT NULL'      ],
-  ['takenUntil',        'timestamp',              'NOT NULL'      ]
+  ['takenuntil',        'timestamp',              'NOT NULL'      ]
 ];
 
 
 /** Runs table definition */
 var runs_table_definition = [
   //Name:                Datatype:                 Constraint:
-  ['taskId',            'uuid',                   'REFERENCES tasks ON DELETE CASCADE'],
-  ['runId',             'integer',                'NOT NULL'      ],
-  ['workerGroup',       'varchar(36)',            'NOT NULL'      ],
-  ['workerId',          'varchar(36)',            'NOT NULL'      ],
-  ['PRIMARY KEY (taskId, runId)'                                  ]
+  ['taskid',            'uuid',                   'REFERENCES tasks ON DELETE CASCADE'],
+  ['runid',             'integer',                'NOT NULL'      ],
+  ['workergroup',       'varchar(36)',            'NOT NULL'      ],
+  ['workerid',          'varchar(36)',            'NOT NULL'      ],
+  ['PRIMARY KEY (taskid, runid)'                                  ]
 ];
 
 
@@ -182,7 +182,9 @@ exports.createTask = function(task) {
     ];
 
     // Construct string of columns
-    var cols = properties.join(', ');
+    var cols = properties.map(function(prop) {
+      return prop.toLowerCase();
+    }).join(', ');
 
     // Construct string of place_holders for values
     var place_folders = properties.map(function(prop, index) {
@@ -214,7 +216,7 @@ exports.createTask = function(task) {
 /** Delete task by with given task identifier, returns a promise of success */
 exports.deleteTask = function(taskId) {
   return connect().then(function(client) {
-    var sql = 'DELETE FROM tasks WHERE taskId = $1';
+    var sql = 'DELETE FROM tasks WHERE taskid = $1';
     return client.promise(sql, [taskId]).then(function() {
       client.release();
       return;
@@ -253,8 +255,8 @@ exports.loadTask = function(taskId) {
 
     // SQL statement for selecting tasks and all runs if any..
     var sql = 'SELECT ' + cols + ' FROM tasks LEFT OUTER JOIN runs ' +
-              'ON (tasks.taskId = runs.taskId) WHERE ' +
-              'tasks.taskId = $1 ORDER BY runId';
+              'ON (tasks.taskid = runs.taskid) WHERE ' +
+              'tasks.taskid = $1 ORDER BY runid';
 
     return client.promise(sql, [taskId]).then(function(result) {
       // Free the client so others can use it
@@ -268,19 +270,19 @@ exports.loadTask = function(taskId) {
 
       // Task status
       var task_status = {
-        taskId:            taskId,
+        taskId:             taskId,
         runs:               []
       };
 
       // Set attributes from tasks table
       task_cols.forEach(function(col) {
-        task_status[col] = result.rows[0][col];
+        task_status[col] = result.rows[0][col.toLowerCase()];
       });
 
       // For each row make a run and add it to the runs list
       result.rows.forEach(function(row) {
         // Skip null rows
-        if (row.runId == null) {
+        if (row.runid == null) {
           return;
         }
 
@@ -288,7 +290,7 @@ exports.loadTask = function(taskId) {
         var run = {};
         // Set attributes from runs table
         run_cols.forEach(function(col) {
-          run[col] = row[col];
+          run[col] = row[col.toLowerCase()];
         });
         task_status.runs.push(run);
       });
@@ -320,7 +322,7 @@ exports.claimTask = function(taskId, takenUntil, run) {
     if (run.runId !== undefined) {
       // Update takenUntil for an existing run...
       // TODO: Check that the run also exists
-      var sql = 'UPDATE tasks SET takenUntil = $2 WHERE taskId = $1 AND ' +
+      var sql = 'UPDATE tasks SET takenuntil = $2 WHERE taskid = $1 AND ' +
                 'state = \'running\'';
       return client.promise(sql, [taskId, takenUntil]).then(function(result) {
         client.release();
@@ -335,9 +337,9 @@ exports.claimTask = function(taskId, takenUntil, run) {
       return client.promise('BEGIN').then(function() {
         // Claim task
         return client.promise(
-          'UPDATE tasks SET takenUntil = $2, retries = retries - 1, ' +
+          'UPDATE tasks SET takenuntil = $2, retries = retries - 1, ' +
           'state = \'running\' ' +
-          'WHERE taskId = $1 AND state = \'pending\'',
+          'WHERE taskid = $1 AND state = \'pending\'',
           [taskId, takenUntil]
         ).then(function(result) {
           // We didn't take the task return null
@@ -346,12 +348,12 @@ exports.claimTask = function(taskId, takenUntil, run) {
           }
           // Add new run
           return client.promise(
-            'INSERT INTO runs (taskId, runId, workerGroup, workerId) ' +
-            'SELECT $1, COUNT(rs.runId) + 1, $2, $3 FROM runs AS rs WHERE ' +
-            'rs.taskId = $1 RETURNING runId',
+            'INSERT INTO runs (taskid, runid, workergroup, workerid) ' +
+            'SELECT $1, COUNT(rs.runid) + 1, $2, $3 FROM runs AS rs WHERE ' +
+            'rs.taskid = $1 RETURNING runid',
             [taskId, run.workerGroup, run.workerId]
           ).then(function(result) {
-            return result.rows[0].runId;
+            return result.rows[0].runid;
           });
         });
       }).then(function(retval) {
@@ -371,7 +373,7 @@ exports.completeTask = function(taskId) {
     // Update state to completed
     // TODO: Include and validate existence of runId with workerId and
     //       workerGroup before we let this happen...
-    var sql = 'UPDATE tasks SET state = \'completed\' WHERE taskId = $1 AND ' +
+    var sql = 'UPDATE tasks SET state = \'completed\' WHERE taskid = $1 AND ' +
               'state = \'running\'';
     return client.promise(sql, [taskId]).then(function(result) {
       client.release();
@@ -385,12 +387,12 @@ exports.completeTask = function(taskId) {
 exports.queryTasks = function(provisionerId, workerType) {
   return connect().then(function(client) {
     // Sql statement to select all tasks for provisioner id
-    var sql = 'SELECT taskId FROM tasks WHERE tasks.provisionerId = $1';
+    var sql = 'SELECT taskid FROM tasks WHERE tasks.provisionerid = $1';
     var params = [provisionerId];
 
     // Append workerType contraint if defined
     if (workerType !== undefined) {
-      sql += ' AND workerType = $2';
+      sql += ' AND workertype = $2';
       params.push(workerType);
     }
 
@@ -399,7 +401,7 @@ exports.queryTasks = function(provisionerId, workerType) {
       client.release();
       // For each taskId load the task status object
       var task_statuses_loaded = result.rows.map(function(row) {
-        return exports.loadTask(row.taskId);
+        return exports.loadTask(row.taskid);
       });
       // Return a promise that all tasks will be loaded
       return Promise.all(task_statuses_loaded);
