@@ -82,3 +82,5 @@ DOCKER_WORKER_OPTS="--amqp amqps://user:pass@host/vhost"
 # local config is a relative path
 ./bin/deploy packer -var "docker_worker_opts=localconfig"
 ```
+
+Example configuration here: [docker_worker_opts_example.sh](/docker_worker_opts_example.sh)
