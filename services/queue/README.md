@@ -23,6 +23,14 @@ _The following itemization of folders outlines how this project is structured._
    but not exactly query specific.
 
 
+Deployment
+----------
+The EC2 instance hosting `queue.taskcluster.net` will automatically update
+when changes is posh to the `master` branch at `taskcluster/taskcluster-queue`.
+This will also update `schemas.taskcluster.net/v1/` with the contents of
+the `schemas/v1/` folder.
+
+
 Things To Do
 ------------
 
