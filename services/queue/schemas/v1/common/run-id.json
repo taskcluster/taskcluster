@@ -1,0 +1,8 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/common/run-id.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "description":  "Id of a task run, always starting from 1",
+  "type":         "integer",
+  "minimum":      1,
+  "maximum":      1000
+}
