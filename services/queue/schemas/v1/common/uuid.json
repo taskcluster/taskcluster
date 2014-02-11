@@ -1,7 +1,0 @@
-{
-  "id":           "http://schemas.taskcluster.net/v1/common/uuid.json#",
-  "$schema":      "http://json-schema.org/draft-04/schema#",
-  "description":  "Universally Unique Identifier",
-  "type":         "string",
-  "pattern":      "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-}

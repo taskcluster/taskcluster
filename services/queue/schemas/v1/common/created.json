@@ -1,7 +1,0 @@
-{
-  "id":           "http://schemas.taskcluster.net/v1/common/created.json#",
-  "$schema":      "http://json-schema.org/draft-04/schema#",
-  "description":  "Creation time of task",
-  "type":         "string",
-  "format":       "date-time"
-}

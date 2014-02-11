@@ -1,9 +1,0 @@
-{
-  "id":           "http://schemas.taskcluster.net/v1/common/identifier.json#",
-  "$schema":      "http://json-schema.org/draft-04/schema#",
-  "description":  "Identifier suitable for routing and fit a UUID",
-  "type":         "string",
-  "minLength":    1,
-  "maxLength":    36,
-  "pattern":      "^([a-zA-Z0-9-_]*)$"
-}
