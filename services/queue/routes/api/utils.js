@@ -106,6 +106,20 @@ API.prototype.mount = function(app, mountpoint) {
     router[entry.method](entry.route, schema(entry), entry.handler);
   });
 
+  // Add entry point to get documentation as JSON
+  router.get('reference', function(req, res) {
+    res.json(200, this._entries.map(function(entry) {
+      return {
+        method:         entry.method,
+        route:          mountpoint + entry.route,
+        requestSchema:  entry.input,
+        reponseSchema:  entry.output,
+        title:          entry.title,
+        description:    entry.desc
+      };
+    }));
+  });
+
   // Mount a JSON parser for the API
   app.use(mountpoint, express.json({
     limit:          this._options || '10mb'
