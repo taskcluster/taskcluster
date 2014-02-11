@@ -1,0 +1,6 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/common/priority.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "description":  "Task priority",
+  "type":         "number"
+}
