@@ -5,35 +5,35 @@
   "description":  "A representation of **task status** as known by the queue",
   "type":               "object",
   "properties": {
-    "taskId":           {"$ref": "http://schemas.taskcluster.net/v1/common.json#uuid"},
-    "provisionerId":    {"$ref": "http://schemas.taskcluster.net/v1/common.json#identifier"},
-    "workerType":       {"$ref": "http://schemas.taskcluster.net/v1/common.json#identifier"},
+    "taskId":           {"$ref": "http://schemas.taskcluster.net/v1/common/uuid.json#"},
+    "provisionerId":    {"$ref": "http://schemas.taskcluster.net/v1/common/identifier.json#"},
+    "workerType":       {"$ref": "http://schemas.taskcluster.net/v1/common/identifier.json#"},
     "runs":             {
       "type":               "array",
       "items": {
         "type":             "object",
         "properties": {
-          "runId":                {"$ref": "http://schemas.taskcluster.net/v1/common.json#run-id"},
-          "workerGroup":          {"$ref": "http://schemas.taskcluster.net/v1/common.json#identifier"},
-          "workerId":             {"$ref": "http://schemas.taskcluster.net/v1/common.json#identifier"}
+          "runId":                {"$ref": "http://schemas.taskcluster.net/v1/common/run-id.json#"},
+          "workerGroup":          {"$ref": "http://schemas.taskcluster.net/v1/common/identifier.json#"},
+          "workerId":             {"$ref": "http://schemas.taskcluster.net/v1/common/identifier.json#"}
         },
         "additionalProperties":   false,
         "required":               ["runId", "workerGroup", "workerId"]
       }
     },
-    "state":            {"$ref": "http://schemas.taskcluster.net/v1/common.json#state"},
+    "state":            {"$ref": "http://schemas.taskcluster.net/v1/common/state.json#"},
     "reason":           {
       "description":    "Reason for the current state, **more reasons will be added in the future**.",
       "enum": [
         "none", "deadline-exceeded", "retries-exhausted", "canceled"
       ]
     },
-    "routing":          {"$ref": "http://schemas.taskcluster.net/v1/common.json#routing"},
-    "retries":          {"$ref": "http://schemas.taskcluster.net/v1/common.json#retries"},
-    "priority":         {"$ref": "http://schemas.taskcluster.net/v1/common.json#priority"},
-    "created":          {"$ref": "http://schemas.taskcluster.net/v1/common.json#created"},
-    "deadline":         {"$ref": "http://schemas.taskcluster.net/v1/common.json#deadline"},
-    "takenUntil":       {"$ref": "http://schemas.taskcluster.net/v1/common.json#taken-until"}
+    "routing":          {"$ref": "http://schemas.taskcluster.net/v1/common/routing.json#"},
+    "retries":          {"$ref": "http://schemas.taskcluster.net/v1/common/retries.json#"},
+    "priority":         {"$ref": "http://schemas.taskcluster.net/v1/common/priority.json#"},
+    "created":          {"$ref": "http://schemas.taskcluster.net/v1/common/created.json#"},
+    "deadline":         {"$ref": "http://schemas.taskcluster.net/v1/common/deadline.json#"},
+    "takenUntil":       {"$ref": "http://schemas.taskcluster.net/v1/common/taken-until.json#"}
   },
   "additionalProperties":   false,
   "required": [

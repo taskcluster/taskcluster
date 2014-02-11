@@ -5,7 +5,7 @@
   "description":  "Message reporting that a task have started running",
   "type":         "object",
   "properties": {
-    "version":    {"$ref": "http://schemas.taskcluster.net/v1/common.json#message-version"},
+    "version":    {"$ref": "http://schemas.taskcluster.net/v1/common/message-version.json#"},
     "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"}
   },
   "additionalProperties":   true,

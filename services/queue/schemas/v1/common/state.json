@@ -1,0 +1,6 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/common/state.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "description":  "Possible task state, this enum is **frozen**.",
+  "enum":         ["pending", "running", "completed", "failed"]
+}
