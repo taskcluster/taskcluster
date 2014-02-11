@@ -107,8 +107,9 @@ API.prototype.mount = function(app, mountpoint) {
   });
 
   // Add entry point to get documentation as JSON
-  router.get('reference', function(req, res) {
-    res.json(200, this._entries.map(function(entry) {
+  var that = this;
+  router.get('/reference', function(req, res) {
+    res.json(200, that._entries.map(function(entry) {
       return {
         method:         entry.method,
         route:          mountpoint + entry.route,
