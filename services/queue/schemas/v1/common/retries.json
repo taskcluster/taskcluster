@@ -1,0 +1,8 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/common/retries.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "description":  "Number of task retries allowed/remaining",
+  "type":         "integer",
+  "minimum":      0,
+  "maximum":      999
+}
