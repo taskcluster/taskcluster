@@ -21,6 +21,7 @@
     "pg.js":                            "2.11.1",
     "amqp":                             "0.1.8",
     "debug":                            "0.7.4",
-    "jayschema":                        "0.2.3"
+    "jayschema":                        "0.2.3",
+    "mkdirp":                           "0.3.5"
   }
 }
