@@ -2,12 +2,37 @@
   "id":           "http://schemas.taskcluster.net/v1/queue:task-running.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Running Task Message",
-  "description":  "Message reporting that a task have started running",
+  "description":  "Message reporting that a given run of a task have started",
   "type":         "object",
   "properties": {
     "version":    {"$const": "message-version"},
-    "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"}
+    "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"},
+    "runId": {
+      "description":  "Id of the run that just started, always starts from 1",
+      "type":         "integer",
+      "minimum":      {"$const": "min-run-id"},
+      "maximum":      {"$const": "max-run-id"}
+    },
+    "logsUrl": {
+      "description":    "URL to JSON file with a mapping from log-filenames to URLs, the URL may point to a resource that isn't available yet.",
+      "type":           "string",
+      "format":         "uri"
+    },
+    "workerGroup": {
+      "description":    "Identifier for the worker-group within which this run started.",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    },
+    "workerId": {
+      "description":    "Identifier for the worker executing this run.",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    }
   },
-  "additionalProperties":   true,
-  "required": ["version", "status"]
+  "additionalProperties":   false,
+  "required": ["version", "status", "runId", "logsUrl", "workerGroup", "workerId"]
 }
