@@ -5,13 +5,11 @@ suite('buffer log test', function() {
 
   test('simple echo', function() {
     var task = TaskFactory.create({
+      image: 'ubuntu',
       command: ['/bin/bash', '-c', 'echo "first command!"'],
       features: {
         buffer_log: true,
         azure_livelog: false
-      },
-      parameters: {
-        docker: { image: 'ubuntu' }
       }
     });
 

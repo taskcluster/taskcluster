@@ -13,14 +13,11 @@ suite('azure logging', function() {
   test('azure logger', function() {
     var task = TaskFactory.create({
       command: ['/bin/bash', '-c', 'echo "first command!"'],
+      image: 'ubuntu',
       features: {
         azure_livelog: true,
         // turn on buffer log for testing
         buffer_log: true
-      },
-
-      parameters: {
-        docker: { image: 'ubuntu' }
       }
     });
 

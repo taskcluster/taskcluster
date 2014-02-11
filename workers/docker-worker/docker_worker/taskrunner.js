@@ -1,4 +1,4 @@
-var JobAPI = require('./job_api');
+var RequestAPI = require('./request_api');
 var Task = require('./task');
 var DockerProc = require('dockerode-process');
 var Middleware = require('middleware-object-hooks');
@@ -26,8 +26,8 @@ function runTask(docker, request) {
   // details to send during the claim.
   var claim = {};
 
-  var api = new JobAPI(request);
-  var task = new Task(api.job);
+  var api = new RequestAPI(request);
+  var task = new Task(request.task);
   var middleware = new Middleware();
 
   // always turn on times

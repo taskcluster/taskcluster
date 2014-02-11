@@ -1,20 +1,20 @@
 var Promise = require('promise');
 var request = require('superagent-promise');
-var debug = require('debug')('taskcluster-docker-worker:jobapi');
+var debug = require('debug')('taskcluster-docker-worker:taskapi');
 
-function JobAPI(options) {
-  this.job = options.job;
+function RequestAPI(options) {
+  this.task = options.task;
   this.claim = options.claim;
   this.finish = options.finish;
 }
 
-JobAPI.prototype = {
+RequestAPI.prototype = {
   /**
-  Full job definition of this request.
+  Full task definition of this request.
 
   @type Object
   */
-  job: null,
+  task: null,
 
   /**
   Claim URL to accept the task.
@@ -46,27 +46,27 @@ JobAPI.prototype = {
   },
 
   /**
-  Send the finalized version of the job to the requester.
+  Send the finalized version of the task to the requester.
 
   @return Promise
   */
   sendFinish: function(result) {
     debug('send finish', this.finish);
-    var job = {};
+    var task = {};
 
     // don't mutate state of this object. Copy the properties over and send
     // the result
-    for (var key in this.job) {
-      job[key] = this.job[key];
+    for (var key in this.task) {
+      task[key] = this.task[key];
     }
 
-    job.result = result;
+    task.result = result;
 
     // post with no content
     return request('POST', this.finish)
-      .send(job)
+      .send(task)
       .end();
   }
 };
 
-module.exports = JobAPI;
+module.exports = RequestAPI;

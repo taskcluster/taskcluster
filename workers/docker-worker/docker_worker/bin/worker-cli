@@ -18,16 +18,11 @@ program.
   action(function(image, cmd) {
     var task = {
       command: dockerArgs,
+      image: image,
       features: {
         metrics: false
-      },
-      parameters: {
-        docker: {
-          image: image
-        }
       }
     };
-
     main(task);
   });
 
@@ -91,7 +86,7 @@ function main(task) {
       var message = {
         claim: endpoints.claim,
         finish: endpoints.finish,
-        job: task
+        task: task
       };
 
       return queue.post({

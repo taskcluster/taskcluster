@@ -3,15 +3,9 @@ suite('task', function() {
   var TaskFactory = require('taskcluster-task-factory/task');
 
   var task = TaskFactory.create({
+    image: 'ubuntu',
     // give us a compelling exit code
-    command: ['echo', '123'],
-
-    parameters: {
-      docker: {
-        // use generic ubuntu image
-        image: 'ubuntu'
-      }
-    }
+    command: ['echo', '123']
   });
 
   var subject;

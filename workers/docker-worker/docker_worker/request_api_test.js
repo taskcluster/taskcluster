@@ -1,6 +1,6 @@
-suite('job api', function() {
+suite('request api', function() {
   var TaskFactory = require('taskcluster-task-factory/task');
-  var JobAPI = require('./job_api');
+  var RequestAPI = require('./request_api');
 
   var testServer = require('./test/server');
 
@@ -34,7 +34,7 @@ suite('job api', function() {
         }
       );
 
-      subject = new JobAPI({
+      subject = new RequestAPI({
         job: task,
         claim: claimURL,
       });
@@ -68,8 +68,8 @@ suite('job api', function() {
         }
       );
 
-      subject = new JobAPI({
-        job: task,
+      subject = new RequestAPI({
+        task: task,
         finish: finishURL,
       });
 

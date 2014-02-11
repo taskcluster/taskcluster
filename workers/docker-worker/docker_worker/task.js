@@ -37,10 +37,8 @@ Task.prototype = {
   @return {Object}
   */
   createContainerConfig: function() {
-    var taskDockerConfig = this.data.parameters.docker;
-
     var config = {
-      Image: taskDockerConfig.image,
+      Image: this.data.image,
       Cmd: this.data.command
     };
 

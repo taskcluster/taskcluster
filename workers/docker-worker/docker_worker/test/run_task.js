@@ -17,7 +17,7 @@ module.exports = function() {
     return new Promise(function(accept, reject) {
       var taskStatus = {};
       var request = {
-        job: task
+        task: task
       };
 
       server().then(
