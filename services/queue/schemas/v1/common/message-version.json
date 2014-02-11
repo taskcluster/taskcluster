@@ -1,6 +1,0 @@
-{
-  "id":           "http://schemas.taskcluster.net/v1/common/message-version.json#",
-  "$schema":      "http://json-schema.org/draft-04/schema#",
-  "description":  "Message version",
-  "enum":         ["0.2.0"]
-}

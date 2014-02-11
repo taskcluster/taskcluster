@@ -14,10 +14,6 @@ var testCases = [
     schema:   'http://schemas.taskcluster.net/v1/queue:task-pending.json#',
     success:  true,
   }, {
-    path:     'v1/uuid.json',
-    schema:   'http://schemas.taskcluster.net/v1/common/uuid.json#',
-    success:  true,
-  }, {
     path:     'v1/task-status.json',
     schema:   'http://schemas.taskcluster.net/v1/task-status.json#',
     success:  true,

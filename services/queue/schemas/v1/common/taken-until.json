@@ -1,7 +1,0 @@
-{
-  "id":           "http://schemas.taskcluster.net/v1/common/taken-until.json#",
-  "$schema":      "http://json-schema.org/draft-04/schema#",
-  "description":  "Time until which a task is claimed by a worker",
-  "type":         "string",
-  "format":       "date-time"
-}

@@ -1,7 +1,0 @@
-{
-  "id":           "http://schemas.taskcluster.net/v1/common/deadline.json#",
-  "$schema":      "http://json-schema.org/draft-04/schema#",
-  "description":  "Deadline of the task, if not resolved before the deadline a task is **failed**",
-  "type":         "string",
-  "format":       "date-time"
-}

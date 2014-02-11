@@ -2,6 +2,7 @@ var debug       = require('debug')('utils:validate');
 var JaySchema   = require('jayschema');
 var fs          = require('fs');
 var misc        = require('./misc');
+var render      = require('./render-schema');
 
 var validator = null;
 
@@ -13,9 +14,21 @@ var setup = function() {
   // Register JSON schemas from folder
   var schemas = misc.listFolder(__dirname + '/../schemas/');
   schemas.forEach(function(filePath) {
+    // We shall only import JSON files
+    if (!/\.json/g.test(filePath)) {
+      return;
+    }
     try {
+      // Load data from file
       var data = fs.readFileSync(filePath, {encoding: 'utf-8'});
-      var schema = JSON.parse(data);
+
+      // Parse JSON
+      var json = JSON.parse(data);
+
+      // Render JSON to JSON Schema, by substituting constants
+      var schema = render(json);
+
+      // Register with the validator
       validator.register(schema);
       debug("Loaded: %s", filePath);
     }

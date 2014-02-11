@@ -5,35 +5,77 @@
   "description":  "A representation of **task status** as known by the queue",
   "type":               "object",
   "properties": {
-    "taskId":           {"$ref": "http://schemas.taskcluster.net/v1/common/uuid.json#"},
-    "provisionerId":    {"$ref": "http://schemas.taskcluster.net/v1/common/identifier.json#"},
-    "workerType":       {"$ref": "http://schemas.taskcluster.net/v1/common/identifier.json#"},
+    "taskId": {
+      "description":  "Unique task identifier",
+      "type":         "string",
+      "pattern":      {"$const": "uuid-pattern"}
+    },
+    "provisionerId": {
+      "description":    "Unique identifier for the provisioner that this task must be scheduled on",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    },
+    "workerType": {
+      "description":    "Identifier for worker type within the specified provisioner",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    },
     "runs":             {
       "type":               "array",
       "items": {
         "type":             "object",
         "properties": {
-          "runId":                {"$ref": "http://schemas.taskcluster.net/v1/common/run-id.json#"},
-          "workerGroup":          {"$ref": "http://schemas.taskcluster.net/v1/common/identifier.json#"},
-          "workerId":             {"$ref": "http://schemas.taskcluster.net/v1/common/identifier.json#"}
+          "runId": {
+            "description":  "Id of this task run, `run-id`s always starts from 1",
+            "type":         "integer",
+            "minimum":      {"$const": "min-run-id"},
+            "maximum":      {"$const": "max-run-id"}
+          },
+          "workerGroup": {
+            "description":    "Identifier for group that worker is a part of, this identifier is mainly used for efficient routing.",
+            "type":           "string",
+            "minLength":      {"$const": "identifier-min-length"},
+            "maxLength":      {"$const": "identifier-max-length"},
+            "pattern":        {"$const": "identifier-pattern"}
+          },
+          "workerId": {
+            "description":    "Identifier for worker within given workerGroup",
+            "type":           "string",
+            "minLength":      {"$const": "identifier-min-length"},
+            "maxLength":      {"$const": "identifier-max-length"},
+            "pattern":        {"$const": "identifier-pattern"}
+          }
         },
         "additionalProperties":   false,
         "required":               ["runId", "workerGroup", "workerId"]
       }
     },
-    "state":            {"$ref": "http://schemas.taskcluster.net/v1/common/state.json#"},
+    "state":            {"$const": "state"},
     "reason":           {
       "description":    "Reason for the current state, **more reasons will be added in the future**.",
       "enum": [
         "none", "deadline-exceeded", "retries-exhausted", "canceled"
       ]
     },
-    "routing":          {"$ref": "http://schemas.taskcluster.net/v1/common/routing.json#"},
-    "retries":          {"$ref": "http://schemas.taskcluster.net/v1/common/retries.json#"},
-    "priority":         {"$ref": "http://schemas.taskcluster.net/v1/common/priority.json#"},
-    "created":          {"$ref": "http://schemas.taskcluster.net/v1/common/created.json#"},
-    "deadline":         {"$ref": "http://schemas.taskcluster.net/v1/common/deadline.json#"},
-    "takenUntil":       {"$ref": "http://schemas.taskcluster.net/v1/common/taken-until.json#"}
+    "routing":          {"$const": "routing"},
+    "retries": {
+      "description":    "Number of retries left for the task in case of infrastructure issues",
+      "type":           "integer",
+      "minimum":        0,
+      "maximum":        999
+    },
+    "priority":         {"$const": "priority"},
+    "created":          {"$const": "created"},
+    "deadline":         {"$const": "deadline"},
+    "takenUntil": {
+      "description":    "Time at which the task may be claimed by another worker, if not reclaimed",
+      "type":           "string",
+      "format":         "date-time"
+    }
   },
   "additionalProperties":   false,
   "required": [

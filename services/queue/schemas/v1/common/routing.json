@@ -1,7 +1,0 @@
-{
-  "id":           "http://schemas.taskcluster.net/v1/common/routing.json#",
-  "$schema":      "http://json-schema.org/draft-04/schema#",
-  "description":  "Task specific routing key, may contain dots (`.`) for arbitrary sub-routes",
-  "type":         "string",
-  "maxLength":    64
-}
