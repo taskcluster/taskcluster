@@ -74,6 +74,8 @@ if (!module.parent) {
       // Write rendered schema
       fs.writeFileSync(outPath, data, {encoding: 'utf-8'});
 
+      console.log(" - " + outPath);
+
       debug("Rendered: %s", filePath);
     }
     catch(error) {
