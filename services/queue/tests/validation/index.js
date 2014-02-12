@@ -10,6 +10,14 @@ var path        = require('path');
  */
 var testCases = [
   {
+    path:     'v1/queue:task-failed-with-run.json',
+    schema:   'http://schemas.taskcluster.net/v1/queue:task-failed.json#',
+    success:  true,
+  }, {
+    path:     'v1/queue:task-failed.json',
+    schema:   'http://schemas.taskcluster.net/v1/queue:task-failed.json#',
+    success:  true,
+  }, {
     path:     'v1/queue:task-pending.json',
     schema:   'http://schemas.taskcluster.net/v1/queue:task-pending.json#',
     success:  true,

@@ -8,20 +8,20 @@
     "version":    {"$const": "message-version"},
     "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"},
     "runId": {
-      "description":  "Id of the last run for the task",
+      "description":  "Id of the last run for the task, not provided if `deadline` was exceeded before a run was started",
       "type":         "integer",
       "minimum":      {"$const": "min-run-id"},
       "maximum":      {"$const": "max-run-id"}
     },
     "workerGroup": {
-      "description":    "Identifier for the worker-group within which the last attempt of the task ran.",
+      "description":    "Identifier for the worker-group within which the last attempt of the task ran. Not provided, if `deadline` was exceeded before a run was started.",
       "type":           "string",
       "minLength":      {"$const": "identifier-min-length"},
       "maxLength":      {"$const": "identifier-max-length"},
       "pattern":        {"$const": "identifier-pattern"}
     },
     "workerId": {
-      "description":    "Identifier for the last worker that failed to report, causing the task to fail.",
+      "description":    "Identifier for the last worker that failed to report, causing the task to fail. Not provided, if `deadline` was exceeded before a run was started.",
       "type":           "string",
       "minLength":      {"$const": "identifier-min-length"},
       "maxLength":      {"$const": "identifier-max-length"},
@@ -29,5 +29,5 @@
     }
   },
   "additionalProperties":   false,
-  "required": ["version", "status", "runId", "workerGroup", "workerId"]
+  "required": ["version", "status"]
 }
