@@ -21,7 +21,7 @@
       "description":  "Signed URL to which `result.json` must be uploaded before this run is completed. **Note**, you must do a `PUT` to this URL and headers **must** set `ContentLength` and have `ContentType: application/json`. The URL is set to expire with `takenUntil`, reclaim the task to refresh URLs.",
       "type":         "string",
       "format":       "uri"
-    },
+    }
   },
   "additionalProperties":   false,
   "required": ["status", "runId", "logsPutUrl", "resultPutUrl"]
