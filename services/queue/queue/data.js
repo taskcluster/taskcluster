@@ -406,7 +406,8 @@ exports.completeTask = function(taskId) {
 exports.queryTasks = function(provisionerId, workerType) {
   return connect().then(function(client) {
     // Sql statement to select all tasks for provisioner id
-    var sql = 'SELECT taskid FROM tasks WHERE tasks.provisionerid = $1';
+    var sql = 'SELECT taskid FROM tasks WHERE tasks.provisionerid = $1 ' +
+              'AND tasks.state = \'pending\'';
     var params = [provisionerId];
 
     // Append workerType contraint if defined
