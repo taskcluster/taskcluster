@@ -317,7 +317,7 @@ api.declare({
   method:   'post',
   route:    '/task/:taskId/completed',
   input:    'http://schemas.taskcluster.net/v1/task-completed-request.json#',
-  output:   'http://schemas.taskcluster.net/v1/task-completed-response.json#'
+  output:   'http://schemas.taskcluster.net/v1/task-completed-response.json#',
   title:    "Report Completed Task",
   desc: [
     "Report task completed..."
