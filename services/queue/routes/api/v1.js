@@ -114,7 +114,7 @@ api.declare({
   method:   'get',
   route:    '/task/:taskId/status',
   input:    undefined,  // No input is accepted
-  output:   undefined,  // TODO: define schema later
+  output:   'http://schemas.taskcluster.net/v1/task-status-response.json#',
   title:    "Get task status",
   desc: [
     "Get task status structure from `taskId`"
@@ -147,8 +147,8 @@ api.declare({
 api.declare({
   method:   'post',
   route:    '/task/:taskId/claim',
-  input:    undefined,  // TODO: define schema later
-  output:   undefined,  // TODO: define schema later
+  input:    'http://schemas.taskcluster.net/v1/task-claim-request.json#',
+  output:   'http://schemas.taskcluster.net/v1/task-claim-response.json#',
   title:    "Claim task",
   desc: [
     "Claim task, takes workerGroup, workerId and optionally runId as input",
@@ -214,8 +214,6 @@ api.declare({
         result_url_signed
       ).spread(function(logs_url, result_url) {
         res.reply({
-          workerGroup:    req.body.workerGroup,
-          workerId:       req.body.workerId,
           runId:          runId,
           logsPutUrl:     logs_url,
           resultPutUrl:   result_url,
@@ -247,8 +245,8 @@ api.declare({
 api.declare({
   method:   'post',
   route:    '/task/:taskId/artifact-urls',
-  input:    undefined,  // TODO: define schema later
-  output:   undefined,  // TODO: define schema later
+  input:    'http://schemas.taskcluster.net/v1/artifact-url-request.json#',
+  output:   'http://schemas.taskcluster.net/v1/artifact-url-response.json#',
   title:    "Get artifact urls",
   desc: [
     "Get artifact-urls for posted artifact urls..."
@@ -296,10 +294,9 @@ api.declare({
   ).spread(function(task_status, url_map) {
     if (task_status) {
       res.reply({
-        status:         task_status,
-        runId:          runId,
-        expires:        expires.toJSON(),
-        artifact_urls:  url_map
+        status:           task_status,
+        expires:          expires.toJSON(),
+        artifactPutUrls:  url_map
       });
     } else {
       res.json(404, {
@@ -319,8 +316,8 @@ api.declare({
 api.declare({
   method:   'post',
   route:    '/task/:taskId/completed',
-  input:    undefined,  // TODO: define schema later
-  output:   undefined,  // TODO: define schema later
+  input:    'http://schemas.taskcluster.net/v1/task-completed-request.json#',
+  output:   'http://schemas.taskcluster.net/v1/task-completed-response.json#'
   title:    "Report Completed Task",
   desc: [
     "Report task completed..."

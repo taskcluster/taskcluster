@@ -1,0 +1,48 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/artifact-url-request.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Artifact URL Request",
+  "description":  "Request for signed URLs to which artifacts can be uploaded",
+  "type":         "object",
+  "properties": {
+    "runId": {
+      "description":  "`run-id` for which artifact PUT URLs are requested.",
+      "type":         "integer",
+      "minimum":      {"$const": "min-run-id"},
+      "maximum":      {"$const": "max-run-id"}
+    },
+    "workerGroup": {
+      "description":    "Worker group on which the requesting run is running.",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    },
+    "workerId": {
+      "description":    "Identifier for worker within the given workerGroup",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    },
+    "artifacts": {
+      "description":    "Mapping from artifact name to meta-data about artifact, currently only `contentType` is requested, **more will** be added.",
+      "type":           "object",
+      "additionalProperties": {
+        "description":  "Artifact meta-data, used for signing the URL",
+        "type":         "object",
+        "properties": {
+          "contentType": {
+            "description":  "Artifact mime-type, when uploading artifact to the signed `PUT` URL returned from this request this must given with the `ContentType` header. Please, provide correct mime-type, this make tooling a lot easier, specifically, always using `application/json` for JSON artifacts.",
+            "type":         "string",
+            "maxLength":    255
+          }
+        },
+        "additionalProperties": false,
+        "required": ["contentType"]
+      }
+    }
+  },
+  "additionalProperties":   false,
+  "required": ["runId", "workerGroup", "workerId"]
+}
