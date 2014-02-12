@@ -3,6 +3,7 @@ var nconf     = require('nconf');
 var Promise   = require('promise');
 var debug     = require('debug')('queue:data');
 var debugSql  = require('debug')('queue:data:sql');
+var events    = require('./events');
 
 var _connString = null;
 
@@ -46,6 +47,7 @@ var connect = function() {
     });
   });
 };
+exports.connect = connect;
 
 
 /** Tasks table definition */
@@ -75,6 +77,11 @@ var runs_table_definition = [
   ['PRIMARY KEY (taskid, runid)'                                  ]
 ];
 
+/** Interval handle for setInterval to expire claims */
+var expireClaimsIntervalHandle = null;
+
+/** Interval by which we should expire claims */
+var expireClaimsInterval = 1000 * 60 * 3;
 
 /** Ensure database tables exists and connection string is setup */
 var setupDatabase = function() {
@@ -151,6 +158,14 @@ var setupDatabase = function() {
   // Free the client at the end of all this
   return created_runs_table.then(function() {
     client.release();
+
+    // Call expireClaims to ensure that claims are expired occasionally
+    expireClaimsIntervalHandle = setInterval(function() {
+      exports.expireClaims();
+    }, expireClaimsInterval)
+
+    // Expire claims initial
+    exports.expireClaims();
   }, function(err) {
     client.release();
     debug("Failed to setup database tables: %s or as JSON %j", err, err);
@@ -162,6 +177,10 @@ exports.setupDatabase = setupDatabase;
 
 /** Disconnect from the database */
 var disconnect = function() {
+  if (expireClaimsIntervalHandle) {
+    clearInterval(expireClaimsIntervalHandle);
+    expireClaimsIntervalHandle = null;
+  }
   pg.end();
 }
 exports.disconnect = disconnect;
@@ -413,8 +432,104 @@ exports.queryTasks = function(provisionerId, workerType) {
 };
 
 
+/**
+ * Render running tasks pending, if takenUntil have expired
+ * and report non-completed tasks past their deadline as failed.
+ */
+exports.expireClaims = function() {
+  return connect().then(function(client) {
+    // Mark task past their deadline as failed
+    var sql = 'UPDATE tasks SET state = \'failed\', ' +
+              'reason = \'deadline-exceeded\' WHERE deadline < $1 AND ' +
+              '(state = \'pending\' or state = \'running\') RETURNING taskid';
+    // Get failed tasks
+    var deadline_exceeded = client.promise(sql, [new Date()]);
 
+    // Mark task who doesn't have more retries with takenUntil expired as failed
+    var sql = 'UPDATE tasks SET state = \'failed\', ' +
+              'reason = \'retries-exhausted\' WHERE takenuntil < $1 AND ' +
+              'state = \'running\' AND retries = 0 RETURNING taskid';
+    var retries_exhausted = client.promise(sql, [new Date()]);
 
+    // Load all failed tasks from task-ids
+    var failed_tasks = Promise.all(
+      deadline_exceeded,
+      retries_exhausted
+    ).spread(function(result1, result2) {
+      debug("Loading tasks to be reported as failed");
+      return Promise.all(result1.rows.map(function(row) {
+        return exports.loadTask(row.taskid);
+      }).concat(result2.rows.map(function(row) {
+        return exports.loadTask(row.taskid);
+      })));
+    });
+
+    // For each task, publish a failed message
+    var failed_tasks_reported = failed_tasks.then(function(tasks) {
+      debug("Reporting failed tasks");
+      return Promise.all(tasks.map(function(task) {
+        // Construct message that we'll send
+        var message = {
+          version:      '0.2.0',
+          status:       task,
+        };
+
+        // Find latest run, if any...
+        var run = null;
+        task.runs.forEach(function(r) {
+          if (!run || r.runId > run.runId) {
+            run = r;
+          }
+        });
+
+        // If there is a latests run we should provide it
+        if (run) {
+          message.runId       = run.runId;
+          message.workerGroup = run.workerGroup;
+          message.workerId    = run.workerId;
+        }
+
+        // Publish a message that task failed
+        return events.publish('v1/queue:task-failed', message);
+      }));
+    });
+
+    // Mark running tasks with expired takenUntil as pending, and decrement
+    // retries
+    var sql = 'UPDATE tasks SET state = \'pending\', retries = retries - 1 ' +
+              'WHERE takenuntil < $1 AND state = \'running\' AND ' +
+              'retries > 0 RETURNING taskid';
+    var pending_tasks = client.promise(sql, [new Date()]).then(function(result) {
+      debug("Loading tasks that are pending again");
+      return Promise.all(result.rows.map(function(row) {
+        return exports.loadTask(row.taskid);
+      }));
+    });
+
+    // Publish messages about tasks that are now pending again
+    var pending_tasks_reported = pending_tasks.then(function(tasks) {
+      debug("Report task that are now pending again");
+      return Promise.all(tasks.map(function(task) {
+        // Publish a message that task failed
+        return events.publish('v1/queue:task-pending', {
+          version:      '0.2.0',
+          status:       task
+        });
+      }));
+    });
+
+    return Promise.all(
+      failed_tasks_reported,
+      pending_tasks_reported
+    ).then(function() {
+      client.release();
+      debug("Successfully expired old tasks and claims.");
+    }, function(err) {
+      debug("Failed to do expireClaims, error: %s as JSON: %j", err, err);
+      throw err;
+    });
+  });
+};
 
 /** Create new task status structure from json object */
 /*  // Let's implement this in the future, but not right now... Just need
