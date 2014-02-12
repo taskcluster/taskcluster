@@ -1,0 +1,26 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/artifact-url-reponse.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Artifact URL Response",
+  "description":  "Response to a request for artifact PUT URLs.",
+  "type":         "object",
+  "properties": {
+    "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"},
+    "expires": {
+      "description":  "Time-stamp at which the signed URLs expires, you can always request new artifact URLs, do don't try to upload to expired URLs.",
+      "type":         "string",
+      "format":       "date-time"
+    },
+    "artifactPutUrls": {
+      "description":  "Mapping from requested artifact to signed URL for uploading said artifact.",
+      "type":         "object",
+      "additionalProperties": {
+        "description":      "Signed URL to which an artifact can be uploaded. **Note**, when uploading you must use a `PUT` request and headers **must** set `ContentLength` and have `ContentType` set the `contentType` given in the artifact URL request.",
+        "type":             "string",
+        "format":           "uri"
+      }
+    }
+  },
+  "additionalProperties":   false,
+  "required": ["status", "runId", "logsPutUrl", "resultPutUrl"]
+}

@@ -1,0 +1,31 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/task-claim-request.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Task Claim Request",
+  "description":  "Request to claim (or reclaim) a task",
+  "type":         "object",
+  "properties": {
+    "runId": {
+      "description":  "**optional**, provided when reclaiming a task, for which the worker is already executing a run, but the worker wants to extend `takenUntil`. Do not provide this property, if you're claiming a new task.",
+      "type":         "integer",
+      "minimum":      {"$const": "min-run-id"},
+      "maximum":      {"$const": "max-run-id"}
+    },
+    "workerGroup": {
+      "description":    "Identifier for group that worker claiming the task is a part of.",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    },
+    "workerId": {
+      "description":    "Identifier for worker within the given workerGroup",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    }
+  },
+  "additionalProperties":   false,
+  "required": ["workerGroup", "workerId"]
+}
