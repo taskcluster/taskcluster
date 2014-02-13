@@ -12,12 +12,16 @@ module.exports = function() {
 
   /**
   Starts a http server and runs a task (and reports back to the server)
+
+  @param {Object} task definition to use for run.
+  @param {Object} base properties for all task events.
   */
   return function runTask(task) {
     return new Promise(function(accept, reject) {
       var taskStatus = {};
       var request = {
-        task: task
+        task: task,
+        base: {},
       };
 
       server().then(

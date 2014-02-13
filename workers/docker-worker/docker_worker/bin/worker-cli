@@ -35,8 +35,8 @@ function initializeHttp(http) {
 
   return ngrokConnect(port).then(function(host) {
     // create the http endpoints used in testing
-    var claim = http.endpoint('post', host, function onClaim(req, res) {
-      console.log('claim', req.body);
+    var start = http.endpoint('post', host, function(req, res) {
+      console.log('start', req.body);
       reader = logStream(req.body.log, {
         intervalMS: 10,
         headers: { 'x-ms-version': '2013-08-15' }
@@ -46,14 +46,13 @@ function initializeHttp(http) {
       res.send(200);
     });
 
-    var finish = http.endpoint('post', host, function onFinish(req, res) {
-      console.log('finish', req.body);
+    var stop = http.endpoint('post', host, function(req, res) {
       var pending = 2;
-      var result = req.body.result;
+      var result = req.body;
 
       function next(type) {
         if (--pending === 0) {
-          process.exit(result.task_result.exit_status);
+          process.exit(result.exitCode);
         }
       }
 
@@ -68,8 +67,8 @@ function initializeHttp(http) {
     });
 
     return {
-      claim: claim,
-      finish: finish
+      start: start,
+      stop: stop
     };
   });
 }
@@ -84,8 +83,8 @@ function main(task) {
   ).then(
     function postMessage(endpoints) {
       var message = {
-        claim: endpoints.claim,
-        finish: endpoints.finish,
+        start: endpoints.start,
+        stop: endpoints.stop,
         task: task
       };
 
