@@ -12,11 +12,9 @@ function BufferLog() {
       return claim;
     },
 
-    end: function(output) {
-      // stream as text output for our alpha version
-      output.extra_info = {
-        log: stream.text
-      };
+    stop: function(output) {
+      // stream as text output for our alpha version / debugging
+      output.logText = stream.text;
       return output;
     }
   };

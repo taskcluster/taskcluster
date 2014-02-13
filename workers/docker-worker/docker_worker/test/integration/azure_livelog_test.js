@@ -15,28 +15,26 @@ suite('azure logging', function() {
       command: ['/bin/bash', '-c', 'echo "first command!"'],
       image: 'ubuntu',
       features: {
-        azure_livelog: true,
+        azureLivelog: true,
         // turn on buffer log for testing
-        buffer_log: true
+        bufferLog: true
       }
     });
 
     var result;
     return runTask(task).then(
       function(taskStatus) {
-        assert.ok(taskStatus.claimed);
-        assert.ok(taskStatus.claimed.log);
+        result = taskStatus.stop;
 
-        result = taskStatus.finish.result;
-
-        assert.ok(result.artifacts.log, 'has artifact for log url');
-        return request('GET', result.artifacts.log).end();
+        assert.ok(taskStatus.start);
+        assert.ok(taskStatus.start.log);
+        return request('GET', taskStatus.start.log).end();
       }
     ).then(
       function(req) {
         assert.equal(
           req.res.text,
-          result.extra_info.log
+          result.logText
         );
       }
     );

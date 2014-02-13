@@ -1,7 +1,7 @@
 var ContainerMetrics = require('../metrics/container');
 
 /**
-Times middleware keeps track of the starting and ending times of a task.
+Times middleware keeps track of the starting and stoping times of a task.
 */
 function Metrics(group) {
   var handler = new ContainerMetrics(group);
@@ -17,9 +17,9 @@ function Metrics(group) {
       return start;
     },
 
-    end: function(end) {
+    stop: function(stop) {
       handler.stop();
-      return end;
+      return stop;
     }
   };
 }

@@ -21,11 +21,11 @@ suite('request api', function() {
   var subject;
   var task = TaskFactory.create();
 
-  suite('sendClaim', function() {
-    test('issue a claim to the server', function(done) {
+  suite('sendStart', function() {
+    test('issue a start to the server', function(done) {
       var sentJSON = { woot: true };
       var ranServer = false;
-      var claimURL = server.endpoint(
+      var startURL = server.endpoint(
         'post',
         function(req, res) {
           ranServer = true;
@@ -36,10 +36,10 @@ suite('request api', function() {
 
       subject = new RequestAPI({
         job: task,
-        claim: claimURL,
+        start: startURL,
       });
 
-      return subject.sendClaim(sentJSON).then(
+      return subject.sendStart(sentJSON).then(
         function(res) {
           assert.ok(ranServer);
           assert.deepEqual(res.body, {});
@@ -49,20 +49,15 @@ suite('request api', function() {
     });
   });
 
-  suite('sendFinish', function() {
-    test('issue a finish to the server', function(done) {
+  suite('sendStop', function() {
+    test('issue a stop to the server', function(done) {
       var result = { yey: true };
-      var expected = {};
-      for (var key in task) {
-        expected[key] = task[key];
-      }
-      expected.result = result;
 
       var ranServer = false;
-      var finishURL = server.endpoint(
+      var stopURL = server.endpoint(
         'post',
         function(req, res) {
-          assert.deepEqual(req.body, expected);
+          assert.deepEqual(req.body, result);
           ranServer = true;
           res.send(200, {});
         }
@@ -70,10 +65,10 @@ suite('request api', function() {
 
       subject = new RequestAPI({
         task: task,
-        finish: finishURL,
+        stop: stopURL
       });
 
-      return subject.sendFinish(result).then(
+      return subject.sendStop(result).then(
         function(res) {
           assert.equal(res.statusCode, 200);
           assert.ok(ranServer, 'server ran');

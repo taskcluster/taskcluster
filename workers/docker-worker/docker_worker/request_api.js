@@ -4,8 +4,8 @@ var debug = require('debug')('taskcluster-docker-worker:taskapi');
 
 function RequestAPI(options) {
   this.task = options.task;
-  this.claim = options.claim;
-  this.finish = options.finish;
+  this.start = options.start;
+  this.stop = options.stop;
 }
 
 RequestAPI.prototype = {
@@ -17,54 +17,45 @@ RequestAPI.prototype = {
   task: null,
 
   /**
-  Claim URL to accept the task.
+  start URL to accept the task.
 
   @type String
   */
-  claim: null,
+  start: null,
 
   /**
-  Finish URL to send the response to.
+  stop URL to send the response to.
 
   @type String
   */
-  finish: null,
+  stop: null,
 
   /**
-  Send a claim to the requester.
+  Send a start to the requester.
 
-  @param {Object} claim payload to send.
+  @param {Object} payload for the start request.
   @return Promise
   */
-  sendClaim: function(claim) {
-    claim = claim || {};
-    debug('send claim', this.claim, claim);
+  sendStart: function(payload) {
+    payload = payload || {};
+    debug('send start', this.start, payload);
     // post with no content
-    return request('POST', this.claim)
-      .send(claim)
+    return request('POST', this.start)
+      .send(payload)
       .end();
   },
 
   /**
   Send the finalized version of the task to the requester.
 
+  @param {Object} payload for the stop request.
   @return Promise
   */
-  sendFinish: function(result) {
-    debug('send finish', this.finish);
-    var task = {};
-
-    // don't mutate state of this object. Copy the properties over and send
-    // the result
-    for (var key in this.task) {
-      task[key] = this.task[key];
-    }
-
-    task.result = result;
-
-    // post with no content
-    return request('POST', this.finish)
-      .send(task)
+  sendStop: function(result) {
+    result = result || {};
+    debug('send stop', this.stop);
+    return request('POST', this.stop)
+      .send(result)
       .end();
   }
 };

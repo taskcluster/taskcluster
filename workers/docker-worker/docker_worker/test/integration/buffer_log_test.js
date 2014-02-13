@@ -8,18 +8,19 @@ suite('buffer log test', function() {
       image: 'ubuntu',
       command: ['/bin/bash', '-c', 'echo "first command!"'],
       features: {
-        buffer_log: true,
-        azure_livelog: false
+        bufferLog: true,
+        azureLivelog: false
       }
     });
 
     return runTask(task).then(
       function(taskStatus) {
-        assert.ok(taskStatus.claimed);
-        var result = taskStatus.finish.result;
+        assert.ok(taskStatus.start, 'starts');
+        assert.ok(taskStatus.stop, 'stops');
 
-        assert.ok(result.extra_info.log.indexOf('first command') !== -1);
-        assert.equal(result.task_result.exit_status, 0);
+        var result = taskStatus.stop;
+        assert.ok(result.logText.indexOf('first command') !== -1);
+        assert.equal(result.exitCode, 0);
       }
     );
   });

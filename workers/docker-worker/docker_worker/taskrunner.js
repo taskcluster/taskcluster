@@ -17,14 +17,10 @@ var debug = require('debug')('taskcluster-docker-worker:taskrunner');
 @return Promise
 */
 function runTask(docker, request) {
-  // task result/output
-  var output = {
-    artifacts: {},
-    extra_info: {}
-  };
-
-  // details to send during the claim.
-  var claim = {};
+  // object sent over in the `start` result
+  var startResult = {};
+  // object sent over in the `end` result
+  var endResult = {};
 
   var api = new RequestAPI(request);
   var task = new Task(request.task);
@@ -34,12 +30,12 @@ function runTask(docker, request) {
   middleware.use(MIDDLEWARES.times());
 
   // this is mostly a debugging middleware so its off by default
-  if (task.feature('buffer_log', false)) {
+  if (task.feature('bufferLog', false)) {
     middleware.use(MIDDLEWARES.bufferLog());
   }
 
   // live logging should always be on
-  if (task.feature('azure_livelog', true)) {
+  if (task.feature('azureLivelog', true)) {
     middleware.use(MIDDLEWARES.azureLiveLog());
   }
 
@@ -53,10 +49,10 @@ function runTask(docker, request) {
   });
 
   debug('run task', api.job);
-  return middleware.run('start', claim, task, dockerProcess).then(
-    function(claimPayload) {
-      debug('claim payload', claimPayload);
-      return api.sendClaim(claimPayload);
+  return middleware.run('start', startResult, task, dockerProcess).then(
+    function(payload) {
+      debug('claim payload', payload);
+      return api.sendStart(payload);
     }
   ).then(
     function initiateExecute(value) {
@@ -64,16 +60,12 @@ function runTask(docker, request) {
     }
   ).then(
     function processRun(code) {
-
-      output.task_result = {
-        exit_status: code
-      };
-
-      return middleware.run('end', output, task, dockerProcess);
+      endResult.exitCode = code;
+      return middleware.run('stop', endResult, task, dockerProcess);
     }
   ).then(
-    function sendFinish(output) {
-      return api.sendFinish(output).then(
+    function sendEnd(payload) {
+      return api.sendStop(payload).then(
         function() {
           return dockerProcess.remove();
         }

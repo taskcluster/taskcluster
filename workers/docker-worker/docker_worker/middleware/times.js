@@ -9,13 +9,9 @@ function Times() {
       return claim;
     },
 
-    end: function(value) {
-      var times = value.times = {};
-      times.started_timestamp = started;
-      times.finished_timestamp = Date.now();
-      times.runtime_seconds =
-        (times.finished_timestamp - times.started_timestamp) / 1000;
-
+    stop: function(value) {
+      value.startTimestamp = started;
+      value.stopTimestamp = Date.now();
       return value;
     }
   };

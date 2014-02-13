@@ -22,13 +22,13 @@ module.exports = function() {
 
       server().then(
         function serverListening(testServer) {
-          request.claim = testServer.endpoint('post', function(req, res) {
-            taskStatus.claimed = req.body;
+          request.start = testServer.endpoint('post', function(req, res) {
+            taskStatus.start = req.body;
             res.send(200);
           });
 
-          request.finish = testServer.endpoint('post', function(req, res) {
-            taskStatus.finish = req.body;
+          request.stop = testServer.endpoint('post', function(req, res) {
+            taskStatus.stop = req.body;
             res.send(200);
             accept(taskStatus);
           });
