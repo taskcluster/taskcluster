@@ -3,6 +3,7 @@ var IronMQ = require('./ironmq');
 var EventEmitter = require('events').EventEmitter;
 
 var assert = require('assert');
+var request = require('superagent-promise');
 var taskrunner = require('./taskrunner');
 var debug = require('debug')('taskcluster-docker-worker:ironmq');
 
@@ -99,12 +100,7 @@ IronMQConsumer.prototype = {
     clearTimeout(this.timerId);
   },
 
-  handleMessage: function(message) {
-    debug('handle message', message);
-
-    var id = message.id;
-    var body = JSON.parse(message.body);
-
+  runTask: function(id, body) {
     return taskrunner(this.docker, body).then(
       function() {
         return this.queue.del(id);
@@ -113,6 +109,29 @@ IronMQConsumer.prototype = {
         debug('epic fail!', err);
       }
     );
+  },
+
+  handleMessage: function(message) {
+    debug('handle message', message);
+
+    var id = message.id;
+    var body = JSON.parse(message.body);
+
+    if (typeof body.task === 'object') {
+      // if task is an object use it directly
+      return this.runTask(id, body);
+    }
+
+    // if its not an object use it like a url
+    var taskUrl = body.task;
+    return request('GET', taskUrl).end().then(function(res) {
+      if (!res.ok) {
+        debug('epic fail failed to download task', taskUrl);
+        throw new Error('failed to download url ' + taskUrl);
+      }
+      body.task = res.body;
+      return this.runTask(id, body);
+    }.bind(this));
   }
 };
 
