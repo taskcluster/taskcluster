@@ -385,7 +385,7 @@ api.declare({
 api.declare({
   method:   'get',
   route:    '/claim-work/:provisionerId/:workerType',
-  input:    undefined,  // TODO: define schema later
+  input:    'http://schemas.taskcluster.net/v1/claim-work-request.json#',
   output:   undefined,  // TODO: define schema later
   title:    "Claim work for a worker",
   desc: [
@@ -433,7 +433,7 @@ api.declare({
     });
 
     // When claimed
-    task_claimed.then(function(runId) {
+    return task_claimed.then(function(runId) {
       // If task wasn't claimed, report 404
       if(runId === null) {
         res.json(404, {
@@ -476,8 +476,6 @@ api.declare({
           result_url_signed
         ).spread(function(logs_url, result_url) {
           res.reply({
-            workerGroup:    workerGroup,
-            workerId:       workerId,
             runId:          runId,
             logsPutUrl:     logs_url,
             resultPutUrl:   result_url,
