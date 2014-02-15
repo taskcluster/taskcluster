@@ -1,0 +1,25 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/claim-work-request.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Claim Work Request",
+  "description":  "Request to claim work for a given `workerType`",
+  "type":         "object",
+  "properties": {
+    "workerGroup": {
+      "description":    "Identifier for group that worker asking for a task is a part of.",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    },
+    "workerId": {
+      "description":    "Identifier for worker within the given workerGroup",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    }
+  },
+  "additionalProperties":   false,
+  "required": ["workerGroup", "workerId"]
+}

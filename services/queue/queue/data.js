@@ -380,6 +380,12 @@ exports.claimTask = function(taskId, takenUntil, run) {
           client.release();
           return retval;
         });
+      }, function(err) {
+        debug("Failed to claim task, error: %s, as JSON: %j", err, err);
+        return client.promise('ROLLBACK').then(function() {
+          client.release();
+          return retval;
+        });
       });
     }
   });
