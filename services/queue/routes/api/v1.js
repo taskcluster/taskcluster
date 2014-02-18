@@ -343,6 +343,7 @@ api.declare({
       var resolution = {
         version:        '0.2.0',
         status:         task_status,
+        runId:          runId,
         resultUrl:      task_bucket_url(taskId + '/' + runId + '/result.json'),
         logsUrl:        task_bucket_url(taskId + '/' + runId + '/logs.json'),
         workerId:       workerId,
