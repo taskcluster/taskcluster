@@ -1,0 +1,46 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/resolution.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "`resolution.json` file",
+  "description":  "Payload format for the task resolution file.",
+  "type":         "object",
+  "properties": {
+    "version": {
+      "description":    "Resolution file version",
+      "enum":           ["0.2.0"]
+    },
+    "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"},
+    "runId": {
+      "description":  "Id of the run that completed the task",
+      "type":         "integer",
+      "minimum":      {"$const": "min-run-id"},
+      "maximum":      {"$const": "max-run-id"}
+    },
+    "resultUrl": {
+      "description":    "URL to JSON file the result structure for this run.",
+      "type":           "string",
+      "format":         "uri"
+    },
+    "logsUrl": {
+      "description":    "URL to JSON file with a mapping from log-filenames to URLs.",
+      "type":           "string",
+      "format":         "uri"
+    },
+    "workerGroup": {
+      "description":    "Identifier for the worker-group within which this run ran.",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    },
+    "workerId": {
+      "description":    "Identifier for the worker that executed this run.",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    }
+  },
+  "additionalProperties":   false,
+  "required": ["version", "status", "runId", "resultUrl", "logsUrl", "workerGroup", "workerId"]
+}
