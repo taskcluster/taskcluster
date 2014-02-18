@@ -1,5 +1,5 @@
 {
-  "id":           "http://schemas.taskcluster.net/v1/artifact-url-reponse.json#",
+  "id":           "http://schemas.taskcluster.net/v1/artifact-url-response.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Artifact URL Response",
   "description":  "Response to a request for artifact PUT URLs.",
@@ -22,5 +22,5 @@
     }
   },
   "additionalProperties":   false,
-  "required": ["status", "runId", "logsPutUrl", "resultPutUrl"]
+  "required": ["status", "expires", "artifactPutUrls"]
 }
