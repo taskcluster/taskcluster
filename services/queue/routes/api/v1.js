@@ -17,10 +17,10 @@ var api = module.exports = new utils.API({
   limit:          '10mb'
 });
 
-/** Get the url to a prefix within the task-bucket */
+/** Get the url to a prefix within the taskBucket */
 var task_bucket_url = function(prefix) {
   return 'https://s3-' + nconf.get('aws:region') + '.amazonaws.com/' +
-          nconf.get('queue:task-bucket') + '/' + prefix;
+          nconf.get('queue:taskBucket') + '/' + prefix;
 };
 
 /** Sign a url for upload to a bucket */
@@ -70,7 +70,7 @@ api.declare({
 
   // Upload to S3, notice that the schema is validated by middleware
   var uploaded_to_s3 = s3.putObject({
-    Bucket:               nconf.get('queue:task-bucket'),
+    Bucket:               nconf.get('queue:taskBucket'),
     Key:                  taskId + '/task.json',
     Body:                 JSON.stringify(req.body),
     ContentType:          'application/json'
@@ -194,7 +194,7 @@ api.declare({
 
       // Sign urls for the reply
       var logs_url_signed = sign_put_url({
-        Bucket:         nconf.get('queue:task-bucket'),
+        Bucket:         nconf.get('queue:taskBucket'),
         Key:            taskId + '/runs/' + runId + '/logs.json',
         ContentType:    'application/json',
         Expires:        timeout
@@ -202,7 +202,7 @@ api.declare({
 
       // Sign url for uploading task result
       var result_url_signed = sign_put_url({
-        Bucket:         nconf.get('queue:task-bucket'),
+        Bucket:         nconf.get('queue:taskBucket'),
         Key:            taskId + '/runs/' + runId + '/result.json',
         ContentType:    'application/json',
         Expires:        timeout
@@ -271,7 +271,7 @@ api.declare({
   // Get signed urls
   var urls_signed = artifact_list.map(function(artifact) {
     return sign_put_url({
-      Bucket:         nconf.get('queue:task-bucket'),
+      Bucket:         nconf.get('queue:taskBucket'),
       Key:            taskId + '/runs/' + runId + '/artifacts/' + artifact,
       ContentType:    artifacts[artifact].contentType,
       Expires:        timeout
@@ -351,7 +351,7 @@ api.declare({
       };
 
       var uploaded_to_s3 = s3.putObject({
-        Bucket:               nconf.get('queue:task-bucket'),
+        Bucket:               nconf.get('queue:taskBucket'),
         Key:                  taskId + '/resolution.json',
         Body:                 JSON.stringify(resolution),
         ContentType:          'application/json'
@@ -457,7 +457,7 @@ api.declare({
 
         // Sign urls for the reply
         var logs_url_signed = sign_put_url({
-          Bucket:         nconf.get('queue:task-bucket'),
+          Bucket:         nconf.get('queue:taskBucket'),
           Key:            taskId + '/runs/' + runId + '/logs.json',
           ContentType:    'application/json',
           Expires:        timeout
@@ -465,7 +465,7 @@ api.declare({
 
         // Sign url for uploading task result
         var result_url_signed = sign_put_url({
-          Bucket:         nconf.get('queue:task-bucket'),
+          Bucket:         nconf.get('queue:taskBucket'),
           Key:            taskId + '/runs/' + runId + '/result.json',
           ContentType:    'application/json',
           Expires:        timeout
