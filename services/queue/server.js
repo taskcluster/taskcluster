@@ -124,6 +124,11 @@ exports.launch = function() {
   return events.setup().then(function() {
     return data.setupDatabase();
   }).then(function() {
+    // Publish schemas if necessary
+    if (nconf.get('queue:publishSchemas')) {
+      return require('./utils/render-schema').publish();
+    }
+  }).then(function() {
     return new Promise(function(accept, reject) {
       // Launch HTTP server
       var server = http.createServer(app);
