@@ -109,8 +109,6 @@ API.prototype.mount = function(app, mountpoint) {
   // Add entry point to get documentation as JSON
   var that = this;
   router.get('/reference', function(req, res) {
-    res.header('Access-Control-Allow-Origin',   '*');
-    res.header('Access-Control-Allow-Headers',  'X-Requested-With');
     res.json(200, that._entries.map(function(entry) {
       return {
         method:         entry.method,
@@ -127,6 +125,12 @@ API.prototype.mount = function(app, mountpoint) {
   app.use(mountpoint, express.json({
     limit:          this._options || '10mb'
   }));
+
+  // Allow CORS requests to the API
+  app.use(mountpoint, function() {
+    res.header('Access-Control-Allow-Origin',   '*');
+    res.header('Access-Control-Allow-Headers',  'X-Requested-With');
+  });
 
   // Mount the router middleware for the API
   app.use(mountpoint, router.middleware);
