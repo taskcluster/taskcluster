@@ -88,18 +88,7 @@ var setupDatabase = function() {
   debug("Setup the database table and connection string");
 
   // Construct database connection string
-  _connString = [
-    'pg://',
-    nconf.get('database:user'),
-    ':',
-    nconf.get('database:password'),
-    '@',
-    nconf.get('database:host'),
-    ':',
-    nconf.get('database:port'),
-    '/',
-    nconf.get('database:name')
-  ].join('');
+  _connString = nconf.get('database:connectionString');
 
   // Connect to database
   var get_client = connect();
@@ -114,7 +103,7 @@ var setupDatabase = function() {
 
   var ready_for_setup = got_client;
   // drop tables if requested
-  if (nconf.get('database:drop-tables')) {
+  if (nconf.get('database:dropTables')) {
     debug('Dropping database tables');
     ready_for_setup = ready_for_setup.then(function() {
       return client.promise('DROP TABLE IF EXISTS tasks CASCADE');

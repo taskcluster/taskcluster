@@ -35,7 +35,7 @@ var schema = function(options) {
     res.reply = function(json) {
       // If we're supposed to validate outgoing messages and output schema is
       // defined, then we have to validate against it...
-      if(nconf.get('queue:validate-outgoing') &&
+      if(nconf.get('queue:validateOutgoing') &&
          options.output !== undefined) {
         var errors = validate(json, options.output);
         if (errors) {

@@ -4,76 +4,44 @@ var aws     = require('aws-sdk');
 /** Default configuration values */
 var DEFAULT_CONFIG_VALUES = {
   // TaskCluster Queue configuration
-  'queue': {
+  queue: {
     // Name of S3 bucket where all task and artifacts will be stored
-    'task-bucket':                  'tasks.taskcluster.net',
+    taskBucket:                    'tasks.taskcluster.net',
 
     // Validate out-going messages, this can be disabled if we trust that we
     // generate correct JSON internally and want more performance
-    'validate-outgoing':            true
+    validateOutgoing:              true
   },
 
   // Server (HTTP) configuration
-  'server': {
+  server: {
     // Server hostname
-    'hostname':                     'localhost',
+    hostname:                       'localhost',
 
     // Port to run the HTTP server on
-    'port':                         3000,
+    port:                           3000,
 
     // Cookie secret used to sign cookies, must be secret at deployment
-    'cookie-secret':                "Warn, if no secret is used on production"
+    cookieSecret:                   "Warn, if no secret is used on production"
   },
 
   // Database configuration
-  'database': {
-    // Database hostname
-    'host':                         'localhost',
-
-    // Database port
-    'port':                         5432,
-
-    // Database name
-    'name':                         'queue_v1',
-
-    // Database user
-    'user':                         'queue',
-
-    // Database password
-    'password':                     'secret',
+  database: {
+    // Database connection string as anything://user:password@host:port/database
+    connectionString:               'pg://queue:secret@localhost:5432/queue_v1',
 
     // Drop database table if they already exist, this is mainly useful for
-    // debugging when given as command-line argument: --database:drop-tables
-    'drop-tables':                  false
+    // debugging when given as command-line argument: --database:dropTables
+    dropTables:                  false
   },
 
   // AMQP configuration as given to `amqp.createConnection`
   // See: https://github.com/postwait/node-amqp#connection-options-and-url
-  'amqp': {
-    // AMQP hostname
-    'host':                         'localhost',
-
-    // AMQP port
-    'port':                         5672,
-
-    // AMQP user
-    'login':                        'guest',
-
-    // AMQP password
-    'password':                     'guest',
-
-    // AMQP authentication mechanism
-    'authMechanism':                'AMQPLAIN',
-
-    // AMQP virtual host
-    'vhost':                        '/',
-
-    // Use SSL, keys are required to enable this, refer to node-amqp
-    // documentation for details, see:
-    // https://github.com/postwait/node-amqp#connection-options-and-url
-    'ssl': {
-      'enable':                     false
-    }
+  // As we'll be offering this through an API end-point this should really only
+  // be url.
+  amqp: {
+    // URL for AMQP setup formatted as amqp://user:password@host:port/vhost
+    url:                            'amqp://guest:guest@localhost:5672'
   },
 
   // AWS SDK configuration
@@ -93,6 +61,21 @@ exports.load = function(default_only) {
   if (!default_only) {
     // Load configuration from command line arguments, if requested
     nconf.argv();
+
+    // Configurations elements loaded from commandline, these are the only
+    // values we should ever really need to change.
+    nconf.env({
+      separator:  '__',
+      whitelist:  [
+        'server__hostname',
+        'server__port',
+        'server__cookieSecret',
+        'database__connectionString',
+        'amqp__url',
+        'aws__accessKeyId',
+        'aws__secretAccessKey'
+      ]
+    });
 
     // Config from current working folder if present
     nconf.file('local', 'taskcluster-queue.conf.json');
