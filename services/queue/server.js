@@ -36,7 +36,7 @@ require('./routes/api/v1').mount(app, '/v1');
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
-app.use(express.cookieParser(nconf.get('server:cookie-secret')));
+app.use(express.cookieParser(nconf.get('server:cookieSecret')));
 app.use(express.session());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -51,7 +51,7 @@ app.use('/static', express.static(path.join(__dirname, 'static')));
 
 // Warn if no secret was used in production
 if ('production' == app.get('env')) {
-  var secret = nconf.get('server:cookie-secret');
+  var secret = nconf.get('server:cookieSecret');
   if (secret == "Warn, if no secret is used on production") {
     console.log("Warning: Customized cookie secret should be used in production");
   }
