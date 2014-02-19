@@ -5,6 +5,9 @@ var misc        = require('./misc');
 var constants   = require('../schemas/constants');
 var _           = require('lodash');
 var mkdirp      = require('mkdirp');
+var nconf       = require('nconf');
+var aws         = require('aws-sdk');
+var Promise     = require('promise');
 
 /** Replace val with constant, if it is an {$const: <key>} schema */
 var substitute = function(val) {
@@ -36,6 +39,55 @@ var render = function(schema) {
 
 // Export the render function only
 module.exports = render;
+
+/** Publish schemas to schemas.taskcluster.net/ */
+render.publish = function() {
+  // Create AWS instance
+  var s3 = new aws.S3();
+  debug("Publishing schemas to S3");
+
+  // Publish JSON schemas from folder
+  var schema_folder = __dirname + '/../schemas/';
+  var schemas = misc.listFolder(schema_folder);
+  var all_published = schemas.map(function(filePath) {
+    // We shall only render JSON files
+    if (!/\.json/g.test(filePath)) {
+      return;
+    }
+    try {
+      // Load data from file
+      var data = fs.readFileSync(filePath, {encoding: 'utf-8'});
+
+      // Parse JSON
+      var json = JSON.parse(data);
+
+      // Render JSON to JSON Schema, by substituting constants
+      var schema = render(json);
+
+      // Path magic...
+      var relPath = path.relative(schema_folder, filePath);
+
+      // Publish schema to S3
+      debug("Publishing: %s", relPath);
+      return s3.putObject({
+        Bucket:           nconf.get('queue:schemaBucket'),
+        Key:              relPath,
+        Body:             JSON.stringify(schema, undefined, 4),
+        ContentType:      'application/json'
+      }).promise();
+    }
+    catch(error) {
+      debug("Failed to load schema: %s, error: %s", filePath, error);
+      throw error;
+    }
+  });
+  return Promise.all(all_published).then(function() {
+    debug("All schemas published");
+  }, function(err) {
+    debug("Failed to publish schemas, error: %s, as JSON: %j", err, err);
+    throw err;
+  });
+};
 
 // This module is loaded as top-level module, we take output folder to which
 // we should render schemas as input

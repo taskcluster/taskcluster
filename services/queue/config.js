@@ -6,11 +6,19 @@ var DEFAULT_CONFIG_VALUES = {
   // TaskCluster Queue configuration
   queue: {
     // Name of S3 bucket where all task and artifacts will be stored
-    taskBucket:                    'tasks.taskcluster.net',
+    taskBucket:                     'tasks.taskcluster.net',
+
+    // Bucket to which schemas should be published
+    schemaBucket:                   'schemas.taskcluster.net',
+
+    // Publish schemas to bucket on startup, this should default to false, only
+    // do this in the actual production server... Hence, set it by environment
+    // variable. Unset it `inorder` to set it false by environment variable.
+    publishSchemas:                 false,
 
     // Validate out-going messages, this can be disabled if we trust that we
     // generate correct JSON internally and want more performance
-    validateOutgoing:              true
+    validateOutgoing:               true
   },
 
   // Server (HTTP) configuration
@@ -68,6 +76,7 @@ exports.load = function(default_only) {
     nconf.env({
       separator:  '__',
       whitelist:  [
+        'queue__publishSchemas',
         'server__hostname',
         'server__port',
         'server__cookieSecret',
