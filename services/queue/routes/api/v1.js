@@ -535,3 +535,30 @@ api.declare({
   });
 });
 
+/** Fetch AMQP Connection String */
+api.declare({
+  method:   'get',
+  route:    '/settings/amqp-connection-string',
+  input:    undefined,  // No input accepted
+  output:   'http://schemas.taskcluster.net/v1/amqp-connection-string-response.json#',
+  title:    "Fetch AMQP Connection String",
+  desc: [
+    "Most hosted AMQP services requires us to specify a virtual host, ",
+    "so hardcoding the AMQP connection string into various services would be ",
+    "a bad solution. Hence, we offer all authorized queue consumers to fetch ",
+    "an AMQP connection string using the API end-point.",
+    "",
+    "**Warning**, this API end-point is not stable, and may change in the ",
+    "future the strategy of not hardcoding AMQP connection details into ",
+    "various components obviously makes sense. But as we have no method of ",
+    "notifying consumers that the connection string have moved. This ",
+    "approach may not be optimal either. Thus, we may be choose to remove ",
+    "this API end-point when `pulse.mozilla.org` is a stable AMQP service ",
+    "we can rely on."
+  ].join('\n')
+}, function(req, res) {
+  res.reply({
+    url:  nconf.get('amqp:url')
+  });
+});
+
