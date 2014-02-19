@@ -24,7 +24,7 @@ require('./utils/aws-sdk-promise').patch();
 var app = exports.app = express();
 
 // Middleware configuration
-app.set('port', nconf.get('server:port'));
+app.set('port', Number(nconf.get('server:port')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(express.favicon());
