@@ -1,9 +1,11 @@
 {
-  "name": "taskcluster-queue",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "start": "node server.js"
+  "name":     "taskcluster-queue",
+  "version":  "0.1.0",
+  "private":  true,
+  "main":     "server.js",
+  "repository": {
+    "type":   "git",
+    "url":    "https://github.com/taskcluster/taskcluster-queue.git"
   },
   "dependencies": {
     "express":                          "3.4.8",
@@ -23,5 +25,8 @@
     "debug":                            "0.7.4",
     "jayschema":                        "0.2.3",
     "mkdirp":                           "0.3.5"
+  },
+  "engines": {
+    "node":   "0.10.x"
   }
 }
