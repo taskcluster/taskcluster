@@ -127,9 +127,10 @@ API.prototype.mount = function(app, mountpoint) {
   }));
 
   // Allow CORS requests to the API
-  app.use(mountpoint, function() {
+  app.use(mountpoint, function(req, res, next) {
     res.header('Access-Control-Allow-Origin',   '*');
     res.header('Access-Control-Allow-Headers',  'X-Requested-With');
+    next();
   });
 
   // Mount the router middleware for the API
