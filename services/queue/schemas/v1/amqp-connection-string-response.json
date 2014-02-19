@@ -1,0 +1,16 @@
+{
+  "id":           "http://schemas.taskcluster.net/v1/amqp-connection-string-response.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "AMQP Connection String Response",
+  "description":  "Connection string to use for RabbitMQ.",
+  "type":         "object",
+  "properties": {
+    "url": {
+      "description":      "AMQP Connection String, including credentials and vhost.",
+      "type":             "string",
+      "format":           "uri"
+    }
+  },
+  "additionalProperties":   false,
+  "required": ["url"]
+}
