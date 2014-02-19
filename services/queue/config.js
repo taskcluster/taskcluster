@@ -18,7 +18,8 @@ var DEFAULT_CONFIG_VALUES = {
     // Server hostname
     hostname:                       'localhost',
 
-    // Port to run the HTTP server on
+    // Port on which HTTP server is exposed, and port on which node will listen
+    // unless `$PORT` is specified.
     port:                           3000,
 
     // Cookie secret used to sign cookies, must be secret at deployment
@@ -32,7 +33,7 @@ var DEFAULT_CONFIG_VALUES = {
 
     // Drop database table if they already exist, this is mainly useful for
     // debugging when given as command-line argument: --database:dropTables
-    dropTables:                  false
+    dropTables:                     false
   },
 
   // AMQP configuration as given to `amqp.createConnection`
