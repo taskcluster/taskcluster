@@ -2,9 +2,9 @@
 This is a test helper "rollup" intended to be used in integration testing the
 public worker amqp interface.
 */
-module.exports = function() {
+module.exports = function(worker) {
   var server = require('./server');
-  var worker = require('./worker')();
+  worker = worker || require('./worker')();
 
   var Promise = require('promise');
   var IronMQ = require('../ironmq');
@@ -14,14 +14,15 @@ module.exports = function() {
   Starts a http server and runs a task (and reports back to the server)
 
   @param {Object} task definition to use for run.
-  @param {Object} base properties for all task events.
+  @param {Number} timeout before task expires.
   */
-  return function runTask(task) {
+  return function runTask(task, timeout) {
     return new Promise(function(accept, reject) {
+      timeout = timeout || 60;
+
       var taskStatus = {};
       var request = {
-        task: task,
-        base: {},
+        task: task
       };
 
       server().then(
@@ -42,7 +43,7 @@ module.exports = function() {
           var body = JSON.stringify(request);
           return queue.post({
             body: body,
-            timeout: 60,
+            timeout: timeout,
             expires_in: 60
           });
         },

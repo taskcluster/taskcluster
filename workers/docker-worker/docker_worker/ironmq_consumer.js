@@ -9,6 +9,60 @@ var debug = require('debug')('taskcluster-docker-worker:ironmq');
 
 var INTERVAL = 5000;
 
+function Task(message, body, queue) {
+  this.message = message;
+  this.queue = queue;
+  this.body = body;
+
+  this.done = false;
+
+  // give some buffer before we touch (issue it 70% the way through the timeout)
+  // Remember timeout is given in seconds so we bump it up to MS
+  this.touchInterval = Math.floor(message.timeout * 0.7) * 1000;
+  this.touchTimeoutId = null;
+
+  debug('touch task every', this.touchInterval, 'ms');
+  this.touch().catch(function(err) {
+    debug('epic fail error during touch', err);
+  });
+}
+
+Task.prototype = {
+  touch: function() {
+    debug('being holding message', this.message.id);
+    return new Promise(function(accept, reject) {
+      var touch = function() {
+        // safety to ensure we don't leak timers.
+        if (this.done) return accept();
+        debug('issue touch', this.message.id);
+
+        this.queue.msg_touch(this.message.id).then(function(result) {
+          this.touchTimeoutId = setTimeout(touch, this.touchInterval);
+        }.bind(this)).catch(reject);
+
+      }.bind(this);
+
+      debug('initate touch');
+      touch();
+    }.bind(this));
+  },
+
+  run: function(docker) {
+    return taskrunner(docker, this.body).then(
+      function() {
+        clearTimeout(this.touchTimeoutId);
+
+        return this.queue.del(this.message.id);
+      }.bind(this),
+      function epicFail(err) {
+        debug('epic fail!', err);
+      }
+    ).then(function() {
+      this.done = true;
+    }.bind(this));
+  }
+};
+
 function IronMQConsumer(options) {
   assert(options.queue, 'has queue name');
   assert(options.docker, 'passes docker');
@@ -100,26 +154,19 @@ IronMQConsumer.prototype = {
     clearTimeout(this.timerId);
   },
 
-  runTask: function(id, body) {
-    return taskrunner(this.docker, body).then(
-      function() {
-        return this.queue.del(id);
-      }.bind(this),
-      function epicFail(err) {
-        debug('epic fail!', err);
-      }
-    );
+  runTask: function(body, message) {
+    var task = new Task(message, body, this.queue);
+    return task.run(this.docker);
   },
 
   handleMessage: function(message) {
     debug('handle message', message);
+    var timeout = Math.ceil(message.timeout * 0.65);
 
-    var id = message.id;
     var body = JSON.parse(message.body);
-
     if (typeof body.task === 'object') {
       // if task is an object use it directly
-      return this.runTask(id, body);
+      return this.runTask(body, message);
     }
 
     // if its not an object use it like a url
@@ -130,7 +177,7 @@ IronMQConsumer.prototype = {
         throw new Error('failed to download url ' + taskUrl);
       }
       body.task = res.body;
-      return this.runTask(id, body);
+      return this.runTask(body, message);
     }.bind(this));
   }
 };

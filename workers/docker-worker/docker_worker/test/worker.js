@@ -5,8 +5,8 @@ var IronMQ = require('../ironmq');
 /**
 Rather then test the interface we test through the amqp queue.
 */
-function startConsumer() {
-  var id = uuid.v4();
+function startConsumer(id) {
+  id = id || uuid.v4();
   var binary = __dirname + '/../bin/worker';
   var result = { id: id };
 
@@ -18,7 +18,7 @@ function startConsumer() {
     var envs = {};
     for (var key in process.env) envs[key] = process.env[key];
 
-    result.proc = spawn(binary, ['start', id], {
+    result.proc = spawn(binary, ['start', id, '--interval', '100'], {
       env: envs,
       // share all the file descriptors so we see pretty debug output
       stdio: 'inherit'

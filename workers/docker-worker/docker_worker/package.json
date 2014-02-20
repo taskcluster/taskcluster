@@ -4,7 +4,7 @@
   "description": "Taskcluster host",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha *_test.js"
+    "test": "make test"
   },
   "bin": {
     "worker": "./bin/worker"
@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "dockerode": "~1.2.0",
-    "promise": "~3.2.0",
+    "promise": "~4.0.0",
     "dockerode-promise": "0.0.1",
     "superagent": "~0.16.0",
     "superagent-promise": "0.0.0",
