@@ -8,6 +8,10 @@ var DEFAULT_CONFIG_VALUES = {
     // Name of S3 bucket where all task and artifacts will be stored
     taskBucket:                     'tasks.taskcluster.net',
 
+    // True, if taskBucket is CNAME'd like task.taskcluster.net, note, that
+    // bucket name always has to be equal to CNAME, so this is just a boolean
+    taskBucketIsCNAME:              true,
+
     // Bucket to which schemas should be published
     schemaBucket:                   'schemas.taskcluster.net',
 

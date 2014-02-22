@@ -19,6 +19,10 @@ var api = module.exports = new utils.API({
 
 /** Get the url to a prefix within the taskBucket */
 var task_bucket_url = function(prefix) {
+  // If taskBucket has a CNAME, we build a prettier URL:
+  if (nconf.get('queue:taskBucketIsCNAME')) {
+    return nconf.get('queue:taskBucket') + '/' + prefix;
+  }
   return 'https://s3-' + nconf.get('aws:region') + '.amazonaws.com/' +
           nconf.get('queue:taskBucket') + '/' + prefix;
 };
@@ -188,7 +192,7 @@ api.declare({
         workerGroup:    req.body.workerGroup,
         workerId:       req.body.workerId,
         runId:          runId,
-        logsUrl:        task_bucket_url(taskId + '/' + runId + '/logs.json'),
+        logsUrl:        task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
         status:         task_status
       });
 
@@ -344,8 +348,8 @@ api.declare({
         version:        '0.2.0',
         status:         task_status,
         runId:          runId,
-        resultUrl:      task_bucket_url(taskId + '/' + runId + '/result.json'),
-        logsUrl:        task_bucket_url(taskId + '/' + runId + '/logs.json'),
+        resultUrl:      task_bucket_url(taskId + '/runs/' + runId + '/result.json'),
+        logsUrl:        task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
         workerId:       workerId,
         workerGroup:    workerGroup
       };
@@ -360,8 +364,8 @@ api.declare({
       var event_published = events.publish('v1/queue:task-completed', {
         version:        '0.2.0',
         status:         task_status,
-        resultUrl:      task_bucket_url(taskId + '/' + runId + '/result.json'),
-        logsUrl:        task_bucket_url(taskId + '/' + runId + '/logs.json'),
+        resultUrl:      task_bucket_url(taskId + '/runs/' + runId + '/result.json'),
+        logsUrl:        task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
         runId:          runId,
         workerId:       workerId,
         workerGroup:    workerGroup
@@ -451,7 +455,7 @@ api.declare({
           workerGroup:    workerGroup,
           workerId:       workerId,
           runId:          runId,
-          logsUrl:        task_bucket_url(taskId + '/' + runId + '/logs.json'),
+          logsUrl:        task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
           status:         task_status
         });
 
