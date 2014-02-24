@@ -1,0 +1,45 @@
+#! /usr/bin/env node
+
+var queue         = require('../queue');
+var program       = require('commander');
+
+var username = process.env.USER || process.env.USERNAME || 'nobody';
+
+var DEFAULT_OWNER = username + '@localhost.local';
+var DEFAULT_PROVISIONER_ID = 'aws-provisioner';
+
+program
+  .version(require('../package.json').version)
+  .command('post')
+  .option(
+    '--provisioner-id <provisioner-id>',
+    "provisionerId, defaults 'aws-provisioner'",
+    DEFAULT_PROVISIONER_ID
+  )
+  .option(
+    '--worker-type <worker-type>',
+    "workerType, this is the AMI"
+  )
+  .option(
+    '--owner <email>',
+    "task owners email address",
+    DEFAULT_OWNER
+  )
+  .option(
+    '--payload <payload>',
+    "JSON Payload"
+  )
+  .action(function(options) {
+    queue.postTask(JSON.parse(options.payload), {
+      provisionerId:  options.provisionerId,
+      workerType:     options.workerType,
+      owner:          options.owner
+    }).then(function(taskId) {
+      console.log("Posted task was assigned taskId: " + taskId);
+    }).catch(function(err) {
+      console.log("Failed to post task", err);
+      process.exit(1);
+    });
+  });
+
+program.parse(process.argv);

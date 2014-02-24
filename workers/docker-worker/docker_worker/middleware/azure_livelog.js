@@ -3,8 +3,15 @@ var uuid = require('uuid');
 var BlobStream = require('taskcluster-azure-blobstream');
 var Promise = require('promise');
 
-function AzureLiveLog() {
-  if (!(this instanceof AzureLiveLog)) return new AzureLiveLog();
+/** Build an Azure live log middleware instance */
+var AzureLiveLogBuilder = function(flag) {
+  if (flag) {
+    return new AzureLiveLog();
+  }
+  return null;
+};
+
+function AzureLiveLog(flag) {
   // Rely on azure's werid environment variables for now to auth...
   this.blobService = azure.createBlobService();
   this.createContainer =
@@ -19,7 +26,7 @@ AzureLiveLog.prototype = {
   Ensure the azure container exists then create a new blob stream to pipe
   the docker output into.
   */
-  start: function(payload, task, dockerProcess) {
+  declareLogs: function(logs, taskRun, dockerProcess) {
     var container;
     var url;
     var path;
@@ -29,8 +36,8 @@ AzureLiveLog.prototype = {
     container = this.container = 'taskclusterlogs';
     url = this.url = this.blobService.getBlobUrl(container, path);
 
-    // add the log url to the payload so consumers can read from it immediately.
-    payload.log = url;
+    // add the log url to the logs so consumers can read from it immediately.
+    logs['terminal.log'] = url;
 
     return this.createContainer(
       container,
@@ -40,21 +47,24 @@ AzureLiveLog.prototype = {
       function pipeToAzure() {
         this.stream = new BlobStream(this.blobService, container, path);
         dockerProcess.stdout.pipe(this.stream);
-        return payload;
+        return logs;
       }.bind(this)
     );
   },
 
-  stop: function(output) {
-    if (this.stream.closed) return output;
+  extractResult: function(result) {
+    if (this.stream.closed) return result;
 
     return new Promise(
       function(accept, reject) {
-        this.stream.once('close', accept.bind(null, output));
+        this.stream.once('close', accept.bind(null, result));
         this.stream.once('error', reject);
       }.bind(this)
     );
   }
 };
 
-module.exports = AzureLiveLog;
+AzureLiveLogBuilder.featureFlagName    = 'azureLiveLog';
+AzureLiveLogBuilder.featureFlagDefault = true;
+
+module.exports = AzureLiveLogBuilder;

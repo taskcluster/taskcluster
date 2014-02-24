@@ -1,9 +1,11 @@
 /**
-Middleware for using the simple "ghetto" buffer
-*/
-
+ * Middleware for using the simple "ghetto" buffer
+ */
 var GhettoStream = require('../ghetto_stream');
-function BufferLog() {
+function BufferLog(flag) {
+  if (!flag) {
+    return null;
+  }
   var stream = new GhettoStream();
 
   return {
@@ -12,12 +14,15 @@ function BufferLog() {
       return claim;
     },
 
-    stop: function(output) {
+    extractResult: function(result) {
       // stream as text output for our alpha version / debugging
-      output.logText = stream.text;
-      return output;
+      result.logText = stream.text;
+      return result;
     }
   };
 }
+
+BufferLog.featureFlagName    = 'bufferLog';
+BufferLog.featureFlagDefault = false;
 
 module.exports = BufferLog;

@@ -67,7 +67,7 @@ Modem.prototype.dial = function(options, callback) {
   }
 
   if(data) {
-    if(data instanceof String) {
+    if(typeof data === "string") {
       optionsf.headers['Content-Length'] = Buffer.byteLength(data);
     } else {
       optionsf.headers['Content-Length'] = data.length;

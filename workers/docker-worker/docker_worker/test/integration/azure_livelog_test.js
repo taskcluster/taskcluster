@@ -6,37 +6,35 @@ suite('azure logging', function() {
     return;
   }
 
-  var runTask = require('../run_task')();
   var request = require('superagent-promise');
-  var TaskFactory = require('taskcluster-task-factory/task');
+  var testworker = require('../testworker');
 
   test('azure logger', function() {
-    var task = TaskFactory.create({
-      command: ['/bin/bash', '-c', 'echo "first command!"'],
-      image: 'ubuntu',
+    return testworker.submitTaskAndGetResults({
+      image:          'ubuntu',
+      command:        ['/bin/bash', '-c', 'echo "first command!"'],
       features: {
-        azureLivelog: true,
-        // turn on buffer log for testing
-        bufferLog: true
+        bufferLog:    true,
+        azureLivelog: true
       }
+    }).then(function(data) {
+      // Get task specific results
+      var result = data.result.result;
+      assert.equal(result.exitCode, 0);
+      assert.ok(result.logText.indexOf('first') !== -1);
+
+      // Get the logs.json
+      var logs = data.logs;
+
+      // Lookup in the logs map inside logs.json
+      var azure_log = logs.logs['terminal.log'];
+      assert.ok(azure_log !== undefined);
+
+      // Fetch log from azure
+      request('GET', azure_log).end().then(function(req) {
+        // Check that it's equal to logText from buffer log
+        assert.equal(req.res.text, result.logText);
+      });
     });
-
-    var result;
-    return runTask(task).then(
-      function(taskStatus) {
-        result = taskStatus.stop;
-
-        assert.ok(taskStatus.start);
-        assert.ok(taskStatus.start.log);
-        return request('GET', taskStatus.start.log).end();
-      }
-    ).then(
-      function(req) {
-        assert.equal(
-          req.res.text,
-          result.logText
-        );
-      }
-    );
   });
 });

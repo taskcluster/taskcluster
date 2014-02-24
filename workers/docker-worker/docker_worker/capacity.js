@@ -47,7 +47,7 @@ Capacity.prototype = {
   push: function(promise) {
     this.size++;
     debug('push', this.size);
-    return promise.then(this._pop);
+    return promise.then(this._pop, this._pop);
   }
 };
 
