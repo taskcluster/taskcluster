@@ -74,7 +74,7 @@ Overriding the defaults is easy:
 
 ```
 # localconfig
-DOCKER_WORKER_OPTS="--amqp amqps://user:pass@host/vhost"
+DOCKER_WORKER_OPTS="--worker-type testing-worker-type"
 ```
 
 ```sh
