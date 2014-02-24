@@ -1,5 +1,4 @@
 export DEBUG=*
-export DOCKER_WORKER_OPTS='aws-docker'
 export AZURE_STORAGE_ACCESS_KEY=xxx
 export AZURE_STORAGE_ACCOUNT=xx
 export IRON_TOKEN=xxx
