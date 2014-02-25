@@ -21,7 +21,7 @@ var api = module.exports = new utils.API({
 var task_bucket_url = function(prefix) {
   // If taskBucket has a CNAME, we build a prettier URL:
   if (nconf.get('queue:taskBucketIsCNAME')) {
-    return nconf.get('queue:taskBucket') + '/' + prefix;
+    return 'http://' + nconf.get('queue:taskBucket') + '/' + prefix;
   }
   return 'https://s3-' + nconf.get('aws:region') + '.amazonaws.com/' +
           nconf.get('queue:taskBucket') + '/' + prefix;
