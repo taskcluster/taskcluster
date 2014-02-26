@@ -35,6 +35,7 @@ module.exports = {
 
   // Task-specific routing key
   "routing": {
+    "title":        "Routing Key",
     "description":  "Task specific routing key, may contain dots (`.`) for arbitrary sub-routes",
     "type":         "string",
     "maxLength":    64
@@ -47,12 +48,14 @@ module.exports = {
 
   // Priority of a task, for task.json
   "priority": {
+    "title":        "Priority",
     "description":  "Task priority",
     "type":         "number"
   },
 
   // Deadline of task
   "deadline": {
+    "title":        "Deadline",
     "description":  "Deadline of the task, a task is resolved as **failed** " +
                     "if it haven't be resolved by other means before the " +
                     "deadline",
@@ -62,6 +65,7 @@ module.exports = {
 
   // Creation time of tasks
   "created": {
+    "title":        "Created",
     "description":  "Creation time of task",
     "type":         "string",
     "format":       "date-time"
