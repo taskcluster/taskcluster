@@ -79,7 +79,7 @@
     },
     "tags": {
       "title":                  "Tags",
-      "description":            "Arbitrary key-value tags",
+      "description":            "Arbitrary key-value tags (only strings limited to 4k)",
       "type":                   "object",
       "additionalProperties":   {"type": "string", "maxLength": 4096}
     }
