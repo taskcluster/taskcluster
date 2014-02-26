@@ -37,7 +37,11 @@
     "priority":         {"$const": "priority"},
     "created":          {"$const": "created"},
     "deadline":         {"$const": "deadline"},
-    "payload":          {"type": "object"},
+    "payload": {
+      "title":          "Task Payload",
+      "description":    "Task-specific payload following worker-specific format. For example the `docker-worker` requires the following keys: `image`, `commands` and `features`.",
+      "type":           "object"
+    },
     "metadata": {
       "title":                  "Meta-data",
       "description":            "Required task metadata",
