@@ -5,14 +5,29 @@ Docker task host for linux.
 # Architecture
 
 A "host" is a trusted context which tasks cannot access... The "host"
-listens over AMQP and starts tasks. Then as tasks progress the details
-are relayed over AMQP.
+polls the queue for tasks using assigned `provisionerId` and `workerType`.
+By default the `provisionerId` is `"aws-provisioner"` and uses the EC2 metadata
+service to fetch AMI image-id as `workerType`, instance-id as `workerId` and
+availability-zone as `workerGroup`. if you're launching test worker, make sure
+to use a unique `provisionerId` to avoid annoying the provisioner.
 
-A "task" in the context of this taskhost is a single json blob which
-contains some details about a executable to run. The executables are
-each run as their own docker container (the task may specify what docker
-container to use).
+The docker-worker consumes taskcluster tasks, with a payload on the following
+format:
+```js
+{
+  image:    'ubuntu',     // docker image identifier
+  command:  [             // Command followed by arguments to execute
+    '/bin/bash', '-c',
+    'echo "Hello World"'
+  ]
+  features: {             // Set of optional features
+    bufferLog:    true,   // Debug log everything to result.json blob
+    azureLivelog: false   // Live log everything to azure, see logs.json
+  }
+}
+```
 
+Each task is evaluated in an isolated docker container.
 Docker has a bunch of awesome utilities for making this work well...
 Since the images are COW running any number of task hosts is plausible
 and we can manage their overall usage.
@@ -24,9 +39,7 @@ api]([http://docs.docker.io/en/latest/api/docker_remote_api_v1.8/)
 
 ```
 # from the root of this repo)
-./docker_worker/bin/worker start $RABBIT_QUEUE_NAME
-
-# the command will fail if the queue is not already created;
+./docker_worker/bin/worker start --provisioner-id <identifier>
 ```
 
 ## Development
@@ -70,17 +83,18 @@ image does not have the required credentials for all worker operations.
 See [packer/app/etc/default-worker](packer/app/etc/default-worker) for
 the defaults...
 
-Overriding the defaults is easy:
-
-```
-# localconfig
-DOCKER_WORKER_OPTS="--worker-type testing-worker-type"
-```
+Overriding the defaults is easy, just copy the example configuration file
+[docker_worker_opts_example.sh](/docker_worker_opts_example.sh),
+fill out the missing credentials and save it as `docker-worker-opts.sh`.
 
 ```sh
 # Additional packer flags can be added after "packer" sub command
 # local config is a relative path
-./bin/deploy packer -var "docker_worker_opts=localconfig"
+./bin/deploy packer -var "docker_worker_opts=docker-worker-opts.sh"
 ```
 
-Example configuration here: [docker_worker_opts_example.sh](/docker_worker_opts_example.sh)
+**Note** you can set command line options for docker-worker with
+`DOCKER_WORKER_OPTS`, if you're deploying outside AWS EC2, or don't want the
+aws-provisioner to launch instances for you, then you should provide
+`--provisioner-id my-provisioner`.
+

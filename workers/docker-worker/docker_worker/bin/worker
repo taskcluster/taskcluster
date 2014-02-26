@@ -23,7 +23,9 @@ var DEFAULT_INTERVAL = 30000;
  * As we estimate our location in the current billing cycle using system uptime
  * There is a reasonable chance that `uptimeInMinutes % 60 == 0` means that the
  * next billing cycle have started. It usually takes a few minutes from instance
- * is launched to it actually starts running.
+ * is launched to it actually starts running. It may also take a few minutes
+ * from we initiate shutdown until Amazon EC2 notices that the instance has
+ * halted.
  *
  * We should experiment with this number.
  */

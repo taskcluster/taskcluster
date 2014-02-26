@@ -71,7 +71,7 @@ exports.postTask = function(payload, options) {
     deadline:                 options.deadline,
     payload:                  payload,
     metadata: {
-      name:                   options.name        || payload.command,
+      name:                   options.name        || payload.command.join(' '),
       description:            options.description,
       owner:                  options.owner,
       source:                 options.source      || "http://localhost"
