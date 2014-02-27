@@ -16,7 +16,7 @@ function BufferLog(flag) {
 
     extractResult: function(result) {
       // stream as text output for our alpha version / debugging
-      result.logText = stream.text;
+      result.result.logText = stream.text;
       return result;
     }
   };

@@ -7,7 +7,8 @@ var times       = require('./middleware/times');
 MIDDLEWARE_BUILDERS = [
   './middleware/buffer_log',
   './middleware/azure_livelog',
-  './middleware/container_metrics'
+  './middleware/container_metrics',
+  './middleware/artifact_extractor'
 ].map(function(path) {
   return require(path);
 });
@@ -88,18 +89,6 @@ var runTask = function(taskRun, docker) {
     debug('Docker for task %s finished', taskRun.status.taskId);
     finished = new Date();
     var result = {
-      exitCode:       exitCode
-    };
-    return middleware.run('extractResult', result, taskRun, dockerProcess);
-  }).then(function(result) {
-    //TODO: Run middleware step for uploading artifacts... we could optimize
-    //      this by running that step in parallel, perhaps by asking a
-    //      sequential middleware run to declare artifacts. Then we can also
-    //      fetch all signed URLs at once.
-
-    // Remove docker container
-    dockerProcess.remove();
-    return taskRun.putResult({
       version:            '0.2.0',
       artifacts:          {},
       statistics: {
@@ -111,11 +100,23 @@ var runTask = function(taskRun, docker) {
         workerId:         taskRun.owner.workerId
       },
       // This is worker/task specific results
-      result:             result
-    });
+      result: {
+        exitCode:       exitCode
+      }
+    };
+    return middleware.run('extractResult', result, taskRun, dockerProcess);
+  }).then(function(result) {
+    //TODO: Run middleware step for uploading artifacts... we could optimize
+    //      this by running that step in parallel, perhaps by asking a
+    //      sequential middleware run to declare artifacts. Then we can also
+    //      fetch all signed URLs at once.
+
+    // Remove docker container
+    dockerProcess.remove();
+    return taskRun.putResult(result);
   }).then(function() {
     return taskRun.taskCompleted();
-  }).catch(function(err) {
+  }).then(null, function(err) {
     // Whatever happens we should stop reclaiming the task!!!
     taskRun.clearKeepTask();
     // Also, let's just remove the docker container, just in case :)

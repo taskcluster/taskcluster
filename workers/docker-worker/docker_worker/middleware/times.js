@@ -11,8 +11,8 @@ var Times = function(flag) {
     },
 
     extractResult: function(result) {
-      result.startTimestamp = started;
-      result.stopTimestamp = Date.now();
+      result.result.startTimestamp = started;
+      result.result.stopTimestamp = Date.now();
       return result;
     }
   };

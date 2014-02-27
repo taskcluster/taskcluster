@@ -21,8 +21,12 @@ format:
     'echo "Hello World"'
   ]
   features: {             // Set of optional features
-    bufferLog:    true,   // Debug log everything to result.json blob
-    azureLivelog: false   // Live log everything to azure, see logs.json
+    bufferLog:    false,  // Debug log everything to result.json blob
+    azureLivelog: true    // Live log everything to azure, see logs.json
+  },
+  artifacts: {
+    // Name:              Source:
+    'passwd.txt':         '/etc/passwd'
   }
 }
 ```

@@ -89,6 +89,7 @@ exports.postTask = function(payload, options) {
           debug("Failed to post task: %s", res.text);
           return reject(res.text);
         }
+        debug("Task posted with taskId: " + res.body.status.taskId);
         accept(res.body.status.taskId);
       });
   });

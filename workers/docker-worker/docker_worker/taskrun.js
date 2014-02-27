@@ -193,8 +193,9 @@ TaskRun.prototype.putArtifact = function(name, filename, contentType) {
             return reject(res.text);
           }
           debug("Got signed artifact PUT URL from queue");
+          var artifactUrls = res.body.artifacts[name];
           var req = request
-                      .put(res.body.artifactPutUrls[name])
+                      .put(artifactUrls.artifactPutUrl)
                       .set('Content-Type',    contentType)
                       .set('Content-Length',  stat.size);
           fs.createReadStream(filename).pipe(req, {end: false});
@@ -203,16 +204,40 @@ TaskRun.prototype.putArtifact = function(name, filename, contentType) {
               debug("Failed to upload to signed artifact PUT URL");
               return reject(res.text);
             }
-            debug("Successfully uploaded artifact %s to PUT URl", name);
-            var artifactUrl = 'http://tasks.taskcluster.net/' +
-                              that.status.taskId + '/runs/' + that._runId +
-                              '/artifacts/' + name;
-            accept(artifactUrl);
+            debug("Successfully uploaded artifact %s to PUT URL", name);
+            accept(artifactUrls[name].artifactUrl);
           });
         });
     });
   });
 };
+
+TaskRun.prototype.getArtifactPutUrls = function(artifacts) {
+  var that = this;
+  return new Promise(function(accept, reject) {
+    // Construct request URL for fetching signed artifact PUT URLs
+    var url = queue.queueUrl('/task/' + that.status.taskId + '/artifact-urls');
+
+    // Request artifact put urls
+    request
+      .post(url)
+      .send({
+        workerGroup:      that.owner.workerGroup,
+        workerId:         that.owner.workerId,
+        runId:            that._runId,
+        artifacts:        artifacts
+      })
+      .end(function(res) {
+        if (!res.ok) {
+          debug("Failed get a signed artifact URL, errors: %s", res.text);
+          return reject(res.text);
+        }
+        debug("Got signed artifact PUT URL from queue");
+        accept(res.body.artifacts);
+      });
+  });
+};
+
 
 /** Report task completed, returns promise of success */
 TaskRun.prototype.taskCompleted = function() {
