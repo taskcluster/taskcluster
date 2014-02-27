@@ -284,9 +284,14 @@ api.declare({
 
   // Create a JSON object from signed urls
   var artifact_urls = Promise.all(urls_signed).then(function(signed_urls) {
+    var artifactPrefix = taskId + '/runs/' + runId + '/artifacts/';
     var url_map = {};
     artifact_list.forEach(function(artifact, index) {
-      url_map[artifact] = signed_urls[index];
+      url_map[artifact] = {
+        artifactPutUrl:       signed_urls[index],
+        artifactUrl:          task_bucket_url(artifactPrefix + artifact),
+        contentType:          artifacts[artifact].contentType
+      };
     });
     return url_map;
   });
@@ -300,7 +305,7 @@ api.declare({
       res.reply({
         status:           task_status,
         expires:          expires.toJSON(),
-        artifactPutUrls:  url_map
+        artifacts:        url_map
       });
     } else {
       res.json(404, {

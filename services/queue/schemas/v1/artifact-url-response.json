@@ -11,13 +11,31 @@
       "type":         "string",
       "format":       "date-time"
     },
-    "artifactPutUrls": {
-      "description":  "Mapping from requested artifact to signed URL for uploading said artifact.",
+    "artifacts": {
+      "description":  "Mapping from requested artifact to signed URL for uploading said artifact and URL where uploaded artifact can be found.",
       "type":         "object",
       "additionalProperties": {
-        "description":      "Signed URL to which an artifact can be uploaded. **Note**, when uploading you must use a `PUT` request and headers **must** set `ContentLength` and have `ContentType` set the `contentType` given in the artifact URL request.",
-        "type":             "string",
-        "format":           "uri"
+        "description":  "Pair of signed URL for uploading and URL for downloading artifact when uploaded",
+        "type":         "object",
+        "properties": {
+          "artifactPutUrl": {
+            "description":      "Signed URL to which an artifact can be uploaded. **Note**, when uploading you must use a `PUT` request and headers **must** set `ContentLength` and have `ContentType` set the `contentType` given in the artifact URL request.",
+            "type":             "string",
+            "format":           "uri"
+          },
+          "artifactUrl": {
+            "description":      "URL for where artifact can be found, once uploaded to the `artifactPutUrl` above.",
+            "type":             "string",
+            "format":           "uri"
+          },
+          "contentType": {
+            "description":  "Artifact mime-type as given in the request",
+            "type":         "string",
+            "maxLength":    255
+          }
+        },
+        "additionalProperties": false,
+        "required": ["artifactPutUrl", "artifactUrl", "contentType"]
       }
     }
   },
