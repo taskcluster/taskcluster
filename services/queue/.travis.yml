@@ -1,7 +1,12 @@
+env:
+  global:
+  - TASKCLUSTER_TEST_TASK_BUCKET=travis-ci-testing
+  - secure: Gd+8//GiuCan2gBUIBpYnc6nv/npw4ftjFxxL6g9CLLXiLHLI6HI6ujmQYVkTES56wQG6v0rG8XDetwP1dnWnfieflG8P9HoVLUVGcmVC++HMCBMgse/6v4mgo/99WqhkeJqckV7SPDNpLIudK8AuUzIi5VQbasqWuo2R4rZoeg=
+  - secure: U6A1YBs+Pk7n0jiUUduwfnGsFvAIKMJ/YKIqbZ4ISXPmNELklhL/s7TSIg3+OnLm2B9g4RdUMPH3s3IKbf6v2YcNSyq6iMZYT2iQ0AAYC+hoSJZuASnLq/FlChp8nhY1ZMymFgjnrerUpBRawQH6txSosc/v5TrbBYurqQDisDE=
 language: node_js
 node_js:
 - '0.10'
-script: make ci
+script: npm run-script ci
 before_script:
 - sudo -u postgres psql -c "CREATE ROLE queue LOGIN PASSWORD 'secret'";
 - sudo -u postgres psql -c "CREATE DATABASE queue_v1 OWNER queue";

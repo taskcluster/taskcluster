@@ -2,7 +2,6 @@ var nodeunit = require('nodeunit');
 
 /** Test files to be executed, relative to the test/ folder */
 var test_files = [
-  //'queue/data.js',
   'api',
   'validation',
   'events'
@@ -15,5 +14,5 @@ var reporter = nodeunit.reporters.default;
 
 // Run test
 reporter.run(test_files.map(function(test) {
-      return './tests/' + test;
+  return './tests/' + test;
 }));
