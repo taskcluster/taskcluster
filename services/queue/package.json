@@ -7,6 +7,9 @@
     "type":   "git",
     "url":    "https://github.com/taskcluster/taskcluster-queue.git"
   },
+  "scripts": {
+    "test": "make test"
+  },
   "dependencies": {
     "express":                          "3.4.8",
     "jade":                             "1.1.4",
