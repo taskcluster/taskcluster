@@ -1,0 +1,17 @@
+language: node_js
+node_js:
+- '0.10'
+script: make ci
+before_script:
+- sudo -u postgres psql -c "CREATE ROLE queue LOGIN PASSWORD 'secret'";
+- sudo -u postgres psql -c "CREATE DATABASE queue_v1 OWNER queue";
+services:
+- rabbitmq
+- postgresql
+deploy:
+  provider: heroku
+  api_key:
+    secure: JNWc7d7z9HNIKFg4RcBa4g/WEBV7HkDoFOxLojqOF6yDyNljtziO/aN4i8at3POJDPDaiRNTasiEzoFLBIOEiqDrwgyKbRSibVfxIZUWROt/+dzrOeh0C3if28OuPGVy3Puo+Q3ieIYrJ9pylIuQyQzB6h3H13dKpY3tcPVLVPU=
+  app: queue-taskcluster-net
+  on:
+    repo: taskcluster/taskcluster-queue
