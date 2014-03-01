@@ -6,7 +6,10 @@ var DEFAULT_CONFIG_VALUES = {
   // TaskCluster Queue configuration
   queue: {
     // Name of S3 bucket where all task and artifacts will be stored
-    taskBucket:                     'tasks.taskcluster.net',
+    taskBucket:                     process.env.TASKCLUSTER_TEST_TASK_BUCKET ||
+                                    // XXX: big hack to allow CI to override
+                                    //      test bucket.
+                                    'tasks.taskcluster.net',
 
     // True, if taskBucket is CNAME'd like task.taskcluster.net, note, that
     // bucket name always has to be equal to CNAME, so this is just a boolean
@@ -70,7 +73,6 @@ var DEFAULT_CONFIG_VALUES = {
 
 /** Load configuration */
 exports.load = function(default_only) {
-
   if (!default_only) {
     // Load configuration from command line arguments, if requested
     nconf.argv();
@@ -106,4 +108,4 @@ exports.load = function(default_only) {
 
   // Set configuration for aws-sdk
   aws.config.update(nconf.get('aws'));
-}
+};
