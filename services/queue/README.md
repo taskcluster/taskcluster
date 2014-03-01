@@ -1,5 +1,4 @@
-TaskCluster Queue
-=================
+# TaskCluster Queue [![Build Status](https://travis-ci.org/taskcluster/taskcluster-queue.png?branch=master)](https://travis-ci.org/taskcluster/taskcluster-queue)
 
 This the central queue coordinating execution of tasks in the TaskCluster setup.
 
@@ -25,11 +24,7 @@ _The following itemization of folders outlines how this project is structured._
 
 Deployment
 ----------
-The EC2 instance hosting `queue.taskcluster.net` will automatically update
-when changes is posh to the `master` branch at `taskcluster/taskcluster-queue`.
-This will also update `schemas.taskcluster.net/v1/` with the contents of
-the `schemas/v1/` folder.
-
+Code is deployed from master to heroku whenever code hits master (and it passes travis ci)
 
 Things To Do
 ------------
