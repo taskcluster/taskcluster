@@ -104,6 +104,8 @@ exports.publish = function(exchange, message) {
     // Check if we're supposed to validate out-going messages
     if (nconf.get('queue:validateOutgoing')) {
       var schema = 'http://schemas.taskcluster.net/' + exchange + '.json#';
+      debug('Validating with schema', schema);
+
       var errors = validate(message, schema);
       // Reject message if there's any errors
       if (errors) {
