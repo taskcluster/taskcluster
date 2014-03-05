@@ -91,14 +91,29 @@ Overriding the defaults is easy, just copy the example configuration file
 [docker_worker_opts_example.sh](/docker_worker_opts_example.sh),
 fill out the missing credentials and save it as `docker-worker-opts.sh`.
 
+#### Packer is used to build the AMI
+
+##### Variables
+
+  - (_required_) `docker_worker_opts` [path] - a path to the opts file to upload see
+    [dock_worker_opts_example.sh](./dock_worker_opts_example.sh)
+
+  - (_required_) `loggly_account` [string] - name of the loggly account.
+
+  - (_required_) `loggly_auth` [string] - password for the loggly user.
+
+  - `source_ami` [string] - base ami to use.
+
+##### Example
+
 ```sh
-# Additional packer flags can be added after "packer" sub command
-# local config is a relative path
-./bin/deploy packer -var "docker_worker_opts=docker-worker-opts.sh"
+./bin/deploy packer \
+  -var "docker_worker_opts=docker-worker-opts.sh"
+  -var "loggly_account=logglyaccount" \
+  -var "loggly_auth=logglyauth"
 ```
 
 **Note** you can set command line options for docker-worker with
-`DOCKER_WORKER_OPTS`, if you're deploying outside AWS EC2, or don't want the
+[`DOCKER_WORKER_OPTS`](https://github.com/taskcluster/docker-worker/blob/master/docker_worker_opts_example.sh#L2), if you're deploying outside AWS EC2, or don't want the
 aws-provisioner to launch instances for you, then you should provide
 `--provisioner-id my-provisioner`.
-

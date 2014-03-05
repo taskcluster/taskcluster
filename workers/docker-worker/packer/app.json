@@ -3,9 +3,23 @@
   "variables": {
     "docker_worker": "",
     "source_ami": "ami-7c4e2d4c",
-    "docker_worker_opts": "packer/app/etc/default/docker-worker"
+    "docker_worker_opts": "packer/app/etc/default/docker-worker",
+    "loggly_account": "",
+    "loggly_auth": ""
   },
   "provisioners": [
+    {
+      "type": "file",
+      "source": "packer/app/scripts/configure-syslog.py",
+      "destination": "/tmp/loggly.py"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "chmod u+x /tmp/loggly.py",
+        "sudo python /tmp/loggly.py setup -y -s {{user `loggly_account`}} -a {{user `loggly_auth`}}"
+      ]
+    },
     {
       "type": "file",
       "source": "{{user `docker_worker`}}",
