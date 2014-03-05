@@ -13,7 +13,7 @@ var Listener    = require('./listener');
 var debug       = require('debug')('docker-worker:test:testworker');
 
 /** Test provisioner id, don't change this... */
-exports.TEST_PROVISIONER_ID = 'jonasfj-says-dont-provision-this';
+exports.TEST_PROVISIONER_ID = 'jonasfj-auto-test-prov';
 
 /** Wait for a message, fetch result and stop listening */
 var waitForResult = function(listener) {
@@ -68,11 +68,15 @@ var waitForResult = function(listener) {
  * result from S3 and return it from the promise.
  *
  * This is accomplished by posting task with provisionerId,
- * `jonasfj-says-dont-provision-this` with a UUID for workerType, so that we're
+ * `jonasfj-auto-test-prov` with a UUID for workerType, so that we're
  * sure the task will only be picked up by our local worker.
  */
 exports.submitTaskAndGetResults = function(payload) {
-  var workerType = uuid.v4();
+  // We'll use a uuid but slash it to 22 chars as we only allow 22 chars for
+  // workerType. If we wanted, we could fit a full UUID in there by using the
+  // slugid encoding as employed by the queue... But this is just for testing
+  // so we don't care.
+  var workerType = uuid.v4().substr(22);
 
   // Start listening for a result from the worker type
   var listener = new Listener(workerType);

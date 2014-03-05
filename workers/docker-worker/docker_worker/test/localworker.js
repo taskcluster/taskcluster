@@ -22,9 +22,9 @@ LocalWorker.prototype.launch = function() {
     'start',
     '-i',   10000,        // We launch worker after task is submitted
     '-c',   1,
-    '--provisioner-id',   'jonasfj-says-dont-provision-this',
+    '--provisioner-id',   'jonasfj-auto-test-prov',
     '--worker-type',      this.workerType,
-    '--worker-group',     'jonasfjs-local-test-workers',
+    '--worker-group',     'jonasfj-local-worker',
     '--worker-id',        'who-ever-cares'
   ];
 
