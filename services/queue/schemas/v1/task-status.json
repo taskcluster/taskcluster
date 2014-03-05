@@ -6,9 +6,9 @@
   "type":               "object",
   "properties": {
     "taskId": {
-      "description":  "Unique task identifier",
+      "description":  "Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.",
       "type":         "string",
-      "pattern":      {"$const": "uuid-pattern"}
+      "pattern":      {"$const": "slugid-pattern"}
     },
     "provisionerId": {
       "description":    "Unique identifier for the provisioner that this task must be scheduled on",

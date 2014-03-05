@@ -1,10 +1,10 @@
 var nconf   = require('nconf');
 var utils   = require('./utils');
-var uuid    = require('uuid');
 var Promise = require('promise');
 var aws     = require('aws-sdk');
 var _       = require('lodash');
 var debug   = require('debug')('routes:api:0.2.0');
+var slugid  = require('../../utils/slugid');
 
 var data    = require('../../queue/data');
 var events  = require('../../queue/events');
@@ -54,7 +54,7 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   // Create task identifier
-  var taskId = uuid.v4();
+  var taskId = slugid.v4();
 
   // Task status structure to reply with in case of success
   var task_status = {
