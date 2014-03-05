@@ -2,7 +2,7 @@
  * This module defines a mapping from keys to value that can be rendered into
  * JSON schemas using render-schema.js from utils
  *
- * This enables us to reuse the same uuid-pattern everywhere we define UUIDs
+ * This enables us to reuse the same slugid-pattern everywhere we define slugids
  * but give a different description of each occurrence. It makes it easy to
  * maintain consistent schemas without using `$ref`s for every single pattern
  * that can be reused.
@@ -26,7 +26,7 @@ module.exports = {
   // identifiers can't contain dots `.` is critical.
   "identifier-pattern":     "^([a-zA-Z0-9-_]*)$",
   "identifier-min-length":  1,
-  "identifier-max-length":  36,
+  "identifier-max-length":  22,
 
   // Run identifier limitations, these are also somewhat founded in RabbitMQ
   // routing key limitations
@@ -77,6 +77,6 @@ module.exports = {
     "enum":         ["0.2.0"]
   },
 
-  // UUID pattern, for when-ever that is useful
-  "uuid-pattern":     "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+  // Slugid pattern, for when-ever that is useful
+  "slugid-pattern":  "^[a-zA-Z0-9-_]{22}"
 };

@@ -32,9 +32,9 @@ exports['v1/queue:task-pending'] = function(test) {
   events.publish('v1/queue:task-pending', {
     "version":              "0.2.0",
     "status": {
-      "taskId":             "70f8926b-c4be-4604-9c33-4e9628bc31f6",
-      "provisionerId":      "jonasfj-test-aws-provisioner",
-      "workerType":         "map-this-to-my-cool-ami",
+      "taskId":             "w0mNqBW9QLGD5TL1srCK8w",
+      "provisionerId":      "jonasfj-test-provId",
+      "workerType":         "jonasfj-test-worker",
       "runs":               [],
       "state":              "pending",
       "reason":             "none",
@@ -63,9 +63,9 @@ exports['v1/queue:task-pending validation test'] = function(test) {
   events.publish('v1/queue:task-pending', {
     "version":              "0.2.0",
     "status": {
-      "taskId":             "70f8926b-c4be-4604-9c33-4e9628bc31f6",
-      "provisionerId":      "jonasfj-test-aws-provisioner",
-      "workerType":         "map-this-to-my-cool-ami",
+      "taskId":             "w0mNqBW9QLGD5TL1srCK8w",
+      "provisionerId":      "jonasfj-test-provId",
+      "workerType":         "jonasfj-test-worker",
       "runs":               [],
       "state":              "pending",
       "reason":             "none",
@@ -87,7 +87,7 @@ exports['v1/queue:task-pending validation test'] = function(test) {
 
 /** Test that message can be received */
 exports['v1/queue:task-pending receive test'] = function(test) {
-  test.expect(2);
+  test.expect(1);
 
   // Create a connection
   var conn = null;
@@ -102,7 +102,7 @@ exports['v1/queue:task-pending receive test'] = function(test) {
   var subscribed = connected.then(function() {
     return new Promise(function(accept, reject) {
       debug('Create exclusive queue');
-      queue = conn.queue("test-queue", {
+      queue = conn.queue("", {
         passive:                    false,
         durable:                    false,
         exclusive:                  true,
@@ -111,7 +111,7 @@ exports['v1/queue:task-pending receive test'] = function(test) {
       }, function() {
         debug('Subscribe to messages on queue');
         queue.subscribe(function(message) {
-          test.ok(message.status.taskId == '70f8926b-c4be-4604-9c33-4e9628bc31f6',
+          test.ok(message.status.taskId == 'w0mNqBW9QLGD5TL1srCK8w',
                   "Didn't get the expected message");
           queue.destroy();
           conn.destroy();
@@ -120,7 +120,7 @@ exports['v1/queue:task-pending receive test'] = function(test) {
         debug('Bind queue to exchange');
         queue.bind(
           'v1/queue:task-pending',
-          '70f8926b-c4be-4604-9c33-4e9628bc31f6.#',
+          'w0mNqBW9QLGD5TL1srCK8w.#',
           function() {
             accept();
           }
@@ -135,9 +135,9 @@ exports['v1/queue:task-pending receive test'] = function(test) {
     events.publish('v1/queue:task-pending', {
       "version":              "0.2.0",
       "status": {
-        "taskId":             "70f8926b-c4be-4604-9c33-4e9628bc31f6",
-        "provisionerId":      "jonasfj-test-aws-provisioner",
-        "workerType":         "map-this-to-my-cool-ami",
+        "taskId":             "w0mNqBW9QLGD5TL1srCK8w",
+        "provisionerId":      "jonasfj-test-provId",
+        "workerType":         "jonasfj-test-worker",
         "runs":               [],
         "state":              "pending",
         "reason":             "none",
@@ -148,10 +148,8 @@ exports['v1/queue:task-pending receive test'] = function(test) {
         "deadline":           "2014-03-01T03:22:36.356Z",
         "takenUntil":         "1970-01-01T00:00:00.000Z"
       }
-    }).then(function() {
-      test.ok(true);
-    }, function() {
-      test.ok(true, "Message validation failed unexpectedly...");
+    }).then(null, function() {
+      test.ok(false, "Message validation failed unexpectedly...");
     });
   });
 };
