@@ -108,7 +108,7 @@ fill out the missing credentials and save it as `docker-worker-opts.sh`.
 
 ```sh
 ./bin/deploy packer \
-  -var "docker_worker_opts=docker-worker-opts.sh"
+  -var "docker_worker_opts=docker-worker-opts.sh" \
   -var "loggly_account=logglyaccount" \
   -var "loggly_auth=logglyauth"
 ```
