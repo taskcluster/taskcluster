@@ -1,16 +1,16 @@
 {
   "version":"0.2.0",
   "status":{
-    "taskId":"51d3bd42-2b9f-48c5-8815-c1ce9ae1d800",
+    "taskId":"w0mNqBW9QLGD5TL1srCK8w",
     "runs":[
         {
             "runId":          1,
-            "workerGroup":    "jonasfj-test-worker-group",
+            "workerGroup":    "jonasfj-test-workergrp",
             "workerId":       "jonasfj-test-worker"
         }
     ],
-    "provisionerId":"jonasfj-test-provisioner",
-    "workerType":"jonasfj-test-worker-type",
+    "provisionerId":"jonasfj-test-provid",
+    "workerType":"jonasfj-test-worker",
     "state":"failed",
     "reason":"deadline-exceeded",
     "routing":"jonasfj.test",
@@ -21,6 +21,6 @@
     "takenUntil":"1970-01-01T00:00:00.000Z"
   },
   "runId":          1,
-  "workerGroup":    "jonasfj-test-worker-group",
+  "workerGroup":    "jonasfj-test-workergrp",
   "workerId":       "jonasfj-test-worker"
 }

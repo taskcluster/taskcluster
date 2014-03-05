@@ -4,6 +4,7 @@ var Promise   = require('promise');
 var debug     = require('debug')('queue:data');
 var debugSql  = require('debug')('queue:data:sql');
 var events    = require('./events');
+var slugid    = require('../utils/slugid');
 
 var _connString = null;
 
@@ -201,6 +202,9 @@ exports.createTask = function(task) {
 
     // Construct list of values
     var values = properties.map(function(prop) {
+      if (prop == 'taskId') {
+        return slugid.decode(task.taskId)
+      }
       return task[prop];
     });
 
@@ -225,7 +229,7 @@ exports.createTask = function(task) {
 exports.deleteTask = function(taskId) {
   return connect().then(function(client) {
     var sql = 'DELETE FROM tasks WHERE taskid = $1';
-    return client.promise(sql, [taskId]).then(function() {
+    return client.promise(sql, [slugid.decode(taskId)]).then(function() {
       client.release();
       return;
     }, function(err) {
@@ -266,7 +270,7 @@ exports.loadTask = function(taskId) {
               'ON (tasks.taskid = runs.taskid) WHERE ' +
               'tasks.taskid = $1 ORDER BY runid';
 
-    return client.promise(sql, [taskId]).then(function(result) {
+    return client.promise(sql, [slugid.decode(taskId)]).then(function(result) {
       // Free the client so others can use it
       client.release();
 
@@ -326,6 +330,7 @@ exports.loadTask = function(taskId) {
  * by somebody else...
  */
 exports.claimTask = function(taskId, takenUntil, run) {
+  taskId = slugid.decode(taskId);
   return connect().then(function(client) {
     if (run.runId !== undefined) {
       // Update takenUntil for an existing run...
@@ -389,7 +394,7 @@ exports.completeTask = function(taskId) {
     //       workerGroup before we let this happen...
     var sql = 'UPDATE tasks SET state = \'completed\' WHERE taskid = $1 AND ' +
               'state = \'running\'';
-    return client.promise(sql, [taskId]).then(function(result) {
+    return client.promise(sql, [slugid.decode(taskId)]).then(function(result) {
       client.release();
       return result.rowCount != 0;
     });
@@ -416,7 +421,7 @@ exports.queryTasks = function(provisionerId, workerType) {
       client.release();
       // For each taskId load the task status object
       var task_statuses_loaded = result.rows.map(function(row) {
-        return exports.loadTask(row.taskid);
+        return exports.loadTask(slugid.encode(row.taskid));
       });
       // Return a promise that all tasks will be loaded
       return Promise.all(task_statuses_loaded);
@@ -454,9 +459,9 @@ exports.expireClaims = function() {
     ).spread(function(result1, result2) {
       debug("Loading tasks to be reported as failed");
       return Promise.all(result1.rows.map(function(row) {
-        return exports.loadTask(row.taskid);
+        return exports.loadTask(slugid.encode(row.taskid));
       }).concat(result2.rows.map(function(row) {
-        return exports.loadTask(row.taskid);
+        return exports.loadTask(slugid.encode(row.taskid));
       })));
     });
 
@@ -498,7 +503,7 @@ exports.expireClaims = function() {
     var pending_tasks = client.promise(sql, [new Date()]).then(function(result) {
       debug("Loading tasks that are pending again");
       return Promise.all(result.rows.map(function(row) {
-        return exports.loadTask(row.taskid);
+        return exports.loadTask(slugid.encode(row.taskid));
       }));
     });
 
