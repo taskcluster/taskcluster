@@ -2,9 +2,8 @@ var server        = require('../../server'); // include for configuration
 var data          = require('../../queue/data');
 var debug         = require('debug')('tests:queue:data');
 var _             = require('lodash');
-var uuid          = require('uuid');
 var validate      = require('../../utils/validate');
-
+var slugid        = require('../../utils/slugid');
 
 
 var setupDatabase = false;
@@ -43,9 +42,9 @@ exports['Create and delete task'] = function(test) {
 
   // Task structure to insert
   var task = {
-    "taskId":             uuid.v4(),
-    "provisionerId":      "jonasfj-test-aws-provisioner",
-    "workerType":         "map-this-to-my-cool-ami",
+    "taskId":             slugid.v4(),
+    "provisionerId":      "jonasfj-test-provid",
+    "workerType":         "jonasfj-test-worker",
     "runs":               [], // This will be ignored by createTask
     "state":              "pending",
     "reason":             "none",
@@ -81,9 +80,9 @@ exports['Create, load and delete task'] = function(test) {
 
   // Task structure to insert
   var task = {
-    "taskId":             "c4a88130-d9ac-421e-beae-7139d11472a4",
-    "provisionerId":      "jonasfj-test-aws-provisioner",
-    "workerType":         "map-this-to-my-cool-ami",
+    "taskId":             "w1mNqBW9QLGD5TL1srCK8w",
+    "provisionerId":      "jonasfj-test-provid",
+    "workerType":         "jonasfj-test-worker",
     "runs":               [], // This will be ignored by createTask
     "state":              "pending",
     "reason":             "none",
@@ -136,9 +135,9 @@ exports['Create, claim and delete task'] = function(test) {
 
   // Task structure to insert
   var task = {
-    "taskId":             uuid.v4(),
-    "provisionerId":      "jonasfj-test-aws-provisioner",
-    "workerType":         "map-this-to-my-cool-ami",
+    "taskId":             slugid.v4(),
+    "provisionerId":      "jonasfj-test-provid",
+    "workerType":         "jonasfj-test-worker",
     "runs":               [], // This will be ignored by createTask
     "state":              "pending",
     "reason":             "none",
@@ -183,9 +182,9 @@ exports['Create, claim, complete and delete task'] = function(test) {
 
   // Task structure to insert
   var task = {
-    "taskId":             uuid.v4(),
-    "provisionerId":      "jonasfj-test-aws-provisioner",
-    "workerType":         "map-this-to-my-cool-ami",
+    "taskId":             slugid.v4(),
+    "provisionerId":      "jonasfj-test-provid",
+    "workerType":         "jonasfj-test-worker",
     "runs":               [], // This will be ignored by createTask
     "state":              "pending",
     "reason":             "none",
