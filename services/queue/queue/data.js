@@ -491,7 +491,7 @@ exports.expireClaims = function() {
         }
 
         // Publish a message that task failed
-        return events.publish('v1/queue:task-failed', message);
+        return events.publish('task-failed', message);
       }));
     });
 
@@ -512,7 +512,7 @@ exports.expireClaims = function() {
       debug("Report task that are now pending again");
       return Promise.all(tasks.map(function(task) {
         // Publish a message that task failed
-        return events.publish('v1/queue:task-pending', {
+        return events.publish('task-pending', {
           version:      '0.2.0',
           status:       task
         });

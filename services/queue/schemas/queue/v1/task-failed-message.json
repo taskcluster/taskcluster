@@ -1,12 +1,12 @@
 {
-  "id":           "http://schemas.taskcluster.net/v1/queue:task-failed.json#",
+  "id":           "http://schemas.taskcluster.net/queue/v1/task-failed-message.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Failed Task Message",
   "description":  "Message reporting that a task have failed",
   "type":         "object",
   "properties": {
     "version":    {"$const": "message-version"},
-    "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"},
+    "status":     {"$ref": "http://schemas.taskcluster.net/queue/v1/task-status.json#"},
     "runId": {
       "description":  "Id of the last run for the task, not provided if `deadline` was exceeded before a run was started",
       "type":         "integer",

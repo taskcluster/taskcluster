@@ -45,8 +45,8 @@ var sign_put_url = function(options) {
 api.declare({
   method:   'post',
   route:    '/task/new',
-  input:    'http://schemas.taskcluster.net/v1/task.json#',
-  output:   'http://schemas.taskcluster.net/v1/create-task-response.json#',
+  input:    'http://schemas.taskcluster.net/queue/v1/task.json#',
+  output:   'http://schemas.taskcluster.net/queue/v1/create-task-response.json#',
   title:    "Create new task",
   desc: [
     "Create a new task, the `status` of the resulting JSON is a task status",
@@ -87,7 +87,7 @@ api.declare({
     var added_to_database = data.createTask(task_status);
 
     // Publish message through events
-    var event_published = events.publish('v1/queue:task-pending', {
+    var event_published = events.publish('task-pending', {
       version:    '0.2.0',
       status:     task_status
     });
@@ -118,7 +118,7 @@ api.declare({
   method:   'get',
   route:    '/task/:taskId/status',
   input:    undefined,  // No input is accepted
-  output:   'http://schemas.taskcluster.net/v1/task-status-response.json#',
+  output:   'http://schemas.taskcluster.net/queue/v1/task-status-response.json#',
   title:    "Get task status",
   desc: [
     "Get task status structure from `taskId`"
@@ -151,8 +151,8 @@ api.declare({
 api.declare({
   method:   'post',
   route:    '/task/:taskId/claim',
-  input:    'http://schemas.taskcluster.net/v1/task-claim-request.json#',
-  output:   'http://schemas.taskcluster.net/v1/task-claim-response.json#',
+  input:    'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#',
+  output:   'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#',
   title:    "Claim task",
   desc: [
     "Claim task, takes workerGroup, workerId and optionally runId as input",
@@ -187,7 +187,7 @@ api.declare({
     // Load task status structure
     return data.loadTask(taskId).then(function(task_status) {
       // Fire event
-      var event_sent = events.publish('v1/queue:task-running', {
+      var event_sent = events.publish('task-running', {
         version:        '0.2.0',
         workerGroup:    req.body.workerGroup,
         workerId:       req.body.workerId,
@@ -249,8 +249,8 @@ api.declare({
 api.declare({
   method:   'post',
   route:    '/task/:taskId/artifact-urls',
-  input:    'http://schemas.taskcluster.net/v1/artifact-url-request.json#',
-  output:   'http://schemas.taskcluster.net/v1/artifact-url-response.json#',
+  input:    'http://schemas.taskcluster.net/queue/v1/artifact-url-request.json#',
+  output:   'http://schemas.taskcluster.net/queue/v1/artifact-url-response.json#',
   title:    "Get artifact urls",
   desc: [
     "Get artifact-urls for posted artifact urls..."
@@ -325,8 +325,8 @@ api.declare({
 api.declare({
   method:   'post',
   route:    '/task/:taskId/completed',
-  input:    'http://schemas.taskcluster.net/v1/task-completed-request.json#',
-  output:   'http://schemas.taskcluster.net/v1/task-completed-response.json#',
+  input:    'http://schemas.taskcluster.net/queue/v1/task-completed-request.json#',
+  output:   'http://schemas.taskcluster.net/queue/v1/task-completed-response.json#',
   title:    "Report Completed Task",
   desc: [
     "Report task completed..."
@@ -366,7 +366,7 @@ api.declare({
         ContentType:          'application/json'
       }).promise();
 
-      var event_published = events.publish('v1/queue:task-completed', {
+      var event_published = events.publish('task-completed', {
         version:        '0.2.0',
         status:         task_status,
         resultUrl:      task_bucket_url(taskId + '/runs/' + runId + '/result.json'),
@@ -395,7 +395,7 @@ api.declare({
 api.declare({
   method:   'get',
   route:    '/claim-work/:provisionerId/:workerType',
-  input:    'http://schemas.taskcluster.net/v1/claim-work-request.json#',
+  input:    'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#',
   output:   undefined,  // TODO: define schema later
   title:    "Claim work for a worker",
   desc: [
@@ -455,7 +455,7 @@ api.declare({
       // Load task status structure
       return data.loadTask(taskId).then(function(task_status) {
         // Fire event
-        var event_sent = events.publish('v1/queue:task-running', {
+        var event_sent = events.publish('task-running', {
           version:        '0.2.0',
           workerGroup:    workerGroup,
           workerId:       workerId,
@@ -549,7 +549,7 @@ api.declare({
   method:   'get',
   route:    '/settings/amqp-connection-string',
   input:    undefined,  // No input accepted
-  output:   'http://schemas.taskcluster.net/v1/amqp-connection-string-response.json#',
+  output:   'http://schemas.taskcluster.net/queue/v1/amqp-connection-string-response.json#',
   title:    "Fetch AMQP Connection String",
   desc: [
     "Most hosted AMQP services requires us to specify a virtual host, ",

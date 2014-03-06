@@ -1,5 +1,5 @@
 {
-  "id":           "http://schemas.taskcluster.net/v1/result.json#",
+  "id":           "http://schemas.taskcluster.net/queue/v1/result.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "`result.json` file",
   "description":  "Payload format uploaded to `resultPutUrl`",
