@@ -1,12 +1,12 @@
 {
-  "id":           "http://schemas.taskcluster.net/v1/queue:task-pending.json#",
+  "id":           "http://schemas.taskcluster.net/queue/v1/task-pending-message.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Pending Task Message",
   "description":  "Message reporting that a task is now pending",
   "type":         "object",
   "properties": {
     "version":    {"$const": "message-version"},
-    "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"}
+    "status":     {"$ref": "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
   },
   "additionalProperties":   false,
   "required": ["version", "status"]

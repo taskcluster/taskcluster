@@ -8,6 +8,11 @@ var validator = null;
 
 /** Create validator and load schemas */
 var setup = function() {
+  // Don't setup validator twice
+  if (validator !== null) {
+    return;
+  }
+
   // Create validator
   validator = new JaySchema();
 
@@ -48,7 +53,7 @@ var setup = function() {
 module.exports = function(json, schema) {
   // Lazy load schemas
   if (validator === null) {
-    setup();
+    throw new Error("validate.setup must be called first!");
   }
 
   // Validate json
@@ -60,3 +65,6 @@ module.exports = function(json, schema) {
   }
   return errors;
 };
+
+// Export setup function
+module.exports.setup = setup;
