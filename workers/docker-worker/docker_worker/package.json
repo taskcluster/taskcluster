@@ -30,7 +30,7 @@
     "middleware-object-hooks":          "0.0.2",
     "azure":                            "~0.8.1",
     "uuid":                             "~1.4.1",
-    "taskcluster-azure-blobstream":     "0.0.1",
+    "taskcluster-azure-blobstream":     "0.1.0",
     "ngrok":                            "~0.1.5",
     "proxied-promise-object":           "~0.1.0",
     "taskcluster-logstream":            "~0.1.3",

@@ -114,7 +114,8 @@ BlockStream.prototype = {
         return this._commitBlocks(
           this.container,
           this.blob,
-          blockList
+          blockList,
+          { contentType: this.contentType }
         );
       }.bind(this)
     ).then(

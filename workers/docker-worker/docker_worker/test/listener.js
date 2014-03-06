@@ -73,7 +73,7 @@ Listener.prototype.listen = function() {
         debug("Listening next task");
         accept();
       });
-    })
+    });
   });
 };
 
