@@ -19,7 +19,8 @@ format:
   command:  [             // Command followed by arguments to execute
     '/bin/bash', '-c',
     'echo "Hello World"'
-  ]
+  ],
+  env: { KEY: 'value' },  // Environment variables for the container
   features: {             // Set of optional features
     bufferLog:    false,  // Debug log everything to result.json blob
     azureLivelog: true    // Live log everything to azure, see logs.json
