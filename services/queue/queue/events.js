@@ -44,10 +44,10 @@ exports.setup = function() {
     // For each desired exchange we create a promise that the exchange will be
     // declared (we just carry name to function below as name, enjoy)
     var exchanges_declared_promises = [
-      'v1/queue:task-pending',
-      'v1/queue:task-running',
-      'v1/queue:task-completed',
-      'v1/queue:task-failed'
+      'queue/v1/task-pending',
+      'queue/v1/task-running',
+      'queue/v1/task-completed',
+      'queue/v1/task-failed'
     ].map(function(name) {
       // Promise that exchange with `name` will be created
       return new Promise(function(accept, reject) {
@@ -103,7 +103,8 @@ exports.publish = function(exchange, message) {
   return new Promise(function(accept, reject) {
     // Check if we're supposed to validate out-going messages
     if (nconf.get('queue:validateOutgoing')) {
-      var schema = 'http://schemas.taskcluster.net/' + exchange + '.json#';
+      var schema = 'http://schemas.taskcluster.net/queue/v1/' + exchange +
+                   '-message.json#';
       debug('Validating with schema', schema);
 
       var errors = validate(message, schema);
@@ -134,7 +135,7 @@ exports.publish = function(exchange, message) {
     ].join('.');
 
     // Publish message to RabbitMQ
-    _exchanges[exchange].publish(routingKey, message, {
+    _exchanges['queue/v1/' + exchange].publish(routingKey, message, {
       contentType:        'application/json',
       deliveryMode:       2,
     }, function(err) {

@@ -1,11 +1,11 @@
 {
-  "id":           "http://schemas.taskcluster.net/v1/task-claim-response.json#",
+  "id":           "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Task Claim Response",
   "description":  "Response to a successful task claim",
   "type":         "object",
   "properties": {
-    "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"},
+    "status":     {"$ref": "http://schemas.taskcluster.net/queue/v1/task-status.json#"},
     "runId": {
       "description":  "`run-id` assigned to this run of the task",
       "type":         "integer",

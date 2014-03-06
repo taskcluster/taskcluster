@@ -11,6 +11,7 @@ var setupDatabase = false;
 /** Setup database */
 exports.setUp = function(callback)  {
   if (!setupDatabase) {
+    validate.setup();
     setupDatabase = true;
     debug("Setting up database");
     data.setupDatabase().then(function(server) {
@@ -107,7 +108,7 @@ exports['Create, load and delete task'] = function(test) {
     // Validate the result, this should match our schema
     var errors = validate(
       task_status,
-      'http://schemas.taskcluster.net/v1/task-status.json#'
+      'http://schemas.taskcluster.net/queue/v1/task-status.json#'
     );
     // test for errors
     test.equal(errors, null, "Validation of loaded task status structure failed");

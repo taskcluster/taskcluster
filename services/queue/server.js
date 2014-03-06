@@ -8,6 +8,7 @@ var Promise                         = require('promise');
 var PersonaStrategy                 = require('passport-persona').Strategy;
 var events                          = require('./queue/events');
 var data                            = require('./queue/data');
+var validate                        = require('./utils/validate');
 var debug                           = require('debug')('server');
 
 // Load configuration
@@ -119,6 +120,9 @@ exports.launch = function() {
   if ('development' == app.get('env')) {
     debug("Launching in development-mode");
   }
+
+  // Setup validation
+  validate.setup();
 
   // Setup amqp exchanges and connection
   return events.setup().then(function() {

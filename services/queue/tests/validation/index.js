@@ -10,20 +10,20 @@ var path        = require('path');
  */
 var testCases = [
   {
-    path:     'v1/queue:task-failed-with-run.json',
-    schema:   'http://schemas.taskcluster.net/v1/queue:task-failed.json#',
+    path:     'v1/task-failed-with-run-message.json',
+    schema:   'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#',
     success:  true,
   }, {
-    path:     'v1/queue:task-failed.json',
-    schema:   'http://schemas.taskcluster.net/v1/queue:task-failed.json#',
+    path:     'v1/task-failed-message.json',
+    schema:   'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#',
     success:  true,
   }, {
-    path:     'v1/queue:task-pending.json',
-    schema:   'http://schemas.taskcluster.net/v1/queue:task-pending.json#',
+    path:     'v1/task-pending-message.json',
+    schema:   'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#',
     success:  true,
   }, {
     path:     'v1/task-status.json',
-    schema:   'http://schemas.taskcluster.net/v1/task-status.json#',
+    schema:   'http://schemas.taskcluster.net/queue/v1/task-status.json#',
     success:  true,
   },
 ];
@@ -31,6 +31,9 @@ var testCases = [
 // define a test for each test file
 testCases.forEach(function(testCase) {
   exports[testCase.path] = function(test) {
+    // Ensure that validate is setup
+    validate.setup();
+
     // Load test data
     var filePath = path.join(__dirname, testCase.path);
     var data = fs.readFileSync(filePath, {encoding: 'utf-8'});
