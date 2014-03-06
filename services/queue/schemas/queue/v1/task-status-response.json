@@ -1,11 +1,11 @@
 {
-  "id":           "http://schemas.taskcluster.net/v1/task-status-response.json#",
+  "id":           "http://schemas.taskcluster.net/queue/v1/task-status-response.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Task Status Response",
   "description":  "Response to a task status request",
   "type":         "object",
   "properties": {
-    "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"}
+    "status":     {"$ref": "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
   },
   "additionalProperties":   false,
   "required": ["status"]

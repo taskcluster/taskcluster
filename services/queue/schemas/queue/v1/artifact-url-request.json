@@ -1,5 +1,5 @@
 {
-  "id":           "http://schemas.taskcluster.net/v1/artifact-url-request.json#",
+  "id":           "http://schemas.taskcluster.net/queue/v1/artifact-url-request.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Artifact URL Request",
   "description":  "Request for signed URLs to which artifacts can be uploaded",

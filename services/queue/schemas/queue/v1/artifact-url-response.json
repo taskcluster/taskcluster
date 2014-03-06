@@ -1,11 +1,11 @@
 {
-  "id":           "http://schemas.taskcluster.net/v1/artifact-url-response.json#",
+  "id":           "http://schemas.taskcluster.net/queue/v1/artifact-url-response.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Artifact URL Response",
   "description":  "Response to a request for artifact PUT URLs.",
   "type":         "object",
   "properties": {
-    "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"},
+    "status":     {"$ref": "http://schemas.taskcluster.net/queue/v1/task-status.json#"},
     "expires": {
       "description":  "Time-stamp at which the signed URLs expires, you can always request new artifact URLs, do don't try to upload to expired URLs.",
       "type":         "string",

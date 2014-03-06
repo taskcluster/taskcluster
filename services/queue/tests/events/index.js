@@ -24,12 +24,12 @@ exports.tearDown = function(callback) {
 }
 
 /** Test message publication */
-exports['v1/queue:task-pending'] = function(test) {
+exports['task-pending'] = function(test) {
   test.expect(1);
 
   // Publish a message
-  debug('Publishing to v1/queue:task-pending');
-  events.publish('v1/queue:task-pending', {
+  debug('Publishing to task-pending');
+  events.publish('task-pending', {
     "version":              "0.2.0",
     "status": {
       "taskId":             "w0mNqBW9QLGD5TL1srCK8w",
@@ -55,12 +55,12 @@ exports['v1/queue:task-pending'] = function(test) {
 };
 
 /** Test that invalid message publication fails */
-exports['v1/queue:task-pending validation test'] = function(test) {
+exports['task-pending validation test'] = function(test) {
   test.expect(1);
 
   // Publish a message
-  debug('Publishing to v1/queue:task-pending');
-  events.publish('v1/queue:task-pending', {
+  debug('Publishing to task-pending');
+  events.publish('task-pending', {
     "version":              "0.2.0",
     "status": {
       "taskId":             "w0mNqBW9QLGD5TL1srCK8w",
@@ -86,7 +86,7 @@ exports['v1/queue:task-pending validation test'] = function(test) {
 };
 
 /** Test that message can be received */
-exports['v1/queue:task-pending receive test'] = function(test) {
+exports['task-pending receive test'] = function(test) {
   test.expect(1);
 
   // Create a connection
@@ -119,7 +119,7 @@ exports['v1/queue:task-pending receive test'] = function(test) {
         });
         debug('Bind queue to exchange');
         queue.bind(
-          'v1/queue:task-pending',
+          'queue/v1/task-pending',
           'w0mNqBW9QLGD5TL1srCK8w.#',
           function() {
             accept();
@@ -131,8 +131,8 @@ exports['v1/queue:task-pending receive test'] = function(test) {
 
   // Publish a message
   subscribed.then(function() {
-    debug('Publishing to v1/queue:task-pending');
-    events.publish('v1/queue:task-pending', {
+    debug('Publishing to task-pending');
+    events.publish('task-pending', {
       "version":              "0.2.0",
       "status": {
         "taskId":             "w0mNqBW9QLGD5TL1srCK8w",

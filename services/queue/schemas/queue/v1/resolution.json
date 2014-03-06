@@ -1,12 +1,15 @@
 {
-  "id":           "http://schemas.taskcluster.net/v1/queue:task-completed.json#",
+  "id":           "http://schemas.taskcluster.net/queue/v1/resolution.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
-  "title":        "Completed Task Message",
-  "description":  "Message reporting that a task have been completed",
+  "title":        "`resolution.json` file",
+  "description":  "Payload format for the task resolution file.",
   "type":         "object",
   "properties": {
-    "version":    {"$const": "message-version"},
-    "status":     {"$ref": "http://schemas.taskcluster.net/v1/task-status.json#"},
+    "version": {
+      "description":    "Resolution file version",
+      "enum":           ["0.2.0"]
+    },
+    "status":     {"$ref": "http://schemas.taskcluster.net/queue/v1/task-status.json#"},
     "runId": {
       "description":  "Id of the run that completed the task",
       "type":         "integer",
@@ -19,7 +22,7 @@
       "format":         "uri"
     },
     "logsUrl": {
-      "description":    "URL to JSON file with a mapping from log-filenames to URLs, at this point the URL should be valid.",
+      "description":    "URL to JSON file with a mapping from log-filenames to URLs.",
       "type":           "string",
       "format":         "uri"
     },

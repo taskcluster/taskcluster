@@ -1,5 +1,5 @@
 {
-  "id":           "http://schemas.taskcluster.net/v1/task-completed-request.json#",
+  "id":           "http://schemas.taskcluster.net/queue/v1/task-completed-request.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Task Completed Request",
   "description":  "Request for a task to be declared completed",
