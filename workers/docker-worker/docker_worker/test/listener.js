@@ -69,7 +69,7 @@ Listener.prototype.listen = function() {
       var routingPattern = '*.*.*.*.' + testworker.TEST_PROVISIONER_ID + '.' +
                            that.workerType + '.#';
       // Bind the task completed exchange
-      that.queue.bind('v1/queue:task-completed', routingPattern, function() {
+      that.queue.bind('queue/v1/task-completed', routingPattern, function() {
         debug("Listening next task");
         accept();
       });
