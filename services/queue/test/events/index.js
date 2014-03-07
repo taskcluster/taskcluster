@@ -4,10 +4,12 @@ var Promise   = require('promise');
 var server    = require('../../server');
 var events    = require('../../queue/events');
 var debug     = require('debug')('tests:events');
+var validate  = require('../../utils/validate');
 
 /** Setup events */
 exports.setUp = function(callback)  {
   debug("Setting up exchanges with events.setup()");
+  validate.setup();
   events.setup().then(function() {
     debug("Exchange setup completed!");
     callback();
@@ -40,6 +42,7 @@ exports['task-pending'] = function(test) {
       "reason":             "none",
       "routing":            "jonasfjs-precious-tasks.stupid-test.aws",
       "retries":            0,
+      "timeout":            30,
       "priority":           2.6,
       "created":            "2014-02-01T03:22:36.356Z",
       "deadline":           "2014-03-01T03:22:36.356Z",
@@ -47,8 +50,8 @@ exports['task-pending'] = function(test) {
     }
   }).then(function() {
     test.ok(true, "Message was sent, how nice");
-  }, function() {
-    test.ok(false, "Failed to send message!");
+  }, function(err) {
+    test.ok(false, "Failed to send message!" + err);
   }).then(function() {
     test.done();
   });
@@ -71,6 +74,7 @@ exports['task-pending validation test'] = function(test) {
       "reason":             "none",
       "routing":            "jonasfjs-precious-tasks.stupid-test.aws",
       "retries":            0,
+      "timeout":            30,
       "priority":           2.6,
       "created":            "2014-02-01T03:22:36.356Z",
       "deadline":           "2014-03-01T03:22:36.356Z",
@@ -143,6 +147,7 @@ exports['task-pending receive test'] = function(test) {
         "reason":             "none",
         "routing":            "jonasfjs-precious-tasks.stupid-test.aws",
         "retries":            0,
+        "timeout":            30,
         "priority":           2.6,
         "created":            "2014-02-01T03:22:36.356Z",
         "deadline":           "2014-03-01T03:22:36.356Z",

@@ -6,6 +6,7 @@
   "state":              "pending",
   "reason":             "none",
   "routing":            "jonasfjs-precious-tasks.stupid-test.aws",
+  "timeout":            30,
   "retries":            0,
   "priority":           2.6,
   "created":            "2014-02-01T03:22:36.356Z",
