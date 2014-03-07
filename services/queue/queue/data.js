@@ -61,6 +61,7 @@ var tasks_table_definition = [
   ['reason',            'varchar(255)',           'NOT NULL'      ],
   ['routing',           'varchar(64)',            'NOT NULL'      ],
   ['retries',           'integer',                'NOT NULL'      ],
+  ['timeout',           'integer',                'NOT NULL'      ],
   ['priority',          'double precision',       'NOT NULL'      ],
   ['created',           'timestamp',              'NOT NULL'      ],
   ['deadline',          'timestamp',              'NOT NULL'      ],
@@ -81,8 +82,10 @@ var runs_table_definition = [
 /** Interval handle for setInterval to expire claims */
 var expireClaimsIntervalHandle = null;
 
-/** Interval by which we should expire claims */
-var expireClaimsInterval = 1000 * 60 * 3;
+/**
+Interval by which we should expire claims.
+*/
+var expireClaimsInterval = 1000 * 15;
 
 /** Ensure database tables exists and connection string is setup */
 var setupDatabase = function() {
@@ -152,7 +155,7 @@ var setupDatabase = function() {
     // Call expireClaims to ensure that claims are expired occasionally
     expireClaimsIntervalHandle = setInterval(function() {
       exports.expireClaims();
-    }, expireClaimsInterval)
+    }, expireClaimsInterval);
 
     // Expire claims initial
     exports.expireClaims();
@@ -187,7 +190,7 @@ exports.createTask = function(task) {
   return connect().then(function(client) {
     var properties = [
       'taskId', 'provisionerId', 'workerType', 'state', 'reason', 'routing',
-      'retries', 'priority', 'created', 'deadline', 'takenUntil'
+      'retries', 'timeout', 'priority', 'created', 'deadline', 'takenUntil'
     ];
 
     // Construct string of columns
@@ -203,7 +206,7 @@ exports.createTask = function(task) {
     // Construct list of values
     var values = properties.map(function(prop) {
       if (prop == 'taskId') {
-        return slugid.decode(task.taskId)
+        return slugid.decode(task.taskId);
       }
       return task[prop];
     });
@@ -251,7 +254,7 @@ exports.loadTask = function(taskId) {
     // Columns we want from tasks
     var task_cols = [
       'provisionerId', 'workerType', 'state', 'reason', 'routing', 'retries',
-      'priority', 'created', 'deadline', 'takenUntil',
+      'timeout', 'priority', 'created', 'deadline', 'takenUntil',
     ];
 
     // Dates, which will be returned as javascript data objects, they should
@@ -457,7 +460,13 @@ exports.expireClaims = function() {
       deadline_exceeded,
       retries_exhausted
     ).spread(function(result1, result2) {
-      debug("Loading tasks to be reported as failed");
+
+      debug("Loading tasks to be reported as failed", {
+        deadlines: result1.rows,
+        retriesExhausted: result2.rows,
+        deadlineCount: result1.rowCount,
+        retriesExhaustedCount: result2.rowCount
+      });
       return Promise.all(result1.rows.map(function(row) {
         return exports.loadTask(slugid.encode(row.taskid));
       }).concat(result2.rows.map(function(row) {
@@ -497,11 +506,15 @@ exports.expireClaims = function() {
 
     // Mark running tasks with expired takenUntil as pending, and decrement
     // retries
-    var sql = 'UPDATE tasks SET state = \'pending\', retries = retries - 1 ' +
+    var sql = 'UPDATE tasks SET state = \'pending\' ' +
               'WHERE takenuntil < $1 AND state = \'running\' AND ' +
               'retries > 0 RETURNING taskid';
     var pending_tasks = client.promise(sql, [new Date()]).then(function(result) {
-      debug("Loading tasks that are pending again");
+      debug("Loading tasks that are pending again", {
+        count: result.rowCount,
+        tasks: result.rows
+      });
+
       return Promise.all(result.rows.map(function(row) {
         return exports.loadTask(slugid.encode(row.taskid));
       }));

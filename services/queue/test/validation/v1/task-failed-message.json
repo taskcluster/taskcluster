@@ -9,6 +9,7 @@
     "reason":"deadline-exceeded",
     "routing":"jonasfj.test",
     "retries":1,
+    "timeout":30,
     "priority":1,
     "created":"2014-02-06T20:04:48.544Z",
     "deadline":"2013-04-06T20:04:48.544Z",

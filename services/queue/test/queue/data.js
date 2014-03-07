@@ -51,6 +51,7 @@ exports['Create and delete task'] = function(test) {
     "reason":             "none",
     "routing":            "jonasfjs-precious-tasks.stupid-test.aws",
     "retries":            0,
+    "timeout":            60,
     "priority":           2.6,
     "created":            "2014-02-01T03:22:36.356Z",
     "deadline":           "2014-03-01T03:22:36.356Z",
@@ -77,7 +78,7 @@ exports['Create and delete task'] = function(test) {
 
 /** Test that we can create, load and delete tasks */
 exports['Create, load and delete task'] = function(test) {
-  test.expect(4);
+  test.expect(5);
 
   // Task structure to insert
   var task = {
@@ -89,6 +90,7 @@ exports['Create, load and delete task'] = function(test) {
     "reason":             "none",
     "routing":            "jonasfjs-precious-tasks.stupid-test.aws",
     "retries":            0,
+    "timeout":            60,
     "priority":           2.6,
     "created":            "2014-02-01T03:22:36.356Z",
     "deadline":           "2014-03-01T03:22:36.356Z",
@@ -105,6 +107,7 @@ exports['Create, load and delete task'] = function(test) {
     return data.loadTask(task.taskId);
   }).then(function(task_status) {
     test.ok(task_status);
+    test.equal(task_status.timeout, task.timeout);
     // Validate the result, this should match our schema
     var errors = validate(
       task_status,
@@ -144,6 +147,7 @@ exports['Create, claim and delete task'] = function(test) {
     "reason":             "none",
     "routing":            "jonasfjs-precious-tasks.stupid-test.aws",
     "retries":            0,
+    "timeout":            60,
     "priority":           2.6,
     "created":            "2014-02-01T03:22:36.356Z",
     "deadline":           "2014-03-01T03:22:36.356Z",
@@ -191,6 +195,7 @@ exports['Create, claim, complete and delete task'] = function(test) {
     "reason":             "none",
     "routing":            "jonasfjs-precious-tasks.stupid-test.aws",
     "retries":            0,
+    "timeout":            60,
     "priority":           2.6,
     "created":            "2014-02-01T03:22:36.356Z",
     "deadline":           "2014-03-01T03:22:36.356Z",

@@ -14,5 +14,5 @@ var reporter = nodeunit.reporters.default;
 
 // Run test
 reporter.run(test_files.map(function(test) {
-  return './tests/' + test;
+  return './test/' + test;
 }));
