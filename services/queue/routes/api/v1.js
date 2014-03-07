@@ -393,7 +393,7 @@ api.declare({
 
 /** Fetch work for a worker */
 api.declare({
-  method:   'get',
+  method:   'post',
   route:    '/claim-work/:provisionerId/:workerType',
   input:    'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#',
   output:   undefined,  // TODO: define schema later
