@@ -27,6 +27,7 @@
       "pattern":        {"$const": "identifier-pattern"}
     },
     "routing":          {"$const": "routing"},
+    "timeout":          {"$const": "timeout"},
     "retries": {
       "title":          "Retries",
       "description":    "Number of times to retry the task in case of infrastructure issues",
@@ -87,6 +88,6 @@
   "additionalProperties":   false,
   "required": [
     "version", "provisionerId", "workerType", "routing", "retries",
-    "priority", "created", "deadline", "payload", "metadata", "tags"
+    "priority", "timeout", "created", "deadline", "payload", "metadata", "tags"
   ]
 }

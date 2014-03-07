@@ -21,8 +21,8 @@ var schema = function(options) {
     if (options.input !== undefined) {
       var errors = validate(req.body, options.input);
       if (errors) {
-        debug("Request payload for %s didn't follow schema %s",
-              req.url, options.input);
+        debug("Request payload for %s didn't follow schema",
+              req.url, options.input, errors);
         res.json(400, {
           'message':  "Request payload must follow the schema: " + options.input,
           'error':    errors

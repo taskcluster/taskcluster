@@ -6,7 +6,7 @@ env:
 language: node_js
 node_js:
 - '0.10'
-script: npm run-script ci
+script: npm test
 before_script:
 - sudo -u postgres psql -c "CREATE ROLE queue LOGIN PASSWORD 'secret'";
 - sudo -u postgres psql -c "CREATE DATABASE queue_v1 OWNER queue";

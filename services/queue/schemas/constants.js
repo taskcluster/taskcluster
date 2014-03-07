@@ -53,6 +53,16 @@ module.exports = {
     "type":         "number"
   },
 
+  // Timeout for task
+  "timeout": {
+    "title":          "Timeout",
+    "description":    "The queue will take the `timeout` value as an advice, but reserves the right to ignore it." +
+                      "So workers and other interested parties should **not** rely on the value of the `timeout` property.",
+    "type":           "integer",
+    "minimum":        30,
+    "maximum":        1200
+  },
+
   // Deadline of task
   "deadline": {
     "title":        "Deadline",
