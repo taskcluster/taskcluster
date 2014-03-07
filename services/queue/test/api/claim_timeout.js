@@ -64,7 +64,7 @@ suite('claim timeouts', function() {
 
     function claimWork() {
       return request(
-        'GET',
+        'POST',
         url + 'v1/claim-work/' + task.provisionerId + '/' + task.workerType
       ).
       send({
