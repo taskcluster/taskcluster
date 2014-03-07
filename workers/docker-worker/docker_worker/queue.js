@@ -65,6 +65,7 @@ exports.postTask = function(payload, options) {
     provisionerId:            options.provisionerId,
     workerType:               options.workerType,
     routing:                  options.routing     || "",
+    timeout:                  options.timeout     || 180, // default timeout in seconds
     retries:                  options.retries     || DEFAULT_RETRIES,
     priority:                 options.priority    || DEFAULT_PRIORITY,
     created:                  (new Date()).toJSON(),

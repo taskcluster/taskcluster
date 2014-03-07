@@ -43,7 +43,7 @@ Worker.prototype.claimWork = function() {
 
     // First /claim-work/...
     request
-      .get(url)
+      .post(url)
       .send({
         workerGroup:    that.workerGroup,
         workerId:       that.workerId
