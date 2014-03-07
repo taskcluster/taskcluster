@@ -140,7 +140,7 @@ exports.publish = function(exchange, message) {
       deliveryMode:       2,
     }, function(err) {
       if (err) {
-        reject(new Error("Failed to send message"));
+        reject(new Error("Failed to send message\n" + err.stack));
       } else {
         debug(
           "Published message to %s with taskId: %s",

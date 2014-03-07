@@ -9,6 +9,7 @@ var slugid  = require('../../utils/slugid');
 var data    = require('../../queue/data');
 var events  = require('../../queue/events');
 
+
 // Create S3 instance
 var s3 = new aws.S3();
 
@@ -65,6 +66,7 @@ api.declare({
     state:                'pending',
     reason:               'none',
     routing:              req.body.routing,
+    timeout:              req.body.timeout,
     retries:              req.body.retries,
     priority:             req.body.priority,
     created:              req.body.created,
@@ -94,16 +96,17 @@ api.declare({
 
     // Return a promise that everything happens
     return Promise.all(added_to_database, event_published);
-  })
+  });
 
   // Reply to request, when task is uploaded to s3, added to database and
   // published over RabbitMQ
   done.then(function() {
+    debug('new task', task_status, { taskIdSlug: slugid.decode(taskId) });
     // Reply that the task was inserted
     res.reply({
       status: task_status
     });
-  }, function(err) {
+  }).catch(function(err) {
     debug("Failed to accept new task, error: %s as JSON: %j", err, err);
     // Report internal error
     res.json(500, {
@@ -161,10 +164,10 @@ api.declare({
 }, function(req, res) {
   // Get the taskId
   var taskId = req.params.taskId;
+  var timeout = res.body.timeout;
 
   // Set takenUntil to now + 20 min
   var takenUntil = new Date();
-  var timeout = 20 * 60;
   takenUntil.setSeconds(takenUntil.getSeconds() + timeout);
 
   // Claim task without runId if this is a new claim
@@ -423,7 +426,8 @@ api.declare({
     }
 
     // Pick the first task
-    var taskId = tasks[0].taskId;
+    var task = tasks[0];
+    var taskId = task.taskId;
 
     ///////////// Warning: Code duplication from /task/:taskId/claim
     /////////////          This needs to be refactored, all logic like this
@@ -432,7 +436,7 @@ api.declare({
 
     // Set takenUntil to now + 20 min
     var takenUntil = new Date();
-    var timeout = 20 * 60;
+    var timeout = task.timeout;
     takenUntil.setSeconds(takenUntil.getSeconds() + timeout);
 
     // Claim task without runId if this is a new claim

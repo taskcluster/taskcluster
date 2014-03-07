@@ -58,8 +58,9 @@ exports['POST new task to v1/task/new'] = function(test) {
     json:   {
       version:          '0.2.0',
       provisionerId:    'jonasfj-provisioner',
-      workerType:      'my-ami',
+      workerType:       'my-ami',
       routing:          'jonasfj-test.what-a-hack',
+      timeout:          30,
       retries:          5,
       priority:         1,
       created:          created.toJSON(),
@@ -98,7 +99,7 @@ exports['POST invalid task to v1/task/new'] = function(test) {
     url:    'http://' + nconf.get('server:hostname') + ':' +
             nconf.get('server:port') + '/v1/task/new',
     json:   {
-      version:          '0.0.0',
+      version:          '0.0.0', // version 0.0.0 is invalid
       provisionerId:    'jonasfj-provisioner',
       workerType:       'my-ami',
       routing:          'jonasfj-test.what-a-hack',
@@ -123,4 +124,3 @@ exports['POST invalid task to v1/task/new'] = function(test) {
     test.done();
   });
 };
-

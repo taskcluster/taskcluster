@@ -14,6 +14,7 @@
     "state":"failed",
     "reason":"deadline-exceeded",
     "routing":"jonasfj.test",
+    "timeout":30,
     "retries":1,
     "priority":1,
     "created":"2014-02-06T20:04:48.544Z",
