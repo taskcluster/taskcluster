@@ -164,21 +164,24 @@ api.declare({
 }, function(req, res) {
   // Get the taskId
   var taskId = req.params.taskId;
-  var timeout = res.body.timeout;
+  var taskStatus;
+  var timeout;
 
-  // Set takenUntil to now + 20 min
-  var takenUntil = new Date();
-  takenUntil.setSeconds(takenUntil.getSeconds() + timeout);
+  data.loadTask(taskId).then(function(status) {
+    task_status = status;
+    timeout = task_status.timeout;
 
-  // Claim task without runId if this is a new claim
-  var task_claimed = data.claimTask(taskId, takenUntil, {
-    workerGroup:    req.body.workerGroup,
-    workerId:       req.body.workerId,
-    runId:          req.body.runId || undefined
-  });
+    // Set takenUntil to now + 20 min
+    var takenUntil = new Date();
+    takenUntil.setSeconds(takenUntil.getSeconds() + timeout);
 
-  // When claimed
-  task_claimed.then(function(runId) {
+    // Claim task without runId if this is a new claim
+    return data.claimTask(taskId, takenUntil, {
+      workerGroup:    req.body.workerGroup,
+      workerId:       req.body.workerId,
+      runId:          req.body.runId || undefined
+    });
+  }).then(function(runId) {
     // If task wasn't claimed, report 404
     if(runId === null) {
       res.json(404, {
@@ -186,58 +189,54 @@ api.declare({
       });
       return;
     }
+    // Fire event
+    var event_sent = events.publish('task-running', {
+      version:        '0.2.0',
+      workerGroup:    req.body.workerGroup,
+      workerId:       req.body.workerId,
+      runId:          runId,
+      logsUrl:        task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
+      status:         task_status
+    });
 
-    // Load task status structure
-    return data.loadTask(taskId).then(function(task_status) {
-      // Fire event
-      var event_sent = events.publish('task-running', {
-        version:        '0.2.0',
-        workerGroup:    req.body.workerGroup,
-        workerId:       req.body.workerId,
+    // Sign urls for the reply
+    var logs_url_signed = sign_put_url({
+      Bucket:         nconf.get('queue:taskBucket'),
+      Key:            taskId + '/runs/' + runId + '/logs.json',
+      ContentType:    'application/json',
+      Expires:        timeout
+    });
+
+    // Sign url for uploading task result
+    var result_url_signed = sign_put_url({
+      Bucket:         nconf.get('queue:taskBucket'),
+      Key:            taskId + '/runs/' + runId + '/result.json',
+      ContentType:    'application/json',
+      Expires:        timeout
+    });
+
+    // Send reply client
+    var reply_sent = Promise.all(
+      logs_url_signed,
+      result_url_signed
+    ).spread(function(logs_url, result_url) {
+      res.reply({
         runId:          runId,
-        logsUrl:        task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
+        logsPutUrl:     logs_url,
+        resultPutUrl:   result_url,
         status:         task_status
       });
-
-      // Sign urls for the reply
-      var logs_url_signed = sign_put_url({
-        Bucket:         nconf.get('queue:taskBucket'),
-        Key:            taskId + '/runs/' + runId + '/logs.json',
-        ContentType:    'application/json',
-        Expires:        timeout
+    }, function(err) {
+      debug("Failed to reply to claim, error: %s as JSON: %j", err, err);
+      res.json(500, {
+        message:        "Internal Server Error"
       });
-
-      // Sign url for uploading task result
-      var result_url_signed = sign_put_url({
-        Bucket:         nconf.get('queue:taskBucket'),
-        Key:            taskId + '/runs/' + runId + '/result.json',
-        ContentType:    'application/json',
-        Expires:        timeout
-      });
-
-      // Send reply client
-      var reply_sent = Promise.all(
-        logs_url_signed,
-        result_url_signed
-      ).spread(function(logs_url, result_url) {
-        res.reply({
-          runId:          runId,
-          logsPutUrl:     logs_url,
-          resultPutUrl:   result_url,
-          status:         task_status
-        });
-      }, function(err) {
-        debug("Failed to reply to claim, error: %s as JSON: %j", err, err);
-        res.json(500, {
-          message:        "Internal Server Error"
-        });
-      });
-
-      // If either of these fails, then I have no idea what to do... so we'll
-      // just do them in parallel... a better strategy might developed in the
-      // future, this is just a prototype
-      return Promise.all(reply_sent, event_sent);
     });
+
+    // If either of these fails, then I have no idea what to do... so we'll
+    // just do them in parallel... a better strategy might developed in the
+    // future, this is just a prototype
+    return Promise.all(reply_sent, event_sent);
   }).then(undefined, function(err) {
     debug("Failed to claim task, error %s, as JSON: %j", err, err);
     res.json(500, {
