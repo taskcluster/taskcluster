@@ -1,4 +1,4 @@
-#! /bin/bash -vex
+#! /bin/bash -e
 
 # These can safely be run in all cases
 ./node_modules/.bin/nodeunit test/queue/data.js \
@@ -12,4 +12,5 @@ else
   echo "Running tests which require s3 credentials"
   ./node_modules/.bin/nodeunit test/api/index.js;
   ./node_modules/.bin/mocha test/api/claim_timeout.js
+  ./node_modules/.bin/mocha test/api/claim.js
 fi
