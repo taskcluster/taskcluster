@@ -1,9 +1,9 @@
-var server        = require('../../server'); // include for configuration
-var data          = require('../../queue/data');
+var server        = require('../server'); // include for configuration
+var data          = require('../queue/data');
 var debug         = require('debug')('tests:queue:data');
 var _             = require('lodash');
-var validate      = require('../../utils/validate');
-var slugid        = require('../../utils/slugid');
+var validate      = require('../utils/validate');
+var slugid        = require('../utils/slugid');
 
 
 var setupDatabase = false;

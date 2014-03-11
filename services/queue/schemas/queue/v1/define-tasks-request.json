@@ -1,0 +1,17 @@
+{
+  "id":           "http://schemas.taskcluster.net/queue/v1/define-tasks-request.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Define Tasks Request",
+  "description":  "Request for a number of `taskId`s to be assigned, and PUT URLs to which the definition can be uploaded, without the tasks becoming _pending_ immediately.",
+  "type":         "object",
+  "properties": {
+    "tasksRequested": {
+      "description":  "Number of `taskId`s to generated for uploading task definitions.",
+      "type":         "integer",
+      "minimum":      1,
+      "maximum":      1000
+    }
+  },
+  "additionalProperties":   false,
+  "required": ["tasksRequested"]
+}

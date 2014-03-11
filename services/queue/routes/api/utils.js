@@ -37,14 +37,24 @@ var schema = function(options) {
       // defined, then we have to validate against it...
       if(nconf.get('queue:validateOutgoing') &&
          options.output !== undefined) {
-        var errors = validate(json, options.output);
-        if (errors) {
+        try {
+          var errors = validate(json, options.output);
+          if (errors) {
+            res.json(500, {
+              'message':  "Internal Server Error",
+            });
+            debug("Reply for %s didn't match schema: %s got errors:\n%s",
+                  req.url, options.output, JSON.stringify(errors, null, 4));
+            return;
+          }
+        }
+        catch(err) {
+          debug("Schema validation caused an exception, schema: %s, input:",
+                options.output, JSON.stringify(json, null, 4));
           res.json(500, {
             'message':  "Internal Server Error",
           });
-          debug("Reply for %s didn't match schema: %s got errors:\n%s",
-                req.url, options.output, JSON.stringify(errors, null, 4));
-          return;
+          throw err;
         }
       }
       // If JSON was valid or validation was skipped then reply with 200 OK

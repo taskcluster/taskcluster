@@ -1,10 +1,10 @@
 var nconf     = require('nconf');
 var amqp      = require('amqp');
 var Promise   = require('promise');
-var server    = require('../../server');
-var events    = require('../../queue/events');
+var server    = require('../server');
+var events    = require('../queue/events');
 var debug     = require('debug')('tests:events');
-var validate  = require('../../utils/validate');
+var validate  = require('../utils/validate');
 
 /** Setup events */
 exports.setUp = function(callback)  {
