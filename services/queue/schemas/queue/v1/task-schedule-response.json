@@ -1,0 +1,12 @@
+{
+  "id":           "http://schemas.taskcluster.net/queue/v1/task-schedule-response.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Schedule Task Response",
+  "description":  "Response for a request to schedule a task previously defined, but not scheuled.",
+  "type":         "object",
+  "properties": {
+    "status":     {"$ref": "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
+  },
+  "additionalProperties":   false,
+  "required": ["status"]
+}

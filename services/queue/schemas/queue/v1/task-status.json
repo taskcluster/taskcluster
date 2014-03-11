@@ -60,7 +60,8 @@
     "reason":           {
       "description":    "Reason for the current state, **more reasons will be added in the future**.",
       "enum": [
-        "none", "deadline-exceeded", "retries-exhausted", "canceled"
+        "none", "deadline-exceeded", "retries-exhausted", "canceled",
+        "rerun-requested"
       ]
     },
     "routing":          {"$const": "routing"},

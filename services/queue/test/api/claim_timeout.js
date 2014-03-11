@@ -1,9 +1,27 @@
 suite('claim timeouts', function() {
-  var server = require('../../server');
-  var assert = require('assert');
-  var request = require('superagent-promise');
-  var Promise = require('promise');
-  var debug = require('debug')('test:claim timeouts');
+  var debug       = require('debug')('test:claim timeouts');
+  var LocalQueue  = require('../localqueue');
+  var assert      = require('assert');
+  var Promise     = require('promise');
+  var request     = require('superagent-promise');
+  var config      = require('../../config');
+  var nconf       = require('nconf');
+  var _           = require('lodash');
+  config.load();
+
+  // Queue base URL
+  var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
+                     nconf.get('server:port');
+
+  var queue = null;
+  setup(function() {
+    queue = new LocalQueue();
+    return queue.launch();
+  });
+
+  teardown(function() {
+    queue.terminate();
+  });
 
   // break all rules that have ever existed...
   // timeout is in seconds
@@ -14,21 +32,6 @@ suite('claim timeouts', function() {
       setTimeout(accept, timeout);
     });
   }
-
-  /** start the server between tests */
-
-  var url;
-  var httpServer;
-  setup(function() {
-    return server.launch().then(function(_httpServer) {
-      httpServer = _httpServer;
-      url = 'http://localhost:' + httpServer.address().port + '/';
-    });
-  });
-
-  teardown(function() {
-    return httpServer.terminate();
-  });
 
   suite('let task timeout (no claim)', function() {
     // this takes over 30 seconds at minimum
@@ -65,7 +68,7 @@ suite('claim timeouts', function() {
     function claimWork() {
       return request(
         'POST',
-        url + 'v1/claim-work/' + task.provisionerId + '/' + task.workerType
+        baseUrl + '/v1/claim-work/' + task.provisionerId + '/' + task.workerType
       ).
       send({
         workerGroup: 'testing',
@@ -76,7 +79,7 @@ suite('claim timeouts', function() {
 
     var body;
     setup(function(done) {
-      return request('POST', url + 'v1/task/new').
+      return request('POST', baseUrl + '/v1/task/new').
         send(task).
         end().
         then(function(res) {
