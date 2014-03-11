@@ -435,6 +435,25 @@ exports.queryTasks = function(provisionerId, workerType) {
   });
 };
 
+/** Rerun the task again */
+exports.rerunTask = function(taskId, retries) {
+  return connect().then(function(client) {
+    var sql     = 'UPDATE tasks SET state = \'pending\', ' +
+                  'reason = \'rerun-requested\', retries = $1, ' +
+                  'takenUntil = $2 WHERE taskid = $3 AND ' +
+                  '(state = \'completed\' OR state = \'failed\')';
+    var params  = [retries, (new Date(0)).toJSON(), slugid.decode(taskId)];
+    return client.promise(sql, params).then(function() {
+      client.release();
+      return exports.loadTask(taskId);
+    });
+  }).then(undefined, function(err) {
+    debug("Failed to update task for rerun, err: %s, as JSON: %j",
+          err, err, err.stack);
+    throw err;
+  });
+};
+
 
 /**
  * Render running tasks pending, if takenUntil have expired

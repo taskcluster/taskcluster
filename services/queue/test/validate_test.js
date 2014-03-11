@@ -1,4 +1,4 @@
-var validate    = require('../../utils/validate');
+var validate    = require('../utils/validate');
 var fs          = require('fs');
 var path        = require('path');
 
@@ -10,19 +10,19 @@ var path        = require('path');
  */
 var testCases = [
   {
-    path:     'v1/task-failed-with-run-message.json',
+    path:     'validate_test/task-failed-with-run-message.json',
     schema:   'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#',
     success:  true,
   }, {
-    path:     'v1/task-failed-message.json',
+    path:     'validate_test/task-failed-message.json',
     schema:   'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#',
     success:  true,
   }, {
-    path:     'v1/task-pending-message.json',
+    path:     'validate_test/task-pending-message.json',
     schema:   'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#',
     success:  true,
   }, {
-    path:     'v1/task-status.json',
+    path:     'validate_test/task-status.json',
     schema:   'http://schemas.taskcluster.net/queue/v1/task-status.json#',
     success:  true,
   },

@@ -1,9 +1,27 @@
 suite('claim timeouts', function() {
-  var server = require('../../server');
-  var assert = require('assert');
-  var request = require('superagent-promise');
-  var Promise = require('promise');
-  var debug = require('debug')('test:claim timeouts');
+  var debug       = require('debug')('test:api:claim');
+  var LocalQueue  = require('../localqueue');
+  var assert      = require('assert');
+  var Promise     = require('promise');
+  var request     = require('superagent-promise');
+  var config      = require('../../config');
+  var nconf       = require('nconf');
+  var _           = require('lodash');
+  config.load();
+
+  // Queue base URL
+  var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
+                     nconf.get('server:port');
+
+  var queue = null;
+  setup(function() {
+    queue = new LocalQueue();
+    return queue.launch();
+  });
+
+  teardown(function() {
+    queue.terminate();
+  });
 
   // break all rules that have ever existed...
   // timeout is in seconds
@@ -14,21 +32,6 @@ suite('claim timeouts', function() {
       setTimeout(accept, timeout);
     });
   }
-
-  /** start the server between tests */
-
-  var url;
-  var httpServer;
-  setup(function() {
-    return server.launch().then(function(_httpServer) {
-      httpServer = _httpServer;
-      url = 'http://localhost:' + httpServer.address().port + '/';
-    });
-  });
-
-  teardown(function() {
-    return httpServer.terminate();
-  });
 
   suite('reclaim task by id', function() {
     var unique = String(Date.now());
@@ -61,7 +64,7 @@ suite('claim timeouts', function() {
 
     var status;
     setup(function(done) {
-      return request('POST', url + 'v1/task/new').
+      return request.post(baseUrl + '/v1/task/new').
         send(task).
         end().
         then(function(res) {
@@ -73,7 +76,7 @@ suite('claim timeouts', function() {
     });
 
     function claim(body) {
-      return request('POST', url + 'v1/task/' + status.taskId + '/claim').
+      return request.post(baseUrl + '/v1/task/' + status.taskId + '/claim').
         send(body).
         end();
     }
