@@ -1,0 +1,6 @@
+# /etc/default/docker
+ 
+mkdir -p /mnt/var/lib/docker
+mkdir -p /mnt/docker-tmp
+export TMPDIR="/mnt/docker-tmp"
+export DOCKER_OPTS=" -g /mnt/var/lib/docker"

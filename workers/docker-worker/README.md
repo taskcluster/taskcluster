@@ -113,6 +113,7 @@ fill out the missing credentials and save it as `docker-worker-opts.sh`.
   -var "loggly_account=logglyaccount" \
   -var "loggly_auth=logglyauth"
 ```
+You can also use the `-var-file` and provide a JSON file with your variables.
 
 **Note** you can set command line options for docker-worker with
 [`DOCKER_WORKER_OPTS`](https://github.com/taskcluster/docker-worker/blob/master/docker_worker_opts_example.sh#L2), if you're deploying outside AWS EC2, or don't want the
