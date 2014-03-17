@@ -74,6 +74,11 @@ function shutdown() {
 
 /** Idle handler to shutdown if fully idle and less than */
 function onIdleCapacityShutdown(capacity) {
+  // Don't shutdown if we're not fully idle
+  if (capacity.size < capacity.maximumSize) {
+    return;
+  }
+
   // Get system uptime in minutes
   var uptimeInMinutes   = os.uptime() / 60;
 
@@ -84,6 +89,7 @@ function onIdleCapacityShutdown(capacity) {
   // SHUTDOWN_MAX_CYCLE_LEFT minutes left in billing cycle
   if (SHUTDOWN_MIN_CYCLE_LEFT < billingCycleLeft &&
       billingCycleLeft < SHUTDOWN_MAX_CYCLE_LEFT) {
+    debug("Shutting due to idle capacity");
     shutdown();
   }
 };
