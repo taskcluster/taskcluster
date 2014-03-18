@@ -1,16 +1,19 @@
 var Promise       = require('promise');
-var request       = require('superagent');
+var request       = require('superagent-promise');
 var fs            = require('fs');
 var mime          = require('mime');
 var debug         = require('debug')('taskrun');
 var assert        = require('assert');
 var queue         = require('./queue');
 
-/**
- * Minimum time remaining until `takenUntil` expires before reclaim is
- * initialized, if `keepTask()` is used.
- */
-var RECLAIM_TIME = 1000 * 60 * 3;
+
+// XXX: This code should live in the client not in the worker
+function handleRequestError(res) {
+  if (res.error) {
+    // XXX: we can (and actually do) better in the client...
+    throw res.error;
+  }
+}
 
 /**
  * Create a new TaskRun instance, this class help you keep a task run, upload
@@ -39,29 +42,28 @@ var TaskRun = function(owner, task, status, runId, logsPutUrl, resultPutUrl) {
  * reimplementing the timing logic.
  */
 TaskRun.prototype.reclaimTask = function() {
-  var that = this;
-  var taskId = that.status.taskId;
-  return new Promise(function(accept, reject) {
-    var url = queue.queueUrl('/task/' + taskId + '/claim');
-    request
-      .post(url)
-      .send({
-        workerGroup:      that.owner.workerGroup,
-        workerId:         that.owner.workerId,
-        runId:            that._runId
-      })
-      .end(function(res) {
-        if (!res.ok) {
-          debug("Failed to reclaim task: %s", taskId);
-          return reject();
-        }
-        debug("Successfully, reclaimed task: %s", taskId);
-        that.status         = res.body.status;
-        that._logsPutUrl    = res.body.logsPutUrl;
-        that._resultPutUrl  = res.body.resultPutUrl;
-        accept();
-      });
-  });
+  var taskId = this.status.taskId;
+  var url = queue.queueUrl('/task/' + taskId + '/claim');
+
+  return request
+    .post(url)
+    .send({
+      workerGroup:      this.owner.workerGroup,
+      workerId:         this.owner.workerId,
+      runId:            this._runId
+    })
+    .end()
+    .then(function(res) {
+      if (res.error) {
+        debug("Failed to reclaim task: %s", taskId, res.text);
+        throw res.error;
+      }
+
+      debug("Successfully, reclaimed task: %s", taskId);
+      this.status         = res.body.status;
+      this._logsPutUrl    = res.body.logsPutUrl;
+      this._resultPutUrl  = res.body.resultPutUrl;
+    }.bind(this));
 };
 
 /**
@@ -71,27 +73,34 @@ TaskRun.prototype.reclaimTask = function() {
  * The optional argument `abortCallback` will be called if a reclaim fails.
  */
 TaskRun.prototype.keepTask = function(abortCallback) {
-  var that = this;
-  var reclaim = null;
-  // Function to set reclaim timeout
-  var setReclaimTimeout = function() {
-    that._reclaimTimeoutHandle = setTimeout(reclaim,
-      (new Date(that.status.takenUntil)).getTime() -
-      (new Date()).getTime() - RECLAIM_TIME
-    );
-  };
   // Function to reclaim and set reclaim timeout again
-  reclaim = function() {
-    that.reclaimTask().then(setReclaimTimeout, function() {
-      // TODO: This is a little aggressive, we should allow it to fail a few
-      // times before we abort... And we should check the error code, 404
-      // Task not found, means task completed or canceled, in which case we
-      // really should abort immediately
-      if (abortCallback) {
-        abortCallback();
-      }
-    });
-  };
+  var reclaim = function() {
+    this.reclaimTask().
+      then(setReclaimTimeout).
+      catch(function(err) {
+        console.error('Error while attempting to issue claim');
+        console.error(err.stack);
+
+        // TODO: This is a little aggressive, we should allow it to fail a few
+        // times before we abort... And we should check the error code, 404
+        // Task not found, means task completed or canceled, in which case we
+        // really should abort immediately
+        abortCallback && abortCallback();
+      });
+  }.bind(this);
+
+  var setReclaimTimeout = function() {
+    // calculate when (in absolute time) when to issue the claim
+    var takenUntil = new Date(this.status.takenUntil);
+
+    // calculate the time in milliseconds from now. Default to now if its in the
+    // past.
+    var nextTick = Math.max((takenUntil.valueOf() - Date.now()) * 0.7, 0);
+    debug('rescheduling reclaim', { nextTick: nextTick });
+    this._reclaimTimeoutHandle = setTimeout(reclaim, nextTick);
+
+  }.bind(this);
+
   // Set reclaim time out
   setReclaimTimeout();
 };
@@ -107,40 +116,22 @@ TaskRun.prototype.clearKeepTask = function() {
 
 /** Put logs.json for current run, returns promise of success */
 TaskRun.prototype.putLogs = function(json) {
-  var that = this;
-  return new Promise(function(accept, reject) {
-    debug("Uploading logs.json to signed PUT URL");
-    request
-      .put(that._logsPutUrl)
-      .send(json)
-      .end(function(res) {
-        if (!res.ok) {
-          debug("Failed to upload logs.json, error: %s", res.text)
-          return reject();
-        }
-        debug("Successfully, uploaded logs.json");
-        accept();
-      });
-  });
+  debug('Uploading logs.json to signed PUT URL');
+  return request
+           .put(this._logsPutUrl)
+           .send(json)
+           .end()
+           .then(handleRequestError);
 };
 
 /** Put result.json for current run, returns promise of success */
 TaskRun.prototype.putResult = function(json) {
-  var that = this;
-  return new Promise(function(accept, reject) {
-    debug("Uploading result.json to PUT URL");
-    request
-      .put(that._resultPutUrl)
-      .send(json)
-      .end(function(res) {
-        if (!res.ok) {
-          debug("Failed to upload logs.json, error: %s", res.text)
-          return reject();
-        }
-          debug("Successfully, uploaded result.json");
-          accept();
-      });
-  });
+  debug("Uploading result.json to PUT URL");
+  return request
+    .put(this._resultPutUrl)
+    .send(json)
+    .end()
+    .then(handleRequestError);
 };
 
 /**
@@ -163,63 +154,22 @@ TaskRun.prototype.putArtifact = function(name, filename, contentType) {
       accept(stat);
     });
   }).then(function(stat) {
-    return new Promise(function(accept, reject) {
-      // Lookup mimetype if not provided
-      if (!contentType) {
-        contentType = mime.lookup(filename);
-      }
+    // Lookup mimetype if not provided
+    if (!contentType) {
+      contentType = mime.lookup(filename);
+    }
 
-      // Create artifacts map to submit
-      var artifacts = {};
-      artifacts[name] = {
-        contentType:       contentType
-      };
+    // Create artifacts map to submit
+    var artifacts = {};
+    artifacts[name] = {
+      contentType:       contentType
+    };
 
-      // Construct request URL for fetching signed artifact PUT URLs
-      var url = queue.queueUrl('/task/' + that.status.taskId + '/artifact-urls');
-
-      // Request artifact put urls
-      request
-        .post(url)
-        .send({
-          workerGroup:      that.owner.workerGroup,
-          workerId:         that.owner.workerId,
-          runId:            that._runId,
-          artifacts:        artifacts
-        })
-        .end(function(res) {
-          if (!res.ok) {
-            debug("Failed get a signed artifact URL, errors: %s", res.text);
-            return reject(res.text);
-          }
-          debug("Got signed artifact PUT URL from queue");
-          var artifactUrls = res.body.artifacts[name];
-          var req = request
-                      .put(artifactUrls.artifactPutUrl)
-                      .set('Content-Type',    contentType)
-                      .set('Content-Length',  stat.size);
-          fs.createReadStream(filename).pipe(req, {end: false});
-          req.end(function(res) {
-            if (!res.ok) {
-              debug("Failed to upload to signed artifact PUT URL");
-              return reject(res.text);
-            }
-            debug("Successfully uploaded artifact %s to PUT URL", name);
-            accept(artifactUrls[name].artifactUrl);
-          });
-        });
-    });
-  });
-};
-
-TaskRun.prototype.getArtifactPutUrls = function(artifacts) {
-  var that = this;
-  return new Promise(function(accept, reject) {
     // Construct request URL for fetching signed artifact PUT URLs
     var url = queue.queueUrl('/task/' + that.status.taskId + '/artifact-urls');
 
     // Request artifact put urls
-    request
+    return request
       .post(url)
       .send({
         workerGroup:      that.owner.workerGroup,
@@ -227,40 +177,76 @@ TaskRun.prototype.getArtifactPutUrls = function(artifacts) {
         runId:            that._runId,
         artifacts:        artifacts
       })
-      .end(function(res) {
-        if (!res.ok) {
+      .end()
+      .then(function(res) {
+        if (res.error) {
           debug("Failed get a signed artifact URL, errors: %s", res.text);
-          return reject(res.text);
+          throw res.error;
         }
         debug("Got signed artifact PUT URL from queue");
-        accept(res.body.artifacts);
+        var artifactUrls = res.body.artifacts[name];
+        var req = request
+                    .put(artifactUrls.artifactPutUrl)
+                    .set('Content-Type',    contentType)
+                    .set('Content-Length',  stat.size);
+        fs.createReadStream(filename).pipe(req, {end: false});
+        return req.end().then(function(res) {
+          if (!res.ok) {
+            debug("Failed to upload to signed artifact PUT URL");
+            return reject(res.text);
+          }
+          debug("Successfully uploaded artifact %s to PUT URL", name);
+          accept(artifactUrls[name].artifactUrl);
+        });
       });
   });
+};
+
+TaskRun.prototype.getArtifactPutUrls = function(artifacts) {
+  // Construct request URL for fetching signed artifact PUT URLs
+  var url = queue.queueUrl('/task/' + this.status.taskId + '/artifact-urls');
+
+  // Request artifact put urls
+  return request
+    .post(url)
+    .send({
+      workerGroup:      this.owner.workerGroup,
+      workerId:         this.owner.workerId,
+      runId:            this._runId,
+      artifacts:        artifacts
+    })
+    .end()
+    .then(function(res) {
+      if (res.error) {
+        debug("Failed get a signed artifact URL, errors: %s", res.text);
+        throw res.error;
+      }
+      debug("Got signed artifact PUT URL from queue");
+      return res.body.artifacts;
+    });
 };
 
 
 /** Report task completed, returns promise of success */
 TaskRun.prototype.taskCompleted = function() {
   this.clearKeepTask();
-  var that = this;
-  return new Promise(function(accept, reject) {
-    var url = queue.queueUrl('/task/' + that.status.taskId + '/completed');
-    request
-      .post(url)
-      .send({
-        workerGroup:      that.owner.workerGroup,
-        workerId:         that.owner.workerId,
-        runId:            that._runId
-      })
-      .end(function(res) {
-        if (!res.ok) {
-          debug("Failed to report task as completed, error code: %s", res.status);
-          return reject(res.text);
-        }
-        debug("Successfully reported task completed");
-        accept();
-      });
-  });
+
+  var url = queue.queueUrl('/task/' + this.status.taskId + '/completed');
+  return request
+    .post(url)
+    .send({
+      workerGroup:      this.owner.workerGroup,
+      workerId:         this.owner.workerId,
+      runId:            this._runId
+    })
+    .end()
+    .then(function(res) {
+      if (res.error) {
+        debug("Failed to report task as completed, error code: %s", res.status);
+        throw res.error;
+      }
+      debug("Successfully reported task completed");
+    });
 };
 
 // Export TaskRun

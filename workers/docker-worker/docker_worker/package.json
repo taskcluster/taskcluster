@@ -23,7 +23,7 @@
     "promise":                          "~4.0.0",
     "dockerode-promise":                "0.0.1",
     "superagent":                       "~0.16.0",
-    "superagent-promise":               "0.0.0",
+    "superagent-promise":               "0.1.0",
     "commander":                        "~2.1.0",
     "debug":                            "~0.7.4",
     "dockerode-process":                "0.3.1",

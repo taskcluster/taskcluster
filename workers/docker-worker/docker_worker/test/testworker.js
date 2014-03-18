@@ -89,7 +89,8 @@ exports.submitTaskAndGetResults = function(payload) {
       workerType:       workerType,
       owner:            'unknown@localhost.local',
       name:             'Task from docker-worker test suite',
-      deadline:         1
+      deadline:         1,
+      timeout:          30
     });
   });
 

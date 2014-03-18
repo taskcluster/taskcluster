@@ -1,18 +1,37 @@
 suite('superagent-promise', function() {
-  var assert = require('assert');
-  var agent = require('./');
-  var http = require('http');
+  var assert  = require('assert');
+  var request = require('./');
+  var http    = require('http');
+  var debug   = require('debug')('index_test');
 
   // start the server
   var server;
-  var body = 'woot';
+  var successBody = 'woot';
+  var errorBody = 'Not Found';
   setup(function(done) {
     server = http.createServer(function(req, res) {
-      res.writeHead(200, {
-        'Content-Length': body.length,
-        'Content-Type': 'text/plain'
-      });
-      res.end(body);
+      if (/success$/.test(req.url)) {
+        debug("Responding with 200");
+        res.writeHead(200, {
+          'Content-Length': successBody.length,
+          'Content-Type': 'text/plain'
+        });
+        res.end(successBody);
+      } else if(/NotFound$/.test(req.url)) {
+        debug("Responding with 404");
+        res.writeHead(404, {
+          'Content-Length': errorBody.length,
+          'Content-Type': 'text/plain'
+        });
+        res.end(errorBody);
+      } else if(/error$/.test(req.url)) {
+        debug("Responding with 200, but mismatching Content-Length");
+        res.writeHead(404, {
+          'Content-Length': successBody.length - 2,
+          'Content-Type': 'text/plain'
+        });
+        res.end(successBody);
+      }
     });
 
     server.listen(0, done);
@@ -25,11 +44,11 @@ suite('superagent-promise', function() {
 
   test('issue request', function(done) {
     var addr = server.address();
-    var url = 'http://' + addr.address + ':' + addr.port;
+    var url = 'http://' + addr.address + ':' + addr.port + "/success";
 
-    agent('GET', url).end().then(
+    request('GET', url).end().then(
       function(res) {
-        assert.equal(res.text, body);
+        assert.equal(res.text, successBody);
         done();
       },
 
@@ -37,5 +56,48 @@ suite('superagent-promise', function() {
         done(err);
       }
     );
+  });
+
+  test('issue request with .get', function(done) {
+    var addr = server.address();
+    var url = 'http://' + addr.address + ':' + addr.port + "/success";
+
+    request.get(url).end().then(
+      function(res) {
+        assert.equal(res.text, successBody);
+        done();
+      },
+
+      function(err) {
+        done(err);
+      }
+    );
+  });
+
+  test('issue 404 request', function(done) {
+    var addr = server.address();
+    var url = 'http://' + addr.address + ':' + addr.port + "/NotFound";
+
+    request('GET', url).end().then(function(res) {
+      assert.ok(!res.ok);
+      assert.equal(res.text, errorBody);
+      done();
+    }, function(err) {
+      console.log(err);
+      done(err);
+    });
+  });
+
+  test('test error', function(done) {
+    var addr = server.address();
+    var url = 'http://' + addr.address + ':' + addr.port + "/error";
+
+    request('GET', url).end().then(function(res) {
+      assert.ok(false);
+      done();
+    }, function(err) {
+      assert.ok(err);
+      done();
+    });
   });
 });
