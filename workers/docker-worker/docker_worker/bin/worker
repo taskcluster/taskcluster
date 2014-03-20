@@ -75,7 +75,7 @@ function shutdown() {
 /** Idle handler to shutdown if fully idle and less than */
 function onIdleCapacityShutdown(capacity) {
   // Don't shutdown if we're not fully idle
-  if (capacity.size < capacity.maximumSize) {
+  if (capacity.size > 0) {
     return;
   }
 
