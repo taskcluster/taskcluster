@@ -6,7 +6,7 @@ var constants   = require('../schemas/constants');
 var _           = require('lodash');
 var mkdirp      = require('mkdirp');
 var nconf       = require('nconf');
-var aws         = require('aws-sdk');
+var aws         = require('aws-sdk-promise');
 var Promise     = require('promise');
 
 /** Replace val with constant, if it is an {$const: <key>} schema */

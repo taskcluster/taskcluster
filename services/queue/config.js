@@ -1,5 +1,5 @@
 var nconf   = require('nconf');
-var aws     = require('aws-sdk');
+var aws     = require('aws-sdk-promise');
 
 /** Default configuration values */
 var DEFAULT_CONFIG_VALUES = {
