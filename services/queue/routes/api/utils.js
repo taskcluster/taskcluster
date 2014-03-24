@@ -2,6 +2,8 @@ var nconf       = require('nconf');
 var express     = require('express');
 var debug       = require('debug')('routes:api:utils');
 var validate    = require('../../utils/validate');
+var Promise     = require('promise');
+var uuid        = require('uuid');
 
 // This file contains a collection of neat middleware for building API
 // end-points, that can mounted on an express application
@@ -37,24 +39,11 @@ var schema = function(options) {
       // defined, then we have to validate against it...
       if(nconf.get('queue:validateOutgoing') &&
          options.output !== undefined) {
-        try {
-          var errors = validate(json, options.output);
-          if (errors) {
-            res.json(500, {
-              'message':  "Internal Server Error",
-            });
-            debug("Reply for %s didn't match schema: %s got errors:\n%s",
-                  req.url, options.output, JSON.stringify(errors, null, 4));
-            return;
-          }
-        }
-        catch(err) {
-          debug("Schema validation caused an exception, schema: %s, input:",
-                options.output, JSON.stringify(json, null, 4));
-          res.json(500, {
-            'message':  "Internal Server Error",
-          });
-          throw err;
+        var errors = validate(json, options.output);
+        if (errors) {
+          debug("Reply for %s didn't match schema: %s got errors:\n%s",
+                req.url, options.output, JSON.stringify(errors, null, 4));
+          throw errors;
         }
       }
       // If JSON was valid or validation was skipped then reply with 200 OK
@@ -90,6 +79,10 @@ exports.API = API;
  * return JSON replies with `request.reply(json)` and errors with
  * `request.json(code, json)`, as `request.reply` may be validated against the
  * declared output schema.
+ *
+ * **Note** the handler may return a promise, if this promise fails we will
+ * log the error and return an error message. If the promise is successful,
+ * nothing happens.
  */
 API.prototype.declare = function(options, handler) {
   // Check presence of require properties
@@ -102,7 +95,22 @@ API.prototype.declare = function(options, handler) {
   });
 
   // Set handler on options
-  options.handler = handler;
+  options.handler = function(req, res) {
+    Promise.from(handler(req, res)).catch(function(err) {
+      var incidentId = uuid.v4();
+      debug(
+        "Error occurred handling: %s, err: %s, as JSON: %j, incidentId: %s",
+        options.route, err, err, incidentId, err.stack
+      );
+      res.json(500, {
+        message:        "Internal Server Error",
+        error: {
+          info:         "Ask administrator to lookup incidentId in log-file",
+          incidentId:   incidentId
+        }
+      });
+    });
+  };
 
   // Append entry to entries
   this._entries.push(options);

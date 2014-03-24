@@ -19,7 +19,6 @@ config.load(module.parent);
 
 // Load a little monkey patching
 require('./utils/spread-promise').patch();
-require('./utils/aws-sdk-promise').patch();
 
 // Create expressjs application
 var app = exports.app = express();
