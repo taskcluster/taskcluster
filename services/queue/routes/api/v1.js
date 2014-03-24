@@ -1,7 +1,7 @@
 var nconf     = require('nconf');
 var utils     = require('./utils');
 var Promise   = require('promise');
-var aws       = require('aws-sdk');
+var aws       = require('aws-sdk-promise');
 var _         = require('lodash');
 var debug     = require('debug')('routes:api:0.2.0');
 var slugid    = require('../../utils/slugid');
@@ -101,17 +101,11 @@ api.declare({
 
   // Reply to request, when task is uploaded to s3, added to database and
   // published over RabbitMQ
-  done.then(function() {
+  return done.then(function() {
     debug('new task', task_status, { taskIdSlug: slugid.decode(taskId) });
     // Reply that the task was inserted
-    res.reply({
+    return res.reply({
       status: task_status
-    });
-  }).catch(function(err) {
-    debug("Failed to accept new task, error: %s as JSON: %j", err, err);
-    // Report internal error
-    res.json(500, {
-      message:                "Internal Server Error"
     });
   });
 });
@@ -169,15 +163,10 @@ api.declare({
   }
 
   // When all signatures have been generated we
-  Promise.all(signature_promises).then(function() {
-    res.reply({
+  return Promise.all(signature_promises).then(function() {
+    return res.reply({
       expires:  expires.toJSON(),
       tasks:    tasks
-    });
-  }, function(err) {
-    debug("Failed to generate taskIds and PUT URLs, error %s, as JSON: %j", err, err);
-    res.json(500, {
-      message:        "Internal Server Error"
     });
   });
 });
@@ -244,7 +233,7 @@ api.declare({
   var got_status = data.loadTask(taskId);
 
   // When state is loaded check what to do
-  Promise.all(
+  return Promise.all(
     got_task,
     got_resolution,
     got_status
@@ -312,17 +301,9 @@ api.declare({
     // Return a promise that everything happens
     return Promise.all(added_to_database, event_published).then(function() {
       // Reply with created task status
-      res.reply({
+      return res.reply({
         status:   task_status
       });
-    });
-  }).then(undefined, function(err) {
-    debug(
-      "Failed to schedule task, error %s, as JSON: %j",
-      err, err, err.stack
-    );
-    res.json(500, {
-      message:        "Internal Server Error"
     });
   });
 });
@@ -343,20 +324,14 @@ api.declare({
   var task_loaded = data.loadTask(req.params.taskId);
 
   // When loaded reply with task status structure, if found
-  task_loaded.then(function(task_status) {
+  return task_loaded.then(function(task_status) {
     if (task_status) {
-      res.reply({
+      return res.reply({
         status:     task_status
       });
-    } else {
-      res.json(404, {
-        message:      "Task not found or already resolved"
-      });
     }
-  }, function(err) {
-    debug("Failed to load task, error %s, as JSON: %j", err, err);
-    res.json(500, {
-      message:        "Internal Server Error"
+    res.json(404, {
+      message:      "Task not found or already resolved"
     });
   });
 });
@@ -379,7 +354,7 @@ api.declare({
   var taskStatus;
   var timeout;
 
-  data.loadTask(taskId).then(function(status) {
+  return data.loadTask(taskId).then(function(status) {
     task_status = status;
     timeout = task_status.timeout;
 
@@ -432,16 +407,11 @@ api.declare({
       logs_url_signed,
       result_url_signed
     ).spread(function(logs_url, result_url) {
-      res.reply({
+      return res.reply({
         runId:          runId,
         logsPutUrl:     logs_url,
         resultPutUrl:   result_url,
         status:         task_status
-      });
-    }, function(err) {
-      debug("Failed to reply to claim, error: %s as JSON: %j", err, err);
-      res.json(500, {
-        message:        "Internal Server Error"
       });
     });
 
@@ -449,11 +419,6 @@ api.declare({
     // just do them in parallel... a better strategy might developed in the
     // future, this is just a prototype
     return Promise.all(reply_sent, event_sent);
-  }).then(undefined, function(err) {
-    debug("Failed to claim task, error %s, as JSON: %j", err, err);
-    res.json(500, {
-      message:        "Internal Server Error"
-    });
   });
 });
 
@@ -511,25 +476,19 @@ api.declare({
   });
 
   // When loaded reply with task status structure, if found
-  Promise.all(
+  return Promise.all(
     task_loaded,
     artifact_urls
   ).spread(function(task_status, url_map) {
     if (task_status) {
-      res.reply({
+      return res.reply({
         status:           task_status,
         expires:          expires.toJSON(),
         artifacts:        url_map
       });
-    } else {
-      res.json(404, {
-        message:      "Task not found or already resolved"
-      });
     }
-  }, function(err) {
-    debug("Failed to sign-urls for artifacts, error %s, as JSON: %j", err, err);
-    res.json(500, {
-      message:        "Internal Server Error"
+    res.json(404, {
+      message:      "Task not found or already resolved"
     });
   });
 });
@@ -554,7 +513,7 @@ api.declare({
 
   var task_completed = data.completeTask(taskId);
 
-  task_completed.then(function(success) {
+  return task_completed.then(function(success) {
     if (!success) {
       res.json(404, {
         message:    "Task not found"
@@ -590,16 +549,14 @@ api.declare({
         workerGroup:    workerGroup
       });
 
-      return Promise.all(uploaded_to_s3, event_published).then(function() {
-        res.reply({
+      return Promise.all(
+        uploaded_to_s3,
+        event_published
+      ).then(function() {
+        return res.reply({
           status:     task_status
         });
       });
-    });
-  }).then(undefined, function(err) {
-    debug("Failed to complete task, error %s, as JSON: %j", err, err);
-    res.json(500, {
-      message:        "Internal Server Error"
     });
   });
 });
@@ -634,7 +591,7 @@ api.declare({
   var task_loaded = data.queryTasks(provisionerId, workerType);
 
   // When loaded let's pick a pending task
-  task_loaded.then(function(tasks) {
+  return task_loaded.then(function(tasks) {
     // if there is no tasks available, report 204
     if (tasks.length == 0) {
       // Ask worker to sleep for 3 min before polling again
@@ -708,16 +665,11 @@ api.declare({
           logs_url_signed,
           result_url_signed
         ).spread(function(logs_url, result_url) {
-          res.reply({
+          return res.reply({
             runId:          runId,
             logsPutUrl:     logs_url,
             resultPutUrl:   result_url,
             status:         task_status
-          });
-        }, function(err) {
-          debug("Failed to reply to claim, error: %s as JSON: %j", err, err);
-          res.json(500, {
-            message:        "Internal Server Error"
           });
         });
 
@@ -726,11 +678,6 @@ api.declare({
         // future, this is just a prototype
         return Promise.all(reply_sent, event_sent);
       });
-    });
-  }, function(err) {
-    debug("Failed to complete task, error %s, as JSON: %j", err, err);
-    res.json(500, {
-      message:        "Internal Server Error"
     });
   });
 });
@@ -801,7 +748,7 @@ api.declare({
   });
 
   // When state is loaded check what to do
-  Promise.all(
+  return Promise.all(
     got_task,
     got_resolution,
     got_status
@@ -857,23 +804,17 @@ api.declare({
       assert(task_status, "task_status cannot be null here!");
 
       // Reply with created task status
-      res.reply({
+      var sent_reply = res.reply({
         status:   task_status
       });
 
       // Publish message through events
-      return events.publish('task-pending', {
+      var event_published = events.publish('task-pending', {
         version:    '0.2.0',
         status:     task_status
       });
-    });
-  }).then(undefined, function(err) {
-    debug(
-      "Failed to rerun task, error %s, as JSON: %j",
-      err, err, err.stack
-    );
-    res.json(500, {
-      message:        "Internal Server Error"
+
+      return Promise.all(sent_reply, event_published);
     });
   });
 });
@@ -898,13 +839,8 @@ api.declare({
 
   // When loaded reply
   task_loaded.then(function(tasks) {
-    res.reply({
+    return res.reply({
       tasks: tasks
-    });
-  }, function(err) {
-    debug("Failed to complete task, error %s, as JSON: %j", err, err);
-    res.json(500, {
-      message:        "Internal Server Error"
     });
   });
 });
@@ -931,7 +867,7 @@ api.declare({
     "we can rely on."
   ].join('\n')
 }, function(req, res) {
-  res.reply({
+  return res.reply({
     url:  nconf.get('amqp:url')
   });
 });

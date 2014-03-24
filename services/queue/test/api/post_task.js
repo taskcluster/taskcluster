@@ -1,4 +1,4 @@
-suite('Test reruns', function() {
+suite('Post-Task Tests', function() {
   var LocalQueue  = require('../localqueue');
   var debug       = require('debug')('post_task_test');
   var assert      = require('assert');
@@ -58,8 +58,9 @@ suite('Test reruns', function() {
     });
   });
 
+
   /** Test validation of task publication */
-  test('Post New Task', function() {
+  test('Post New Invalid Task', function() {
     // Create datetime for created and deadline as 3 days later
     var created = new Date();
     var deadline = new Date();
@@ -93,6 +94,7 @@ suite('Test reruns', function() {
       debug("Server replied: %j", res.body);
     });
   });
+
 });
 
 
