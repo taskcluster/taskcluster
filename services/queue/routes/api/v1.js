@@ -349,6 +349,10 @@ api.declare({
     "returns task status structure, runId, resultPutUrl and logsPutUrl"
   ].join('\n')
 }, function(req, res) {
+  // Get input from request
+  var workerGroup     = req.body.workerGroup;
+  var workerId        = req.body.workerId;
+  var requestedRunId  = req.body.runId || undefined;
   // Get the taskId
   var taskId = req.params.taskId;
   var taskStatus;
@@ -364,9 +368,9 @@ api.declare({
 
     // Claim task without runId if this is a new claim
     return data.claimTask(taskId, takenUntil, {
-      workerGroup:    req.body.workerGroup,
-      workerId:       req.body.workerId,
-      runId:          req.body.runId || undefined
+      workerGroup:    workerGroup,
+      workerId:       workerId,
+      runId:          requestedRunId || undefined
     });
   }).then(function(runId) {
     // If task wasn't claimed, report 404
@@ -376,15 +380,20 @@ api.declare({
       });
       return;
     }
-    // Fire event
-    var event_sent = events.publish('task-running', {
-      version:        '0.2.0',
-      workerGroup:    req.body.workerGroup,
-      workerId:       req.body.workerId,
-      runId:          runId,
-      logsUrl:        task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
-      status:         task_status
-    });
+
+    // Only send event if we have a new runId
+    var event_sent = Promise.from(null);
+    if (requestedRunId !== runId) {
+      // Fire event
+      event_sent = events.publish('task-running', {
+        version:      '0.2.0',
+        workerGroup:  workerGroup,
+        workerId:     workerId,
+        runId:        runId,
+        logsUrl:      task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
+        status:       task_status
+      });
+    }
 
     // Sign urls for the reply
     var logs_url_signed = sign_put_url({
