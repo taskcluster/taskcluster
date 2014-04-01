@@ -34,7 +34,7 @@
     {
       "type":           "shell",
       "inline": [
-        "sudo apt-get install -y git"
+        "sudo apt-get install -y git lvm2"
       ]
     },
     {

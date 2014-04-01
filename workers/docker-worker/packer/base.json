@@ -5,7 +5,8 @@
       "type": "shell",
       "scripts": [
         "packer/base/scripts/docker.sh",
-        "packer/base/scripts/node.sh"
+        "packer/base/scripts/node.sh",
+        "packer/base/scripts/lvm.sh",
       ]
     }
   ],

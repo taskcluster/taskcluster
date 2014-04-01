@@ -119,3 +119,49 @@ You can also use the `-var-file` and provide a JSON file with your variables.
 [`DOCKER_WORKER_OPTS`](https://github.com/taskcluster/docker-worker/blob/master/docker_worker_opts_example.sh#L2), if you're deploying outside AWS EC2, or don't want the
 aws-provisioner to launch instances for you, then you should provide
 `--provisioner-id my-provisioner`.
+
+##### Providing Options as User-Data
+The AMI built with packer will load EC2 `userdata` for the instance when
+launched. The `userdata` will be parsed as JSON and used to overwrite options.
+This is useful, as options such as `--worker-type` and `--provisioner-id` can
+be specified in userdata using an object like:
+
+```js
+{
+  "provisionerId":  "aws-provisioner",
+  "workerType":     "my-worker-type"
+}
+```
+
+Other options such as `capacity`, etc. can also be specified here.
+
+##### Block-Device Mapping
+The AMI built with packer will mount all available instances storage under
+`/mnt` and use this for storing docker images and containers. In order for this
+to work you must specify a block device mapping that maps `ephemeral[0-9]` to
+`/dev/sd[b-z]`.
+
+It should be noted that they'll appear in the virtual machine as
+`/dev/xvd[b-z]`, as this is how Xen storage devices are named under newer
+kernels. However, the format and mount script will mount them all as a single
+partition on `/mnt` using LVM.
+
+An example block device mapping looks as follows:
+
+```js
+  {
+  "BlockDeviceMappings": [
+      {
+        "DeviceName": "/dev/sdb",
+        "VirtualName": "ephemeral0"
+      },
+      {
+        "DeviceName": "/dev/sdc",
+        "VirtualName": "ephemeral1"
+      }
+    ]
+  }
+```
+
+**Note**, that HVM machines may have a different naming scheme and, thus, need
+a few hacks. However, we're not building HVM machines at the moment.
