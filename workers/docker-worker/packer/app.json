@@ -58,12 +58,6 @@
     },
     {
       "type":           "shell",
-      "scripts": [
-        "packer/app/scripts/docker_prefill.sh"
-      ]
-    },
-    {
-      "type":           "shell",
       "inline": [
         "/tmp/deploy.sh /tmp/{{user `docker_worker`}} /tmp/docker-worker.conf /tmp/docker-worker /tmp/docker"
       ]

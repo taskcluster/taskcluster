@@ -132,8 +132,20 @@ program
     '-s, --shutdown',
     "Shutdown the machine when this process ends, due to errors or idling"
   )
+  .option(
+    '--options <options-as-json>',
+    "Provide options as JSON string, will overwrite other options"
+  )
   .description("Launch a worker process")
   .action(function(options) {
+    // Check if JSON options are provided
+    if (options.options !== undefined && options.options !== "") {
+      var opts = JSON.parse(options.options);
+      for(var key in opts) {
+        options[key] = opts[key];
+      }
+    }
+
     // Provide default workerType using image-id from ec2 metadata service
     if (options.workerType === undefined) {
       options.workerType = metadata.getImageId();
