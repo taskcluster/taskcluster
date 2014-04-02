@@ -1,25 +1,21 @@
-# /etc/default/docker
+#! /bin/bash
+
+# Reformat instance storage to use BTRFS
 
 # Find instance storage devices
-DEVICES=`ls /dev/xvd* | grep -v '/dev/xvda1'`;
+devices=$(ls /dev/xvd* | grep -v '/dev/xvda1');
 
 # Unmount block-device if already mounted, the first block-device always is
-for d in $DEVICES; do umount $d || true; done
+for d in $devices; do umount $d || true; done
 
-# Create volume group containing all instance storage devices
-echo $DEVICES | xargs vgcreate instance_storage
+# btrfsify the storage
+mkfs.btrfs -f -d single -L instance_storage $devices
 
-# Create logical volume with all storage
-lvcreate -l 100%VG -n all instance_storage
-
-# Format logical volume with ext4
-mkfs.ext4 /dev/instance_storage/all
-
-# Mount on /mnt
-mount /dev/instance_storage/all /mnt
-
+# fetch first device btrfs can mount any of them (they are all part of the same
+# fs)
+mount $(echo $devices | cut -d ' ' -f 1) /mnt
 
 mkdir -p /mnt/var/lib/docker
 mkdir -p /mnt/docker-tmp
 export TMPDIR="/mnt/docker-tmp"
-export DOCKER_OPTS=" -g /mnt/var/lib/docker"
+export DOCKER_OPTS=" -g /mnt/var/lib/docker -s btrfs"

@@ -1,4 +1,4 @@
-#! /bin/bash -vxe
+#! /bin/bash -vex
 
 node_version=0.10.24
 url=http://nodejs.org/dist/v$node_version/node-v$node_version-linux-x64.tar.gz

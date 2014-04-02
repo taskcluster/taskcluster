@@ -2,7 +2,7 @@
   "description": "taskcluster docker worker vm",
   "variables": {
     "docker_worker":        "",
-    "source_ami":           "ami-7c4e2d4c",
+    "source_ami":           "ami-50cca460",
     "docker_worker_opts":   "",
     "loggly_account":       "",
     "loggly_auth":          "",
@@ -70,7 +70,7 @@
       "source_ami":     "{{user `source_ami`}}",
       "instance_type":  "m3.large",
       "ssh_username":   "ubuntu",
-      "ami_name":       "taskcluster-docker-worker-{{user `update_type`}} {{timestamp}}",
+      "ami_name":       "taskcluster-docker-worker-btrfs-{{user `update_type`}} {{timestamp}}",
       "tags": {
         "OS_Version":   "Ubuntu",
         "Release":      "Latest"

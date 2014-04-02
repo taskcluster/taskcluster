@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -vex
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 
 # Add the Docker repository to your apt sources list.
@@ -14,7 +14,7 @@ sudo apt-get update
 sudo apt-get install -y -q curl
 
 # add the docker gpg key
-sudo curl https://get.docker.io/gpg | apt-key add -
+sudo curl https://get.docker.io/gpg | sudo apt-key add -
 
 # Update your sources
 sudo apt-get update
