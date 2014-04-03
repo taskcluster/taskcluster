@@ -21,4 +21,4 @@ sudo apt-get update
 sudo apt-get upgrade -y
 
 # Install. Confirm install.
-sudo apt-get install -y -q lxc-docker
+sudo apt-get install -y -q lxc-docker linux-image-extra-`uname -r`

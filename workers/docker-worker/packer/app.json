@@ -6,7 +6,8 @@
     "docker_worker_opts":   "",
     "loggly_account":       "",
     "loggly_auth":          "",
-    "update_type":          "static"
+    "update_type":          "static",
+    "fs_type":              "aufs"
   },
   "provisioners": [
     {
@@ -34,7 +35,7 @@
     {
       "type":           "shell",
       "inline": [
-        "sudo apt-get install -y git lvm2"
+        "sudo apt-get install -y git lvm2 linux-image-extra-`uname -r`"
       ]
     },
     {
@@ -49,7 +50,7 @@
     },
     {
       "type":           "file",
-      "source":         "packer/app/etc/default/docker",
+      "source":         "packer/app/etc/default/docker-{{user `fs_type`}}",
       "destination":    "/tmp/docker"
     },
     {

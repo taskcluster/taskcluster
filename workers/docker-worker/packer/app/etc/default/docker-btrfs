@@ -1,6 +1,4 @@
-#! /bin/bash
-
-# Reformat instance storage to use BTRFS
+#!/bin/bash
 
 # Find instance storage devices
 devices=$(ls /dev/xvd* | grep -v '/dev/xvda1');
