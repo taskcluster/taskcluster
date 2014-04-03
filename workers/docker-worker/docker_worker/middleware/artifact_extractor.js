@@ -103,8 +103,14 @@ var putFileFromContainer = function(container, path, putUrl, contentType) {
 
       // Wait for TAR extraction to finish
       extract.on('finish', function() {
-        // Make the resolution whatever it was take effect
-        resolution.action(resolution.retval);
+        if (resolution) {
+          // Make the resolution whatever it was take effect
+          resolution.action(resolution.retval);
+        } else {
+          // Docker 0.9 returns an empty tar stream for missing files
+          accept("No content available at '" + path + "' most likely " +
+                 "there is nothing at that path.");
+        }
       });
 
       // Pipe the data-stream from docker for tar-extraction
