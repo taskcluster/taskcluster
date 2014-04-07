@@ -16,6 +16,7 @@
       "minimum":      {"$const": "min-run-id"},
       "maximum":      {"$const": "max-run-id"}
     },
+    "success":        {"$const": "success"},
     "resultUrl": {
       "description":    "URL to JSON file the result structure for this run.",
       "type":           "string",
@@ -42,5 +43,8 @@
     }
   },
   "additionalProperties":   false,
-  "required": ["version", "status", "runId", "resultUrl", "logsUrl", "workerGroup", "workerId"]
+  "required": [
+    "version", "status", "runId", "success", "resultUrl", "logsUrl",
+    "workerGroup", "workerId"
+  ]
 }
