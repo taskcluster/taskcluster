@@ -53,10 +53,11 @@
           "minLength":      {"$const": "identifier-min-length"},
           "maxLength":      {"$const": "identifier-max-length"},
           "pattern":        {"$const": "identifier-pattern"}
-        }
+        },
+        "success":          {"$const": "success"}
       },
       "additionalProperties":   false,
-      "required": ["workerGroup", "workerId"]
+      "required": ["workerGroup", "workerId", "success"]
     },
     "result": {
       "description":  "Task/worker-specific result structure",

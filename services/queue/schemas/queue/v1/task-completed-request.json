@@ -11,21 +11,22 @@
       "minimum":      {"$const": "min-run-id"},
       "maximum":      {"$const": "max-run-id"}
     },
+    "success":        {"$const": "success"},
     "workerGroup": {
-      "description":    "Worker group on which the completed run was executed.",
-      "type":           "string",
-      "minLength":      {"$const": "identifier-min-length"},
-      "maxLength":      {"$const": "identifier-max-length"},
-      "pattern":        {"$const": "identifier-pattern"}
+      "description":  "Worker group on which the completed run was executed.",
+      "type":         "string",
+      "minLength":    {"$const": "identifier-min-length"},
+      "maxLength":    {"$const": "identifier-max-length"},
+      "pattern":      {"$const": "identifier-pattern"}
     },
     "workerId": {
-      "description":    "Identifier for worker within the given workerGroup",
-      "type":           "string",
-      "minLength":      {"$const": "identifier-min-length"},
-      "maxLength":      {"$const": "identifier-max-length"},
-      "pattern":        {"$const": "identifier-pattern"}
+      "description":  "Identifier for worker within the given workerGroup",
+      "type":         "string",
+      "minLength":    {"$const": "identifier-min-length"},
+      "maxLength":    {"$const": "identifier-max-length"},
+      "pattern":      {"$const": "identifier-pattern"}
     }
   },
   "additionalProperties":   false,
-  "required": ["runId", "workerGroup", "workerId"]
+  "required": ["runId", "success", "workerGroup", "workerId"]
 }

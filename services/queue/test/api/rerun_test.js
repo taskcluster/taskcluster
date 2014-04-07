@@ -137,7 +137,8 @@ suite('Test reruns', function() {
         },
         metadata: {
           workerGroup:    'my-test-group',
-          workerId:       'jonasfj-test-worker'
+          workerId:       'jonasfj-test-worker',
+          success:        true
         },
         result:       {}
       }).end().then(function(res) {
@@ -150,6 +151,7 @@ suite('Test reruns', function() {
       var endpoint = '/v1/task/' + taskId + '/completed';
       return request.post(baseUrl + endpoint).send({
         runId:          1,  // First runId should always be 1
+        success:        true,
         workerGroup:    'my-test-group',
         workerId:       'jonasfj-test-worker'
       }).end().then(function(res) {
