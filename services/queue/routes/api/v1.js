@@ -519,11 +519,12 @@ api.declare({
   var runId         = req.body.runId;
   var workerGroup   = req.body.workerGroup;
   var workerId      = req.body.workerId;
+  var success       = req.body.success;
 
   var task_completed = data.completeTask(taskId);
 
-  return task_completed.then(function(success) {
-    if (!success) {
+  return task_completed.then(function(completed) {
+    if (!completed) {
       res.json(404, {
         message:    "Task not found"
       });
@@ -534,9 +535,10 @@ api.declare({
       var resolution = {
         version:        '0.2.0',
         status:         task_status,
-        runId:          runId,
         resultUrl:      task_bucket_url(taskId + '/runs/' + runId + '/result.json'),
         logsUrl:        task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
+        runId:          runId,
+        success:        success,
         workerId:       workerId,
         workerGroup:    workerGroup
       };
@@ -554,6 +556,7 @@ api.declare({
         resultUrl:      task_bucket_url(taskId + '/runs/' + runId + '/result.json'),
         logsUrl:        task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
         runId:          runId,
+        success:        success,
         workerId:       workerId,
         workerGroup:    workerGroup
       });
