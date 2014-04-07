@@ -227,8 +227,12 @@ TaskRun.prototype.getArtifactPutUrls = function(artifacts) {
 };
 
 
-/** Report task completed, returns promise of success */
-TaskRun.prototype.taskCompleted = function() {
+/**
+ * Report task completed, the `success` parameter indicates whether or not the
+ * completion was successful or unsuccessful. Either way, the task is completed
+ * Returns promise of successful reporting
+ */
+TaskRun.prototype.taskCompleted = function(success) {
   this.clearKeepTask();
 
   var url = queue.queueUrl('/task/' + this.status.taskId + '/completed');
@@ -237,7 +241,8 @@ TaskRun.prototype.taskCompleted = function() {
     .send({
       workerGroup:      this.owner.workerGroup,
       workerId:         this.owner.workerId,
-      runId:            this._runId
+      runId:            this._runId,
+      success:          success
     })
     .end()
     .then(function(res) {

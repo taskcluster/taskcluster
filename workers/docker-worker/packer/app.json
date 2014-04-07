@@ -71,7 +71,7 @@
       "source_ami":     "{{user `source_ami`}}",
       "instance_type":  "m3.large",
       "ssh_username":   "ubuntu",
-      "ami_name":       "taskcluster-docker-worker-btrfs-{{user `update_type`}} {{timestamp}}",
+      "ami_name":       "taskcluster-docker-worker-{{user `fs_type`}}-{{user `update_type`}} {{timestamp}}",
       "tags": {
         "OS_Version":   "Ubuntu",
         "Release":      "Latest"

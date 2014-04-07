@@ -94,7 +94,7 @@ var runTask = function(taskRun, docker) {
   });
 
   // Run middleware hooks
-  var started, finished;
+  var started, finished, success;
   return middleware.run(
     'start', {}, taskRun, dockerProcess
   ).then(function() {
@@ -111,6 +111,7 @@ var runTask = function(taskRun, docker) {
   }).then(function(exitCode) {
     debug('Docker for task %s finished', taskRun.status.taskId);
     finished = new Date();
+    success = (exitCode === 0);
     var result = {
       version:            '0.2.0',
       artifacts:          {},
@@ -120,7 +121,8 @@ var runTask = function(taskRun, docker) {
       },
       metadata: {
         workerGroup:      taskRun.owner.workerGroup,
-        workerId:         taskRun.owner.workerId
+        workerId:         taskRun.owner.workerId,
+        success:          success
       },
       // This is worker/task specific results
       result: {
@@ -138,7 +140,7 @@ var runTask = function(taskRun, docker) {
     dockerProcess.remove();
     return taskRun.putResult(result);
   }).then(function() {
-    return taskRun.taskCompleted();
+    return taskRun.taskCompleted(success);
   }).then(null, function(err) {
     // Whatever happens we should stop reclaiming the task!!!
     taskRun.clearKeepTask();
