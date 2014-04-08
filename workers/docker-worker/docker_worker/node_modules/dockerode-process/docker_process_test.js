@@ -173,4 +173,41 @@ suite('docker process', function() {
     });
   });
 
+  suite('can kill', function() {
+    setup(function() {
+      subject = new DockerRun(docker, {
+        create: {
+          Image: 'ubuntu',
+          Cmd: ['/bin/bash', '-c', 'sleep 60; echo stdout && echo stderr >&2'],
+          Tty: true
+        },
+        start: {}
+      });
+    });
+
+    test('immediate', function(done) {
+      subject.run().then(function() {
+        done();
+      });
+      subject.kill()
+    });
+
+    test('after created', function(done) {
+      subject.once('container', function(container) {
+        subject.kill()
+      });
+      subject.run().then(function() {
+        done();
+      });
+    });
+
+    test('after started', function(done) {
+      subject.once('container start', function(container) {
+        subject.kill();
+      });
+      subject.run().then(function() {
+        done();
+      });
+    });
+  });
 });

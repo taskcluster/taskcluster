@@ -98,8 +98,8 @@ DockerProc.prototype = {
     ).then(
 
       function startedContainer() {
-        this.emit('container start', this.container);
         this.started = true;
+        this.emit('container start', this.container);
         debug('initiate wait for container');
         return container.wait();
       }.bind(this)
@@ -147,6 +147,19 @@ DockerProc.prototype = {
         this._run().then(accept, reject);
       }.bind(this));
     }.bind(this));
+  },
+
+  /** Kill docker container */
+  kill: function() {
+    var that = this;
+    this.killed = true;
+    if (this.started) {
+      this.container.kill();
+    } else {
+      this.once('container start', function() {
+        that.container.kill();
+      });
+    }
   }
 };
 

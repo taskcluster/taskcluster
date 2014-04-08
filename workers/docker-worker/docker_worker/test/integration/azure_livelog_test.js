@@ -16,7 +16,8 @@ suite('azure logging', function() {
       features: {
         bufferLog:    true,
         azureLivelog: true
-      }
+      },
+      maxRunTime:         5 * 60
     }).then(function(data) {
       // Get task specific results
       var result = data.result.result;

@@ -94,7 +94,7 @@ var runTask = function(taskRun, docker) {
   });
 
   // Run middleware hooks
-  var started, finished, success;
+  var started, finished, success, timer;
   return middleware.run(
     'start', {}, taskRun, dockerProcess
   ).then(function() {
@@ -107,8 +107,14 @@ var runTask = function(taskRun, docker) {
   }).then(function() {
     debug('Starting docker for task: %s', taskRun.status.taskId);
     started = new Date();
+    timer = setTimeout(function() {
+      debug("Kill docker container for %s as maxRunTime have been reached",
+            taskRun.status.taskId);
+      dockerProcess.kill();
+    }, taskRun.task.payload.maxRunTime * 1000);
     return dockerProcess.run();
   }).then(function(exitCode) {
+    clearTimeout(timer);
     debug('Docker for task %s finished', taskRun.status.taskId);
     finished = new Date();
     success = (exitCode === 0);

@@ -14,7 +14,8 @@ suite('artifact extration tests', function() {
         // Name:              Source:
         'username.txt':       '/username.txt',
         'passwd.txt':         '/etc/passwd'
-      }
+      },
+      maxRunTime:         5 * 60
     }).then(function(data) {
       // Get task specific results
       var result = data.result.result;
@@ -36,7 +37,8 @@ suite('artifact extration tests', function() {
       artifacts: {
         // Name:              Source:
         'my-missing.txt':     '/this-file-is-missing.txt'
-      }
+      },
+      maxRunTime:         5 * 60
     }).then(function(data) {
       // Get task specific results
       var result = data.result.result;
@@ -59,7 +61,8 @@ suite('artifact extration tests', function() {
         'username.txt':       '/username.txt',
         'passwd.txt':         '/etc/passwd',
         'my-missing.txt':     '/this-file-is-missing.txt'
-      }
+      },
+      maxRunTime:         5 * 60
     }).then(function(data) {
       // Get task specific results
       var result = data.result.result;

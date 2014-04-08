@@ -10,7 +10,8 @@ suite('setting env variables', function() {
       features: {
         bufferLog:    true,
         azureLivelog: false
-      }
+      },
+      maxRunTime:         5 * 60
     }).then(function(data) {
       // Get task specific results
       var result = data.result.result;

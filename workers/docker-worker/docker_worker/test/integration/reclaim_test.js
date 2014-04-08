@@ -8,6 +8,7 @@ suite('reclaim timeout', function() {
       features: {
         bufferLog:        true
       },
+      maxRunTime:         5 * 60
     }).then(function(data) {
       var result = data.result;
       // XXX: result clearly is not a great name for both levels here.
