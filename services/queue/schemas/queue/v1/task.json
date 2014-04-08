@@ -73,6 +73,12 @@
           "type":               "string",
           "format":             "uri",
           "maxLength":          4096
+        },
+        "taskGraphId": {
+          "title":              "Task-Graph Identifier",
+          "description":        "**Optional**, identifier for a task-graph to which this task belongs. If this key is present it must be valid `taskGraphId` to which this task belongs.",
+          "type":               "string",
+          "pattern":            {"$const": "slugid-pattern"}
         }
       },
       "additionalProperties":   false,
