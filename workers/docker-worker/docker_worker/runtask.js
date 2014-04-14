@@ -30,7 +30,8 @@ MIDDLEWARE_BUILDERS = [
   './middleware/buffer_log',
   './middleware/azure_livelog',
   './middleware/container_metrics',
-  './middleware/artifact_extractor'
+  './middleware/artifact_extractor',
+  './middleware/artifact_log'
 ].map(function(path) {
   return require(path);
 });

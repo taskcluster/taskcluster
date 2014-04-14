@@ -1,21 +1,15 @@
-suite('azure logging', function() {
-  if (!process.env.AZURE_STORAGE_ACCOUNT) {
-    test.skip(
-      'azure logging test disabled env: AZURE_STORAGE_ACCOUNT missing'
-    );
-    return;
-  }
-
+suite('logging to artifact', function() {
   var request = require('superagent-promise');
   var testworker = require('../testworker');
 
-  test('azure logger', function() {
+  test('artifact logger', function() {
     return testworker.submitTaskAndGetResults({
       image:          'ubuntu',
       command:        ['/bin/bash', '-c', 'echo "first command!"; for i in {1..1000}; do echo "Hello Number $i"; done;'],
       features: {
         bufferLog:    true,
-        azureLiveLog: true
+        azureLiveLog: false,
+        artifactLog:  true
       },
       maxRunTime:         5 * 60
     }).then(function(data) {
@@ -26,13 +20,15 @@ suite('azure logging', function() {
 
       // Get the logs.json
       var logs = data.logs;
+      var artifacts = data.result.artifacts;
 
       // Lookup in the logs map inside logs.json
-      var azure_log = logs.logs['terminal.log'];
-      assert.ok(azure_log !== undefined);
+      var artifact_log = logs.logs['terminal-artifact.log'];
+      assert.ok(artifact_log !== undefined);
+      assert.ok(artifacts['terminal-artifact.log'] == artifact_log);
 
-      // Fetch log from azure
-      return request.get(azure_log).end().then(function(req) {
+      // Fetch log
+      return request.get(artifact_log).end().then(function(req) {
         // Check that it's equal to logText from buffer log
         assert.equal(req.res.text, result.logText);
       });

@@ -7,7 +7,7 @@ suite('buffer log test', function() {
       command:        ['/bin/bash', '-c', 'echo "first command!"'],
       features: {
         bufferLog:    true,
-        azureLivelog: false
+        azureLiveLog: false
       },
       maxRunTime:         5 * 60
     }).then(function(data) {

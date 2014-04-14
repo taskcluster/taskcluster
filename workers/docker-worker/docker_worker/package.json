@@ -38,7 +38,8 @@
     "mime":                             "1.2.11",
     "amqp":                             "0.1.8",
     "tar-stream":                       "0.2.5",
-    "time-chunked-stream":              "0.1.0"
+    "time-chunked-stream":              "0.1.0",
+    "temporary":                        "0.0.8"
   },
   "devDependencies": {
     "mocha":                            "~1.16.2",

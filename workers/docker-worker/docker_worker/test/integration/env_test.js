@@ -9,7 +9,7 @@ suite('setting env variables', function() {
       command:        ['/bin/bash', '-c', 'echo $WOOTBAR'],
       features: {
         bufferLog:    true,
-        azureLivelog: false
+        azureLiveLog: false
       },
       maxRunTime:         5 * 60
     }).then(function(data) {

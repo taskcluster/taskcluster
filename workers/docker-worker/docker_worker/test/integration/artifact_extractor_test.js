@@ -7,7 +7,7 @@ suite('artifact extration tests', function() {
       command:        ['/bin/bash', '-c', 'echo "the user is:" > /username.txt; whoami >> /username.txt; echo "Okay, this is now done";'],
       features: {
         bufferLog:        true,
-        azureLivelog:     false,
+        azureLiveLog:     false,
         extractArtifacts: true
       },
       artifacts: {

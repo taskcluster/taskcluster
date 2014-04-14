@@ -7,7 +7,7 @@ suite('stop request', function() {
       command:          ['/bin/bash', '-c', 'echo "first command!"'],
       features: {
         bufferLog:      false,
-        azureLivelog:   false
+        azureLiveLog:   false
       },
       maxRunTime:         5 * 60
     }).then(function(data) {

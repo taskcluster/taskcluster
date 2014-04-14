@@ -7,7 +7,7 @@ suite('worker timeouts', function() {
       command:        ['/bin/bash', '-c', 'echo "Hello"; sleep 180; echo "done";'],
       features: {
         bufferLog:    true,
-        azureLivelog: false
+        azureLiveLog: false
       },
       maxRunTime:         10
     }).then(function(data) {
