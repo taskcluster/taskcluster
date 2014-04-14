@@ -1,7 +1,8 @@
-var azure = require('azure');
-var uuid = require('uuid');
-var BlobStream = require('taskcluster-azure-blobstream');
-var Promise = require('promise');
+var azure             = require('azure');
+var uuid              = require('uuid');
+var BlobStream        = require('taskcluster-azure-blobstream');
+var Promise           = require('promise');
+var TimeChunkedStream = require('time-chunked-stream');
 
 /** Build an Azure live log middleware instance */
 var AzureLiveLogBuilder = function(flag) {
@@ -46,7 +47,11 @@ AzureLiveLog.prototype = {
     ).then(
       function pipeToAzure() {
         this.stream = new BlobStream(this.blobService, container, path);
-        dockerProcess.stdout.pipe(this.stream);
+        dockerProcess.stdout
+          .pipe(new TimeChunkedStream({
+            timeout:  5000
+          }))
+          .pipe(this.stream);
         return logs;
       }.bind(this)
     );

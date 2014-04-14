@@ -37,7 +37,8 @@
     "keen.io":                          "0.0.4",
     "mime":                             "1.2.11",
     "amqp":                             "0.1.8",
-    "tar-stream":                       "0.2.5"
+    "tar-stream":                       "0.2.5",
+    "time-chunked-stream":              "0.1.0"
   },
   "devDependencies": {
     "mocha":                            "~1.16.2",

@@ -12,7 +12,7 @@ suite('azure logging', function() {
   test('azure logger', function() {
     return testworker.submitTaskAndGetResults({
       image:          'ubuntu',
-      command:        ['/bin/bash', '-c', 'echo "first command!"'],
+      command:        ['/bin/bash', '-c', 'echo "first command!"; for i in {1..1000}; do echo "Hello Number $i"; done;'],
       features: {
         bufferLog:    true,
         azureLivelog: true
@@ -32,7 +32,7 @@ suite('azure logging', function() {
       assert.ok(azure_log !== undefined);
 
       // Fetch log from azure
-      request('GET', azure_log).end().then(function(req) {
+      return request.get(azure_log).end().then(function(req) {
         // Check that it's equal to logText from buffer log
         assert.equal(req.res.text, result.logText);
       });
