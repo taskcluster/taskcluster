@@ -23,12 +23,14 @@ format:
   env: { KEY: 'value' },  // Environment variables for the container
   features: {             // Set of optional features
     bufferLog:    false,  // Debug log everything to result.json blob
-    azureLivelog: true    // Live log everything to azure, see logs.json
+    azureLiveLog: true,   // Live log everything to azure, see logs.json
+    artifactLog:  false   // Log every to an artifact uploaded at end of run
   },
   artifacts: {
     // Name:              Source:
     'passwd.txt':         '/etc/passwd'
-  }
+  },
+  maxRunTime:             600 // Maximum allowed run time
 }
 ```
 
