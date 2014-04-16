@@ -1,0 +1,17 @@
+extends layout
+
+block content
+  div.jumbotron
+    h1 TaskCluster Task-Graph Scheduler
+    p
+      | Welcome to the TaskCluster Task-Graph Scheduler...
+    p
+      b Enjoy,
+  if !user
+    div.alert.alert-info
+      strong Notice,
+      |  you must be authenticated with an
+      code @mozilla.com
+      |  e-mail address to access these pages. Please
+      a.alert-link.signin(href='#')  sign in
+      | !
