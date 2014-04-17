@@ -34,8 +34,8 @@ suite('Post-Task Tests', function() {
     var submit_task = request.post(baseUrl + '/v1/task/new').send({
       version:          '0.2.0',
       provisionerId:    'jonasfj-provisioner',
-      workerType:       'my-ami',
-      routing:          'jonasfj-test.what-a-hack',
+      workerType:       'my-ami', // let's just test a large routing key too, 128 chars please :)
+      routing:          'jonasfj-test.what-a-hack.I suppose we might actually need it when we add taskgraph scheduler id, taskgraphId, task graph routing',
       timeout:          30,
       retries:          5,
       priority:         1,
