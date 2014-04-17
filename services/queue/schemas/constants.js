@@ -38,7 +38,7 @@ module.exports = {
     "title":        "Routing Key",
     "description":  "Task specific routing key, may contain dots (`.`) for arbitrary sub-routes",
     "type":         "string",
-    "maxLength":    64
+    "maxLength":    128
   },
 
   // Maximum number of retries allowed by the format, if we allow it grow higher
