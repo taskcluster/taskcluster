@@ -55,11 +55,11 @@ exports.connect = connect;
 var tasks_table_definition = [
   //Name:                Datatype:                 Constraint:
   ['taskid',            'uuid',                   'PRIMARY KEY'   ],
-  ['provisionerid',     'varchar(36)',            'NOT NULL'      ],
-  ['workertype',        'varchar(36)',            'NOT NULL'      ],
+  ['provisionerid',     'varchar(22)',            'NOT NULL'      ],
+  ['workertype',        'varchar(22)',            'NOT NULL'      ],
   ['state',             'varchar(255)',           'NOT NULL'      ],
   ['reason',            'varchar(255)',           'NOT NULL'      ],
-  ['routing',           'varchar(64)',            'NOT NULL'      ],
+  ['routing',           'varchar(128)',           'NOT NULL'      ],
   ['retries',           'integer',                'NOT NULL'      ],
   ['timeout',           'integer',                'NOT NULL'      ],
   ['priority',          'double precision',       'NOT NULL'      ],
@@ -74,8 +74,8 @@ var runs_table_definition = [
   //Name:                Datatype:                 Constraint:
   ['taskid',            'uuid',                   'REFERENCES tasks ON DELETE CASCADE'],
   ['runid',             'integer',                'NOT NULL'      ],
-  ['workergroup',       'varchar(36)',            'NOT NULL'      ],
-  ['workerid',          'varchar(36)',            'NOT NULL'      ],
+  ['workergroup',       'varchar(22)',            'NOT NULL'      ],
+  ['workerid',          'varchar(22)',            'NOT NULL'      ],
   ['PRIMARY KEY (taskid, runid)'                                  ]
 ];
 
