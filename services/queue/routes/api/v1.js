@@ -47,6 +47,7 @@ var sign_put_url = function(options) {
 api.declare({
   method:   'post',
   route:    '/task/new',
+  name:     'createTask',
   input:    'http://schemas.taskcluster.net/queue/v1/task.json#',
   output:   'http://schemas.taskcluster.net/queue/v1/create-task-response.json#',
   title:    "Create new task",
@@ -114,6 +115,7 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/define-tasks',
+  name:       'defineTasks',
   input:      'http://schemas.taskcluster.net/queue/v1/define-tasks-request.json#',
   output:     'http://schemas.taskcluster.net/queue/v1/define-tasks-response.json#',
   title:      "Define Tasks",
@@ -176,6 +178,7 @@ api.declare({
 api.declare({
   method:     'post',
   route:      '/task/:taskId/schedule',
+  name:       'scheduleTask',
   input:      undefined, // No input accepted
   output:     'http://schemas.taskcluster.net/queue/v1/task-schedule-response.json#',
   title:      "Schedule Defined Task",
@@ -341,6 +344,7 @@ api.declare({
 api.declare({
   method:   'post',
   route:    '/task/:taskId/claim',
+  name:     'claimTask',
   input:    'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#',
   output:   'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#',
   title:    "Claim task",
@@ -437,6 +441,7 @@ api.declare({
 api.declare({
   method:   'post',
   route:    '/task/:taskId/artifact-urls',
+  name:     'requestArtifactUrls',
   input:    'http://schemas.taskcluster.net/queue/v1/artifact-url-request.json#',
   output:   'http://schemas.taskcluster.net/queue/v1/artifact-url-response.json#',
   title:    "Get artifact urls",
@@ -507,6 +512,7 @@ api.declare({
 api.declare({
   method:   'post',
   route:    '/task/:taskId/completed',
+  name:     'reportTaskCompleted',
   input:    'http://schemas.taskcluster.net/queue/v1/task-completed-request.json#',
   output:   'http://schemas.taskcluster.net/queue/v1/task-completed-response.json#',
   title:    "Report Completed Task",
@@ -577,6 +583,7 @@ api.declare({
 api.declare({
   method:   'post',
   route:    '/claim-work/:provisionerId/:workerType',
+  name:     'claimWork',
   input:    'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#',
   output:   'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#',
   title:    "Claim work for a worker",
@@ -699,6 +706,7 @@ api.declare({
 api.declare({
   method:     'post',
   route:      '/task/:taskId/rerun',
+  name:       'rerunTask',
   input:      undefined, // No input accepted
   output:     'http://schemas.taskcluster.net/queue/v1/task-rerun-response.json#',
   title:      "Rerun a Resolved Task",
@@ -836,11 +844,14 @@ api.declare({
 api.declare({
   method:   'get',
   route:    '/pending-tasks/:provisionerId',
+  name:     'getPendingTasks',
   input:    undefined,  // TODO: define schema later
   output:   undefined,  // TODO: define schema later
   title:    "Fetch pending tasks for provisioner",
   desc: [
-    "Documented later..."
+    "Documented later...",
+    "",
+    "**Warning** this api end-point is **not stable**."
   ].join('\n')
 }, function(req, res) {
   // Get input
@@ -861,6 +872,7 @@ api.declare({
 api.declare({
   method:   'get',
   route:    '/settings/amqp-connection-string',
+  name:     'getAMQPConnectionString',
   input:    undefined,  // No input accepted
   output:   'http://schemas.taskcluster.net/queue/v1/amqp-connection-string-response.json#',
   title:    "Fetch AMQP Connection String",
