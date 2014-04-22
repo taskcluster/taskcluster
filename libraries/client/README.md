@@ -1,4 +1,5 @@
 # TaskCluster Client
+_A taskcluster client library for node.js._
 
 ## Usage
 This client library is generated from the auto-generated API reference.
