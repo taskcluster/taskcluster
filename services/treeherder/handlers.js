@@ -13,16 +13,12 @@ var handlers = {};
 var branches = {};
 
 // Load branches
-(function() {
-  var projects = nconf.get('treeherder:branches');
-  for(var branch in projects) {
-    var project = projects[branch];
-    branches[branch] = new Project(branch, {
-      consumerKey:          project.consumerKey,
-      consumerSecret:       project.consumerSecret
-    });
-  }
-})();
+nconf.get('treeherder:branches').split(' ').forEach(function(branch) {
+  branches[branch] = new Project(branch, {
+    consumerKey:          nconf.get('treeherder:consumerKey'),
+    consumerSecret:       nconf.get('treeherder:consumerSecret')
+  });
+});
 
 debug("Loaded with branches: ", _.keys(branches));
 
