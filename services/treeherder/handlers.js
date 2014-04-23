@@ -22,6 +22,12 @@ nconf.get('treeherder:branches').split(' ').forEach(function(branch) {
 
 debug("Loaded with branches: ", _.keys(branches));
 
+// TODO:
+//  - Listen for task-pending (and report rerun, if this is the case)
+//    - Need way to know if new run is rerun or retry
+//  - Fix things in treeherder so we can report a task running if it's rerun
+//    after being reported completed
+
 /**
  * Handle message for the `queue/v1/task-running` exchange.
  * by
@@ -47,7 +53,7 @@ handlers['queue/v1/task-running'] = function(message) {
       debug("No project for %s", taskGraphInfo.tags.treeherderRepository);
       return;
     }
-    return project.postJobs([{
+    var job = {
       project:                taskGraphInfo.tags.treeherderRepository,
       revision_hash:          taskGraphId,
       job: {
@@ -81,7 +87,9 @@ handlers['queue/v1/task-running'] = function(message) {
           opt:    true
         }
       }
-    }]);
+    };
+    debug("postJobs-data-running", job);
+    return project.postJobs([job]);
   });
 };
 
@@ -124,7 +132,7 @@ handlers['queue/v1/task-completed'] = function(message) {
       debug("No project for %s", taskGraphInfo.tags.treeherderRepository);
       return;
     }
-    return project.postJobs([{
+    var job = {
       project:                taskGraphInfo.tags.treeherderRepository,
       revision_hash:          taskGraphId,
       job: {
@@ -164,7 +172,9 @@ handlers['queue/v1/task-completed'] = function(message) {
           };
         })
       }
-    }]);
+    };
+    debug("postJobs-data-completed", job);
+    return project.postJobs([job]);
   });
 };
 
@@ -193,7 +203,7 @@ handlers['queue/v1/task-failed'] = function(message) {
       debug("No project for %s", taskGraphInfo.tags.treeherderRepository);
       return;
     }
-    return project.postJobs([{
+    var job = {
       project:                taskGraphInfo.tags.treeherderRepository,
       revision_hash:          taskGraphId,
       job: {
@@ -227,7 +237,9 @@ handlers['queue/v1/task-failed'] = function(message) {
           opt:    true
         }
       }
-    }]);
+    };
+    debug("postJobs-data-failed", job);
+    return project.postJobs([job]);
   });
 };
 
@@ -257,8 +269,7 @@ handlers['scheduler/v1/task-graph-running'] = function(message) {
       return;
     }
 
-    // Post result set
-    return project.postResultset([{
+    var resultset = {
       revision_hash:          taskGraphId,
       author:                 taskGraph.metadata.owner,
       push_timestamp:         (new Date()).getTime(),
@@ -270,7 +281,11 @@ handlers['scheduler/v1/task-graph-running'] = function(message) {
         repository:           taskGraph.tags.treeherderRepository,
         author:               taskGraph.metadata.owner
       }]
-    }]);
+    };
+    debug("postResultset-data", jobs);
+
+    // Post result set
+    return project.postResultset([resultset]);
   });
 
   // Post jobs
@@ -336,6 +351,7 @@ handlers['scheduler/v1/task-graph-running'] = function(message) {
         debug("No project for %s", taskGraph.tags.treeherderRepository);
         return;
       }
+      debug("postJobs-data-create", jobs);
       return project.postJobs(jobs);
     });
   })
