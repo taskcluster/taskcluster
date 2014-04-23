@@ -18,7 +18,7 @@ var DEFAULT_CONFIG_VALUES = {
     routingKeyPrefix:               'jonasfj-test-t2-report',
 
     // Branches we're allowed to post to, space separated list
-    branches:       "try-taskcluster",
+    branches:                       "try-taskcluster",
 
     // TreeHerder Credentials obtained from an ateam member (try jeads)
     consumerKey:                    null,
