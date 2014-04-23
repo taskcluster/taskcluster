@@ -24,6 +24,7 @@ var branches = {};
   }
 })();
 
+debug("Loaded with branches: ", _.keys(branches));
 
 /**
  * Handle message for the `queue/v1/task-running` exchange.
