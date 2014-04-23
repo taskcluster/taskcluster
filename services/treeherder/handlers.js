@@ -43,6 +43,10 @@ handlers['queue/v1/task-running'] = function(message) {
     var taskGraphInfo = values.shift();
     var task          = values.shift();
     var project = branches[taskGraphInfo.tags.treeherderRepository];
+    if (!project) {
+      debug("No project for %s", taskGraphInfo.tags.treeherderRepository);
+      return;
+    }
     return project.postJobs([{
       project:                taskGraphInfo.tags.treeherderRepository,
       revision_hash:          taskGraphId,
@@ -116,6 +120,10 @@ handlers['queue/v1/task-completed'] = function(message) {
     var logs          = values.shift();
     var result        = values.shift();
     var project = branches[taskGraphInfo.tags.treeherderRepository];
+    if (!project) {
+      debug("No project for %s", taskGraphInfo.tags.treeherderRepository);
+      return;
+    }
     return project.postJobs([{
       project:                taskGraphInfo.tags.treeherderRepository,
       revision_hash:          taskGraphId,
@@ -181,6 +189,10 @@ handlers['queue/v1/task-failed'] = function(message) {
     var taskGraphInfo = values.shift();
     var task          = values.shift();
     var project = branches[taskGraphInfo.tags.treeherderRepository];
+    if (!project) {
+      debug("No project for %s", taskGraphInfo.tags.treeherderRepository);
+      return;
+    }
     return project.postJobs([{
       project:                taskGraphInfo.tags.treeherderRepository,
       revision_hash:          taskGraphId,
@@ -240,6 +252,10 @@ handlers['scheduler/v1/task-graph-running'] = function(message) {
 
     // Find project
     project = branches[taskGraph.tags.treeherderRepository];
+    if (!project) {
+      debug("No project for %s", taskGraph.tags.treeherderRepository);
+      return;
+    }
 
     // Post result set
     return project.postResultset([{
@@ -316,6 +332,10 @@ handlers['scheduler/v1/task-graph-running'] = function(message) {
         };
       });
     })).then(function(jobs) {
+      if (!project) {
+        debug("No project for %s", taskGraph.tags.treeherderRepository);
+        return;
+      }
       return project.postJobs(jobs);
     });
   })
