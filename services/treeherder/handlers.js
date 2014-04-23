@@ -282,7 +282,7 @@ handlers['scheduler/v1/task-graph-running'] = function(message) {
         author:               taskGraph.metadata.owner
       }]
     };
-    debug("postResultset-data", jobs);
+    debug("postResultset-data", resultset);
 
     // Post result set
     return project.postResultset([resultset]);
