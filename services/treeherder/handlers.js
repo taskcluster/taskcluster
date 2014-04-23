@@ -88,7 +88,7 @@ handlers['queue/v1/task-running'] = function(message) {
         }
       }
     };
-    debug("postJobs-data-running", job);
+    debug("postJobs-data-running, %j", job);
     return project.postJobs([job]);
   });
 };
@@ -173,7 +173,7 @@ handlers['queue/v1/task-completed'] = function(message) {
         })
       }
     };
-    debug("postJobs-data-completed", job);
+    debug("postJobs-data-completed, %j", job);
     return project.postJobs([job]);
   });
 };
@@ -238,7 +238,7 @@ handlers['queue/v1/task-failed'] = function(message) {
         }
       }
     };
-    debug("postJobs-data-failed", job);
+    debug("postJobs-data-failed, %j", job);
     return project.postJobs([job]);
   });
 };
@@ -282,7 +282,7 @@ handlers['scheduler/v1/task-graph-running'] = function(message) {
         author:               taskGraph.metadata.owner
       }]
     };
-    debug("postResultset-data", resultset);
+    debug("postResultset-data, %j", resultset);
 
     // Post result set
     return project.postResultset([resultset]);
@@ -351,7 +351,7 @@ handlers['scheduler/v1/task-graph-running'] = function(message) {
         debug("No project for %s", taskGraph.tags.treeherderRepository);
         return;
       }
-      debug("postJobs-data-create", jobs);
+      debug("postJobs-data-create, %j", jobs);
       return project.postJobs(jobs);
     });
   })
