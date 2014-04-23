@@ -5,14 +5,14 @@ This component will post events from task-graphs and their tasks to treeherder
 provided that:
   * The task-graph routing key is prefix `treeherder-reporting.`
   * The task-graph carries the following tags:
-    - treeherderComment
-    - treeherderRevision
-    - treeherderRepository
+    - `treeherderComment`,
+    - `treeherderRevision`, and
+    - `treeherderRepository`
   * All tasks (to be posted) carries tag tags:
-   - treeherderSymbol
-   - treeherderGroupName
-   - treeherderGroupSymbol
-   - treeherderProductName
+   - `treeherderSymbol`,
+   - `treeherderGroupName`,
+   - `treeherderGroupSymbol`, and
+   - `treeherderProductName`
 
 
 Note, the task-graph routing key prefix is configurable, but in production we
