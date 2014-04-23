@@ -9,6 +9,7 @@ var DEFAULT_CONFIG_VALUES = {
     // to use an exclusive queue that will be automatically deleted. This is
     // useful for testing. Note, that the production queue should not be used
     // during development, and this will take messages
+    // In production we'll use `taskcluster-treeherder`
     amqpQueueName:                  undefined,
 
     // Routing key to look for as first entry in task-graph routing, in
@@ -52,7 +53,8 @@ exports.load = function() {
   nconf.env({
     separator:  '__',
     whitelist:  [
-      'scheduler__baseUrl',
+      'treeherder__routingKeyPrefix',
+      'treeherder__amqpQueueName',
       'treeherder__branches'
     ]
   });
