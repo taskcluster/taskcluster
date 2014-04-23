@@ -28,6 +28,11 @@ debug("Loaded with branches: ", _.keys(branches));
 //  - Fix things in treeherder so we can report a task running if it's rerun
 //    after being reported completed
 
+/** Get time of Date object in seconds since epoch */
+var getTime = function(date) {
+  return Math.floor(date.getTime() / 1000);
+};
+
 /**
  * Handle message for the `queue/v1/task-running` exchange.
  * by
@@ -75,7 +80,7 @@ handlers['queue/v1/task-running'] = function(message) {
         group_name:           task.tags.treeherderGroupName,
         group_symbol:         task.tags.treeherderGroupSymbol,
         product_name:         task.tags.treeherderProductName,
-        submit_timestamp:     (new Date(task.created)).getTime(),
+        submit_timestamp:     getTime(new Date(task.created)),
         start_timestamp:      undefined,
         end_timestamp:        undefined,
         state:                'running',
@@ -154,9 +159,9 @@ handlers['queue/v1/task-completed'] = function(message) {
         group_name:           task.tags.treeherderGroupName,
         group_symbol:         task.tags.treeherderGroupSymbol,
         product_name:         task.tags.treeherderProductName,
-        submit_timestamp:     (new Date(task.created)).getTime(),
-        start_timestamp:      (new Date(result.statistics.started)).getTime(),
-        end_timestamp:        (new Date(result.statistics.finished)).getTime(),
+        submit_timestamp:     getTime(new Date(task.created)),
+        start_timestamp:      getTime(new Date(result.statistics.started)),
+        end_timestamp:        getTime(new Date(result.statistics.finished)),
         state:                'completed',
         result:               (message.success ? 'success' : 'testfailed'),
         who:                  task.metadata.owner,
@@ -225,9 +230,9 @@ handlers['queue/v1/task-failed'] = function(message) {
         group_name:           task.tags.treeherderGroupName,
         group_symbol:         task.tags.treeherderGroupSymbol,
         product_name:         task.tags.treeherderProductName,
-        submit_timestamp:     (new Date(task.created)).getTime(),
-        start_timestamp:      (new Date(task.created)).getTime(),
-        end_timestamp:        (new Date()).getTime(),
+        submit_timestamp:     getTime(new Date(task.created)),
+        start_timestamp:      getTime(new Date(task.created)),
+        end_timestamp:        getTime(new Date()),
         state:                'completed',
         result:               'exception',
         who:                  task.metadata.owner,
@@ -272,7 +277,7 @@ handlers['scheduler/v1/task-graph-running'] = function(message) {
     var resultset = {
       revision_hash:          taskGraphId,
       author:                 taskGraph.metadata.owner,
-      push_timestamp:         (new Date()).getTime(),
+      push_timestamp:         getTime(new Date()),
       type:                   'push',
       revisions: [{
         comment:              taskGraph.tags.treeherderComment,
@@ -322,7 +327,7 @@ handlers['scheduler/v1/task-graph-running'] = function(message) {
             group_name:           task.tags.treeherderGroupName,
             group_symbol:         task.tags.treeherderGroupSymbol,
             product_name:         task.tags.treeherderProductName,
-            submit_timestamp:     (new Date(task.created)).getTime(),
+            submit_timestamp:     getTime(new Date(task.created)),
             start_timestamp:      undefined,
             end_timestamp:        undefined,
             state:                'pending',
