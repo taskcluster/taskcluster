@@ -17,14 +17,12 @@ var DEFAULT_CONFIG_VALUES = {
     // production during tests `jonasfj-test-th-report` is appropriate.
     routingKeyPrefix:               'jonasfj-test-t2-report',
 
-    // Branches we're allowed to post to
-    branches: {
-      'try-taskcluster': {
-        // TreeHerder Credentials obtained from an ateam member (try jeads)
-        consumerKey:                    null,
-        consumerSecret:                 null
-      }
-    }
+    // Branches we're allowed to post to, space separated list
+    branches:       "try-taskcluster",
+
+    // TreeHerder Credentials obtained from an ateam member (try jeads)
+    consumerKey:                    null,
+    consumerSecret:                 null
   },
 
   // old config entries
@@ -55,7 +53,8 @@ exports.load = function() {
     whitelist:  [
       'treeherder__routingKeyPrefix',
       'treeherder__amqpQueueName',
-      'treeherder__branches'
+      'treeherder__consumerKey',
+      'treeherder__consumerSecret'
     ]
   });
 
