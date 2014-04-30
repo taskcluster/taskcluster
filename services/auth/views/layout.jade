@@ -1,29 +1,30 @@
 doctype html
 html(lang='en')
   head
-    meta(charset='utf-8')
-    if title
-      title TaskCluster - Task-Graph Scheduler - #{title}
-    else
-      title TaskCluster - Task-Graph Scheduler
-    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    block head
+      meta(charset='utf-8')
+      if title
+        title TaskCluster - AWS Provisioner - #{title}
+      else
+        title TaskCluster - AWS Provisioner
+      meta(name='viewport', content='width=device-width, initial-scale=1.0')
 
-    // Bootstrap and Awesome Font styles
-    link(rel='stylesheet',
-         href='//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css')
-    link(rel='stylesheet',
-         href='//netdna.bootstrapcdn.com/font-awesome/4.0.2/css/font-awesome.min.css')
+      // Bootstrap and Awesome Font styles
+      link(rel='stylesheet',
+           href='/assets/bootstrap/css/bootstrap.min.css')
+      link(rel='stylesheet',
+           href='/assets/bootstrap/css/bootstrap-theme.min.css')
 
-    // Custom styling
-    link(rel='stylesheet', href='/static/style.css')
+      // Custom styling
+      link(rel='stylesheet', href='/assets/style.css')
 
-    // jQuery and Bootstrap Javascript
-    script(src='//code.jquery.com/jquery-1.10.1.min.js')
-    script(src='//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js')
+      // jQuery and Bootstrap Javascript
+      script(src='//code.jquery.com/jquery-1.10.1.min.js')
+      script(src='/assets/bootstrap/js/bootstrap.min.js')
 
-    // Persona login script and login script
-    script(src='https://login.persona.org/include.js')
-    script(src='/static/login.js')
+      // Persona login script and login script
+      script(src='https://login.persona.org/include.js')
+      script(src='/assets/login.js')
   body
     if !user
       form#persona-form(action='/persona-auth', method='post',
@@ -33,16 +34,16 @@ html(lang='en')
     nav.navbar.navbar-default(role='navigation')
       div.navbar-header
         a.navbar-brand(href='/')
-          | Task Cluster - Task-Graph Scheduler
+          | Task Cluster - AWS Provisioner
       ul.nav.navbar-nav
-        li: a(href='/log')
-          | Action log
+        li: a(href='/worker-type')
+          | Manage Worker-Types
         if user
           li: a(href='/logout')
             | Logout
 
       if !user
-        img.navbar-right.signin#signin(src='/static/signin.png')
+        img.navbar-right.signin#signin(src='/assets/signin.png')
 
     section.container
       header

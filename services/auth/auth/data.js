@@ -228,6 +228,37 @@ Entity.load = function(partitionKey, rowKey, constructor) {
   });
 };
 
+/** Remove entity if not modified, unless ignoreChanges == true */
+Entity.prototype.remove = function(ignoreChanges) {
+  var that = this;
+  return new Promise(function(accept, reject) {
+    // Find PartitionKey and RowKey from shadow property
+    var partitionKey, rowKey;
+    that.__mapping.forEach(function(entry) {
+      if (entry.key == 'PartitionKey') {
+        partitionKey = serialize(that.__shadow[entry.property], entry);
+      }
+      if (entry.key == 'RowKey') {
+        rowKey = serialize(that.__shadow[entry.property], entry);
+      }
+    });
+    client.deleteEntity(that.__tableName, {
+      PartitionKey:   partitionKey,
+      RowKey:         rowKey,
+      __etag:         ignoreChanges === true ? undefined : that.__etag
+    }, {
+      force:          ignoreChanges === true
+    }, function(err, data) {
+      if (err) {
+        debug("Failed to delete entity with error: %s, as JSON: %j",
+              err, err, err.stack);
+        return reject(err);
+      }
+      accept();
+    });
+  });
+};
+
 /**
  * Modify an entity instance, the `modifier` is a function that is called with
  * a clone of the entity as `this`, it should apply modifications to `this`.
@@ -384,86 +415,78 @@ Entity.prototype.modify = function(modifier) {
 };
 
 
-/** Subclass of Entity for representation of Tasks */
-var Task = function(entity) {
+
+/** Subclass of Entity for representation of a user */
+var User = function(entity) {
   // Call base class constructor
   Entity.call(this, entity);
 };
 
 // Subclass entity, this declares read-only properties
-Entity.subClass(Task, nconf.get('scheduler:azureTaskGraphTable'), [
+Entity.subClass(User, nconf.get('auth:azureUserTable'), [
   {
     key:              'PartitionKey',
-    property:         'taskGraphId',
+    property:         'userId',
     type:             'string'
   }, {
+    // This is always hardcoded to 'credentials'
     key:              'RowKey',
-    property:         'taskId',
+    type:             'string',
+    hidden:           true
+  }, {
+    key:              'token',
+    type:             'string'
+  }, {
+    key:              'name',
     type:             'string'
   }, {
     key:              'version',
     type:             'string'
   }, {
-    key:              'label',
-    type:             'string'
+    key:              'scopes',
+    type:             'json'
   }, {
-    key:              'rerunsAllowed',
-    type:             'number'
-  }, {
-    key:              'rerunsLeft',
-    type:             'number'
-  }, {
-    key:              'deadline',
+    key:              'expires',
     type:             'date'
   }, {
-    key:              'requires',
-    type:             'json'
-  }, {
-    key:              'requiresLeft',
-    type:             'json'
-  }, {
-    key:              'dependents',
-    type:             'json'
-  }, {
-    key:              'resolution',
+    key:              'details',
     type:             'json'
   }
 ].map(normalizeEntityMappingEntry));
 
-/** Create task */
-Task.create = function(properties) {
-  return Entity.create(properties, Task);
+/** Create User */
+User.create = function(properties) {
+  properties.RowKey = 'credentials';
+  return Entity.create(properties, User);
 };
 
-/** Load task */
-Task.load = function(taskGraphId, taskId) {
-  return Entity.load(taskGraphId, taskId, Task);
+/** Load User */
+User.load = function(userId) {
+  return Entity.load(userId, 'credentials', User);
 };
 
-/** Load all tasks for a given task-graph */
-Task.loadPartition = function(taskGraphId) {
+/** Load all registered users */
+User.loadAll = function() {
   return new Promise(function(accept, reject) {
-    var tasks = [];
+    var users = [];
     var fetchNext = function(continuationTokens) {
-      client.queryEntities(Task.prototype.__tableName, {
-        query:      azureTable.Query.create()
-                      .where('PartitionKey', '==', taskGraphId)
-                      .and('RowKey', '!=', 'task-graph'),
-        forceEtags: true,
+      client.queryEntities(User.prototype.__tableName, {
+        query:        azureTable.Query.create('RowKey', '==', 'credentials'),
+        forceEtags:   true,
         continuation: continuationTokens
       }, function(err, data, continuationTokens) {
         // Reject if we hit an error
         if (err) {
           return reject(err);
         }
-        // Create wrapper for each task fetched
-        tasks.push.apply(tasks, data.map(function(entity) {
-          return new Task(entity);
+        // Create wrapper for each worker type fetched
+        users.push.apply(users, data.map(function(entity) {
+          return new WorkerType(entity);
         }));
 
         // If there are no continuation tokens then we accept data fetched
         if (!continuationTokens) {
-          return accept(tasks);
+          return accept(users);
         }
         // Fetch next set based on continuation tokens
         fetchNext(continuationTokens);
@@ -473,72 +496,9 @@ Task.loadPartition = function(taskGraphId) {
   });
 };
 
-// Export Task
-exports.Task = Task;
 
-/** Subclass of Entity for representation of TaskGraphs */
-var TaskGraph = function(entity) {
-  // Call base class constructor
-  Entity.call(this, entity);
-};
-
-// Subclass entity, this declares read-only properties
-Entity.subClass(TaskGraph, nconf.get('scheduler:azureTaskGraphTable'), [
-  {
-    key:              'PartitionKey',
-    property:         'taskGraphId',
-    type:             'string'
-  }, {
-    // This is always hardcoded to 'task-graph', so we can use the same table
-    // for both TaskGraph and Task entities. This ensures that we can make
-    // atomic operations should we ever need to do this.
-    key:              'RowKey',
-    type:             'string',
-    hidden:           true
-  }, {
-    key:              'version',
-    type:             'string'
-  }, {
-    key:              'requires',
-    type:             'json'
-  }, {
-    key:              'requiresLeft',
-    type:             'json'
-  }, {
-    key:              'state',
-    type:             'string'
-  }, {
-    key:              'routing',
-    type:             'string'
-  }, {
-    key:              'details',
-    type:             'json'
-  }
-].map(normalizeEntityMappingEntry));
-
-/** Create TaskGraph */
-TaskGraph.create = function(properties) {
-  properties.RowKey = 'task-graph';
-  return Entity.create(properties, TaskGraph);
-};
-
-/** Load TaskGraph */
-TaskGraph.load = function(taskGraphId) {
-  return Entity.load(taskGraphId, 'task-graph', TaskGraph);
-};
-
-/** Get task-graph status structure */
-TaskGraph.prototype.status = function() {
-  return {
-    taskGraphId:    this.taskGraphId,
-    schedulerId:    nconf.get('scheduler:taskGraphSchedulerId'),
-    state:          this.state,
-    routing:        this.routing
-  };
-};
-
-// Export TaskGraph
-exports.TaskGraph = TaskGraph;
+// Export User
+exports.User = User;
 
 /**
  * Ensures the existence of a table, given a tableName or Entity subclass
