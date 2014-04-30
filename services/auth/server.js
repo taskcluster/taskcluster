@@ -14,6 +14,7 @@ var Promise                         = require('promise');
 var PersonaStrategy                 = require('passport-persona').Strategy;
 var validate                        = require('./utils/validate');
 var debug                           = require('debug')('server');
+var data                            = require('./auth/data');
 
 // Load a little monkey patching
 require('./utils/spread-promise').patch();
@@ -26,6 +27,7 @@ app.set('port', Number(process.env.PORT || nconf.get('server:port')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = require('moment');  // make moment available to jade
+app.locals.marked = require('marked');  // make marked available to jade
 app.use(express.favicon());
 app.use(express.logger('dev'));
 
@@ -134,9 +136,15 @@ exports.launch = function() {
   // Setup
   return validate.setup().then(function() {
     // Publish schemas if necessary
-    if (nconf.get('auth:publishSchemas')) {
+    if (nconf.get('auth:publishSchemas') == 'true') {
       return require('./utils/render-schema').publish();
     }
+  }).then(function() {
+    if (nconf.get('auth:clearUserTable') == 'true') {
+      return data.deleteTable(data.User);
+    }
+  }).then(function() {
+    return data.ensureTable(data.User);
   }).then(function() {
     return new Promise(function(accept, reject) {
       // Launch HTTP server
