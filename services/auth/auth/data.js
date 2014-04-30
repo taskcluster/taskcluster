@@ -479,9 +479,9 @@ User.loadAll = function() {
         if (err) {
           return reject(err);
         }
-        // Create wrapper for each worker type fetched
+        // Create wrapper for each user fetched
         users.push.apply(users, data.map(function(entity) {
-          return new WorkerType(entity);
+          return new User(entity);
         }));
 
         // If there are no continuation tokens then we accept data fetched
@@ -517,6 +517,26 @@ exports.ensureTable = function(table) {
     }, function(err, data) {
       if (err) {
         debug("Failed to create table '%s' with error: %s, as JSON: %j",
+              table, err, err);
+        return reject(err);
+      }
+      accept();
+    });
+  });
+};
+
+/** Delete azure table, return promise of success */
+exports.deleteTable = function(table, ignoreErrors) {
+  // Find table name from model, if model is given
+  if (typeof(table) != 'string') {
+    table = table.prototype.__tableName;
+  }
+
+  // Delete table
+  return new Promise(function(accept, reject) {
+    client.deleteTable(table, function(err) {
+      if (err && !ignoreErrors) {
+        debug("Failed to delete table '%s' with error: %s, as JSON: %j",
               table, err, err);
         return reject(err);
       }

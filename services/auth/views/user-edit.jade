@@ -35,7 +35,7 @@ block content
         input(type="text",
               style="width: 80ex",
               name="scopes",
-              value="#{user.scopes}")#scopes.form-control
+              value="#{JSON.stringify(user.scopes)}")#scopes.form-control
     div.form-group
       label.col-sm-2.control-label(for="expires")
         | Expires
