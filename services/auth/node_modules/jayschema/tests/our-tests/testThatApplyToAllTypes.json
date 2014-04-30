@@ -1,0 +1,203 @@
+[
+    {
+        "description": "enum keyword",
+        "schema": {
+            "enum": ["foo", "bar"]
+        },
+        "tests": [
+            {
+                "description": "item matches schema",
+                "data": "foo",
+                "valid": true
+            },
+            {
+                "description": "item does not match schema",
+                "data": "baz",
+                "valid": false
+            },
+            {
+                "description": "integer does not match schema",
+                "data": 42,
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "enum keyword with mixed types",
+        "schema": {
+            "enum": ["foo", "bar", 42]
+        },
+        "tests": [
+            {
+                "description": "item matches schema",
+                "data": "foo",
+                "valid": true
+            },
+            {
+                "description": "item does not match schema",
+                "data": "baz",
+                "valid": false
+            },
+            {
+                "description": "integer matches schema",
+                "data": 42,
+                "valid": true
+            },
+            {
+                "description": "string similar to integer does not match schema",
+                "data": "42",
+                "valid": false
+            },
+            {
+                "description": "empty string does not match schema",
+                "data": "",
+                "valid": false
+            },
+            {
+                "description": "null does not match schema",
+                "data": null,
+                "valid": false
+            },
+            {
+                "description": "array does not match schema",
+                "data": [],
+                "valid": false
+            },
+            {
+                "description": "object does not match schema",
+                "data": {},
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "allOf keyword",
+        "schema": {
+            "type": "array",
+            "allOf": [
+              { "items": { "type": "number" } },
+              { "maxItems": 3 }
+            ]
+        },
+        "tests": [
+            {
+                "description": "empty array matches schema",
+                "data": [],
+                "valid": true
+            },
+            {
+                "description": "array of numbers matches schema",
+                "data": [1, 2, 3],
+                "valid": true
+            },
+            {
+                "description": "array violates first of two 'allOf' schemas",
+                "data": [1, "2", 3],
+                "valid": false
+            },
+            {
+                "description": "array violates second of two 'allOf' schemas",
+                "data": [1, 2, 3, 4],
+                "valid": false
+            },
+            {
+                "description": "array violates both of the 'allOf' schemas",
+                "data": [1, 2, "3", 4],
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "anyOf keyword",
+        "schema": {
+            "type": "array",
+            "anyOf": [
+              { "items": { "type": "number" } },
+              { "maxItems": 3 }
+            ]
+        },
+        "tests": [
+            {
+                "description": "empty array matches schema",
+                "data": [],
+                "valid": true
+            },
+            {
+                "description": "array of numbers matches schema",
+                "data": [1, 2, 3],
+                "valid": true
+            },
+            {
+                "description": "matches second of the two 'anyOf' schemas",
+                "data": [1, "2", 3],
+                "valid": true
+            },
+            {
+                "description": "matches first of the two 'anyOf' schemas",
+                "data": [1, 2, 3, 4],
+                "valid": true
+            },
+            {
+                "description": "array violates both of the 'anyOf' schemas",
+                "data": [1, 2, "3", 4],
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "oneOf keyword",
+        "schema": {
+            "type": "array",
+            "oneOf": [
+              { "items": { "type": "number" } },
+              { "maxItems": 3 }
+            ]
+        },
+        "tests": [
+            {
+                "description": "mixed array matches schema",
+                "data": [1, "2", 3],
+                "valid": true
+            },
+            {
+                "description": "empty array does not match schema",
+                "data": [],
+                "valid": false
+            },
+            {
+                "description": "array matches both 'oneOf' schemas, so fails to match overall",
+                "data": [1, 2, 3],
+                "valid": false
+            },
+            {
+                "description": "array matches neither of the 'oneOf' schemas",
+                "data": [1, 2, 3, "4"],
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "not keyword",
+        "schema": {
+            "type": "number",
+            "not": { "multipleOf": 8 }
+        },
+        "tests": [
+            {
+                "description": "does not match 'not' schema, so DOES match overall schema",
+                "data": 63,
+                "valid": true
+            },
+            {
+                "description": "matches 'not' schema, so DOES NOT match overall schema",
+                "data": 64,
+                "valid": false
+            }
+        ]
+    }
+]
