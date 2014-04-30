@@ -1,0 +1,292 @@
+[
+    {
+        "description": "maxProperties",
+        "schema": {
+            "type": "object",
+            "maxProperties": 3
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": { "foo": 1, "bar": 2, "baz": 3 },
+                "valid": true
+            },
+            {
+                "description": "too many properties does not match schema",
+                "data": { "foo": 1, "bar": 2, "baz": 3, "qux": 4 },
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "minProperties",
+        "schema": {
+            "type": "object",
+            "minProperties": 3
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": { "foo": 1, "bar": 2, "baz": 3 },
+                "valid": true
+            },
+            {
+                "description": "too few properties does not match schema",
+                "data": { "foo": 1, "bar": 2 },
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "required",
+        "schema": {
+            "type": "object",
+            "required": ["foo", "bar"]
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": { "foo": 1, "bar": 2 },
+                "valid": true
+            },
+            {
+                "description": "matches schema even with extra properties",
+                "data": { "foo": 1, "bar": 2, "baz": 3 },
+                "valid": true
+            },
+            {
+                "description": "missing required property does not match schema",
+                "data": { "foo": 1 },
+                "valid": false
+            },
+            {
+                "description": "empty object does not match schema",
+                "data": {},
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "additionalProperties true",
+        "schema": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": { "foo": 1, "bar": 2, "baz": 3 },
+                "valid": true
+            }
+        ]
+    },
+
+    {
+        "description": "additionalProperties is a schema",
+        "schema": {
+            "type": "object",
+            "additionalProperties": {}
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": { "foo": 1, "bar": 2, "baz": 3 },
+                "valid": true
+            }
+        ]
+    },
+
+    {
+        "description": "additionalProperties is false",
+        "schema": {
+            "type": "object",
+            "properties": { "foo": {}, "bar": {}, "baz": {} },
+            "additionalProperties": false
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": { "foo": 1, "bar": 2, "baz": 3 },
+                "valid": true
+            },
+            {
+                "description": "fewer properties than allowed still matches schema",
+                "data": { "foo": 1, "bar": 2 },
+                "valid": true
+            },
+            {
+                "description": "does not match schema",
+                "data": { "foo": 1, "bar": 2, "baz": 3, "qux": 4 },
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "additionalProperties is false but patternProperties is specified",
+        "schema": {
+            "type": "object",
+            "properties": { "foo": {} },
+            "patternProperties": { "^b": {} },
+            "additionalProperties": false
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": { "foo": 1, "bar": 2, "baz": 3 },
+                "valid": true
+            },
+            {
+                "description": "does not match schema",
+                "data": { "foo": 1, "bar": 2, "qux": 4 },
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "property dependencies",
+        "schema": {
+            "type": "object",
+            "dependencies": {
+                "foo": ["bar", "baz"]
+            }
+        },
+        "tests": [
+            {
+                "description": "empty object matches schema",
+                "data": {},
+                "valid": true
+            },
+            {
+                "description": "matches schema",
+                "data": {"foo": 1, "bar": 2, "baz": 3},
+                "valid": true
+            },
+            {
+                "description": "does not match schema because of missing dependency",
+                "data": { "foo": 1, "bar": 2, "qux": 4 },
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "schema dependencies",
+        "schema": {
+            "type": "object",
+            "dependencies": {
+                "foo": {
+                    "required": ["bar", "baz"],
+                    "maxProperties": 3
+                }
+            }
+        },
+        "tests": [
+            {
+                "description": "empty object matches schema",
+                "data": {},
+                "valid": true
+            },
+            {
+                "description": "matches schema",
+                "data": {"foo": 1, "bar": 2, "baz": 3},
+                "valid": true
+            },
+            {
+                "description": "matches schema; maxProperties only enforced if foo present",
+                "data": {"moo": 1, "bar": 2, "baz": 3, "qux": 4},
+                "valid": true
+            },
+            {
+                "description": "does not match schema because of missing dependency-required field",
+                "data": {"foo": 1, "baz": 3},
+                "valid": false
+            },
+            {
+                "description": "does not match schema; only 3 props allowed if foo present",
+                "data": {"foo": 1, "bar": 2, "baz": 3, "qux": 4},
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "properties",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "firstName": { "type": "string" },
+                "lastName": { "type": "string" },
+                "age": { "type": "integer" }
+            }
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": {
+                    "firstName": "Mohammed",
+                    "lastName": "Chang",
+                    "age": 99,
+                    "city": "Lagos"
+                },
+                "valid": true
+            },
+            {
+                "description": "does not match schema",
+                "data": {
+                    "firstName": "Mohammed",
+                    "lastName": "Chang",
+                    "age": 49.5,
+                    "city": "Lagos"
+                },
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "patternProperties",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "firstName": { "type": "string" },
+                "lastName": { "type": "string" },
+                "age": { "type": "integer" }
+            },
+            "patternProperties": {
+                "^address\\d+$": { "type": "string" }
+            },
+            "additionalProperties": false
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": {
+                    "firstName": "Mohammed",
+                    "lastName": "Chang",
+                    "age": 99,
+                    "address1": "123 Main Street",
+                    "address2": "Suite A"
+                },
+                "valid": true
+            },
+            {
+                "description": "does not match schema",
+                "data": {
+                    "firstName": "Mohammed",
+                    "lastName": "Chang",
+                    "age": 99,
+                    "address1": "123 Main Street",
+                    "address2": "Suite A",
+                    "addressA": "Mailbox 7"
+                },
+                "valid": false
+            }
+        ]
+    }
+
+]
