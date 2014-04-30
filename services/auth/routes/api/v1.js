@@ -82,3 +82,44 @@ api.declare({
     });
   });
 });
+
+
+/** Get authorized scopes for a given user */
+api.declare({
+  method:     'get',
+  route:      '/user/:userId/scopes',
+  input:      undefined,
+  output:     undefined,
+  scopes:     ['auth:inspect', 'auth:credentials'],
+  title:      "Get User Authorized Scopes",
+  desc: [
+    "TODO: Write documentation..."
+  ].join('\n')
+}, function(req, res) {
+
+});
+
+
+/** Get credentials for a given user */
+api.declare({
+  method:     'get',
+  route:      '/user/:userId/credentials',
+  input:      undefined,
+  output:     undefined,
+  scopes:     ['auth:credentials'],
+  title:      "Get User Credentials",
+  desc: [
+    "TODO: Write documentation..."
+  ].join('\n')
+}, function(req, res) {
+
+});
+
+
+
+
+
+
+
+
+

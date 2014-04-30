@@ -6,7 +6,6 @@ block content
       tr
         th Name
         th ClientId
-        th AccessToken
         th Expires
         th View
         th Edit
@@ -14,12 +13,10 @@ block content
     tbody
       for user in users
         tr
-          td #{name}
+          td #{user.name}
           td
             code #{user.userId}
-          td
-            code #{user.token}
-          td #{user.expires}
+          td #{moment(user.expires).fromNow()}
           td
             a(href="/user/#{user.userId}/view").btn.btn-success.btn-xs
               i.glyphicon.glyphicon-eye-open

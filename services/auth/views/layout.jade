@@ -4,9 +4,9 @@ html(lang='en')
     block head
       meta(charset='utf-8')
       if title
-        title TaskCluster - AWS Provisioner - #{title}
+        title TaskCluster - Authentication Mananger - #{title}
       else
-        title TaskCluster - AWS Provisioner
+        title TaskCluster - Authentication Mananger
       meta(name='viewport', content='width=device-width, initial-scale=1.0')
 
       // Bootstrap and Awesome Font styles
@@ -34,10 +34,10 @@ html(lang='en')
     nav.navbar.navbar-default(role='navigation')
       div.navbar-header
         a.navbar-brand(href='/')
-          | Task Cluster - AWS Provisioner
+          | Task Cluster - Authentication Mananger
       ul.nav.navbar-nav
-        li: a(href='/worker-type')
-          | Manage Worker-Types
+        li: a(href='/user')
+          | Manage Users
         if user
           li: a(href='/logout')
             | Logout
