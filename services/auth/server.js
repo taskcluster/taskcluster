@@ -25,6 +25,7 @@ var app = exports.app = express();
 app.set('port', Number(process.env.PORT || nconf.get('server:port')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+app.locals.moment = require('moment');  // make moment available to jade
 app.use(express.favicon());
 app.use(express.logger('dev'));
 
@@ -44,8 +45,8 @@ app.use(function(req, res, next) {
   next();
 });
 app.use(app.router);
-app.use('/static', require('stylus').middleware(path.join(__dirname, 'static')));
-app.use('/static', express.static(path.join(__dirname, 'static')));
+app.use('/assets', require('stylus').middleware(path.join(__dirname, 'assets')));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // Warn if no secret was used in production
 if ('production' == app.get('env')) {
@@ -109,6 +110,18 @@ var ensureAuthenticated = function(req, res, next) {
 var routes = require('./routes');
 app.get('/',                                    routes.index);
 app.get('/unauthorized',                        routes.unauthorized);
+// Route configuration
+var routes = require('./routes');
+app.get('/',                                              routes.index);
+app.get('/unauthorized',                                  routes.unauthorized);
+app.get('/user',                    ensureAuthenticated,  routes.user.list);
+app.get('/user/create',             ensureAuthenticated,  routes.user.create);
+app.get('/user/:userId/view',       ensureAuthenticated,  routes.user.view);
+app.get('/user/:userId/edit',       ensureAuthenticated,  routes.user.edit);
+app.get('/user/:userId/delete',     ensureAuthenticated,  routes.user.delete);
+app.post('/user/update',            ensureAuthenticated,  routes.user.update)
+
+
 
 /** Launch the server */
 exports.launch = function() {

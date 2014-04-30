@@ -1,0 +1,62 @@
+extends layout
+
+block content
+  form.form-horizontal(role="form", action="/user/update", method="post")
+    input(type="hidden", name="updateOrCreate", value="#{action}")
+    div.form-group
+      label.col-sm-2.control-label(for="name")
+        | Name
+      div.col-sm-10
+        input(type="text",
+              style="width: 80ex",
+              maxlength="22",
+              name="name",
+              value="#{user.name}")#name.form-control
+    div.form-group
+      label.col-sm-2.control-label(for="userId")
+        | ClientId
+      div.col-sm-10
+        code #{user.userId}
+        input(type="hidden",
+              name="userId",
+              value="#{user.userId}")#userId
+    div.form-group
+      label.col-sm-2.control-label(for="token")
+        | AccessToken
+      div.col-sm-10
+        code #{user.token}
+        input(type="hidden",
+              name="token",
+              value="#{user.token}")#token
+    div.form-group
+      label.col-sm-2.control-label(for="scopes")
+        | Scopes
+      div.col-sm-10
+        input(type="text",
+              style="width: 80ex",
+              name="scopes",
+              value="#{user.scopes}")#scopes.form-control
+    div.form-group
+      label.col-sm-2.control-label(for="expires")
+        | Expires
+      div.col-sm-10
+        input(type="text",
+              style="width: 80ex",
+              name="expires",
+              value="#{user.expires.toJSON()}")#expires.form-control
+    div.form-group
+      label.col-sm-2.control-label(for="notes")
+        | Notes
+      div.col-sm-10
+        textarea(style='width: 80ex; height: 60ex',
+                 name='notes')#notes.form-control
+          | #{user.details.notes}
+    div.form-group
+      div.col-sm-offset-2.col-sm-1
+        button(type="submit").btn.btn-primary
+          if action == 'update'
+            i.glyphicon.glyphicon-ok
+            |  Update
+          else
+            i.glyphicon.glyphicon-ok
+            |  Create
