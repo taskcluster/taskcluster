@@ -1,0 +1,43 @@
+extends layout
+
+block content
+  table.table
+    thead
+      tr
+        th Name
+        th ClientId
+        th AccessToken
+        th Expires
+        th View
+        th Edit
+        th Delete
+    tbody
+      for user in users
+        tr
+          td #{name}
+          td
+            code #{user.userId}
+          td
+            code #{user.token}
+          td #{user.expires}
+          td
+            a(href="/user/#{user.userId}/view").btn.btn-success.btn-xs
+              i.glyphicon.glyphicon-eye-open
+              |  View
+          td
+            a(href="/user/#{user.userId}/edit").btn.btn-primary.btn-xs
+              i.glyphicon.glyphicon-pencil
+              |  Edit
+          td
+            a(
+              href="/user/#{user.userId}/delete"
+            ).btn.btn-danger.btn-xs.prompt-first
+              i.glyphicon.glyphicon-trash
+              |  Delete
+  a(href="/user/create").btn.btn-primary
+    i.glyphicon.glyphicon-plus
+    |  New user
+  script
+    | $('.prompt-first').click(function() {
+    |   return confirm("Do you really want to delete this user?");
+    | });

@@ -18,7 +18,7 @@ var DEFAULT_CONFIG_VALUES = {
     validateOutgoing:               true,
 
     // Azure credentials table name
-    azureCredentialsTable:          "Credentials",
+    azureUserTable:                 "Users",
   },
 
   // Azure table credentials

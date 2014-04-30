@@ -1,0 +1,36 @@
+extends layout
+
+block content
+  dl.dl-horizontal
+    dt Name
+    dd #{user.name}
+    dt ClientId
+    dd
+      code #{user.userId}
+    dt AccessToken
+    dd
+      code #{user.token}
+    dt Expires
+    dd #{moment(user.expires).fromNow()}
+    dt Scopes
+    dd
+      ul
+        for scope in user.scopes
+          li
+            code #{scope}
+    hr
+    dt Actions
+    dd
+      a(href="/user/#{user.userId}/edit").btn.btn-success.btn-sm
+        i.glyphicon.glyphicon-pencil
+        |  Edit
+      = ' '
+      a(
+        href="/user/#{user.userId}/delete"
+      ).btn.btn-danger.btn-sm.prompt-first
+        i.glyphicon.glyphicon-trash
+        |  Delete
+  script
+    | $('.prompt-first').click(function() {
+    |   return confirm("Do you really want to delete this user?");
+    | });
