@@ -1,0 +1,323 @@
+[
+    {
+        "description": "additionalItems true",
+        "schema": {
+            "type": "array",
+            "additionalItems": true
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": [1, 2, 3],
+                "valid": true
+            }
+        ]
+    },
+
+    {
+        "description": "additionalItems false",
+        "schema": {
+            "type": "array",
+            "additionalItems": false
+        },
+        "tests": [
+            {
+                "description": "matches schema because 'items' is not specified",
+                "data": [1, 2, 3],
+                "valid": true
+            }
+        ]
+    },
+
+    {
+        "description": "additionalItems: false and items as an array",
+        "schema": {
+            "type": "array",
+            "items": [ {}, {}, {} ],
+            "additionalItems": false
+        },
+        "tests": [
+            {
+                "description": "empty array matches schema",
+                "data": [],
+                "valid": true
+            },
+            {
+                "description": "array of arrays matches schema",
+                "data": [[ 1, 2, 3, 4 ], [ 5, 6, 7, 8 ]],
+                "valid": true
+            },
+            {
+                "description": "array of 3 elements matches schema",
+                "data": [1, 2, 3],
+                "valid": true
+            },
+            {
+                "description": "array of 4 elements does not match schema",
+                "data": [1, 2, 3, 4],
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "additionalItems as a schema",
+        "schema": {
+            "type": "array",
+            "additionalItems": { "type": "string" }
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": ["a", "b", "c"],
+                "valid": true
+            }
+        ]
+    },
+
+    {
+        "description": "additionalItems as a schema",
+        "schema": {
+            "type": "array",
+            "additionalItems": { "type": "string" }
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": ["a", "b", "c"],
+                "valid": true
+            }
+        ]
+    },
+
+    {
+        "description": "items as an array and additionalItems true",
+        "schema": {
+            "type": "array",
+            "items": [ {"type": "number"}, {"type": "integer"} ],
+            "additionalItems": true
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": [1, 2, 3],
+                "valid": true
+            },
+            {
+                "description": "does not match schema",
+                "data": [1, "2", 3],
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "items as an array and additionalItems false",
+        "schema": {
+            "type": "array",
+            "items": [ {"type": "number"}, {"type": "integer"} ],
+            "additionalItems": false
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": [1, 2],
+                "valid": true
+            },
+            {
+                "description": "does not match schema",
+                "data": [1, 2, 3],
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "maxItems",
+        "schema": {
+            "type": "array",
+            "maxItems": 3
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": [1, 2],
+                "valid": true
+            },
+            {
+                "description": "max limit matches schema",
+                "data": [1, 2, 3],
+                "valid": true
+            },
+            {
+                "description": "does not match schema",
+                "data": [1, 2, 3, 4],
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "minItems",
+        "schema": {
+            "type": "array",
+            "minItems": 3
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": [1, 2, 3, 4],
+                "valid": true
+            },
+            {
+                "description": "min limit matches schema",
+                "data": [1, 2, 3],
+                "valid": true
+            },
+            {
+                "description": "does not match schema",
+                "data": [1, 2],
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "uniqueItems",
+        "schema": {
+            "type": "array",
+            "uniqueItems": true
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": [1, 2, 3],
+                "valid": true
+            },
+            {
+                "description": "string is not a number, so matches schema",
+                "data": [1, 2, 3, "3"],
+                "valid": true
+            },
+            {
+                "description": "does not match schema",
+                "data": [1, 2, 3, 3],
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "uniqueItems explicitly set to false",
+        "schema": {
+            "type": "array",
+            "uniqueItems": false
+        },
+        "tests": [
+            {
+                "description": "matches schema even though all items are unique",
+                "data": [1, 2, 3],
+                "valid": true
+            },
+            {
+                "description": "matches schema",
+                "data": [1, 2, 3, "3"],
+                "valid": true
+            }
+        ]
+    },
+
+    {
+        "description": "items as a schema",
+        "schema": {
+            "type": "array",
+            "items": { "type": "integer" }
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": [1, 2, 3],
+                "valid": true
+            },
+            {
+                "description": "float element not match schema",
+                "data": [1, 2, 3, 4.2],
+                "valid": false
+            },
+            {
+                "description": "string element not match schema",
+                "data": [1, 2, 3, "4"],
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "items as an array and additionalItems false",
+        "schema": {
+            "type": "array",
+            "items": [{"type": "integer"}, {"type": "string"}, {"type": "object"}],
+            "additionalItems": false
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": [1, "2", {"a": 3}],
+                "valid": true
+            },
+            {
+                "description": "second element does not match schema",
+                "data": [1, 2, {"a": 3}],
+                "valid": false
+            }
+        ]
+    },
+
+    {
+        "description": "items as an array and additionalItems true",
+        "schema": {
+            "type": "array",
+            "items": [{"type": "integer"}, {"type": "string"}, {"type": "object"}],
+            "additionalItems": true
+        },
+        "tests": [
+            {
+                "description": "matches schema",
+                "data": [1, "2", {"a": 3}],
+                "valid": true
+            },
+            {
+                "description": "with additional item matches schema",
+                "data": [1, "2", {"a": 3}, 4],
+                "valid": true
+            }
+        ]
+    },
+
+
+    {
+        "description": "items as an array and additionalItems as a schema",
+        "schema": {
+            "type": "array",
+            "items": [{"type": "integer"}, {"type": "string"}, {"type": "object"}],
+            "additionalItems": {"type": "array"}
+        },
+        "tests": [
+            {
+                "description": "matches schema (additional items not required)",
+                "data": [1, "2", {"a": 3}],
+                "valid": true
+            },
+            {
+                "description": "with additional item that matches schema",
+                "data": [1, "2", {"a": 3}, [4]],
+                "valid": true
+            },
+            {
+                "description": "with additional item that does not match schema",
+                "data": [1, "2", {"a": 3}, 4],
+                "valid": false
+            }
+        ]
+    }
+]
