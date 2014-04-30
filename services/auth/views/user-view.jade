@@ -18,6 +18,8 @@ block content
         for scope in user.scopes
           li
             code #{scope}
+    dt Notes
+    dd !{marked(user.details.notes)}
     hr
     dt Actions
     dd

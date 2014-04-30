@@ -1,8 +1,9 @@
 var Promise     = require('promise');
 var debug       = require('debug')('routes:user');
-var User        = require('../provisioner/data').User;
+var User        = require('../auth/data').User;
 var nconf       = require('nconf');
 var uuid        = require('uuid');
+var slugid      = require('slugid');
 
 // Auxiliary function to handle errors
 var errorHandler = function(res, title) {
@@ -11,7 +12,7 @@ var errorHandler = function(res, title) {
     debug("Error for incident id: %s, as JSON: %j",
           iid, error, error, error.stack);
     res.render('error', {
-      title:            title
+      title:            title,
       message:          "Ask administrator to lookup incident ID: " + iid
     });
   };
@@ -29,14 +30,17 @@ exports.list = function(req, res){
 
 /** Show form to create new user */
 exports.create = function(req, res){
+  // Set default expiration to 1000 years...
+  var expires = new Date();
+  expires.setFullYear(expires.getFullYear() + 1000, 0, 0);
   res.render('user-edit', {
     title:          "Create New User",
     user: {
-      name:         "My new user"
+      name:         "My new user",
       userId:       slugid.v4(),
       token:        slugid.v4() + slugid.v4() + slugid.v4(),
       scopes:       [],
-      expires:      new Date(8640000000000000),  // max date in JS
+      expires:      expires,
       details: {
         notes:      "Describe what this use is for..."
       }
@@ -86,7 +90,7 @@ exports.delete = function(req, res) {
 
 /** Update/create user and redirect to view */
 exports.update = function(req, res){
-  debug("Create/update user: %s", req.body);
+  debug("Create/update user: %j", req.body);
 
   Promise.from(null).then(function() {
     // Create user if requested
@@ -97,8 +101,8 @@ exports.update = function(req, res){
         userId:         req.body.userId,
         token:          req.body.token,
         scopes:         JSON.parse(req.body.scopes),
-        expires:        Date(req.body.expires),
-        detail: {
+        expires:        new Date(req.body.expires),
+        details: {
           notes:        req.body.notes
         }
       });
@@ -111,7 +115,7 @@ exports.update = function(req, res){
           this.name         = req.body.name;
           this.scopes       = JSON.parse(req.body.scopes);
           this.expires      = new Date(req.body.expires);
-          this.detail       = {notes: req.body.notes};
+          this.details      = {notes: req.body.notes};
         });
       })
     }

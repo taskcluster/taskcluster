@@ -8,10 +8,8 @@ var DEFAULT_CONFIG_VALUES = {
     // Bucket to which schemas should be published
     schemaBucket:                   'schemas.taskcluster.net',
 
-    // Publish schemas to bucket on startup, this should default to false, only
-    // do this in the actual production server... Hence, set it by environment
-    // variable. Unset it `inorder` to set it false by environment variable.
-    publishSchemas:                 false,
+    // Publish schemas to bucket on startup (as string)
+    publishSchemas:                 'false',
 
     // Validate out-going messages, this can be disabled if we trust that we
     // generate correct JSON internally and want more performance
@@ -19,6 +17,9 @@ var DEFAULT_CONFIG_VALUES = {
 
     // Azure credentials table name
     azureUserTable:                 "Users",
+
+    // Whether or not to delete the users table (as string)
+    clearUserTable:                 'false'
   },
 
   // Azure table credentials
@@ -70,6 +71,7 @@ exports.load = function() {
     whitelist:  [
       'auth__publishSchemas',
       'auth__azureCredentialsTable',
+      'auth__clearUserTable',
       'azureTableCredentials__accountUrl',
       'azureTableCredentials__accountName',
       'azureTableCredentials__accountKey',
