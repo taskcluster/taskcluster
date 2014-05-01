@@ -3,36 +3,36 @@ extends layout
 block content
   dl.dl-horizontal
     dt Name
-    dd #{user.name}
+    dd #{client.name}
     dt ClientId
     dd
-      code #{user.userId}
+      code #{client.clientId}
     dt AccessToken
     dd
-      code #{user.token}
+      code #{client.accessToken}
     dt Expires
-    dd #{moment(user.expires).fromNow()}
+    dd #{moment(client.expires).fromNow()}
     dt Scopes
     dd
       ul
-        for scope in user.scopes
+        for scope in client.scopes
           li
             code #{scope}
     dt Notes
-    dd !{marked(user.details.notes)}
+    dd !{marked(client.details.notes)}
     hr
     dt Actions
     dd
-      a(href="/user/#{user.userId}/edit").btn.btn-success.btn-sm
+      a(href="/client/#{client.clientId}/edit").btn.btn-success.btn-sm
         i.glyphicon.glyphicon-pencil
         |  Edit
       = ' '
       a(
-        href="/user/#{user.userId}/delete"
+        href="/client/#{client.clientId}/delete"
       ).btn.btn-danger.btn-sm.prompt-first
         i.glyphicon.glyphicon-trash
         |  Delete
   script
     | $('.prompt-first').click(function() {
-    |   return confirm("Do you really want to delete this user?");
+    |   return confirm("Do you really want to delete this client?");
     | });

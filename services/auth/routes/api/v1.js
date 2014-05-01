@@ -6,6 +6,7 @@ var _           = require('lodash');
 var debug       = require('debug')('routes:api:v1');
 var request     = require('superagent-promise');
 var assert      = require('assert');
+var Client      = require('../../auth/data').Client;
 
 /** API end-point for version v1/ */
 var api = module.exports = new utils.API({
@@ -84,30 +85,36 @@ api.declare({
 });
 
 
-/** Get authorized scopes for a given user */
+/** Get authorized scopes for a given client */
 api.declare({
   method:     'get',
-  route:      '/user/:userId/scopes',
+  route:      '/client/:clientId/scopes',
   input:      undefined,
   output:     undefined,
   scopes:     ['auth:inspect', 'auth:credentials'],
-  title:      "Get User Authorized Scopes",
+  title:      "Get Client Authorized Scopes",
   desc: [
     "TODO: Write documentation..."
   ].join('\n')
 }, function(req, res) {
-
+  return Client.load(req.params.clientId).then(function(client) {
+    return res.json(200, {
+      clientId:   client.clientId,
+      scopes:     client.scopes,
+      expires:    client.expires.toJSON()
+    });
+  });
 });
 
 
-/** Get credentials for a given user */
+/** Get credentials for a given client */
 api.declare({
   method:     'get',
-  route:      '/user/:userId/credentials',
+  route:      '/client/:userId/credentials',
   input:      undefined,
   output:     undefined,
   scopes:     ['auth:credentials'],
-  title:      "Get User Credentials",
+  title:      "Get Client Credentials",
   desc: [
     "TODO: Write documentation..."
   ].join('\n')

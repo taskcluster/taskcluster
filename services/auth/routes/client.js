@@ -1,6 +1,6 @@
 var Promise     = require('promise');
 var debug       = require('debug')('routes:user');
-var User        = require('../auth/data').User;
+var Client      = require('../auth/data').Client;
 var nconf       = require('nconf');
 var uuid        = require('uuid');
 var slugid      = require('slugid');
@@ -18,27 +18,27 @@ var errorHandler = function(res, title) {
   };
 };
 
-/** List all registered users */
+/** List all registered clients */
 exports.list = function(req, res){
-  User.loadAll().then(function(users) {
-    res.render('user-list', {
-      title:          "Registered Users",
-      users:          users
+  Client.loadAll().then(function(clients) {
+    res.render('client-list', {
+      title:          "Registered Clients",
+      clients:        clients
     });
-  }).catch(errorHandler(res, "Failed to load users"));
+  }).catch(errorHandler(res, "Failed to load clients"));
 };
 
-/** Show form to create new user */
+/** Show form to create new client */
 exports.create = function(req, res){
   // Set default expiration to 1000 years...
   var expires = new Date();
   expires.setFullYear(expires.getFullYear() + 1000, 0, 0);
-  res.render('user-edit', {
-    title:          "Create New User",
-    user: {
-      name:         "My new user",
-      userId:       slugid.v4(),
-      token:        slugid.v4() + slugid.v4() + slugid.v4(),
+  res.render('client-edit', {
+    title:          "Create New Client",
+    client: {
+      name:         "My new client",
+      clientId:     '[generated at creation]',
+      accessToken:  '[generated at creation]',
       scopes:       [],
       expires:      expires,
       details: {
@@ -49,57 +49,57 @@ exports.create = function(req, res){
   });
 };
 
-/** View existing user */
+/** View existing client */
 exports.view = function(req, res, next){
-  User.load(req.params.userId).then(function(user) {
-    res.render('user-view', {
-      title:          "User " + user.name,
-      user:           user
+  Client.load(req.params.clientId).then(function(client) {
+    res.render('client-view', {
+      title:          "Client " + client.name,
+      client:         client
     });
   }, function() {
     // Return 404
     next();
-  }).catch(errorHandler(res, "Error showing user"));
+  }).catch(errorHandler(res, "Error showing client"));
 };
 
-/** Edit existing user */
+/** Edit existing client */
 exports.edit = function(req, res){
-  User.load(req.params.userId).then(function(user) {
-    res.render('user-edit', {
-      title:          "Edit: " + user.name,
-      user:           user,
+  Client.load(req.params.clientId).then(function(client) {
+    res.render('client-edit', {
+      title:          "Edit: " + client.name,
+      client:         client,
       action:         'update'
     });
   }, function() {
     // Return 404
     next();
-  }).catch(errorHandler(res, "Error editing user"));
+  }).catch(errorHandler(res, "Error editing client"));
 };
 
-/** Delete existing user */
+/** Delete existing client */
 exports.delete = function(req, res) {
-  User.load(req.params.userId).then(function(user) {
-    return user.remove();
+  Client.load(req.params.clientId).then(function(client) {
+    return client.remove();
   }, function() {
     // Return 404
     next();
   }).then(function() {
-    res.redirect(302, '/user/');
-  }).catch(errorHandler(res, "Error showing user"));
+    res.redirect(302, '/client/');
+  }).catch(errorHandler(res, "Error showing client"));
 };
 
-/** Update/create user and redirect to view */
+/** Update/create client and redirect to view */
 exports.update = function(req, res){
-  debug("Create/update user: %j", req.body);
+  debug("Create/update client: %j", req.body);
 
   Promise.from(null).then(function() {
-    // Create user if requested
+    // Create client if requested
     if (req.body.updateOrCreate == 'create') {
-      return User.create({
+      return Client.create({
         version:        '0.2.0',
         name:           req.body.name,
-        userId:         req.body.userId,
-        token:          req.body.token,
+        clientId:       slugid.v4(),
+        accessToken:    slugid.v4() + slugid.v4() + slugid.v4(),
         scopes:         JSON.parse(req.body.scopes),
         expires:        new Date(req.body.expires),
         details: {
@@ -110,8 +110,8 @@ exports.update = function(req, res){
 
     // Update WorkerType if requested
     if (req.body.updateOrCreate == 'update') {
-      return User.load(req.body.userId).then(function(user) {
-        return user.modify(function() {
+      return Client.load(req.body.clientId).then(function(client) {
+        return client.modify(function() {
           this.name         = req.body.name;
           this.scopes       = JSON.parse(req.body.scopes);
           this.expires      = new Date(req.body.expires);
@@ -120,6 +120,6 @@ exports.update = function(req, res){
       })
     }
   }).then(function() {
-    res.redirect(302, '/user/' + req.body.userId + '/view');
-  }).catch(errorHandler(res, "Error saving user"));
+    res.redirect(302, '/client/' + req.body.clientId + '/view');
+  }).catch(errorHandler(res, "Error saving client"));
 };
