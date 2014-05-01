@@ -4,10 +4,60 @@ var debug       = require('debug')('routes:api:utils');
 var validate    = require('../../utils/validate');
 var Promise     = require('promise');
 var uuid        = require('uuid');
-
+var hawk        = require('hawk');
+var request     = require('superagent-promise');
 
 // This file contains a collection of neat middleware for building API
 // end-points, that can mounted on an express application
+
+/*
+var findUser = function(clientId, callback) {
+  request
+    .get('http://localhost:5050')
+    .
+};*/
+
+/** Local nonce cache, using an over-approximation */
+var nonceManager = function() {
+  var nextnonce = 0;
+  var N = 500;
+  var noncedb = new Array(500);
+  for(var i = 0; i < 500; i++) {
+    noncedb[i] = {nonce: null, ts: null};
+  }
+  return function(nonce, ts, cb) {
+    for(var i = 0; i < 500; i++) {
+      if (noncedb[i].nonce === nonce && noncedb[i].ts === ts) {
+        debug("CRITICAL: Replay attack detected!");
+        return cb(new Error("Signature already used"));
+      }
+    }
+    noncedb[nextnonce++].nonce  = nonce;
+    noncedb[nextnonce++].ts     = ts;
+    cb();
+  };
+};
+var _nonceManager = nonceManager();
+
+/**
+ * Declare {scopes} of which one much match the scopes assigned to the
+ * the authenticated user.
+ */
+var auth = function(options) {
+  return function(req, res, next) {
+    // Restore originalUrl as needed by hawk for authentication
+    req.url = req.originalUrl;
+    hawk.server.authenticate(req, findClient, {
+      payload:      JSON.stringify(req.body),
+      nonceFunc:    _nonceManager
+    }, function(err, credentials, artifacts) {
+      if (err) {
+        return res.json(err.output.statusCode, err.output.payload);
+      }
+      next();
+    });
+  };
+};
 
 /**
  * Declare {input, output} schemas as options to validate
@@ -125,7 +175,7 @@ API.prototype.mount = function(app, mountpoint) {
   // Create router that we can mount
   var router = new express.Router();
   this._entries.forEach(function(entry) {
-    router[entry.method](entry.route, schema(entry), entry.handler);
+    router[entry.method](entry.route, auth(entry), schema(entry), entry.handler);
   });
 
   // Add entry point to get documentation as JSON
@@ -135,9 +185,11 @@ API.prototype.mount = function(app, mountpoint) {
       return {
         method:         entry.method,
         route:          mountpoint + entry.route,
+        name:           entry.name  || null,
         requestSchema:  entry.input || entry.requestSchema,
         responseSchema: entry.output,
         title:          entry.title,
+        scopes:         entry.scopes,
         description:    entry.desc
       };
     }));
