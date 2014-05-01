@@ -11,30 +11,30 @@ block content
         th Edit
         th Delete
     tbody
-      for user in users
+      for client in clients
         tr
-          td #{user.name}
+          td #{client.name}
           td
-            code #{user.userId}
-          td #{moment(user.expires).fromNow()}
+            code #{client.clientId}
+          td #{moment(client.expires).fromNow()}
           td
-            a(href="/user/#{user.userId}/view").btn.btn-success.btn-xs
+            a(href="/client/#{client.clientId}/view").btn.btn-success.btn-xs
               i.glyphicon.glyphicon-eye-open
               |  View
           td
-            a(href="/user/#{user.userId}/edit").btn.btn-primary.btn-xs
+            a(href="/client/#{client.clientId}/edit").btn.btn-primary.btn-xs
               i.glyphicon.glyphicon-pencil
               |  Edit
           td
             a(
-              href="/user/#{user.userId}/delete"
+              href="/client/#{client.clientId}/delete"
             ).btn.btn-danger.btn-xs.prompt-first
               i.glyphicon.glyphicon-trash
               |  Delete
-  a(href="/user/create").btn.btn-primary
+  a(href="/client/create").btn.btn-primary
     i.glyphicon.glyphicon-plus
-    |  New user
+    |  New client
   script
     | $('.prompt-first').click(function() {
-    |   return confirm("Do you really want to delete this user?");
+    |   return confirm("Do you really want to delete this client?");
     | });
