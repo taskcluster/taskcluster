@@ -41,6 +41,10 @@ object as documented in the REST API documentation.
  * `getTaskGraphInfo(taskGraphId)`
  * `inspectTaskGraph(taskGraphId)`
 
+### Methods in `client.auth`
+ * `getScopes(clientId)`
+ * `getCredentials(userId)`
+
 <!-- END OF GENERATED DOCS -->
 
 ### Loading an API Dynamically
