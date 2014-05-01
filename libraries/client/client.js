@@ -127,9 +127,9 @@ Client.config = function(baseUrlMapping) {
 /**
  * Provide default credentials for authentication.
  *
- * Example: `Client.auth({clientId: '...', accessToken: '...'});`
+ * Example: `Client.authenticate({clientId: '...', accessToken: '...'});`
  */
-Client.auth = function(credentials) {
+Client.authenticate = function(credentials) {
   if (credentials) {
     _defaultCredentials = {
       id:           credentials.clientId,
