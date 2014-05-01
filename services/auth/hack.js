@@ -1,8 +1,22 @@
-var request = require('superagent');
-require('superagent-hawk')(request);
+require('superagent-hawk')(require('superagent'));
+var request = require('superagent-promise');
 
 console.log("Sending request");
+request
+  .get('http://localhost:5050/v1/client/RaOW8ww-QjKHUDAOqpgtcw/scopes')
+  .end()
+  .then(function(res) {
+    console.log('------------');
+    if (res.ok) {
+      console.log("OK");
+      console.log(JSON.stringify(res.body, null, 2));
+    } else {
+      console.log("ERROR: " + res.status);
+      console.log(res.text);
+    }
+  });
 
+/*
 request
   .get('http://localhost:5050/v1/restricted')
   .send({
@@ -19,3 +33,4 @@ request
     console.log('body:', res.body);
   });
 
+*/
