@@ -100,7 +100,7 @@ app.get('/logout', function(req, res){
   res.redirect('/');
 });
 
-/** Middleware for requiring authenticatoin */
+/** Middleware for requiring authentication */
 var ensureAuthenticated = function(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
@@ -114,15 +114,14 @@ app.get('/',                                    routes.index);
 app.get('/unauthorized',                        routes.unauthorized);
 // Route configuration
 var routes = require('./routes');
-app.get('/',                                              routes.index);
-app.get('/unauthorized',                                  routes.unauthorized);
-app.get('/user',                    ensureAuthenticated,  routes.user.list);
-app.get('/user/create',             ensureAuthenticated,  routes.user.create);
-app.get('/user/:userId/view',       ensureAuthenticated,  routes.user.view);
-app.get('/user/:userId/edit',       ensureAuthenticated,  routes.user.edit);
-app.get('/user/:userId/delete',     ensureAuthenticated,  routes.user.delete);
-app.post('/user/update',            ensureAuthenticated,  routes.user.update)
-
+app.get('/',                                                routes.index);
+app.get('/unauthorized',                                    routes.unauthorized);
+app.get('/client',                    ensureAuthenticated,  routes.client.list);
+app.get('/client/create',             ensureAuthenticated,  routes.client.create);
+app.get('/client/:clientId/view',     ensureAuthenticated,  routes.client.view);
+app.get('/client/:clientId/edit',     ensureAuthenticated,  routes.client.edit);
+app.get('/client/:clientId/delete',   ensureAuthenticated,  routes.client.delete);
+app.post('/client/update',            ensureAuthenticated,  routes.client.update)
 
 
 /** Launch the server */
@@ -140,11 +139,11 @@ exports.launch = function() {
       return require('./utils/render-schema').publish();
     }
   }).then(function() {
-    if (nconf.get('auth:clearUserTable') == 'true') {
-      return data.deleteTable(data.User);
+    if (nconf.get('auth:clearClientTable') == 'true') {
+      return data.deleteTable(data.Client);
     }
   }).then(function() {
-    return data.ensureTable(data.User);
+    return data.ensureTable(data.Client);
   }).then(function() {
     return new Promise(function(accept, reject) {
       // Launch HTTP server
@@ -176,7 +175,7 @@ if (!module.parent) {
     if (app.get('env') == 'development' && process.send) {
       process.send({ready: true});
     }
-    debug("Launch queue successfully");
+    debug("Launched authentication server successfully");
   }).catch(function(err) {
     debug("Failed to start server, err: %s, as JSON: %j", err, err, err.stack);
     // If we didn't launch the server we should crash

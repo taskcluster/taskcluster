@@ -16,10 +16,10 @@ var DEFAULT_CONFIG_VALUES = {
     validateOutgoing:               true,
 
     // Azure credentials table name
-    azureUserTable:                 "Users",
+    azureClientTable:               "TestClients",
 
-    // Whether or not to delete the users table (as string)
-    clearUserTable:                 'false'
+    // Whether or not to delete the client table (as string)
+    clearClientTable:               'false'
   },
 
   // Azure table credentials
@@ -71,7 +71,7 @@ exports.load = function() {
     whitelist:  [
       'auth__publishSchemas',
       'auth__azureCredentialsTable',
-      'auth__clearUserTable',
+      'auth__clearClientTable',
       'azureTableCredentials__accountUrl',
       'azureTableCredentials__accountName',
       'azureTableCredentials__accountKey',

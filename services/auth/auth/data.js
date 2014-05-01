@@ -416,17 +416,17 @@ Entity.prototype.modify = function(modifier) {
 
 
 
-/** Subclass of Entity for representation of a user */
-var User = function(entity) {
+/** Subclass of Entity for representation of a client */
+var Client = function(entity) {
   // Call base class constructor
   Entity.call(this, entity);
 };
 
 // Subclass entity, this declares read-only properties
-Entity.subClass(User, nconf.get('auth:azureUserTable'), [
+Entity.subClass(Client, nconf.get('auth:azureClientTable'), [
   {
     key:              'PartitionKey',
-    property:         'userId',
+    property:         'clientId',
     type:             'string'
   }, {
     // This is always hardcoded to 'credentials'
@@ -434,7 +434,7 @@ Entity.subClass(User, nconf.get('auth:azureUserTable'), [
     type:             'string',
     hidden:           true
   }, {
-    key:              'token',
+    key:              'accessToken',
     type:             'string'
   }, {
     key:              'name',
@@ -454,23 +454,23 @@ Entity.subClass(User, nconf.get('auth:azureUserTable'), [
   }
 ].map(normalizeEntityMappingEntry));
 
-/** Create User */
-User.create = function(properties) {
+/** Create Client */
+Client.create = function(properties) {
   properties.RowKey = 'credentials';
-  return Entity.create(properties, User);
+  return Entity.create(properties, Client);
 };
 
-/** Load User */
-User.load = function(userId) {
-  return Entity.load(userId, 'credentials', User);
+/** Load Client */
+Client.load = function(clientId) {
+  return Entity.load(clientId, 'credentials', Client);
 };
 
-/** Load all registered users */
-User.loadAll = function() {
+/** Load all registered clients */
+Client.loadAll = function() {
   return new Promise(function(accept, reject) {
-    var users = [];
+    var clients = [];
     var fetchNext = function(continuationTokens) {
-      client.queryEntities(User.prototype.__tableName, {
+      client.queryEntities(Client.prototype.__tableName, {
         query:        azureTable.Query.create('RowKey', '==', 'credentials'),
         forceEtags:   true,
         continuation: continuationTokens
@@ -479,14 +479,14 @@ User.loadAll = function() {
         if (err) {
           return reject(err);
         }
-        // Create wrapper for each user fetched
-        users.push.apply(users, data.map(function(entity) {
-          return new User(entity);
+        // Create wrapper for each client fetched
+        clients.push.apply(clients, data.map(function(entity) {
+          return new Client(entity);
         }));
 
         // If there are no continuation tokens then we accept data fetched
         if (!continuationTokens) {
-          return accept(users);
+          return accept(clients);
         }
         // Fetch next set based on continuation tokens
         fetchNext(continuationTokens);
@@ -497,8 +497,8 @@ User.loadAll = function() {
 };
 
 
-// Export User
-exports.User = User;
+// Export Client
+exports.Client = Client;
 
 /**
  * Ensures the existence of a table, given a tableName or Entity subclass
