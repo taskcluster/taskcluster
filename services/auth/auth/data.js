@@ -411,6 +411,9 @@ Entity.prototype.modify = function(modifier) {
     // if successful we better update this object
     that.__shadow = properties;
     that.__etag   = etag;
+
+    // Return object that was modified
+    return that;
   });
 };
 

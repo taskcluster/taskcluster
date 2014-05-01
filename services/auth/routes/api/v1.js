@@ -55,7 +55,7 @@ var nonceFunc = nonceManager();
 
 
 /** Get task-graph status */
-api.declare({
+/*api.declare({
   method:     'get',
   route:      '/restricted',
   input:      undefined,
@@ -82,13 +82,14 @@ api.declare({
       accept();
     });
   });
-});
+});*/
 
 
 /** Get authorized scopes for a given client */
 api.declare({
   method:     'get',
   route:      '/client/:clientId/scopes',
+  name:       'getScopes',
   input:      undefined,
   output:     undefined,
   scopes:     ['auth:inspect', 'auth:credentials'],
@@ -98,10 +99,10 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   return Client.load(req.params.clientId).then(function(client) {
-    return res.json(200, {
-      clientId:   client.clientId,
-      scopes:     client.scopes,
-      expires:    client.expires.toJSON()
+    return res.reply({
+      clientId:     client.clientId,
+      scopes:       client.scopes,
+      expires:      client.expires.toJSON()
     });
   });
 });
@@ -111,6 +112,7 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/client/:userId/credentials',
+  name:       'getCredentials',
   input:      undefined,
   output:     undefined,
   scopes:     ['auth:credentials'],
@@ -119,7 +121,14 @@ api.declare({
     "TODO: Write documentation..."
   ].join('\n')
 }, function(req, res) {
-
+  return Client.load(req.params.clientId).then(function(client) {
+    return res.reply({
+      clientId:     client.clientId,
+      accessToken:  client.accessToken,
+      scopes:       client.scopes,
+      expires:      client.expires.toJSON()
+    });
+  });
 });
 
 

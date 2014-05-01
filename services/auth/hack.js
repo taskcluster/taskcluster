@@ -3,7 +3,12 @@ var request = require('superagent-promise');
 
 console.log("Sending request");
 request
-  .get('http://localhost:5050/v1/client/RaOW8ww-QjKHUDAOqpgtcw/scopes')
+  .get('http://localhost:5050/v1/client/zluiWOFZQomIpolQLe0GfQ/scopes')
+  .hawk({
+    id:   'zluiWOFZQomIpolQLe0GfQ',
+    key:  'jm-Kf79yRYuPLA8VUJQzcwAmKE0FC9T8KpzH9Tc1ONiQv-G1zJq7SRSzU0pWxOd-JQ',
+    algorithm:  'sha256'
+  })
   .end()
   .then(function(res) {
     console.log('------------');
@@ -16,7 +21,7 @@ request
     }
   });
 
-/*
+
 request
   .get('http://localhost:5050/v1/restricted')
   .send({
@@ -27,10 +32,10 @@ request
     key:        'dfsadjfkdsjflsadfjsdfsd',
     algorithm:  'sha256'
   })
-  .end(function (res) {
+  .end()
+  .then(function (res) {
     console.log('------------1');
     console.log('ok:', res.ok);
     console.log('body:', res.body);
   });
 
-*/

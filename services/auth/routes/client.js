@@ -117,9 +117,9 @@ exports.update = function(req, res){
           this.expires      = new Date(req.body.expires);
           this.details      = {notes: req.body.notes};
         });
-      })
+      });
     }
-  }).then(function() {
-    res.redirect(302, '/client/' + req.body.clientId + '/view');
+  }).then(function(client) {
+    res.redirect(302, '/client/' + client.clientId + '/view');
   }).catch(errorHandler(res, "Error saving client"));
 };
