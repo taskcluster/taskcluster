@@ -4,10 +4,7 @@ suite('Post-Task Tests', function() {
   var assert      = require('assert');
   var Promise     = require('promise');
   var request     = require('superagent-promise');
-  var config      = require('../../config');
-  var nconf       = require('nconf');
-  var _           = require('lodash');
-  config.load();
+  var nconf       = require('../../config/test')();
 
   // Queue base URL
   var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
@@ -19,7 +16,7 @@ suite('Post-Task Tests', function() {
   });
 
   teardown(function() {
-    queue.terminate();
+    return queue.terminate();
   });
 
   /** Test task publication */
@@ -29,9 +26,7 @@ suite('Post-Task Tests', function() {
     var deadline = new Date();
     deadline.setDate(created.getDate() + 3);
 
-    // Post request to server
-    debug("Posting task/new to server");
-    var submit_task = request.post(baseUrl + '/v1/task/new').send({
+    var task = {
       version:          '0.2.0',
       provisionerId:    'jonasfj-provisioner',
       workerType:       'my-ami', // let's just test a large routing key too, 128 chars please :)
@@ -51,11 +46,28 @@ suite('Post-Task Tests', function() {
       tags: {
         purpose:        'taskcluster-testing'
       }
-    }).end();
-    return submit_task.then(function(res) {
-      assert(res.ok, "Queue should have accepted this task");
-      debug("Server replied: %j", res.body);
-    });
+    };
+
+    // Post request to server
+    debug("Posting task/new to server");
+    return request.post(baseUrl + '/v1/task/new').
+      send(task).
+      end().
+      then(function(res) {
+        assert(res.ok, "Queue should have accepted this task");
+        debug("Server replied: %j", res.body);
+
+        var taskId = res.body.status.taskId;
+        return request.get(baseUrl + '/v1/task/' + taskId + '/status').end();
+      }).
+      then(function(res) {
+        var status = res.body.status;
+        assert.equal(
+          status.routing,
+          task.routing
+        );
+        assert.equal(status.state, 'pending');
+      });
   });
 
 
@@ -94,9 +106,4 @@ suite('Post-Task Tests', function() {
       debug("Server replied: %j", res.body);
     });
   });
-
 });
-
-
-
-
