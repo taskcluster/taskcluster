@@ -1,47 +1,14 @@
-var nconf     = require('nconf');
 var utils     = require('./utils');
 var Promise   = require('promise');
-var aws       = require('aws-sdk-promise');
-var _         = require('lodash');
 var debug     = require('debug')('routes:api:0.2.0');
-var slugid    = require('../../utils/slugid');
+var slugid    = require('slugid');
 var validate  = require('../../utils/validate');
 var assert    = require('assert');
-
-var data    = require('../../queue/data');
-var events  = require('../../queue/events');
-
-// Create S3 instance
-var s3 = new aws.S3();
 
 /** API end-point for version v1/ */
 var api = module.exports = new utils.API({
   limit:          '10mb'
 });
-
-/** Get the url to a prefix within the taskBucket */
-var task_bucket_url = function(prefix) {
-  // If taskBucket has a CNAME, we build a prettier URL:
-  if (nconf.get('queue:taskBucketIsCNAME') == 'true') {
-    return 'http://' + nconf.get('queue:taskBucket') + '/' + prefix;
-  }
-  return 'https://s3-' + nconf.get('aws:region') + '.amazonaws.com/' +
-          nconf.get('queue:taskBucket') + '/' + prefix;
-};
-
-/** Sign a url for upload to a bucket */
-var sign_put_url = function(options) {
-  return new Promise(function(accept, reject) {
-    s3.getSignedUrl('putObject', options, function(err, url) {
-      if(err) {
-        reject(err);
-      } else {
-        accept(url);
-      }
-    });
-  });
-};
-
 
 /** Create tasks */
 api.declare({
@@ -56,11 +23,15 @@ api.declare({
     "structure, you can find the `taskId` in this structure, enjoy."
   ].join('\n')
 }, function(req, res) {
+  var Bucket = req.app.get('bucket');
+  var Db = req.app.get('db');
+  var Events = req.app.get('events');
+
   // Create task identifier
   var taskId = slugid.v4();
 
   // Task status structure to reply with in case of success
-  var task_status = {
+  var taskStatus = {
     taskId:               taskId,
     provisionerId:        req.body.provisionerId,
     workerType:           req.body.workerType,
@@ -73,41 +44,25 @@ api.declare({
     priority:             req.body.priority,
     created:              req.body.created,
     deadline:             req.body.deadline,
-    takenUntil:           (new Date(0)).toJSON()
+    takenUntil:           new Date(0).toJSON()
   };
 
   // Upload to S3, notice that the schema is validated by middleware
-  var uploaded_to_s3 = s3.putObject({
-    Bucket:               nconf.get('queue:taskBucket'),
-    Key:                  taskId + '/task.json',
-    Body:                 JSON.stringify(req.body),
-    ContentType:          'application/json'
-  }).promise();
-
-  // When upload is completed
-  var done = uploaded_to_s3.then(function() {
-
-    // Insert into database
-    var added_to_database = data.createTask(task_status);
-
-    // Publish message through events
-    var event_published = events.publish('task-pending', {
+  return Bucket.put(
+    taskId + '/task.json',
+    req.body
+  ).then(function() {
+    var taskInDb = Db.create(taskStatus);
+    var pendingEvent = Events.publish('task-pending', {
       version:    '0.2.0',
-      status:     task_status
+      status: taskStatus
     });
 
-    // Return a promise that everything happens
-    return Promise.all(added_to_database, event_published);
-  });
+    return Promise.all([taskInDb, pendingEvent]);
 
-  // Reply to request, when task is uploaded to s3, added to database and
-  // published over RabbitMQ
-  return done.then(function() {
-    debug('new task', task_status, { taskIdSlug: slugid.decode(taskId) });
-    // Reply that the task was inserted
-    return res.reply({
-      status: task_status
-    });
+  }).then(function() {
+    debug('new task', taskStatus);
+    return res.reply({ status: taskStatus });
   });
 });
 
@@ -137,6 +92,9 @@ api.declare({
     "`/task/:taskId/schedule`."
   ].join('\n')
 }, function(req, res) {
+  var Bucket = req.app.get('bucket');
+  var Db = req.app.get('tasksDb');
+
   var tasksRequested = req.body.tasksRequested;
 
   // Set expires to now + 20 min
@@ -147,25 +105,23 @@ api.declare({
   // Mapping from tasks to URLs
   var tasks = {};
 
-  var signature_promises = [];
-  while(signature_promises.length < tasksRequested) {
-    signature_promises.push((function() {
+  var signaturePromises = [];
+  while(signaturePromises.length < tasksRequested) {
+    signaturePromises.push((function() {
       var taskId = slugid.v4();
-      return sign_put_url({
-        Bucket:         nconf.get('queue:taskBucket'),
-        Key:            taskId + '/task.json',
-        ContentType:    'application/json',
-        Expires:        timeout
-      }).then(function(url) {
+      return Bucket.signedPutUrl(
+        taskId + '/task.json',
+        timeout
+      ).then(function(url) {
         tasks[taskId] = {
-          taskPutUrl:     url
+          taskPutUrl: url
         };
       });
     })());
   }
 
   // When all signatures have been generated we
-  return Promise.all(signature_promises).then(function() {
+  return Promise.all(signaturePromises).then(function() {
     return res.reply({
       expires:  expires.toJSON(),
       tasks:    tasks
@@ -197,55 +153,30 @@ api.declare({
     "To reschedule a task previously resolved, use `/task/:taskId/rerun`."
   ].join('\n')
 }, function(req, res) {
+  var Db = req.app.get('db');
+  var Bucket = req.app.get('bucket');
+  var Events = req.app.get('events');
+
   // Get taskId from parameter
   var taskId = req.params.taskId;
 
-  // Load task.json
-  var got_task = s3.getObject({
-    Bucket:               nconf.get('queue:taskBucket'),
-    Key:                  taskId + '/task.json'
-  }).promise().then(function(response) {
-    var data = response.data.Body.toString('utf8');
-    return JSON.parse(data);
-  }, function(err) {
-    if (err.code == 'NoSuchKey') {
-      return null;
-    }
-    debug("Failed to get task.json for taskId: %s with error: %s, as JSON: %j",
-          err, err, err.stack);
-    throw err;
-  });
-
-  // Check for resolution
-  var got_resolution = s3.getObject({
-    Bucket:               nconf.get('queue:taskBucket'),
-    Key:                  taskId + '/resolution.json'
-  }).promise().then(function(response) {
-    var data = response.data.Body.toString('utf8');
-    return JSON.parse(data);
-  }, function(err) {
-    if (err.code == 'NoSuchKey') {
-      return null;
-    }
-    debug("Failed to get resolution for taskId: %s with error: %s, as JSON: %j",
-          err, err, err.stack);
-    throw err;
-  });
+  var gotTask = Bucket.get(taskId + '/task.json');
+  var gotResolution = Bucket.get(taskId + '/resolution.json');
 
   // Load task status from database
-  var got_status = data.loadTask(taskId);
+  var gotStatus = Db.findBySlug(taskId);
 
   // When state is loaded check what to do
   return Promise.all(
-    got_task,
-    got_resolution,
-    got_status
-  ).spread(function(task, resolution, task_status) {
+    gotTask,
+    gotResolution,
+    gotStatus
+  ).spread(function(task, resolution, taskStatus) {
     // If task wasn't present on S3 then that is a problem too
     if (task === null) {
       return res.json(400, {
         message:  "Task definition not uploaded!",
-        error:    "Couldn't fetch: " + task_bucket_url(taskId + '/task.json')
+        error:    "Couldn't fetch: " + Bucket.publicUrl(taskId + '/task.json')
       });
     }
 
@@ -253,14 +184,15 @@ api.declare({
     // can't be scheduled. But for simplicity we let this operation be
     // idempotent, hence, we just ignore the request to schedule the task, and
     // return the latest task status
-    if (task_status !== null) {
+    if (taskStatus) {
       return res.reply({
-        status:     task_status
+        status: taskStatus
       });
     }
-    if (resolution !== null) {
+
+    if (resolution) {
       return res.reply({
-        status:     resolution.status
+        status: resolution.status
       });
     }
 
@@ -276,7 +208,7 @@ api.declare({
     }
 
     // Task status structure to reply with in case of success
-    task_status = {
+    taskStatus = {
       taskId:               taskId,
       provisionerId:        task.provisionerId,
       workerType:           task.workerType,
@@ -287,25 +219,25 @@ api.declare({
       timeout:              task.timeout,
       retries:              task.retries,
       priority:             task.priority,
-      created:              task.created,
-      deadline:             task.deadline,
-      takenUntil:           (new Date(0)).toJSON()
+      created:              new Date(task.created).toJSON(),
+      deadline:             new Date(task.deadline).toJSON(),
+      takenUntil:           new Date(0).toJSON()
     };
 
     // Insert into database
-    var added_to_database = data.createTask(task_status);
+    var addedToDatabase = Db.create(taskStatus);
 
     // Publish message through events
-    var event_published = events.publish('task-pending', {
+    var eventPublished = Events.publish('task-pending', {
       version:    '0.2.0',
-      status:     task_status
+      status:     taskStatus
     });
 
     // Return a promise that everything happens
-    return Promise.all(added_to_database, event_published).then(function() {
+    return Promise.all(addedToDatabase, eventPublished).then(function() {
       // Reply with created task status
       return res.reply({
-        status:   task_status
+        status:   taskStatus
       });
     });
   });
@@ -323,20 +255,20 @@ api.declare({
     "Get task status structure from `taskId`"
   ].join('\n')
 }, function(req, res) {
-  // Load task
-  var task_loaded = data.loadTask(req.params.taskId);
+  var Db = req.app.get('db');
 
-  // When loaded reply with task status structure, if found
-  return task_loaded.then(function(task_status) {
-    if (task_status) {
+  return Db.findBySlug(req.params.taskId).
+    then(function(taskStatus) {
+      if (!taskStatus) {
+        res.json(404, {
+          message: "Task not found or already resolved"
+        });
+      }
+
       return res.reply({
-        status:     task_status
+        status: taskStatus
       });
-    }
-    res.json(404, {
-      message:      "Task not found or already resolved"
     });
-  });
 });
 
 
@@ -353,6 +285,10 @@ api.declare({
     "returns task status structure, runId, resultPutUrl and logsPutUrl"
   ].join('\n')
 }, function(req, res) {
+  var Db = req.app.get('db');
+  var Bucket = req.app.get('bucket');
+  var Events = req.app.get('events');
+
   // Get input from request
   var workerGroup     = req.body.workerGroup;
   var workerId        = req.body.workerId;
@@ -362,23 +298,23 @@ api.declare({
   var taskStatus;
   var timeout;
 
-  return data.loadTask(taskId).then(function(status) {
-    task_status = status;
-    timeout = task_status.timeout;
+  return Db.findBySlug(taskId).then(function(status) {
+    taskStatus = status;
+    timeout = taskStatus.timeout;
 
     // Set takenUntil to now + 20 min
     var takenUntil = new Date();
     takenUntil.setSeconds(takenUntil.getSeconds() + timeout);
 
     // Claim task without runId if this is a new claim
-    return data.claimTask(taskId, takenUntil, {
+    return Db.claim(taskId, takenUntil, {
       workerGroup:    workerGroup,
       workerId:       workerId,
       runId:          requestedRunId || undefined
     });
   }).then(function(runId) {
     // If task wasn't claimed, report 404
-    if(runId === null) {
+    if (!runId) {
       res.json(404, {
         message: "Task not found, or already taken"
       });
@@ -386,52 +322,48 @@ api.declare({
     }
 
     // Only send event if we have a new runId
-    var event_sent = Promise.from(null);
+    var eventSent = Promise.from(null);
     if (requestedRunId !== runId) {
       // Fire event
-      event_sent = events.publish('task-running', {
+      eventSent = Events.publish('task-running', {
         version:      '0.2.0',
         workerGroup:  workerGroup,
         workerId:     workerId,
         runId:        runId,
-        logsUrl:      task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
-        status:       task_status
+        logsUrl:      Bucket.publicUrl(taskId + '/runs/' + runId + '/logs.json'),
+        status:       taskStatus
       });
     }
 
     // Sign urls for the reply
-    var logs_url_signed = sign_put_url({
-      Bucket:         nconf.get('queue:taskBucket'),
-      Key:            taskId + '/runs/' + runId + '/logs.json',
-      ContentType:    'application/json',
-      Expires:        timeout
-    });
+    var logsUrlSigned = Bucket.signedPutUrl(
+      taskId + '/runs/' + runId + '/logs.json',
+      timeout
+    );
 
     // Sign url for uploading task result
-    var result_url_signed = sign_put_url({
-      Bucket:         nconf.get('queue:taskBucket'),
-      Key:            taskId + '/runs/' + runId + '/result.json',
-      ContentType:    'application/json',
-      Expires:        timeout
-    });
+    var resultUrlSigned = Bucket.signedPutUrl(
+      taskId + '/runs/' + runId + '/result.json',
+      timeout
+    );
 
     // Send reply client
-    var reply_sent = Promise.all(
-      logs_url_signed,
-      result_url_signed
-    ).spread(function(logs_url, result_url) {
+    var replySent = Promise.all(
+      logsUrlSigned,
+      resultUrlSigned
+    ).spread(function(logsUrl, resultUrl) {
       return res.reply({
         runId:          runId,
-        logsPutUrl:     logs_url,
-        resultPutUrl:   result_url,
-        status:         task_status
+        logsPutUrl:     logsUrl,
+        resultPutUrl:   resultUrl,
+        status:         taskStatus
       });
     });
 
     // If either of these fails, then I have no idea what to do... so we'll
     // just do them in parallel... a better strategy might developed in the
     // future, this is just a prototype
-    return Promise.all(reply_sent, event_sent);
+    return Promise.all(replySent, eventSent);
   });
 });
 
@@ -449,16 +381,25 @@ api.declare({
     "Get artifact-urls for posted artifact urls..."
   ].join('\n')
 }, function(req, res) {
+
+  var Db = req.app.get('db');
+  var Bucket = req.app.get('bucket');
+
   // Get input from posted JSON
   var taskId        = req.params.taskId;
   var runId         = req.body.runId;
   var artifacts     = req.body.artifacts;
-  var artifact_list = _.keys(artifacts);
+  var artifactList  = Object.keys(artifacts);
 
   // Load task
-  var task_loaded = data.loadTask(taskId)
+  var taskLoaded = Db.findBySlug(taskId);
 
   // Let urls timeout after 20 min
+  // XXX: Timeouts for the run artifacts are a big race condition at best and a
+  //      lot of extra complexity at worst for the reclaims... If a task we
+  //      thought timed out somehow pushes artifacts to a particular run this is
+  //      unlikely and not a big deal. Losing runs that where successful but
+  //      could not push artifacts are expensive (and probably mysterious).
   var timeout = 20 * 60;
   var expires = new Date();
   expires.setSeconds(expires.getSeconds() + timeout);
@@ -466,39 +407,38 @@ api.declare({
   debug("Signing URLs for artifacts: %j", artifacts);
 
   // Get signed urls
-  var urls_signed = artifact_list.map(function(artifact) {
-    return sign_put_url({
-      Bucket:         nconf.get('queue:taskBucket'),
-      Key:            taskId + '/runs/' + runId + '/artifacts/' + artifact,
-      ContentType:    artifacts[artifact].contentType,
-      Expires:        timeout
-    });
+  var urlsSigned = artifactList.map(function(artifact) {
+    return Bucket.signedPutUrl(
+      taskId + '/runs/' + runId + '/artifacts/' + artifact,
+      timeout,
+      artifacts[artifact].contentType
+    );
   });
 
   // Create a JSON object from signed urls
-  var artifact_urls = Promise.all(urls_signed).then(function(signed_urls) {
+  var artifactUrls = Promise.all(urlsSigned).then(function(signedUrls) {
     var artifactPrefix = taskId + '/runs/' + runId + '/artifacts/';
-    var url_map = {};
-    artifact_list.forEach(function(artifact, index) {
-      url_map[artifact] = {
-        artifactPutUrl:       signed_urls[index],
-        artifactUrl:          task_bucket_url(artifactPrefix + artifact),
+    var urlMap = {};
+    artifactList.forEach(function(artifact, index) {
+      urlMap[artifact] = {
+        artifactPutUrl:       signedUrls[index],
+        artifactUrl:          Bucket.publicUrl(artifactPrefix + artifact),
         contentType:          artifacts[artifact].contentType
       };
     });
-    return url_map;
+    return urlMap;
   });
 
   // When loaded reply with task status structure, if found
   return Promise.all(
-    task_loaded,
-    artifact_urls
-  ).spread(function(task_status, url_map) {
-    if (task_status) {
+    taskLoaded,
+    artifactUrls
+  ).spread(function(taskStatus, urlMap) {
+    if (taskStatus) {
       return res.reply({
-        status:           task_status,
+        status:           taskStatus,
         expires:          expires.toJSON(),
-        artifacts:        url_map
+        artifacts:        urlMap
       });
     }
     res.json(404, {
@@ -520,6 +460,10 @@ api.declare({
     "Report task completed..."
   ].join('\n')
 }, function(req, res) {
+  var Db = req.app.get('db');
+  var Bucket = req.app.get('bucket');
+  var Events = req.app.get('events');
+
   // Get input from posted JSON
   var taskId        = req.params.taskId;
   var runId         = req.body.runId;
@@ -527,40 +471,38 @@ api.declare({
   var workerId      = req.body.workerId;
   var success       = req.body.success;
 
-  var task_completed = data.completeTask(taskId);
+  var taskCompleted = Db.completeTask(taskId);
 
-  return task_completed.then(function(completed) {
+  return taskCompleted.then(function(completed) {
     if (!completed) {
       res.json(404, {
         message:    "Task not found"
       });
       return;
     }
-    return data.loadTask(taskId).then(function(task_status) {
+    return Db.findBySlug(taskId).then(function(task) {
       // Resolution to be uploaded to S3
       var resolution = {
         version:        '0.2.0',
-        status:         task_status,
-        resultUrl:      task_bucket_url(taskId + '/runs/' + runId + '/result.json'),
-        logsUrl:        task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
+        status:         task,
+        resultUrl:      Bucket.publicUrl(taskId + '/runs/' + runId + '/result.json'),
+        logsUrl:        Bucket.publicUrl(taskId + '/runs/' + runId + '/logs.json'),
         runId:          runId,
         success:        success,
         workerId:       workerId,
         workerGroup:    workerGroup
       };
 
-      var uploaded_to_s3 = s3.putObject({
-        Bucket:               nconf.get('queue:taskBucket'),
-        Key:                  taskId + '/resolution.json',
-        Body:                 JSON.stringify(resolution),
-        ContentType:          'application/json'
-      }).promise();
+      var uploadedToS3 = Bucket.put(
+        taskId + '/resolution.json',
+        resolution
+      );
 
-      var event_published = events.publish('task-completed', {
+      var eventPublished = Events.publish('task-completed', {
         version:        '0.2.0',
-        status:         task_status,
-        resultUrl:      task_bucket_url(taskId + '/runs/' + runId + '/result.json'),
-        logsUrl:        task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
+        status:         task,
+        resultUrl:      Bucket.publicUrl(taskId + '/runs/' + runId + '/result.json'),
+        logsUrl:        Bucket.publicUrl(taskId + '/runs/' + runId + '/logs.json'),
         runId:          runId,
         success:        success,
         workerId:       workerId,
@@ -568,11 +510,11 @@ api.declare({
       });
 
       return Promise.all(
-        uploaded_to_s3,
-        event_published
+        uploadedToS3,
+        eventPublished
       ).then(function() {
         return res.reply({
-          status:     task_status
+          status: task
         });
       });
     });
@@ -600,19 +542,26 @@ api.declare({
     "your `workerType` claim work using `/v1/task/:taskId/claim`."
   ].join('\n')
 }, function(req, res) {
+  var Db = req.app.get('db');
+  var Bucket = req.app.get('bucket');
+  var Events = req.app.get('events');
+
   // Get input
   var provisionerId   = req.params.provisionerId;
   var workerType      = req.params.workerType;
   var workerGroup     = req.body.workerGroup;
   var workerId        = req.body.workerId;
 
-  // Load pending tasks
-  var task_loaded = data.queryTasks(provisionerId, workerType);
+  var query = {
+    provisionerId: provisionerId,
+    state: 'pending',
+    workerType: workerType
+  };
 
   // When loaded let's pick a pending task
-  return task_loaded.then(function(tasks) {
+  return Db.findOne(query).then(function(taskStatus) {
     // if there is no tasks available, report 204
-    if (tasks.length == 0) {
+    if (!taskStatus) {
       // Ask worker to sleep for 3 min before polling again
       res.json(204, {
         sleep:        3 * 60
@@ -621,8 +570,7 @@ api.declare({
     }
 
     // Pick the first task
-    var task = tasks[0];
-    var taskId = task.taskId;
+    var taskId = taskStatus.taskId;
 
     ///////////// Warning: Code duplication from /task/:taskId/claim
     /////////////          This needs to be refactored, all logic like this
@@ -631,71 +579,67 @@ api.declare({
 
     // Set takenUntil to now + 20 min
     var takenUntil = new Date();
-    var timeout = task.timeout;
+    var timeout = taskStatus.timeout;
     takenUntil.setSeconds(takenUntil.getSeconds() + timeout);
 
     // Claim task without runId if this is a new claim
-    var task_claimed = data.claimTask(taskId, takenUntil, {
+    var taskClaimed = Db.claim(taskId, takenUntil, {
       workerGroup:    workerGroup,
       workerId:       workerId,
       runId:          undefined
     });
 
     // When claimed
-    return task_claimed.then(function(runId) {
+    return taskClaimed.then(function(runId) {
       // If task wasn't claimed, report 404
-      if(runId === null) {
+      if (!runId) {
         res.json(404, {
           message: "Task not found, or already taken"
         });
         return;
       }
 
-      // Load task status structure
-      return data.loadTask(taskId).then(function(task_status) {
+      return Db.findBySlug(taskId).then(function(taskStatus) {
+        // Load task status structure
         // Fire event
-        var event_sent = events.publish('task-running', {
+        var eventSent = Events.publish('task-running', {
           version:        '0.2.0',
           workerGroup:    workerGroup,
           workerId:       workerId,
           runId:          runId,
-          logsUrl:        task_bucket_url(taskId + '/runs/' + runId + '/logs.json'),
-          status:         task_status
+          logsUrl:        Bucket.publicUrl(taskId + '/runs/' + runId + '/logs.json'),
+          status:         taskStatus
         });
 
         // Sign urls for the reply
-        var logs_url_signed = sign_put_url({
-          Bucket:         nconf.get('queue:taskBucket'),
-          Key:            taskId + '/runs/' + runId + '/logs.json',
-          ContentType:    'application/json',
-          Expires:        timeout
-        });
+        var logsUrlSigned = Bucket.signedPutUrl(
+          taskId + '/runs/' + runId + '/logs.json',
+          timeout
+        );
 
         // Sign url for uploading task result
-        var result_url_signed = sign_put_url({
-          Bucket:         nconf.get('queue:taskBucket'),
-          Key:            taskId + '/runs/' + runId + '/result.json',
-          ContentType:    'application/json',
-          Expires:        timeout
-        });
+        var resultUrlSigned = Bucket.signedPutUrl(
+          taskId + '/runs/' + runId + '/result.json',
+          timeout
+        );
 
         // Send reply client
-        var reply_sent = Promise.all(
-          logs_url_signed,
-          result_url_signed
-        ).spread(function(logs_url, result_url) {
+        var replySent = Promise.all(
+          logsUrlSigned,
+          resultUrlSigned
+        ).then(function(urls) {
           return res.reply({
             runId:          runId,
-            logsPutUrl:     logs_url,
-            resultPutUrl:   result_url,
-            status:         task_status
+            logsPutUrl:     urls[0],
+            resultPutUrl:   urls[1],
+            status:         taskStatus
           });
         });
 
         // If either of these fails, then I have no idea what to do... so we'll
         // just do them in parallel... a better strategy might developed in the
         // future, this is just a prototype
-        return Promise.all(reply_sent, event_sent);
+        return Promise.all(replySent, eventSent);
       });
     });
   });
@@ -725,116 +669,91 @@ api.declare({
     "current task status."
   ].join('\n')
 }, function(req, res) {
+  var Db = req.app.get('db');
+  var Bucket = req.app.get('bucket');
+  var Events = req.app.get('events');
+
   // Get taskId from parameter
   var taskId = req.params.taskId;
 
   // Load task.json
-  var got_task = s3.getObject({
-    Bucket:               nconf.get('queue:taskBucket'),
-    Key:                  taskId + '/task.json'
-  }).promise().then(function(response) {
-    var data = response.data.Body.toString('utf8');
-    return JSON.parse(data);
-  }, function(err) {
-    if (err.code == 'NoSuchKey') {
-      return null;
-    }
-    debug("Failed to get task.json for taskId: %s with error: %s, as JSON: %j",
-      err, err, err.stack);
-    throw err;
-  });
+  var gotTask = Bucket.get(taskId + '/task.json');
 
   // Check for resolution
-  var got_resolution = s3.getObject({
-    Bucket:               nconf.get('queue:taskBucket'),
-    Key:                  taskId + '/resolution.json'
-  }).promise().then(function(response) {
-    var data = response.data.Body.toString('utf8');
-    return JSON.parse(data);
-  }, function(err) {
-    if (err.code == 'NoSuchKey') {
-      return null;
-    }
-    debug("Failed to get resolution for taskId: %s with error: %s, as JSON: %j",
-      err, err, err.stack);
-    throw err;
-  });
+  var gotResolution = Bucket.get(taskId + '/resolution.json');
 
   // Load task status from database
-  var got_status = data.loadTask(taskId).then(function(task_status) {
-    return task_status;
-  }, function() {
-    return false;
-  });
+  var gotStatus = Db.findBySlug(taskId);
 
   // When state is loaded check what to do
   return Promise.all(
-    got_task,
-    got_resolution,
-    got_status
-  ).spread(function(task, resolution, task_status) {
+    gotTask,
+    gotResolution,
+    gotStatus
+  ).spread(function(task, resolution, taskStatus) {
     // Check that the task exists and have been scheduled before!
-    if (task === null) {
+    if (!task) {
       return res.json(400, {
         message:  "Task definition not uploaded and never scheuled!",
-        error:    "Couldn't fetch: " + task_bucket_url(taskId + '/task.json')
+        error:    "Couldn't fetch: " + Bucket.publicUrl(taskId + '/task.json')
       });
     }
-    if (task_status === false && resolution === false) {
+
+    if (!taskStatus && !resolution) {
       return res.json(400, {
         message:  "This task have never been scheduled before, can't rerun it",
         error:    "There is no resolution or status for " + taskId
       });
     }
 
-    // Make a promise that task_status is pending again
-    var task_status_pending = null;
+    // Make a promise that task is pending again
+    var taskStatusPending = null;
 
-    // If task_status was deleted from database we create it again
-    if (task_status === false) {
+    // If task was deleted from database we create it again
+    if (!taskStatus) {
       // Restore task status structure from resolution
-      task_status = resolution.status;
+      taskStatus = resolution.status;
 
       // Make the task pending again
-      task_status.state       = 'pending';
-      task_status.reason      = 'rerun-requested';
-      task_status.retries     = task.retries;
-      task_status.takenUntil  = (new Date(0)).toJSON();
+      taskStatus.state       = 'pending';
+      taskStatus.reason      = 'rerun-requested';
+      taskStatus.retries     = task.retries;
+      taskStatus.takenUntil  = (new Date(0)).toJSON();
 
       // Insert into database
-      task_status_pending = data.createTask(task_status).then(function() {
-        return task_status;
-      })
-    } else if (task_status.state == 'running' ||
-               task_status.state == 'pending') {
+      taskStatusPending = Db.create(taskStatus).then(function() {
+        return taskStatus;
+      });
+    } else if (taskStatus.state == 'running' ||
+               taskStatus.state == 'pending') {
       // If the task isn't resolved, we do nothing letting this function be
       // idempotent
-      debug("Attempt to rerun a task with state: '%s' ignored",
-            task_status.state);
+      debug("Attempt to rerun a task with state: '%s' ignored", taskStatus.state);
       return res.reply({
-        status:     task_status
-      })
+        status: taskStatus
+      });
     } else {
+      debug('Rerun task');
       // Rerun the task again
-      task_status_pending = data.rerunTask(taskId, task.retries);
+      taskStatusPending = Db.rerunTask(taskId, task.retries);
     }
 
     // When task is pending again
-    return task_status_pending.then(function(task_status) {
-      assert(task_status, "task_status cannot be null here!");
+    return taskStatusPending.then(function(taskStatus) {
+      assert(taskStatus, "task cannot be null here!");
 
       // Reply with created task status
-      var sent_reply = res.reply({
-        status:   task_status
+      var sentReply = res.reply({
+        status: taskStatus
       });
 
       // Publish message through events
-      var event_published = events.publish('task-pending', {
+      var eventPublished = Events.publish('task-pending', {
         version:    '0.2.0',
-        status:     task_status
+        status:     taskStatus
       });
 
-      return Promise.all(sent_reply, event_published);
+      return Promise.all(sentReply, eventPublished);
     });
   });
 });
@@ -854,14 +773,17 @@ api.declare({
     "**Warning** this api end-point is **not stable**."
   ].join('\n')
 }, function(req, res) {
+  var Db = req.app.get('db');
   // Get input
   var provisionerId  = req.params.provisionerId;
 
   // Load pending tasks
-  var task_loaded = data.queryTasks(provisionerId);
+  var taskLoaded = Db.findAll({
+    provisionerId: provisionerId
+  });
 
   // When loaded reply
-  task_loaded.then(function(tasks) {
+  taskLoaded.then(function(tasks) {
     return res.reply({
       tasks: tasks
     });
@@ -892,7 +814,6 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   return res.reply({
-    url:  nconf.get('amqp:url')
+    url:  req.app.get('nconf').get('amqp:url')
   });
 });
-

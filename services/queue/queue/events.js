@@ -2,14 +2,7 @@ var Promise   = require('promise');
 var nconf     = require('nconf');
 var amqp      = require('amqp');
 var validate  = require('../utils/validate');
-
 var debug   = require('debug')('queue:events');
-
-// AMQP connection created by events.setup()
-var _conn = null;
-
-// Exchanges setup by events.setup()
-var _exchanges = null;
 
 /**
  * Setup AMQP connection and declare the required exchanges, this returns a
@@ -20,7 +13,7 @@ var _exchanges = null;
  * setup exchanges is critical... Whether server crashes or loops doesn't really
  * matter to me.
  */
-exports.setup = function() {
+function connect(amqpCredentials) {
   debug("Connecting to AMQP server");
 
   // Connection created
@@ -71,38 +64,35 @@ exports.setup = function() {
   });
 
   return setup_completed.then(function() {
-    // Set connection and exchange globally
-    _conn = conn;
-    _exchanges = exchanges;
+    return new Events(conn, exchanges);
   });
-};
+}
 
-/**
- * Disconnect from AMQP server, returns a promise of success
- * Mainly used for testing...
- */
-exports.disconnect = function() {
-  return new Promise(function(accept, reject) {
-    _conn.on('close', function() {
-      accept();
-    });
-    _conn.destroy();
-  });
-};
+module.exports.connect = connect;
 
-/**
- * Publish a message to exchange, routing key will be constructed from message
- */
-exports.publish = function(exchange, message) {
-  // Check if exchanges are created, don't give a promise if exchanges aren't
-  // setup...
-  if (_exchanges === null) {
-    throw new Error("Exchanges are not setup yet, call events.setup()!");
-  }
+function Events(connection, exchanges) {
+  this.connection = connection;
+  this.exchanges = exchanges;
+}
 
-  return new Promise(function(accept, reject) {
-    // Check if we're supposed to validate out-going messages
-    if (nconf.get('queue:validateOutgoing')) {
+Events.prototype = {
+  /**
+   * Disconnect from AMQP server, returns a promise of success
+   * Mainly used for testing...
+   */
+  disconnect: function() {
+    return new Promise(function(accept, reject) {
+      this.connection.on('close', accept);
+      this.connection.destroy();
+    }.bind(this));
+  },
+
+  /**
+   * Publish a message to exchange, routing key will be constructed from message
+   */
+  publish: function(exchange, message) {
+    return new Promise(function(accept, reject) {
+      // Check if we're supposed to validate out-going messages
       var schema = 'http://schemas.taskcluster.net/queue/v1/' + exchange +
                    '-message.json#';
       debug('Validating with schema', schema);
@@ -119,36 +109,36 @@ exports.publish = function(exchange, message) {
         reject(errors);
         return;
       }
-    }
 
-    // Construct routing key from task status structure in message
-    // as well as runId, workerGroup and workerId, which are present in the
-    // message if relevant.
-    var routingKey = [
-      message.status.taskId,
-      message.runId         || '_',
-      message.workerGroup   || '_',
-      message.workerId      || '_',
-      message.status.provisionerId,
-      message.status.workerType,
-      message.status.routing
-    ].join('.');
+      // Construct routing key from task status structure in message
+      // as well as runId, workerGroup and workerId, which are present in the
+      // message if relevant.
+      var routingKey = [
+        message.status.taskId,
+        message.runId         || '_',
+        message.workerGroup   || '_',
+        message.workerId      || '_',
+        message.status.provisionerId,
+        message.status.workerType,
+        message.status.routing
+      ].join('.');
 
-    // Publish message to RabbitMQ
-    _exchanges['queue/v1/' + exchange].publish(routingKey, message, {
-      contentType:        'application/json',
-      deliveryMode:       2,
-    }, function(err) {
-      if (err) {
-        reject(new Error("Failed to send message\n" + err.stack));
-      } else {
-        debug(
-          "Published message to %s with taskId: %s",
-          exchange,
-          message.status.taskId
-        );
-        accept();
-      }
-    });
-  });
+      // Publish message to RabbitMQ
+      this.exchanges['queue/v1/' + exchange].publish(routingKey, message, {
+        contentType:        'application/json',
+        deliveryMode:       2,
+      }, function(err) {
+        if (err) {
+          reject(new Error("Failed to send message\n" + err.stack));
+        } else {
+          debug(
+            "Published message to %s with taskId: %s",
+            exchange,
+            message.status.taskId
+          );
+          accept();
+        }
+      });
+    }.bind(this));
+  }
 };
