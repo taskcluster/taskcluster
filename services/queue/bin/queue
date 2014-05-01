@@ -1,0 +1,16 @@
+#! /usr/bin/env node
+
+var program = require('commander');
+
+program.
+  option(
+    '-c, --config <type>',
+    'nconf configuration to use (a file in ./config/[test|production])',
+    process.env.NODE_ENV || 'production'
+  );
+
+// the interface here is process only so we can abuse state here a bit.
+
+require('./server');
+
+program.parse(process.argv);

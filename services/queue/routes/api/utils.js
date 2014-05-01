@@ -24,7 +24,7 @@ var schema = function(options) {
       var errors = validate(req.body, options.input);
       if (errors) {
         debug("Request payload for %s didn't follow schema",
-              req.url, options.input, errors);
+              req.url, options.input, errors, res.body);
         res.json(400, {
           'message':  "Request payload must follow the schema: " + options.input,
           'error':    errors
@@ -37,8 +37,7 @@ var schema = function(options) {
     res.reply = function(json) {
       // If we're supposed to validate outgoing messages and output schema is
       // defined, then we have to validate against it...
-      if(nconf.get('queue:validateOutgoing') &&
-         options.output !== undefined) {
+      if(options.output !== undefined) {
         var errors = validate(json, options.output);
         if (errors) {
           debug("Reply for %s didn't match schema: %s got errors:\n%s",

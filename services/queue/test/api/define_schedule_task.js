@@ -1,13 +1,11 @@
 suite('Test reruns', function() {
-  var LocalQueue  = require('../localqueue');
   var debug       = require('debug')('define_schedule_test');
+
+  var LocalQueue  = require('../localqueue');
   var assert      = require('assert');
   var Promise     = require('promise');
   var request     = require('superagent-promise');
-  var config      = require('../../config');
-  var nconf       = require('nconf');
-  var _           = require('lodash');
-  config.load();
+  var nconf       = require('../../config/test')();
 
   // Queue base URL
   var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
@@ -19,7 +17,7 @@ suite('Test reruns', function() {
   });
 
   teardown(function() {
-    queue.terminate();
+    return queue.terminate();
   });
 
   /** Test define tasks */
@@ -52,10 +50,10 @@ suite('Test reruns', function() {
     var got_taskid_and_url = got_tasks.then(function(res) {
       assert(res.ok, "This should have succeeded");
       assert(
-        _.keys(res.body.tasks).length == 1,
+        Object.keys(res.body.tasks).length == 1,
         "Didn't generate number of tasks requested"
       );
-      taskId = _.keys(res.body.tasks)[0];
+      taskId = Object.keys(res.body.tasks)[0];
       return res.body.tasks[taskId].taskPutUrl;
     });
 

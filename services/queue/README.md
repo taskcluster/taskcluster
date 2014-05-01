@@ -9,11 +9,10 @@ Project Structure
 _The following itemization of folders outlines how this project is structured._
 
  * `queue/`, contains queue application logic.
+ * `config/`, contains nconf based configuration for tests / production.
  * `routes/`, contains all forms of HTTP entries, including the API, though the
    API is mainly implemented by the application logic in `queue/`
    (or at least this is the intention, as we improve the implementation).
- * `views/`, templates for HTTP entries...
- * `static/`, static files for templates.
  * `schemas/`, JSON Schemas against which all input and output, i.e. messages,
     S3 files, requests and responses should be validated against.
  * `tests/`, automated tests using `nodeunit`, launched with `node tests` so

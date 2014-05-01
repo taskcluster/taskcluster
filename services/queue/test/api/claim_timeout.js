@@ -4,15 +4,11 @@ suite('claim timeouts', function() {
   var assert      = require('assert');
   var Promise     = require('promise');
   var request     = require('superagent-promise');
-  var config      = require('../../config');
-  var nconf       = require('nconf');
-  var _           = require('lodash');
-  config.load();
+  var nconf       = require('../../config/test')();
 
   // Queue base URL
   var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
                      nconf.get('server:port');
-
   var queue = null;
   setup(function() {
     queue = new LocalQueue();
@@ -20,7 +16,7 @@ suite('claim timeouts', function() {
   });
 
   teardown(function() {
-    queue.terminate();
+    return queue.terminate();
   });
 
   // break all rules that have ever existed...
@@ -78,7 +74,7 @@ suite('claim timeouts', function() {
     }
 
     var body;
-    setup(function(done) {
+    setup(function() {
       return request('POST', baseUrl + '/v1/task/new').
         send(task).
         end().
