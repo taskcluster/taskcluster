@@ -5,6 +5,7 @@ var request     = require('superagent-promise');
 var cliff       = require('cliff');
 var program     = require('commander');
 var _           = require('lodash');
+var Promise     = require('promise');
 
 // Default API version to load
 var DEFAULT_VERSION = 1;
