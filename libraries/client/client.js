@@ -2,14 +2,30 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Load superagent-hawk
+require('superagent-hawk')(require('superagent'));
+
 var request     = require('superagent-promise');
 var debug       = require('debug')('taskcluster-client');
 var _           = require('lodash');
 var Promise     = require('promise');
 
-/** Construct a client given a base URL and JSON API reference. */
-var Client = function(baseUrl, reference) {
+// Default credentials
+var _defaultCredentials = null;
+
+/**
+ * Construct a client given a base URL, JSON API reference and credentials.
+ * If no credentials are provided default credentials will be used.
+ */
+var Client = function(baseUrl, reference, credentials) {
   this._baseUrl = baseUrl;
+  if (credentials) {
+    this._credentials = {
+      id:           credentials.clientId,
+      key:          credentials.accessToken,
+      algorithm:    'sha256'
+    };
+  }
   var that = this;
   // For each API entry in the reference
   reference.forEach(function(entry) {
@@ -41,6 +57,10 @@ var Client = function(baseUrl, reference) {
       if (has_payload) {
         req.send(args.pop());
       }
+      // Authenticate, if credentials are provided
+      if (that._credentials || _defaultCredentials) {
+        req.hawk(that._credentials || _defaultCredentials);
+      }
       // Send request and handle response
       return req.end().then(function(res) {
         if (!res.ok) {
@@ -55,10 +75,11 @@ var Client = function(baseUrl, reference) {
 };
 
 /**
- * Create client given a baseUrl and version (defaults to 1)
+ * Create client given a baseUrl, version (defaults to 1) and credentials.
+ * Defaults to default credentials (or no credentials), if none is provided.
  * Return a promise for the client instance.
  */
-Client.load = function(baseUrl, version) {
+Client.load = function(baseUrl, version, credentials) {
   if (version === undefined) {
     version = 1;
   }
@@ -102,6 +123,24 @@ Client.config = function(baseUrlMapping) {
     Client[name]._baseUrl = baseUrl;
   });
 };
+
+/**
+ * Provide default credentials for authentication.
+ *
+ * Example: `Client.auth({clientId: '...', accessToken: '...'});`
+ */
+Client.auth = function(credentials) {
+  if (credentials) {
+    _defaultCredentials = {
+      id:           credentials.clientId,
+      key:          credentials.accessToken,
+      algorithm:    'sha256'
+    };
+  } else {
+    _defaultCredentials = null;
+  }
+};
+
 
 // Export client
 module.exports = Client;
