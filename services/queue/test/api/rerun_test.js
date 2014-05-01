@@ -1,13 +1,11 @@
 suite('Test reruns', function() {
-  var LocalQueue  = require('../localqueue');
+
   var debug       = require('debug')('rerun_test');
+  var LocalQueue  = require('../localqueue');
   var assert      = require('assert');
   var Promise     = require('promise');
   var request     = require('superagent-promise');
-  var config      = require('../../config');
-  var nconf       = require('nconf');
-  var _           = require('lodash');
-  config.load();
+  var nconf       = require('../../config/test')();
 
   // Queue base URL
   var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
@@ -19,7 +17,7 @@ suite('Test reruns', function() {
   });
 
   teardown(function() {
-    queue.terminate();
+    return queue.terminate();
   });
 
   /** Test that task can rerun */
@@ -36,7 +34,7 @@ suite('Test reruns', function() {
       provisionerId:    'jonasfj-provisioner',
       workerType:       'my-ami',
       routing:          'jonasfj-test.what-a-hack',
-      timeout:          30,
+      timeout:          60,
       retries:          5,
       priority:         1,
       created:          created.toJSON(),
@@ -227,7 +225,3 @@ suite('Test reruns', function() {
     });
   });
 });
-
-
-
-
