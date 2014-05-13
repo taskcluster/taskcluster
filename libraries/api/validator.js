@@ -6,6 +6,7 @@ var _           = require('lodash');
 var aws         = require('aws-sdk-promise');
 var Promise     = require('promise');
 var assert      = require('assert');
+var path        = require('path');
 
 var utils       = require('./utils');
 
@@ -112,7 +113,7 @@ var validator = function(options) {
   // Load schemas from folder
   if (options.folder) {
     // Register JSON schemas from folder
-    utils.listFolder(folder).forEach(function(filePath) {
+    utils.listFolder(options.folder).forEach(function(filePath) {
       // We shall only import JSON files
       if (!/\.json/g.test(filePath)) {
         return;
@@ -152,6 +153,8 @@ var validator = function(options) {
     assert(options.schemaPrefix, "Can't publish without schemaPrefix");
     assert(options.schemaBucket, "Can't publish without schemaBucket");
     assert(options.aws,          "Can't publish without aws credentials");
+    assert(options.schemaPrefix == "" || /.+\/$/.test(options.schemaPrefix),
+           "schemaPrefix must be empty or should end with a slash");
     // Publish schemas to S3
     var s3 = new aws.S3(options.aws);
     promises = promises.concat(schemasLoaded.map(function(entry) {
@@ -174,7 +177,9 @@ var validator = function(options) {
   }));
 
   // Promise that all promises finish
-  return Promise.all(promises);
+  return Promise.all(promises).then(function() {
+    return validator;
+  });
 };
 
 // Export method to load validator Validator
