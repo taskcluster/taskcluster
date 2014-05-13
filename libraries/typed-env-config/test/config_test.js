@@ -1,8 +1,8 @@
-suite('config', function() {
+suite("config", function() {
   var assert  = require('assert');
   var base    = require('../');
 
-  test('defaults', function() {
+  test("defaults", function() {
     var cfg = base.config({
       defaults: {test: {value: 42}}
     });
@@ -10,31 +10,39 @@ suite('config', function() {
     assert(cfg.get('test:value') == 42);
   });
 
-  test('env', function() {
+  test("env", function() {
     // Set environment variable
-    process.env.test_value = '41';
+    process.env.test__value = '41';
 
     var cfg = base.config({
       defaults: {test: {value: 42}},
-      env: [
-        'test_value'
+      envs: [
+        'test__value'
       ]
     });
 
     assert(cfg.get('test:value') == '41');
+    assert(cfg.get('HOME') == undefined);
   });
 
-  test('fallback from env', function() {
+  test("fallback from env", function() {
     // Ensure that environment variable isn't set
-    delete process.env.test_value;
+    delete process.env.test__value;
 
     var cfg = base.config({
       defaults: {test: {value: 42}},
-      env: [
-        'test_value'
+      envs: [
+        'test__value'
       ]
     });
 
     assert(cfg.get('test:value') == 42);
+  });
+
+  test("filename", function() {
+    var cfg = base.config({
+      filename: 'test/taskcluster-base-test'
+    });
+    assert(cfg.get('test') == "ok it works");
   });
 });
