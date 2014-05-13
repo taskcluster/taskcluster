@@ -116,6 +116,7 @@ Client.isExpired = function() {
  * {
  *   clientId:          '...',  // TaskCluster clientId
  *   accessToken:       '...'   // Access token for clientId
+ *   baseUrl:           '...',  // BaseUrl for authentication server
  * }
  *
  * The client identified by `clientId` must have the scope 'auth:credentials'.
@@ -331,6 +332,7 @@ API.prototype.declare = function(options, handler) {
  *   validator:           new base.validator()      // JSON schema validator
  *   nonceManager:        function(nonce, ts, cb) { // Check for replay attack
  *   clientLoader:        function(clientId) {      // Return promise for client
+ *   authBaseUrl:         'http://auth.example.net' // BaseUrl for auth server
  *   credentials: {
  *     clientId:          '...',  // TaskCluster clientId
  *     accessToken:       '...'   // Access token for clientId
@@ -357,7 +359,9 @@ API.prototype.router = function(options) {
   // Create clientLoader, if not provided
   if (!options.clientLoader) {
     assert(options.credentials, "Either credentials or clientLoader is required");
-    options.clientLoader = clientLoader(options.credentials);
+    options.clientLoader = clientLoader(_.defaults({
+      baseUrl:            options.authBaseUrl
+    }, options.credentials));
   }
 
   // Create router
@@ -473,6 +477,7 @@ API.prototype.publish = function(options) {
  *   validator:           new base.validator()      // JSON schema validator
  *   nonceManager:        function(nonce, ts, cb) { // Check for replay attack
  *   clientLoader:        function(clientId) {      // Return promise for client
+ *   authBaseUrl:         'http://auth.example.net' // BaseUrl for auth server
  *   credentials: {
  *     clientId:          '...',  // TaskCluster clientId
  *     accessToken:       '...'   // Access token for clientId
