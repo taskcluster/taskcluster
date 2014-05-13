@@ -16,9 +16,9 @@ var nconf       = require('nconf');
  * If `filename` is given, configuration will be loaded from folders in the
  * following order:
  *
- *  1. Current working director (`./<filename>.json.conf`),
- *  2. Home folder (`~/.<filename>.json.conf`), and
- *  3. System config (`/etc/<filename>.json.conf`)
+ *  1. Current working director (`./<filename>.conf.json`),
+ *  2. Home folder (`~/.<filename>.conf.json`), and
+ *  3. System config (`/etc/<filename>.conf.json`)
  *
  */
 var config = function(options) {
@@ -28,26 +28,29 @@ var config = function(options) {
     envs:             [],
     filename:         null
   });
+  assert(options.envs instanceof Array, "'envs' must be an array");
 
   // Create config provider
   var cfg = new nconf.Provider();
 
   // Load whitelisted configuration keys from environment variables
-  cfg.env({
-    separator:  '_',
-    whitelist:  options.envs
-  });
+  if (options.envs.length > 0) {
+    cfg.env({
+      separator:  '__',
+      whitelist:  options.envs
+    });
+  }
 
   // Load configuration from file
   if (options.filename) {
     // Config from current working folder if present
-    cfg.file('local', + filename);
+    cfg.file('local', options.filename + '.conf.json');
 
     // User configuration
-    cfg.file('user', '~/.' + filename);
+    cfg.file('user', '~/.' + options.filename + '.conf.json');
 
     // Global configuration
-    cfg.file('global', '/etc/' + filename);
+    cfg.file('global', '/etc/' + options.filename + '.conf.json');
   }
 
   // Load defaults
