@@ -6,6 +6,7 @@ var hawk        = require('hawk');
 var aws         = require('aws-sdk-promise');
 var assert      = require('assert');
 var _           = require('lodash');
+var bodyParser  = require('body-parser');
 var taskcluster = require('taskcluster-client');
 
 /**
@@ -67,7 +68,17 @@ var schema = function(options) {
   };
 };
 
-/** Abstraction of a client with some helper methods */
+/**
+ * Abstraction of a client with some helper methods
+ *
+ * options:
+ * {
+ *   clientId:      '...'       // ClientId for the client
+ *   accessToken:   '...'       // AccessToken for clientId
+ *   scopes:        []          // List of scope patterns
+ *   expires:       new Date()  // Date object or date as string
+ * }
+ */
 var Client = function(options) {
   assert(options.clientId,                "ClientId is required");
   assert(options.accessToken,             "AccessToken is required");
@@ -85,7 +96,7 @@ var Client = function(options) {
 };
 
 /** Check if the client satisfies any of the given scopes */
-Client.satisfies = function(scopes) {
+Client.prototype.satisfies = function(scopes) {
   if (typeof(scopes) == 'string') {
     scopes = [scopes];
   }
@@ -105,7 +116,7 @@ Client.satisfies = function(scopes) {
 };
 
 /** Check if client credentials are expired */
-Client.isExpired = function() {
+Client.prototype.isExpired = function() {
   return this.expires < (new Date());
 };
 
@@ -127,9 +138,9 @@ Client.isExpired = function() {
 var clientLoader = function(options) {
   assert(options.clientId,    "ClientId is required");
   assert(options.accessToken, "AccessToken is required");
-  var auth = new taskcluster.auth(options);
+  var auth = new taskcluster.Auth(options);
   return function(clientId) {
-    return  auth.getCredentials(clientId).then(function(client) {
+    return auth.getCredentials(clientId).then(function(client) {
       return new Client(client);
     });
   };
@@ -368,13 +379,13 @@ API.prototype.router = function(options) {
   var router = express.Router();
 
   // Use JSON middleware
-  router.use(express.json({
+  router.use(bodyParser.json({
     limit:                options.inputLimit
   }));
 
   // Allow CORS requests to the API
   if (options.allowedCORSOrigin) {
-    router.use(mountpoint, function(req, res, next) {
+    router.use(function(req, res, next) {
       res.header('Access-Control-Allow-Origin',   options.allowedCORSOrigin);
       res.header('Access-Control-Allow-Headers',  'X-Requested-With,Content-Type');
       next();
@@ -407,6 +418,7 @@ API.prototype.router = function(options) {
  * }
  */
 API.prototype.reference = function(options) {
+  assert(options,         "Options is required");
   assert(options.baseUrl, "A 'baseUrl' must be provided");
   return {
     version:            '0.2.0',
@@ -422,9 +434,10 @@ API.prototype.reference = function(options) {
         return '/<' + param + '>';
       });
       return {
+        type:           'function',
         method:         entry.method,
         route:          route,
-        args:           args,
+        args:           params,
         name:           entry.name,
         scopes:         entry.scopes,
         input:          entry.input,
@@ -460,7 +473,7 @@ API.prototype.publish = function(options) {
   var s3 = new aws.S3(options.aws);
   return s3.putObject({
     Bucket:           options.referenceBucket,
-    Key:              referencePrefix,
+    Key:              options.referencePrefix,
     Body:             JSON.stringify(this.reference(options), undefined, 4),
     ContentType:      'application/json'
   }).promise();
