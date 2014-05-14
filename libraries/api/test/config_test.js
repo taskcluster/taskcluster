@@ -43,9 +43,7 @@ suite("config", function() {
     var cfg = base.config({
       filename: 'test/taskcluster-base-test'
     });
-    console.log("Path:");
-    console.log(process.cwd());
-    console.log(__dirname);
     assert(cfg.get('test') == "ok it works", "Failed to load from file");
   });
 });
+
