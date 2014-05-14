@@ -27,12 +27,12 @@ suite("api/publish", function() {
       ],
       filename:               'taskcluster-base-test'
     });
-
     if (cfg.get('aws') && cfg.get('referenceTestBucket')) {
       return mockAuthServer.api.publish({
         baseUrl:              'http://localhost:23243/v1',
         referencePrefix:      'base/test/api.json',
         referenceBucket:      cfg.get('referenceTestBucket'),
+        aws:                  cfg.get('aws')
       }).then(function() {
         // Get the file... we don't bother checking the contents this is good
         // enough
