@@ -5,17 +5,23 @@ var validate    = require('../../utils/validate');
 var Promise     = require('promise');
 var uuid        = require('uuid');
 var hawk        = require('hawk');
-var request     = require('superagent-promise');
+var Client      = require('../../auth/data').Client;
 
 // This file contains a collection of neat middleware for building API
 // end-points, that can mounted on an express application
 
-/*
-var findUser = function(clientId, callback) {
-  request
-    .get('http://localhost:5050')
-    .
-};*/
+/** Find a user */
+var findClient = function(clientId, callback) {
+  Client.load(clientId).then(function(client) {
+    callback(null, {
+      id:             client.clientId,
+      key:            client.accessToken,
+      algorithm:      'sha256',
+      scopes:         client.scopes,
+      expires:        new Date(client.expires)
+    });
+  }).catch(callback);
+};
 
 /** Local nonce cache, using an over-approximation */
 var nonceManager = function() {
@@ -47,15 +53,50 @@ var auth = function(options) {
   return function(req, res, next) {
     // Restore originalUrl as needed by hawk for authentication
     req.url = req.originalUrl;
-    hawk.server.authenticate(req, findClient, {
-      payload:      JSON.stringify(req.body),
-      nonceFunc:    _nonceManager
-    }, function(err, credentials, artifacts) {
-      if (err) {
-        return res.json(err.output.statusCode, err.output.payload);
-      }
+    if (options.scopes == undefined) {
       next();
-    });
+    } else {
+      hawk.server.authenticate(req, findClient, {
+        //payload:      JSON.stringify(req.body),
+        nonceFunc:    _nonceManager
+      }, function(err, credentials, artifacts) {
+        if (err) {
+          var incidentId = uuid.v4();
+          var message = "Ask administrator to lookup incidentId in log-file";
+          if (err.output && err.output.payload && err.output.payload.error) {
+            message = err.output.payload.error;
+          }
+          debug(
+            "Error occurred authenticating, err: %s, %j, incidentId: %s",
+            err, err, incidentId, err.stack
+          );
+          return res.json(401, {
+            message:        "Internal Server Error",
+            error: {
+              info:         message,
+              incidentId:   incidentId
+            }
+          });
+        }
+        var authorized = credentials.scopes.some(function(pattern) {
+          var match = /^(.*)\*$/.exec(pattern);
+          return options.scopes.some(function(scope) {
+            if (scope === pattern) {
+              return true;
+            }
+            if (match) {
+              return scope.indexOf(match[1]) == 0;
+            }
+            return false;
+          });
+        });
+        if (authorized) {
+          next();
+        } else {
+          res.json(401, {message: "Authenticated by not authorized!"});
+        }
+      });
+    }
   };
 };
 

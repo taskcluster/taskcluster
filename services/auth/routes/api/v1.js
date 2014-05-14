@@ -111,7 +111,7 @@ api.declare({
 /** Get credentials for a given client */
 api.declare({
   method:     'get',
-  route:      '/client/:userId/credentials',
+  route:      '/client/:clientId/credentials',
   name:       'getCredentials',
   input:      undefined,
   output:     undefined,
