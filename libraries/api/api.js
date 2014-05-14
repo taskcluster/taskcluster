@@ -467,7 +467,12 @@ API.prototype.reference = function(options) {
  * Return a promise that reference was published.
  */
 API.prototype.publish = function(options) {
-  ['baseUrl', 'referencePrefix', 'referenceBucket'].forEach(function(key) {
+  [
+    'baseUrl',
+    'referencePrefix',
+    'referenceBucket',
+    'aws'
+  ].forEach(function(key) {
     assert(options[key], "Option '" + key + "' must be provided");
   });
   var s3 = new aws.S3(options.aws);
