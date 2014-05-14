@@ -36,7 +36,7 @@ var config = function(options) {
   // Load whitelisted configuration keys from environment variables
   if (options.envs.length > 0) {
     cfg.env({
-      separator:  '__',
+      separator:  '_',
       whitelist:  options.envs
     });
   }
