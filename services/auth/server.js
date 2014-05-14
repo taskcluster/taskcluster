@@ -28,7 +28,6 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = require('moment');  // make moment available to jade
 app.locals.marked = require('marked');  // make marked available to jade
-app.use(express.favicon());
 app.use(express.logger('dev'));
 
 // Mount API for version v1
