@@ -12,12 +12,12 @@ suite("config", function() {
 
   test("env", function() {
     // Set environment variable
-    process.env.test__value = '41';
+    process.env.test_value = '41';
 
     var cfg = base.config({
       defaults: {test: {value: 42}},
       envs: [
-        'test__value'
+        'test_value'
       ]
     });
 
@@ -27,12 +27,12 @@ suite("config", function() {
 
   test("fallback from env", function() {
     // Ensure that environment variable isn't set
-    delete process.env.test__value;
+    delete process.env.test_value;
 
     var cfg = base.config({
       defaults: {test: {value: 42}},
       envs: [
-        'test__value'
+        'test_value'
       ]
     });
 
