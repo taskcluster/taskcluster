@@ -18,10 +18,13 @@ suite("api/publish", function() {
   // Test getCredentials from mockAuthServer
   test("publish reference from mockAuthServer", function() {
     var cfg = base.config({
-      defaults: {
-        aws:                  {},
-        referenceTestBucket:  'test-bucket-for-any-garbage'
-      },
+      envs: [
+        'aws_accessKeyId',
+        'aws_secretAccessKey',
+        'aws_region',
+        'aws_apiVersion',
+        'referenceTestBucket'
+      ],
       filename:               'taskcluster-base-test'
     });
 
