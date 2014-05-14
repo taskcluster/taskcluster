@@ -33,10 +33,13 @@ suite("validator", function() {
 
   test("test publish", function() {
     var cfg = base.config({
-      defaults: {
-        aws:                  {},
-        schemaTestBucket:     'test-bucket-for-any-garbage'
-      },
+      envs: [
+        'aws_accessKeyId',
+        'aws_secretAccessKey',
+        'aws_region',
+        'aws_apiVersion',
+        'schemaTestBucket'
+      ],
       filename:               'taskcluster-base-test'
     });
 
