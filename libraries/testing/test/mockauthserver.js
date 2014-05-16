@@ -16,19 +16,21 @@ var _clients = {
 
 /** Create mock authentication API */
 var api = new base.API({
-  title:  "Authentication Mock Server",
-  desc:   "Server that simulates an instance of the taskcluster\n" +
-          "authentication server"
+  title:        "Authentication Mock Server",
+  description: [
+    "Server that simulates an instance of the taskcluster\n" +
+    "authentication server"
+  ].join('\n')
 });
 
 /** Create interface for returning a response */
 api.declare({
-  method:     'get',
-  route:      '/client/:clientId/credentials',
-  name:       'getCredentials',
-  scopes:     ['auth:credentials'],
-  title:      "Get Credentials",
-  desc:       "Get credentials... mock..."
+  method:       'get',
+  route:        '/client/:clientId/credentials',
+  name:         'getCredentials',
+  scopes:       ['auth:credentials'],
+  title:        "Get Credentials",
+  description:  "Get credentials... mock..."
 }, function(req, res) {
   var client = _clients[req.params.clientId];
   if (client) {
