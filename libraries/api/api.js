@@ -300,8 +300,8 @@ var handle = function(handler, context) {
  *
  * options:
  * {
- *   title: "API Title",
- *   desc:  "API description in markdown"
+ *   title:         "API Title",
+ *   description:   "API description in markdown"
  * }
  *
  * The API object will only modified by declarations, when `mount` or `publish`
@@ -309,7 +309,7 @@ var handle = function(handler, context) {
  * API.
  */
 var API = function(options) {
-  ['title', 'desc'].forEach(function(key) {
+  ['title', 'description'].forEach(function(key) {
     assert(options[key], "Option '" + key + "' must be provided");
   });
   this._options = options;
@@ -329,7 +329,9 @@ var API = function(options) {
  *   skipInputValidation:    true,                     // defaults to false
  *   skipOutputValidation:   true,                     // defaults to false
  *   title:    "My API Method",
- *   desc:     "Description of method in markdown, enjoy"
+ *   description: [
+ *     "Description of method in markdown, enjoy"
+ *   ].join('\n')
  * }
  *
  * The handler parameter is a normal connect/express request handler, it should
@@ -342,7 +344,7 @@ var API = function(options) {
  * nothing happens.
  */
 API.prototype.declare = function(options, handler) {
-  ['method', 'route', 'title', 'desc'].forEach(function(key) {
+  ['method', 'route', 'title', 'description'].forEach(function(key) {
     assert(options[key], "Option '" + key + "' must be provided");
   });
   options.handler = handler;
@@ -440,7 +442,7 @@ API.prototype.reference = function(options) {
   return {
     version:            '0.2.0',
     title:              this._options.title,
-    description:        this._options.desc,
+    description:        this._options.description,
     baseUrl:            options.baseUrl,
     entries: this._entries.map(function(entry) {
       // Find parameters for entry
@@ -460,7 +462,7 @@ API.prototype.reference = function(options) {
         input:          entry.input,
         output:         entry.output,
         title:          entry.title,
-        description:    entry.desc
+        description:    entry.description
       };
     })
   };
