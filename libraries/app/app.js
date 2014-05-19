@@ -1,0 +1,154 @@
+var express         = require('express');
+var bodyParser      = require('body-parser');
+var morgan          = require('morgan');
+var methodOverride  = require('method-override');
+var cookieParser    = require('cookie-parser');
+var cookieSession   = require('cookie-session');
+var errorHandler    = require('errorhandler');
+var passport        = require('passport');
+var _               = require('lodash');
+var debug           = require('debug')("base:app");
+var assert          = require('assert');
+var moment          = require('moment');
+var marked          = require('marked');
+
+/**
+ * Setup Middleware for normal browser consumable HTTP end-points.
+ *
+ * options:
+ * {
+ *   cookieSecret:  "..."                          // Cookie signing secret
+ *   viewFolder:    path.join(__dirnmae, 'views')  // Folder with templates
+ *   assetsFolder:  path.join(__dirname, 'assets') // Folder with static files
+ *   development:   true                           // Is in development?
+ *   publicUrl:     'http://domain.com'            // Public URL for persona
+ *   personaLogin:         '/persona-auth'    // Login URL
+ *   personaLogout:        '/logout'          // Logout URL
+ *   personaUnauthorized:  '/unauthorized'    // Unauthorized URL
+ * }
+ *
+ * Returns a middleware utility that ensures authentication as administrator.
+ */
+var setup = function(options) {
+  var app = this;
+  assert(options.cookieSecret,    "cookieSecret is required");
+  assert(options.viewFolder,      "viewFolder is required");
+  assert(options.assetsFolder,    "assetsFolder is required");
+
+  // Set default options
+  _.defaults(options, {
+    personaLogin:         '/persona-auth',
+    personaLogout:        '/logout',
+    personaUnauthorized:  '/unauthorized'
+  });
+
+  app.set('views', options.viewFolder);
+  app.set('view engine', 'jade');
+  app.locals.moment = moment;
+  app.locals.marked = marked;
+
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded());
+  app.use(methodOverride());
+  app.use(cookieParser(options.cookieSecret));
+  app.use(cookieSession());
+  app.use(passport.initialize());
+  app.use(passport.session());
+  app.use(function(req, res, next) {
+    // Expose user to all templates, if logged in
+    res.locals.user = req.user;
+    next();
+  });
+  app.use(app.router);
+  app.use('/assets', express.static(options.assetsFolder));
+
+
+  // Warn if no secret was used in production
+  if ('production' == app.get('env')) {
+    var secret = options.cookieSecret;
+    if (secret == "Warn, if no secret is used on production") {
+      console.log("Warning: Customized cookie secret should be used in " +
+                  "production");
+    }
+  }
+
+  // Middleware for development
+  if (options.development === true) {
+    app.use(errorHandler());
+  }
+
+  // Passport configuration
+  passport.use(new PersonaStrategy({
+      audience:   options.publicUrl
+    }, function(email, done) {
+    debug("Signed in with:" + email);
+    if (/@mozilla\.com$/.test(email)) {
+      done(null, {email: email});
+    } else {
+      done(null, null);
+    }
+  }));
+
+  // Serialize user to signed cookie
+  passport.serializeUser(function(user, done) {
+    done(null, user.email);
+  });
+
+  // Deserialize user from signed cookie
+  passport.deserializeUser(function(email, done) {
+    done(null, {email: email});
+  });
+
+  // Facilitate persona login
+  app.post(options.personaLogin, passport.authenticate('persona', {
+      failureRedirect:        options.personaUnauthorized
+    }), function(req, res) {
+    res.redirect('/');
+  });
+
+  // Provide end-point to log out the user
+  app.get(personaLogout, function(req, res){
+    req.logout();
+    res.redirect('/');
+  });
+
+  // Middleware utility for requiring authentication
+  var ensureAuth = function(req, res, next) {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    res.redirect(options.personaUnauthorized);
+  };
+
+  return ensureAuth;
+};
+
+/** Create server from app */
+var createServer = function() {
+  return this.listen(this.get('port'));
+};
+
+/** Create express application
+ * options:
+ * {
+ *   port:                8080  // Port to run the server on
+ * }
+ *
+ * Returns an express application with extra methods:
+ *   - `setup`          (Configures middleware for HTML UI and persona login)
+ *   - `createServer`   (Creates an server)
+ */
+var app = function(options) {
+  var app = express();
+  app.set('port',   options.port);
+  app.use(morgan('dev'));
+
+  // Add some auxiliary methods to the app
+  app.setup           = setup;
+  app.createServer    = createServer;
+
+  return app;
+};
+
+// Export app creation utility
+module.exports = app;
