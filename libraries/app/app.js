@@ -146,9 +146,16 @@ var createServer = function() {
 
     // Listen
     server.listen(app.get('port'), function() {
-      debug('Express server listening on port ' + app.get('port'));
+      debug('Server listening on port ' + app.get('port'));
       accept(server);
     });
+  }).then(function(server) {
+    // If there is a parent process post a message to notify it
+    if(process.send) {
+      process.send({ready: true});
+    }
+
+    return server;
   });
 };
 
@@ -164,7 +171,7 @@ var createServer = function() {
  */
 var app = function(options) {
   var app = express();
-  app.set('port',   options.port);
+  app.set('port', options.port);
   app.use(morgan('dev'));
 
   // Add some auxiliary methods to the app
