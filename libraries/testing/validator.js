@@ -105,6 +105,12 @@ Validator.prototype.register = function(schema) {
  * }
  */
 var validator = function(options) {
+  // Provide default options
+  _.defaults(options, {
+    schemaBucket:    'schemas.taskcluster.net'
+  });
+
+  // Create validator
   var validator = new Validator();
 
   // Data for publication, if needed
@@ -150,9 +156,8 @@ var validator = function(options) {
 
   // Check if we should publish
   if (options.publish) {
-    assert(options.schemaPrefix, "Can't publish without schemaPrefix");
-    assert(options.schemaBucket, "Can't publish without schemaBucket");
     assert(options.aws,          "Can't publish without aws credentials");
+    assert(options.schemaPrefix, "Can't publish without schemaPrefix");
     assert(options.schemaPrefix == "" || /.+\/$/.test(options.schemaPrefix),
            "schemaPrefix must be empty or should end with a slash");
     // Publish schemas to S3
