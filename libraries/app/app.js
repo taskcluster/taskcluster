@@ -170,6 +170,9 @@ var createServer = function() {
  *   - `createServer`   (Creates an server)
  */
 var app = function(options) {
+  assert(typeof(options.port) === 'number', "Port must be a number");
+
+  // Create application
   var app = express();
   app.set('port', options.port);
   app.use(morgan('dev'));
