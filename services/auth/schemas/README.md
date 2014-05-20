@@ -7,4 +7,4 @@ we have introduce an extra syntax `{"$const": "<key>"}`. These objects will
 be replaced with values from `constants.js` when schemas a rendered.
 
 For details on how to render the schemas and get the actual raw JSON schemas,
-see `../utils/render-schema.js`.
+see taskcluster-base.
