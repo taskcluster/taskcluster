@@ -11,6 +11,10 @@ var debug           = require('debug')("base:app");
 var assert          = require('assert');
 var moment          = require('moment');
 var marked          = require('marked');
+var Promise         = require('promise');
+var http            = require('http');
+var PassportPersona = require('passport-persona');
+
 
 /**
  * Setup Middleware for normal browser consumable HTTP end-points.
@@ -19,7 +23,7 @@ var marked          = require('marked');
  * {
  *   cookieSecret:  "..."                          // Cookie signing secret
  *   viewFolder:    path.join(__dirnmae, 'views')  // Folder with templates
- *   assetsFolder:  path.join(__dirname, 'assets') // Folder with static files
+ *   assetFolder:   path.join(__dirname, 'assets') // Folder with static files
  *   development:   true                           // Is in development?
  *   publicUrl:     'http://domain.com'            // Public URL for persona
  *   personaLogin:         '/persona-auth'    // Login URL
@@ -33,7 +37,7 @@ var setup = function(options) {
   var app = this;
   assert(options.cookieSecret,    "cookieSecret is required");
   assert(options.viewFolder,      "viewFolder is required");
-  assert(options.assetsFolder,    "assetsFolder is required");
+  assert(options.assetFolder,     "assetFolder is required");
 
   // Set default options
   _.defaults(options, {
@@ -51,7 +55,7 @@ var setup = function(options) {
   app.use(bodyParser.urlencoded());
   app.use(methodOverride());
   app.use(cookieParser(options.cookieSecret));
-  app.use(cookieSession());
+  app.use(cookieSession({secret: options.cookieSecret}));
   app.use(passport.initialize());
   app.use(passport.session());
   app.use(function(req, res, next) {
@@ -59,9 +63,7 @@ var setup = function(options) {
     res.locals.user = req.user;
     next();
   });
-  app.use(app.router);
-  app.use('/assets', express.static(options.assetsFolder));
-
+  app.use('/assets', express.static(options.assetFolder));
 
   // Warn if no secret was used in production
   if ('production' == app.get('env')) {
@@ -78,7 +80,7 @@ var setup = function(options) {
   }
 
   // Passport configuration
-  passport.use(new PersonaStrategy({
+  passport.use(new PassportPersona.Strategy({
       audience:   options.publicUrl
     }, function(email, done) {
     debug("Signed in with:" + email);
@@ -107,7 +109,7 @@ var setup = function(options) {
   });
 
   // Provide end-point to log out the user
-  app.get(personaLogout, function(req, res){
+  app.get(options.personaLogout, function(req, res){
     req.logout();
     res.redirect('/');
   });
@@ -125,7 +127,29 @@ var setup = function(options) {
 
 /** Create server from app */
 var createServer = function() {
-  return this.listen(this.get('port'));
+  var app = this;
+  return new Promise(function(accept, reject) {
+    // Launch HTTP server
+    var server = http.createServer(app);
+
+    // Add a little method to help kill the server
+    server.terminate = function() {
+      return new Promise(function(accept, reject) {
+        server.close(function() {
+          accept();
+        });
+      });
+    };
+
+    // Handle errors
+    server.once('error', reject);
+
+    // Listen
+    server.listen(app.get('port'), function() {
+      debug('Express server listening on port ' + app.get('port'));
+      accept(server);
+    });
+  });
 };
 
 /** Create express application
