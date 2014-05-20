@@ -8,6 +8,9 @@ var assert      = require('assert');
 var _           = require('lodash');
 var bodyParser  = require('body-parser');
 var taskcluster = require('taskcluster-client');
+var path        = require('path');
+var fs          = require('fs');
+var Validator   = require('./validator').Validator;
 
 /**
  * Declare {input, output} schemas as options to validate
@@ -376,7 +379,8 @@ API.prototype.declare = function(options, handler) {
  * Return an `express.Router` instance.
  */
 API.prototype.router = function(options) {
-  assert(options.validator, "API.router() needs a validator");
+  assert(options.validator instanceof Validator,
+         "API.router() needs a validator");
 
   // Provide default options
   _.defaults(options, {
@@ -439,7 +443,7 @@ API.prototype.router = function(options) {
 API.prototype.reference = function(options) {
   assert(options,         "Options is required");
   assert(options.baseUrl, "A 'baseUrl' must be provided");
-  return {
+  var reference = {
     version:            '0.2.0',
     title:              this._options.title,
     description:        this._options.description,
@@ -452,20 +456,43 @@ API.prototype.reference = function(options) {
         params.push(param);
         return '/<' + param + '>';
       });
-      return {
+      var retval = {
         type:           'function',
         method:         entry.method,
         route:          route,
         args:           params,
         name:           entry.name,
         scopes:         entry.scopes,
-        input:          entry.input,
-        output:         entry.output,
         title:          entry.title,
         description:    entry.description
       };
+      if (entry.input) {
+        retval.input  = entry.input;
+      }
+      if (entry.output) {
+        retval.output = entry.output;
+      }
+      return retval;
     })
   };
+
+  // Create validator to validate schema
+  var validator = new Validator();
+  // Load api-reference.json schema from disk
+  var schemaPath = path.join(__dirname, 'schemas', 'api-reference.json');
+  var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
+  validator.register(JSON.parse(schema));
+
+  // Check against it
+  var refSchema = 'http://schemas.taskcluster.net/base/v1/api-reference.json#';
+  var errors = validator.check(reference, refSchema);
+  if (errors) {
+    debug("API.references(): Failed to validate against schema, errors: %j " +
+          "reference: %j", errors, reference);
+    throw new Error("API.references(): Failed to validate against schema");
+  }
+
+  return reference;
 };
 
 /**
@@ -486,15 +513,17 @@ API.prototype.reference = function(options) {
  * Return a promise that reference was published.
  */
 API.prototype.publish = function(options) {
-  [
-    'baseUrl',
-    'referencePrefix',
-    'referenceBucket',
-    'aws'
-  ].forEach(function(key) {
+  // Provide default options
+  _.defaults(options, {
+    referenceBucket:    'references.taskcluster.net'
+  });
+  // Check that required options are provided
+  ['baseUrl', 'referencePrefix', 'aws'].forEach(function(key) {
     assert(options[key], "Option '" + key + "' must be provided");
   });
+  // Create S3 object
   var s3 = new aws.S3(options.aws);
+  // Upload object
   return s3.putObject({
     Bucket:           options.referenceBucket,
     Key:              options.referencePrefix,
