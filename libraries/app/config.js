@@ -9,22 +9,24 @@ var nconf       = require('nconf');
  * options:
  * {
  *   defaults:     {},   // Default configuration values
+ *   profile:      {},   // Profile configuration values (overrides defaults)
  *   envs:         [],   // Values to load from env, using `_` as separator
  *   filename:     null  // Filename to load config from at multiple levels
  * }
  *
- * If `filename` is given, configuration will be loaded from folders in the
- * following order:
- *
- *  1. Current working director (`./<filename>.conf.json`),
- *  2. Home folder (`~/.<filename>.conf.json`), and
- *  3. System config (`/etc/<filename>.conf.json`)
- *
+ * Configuration values are searched in the following order:
+ *  1. Environment variables
+ *  2. Current working director (`./<filename>.conf.json`),
+ *  3. Home folder (`~/.<filename>.conf.json`), and
+ *  4. System config (`/etc/<filename>.conf.json`)
+ *  5. Default value from `profile`
+ *  6. Default value from `defaults`
  */
 var config = function(options) {
   // Set default options
   _.defaults(options, {
     defaults:         {},
+    profile:          {},
     envs:             [],
     filename:         null
   });
@@ -52,6 +54,9 @@ var config = function(options) {
     // Global configuration
     cfg.file('global', '/etc/' + options.filename + '.conf.json');
   }
+
+  // Load default values from profile
+  cfg.overrides(options.profile);
 
   // Load defaults
   cfg.defaults(options.defaults);
