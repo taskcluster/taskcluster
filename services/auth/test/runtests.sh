@@ -1,6 +1,6 @@
-#! /bin/bash -vex
+#!/bin/bash -ve
+# USAGE: Run this file using `npm test` (must run from repository root)
 
-./node_modules/.bin/nodeunit  \
-  tests/auth_test.js          \
-  tests/validate_test.js
+./node_modules/.bin/mocha   \
+  test/validate_test.js
 

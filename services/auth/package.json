@@ -23,7 +23,7 @@
     "taskcluster-base":                 "0.0.3"
   },
   "devDependencies": {
-    "nodeunit":                         "0.8.6"
+    "mocha":                            "1.18.2"
   },
   "engines": {
     "node":                             "0.10.x"
