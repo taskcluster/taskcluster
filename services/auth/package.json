@@ -4,7 +4,7 @@
   "private":  true,
   "main":     "server.js",
   "scripts": {
-    "test":   "tests/runtests.sh"
+    "test":   "test/runtests.sh"
   },
   "repository": {
     "type":   "git",
@@ -41,7 +41,7 @@
     "moment":                           "2.6.0",
     "marked":                           "0.3.2",
     "taskcluster-client":               "0.4.3",
-    "taskcluster-base":                 "0.0.1"
+    "taskcluster-base":                 "0.0.3"
   },
   "devDependencies": {
     "nodeunit":                         "0.8.6"
