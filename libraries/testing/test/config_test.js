@@ -10,6 +10,15 @@ suite("config", function() {
     assert(cfg.get('test:value') == 42);
   });
 
+  test("profile", function() {
+    var cfg = base.config({
+      defaults: {test: {value: 41}},
+      profile:  {test: {value: 42}}
+    });
+
+    assert(cfg.get('test:value') == 42);
+  });
+
   test("env", function() {
     // Set environment variable
     process.env.test_value = '41';
