@@ -1,7 +1,5 @@
 var Promise     = require('promise');
-var debug       = require('debug')('routes:user');
-var Client      = require('../auth/data').Client;
-var nconf       = require('nconf');
+var debug       = require('debug')('taskcluster-auth;routes:user');
 var uuid        = require('uuid');
 var slugid      = require('slugid');
 
@@ -19,7 +17,8 @@ var errorHandler = function(res, title) {
 };
 
 /** List all registered clients */
-exports.list = function(req, res){
+exports.list = function(req, res) {
+  var Client = req.app.globals.Client;
   Client.loadAll().then(function(clients) {
     res.render('client-list', {
       title:          "Registered Clients",
@@ -29,7 +28,7 @@ exports.list = function(req, res){
 };
 
 /** Show form to create new client */
-exports.create = function(req, res){
+exports.create = function(req, res) {
   // Set default expiration to 1000 years...
   var expires = new Date();
   expires.setFullYear(expires.getFullYear() + 1000, 0, 0);
@@ -50,7 +49,8 @@ exports.create = function(req, res){
 };
 
 /** View existing client */
-exports.view = function(req, res, next){
+exports.view = function(req, res, next) {
+  var Client = req.app.globals.Client;
   Client.load(req.params.clientId).then(function(client) {
     res.render('client-view', {
       title:          "Client " + client.name,
@@ -63,7 +63,8 @@ exports.view = function(req, res, next){
 };
 
 /** Edit existing client */
-exports.edit = function(req, res){
+exports.edit = function(req, res) {
+  var Client = req.app.globals.Client;
   Client.load(req.params.clientId).then(function(client) {
     res.render('client-edit', {
       title:          "Edit: " + client.name,
@@ -78,6 +79,7 @@ exports.edit = function(req, res){
 
 /** Delete existing client */
 exports.delete = function(req, res) {
+  var Client = req.app.globals.Client;
   Client.load(req.params.clientId).then(function(client) {
     return client.remove();
   }, function() {
@@ -89,9 +91,9 @@ exports.delete = function(req, res) {
 };
 
 /** Update/create client and redirect to view */
-exports.update = function(req, res){
+exports.update = function(req, res) {
   debug("Create/update client: %j", req.body);
-
+  var Client = req.app.globals.Client;
   Promise.from(null).then(function() {
     // Create client if requested
     if (req.body.updateOrCreate == 'create') {
