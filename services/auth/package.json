@@ -2,7 +2,7 @@
   "name":     "taskcluster-auth",
   "version":  "0.1.0",
   "private":  true,
-  "main":     "server.js",
+  "main":     "node bin/server.js production",
   "scripts": {
     "test":   "test/runtests.sh"
   },
