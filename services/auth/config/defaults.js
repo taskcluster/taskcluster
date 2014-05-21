@@ -2,7 +2,7 @@ module.exports = {
   // Component specific configuration
   auth: {
     // Azure table for the client table
-    clientTableName:                'ClientTable',
+    clientTableName:                'TestClients',
 
     // Publish references and schemas
     publishMetaData:                'false'
@@ -37,6 +37,12 @@ module.exports = {
 
   // AWS SDK configuration for publication of schemas and references
   aws: {
+    // Access key id (typically configured using environment variables)
+    accessKeyId:                    undefined,
+
+    // Secret access key (typically configured using environment variables)
+    secretAccessKey:                undefined,
+
     // Default AWS region, this is where the S3 bucket lives
     region:                         'us-west-2',
 
