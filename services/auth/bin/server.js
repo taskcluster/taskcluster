@@ -5,6 +5,7 @@ var v1      = require('../routes/api/v1');
 var routes  = require('../routes');
 var path    = require('path');
 var debug   = require('debug')('taskcluster-auth:bin:server');
+var Promise = require('promise');
 
 /** Launch server */
 var launch = function(profile) {
