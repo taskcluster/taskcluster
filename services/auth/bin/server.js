@@ -40,7 +40,7 @@ var launch = function(profile) {
     schemaPrefix:     'auth/v1/',
     aws:              cfg.get('aws')
   }).then(function(validator_) {
-    validator = validator;
+    validator = validator_;
   });
 
   // Load validator and create client table before proceeding
