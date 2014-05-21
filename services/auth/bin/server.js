@@ -13,8 +13,6 @@ var launch = function(profile) {
     defaults:     require('../config/defaults'),
     profile:      require('../config/' + profile),
     envs: [
-      'auth_clientTableName',
-      'auth_publishMetaData',
       'server_publicUrl',
       'server_cookieSecret',
       'azureTable_accountName',
@@ -33,13 +31,22 @@ var launch = function(profile) {
   });
 
   // Initialize validator and publish schemas if needed
-  return base.validator({
+  var validator = null;
+  var validatorLoaded = base.validator({
     folder:           path.join(__dirname, '..', 'schemas'),
     constants:        require('../schemas/constants'),
     publish:          cfg.get('auth:publishMetaData') === 'true',
     schemaPrefix:     'auth/v1/',
     aws:              cfg.get('aws')
-  }).then(function(validator) {
+  }).then(function(validator_) {
+    validator = validator;
+  });
+
+  // Load validator and create client table before proceeding
+  return Promise.all(
+    validatorLoaded,
+    Client.createTable()
+  ).then(function() {
     // Create API router and publish reference if needed
     return v1.setup({
       context: {
