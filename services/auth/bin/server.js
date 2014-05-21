@@ -19,7 +19,9 @@ var launch = function(profile) {
       'server_cookieSecret',
       'azureTable_accountName',
       'azureTable_accountKey',
-      'azureTable_accountUrl'
+      'azureTable_accountUrl',
+      'aws_accessKeyId',
+      'aws_secretAccessKey'
     ],
     filename:     'taskcluster-auth'
   });
