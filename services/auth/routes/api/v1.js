@@ -28,7 +28,7 @@ api.declare({
     "where the clients authorization is set to expire.",
     "",
     "This API end-point allows you inspect clients without getting access to",
-    "credentails, as provide by the `getCredentials` request below."
+    "credentials, as provide by the `getCredentials` request below."
   ].join('\n')
 }, function(req, res) {
   return this.Client.load(req.params.clientId).then(function(client) {
