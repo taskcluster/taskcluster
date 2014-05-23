@@ -462,10 +462,12 @@ API.prototype.reference = function(options) {
         route:          route,
         args:           params,
         name:           entry.name,
-        scopes:         entry.scopes,
         title:          entry.title,
         description:    entry.description
       };
+      if (entry.scopes) {
+        retval.scopes = entry.scopes;
+      }
       if (entry.input) {
         retval.input  = entry.input;
       }
