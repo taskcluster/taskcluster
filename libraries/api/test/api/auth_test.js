@@ -46,4 +46,63 @@ suite("api/auth", function() {
         assert(res.body.accessToken === 'test-token', "Got wrong token");
       });
   });
+
+  // Test getCredentials with wrong credentials
+  test("Fail auth", function() {
+    var url = 'http://localhost:23243/client/test-client/credentials';
+    return request
+      .get(url)
+      .hawk({
+        id:           'delegating-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      })
+      .end()
+      .then(function(res) {
+        assert(res.status === 401, "Request didn't failed");
+      });
+  });
+
+
+  // Test getCredentials with by delegation
+  test("Auth by delegation", function() {
+    var url = 'http://localhost:23243/client/test-client/credentials';
+    return request
+      .get(url)
+      .hawk({
+        id:           'delegating-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      }, {
+        ext: new Buffer(JSON.stringify({
+          delegating:       true,
+          scopes:           ['auth:credenti*']
+        })).toString('base64')
+      })
+      .end()
+      .then(function(res) {
+        assert(res.ok, "Request failed");
+      });
+  });
+
+    // Test getCredentials with by delegation with can-delegate
+  test("No cheating by delegation", function() {
+    var url = 'http://localhost:23243/client/test-client/credentials';
+    return request
+      .get(url)
+      .hawk({
+        id:           'test-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      }, {
+        ext: new Buffer(JSON.stringify({
+          delegating:       true,
+          scopes:           ['auth:credenti*']
+        })).toString('base64')
+      })
+      .end()
+      .then(function(res) {
+        assert(res.status === 401, "Request didn't failed");
+      });
+  });
 });
