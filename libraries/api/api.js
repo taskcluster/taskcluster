@@ -98,13 +98,16 @@ var Client = function(options) {
   this.scopes       = options.scopes;
 };
 
-/** Check if the client satisfies any of the given scopes */
-Client.prototype.satisfies = function(scopes) {
+/** Auxiliary function to check if scopePatterns intersect scopes */
+var scopeIntersect = function(scopePatterns, scopes) {
   if (typeof(scopes) == 'string') {
     scopes = [scopes];
   }
+  if (typeof(scopePatterns) == 'string') {
+    scopePatterns = [scopePatterns];
+  }
   assert(scopes instanceof Array, "Scopes must be a string or an array");
-  return this.scopes.some(function(pattern) {
+  return scopePatterns.some(function(pattern) {
     var match = /^(.*)\*$/.exec(pattern);
     return scopes.some(function(scope) {
       if (scope === pattern) {
@@ -116,6 +119,11 @@ Client.prototype.satisfies = function(scopes) {
       return false;
     });
   });
+}
+
+/** Check if the client satisfies any of the given scopes */
+Client.prototype.satisfies = function(scopes) {
+  return scopeIntersect(this.scopes, scopes);
 };
 
 /** Check if client credentials are expired */
@@ -123,14 +131,15 @@ Client.prototype.isExpired = function() {
   return this.expires < (new Date());
 };
 
+
 /**
  * Create function to find a client from clientId
  *
  * options:
  * {
  *   clientId:          '...',  // TaskCluster clientId
- *   accessToken:       '...'   // Access token for clientId
- *   baseUrl:           '...',  // BaseUrl for authentication server
+ *   accessToken:       '...',  // Access token for clientId
+ *   baseUrl:           '...'   // BaseUrl for authentication server
  * }
  *
  * The client identified by `clientId` must have the scope 'auth:credentials'.
@@ -204,6 +213,11 @@ var nonceManager = function(options) {
  * Note: Both API end-points and clients has a list of scopes. To authorize
  * a request we just need an intersection between these two lists.
  *
+ * This also adds a method `req.satisfies(scopes, noReply)` to the `request`
+ * object. Calling this method with a list of scopes return `true` if the client
+ * satisfies one of the scopes. If the client does not satisfy one of the scopes
+ * it returns `false` and sends an error message unless `noReply = true`.
+ *
  * Reports 401 if authentication fails.
  */
 var authenticate = function(nonceManager, clientLoader, options) {
@@ -251,14 +265,50 @@ var authenticate = function(nonceManager, clientLoader, options) {
             }
           });
         }
-        // Check that the request is authorized
-        if (!credentials.client.isExpired() &&
-            credentials.client.satisfies(options.scopes)) {
-          // Set client on request and call next
-          req.client = credentials.client;
+        // Check that request is expired
+        if (credentials.client.isExpired()) {
+          return res.json(401, {
+            message:  "Authentication Failed: TaskCluster credentials expired"
+          });
+        }
+
+        /**
+         * Create method to check if request satisfies a scope from required
+         * set of scopes.
+         * Return true, if successful and if unsuccessful it replies with
+         * error to `res`, unless `noReply` is `true`.
+         */
+        var authorizedScopes = credentials.client.scopes;
+        req.satisfies = function(scopes, noReply) {
+          var retval = scopeIntersect(authorizedScopes, scopes);
+          if (!retval && !noReply) {
+            res.json(401, {
+              message:  "Authorization Failed",
+              error: {
+                info:     "None of the scopes was satisfied",
+                scopes:   scopes,
+              }
+            });
+          }
+          return retval;
+        };
+
+        // If we're delegating scopes
+        if (artifacts.ext) {
+          var extdata = new Buffer(artifacts.ext, 'base64').toString('utf-8');
+          var ext     = JSON.parse(extdata);
+          if (ext.delegating) {
+            if (!req.satisfies('auth:can-delegate')) {
+              return;
+            }
+            // Change authorized scopes
+            authorizedScopes = ext.scopes;
+          }
+        }
+
+        // Check that request satisfies one of the required scopes
+        if (req.satisfies(options.scopes)) {
           next();
-        } else {
-          res.json(401, {message: "Authenticated by not authorized!"});
         }
       });
     }
