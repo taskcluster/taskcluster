@@ -4,9 +4,6 @@ var path        = require('path');
 var request     = require('superagent-promise');
 var _           = require('lodash');
 
-// Default API version to load
-var DEFAULT_VERSION = 1;
-
 // Path to apis.json file
 var apis_json   = path.join(__dirname, '..', 'apis.json');
 
@@ -16,11 +13,6 @@ var readme_md   = path.join(__dirname, '..', 'README.md');
 /** Load APIs from apis.json */
 var loadApis = function() {
   return JSON.parse(fs.readFileSync(apis_json, {encoding: 'utf-8'}));
-};
-
-/** Save APIs to apis.json */
-var saveApis = function(apis) {
-  fs.writeFileSync(apis_json, JSON.stringify(apis), {encoding: 'utf-8'});
 };
 
 // Markers for start and end of documentation section
@@ -35,17 +27,25 @@ var docs = [
   var api = apis[name];
   return [
     "",
-    "### Methods in `client." + name + "`"
-  ].concat(api.reference.filter(function(entry) {
-    return entry.name != null;
+    "### Methods in `taskcluster." + name + "`",
+    "```js",
+    "// Create " + name + " client instance with default baseUrl:",
+    "//  - " + api.reference.baseUrl,
+    "var " + name.toLowerCase() + " = new taskcluster." + name + "(options);",
+    "```"
+  ].concat(api.reference.entries.filter(function(entry) {
+    return entry.type === 'function';
   }).map(function(entry) {
-    var args = (entry.route.match(/\/:[^/]+/g) || []).map(function(arg) {
-      return arg.substr(2);
-    });
-    if (entry.requestSchema != undefined) {
+    var args = entry.args.slice();
+    if (entry.input) {
       args.push('payload');
     }
-    return " * `" + entry.name + "(" + args.join(', ') + ")`"
+    var retval = 'void';
+    if (entry.output) {
+      retval = 'result';
+    }
+    return " * `" + name.toLowerCase() + "." + entry.name +
+           "(" + args.join(', ') + ") : " + retval + "`";
   })).join('\n');
 }).concat([
   "",
