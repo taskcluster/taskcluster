@@ -3,14 +3,23 @@ _A taskcluster client library for node.js._
 
 ## Usage
 This client library is generated from the auto-generated API reference.
-You can load these at runtime using `client.load`, but there is also a series
-of builtin APIs. You can use them as follows:
+You can create a Client class from a JSON reference object at runtime using
+`taskcluster.createClient(reference)`. But there is also a set of builtin
+references from which Client classes are already constructed.
 
 ```js
-var client = require('taskcluster-client');
+var taskcluster = require('taskcluster-client');
 
-// Create task using `queue` (builtin API)
-client.queue.createTask(task).then(function(result) {
+// Instantiate the Queue Client class
+var queue = new taskcluster.Queue({
+  credentials: {
+    clientId:     '...',
+    accessToken:  '...'
+  }
+});
+
+// Create task using the queue client
+queue.createTask(task).then(function(result) {
   // status is a task status structure
   console.log(result.status);
 });
@@ -22,50 +31,103 @@ object as documented in the REST API documentation.
 
 <!-- START OF GENERATED DOCS -->
 
-### Methods in `client.queue`
- * `createTask(payload)`
- * `defineTasks(payload)`
- * `scheduleTask(taskId)`
- * `claimTask(taskId, payload)`
- * `requestArtifactUrls(taskId, payload)`
- * `reportTaskCompleted(taskId, payload)`
- * `claimWork(provisionerId, workerType, payload)`
- * `rerunTask(taskId)`
- * `getPendingTasks(provisionerId)`
- * `getAMQPConnectionString()`
-
-### Methods in `client.scheduler`
- * `createTaskGraph(payload)`
- * `requestTableAccess()`
- * `getTaskGraphStatus(taskGraphId)`
- * `getTaskGraphInfo(taskGraphId)`
- * `inspectTaskGraph(taskGraphId)`
-
-### Methods in `client.auth`
- * `getScopes(clientId)`
- * `getCredentials(userId)`
+### Methods in `taskcluster.Auth`
+```js
+// Create Auth client instance with default baseUrl:
+//  - http://auth.taskcluster.net/v1
+var auth = new taskcluster.Auth(options);
+```
+ * `auth.inspect(clientId) : result`
+ * `auth.getCredentials(clientId) : result`
 
 <!-- END OF GENERATED DOCS -->
 
-### Loading an API Dynamically
-You can load an API dynamically using `client.load(baseUrl, version)`, as
-illustrated below:
+### Create Client Class Dynamically
+You can create a Client class from a reference JSON object as illustrated
+below:
 
 ```js
-// Load API from /v1/reference from queue.taskcluster.net
-client.load('http://queue.taskcluster.net', 1).then(function(queue) {
-  // Create a task using queue API as created above
-  return queue.createTask(task);
-}).then(...);
+var reference = {...}; // JSON from references.taskcluster.net/...
+
+// Create Client class
+var MyClient = taskcluster.createClient(reference);
+
+// Instantiate an instance of MyClient
+var myClient = new MyClient({
+  credentials: {...}
+});
+
+// Make a request with a method on myClient
+myClient.myMethod(arg1, arg2, payload).then(function(result) {
+  // ...
+});
 ```
-If you have the reference locally, you can also create an API wrapper with
-`new client(baseUrl, reference)`, where `reference` is the JSON list returned
-from `/v1/reference`.
 
 ### Configuring API BaseUrls
-If you use the builtin APIs documented above you can configure which `baseUrl`
-to use using `client.config({queue: 'http://localhost:3001'})`. If no `baseUrl`
-is configured this way, the builtin `baseUrl` will be used.
+If you use the builtin API Client classes documented above you can configure
+the `baseUrl` when creating an instance of the client. As illustrated below:
+
+```js
+var auth = new taskcluster.Auth({
+  credentials:  {...},
+  baseUrl:      "http://localhost:4040" // Useful for development and testing
+});
+```
+### Configuring Credentials
+When creating an instance of a Client class the credentials can be provided
+in options. For example:
+```js
+var auth = new taskcluster.Auth({
+  credentials: {
+    clientId:     '...',
+    accessToken:  '...'
+  }
+});
+```
+
+You can also configure default options globally using
+`taskcluster.config(options)`, as follows:
+
+```js
+// Configure default options
+taskcluster.config({
+  credentials: {
+    clientId:     '...',
+    accessToken:  '...'
+  }
+});
+
+// No credentials needed here
+var auth = new taskcluster.Auth();
+```
+
+### Delegated Authorization
+If your client has the scope `auth:can-delegate` you can send requests with
+a scope set different from the one you have. This is useful when the
+scheduler performs a request on behalf of a task-graph, or when
+authentication takes place in a trusted proxy. See example below:
+
+```js
+// Create delegating instance of Auth Client class
+var auth = new taskcluster.Auth({
+  credentials: {
+    clientId:     '...',
+    accessToken:  '...',
+    delegating:   true,
+    scopes:       ['scope', ...]  // For example task.scopes
+  }
+});
+
+// This request is only successful if the set of scopes declared above
+// allows the request to come through. The set of scopes the client has
+// will not be used to authorize this request.
+auth.getCredentials(someClientId).then(function(result) {
+  // ...
+});
+```
+We call this delegated authorization, because the trusted node that has the
+scope `auth:can-delegate`, delegates authorization of the request to API
+end-point.
 
 ## Updating Builtin APIs
 When releasing a new version of the `taskcluster-client` library, we should
@@ -73,8 +135,8 @@ always update the builtin references using `utils/update-apis.js` this
 maintenance script can be used to list, show, add, remove and update builtin
 API definitions.
 
-When `apis.json` is updated, please run `utils/generate-docs.js` to update the
-documentation in this file.
+When `apis.json` is updated, please run `utils/generate-docs.js` to update
+the documentation in this file.
 
 ##License
 The taskcluster client library is released on [MPL 2.0](http://mozilla.org/MPL/2.0/).
