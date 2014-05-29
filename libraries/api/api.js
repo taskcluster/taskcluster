@@ -579,7 +579,7 @@ API.prototype.publish = function(options) {
   return s3.putObject({
     Bucket:           options.referenceBucket,
     Key:              options.referencePrefix,
-    Body:             JSON.stringify(this.reference(options), undefined, 4),
+    Body:             JSON.stringify(this.reference(options), undefined, 2),
     ContentType:      'application/json'
   }).promise();
 };
