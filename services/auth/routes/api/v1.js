@@ -56,8 +56,8 @@ api.declare({
     "authorized for and the date-time where the client authorization expires",
     "",
     "Remark, **if you don't need** the `accessToken` but only want to see what",
-    "scopes a client is authorized for, you should use the `inspect` function",
-    "described above."
+    "scopes a client is authorized for, you should use the `getScopes`",
+    "function described above."
   ].join('\n')
 }, function(req, res) {
   return this.Client.load(req.params.clientId).then(function(client) {
@@ -69,4 +69,3 @@ api.declare({
     });
   });
 });
-
