@@ -27,29 +27,31 @@ suite("api/publish", function() {
       ],
       filename:               'taskcluster-base-test'
     });
-    if (cfg.get('aws') && cfg.get('referenceTestBucket')) {
-      return mockAuthServer.api.publish({
-        baseUrl:              'http://localhost:23243/v1',
-        referencePrefix:      'base/test/api.json',
-        referenceBucket:      cfg.get('referenceTestBucket'),
-        aws:                  cfg.get('aws')
-      }).then(function() {
-        // Get the file... we don't bother checking the contents this is good
-        // enough
-        var s3 = new aws.S3(cfg.get('aws'));
-        return s3.getObject({
-          Bucket:     cfg.get('referenceTestBucket'),
-          Key:        'base/test/api.json'
-        }).promise();
-      }).then(function(res) {
-        var reference = JSON.parse(res.data.Body);
-        assert(reference.entries, "Missing entries");
-        assert(reference.entries.length > 0, "Has no entries");
-        assert(reference.title, "Missing title");
-      });
-    } else {
+
+    if (!cfg.get('aws') || !cfg.get('referenceTestBucket')) {
       console.log("Skipping 'publish', missing config file: " +
                   "taskcluster-base-test.conf.json");
+      return;
     }
+
+    return mockAuthServer.api.publish({
+      baseUrl:              'http://localhost:23243/v1',
+      referencePrefix:      'base/test/api.json',
+      referenceBucket:      cfg.get('referenceTestBucket'),
+      aws:                  cfg.get('aws')
+    }).then(function() {
+      // Get the file... we don't bother checking the contents this is good
+      // enough
+      var s3 = new aws.S3(cfg.get('aws'));
+      return s3.getObject({
+        Bucket:     cfg.get('referenceTestBucket'),
+        Key:        'base/test/api.json'
+      }).promise();
+    }).then(function(res) {
+      var reference = JSON.parse(res.data.Body);
+      assert(reference.entries, "Missing entries");
+      assert(reference.entries.length > 0, "Has no entries");
+      assert(reference.title, "Missing title");
+    });
   });
 });
