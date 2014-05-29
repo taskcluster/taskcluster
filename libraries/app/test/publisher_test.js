@@ -4,6 +4,7 @@ suite("Exchanges.Publisher", function() {
   var path    = require('path');
   var fs      = require('fs');
   var debug   = require('debug')('base:test:publisher');
+  var Promise = require('promise');
 
   // AMQP connection string for localhost in various test setups
   var connectionString = 'amqp://guest:guest@localhost:5672';
@@ -45,10 +46,6 @@ suite("Exchanges.Publisher", function() {
       messageBuilder:     function(msg) { return msg; },
       routingKeyBuilder:  function(msg, rk) { return rk; }
     });
-  });
-
-  // Test that we can connect to AMQP server
-  test("connect", function() {
     // Create validator to validate schema
     var validator = new base.validator.Validator();
     // Load exchange-test-schema.json schema from disk
@@ -56,10 +53,16 @@ suite("Exchanges.Publisher", function() {
     var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
     validator.register(JSON.parse(schema));
 
-    return exchanges.connect({
-      connectionString:       connectionString,
-      validator:              validator
-    }).then(function(publisher) {
+    // Set validator on exchanges
+    exchanges.configure({
+      validator:              validator,
+      connectionString:       connectionString
+    });
+  });
+
+  // Test that we can connect to AMQP server
+  test("connect", function() {
+    return exchanges.connect().then(function(publisher) {
       assert(publisher instanceof base.Exchanges.Publisher,
              "Should get an instance of base.Exchanges.Publisher");
     });
@@ -67,17 +70,7 @@ suite("Exchanges.Publisher", function() {
 
   // Test that we can publish messages
   test("publish message", function() {
-    // Create validator to validate schema
-    var validator = new base.validator.Validator();
-    // Load exchange-test-schema.json schema from disk
-    var schemaPath = path.join(__dirname, 'schemas', 'exchange-test-schema.json');
-    var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
-    validator.register(JSON.parse(schema));
-
-    return exchanges.connect({
-      connectionString:       connectionString,
-      validator:              validator
-    }).then(function(publisher) {
+    return exchanges.connect().then(function(publisher) {
       return publisher.testExchange({someString: "My message"}, {
         testId:           "myid",
         taskRoutingKey:   "some.string.with.dots",
@@ -88,17 +81,7 @@ suite("Exchanges.Publisher", function() {
 
   // Test publication fails on schema violation
   test("publish error w. schema violation", function() {
-    // Create validator to validate schema
-    var validator = new base.validator.Validator();
-    // Load exchange-test-schema.json schema from disk
-    var schemaPath = path.join(__dirname, 'schemas', 'exchange-test-schema.json');
-    var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
-    validator.register(JSON.parse(schema));
-
-    return exchanges.connect({
-      connectionString:       connectionString,
-      validator:              validator
-    }).then(function(publisher) {
+    return exchanges.connect().then(function(publisher) {
       return publisher.testExchange({
         someString:   "My message",
         "volation":   true
@@ -118,17 +101,7 @@ suite("Exchanges.Publisher", function() {
 
   // Test publication fails on required key missing
   test("publish error w. required key missing", function() {
-    // Create validator to validate schema
-    var validator = new base.validator.Validator();
-    // Load exchange-test-schema.json schema from disk
-    var schemaPath = path.join(__dirname, 'schemas', 'exchange-test-schema.json');
-    var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
-    validator.register(JSON.parse(schema));
-
-    return exchanges.connect({
-      connectionString:       connectionString,
-      validator:              validator
-    }).then(function(publisher) {
+    return exchanges.connect().then(function(publisher) {
       return publisher.testExchange({
         someString:   "My message",
       }, {
@@ -145,17 +118,7 @@ suite("Exchanges.Publisher", function() {
 
   // Test publication fails on size violation
   test("publish error w. size violation", function() {
-    // Create validator to validate schema
-    var validator = new base.validator.Validator();
-    // Load exchange-test-schema.json schema from disk
-    var schemaPath = path.join(__dirname, 'schemas', 'exchange-test-schema.json');
-    var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
-    validator.register(JSON.parse(schema));
-
-    return exchanges.connect({
-      connectionString:       connectionString,
-      validator:              validator
-    }).then(function(publisher) {
+    return exchanges.connect().then(function(publisher) {
       return publisher.testExchange({
         someString:   "My message",
       }, {
@@ -173,17 +136,7 @@ suite("Exchanges.Publisher", function() {
 
   // Test publication fails on multiple words
   test("publish error w. multiple words", function() {
-    // Create validator to validate schema
-    var validator = new base.validator.Validator();
-    // Load exchange-test-schema.json schema from disk
-    var schemaPath = path.join(__dirname, 'schemas', 'exchange-test-schema.json');
-    var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
-    validator.register(JSON.parse(schema));
-
-    return exchanges.connect({
-      connectionString:       connectionString,
-      validator:              validator
-    }).then(function(publisher) {
+    return exchanges.connect().then(function(publisher) {
       return publisher.testExchange({
         someString:   "My message",
       }, {
