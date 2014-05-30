@@ -1,91 +1,40 @@
 module.exports = {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // AMQP configuration as given to `amqp.createConnection`
-  // See: https://github.com/postwait/node-amqp#connection-options-and-url
-  // As we'll be offering this through an API end-point this should really only
-  // be url.
-  amqp: {
-    // URL for AMQP setup formatted as amqp://user:password@host:port/vhost
-    url:                            'amqp://guest:guest@localhost:5672'
-  },
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module.exports = {
   // TaskCluster Queue configuration
   queue: {
-    reaperInterval: 1000 * 15,
+    // Publish references and schemas
+    publishMetaData:              'false'
 
-    // Name of S3 bucket where all task and artifacts will be stored
-    taskBucket:                     'tasks.taskcluster.net',
 
-    // True, if taskBucket is CNAME'd like task.taskcluster.net, note, that
-    // bucket name always has to be equal to CNAME, so this is just a boolean
-    // encoding as string to ENV can set it without having to provide
-    // environment variable as empty string.
-    taskBucketIsCNAME:              'true',
+    exchangePrefix:               'queue/v1/'
 
-    // Bucket to which schemas should be published
-    schemaBucket:                   'schemas.taskcluster.net',
+    reaper: {
+      interval:                   30,
+      errorLimit:                 5
+      startInSeparateProcess:     'false'
+    },
 
-    // Publish schemas to bucket on startup, this should default to false, only
-    // do this in the actual production server... Hence, set it by environment
-    // variable. Unset it `inorder` to set it false by environment variable.
-    publishSchemas:                 false
+    tasks: {
+      bucket:                     'tasks.taskcluster.net',
+      publicBaseUrl:              'http://tasks.taskcluster.net'
+    }
   },
 
-  // Server (HTTP) configuration
+
+  // Server configuration
   server: {
-    // Server hostname
-    hostname:                       'localhost',
+    // Public URL from which the server can be accessed (used for persona)
+    publicUrl:                      'http://auth.taskcluster.net',
 
-    // Port on which HTTP server is exposed, and port on which node will listen
-    // unless `$PORT` is specified.
-    port:                           3000,
-
-    // Cookie secret used to sign cookies, must be secret at deployment
-    cookieSecret:                   "Warn, if no secret is used on production"
-  },
+    // Port to listen for requests on
+    port:                           undefined
+  }
 
   // Database configuration
   database: {
     // Database connection string as anything://user:password@host:port/database
     connectionString:               'postgres://queue:secret@localhost:5432/queue_v1',
-
-    // Drop database table if they already exist, this is mainly useful for
-    // debugging when given as command-line argument: --database:dropTables
-    dropTables:                     false
   },
+
 
   // AMQP configuration as given to `amqp.createConnection`
   // See: https://github.com/postwait/node-amqp#connection-options-and-url
@@ -96,13 +45,19 @@ module.exports = {
     url:                            'amqp://guest:guest@localhost:5672'
   },
 
-  // AWS SDK configuration
+  // AWS SDK configuration for publication of schemas and references
   aws: {
+    // Access key id (typically configured using environment variables)
+    accessKeyId:                    undefined,
+
+    // Secret access key (typically configured using environment variables)
+    secretAccessKey:                undefined,
+
     // Default AWS region, this is where the S3 bucket lives
-    region:                       'us-west-2',
+    region:                         'us-west-2',
 
     // Lock API version to use the latest API from 2013, this is fuzzy locking,
     // but it does the trick...
-    apiVersion:                   '2014-01-01'
+    apiVersion:                     '2014-01-01'
   }
 };
