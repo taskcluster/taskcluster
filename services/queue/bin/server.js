@@ -1,102 +1,117 @@
-var debug = require('debug')('queue:server');
-var program = require('commander');
-var express = require('express');
-var path = require('path');
+#!/usr/bin/env node
+var base      = require('taskcluster-base');
+var v1        = require('../routes/api/v1');
+var path      = require('path');
+var debug     = require('debug')('queue:bin:server');
+var Promise   = require('promise');
+var exchanges = require('../queue/exchanges');
+var schema    = require('../queue/schema');
+var TaskStore = require('../queue/taskstore');
+var Tasks     = require('../queue/tasks');
 
-var Promise = require('promise');
-var AWS = require('aws-sdk-promise');
-var Bucket = require('../queue/bucket');
-var TasksStore = require('../queue/tasks_store');
-
-function launch(options) {
-  var nconf = require(__dirname + '/../config/' + program.config)();
-
-  require('../utils/spread-promise').patch();
-
-  var app = exports.app = express();
-  app.set('port', Number(process.env.PORT || nconf.get('server:port')));
-  app.set('nconf', nconf);
-
-  // task bucket
-  var s3 = new AWS.S3(nconf.get('aws'));
-
-  app.set(
-    'bucket',
-    new Bucket(
-      s3,
-      nconf.get('queue:taskBucket'), // bucket location
-      nconf.get('queue:taskBucketIsCNAME') ?
-        nconf.get('queue:taskBucket') :
-        null
-    )
-  );
-
-  // task database store
-  var knex = require('knex').initialize({
-    client: 'postgres',
-    connection: nconf.get('database:connectionString')
+/** Launch server */
+var launch = function(profile) {
+  // Load configuration
+  var cfg = base.config({
+    defaults:     require('../config/defaults'),
+    profile:      require('../config/' + profile),
+    envs: [
+      'amqp_url',
+      'database_connectionString',
+    ],
+    filename:     'taskcluster-queue'
   });
 
-  app.set('db', TasksStore(knex));
+  // Connect to task database store
+  var knex = require('knex').initialize({
+    client:       'postgres',
+    connection:   cfg.get('database:connectionString')
+  });
 
-  // routes
-  require('../routes/api/v1').mount(app, '/v1');
+  // Create database schema
+  var schemaCreated = schema.create(knex);
 
-  app.use(express.json());
-  app.use(app.router);
-
-  // Middleware for development
-  if ('development' == app.get('env')) {
-    app.use(express.errorHandler());
-  }
-  // validate
-  require('../utils/validate').setup();
-
-  // async setup stuff...
-  var eventsSetup = require('../queue/events').connect(nconf.get('amqp:url'));
-
-  var publishSchema = nconf.get('queue:publishSchema') ?
-    require('./utils/render-schema').publish() :
-    null;
-
-  var schemaSetup = require('../queue/schema').create(knex);
-
-  Promise.all([eventsSetup, publishSchema, schemaSetup]).
-    then(function(setup) {
-      // XXX: This looks ugly because we are mixing concerns here...
-      //      The events setup step should be its own channel with only the
-      //      exchange setup and then separately we can lazily connect to amqp
-      //      to send messages.
-      app.set('events', setup[0]);
-
-      // reaper to clean database every once and awhile
-      var reaper = require('../queue/reaper')(
-        nconf.get('queue:reaperInterval'),
-        app.get('db'),
-        app.get('events')
-      );
-
-      reaper.start();
-      app.set('reaper', reaper);
-
-      var server = require('http').createServer(app);
-      var listen = Promise.denodeify(server.listen.bind(server, app.get('port')));
-      return listen();
-    }).
-    then(function() {
-      debug('Express server listening on port ' + app.get('port'));
-      if (process.send) {
-        process.send({ready: true});
-      }
-    }).
-    catch(function(err) {
-      debug("Failed to start server, err: %s, as JSON: %j", err, err, err.stack);
-      // If we didn't launch the server we should crash
-      process.exit(1);
+  // Setup AMQP exchanges and create a publisher
+  // First create a validator and then publisher
+  var validator = null;
+  var publisher = null;
+  var publisherCreated = base.validator({
+    folder:           path.join(__dirname, '..', 'schemas'),
+    constants:        require('../schemas/constants'),
+    publish:          cfg.get('queue:publishMetaData') === 'true',
+    schemaPrefix:     'queue/v1/',
+    aws:              cfg.get('aws')
+  }).then(function(validator_) {
+    validator = validator_;
+    return exchanges.setup({
+      connectionString:   cfg.get('amqp:url'),
+      exchangePrefix:     cfg.get('queue:exchangePrefix'),
+      validator:          validator,
+      referencePrefix:    'queue/v1/exchanges.json',
+      publish:            cfg.get('queue:publishMetaData') === 'true'
     });
+  }).then(function(publisher_) {
+    publisher = publisher_;
+  });
+
+  // Create tasks access utility
+  var tasks = new Tasks({
+    aws:                cfg.get('aws'),
+    bucket:             cfg.get('queue:tasks:bucket'),
+    publicBaseUrl:      cfg.get('queue:tasks:publicBaseUrl')
+  });
+
+  // When: publisher, schema and validator is created, proceed
+  return Promise.all(
+    publisherCreated,
+    schemaCreated
+  ).then(function() {
+    // Create API router and publish reference if needed
+    return v1.setup({
+      context: {
+        config:         cfg,
+        bucket:         tasks,
+        store:          new TaskStore(knex),
+        publisher:      publisher,
+        validator:      validator
+      },
+      validator:        validator,
+      publish:          cfg.get('queue:publishMetaData') === 'true',
+      baseUrl:          cfg.get('server:publicUrl') + '/v1',
+      referencePrefix:  'queue/v1/api.json',
+      aws:              cfg.get('aws')
+    });
+  }).then(function(router) {
+    // Create app
+    var app = base.app({
+      port:           Number(process.env.PORT || cfg.get('server:port'))
+    });
+
+    // Mount API router
+    app.use('/v1', router);
+
+    // Create server
+    return app.createServer();
+  });
+};
+
+// If server.js is executed start the server
+if (!module.parent) {
+  // Find configuration profile
+  var profile = process.argv[2];
+  if (!profile) {
+    console.log("Usage: server.js [profile]")
+    console.error("ERROR: No configuration profile is provided");
+  }
+  // Launch with given profile
+  launch(profile).then(function() {
+    debug("Launched authentication server successfully");
+  }).catch(function(err) {
+    debug("Failed to start server, err: %s, as JSON: %j", err, err, err.stack);
+    // If we didn't launch the server we should crash
+    process.exit(1);
+  });
 }
 
-program.
-  command('server').
-  description('launch the queue server').
-  action(launch);
+// Export launch in-case anybody cares
+module.exports = launch;
