@@ -5,27 +5,53 @@ var slugid    = require('slugid');
 var validate  = require('../../utils/validate');
 var assert    = require('assert');
 
-/** API end-point for version v1/ */
-var api = module.exports = new utils.API({
-  limit:          '10mb'
+var base      = require('taskcluster-base');
+
+
+/** API end-point for version v1/
+ *
+ * In this API implementation we shall assume the following context:
+ * {
+ *   config:       // base.config
+ *   bucket:       // Bucket from queue/bucket.js
+ *   store:        // TaskStore from queue/taskstore.js
+ *   publisher:    // publisher from base.Exchanges
+ *   validator:    // base.validator
+ * }
+ */
+var api = new base.API({
+  title:        "Queue API Documentation",
+  description: [
+    "The queue, typically available at `queue.taskcluster.net`, is responsible",
+    "for accepting tasks and track their state as they are executed by",
+    "workers. In order ensure they are eventually resolved.",
+    "",
+    "This document describes the API end-points offered by the queue. These ",
+    "end-points targets the following audience:",
+    " * Schedulers, who create tasks to be executed,",
+    " * Workers, who execute tasks, and",
+    " * Tools, that wants to inspect the state of a task."
+  ].join('\n')
 });
+
+// Export api
+module.exports = api;
 
 /** Create tasks */
 api.declare({
   method:   'post',
   route:    '/task/new',
   name:     'createTask',
+  scopes:   undefined,  // Still no auth required
   input:    'http://schemas.taskcluster.net/queue/v1/task.json#',
   output:   'http://schemas.taskcluster.net/queue/v1/create-task-response.json#',
   title:    "Create new task",
-  desc: [
+  description: [
     "Create a new task, the `status` of the resulting JSON is a task status",
     "structure, you can find the `taskId` in this structure, enjoy."
   ].join('\n')
 }, function(req, res) {
-  var Bucket = req.app.get('bucket');
-  var Db = req.app.get('db');
-  var Events = req.app.get('events');
+  var ctx = this;
 
   // Create task identifier
   var taskId = slugid.v4();
@@ -48,21 +74,21 @@ api.declare({
   };
 
   // Upload to S3, notice that the schema is validated by middleware
-  return Bucket.put(
+  return ctx.bucket.put(
     taskId + '/task.json',
     req.body
   ).then(function() {
-    var taskInDb = Db.create(taskStatus);
-    var pendingEvent = Events.publish('task-pending', {
-      version:    '0.2.0',
-      status: taskStatus
+    var taskInDb = ctx.store.create(taskStatus);
+    var pendingEvent = ctx.publisher.taskPending({
+      status:     taskStatus
     });
 
-    return Promise.all([taskInDb, pendingEvent]);
-
+    return Promise.all(taskInDb, pendingEvent);
   }).then(function() {
     debug('new task', taskStatus);
-    return res.reply({ status: taskStatus });
+    return res.reply({
+      status:     taskStatus
+    });
   });
 });
 
@@ -71,10 +97,11 @@ api.declare({
   method:     'get',
   route:      '/define-tasks',
   name:       'defineTasks',
+  scopes:     undefined,  // Still no auth required
   input:      'http://schemas.taskcluster.net/queue/v1/define-tasks-request.json#',
   output:     'http://schemas.taskcluster.net/queue/v1/define-tasks-response.json#',
   title:      "Define Tasks",
-  desc: [
+  description: [
     "Request a number of `taskId`s and signed URL to which the tasks can be",
     "uploaded. The tasks will not be scheduled, to do this you must called the",
     "`/task/:taskId/schedule` API end-point.",
@@ -92,8 +119,7 @@ api.declare({
     "`/task/:taskId/schedule`."
   ].join('\n')
 }, function(req, res) {
-  var Bucket = req.app.get('bucket');
-  var Db = req.app.get('tasksDb');
+  var ctx = this;
 
   var tasksRequested = req.body.tasksRequested;
 
@@ -109,7 +135,7 @@ api.declare({
   while(signaturePromises.length < tasksRequested) {
     signaturePromises.push((function() {
       var taskId = slugid.v4();
-      return Bucket.signedPutUrl(
+      return ctx.bucket.signedPutUrl(
         taskId + '/task.json',
         timeout
       ).then(function(url) {
@@ -135,10 +161,11 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/schedule',
   name:       'scheduleTask',
+  scopes:     undefined,  // Still no auth required
   input:      undefined, // No input accepted
   output:     'http://schemas.taskcluster.net/queue/v1/task-schedule-response.json#',
   title:      "Schedule Defined Task",
-  desc: [
+  description: [
     "If you've uploaded task definitions to PUT URLs obtained from",
     "`/define-tasks`, then you can schedule the tasks using this method.",
     "This will down fetch and validate the task definition against the",
@@ -153,18 +180,16 @@ api.declare({
     "To reschedule a task previously resolved, use `/task/:taskId/rerun`."
   ].join('\n')
 }, function(req, res) {
-  var Db = req.app.get('db');
-  var Bucket = req.app.get('bucket');
-  var Events = req.app.get('events');
+  var ctx = this;
 
   // Get taskId from parameter
   var taskId = req.params.taskId;
 
-  var gotTask = Bucket.get(taskId + '/task.json');
-  var gotResolution = Bucket.get(taskId + '/resolution.json');
+  var gotTask       = ctx.bucket.get(taskId + '/task.json');
+  var gotResolution = ctx.bucket.get(taskId + '/resolution.json');
 
   // Load task status from database
-  var gotStatus = Db.findBySlug(taskId);
+  var gotStatus = ctx.store.findBySlug(taskId);
 
   // When state is loaded check what to do
   return Promise.all(
@@ -176,7 +201,7 @@ api.declare({
     if (task === null) {
       return res.json(400, {
         message:  "Task definition not uploaded!",
-        error:    "Couldn't fetch: " + Bucket.publicUrl(taskId + '/task.json')
+        error:    "Couldn't fetch: " + ctx.bucket.publicUrl(taskId + '/task.json')
       });
     }
 
@@ -225,11 +250,10 @@ api.declare({
     };
 
     // Insert into database
-    var addedToDatabase = Db.create(taskStatus);
+    var addedToDatabase = ctx.store.create(taskStatus);
 
     // Publish message through events
-    var eventPublished = Events.publish('task-pending', {
-      version:    '0.2.0',
+    var eventPublished = ctx.publisher.taskPending({
       status:     taskStatus
     });
 
@@ -248,27 +272,26 @@ api.declare({
 api.declare({
   method:   'get',
   route:    '/task/:taskId/status',
+  name:     'getTaskStatus',
+  scopes:   undefined,  // Still no auth required
   input:    undefined,  // No input is accepted
   output:   'http://schemas.taskcluster.net/queue/v1/task-status-response.json#',
   title:    "Get task status",
-  desc: [
+  description: [
     "Get task status structure from `taskId`"
   ].join('\n')
 }, function(req, res) {
-  var Db = req.app.get('db');
-
-  return Db.findBySlug(req.params.taskId).
-    then(function(taskStatus) {
-      if (!taskStatus) {
-        res.json(404, {
-          message: "Task not found or already resolved"
-        });
-      }
-
-      return res.reply({
-        status: taskStatus
+  return this.store.findBySlug(req.params.taskId).then(function(taskStatus) {
+    if (!taskStatus) {
+      res.json(404, {
+        message: "Task not found or already resolved"
       });
+    }
+
+    return res.reply({
+      status: taskStatus
     });
+  });
 });
 
 
@@ -277,17 +300,16 @@ api.declare({
   method:   'post',
   route:    '/task/:taskId/claim',
   name:     'claimTask',
+  scopes:   undefined,  // Still no auth required
   input:    'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#',
   output:   'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#',
   title:    "Claim task",
-  desc: [
+  description: [
     "Claim task, takes workerGroup, workerId and optionally runId as input",
     "returns task status structure, runId, resultPutUrl and logsPutUrl"
   ].join('\n')
 }, function(req, res) {
-  var Db = req.app.get('db');
-  var Bucket = req.app.get('bucket');
-  var Events = req.app.get('events');
+  var ctx = this;
 
   // Get input from request
   var workerGroup     = req.body.workerGroup;
@@ -298,7 +320,7 @@ api.declare({
   var taskStatus;
   var timeout;
 
-  return Db.findBySlug(taskId).then(function(status) {
+  return ctx.store.findBySlug(taskId).then(function(status) {
     taskStatus = status;
     timeout = taskStatus.timeout;
 
@@ -307,7 +329,7 @@ api.declare({
     takenUntil.setSeconds(takenUntil.getSeconds() + timeout);
 
     // Claim task without runId if this is a new claim
-    return Db.claim(taskId, takenUntil, {
+    return ctx.store.claim(taskId, takenUntil, {
       workerGroup:    workerGroup,
       workerId:       workerId,
       runId:          requestedRunId || undefined
@@ -325,24 +347,24 @@ api.declare({
     var eventSent = Promise.from(null);
     if (requestedRunId !== runId) {
       // Fire event
-      eventSent = Events.publish('task-running', {
-        version:      '0.2.0',
+      eventSent = ctx.publisher.taskRunning({
         workerGroup:  workerGroup,
         workerId:     workerId,
         runId:        runId,
-        logsUrl:      Bucket.publicUrl(taskId + '/runs/' + runId + '/logs.json'),
+        logsUrl:      ctx.bucket.publicUrl(taskId + '/runs/' + runId +
+                                           '/logs.json'),
         status:       taskStatus
       });
     }
 
     // Sign urls for the reply
-    var logsUrlSigned = Bucket.signedPutUrl(
+    var logsUrlSigned = ctx.bucket.signedPutUrl(
       taskId + '/runs/' + runId + '/logs.json',
       timeout
     );
 
     // Sign url for uploading task result
-    var resultUrlSigned = Bucket.signedPutUrl(
+    var resultUrlSigned = ctx.bucket.signedPutUrl(
       taskId + '/runs/' + runId + '/result.json',
       timeout
     );
@@ -374,16 +396,15 @@ api.declare({
   method:   'post',
   route:    '/task/:taskId/artifact-urls',
   name:     'requestArtifactUrls',
+  scopes:   undefined,  // Still no auth required
   input:    'http://schemas.taskcluster.net/queue/v1/artifact-url-request.json#',
   output:   'http://schemas.taskcluster.net/queue/v1/artifact-url-response.json#',
   title:    "Get artifact urls",
-  desc: [
+  description: [
     "Get artifact-urls for posted artifact urls..."
   ].join('\n')
 }, function(req, res) {
-
-  var Db = req.app.get('db');
-  var Bucket = req.app.get('bucket');
+  var ctx = this;
 
   // Get input from posted JSON
   var taskId        = req.params.taskId;
@@ -392,7 +413,7 @@ api.declare({
   var artifactList  = Object.keys(artifacts);
 
   // Load task
-  var taskLoaded = Db.findBySlug(taskId);
+  var taskLoaded = ctx.store.findBySlug(taskId);
 
   // Let urls timeout after 20 min
   // XXX: Timeouts for the run artifacts are a big race condition at best and a
@@ -408,7 +429,7 @@ api.declare({
 
   // Get signed urls
   var urlsSigned = artifactList.map(function(artifact) {
-    return Bucket.signedPutUrl(
+    return ctx.store.signedPutUrl(
       taskId + '/runs/' + runId + '/artifacts/' + artifact,
       timeout,
       artifacts[artifact].contentType
@@ -422,7 +443,7 @@ api.declare({
     artifactList.forEach(function(artifact, index) {
       urlMap[artifact] = {
         artifactPutUrl:       signedUrls[index],
-        artifactUrl:          Bucket.publicUrl(artifactPrefix + artifact),
+        artifactUrl:          ctx.store.publicUrl(artifactPrefix + artifact),
         contentType:          artifacts[artifact].contentType
       };
     });
@@ -453,16 +474,16 @@ api.declare({
   method:   'post',
   route:    '/task/:taskId/completed',
   name:     'reportTaskCompleted',
+  scopes:   undefined,  // Still no auth required
   input:    'http://schemas.taskcluster.net/queue/v1/task-completed-request.json#',
   output:   'http://schemas.taskcluster.net/queue/v1/task-completed-response.json#',
   title:    "Report Completed Task",
-  desc: [
+  description: [
     "Report task completed..."
   ].join('\n')
 }, function(req, res) {
-  var Db = req.app.get('db');
-  var Bucket = req.app.get('bucket');
-  var Events = req.app.get('events');
+  var ctx     = this;
+  var bucket  = this.bucket;
 
   // Get input from posted JSON
   var taskId        = req.params.taskId;
@@ -471,7 +492,7 @@ api.declare({
   var workerId      = req.body.workerId;
   var success       = req.body.success;
 
-  var taskCompleted = Db.completeTask(taskId);
+  var taskCompleted = ctx.store.completeTask(taskId);
 
   return taskCompleted.then(function(completed) {
     if (!completed) {
@@ -480,29 +501,28 @@ api.declare({
       });
       return;
     }
-    return Db.findBySlug(taskId).then(function(task) {
+    return ctx.store.findBySlug(taskId).then(function(task) {
       // Resolution to be uploaded to S3
       var resolution = {
         version:        '0.2.0',
         status:         task,
-        resultUrl:      Bucket.publicUrl(taskId + '/runs/' + runId + '/result.json'),
-        logsUrl:        Bucket.publicUrl(taskId + '/runs/' + runId + '/logs.json'),
+        resultUrl:      bucket.publicUrl(taskId + '/runs/' + runId + '/result.json'),
+        logsUrl:        bucket.publicUrl(taskId + '/runs/' + runId + '/logs.json'),
         runId:          runId,
         success:        success,
         workerId:       workerId,
         workerGroup:    workerGroup
       };
 
-      var uploadedToS3 = Bucket.put(
+      var uploadedToS3 = bucket.put(
         taskId + '/resolution.json',
         resolution
       );
 
-      var eventPublished = Events.publish('task-completed', {
-        version:        '0.2.0',
+      var eventPublished = ctx.publisher.taskCompleted({
         status:         task,
-        resultUrl:      Bucket.publicUrl(taskId + '/runs/' + runId + '/result.json'),
-        logsUrl:        Bucket.publicUrl(taskId + '/runs/' + runId + '/logs.json'),
+        resultUrl:      bucket.publicUrl(taskId + '/runs/' + runId + '/result.json'),
+        logsUrl:        bucket.publicUrl(taskId + '/runs/' + runId + '/logs.json'),
         runId:          runId,
         success:        success,
         workerId:       workerId,
@@ -526,10 +546,11 @@ api.declare({
   method:   'post',
   route:    '/claim-work/:provisionerId/:workerType',
   name:     'claimWork',
+  scopes:   undefined,  // Still no auth required
   input:    'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#',
   output:   'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#',
   title:    "Claim work for a worker",
-  desc: [
+  description: [
     "Claim work for a worker, returns information about an appropriate task",
     "claimed for the worker. Similar to `/v1/task/:taskId/claim`, which can be",
     "used to claim a specific task, or reclaim a specific task extending the",
@@ -542,9 +563,7 @@ api.declare({
     "your `workerType` claim work using `/v1/task/:taskId/claim`."
   ].join('\n')
 }, function(req, res) {
-  var Db = req.app.get('db');
-  var Bucket = req.app.get('bucket');
-  var Events = req.app.get('events');
+  var ctx = this;
 
   // Get input
   var provisionerId   = req.params.provisionerId;
@@ -559,7 +578,7 @@ api.declare({
   };
 
   // When loaded let's pick a pending task
-  return Db.findOne(query).then(function(taskStatus) {
+  return ctx.store.findOne(query).then(function(taskStatus) {
     // if there is no tasks available, report 204
     if (!taskStatus) {
       // Ask worker to sleep for 3 min before polling again
@@ -583,7 +602,7 @@ api.declare({
     takenUntil.setSeconds(takenUntil.getSeconds() + timeout);
 
     // Claim task without runId if this is a new claim
-    var taskClaimed = Db.claim(taskId, takenUntil, {
+    var taskClaimed = ctx.store.claim(taskId, takenUntil, {
       workerGroup:    workerGroup,
       workerId:       workerId,
       runId:          undefined
@@ -599,26 +618,26 @@ api.declare({
         return;
       }
 
-      return Db.findBySlug(taskId).then(function(taskStatus) {
+      return ctx.store.findBySlug(taskId).then(function(taskStatus) {
         // Load task status structure
         // Fire event
-        var eventSent = Events.publish('task-running', {
-          version:        '0.2.0',
+        var eventSent = ctx.publisher.taskRunning({
           workerGroup:    workerGroup,
           workerId:       workerId,
           runId:          runId,
-          logsUrl:        Bucket.publicUrl(taskId + '/runs/' + runId + '/logs.json'),
+          logsUrl:        ctx.bucket.publicUrl(taskId + '/runs/' + runId +
+                                               '/logs.json'),
           status:         taskStatus
         });
 
         // Sign urls for the reply
-        var logsUrlSigned = Bucket.signedPutUrl(
+        var logsUrlSigned = ctx.bucket.signedPutUrl(
           taskId + '/runs/' + runId + '/logs.json',
           timeout
         );
 
         // Sign url for uploading task result
-        var resultUrlSigned = Bucket.signedPutUrl(
+        var resultUrlSigned = ctx.bucket.signedPutUrl(
           taskId + '/runs/' + runId + '/result.json',
           timeout
         );
@@ -651,10 +670,11 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/rerun',
   name:       'rerunTask',
+  scopes:     undefined,  // Still no auth required
   input:      undefined, // No input accepted
   output:     'http://schemas.taskcluster.net/queue/v1/task-rerun-response.json#',
   title:      "Rerun a Resolved Task",
-  desc: [
+  description: [
     "This method _reruns_ a previously resolved task, even if it was",
     "_completed_. This is useful if your task completes unsuccessfully, and",
     "you just want to run it from scratch again. This will also reset the",
@@ -669,21 +689,20 @@ api.declare({
     "current task status."
   ].join('\n')
 }, function(req, res) {
-  var Db = req.app.get('db');
-  var Bucket = req.app.get('bucket');
-  var Events = req.app.get('events');
+  var ctx = this;
+  var bucket = this.bucket;
 
   // Get taskId from parameter
   var taskId = req.params.taskId;
 
   // Load task.json
-  var gotTask = Bucket.get(taskId + '/task.json');
+  var gotTask = bucket.get(taskId + '/task.json');
 
   // Check for resolution
   var gotResolution = Bucket.get(taskId + '/resolution.json');
 
   // Load task status from database
-  var gotStatus = Db.findBySlug(taskId);
+  var gotStatus = ctx.store.findBySlug(taskId);
 
   // When state is loaded check what to do
   return Promise.all(
@@ -694,8 +713,8 @@ api.declare({
     // Check that the task exists and have been scheduled before!
     if (!task) {
       return res.json(400, {
-        message:  "Task definition not uploaded and never scheuled!",
-        error:    "Couldn't fetch: " + Bucket.publicUrl(taskId + '/task.json')
+        message:  "Task definition not uploaded and never scheduled!",
+        error:    "Couldn't fetch: " + bucket.publicUrl(taskId + '/task.json')
       });
     }
 
@@ -721,7 +740,7 @@ api.declare({
       taskStatus.takenUntil  = (new Date(0)).toJSON();
 
       // Insert into database
-      taskStatusPending = Db.create(taskStatus).then(function() {
+      taskStatusPending = ctx.store.create(taskStatus).then(function() {
         return taskStatus;
       });
     } else if (taskStatus.state == 'running' ||
@@ -735,7 +754,7 @@ api.declare({
     } else {
       debug('Rerun task');
       // Rerun the task again
-      taskStatusPending = Db.rerunTask(taskId, task.retries);
+      taskStatusPending = ctx.store.rerunTask(taskId, task.retries);
     }
 
     // When task is pending again
@@ -748,8 +767,7 @@ api.declare({
       });
 
       // Publish message through events
-      var eventPublished = Events.publish('task-pending', {
-        version:    '0.2.0',
+      var eventPublished = ctx.publisher.taskPending({
         status:     taskStatus
       });
 
@@ -764,21 +782,21 @@ api.declare({
   method:   'get',
   route:    '/pending-tasks/:provisionerId',
   name:     'getPendingTasks',
+  scopes:   undefined,  // Still no auth required
   input:    undefined,  // TODO: define schema later
   output:   undefined,  // TODO: define schema later
   title:    "Fetch pending tasks for provisioner",
-  desc: [
+  description: [
     "Documented later...",
     "",
     "**Warning** this api end-point is **not stable**."
   ].join('\n')
 }, function(req, res) {
-  var Db = req.app.get('db');
   // Get input
   var provisionerId  = req.params.provisionerId;
 
   // Load pending tasks
-  var taskLoaded = Db.findAll({
+  var taskLoaded = this.store.findAll({
     provisionerId: provisionerId
   });
 
@@ -795,10 +813,11 @@ api.declare({
   method:   'get',
   route:    '/settings/amqp-connection-string',
   name:     'getAMQPConnectionString',
+  scopes:   undefined,  // Still no auth required
   input:    undefined,  // No input accepted
   output:   'http://schemas.taskcluster.net/queue/v1/amqp-connection-string-response.json#',
   title:    "Fetch AMQP Connection String",
-  desc: [
+  description: [
     "Most hosted AMQP services requires us to specify a virtual host, ",
     "so hardcoding the AMQP connection string into various services would be ",
     "a bad solution. Hence, we offer all authorized queue consumers to fetch ",
@@ -814,6 +833,6 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   return res.reply({
-    url:  req.app.get('nconf').get('amqp:url')
+    url:  this.config.get('amqp:url')
   });
 });
