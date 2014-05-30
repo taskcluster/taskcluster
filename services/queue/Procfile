@@ -1,1 +1,1 @@
-web: ./bin/queue -c production server
+web: node bin/server.js production
