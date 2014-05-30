@@ -1,4 +1,47 @@
 module.exports = {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // AMQP configuration as given to `amqp.createConnection`
+  // See: https://github.com/postwait/node-amqp#connection-options-and-url
+  // As we'll be offering this through an API end-point this should really only
+  // be url.
+  amqp: {
+    // URL for AMQP setup formatted as amqp://user:password@host:port/vhost
+    url:                            'amqp://guest:guest@localhost:5672'
+  },
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module.exports = {
   // TaskCluster Queue configuration
   queue: {
     reaperInterval: 1000 * 15,
