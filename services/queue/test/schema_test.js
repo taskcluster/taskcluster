@@ -1,4 +1,4 @@
-var base        = require('taskcluster-sbase');
+var base        = require('taskcluster-base');
 var path        = require('path');
 
 suite('schemas', function() {
