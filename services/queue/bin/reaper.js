@@ -77,7 +77,7 @@ if (!module.parent) {
   }
   // Launch with given profile
   launch(profile).then(function() {
-    debug("Launched authentication reaper successfully");
+    debug("Launched reaper successfully");
   }).catch(function(err) {
     debug("Failed to start reaper, err: %s, as JSON: %j", err, err, err.stack);
     // If we didn't launch the reaper we should crash
