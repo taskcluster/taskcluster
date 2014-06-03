@@ -1,6 +1,6 @@
 module.exports = {
   queue: {
-    publishMetaData:              'false'
+    publishMetaData:              'false',
     reaper: {
       // Let's not wait too long for reaping during tests
       interval:                   10,

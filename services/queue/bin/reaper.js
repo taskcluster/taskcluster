@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-var base    = require('taskcluster-base');
-var path    = require('path');
-var debug   = require('debug')('queue:bin:reaper');
-var Promise = require('promise');
+var base      = require('taskcluster-base');
+var path      = require('path');
+var debug     = require('debug')('queue:bin:reaper');
+var Promise   = require('promise');
 var exchanges = require('../queue/exchanges');
 var schema    = require('../queue/schema');
 var TaskStore = require('../queue/taskstore');
+var Knex      = require('knex');
+
 
 /** Launch server */
 var launch = function(profile) {
@@ -24,7 +26,7 @@ var launch = function(profile) {
   });
 
   // Connect to task database store
-  var knex = require('knex').initialize({
+  var knex = Knex({
     client:       'postgres',
     connection:   cfg.get('database:connectionString')
   });
