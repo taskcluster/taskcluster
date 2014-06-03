@@ -1,7 +1,7 @@
 var base        = require('taskcluster-base');
 var path        = require('path');
 
-suite('schemas', function() {
+suite('validate', function() {
   // Run test cases using schemas testing utility from taskcluster-base
   base.testing.schemas({
     validator: {
@@ -13,19 +13,19 @@ suite('schemas', function() {
     cases: [
       {
         schema:   'queue/v1/task-failed-message.json#',
-        path:     'validate_test/task-failed-with-run-message.json',
+        path:     'task-failed-with-run-message.json',
         success:  true,
       }, {
         schema:   'queue/v1/task-failed-message.json#',
-        path:     'validate_test/task-failed-message.json',
+        path:     'task-failed-message.json',
         success:  true,
       }, {
         schema:   'queue/v1/task-pending-message.json#',
-        path:     'validate_test/task-pending-message.json',
+        path:     'task-pending-message.json',
         success:  true,
       }, {
         schema:   'queue/v1/task-status.json#',
-        path:     'validate_test/task-status.json',
+        path:     'task-status.json',
         success:  true,
       }
     ]
