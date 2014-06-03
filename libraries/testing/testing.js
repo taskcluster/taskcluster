@@ -119,15 +119,21 @@ exports.LocalApp = LocalApp;
  *   validator: {}  // options for base.validator
  *   cases: [
  *     {
- *       schema:    'http://...'      // JSON schema identifier to test against
+ *       schema:    '...json'         // JSON schema identifier to test against
  *       path:      'test-file.json', // Path to test file
  *       success:   true || false     // Is test expected to fail
  *     }
  *   ],
  *   basePath:      path.join(__dirname, 'validate')  // basePath test cases
+ *   schemaPrefix:  'http://'         // Prefix for schema identifiers
  * }
  */
 var schemas = function(options) {
+  _.defaults(options, {
+    schemaPrefix:     ''  // Defaults to no schema prefix
+  });
+
+  // Validate options
   assert(options.validator, "Options must be given for validator");
   assert(options.cases instanceof Array, "Array of cases must be given");
 
@@ -138,6 +144,7 @@ var schemas = function(options) {
     });
   });
 
+  // Create test cases
   options.cases.forEach(function(testCase) {
     test(testCase.path, function() {
       // Load test data
@@ -149,8 +156,11 @@ var schemas = function(options) {
       var data = fs.readFileSync(filePath, {encoding: 'utf-8'});
       var json = JSON.parse(data);
 
+      // Find schema
+      var schema = options.schemaPrefix + testCase.schema;
+
       // Validate json
-      var errors = validator.check(json, testCase.schema);
+      var errors = validator.check(json, schema);
 
       // Test errors
       if(testCase.success) {
