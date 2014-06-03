@@ -2,28 +2,37 @@ module.exports = {
   // TaskCluster Queue configuration
   queue: {
     // Publish references and schemas
-    publishMetaData:              'false'
+    publishMetaData:              'false',
 
+    // Prefix for exchanges declared
+    exchangePrefix:               'queue/v1/',
 
-    exchangePrefix:               'queue/v1/'
-
+    // Settings for task reaper, note that this must be started as a separate
+    // process bin/reaper.js run the reaper
     reaper: {
-      interval:                   30,
+      // Timeóut between dealing with timed tasks
+      interval:                   180,
+
+      // Number of times reaping is allowed to fail in a row, before the process
+      // crashes as sign if illness
       errorLimit:                 5
-      startInSeparateProcess:     'false'
     },
 
+    // Configuration of task storage
     tasks: {
+      // S3 bucket to store tasks in
       bucket:                     'tasks.taskcluster.net',
+
+      // Public base url for keys in the bucket, if cnamed, otherwise, leave it
+      // null, and bucket URL will be used.
       publicBaseUrl:              'http://tasks.taskcluster.net'
     }
   },
 
-
   // Server configuration
   server: {
     // Public URL from which the server can be accessed (used for persona)
-    publicUrl:                      'http://auth.taskcluster.net',
+    publicUrl:                      'http://queue.taskcluster.net',
 
     // Port to listen for requests on
     port:                           undefined
@@ -31,18 +40,15 @@ module.exports = {
 
   // Database configuration
   database: {
-    // Database connection string as anything://user:password@host:port/database
-    connectionString:               'postgres://queue:secret@localhost:5432/queue_v1',
+    // Database connection string as pg://user:password@host:port/database
+    connectionString:               undefined
   },
 
 
-  // AMQP configuration as given to `amqp.createConnection`
-  // See: https://github.com/postwait/node-amqp#connection-options-and-url
-  // As we'll be offering this through an API end-point this should really only
-  // be url.
+  // AMQP configuration
   amqp: {
     // URL for AMQP setup formatted as amqp://user:password@host:port/vhost
-    url:                            'amqp://guest:guest@localhost:5672'
+    url:                            undefined
   },
 
   // AWS SDK configuration for publication of schemas and references

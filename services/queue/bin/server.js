@@ -18,6 +18,9 @@ var launch = function(profile) {
     envs: [
       'amqp_url',
       'database_connectionString',
+      'queue_publishMetaData',
+      'aws_accessKeyId',
+      'aws_secretAccessKey'
     ],
     filename:     'taskcluster-queue'
   });

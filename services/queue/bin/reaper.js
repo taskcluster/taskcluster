@@ -16,6 +16,9 @@ var launch = function(profile) {
     envs: [
       'amqp_url',
       'database_connectionString',
+      'queue_publishMetaData',
+      'aws_accessKeyId',
+      'aws_secretAccessKey'
     ],
     filename:     'taskcluster-queue'
   });
@@ -56,7 +59,7 @@ var launch = function(profile) {
       errorLimit:   Number(cfg.get('queue:reaper:errorLimit')),
       store:        new TaskStore(knex),
       publisher:    publisher,
-      start:        cfg.get('queue:reaper:startInSeparateProcess') === 'true'
+      start:        true
     });
 
     // Return started reaper process
