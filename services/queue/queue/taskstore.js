@@ -151,7 +151,7 @@ TaskStore.prototype.findBySlug = decorateDecodeSlug(function(taskId) {
 });
 
 /** Claim task given `taskId, `takenUntil` and `run` */
-TaskStore.prototype.claim: function(slug, takenUntil, run) {
+TaskStore.prototype.claim = function(slug, takenUntil, run) {
   debug('claim', slug, 'until', takenUntil);
   if (run.runId) {
     return this.refreshClaim(slug, takenUntil, run);
@@ -289,7 +289,7 @@ TaskStore.prototype.findAndUpdateFailed = function() {
     .update({
       state:    'failed',
       reason:   'retries-exhausted'
-    }).
+    })
     .where({
       state:    'running',
       retries:  0

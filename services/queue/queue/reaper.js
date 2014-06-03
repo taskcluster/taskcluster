@@ -2,6 +2,7 @@ var events  = require('events');
 var util    = require('util');
 var Promise = require('promise');
 var _       = require('lodash');
+var assert  = require('assert');
 var debug   = require('debug')('queue:reaper');
 
 /**
