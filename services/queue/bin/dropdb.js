@@ -2,6 +2,8 @@
 var base    = require('taskcluster-base');
 var debug   = require('debug')('queue:bin:dropdb');
 var schema  = require('../queue/schema');
+var Promise = require('promise');
+var Knex    = require('knex');
 
 /** Drop database */
 var dropdb = function(profile) {
@@ -16,14 +18,16 @@ var dropdb = function(profile) {
   });
 
   // Connect to task database store
-  var knex = require('knex').initialize({
+  var knex = Knex({
     client:       'postgres',
     connection:   cfg.get('database:connectionString')
   });
 
   // Destroy the database
   return schema.destroy(knex).then(function() {
-    // TODO Destroy knex connection
+    return new Promise(function(accept) {
+      knex.client.pool.destroy(accept);
+    });
   });
 };
 
@@ -34,6 +38,7 @@ if (!module.parent) {
   if (!profile) {
     console.log("Usage: dropdb.js [profile]")
     console.error("ERROR: No configuration profile is provided");
+    process.exit(1);
   }
   // dropdb with given profile
   dropdb(profile).then(function() {

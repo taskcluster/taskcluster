@@ -36,7 +36,7 @@ module.exports = {
 
     // Port to listen for requests on
     port:                           undefined
-  }
+  },
 
   // Database configuration
   database: {
