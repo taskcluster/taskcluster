@@ -7,7 +7,7 @@ var exchanges = require('../queue/exchanges');
 var schema    = require('../queue/schema');
 var TaskStore = require('../queue/taskstore');
 var Knex      = require('knex');
-
+var Reaper    = require('../queue/reaper');
 
 /** Launch server */
 var launch = function(profile) {
