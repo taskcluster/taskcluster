@@ -47,21 +47,21 @@ var commonRoutingKey = [
   }, {
     name:             'runId',
     summary:          "`runId` of latest run for the task, " +
-                      "`_` if no run is exists for the task."
+                      "`_` if no run is exists for the task.",
     multipleWords:    false,
     required:         false,
     maxSize:          3
   }, {
     name:             'workerGroup',
     summary:          "`workerGroup` of latest run for the task, " +
-                      "`_` if no run is exists for the task."
+                      "`_` if no run is exists for the task.",
     multipleWords:    false,
     required:         false,
     maxSize:          22
   }, {
     name:             'workerId',
     summary:          "`workerId` of latest run for the task, " +
-                      "`_` if no run is exists for the task."
+                      "`_` if no run is exists for the task.",
     multipleWords:    false,
     required:         false,
     maxSize:          22
@@ -120,7 +120,7 @@ exchanges.declare({
     "significantly without affecting general responsiveness."
   ].join('\n'),
   routingKey:         commonRoutingKey,
-  schema: 'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#'
+  schema: 'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder
 });
@@ -134,7 +134,7 @@ exchanges.declare({
   description: [
     "Whenever a task is claimed by a worker, a run is started on the worker,",
     "and a message is posted on this exchange.",
-    ""
+    "",
     "**Notice**, that the `logsUrl` may return `404` during the run, but by",
     "the end of the run the `logsUrl` will be valid. But this may not have",
     "happened when this message is posted.",
@@ -144,7 +144,7 @@ exchanges.declare({
     "minutes. This is useful if the worker supports live logging."
   ].join('\n'),
   routingKey:         commonRoutingKey,
-  schema: 'http://schemas.taskcluster.net/queue/v1/task-running-message.json#'
+  schema: 'http://schemas.taskcluster.net/queue/v1/task-running-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder
 });
@@ -166,7 +166,7 @@ exchanges.declare({
     "details on the format of the file available through `resultUrl`."
   ].join('\n'),
   routingKey:         commonRoutingKey,
-  schema: 'http://schemas.taskcluster.net/queue/v1/task-completed-message.json#'
+  schema: 'http://schemas.taskcluster.net/queue/v1/task-completed-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder
 });
@@ -187,7 +187,7 @@ exchanges.declare({
     "to the `reason` property."
   ].join('\n'),
   routingKey:         commonRoutingKey,
-  schema: 'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#'
+  schema: 'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder
 });
