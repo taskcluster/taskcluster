@@ -1,0 +1,40 @@
+var base  = require('../../');
+var debug = require('debug')('base:test:bin:app.js');
+
+/** Global State where we count requests */
+var global_state = 0;
+
+/** Launch a simple test app */
+var launch = function() {
+  // Create a simple app we can use for testing
+  var app = base.app({
+    port:     62827
+  });
+
+  // Respond 'Hello World' for /test
+  app.get('/test', function(req, res) {
+    res.send(200, "Hello World");
+  });
+
+  // Respond request count in process for /request-count
+  app.get('/request-count', function(req, res) {
+    global_state += 1;
+    res.send(200, "Count: " + global_state);
+  });
+
+  // Create a server
+  return app.createServer();
+};
+
+// If is executed run launch
+if (!module.parent) {
+  launch().then(function() {
+    debug("Launched app.js successfully");
+  }).catch(function(err) {
+    debug("Failed to start app.js, err: %s, as JSON: %j", err, err, err.stack);
+    process.exit(1);
+  });
+}
+
+// Export launch in-case anybody cares
+module.exports = launch;
