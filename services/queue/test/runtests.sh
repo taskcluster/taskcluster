@@ -2,7 +2,7 @@
 # USAGE: Run this file using `npm test` (must run from repository root)
 
 mocha                             \
-  test/schema_test.js
+  test/validate_test.js
   #test/queue/events_test.js       \
   #test/queue/tasks_store_test.js  \
   ;

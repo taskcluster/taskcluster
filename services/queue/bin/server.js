@@ -8,6 +8,7 @@ var exchanges = require('../queue/exchanges');
 var schema    = require('../queue/schema');
 var TaskStore = require('../queue/taskstore');
 var Tasks     = require('../queue/tasks');
+var Knex      = require('knex');
 
 /** Launch server */
 var launch = function(profile) {
@@ -26,7 +27,7 @@ var launch = function(profile) {
   });
 
   // Connect to task database store
-  var knex = require('knex').initialize({
+  var knex = Knex({
     client:       'postgres',
     connection:   cfg.get('database:connectionString')
   });
