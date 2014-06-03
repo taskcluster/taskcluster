@@ -67,7 +67,7 @@ var launch = function(profile) {
   });
 };
 
-// If reaper.js is executed start the reaper
+// If reaper.js is executed call launch
 if (!module.parent) {
   // Find configuration profile
   var profile = process.argv[2];
