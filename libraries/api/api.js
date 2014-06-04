@@ -21,7 +21,6 @@ var Validator   = require('./validator').Validator;
  *   output:   'http://schemas...output-schema.json',  // optional, null if no output
  *   skipInputValidation:    true,                     // defaults to false
  *   skipOutputValidation:   true,                     // defaults to false
- *   validator:              new base.validator()      // JSON schema validator
  * }
  *
  * This validates body against the schema given in `options.input` and returns
@@ -31,11 +30,11 @@ var Validator   = require('./validator').Validator;
  * Handlers may output errors using `req.json`, as `req.reply` will validate
  * against schema and always returns a 200 OK reply.
  */
-var schema = function(options) {
+var schema = function(validator, options) {
   return function(req, res, next) {
     // If input schema is defined we need to validate the input
     if (options.input !== undefined) {
-      var errors = options.validator.check(req.body, options.input);
+      var errors = validator.check(req.body, options.input);
       if (errors) {
         debug("Request payload for %s didn't follow schema %s",
               req.url, options.input);
@@ -52,7 +51,7 @@ var schema = function(options) {
       // If we're supposed to validate outgoing messages and output schema is
       // defined, then we have to validate against it...
       if(options.output !== undefined) {
-        var errors = options.validator.check(json, options.output);
+        var errors = validator.check(json, options.output);
         if (errors) {
           res.json(500, {
             'message':  "Internal Server Error",
@@ -472,7 +471,7 @@ API.prototype.router = function(options) {
       entry.route,
       // Middleware
       authenticate(options.nonceManager, options.clientLoader, entry),
-      schema(entry),
+      schema(options.validator, entry),
       handle(entry.handler, options.context)
     );
   });
