@@ -27,7 +27,8 @@ var Tasks = function(options) {
   }, options.aws || {}));
 
   // Set publicBaseUrl
-  this._publicBaseUrl = options.publicBaseUrl || this._s3.endpoint.href;
+  this._publicBaseUrl = options.publicBaseUrl ||
+                        urljoin(this._s3.endpoint.href, options.bucket);
 };
 
 /** Get object from path (returns a promise) */
