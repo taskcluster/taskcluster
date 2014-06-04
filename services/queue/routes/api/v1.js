@@ -434,7 +434,7 @@ api.declare({
 
   // Get signed urls
   var urlsSigned = artifactList.map(function(artifact) {
-    return ctx.store.signedPutUrl(
+    return ctx.bucket.signedPutUrl(
       taskId + '/runs/' + runId + '/artifacts/' + artifact,
       timeout,
       artifacts[artifact].contentType
@@ -448,7 +448,7 @@ api.declare({
     artifactList.forEach(function(artifact, index) {
       urlMap[artifact] = {
         artifactPutUrl:       signedUrls[index],
-        artifactUrl:          ctx.store.publicUrl(artifactPrefix + artifact),
+        artifactUrl:          ctx.bucket.publicUrl(artifactPrefix + artifact),
         contentType:          artifacts[artifact].contentType
       };
     });
