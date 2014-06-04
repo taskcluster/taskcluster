@@ -8,6 +8,7 @@ var util          = require('util');
 var base          = require('./');
 var fs            = require('fs');
 var path          = require('path');
+var uuid          = require('uuid');
 
 
 /**
@@ -51,9 +52,14 @@ util.inherits(LocalApp, events.EventEmitter);
 LocalApp.prototype.launch = function() {
   var that = this;
   return new Promise(function(accept, reject) {
+    // Generate app instance id so we can start multiple subprocesses
+    var appId = uuid.v4();
+
     // Create subprocess
     that.process = childProcess.fork(that.options.command, that.options.args, {
-      env:      process.env,
+      env:      _.defaults({
+        LOCAL_APP_IDENTIFIER: appId
+      }, process.env),
       silent:   false,
       cwd:      that.options.cwd
     });
@@ -63,7 +69,7 @@ LocalApp.prototype.launch = function() {
 
     // Message handler
     var messageHandler = function(message) {
-      if (!message.ready) return;
+      if (!message.ready || message.appId !== appId) return;
 
       // Stop listening messages
       that.process.removeListener('message', messageHandler);
@@ -75,7 +81,7 @@ LocalApp.prototype.launch = function() {
       that.process.once('exit', that.onEarlyExit);
 
       // Accept that the server started correctly
-      debug("----------- LocalQueue Running --------------", that.options.name);
+      debug("----------- %s Running --------------", that.options.name);
       accept('http://localhost:' + message.port + that.options.baseUrlPath);
     };
 
