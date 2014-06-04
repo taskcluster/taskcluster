@@ -40,6 +40,12 @@ suite("Exchanges.Publisher", function() {
           multipleWords:  false,
           required:       false,
           maxSize:        16
+        }, {
+          name:           'index',
+          summary:        "index of something",
+          multipleWords:  false,
+          required:       false,
+          maxSize:        3
         }
       ],
       schema:             'http://localhost:1203/exchange-test-schema.json#',
@@ -75,6 +81,18 @@ suite("Exchanges.Publisher", function() {
         testId:           "myid",
         taskRoutingKey:   "some.string.with.dots",
         state:            undefined // Optional
+      });
+    });
+  });
+
+  // Test that we can publish messages
+  test("publish message w. number in routing key", function() {
+    return exchanges.connect().then(function(publisher) {
+      return publisher.testExchange({someString: "My message"}, {
+        testId:           "myid",
+        taskRoutingKey:   "some.string.with.dots",
+        state:            undefined, // Optional
+        index:            15
       });
     });
   });
