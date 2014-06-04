@@ -1,22 +1,30 @@
 suite('/task/:taskId/artifact-urls', function() {
   var debug       = require('debug')('post_task_test');
-  var LocalQueue  = require('../localqueue');
   var assert      = require('assert');
   var Promise     = require('promise');
   var request     = require('superagent-promise');
-  var nconf       = require('../../config/test')();
+  var path        = require('path');
+  var base        = require('taskcluster-base');
 
-  // Queue base URL
-  var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
-                     nconf.get('server:port');
-  var queue = null;
-  setup(function() {
-    queue = new LocalQueue();
-    return queue.launch();
+  var server = new base.testing.LocalApp({
+    command:      path.join(__dirname, '..', '..', 'bin', 'server.js'),
+    args:         ['test'],
+    name:         'server.js',
+    baseUrlPath:  '/v1'
   });
 
+  // Setup server
+  var baseUrl = null;
+  setup(function() {
+    // Launch server
+    return server.launch().then(function(baseUrl_) {
+      baseUrl = baseUrl_;
+    });
+  });
+
+  // Shutdown server
   teardown(function() {
-    return queue.terminate();
+    return server.terminate();
   });
 
   // first we need a task to actually post artifact to
@@ -51,7 +59,7 @@ suite('/task/:taskId/artifact-urls', function() {
     };
 
     // Post request to server
-    return request.post(baseUrl + '/v1/task/new').
+    return request.post(baseUrl + '/task/new').
       send(task).
       end().
       then(function(res) {
@@ -59,7 +67,7 @@ suite('/task/:taskId/artifact-urls', function() {
       }).
       then(function() {
         return request.
-          post(baseUrl + '/v1/task/' + taskId + '/claim').
+          post(baseUrl + '/task/' + taskId + '/claim').
           send({
             workerGroup: 'workerGroup',
             workerId: 'workerId'
@@ -88,7 +96,7 @@ suite('/task/:taskId/artifact-urls', function() {
     };
 
 
-    var url = baseUrl + '/v1/task/' + taskId + '/artifact-urls';
+    var url = baseUrl + '/task/' + taskId + '/artifact-urls';
     var artifactRequest = request.post(url).
       send(artifactRequest).
       end().

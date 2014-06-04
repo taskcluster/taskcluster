@@ -1,22 +1,30 @@
 suite('Post-Task Tests', function() {
-  var LocalQueue  = require('../localqueue');
   var debug       = require('debug')('post_task_test');
   var assert      = require('assert');
   var Promise     = require('promise');
   var request     = require('superagent-promise');
-  var nconf       = require('../../config/test')();
+  var path        = require('path');
+  var base        = require('taskcluster-base');
 
-  // Queue base URL
-  var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
-                     nconf.get('server:port');
-  var queue = null;
-  setup(function() {
-    queue = new LocalQueue();
-    return queue.launch();
+  var server = new base.testing.LocalApp({
+    command:      path.join(__dirname, '..', '..', 'bin', 'server.js'),
+    args:         ['test'],
+    name:         'server.js',
+    baseUrlPath:  '/v1'
   });
 
+  // Setup server
+  var baseUrl = null;
+  setup(function() {
+    // Launch server
+    return server.launch().then(function(baseUrl_) {
+      baseUrl = baseUrl_;
+    });
+  });
+
+  // Shutdown server
   teardown(function() {
-    return queue.terminate();
+    return server.terminate();
   });
 
   /** Test task publication */
@@ -50,7 +58,7 @@ suite('Post-Task Tests', function() {
 
     // Post request to server
     debug("Posting task/new to server");
-    return request.post(baseUrl + '/v1/task/new').
+    return request.post(baseUrl + '/task/new').
       send(task).
       end().
       then(function(res) {
@@ -58,7 +66,7 @@ suite('Post-Task Tests', function() {
         debug("Server replied: %j", res.body);
 
         var taskId = res.body.status.taskId;
-        return request.get(baseUrl + '/v1/task/' + taskId + '/status').end();
+        return request.get(baseUrl + '/task/' + taskId + '/status').end();
       }).
       then(function(res) {
         var status = res.body.status;
@@ -80,7 +88,7 @@ suite('Post-Task Tests', function() {
 
     // Post request to server
     debug("Posting task/new to server");
-    var submit_task = request.post(baseUrl + '/v1/task/new').send({
+    var submit_task = request.post(baseUrl + '/task/new').send({
       version:          '0.0.0',  // version 0.0.0 is invalid
       provisionerId:    'jonasfj-provisioner',
       workerType:       'my-ami',
@@ -102,6 +110,7 @@ suite('Post-Task Tests', function() {
       }
     }).end();
     return submit_task.then(function(res) {
+      assert(res.status === 400, "Rejected by validation");
       assert(!res.ok, "Validation should have rejected this task");
       debug("Server replied: %j", res.body);
     });
