@@ -1,22 +1,33 @@
 suite('claim timeouts', function() {
   var debug       = require('debug')('test:api:claim');
-  var LocalQueue  = require('../localqueue');
   var assert      = require('assert');
   var Promise     = require('promise');
   var request     = require('superagent-promise');
-  var nconf       = require('../../config/test')();
+  var path        = require('path');
+  var base        = require('taskcluster-base');
+  var dropdb      = require('../../bin/dropdb');
 
-  // Queue base URL
-  var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
-                     nconf.get('server:port');
-  var queue = null;
-  setup(function() {
-    queue = new LocalQueue();
-    return queue.launch();
+  var server = new base.testing.LocalApp({
+    command:      path.join(__dirname, '..', '..', 'bin', 'server.js'),
+    args:         ['test'],
+    name:         'server.js',
+    baseUrlPath:  '/v1'
   });
 
+  // Setup server
+  var baseUrl = null;
+  setup(function() {
+    return dropdb('test').then(function() {
+      // Launch server
+      return server.launch().then(function(baseUrl_) {
+        baseUrl = baseUrl_;
+      });
+    });
+  });
+
+  // Shutdown server
   teardown(function() {
-    return queue.terminate();
+    return server.terminate();
   });
 
   // break all rules that have ever existed...
@@ -60,7 +71,7 @@ suite('claim timeouts', function() {
 
     var status;
     setup(function() {
-      return request.post(baseUrl + '/v1/task/new').
+      return request.post(baseUrl + '/task/new').
         send(task).
         end().
         then(function(res) {
@@ -72,7 +83,7 @@ suite('claim timeouts', function() {
     });
 
     function claim(body) {
-      return request.post(baseUrl + '/v1/task/' + status.taskId + '/claim').
+      return request.post(baseUrl + '/task/' + status.taskId + '/claim').
         send(body).
         end();
     }

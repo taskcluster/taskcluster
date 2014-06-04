@@ -5,6 +5,7 @@ suite('Post-Task Tests', function() {
   var request     = require('superagent-promise');
   var path        = require('path');
   var base        = require('taskcluster-base');
+  var dropdb      = require('../../bin/dropdb');
 
   var server = new base.testing.LocalApp({
     command:      path.join(__dirname, '..', '..', 'bin', 'server.js'),
@@ -16,9 +17,11 @@ suite('Post-Task Tests', function() {
   // Setup server
   var baseUrl = null;
   setup(function() {
-    // Launch server
-    return server.launch().then(function(baseUrl_) {
-      baseUrl = baseUrl_;
+    return dropdb('test').then(function() {
+      // Launch server
+      return server.launch().then(function(baseUrl_) {
+        baseUrl = baseUrl_;
+      });
     });
   });
 
