@@ -12,6 +12,11 @@ module.exports = {
       // Use the test garbage bucket
       bucket:                     'test-bucket-for-any-garbage',
       publicBaseUrl:              null
+    },
+
+    credentials: {
+      clientId:                   'zIroSzcvRPezmco_cecVmA',
+      accessToken:                'Rj7z_GDMSaKWGadgs-je1Am7z5Q4zuQgOj6AZa0wzSSgAIkKQpB1RTG328W1Ls6WTA'
     }
   },
 
