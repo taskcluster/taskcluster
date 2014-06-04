@@ -24,7 +24,7 @@ var Tasks = function(options) {
     params: {
       Bucket:       options.bucket
     }
-  }, options.aws || {});
+  }, options.aws || {}));
 
   // Set publicBaseUrl
   this._publicBaseUrl = options.publicBaseUrl || this._s3.endpoint.href;
