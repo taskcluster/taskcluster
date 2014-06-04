@@ -7,6 +7,7 @@ mocha                           \
   test/validator_test.js        \
   test/api/publish_test.js      \
   test/api/auth_test.js         \
+  test/api/validate_test.js     \
   test/app_test.js              \
   test/exchanges_test.js        \
   test/publisher_test.js        \
