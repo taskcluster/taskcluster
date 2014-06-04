@@ -1,1 +1,2 @@
 .vagrant/
+/taskcluster-queue.conf.json

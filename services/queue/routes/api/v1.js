@@ -194,7 +194,11 @@ api.declare({
     gotTask,
     gotResolution,
     gotStatus
-  ).spread(function(task, resolution, taskStatus) {
+  ).then(function(values) {
+    var task        = values.shift();
+    var resolution  = values.shift();
+    var taskStatus  = values.shift();
+
     // If task wasn't present on S3 then that is a problem too
     if (task === null) {
       return res.json(400, {
@@ -371,7 +375,10 @@ api.declare({
     var replySent = Promise.all(
       logsUrlSigned,
       resultUrlSigned
-    ).spread(function(logsUrl, resultUrl) {
+    ).then(function(values) {
+      var logsUrl   = values.shift();
+      var resultUrl = values.shift();
+
       return res.reply({
         runId:          runId,
         logsPutUrl:     logsUrl,
@@ -452,7 +459,10 @@ api.declare({
   return Promise.all(
     taskLoaded,
     artifactUrls
-  ).spread(function(taskStatus, urlMap) {
+  ).then(function(values) {
+    var taskStatus  = values.shift();
+    var urlMap      = values.shift();
+
     if (taskStatus) {
       return res.reply({
         status:           taskStatus,
@@ -707,7 +717,11 @@ api.declare({
     gotTask,
     gotResolution,
     gotStatus
-  ).spread(function(task, resolution, taskStatus) {
+  ).then(function(values) {
+    var task        = values.shift();
+    var resolution  = values.shift();
+    var taskStatus  = values.shift();
+
     // Check that the task exists and have been scheduled before!
     if (!task) {
       return res.json(400, {

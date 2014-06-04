@@ -21,17 +21,17 @@ module.exports = {
   },
 
   server: {
-    publicUrl:                      'http://localhost:600235',
-    port:                           600235
+    publicUrl:                    'http://localhost:600235',
+    port:                         600235
   },
 
   // Local database
   database: {
-    connectionString:               'postgres://queue:secret@localhost:5432/queue_v1',
+    connectionString:             'postgres://queue:secret@localhost:5432/queue_v1',
   },
 
   // Use local AMQP installation
   amqp: {
-    url:                            'amqp://guest:guest@localhost:5672'
-  },
+    url:                          'amqp://guest:guest@localhost:5672'
+  }
 };
