@@ -78,7 +78,7 @@ var commonRoutingKey = [
     required:         true,
     maxSize:          22
   }, {
-    name:             'taskRouting',
+    name:             'routing',
     summary:          "task-specific routing key (`task.routing`).",
     multipleWords:    true,
     required:         true,
@@ -94,6 +94,8 @@ var commonMessageBuilder = function(message) {
 
 /** Build a message from message */
 var commonRoutingKeyBuilder = function(message) {
+  console.log(message);
+  console.log(message.runId);
   return {
     taskId:           message.status.taskId,
     runId:            message.runId,
