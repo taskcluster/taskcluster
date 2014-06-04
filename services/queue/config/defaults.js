@@ -26,6 +26,14 @@ module.exports = {
       // Public base url for keys in the bucket, if cnamed, otherwise, leave it
       // null, and bucket URL will be used.
       publicBaseUrl:              'http://tasks.taskcluster.net'
+    },
+
+    // TaskCluster credentials for this server, these must have scopes:
+    // auth:credentials
+    // (typically configured using environment variables)
+    credentials: {
+      clientId:                   undefined,
+      accessToken:                undefined
     }
   },
 

@@ -21,7 +21,9 @@ var launch = function(profile) {
       'database_connectionString',
       'queue_publishMetaData',
       'aws_accessKeyId',
-      'aws_secretAccessKey'
+      'aws_secretAccessKey',
+      'queue_credentials_clientId',
+      'queue_credentials_accessToken'
     ],
     filename:     'taskcluster-queue'
   });
@@ -80,6 +82,8 @@ var launch = function(profile) {
         validator:      validator
       },
       validator:        validator,
+      authBaseUrl:      undefined,
+      credentials:      cfg.get('queue:credentials'),
       publish:          cfg.get('queue:publishMetaData') === 'true',
       baseUrl:          cfg.get('server:publicUrl') + '/v1',
       referencePrefix:  'queue/v1/api.json',
