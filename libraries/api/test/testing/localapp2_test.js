@@ -38,5 +38,23 @@ suite('testing.LocalApp (additional)', function() {
       );
     });
   });
+
+  // Create server that crashes
+  var serverCrash = new base.testing.LocalApp({
+    command:  path.join(__dirname, '..', 'bin', 'app.js'),
+    args:     ['CRASH'],
+    cwd:      path.join(__dirname, '..'),
+    name:     'app.js',
+  });
+
+  /** Test that /test works */
+  test('detect crash', function() {
+    return serverCrash.launch().then(function() {
+      return new Promise(function(accept, reject) {
+        setTimeout(reject, 2000);
+        serverCrash.once('error', accept);
+      });
+    });
+  });
 });
 
