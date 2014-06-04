@@ -156,7 +156,8 @@ var createServer = function() {
     if(process.send) {
       process.send({
         ready:  true,
-        port:   app.get('port')
+        port:   app.get('port'),
+        appId:  process.env.LOCAL_APP_IDENTIFIER
       });
     }
 
