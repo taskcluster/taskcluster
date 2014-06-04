@@ -25,6 +25,8 @@ var dropdb = function(profile) {
 
   // Destroy the database
   return schema.destroy(knex).then(function() {
+    return schema.create(knex);
+  }).then(function() {
     return new Promise(function(accept) {
       knex.client.pool.destroy(accept);
     });

@@ -1,22 +1,52 @@
 suite('claim timeouts', function() {
   var debug       = require('debug')('test:claim timeouts');
-  var LocalQueue  = require('../localqueue');
   var assert      = require('assert');
   var Promise     = require('promise');
   var request     = require('superagent-promise');
-  var nconf       = require('../../config/test')();
+  var path        = require('path');
+  var base        = require('taskcluster-base');
+  var dropdb      = require('../../bin/dropdb');
 
-  // Queue base URL
-  var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
-                     nconf.get('server:port');
-  var queue = null;
-  setup(function() {
-    queue = new LocalQueue();
-    return queue.launch();
+  // Configure server
+  var server = new base.testing.LocalApp({
+    command:      path.join(__dirname, '..', '..', 'bin', 'server.js'),
+    args:         ['test'],
+    name:         'server.js',
+    baseUrlPath:  '/v1'
   });
 
+  // Configure reaper
+  var reaper = new base.testing.LocalApp({
+    command:      path.join(__dirname, '..', '..', 'bin', 'reaper.js'),
+    args:         ['test'],
+    name:         'reaper.js'
+  });
+
+  // Setup server
+  var baseUrl = null;
+  setup(function() {
+    return dropdb('test').then(function() {
+      // Launch server
+      console.log("LAUNCHING server");
+      return Promise.all(
+        reaper.launch().then(function() {
+          console.log("REAPER running");
+        }),
+        server.launch().then(function(baseUrl_) {
+          baseUrl = baseUrl_;
+          console.log("REAPER running");
+        })
+      );
+    });
+  });
+
+  // Shutdown server
   teardown(function() {
-    return queue.terminate();
+    console.log("TEAR DOWN");
+    return Promise.all(
+      reaper.terminate().then(function() {console.log("REAPER DONE");}),
+      server.terminate().then(function() {console.log("Server DONE");})
+    );
   });
 
   // break all rules that have ever existed...
@@ -64,7 +94,7 @@ suite('claim timeouts', function() {
     function claimWork() {
       return request(
         'POST',
-        baseUrl + '/v1/claim-work/' + task.provisionerId + '/' + task.workerType
+        baseUrl + '/claim-work/' + task.provisionerId + '/' + task.workerType
       ).
       send({
         workerGroup: 'testing',
@@ -75,7 +105,7 @@ suite('claim timeouts', function() {
 
     var body;
     setup(function() {
-      return request('POST', baseUrl + '/v1/task/new').
+      return request('POST', baseUrl + '/task/new').
         send(task).
         end().
         then(function(res) {
