@@ -85,7 +85,8 @@ function specify(type, spec) {
 }
 
 function preferredMediaTypes(accept, provided) {
-  accept = parseAccept(accept || '');
+  // RFC 2616 sec 14.2: no header = */*
+  accept = parseAccept(accept === undefined ? '*/*' : accept || '');
   if (provided) {
     return provided.map(function(type) {
       return [type, getMediaTypePriority(type, accept)];

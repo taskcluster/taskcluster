@@ -150,9 +150,14 @@ var createServer = function() {
       accept(server);
     });
   }).then(function(server) {
-    // If there is a parent process post a message to notify it
+    // If there is a parent process post a message to notify it that the app is
+    // ready and running on specified port. This is useful for automated
+    // testing and hopefully won't cause pain anywhere else.
     if(process.send) {
-      process.send({ready: true});
+      process.send({
+        ready:  true,
+        port:   app.get('port')
+      });
     }
 
     return server;

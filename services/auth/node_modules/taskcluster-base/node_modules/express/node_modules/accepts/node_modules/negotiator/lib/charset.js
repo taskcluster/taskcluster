@@ -56,7 +56,8 @@ function specify(charset, spec) {
 }
 
 function preferredCharsets(accept, provided) {
-  accept = parseAcceptCharset(accept || '');
+  // RFC 2616 sec 14.2: no header = *
+  accept = parseAcceptCharset(accept === undefined ? '*' : accept || '');
   if (provided) {
     return provided.map(function(type) {
       return [type, getCharsetPriority(type, accept)];
