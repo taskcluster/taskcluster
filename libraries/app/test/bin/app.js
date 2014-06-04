@@ -22,6 +22,13 @@ var launch = function() {
     res.send(200, "Count: " + global_state);
   });
 
+  // Kill process in crash case for testing
+  if (process.argv[2] === 'CRASH') {
+    setTimeout(function() {
+      process.exit(1);
+    }, 1000);
+  }
+
   // Create a server
   return app.createServer();
 };
