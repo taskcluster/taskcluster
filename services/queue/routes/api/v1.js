@@ -1,8 +1,6 @@
-var utils     = require('./utils');
 var Promise   = require('promise');
-var debug     = require('debug')('routes:api:0.2.0');
+var debug     = require('debug')('routes:api:v1');
 var slugid    = require('slugid');
-var validate  = require('../../utils/validate');
 var assert    = require('assert');
 
 var base      = require('taskcluster-base');
@@ -223,7 +221,7 @@ api.declare({
 
     // Validate task.json
     var schema = 'http://schemas.taskcluster.net/queue/v1/task.json#';
-    var errors = validate(task, schema);
+    var errors = ctx.validator.check(task, schema);
     if (errors) {
       debug("task.json attempted schemed didn't follow schema");
       return res.json(400, {
