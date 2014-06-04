@@ -58,7 +58,7 @@
           },
           "scopes": {
             "type":           "array",
-            "description":    "List of scopes, of which the client must satisfy at least one to invoke the function. Empty list if no scope is required.",
+            "description":    "List of scopes, of which the client must satisfy at least one to invoke the function. Not provided if authentication isn't required",
             "items": {
               "type":         "string",
               "description":  "Scope identifier"

@@ -67,7 +67,8 @@ function specify(language, spec) {
 };
 
 function preferredLanguages(accept, provided) {
-  accept = parseAcceptLanguage(accept || '');
+  // RFC 2616 sec 14.4: no header = *
+  accept = parseAcceptLanguage(accept === undefined ? '*' : accept || '');
   if (provided) {
 
     var ret = provided.map(function(type) {

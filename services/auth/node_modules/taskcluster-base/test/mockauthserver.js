@@ -9,7 +9,13 @@ var _clients = {
   'test-client': {
       clientId:     'test-client',
       accessToken:  'test-token',
-      scopes:       ['auth:*'],
+      scopes:       ['auth:credentials'],
+      expires:      new Date(2092, 0, 0, 0, 0, 0, 0)
+  },
+  'delegating-client': {
+      clientId:     'delegating-client',
+      accessToken:  'test-token',
+      scopes:       ['auth:can-delegate'],
       expires:      new Date(2092, 0, 0, 0, 0, 0, 0)
   }
 };
