@@ -75,7 +75,7 @@ exports.createClient = function(reference) {
                  "Can't delegate without scopes to delegate");
           extra.ext = {
             delegating: true,
-            scopes:     this._options.credentials.scopes;
+            scopes:     this._options.credentials.scopes
           };
         }
         // Write hawk authentication header
@@ -89,7 +89,16 @@ exports.createClient = function(reference) {
       return req.end().then(function(res) {
         if (!res.ok) {
           debug("Error calling: " + entry.name, res.body);
-          throw new Error(res.body);
+          var message = "Unknown Server Error";
+          if (res.status === 401) {
+            message = "Authentication Error";
+          }
+          if (res.status === 500) {
+            message = "Internal Server Error";
+          }
+          err = new Error(res.body.message || message);
+          err.body = res.body;
+          throw err
         }
         debug("Success calling: " + entry.name);
         return res.body;
