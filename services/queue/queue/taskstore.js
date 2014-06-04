@@ -105,7 +105,7 @@ var first = function(rows) {
 };
 
 /** Create TaskStore instance given initialized knex instance */
-var TaskStore = function(knex) {
+function TaskStore(knex) {
   this._knex = knex;
 };
 
