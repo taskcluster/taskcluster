@@ -9,8 +9,18 @@ suite('queue/bucket', function() {
   var cfg = base.config({
     defaults:     require('../../config/defaults'),
     profile:      require('../../config/' + 'test'),
+    envs: [
+      'aws_accessKeyId',
+      'aws_secretAccessKey'
+    ],
     filename:     'taskcluster-queue'
   });
+
+  // Skip tests if no AWS credentials is configured
+  if (!cfg.get('aws:accessKeyId')) {
+    console.log("Skip tests due to missing aws credentials!");
+    return;
+  }
 
   var subject;
   setup(function() {
