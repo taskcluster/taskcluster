@@ -1,10 +1,8 @@
 env:
   global:
-  - queue__taskBucket=travis-ci-testing
-  - queue__taskBucketIsCNAME=false
   - DEBUG=*
-  - secure: Gd+8//GiuCan2gBUIBpYnc6nv/npw4ftjFxxL6g9CLLXiLHLI6HI6ujmQYVkTES56wQG6v0rG8XDetwP1dnWnfieflG8P9HoVLUVGcmVC++HMCBMgse/6v4mgo/99WqhkeJqckV7SPDNpLIudK8AuUzIi5VQbasqWuo2R4rZoeg=
-  - secure: U6A1YBs+Pk7n0jiUUduwfnGsFvAIKMJ/YKIqbZ4ISXPmNELklhL/s7TSIg3+OnLm2B9g4RdUMPH3s3IKbf6v2YcNSyq6iMZYT2iQ0AAYC+hoSJZuASnLq/FlChp8nhY1ZMymFgjnrerUpBRawQH6txSosc/v5TrbBYurqQDisDE=
+  - secure: "oIMHUsl9hzKIWOfvTkfVatoZ2OQ/m+ocPEGz1udosWdU8A1HZy9SmVYxWqkaw2kgLCgBRzkmF8KLEJ/Mn+qnUyj3QdWtpukmOjxxv7DxklPDZko1ya/IoqNqiHxhcxE688XUy3QEkZTN3eQbjMjAqjGGrsQJTuOi/aro3tH0SV8="
+  - secure: "XtGhjiIA+N2s07Cvud6noeAC9IzFg7TDBLtHQRo2cvCIzesve88WE284ca4QLhyeEmv0ifEQsuk1rL1Q7eB3wviXkQ98vivIrHdLCeXkASQ/UUGUHESy4ByHbL2OSZwcgWMrHLh/VDFtfWIlN5dMSjMpYuLfJnuLXAmwbYpRU7o="
 language: node_js
 node_js:
 - '0.10'
