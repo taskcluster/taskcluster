@@ -64,6 +64,15 @@ var launch = function(profile) {
       start:        true
     });
 
+    // Notify parent process, so that this worker can run using LocalApp
+    base.app.notifyLocalAppInParentProcess();
+
+    // Handle errors by crashing
+    reaper.on('error', function(err) {
+      console.log("Error in reaper, now crashing: ", err);
+      process.exit(1);
+    });
+
     // Return started reaper process
     return reaper;
   });
