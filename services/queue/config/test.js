@@ -33,5 +33,9 @@ module.exports = {
   // Use local AMQP installation
   amqp: {
     url:                          'amqp://guest:guest@localhost:5672'
+  },
+
+  aws: {
+    region:                       'us-west-2'
   }
 };

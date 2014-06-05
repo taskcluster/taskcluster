@@ -29,7 +29,9 @@ Code is deployed from master to heroku whenever code hits master (and it passes 
 AWS Access Policies Required
 ----------------------------
 The taskcluster queue uses an S3 bucket for storing tasks meta-data, artifacts
-and results and optionally and S3 bucket for publishing JSON schemas.
+and results, in addition API and exchange meta-data is published buckets
+`schemas.taskcluster.net` and `references.taskcluster.net` as these are
+configured as defaults in `taskcluster-base`.
 In order to operate on these resources the following access policy is needed:
 
 ```js
@@ -40,7 +42,16 @@ In order to operate on these resources the following access policy is needed:
         "s3:PutObject"
       ],
       "Resource": [
-        "arn:aws:s3:::<schema-bucket>/queue/*"
+        "arn:aws:s3:::schemas.taskcluster.net/queue/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::references.taskcluster.net/queue/*"
       ]
     },
     {
