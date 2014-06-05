@@ -64,7 +64,8 @@ Reaper.prototype.start = function() {
     }).catch(function(err) {
       that._errorCount += 1;
       // Rethrow error if we're above the limit
-      if (that._errorCount > that.errorLimit) {
+      if (that._errorCount > that._errorLimit) {
+        debug("Error in reaper: %s, as JSON: %j", err, err, err.stack);
         throw err;
       } else {
         debug("Ignored error in reaper: %s, as JSON: %j", err, err, err.stack);
@@ -76,6 +77,7 @@ Reaper.prototype.start = function() {
         that.start();
       }
     }).catch(function(err) {
+      debug("emitting error to provoke a crash");
       that._timeout = null;
       that.emit('error', err);
     });

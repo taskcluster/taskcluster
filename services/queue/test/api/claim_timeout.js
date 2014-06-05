@@ -27,14 +27,10 @@ suite('claim timeouts', function() {
   setup(function() {
     return dropdb('test').then(function() {
       // Launch server
-      console.log("LAUNCHING server");
       return Promise.all(
-        reaper.launch().then(function() {
-          console.log("REAPER running");
-        }),
+        reaper.launch(),
         server.launch().then(function(baseUrl_) {
           baseUrl = baseUrl_;
-          console.log("REAPER running");
         })
       );
     });
@@ -42,10 +38,9 @@ suite('claim timeouts', function() {
 
   // Shutdown server
   teardown(function() {
-    console.log("TEAR DOWN");
     return Promise.all(
-      reaper.terminate().then(function() {console.log("REAPER DONE");}),
-      server.terminate().then(function() {console.log("Server DONE");})
+      reaper.terminate(),
+      server.terminate()
     );
   });
 
@@ -92,15 +87,14 @@ suite('claim timeouts', function() {
     };
 
     function claimWork() {
-      return request(
-        'POST',
-        baseUrl + '/claim-work/' + task.provisionerId + '/' + task.workerType
-      ).
-      send({
-        workerGroup: 'testing',
-        workerId: 'worker-' + unique
-      }).
-      end();
+      var url = baseUrl + '/claim-work/' + task.provisionerId + '/' + task.workerType;
+      return request
+        .post(url)
+        .send({
+          workerGroup:  'testing',
+          workerId:     'worker-' + unique
+        })
+        .end();
     }
 
     var body;
