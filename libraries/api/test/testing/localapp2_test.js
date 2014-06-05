@@ -21,7 +21,7 @@ suite('testing.LocalApp (additional)', function() {
     name:     'app.js',
   });
 
-  /** Test that /test works */
+  /** Test that we can launch two instances */
   test('launch two instances', function() {
     return Promise.all(
       server.launch(),
@@ -47,13 +47,25 @@ suite('testing.LocalApp (additional)', function() {
     name:     'app.js',
   });
 
-  /** Test that /test works */
+  /** Test that crash detection works */
   test('detect crash', function() {
     return serverCrash.launch().then(function() {
       return new Promise(function(accept, reject) {
         setTimeout(reject, 2000);
         serverCrash.once('error', accept);
       });
+    });
+  });
+
+  /** Test that we can terminate after a crash */
+  test('terminate after crash', function() {
+    return serverCrash.launch().then(function() {
+      return new Promise(function(accept, reject) {
+        setTimeout(reject, 2000);
+        serverCrash.once('error', accept);
+      });
+    }).then(function() {
+      return serverCrash.terminate();
     });
   });
 });
