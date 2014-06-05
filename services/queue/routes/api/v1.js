@@ -572,7 +572,6 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   var ctx = this;
-
   // Get input
   var provisionerId   = req.params.provisionerId;
   var workerType      = req.params.workerType;
@@ -580,9 +579,9 @@ api.declare({
   var workerId        = req.body.workerId;
 
   var query = {
-    provisionerId: provisionerId,
-    state: 'pending',
-    workerType: workerType
+    provisionerId:  provisionerId,
+    state:          'pending',
+    workerType:     workerType
   };
 
   // When loaded let's pick a pending task

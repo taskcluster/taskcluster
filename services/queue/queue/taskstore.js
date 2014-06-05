@@ -126,7 +126,6 @@ TaskStore.prototype._findAllByTaskId = function(taskIds) {
   if (!taskIds.length) {
     return [];
   }
-
   return this._taskJoinQuery()
     .whereIn('tasks.taskId', taskIds)
     .then(outgoingTasks);
@@ -248,6 +247,7 @@ TaskStore.prototype.findOne = function(query) {
 
 /** Create rerun for a task */
 TaskStore.prototype.rerunTask = decorateDecodeSlug(function(taskId, retries) {
+  var that = this;
   return this._knex('tasks')
     .update({
       state:        'pending',
@@ -261,17 +261,18 @@ TaskStore.prototype.rerunTask = decorateDecodeSlug(function(taskId, retries) {
         .where('state', 'completed')
         .orWhere('state', 'failed');
     })
-    .then((function(count) {
+    .then(function(count) {
       if (!count) {
         return null;
       }
       // yuck!
-      return this.findBySlug(slugid.encode(taskId));
-    }).bind(this));
+      return that.findBySlug(slugid.encode(taskId));
+    });
 });
 
 /** Find and update failed tasks */
 TaskStore.prototype.findAndUpdateFailed = function() {
+  var that = this;
   var deadlineExpire = this._knex('tasks')
     .update({
       state: 'failed',
@@ -307,11 +308,14 @@ TaskStore.prototype.findAndUpdateFailed = function() {
         return list.concat(taskIds);
       }, []);
     })
-    .then(this._findAllByTaskId);
+    .then(function(taskIds) {
+      return that._findAllByTaskId(taskIds);
+    });
 };
 
 /** Find and tasks with takenUntil timed out and make them pending again */
 TaskStore.prototype.findAndUpdatePending = function() {
+  var that = this;
   return this._knex('tasks')
     .update({
       state: 'pending'
@@ -320,5 +324,7 @@ TaskStore.prototype.findAndUpdatePending = function() {
     .andWhere('state', 'running')
     .andWhere('retries', '>', 0)
     .returning('taskId')
-    .then(this._findAllByTaskId);
+    .then(function(taskIds) {
+      return that._findAllByTaskId(taskIds);
+    });
 };
