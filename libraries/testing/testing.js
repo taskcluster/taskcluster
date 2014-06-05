@@ -93,13 +93,14 @@ LocalApp.prototype.launch = function() {
 /** Handle early exits */
 LocalApp.prototype.onEarlyExit = function() {
   debug("----------- %s Crashed --------------", this.options.name);
+  this.process = null;
   this.emit('error', new Error(this.options.name + " process exited early"));
 };
 
 /** Terminate local app instance */
 LocalApp.prototype.terminate = function() {
   var that = this;
-  return (new Promise(function(accept) {
+  return new Promise(function(accept) {
     if (!that.process) {
       return accept();
     }
@@ -107,7 +108,7 @@ LocalApp.prototype.terminate = function() {
     that.process.once('exit', accept);
     that.process.kill();
     that.process = null;
-  })).then(function() {
+  }).then(function() {
     debug("----------- %s Terminated -----------", that.options.name);
   });
 };
