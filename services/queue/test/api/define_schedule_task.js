@@ -1,30 +1,40 @@
 suite('Test reruns', function() {
   var debug       = require('debug')('define_schedule_test');
-
-  var LocalQueue  = require('../localqueue');
   var assert      = require('assert');
   var Promise     = require('promise');
   var request     = require('superagent-promise');
-  var nconf       = require('../../config/test')();
+  var path        = require('path');
+  var base        = require('taskcluster-base');
+  var dropdb      = require('../../bin/dropdb');
 
-  // Queue base URL
-  var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
-                     nconf.get('server:port');
-  var queue = null;
-  setup(function() {
-    queue = new LocalQueue();
-    return queue.launch();
+  var server = new base.testing.LocalApp({
+    command:      path.join(__dirname, '..', '..', 'bin', 'server.js'),
+    args:         ['test'],
+    name:         'server.js',
+    baseUrlPath:  '/v1'
   });
 
+  // Setup server
+  var baseUrl = null;
+  setup(function() {
+    return dropdb('test').then(function() {
+      // Launch server
+      return server.launch().then(function(baseUrl_) {
+        baseUrl = baseUrl_;
+      });
+    });
+  });
+
+  // Shutdown server
   teardown(function() {
-    return queue.terminate();
+    return server.terminate();
   });
 
   /** Test define tasks */
   test('GET task put url using v1/define-tasks', function() {
     // Post request to server
     debug("GET from define/tasks to server");
-    var got_tasks = request.get(baseUrl + '/v1/define-tasks').send({
+    var got_tasks = request.get(baseUrl + '/define-tasks').send({
       tasksRequested:       5
     }).end();
 
@@ -41,7 +51,7 @@ suite('Test reruns', function() {
   test('define a single task, schedule, and claim it', function() {
     // Post request to server
     debug("GET from define/tasks to server");
-    var got_tasks = request.get(baseUrl + '/v1/define-tasks').send({
+    var got_tasks = request.get(baseUrl + '/define-tasks').send({
       tasksRequested:       1
     }).end();
 
@@ -91,7 +101,7 @@ suite('Test reruns', function() {
 
     // When task is defined, let's try to schedule it
     var task_scheduled = task_defined.then(function() {
-      return request.post(baseUrl + '/v1/task/' + taskId + '/schedule').end();
+      return request.post(baseUrl + '/task/' + taskId + '/schedule').end();
     });
 
     // Check that it was scheduled right
@@ -102,7 +112,7 @@ suite('Test reruns', function() {
 
     // Test that if we claim a task, then we get the task we just created
     return check_scheduling.then(function() {
-      request.post(baseUrl + '/v1/task/' + taskId + '/claim').send({
+      request.post(baseUrl + '/task/' + taskId + '/claim').send({
         workerGroup:    'my-test-group',
         workerId:       'jonasfj-test-worker'
       }).end().then(function(res) {

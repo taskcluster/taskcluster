@@ -1,25 +1,34 @@
 suite('Test reruns', function() {
-
   var debug       = require('debug')('rerun_test');
-  var LocalQueue  = require('../localqueue');
   var assert      = require('assert');
   var Promise     = require('promise');
   var request     = require('superagent-promise');
-  var nconf       = require('../../config/test')();
+  var path        = require('path');
+  var base        = require('taskcluster-base');
+  var dropdb      = require('../../bin/dropdb');
 
-  // Queue base URL
-  var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
-                     nconf.get('server:port');
-  var queue = null;
+  var server = new base.testing.LocalApp({
+    command:      path.join(__dirname, '..', '..', 'bin', 'server.js'),
+    args:         ['test'],
+    name:         'server.js',
+    baseUrlPath:  '/v1'
+  });
+
+  // Setup server
+  var baseUrl = null;
   setup(function() {
-    queue = new LocalQueue();
-    return queue.launch();
+    return dropdb('test').then(function() {
+      // Launch server
+      return server.launch().then(function(baseUrl_) {
+        baseUrl = baseUrl_;
+      });
+    });
   });
 
+  // Shutdown server
   teardown(function() {
-    return queue.terminate();
+    return server.terminate();
   });
-
   /** Test that task can rerun */
   test('Post task, claim, completed, rerun and claim again', function() {
     // Create datetime for created and deadline as 3 days later
@@ -29,7 +38,7 @@ suite('Test reruns', function() {
 
     // Post request to server
     debug("Posting task/new to server");
-    var submit_task = request.post(baseUrl + '/v1/task/new').send({
+    var submit_task = request.post(baseUrl + '/task/new').send({
       version:          '0.2.0',
       provisionerId:    'jonasfj-provisioner',
       workerType:       'my-ami',
@@ -61,7 +70,7 @@ suite('Test reruns', function() {
 
     // Fetch task status
     var fetch_pending_task_status = has_taskid.then(function() {
-      var endpoint = '/v1/task/' + taskId + '/status';
+      var endpoint = '/task/' + taskId + '/status';
       return request.get(baseUrl + endpoint).end();
     });
 
@@ -75,7 +84,7 @@ suite('Test reruns', function() {
 
     // Claim work
     var claimed_work = check_task_status_0.then(function() {
-      var endpoint = '/v1/claim-work/jonasfj-provisioner/my-ami';
+      var endpoint = '/claim-work/jonasfj-provisioner/my-ami';
       return request.post(baseUrl + endpoint).send({
         workerGroup:    'my-test-group',
         workerId:       'jonasfj-test-worker'
@@ -99,7 +108,7 @@ suite('Test reruns', function() {
 
     // Fetch task status
     var fetch_task_status = check_taskid_claimed.then(function() {
-      var endpoint = '/v1/task/' + taskId + '/status';
+      var endpoint = '/task/' + taskId + '/status';
       return request.get(baseUrl + endpoint).end();
     });
 
@@ -146,7 +155,7 @@ suite('Test reruns', function() {
 
     // Put result.json
     var complete_task = put_result_json.then(function() {
-      var endpoint = '/v1/task/' + taskId + '/completed';
+      var endpoint = '/task/' + taskId + '/completed';
       return request.post(baseUrl + endpoint).send({
         runId:          1,  // First runId should always be 1
         success:        true,
@@ -161,7 +170,7 @@ suite('Test reruns', function() {
 
     // Fetch task status
     var fetch_task_status_again = complete_task.then(function() {
-      var endpoint = '/v1/task/' + taskId + '/status';
+      var endpoint = '/task/' + taskId + '/status';
       return request.get(baseUrl + endpoint).end();
     });
 
@@ -178,7 +187,7 @@ suite('Test reruns', function() {
 
     // Rerun task...
     var rerun_task = check_task_status_again.then(function() {
-      var endpoint = '/v1/task/' + taskId + '/rerun';
+      var endpoint = '/task/' + taskId + '/rerun';
       return request.post(baseUrl + endpoint).end();
     });
 
@@ -192,7 +201,7 @@ suite('Test reruns', function() {
 
     // Claim task again
     var claim_task_again = check_rerun_task.then(function() {
-      var endpoint = '/v1/claim-work/jonasfj-provisioner/my-ami';
+      var endpoint = '/claim-work/jonasfj-provisioner/my-ami';
       return request.post(baseUrl + endpoint).send({
         workerGroup:    'my-test-group',
         workerId:       'jonasfj-test-worker2'
