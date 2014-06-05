@@ -1,22 +1,33 @@
 suite('/pending-tasks/:provisionerId', function() {
-  var LocalQueue  = require('../localqueue');
   var debug       = require('debug')('post_task_test');
   var assert      = require('assert');
   var Promise     = require('promise');
   var request     = require('superagent-promise');
-  var nconf       = require('../../config/test')();
+  var path        = require('path');
+  var base        = require('taskcluster-base');
+  var dropdb      = require('../../bin/dropdb');
 
-  // Queue base URL
-  var baseUrl     = 'http://' + nconf.get('server:hostname') + ':' +
-                     nconf.get('server:port');
-  var queue = null;
-  setup(function() {
-    queue = new LocalQueue();
-    return queue.launch();
+  var server = new base.testing.LocalApp({
+    command:      path.join(__dirname, '..', '..', 'bin', 'server.js'),
+    args:         ['test'],
+    name:         'server.js',
+    baseUrlPath:  '/v1'
   });
 
+  // Setup server
+  var baseUrl = null;
+  setup(function() {
+    return dropdb('test').then(function() {
+      // Launch server
+      return server.launch().then(function(baseUrl_) {
+        baseUrl = baseUrl_;
+      });
+    });
+  });
+
+  // Shutdown server
   teardown(function() {
-    return queue.terminate();
+    return server.terminate();
   });
 
   var taskId;
@@ -50,7 +61,7 @@ suite('/pending-tasks/:provisionerId', function() {
 
     // Post request to server
     debug("Posting task/new to server");
-    return request.post(baseUrl + '/v1/task/new').
+    return request.post(baseUrl + '/task/new').
       send(task).
       end().
       then(function(res) {
@@ -60,7 +71,7 @@ suite('/pending-tasks/:provisionerId', function() {
 
   test('fetch by provisioner with tasks', function() {
     return request.
-      get(baseUrl + '/v1/pending-tasks/' + provisionerId).
+      get(baseUrl + '/pending-tasks/' + provisionerId).
       end().
       then(function(res) {
         var tasks = res.body.tasks;
@@ -71,7 +82,7 @@ suite('/pending-tasks/:provisionerId', function() {
 
   test('fetch by provisioner with no tasks', function() {
     return request.
-      get(baseUrl + '/v1/pending-tasks/nobodyishome').
+      get(baseUrl + '/pending-tasks/nobodyishome').
       end().
       then(function(res) {
         assert.equal(res.body.tasks.length, 0);
