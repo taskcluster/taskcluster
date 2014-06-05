@@ -1,9 +1,33 @@
 suite('queue/tasks_store', function() {
-  var Promise = require('promise');
-  var slugid = require('slugid');
-  var assert = require('assert');
+  var Promise   = require('promise');
+  var slugid    = require('slugid');
+  var assert    = require('assert');
+  var TaskStore = require('../../queue/taskstore');
+  var Knex      = require('knex');
+  var schema    = require('../../queue/schema');
+  var base      = require('taskcluster-base');
+
+  // Load configuration
+  var cfg = base.config({
+    defaults:     require('../../config/defaults'),
+    profile:      require('../../config/' + 'test'),
+    filename:     'taskcluster-queue'
+  });
+
+  var connect = function() {
+    var db = Knex({
+      client:     'postgres',
+      connection: cfg.get('database:connectionString')
+    });
+
+    // ensure we have a clean working state in the database.
+    var create = schema.create.bind(schema, db);
+    return schema.destroy(db).then(create).then(function() {
+      return db;
+    });
+  };
+
   var Tasks;
-  var testDb = require('../db');
   var knex;
 
   function mapByTaskId(list) {
@@ -36,9 +60,9 @@ suite('queue/tasks_store', function() {
   }
 
   setup(function() {
-    return testDb().then(function(_knex) {
+    return connect().then(function(_knex) {
       knex = _knex;
-      Tasks = require('../../queue/tasks_store')(knex);
+      Tasks = new TaskStore(knex);
     });
   });
 
