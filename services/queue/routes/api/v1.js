@@ -706,7 +706,7 @@ api.declare({
   var gotTask = bucket.get(taskId + '/task.json');
 
   // Check for resolution
-  var gotResolution = Bucket.get(taskId + '/resolution.json');
+  var gotResolution = bucket.get(taskId + '/resolution.json');
 
   // Load task status from database
   var gotStatus = ctx.store.findBySlug(taskId);
