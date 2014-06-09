@@ -12,7 +12,7 @@ module.exports = {
   server: {
     publicUrl:                      'http://queue.taskcluster.net',
     port:                           80
-  }
+  },
 
   database: {
     // Provided by environment variable
