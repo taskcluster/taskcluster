@@ -540,6 +540,8 @@ API.prototype.reference = function(options) {
   if (errors) {
     debug("API.references(): Failed to validate against schema, errors: %j " +
           "reference: %j", errors, reference);
+    debug("Reference:\n%s", JSON.stringify(reference, null 2));
+    debug("Errors:\n%s", JSON.stringify(errors, null 2));
     throw new Error("API.references(): Failed to validate against schema");
   }
 
