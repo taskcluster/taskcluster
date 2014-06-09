@@ -54,7 +54,8 @@ var launch = function(profile) {
       exchangePrefix:     cfg.get('queue:exchangePrefix'),
       validator:          validator,
       referencePrefix:    'queue/v1/exchanges.json',
-      publish:            cfg.get('queue:publishMetaData') === 'true'
+      publish:            cfg.get('queue:publishMetaData') === 'true',
+      aws:                cfg.get('aws')
     });
   }).then(function(publisher_) {
     publisher = publisher_;
