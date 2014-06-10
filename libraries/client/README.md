@@ -29,6 +29,16 @@ The `payload` parameter is always a JSON object as documented by the REST API
 documentation. The methods always returns a _promise_ for the response JSON
 object as documented in the REST API documentation.
 
+## Documentation
+The set of API entries listed below is generated from the builtin references.
+Detailed documentation with description, payload and result format details is
+available on [docs.taskcluster.net](http://docs.taskcluster.net).
+
+On the [documentation site](http://docs.taskcluster.net) entries often have a
+_signature_, you'll find that it matches the signatures below. Notice that all
+the methods returns a promise. A method with `: void` also returns a promise,
+that either resolves without giving a value or rejects with an error.
+
 <!-- START OF GENERATED DOCS -->
 
 ### Methods in `taskcluster.Auth`
@@ -60,7 +70,7 @@ var queue = new taskcluster.Queue(options);
 
 <!-- END OF GENERATED DOCS -->
 
-### Create Client Class Dynamically
+## Create Client Class Dynamically
 You can create a Client class from a reference JSON object as illustrated
 below:
 
@@ -81,7 +91,7 @@ myClient.myMethod(arg1, arg2, payload).then(function(result) {
 });
 ```
 
-### Configuring API BaseUrls
+## Configuring API BaseUrls
 If you use the builtin API Client classes documented above you can configure
 the `baseUrl` when creating an instance of the client. As illustrated below:
 
@@ -91,7 +101,8 @@ var auth = new taskcluster.Auth({
   baseUrl:      "http://localhost:4040" // Useful for development and testing
 });
 ```
-### Configuring Credentials
+
+## Configuring Credentials
 When creating an instance of a Client class the credentials can be provided
 in options. For example:
 ```js
@@ -119,7 +130,7 @@ taskcluster.config({
 var auth = new taskcluster.Auth();
 ```
 
-### Delegated Authorization
+## Delegated Authorization
 If your client has the scope `auth:can-delegate` you can send requests with
 a scope set different from the one you have. This is useful when the
 scheduler performs a request on behalf of a task-graph, or when
