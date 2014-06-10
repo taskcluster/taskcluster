@@ -7,9 +7,10 @@ var aws         = require('aws-sdk-promise');
 var assert      = require('assert');
 var _           = require('lodash');
 var bodyParser  = require('body-parser');
-var taskcluster = require('taskcluster-client');
 var path        = require('path');
 var fs          = require('fs');
+require('superagent-hawk')(require('superagent'));
+var request     = require('superagent-promise');
 var Validator   = require('./validator').Validator;
 
 /**
@@ -147,13 +148,26 @@ Client.prototype.isExpired = function() {
  * return value with `API.router(...)` or `API.initialize(...)`.
  */
 var clientLoader = function(options) {
+  _.defaults(options, {
+    baseUrl:          'http://auth.taskcluster.net/v1'
+  });
   assert(options.clientId,    "ClientId is required");
   assert(options.accessToken, "AccessToken is required");
-  var auth = new taskcluster.Auth(options);
   return function(clientId) {
-    return auth.getCredentials(clientId).then(function(client) {
-      return new Client(client);
-    });
+    return request
+      .get(options.baseUrl + '/client/' + clientId + '/credentials')
+      .hawk({
+        id:         options.clientId,
+        key:        options.accessToken,
+        algorithm:  'sha256'
+      })
+      .end().then(function(res) {
+        if(!res.ok) {
+          debug('Failed to fetch credentials for clientId: %s', clientId);
+          throw new Error("Failed to fetch credentials: " + res.text);
+        }
+        return new Client(res.body);
+      });
   };
 };
 
