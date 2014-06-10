@@ -1,4 +1,4 @@
-# TaskCluster Client
+# TaskCluster Client [![Build Status](https://travis-ci.org/taskcluster/taskcluster-client.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-client)
 _A taskcluster client library for node.js._
 
 ## Usage
