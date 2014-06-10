@@ -5,24 +5,24 @@
   "description":  "Client for interfacing taskcluster components",
   "license":      "MPL-2.0",
   "scripts": {
-    "test":   "mocha test/auth_test.js"
+    "test":       "mocha test/client_test.js"
   },
   "repository": {
-    "type":   "git",
-    "url":    "https://github.com/taskcluster/taskcluster-client.git"
+    "type":       "git",
+    "url":        "https://github.com/taskcluster/taskcluster-client.git"
   },
   "dependencies": {
-    "promise":                          "4.0.0",
     "lodash":                           "2.4.1",
     "debug":                            "0.7.4",
     "superagent":                       "~0.16.0",
     "superagent-promise":               "0.1.0",
-    "superagent-hawk":                  "0.0.3",
-    "hawk":                             "2.2.1"
+    "superagent-hawk":                  "0.0.3"
   },
   "devDependencies": {
     "mocha":                            "1.18.2",
     "commander":                        "2.2.0",
-    "cliff":                            "0.1.8"
+    "cliff":                            "0.1.8",
+    "taskcluster-base":                 "0.0.12",
+    "promise":                          "4.0.0"
   }
 }
