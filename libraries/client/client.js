@@ -8,7 +8,7 @@ require('superagent-hawk')(require('superagent'));
 var request     = require('superagent-promise');
 var debug       = require('debug')('taskcluster-client');
 var _           = require('lodash');
-var Promise     = require('promise');
+var assert      = require('assert');
 
 // Default options stored globally for convenience
 var _defaultOptions = {};
@@ -61,7 +61,7 @@ exports.createClient = function(reference) {
         endpoint = endpoint.replace('<' + arg + '>', args.shift() || '');
       });
       // Create request
-      var req = request[entry.method](reference.baseUrl + endpoint);
+      var req = request[entry.method](this._options.baseUrl + endpoint);
       // Add payload if one is given
       if (entry.input) {
         req.send(args.pop());
@@ -73,10 +73,10 @@ exports.createClient = function(reference) {
         if (this._options.credentials.delegating) {
           assert(this._options.credentials.scopes,
                  "Can't delegate without scopes to delegate");
-          extra.ext = {
-            delegating: true,
-            scopes:     this._options.credentials.scopes
-          };
+          extra.ext = new Buffer(JSON.stringify({
+            delegating:       true,
+            scopes:           this._options.credentials.scopes
+          })).toString('base64');
         }
         // Write hawk authentication header
         req.hawk({
