@@ -24,7 +24,7 @@
     "superagent-promise":               "0.1.0",
     "slugid":                           "1.0.1",
     "superagent-hawk":                  "0.0.3",
-    "taskcluster-base":                 "git://github.com/taskcluster/taskcluster-base.git"
+    "taskcluster-base":                 "0.0.12"
   },
   "devDependencies": {
     "mocha":                            "1.18.2"
