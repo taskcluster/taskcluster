@@ -40,6 +40,24 @@ var auth = new taskcluster.Auth(options);
  * `auth.inspect(clientId) : result`
  * `auth.getCredentials(clientId) : result`
 
+### Methods in `taskcluster.Queue`
+```js
+// Create Queue client instance with default baseUrl:
+//  - http://queue.taskcluster.net/v1
+var queue = new taskcluster.Queue(options);
+```
+ * `queue.createTask(payload) : result`
+ * `queue.defineTasks(payload) : result`
+ * `queue.scheduleTask(taskId) : result`
+ * `queue.getTaskStatus(taskId) : result`
+ * `queue.claimTask(taskId, payload) : result`
+ * `queue.requestArtifactUrls(taskId, payload) : result`
+ * `queue.reportTaskCompleted(taskId, payload) : result`
+ * `queue.claimWork(provisionerId, workerType, payload) : result`
+ * `queue.rerunTask(taskId) : result`
+ * `queue.getPendingTasks(provisionerId) : void`
+ * `queue.getAMQPConnectionString() : result`
+
 <!-- END OF GENERATED DOCS -->
 
 ### Create Client Class Dynamically
