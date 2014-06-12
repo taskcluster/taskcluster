@@ -50,6 +50,51 @@ suite('/pending-tasks/:provisionerId', function() {
 
   var taskId;
   var provisionerId = 'jonsafj-provisioner';
+
+  // completed task
+  setup(function() {
+    var created = new Date();
+    var deadline = new Date();
+    deadline.setDate(created.getDate() + 3);
+
+    var task = {
+      version:          '0.2.0',
+      provisionerId:    provisionerId,
+      workerType:       'my-ami', // let's just test a large routing key too, 128 chars please :)
+      routing:          'jonasfj-test.what-a-hack.I suppose we might actually need it when we add taskgraph scheduler id, taskgraphId, task graph routing',
+      timeout:          30,
+      retries:          5,
+      priority:         1,
+      created:          created.toJSON(),
+      deadline:         deadline.toJSON(),
+      payload:          {},
+      metadata: {
+        name:           "Unit testing task",
+        description:    "Task created during unit tests",
+        owner:          'jonsafj@mozilla.com',
+        source:         'https://github.com/taskcluster/taskcluster-queue'
+      },
+      tags: {
+        purpose:        'taskcluster-testing'
+      }
+    };
+
+    // Post request to server
+    debug("Posting task/new to server");
+    return request.post(baseUrl + '/task/new').
+      send(task).
+      end().
+      then(function(res) {
+        var taskId = res.body.status.taskId;
+        // claim the task
+        return request.
+          post(baseUrl + '/task/' +  taskId + '/claim').
+          send({ workerGroup: 'woot', workerId: 'yep' }).
+          end();
+      })
+  });
+
+  // pending task
   setup(function() {
     var created = new Date();
     var deadline = new Date();
@@ -107,4 +152,3 @@ suite('/pending-tasks/:provisionerId', function() {
       })
   });
 });
-
