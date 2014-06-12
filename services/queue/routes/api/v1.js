@@ -808,6 +808,7 @@ api.declare({
 
   // Load pending tasks
   var taskLoaded = this.store.findAll({
+    state: 'pending',
     provisionerId: provisionerId
   });
 
