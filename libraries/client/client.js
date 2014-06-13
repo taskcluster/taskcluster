@@ -25,14 +25,18 @@ var _defaultOptions = {};
  *     delegating: true || false,  // Is delegating authentication?
  *     scopes:     ['scopes', ...] // Scopes to authorize with
  *   }
- *   baseUrl:    'http://.../v1' // API baseUrl, default is taken from reference
+ *   baseUrl:    'http://.../v1'  // baseUrl for API requests
+ *   exchangePrefix:  'queue/v1/' // exchangePrefix prefix
  * }
+ *
+ * `baseUrl` and `exchangePrefix` defaults to values from reference.
  */
 exports.createClient = function(reference) {
   // Client class constructor
   var Client = function(options) {
     this._options = _.defaults(options || {}, {
-      baseUrl:  reference.baseUrl
+      baseUrl:          reference.baseUrl        || '',
+      exchangePrefix:   reference.exchangePrefix || ''
     }, _defaultOptions);
   };
   // For each function entry create a method on the Client class
@@ -106,6 +110,48 @@ exports.createClient = function(reference) {
     };
   });
 
+  // For each topic-exchange entry
+  reference.entries.filter(function() {
+    return entry.type === 'topic-exchange';
+  }).forEach(function(entry) {
+    // Create function for routing-key pattern construction
+    Client.prototype[entry.name] = function(routingKeyPattern) {
+      if (typeof(routingKeyPattern) !== 'string') {
+        // Allow for empty routing key patterns
+        if (routingKeyPattern === undefined ||
+            routingKeyPattern === null) {
+          routingKeyPattern = {};
+        }
+        // Check that the routing key pattern is an object
+        assert(routingKeyPattern instanceof Object,
+               "routingKeyPattern must be an object");
+
+        // Construct routingkey pattern as string from reference
+        routingKeyPattern = entry.routingKey.map(function(key) {
+          var value = routingKeyPattern[key.name];
+          if (typeof(value) === 'string') {
+            assert(key.multipleWords || value.indexOf('.') === -1,
+                   "routingKey pattern '" + value + "' for " + key.name +
+                   " cannot contain dots as it does not hold multiple words");
+            return value;
+          } else {
+            assert(value === null || value === undefined,
+                  "Value: '" + value + "' is not supported as routingKey "+
+                  "pattern for " + key.name);
+            return key.multipleWords ? '#' : '*';
+          }
+        }).join('.');
+      }
+
+      // Return values necessary to bind with EventHandler
+      return {
+        exchange:             this._options.exchangePrefix + entry.exchange,
+        routingKeyPattern:    routingKeyPattern,
+        routingKeyReference:  _.cloneDeep(entry.routingKey)
+      };
+    };
+  });
+
   // Return client class
   return Client;
 };
@@ -135,3 +181,6 @@ exports.createClient = function(reference) {
 exports.config = function(options) {
   _defaultOptions = _.defaults(options, _defaultOptions);
 };
+
+// Export listener
+exports.Listener = require('./listener');
