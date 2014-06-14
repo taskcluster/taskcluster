@@ -70,6 +70,7 @@ listener.on('message', function(message) {
   message.routing.taskId  // Element from parsed routing key
   message.routing.runId   // ...
   message.redelivered     // True, if message has been nack'ed and requeued
+  return new Promise(...);
 });
 
 // Start listening for events
@@ -126,6 +127,17 @@ var queue = new taskcluster.Queue(options);
  * `queue.getPendingTasks(provisionerId) : void`
  * `queue.getAMQPConnectionString() : result`
 
+### Exchanges in `taskcluster.QueueEvents`
+```js
+// Create QueueEvents client instance with default exchangePrefix:
+//  - queue/v1/
+var queueEvents = new taskcluster.QueueEvents(options);
+```
+ * `queueEvents.taskPending(routingKeyPattern) : binding-info`
+ * `queueEvents.taskRunning(routingKeyPattern) : binding-info`
+ * `queueEvents.taskCompleted(routingKeyPattern) : binding-info`
+ * `queueEvents.taskFailed(routingKeyPattern) : binding-info`
+
 <!-- END OF GENERATED DOCS -->
 
 ## Create Client Class Dynamically
@@ -139,9 +151,7 @@ var reference = {...}; // JSON from references.taskcluster.net/...
 var MyClient = taskcluster.createClient(reference);
 
 // Instantiate an instance of MyClient
-var myClient = new MyClient({
-  credentials: {...}
-});
+var myClient = new MyClient(options);
 
 // Make a request with a method on myClient
 myClient.myMethod(arg1, arg2, payload).then(function(result) {
@@ -149,7 +159,12 @@ myClient.myMethod(arg1, arg2, payload).then(function(result) {
 });
 ```
 
-## Configuring API BaseUrls
+## Configuration of API Invocations
+There is a number of configuration options for Client which affects invocation
+of API end-points. These are useful if using a non-default server, for example
+when setting up a staging area or testing locally.
+
+### Configuring API BaseUrls
 If you use the builtin API Client classes documented above you can configure
 the `baseUrl` when creating an instance of the client. As illustrated below:
 
@@ -160,7 +175,7 @@ var auth = new taskcluster.Auth({
 });
 ```
 
-## Configuring Credentials
+### Configuring Credentials
 When creating an instance of a Client class the credentials can be provided
 in options. For example:
 ```js
@@ -188,7 +203,7 @@ taskcluster.config({
 var auth = new taskcluster.Auth();
 ```
 
-## Delegated Authorization
+### Delegated Authorization
 If your client has the scope `auth:can-delegate` you can send requests with
 a scope set different from the one you have. This is useful when the
 scheduler performs a request on behalf of a task-graph, or when
@@ -215,6 +230,43 @@ auth.getCredentials(someClientId).then(function(result) {
 We call this delegated authorization, because the trusted node that has the
 scope `auth:can-delegate`, delegates authorization of the request to API
 end-point.
+
+## Configuration of Exchange Bindings
+When a taskcluster Client class is instantiated the option `exchangePrefix` may
+be given. This will replace the default `exchangePrefix`. This can be useful if
+deploying a staging area or similar. See example below:
+
+```js
+
+// Instantiate the QueueEvents Client class
+var queueEvents = new taskcluster.QueueEvents({
+  exchangePrefix:     'staging-queue/v1/'
+});
+
+// This listener will now bind to: staging-queue/v1/task-completed
+listener.bind(queueEvents.taskCompleted({taskId: '<myTaskId>'}));
+```
+
+## Using the Listener
+
+TODO:
+```
+var listener = new taskcluster.Listener({
+  prefetch:           5,            // Number of tasks to process in parallel
+  connectionString:   'amqp://...', // AMQP connection string
+  // If no queue name is given, the queue is:
+  //    exclusive, autodeleted and non-durable
+  // If a queue name is given, the queue is:
+  //    durable, not auto-deleted and non-exclusive
+  queueName:          'my-queue',   // Queue name, undefined if none
+  maxLength:          0,            // Max allowed queue size
+});
+
+listener.connect().then(...);       // Setup listener and start
+listener.pause().then(...);         // Pause retrieval of new messages
+listener.resume().then(...);        // Start getting new messages
+listener.close();                   // Disconnect from AMQP
+```
 
 ## Updating Builtin APIs
 When releasing a new version of the `taskcluster-client` library, we should

@@ -19,11 +19,24 @@ var loadApis = function() {
 var DOCS_START_MARKER = '<!-- START OF GENERATED DOCS -->';
 var DOCS_END_MARKER   = '<!-- END OF GENERATED DOCS -->';
 
+/** Find instance name by making first character lower-case */
+var instanceName = function(name) {
+  return name[0].toLowerCase() + name.substr(1);
+};
+
 var apis = loadApis();
 
 var docs = [
   DOCS_START_MARKER
-].concat(_.keys(apis).map(function(name) {
+];
+
+// Generate documentation for methods
+docs = docs.concat(_.keys(apis).filter(function(name) {
+    // Find component that hold functions
+    return apis[name].reference.entries.some(function(entry) {
+      return entry.type === 'function';
+    });
+  }).map(function(name) {
   var api = apis[name];
   return [
     "",
@@ -31,7 +44,7 @@ var docs = [
     "```js",
     "// Create " + name + " client instance with default baseUrl:",
     "//  - " + api.reference.baseUrl,
-    "var " + name.toLowerCase() + " = new taskcluster." + name + "(options);",
+    "var " + instanceName(name) + " = new taskcluster." + name + "(options);",
     "```"
   ].concat(api.reference.entries.filter(function(entry) {
     return entry.type === 'function';
@@ -44,13 +57,41 @@ var docs = [
     if (entry.output) {
       retval = 'result';
     }
-    return " * `" + name.toLowerCase() + "." + entry.name +
+    return " * `" + instanceName(name) + "." + entry.name +
            "(" + args.join(', ') + ") : " + retval + "`";
   })).join('\n');
-}).concat([
+}));
+
+
+// Generate documentation for exchanges
+docs = docs.concat(_.keys(apis).filter(function(name) {
+    // Find component that hold functions
+    return apis[name].reference.entries.some(function(entry) {
+      return entry.type === 'topic-exchange';
+    });
+  }).map(function(name) {
+  var api = apis[name];
+  return [
+    "",
+    "### Exchanges in `taskcluster." + name + "`",
+    "```js",
+    "// Create " + name + " client instance with default exchangePrefix:",
+    "//  - " + api.reference.exchangePrefix,
+    "var " + instanceName(name) + " = new taskcluster." + name + "(options);",
+    "```"
+  ].concat(api.reference.entries.filter(function(entry) {
+    return entry.type === 'topic-exchange';
+  }).map(function(entry) {
+    return " * `" + instanceName(name) + "." + entry.name +
+           "(routingKeyPattern) : binding-info`";
+  })).join('\n');
+}));
+
+
+docs = docs.concat([
   "",
   DOCS_END_MARKER
-])).join('\n')
+]).join('\n');
 
 // Load readme
 var readme = fs.readFileSync(readme_md, {encoding: 'utf-8'});
