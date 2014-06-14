@@ -1,11 +1,16 @@
 # TaskCluster Client [![Build Status](https://travis-ci.org/taskcluster/taskcluster-client.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-client)
 _A taskcluster client library for node.js._
 
-## Usage
 This client library is generated from the auto-generated API reference.
 You can create a Client class from a JSON reference object at runtime using
 `taskcluster.createClient(reference)`. But there is also a set of builtin
 references from which Client classes are already constructed.
+
+## Calling API End-Points
+To invoke an API end-point instantiate a taskcluster Client class, these are
+classes can be created from a JSON reference object, but a number of them are
+also built-in to this library. In the following example we instantiate an
+instance of the `Queue` Client class and use to to create a task.
 
 ```js
 var taskcluster = require('taskcluster-client');
@@ -28,6 +33,59 @@ queue.createTask(task).then(function(result) {
 The `payload` parameter is always a JSON object as documented by the REST API
 documentation. The methods always returns a _promise_ for the response JSON
 object as documented in the REST API documentation.
+
+## Listening for Events
+Many TaskCluster components publishes messages about current events over AMQP.
+The JSON reference object also contains meta-data about declared AMQP topic
+exchanges and their routing key construction. This is designed to make it easy
+to construct routing key patterns and parse routing keys from incoming messages.
+
+The following example create a `listener` and instantiate an instance of
+the Client class `QueueEvents` which we use to find the exchange and create
+a routing pattern to listen for completion of a specific task. The
+`taskCompleted` method will construct a routing key pattern by using `*` or `#`
+for missing entries, pending on whether or not they are single word or
+multi-key entries.
+
+```js
+var taskcluster = require('taskcluster-client');
+
+// Create a listener (this creates a queue on AMQP)
+var listener = new taskcluster.Listener({
+  connectionString:   'amqp://...'
+});
+
+// Instantiate the QueueEvents Client class
+var queueEvents = new taskcluster.QueueEvents();
+
+// Bind to task-completed events from queue that matches routing key pattern:
+//   '<myTaskId>.*.*.*.*.*.#'
+listener.bind(queueEvents.taskCompleted({taskId: '<myTaskId>'}));
+
+// Listen for messages
+listener.on('message', function(message) {
+  message.exchange        // Exchange from which message came
+  message.payload         // Documented on docs.taskcluster.net
+  message.routingKey      // Message routing key in string format
+  message.routing.taskId  // Element from parsed routing key
+  message.routing.runId   // ...
+  message.redelivered     // True, if message has been nack'ed and requeued
+});
+
+// Start listening for events
+listener.connect().then(function() {
+  // Now listening
+});
+```
+
+The listener creates a AMQP queue, on the server side and subscribes to messages
+on the queue. It's possible to use named queues, see details below. For details
+on routing key entries refer to documentation on
+[docs.taskcluster.net](docs.taskcluster.net).
+
+**Remark,** API end-points and AMQP exchanges are typically documented in
+separate reference files. For this reason they also have separate Client
+classes, even if they are from the same component.
 
 ## Documentation
 The set of API entries listed below is generated from the builtin references.
