@@ -8,7 +8,7 @@ var assert    = require('assert');
 var slugid    = require('slugid');
 
 /** Create new Listener */
-var Listener = function() {
+var Listener = function(options) {
   this._connected = false;
   this._bindings = [];
   this._options = _.defaults(options || {}, {
@@ -61,6 +61,7 @@ Listener.prototype.bind = function(binding) {
 /** Connect, setup queue and binding to exchanges */
 Listener.prototype.connect = function() {
   assert(!this._connected, "Can't connect when already connected");
+  assert(this._options.connectionString, "connectionString is required");
   var that = this;
 
   // Create AMQP connection and channel
@@ -106,7 +107,7 @@ Listener.prototype.connect = function() {
       return that._channel.bindQueue(
         that._queueName,
         binding.exchange,
-        binding.routingKey
+        binding.routingKeyPattern
       );
     }));
   });
@@ -114,11 +115,14 @@ Listener.prototype.connect = function() {
   // Begin consumption
   return bindingsCreated.then(function() {
     return that._channel.consume(that._queueName, function(msg) {
+      debug("Received message from: %s", msg.fields.exchange);
       that._handle(msg);
     });
   }).then(function(result) {
     that._consumerTag = result.consumerTag;
     that._connected = true;
+    debug("Listening with consumer tag: '%s' on queue '%s'",
+          that._consumerTag, that._queueName);
   });
 };
 
@@ -129,7 +133,7 @@ Listener.prototype.pause = function() {
     return;
   }
   assert(this._connected, "Can't pause when not connected");
-  return this._channel(that._consumerTag);
+  return this._channel.cancel(this._consumerTag);
 };
 
 /** Connect or resume consumption of message */
@@ -191,7 +195,7 @@ Listener.prototype._handle = function(msg) {
       routing[routingKeyReference[i].name] = keys.join('.');
 
       // Provide parsed routing key
-      message.routing = routingKeyReference;
+      message.routing = routing;
     }
     catch(err) {
       // Ideally we should rethrow the exception. But since it's not quite
@@ -209,19 +213,19 @@ Listener.prototype._handle = function(msg) {
   Promise.all(this.listeners('message').map(function(handler) {
     return handler(message);
   })).then(function() {
-    return that.channel.ack(msg);
+    return that._channel.ack(msg);
   }).catch(function(err) {
     debug("Failed to process message %j from %s with error: %s, as JSON: %j",
           message, message.exchange, err, err, err.stack);
     if (message.redelivered) {
       debug("Nack (without requeueing) message %j from %s",
             message, message.exchange);
-      return that.channel.nack(msg, false, false);
+      return that._channel.nack(msg, false, false);
     } else {
       // Nack and requeue
-      return that.channel.nack(msg, false, true);
+      return that._channel.nack(msg, false, true);
     }
-  }).catch(function() {
+  }).catch(function(err) {
     debug("CRITICAL: Failed to nack message");
     that.emit('error', err);
   });
