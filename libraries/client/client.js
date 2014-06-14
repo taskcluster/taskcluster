@@ -111,7 +111,7 @@ exports.createClient = function(reference) {
   });
 
   // For each topic-exchange entry
-  reference.entries.filter(function() {
+  reference.entries.filter(function(entry) {
     return entry.type === 'topic-exchange';
   }).forEach(function(entry) {
     // Create function for routing-key pattern construction
