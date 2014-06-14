@@ -16,10 +16,6 @@ var Listener = function(options) {
     connectionString:       undefined,
     queueName:              undefined,
     maxLength:              undefined
-
-    //
-    //    no queueName: exclusive, autodelete, durable: false
-    //    queueName:    durable: true, autoDelete: false, exclusive: false
   });
 };
 
@@ -238,66 +234,3 @@ Listener.prototype.close = function() {
 
 // Export Listener
 module.exports = Listener;
-
-/*
-options:
- {
-    prefetch:   1,
-    context:    {},
-    amqpUrl:    '...'
-    start:      true || false,
-    maxLength:  undefined
- }
-
-var eventHandler = new taskcluster.EventHandler(options);
-
-eventHandler.configure(options);
-
-var schedulerEvents = new taskcluster.SchedulerEvents({exchangePrefix: ...});
-eventHandler.bind(schedulerEvents.taskGraphBlocked({
-  taskId:
-});
-
-eventHandler.handle(function(message) {
-  message.payload               // Message payload as JSON
-
-  message.routing.taskId        // taskId part of routing key
-  message.routing...
-  message.routing.workerGroup
-  message.routing.routing       // Tasks specific routing key
-
-  message.routingKey            // Routing key as text
-
-  message.exchange              // string queue/v1/exchangeId
-                                // Can compare to
-                                // schedulerEvents.taskGraphBlocked().exchange
-  message.redelivered           // true, if delivered before
-  return new Promise(...);
-});
-
-// if redelivered messages fails, then it's logged and the message is dropped
-
-eventHandler.setup(options).then(function(listener) {
-  listener.pause()
-  listener.resume()
-  listener.on('error', function() {crash});
-  listener.terminate();
-});
-
-
-*/
-
-/*
-var listener = new taskcluster.Listener(options);
-
-listener.bind(...);
-
-listener.on('message', function(message) {...});
-
-listener.connect().then(function() {
-  listener.resume();
-  listener.pause();
-});
-
-*/
-
