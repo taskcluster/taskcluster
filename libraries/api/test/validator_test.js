@@ -3,14 +3,58 @@ suite("validator", function() {
   var path    = require('path');
   var aws     = require('aws-sdk-promise');
   var base    = require('../');
+  var express = require('express');
+  var http    = require('http');
+  var fs      = require('fs');
+  var Promise = require('promise');
 
-
+  // Test that we can load from a folder
   test("load from folder", function() {
     return base.validator({
       publish:      false,
       folder:       path.join(__dirname, 'schemas'),
       constants:    {"my-constant": 42}
     }).then(function(validator) {
+      var errors = validator.check({
+        value: 42
+      }, 'http://localhost:1203/test-schema.json');
+      assert(errors === null, "Got errors");
+    });
+  });
+
+  // Test that we can preload from a url
+  test("preload from url", function() {
+    // Create a simple server that serves test-schema.json
+    var app = express();
+    app.get('/test-schema.json', function(req, res) {
+      var fileName = path.join(__dirname, 'schemas', 'test-schema.json');
+      res.json(200,
+        JSON.parse(fs.readFileSync(fileName, {encoding: 'utf8'}))
+      );
+    });
+
+    // Start server
+    var server = http.createServer(app);
+    var serverRunning = new Promise(function(accept, reject) {
+      server.once('error',      reject);
+      server.once('listening',  accept);
+      server.listen(1203);
+    });
+
+    var validator = null;
+    return serverRunning.then(function() {
+      return base.validator({
+        publish:      false,
+        preload: [
+          'http://localhost:1203/test-schema.json'
+        ]
+      });
+    }).then(function(validator_) {
+      validator = validator_
+      return new Promise(function(accept) {
+        server.close(accept);
+      });
+    }).then(function() {
       var errors = validator.check({
         value: 42
       }, 'http://localhost:1203/test-schema.json');

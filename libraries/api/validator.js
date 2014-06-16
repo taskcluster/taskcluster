@@ -70,15 +70,16 @@ Validator.prototype.check = function(json, schema) {
 Validator.prototype.load = function(url) {
   var that = this;
   return request
-    .get(url)
-    .then(function(res) {
-      if (!res.ok) {
-        debug("Failed to load schema from: " + url);
-        throw new Error("Failed to load from URL: " + url);
-      }
-      debug("Loaded: %s", url);
-      that._validator.register(res.body);
-    });
+  .get(url)
+  .end()
+  .then(function(res) {
+    if (!res.ok) {
+      debug("Failed to load schema from: " + url);
+      throw new Error("Failed to load from URL: " + url);
+    }
+    debug("Loaded: %s", url);
+    that._validator.register(res.body);
+  });
 };
 
 /** Register JSON schema with the validator */
