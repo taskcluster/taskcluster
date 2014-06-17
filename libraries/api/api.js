@@ -34,7 +34,7 @@ var Validator   = require('./validator').Validator;
 var schema = function(validator, options) {
   return function(req, res, next) {
     // If input schema is defined we need to validate the input
-    if (options.input !== undefined) {
+    if (options.input !== undefined && !options.skipInputValidation) {
       var errors = validator.check(req.body, options.input);
       if (errors) {
         debug("Request payload for %s didn't follow schema %s",
@@ -51,7 +51,7 @@ var schema = function(validator, options) {
     res.reply = function(json) {
       // If we're supposed to validate outgoing messages and output schema is
       // defined, then we have to validate against it...
-      if(options.output !== undefined) {
+      if(options.output !== undefined && !options.skipOutputValidation) {
         var errors = validator.check(json, options.output);
         if (errors) {
           res.json(500, {
