@@ -51,6 +51,32 @@ suite("api/validate", function() {
     res.reply({value: 12});
   });
 
+  // Declare a method we can test input validation skipping on
+  api.declare({
+    method:   'get',
+    route:    '/test-skip-input-validation',
+    name:     'testInputSkipInputValidation',
+    input:    'http://localhost:4321/test-schema.json',
+    skipInputValidation: true,
+    title:    "Test End-Point",
+    description:  "Place we can call to test something",
+  }, function(req, res) {
+    res.send(200, "Hello World");
+  });
+
+  // Declare a method we can test output validation skipping on
+  api.declare({
+    method:   'get',
+    route:    '/test-skip-output-validation',
+    name:     'testOutputSkipInputValidation',
+    output:    'http://localhost:4321/test-schema.json',
+    skipOutputValidation: true,
+    title:    "Test End-Point",
+    description:  "Place we can call to test something",
+  }, function(req, res) {
+    res.reply({value: 12});
+  });
+
   // Reference to mock authentication server
   var _mockAuthServer = null;
   // Reference for test api server
@@ -166,6 +192,31 @@ suite("api/validate", function() {
       .end()
       .then(function(res) {
         assert(res.status === 500, "Request wasn't 500");
+      });
+  });
+
+  // test skipping input validation
+  test("skip input validation", function() {
+    var url = 'http://localhost:23525/test-skip-input-validation';
+    return request
+      .get(url)
+      .send({value: 100})
+      .end()
+      .then(function(res) {
+        assert(res.ok, "Request failed");
+        assert(res.text === "Hello World", "Got wrong value");
+      });
+  });
+
+  // test skipping output validation
+  test("skip output validation", function() {
+    var url = 'http://localhost:23525/test-skip-output-validation';
+    return request
+      .get(url)
+      .end()
+      .then(function(res) {
+        assert(res.ok, "Request failed");
+        assert(res.body.value === 12, "Got wrong value");
       });
   });
 });
