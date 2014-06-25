@@ -62,6 +62,13 @@ suite("validator", function() {
     });
   });
 
+  // Sometimes we have no schemas to load, but need a validator
+  test("create empty validator", function() {
+    return base.validator().then(function(validator) {
+      assert(validator, "Didn't get a validator");
+    });
+  });
+
   test("find errors", function() {
     return base.validator({
       publish:      false,
