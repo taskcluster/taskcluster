@@ -107,7 +107,7 @@ Validator.prototype.register = function(schema) {
  */
 var validator = function(options) {
   // Provide default options
-  _.defaults(options, {
+  options = _.defaults(options || {}, {
     schemaBucket:    'schemas.taskcluster.net'
   });
 
