@@ -12,7 +12,6 @@ var tcServices = tc.NewServices()
 var httpClient = &http.Client{};
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("<<< WHAT >>>")
 	targetPath, err := tcServices.ConvertPath(r.URL);
 
 	// Unkown service which we are trying to hit...
