@@ -6,6 +6,17 @@ scheduler) without hardcoding credentials into the containers
 themselves.
 
 
+## Deployment
+
+The proxy server can be deployed directly by building `proxy/main.go`
+but the prefered method is via the `./build.sh` script which will
+compile the proxy server for linux/amd64 and deploy the server to a
+docker image.
+
+```sh
+./build.sh user/taskcluster-proxy-server
+```
+
 ## Download via `go get`
 
 ```sh

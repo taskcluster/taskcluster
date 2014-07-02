@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"log"
 	"io"
+	"flag"
 )
 
 var tcServices = tc.NewServices()
@@ -68,6 +69,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	port := flag.Int("p", 8080, "Port to bind the proxy server to")
+	flag.Parse()
+	log.Printf("Proxy server starting on: %d", *port)
+
 	http.HandleFunc("/", handler)
-	http.ListenAndServe(":8080", nil)
+	startError := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
+	if startError != nil {
+		log.Fatal(startError)
+	}
 }
