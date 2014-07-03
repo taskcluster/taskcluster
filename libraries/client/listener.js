@@ -47,7 +47,7 @@ Listener.prototype.bind = function(binding) {
     return that._channel.bindQueue(
       that._queueName,
       binding.exchange,
-      binding.routingKey
+      binding.routingKeyPattern
     );
   } else {
     return Promise.from(null);
