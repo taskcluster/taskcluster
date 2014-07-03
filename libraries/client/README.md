@@ -127,6 +127,18 @@ var queue = new taskcluster.Queue(options);
  * `queue.getPendingTasks(provisionerId) : void`
  * `queue.getAMQPConnectionString() : result`
 
+### Methods in `taskcluster.scheduler`
+```js
+// Create scheduler client instance with default baseUrl:
+//  - http://scheduler.taskcluster.net/v1
+var scheduler = new taskcluster.scheduler(options);
+```
+ * `scheduler.createTaskGraph(payload) : result`
+ * `scheduler.extendTaskGraph(taskGraphId, payload) : result`
+ * `scheduler.getTaskGraphStatus(taskGraphId) : result`
+ * `scheduler.getTaskGraphInfo(taskGraphId) : result`
+ * `scheduler.inspectTaskGraph(taskGraphId) : result`
+
 ### Exchanges in `taskcluster.QueueEvents`
 ```js
 // Create QueueEvents client instance with default exchangePrefix:
@@ -137,6 +149,17 @@ var queueEvents = new taskcluster.QueueEvents(options);
  * `queueEvents.taskRunning(routingKeyPattern) : binding-info`
  * `queueEvents.taskCompleted(routingKeyPattern) : binding-info`
  * `queueEvents.taskFailed(routingKeyPattern) : binding-info`
+
+### Exchanges in `taskcluster.schedulerEvents`
+```js
+// Create schedulerEvents client instance with default exchangePrefix:
+//  - scheduler/v1/
+var schedulerEvents = new taskcluster.schedulerEvents(options);
+```
+ * `schedulerEvents.taskGraphRunning(routingKeyPattern) : binding-info`
+ * `schedulerEvents.taskGraphExtended(routingKeyPattern) : binding-info`
+ * `schedulerEvents.taskGraphBlocked(routingKeyPattern) : binding-info`
+ * `schedulerEvents.taskGraphFinished(routingKeyPattern) : binding-info`
 
 <!-- END OF GENERATED DOCS -->
 
