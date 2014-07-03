@@ -207,7 +207,9 @@ Listener.prototype._handle = function(msg) {
 
   // Process handlers
   Promise.all(this.listeners('message').map(function(handler) {
-    return handler(message);
+    return Promise.from().then(function() {
+      return handler(message);
+    });
   })).then(function() {
     return that._channel.ack(msg);
   }).catch(function(err) {
