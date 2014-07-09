@@ -207,7 +207,7 @@ Listener.prototype._handle = function(msg) {
 
   // Process handlers
   Promise.all(this.listeners('message').map(function(handler) {
-    return Promise.from().then(function() {
+    return Promise.resolve(null).then(function() {
       return handler(message);
     });
   })).then(function() {
