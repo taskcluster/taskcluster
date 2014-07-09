@@ -118,6 +118,7 @@ var queue = new taskcluster.Queue(options);
  * `queue.createTask(payload) : result`
  * `queue.defineTasks(payload) : result`
  * `queue.scheduleTask(taskId) : result`
+ * `queue.getTask(taskId) : result`
  * `queue.getTaskStatus(taskId) : result`
  * `queue.claimTask(taskId, payload) : result`
  * `queue.requestArtifactUrls(taskId, payload) : result`
@@ -127,11 +128,11 @@ var queue = new taskcluster.Queue(options);
  * `queue.getPendingTasks(provisionerId) : void`
  * `queue.getAMQPConnectionString() : result`
 
-### Methods in `taskcluster.scheduler`
+### Methods in `taskcluster.Scheduler`
 ```js
-// Create scheduler client instance with default baseUrl:
+// Create Scheduler client instance with default baseUrl:
 //  - http://scheduler.taskcluster.net/v1
-var scheduler = new taskcluster.scheduler(options);
+var scheduler = new taskcluster.Scheduler(options);
 ```
  * `scheduler.createTaskGraph(payload) : result`
  * `scheduler.extendTaskGraph(taskGraphId, payload) : result`
@@ -150,11 +151,11 @@ var queueEvents = new taskcluster.QueueEvents(options);
  * `queueEvents.taskCompleted(routingKeyPattern) : binding-info`
  * `queueEvents.taskFailed(routingKeyPattern) : binding-info`
 
-### Exchanges in `taskcluster.schedulerEvents`
+### Exchanges in `taskcluster.SchedulerEvents`
 ```js
-// Create schedulerEvents client instance with default exchangePrefix:
+// Create SchedulerEvents client instance with default exchangePrefix:
 //  - scheduler/v1/
-var schedulerEvents = new taskcluster.schedulerEvents(options);
+var schedulerEvents = new taskcluster.SchedulerEvents(options);
 ```
  * `schedulerEvents.taskGraphRunning(routingKeyPattern) : binding-info`
  * `schedulerEvents.taskGraphExtended(routingKeyPattern) : binding-info`

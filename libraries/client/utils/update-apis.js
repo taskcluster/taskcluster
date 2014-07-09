@@ -93,21 +93,20 @@ program
     var apis = loadApis();
 
     // Update remaining references
-    Promise.all(_.keys(apis).map(function(name) {
+    Promise.all(Object.keys(apis).map(function(name) {
       var api = apis[name];
       // Load reference from referenceUrl
       console.log("Fetching reference from: " + api.referenceUrl);
-      loaded_reference = request
-                            .get(api.referenceUrl)
-                            .end().then(function(res) {
-        if (!res.ok) {
-          console.log("Failed to fetch reference from: " + api.referenceUrl);
-          console.log("Error: " + res.text);
-          process.exit(2);
-        }
-        console.log("Updated: " + name);
-        api.reference = res.body;
-      });
+
+      return request.get(api.referenceUrl).end().
+        then(function(res) {
+          if (!res.ok) {
+            console.log("Failed to fetch reference from: " + api.referenceUrl);
+            console.log("Error: " + res.text);
+            process.exit(2);
+          }
+          api.reference = res.body;
+        });
     })).then(function() {
       saveApis(apis);
     });
