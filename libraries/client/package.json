@@ -25,6 +25,6 @@
     "commander":                        "2.2.0",
     "cliff":                            "0.1.8",
     "taskcluster-base":                 "0.0.12",
-    "promise":                          "4.0.0"
+    "promise":                          "5.0.0"
   }
 }
