@@ -63,7 +63,7 @@ suite('listener', function() {
       });
     });
 
-    return Promise.all(published, result);
+    return Promise.all([published, result]);
   });
 
   // Test that routing key can be parsed if proper information is provided
@@ -99,7 +99,7 @@ suite('listener', function() {
       });
     });
 
-    return Promise.all(published, result);
+    return Promise.all([published, result]);
   });
 
   // Naive test that creation work when providing a name for the queue
@@ -136,7 +136,7 @@ suite('listener', function() {
       });
     });
 
-    return Promise.all(published, result);
+    return Promise.all([published, result]);
   });
 
   // Test routing with multi key
@@ -172,7 +172,7 @@ suite('listener', function() {
       });
     });
 
-    return Promise.all(published, result);
+    return Promise.all([published, result]);
   });
 
 
@@ -242,7 +242,7 @@ suite('listener', function() {
         return listener.resume();
       });
     });
-    return Promise.all(published, result);
+    return Promise.all([published, result]);
   });
 
   // Test pause and resume
