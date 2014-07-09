@@ -21,8 +21,8 @@ module.exports = {
   },
 
   server: {
-    publicUrl:                    'http://localhost:600235',
-    port:                         600235
+    publicUrl:                    'http://localhost:60235',
+    port:                         60235
   },
 
   // Local database
