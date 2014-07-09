@@ -269,6 +269,24 @@ api.declare({
   });
 });
 
+/** Get task */
+api.declare({
+  method:   'get',
+  route:    '/task/:taskId',
+  name:     'getTask',
+  scopes:   undefined,  // Still no auth required
+  input:    undefined,  // No input is accepted
+  output:   'http://schemas.taskcluster.net/queue/v1/task.json#',
+  title:    "Get task",
+  description: [
+    "Get task structure from `taskId`"
+  ].join('\n')
+}, function(req, res) {
+  // TODO: Once we move tasks to azure use information stored in the status
+  // table instead of this hardcoded value.
+  res.redirect(this.bucket.publicUrl(req.params.taskId + '/task.json'));
+});
+
 
 /** Get task status */
 api.declare({
