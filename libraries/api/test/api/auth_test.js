@@ -4,29 +4,109 @@ suite("api/auth", function() {
   var assert          = require('assert');
   var Promise         = require('promise');
   var mockAuthServer  = require('../mockauthserver');
+  var base            = require('../../');
+  var express         = require('express');
+
 
   // Reference to mock authentication server
-  var _server = null;
+  var _mockAuthServer = null;
+  // Reference for test api server
+  var _apiServer = null;
+
+  this.timeout(500);
+
+  // Create test api
+  var api = new base.API({
+    title:        "Test Api",
+    description:  "Another test api"
+  });
+
+  // Declare a method we can test parameterized scopes with
+  api.declare({
+    method:       'get',
+    route:        '/test-scopes',
+    name:         'testScopes',
+    title:        "Test End-Point",
+    scopes:       [['service:<param>']],
+    deferAuth:    true,
+    description:  "Place we can call to test something",
+  }, function(req, res) {
+    if(req.satisfies({
+      param:      'myfolder/resource'
+    })) {
+      res.json(200, "OK");
+    }
+  });
+
+  // Declare a method we can test with no authentication
+  api.declare({
+    method:       'get',
+    route:        '/test-no-auth',
+    name:         'testNoAuth',
+    title:        "Test End-Point",
+    description:  "Place we can call to test something",
+  }, function(req, res) {
+    res.json(200, "OK");
+  });
+
 
   // Create a mock authentication server
   setup(function(){
-    assert(_server === null, "_server must be null");
+    assert(_mockAuthServer === null,  "_mockAuthServer must be null");
+    assert(_apiServer === null,       "_apiServer must be null");
     return mockAuthServer({
       port:         23243
     }).then(function(server) {
-      _server = server;
+      _mockAuthServer = server;
+    }).then(function() {
+      // Create server for api
+      return base.validator().then(function(validator) {
+        // Create router
+        var router = api.router({
+          validator:      validator,
+          credentials: {
+            clientId:     'test-client',
+            accessToken:  'test-token'
+          },
+          authBaseUrl:    'http://localhost:23243'
+        });
+
+        // Create application
+        app = express();
+
+        // Use router
+        app.use(router);
+
+        return new Promise(function(accept, reject) {
+          var server = app.listen(23526);
+          server.once('listening', function() {
+            accept(server)
+          });
+          server.once('error', reject);
+          _apiServer = server;
+        });
+      });
     });
   });
 
   // Close server
   teardown(function() {
-    assert(_server, "_server doesn't exist");
-    return new Promise(function(accept, reject) {
-      _server.once('close', function() {
-        _server = null;
+    assert(_mockAuthServer, "_mockAuthServer doesn't exist");
+    assert(_apiServer,      "_apiServer doesn't exist");
+    return new Promise(function(accept) {
+      _apiServer.once('close', function() {
+        _apiServer = null;
         accept();
       });
-      _server.close();
+      _apiServer.close();
+    }).then(function() {
+      return new Promise(function(accept) {
+        _mockAuthServer.once('close', function() {
+          _mockAuthServer = null;
+          accept();
+        });
+        _mockAuthServer.close();
+      });
     });
   });
 
@@ -81,11 +161,14 @@ suite("api/auth", function() {
       })
       .end()
       .then(function(res) {
-        assert(res.ok, "Request failed");
+        if(!res.ok) {
+          console.log(res.body);
+          assert(false, "Request failed");
+        }
       });
   });
 
-    // Test getCredentials with by delegation with can-delegate
+  // Test getCredentials with by delegation with can-delegate
   test("No cheating by delegation", function() {
     var url = 'http://localhost:23243/client/test-client/credentials';
     return request
@@ -103,6 +186,65 @@ suite("api/auth", function() {
       .end()
       .then(function(res) {
         assert(res.status === 401, "Request didn't failed");
+      });
+  });
+
+  // Test parameterized scopes
+  test("Parameterized scopes", function() {
+    var url = 'http://localhost:23526/test-scopes';
+    return request
+      .get(url)
+      .hawk({
+        id:           'delegating-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      }, {
+        ext: new Buffer(JSON.stringify({
+          delegating:       true,
+          scopes:           ['service:myfolder/*']
+        })).toString('base64')
+      })
+      .end()
+      .then(function(res) {
+        if(!res.ok) {
+          console.log(JSON.stringify(res.body));
+          assert(false, "Request failed");
+        }
+      });
+  });
+
+  // Test that we can't cheat parameterized scopes
+  test("Can't cheat parameterized scopes", function() {
+    var url = 'http://localhost:23526/test-scopes';
+    return request
+      .get(url)
+      .hawk({
+        id:           'delegating-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      }, {
+        ext: new Buffer(JSON.stringify({
+          delegating:       true,
+          scopes:           ['service:myfolde/*']
+        })).toString('base64')
+      })
+      .end()
+      .then(function(res) {
+        assert(res.status === 401, "Request didn't failed");
+      });
+  });
+
+  // Test without authentication
+  test("Without authentication", function() {
+    var url = 'http://localhost:23526/test-no-auth';
+    return request
+      .get(url)
+      .end()
+      .then(function(res) {
+        if(!res.ok) {
+          console.log(JSON.stringify(res.body));
+          assert(false, "Request failed");
+        }
       });
   });
 });

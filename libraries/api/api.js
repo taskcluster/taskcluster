@@ -98,32 +98,40 @@ var Client = function(options) {
   this.scopes       = options.scopes;
 };
 
-/** Auxiliary function to check if scopePatterns intersect scopes */
-var scopeIntersect = function(scopePatterns, scopes) {
-  if (typeof(scopes) == 'string') {
-    scopes = [scopes];
+/** Auxiliary function to check if scopePatterns intersect a scope-set */
+var scopeIntersect = function(scopePatterns, scopesets) {
+  if (typeof(scopesets) == 'string') {
+    scopesets = [[scopesets]];
   }
+  scopesets = scopesets.map(function(scopeset) {
+    if (typeof(scopeset) == 'string') {
+      return [scopeset];
+    }
+    return scopeset;
+  });
   if (typeof(scopePatterns) == 'string') {
     scopePatterns = [scopePatterns];
   }
-  assert(scopes instanceof Array, "Scopes must be a string or an array");
-  return scopePatterns.some(function(pattern) {
-    var match = /^(.*)\*$/.exec(pattern);
-    return scopes.some(function(scope) {
-      if (scope === pattern) {
-        return true;
-      }
-      if (match) {
-        return scope.indexOf(match[1]) == 0;
-      }
-      return false;
+  assert(scopesets instanceof Array, "scopesets must be a string or an array");
+  return scopesets.some(function(scopeset) {
+    assert(scopesets instanceof Array, "scopeset must be a string or an array");
+    return scopeset.every(function(scope) {
+      return scopePatterns.some(function(pattern) {
+        if (scope === pattern) {
+          return true;
+        }
+        if (/\*$/.test(pattern)) {
+          return scope.indexOf(pattern.slice(0, -1)) === 0;
+        }
+        return false;
+      });
     });
   });
 }
 
-/** Check if the client satisfies any of the given scopes */
-Client.prototype.satisfies = function(scopes) {
-  return scopeIntersect(this.scopes, scopes);
+/** Check if the client satisfies any of the given scope-sets */
+Client.prototype.satisfies = function(scopesets) {
+  return scopeIntersect(this.scopes, scopesets);
 };
 
 /** Check if client credentials are expired */
@@ -210,26 +218,39 @@ var nonceManager = function(options) {
 };
 
 /**
- * Authenticate client and validate that he has one of the scopes required.
- * Skips validation if `options.scopes` is `undefined`.
+ * Authenticate client and validate that he satisfies one of the sets of scopes
+ * required. Skips validation if `options.scopes` is `undefined`.
  *
  * options:
  * {
- *   scopes:  ['admin', 'superuser', 'service:method:action']
+ *   scopes:  [
+ *     'service:method:action:<resource>'
+ *     ['admin', 'superuser'],
+ *   ]
+ *   deferAuth:   false // defaults to false
  * }
  *
- * Checks that the authenticated client has a scope pattern that matches one
- * of the declared `scopes`. If the client has pattern "service:*" this will
- * match any scope that starts with "service:" as is the case in the example
- * above.
- *
- * Note: Both API end-points and clients has a list of scopes. To authorize
- * a request we just need an intersection between these two lists.
+ * Check that the client is authenticated and has scope patterns that satisfies
+ * either `'service:method:action:<resource>'` or both `'admin'` and
+ * `'superuser'`. If the client has pattern "service:*" this will match any
+ * scope that starts with "service:" as is the case in the example above.
  *
  * This also adds a method `req.satisfies(scopes, noReply)` to the `request`
- * object. Calling this method with a list of scopes return `true` if the client
- * satisfies one of the scopes. If the client does not satisfy one of the scopes
- * it returns `false` and sends an error message unless `noReply = true`.
+ * object. Calling this method with a set of scopes-sets return `true` if the
+ * client satisfies one of the scopes-sets. If the client does not satisfy one
+ * of the scopes-sets it returns `false` and sends an error message unless
+ * `noReply = true`.
+ *
+ * If `deferAuth` is set to `true`, then authentication will be postponed to
+ * the first invocation of `req.satisfies`. Further note, that if
+ * `req.satisfies` is called with an object as first argument (instead of a
+ * list), then it'll assume this object is a mapping from scope parameters to
+ * values. e.g. `req.satisfies({resource: "my-resource"})` will check that
+ * the client satisfies `'service:method:action:my-resource'`.
+ * (This is useful when working with dynamic scope strings).
+ *
+ * Remark `deferAuth` will not perform authorization unless, `req.satisfies({})`
+ * is called either without arguments or with an object as first argument.
  *
  * Reports 401 if authentication fails.
  */
@@ -249,16 +270,28 @@ var authenticate = function(nonceManager, clientLoader, options) {
   return function(req, res, next) {
     // Restore originalUrl as needed by hawk for authentication
     req.url = req.originalUrl;
-    if (options.scopes == undefined) {
-      next();
-    } else {
-      hawk.server.authenticate(req, getCredentials, {
-        // Not sure if JSON stringify is not deterministic by specification.
-        // I suspect not, so we'll postpone this till we're sure we want to do
-        // payload validation and how we want to do it.
-        //payload:      JSON.stringify(req.body),
-        nonceFunc:    nonceManager
-      }, function(err, credentials, artifacts) {
+    // Technically, we always perform authentication, but we don't consider
+    // the result of `deferAuth` is true or `scopes` is undefined.
+    hawk.server.authenticate(req, getCredentials, {
+      // Not sure if JSON stringify is not deterministic by specification.
+      // I suspect not, so we'll postpone this till we're sure we want to do
+      // payload validation and how we want to do it.
+      //payload:      JSON.stringify(req.body),
+      nonceFunc:    nonceManager
+    }, function(err, credentials, artifacts) {
+      // Keep reference to set of authorized scopes, which will be extended
+      // by authenticate()
+      var authorizedScopes = [];
+
+      // Make function that will authenticate and return an error if one
+      // occurred and otherwise do nothing. This allows us to ignore
+      // authentication errors in case authentication is deferred
+      var authenticated = false;
+      var authenticate = function()  {
+        // Don't authenticate twice
+        if (authenticated) {
+          return;
+        }
         // Handle error fetching credentials or validating signature
         if (err) {
           var incidentId = uuid.v4();
@@ -270,41 +303,31 @@ var authenticate = function(nonceManager, clientLoader, options) {
             "Error occurred authenticating, err: %s, %j, incidentId: %s",
             err, err, incidentId, err.stack
           );
-          return res.json(401, {
-            message:        "Internal Server Error",
-            error: {
-              info:         message,
-              incidentId:   incidentId
+          return {
+            code: 401,
+            payload: {
+              message:        "Internal Server Error",
+              error: {
+                info:         message,
+                incidentId:   incidentId
+              }
             }
-          });
+          };
         }
         // Check that request is expired
         if (credentials.client.isExpired()) {
-          return res.json(401, {
-            message:  "Authentication Failed: TaskCluster credentials expired"
-          });
+          return {
+            code:     401,
+            payload:  {
+              message:  "Authentication Failed: TaskCluster credentials expired"
+            }
+          };
         }
+        // Find authorized scopes
+        authorizedScopes = credentials.client.scopes;
 
-        /**
-         * Create method to check if request satisfies a scope from required
-         * set of scopes.
-         * Return true, if successful and if unsuccessful it replies with
-         * error to `res`, unless `noReply` is `true`.
-         */
-        var authorizedScopes = credentials.client.scopes;
-        req.satisfies = function(scopes, noReply) {
-          var retval = scopeIntersect(authorizedScopes, scopes);
-          if (!retval && !noReply) {
-            res.json(401, {
-              message:  "Authorization Failed",
-              error: {
-                info:     "None of the scopes was satisfied",
-                scopes:   scopes,
-              }
-            });
-          }
-          return retval;
-        };
+        // Now we're authenticated
+        authenticated = true;
 
         // If we're delegating scopes
         if (artifacts.ext) {
@@ -318,13 +341,67 @@ var authenticate = function(nonceManager, clientLoader, options) {
             authorizedScopes = ext.scopes;
           }
         }
+      };
 
-        // Check that request satisfies one of the required scopes
-        if (req.satisfies(options.scopes)) {
+      /**
+       * Create method to check if request satisfies a scope-set from required
+       * set of scope-sets.
+       * Return true, if successful and if unsuccessful it replies with
+       * error to `res`, unless `noReply` is `true`.
+       */
+      req.satisfies = function(scopesets, noReply) {
+        // Authenticate
+        var error = authenticate();
+        if (error) {
+          if (!noReply) {
+            res.json(error.code, error.payload);
+          }
+          return false;
+        }
+
+        // Wrap strings if given
+        if (typeof(scopesets) === 'string') {
+          scopesets = [scopesets];
+        }
+
+        // If we're not given an array, we assume it's a set of parameters that
+        // must be used to parameterize the original scopesets
+        if (!(scopesets instanceof Array)) {
+          var params = scopesets;
+          scopesets = _.cloneDeep(options.scopes, function(scope) {
+            if(typeof(scope) === 'string') {
+              return scope.replace(/<([^>]+)>/g, function(match, param) {
+                var value = params[param];
+                return value === undefined ? match : value;
+              });
+            }
+          });
+        }
+
+        // Test that we have scope intersection, and hence, is authorized
+        var retval = scopeIntersect(authorizedScopes, scopesets);
+        if (!retval && !noReply) {
+          res.json(401, {
+            message:  "Authorization Failed",
+            error: {
+              info:       "None of the scope-sets was satisfied",
+              scopesets:  scopesets,
+            }
+          });
+        }
+        return retval;
+      };
+
+      // If we have scopesets to check and authentication isn't deferred
+      if (options.scopes != undefined && !options.deferAuth) {
+        // Check that request satisfies one of the required scopesets
+        if(req.satisfies(options.scopes)) {
           next();
         }
-      });
-    }
+      } else {
+        next();
+      }
+    });
   };
 };
 
