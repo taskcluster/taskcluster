@@ -123,7 +123,7 @@ suite("api/validate", function() {
           _apiServer = server;
         });
       });
-    })
+    });
   });
 
   // Close server
