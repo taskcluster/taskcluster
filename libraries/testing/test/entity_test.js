@@ -10,7 +10,6 @@ suite("entity", function() {
     envs: [
       'azureTestCredentials_accountName',
       'azureTestCredentials_accountKey',
-      'azureTestCredentials_accountUrl',
       'azureTestTableName'
     ],
     filename:               'taskcluster-base-test'
