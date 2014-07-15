@@ -149,7 +149,6 @@ Entity.registerDataType('slugid', {
  *   credentials: {
  *     accountName:    "...",              // Azure account name
  *     accountKey:     "...",              // Azure account key
- *     accountUrl:     "https://..."       // Account URL, please use HTTPS
  *   },
  *   tableName:        "AzureTableName",   // Azure table name
  *   mapping:          [...]               // Property mapping.
@@ -216,13 +215,18 @@ Entity.configure = function(options) {
   // If credentials are provided validate them and add an azure table client
   if (options.credentials) {
     assert(options.credentials,             "Azure credentials must be given");
-    assert(options.credentials.accountUrl,  "Missing accountUrl");
-    assert(/^https:\/\//.test(options.credentials.accountUrl),
-                                            "Don't use non-HTTPS accountUrl");
     assert(options.credentials.accountName, "Missing accountName");
     assert(options.credentials.accountKey ||
            options.credentials.sas,         "Missing accountKey or sas");
-    subClass.prototype._azClient = azureTable.createClient(options.credentials);
+    // Add accountUrl, if not already present, there is really no reason to
+    // not just compute... That's what the Microsoft libraries does anyways
+    var credentials = _.defaults({}, options.credentials, {
+      accountUrl:  "https://" + options.credentials.accountName +
+                   ".table.core.windows.net/"
+    });
+    assert(/^https:\/\//.test(credentials.accountUrl),
+                                              "Don't use non-HTTPS accountUrl");
+    subClass.prototype._azClient = azureTable.createClient(credentials);
   }
 
   // If tableName is provide validate and add it
