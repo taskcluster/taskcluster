@@ -186,3 +186,70 @@ var schemas = function(options) {
 
 // Export schemas
 exports.schemas = schemas;
+
+/** Declare API for mock authentication server */
+var mockAuthApi = new base.API({
+  title:        "Mock Auth Server",
+  description:  "Auth server for testing"
+});
+
+/** Declare method to get credentails */
+mockAuthApi.declare({
+  method:       'get',
+  route:        '/client/:clientId/credentials',
+  name:         'getCredentials',
+  scopes:       ['auth:credentials'],
+  title:        "Get Credentials",
+  description:  "Mock implementation of getCredentials"
+}, function(req, res) {
+  var clientId  = req.params.clientId;
+  var client    = _.find(this.clients, {clientId: clientId});
+  if (!client) {
+    res.json(404, {error: "ClientId not found"});
+  }
+  res.json(200, client);
+});
+
+/** Create a clientLoader with a fixed set of clients */
+var createClientLoader = function(clients) {
+  return function(clientId) {
+    return new Promise(function(accept, reject) {
+      var client = _.find(clients, {clientId: clientId});
+      if (client) {
+        return accept(new base.API.authenticate.Client(client));
+      }
+      return reject();
+    });
+  };
+};
+
+/** Create an mock authentication server for testing */
+var createMockAuthServer = function(options) {
+  // Set default options
+  options = _.defaults(options || {}, {
+    port:       1207
+  });
+
+  return base.validator().then(function(validator) {
+    // Create application
+    var app = base.app(options);
+
+    // Create router for the API
+    var router =  mockAuthApi.router({
+      context: {
+        clients:      options.clients
+      },
+      validator:      validator,
+      clientLoader:   createClientLoader(options.clients)
+    });
+
+    // Mount router
+    app.use('/v1', router);
+
+    // Create server
+    return app.createServer();
+  });
+};
+
+// Export createMockAuthServer
+exports.createMockAuthServer = createMockAuthServer;
