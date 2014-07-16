@@ -62,7 +62,12 @@ exports.createClient = function(reference) {
       // Substitute parameters into route
       var endpoint = entry.route;
       entry.args.forEach(function(arg) {
-        endpoint = endpoint.replace('<' + arg + '>', args.shift() || '');
+        var value = args.shift();
+        // Replace with empty string in case of undefined or null argument
+        if (value === undefined || value === null) {
+          value = '';
+        }
+        endpoint = endpoint.replace('<' + arg + '>', value);
       });
       // Create request
       var req = request[entry.method](this._options.baseUrl + endpoint);
