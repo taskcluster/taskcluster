@@ -98,17 +98,22 @@ var Client = function(options) {
   this.scopes       = options.scopes;
 };
 
-/** Auxiliary function to check if scopePatterns intersect a scope-set */
-var scopeIntersect = function(scopePatterns, scopesets) {
+/** Normalize scope sets */
+var normalizeScopeSets = function(scopesets) {
   if (typeof(scopesets) == 'string') {
     scopesets = [[scopesets]];
   }
-  scopesets = scopesets.map(function(scopeset) {
+  return scopesets.map(function(scopeset) {
     if (typeof(scopeset) == 'string') {
       return [scopeset];
     }
     return scopeset;
   });
+};
+
+/** Auxiliary function to check if scopePatterns intersect a scope-set */
+var scopeIntersect = function(scopePatterns, scopesets) {
+  var scopesets = normalizeScopeSets(scopesets);
   if (typeof(scopePatterns) == 'string') {
     scopePatterns = [scopePatterns];
   }
@@ -606,7 +611,7 @@ API.prototype.reference = function(options) {
         description:    entry.description
       };
       if (entry.scopes) {
-        retval.scopes = entry.scopes;
+        retval.scopes = normalizeScopeSets(entry.scopes);
       }
       if (entry.input) {
         retval.input  = entry.input;
