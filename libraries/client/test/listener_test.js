@@ -29,6 +29,13 @@ suite('listener', function() {
     assert(info.routingKeyPattern = 'test.#.*.*');
   });
 
+  // Test that binding info is generated with number as routing keys
+  test('binding info with number', function() {
+    var info = mockEventsClient.testExchange({testId: 0});
+    assert(info.exchange = 'taskcluster-client/test/test-exchange');
+    assert(info.routingKeyPattern = '0.#.*.*');
+  });
+
   // Bind and listen with listener
   test('bind and listen', function() {
     this.timeout(1500);
