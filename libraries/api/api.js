@@ -1,17 +1,18 @@
-var express     = require('express');
-var debug       = require('debug')('base:api');
-var Promise     = require('promise');
-var uuid        = require('uuid');
-var hawk        = require('hawk');
-var aws         = require('aws-sdk-promise');
-var assert      = require('assert');
-var _           = require('lodash');
-var bodyParser  = require('body-parser');
-var path        = require('path');
-var fs          = require('fs');
+var express       = require('express');
+var debug         = require('debug')('base:api');
+var Promise       = require('promise');
+var uuid          = require('uuid');
+var hawk          = require('hawk');
+var aws           = require('aws-sdk-promise');
+var assert        = require('assert');
+var _             = require('lodash');
+var bodyParser    = require('body-parser');
+var path          = require('path');
+var fs            = require('fs');
 require('superagent-hawk')(require('superagent'));
-var request     = require('superagent-promise');
-var Validator   = require('./validator').Validator;
+var request       = require('superagent-promise');
+var Validator     = require('./validator').Validator;
+var pathToRegexp  = require('path-to-regexp');
 
 /**
  * Declare {input, output} schemas as options to validate
@@ -598,9 +599,12 @@ API.prototype.reference = function(options) {
       var params = [];
       var route = entry.route.replace(/\/:[^/]+/g, function(param) {
         param = param.substr(2);
-        params.push(param);
         return '/<' + param + '>';
       });
+      pathToRegexp(entry.route, params);
+      params = params.map(function(param) {
+        return param.name;
+      })
       var retval = {
         type:           'function',
         method:         entry.method,
