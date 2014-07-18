@@ -4,6 +4,7 @@ suite("entity", function() {
   var _       = require('lodash');
   var Promise = require('promise');
   var base    = require('../');
+  var debug   = require('debug')('base:test:entity');
 
   // Load test configuration
   var cfg = base.config({
@@ -71,6 +72,37 @@ suite("entity", function() {
       assert(item.nb    === 1337.2,         "nb mismatch");
       assert(item.json.Hello  === "World",  "json mismatch");
       assert(item.date  === date,           "Date mismatch");
+    });
+  });
+
+  // Test create overwrite fails
+  test("Item.create (overwrite fails)", function() {
+    var date  = new Date();
+    var id    = slugid.v4();
+    return Item.create({
+      pk:       id,
+      rk:       "row-key",
+      str:      "Hello World",
+      nb:       1337.2,
+      json:     {Hello: "World"},
+      ID:       id,
+      date:     date
+    }).then(function(item) {
+      return Item.create({
+        pk:       id,
+        rk:       "row-key",
+        str:      "Hello World",
+        nb:       1337.2,
+        json:     {Hello: "World"},
+        ID:       id,
+        date:     date
+      }).then(function() {
+        assert(false, "This should have failed");
+      }, function(err) {
+        assert(err.code === 'EntityAlreadyExists',
+               "Expected an 'EntityAlreadyExists' error");
+        debug("Got an expected error: %j", err);
+      });
     });
   });
 
