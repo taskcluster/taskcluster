@@ -15,11 +15,15 @@ var normalizeMapping = function(mapping) {
   var properties  = [];
   var result      = {};
   mapping.forEach(function(entry) {
-    // Check that PartitionKey and RowKey always are strings
-    assert(entry.key != 'PartitionKey' || entry.type == 'string',
-                                      "PartitionKey must be a string");
-    assert(entry.key != 'RowKey' || entry.type == 'string',
-                                      "RowKey must be a string");
+    // Check that PartitionKey and RowKey always are strings of some form
+    if (entry.key === 'PartitionKey')  {
+      assert(entry.type == 'string' ||
+             entry.type == 'encodedstring', "PartitionKey must be a string");
+    }
+    if (entry.key === 'RowKey') {
+      assert(entry.type == 'string' ||
+             entry.type == 'encodedstring', "RowKey must be a string");
+    }
     // Ensure that a key is defined
     assert(entry.key !== undefined,   "Entry key must be defined");
     // Check that entry has a type and that is defined
@@ -92,6 +96,26 @@ Entity.registerDataType('string', {
   deserialize:  function(r) {
     assert.equal(typeof(r), 'string', "Type string must be a string");
     return r;
+  }
+});
+
+// Register `encodedstring` as a type, to workaround Azure Table Storage
+// limitations, such as no control characters and no /\#?%
+// Note in particular % is undocumented and doesn't work.
+// See: http://msdn.microsoft.com/en-us/library/azure/dd179338.aspx
+Entity.registerDataType('encodedstring', {
+  serialize:    function(d) {
+    assert.equal(typeof(d), 'string', "Type string must be a string");
+    // 1. URL encode
+    // 2. URL encode all tilde (replace ~ with %7E)
+    // 3. Replace % with tilde for Azure compatibility
+    return encodeURIComponent(d).replace(/~/g, '%7E').replace(/%/g, '~');
+  },
+  deserialize:  function(r) {
+    assert.equal(typeof(r), 'string', "Type string must be a string");
+    // 1. Replace tilde with % to get URL encoded string
+    // 2. URL decode (this handle step 1 and 2 from encoding process)
+    return decodeURIComponent(r.replace(/~/g, '%'));
   }
 });
 
