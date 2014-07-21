@@ -159,6 +159,7 @@ suite("entity", function() {
     return Item.load(slugid.v4(), slugid.v4()).then(function() {
       assert(false, "We shouldn't be able to load this");
     }, function(err) {
+      debug("Expected error: %j", err);
       assert(err, "Error expected");
     });
   });
