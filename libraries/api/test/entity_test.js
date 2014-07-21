@@ -28,7 +28,7 @@ suite("entity", function() {
   var AbstractItem = base.Entity.configure({
     mapping: [
       {key: 'PartitionKey', property: 'pk',   type: 'string'},
-      {key: 'RowKey',       property: 'rk',   type: 'string'},
+      {key: 'RowKey',       property: 'rk',   type: 'encodedstring'},
       {key: 'str',          property: 'str',  type: 'string'},
       {key: 'nb',           property: 'nb',   type: 'number'},
       {key: 'js',           property: 'json', type: 'json'  },
@@ -74,6 +74,29 @@ suite("entity", function() {
       assert(item.date  === date,           "Date mismatch");
     });
   });
+
+  // Test create with special characters
+  test("Item.create w. special characters", function() {
+    var date  = new Date();
+    var id    = slugid.v4();
+    return Item.create({
+      pk:       id,
+      rk:       "$@row/$key__",
+      str:      "Hello World",
+      nb:       1337.2,
+      json:     {Hello: "World"},
+      ID:       id,
+      date:     date
+    }).then(function(item) {
+      assert(item.pk    === id,             "pk mismatch");
+      assert(item.rk    === "$@row/$key__", "row-key mismatch");
+      assert(item.str   === 'Hello World',  "str mismatch");
+      assert(item.nb    === 1337.2,         "nb mismatch");
+      assert(item.json.Hello  === "World",  "json mismatch");
+      assert(item.date  === date,           "Date mismatch");
+    });
+  });
+
 
   // Test create overwrite fails
   test("Item.create (overwrite fails)", function() {
