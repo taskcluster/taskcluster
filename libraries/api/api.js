@@ -12,7 +12,6 @@ var fs            = require('fs');
 require('superagent-hawk')(require('superagent'));
 var request       = require('superagent-promise');
 var Validator     = require('./validator').Validator;
-var pathToRegexp  = require('path-to-regexp');
 
 /**
  * Declare {input, output} schemas as options to validate
@@ -596,15 +595,16 @@ API.prototype.reference = function(options) {
     baseUrl:            options.baseUrl,
     entries: this._entries.map(function(entry) {
       // Find parameters for entry
-      var params = [];
-      var route = entry.route.replace(/\/:[^/]+/g, function(param) {
-        param = param.substr(2);
+      var params  = [];
+      // Note: express uses the NPM module path-to-regexp for parsing routes
+      // when modifying this to support more complicated routes it can be
+      // beneficial lookup the source of this module:
+      // https://github.com/component/path-to-regexp/blob/0.1.x/index.js
+      var regexp  = /\/:(\w+)(\(.*?\))?/g;
+      var route   = entry.route.replace(regexp, function(match, param) {
+        params.push(param);
         return '/<' + param + '>';
       });
-      pathToRegexp(entry.route, params);
-      params = params.map(function(param) {
-        return param.name;
-      })
       var retval = {
         type:           'function',
         method:         entry.method,
