@@ -86,11 +86,11 @@ Entity.registerDataType = function(type, options) {
 // Register `string` as a type
 Entity.registerDataType('string', {
   serialize:    function(d) {
-    assert(typeof(d) === 'string', "Type string must be a string");
+    assert.equal(typeof(d), 'string', "Type string must be a string");
     return d;
   },
   deserialize:  function(r) {
-    assert(typeof(r) === 'string', "Type string must be a string");
+    assert.equal(typeof(r), 'string', "Type string must be a string");
     return r;
   }
 });
@@ -98,11 +98,11 @@ Entity.registerDataType('string', {
 // Register `number` as a type
 Entity.registerDataType('number', {
   serialize:    function(d) {
-    assert(typeof(d) === 'number', "Type number must be a number");
+    assert.equal(typeof(d), 'number', "Type number must be a number");
     return d;
   },
   deserialize:  function(r) {
-    assert(typeof(r) === 'number', "Type number must be a number");
+    assert.equal(typeof(r), 'number', "Type number must be a number");
     return r;
   }
 });
@@ -111,7 +111,7 @@ Entity.registerDataType('number', {
 Entity.registerDataType('json', {
   serialize:    function(d) { return JSON.stringify(d); },
   deserialize:  function(r) {
-    assert(typeof(r) === 'string', "JSON input must be a string");
+    assert.equal(typeof(r), 'string', "JSON input must be a string");
     return JSON.parse(r);
   }
 });
@@ -131,13 +131,13 @@ Entity.registerDataType('date', {
 // Register `slugid` as a type
 Entity.registerDataType('slugid', {
   serialize:    function(d) {
-    assert(d,               "Slugs must be a string");
-    assert(d.length == 22,  "Slugs should always be 22 chars long");
+    assert(d,                   "Slugs must be a string");
+    assert.equal(d.length, 22,  "Slugs should always be 22 chars long");
     return slugid.decode(d);
   },
   deserialize:  function(r) {
-    assert(typeof(r) == 'string', "Slugids should be returned from " +
-                                  "azure as strings");
+    assert.equal(typeof(r), 'string', "Slugids should be returned from " +
+                                      "azure as strings");
     return slugid.encode(r);
   }
 });
