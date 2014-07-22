@@ -14,7 +14,7 @@
   "dependencies": {
     "lodash":                           "2.4.1",
     "debug":                            "0.7.4",
-    "superagent":                       "~0.16.0",
+    "superagent":                       "0.18.2",
     "superagent-promise":               "0.1.2",
     "superagent-hawk":                  "0.0.3",
     "amqplib":                          "0.2.0",
