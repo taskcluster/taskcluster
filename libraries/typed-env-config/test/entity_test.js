@@ -373,5 +373,56 @@ suite("entity", function() {
       assert(items[1].str   === 'Hello World',  "str mismatch");
     });
   });
+
+  // Test Item.queryProperty
+  test("Item.queryProperty (without handler)", function() {
+    var date  = new Date();
+    var id    = slugid.v4();
+    var id2   = slugid.v4();
+    var created = Item.create({
+      pk:       slugid.v4(),
+      rk:       id,
+      str:      "Hello World",
+      nb:       34,
+      json:     {Hello: "World"},
+      ID:       id2,
+      date:     date
+    });
+    return created.then(function() {
+      return Item.queryProperty('ID', '==', id2);
+    }).then(function(items) {
+      assert(items.length == 1,                 "Expected one item");
+      assert(items[0].rk    === id,             "rk mismatch");
+      assert(items[0].str   === 'Hello World',  "str mismatch");
+    });
+  });
+
+  // Test Item.queryProperty with handler
+  test("Item.queryProperty (with handler)", function() {
+    var date  = new Date();
+    var id    = slugid.v4();
+    var id2   = slugid.v4();
+    var gotit = false;
+    var created = Item.create({
+      pk:       slugid.v4(),
+      rk:       id,
+      str:      "Hello World",
+      nb:       34,
+      json:     {Hello: "World"},
+      ID:       id2,
+      date:     date
+    });
+    return created.then(function() {
+      return Item.queryProperty('ID', '==', id2, function(item) {
+        assert(item,                          "Expected an item");
+        assert(item.rk    === id,             "rk mismatch");
+        assert(item.str   === 'Hello World',  "str mismatch");
+        gotit = true;
+      });
+    }).then(function() {
+      assert(gotit, "Didn't get the item");
+    });
+  });
+
 });
 
