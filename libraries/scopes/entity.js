@@ -444,6 +444,96 @@ Entity.queryRowKey = function(rowKey) {
   });
 };
 
+/**
+ * Query entities using `property`, `operator` and `value`.
+ *
+ * If `handler` is provided it must be a function that a single entity and
+ * returns a promise, when it is ready to proceed querying the table.
+ *
+ * If no `handler` is provided a promise for a list of entities is returned.
+ * Remark, the `handler` is available as it can be necessary to handle entities
+ * as the table is scanned to avoid keeping them all in memory.
+ */
+Entity.queryProperty = function(property, operator, value, handler) {
+  var Class = this;
+  // Validate the context
+  assert(Class,     "Entity.create must be bound to an Entity subclass");
+  var client    = Class.prototype._azClient;
+  var tableName = Class.prototype._azTableName;
+  var mapping   = Class.prototype.__mapping;
+  assert(client,    "Azure credentials not configured");
+  assert(tableName, "Azure tableName not configured");
+  assert(mapping,   "Property mapping not configured");
+
+  // Check that the property is okay, and we're not doing something stupid
+  assert(property, "An property must be given")
+  assert(mapping.PartitionKey.property !== property,
+         "Use something smarter when you have the partition key");
+  // Find property entry
+  var entry = null;
+  _.forIn(mapping, function(ent) {
+    if (ent.property === property) {
+      entry = ent;
+    }
+  });
+  assert(entry, "Property does not exist");
+
+  // Check operator
+  assert(['==', '!=', '<', '>', '>=', '<='].indexOf(operator) != -1,
+         "Operator not allowed");
+
+  // Validate handler
+  assert(!handler || handler instanceof Function,
+        "If handler is provided it must be a function");
+
+  // Serialize value
+  value = entry.serialize(value);
+
+  // Execute the query
+  return new Promise(function(accept, reject) {
+    var entities = [];
+    var fetchNext = function(continuationTokens) {
+      client.queryEntities(tableName, {
+        query:        azureTable.Query.create(entry.key, operator, value),
+        forceEtags:   true,
+        continuation: continuationTokens
+      }, function(err, data, continuationTokens) {
+        // Reject if we hit an error
+        if (err) {
+          return reject(err);
+        }
+
+        // Promise that we're ready to continue
+        var ready = Promise.resolve(null);
+
+        if (handler) {
+          // If we have a handler, we're not ready until all entities have been
+          // handled by the handler
+          ready = Promise.all(data.map(function(entity) {
+            return handler(new Class(entity));
+          }))
+        } else {
+          // Create wrapper for each entity fetched
+          entities.push.apply(entities, data.map(function(entity) {
+            return new Class(entity);
+          }));
+        }
+
+        // When ready, either continue or accept entities collected so far
+        ready.then(function() {
+          // If there are no continuation tokens then we accept data fetched
+          if (!continuationTokens) {
+            return accept(entities);
+          }
+          // Fetch next set based on continuation tokens
+          fetchNext(continuationTokens);
+        });
+      });
+    }
+    fetchNext(undefined);
+  });
+};
+
 /** Remove entity without loading it */
 Entity.remove = function(partitionKey, rowKey) {
   var Class = this;
