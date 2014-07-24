@@ -12,20 +12,8 @@ suite('validate', function() {
     schemaPrefix:   'http://schemas.taskcluster.net/',
     cases: [
       {
-        schema:   'queue/v1/task-failed-message.json#',
-        path:     'task-failed-with-run-message.json',
-        success:  true,
-      }, {
-        schema:   'queue/v1/task-failed-message.json#',
-        path:     'task-failed-message.json',
-        success:  true,
-      }, {
-        schema:   'queue/v1/task-pending-message.json#',
-        path:     'task-pending-message.json',
-        success:  true,
-      }, {
-        schema:   'queue/v1/task-status.json#',
-        path:     'task-status.json',
+        schema:   'queue/v1/task.json#',
+        path:     'task.json',
         success:  true,
       }
     ]

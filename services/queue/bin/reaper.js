@@ -1,13 +1,11 @@
 #!/usr/bin/env node
-var base      = require('taskcluster-base');
-var path      = require('path');
-var debug     = require('debug')('queue:bin:reaper');
-var Promise   = require('promise');
-var exchanges = require('../queue/exchanges');
-var schema    = require('../queue/schema');
-var TaskStore = require('../queue/taskstore');
-var Knex      = require('knex');
-var Reaper    = require('../queue/reaper');
+var base        = require('taskcluster-base');
+var path        = require('path');
+var debug       = require('debug')('queue:bin:reaper');
+var Promise     = require('promise');
+var exchanges   = require('../queue/exchanges')
+var TaskModule  = require('../queue/task.js')
+var Reaper      = require('../queue/reaper');
 
 /** Launch server */
 var launch = function(profile) {
@@ -18,21 +16,14 @@ var launch = function(profile) {
     envs: [
       'amqp_url',
       'database_connectionString',
-      'queue_publishMetaData',
-      'aws_accessKeyId',
-      'aws_secretAccessKey'
     ],
     filename:     'taskcluster-queue'
   });
 
-  // Connect to task database store
-  var knex = Knex({
-    client:       'postgres',
-    connection:   cfg.get('database:connectionString')
+  // Create Task subclass wrapping database access
+  var Task = TaskModule.configure({
+    connectionString:   cfg.get('database:connectionString')
   });
-
-  // Create database schema
-  var schemaCreated = schema.create(knex);
 
   // Setup AMQP exchanges and create a publisher
   // First create a validator, though
@@ -50,7 +41,7 @@ var launch = function(profile) {
   // Wait for publisher and database schema to be created
   return Promise.all(
     publisherCreated,
-    schemaCreated
+    Task.ensureTables()
   ).then(function(values) {
     // Get the publisher
     var publisher = values.shift();
@@ -59,7 +50,7 @@ var launch = function(profile) {
     var reaper = new Reaper({
       interval:     Number(cfg.get('queue:reaper:interval')),
       errorLimit:   Number(cfg.get('queue:reaper:errorLimit')),
-      store:        new TaskStore(knex),
+      Task:         Task,
       publisher:    publisher,
       start:        true
     });

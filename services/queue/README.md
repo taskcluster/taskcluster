@@ -2,8 +2,6 @@
 
 This the central queue coordinating execution of tasks in the TaskCluster setup.
 
-**Warning:** This is still very much a prototype.
-
 Project Structure
 -----------------
 _The following itemization of folders outlines how this project is structured._
@@ -17,21 +15,62 @@ _The following itemization of folders outlines how this project is structured._
     S3 files, requests and responses should be validated against.
  * `tests/`, automated tests using `nodeunit`, launched with `node tests` so
    that we can stick in other test frameworks should we ever need it.
- * `utils/`, various helpful utilities, monkey-patches, etc. that are useful,
-   but not exactly query specific.
+
+
+Development
+-----------
+
+To run tests under vagrant you'll need a configuration file with access
+credentials for S3 and Azure Blob and Table Storage. It is useful overwrite
+the configs given in `config/test.js` with a local configuration file
+`taskcluster-queue.conf.json` as illustrated below:
+
+```
+{
+  "aws": {
+    "accessKeyId":        "...",
+    "secretAccessKey":    "...",
+    "region":             "us-west-2"
+  },
+  "azure": {
+    "accountName":        "...",
+    "accountKey":         "..."
+  }
+}
+```
+
+For S3 we have a dummy bucket called `test-bucket-for-any-garbage` which stores objects for 24 hours. Mozilla developers can get access from a taskcluster
+developer, or you can setup a custom a bucket and overwrite the bucket name
+as well as the credentials.
+
+Same thing applies for azure, though it's as nicely scoped, and doesnt clean up
+on it's own.
 
 
 Deployment
 ----------
-Code is deployed from master to heroku whenever code hits master (and it passes travis ci)
+Code is deployed from master to heroku whenever code hits master
+(and it passes travis ci)
+
+The following processes are designed to run constantly:
+
+ * `./bin/server.js production`
+ * `./bin/reaper.js production`
+
+With the following processes running as cron jobs on daily basis:
+
+ * `./bin/expire-artifacts.js production`
+ * `./bin/retire-tasks.js production`
+
+On heroku these are configured using the scheduler.
 
 
 AWS Access Policies Required
 ----------------------------
-The taskcluster queue uses an S3 bucket for storing tasks meta-data, artifacts
-and results, in addition API and exchange meta-data is published buckets
-`schemas.taskcluster.net` and `references.taskcluster.net` as these are
-configured as defaults in `taskcluster-base`.
+The taskcluster queue uses an S3 bucket for storing artifacts, in addition API
+and exchange meta-data is published buckets `schemas.taskcluster.net` and
+`references.taskcluster.net` as these are configured as defaults in
+`taskcluster-base`.
 In order to operate on these resources the following access policy is needed:
 
 ```js
@@ -58,7 +97,8 @@ In order to operate on these resources the following access policy is needed:
       "Effect": "Allow",
       "Action": [
         "s3:GetObject",
-        "s3:PutObject"
+        "s3:PutObject",
+        "s3:DeleteObject"
       ],
       "Resource": [
         "arn:aws:s3:::<task-bucket>/*"

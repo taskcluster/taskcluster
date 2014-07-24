@@ -12,7 +12,7 @@ var debug   = require('debug')('queue:reaper');
  * {
  *   interval:   30 // Interval to cleanup in seconds
  *   errorLimit: 5  // Number of times reaping is allowed to fail in a row
- *   store:         // TaskStore from queue/taskstore.js
+ *   Task:          // Task from queue/task.js
  *   publisher:     // publisher from base.Exchanges
  *   start:         // Start immediately (defaults to false)
  * }
@@ -29,11 +29,11 @@ var Reaper = function(options) {
   // Validate options
   assert(typeof(options.interval) === 'number' && options.interval > 0,
          "options.interval must be a positive number");
-  assert(options.store, "store must be a TaskStore instance");
+  assert(options.Task, "Task must be a Task instance");
   assert(options.publisher, "publisher must be a provided");
 
   // Set properties
-  this._store       = options.store;
+  this._Task        = options.Task;
   this._publisher   = options.publisher;
   this._interval    = options.interval;
   this._errorLimit  = options.errorLimit;
@@ -94,44 +94,73 @@ Reaper.prototype.stop = function() {
 Reaper.prototype.reap = function() {
   var that = this;
 
-  // Reap failed tasks
-  var failedReaped = this._store.findAndUpdateFailed().then(function(tasks) {
-    debug("failed tasks: " + tasks.length);
-    return tasks.map(function(task) {
-      debug("task failed: %s", task.taskId);
+  // Expire by deadline
+  var expiredByDeadline = this._Task.expireByDeadline().then(function(tasks) {
+    debug("failed tasks by deadline expiration: " + tasks.length);
+    return Promise.all(tasks.map(function(task) {
+      debug("task failed: %s (by deadline expiration)", task.taskId);
       // Construct message
       var message = {
-        status:   task
+        status:     task.status(),
       };
 
-      // Add run information from latest run, if one exists
-      task.runs.forEach(function(run) {
-        if (!message.runId || message.runId < run.runId) {
-          message.runId       = run.runId;
-          message.workerGroup = run.workerGroup;
-          message.workerId    = run.workerId;
-        }
-      });
+      // Add run information from last run, if one exists
+      var lastRun = _.last(task.runs);
+      if (lastRun) {
+        message.runId         = lastRun.runId;
+        message.workerGroup   = lastRun.workerGroup;
+        message.workerId      = lastRun.workerId;
+      }
 
       // Publish message
-      return that._publisher.taskFailed(message);
-    });
+      return that._publisher.taskFailed(message, task.routing);
+    }));
   });
 
-  // Reap pending tasks
-  var pendingReaped = that._store.findAndUpdatePending().then(function(tasks) {
-    debug("pending tasks: " + tasks.length);
-    return tasks.map(function(task) {
-      debug("task pending: %s", task.taskId);
-      // Publish event notifying about the new task
+  // Expire claims without retries
+  var expiredClaimsWithoutRetries = this._Task.expireClaimsWithoutRetries()
+                                              .then(function(tasks) {
+    debug("failed tasks by claim expiration without retry: " + tasks.length);
+    return Promise.all(tasks.map(function(task) {
+      debug("task failed: %s (by claim expiration without retry)", task.taskId);
+      // Construct message
+      var message = {
+        status:     task.status(),
+      };
+
+      // Add run information from last run, if one exists
+      var lastRun = _.last(task.runs);
+      if (lastRun) {
+        message.runId         = lastRun.runId;
+        message.workerGroup   = lastRun.workerGroup;
+        message.workerId      = lastRun.workerId;
+      }
+
+      // Publish message
+      return that._publisher.taskFailed(message, task.routing);
+    }));
+  });
+
+  // Expire claims with retries
+  var expiredClaimsWithRetries = this._Task.expireClaimsWithRetries()
+                                           .then(function(tasks) {
+    debug("retry after claim expiration: " + tasks.length);
+    return Promise.all(tasks.map(function(task) {
+      debug("task retried: %s (by claim expiration)", task.taskId);
+      // Publish message
       return that._publisher.taskPending({
-        status:     task
-      });
-    });
+        status:     task.status(),
+        runId:      _.last(task.runs).runId
+      }, task.routing);
+    }));
   });
 
   // Promise that both things are reaped
-  return Promise.all(failedReaped, pendingReaped);
+  return Promise.all(
+    expiredByDeadline,
+    expiredClaimsWithoutRetries,
+    expiredClaimsWithRetries
+  );
 };
 
 // Export reaper

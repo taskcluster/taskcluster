@@ -1,17 +1,20 @@
 #!/usr/bin/env node
-var base      = require('taskcluster-base');
-var v1        = require('../routes/api/v1');
-var path      = require('path');
-var debug     = require('debug')('queue:bin:server');
-var Promise   = require('promise');
-var exchanges = require('../queue/exchanges');
-var schema    = require('../queue/schema');
-var TaskStore = require('../queue/taskstore');
-var Tasks     = require('../queue/tasks');
-var Knex      = require('knex');
+var debug       = require('debug')('queue:bin:server');
+var base        = require('taskcluster-base');
+var v1          = require('../routes/api/v1');
+var path        = require('path');
+var Promise     = require('promise');
+var exchanges   = require('../queue/exchanges');
+var TaskModule  = require('../queue/task.js')
+var _           = require('lodash');
+var BlobStore   = require('../queue/blobstore');
+var data        = require('../queue/data');
+var Bucket      = require('../queue/bucket');
 
 /** Launch server */
 var launch = function(profile) {
+  debug("Launching with profile: %s", profile);
+
   // Load configuration
   var cfg = base.config({
     defaults:     require('../config/defaults'),
@@ -20,22 +23,18 @@ var launch = function(profile) {
       'amqp_url',
       'database_connectionString',
       'queue_publishMetaData',
+      'taskcluster_credentials_clientId',
+      'taskcluster_credentials_accessToken',
       'aws_accessKeyId',
       'aws_secretAccessKey',
       'queue_credentials_clientId',
-      'queue_credentials_accessToken'
+      'queue_credentials_accessToken',
+      'azure_accountName',
+      'azure_accountKey',
     ],
     filename:     'taskcluster-queue'
   });
 
-  // Connect to task database store
-  var knex = Knex({
-    client:       'postgres',
-    connection:   cfg.get('database:connectionString')
-  });
-
-  // Create database schema
-  var schemaCreated = schema.create(knex);
 
   // Setup AMQP exchanges and create a publisher
   // First create a validator and then publisher
@@ -48,6 +47,7 @@ var launch = function(profile) {
     schemaPrefix:     'queue/v1/',
     aws:              cfg.get('aws')
   }).then(function(validator_) {
+    debug("Validator created");
     validator = validator_;
     return exchanges.setup({
       connectionString:   cfg.get('amqp:url'),
@@ -58,39 +58,71 @@ var launch = function(profile) {
       aws:                cfg.get('aws')
     });
   }).then(function(publisher_) {
+    debug("Publisher created");
     publisher = publisher_;
   });
 
-  // Create tasks access utility
-  var tasks = new Tasks({
-    aws:                cfg.get('aws'),
-    bucket:             cfg.get('queue:tasks:bucket'),
-    publicBaseUrl:      cfg.get('queue:tasks:publicBaseUrl')
+  // Create artifact bucket instance for API implementation
+  var artifactBucket = new Bucket({
+    bucket:             cfg.get('queue:artifactBucket'),
+    credentials:        cfg.get('aws')
   });
 
-  // When: publisher, schema and validator is created, proceed
+  // Create taskstore and artifactStore
+  var taskstore     = new BlobStore({
+    container:          cfg.get('queue:taskContainer'),
+    credentials:        cfg.get('azure')
+  });
+  var artifactStore = new BlobStore({
+    container:          cfg.get('queue:artifactContainer'),
+    credentials:        cfg.get('azure')
+  });
+
+  // Create artifacts table
+  var Artifact = data.Artifact.configure({
+    tableName:          cfg.get('queue:artifactTableName'),
+    credentials:        cfg.get('azure')
+  });
+
+  // Create Task subclass wrapping database access
+  var Task = TaskModule.configure({
+    connectionString:   cfg.get('database:connectionString')
+  });
+
+  // When: publisher, validator and containers are created, proceed
+  debug("Waiting for resources to be created");
   return Promise.all(
     publisherCreated,
-    schemaCreated
+    taskstore.createContainer(),
+    artifactStore.createContainer(),
+    Artifact.createTable(),
+    Task.ensureTables()
   ).then(function() {
     // Create API router and publish reference if needed
+    debug("Creating API router");
     return v1.setup({
       context: {
-        config:         cfg,
-        bucket:         tasks,
-        store:          new TaskStore(knex),
+        Task:           Task,
+        taskstore:      taskstore,
+        artifactBucket: artifactBucket,
+        artifactStore:  artifactStore,
         publisher:      publisher,
-        validator:      validator
+        validator:      validator,
+        Artifact:       Artifact,
+        claimTimeout:   cfg.get('queue:claimTimeout'),
+        cfg:            cfg   // To be deprecated
       },
       validator:        validator,
-      authBaseUrl:      undefined,
-      credentials:      cfg.get('queue:credentials'),
+      authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
+      credentials:      cfg.get('taskcluster:credentials'),
       publish:          cfg.get('queue:publishMetaData') === 'true',
       baseUrl:          cfg.get('server:publicUrl') + '/v1',
       referencePrefix:  'queue/v1/api.json',
       aws:              cfg.get('aws')
     });
   }).then(function(router) {
+    debug("Configuring app");
+
     // Create app
     var app = base.app({
       port:           Number(process.env.PORT || cfg.get('server:port'))
@@ -100,6 +132,7 @@ var launch = function(profile) {
     app.use('/v1', router);
 
     // Create server
+    debug("Launching server");
     return app.createServer();
   });
 };
@@ -114,7 +147,7 @@ if (!module.parent) {
   }
   // Launch with given profile
   launch(profile).then(function() {
-    debug("Launched authentication server successfully");
+    debug("Launched server successfully");
   }).catch(function(err) {
     debug("Failed to start server, err: %s, as JSON: %j", err, err, err.stack);
     // If we didn't launch the server we should crash
