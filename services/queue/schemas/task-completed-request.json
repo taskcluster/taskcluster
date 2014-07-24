@@ -5,28 +5,10 @@
   "description":  "Request for a task to be declared completed",
   "type":         "object",
   "properties": {
-    "runId": {
-      "description":  "`run-id` for run that completed the task.",
-      "type":         "integer",
-      "minimum":      {"$const": "min-run-id"},
-      "maximum":      {"$const": "max-run-id"}
-    },
-    "success":        {"$const": "success"},
-    "workerGroup": {
-      "description":  "Worker group on which the completed run was executed.",
-      "type":         "string",
-      "minLength":    {"$const": "identifier-min-length"},
-      "maxLength":    {"$const": "identifier-max-length"},
-      "pattern":      {"$const": "identifier-pattern"}
-    },
-    "workerId": {
-      "description":  "Identifier for worker within the given workerGroup",
-      "type":         "string",
-      "minLength":    {"$const": "identifier-min-length"},
-      "maxLength":    {"$const": "identifier-max-length"},
-      "pattern":      {"$const": "identifier-pattern"}
-    }
+    "success":    {"$const": "success"}
   },
   "additionalProperties":   false,
-  "required": ["runId", "success", "workerGroup", "workerId"]
+  "required": [
+    "success"
+  ]
 }

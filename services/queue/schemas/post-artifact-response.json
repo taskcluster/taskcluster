@@ -1,0 +1,121 @@
+{
+  "id":           "http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Post Artifact Response",
+  "description":  "Response to a request for posting an artifact. Note that the `kind` property is referenced in the request as well.",
+  "oneOf": [
+    {
+      "title":        "S3 Artifact Response",
+      "description":  "Response to a request for a signed PUT URL that will allow you to upload an artifact to an S3 bucket managed by the queue.",
+      "type":         "object",
+      "properties": {
+        "kind": {
+          "description":  "Artifact post response kind, in this case `'s3'`",
+          "enum":         ["s3"]
+        },
+        "putUrl": {
+          "description":  "URL to which a `PUT` request can be made to upload the artifact requested. Note, the `Content-Length` must be specified correctly, and the `ContentType` header must be set the value specified below.",
+          "type":         "string",
+          "format":       "uri"
+        },
+        "expires": {
+          "description":  "Date-time after which the signed `putUrl` no longer works",
+          "type":         "string",
+          "format":       "date-time"
+        },
+        "contentType": {
+          "description":  "Artifact mime-type, must be specified as header when uploading with the signed `putUrl`.",
+          "type":         "string",
+          "maxLength":    255
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "putUrl",
+        "expires",
+        "contentType"
+      ]
+    }, {
+      "title":        "Azure Artifact Response",
+      "description":  "Response to a request for an Azure Shared Access Signature (SAS) that will allow you to upload an artifact to an Azure blob storage container managed by the queue.",
+      "type":         "object",
+      "properties": {
+        "kind": {
+          "description":  "Artifact post response kind, in this case `azure`",
+          "enum":         ["azure"]
+        },
+        "expires": {
+          "description":  "Date-time after which Shared Access Signature (SAS) will seize to work.",
+          "type":         "string",
+          "format":       "date-time"
+        },
+        "contentType": {
+          "description":  "Artifact mime-type, should be specified with the `x-ms-blob-content-type` when committing the block.",
+          "type":         "string",
+          "maxLength":    255
+        },
+        "sas": {
+          "description":  "Shared Access Signature (SAS), see Azure REST API reference for details on how to use this.",
+          "type":         "object",
+          "properties": {
+            "baseUrl": {
+              "description":  "Base URL for the azure blob storage account.",
+              "type":         "string",
+              "format":       "uri"
+            },
+            "path": {
+              "description":  "Path to resource that you're granted write access to. This is typically on the form `<container>/<taskId>/<runId>/<name>`, but don't rely on that.",
+              "type":         "string"
+            },
+            "queryString": {
+              "description":  "Key-value pairs to provide as query-string parameters to authenticate requests. Typically, a few additional query-string parameters are also provided to identify operation and possibly block identifier, see Azure REST API reference for details.",
+              "type":         "object"
+            }
+          },
+          "additionalProperties":   false,
+          "required": [
+            "baseUrl",
+            "path",
+            "queryString"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expires",
+        "contentType",
+        "sas"
+      ]
+    }, {
+      "title":        "Redirect Artifact Response",
+      "description":  "Response to a request for the queue to redirect to a URL for a given artifact.",
+      "type":         "object",
+      "properties": {
+        "kind": {
+          "description":  "Artifact post response kind, in this case `redirect`",
+          "enum":         ["redirect"]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ]
+    }, {
+      "title":        "Error Artifact Response",
+      "description":  "Response to a request for the queue to reply `403` (forbidden) with `reason` and `message` to any `GET` request for this artifact.",
+      "type":         "object",
+      "properties": {
+        "kind": {
+          "description":  "Artifact post response kind, in this case `error`",
+          "enum":         ["error"]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ]
+    }
+  ]
+}

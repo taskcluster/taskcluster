@@ -3,32 +3,46 @@ module.exports = {
     // Should be overwritten by environment variable
     publishMetaData:              'false',
     exchangePrefix:               'queue/v1/',
-    tasks: {
-      bucket:                     'tasks.taskcluster.net',
-      publicBaseUrl:              'http://tasks.taskcluster.net'
+    artifactBucket:               'taskcluster-artifacts',
+    artifactContainer:            'artifacts',
+    taskContainer:                'tasks',
+    artifactTableName:            'Artifacts'
+  },
+
+  taskcluster: {
+    authBaseUrl:                  'https://auth.taskcluster.net/v1',
+    credentials: {
+      // Provided by environment variable
+      clientId:                   undefined,
+      accessToken:                undefined
     }
   },
 
   server: {
-    publicUrl:                      'http://queue.taskcluster.net',
-    port:                           80
+    publicUrl:                    'https://queue.taskcluster.net',
+    port:                         80
   },
 
   database: {
     // Provided by environment variable
-    connectionString:               undefined
+    connectionString:             undefined
   },
 
+  azure: {
+    // Provided by environment variable
+    accountName:                  undefined,
+    accountKey:                   undefined
+  },
 
   amqp: {
     // Provided by environment variable
-    url:                            undefined
+    url:                          undefined
   },
 
   // Credentials are given by environment variables
   aws: {
-    accessKeyId:                    undefined,
-    secretAccessKey:                undefined,
-    region:                         'us-west-2'
+    accessKeyId:                  undefined,
+    secretAccessKey:              undefined,
+    region:                       'us-west-2'
   }
 };

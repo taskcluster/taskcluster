@@ -12,17 +12,32 @@
       "minimum":      {"$const": "min-run-id"},
       "maximum":      {"$const": "max-run-id"}
     },
-    "logsPutUrl": {
-      "description":  "Signed URL to which `logs.json` must be uploaded before this run is completed. **Note**, you must do a `PUT` to this URL and headers **must** set `ContentLength` and have `ContentType: application/json`. The URL is set to expire with `takenUntil`, reclaim the task to refresh URLs. Workers are encouraged to upload the `logs.json` as soon as possible, especially, if they URLs provided in `logs.json` refers to logs updated during the run.",
-      "type":         "string",
-      "format":       "uri"
+    "workerGroup": {
+      "description":    "Identifier for the worker-group within which this run started.",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
     },
-    "resultPutUrl": {
-      "description":  "Signed URL to which `result.json` must be uploaded before this run is completed. **Note**, you must do a `PUT` to this URL and headers **must** set `ContentLength` and have `ContentType: application/json`. The URL is set to expire with `takenUntil`, reclaim the task to refresh URLs.",
-      "type":         "string",
-      "format":       "uri"
+    "workerId": {
+      "description":    "Identifier for the worker executing this run.",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    },
+    "takenUntil": {
+      "description":    "Time at which the run expires and is resolved as `failed`, if the run isn't reclaimed.",
+      "type":           "string",
+      "format":         "date-time"
     }
   },
   "additionalProperties":   false,
-  "required": ["status", "runId", "logsPutUrl", "resultPutUrl"]
+  "required": [
+    "status",
+    "runId",
+    "workerGroup",
+    "workerId",
+    "takenUntil"
+  ]
 }
