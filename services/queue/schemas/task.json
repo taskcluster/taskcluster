@@ -8,7 +8,7 @@
     "version": {
       "title":          "Version",
       "description":    "Task definition version",
-      "enum":           ["0.2.0"]
+      "enum":           [1]
     },
     "provisionerId": {
       "title":          "Provisioner Id",
@@ -27,7 +27,6 @@
       "pattern":        {"$const": "identifier-pattern"}
     },
     "routing":          {"$const": "routing"},
-    "timeout":          {"$const": "timeout"},
     "retries": {
       "title":          "Retries",
       "description":    "Number of times to retry the task in case of infrastructure issues",
@@ -38,6 +37,7 @@
     "priority":         {"$const": "priority"},
     "created":          {"$const": "created"},
     "deadline":         {"$const": "deadline"},
+    "scopes":           {"$const": "scopes"},
     "payload": {
       "title":          "Task Payload",
       "description":    "Task-specific payload following worker-specific format. For example the `docker-worker` requires the following keys: `image`, `commands` and `features`.",
@@ -94,6 +94,6 @@
   "additionalProperties":   false,
   "required": [
     "version", "provisionerId", "workerType", "routing", "retries",
-    "priority", "timeout", "created", "deadline", "payload", "metadata", "tags"
+    "priority", "created", "deadline", "scopes", "payload", "metadata", "tags"
   ]
 }

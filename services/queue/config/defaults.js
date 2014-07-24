@@ -10,7 +10,7 @@ module.exports = {
     // Settings for task reaper, note that this must be started as a separate
     // process bin/reaper.js run the reaper
     reaper: {
-      // Timeóut between dealing with timed tasks
+      // Timeout between dealing with timed tasks
       interval:                   180,
 
       // Number of times reaping is allowed to fail in a row, before the process
@@ -18,15 +18,26 @@ module.exports = {
       errorLimit:                 5
     },
 
-    // Configuration of task storage
-    tasks: {
-      // S3 bucket to store tasks in
-      bucket:                     'tasks.taskcluster.net',
+    // Number of seconds before the claim to a run expires
+    claimTimeout:                 20 * 60,
 
-      // Public base url for keys in the bucket, if cnamed, otherwise, leave it
-      // null, and bucket URL will be used.
-      publicBaseUrl:              'http://tasks.taskcluster.net'
-    },
+    // S3 bucket where artifacts are stored
+    artifactBucket:               'taskcluster-artifacts',
+
+    // Azure blob container for artifacts
+    artifactContainer:            'artifacts',
+
+    // Azure task storage container (for task information and archived status)
+    taskContainer:                'tasks',
+
+    // Azure table name for artifacts meta-data
+    artifactTableName:            'Artifacts'
+  },
+
+  // TaskCluster configuration
+  taskcluster: {
+    // BaseUrl for auth, if default built-in baseUrl isn't to be provided
+    authBaseUrl:                  undefined,
 
     // TaskCluster credentials for this server, these must have scopes:
     // auth:credentials
@@ -52,6 +63,11 @@ module.exports = {
     connectionString:               undefined
   },
 
+  // Azure credentials configuration
+  azure: {
+    accountName:                    undefined,
+    accountKey:                     undefined
+  },
 
   // AMQP configuration
   amqp: {

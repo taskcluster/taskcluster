@@ -5,12 +5,6 @@
   "description":  "Request to claim (or reclaim) a task",
   "type":         "object",
   "properties": {
-    "runId": {
-      "description":  "**optional**, provided when reclaiming a task, for which the worker is already executing a run, but the worker wants to extend `takenUntil`. Do not provide this property, if you're claiming a new task.",
-      "type":         "integer",
-      "minimum":      {"$const": "min-run-id"},
-      "maximum":      {"$const": "max-run-id"}
-    },
     "workerGroup": {
       "description":    "Identifier for group that worker claiming the task is a part of.",
       "type":           "string",

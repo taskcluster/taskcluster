@@ -1,9 +1,7 @@
 #!/usr/bin/env node
-var base    = require('taskcluster-base');
-var debug   = require('debug')('queue:bin:dropdb');
-var schema  = require('../queue/schema');
-var Promise = require('promise');
-var Knex    = require('knex');
+var base        = require('taskcluster-base');
+var debug       = require('debug')('queue:bin:dropdb');
+var TaskModule  = require('../queue/task');
 
 /** Drop database */
 var dropdb = function(profile) {
@@ -17,19 +15,15 @@ var dropdb = function(profile) {
     filename:     'taskcluster-queue'
   });
 
-  // Connect to task database store
-  var knex = Knex({
-    client:       'postgres',
-    connection:   cfg.get('database:connectionString')
+  // Create database wrapper
+  var Task = TaskModule.configure({
+    connectionString:   cfg.get('database:connectionString')
   });
 
-  // Destroy the database
-  return schema.destroy(knex).then(function() {
-    return schema.create(knex);
-  }).then(function() {
-    return new Promise(function(accept) {
-      knex.client.pool.destroy(accept);
-    });
+  // Drop tables
+  return Task.dropTables().then(function() {
+    // Close database connection
+    return Task.close();
   });
 };
 
