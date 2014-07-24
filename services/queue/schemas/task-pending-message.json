@@ -6,7 +6,13 @@
   "type":         "object",
   "properties": {
     "version":    {"$const": "message-version"},
-    "status":     {"$ref": "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
+    "status":     {"$ref": "http://schemas.taskcluster.net/queue/v1/task-status.json#"},
+    "runId": {
+      "description":  "Id of run that became pending, `run-id`s always starts from 0",
+      "type":         "integer",
+      "minimum":      {"$const": "min-run-id"},
+      "maximum":      {"$const": "max-run-id"}
+    }
   },
   "additionalProperties":   false,
   "required": ["version", "status"]

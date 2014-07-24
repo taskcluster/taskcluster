@@ -1,5 +1,8 @@
 var base      = require('taskcluster-base');
 
+// Common schema prefix
+var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
+
 /** Declaration of exchanges offered by the queue */
 var exchanges = new base.Exchanges({
   title:      "Queue AMQP Exchanges",
@@ -49,7 +52,7 @@ var commonRoutingKey = [
     summary:          "`runId` of latest run for the task, " +
                       "`_` if no run is exists for the task.",
     multipleWords:    false,
-    required:         false,
+    required:         true,
     maxSize:          3
   }, {
     name:             'workerGroup',
@@ -88,12 +91,12 @@ var commonRoutingKey = [
 
 /** Build an AMQP compatible message from a message */
 var commonMessageBuilder = function(message) {
-  message.version = '0.2.0';
+  message.version = 1;
   return message;
 };
 
 /** Build a message from message */
-var commonRoutingKeyBuilder = function(message) {
+var commonRoutingKeyBuilder = function(message, routing) {
   return {
     taskId:           message.status.taskId,
     runId:            message.runId,
@@ -101,7 +104,7 @@ var commonRoutingKeyBuilder = function(message) {
     workerId:         message.workerId,
     provisionerId:    message.status.provisionerId,
     workerType:       message.status.workerType,
-    routing:          message.status.routing
+    routing:          routing
   };
 };
 
@@ -120,7 +123,7 @@ exchanges.declare({
     "significantly without affecting general responsiveness."
   ].join('\n'),
   routingKey:         commonRoutingKey,
-  schema: 'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#',
+  schema:             SCHEMA_PREFIX_CONST + 'task-pending-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder
 });
@@ -144,7 +147,7 @@ exchanges.declare({
     "minutes. This is useful if the worker supports live logging."
   ].join('\n'),
   routingKey:         commonRoutingKey,
-  schema: 'http://schemas.taskcluster.net/queue/v1/task-running-message.json#',
+  schema:             SCHEMA_PREFIX_CONST + 'task-running-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder
 });
@@ -166,7 +169,7 @@ exchanges.declare({
     "details on the format of the file available through `resultUrl`."
   ].join('\n'),
   routingKey:         commonRoutingKey,
-  schema: 'http://schemas.taskcluster.net/queue/v1/task-completed-message.json#',
+  schema:             SCHEMA_PREFIX_CONST + 'task-completed-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder
 });
@@ -187,7 +190,7 @@ exchanges.declare({
     "to the `reason` property."
   ].join('\n'),
   routingKey:         commonRoutingKey,
-  schema: 'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#',
+  schema:             SCHEMA_PREFIX_CONST + 'task-failed-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder
 });

@@ -1,6 +1,6 @@
 {
   "name":     "taskcluster-queue",
-  "version":  "0.1.0",
+  "version":  "1.0.0",
   "private":  true,
   "main":     "node bin/server.js production",
   "scripts": {
@@ -14,20 +14,22 @@
     "aws-sdk":                          "2.0.0-rc9",
     "aws-sdk-promise":                  "0.0.0",
     "url-join":                         "0.0.1",
-    "knex":                             "0.5.14",
+    "knex":                             "0.6.20",
     "pg.js":                            "3.3.0",
     "promise":                          "4.0.0",
     "lodash":                           "2.4.1",
     "uuid":                             "1.4.1",
     "debug":                            "0.7.4",
-    "superagent":                       "~0.16.0",
+    "superagent":                       "0.18.2",
     "superagent-promise":               "0.1.2",
     "slugid":                           "1.0.1",
-    "superagent-hawk":                  "0.0.3",
-    "taskcluster-base":                 "0.0.12"
+    "taskcluster-base":                 "0.2.6",
+    "azure":                            "0.9.12",
+    "taskcluster-client":               "0.7.4"
   },
   "devDependencies": {
-    "mocha":                            "1.18.2"
+    "mocha":                            "1.18.2",
+    "xmlbuilder":                       "2.3.0"
   },
   "engines": {
     "node":                             "0.10.x"

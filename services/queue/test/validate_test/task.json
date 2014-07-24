@@ -1,0 +1,21 @@
+{
+  "version":            1,
+  "provisionerId":      "jonasfj-test-provid",
+  "workerType":         "jonasfj-test-worker",
+  "routing":            "jonasfjs-precious-tasks.stupid-test.aws",
+  "retries":            0,
+  "priority":           2.6,
+  "created":            "2014-02-01T03:22:36.356Z",
+  "deadline":           "2014-03-01T03:22:36.356Z",
+  "scopes":             ["hello-world/*", "again"],
+  "payload":            {},
+  "metadata": {
+    "name":           "Unit testing task",
+    "description":    "Task created during unit tests",
+    "owner":          "jonsafj@mozilla.com",
+    "source":         "https://github.com/taskcluster/taskcluster-queue"
+  },
+  "tags": {
+    "purpose":        "taskcluster-testing"
+  }
+}

@@ -24,66 +24,110 @@
       "maxLength":      {"$const": "identifier-max-length"},
       "pattern":        {"$const": "identifier-pattern"}
     },
+    "priority":         {"$const": "priority"},
+    "deadline":         {"$const": "deadline"},
+    "retriesLeft": {
+      "description":    "Number of retries left for the task in case of infrastructure issues",
+      "type":           "integer",
+      "minimum":        0,
+      "maximum":        999
+    },
+    "state": {
+      "description":  "State of this task. This is just an auxiliary property derived from state of latests run, or `unscheduled` if none.",
+      "enum":         ["unscheduled", "pending", "running", "completed", "failed"]
+    },
     "runs":             {
-      "description":        "List of runs",
+      "description":        "List of runs, ordered so that index `i` has `runId == i`",
       "type":               "array",
       "items": {
         "description":      "JSON object with information about a run",
         "type":             "object",
         "properties": {
           "runId": {
-            "description":  "Id of this task run, `run-id`s always starts from 1",
+            "description":  "Id of this task run, `run-id`s always starts from 0",
             "type":         "integer",
             "minimum":      {"$const": "min-run-id"},
             "maximum":      {"$const": "max-run-id"}
           },
+          "state": {
+            "description":  "State of this run, ",
+            "enum":         ["pending", "running", "completed", "failed"]
+          },
+          "reasonCreated": {
+            "description":  "Reason for the creation of this run, **more reasons may be added in the future**.",
+            "enum": [
+              "scheduled",
+              "retry",
+              "rerun"
+            ]
+          },
+          "reasonResolved": {
+            "description":  "Reason that run was resolved `failed` or `completed`, this is mainly useful for runs resolved as `failed`. Note, **more reasons may be added in the future**, also this property is only available after the run is resolved.",
+            "enum": [
+              "completed",
+              "deadline-exceeded",
+              "canceled",
+              "claim-expired"
+            ]
+          },
+          "success": {
+            "description":    "True, if the run was completed successfully, ie. exit code is zero. Only present when the run is completed.",
+            "type":           "boolean"
+          },
           "workerGroup": {
-            "description":    "Identifier for group that worker is a part of, this identifier is mainly used for efficient routing.",
+            "description":    "Identifier for group that worker who executes this run is a part of, this identifier is mainly used for efficient routing. Note, this property is only present after the run is claimed.",
             "type":           "string",
             "minLength":      {"$const": "identifier-min-length"},
             "maxLength":      {"$const": "identifier-max-length"},
             "pattern":        {"$const": "identifier-pattern"}
           },
           "workerId": {
-            "description":    "Identifier for worker within given workerGroup",
+            "description":    "Identifier for worker evaluating this run within given `workerGroup`. Note, this property is only available after the run has been claimed.",
             "type":           "string",
             "minLength":      {"$const": "identifier-min-length"},
             "maxLength":      {"$const": "identifier-max-length"},
             "pattern":        {"$const": "identifier-pattern"}
+          },
+          "takenUntil": {
+            "description":    "Time at which the run expires and is resolved as `failed`, if the run isn't reclaimed. Note, only present after the run has been claimed.",
+            "type":           "string",
+            "format":         "date-time"
+          },
+          "scheduled": {
+            "description":    "Date-time at which this run was scheduled, ie. when the run was created in state `pending`.",
+            "type":           "string",
+            "format":         "date-time"
+          },
+          "started": {
+            "description":    "Date-time at which this run was claimed, ie. when the run changed state from `pending` to `running`. This property is only present after the run has been claimed.",
+            "type":           "string",
+            "format":         "date-time"
+          },
+          "resolved": {
+            "description":    "Date-time at which this run was resolved, ie. when the run changed state from `running` to either `completed` or `failed`. This property is only present after the run as been resolved.",
+            "type":           "string",
+            "format":         "date-time"
           }
         },
         "additionalProperties":   false,
-        "required":               ["runId", "workerGroup", "workerId"]
+        "required": [
+          "runId",
+          "state",
+          "reasonCreated",
+          "scheduled"
+        ]
       }
-    },
-    "state":            {"$const": "state"},
-    "reason":           {
-      "description":    "Reason for the current state, **more reasons will be added in the future**.",
-      "enum": [
-        "none", "deadline-exceeded", "retries-exhausted", "canceled",
-        "rerun-requested"
-      ]
-    },
-    "routing":          {"$const": "routing"},
-    "timeout":          {"$const": "timeout"},
-    "retries": {
-      "description":    "Number of retries left for the task in case of infrastructure issues",
-      "type":           "integer",
-      "minimum":        0,
-      "maximum":        999
-    },
-    "priority":         {"$const": "priority"},
-    "created":          {"$const": "created"},
-    "deadline":         {"$const": "deadline"},
-    "takenUntil": {
-      "description":    "Time at which the task may be claimed by another worker, if not reclaimed",
-      "type":           "string",
-      "format":         "date-time"
     }
   },
   "additionalProperties":   false,
   "required": [
-    "taskId", "provisionerId", "workerType", "runs", "state", "reason",
-    "routing", "retries", "timeout", "priority", "created", "deadline", "takenUntil"
+    "taskId",
+    "provisionerId",
+    "workerType",
+    "priority",
+    "deadline",
+    "retriesLeft",
+    "state",
+    "runs"
   ]
 }

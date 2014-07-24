@@ -8,15 +8,10 @@
     "version":    {"$const": "message-version"},
     "status":     {"$ref": "http://schemas.taskcluster.net/queue/v1/task-status.json#"},
     "runId": {
-      "description":  "Id of the run that just started, always starts from 1",
+      "description":  "Id of the run that just started, always starts from 0",
       "type":         "integer",
       "minimum":      {"$const": "min-run-id"},
       "maximum":      {"$const": "max-run-id"}
-    },
-    "logsUrl": {
-      "description":    "URL to JSON file with a mapping from log-filenames to URLs, the URL may point to a resource that isn't available yet.",
-      "type":           "string",
-      "format":         "uri"
     },
     "workerGroup": {
       "description":    "Identifier for the worker-group within which this run started.",
@@ -31,8 +26,20 @@
       "minLength":      {"$const": "identifier-min-length"},
       "maxLength":      {"$const": "identifier-max-length"},
       "pattern":        {"$const": "identifier-pattern"}
+    },
+    "takenUntil": {
+      "description":    "Time at which the run expires and is resolved as `failed`, if the run isn't reclaimed.",
+      "type":           "string",
+      "format":         "date-time"
     }
   },
   "additionalProperties":   false,
-  "required": ["version", "status", "runId", "logsUrl", "workerGroup", "workerId"]
+  "required": [
+    "version",
+    "status",
+    "runId",
+    "workerGroup",
+    "workerId",
+    "takenUntil"
+  ]
 }

@@ -14,16 +14,6 @@
       "maximum":      {"$const": "max-run-id"}
     },
     "success":    {"$const": "success"},
-    "resultUrl": {
-      "description":    "URL to JSON file the result structure for this run.",
-      "type":           "string",
-      "format":         "uri"
-    },
-    "logsUrl": {
-      "description":    "URL to JSON file with a mapping from log-filenames to URLs, at this point the URL should be valid.",
-      "type":           "string",
-      "format":         "uri"
-    },
     "workerGroup": {
       "description":    "Identifier for the worker-group within which this run ran.",
       "type":           "string",
@@ -41,7 +31,11 @@
   },
   "additionalProperties":   false,
   "required": [
-    "version", "status", "runId", "success", "resultUrl", "logsUrl",
-    "workerGroup", "workerId"
+    "version",
+    "status",
+    "runId",
+    "success",
+    "workerGroup",
+    "workerId"
   ]
 }
