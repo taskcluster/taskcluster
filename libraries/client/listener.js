@@ -9,7 +9,6 @@ var slugid    = require('slugid');
 
 /** Create new Listener */
 var Listener = function(options) {
-  this._connected = false;
   this._bindings = [];
   this._options = _.defaults(options || {}, {
     prefetch:               5,
@@ -56,7 +55,7 @@ Listener.prototype.bind = function(binding) {
 
 /** Connect, setup queue and binding to exchanges */
 Listener.prototype.connect = function() {
-  assert(!this._connected, "Can't connect when already connected");
+  if (this._channel) return Promise.resolve(this._channel);
   assert(this._options.connectionString, "connectionString is required");
   var that = this;
 
@@ -80,8 +79,8 @@ Listener.prototype.connect = function() {
   });
 
   // Find queue name and decide if this is an exclusive queue
+  var exclusive = !this._options.queueName;
   this._queueName = this._options.queueName || slugid.v4();
-  var exclusive = this._options.queueName != undefined;
 
   // Create queue
   var queueCreated = channelCreated.then(function() {
@@ -110,40 +109,30 @@ Listener.prototype.connect = function() {
 
   // Begin consumption
   return bindingsCreated.then(function() {
-    return that._channel.consume(that._queueName, function(msg) {
-      debug("Received message from: %s", msg.fields.exchange);
-      that._handle(msg);
-    });
-  }).then(function(result) {
-    that._consumerTag = result.consumerTag;
-    that._connected = true;
-    debug("Listening with consumer tag: '%s' on queue '%s'",
-          that._consumerTag, that._queueName);
-  });
+    return that._channel;
+  })
 };
 
 /** Pause consumption of messages */
 Listener.prototype.pause = function() {
-  if (!this._connected) {
+  if (!this._channel) {
     debug("WARNING: Paused listener instance was wasn't connected yet");
     return;
   }
-  assert(this._connected, "Can't pause when not connected");
+  assert(this._channel, "Can't pause when not connected");
   return this._channel.cancel(this._consumerTag);
 };
 
 /** Connect or resume consumption of message */
 Listener.prototype.resume = function() {
-  if(!this._connected) {
-    return this.connect();
-  } else {
-    var that = this;
-    return that._channel.consume(that._queueName, function(msg) {
+  var that = this;
+  return this.connect().then(function(channel) {
+    return channel.consume(that._queueName, function(msg) {
       that._handle(msg);
     }).then(function(result) {
       that._consumerTag = result.consumerTag;
     });
-  }
+  });
 };
 
 /** Handle message*/
