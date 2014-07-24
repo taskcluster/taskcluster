@@ -73,9 +73,28 @@ listener.on('message', function(message) {
   return new Promise(...);
 });
 
-// Start listening for events
-listener.connect().then(function() {
+// Listen and consume events:
+listener.resume().then(function() {
   // Now listening
+});
+```
+
+For advanced queue usage the `connect` method can be used to
+create and bind the queue and return an associated [amqplib] channel:
+
+```js
+var taskcluster = require('taskcluster-client');
+
+// Create a listener (this creates a queue on AMQP)
+var listener = new taskcluster.Listener({
+  connectionString:   'amqp://...'
+});
+
+// See: http://www.squaremobius.net/amqp.node/doc/channel_api.html
+var channel = listener.connect().then(function(channel) {
+  return channel.consume(function(msg) {
+    channel.ack(msg);
+  });
 });
 ```
 
@@ -286,9 +305,9 @@ var listener = new taskcluster.Listener({
   maxLength:          0,            // Max allowed queue size
 });
 
-listener.connect().then(...);       // Setup listener and start
-listener.pause().then(...);         // Pause retrieval of new messages
+listener.connect().then(...);       // Setup listener and bind queue
 listener.resume().then(...);        // Start getting new messages
+listener.pause().then(...);         // Pause retrieval of new messages
 listener.close();                   // Disconnect from AMQP
 ```
 
