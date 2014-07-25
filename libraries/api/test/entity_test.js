@@ -9,8 +9,8 @@ suite("entity", function() {
   // Load test configuration
   var cfg = base.config({
     envs: [
-      'azureTestCredentials_accountName',
-      'azureTestCredentials_accountKey',
+      'azure_accountName',
+      'azure_accountKey',
       'azureTestTableName'
     ],
     filename:               'taskcluster-base-test'
