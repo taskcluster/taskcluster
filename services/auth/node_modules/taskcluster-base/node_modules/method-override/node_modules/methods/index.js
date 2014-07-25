@@ -34,7 +34,8 @@ if (http.METHODS) {
     'subscribe',
     'unsubscribe',
     'patch',
-    'search'
+    'search',
+    'connect'
   ];
 
 }

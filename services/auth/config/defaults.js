@@ -11,7 +11,7 @@ module.exports = {
   // Server configuration
   server: {
     // Public URL from which the server can be accessed (used for persona)
-    publicUrl:                      'http://auth.taskcluster.net',
+    publicUrl:                      'https://auth.taskcluster.net',
 
     // Port to listen for requests on
     port:                           undefined,
@@ -23,16 +23,13 @@ module.exports = {
     cookieSecret:                   'Warn, if no secret is used on production'
   },
 
-  // Azure table storage configuration
-  azureTable: {
+  // Azure storage configuration
+  azure: {
     // Azure table storage account name
     accountName:                    undefined,
 
     // Azure table storage account key
     accountKey:                     undefined,
-
-    // Azure table account URL, make sure to use HTTPS
-    accountUrl:                     undefined
   },
 
   // AWS SDK configuration for publication of schemas and references
