@@ -17,9 +17,9 @@ suite("entity", function() {
   });
 
   // Check that we have configuration or abort
-  if (!cfg.get('azureTestTableName') || !cfg.get('azureTestCredentials')) {
+  if (!cfg.get('azureTestTableName') || !cfg.get('azure')) {
     console.log("\nWARNING:");
-    console.log("Skipping 'enity' tests, missing config file: " +
+    console.log("Skipping 'entity' tests, missing config file: " +
                 "taskcluster-base-test.conf.json");
     return;
   }
@@ -39,7 +39,7 @@ suite("entity", function() {
 
   // Item configured with table name and credentials for testing
   var Item = AbstractItem.configure({
-    credentials:  cfg.get('azureTestCredentials'),
+    credentials:  cfg.get('azure'),
     tableName:    cfg.get('azureTestTableName')
   });
 
