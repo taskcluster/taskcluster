@@ -15,12 +15,12 @@
     "lodash":                           "2.4.1",
     "uuid":                             "1.4.1",
     "debug":                            "0.7.4",
-    "superagent":                       "~0.16.0",
-    "superagent-promise":               "0.1.0",
+    "superagent":                       "0.18.2",
+    "superagent-promise":               "0.1.2",
     "slugid":                           "1.0.1",
     "superagent-hawk":                  "0.0.3",
-    "taskcluster-client":               "0.4.3",
-    "taskcluster-base":                 "0.0.9"
+    "taskcluster-client":               "0.7.4",
+    "taskcluster-base":                 "0.2.6"
   },
   "devDependencies": {
     "mocha":                            "1.18.2"

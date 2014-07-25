@@ -41,50 +41,31 @@ suite('superagent-promise', function() {
     server.close(done);
   });
 
-
-  test('issue request', function(done) {
+  test('issue request', function() {
     var addr = server.address();
     var url = 'http://' + addr.address + ':' + addr.port + "/success";
 
-    request('GET', url).end().then(
-      function(res) {
-        assert.equal(res.text, successBody);
-        done();
-      },
-
-      function(err) {
-        done(err);
-      }
-    );
+    return request('GET', url).end().then(function(res) {
+      assert.equal(res.text, successBody);
+    });
   });
 
-  test('issue request with .get', function(done) {
+  test('issue request with .get', function() {
     var addr = server.address();
     var url = 'http://' + addr.address + ':' + addr.port + "/success";
 
-    request.get(url).end().then(
-      function(res) {
-        assert.equal(res.text, successBody);
-        done();
-      },
-
-      function(err) {
-        done(err);
-      }
-    );
+    return request.get(url).end().then(function(res) {
+      assert.equal(res.text, successBody);
+    });
   });
 
-  test('issue 404 request', function(done) {
+  test('issue 404 request', function() {
     var addr = server.address();
     var url = 'http://' + addr.address + ':' + addr.port + "/NotFound";
 
-    request('GET', url).end().then(function(res) {
+    return request('GET', url).end().then(function(res) {
       assert.ok(!res.ok);
       assert.equal(res.text, errorBody);
-      done();
-    }, function(err) {
-      console.log(err);
-      done(err);
     });
   });
 

@@ -33,12 +33,15 @@ function parseCharset(s) {
 }
 
 function getCharsetPriority(charset, accepted) {
-  return (accepted.filter(function(a) {
+  return (accepted.map(function(a) {
     return specify(charset, a);
-  }).sort(function (a, b) {
-    // revsort
-    return a.s > b.s ? -1 : 1;
-  })[0] || {q:0}).q;
+  }).filter(Boolean).sort(function (a, b) {
+    if(a.s == b.s) {
+      return a.q > b.q ? -1 : 1;
+    } else {
+      return a.s > b.s ? -1 : 1;
+    }
+  })[0] || {s: 0, q:0});
 }
 
 function specify(charset, spec) {
@@ -62,10 +65,15 @@ function preferredCharsets(accept, provided) {
     return provided.map(function(type) {
       return [type, getCharsetPriority(type, accept)];
     }).filter(function(pair) {
-      return pair[1] > 0;
+      return pair[1].q > 0;
     }).sort(function(a, b) {
-      // revsort
-      return a[1] > b[1] ? -1 : 1;
+      var pa = a[1];
+      var pb = b[1];
+      if(pa.q == pb.q) {
+        return pa.s < pb.s ? 1 : -1;
+      } else {
+        return pa.q < pb.q ? 1 : -1;
+      }
     }).map(function(pair) {
       return pair[0];
     });
