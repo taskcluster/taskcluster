@@ -16,9 +16,8 @@ var launch = function(profile) {
     envs: [
       'server_publicUrl',
       'server_cookieSecret',
-      'azureTable_accountName',
-      'azureTable_accountKey',
-      'azureTable_accountUrl',
+      'azure_accountName',
+      'azure_accountKey',
       'aws_accessKeyId',
       'aws_secretAccessKey'
     ],
@@ -28,7 +27,7 @@ var launch = function(profile) {
   // Configure client table
   var Client = data.Client.configure({
     tableName:    cfg.get('auth:clientTableName'),
-    credentials:  cfg.get('azureTable')
+    credentials:  cfg.get('azure')
   });
 
   // Initialize validator and publish schemas if needed
