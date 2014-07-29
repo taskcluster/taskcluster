@@ -273,6 +273,13 @@ var authenticate = function(nonceManager, clientLoader, options) {
     });
   }
   return function(req, res, next) {
+    // Find port in case this request was forwarded by a proxy, say a HTTPS
+    // load balancer
+    var port = undefined; // Hawk defaults to parsing it from HOST header
+    if (req.headers['x-forwarded-port'] !== undefined) {
+      port = parseInt(req.headers['x-forwarded-port']);
+    }
+
     // Restore originalUrl as needed by hawk for authentication
     req.url = req.originalUrl;
     // Technically, we always perform authentication, but we don't consider
@@ -282,7 +289,12 @@ var authenticate = function(nonceManager, clientLoader, options) {
       // I suspect not, so we'll postpone this till we're sure we want to do
       // payload validation and how we want to do it.
       //payload:      JSON.stringify(req.body),
-      nonceFunc:    nonceManager
+
+      // Provide nonce manager
+      nonceFunc:    nonceManager,
+
+      // Provide port
+      port:         port
     }, function(err, credentials, artifacts) {
       // Keep reference to set of authorized scopes, which will be extended
       // by authenticate()
