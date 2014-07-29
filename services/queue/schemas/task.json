@@ -5,11 +5,6 @@
   "description":  "Definition of a task that can be scheduled",
   "type":               "object",
   "properties": {
-    "version": {
-      "title":          "Version",
-      "description":    "Task definition version",
-      "enum":           [1]
-    },
     "provisionerId": {
       "title":          "Provisioner Id",
       "description":    "Unique identifier for a provisioner, that can supply specified workerType",
@@ -82,7 +77,11 @@
         }
       },
       "additionalProperties":   false,
-      "required": ["name", "owner", "source"]
+      "required": [
+        "name",
+        "owner",
+        "source"
+      ]
     },
     "tags": {
       "title":                  "Tags",
@@ -93,7 +92,16 @@
   },
   "additionalProperties":   false,
   "required": [
-    "version", "provisionerId", "workerType", "routing", "retries",
-    "priority", "created", "deadline", "scopes", "payload", "metadata", "tags"
+    "provisionerId",
+    "workerType",
+    "routing",
+    "retries",
+    "priority",
+    "created",
+    "deadline",
+    "scopes",
+    "payload",
+    "metadata",
+    "tags"
   ]
 }

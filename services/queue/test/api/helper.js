@@ -1,7 +1,5 @@
-var debug       = require('debug')('test:api:claim');
 var assert      = require('assert');
 var Promise     = require('promise');
-var request     = require('superagent-promise');
 var path        = require('path');
 var _           = require('lodash');
 var base        = require('taskcluster-base');
