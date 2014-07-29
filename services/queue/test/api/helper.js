@@ -16,7 +16,7 @@ var defaultClients = [
     scopes:       ['auth:credentials'],
     expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
   }, {
-    clientId:     'test-client',  // Used in default Qeueu creation
+    clientId:     'test-client',  // Used in default Queue creation
     accessToken:  'none',
     scopes:       ['*'],
     expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
