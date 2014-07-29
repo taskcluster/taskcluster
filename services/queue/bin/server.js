@@ -27,10 +27,8 @@ var launch = function(profile) {
       'taskcluster_credentials_accessToken',
       'aws_accessKeyId',
       'aws_secretAccessKey',
-      'queue_credentials_clientId',
-      'queue_credentials_accessToken',
       'azure_accountName',
-      'azure_accountKey',
+      'azure_accountKey'
     ],
     filename:     'taskcluster-queue'
   });
