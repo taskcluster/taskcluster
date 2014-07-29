@@ -87,10 +87,10 @@ api.declare({
   }
 
   // Conditional put to azure blob storage
-  return ctx.taskstore.putIfNotMatch(
-    taskId + '/task.json',
-    taskDef
-  ).then(function() {
+  return ctx.taskstore.putIfNotMatch(taskId + '/task.json', {
+    version:    1,
+    definition: taskDef
+  }).then(function() {
     // Create task in database, load it if it exists, task creation should be
     // an idempotent operation
     return ctx.Task.create({
@@ -154,16 +154,19 @@ api.declare({
   var taskId  = req.params.taskId;
 
   // Fetch task from azure blob storage
-  return ctx.taskstore.get(taskId + '/task.json', true).then(function(taskDef) {
+  return ctx.taskstore.get(taskId + '/task.json', true).then(function(data) {
     // Handle case where task doesn't exist
-    if (!taskDef) {
+    if (!data) {
       return res.json(404, {
         message:  "task not found"
       });
     }
+    // Check version of data stored
+    assert(data.version === 1, "version 1 was expected, don't know how to " +
+           "read newer versions");
 
     // Return task definition
-    return res.reply(taskDef);
+    return res.reply(data.definition);
   });
 });
 
@@ -223,10 +226,10 @@ api.declare({
   }
 
   // Conditional put to azure blob storage
-  return ctx.taskstore.putIfNotMatch(
-    taskId + '/task.json',
-    taskDef
-  ).then(function() {
+  return ctx.taskstore.putIfNotMatch(taskId + '/task.json', {
+    version:    1,
+    definition: taskDef
+  }).then(function() {
     // Create task in database, load it if it exists, task creation should be
     // an idempotent operation
     return ctx.Task.create({
@@ -724,25 +727,29 @@ api.declare({
   var taskId  = req.params.taskId;
 
   // Fetch task from blob storage and validate scopes and find retries
-  return ctx.taskstore.get(taskId + '/task.json', true).then(function(taskDef) {
+  return ctx.taskstore.get(taskId + '/task.json', true).then(function(data) {
     // Check that we got a task definition
-    if (!taskDef) {
+    if (!data) {
       return res.json(400, {
         message:  "Task definition doesn't exist"
       });
     }
 
+    // Check version of task information loaded
+    assert(data.version === 1, "Expect task definition format version 1, "+
+                               "don't know how to read newer versions");
+
     // Authenticate request by providing parameters
     if(!req.satisfies({
-      provisionerId:  taskDef.provisionerId,
-      workerType:     taskDef.workerType
+      provisionerId:  data.definition.provisionerId,
+      workerType:     data.definition.workerType
     })) {
       return;
     }
 
     // Rerun the task
     return ctx.Task.rerunTask(taskId, {
-      retries:  taskDef.retries,
+      retries:  data.definition.retries,
       fetch:    function() {
                   return ctx.taskstore.get(taskId  + '/status.json', true);
                 }

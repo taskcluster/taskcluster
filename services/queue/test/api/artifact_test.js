@@ -23,7 +23,6 @@ suite('Post artifacts', function() {
 
   // Use the same task definition for everything
   var taskDef = {
-    version:          1,
     provisionerId:    'my-provisioner',
     workerType:       'my-worker',
     routing:          "jonasfj-test.what-a-hack",
