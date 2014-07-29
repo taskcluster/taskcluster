@@ -105,6 +105,11 @@ program
             console.log("Error: " + res.text);
             process.exit(2);
           }
+          if (_.isEqual(api.reference, res.body)) {
+            console.log("No changes from: " + api.referenceUrl);
+          } else {
+            console.log("Received changes from: " + api.referenceUrl);
+          }
           api.reference = res.body;
         });
     })).then(function() {

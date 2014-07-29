@@ -123,7 +123,7 @@ that either resolves without giving a value or rejects with an error.
 ### Methods in `taskcluster.Auth`
 ```js
 // Create Auth client instance with default baseUrl:
-//  - http://auth.taskcluster.net/v1
+//  - https://auth.taskcluster.net/v1
 var auth = new taskcluster.Auth(options);
 ```
  * `auth.inspect(clientId) : result`
