@@ -13,7 +13,6 @@ suite('Get task', function() {
   deadline.setDate(created.getDate() + 3);
 
   var taskDef = {
-    version:          1,
     provisionerId:    'my-provisioner',
     workerType:       'my-worker',
     // let's just test a large routing key too, 128 chars please :)
