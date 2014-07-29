@@ -1,5 +1,4 @@
 {
-  "version":            1,
   "provisionerId":      "jonasfj-test-provid",
   "workerType":         "jonasfj-test-worker",
   "routing":            "jonasfjs-precious-tasks.stupid-test.aws",

@@ -16,7 +16,6 @@ suite('Reaper tests', function() {
     deadline.setSeconds(deadline.getSeconds() + timeToDeadline);
     // Use the same task definition for everything
     return {
-      version:          1,
       provisionerId:    'my-provisioner',
       workerType:       'my-worker',
       // let's just test a large routing key too, 128 chars please :)
