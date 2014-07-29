@@ -5,7 +5,7 @@
       "version": "0.2.0",
       "title": "Authentication API",
       "description": "Authentication related API end-points for taskcluster.",
-      "baseUrl": "http://auth.taskcluster.net/v1",
+      "baseUrl": "https://auth.taskcluster.net/v1",
       "entries": [
         {
           "type": "function",
