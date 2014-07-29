@@ -131,19 +131,25 @@ var auth = new taskcluster.Auth(options);
 ### Methods in `taskcluster.Queue`
 ```js
 // Create Queue client instance with default baseUrl:
-//  - http://queue.taskcluster.net/v1
+//  - https://queue.taskcluster.net/v1
 var queue = new taskcluster.Queue(options);
 ```
- * `queue.createTask(payload) : result`
- * `queue.defineTasks(payload) : result`
+ * `queue.createTask(taskId, payload) : result`
+ * `queue.getTask(taskId) : result`
+ * `queue.defineTask(taskId, payload) : result`
  * `queue.scheduleTask(taskId) : result`
  * `queue.getTask(taskId) : result`
- * `queue.getTaskStatus(taskId) : result`
- * `queue.claimTask(taskId, payload) : result`
- * `queue.requestArtifactUrls(taskId, payload) : result`
- * `queue.reportTaskCompleted(taskId, payload) : result`
+ * `queue.status(taskId) : result`
+ * `queue.claimTask(taskId, runId, payload) : result`
+ * `queue.reclaimTask(taskId, runId) : result`
  * `queue.claimWork(provisionerId, workerType, payload) : result`
+ * `queue.reportCompleted(taskId, runId, payload) : result`
  * `queue.rerunTask(taskId) : result`
+ * `queue.createArtifact(taskId, runId, name, payload) : result`
+ * `queue.getArtifactFromRun(taskId, runId, name) : void`
+ * `queue.getLatestArtifact(taskId, name) : void`
+ * `queue.getArtifactsFromRun(taskId, runId) : void`
+ * `queue.getLatestArtifacts(taskId) : void`
  * `queue.getPendingTasks(provisionerId) : void`
  * `queue.getAMQPConnectionString() : result`
 
