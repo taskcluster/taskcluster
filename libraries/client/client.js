@@ -11,7 +11,17 @@ var _           = require('lodash');
 var assert      = require('assert');
 
 // Default options stored globally for convenience
-var _defaultOptions = {};
+var _defaultOptions = {
+  credentials: {
+    clientId: process.env.TASKCLUSTER_CLIENT_ID,
+    accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN,
+  },
+
+  authorization: {
+    delegating: false,
+    scopes: []
+  }
+};
 
 /**
  * Create a client class from a JSON reference.
@@ -19,9 +29,15 @@ var _defaultOptions = {};
  * Returns a Client class which can be initialized with following options:
  * options:
  * {
+ *   // TaskCluster credentials, if not provided fallback to defaults from environment variables
+ *   // if defaults are not explicitly set with taskcluster.config({...})
+ *   // To create a client without authentication (and not using defaults) use `credentials: {}`
  *   credentials: {
- *     clientId:     '...',        // ClientId
- *     accessToken:  '...',        // AccessToken for clientId
+ *     clientId: '...', // ClientId
+ *     accessToken: '...', // AccessToken for clientId
+ *   },
+ *   // Optional authorization details for delegating auth.
+ *   authorization: {
  *     delegating: true || false,  // Is delegating authentication?
  *     scopes:     ['scopes', ...] // Scopes to authorize with
  *   }
@@ -31,6 +47,7 @@ var _defaultOptions = {};
  *
  * `baseUrl` and `exchangePrefix` defaults to values from reference.
  */
+
 exports.createClient = function(reference) {
   // Client class constructor
   var Client = function(options) {
@@ -39,6 +56,7 @@ exports.createClient = function(reference) {
       exchangePrefix:   reference.exchangePrefix || ''
     }, _defaultOptions);
   };
+
   // For each function entry create a method on the Client class
   reference.entries.filter(function(entry) {
     return entry.type === 'function';
@@ -79,12 +97,12 @@ exports.createClient = function(reference) {
       if (this._options.credentials) {
         var extra = {};
         // if delegating scopes, provide the scopes set to delegate
-        if (this._options.credentials.delegating) {
-          assert(this._options.credentials.scopes,
+        if (this._options.authorization.delegating) {
+          assert(this._options.authorization.scopes,
                  "Can't delegate without scopes to delegate");
           extra.ext = new Buffer(JSON.stringify({
             delegating:       true,
-            scopes:           this._options.credentials.scopes
+            scopes:           this._options.authorization.scopes
           })).toString('base64');
         }
         // Write hawk authentication header
