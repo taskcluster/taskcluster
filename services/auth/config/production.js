@@ -10,9 +10,6 @@ module.exports = {
 
   // Server configuration
   server: {
-    // Public URL from which the server can be accessed (used for persona)
-    publicUrl:                      'http://auth.taskcluster.net',
-
     // Run in development mode (logging and error handling)
     development:                    false,
   },
