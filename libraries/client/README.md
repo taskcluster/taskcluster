@@ -253,6 +253,10 @@ taskcluster.config({
 var auth = new taskcluster.Auth();
 ```
 
+If the `clientId` and `accessToken` are left empty we also check the
+`TASKCLUSTER_CLIENT_ID` and `TASKCLUSTER_ACCESS_TOKEN` environment variables
+to use as defaults (similar to how AWS, Azure, etc. handle authentication).
+
 ### Delegated Authorization
 If your client has the scope `auth:can-delegate` you can send requests with
 a scope set different from the one you have. This is useful when the
@@ -264,7 +268,9 @@ authentication takes place in a trusted proxy. See example below:
 var auth = new taskcluster.Auth({
   credentials: {
     clientId:     '...',
-    accessToken:  '...',
+    accessToken:  '...'
+  },
+  authorization: {
     delegating:   true,
     scopes:       ['scope', ...]  // For example task.scopes
   }
