@@ -546,7 +546,7 @@ api.declare({
   name:       'claimWork',
   scopes: [
     [
-      'queue:post:claim-task-run',
+      'queue:post:claim-task',
       'queue:assume:worker-type:<provisionerId>/<workerType>',
       'queue:assume:worker-id:<workerGroup>/<workerId>'
     ]
@@ -629,18 +629,19 @@ api.declare({
 
 /** Report task completed */
 api.declare({
-  method:   'post',
-  route:    '/task/:taskId/runs/:runId/completed',
-  name:     'reportCompleted',
+  method:     'post',
+  route:      '/task/:taskId/runs/:runId/completed',
+  name:       'reportCompleted',
   scopes: [
     [
       'queue:post:task-completed',
       'queue:assume:worker-id:<workerGroup>/<workerId>'
     ]
   ],
-  input:    SCHEMA_PREFIX_CONST + 'task-completed-request.json#',
-  output:   SCHEMA_PREFIX_CONST + 'task-status-response.json#',
-  title:    "Report Run Completed",
+  deferAuth:  true,
+  input:      SCHEMA_PREFIX_CONST + 'task-completed-request.json#',
+  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  title:      "Report Run Completed",
   description: [
     "Report a run completed, resolving the run as `completed`."
   ].join('\n')
@@ -656,13 +657,6 @@ api.declare({
     if (!task || !task.runs[runId]) {
       return res.json(404, {
         message:  "Task not found or already resolved"
-      });
-    }
-
-    // Check that the run is running
-    if (task.runs[runId].state !== 'running') {
-      return res.json(409, {
-        message:  "run is not running"
       });
     }
 

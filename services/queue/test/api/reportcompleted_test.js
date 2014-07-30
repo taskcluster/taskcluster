@@ -1,11 +1,11 @@
-suite('Rerun task', function() {
-  var debug       = require('debug')('test:api:claim');
+suite('Report task completed', function() {
+  var debug       = require('debug')('test:api:completed');
   var assert      = require('assert');
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
   var helper      = require('./helper');
-  var subject     = helper.setup({title: "Rerun task"});
+  var subject     = helper.setup({title: "Report task completed"});
 
   // Create datetime for created and deadline as 3 days later
   var created = new Date();
@@ -37,27 +37,10 @@ suite('Rerun task', function() {
     }
   };
 
-  test("create, claim, complete and rerun (is idempotent)", function() {
+  test("create, claim and complete (is idempotent)", function() {
     var taskId = slugid.v4();
-    var isPending = subject.listenFor(subject.queueEvents.taskPending({
-      taskId:   taskId,
-      runId:    0
-    }));
-    var isRunning = subject.listenFor(subject.queueEvents.taskRunning({
-      taskId:   taskId
-    }));
-    var isCompleted = subject.listenFor(subject.queueEvents.taskCompleted({
-      taskId:   taskId
-    }));
-    var isPendingAgain = subject.listenFor(subject.queueEvents.taskPending({
-      taskId:   taskId,
-      runId:    1
-    }));
-
     debug("### Creating task");
     return subject.queue.createTask(taskId, taskDef).then(function() {
-      debug("### Waiting for pending message");
-      return isPending;
     }).then(function() {
       debug("### Claiming task");
       // First runId is always 0, so we should be able to claim it here
@@ -66,26 +49,45 @@ suite('Rerun task', function() {
         workerId:       'my-worker'
       });
     }).then(function() {
-      debug("### Waiting for running message");
-      return isRunning;
-    }).then(function() {
       debug("### Reporting task completed");
+      subject.scopes(
+        'queue:post:task-completed',
+        'queue:assume:worker-id:my-worker-group/my-worker'
+      );
       return subject.queue.reportCompleted(taskId, 0, {
         success:    true
       });
     }).then(function() {
-      debug("### Waiting for completed message");
-      return isCompleted;
+      debug("### Reporting task completed (again)");
+      return subject.queue.reportCompleted(taskId, 0, {
+        success:    true
+      });
+    });
+  });
+
+  test("create, claim and complete (with bad scopes)", function() {
+    var taskId = slugid.v4();
+    debug("### Creating task");
+    return subject.queue.createTask(taskId, taskDef).then(function() {
     }).then(function() {
-      debug("### Requesting task rerun");
-      subject.scopes('queue:post:rerun:my-provisioner/my-worker');
-      return subject.queue.rerunTask(taskId);
+      debug("### Claiming task");
+      // First runId is always 0, so we should be able to claim it here
+      return subject.queue.claimTask(taskId, 0, {
+        workerGroup:    'my-worker-group',
+        workerId:       'my-worker'
+      });
     }).then(function() {
-      debug("### Waiting for pending message again");
-      return isPendingAgain;
+      debug("### Reporting task completed");
+      subject.scopes(
+        'queue:assume:worker-id:my-worker-group/my-worker'
+      );
+      return subject.queue.reportCompleted(taskId, 0, {
+        success:    true
+      });
     }).then(function() {
-      debug("### Requesting task rerun (again)");
-      return subject.queue.rerunTask(taskId);
+      assert(false, "Expected authentication error");
+    }, function(err) {
+      debug("Got expected authentication error: %s", err);
     });
   });
 });
