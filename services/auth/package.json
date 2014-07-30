@@ -20,7 +20,7 @@
     "slugid":                           "1.0.1",
     "superagent-hawk":                  "0.0.3",
     "taskcluster-client":               "0.7.4",
-    "taskcluster-base":                 "0.2.7"
+    "taskcluster-base":                 "0.2.8"
   },
   "devDependencies": {
     "mocha":                            "1.18.2"

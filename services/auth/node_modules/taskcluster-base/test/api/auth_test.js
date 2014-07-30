@@ -49,6 +49,18 @@ suite("api/auth", function() {
     res.json(200, "OK");
   });
 
+  // Declare a method we can test dynamic authorization
+  api.declare({
+    method:       'get',
+    route:        '/test-dyn-auth',
+    name:         'testDynAuth',
+    title:        "Test End-Point",
+    description:  "Place we can call to test something",
+  }, function(req, res) {
+    if(req.satisfies([req.body.scopes])) {
+      return res.json(200, "OK");
+    }
+  });
 
   // Create a mock authentication server
   setup(function(){
@@ -245,6 +257,96 @@ suite("api/auth", function() {
           console.log(JSON.stringify(res.body));
           assert(false, "Request failed");
         }
+      });
+  });
+
+  // Test with dynamic authentication
+  test("With dynamic authentication", function() {
+    var url = 'http://localhost:23526/test-dyn-auth';
+    return request
+      .get(url)
+      .send({
+        scopes: [
+          'got-all/folder/t',
+          'got-all/hello/*',
+          'got-all/',
+          'got-all/*',
+          'got-only/this'
+        ]
+      })
+      .hawk({
+        id:           'delegating-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      }, {
+        ext: new Buffer(JSON.stringify({
+          delegating:       true,
+          scopes:           ['got-all/*', 'got-only/this']
+        })).toString('base64')
+      })
+      .end()
+      .then(function(res) {
+        if(!res.ok) {
+          console.log(JSON.stringify(res.body));
+          assert(false, "Request failed");
+        }
+      });
+  });
+
+  // Test with dynamic authentication that doesn't work
+  test("With dynamic authentication (overscoped)", function() {
+    var url = 'http://localhost:23526/test-dyn-auth';
+    return request
+      .get(url)
+      .send({
+        scopes: [
+          'got-all/folder/t',
+          'got-all/hello/*',
+          'got-all/',
+          'got-all/*',
+          'got-only/this',
+          'got-*'
+        ]
+      })
+      .hawk({
+        id:           'delegating-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      }, {
+        ext: new Buffer(JSON.stringify({
+          delegating:       true,
+          scopes:           ['got-all/*', 'got-only/this']
+        })).toString('base64')
+      })
+      .end()
+      .then(function(res) {
+        assert(res.status === 401, "Request didn't failed");
+      });
+  });
+
+  // Test with dynamic authentication that doesn't work (again)
+  test("With dynamic authentication (overscoped again)", function() {
+    var url = 'http://localhost:23526/test-dyn-auth';
+    return request
+      .get(url)
+      .send({
+        scopes: [
+          'got-only/this*',
+        ]
+      })
+      .hawk({
+        id:           'delegating-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      }, {
+        ext: new Buffer(JSON.stringify({
+          delegating:       true,
+          scopes:           ['got-only/this']
+        })).toString('base64')
+      })
+      .end()
+      .then(function(res) {
+        assert(res.status === 401, "Request didn't failed");
       });
   });
 });
