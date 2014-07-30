@@ -144,12 +144,13 @@ exports.setup = function(options) {
               clientId:       'test-client',
               accessToken:    'none'
             },
-            authentication: {
-              delegating:     scopes.length > 0,
+            authorization: {
+              delegating:     (scopes.length > 0),
               scopes:         scopes
             }
           });
         };
+        subject.scopes();
         // Create client for binding to reference
         var exchangeReference = exchanges.reference({
           exchangePrefix:   cfg.get('queue:exchangePrefix')
