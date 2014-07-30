@@ -46,6 +46,12 @@ suite('Claim task', function() {
     var firstTakenUntil = new Date();
 
     return subject.queue.createTask(taskId, taskDef).then(function() {
+      // Reduce scopes available to test minimum set of scopes required
+      subject.scopes(
+        'queue:post:claim-task',
+        'queue:assume:worker-type:my-provisioner/my-worker',
+        'queue:assume:worker-id:my-worker-group/my-worker'
+      );
       // First runId is always 0, so we should be able to claim it here
       return subject.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
@@ -107,6 +113,12 @@ suite('Claim task', function() {
     var deadline = new Date();
     deadline.setDate(created.getDate() + 3);
     return subject.queue.createTask(taskId, taskDef).then(function() {
+      // Reduce scopes available to test minimum set of scopes required
+      subject.scopes(
+        'queue:post:claim-task',
+        'queue:assume:worker-type:my-provisioner/my-worker',
+        'queue:assume:worker-id:my-worker-group/my-worker'
+      );
       // First runId is always 0, so we should be able to claim it here
       return subject.queue.claimWork('my-provisioner', 'my-worker', {
         workerGroup:    'my-worker-group',
@@ -114,6 +126,56 @@ suite('Claim task', function() {
       });
     }).then(function(result) {
       assert(result.status.taskId === taskId, "Expected to get taskId");
+    });
+  });
+
+  test("claimTask requires scopes", function() {
+    var taskId = slugid.v4();
+    return subject.queue.createTask(taskId, taskDef).then(function() {
+      // leave out a required scope
+      subject.scopes(
+        'queue:assume:worker-type:my-provisioner/my-worker',
+        'queue:assume:worker-id:my-worker-group/my-worker'
+      );
+      // First runId is always 0, so we should be able to claim it here
+      return subject.queue.claimTask(taskId, 0, {
+        workerGroup:    'my-worker-group',
+        workerId:       'my-worker'
+      }).then(function() {
+        assert(false, "Expected an authentication error");
+      }, function(err) {
+        debug("Got expected authentiation error: %s", err);
+      });
+    }).then(function() {
+      // leave out a required scope
+      subject.scopes(
+        'queue:post:claim-task',
+        'queue:assume:worker-id:my-worker-group/my-worker'
+      );
+      // First runId is always 0, so we should be able to claim it here
+      return subject.queue.claimTask(taskId, 0, {
+        workerGroup:    'my-worker-group',
+        workerId:       'my-worker'
+      }).then(function() {
+        assert(false, "Expected an authentication error");
+      }, function(err) {
+        debug("Got expected authentiation error: %s", err);
+      });
+    }).then(function() {
+      // leave out a required scope
+      subject.scopes(
+        'queue:post:claim-task',
+        'queue:assume:worker-type:my-provisioner/my-worker'
+      );
+      // First runId is always 0, so we should be able to claim it here
+      return subject.queue.claimTask(taskId, 0, {
+        workerGroup:    'my-worker-group',
+        workerId:       'my-worker'
+      }).then(function() {
+        assert(false, "Expected an authentication error");
+      }, function(err) {
+        debug("Got expected authentiation error: %s", err);
+      });
     });
   });
 });

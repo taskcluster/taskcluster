@@ -43,6 +43,7 @@ suite('Create task', function() {
       taskId:   taskId
     }));
 
+    subject.scopes('queue:put:task:my-provisioner/my-worker');
     return subject.queue.createTask(taskId, taskDef).then(function(result) {
       return gotMessage.then(function(message) {
         assert(_.isEqual(result.status, message.payload.status),
@@ -52,6 +53,16 @@ suite('Create task', function() {
         assert(_.isEqual(result.status, result2.status),
                "Task status shouldn't have changed");
       });
+    });
+  });
+
+  test("createTask (without required scopes)", function() {
+    var taskId = slugid.v4();
+    subject.scopes('queue:put:task:my-provisioner/another-worker');
+    return subject.queue.createTask(taskId, taskDef).then(function() {
+      assert(false, "Expected an authentication error");
+    }, function(err) {
+      debug("Got expected authentication error: %s", err);
     });
   });
 
@@ -77,6 +88,7 @@ suite('Create task', function() {
       taskId:   taskId
     }));
 
+    subject.scopes('queue:post:define-task:my-provisioner/my-worker');
     return subject.queue.defineTask(taskId, taskDef).then(function() {
       return new Promise(function(accept, reject) {
         gotMessage.then(reject, reject);

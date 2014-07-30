@@ -56,6 +56,10 @@ suite('Post artifacts', function() {
         workerId:       'my-worker'
       });
     }).then(function() {
+      subject.scopes(
+        'queue:put:artifact:public/s3.json',
+        'queue:assume:worker-id:my-worker-group/my-worker'
+      );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/s3.json', {
         kind:         's3',
@@ -148,6 +152,36 @@ suite('Post artifacts', function() {
     });
   });
 
+  test("Post S3 artifact (with bad scopes)", function() {
+    this.timeout(120 * 1000);
+
+    var taskId = slugid.v4();
+    debug("### Creating task");
+    return subject.queue.createTask(taskId, taskDef).then(function() {
+      debug("### Claiming task");
+      // First runId is always 0, so we should be able to claim it here
+      return subject.queue.claimTask(taskId, 0, {
+        workerGroup:    'my-worker-group',
+        workerId:       'my-worker'
+      });
+    }).then(function() {
+      subject.scopes(
+        'queue:put:artifact:public/another-s3.json',
+        'queue:assume:worker-id:my-worker-group/my-worker'
+      );
+      debug("### Send post artifact request");
+      return subject.queue.createArtifact(taskId, 0, 'public/s3.json', {
+        kind:         's3',
+        expires:      deadline.toJSON(),
+        contentType:  'application/json'
+      });
+    }).then(function() {
+      assert(false, "Expected authentication error");
+    }, function(err) {
+      debug("Got expected authentication error: %s", err);
+    });
+  });
+
   test("Post Azure artifact", function() {
     this.timeout(120 * 1000);
     var taskId = slugid.v4();
@@ -160,6 +194,10 @@ suite('Post artifacts', function() {
         workerId:       'my-worker'
       });
     }).then(function() {
+      subject.scopes(
+        'queue:put:artifact:public/azure.json',
+        'queue:assume:worker-id:my-worker-group/my-worker'
+      );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/azure.json', {
         kind:         'azure',
@@ -238,6 +276,10 @@ suite('Post artifacts', function() {
         workerId:       'my-worker'
       });
     }).then(function() {
+      subject.scopes(
+        'queue:put:artifact:public/error.json',
+        'queue:assume:worker-id:my-worker-group/my-worker'
+      );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/error.json', {
         kind:         'error',
@@ -308,6 +350,10 @@ suite('Post artifacts', function() {
         workerId:       'my-worker'
       });
     }).then(function() {
+      subject.scopes(
+        'queue:put:artifact:public/redirect.json',
+        'queue:assume:worker-id:my-worker-group/my-worker'
+      );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/redirect.json', {
         kind:         'redirect',
