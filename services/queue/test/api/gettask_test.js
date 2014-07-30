@@ -39,6 +39,7 @@ suite('Get task', function() {
   test("getTask", function() {
     var taskId = slugid.v4();
 
+    subject.scopes('queue:put:task:my-provisioner/my-worker');
     return subject.queue.createTask(taskId, taskDef).then(function(result) {
       return subject.queue.getTask(taskId);
     }).then(function(taskDef2) {
