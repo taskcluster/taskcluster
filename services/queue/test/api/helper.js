@@ -13,7 +13,7 @@ var defaultClients = [
   {
     clientId:     'test-server',  // Hardcoded into config/test.js
     accessToken:  'none',
-    scopes:       ['auth:credentials'],
+    scopes:       ['auth:credentials', 'auth:can-delegate'],
     expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
   }, {
     clientId:     'test-client',  // Used in default Queue creation
@@ -108,7 +108,9 @@ exports.setup = function(options) {
       });
       // Connect to AMQP server
       return listener.connect().then(function() {
-        return gotMessage;
+        return listener.resume().then(function() {
+          return gotMessage;
+        });
       });
     };
     // Drop database
@@ -133,13 +135,21 @@ exports.setup = function(options) {
         subject.baseUrl = baseUrl;
         var reference = v1.reference({baseUrl: baseUrl});
         subject.Queue = taskcluster.createClient(reference);
-        subject.queue = new subject.Queue({
-          baseUrl:          baseUrl,
-          credentials: {
-            clientId:       'test-client',
-            accessToken:    'none'
-          }
-        });
+        // Utility to create an Queue instance with limited scopes
+        subject.scopes = function() {
+          var scopes = Array.prototype.slice.call(arguments);
+          subject.queue = new subject.Queue({
+            baseUrl:          baseUrl,
+            credentials: {
+              clientId:       'test-client',
+              accessToken:    'none'
+            },
+            authentication: {
+              delegating:     scopes.length > 0,
+              scopes:         scopes
+            }
+          });
+        };
         // Create client for binding to reference
         var exchangeReference = exchanges.reference({
           exchangePrefix:   cfg.get('queue:exchangePrefix')

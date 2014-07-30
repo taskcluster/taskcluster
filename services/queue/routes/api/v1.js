@@ -659,6 +659,13 @@ api.declare({
       });
     }
 
+    // Check that the run is running
+    if (task.runs[runId].state !== 'running') {
+      return res.json(409, {
+        message:  "run is not running"
+      });
+    }
+
     var workerGroup = task.runs[runId].workerGroup;
     var workerId    = task.runs[runId].workerId;
 
