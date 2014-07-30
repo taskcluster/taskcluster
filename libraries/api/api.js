@@ -216,8 +216,11 @@ var nonceManager = function(options) {
         return cb(new Error("Signature already used"));
       }
     }
-    noncedb[nextnonce++].nonce  = nonce;
-    noncedb[nextnonce++].ts     = ts;
+    noncedb[nextnonce].nonce  = nonce;
+    noncedb[nextnonce].ts     = ts;
+    // Increment nextnonce
+    nextnonce += 1;
+    nextnonce %= options.size;
     cb();
   };
 };
