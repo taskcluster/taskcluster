@@ -69,7 +69,7 @@ api.declare({
   // requester satisfies all the scopes assigned to the task
   if(!req.satisfies({
     provisionerId:  taskDef.provisionerId,
-    workerType:     taskDef.workerId
+    workerType:     taskDef.workerType
   }) || ! req.satisfies([taskDef.scopes])) {
     return;
   }
@@ -208,7 +208,7 @@ api.declare({
   // requester satisfies all the scopes assigned to the task
   if(!req.satisfies({
     provisionerId:  taskDef.provisionerId,
-    workerType:     taskDef.workerId
+    workerType:     taskDef.workerType
   }) || ! req.satisfies([taskDef.scopes])) {
     return;
   }
