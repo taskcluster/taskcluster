@@ -9,6 +9,7 @@ mocha                                 \
   test/api/auth_test.js               \
   test/api/route_test.js              \
   test/api/validate_test.js           \
+  test/api/noncemanager_test.js       \
   test/app_test.js                    \
   test/exchanges_test.js              \
   test/publisher_test.js              \
