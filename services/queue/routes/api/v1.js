@@ -304,7 +304,7 @@ api.declare({
     // Authenticate request by providing parameters
     if(!req.satisfies({
       provisionerId:  task.provisionerId,
-      workerType:     task.workerId
+      workerType:     task.workerType
     })) {
       return;
     }
