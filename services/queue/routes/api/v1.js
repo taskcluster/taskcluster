@@ -427,7 +427,7 @@ api.declare({
     // Authenticate request by providing parameters
     if(!req.satisfies({
       provisionerId:  task.provisionerId,
-      workerType:     task.workerId,
+      workerType:     task.workerType,
       workerGroup:    workerGroup,
       workerId:       workerId
     })) {
@@ -578,7 +578,7 @@ api.declare({
   // Authenticate request by providing parameters
   if(!req.satisfies({
     provisionerId:  provisionerId,
-    workerType:     workerId,
+    workerType:     workerType,
     workerGroup:    workerGroup,
     workerId:       workerId
   })) {
