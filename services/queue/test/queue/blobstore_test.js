@@ -5,8 +5,7 @@ suite('queue/tasks_store', function() {
   var BlobStore     = require('../../queue/blobstore');
   var base          = require('taskcluster-base');
   var _             = require('lodash');
-  var urljoin       = require('url-join');
-  var querystring   = require('querystring');
+  var url           = require('url');
   var request       = require('superagent-promise');
   var BlobUploader  = require('./azure-blob-uploader-sas');
   var debug         = require('debug')('queue:test:queue:blobstore_test');
@@ -156,10 +155,17 @@ suite('queue/tasks_store', function() {
     // Make a new key and try it
     key = slugid.v4();
     var sas2 = blobstore.generateWriteSAS(key, {expiry: expiry});
-    sas.path = sas2.path;
+
+    // Update the first signed url to point at the second with the same query
+    // params to test that we are using a restrictive enough permission set.
+    var parsedInvalidSasUrl    = url.parse(sas, true);
+    var parsedValidSasUrl      = url.parse(sas2, true);
+
+    // Keep the query params the same but change the blob it is pointing at.
+    parsedInvalidSasUrl.pathname = parsedValidSasUrl.pathname;
 
     // Create BlobUploader
-    var uploader = new BlobUploader(sas);
+    var uploader = new BlobUploader(url.format(parsedInvalidSasUrl));
     var block1 = slugid.v4();
     var block2 = slugid.v4();
 
