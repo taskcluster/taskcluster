@@ -55,30 +55,10 @@
           "type":         "string",
           "maxLength":    255
         },
-        "sas": {
-          "description":  "Shared Access Signature (SAS), see Azure REST API reference for details on how to use this.",
-          "type":         "object",
-          "properties": {
-            "baseUrl": {
-              "description":  "Base URL for the azure blob storage account.",
-              "type":         "string",
-              "format":       "uri"
-            },
-            "path": {
-              "description":  "Path to resource that you're granted write access to. This is typically on the form `<container>/<taskId>/<runId>/<name>`, but don't rely on that.",
-              "type":         "string"
-            },
-            "queryString": {
-              "description":  "Key-value pairs to provide as query-string parameters to authenticate requests. Typically, a few additional query-string parameters are also provided to identify operation and possibly block identifier, see Azure REST API reference for details.",
-              "type":         "object"
-            }
-          },
-          "additionalProperties":   false,
-          "required": [
-            "baseUrl",
-            "path",
-            "queryString"
-          ]
+        "putUrl": {
+          "description":  "Shared Access Signature (SAS) with write permissions, see [Azure REST API](http://msdn.microsoft.com/en-US/library/azure/dn140256.aspx) reference for details on how to use this.",
+          "type":         "string",
+          "format":       "uri"
         }
       },
       "additionalProperties": false,
@@ -86,7 +66,7 @@
         "kind",
         "expires",
         "contentType",
-        "sas"
+        "putUrl"
       ]
     }, {
       "title":        "Redirect Artifact Response",

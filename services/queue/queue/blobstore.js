@@ -3,7 +3,6 @@ var _           = require('lodash');
 var Promise     = require('promise');
 var debug       = require('debug')('queue:blobstore');
 var assert      = require('assert');
-var urljoin     = require('url-join');
 var querystring = require('querystring');
 
 /**
@@ -145,7 +144,8 @@ BlobStore.prototype.generateWriteSAS = function(key, options) {
       Permissions:  azure.Constants.BlobConstants.SharedAccessPermissions.WRITE
     }
   });
-  return _.pick(sas, 'baseUrl', 'path', 'queryString');
+
+  return sas.url();
 };
 
 /** Create signed GET url */
@@ -163,12 +163,9 @@ BlobStore.prototype.createSignedGetUrl = function(key, options) {
       Permissions:  azure.Constants.BlobConstants.SharedAccessPermissions.READ
     }
   });
+
   // Generate URL
-  return urljoin(
-    sas.baseUrl,
-    sas.path,
-    '?' + querystring.stringify(sas.queryString)
-  );
+  return sas.url();
 };
 
 /** Delete a blob on azure blob storage */

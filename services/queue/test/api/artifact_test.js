@@ -209,7 +209,7 @@ suite('Post artifacts', function() {
       var block2 = slugid.v4();
 
       debug("### Uploading first block");
-      var uploader = new BlobUploader(result.sas);
+      var uploader = new BlobUploader(result.putUrl);
       return Promise.all(
         uploader.putBlock(block1, '{"block1_says": "Hello world",\n'),
         uploader.putBlock(block2, '"block2_says": "Hello Again"}\n')
