@@ -104,18 +104,18 @@ api.declare({
       details.container = ctx.artifactStore.container;
       details.path      = path;
       // Give 30 minutes before the signature expires
-      var sasExpiration = new Date();
-      sasExpiration.setMinutes(sasExpiration.getMinutes() + 30);
+      var writeExpiration = new Date();
+      writeExpiration.setMinutes(writeExpiration.getMinutes() + 30);
       // Generate SAS
-      var sas = ctx.artifactStore.generateWriteSAS(path, {
-        expiry:       sasExpiration
+      var putUrl = ctx.artifactStore.generateWriteSAS(path, {
+        expiry:       writeExpiration
       });
       // Create reply
       reply = Promise.resolve({
         kind:         'azure',
         contentType:  input.contentType,
-        expires:      sasExpiration.toJSON(),
-        sas:          _.pick(sas, 'baseUrl', 'path', 'queryString')
+        expires:      writeExpiration.toJSON(),
+        putUrl:       putUrl
       });
 
     } else if (input.kind === 'redirect') {
