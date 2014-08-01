@@ -157,10 +157,10 @@ var queue = new taskcluster.Queue(options);
 ### Methods in `taskcluster.Scheduler`
 ```js
 // Create Scheduler client instance with default baseUrl:
-//  - http://scheduler.taskcluster.net/v1
+//  - https://scheduler.taskcluster.net/v1
 var scheduler = new taskcluster.Scheduler(options);
 ```
- * `scheduler.createTaskGraph(payload) : result`
+ * `scheduler.createTaskGraph(taskGraphId, payload) : result`
  * `scheduler.extendTaskGraph(taskGraphId, payload) : result`
  * `scheduler.getTaskGraphStatus(taskGraphId) : result`
  * `scheduler.getTaskGraphInfo(taskGraphId) : result`
@@ -257,35 +257,32 @@ If the `clientId` and `accessToken` are left empty we also check the
 `TASKCLUSTER_CLIENT_ID` and `TASKCLUSTER_ACCESS_TOKEN` environment variables
 to use as defaults (similar to how AWS, Azure, etc. handle authentication).
 
-### Delegated Authorization
-If your client has the scope `auth:can-delegate` you can send requests with
-a scope set different from the one you have. This is useful when the
-scheduler performs a request on behalf of a task-graph, or when
-authentication takes place in a trusted proxy. See example below:
+### Restricting Authorized Scopes
+If you wish to perform requests on behalf of a third-party that has small set of
+scopes than you do. You can specify which scopes your request should be allowed
+to use, in the key `authorizedScopes`. This is useful when the scheduler
+performs a request on behalf of a task-graph, or when authentication takes
+place in a trusted proxy. See example below:
 
 ```js
-// Create delegating instance of Auth Client class
-var auth = new taskcluster.Auth({
+// Create a Queue Client class can only define tasks for a specific workerType
+var queue = new taskcluster.Queue({
+  // Credentials that can define tasks for any provisioner and workerType.
   credentials: {
-    clientId:     '...',
-    accessToken:  '...'
+    clientId:       '...',
+    accessToken:    '...'
   },
-  authorization: {
-    delegating:   true,
-    scopes:       ['scope', ...]  // For example task.scopes
-  }
+  // Restricting this instance of the Queue client to only one scope
+  authorizedScopes: ['queue:post:define-task/my-provisioner/my-worker-type']
 });
 
-// This request is only successful if the set of scopes declared above
-// allows the request to come through. The set of scopes the client has
-// will not be used to authorize this request.
-auth.getCredentials(someClientId).then(function(result) {
+// This request will only be successful, if the task posted is aimed at
+// "my-worker-type" under "my-provisioner".
+queue.defineTask(taskId taskDefinition).then(function(result) {
   // ...
 });
 ```
-We call this delegated authorization, because the trusted node that has the
-scope `auth:can-delegate`, delegates authorization of the request to API
-end-point.
+
 
 ## Configuration of Exchange Bindings
 When a taskcluster Client class is instantiated the option `exchangePrefix` may
