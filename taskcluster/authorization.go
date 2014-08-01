@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	hawk "github.com/tent/hawk-go"
 	"net/http"
-	"os"
 )
 
 type delegationOptions struct {
@@ -14,10 +13,7 @@ type delegationOptions struct {
 	Scopes     []string `json:"scopes"`
 }
 
-func getAuth(http *http.Request) *hawk.Auth {
-	clientId := os.Getenv("TASKCLUSTER_CLIENT_ID")
-	accessToken := os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
-
+func getAuth(clientId string, accessToken string, http *http.Request) *hawk.Auth {
 	// Create the hawk authentication string from the request...
 	credentials := &hawk.Credentials{
 		ID:   clientId,
@@ -27,12 +23,12 @@ func getAuth(http *http.Request) *hawk.Auth {
 	return hawk.NewRequestAuth(http, credentials, 0)
 }
 
-func Authorization(http *http.Request) string {
-	auth := getAuth(http)
+func Authorization(clientId string, accessToken string, http *http.Request) string {
+	auth := getAuth(clientId, accessToken, http)
 	return auth.RequestHeader()
 }
 
-func AuthorizationDelegate(http *http.Request, scopes []string) (string, error) {
+func AuthorizationDelegate(clientId string, accessToken string, http *http.Request, scopes []string) (string, error) {
 	delgating := delegationOptions{true, scopes}
 	delgatingJson, err := json.Marshal(delgating)
 	if err != nil {
@@ -44,7 +40,7 @@ func AuthorizationDelegate(http *http.Request, scopes []string) (string, error) 
 		return "", err
 	}
 
-	auth := getAuth(http)
+	auth := getAuth(clientId, accessToken, http)
 	auth.Ext = delgatingJsonBase64
 	return auth.RequestHeader(), nil
 }
