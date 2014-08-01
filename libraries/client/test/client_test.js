@@ -1,8 +1,9 @@
 suite('mockAuthServer', function() {
+  var base            = require('taskcluster-base');
   var taskcluster     = require('../');
   var assert          = require('assert');
-  var mockAuthServer  = require('./mockauthserver');
   var path            = require('path');
+  var debug           = require('debug')('test:client_test');
 
   // Ensure the client is removed from the require cache so it can be reloaded
   // from scratch.
@@ -16,19 +17,31 @@ suite('mockAuthServer', function() {
 
   var _server = null;
   setup(function() {
-    return mockAuthServer({port: 62351}).then(function(server) {
+    return base.testing.createMockAuthServer({
+      port:     62351,
+      clients: [
+        {
+          clientId:     'test-client',
+          accessToken:  'test-token',
+          scopes:       ['auth:credentials'],
+          expires:      new Date(2092, 0, 0, 0, 0, 0, 0)
+        }
+      ]
+    }).then(function(server) {
       _server = server;
     });
   });
+
   teardown(function() {
     return _server.terminate().then(function() {
       _server = null;
     });
   });
 
+
   test('getCredentials', function() {
-    var reference = mockAuthServer.api.reference({
-      baseUrl: 'http://localhost:62351'
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
     });
     var Auth = new taskcluster.createClient(reference);
     var auth = new Auth({
@@ -44,8 +57,8 @@ suite('mockAuthServer', function() {
   });
 
   test('getCredentials w. baseUrl option', function() {
-    var reference = mockAuthServer.api.reference({
-      baseUrl: 'http://localhost-wrong-base-url:62351'
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost-wrong-base-url:62351/v1'
     });
     var Auth = new taskcluster.createClient(reference);
     var auth = new Auth({
@@ -53,7 +66,7 @@ suite('mockAuthServer', function() {
         clientId:     'test-client',
         accessToken:  'test-token'
       },
-      baseUrl:        'http://localhost:62351'
+      baseUrl:        'http://localhost:62351/v1'
     });
     // Inspect the credentials
     return auth.getCredentials('test-client').then(function(client) {
@@ -61,24 +74,42 @@ suite('mockAuthServer', function() {
     });
   });
 
-  test('getCredentials using delegation', function() {
-    var reference = mockAuthServer.api.reference({
-      baseUrl: 'http://localhost:62351'
+  test('getCredentials using authorizedScopes', function() {
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
     });
     var Auth = new taskcluster.createClient(reference);
     var auth = new Auth({
       credentials: {
-        clientId:       'delegating-client',
+        clientId:       'test-client',
         accessToken:    'test-token',
       },
-      authorization: {
-        delegating:     true,
-        scopes:         ['auth:credentials']
-      }
+      authorizedScopes: ['auth:credentials']
     });
     // Inspect the credentials
     return auth.getCredentials('test-client').then(function(client) {
       assert(client.clientId === 'test-client', "Expected clientId");
+    });
+  });
+
+  test('getCredentials using authorizedScopes (unauthorized)', function() {
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
+    });
+    var Auth = new taskcluster.createClient(reference);
+    var auth = new Auth({
+      credentials: {
+        clientId:       'test-client',
+        accessToken:    'test-token',
+      },
+      authorizedScopes: ['scope-not-authorized']
+    });
+    // Inspect the credentials
+    return auth.getCredentials('test-client').then(function(client) {
+      assert(false, "Expected and error");
+    }, function(err) {
+      debug("Got expected error: %s", err);
+      assert(err, "Expected an error");
     });
   });
 
@@ -96,8 +127,8 @@ suite('mockAuthServer', function() {
       process.env.TASKCLUSTER_CLIENT_ID    = 'test-client';
       process.env.TASKCLUSTER_ACCESS_TOKEN = 'test-token';
 
-      var reference = mockAuthServer.api.reference({
-        baseUrl: 'http://localhost:62351'
+      var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+        baseUrl: 'http://localhost:62351/v1'
       });
 
       var Auth = new getNewClient().createClient(reference);
