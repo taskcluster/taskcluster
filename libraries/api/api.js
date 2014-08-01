@@ -162,7 +162,7 @@ Client.prototype.isExpired = function() {
  */
 var clientLoader = function(options) {
   _.defaults(options, {
-    baseUrl:          'http://auth.taskcluster.net/v1'
+    baseUrl:          'https://auth.taskcluster.net/v1'
   });
   assert(options.clientId,    "ClientId is required");
   assert(options.accessToken, "AccessToken is required");
