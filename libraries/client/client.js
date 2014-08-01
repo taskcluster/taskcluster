@@ -29,25 +29,24 @@ var _defaultOptions = {
  * Returns a Client class which can be initialized with following options:
  * options:
  * {
- *   // TaskCluster credentials, if not provided fallback to defaults from environment variables
- *   // if defaults are not explicitly set with taskcluster.config({...})
- *   // To create a client without authentication (and not using defaults) use `credentials: {}`
+ *   // TaskCluster credentials, if not provided fallback to defaults from
+ *   // environment variables, if defaults are not explicitly set with
+ *   // taskcluster.config({...}).
+ *   // To create a client without authentication (and not using defaults)
+ *   // use `credentials: {}`
  *   credentials: {
- *     clientId: '...', // ClientId
+ *     clientId:    '...', // ClientId
  *     accessToken: '...', // AccessToken for clientId
  *   },
- *   // Optional authorization details for delegating auth.
- *   authorization: {
- *     delegating: true || false,  // Is delegating authentication?
- *     scopes:     ['scopes', ...] // Scopes to authorize with
- *   }
- *   baseUrl:    'http://.../v1'  // baseUrl for API requests
- *   exchangePrefix:  'queue/v1/' // exchangePrefix prefix
+ *   // Limit the set of scopes requests with this client may make.
+ *   // Note, that your clientId must have a superset of the these scopes.
+ *   authorizedScopes:  ['scope1', 'scope2', ...]
+ *   baseUrl:         'http://.../v1'   // baseUrl for API requests
+ *   exchangePrefix:  'queue/v1/'       // exchangePrefix prefix
  * }
  *
  * `baseUrl` and `exchangePrefix` defaults to values from reference.
  */
-
 exports.createClient = function(reference) {
   // Client class constructor
   var Client = function(options) {
@@ -96,13 +95,11 @@ exports.createClient = function(reference) {
       // Authenticate, if credentials are provided
       if (this._options.credentials) {
         var extra = {};
-        // if delegating scopes, provide the scopes set to delegate
-        if (this._options.authorization.delegating) {
-          assert(this._options.authorization.scopes,
-                 "Can't delegate without scopes to delegate");
+        // If set of authorized scopes is provided, we'll restrict the request
+        // to only use these scopes
+        if (this._options.authorizedScopes instanceof Array) {
           extra.ext = new Buffer(JSON.stringify({
-            delegating:       true,
-            scopes:           this._options.authorization.scopes
+            authorizedScopes: this._options.authorizedScopes
           })).toString('base64');
         }
         // Write hawk authentication header
