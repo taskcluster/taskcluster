@@ -15,10 +15,6 @@ var urlConversions = []struct {
 		"http://queue.taskcluster.net/x/y/z",
 	},
 	{
-		"http://xfoo.com/auth/x/y/z",
-		"http://auth.taskcluster.net/x/y/z",
-	},
-	{
 		"http://xfoo.com/scheduler/x/y/z",
 		"http://scheduler.taskcluster.net/x/y/z",
 	},

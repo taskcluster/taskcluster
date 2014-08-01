@@ -16,7 +16,6 @@ func NewServices() Services {
 		// Each service endpoint must end in a '/'.
 		"queue":     "http://queue.taskcluster.net/",
 		"scheduler": "http://scheduler.taskcluster.net/",
-		"auth":      "http://auth.taskcluster.net/",
 	}
 
 	return Services{Endpoints: endpoints}

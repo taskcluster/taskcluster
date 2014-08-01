@@ -28,7 +28,7 @@ func Authorization(clientId string, accessToken string, http *http.Request) stri
 	return auth.RequestHeader()
 }
 
-func AuthorizationDelegate(clientId string, accessToken string, http *http.Request, scopes []string) (string, error) {
+func AuthorizationDelegate(clientId string, accessToken string, scopes []string, http *http.Request) (string, error) {
 	delgating := delegationOptions{true, scopes}
 	delgatingJson, err := json.Marshal(delgating)
 	if err != nil {

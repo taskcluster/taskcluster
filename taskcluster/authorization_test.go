@@ -92,7 +92,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 	scopes := make([]string, 1)
 	scopes[0] = "noauth"
 
-	header, err := tc.AuthorizationDelegate(CLIENT_ID, ACCESS_TOKEN, req, scopes)
+	header, err := tc.AuthorizationDelegate(CLIENT_ID, ACCESS_TOKEN, scopes, req)
 
 	if err != nil {
 		t.Errorf("Failed to create delegating auth %s", err)

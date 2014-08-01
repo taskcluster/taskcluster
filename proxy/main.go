@@ -1,80 +1,74 @@
 package main
 
 import (
-	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
 	"fmt"
-	"net/http"
+	docopt "github.com/docopt/docopt-go"
+	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
 	"log"
-	"io"
-	"flag"
+	"net/http"
+	"os"
+	"strconv"
 )
 
-var tcServices = tc.NewServices()
-var httpClient = &http.Client{};
+var version = "Taskcluster proxy 1.0"
+var usage = `
+Taskcluster authentication proxy
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	targetPath, err := tcServices.ConvertPath(r.URL);
+  Usage:
+    ./proxy [--access-token=woot --client-id=bar -p 8080] <taskId>
+    ./proxy --help
 
-	// Unkown service which we are trying to hit...
-	if err != nil {
-		w.WriteHeader(404);
-		log.Printf("Attempting to use unkown service %s", r.URL.String())
-		fmt.Fprintf(w, "Unkown taskcluster service: %s", err)
-		return
-	}
-
-	// Copy method and body over to the proxy request.
-	log.Printf("Proxying %s | %s | %s", r.URL, r.Method, targetPath)
-	proxyReq, err := http.NewRequest(r.Method, targetPath.String(), r.Body)
-
-	// If we fail to create a request notify the client.
-	if err != nil {
-		w.WriteHeader(500)
-		fmt.Fprintf(w, "Failed to generate proxy request: %s", err)
-		return
-	}
-
-	// Copy all headers over to the proxy request.
-	for key, _ := range r.Header {
-		// Do not forward connection!
-		if key == "Connection" {
-			continue
-		}
-
-		proxyReq.Header.Set(key, r.Header.Get(key))
-	}
-
-	resp, err := httpClient.Do(proxyReq)
-
-	if err != nil {
-		w.WriteHeader(500)
-		fmt.Fprintf(w, "Failed during proxy request: %s", err)
-		return
-	}
-
-	// Map the headers from the proxy back into our response
-	headersToSend := w.Header()
-	for key, _ := range resp.Header {
-		headersToSend.Set(key, resp.Header.Get(key))
-	}
-
-	headersToSend.Set("X-Taskcluster-Endpoint", targetPath.String())
-
-	// Write the response headers and status.
-	w.WriteHeader(resp.StatusCode)
-
-	// Proxy the response body from the endpoint to our response.
-	io.Copy(w, resp.Body)
-	resp.Body.Close()
-}
+  Options:
+    -h --help                       Show this help screen.
+    -p --port <port>                Port to bind the proxy server to [default: 8080].
+    --client-id <clientId>          Use a specific auth.taskcluster hawk client id.
+    --access-token <accessToken>    Use a specific auth.taskcluster hawk access token.
+`
 
 func main() {
-	port := flag.Int("p", 8080, "Port to bind the proxy server to")
-	flag.Parse()
-	log.Printf("Proxy server starting on: %d", *port)
+	log.Println("%s", os.Args)
+	// Parse the docopt string and exit on any error or help message.
+	arguments, _ := docopt.Parse(usage, nil, true, version, false, true)
 
-	http.HandleFunc("/", handler)
-	startError := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
+	taskId := arguments["<taskId>"].(string)
+	port, err := strconv.Atoi(arguments["--port"].(string))
+
+	if err != nil {
+		log.Fatalf("Failed to convert port to integer")
+	}
+
+	clientId := arguments["--client-id"]
+	if clientId == nil {
+		clientId = os.Getenv("TASKCLUSTER_CLIENT_ID")
+	}
+
+	accessToken := arguments["--access-token"]
+	if accessToken == nil {
+		accessToken = os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
+	}
+
+	// Ensure we have credentials our auth proxy is pretty much useless without
+	// it.
+	if accessToken == "" || clientId == "" {
+		log.Fatalf(
+			"Credentials must be passed via environment variables or flags...",
+		)
+	}
+
+	// Fetch the task to get the scopes we should be using...
+	task, err := tc.GetTask(taskId)
+
+	if err != nil {
+		log.Fatalf("Could not fetch taskcluster task '%s' : %s", taskId, err)
+	}
+
+	routes := Routes{
+		Scopes:      task.Scopes,
+		ClientId:    clientId.(string),
+		AccessToken: accessToken.(string),
+	}
+
+	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), routes)
 	if startError != nil {
 		log.Fatal(startError)
 	}
