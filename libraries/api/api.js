@@ -111,7 +111,7 @@ var normalizeScopeSets = function(scopesets) {
   });
 };
 
-/** Auxiliary function to check if scopePatterns intersect a scope-set */
+/** Auxiliary function to check if scopePatterns satisfies a scope-set */
 var scopeIntersect = function(scopePatterns, scopesets) {
   var scopesets = normalizeScopeSets(scopesets);
   if (typeof(scopePatterns) == 'string') {
@@ -318,6 +318,9 @@ var authenticate = function(nonceManager, clientLoader, options) {
           var message = "Ask administrator to lookup incidentId in log-file";
           if (err.output && err.output.payload && err.output.payload.error) {
             message = err.output.payload.error;
+            if (err.output.payload.message) {
+              message += ": " + err.output.payload.message;
+            }
           }
           debug(
             "Error occurred authenticating, err: %s, %j, incidentId: %s",
@@ -349,16 +352,45 @@ var authenticate = function(nonceManager, clientLoader, options) {
         // Now we're authenticated
         authenticated = true;
 
-        // If we're delegating scopes
+        // If we're restricting scopes
         if (artifacts.ext) {
           var extdata = new Buffer(artifacts.ext, 'base64').toString('utf-8');
           var ext     = JSON.parse(extdata);
+          // TODO: Remove legacy support with can-delegate
           if (ext.delegating) {
             if (!req.satisfies('auth:can-delegate')) {
               return;
             }
             // Change authorized scopes
             authorizedScopes = ext.scopes;
+          }
+          // Allow restriction of scopes
+          if (ext.authorizedScopes instanceof Array) {
+            // If we satisfy the authorized scopes, we use them to overwrite
+            // the scopes provided by clientLoader... This feature is used
+            // when taskcluster components executes operations on behalf of
+            // others who has a small set of scopes.
+            if (scopeIntersect(authorizedScopes, [ext.authorizedScopes])) {
+              // Allow the rest of the request to authenticated with a
+              // limited set of scopes
+              authorizedScopes = ext.authorizedScopes;
+            } else {
+              // Return an error, if you are trying to use scopes you're not
+              // authorized to use
+              return {
+                code:     401,
+                payload:  {
+                  message:  "Authentication Failed: Can't restrict to scopes " +
+                            "you do not have",
+                  error: {
+                    info:   "Your request provided ext.authorizedScopes, to " +
+                            "limit scopes allowed. But your client does not " +
+                            "have all the scopes you restrict to.",
+                    authorizedScopesFromRequest: ext.authorizedScopes
+                }
+                }
+              };
+            }
           }
         }
       };
