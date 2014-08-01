@@ -227,7 +227,10 @@ var createClientLoader = function(clients) {
 var createMockAuthServer = function(options) {
   // Set default options
   options = _.defaults(options || {}, {
-    port:       1207
+    port:       1207,
+    env:        'development',
+    forceSSL:   false,
+    trustProxy: false
   });
 
   return base.validator().then(function(validator) {
