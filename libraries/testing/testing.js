@@ -254,5 +254,8 @@ var createMockAuthServer = function(options) {
   });
 };
 
+// Export mockAuthApi
+createMockAuthServer.mockAuthApi = mockAuthApi;
+
 // Export createMockAuthServer
 exports.createMockAuthServer = createMockAuthServer;
