@@ -17,6 +17,18 @@ var _clients = {
       accessToken:  'test-token',
       scopes:       ['auth:can-delegate'],
       expires:      new Date(2092, 0, 0, 0, 0, 0, 0)
+  },
+  'rockstar': {
+    clientId:     'rockstar',
+    accessToken:  'groupie',
+    scopes:       ['*'],
+    expires:      new Date(2092, 0, 0, 0, 0, 0, 0)
+  },
+  'nobody': {
+    clientId:     'nobody',
+    accessToken:  'nerd',
+    scopes:       ['another-irrelevant-scope'],
+    expires:      new Date(2092, 0, 0, 0, 0, 0, 0)
   }
 };
 

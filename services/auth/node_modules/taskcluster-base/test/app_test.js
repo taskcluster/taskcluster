@@ -8,7 +8,10 @@ suite("app", function() {
   test("app({port: 1459})", function() {
     // Create a simple app
     var app = base.app({
-      port: 1459
+      port:       1459,
+      env:        'development',
+      forceSSL:   false,
+      trustProxy: false
     });
     assert(app, "Should have an app");
 
@@ -33,7 +36,10 @@ suite("app", function() {
   test("setup() - GET assets/", function() {
     // Create a simple app
     var app = base.app({
-      port: 1459
+      port:       1459,
+      env:        'development',
+      forceSSL:   false,
+      trustProxy: false
     });
     assert(app, "Should have an app");
 
@@ -73,7 +79,10 @@ suite("app", function() {
   test("setup() - render view", function() {
     // Create a simple app
     var app = base.app({
-      port: 1459
+      port:       1459,
+      env:        'development',
+      forceSSL:   false,
+      trustProxy: false
     });
     assert(app, "Should have an app");
 
