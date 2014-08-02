@@ -10,8 +10,11 @@ module.exports = {
 
   // Server configuration
   server: {
-    // Run in development mode (logging and error handling)
-    development:                    false,
+    env:                            'production',
+    forceSSL:                       true,
+    // We trust the proxy on heroku, as the SSL end-point provided by heroku
+    // is a proxy, so we have to trust it.
+    trustProxy:                     true
   },
 
   // AWS SDK configuration for publication of schemas and references
