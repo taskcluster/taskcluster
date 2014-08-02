@@ -14,9 +14,8 @@ func NewServices() Services {
 	// Hardcoded list of services provided by taskcluster.
 	endpoints := map[string]string{
 		// Each service endpoint must end in a '/'.
-		"queue":     "http://queue.taskcluster.net/",
-		"scheduler": "http://scheduler.taskcluster.net/",
-		"auth":      "http://auth.taskcluster.net/",
+		"queue":     "https://queue.taskcluster.net/",
+		"scheduler": "https://scheduler.taskcluster.net/",
 	}
 
 	return Services{Endpoints: endpoints}

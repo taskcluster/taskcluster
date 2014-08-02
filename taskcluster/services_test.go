@@ -2,12 +2,12 @@ package taskcluster_test
 
 import (
 	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
-	"testing"
 	"net/url"
+	"testing"
 )
 
 var urlConversions = []struct {
-	given string
+	given    string
 	expected string
 }{
 	{
@@ -15,20 +15,15 @@ var urlConversions = []struct {
 		"http://queue.taskcluster.net/x/y/z",
 	},
 	{
-		"http://xfoo.com/auth/x/y/z",
-		"http://auth.taskcluster.net/x/y/z",
-	},
-	{
 		"http://xfoo.com/scheduler/x/y/z",
 		"http://scheduler.taskcluster.net/x/y/z",
 	},
 }
 
-
 func TestConvertPathForQueue(t *testing.T) {
-	services := tc.NewServices();
+	services := tc.NewServices()
 
-	for _, test := range(urlConversions) {
+	for _, test := range urlConversions {
 		expected, _ := url.Parse(test.expected)
 		given, _ := url.Parse(test.given)
 
