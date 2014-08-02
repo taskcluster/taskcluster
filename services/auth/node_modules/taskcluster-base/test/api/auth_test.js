@@ -201,6 +201,67 @@ suite("api/auth", function() {
       });
   });
 
+  test("Auth with restricted scopes", function() {
+    var url = 'http://localhost:23243/client/test-client/credentials';
+    return request
+      .get(url)
+      .hawk({
+        id:           'rockstar',
+        key:          'groupie',
+        algorithm:    'sha256'
+      }, {
+        ext: new Buffer(JSON.stringify({
+          authorizedScopes:    ['auth:credenti*']
+        })).toString('base64')
+      })
+      .end()
+      .then(function(res) {
+        if(!res.ok) {
+          console.log(res.body);
+          assert(false, "Request failed");
+        }
+      });
+  });
+
+  test("Auth with restricted scopes (too restricted)", function() {
+    var url = 'http://localhost:23243/client/test-client/credentials';
+    return request
+      .get(url)
+      .hawk({
+        id:           'rockstar',
+        key:          'groupie',
+        algorithm:    'sha256'
+      }, {
+        ext: new Buffer(JSON.stringify({
+          authorizedScopes:    ['some-irrelevant-scope']
+        })).toString('base64')
+      })
+      .end()
+      .then(function(res) {
+        assert(res.status === 401, "Request didn't fail as expected");
+      });
+  });
+
+  test("Auth with restricted scopes (can't restrict)", function() {
+    var url = 'http://localhost:23243/client/test-client/credentials';
+    return request
+      .get(url)
+      .hawk({
+        id:           'nobody',
+        key:          'nerd',
+        algorithm:    'sha256'
+      }, {
+        ext: new Buffer(JSON.stringify({
+          authorizedScopes:    ['auth:credenti*']
+        })).toString('base64')
+      })
+      .end()
+      .then(function(res) {
+        assert(res.status === 401, "Request didn't fail as expected");
+        assert(res.body.error.authorizedScopesFromRequest, "wrong kind error");
+      });
+  });
+
   // Test parameterized scopes
   test("Parameterized scopes", function() {
     var url = 'http://localhost:23526/test-scopes';
