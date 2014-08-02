@@ -9,7 +9,7 @@ suite("validator", function() {
   var Promise = require('promise');
 
   // Test that we can load from a folder
-  test("load from folder", function() {
+  test("load from folder (json)", function() {
     return base.validator({
       publish:      false,
       folder:       path.join(__dirname, 'schemas'),
@@ -18,6 +18,44 @@ suite("validator", function() {
       var errors = validator.check({
         value: 42
       }, 'http://localhost:1203/test-schema.json');
+      if(errors) {
+        console.log("Got unexpected errors:");
+        console.log(JSON.stringify(errors, null, 2));
+      }
+      assert(errors === null, "Got errors");
+    });
+  });
+
+  test("load from folder (yml)", function() {
+    return base.validator({
+      publish:      false,
+      folder:       path.join(__dirname, 'schemas'),
+      constants:    {"my-constant": 42}
+    }).then(function(validator) {
+      var errors = validator.check({
+        value: 42
+      }, 'http://localhost:1203/yml-test-schema.json');
+      if(errors) {
+        console.log("Got unexpected errors:");
+        console.log(JSON.stringify(errors, null, 2));
+      }
+      assert(errors === null, "Got errors");
+    });
+  });
+
+  test("load from folder (yaml)", function() {
+    return base.validator({
+      publish:      false,
+      folder:       path.join(__dirname, 'schemas'),
+      constants:    {"my-constant": 42}
+    }).then(function(validator) {
+      var errors = validator.check({
+        value: 42
+      }, 'http://localhost:1203/yaml-test-schema.json');
+      if(errors) {
+        console.log("Got unexpected errors:");
+        console.log(JSON.stringify(errors, null, 2));
+      }
       assert(errors === null, "Got errors");
     });
   });
@@ -114,7 +152,17 @@ suite("validator", function() {
         return s3.getObject({
           Bucket:     cfg.get('schemaTestBucket'),
           Key:        'base/test/test-schema.json'
-        }).promise();
+        }).promise().then(function() {
+          return s3.getObject({
+            Bucket:     cfg.get('schemaTestBucket'),
+            Key:        'base/test/yaml-test-schema.json'
+          }).promise();
+        }).then(function() {
+          return s3.getObject({
+            Bucket:     cfg.get('schemaTestBucket'),
+            Key:        'base/test/yml-test-schema.json'
+          }).promise();
+        });
       });
     } else {
       console.log("Skipping 'publish', missing config file: " +
