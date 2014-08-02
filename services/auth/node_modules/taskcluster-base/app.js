@@ -14,7 +14,7 @@ var marked          = require('marked');
 var Promise         = require('promise');
 var http            = require('http');
 var PassportPersona = require('passport-persona');
-
+var sslify          = require('express-sslify');
 
 /**
  * Setup Middleware for normal browser consumable HTTP end-points.
@@ -24,7 +24,6 @@ var PassportPersona = require('passport-persona');
  *   cookieSecret:  "..."                          // Cookie signing secret
  *   viewFolder:    path.join(__dirnmae, 'views')  // Folder with templates
  *   assetFolder:   path.join(__dirname, 'assets') // Folder with static files
- *   development:   true                           // Is in development?
  *   publicUrl:     'http://domain.com'            // Public URL for persona
  *   personaLogin:         '/persona-auth'    // Login URL
  *   personaLogout:        '/logout'          // Logout URL
@@ -75,7 +74,7 @@ var setup = function(options) {
   }
 
   // Middleware for development
-  if (options.development === true) {
+  if (app.get('env') == 'development') {
     app.use(errorHandler());
   }
 
@@ -172,7 +171,10 @@ var createServer = function() {
 /** Create express application
  * options:
  * {
- *   port:                8080  // Port to run the server on
+ *   port:          8080,           // Port to run the server on
+ *   env:           'development',  // 'development' or 'production'
+ *   forceSSL:      false,          // Force redirect to SSL or return 403
+ *   trustProxy:    false           // Trust the proxy that forwarded for SSL
  * }
  *
  * Returns an express application with extra methods:
@@ -180,12 +182,29 @@ var createServer = function() {
  *   - `createServer`   (Creates an server)
  */
 var app = function(options) {
+  assert(options,                           "options are required");
   assert(typeof(options.port) === 'number', "Port must be a number");
+  assert(options.env == 'development' ||
+         options.env == 'production',       "env must be prod... or dev...");
+  assert(options.forceSSL !== undefined,    "forceSSL must be defined");
+  assert(options.trustProxy !== undefined,  "trustProxy must be defined");
 
   // Create application
   var app = express();
   app.set('port', options.port);
-  app.use(morgan('dev'));
+  app.set('env', options.env);
+
+  // ForceSSL if required suggested
+  if (options.forceSSL) {
+    app.use(sslify.HTTPS());
+  }
+
+  // Middleware for development
+  if (app.get('env') == 'development') {
+    app.use(morgan('dev'));
+  } else {
+    app.use(morgan('tiny'))
+  }
 
   // Add some auxiliary methods to the app
   app.setup           = setup;
