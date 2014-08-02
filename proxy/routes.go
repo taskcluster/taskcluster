@@ -47,7 +47,7 @@ func (self Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	// Copy all headers over to the proxy request.
 	for key, _ := range req.Header {
 		// Do not forward connection!
-		if key == "Connection" {
+		if key == "Connection" || key == "Host" {
 			continue
 		}
 
