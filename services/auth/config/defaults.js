@@ -16,8 +16,14 @@ module.exports = {
     // Port to listen for requests on
     port:                           undefined,
 
-    // Run in development mode (logging and error handling)
-    development:                    false,
+    // Environment 'development' or 'production'
+    env:                            'development',
+
+    // Force SSL, not useful when runnning locally
+    forceSSL:                       false,
+
+    // Trust a forwarding proxy
+    trustProxy:                     false,
 
     // Secret used to signed cookies
     cookieSecret:                   'Warn, if no secret is used on production'
