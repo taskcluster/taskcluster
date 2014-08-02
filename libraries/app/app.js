@@ -196,7 +196,7 @@ var app = function(options) {
 
   // ForceSSL if required suggested
   if (options.forceSSL) {
-    app.use(sslify.HTTPS());
+    app.use(sslify.HTTPS(options.trustProxy));
   }
 
   // Middleware for development
