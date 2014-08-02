@@ -20,7 +20,7 @@ fi
 echo "Building proxy server..."
 # Output folder
 mkdir -p target
-GOARCH=amd64 GOOS=linux go build -o target/proxy ./proxy/
+GOARCH=amd64 GOOS=linux go build -o target/taskcluster-proxy .
 
 echo "Building docker image for proxy server"
 docker build -t $1 .

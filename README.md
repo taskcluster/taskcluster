@@ -13,7 +13,8 @@ and `TASKCLUSTER_ACCESS_TOKEN` environment variables.
 The proxy server can be deployed directly by building `proxy/main.go`
 but the prefered method is via the `./build.sh` script which will
 compile the proxy server for linux/amd64 and deploy the server to a
-docker image.
+docker image. [Godep](https://github.com/tools/godep) is required to run
+this script.
 
 ```sh
 ./build.sh user/taskcluster-proxy-server
@@ -22,18 +23,17 @@ docker image.
 ## Download via `go get`
 
 ```sh
-go get github.com/lightsofapollo/taskcluster-proxy/proxy
+go get github.com/lightsofapollo/taskcluster-proxy
 ```
 
 ## Hacking
 
-Follow usual go path setup.
+Follow usual go path setup + godeps.
 
 ```sh
 # inside the project root which will look something like:
 # $GOPATH/src/github.com/lightsofapollo/taskcluster-proxy
-cd proxy
-go build
+godep go build
 ```
 
 ## Tests
