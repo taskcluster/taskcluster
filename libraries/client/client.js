@@ -122,6 +122,7 @@ exports.createClient = function(reference) {
           }
           err = new Error(res.body.message || message);
           err.body = res.body;
+          err.statusCode = res.status;
           throw err
         }
         debug("Success calling: " + entry.name);
