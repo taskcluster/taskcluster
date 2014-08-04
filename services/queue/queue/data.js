@@ -18,7 +18,7 @@ var Artifact = base.Entity.configure({
       key:      'version',
       type:     'number'
     }, {
-      key:      'kind',
+      key:      'storageType',
       type:     'string'
     }, {
       key:      'contentType',
@@ -87,13 +87,13 @@ Artifact.expireEntities = function(options) {
       var ready = Promise.resolve(null);
 
       // Handle S3 artifacts
-      if (artifact.kind === 's3') {
+      if (artifact.storageType === 's3') {
         debug("Deleting artifact from S3 at: %s", artifact.details.prefix);
         ready = options.artifactBucket.deleteObject(artifact.details.prefix);
       }
 
       // Handle azure artifacts
-      if (artifact.kind === 'azure') {
+      if (artifact.storageType === 'azure') {
         ready = options.artifactStore.deleteBlob(artifact.details.path, true);
       }
 

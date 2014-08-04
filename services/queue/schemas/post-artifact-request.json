@@ -2,15 +2,15 @@
   "id":           "http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Post Artifact Request",
-  "description":  "Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `kind` property is referenced in the response as well.",
+  "description":  "Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.",
   "oneOf": [
     {
       "title":        "S3 Artifact Request",
       "description":  "Request for a signed PUT URL that will allow you to upload an artifact to an S3 bucket managed by the queue.",
       "type":         "object",
       "properties": {
-        "kind": {
-          "description":  "Artifact post request kind, in this case `'s3'`",
+        "storageType": {
+          "description":  "Artifact storage type, in this case `'s3'`",
           "enum":         ["s3"]
         },
         "expires": {
@@ -26,7 +26,7 @@
       },
       "additionalProperties": false,
       "required": [
-        "kind",
+        "storageType",
         "expires",
         "contentType"
       ]
@@ -35,8 +35,8 @@
       "description":  "Request for an Azure Shared Access Signature (SAS) that will allow you to upload an artifact to an Azure blob storage container managed by the queue.",
       "type":         "object",
       "properties": {
-        "kind": {
-          "description":  "Artifact post request kind, in this case `azure`",
+        "storageType": {
+          "description":  "Artifact storage type, in this case `azure`",
           "enum":         ["azure"]
         },
         "expires": {
@@ -52,7 +52,7 @@
       },
       "additionalProperties": false,
       "required": [
-        "kind",
+        "storageType",
         "expires",
         "contentType"
       ]
@@ -61,9 +61,9 @@
       "description":  "Request the queue to redirect to a URL for a given artifact. This allows you to reference artifacts that aren't managed by the queue. The queue will still authenticate the request, so depending on the level of secrecy required, secret URLs **might** work. Note, this is mainly useful for public artifacts, for example temporary files directly stored on the worker host and only available there for a specific amount of time.",
       "type":         "object",
       "properties": {
-        "kind": {
-          "description":  "Artifact post request kind, in this case `redirect`",
-          "enum":         ["redirect"]
+        "storageType": {
+          "description":  "Artifact storage type, in this case `reference`",
+          "enum":         ["reference"]
         },
         "expires": {
           "description":  "Date-time after which the queue should no longer redirect to this URL. Note, that the queue will and cannot delete the resource your URL references, you are responsible for doing that yourself.",
@@ -83,7 +83,7 @@
       },
       "additionalProperties": false,
       "required": [
-        "kind",
+        "storageType",
         "expires",
         "url",
         "contentType"
@@ -93,8 +93,8 @@
       "description":  "Request the queue to reply `403` (forbidden) with `reason` and `message` to any `GET` request for this artifact. This is mainly useful as a way for a task to declare that it failed to provide an artifact it wanted to upload.",
       "type":         "object",
       "properties": {
-        "kind": {
-          "description":  "Artifact post request kind, in this case `error`",
+        "storageType": {
+          "description":  "Artifact storage type, in this case `error`",
           "enum":         ["error"]
         },
         "expires": {
@@ -118,7 +118,7 @@
       },
       "additionalProperties": false,
       "required": [
-        "kind",
+        "storageType",
         "expires",
         "reason",
         "message"

@@ -2,15 +2,15 @@
   "id":           "http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Post Artifact Response",
-  "description":  "Response to a request for posting an artifact. Note that the `kind` property is referenced in the request as well.",
+  "description":  "Response to a request for posting an artifact. Note that the `storageType` property is referenced in the request as well.",
   "oneOf": [
     {
       "title":        "S3 Artifact Response",
       "description":  "Response to a request for a signed PUT URL that will allow you to upload an artifact to an S3 bucket managed by the queue.",
       "type":         "object",
       "properties": {
-        "kind": {
-          "description":  "Artifact post response kind, in this case `'s3'`",
+        "storageType": {
+          "description":  "Artifact storage type, in this case `'s3'`",
           "enum":         ["s3"]
         },
         "putUrl": {
@@ -31,7 +31,7 @@
       },
       "additionalProperties": false,
       "required": [
-        "kind",
+        "storageType",
         "putUrl",
         "expires",
         "contentType"
@@ -41,8 +41,8 @@
       "description":  "Response to a request for an Azure Shared Access Signature (SAS) that will allow you to upload an artifact to an Azure blob storage container managed by the queue.",
       "type":         "object",
       "properties": {
-        "kind": {
-          "description":  "Artifact post response kind, in this case `azure`",
+        "storageType": {
+          "description":  "Artifact storage type, in this case `azure`",
           "enum":         ["azure"]
         },
         "expires": {
@@ -63,7 +63,7 @@
       },
       "additionalProperties": false,
       "required": [
-        "kind",
+        "storageType",
         "expires",
         "contentType",
         "putUrl"
@@ -73,28 +73,28 @@
       "description":  "Response to a request for the queue to redirect to a URL for a given artifact.",
       "type":         "object",
       "properties": {
-        "kind": {
-          "description":  "Artifact post response kind, in this case `redirect`",
-          "enum":         ["redirect"]
+        "storageType": {
+          "description":  "Artifact storage type, in this case `reference`",
+          "enum":         ["reference"]
         }
       },
       "additionalProperties": false,
       "required": [
-        "kind"
+        "storageType"
       ]
     }, {
       "title":        "Error Artifact Response",
       "description":  "Response to a request for the queue to reply `403` (forbidden) with `reason` and `message` to any `GET` request for this artifact.",
       "type":         "object",
       "properties": {
-        "kind": {
-          "description":  "Artifact post response kind, in this case `error`",
+        "storageType": {
+          "description":  "Artifact storage type, in this case `error`",
           "enum":         ["error"]
         }
       },
       "additionalProperties": false,
       "required": [
-        "kind"
+        "storageType"
       ]
     }
   ]
