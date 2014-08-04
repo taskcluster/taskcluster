@@ -1,0 +1,190 @@
+id:                 http://schemas.taskcluster.net/queue/v1/task-status.json
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "Task Status Structure"
+description: |
+  A representation of **task status** as known by the queue
+type:               object
+properties:
+  taskId:
+    title:          "Task Identifier"
+    description: |
+      Unique task identifier, this is UUID encoded as
+      [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+      stripped of `=` padding.
+    type:           string
+    pattern:        {$const: slugid-pattern}
+  provisionerId:
+    title:          "Provisioner Id"
+    description: |
+      Unique identifier for the provisioner that this task must be scheduled on
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+  workerType:
+    title:          "Worker Type"
+    description: |
+      Identifier for worker type within the specified provisioner
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+  schedulerId:
+    title:          "Scheduler Identifier"
+    description: |
+      Identifier for the scheduler that _defined_ this task.
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+  taskGroupId:
+    title:          "Task-Group Identifier"
+    description: |
+      Identifier for a group of tasks scheduled together with this task, by
+      scheduler identified by `schedulerId`. For tasks scheduled by the
+      task-graph scheduler, this is the `taskGraphId`.
+    type:           string
+    pattern:        {$const: slugid-pattern}
+  priority:         {$const: priority}
+  deadline:         {$const: deadline}
+  retriesLeft:
+    title:          "Retries Left"
+    description: |
+      Number of retries left for the task in case of infrastructure issues
+    type:           integer
+    minimum:        0
+    maximum:        999
+  state:
+    title:          "State"
+    description: |
+      State of this task. This is just an auxiliary property derived from state
+      of latests run, or `unscheduled` if none.
+    enum:
+      - unscheduled
+      - pending
+      - running
+      - completed
+      - failed
+  runs:
+    title:          "List of Runs"
+    description: |
+      List of runs, ordered so that index `i` has `runId == i`
+    type:           array
+    items:
+      title:              "Run Information"
+      description: |
+        JSON object with information about a run
+      type:               object
+      properties:
+        runId:
+          title:          "Run Identifier"
+          description: |
+            Id of this task run, `run-id`s always starts from `0`
+          type:           integer
+          minimum:        {$const: min-run-id}
+          maximum:        {$const: max-run-id}
+        state:
+          title:          "Run State"
+          description: |
+            State of this run
+          enum:
+            - pending
+            - running
+            - completed
+            - failed
+        reasonCreated:
+          title:          "Reason Created"
+          description: |
+            Reason for the creation of this run,
+            **more reasons may be added in the future**."
+          enum:
+            - scheduled
+            - retry
+            - rerun
+        reasonResolved:
+          title:          "Reason Resolved"
+          description: |
+            Reason that run was resolved `failed` or `completed`, this is mainly
+            useful for runs resolved as `failed`.
+            Note, **more reasons may be added in the future**, also this
+            property is only available after the run is resolved.
+          enum:
+            - completed
+            - deadline-exceeded
+            - canceled
+            - claim-expired
+        success:
+          title:          "Run Success"
+          description: |
+            True, if the run was completed successfully, ie. exit code is zero.
+            Only present when the run is completed.
+          type:         boolean
+        workerGroup:
+          title:        "Worker Group"
+          description: |
+            Identifier for group that worker who executes this run is a part of,
+            this identifier is mainly used for efficient routing.
+            Note, this property is only present after the run is claimed.
+          type:         string
+          minLength:    {$const: identifier-min-length}
+          maxLength:    {$const: identifier-max-length}
+          pattern:      {$const: identifier-pattern}
+        workerId:
+          title:        "Worker Identifier"
+          description: |
+            Identifier for worker evaluating this run within given
+            `workerGroup`. Note, this property is only available after the run
+            has been claimed.
+          type:         string
+          minLength:    {$const: identifier-min-length}
+          maxLength:    {$const: identifier-max-length}
+          pattern:      {$const: identifier-pattern}
+        takenUntil:
+          title:        "Taken Until"
+          description: |
+            Time at which the run expires and is resolved as `failed`, if the
+            run isn't reclaimed. Note, only present after the run has been
+            claimed.
+          type:         string
+          format:       date-time
+        scheduled:
+          title:        "Scheduled"
+          description: |
+            Date-time at which this run was scheduled, ie. when the run was
+            created in state `pending`.
+          type:         string
+          format:       date-time
+        started:
+          title:        "Started"
+          description: |
+            Date-time at which this run was claimed, ie. when the run changed
+            state from `pending` to `running`. This property is only present
+            after the run has been claimed.
+          type:         string
+          format:       date-time
+        resolved:
+          title:        "Resolved"
+          description: |
+            Date-time at which this run was resolved, ie. when the run changed
+            state from `running` to either `completed` or `failed`.
+            This property is only present after the run as been resolved.
+          type:         string
+          format:       date-time
+      additionalProperties: false
+      required:
+        - runId
+        - state
+        - reasonCreated
+        - scheduled
+additionalProperties: false
+required:
+  - taskId
+  - provisionerId
+  - workerType
+  - schedulerId
+  - taskGroupId
+  - priority
+  - deadline
+  - retriesLeft
+  - state
+  - runs
