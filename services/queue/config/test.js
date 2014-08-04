@@ -15,7 +15,7 @@ module.exports = {
   },
 
   taskcluster: {
-    authBaseUrl:                  'http://localhost:1207/v1',
+    authBaseUrl:                  'http://localhost:60007/v1',
 
     credentials: {
       clientId:                   "test-server",
@@ -24,8 +24,8 @@ module.exports = {
   },
 
   server: {
-    publicUrl:                    'http://localhost:1208',
-    port:                         1208
+    publicUrl:                    'http://localhost:60001',
+    port:                         60001
   },
 
   // Local database

@@ -123,7 +123,10 @@ var launch = function(profile) {
 
     // Create app
     var app = base.app({
-      port:           Number(process.env.PORT || cfg.get('server:port'))
+      port:           Number(process.env.PORT || cfg.get('server:port')),
+      env:            cfg.get('server:env'),
+      forceSSL:       cfg.get('server:forceSSL'),
+      trustProxy:     cfg.get('server:trustProxy')
     });
 
     // Mount API router

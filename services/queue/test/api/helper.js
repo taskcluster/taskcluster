@@ -117,7 +117,7 @@ exports.setup = function(options) {
     return dropdb(options.profile).then(function() {
       // Create mock authentication server
       return base.testing.createMockAuthServer({
-        port:     1207, // This is hardcoded into config/test.js
+        port:     60007, // This is hardcoded into config/test.js
         clients:  options.clients
       }).then(function(mockAuthServer_) {
         mockAuthServer = mockAuthServer_;
@@ -144,10 +144,7 @@ exports.setup = function(options) {
               clientId:       'test-client',
               accessToken:    'none'
             },
-            authorization: {
-              delegating:     (scopes.length > 0),
-              scopes:         scopes
-            }
+            authorizedScopes: (scopes.length > 0 ? scopes : undefined)
           });
         };
         subject.scopes();

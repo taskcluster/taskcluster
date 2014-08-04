@@ -15,5 +15,5 @@
     }
   },
   "additionalProperties":   false,
-  "required": ["version", "status"]
+  "required": ["version", "status", "runId"]
 }
