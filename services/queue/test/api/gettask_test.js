@@ -15,10 +15,9 @@ suite('Get task', function() {
   var taskDef = {
     provisionerId:    'my-provisioner',
     workerType:       'my-worker',
-    // let's just test a large routing key too, 128 chars please :)
-    routing:          "jonasfj-test.what-a-hack.I suppose we might " +
-                      "actually need it when we add taskgraph scheduler id, " +
-                      "taskgraphId, task graph routing",
+    schedulerId:      'my-scheduler',
+    taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
+    routing:          "jonasfj-test.what-a-hack",
     retries:          5,
     priority:         1,
     created:          created.toJSON(),

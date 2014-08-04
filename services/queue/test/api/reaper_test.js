@@ -18,7 +18,8 @@ suite('Reaper tests', function() {
     return {
       provisionerId:    'my-provisioner',
       workerType:       'my-worker',
-      // let's just test a large routing key too, 128 chars please :)
+      schedulerId:      'my-scheduler',
+      taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
       routing:          "jonasfj-test.what-a-hack",
       retries:          retries,
       priority:         1,

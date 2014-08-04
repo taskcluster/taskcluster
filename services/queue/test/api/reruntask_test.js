@@ -16,10 +16,9 @@ suite('Rerun task', function() {
   var taskDef = {
     provisionerId:    'my-provisioner',
     workerType:       'my-worker',
-    // let's just test a large routing key too, 128 chars please :)
-    routing:          "jonasfj-test.what-a-hack.I suppose we might " +
-                      "actually need it when we add taskgraph scheduler id, " +
-                      "taskgraphId, task graph routing",
+    schedulerId:      'my-scheduler',
+    taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
+    routing:          "jonasfj-test.what-a-hack",
     retries:          5,
     priority:         1,
     created:          created.toJSON(),
@@ -78,7 +77,10 @@ suite('Rerun task', function() {
       return isCompleted;
     }).then(function() {
       debug("### Requesting task rerun");
-      subject.scopes('queue:post:rerun:my-provisioner/my-worker');
+      subject.scopes(
+        'queue:rerun-task',
+        'assume:scheduler-id:my-scheduler/dSlITZ4yQgmvxxAi4A8fHQ'
+      );
       return subject.queue.rerunTask(taskId);
     }).then(function() {
       debug("### Waiting for pending message again");
