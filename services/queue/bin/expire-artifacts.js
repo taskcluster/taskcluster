@@ -20,7 +20,8 @@ var launch = function(profile) {
       'aws_accessKeyId',
       'aws_secretAccessKey',
       'azure_accountName',
-      'azure_accountKey'
+      'azure_accountKey',
+      'queue_artifactExpirationDelay'
     ],
     filename:     'taskcluster-queue'
   });
@@ -48,11 +49,17 @@ var launch = function(profile) {
     artifactStore.createContainer(),
     Artifact.createTable()
   ).then(function() {
-    debug("Expiring artifacts at: %s", new Date());
+    // Find an artifact expiration delay
+    var delay = parseInt(cfg.get('queue:artifactExpirationDelay'));
+    assert(_.isNaN(delay), "Can't have NaN as artifactExpirationDelay");
+    var now = new Date();
+    now.setHours(now.getHours() - delay);
+    // Expire artifacts using delay
+    debug("Expiring artifacts at: %s, from before %s", new Date(), now);
     return Artifact.expireEntities({
       artifactBucket:   artifactBucket,
       artifactStore:    artifactStore,
-      now:              new Date()
+      now:              now
     });
   }).then(function(count) {
     debug("Expired %s artifacts", count);
