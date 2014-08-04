@@ -220,7 +220,11 @@ Listener.prototype._handle = function(msg) {
 
 /** Close the listener */
 Listener.prototype.close = function() {
-  return this._conn.close();
+  var conn = this._conn;
+  if (conn) {
+    this._conn = this._channel = null;
+    return this._conn.close();
+  }
 };
 
 // Export Listener
