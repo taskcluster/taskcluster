@@ -64,7 +64,7 @@ suite('Post artifacts', function() {
       );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/s3.json', {
-        kind:         's3',
+        storageType:  's3',
         expires:      deadline.toJSON(),
         contentType:  'application/json'
       });
@@ -173,7 +173,7 @@ suite('Post artifacts', function() {
       );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/s3.json', {
-        kind:         's3',
+        storageType:  's3',
         expires:      deadline.toJSON(),
         contentType:  'application/json'
       });
@@ -202,7 +202,7 @@ suite('Post artifacts', function() {
       );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/azure.json', {
-        kind:         'azure',
+        storageType:  'azure',
         expires:      deadline.toJSON(),
         contentType:  'application/json'
       });
@@ -284,7 +284,7 @@ suite('Post artifacts', function() {
       );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/error.json', {
-        kind:         'error',
+        storageType:  'error',
         expires:      deadline.toJSON(),
         reason:       'file-missing-on-worker',
         message:      "Some user-defined message",
@@ -358,7 +358,7 @@ suite('Post artifacts', function() {
       );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/redirect.json', {
-        kind:         'redirect',
+        storageType:  'reference',
         expires:      deadline.toJSON(),
         url:          'https://google.com',
         contentType:  'text/html'
