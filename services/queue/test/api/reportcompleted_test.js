@@ -16,10 +16,9 @@ suite('Report task completed', function() {
   var taskDef = {
     provisionerId:    'my-provisioner',
     workerType:       'my-worker',
-    // let's just test a large routing key too, 128 chars please :)
-    routing:          "jonasfj-test.what-a-hack.I suppose we might " +
-                      "actually need it when we add taskgraph scheduler id, " +
-                      "taskgraphId, task graph routing",
+    schedulerId:      'my-scheduler',
+    taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
+    routing:          "jonasfj-test.what-a-hack",
     retries:          5,
     priority:         1,
     created:          created.toJSON(),
@@ -51,8 +50,8 @@ suite('Report task completed', function() {
     }).then(function() {
       debug("### Reporting task completed");
       subject.scopes(
-        'queue:post:task-completed',
-        'queue:assume:worker-id:my-worker-group/my-worker'
+        'queue:report-task-completed',
+        'assume:worker-id:my-worker-group/my-worker'
       );
       return subject.queue.reportCompleted(taskId, 0, {
         success:    true
@@ -79,7 +78,7 @@ suite('Report task completed', function() {
     }).then(function() {
       debug("### Reporting task completed");
       subject.scopes(
-        'queue:assume:worker-id:my-worker-group/my-worker'
+        'assume:worker-id:my-worker-group/my-worker'
       );
       return subject.queue.reportCompleted(taskId, 0, {
         success:    true

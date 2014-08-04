@@ -25,6 +25,8 @@ suite('Post artifacts', function() {
   var taskDef = {
     provisionerId:    'my-provisioner',
     workerType:       'my-worker',
+    schedulerId:      'my-scheduler',
+    taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
     routing:          "jonasfj-test.what-a-hack",
     retries:          5,
     priority:         1,
@@ -57,8 +59,8 @@ suite('Post artifacts', function() {
       });
     }).then(function() {
       subject.scopes(
-        'queue:put:artifact:public/s3.json',
-        'queue:assume:worker-id:my-worker-group/my-worker'
+        'queue:create-artifact:public/s3.json',
+        'assume:worker-id:my-worker-group/my-worker'
       );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/s3.json', {
@@ -166,8 +168,8 @@ suite('Post artifacts', function() {
       });
     }).then(function() {
       subject.scopes(
-        'queue:put:artifact:public/another-s3.json',
-        'queue:assume:worker-id:my-worker-group/my-worker'
+        'queue:create-artifact:public/another-s3.json',
+        'assume:worker-id:my-worker-group/my-worker'
       );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/s3.json', {
@@ -195,8 +197,8 @@ suite('Post artifacts', function() {
       });
     }).then(function() {
       subject.scopes(
-        'queue:put:artifact:public/azure.json',
-        'queue:assume:worker-id:my-worker-group/my-worker'
+        'queue:create-artifact:public/azure.json',
+        'assume:worker-id:my-worker-group/my-worker'
       );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/azure.json', {
@@ -277,8 +279,8 @@ suite('Post artifacts', function() {
       });
     }).then(function() {
       subject.scopes(
-        'queue:put:artifact:public/error.json',
-        'queue:assume:worker-id:my-worker-group/my-worker'
+        'queue:create-artifact:public/error.json',
+        'assume:worker-id:my-worker-group/my-worker'
       );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/error.json', {
@@ -351,8 +353,8 @@ suite('Post artifacts', function() {
       });
     }).then(function() {
       subject.scopes(
-        'queue:put:artifact:public/redirect.json',
-        'queue:assume:worker-id:my-worker-group/my-worker'
+        'queue:create-artifact:public/redirect.json',
+        'assume:worker-id:my-worker-group/my-worker'
       );
       debug("### Send post artifact request");
       return subject.queue.createArtifact(taskId, 0, 'public/redirect.json', {

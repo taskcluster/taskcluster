@@ -15,6 +15,10 @@ var TASK_FIELDS = [
   'provisionerId',
   'workerType',
 
+  // Scheduler information
+  'schedulerId',
+  'taskGroupId',
+
   // Priority information
   'priority',
   'created',
@@ -59,8 +63,9 @@ var RUN_DATE_FIELDS   = ['takenUntil', 'scheduled', 'started', 'resolved'];
 /** Create database instance */
 var Task = function(rowInfo) {
   _.assign(this, rowInfo.taskRow);
-  this.taskId = slugid.encode(this.taskId);
-  this.runs = _.sortBy(rowInfo.runRows, 'runId');
+  this.taskId       = slugid.encode(this.taskId);
+  this.taskGroupId  = slugid.encode(this.taskGroupId);
+  this.runs         = _.sortBy(rowInfo.runRows, 'runId');
   this.runs.forEach(function(run) {
     run.taskId = slugid.encode(run.taskId);
   });
@@ -132,6 +137,10 @@ Task.ensureTables = function() {
         // Task environment information
         table.string('provisionerId', 22).notNullable();
         table.string('workerType', 22).notNullable();
+
+        // Scheduler information
+        table.string('schedulerId', 22).notNullable();
+        table.uuid('taskGroupId').notNullable();
 
         // Priority information
         table.float('priority').notNullable();
@@ -205,6 +214,11 @@ Task.close = function() {
   });
 };
 
+// Decode the slugid
+var deslug = function(id) {
+  return slugid.decode(id);
+};
+
 /**
  * Extract task row and run rows
  *
@@ -212,7 +226,8 @@ Task.close = function() {
  * load old data from permanent storage going forward.
  */
 var loadTaskInfo = function(taskInfo) {
-  assert(taskInfo.version === 1, "Unknown taskInfo version: %s", taskInfo.version);
+  assert(taskInfo.version === 1,
+         "Unknown taskInfo version: %s", taskInfo.version);
 
   // Extract task row
   var taskRow = TASK_FIELDS.reduce(function(row, field) {
@@ -224,7 +239,9 @@ var loadTaskInfo = function(taskInfo) {
       taskRow[field] = new Date(taskRow[field]);
     }
   });
-  var taskId = taskRow.taskId = slugid.decode(taskInfo.taskId);
+  // Decode slugid to uuids
+  var taskId = taskRow.taskId = deslug(taskInfo.taskId);
+  taskRow.taskGroupId         = deslug(taskRow.taskGroupId);
 
   // Extract run rows
   var runRows = taskInfo.runs.map(function(runInfo) {
@@ -247,11 +264,6 @@ var loadTaskInfo = function(taskInfo) {
     taskRow:  taskRow,
     runRows:  runRows
   };
-};
-
-// Decode the slugid
-var deslug = function(id) {
-  return slugid.decode(id);
 };
 
 // Add a transaction as last argument, if an argument is missing,
@@ -279,6 +291,8 @@ var transacting = function (f) {
  *   taskId:             // TaskId in slugid format
  *   provisionerId:      // provisionerId
  *   workerType:         // workerType
+ *   schedulerId:        // schedulerId
+ *   taskGroupId:        // taskGroupId
  *   priority:           // Priority (float)
  *   created:            // Date object as JSON
  *   deadline:           // Date object as JSON
@@ -1025,6 +1039,8 @@ Task.prototype.status = function() {
     taskId:         this.taskId,
     provisionerId:  this.provisionerId,
     workerType:     this.workerType,
+    schedulerId:    this.schedulerId,
+    taskGroupId:    this.taskGroupId,
     priority:       this.priority,
     deadline:       this.deadline.toJSON(),
     retriesLeft:    this.retriesLeft,
@@ -1073,6 +1089,8 @@ Task.prototype.serialize = function() {
     taskId:         this.taskId,
     provisionerId:  this.provisionerId,
     workerType:     this.workerType,
+    schedulerId:    this.schedulerId,
+    taskGroupId:    this.taskGroupId,
     priority:       this.priority,
     created:        this.created.toJSON(),
     deadline:       this.deadline.toJSON(),

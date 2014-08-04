@@ -54,7 +54,16 @@ module.exports = {
     publicUrl:                      'http://queue.taskcluster.net',
 
     // Port to listen for requests on
-    port:                           undefined
+    port:                           undefined,
+
+    // Environment 'development' or 'production'
+    env:                            'development',
+
+    // Force SSL, not useful when runnning locally
+    forceSSL:                       false,
+
+    // Trust a forwarding proxy
+    trustProxy:                     false,
   },
 
   // Database configuration

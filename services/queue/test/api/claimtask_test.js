@@ -16,10 +16,9 @@ suite('Claim task', function() {
   var taskDef = {
     provisionerId:    'my-provisioner',
     workerType:       'my-worker',
-    // let's just test a large routing key too, 128 chars please :)
-    routing:          "jonasfj-test.what-a-hack.I suppose we might " +
-                      "actually need it when we add taskgraph scheduler id, " +
-                      "taskgraphId, task graph routing",
+    schedulerId:      'my-scheduler',
+    taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
+    routing:          "jonasfj-test.what-a-hack",
     retries:          5,
     priority:         1,
     created:          created.toJSON(),
@@ -48,9 +47,9 @@ suite('Claim task', function() {
     return subject.queue.createTask(taskId, taskDef).then(function() {
       // Reduce scopes available to test minimum set of scopes required
       subject.scopes(
-        'queue:post:claim-task',
-        'queue:assume:worker-type:my-provisioner/my-worker',
-        'queue:assume:worker-id:my-worker-group/my-worker'
+        'queue:claim-task',
+        'assume:worker-type:my-provisioner/my-worker',
+        'assume:worker-id:my-worker-group/my-worker'
       );
       // First runId is always 0, so we should be able to claim it here
       return subject.queue.claimTask(taskId, 0, {
@@ -115,9 +114,9 @@ suite('Claim task', function() {
     return subject.queue.createTask(taskId, taskDef).then(function() {
       // Reduce scopes available to test minimum set of scopes required
       subject.scopes(
-        'queue:post:claim-task',
-        'queue:assume:worker-type:my-provisioner/my-worker',
-        'queue:assume:worker-id:my-worker-group/my-worker'
+        'queue:claim-task',
+        'assume:worker-type:my-provisioner/my-worker',
+        'assume:worker-id:my-worker-group/my-worker'
       );
       // First runId is always 0, so we should be able to claim it here
       return subject.queue.claimWork('my-provisioner', 'my-worker', {
@@ -134,8 +133,8 @@ suite('Claim task', function() {
     return subject.queue.createTask(taskId, taskDef).then(function() {
       // leave out a required scope
       subject.scopes(
-        'queue:assume:worker-type:my-provisioner/my-worker',
-        'queue:assume:worker-id:my-worker-group/my-worker'
+        'assume:worker-type:my-provisioner/my-worker',
+        'assume:worker-id:my-worker-group/my-worker'
       );
       // First runId is always 0, so we should be able to claim it here
       return subject.queue.claimTask(taskId, 0, {
@@ -149,8 +148,8 @@ suite('Claim task', function() {
     }).then(function() {
       // leave out a required scope
       subject.scopes(
-        'queue:post:claim-task',
-        'queue:assume:worker-id:my-worker-group/my-worker'
+        'queue:claim-task',
+        'assume:worker-id:my-worker-group/my-worker'
       );
       // First runId is always 0, so we should be able to claim it here
       return subject.queue.claimTask(taskId, 0, {
@@ -164,8 +163,8 @@ suite('Claim task', function() {
     }).then(function() {
       // leave out a required scope
       subject.scopes(
-        'queue:post:claim-task',
-        'queue:assume:worker-type:my-provisioner/my-worker'
+        'queue:claim-task',
+        'assume:worker-type:my-provisioner/my-worker'
       );
       // First runId is always 0, so we should be able to claim it here
       return subject.queue.claimTask(taskId, 0, {

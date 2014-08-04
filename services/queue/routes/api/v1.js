@@ -41,6 +41,105 @@ var api = new base.API({
   ].join('\n')
 });
 
+// List of slugid parameters
+var SLUGID_PARAMS = [
+  'taskId'
+];
+
+// List of identifier parameters
+var IDENTIFIER_PARAMS = [
+  'provisionerId',
+  'workerType',
+  'workerGroup',
+  'workerId'
+];
+
+// List of integer parameters
+var INT_PARAMS = [
+  'runId'
+];
+
+/**
+ * Check parameters against regular expressions for identifiers
+ * and send a 401 response with an error in case of malformed URL parameters
+ *
+ * returns true if there was no errors.
+ */
+var checkParams = function(req, res) {
+  var errors = [];
+  _.forIn(req.params, function(value, key) {
+    // Validate slugid parameters
+    if (SLUGID_PARAMS.indexOf(key) !== -1) {
+      if (!/^[a-zA-Z0-9-_]{22}$/.test(value)) {
+        errors.push({
+          message:  "Parameter '" + key + "' is not a slugid",
+          error:    value
+        });
+      }
+    }
+
+    // Validate identifier parameters
+    if (IDENTIFIER_PARAMS.indexOf(key) !== -1) {
+      // Validate format
+      if (!/^[a-zA-Z0-9-_]*$/.test(value)) {
+        errors.push({
+          message:  "Parameter '" + key + "' does not match [a-zA-Z0-9-_]* " +
+                    "as required for identifiers",
+          error:    value
+        });
+      }
+
+      // Validate minimum length
+      if (value.length == 0) {
+        errors.push({
+          message:  "Parameter '" + key + "' must be longer than 0 characters",
+          error:    value
+        });
+      }
+
+      // Validate maximum length
+      if (value.length > 22) {
+        errors.push({
+          message:  "Parameter '" + key + "' cannot be more than 22 characters",
+          error:    value
+        });
+      }
+    }
+
+    // Validate and parse integer parameters
+    if (INT_PARAMS.indexOf(key) !== -1) {
+      if (!/^[0-9]+$/.test(value)) {
+        errors.push({
+          message:  "Parameter '" + key + "' does not match [0-9]+",
+          error:    value
+        });
+      } else {
+        var number = parseInt(value);
+        if (_.isNaN(number)) {
+          errors.push({
+            message:  "Parameter '" + key + "' parses to NaN",
+            error:    value
+          });
+        }
+      }
+    }
+  });
+
+  // Check for errors and reply if necessary
+  if (errors.length != 0) {
+    res.json(401, {
+      message:  "Malformed URL parameters",
+      error:    errors
+    });
+    return false;
+  }
+  // No errors
+  return true;
+};
+
+// Export checkParams for use in artifacts.js
+api.checkParams = checkParams;
+
 // Export api
 module.exports = api;
 
@@ -50,7 +149,7 @@ api.declare({
   route:      '/task/:taskId',
   name:       'createTask',
   idempotent: true,
-  scopes:     ['queue:put:task:<provisionerId>/<workerType>'],
+  scopes:     ['queue:create-task:<provisionerId>/<workerType>'],
   deferAuth:  true,
   input:      SCHEMA_PREFIX_CONST + 'task.json#',
   output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
@@ -61,6 +160,11 @@ api.declare({
     "Deadline is at most 7 days into the future"
   ].join('\n')
 }, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
   var ctx = this;
   var taskId  = req.params.taskId;
   var taskDef = req.body;
@@ -98,6 +202,8 @@ api.declare({
       taskId:         taskId,
       provisionerId:  taskDef.provisionerId,
       workerType:     taskDef.workerType,
+      schedulerId:    taskDef.schedulerId,
+      taskGroupId:    taskDef.taskGroupId,
       priority:       taskDef.priority,
       created:        taskDef.created,
       deadline:       taskDef.deadline,
@@ -113,14 +219,19 @@ api.declare({
         }
       ]
     }, true).then(function(task) {
-      // Publish notification on AMQP
-      return ctx.publisher.taskPending({
-        status:         task.status(),
-        runId:          _.last(task.runs).runId
+      // Publish message about a defined task
+      return ctx.publisher.taskDefined({
+        status:         task.status()
       }, task.routing).then(function() {
+        // Publish message about a pending task
+        return ctx.publisher.taskPending({
+          status:         task.status(),
+          runId:          _.last(task.runs).runId
+        }, task.routing);
+      }).then(function() {
         // Reply to caller
         debug("New task created: %s", taskId);
-        res.reply({
+        return res.reply({
           status:       task.status()
         });
       });
@@ -150,6 +261,11 @@ api.declare({
     "Get task definition from queue."
   ].join('\n')
 }, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
   var ctx = this;
   var taskId  = req.params.taskId;
 
@@ -176,8 +292,8 @@ api.declare({
   route:      '/task/:taskId/define',
   name:       'defineTask',
   scopes:     [
-    'queue:post:define-task:<provisionerId>/<workerType>',
-    'queue:put:task:<provisionerId>/<workerType>'
+    'queue:define-task:<provisionerId>/<workerType>',
+    'queue:create-task:<provisionerId>/<workerType>'
   ],
   deferAuth:  true,
   input:      SCHEMA_PREFIX_CONST + 'task.json#',
@@ -200,6 +316,11 @@ api.declare({
     "task definition as previously defined this operation is safe to retry."
   ].join('\n')
 }, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
   var ctx = this;
   var taskId  = req.params.taskId;
   var taskDef = req.body;
@@ -237,6 +358,8 @@ api.declare({
       taskId:         taskId,
       provisionerId:  taskDef.provisionerId,
       workerType:     taskDef.workerType,
+      schedulerId:    taskDef.schedulerId,
+      taskGroupId:    taskDef.taskGroupId,
       priority:       taskDef.priority,
       created:        taskDef.created,
       deadline:       taskDef.deadline,
@@ -246,10 +369,15 @@ api.declare({
       runs:           []
     }, true);
   }).then(function(task) {
-    // Reply to caller
-    debug("New task defined: %s", taskId);
-    res.reply({
-      status:       task.status()
+    // Publish message about a defined task
+    return ctx.publisher.taskDefined({
+      status:         task.status()
+    }, task.routing).then(function() {
+      // Reply to caller
+      debug("New task defined: %s", taskId);
+      return res.reply({
+        status:       task.status()
+      });
     });
   }).catch(function(err) {
     // Handle error in case the taskId is already in use, with another task
@@ -271,8 +399,10 @@ api.declare({
   route:      '/task/:taskId/schedule',
   name:       'scheduleTask',
   scopes:     [
-    'queue:post:schedule-task:<provisionerId>/<workerType>',
-    'queue:put:task:<provisionerId>/<workerType>'
+    [
+      'queue:schedule-task',
+      'assume:scheduler-id:<schedulerId>/<taskGroupId>'
+    ]
   ],
   deferAuth:  true,
   input:      undefined, // No input accepted
@@ -289,10 +419,15 @@ api.declare({
     "To reschedule a task previously resolved, use `rerunTask`."
   ].join('\n')
 }, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
   var ctx = this;
   var taskId = req.params.taskId;
 
-  // Load task status structure to find provisionerId and workerType
+  // Load task status structure to find schedulerId and taskGroupId
   return ctx.Task.load(taskId).then(function(task) {
     // if no task is found, we return 404
     if (!task) {
@@ -303,8 +438,8 @@ api.declare({
 
     // Authenticate request by providing parameters
     if(!req.satisfies({
-      provisionerId:  task.provisionerId,
-      workerType:     task.workerType
+      schedulerId:    task.schedulerId,
+      taskGroupId:    task.taskGroupId
     })) {
       return;
     }
@@ -325,24 +460,6 @@ api.declare({
   });
 });
 
-/** Get task */
-api.declare({
-  method:   'get',
-  route:    '/task/:taskId',
-  name:     'getTask',
-  scopes:   undefined,  // Still no auth required
-  input:    undefined,  // No input is accepted
-  output:   'http://schemas.taskcluster.net/queue/v1/task.json#',
-  title:    "Get task",
-  description: [
-    "Get task structure from `taskId`"
-  ].join('\n')
-}, function(req, res) {
-  // TODO: Once we move tasks to azure use information stored in the status
-  // table instead of this hardcoded value.
-  res.redirect(this.bucket.publicUrl(req.params.taskId + '/task.json'));
-});
-
 
 /** Get task status */
 api.declare({
@@ -357,6 +474,11 @@ api.declare({
     "Get task status structure from `taskId`"
   ].join('\n')
 }, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
   var ctx     = this;
   var taskId  = req.params.taskId;
 
@@ -394,9 +516,9 @@ api.declare({
   name:       'claimTask',
   scopes: [
     [
-      'queue:post:claim-task',
-      'queue:assume:worker-type:<provisionerId>/<workerType>',
-      'queue:assume:worker-id:<workerGroup>/<workerId>'
+      'queue:claim-task',
+      'assume:worker-type:<provisionerId>/<workerType>',
+      'assume:worker-id:<workerGroup>/<workerId>'
     ]
   ],
   deferAuth:  true,
@@ -407,6 +529,11 @@ api.declare({
     "claim a task, more to be added later..."
   ].join('\n')
 }, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
   var ctx = this;
 
   var taskId = req.params.taskId;
@@ -481,8 +608,8 @@ api.declare({
   name:       'reclaimTask',
   scopes: [
     [
-      'queue:post:claim-task',
-      'queue:assume:worker-id:<workerGroup>/<workerId>'
+      'queue:claim-task',
+      'assume:worker-id:<workerGroup>/<workerId>'
     ]
   ],
   deferAuth:  true,
@@ -492,6 +619,11 @@ api.declare({
     "reclaim a task more to be added later..."
   ].join('\n')
 }, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
   var ctx = this;
 
   var taskId = req.params.taskId;
@@ -546,9 +678,9 @@ api.declare({
   name:       'claimWork',
   scopes: [
     [
-      'queue:post:claim-task',
-      'queue:assume:worker-type:<provisionerId>/<workerType>',
-      'queue:assume:worker-id:<workerGroup>/<workerId>'
+      'queue:claim-task',
+      'assume:worker-type:<provisionerId>/<workerType>',
+      'assume:worker-id:<workerGroup>/<workerId>'
     ]
   ],
   deferAuth:  true,
@@ -567,6 +699,11 @@ api.declare({
     "for your `workerType` claim work using `claimTaskRun`."
   ].join('\n')
 }, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
   var ctx = this;
 
   var provisionerId   = req.params.provisionerId;
@@ -634,8 +771,8 @@ api.declare({
   name:       'reportCompleted',
   scopes: [
     [
-      'queue:post:task-completed',
-      'queue:assume:worker-id:<workerGroup>/<workerId>'
+      'queue:report-task-completed',
+      'assume:worker-id:<workerGroup>/<workerId>'
     ]
   ],
   deferAuth:  true,
@@ -646,6 +783,11 @@ api.declare({
     "Report a run completed, resolving the run as `completed`."
   ].join('\n')
 }, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
   var ctx = this;
 
   var taskId        = req.params.taskId;
@@ -704,7 +846,12 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/rerun',
   name:       'rerunTask',
-  scopes:     ['queue:post:rerun:<provisionerId>/<workerType>'],
+  scopes:     [
+    [
+      'queue:rerun-task',
+      'assume:scheduler-id:<schedulerId>/<taskGroupId>'
+    ]
+  ],
   deferAuth:  true,
   input:      undefined, // No input accepted
   output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
@@ -724,6 +871,11 @@ api.declare({
     "current task status."
   ].join('\n')
 }, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
   var ctx     = this;
   var taskId  = req.params.taskId;
 
@@ -742,8 +894,8 @@ api.declare({
 
     // Authenticate request by providing parameters
     if(!req.satisfies({
-      provisionerId:  data.definition.provisionerId,
-      workerType:     data.definition.workerType
+      schedulerId:    data.definition.schedulerId,
+      taskGroupId:    data.definition.taskGroupId
     })) {
       return;
     }
@@ -796,6 +948,11 @@ api.declare({
     "**Warning** this api end-point is **not stable**."
   ].join('\n')
 }, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
   var ctx           = this;
   var provisionerId = req.params.provisionerId;
 
