@@ -76,12 +76,12 @@ api.declare({
       return;
     }
 
-    // Create details for the artifact, depending on `kind`
-    var details = _.pick(input, 'kind', 'contentType');
+    // Create details for the artifact, depending on `storageType`
+    var details = _.pick(input, 'storageType', 'contentType');
     // Create return value
     var reply = null;
 
-    if (input.kind === 's3') {
+    if (input.storageType === 's3') {
       var prefix = [taskId, runId, name].join('/');
       // Create details
       details.bucket    = ctx.artifactBucket.bucket;
@@ -96,14 +96,14 @@ api.declare({
       }).then(function(putUrl) {
         // Return reply
         return {
-          kind:         's3',
+          storageType:  's3',
           contentType:  input.contentType,
           expires:      urlExpiration.toJSON(),
           putUrl:       putUrl
         };
       });
 
-    } else if (input.kind === 'azure') {
+    } else if (input.storageType === 'azure') {
       var path = [taskId, runId, name].join('/');
       // Create details
       details.container = ctx.artifactStore.container;
@@ -117,28 +117,29 @@ api.declare({
       });
       // Create reply
       reply = Promise.resolve({
-        kind:         'azure',
+        storageType:  'azure',
         contentType:  input.contentType,
         expires:      writeExpiration.toJSON(),
         putUrl:       putUrl
       });
 
-    } else if (input.kind === 'redirect') {
+    } else if (input.storageType === 'reference') {
       details.url       = input.url;
       reply = Promise.resolve({
-        kind:         'redirect'
+        storageType:  'reference'
       });
 
-    } else if (input.kind === 'error') {
+    } else if (input.storageType === 'error') {
       details.reason    = input.reason;
       details.message   = input.message;
       reply = Promise.resolve({
-        kind:         'error'
+        storageType:  'error'
       });
 
     } else {
-      debug("ERROR: Unknown kind %s", input.kind);
-      assert(false, "Unknown kind should be handle by JSON schema validation");
+      debug("ERROR: Unknown storageType %s", input.storageType);
+      assert(false, "Unknown storageType should be handle by JSON " +
+                    "schema validation");
     }
 
     // Create artifact (and load if it exists)
@@ -147,7 +148,7 @@ api.declare({
       runId:        runId,
       name:         name,
       version:      1,
-      kind:         input.kind,
+      storageType:  input.storageType,
       details:      details,
       expires:      expires,
       contentType:  input.contentType || ''
@@ -162,7 +163,7 @@ api.declare({
       // Just, in case it already existed and we're retrying the
       // request, this allows the operation to be idempotent
       if (artifact.version !== 1 ||
-          artifact.kind    !== input.kind ||
+          artifact.storageType !== input.storageType ||
           artifact.expires > expires ||
           !_.isEqual(artifact.details, details)) {
         return res.json(409, {
@@ -185,7 +186,7 @@ var replyWithArtifact = function(taskId, runId, name, res) {
   // Load artifact meta-data from table storage
   return ctx.Artifact.load(taskId, runId, name).then(function(artifact) {
     // Handle S3 artifacts
-    if(artifact.kind === 's3') {
+    if(artifact.storageType === 's3') {
       // Find prefix
       var prefix = [taskId, runId, name].join('/');
       return ctx.artifactBucket.createGetUrl(prefix, {
@@ -196,7 +197,7 @@ var replyWithArtifact = function(taskId, runId, name, res) {
     }
 
     // Handle azure artifacts
-    if(artifact.kind === 'azure') {
+    if(artifact.storageType === 'azure') {
       // Find path
       var path = [taskId, runId, name].join('/');
       // Generate URL expiration time
@@ -209,12 +210,12 @@ var replyWithArtifact = function(taskId, runId, name, res) {
     }
 
     // Handle redirect artifacts
-    if (artifact.kind === 'redirect') {
+    if (artifact.storageType === 'reference') {
       return res.redirect(303, artifact.details.url);
     }
 
     // Handle error artifacts
-    if (artifact.kind === 'error') {
+    if (artifact.storageType === 'error') {
       return res.json(403, {
         reason:     artifact.details.reason,
         message:    artifact.details.message
@@ -222,7 +223,8 @@ var replyWithArtifact = function(taskId, runId, name, res) {
     }
 
     // We should never arrive here
-    assert(false, "Unknown artifact kind from table storage: %s", artifact.kind);
+    assert(false, "Unknown artifact storageType from table storage: %s",
+                  artifact.storageType);
   }, function(err) {
     // In case we failed to load the artifact, we check it's because it was
     // missing
@@ -351,9 +353,9 @@ var replyWithArtifacts = function(taskId, runId, res) {
     // Extra artifacts as JSON
     var artifactsAsJSON = artifacts.map(function(artifact) {
       // Handle S3 artifacts
-      if (artifact.kind === 's3') {
+      if (artifact.storageType === 's3') {
         return {
-          kind:         's3',
+          storageType:  's3',
           name:         artifact.name,
           expires:      artifact.expires.toJSON(),
           contentType:  artifact.details.contentType
@@ -361,9 +363,9 @@ var replyWithArtifacts = function(taskId, runId, res) {
       }
 
       // Handle azure artifacts
-      if (artifact.kind === 'azure') {
+      if (artifact.storageType === 'azure') {
         return {
-          kind:         'azure',
+          storageType:  'azure',
           name:         artifact.name,
           expires:      artifact.expires.toJSON(),
           contentType:  artifact.details.contentType
@@ -371,9 +373,9 @@ var replyWithArtifacts = function(taskId, runId, res) {
       }
 
       // Handle redirect artifacts
-      if (artifact.kind === 'redirect') {
+      if (artifact.storageType === 'reference') {
         return {
-          kind:         'redirect',
+          storageType:  'reference',
           name:         artifact.name,
           expires:      artifact.expires.toJSON(),
           contentType:  artifact.details.contentType
@@ -384,9 +386,9 @@ var replyWithArtifacts = function(taskId, runId, res) {
       }
 
       // Handle error artifacts
-      if (artifact.kind === 'error') {
+      if (artifact.storageType === 'error') {
         return {
-          kind:         'error',
+          storageType:  'error',
           name:         artifact.name,
           expires:      artifact.expires.toJSON()
           // Note, we cannot expose message or reason here as would be a
@@ -395,7 +397,7 @@ var replyWithArtifacts = function(taskId, runId, res) {
       }
 
       // We should never arrive here
-      assert(false, "Unknown artifact kind: %s", artifact.kind);
+      assert(false, "Unknown artifact storageType: %s", artifact.storageType);
     });
     // Reply with artifacts as extracted above
     res.reply({
@@ -424,8 +426,8 @@ api.declare({
 
   var taskId = req.params.taskId;
   var runId  = parseInt(req.params.runId);
-  // TODO: Add support querying using kind and prefix
-  //var kind   = req.body.kind;
+  // TODO: Add support querying using storageType and prefix
+  //var storageType   = req.body.storageType;
   //var prefix = req.body.prefix;
 
   return replyWithArtifacts.call(ctx, taskId, runId, res);
