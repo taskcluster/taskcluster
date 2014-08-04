@@ -52,7 +52,7 @@ var launch = function(profile) {
   ).then(function() {
     // Find an artifact expiration delay
     var delay = parseInt(cfg.get('queue:artifactExpirationDelay'));
-    assert(_.isNaN(delay), "Can't have NaN as artifactExpirationDelay");
+    assert(!_.isNaN(delay), "Can't have NaN as artifactExpirationDelay");
     var now = new Date();
     now.setHours(now.getHours() - delay);
     // Expire artifacts using delay
