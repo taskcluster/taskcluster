@@ -7,6 +7,7 @@ var _           = require('lodash');
 var BlobStore   = require('../queue/blobstore');
 var Bucket      = require('../queue/bucket');
 var data        = require('../queue/data');
+var assert      = require('assert');
 
 /** Launch expire-artifacts */
 var launch = function(profile) {
