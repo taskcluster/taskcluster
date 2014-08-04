@@ -31,7 +31,11 @@ module.exports = {
     taskContainer:                'tasks',
 
     // Azure table name for artifacts meta-data
-    artifactTableName:            'Artifacts'
+    artifactTableName:            'Artifacts',
+
+    // Number of hours to wait extra before expiring artifacts
+    // This is instead of expiring artifacts that have expiry set to just now.
+    artifactExpirationDelay:      '1'
   },
 
   // TaskCluster configuration
