@@ -110,6 +110,7 @@ suite('mockAuthServer', function() {
     }, function(err) {
       debug("Got expected error: %s", err);
       assert(err, "Expected an error");
+      assert(err.statusCode === 401, "Wrong status code");
     });
   });
 
