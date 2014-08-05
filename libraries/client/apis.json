@@ -67,7 +67,7 @@
           "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error.\nDeadline is at most 7 days into the future",
           "scopes": [
             [
-              "queue:put:task:<provisionerId>/<workerType>"
+              "queue:create-task:<provisionerId>/<workerType>"
             ]
           ],
           "input": "http://schemas.taskcluster.net/queue/v1/task.json#",
@@ -97,10 +97,10 @@
           "description": "Define a task without scheduling it. This API end-point allows you to\nupload a task definition without having scheduled. The task won't be\nreported as pending until it is scheduled, see the scheduleTask API \nend-point.\n\nThe purpose of this API end-point is allow schedulers to upload task\ndefinitions without the tasks becoming _pending_ immediately. This useful\nif you have a set of dependent tasks. Then you can upload all the tasks\nand when the dependencies of a tasks have been resolved, you can schedule\nthe task by calling `/task/:taskId/schedule`. This eliminates the need to\nstore tasks somewhere else while waiting for dependencies to resolve.\n\n**Note** this operation is **idempotent**, as long as you upload the same\ntask definition as previously defined this operation is safe to retry.",
           "scopes": [
             [
-              "queue:post:define-task:<provisionerId>/<workerType>"
+              "queue:define-task:<provisionerId>/<workerType>"
             ],
             [
-              "queue:put:task:<provisionerId>/<workerType>"
+              "queue:create-task:<provisionerId>/<workerType>"
             ]
           ],
           "input": "http://schemas.taskcluster.net/queue/v1/task.json#",
@@ -118,25 +118,11 @@
           "description": "If you have define a task using `defineTask` API end-point, then you\ncan schedule the task to be scheduled using this method.\nThis will announce the task as pending and workers will be allowed, to\nclaim it and resolved the task.\n\n**Note** this operation is **idempotent** and will not fail or complain\nif called with `taskId` that is already scheduled, or even resolved.\nTo reschedule a task previously resolved, use `rerunTask`.",
           "scopes": [
             [
-              "queue:post:schedule-task:<provisionerId>/<workerType>"
-            ],
-            [
-              "queue:put:task:<provisionerId>/<workerType>"
+              "queue:schedule-task",
+              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
             ]
           ],
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>",
-          "args": [
-            "taskId"
-          ],
-          "name": "getTask",
-          "title": "Get task",
-          "description": "Get task structure from `taskId`",
-          "output": "http://schemas.taskcluster.net/queue/v1/task.json#"
         },
         {
           "type": "function",
@@ -163,9 +149,9 @@
           "description": "claim a task, more to be added later...",
           "scopes": [
             [
-              "queue:post:claim-task",
-              "queue:assume:worker-type:<provisionerId>/<workerType>",
-              "queue:assume:worker-id:<workerGroup>/<workerId>"
+              "queue:claim-task",
+              "assume:worker-type:<provisionerId>/<workerType>",
+              "assume:worker-id:<workerGroup>/<workerId>"
             ]
           ],
           "input": "http://schemas.taskcluster.net/queue/v1/task-claim-request.json#",
@@ -184,8 +170,8 @@
           "description": "reclaim a task more to be added later...",
           "scopes": [
             [
-              "queue:post:claim-task",
-              "queue:assume:worker-id:<workerGroup>/<workerId>"
+              "queue:claim-task",
+              "assume:worker-id:<workerGroup>/<workerId>"
             ]
           ],
           "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#"
@@ -203,9 +189,9 @@
           "description": "Claim work for a worker, returns information about an appropriate task\nclaimed for the worker. Similar to `claimTaskRun`, which can be\nused to claim a specific task, or reclaim a specific task extending the\n`takenUntil` timeout for the run.\n\n**Note**, that if no tasks are _pending_ this method will not assign a\ntask to you. Instead it will return `204` and you should wait a while\nbefore polling the queue again. To avoid polling declare a RabbitMQ queue\nfor your `workerType` claim work using `claimTaskRun`.",
           "scopes": [
             [
-              "queue:post:claim-task",
-              "queue:assume:worker-type:<provisionerId>/<workerType>",
-              "queue:assume:worker-id:<workerGroup>/<workerId>"
+              "queue:claim-task",
+              "assume:worker-type:<provisionerId>/<workerType>",
+              "assume:worker-id:<workerGroup>/<workerId>"
             ]
           ],
           "input": "http://schemas.taskcluster.net/queue/v1/task-claim-request.json#",
@@ -224,8 +210,8 @@
           "description": "Report a run completed, resolving the run as `completed`.",
           "scopes": [
             [
-              "queue:post:task-completed",
-              "queue:assume:worker-id:<workerGroup>/<workerId>"
+              "queue:report-task-completed",
+              "assume:worker-id:<workerGroup>/<workerId>"
             ]
           ],
           "input": "http://schemas.taskcluster.net/queue/v1/task-completed-request.json#",
@@ -243,7 +229,8 @@
           "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nisn't either `failed` or `completed`, this operation will just return the\ncurrent task status.",
           "scopes": [
             [
-              "queue:post:rerun:<provisionerId>/<workerType>"
+              "queue:rerun-task",
+              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
             ]
           ],
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
@@ -262,8 +249,8 @@
           "description": "TODO: document this method",
           "scopes": [
             [
-              "queue:put:artifact:<name>",
-              "queue:assume:worker-id:<workerGroup>/<workerId>"
+              "queue:create-artifact:<name>",
+              "assume:worker-id:<workerGroup>/<workerId>"
             ]
           ],
           "input": "http://schemas.taskcluster.net/queue/v1/post-artifact-request.json",
@@ -283,7 +270,7 @@
           "description": "TODO: document this method",
           "scopes": [
             [
-              "queue:get:artifact:<name>"
+              "queue:get-artifact:<name>"
             ]
           ]
         },
@@ -300,7 +287,7 @@
           "description": "TODO: document this method",
           "scopes": [
             [
-              "queue:get:artifact:<name>"
+              "queue:get-artifact:<name>"
             ]
           ]
         },
@@ -347,6 +334,15 @@
           "title": "Fetch AMQP Connection String",
           "description": "Most hosted AMQP services requires us to specify a virtual host, \nso hardcoding the AMQP connection string into various services would be \na bad solution. Hence, we offer all authorized queue consumers to fetch \nan AMQP connection string using the API end-point.\n\n**Warning**, this API end-point is not stable, and may change in the \nfuture the strategy of not hardcoding AMQP connection details into \nvarious components obviously makes sense. But as we have no method of \nnotifying consumers that the connection string have moved. This \napproach may not be optimal either. Thus, we may be choose to remove \nthis API end-point when `pulse.mozilla.org` is a stable AMQP service \nwe can rely on.",
           "output": "http://schemas.taskcluster.net/queue/v1/amqp-connection-string-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
         }
       ]
     }
@@ -356,15 +352,15 @@
     "reference": {
       "version": "0.2.0",
       "title": "Queue AMQP Exchanges",
-      "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes AMQP exchanges offered by the queue, which allows\nthird-party listeners to monitor tasks as they progress to resolution.\nThese exchanges targets the following audience:\n * Schedulers, who takes action after tasks are completed,\n * Workers, who wants to listen for new or canceled tasks (optional),\n * Tools, that wants to update their view as task progress.\n\nYou'll notice that all the exchanges in the document shares the same\nrouting key pattern. This makes it very easy to bind to all message about\na certain kind tasks. You should also note that the `routing` property\nof a task will be used in the routing key. This property is user-defined\nand may contain dots (ie. multiple routing words).\n\n**Remark**, if the task-graph scheduler, documented elsewhere, is used to\nscheduler a task-graph, then task submitted will have their `routing` key\nprefixed by `task-graph-scheduler.<taskGraphId>.` this means that the\nfirst two words of the task `routing` key will be\n`'task-graph-scheduler'` and `taskGraphId`. This is useful if you're\ninterested in updates about a specific task-graph, and it is necessary\nto know if you're binding to the `task.routing` key and submitting tasks\nthrough the task-graph scheduler. See documentation for task-graph\nscheduler for more details.",
+      "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes AMQP exchanges offered by the queue, which allows\nthird-party listeners to monitor tasks as they progress to resolution.\nThese exchanges targets the following audience:\n * Schedulers, who takes action after tasks are completed,\n * Workers, who wants to listen for new or canceled tasks (optional),\n * Tools, that wants to update their view as task progress.\n\nYou'll notice that all the exchanges in the document shares the same\nrouting key pattern. This makes it very easy to bind to all message about\na certain kind tasks. You should also note that the `routing` property\nof a task will be used in the routing key. This property is user-defined\nand may contain dots (ie. multiple routing words).\n\n**Task-Graphs**, if the task-graph scheduler, documented elsewhere, is\nused to schedule a task-graph, the task submitted will have their\n`schedulerId` set to `task-graph-scheduler`, and their `taskGroupId` to\nthe `taskGraphId` as given to the task-graph scheduler. This is useful if\nyou wish to listen for all messages in a specific task-graph.\n\n**Delivery Guarantees**, most operations on the queue are idempotent,\nwhich means that if repeated with the same arguments then the requests\nwill ensure completion of the operation and return the same response.\nThis is useful if the server crashes or the TCP connection breaks, but\nwhen re-executing an idempotent operation, the queue will also resend\nany related AMQP messages. Hence, messages may be repeated.\n\nThis shouldn't be much of a problem, as the best you can achieve using\nconfirm messages with AMQP is at-least-once delivery semantics. Hence,\nthis only prevents you from obtaining at-most-once delivery semantics.\n\n**Remark**, some message generated by timeouts maybe dropped if the\nserver crashes at wrong time. Ideally, we'll address this in the\nfuture. For now we suggest you ignore this corner case.",
       "exchangePrefix": "queue/v1/",
       "entries": [
         {
           "type": "topic-exchange",
-          "exchange": "task-pending",
-          "name": "taskPending",
-          "title": "Task Pending Messages",
-          "description": "When a task becomes `pending` a message is posted to this exchange.\n\nThis is useful for workers who doesn't want to constantly poll the queue\nfor new tasks. The queue will also be authority for task states and\nclaims. But using this exchange workers should be able to distribute work\nefficiently and they would be able to reduce their polling interval\nsignificantly without affecting general responsiveness.",
+          "exchange": "task-defined",
+          "name": "taskDefined",
+          "title": "Task Defined Messages",
+          "description": "When a task is created or just defined a message is posted to this\nexchange.\n\nThis message exchange is mainly useful when tasks are scheduled by a\nscheduler that uses `defineTask` as this does not make the task\n`pending`. Thus, no `taskPending` message is published.\nPlease, note that messages are also published on this exchange if defined\nusing `createTask`.",
           "routingKey": [
             {
               "name": "taskId",
@@ -377,7 +373,7 @@
               "name": "runId",
               "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
               "multipleWords": false,
-              "required": true,
+              "required": false,
               "maxSize": 3
             },
             {
@@ -409,11 +405,98 @@
               "maxSize": 22
             },
             {
+              "name": "schedulerId",
+              "summary": "`schedulerId` this task was created by.",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
+              "name": "taskGroupId",
+              "summary": "`taskGroupId` this task was created in.",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
               "name": "routing",
               "summary": "task-specific routing key (`task.routing`).",
               "multipleWords": true,
               "required": true,
-              "maxSize": 128
+              "maxSize": 90
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/queue/v1/task-defined-message.json#"
+        },
+        {
+          "type": "topic-exchange",
+          "exchange": "task-pending",
+          "name": "taskPending",
+          "title": "Task Pending Messages",
+          "description": "When a task becomes `pending` a message is posted to this exchange.\n\nThis is useful for workers who doesn't want to constantly poll the queue\nfor new tasks. The queue will also be authority for task states and\nclaims. But using this exchange workers should be able to distribute work\nefficiently and they would be able to reduce their polling interval\nsignificantly without affecting general responsiveness.",
+          "routingKey": [
+            {
+              "name": "taskId",
+              "summary": "`taskId` for the task this message concerns",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
+              "name": "runId",
+              "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
+              "multipleWords": false,
+              "required": false,
+              "maxSize": 3
+            },
+            {
+              "name": "workerGroup",
+              "summary": "`workerGroup` of latest run for the task, `_` if no run is exists for the task.",
+              "multipleWords": false,
+              "required": false,
+              "maxSize": 22
+            },
+            {
+              "name": "workerId",
+              "summary": "`workerId` of latest run for the task, `_` if no run is exists for the task.",
+              "multipleWords": false,
+              "required": false,
+              "maxSize": 22
+            },
+            {
+              "name": "provisionerId",
+              "summary": "`provisionerId` this task is targeted at.",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
+              "name": "workerType",
+              "summary": "`workerType` this task must run on.",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
+              "name": "schedulerId",
+              "summary": "`schedulerId` this task was created by.",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
+              "name": "taskGroupId",
+              "summary": "`taskGroupId` this task was created in.",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
+              "name": "routing",
+              "summary": "task-specific routing key (`task.routing`).",
+              "multipleWords": true,
+              "required": true,
+              "maxSize": 90
             }
           ],
           "schema": "http://schemas.taskcluster.net/queue/v1/task-pending-message.json#"
@@ -436,7 +519,7 @@
               "name": "runId",
               "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
               "multipleWords": false,
-              "required": true,
+              "required": false,
               "maxSize": 3
             },
             {
@@ -468,11 +551,25 @@
               "maxSize": 22
             },
             {
+              "name": "schedulerId",
+              "summary": "`schedulerId` this task was created by.",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
+              "name": "taskGroupId",
+              "summary": "`taskGroupId` this task was created in.",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
               "name": "routing",
               "summary": "task-specific routing key (`task.routing`).",
               "multipleWords": true,
               "required": true,
-              "maxSize": 128
+              "maxSize": 90
             }
           ],
           "schema": "http://schemas.taskcluster.net/queue/v1/task-running-message.json#"
@@ -495,7 +592,7 @@
               "name": "runId",
               "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
               "multipleWords": false,
-              "required": true,
+              "required": false,
               "maxSize": 3
             },
             {
@@ -527,11 +624,25 @@
               "maxSize": 22
             },
             {
+              "name": "schedulerId",
+              "summary": "`schedulerId` this task was created by.",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
+              "name": "taskGroupId",
+              "summary": "`taskGroupId` this task was created in.",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
               "name": "routing",
               "summary": "task-specific routing key (`task.routing`).",
               "multipleWords": true,
               "required": true,
-              "maxSize": 128
+              "maxSize": 90
             }
           ],
           "schema": "http://schemas.taskcluster.net/queue/v1/task-completed-message.json#"
@@ -554,7 +665,7 @@
               "name": "runId",
               "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
               "multipleWords": false,
-              "required": true,
+              "required": false,
               "maxSize": 3
             },
             {
@@ -586,11 +697,25 @@
               "maxSize": 22
             },
             {
+              "name": "schedulerId",
+              "summary": "`schedulerId` this task was created by.",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
+              "name": "taskGroupId",
+              "summary": "`taskGroupId` this task was created in.",
+              "multipleWords": false,
+              "required": true,
+              "maxSize": 22
+            },
+            {
               "name": "routing",
               "summary": "task-specific routing key (`task.routing`).",
               "multipleWords": true,
               "required": true,
-              "maxSize": 128
+              "maxSize": 90
             }
           ],
           "schema": "http://schemas.taskcluster.net/queue/v1/task-failed-message.json#"
@@ -615,10 +740,10 @@
           ],
           "name": "createTaskGraph",
           "title": "Create new task-graph",
-          "description": "Create a new task-graph, the `status` of the resulting JSON is a\ntask-graph status structure, you can find the `taskGraphId` in this\nstructure.\n\n**Referencing required tasks**, it is possible to reference other tasks\nin the task-graph that must be completed successfully before a task is\nscheduled. You just specify the `taskId` in the list of `required` tasks.\nSee the example below, where the second task requires the first task.\n```js\n{\n  ...\n  tasks: [\n    {\n      taskId:     \"XgvL0qtSR92cIWpcwdGKCA\",\n      requires:   [],\n      ...\n    },\n    {\n      taskId:     \"73GsfK62QNKAk2Hg1EEZTQ\",\n      requires:   [\"XgvL0qtSR92cIWpcwdGKCA\"],\n      task: {\n        payload: {\n          env: {\n            DEPENDS_ON:  \"XgvL0qtSR92cIWpcwdGKCA\"\n          }\n          ...\n        }\n        ...\n      },\n      ...\n    }\n  ]\n}\n```\n\n**Task routing keys**, all tasks in a task-graph will have their\ntask-specific routing key prefixed with `schedulerId` and `taskGraphId`.\nThis leaves tasks with a routing key on the following format\n`<schedulerId>.<taskGraphId>.<taskRoutingKey>`.\n\nIn production the `schedulerId` is typically `\"task-graph-scheduler\"`,\nbut this is configurable, which is useful for testing and configuration\nof staging areas, etc.\n\nRemark, prefixing all task-specific routing keys in this manner does\nreduce the maximum size of the task-specific routing key. So keep this\nin mind when constructing the task-specific routing keys.\n\n**Task-graph scopes**, a task-graph is assigned a set of scopes, just\nlike tasks. Tasks within a task-graph cannot have scopes beyond those\nthe task-graph has. The task-graph scheduler will execute all requests\non behalf of a task-graph using the set of scopes assigned to the\ntask-graph. Thus, if you are submitting tasks to `my-worker-type` under\n`my-provisioner` it's important that your task-graph has the scope\nrequired to define tasks for this `provisionerId` and `workerType`.\nSee the queue for details on permissions required. Note, the task-graph\ndoes not require permissions to schedule the tasks. This is done with\nscopes provided by the task-graph scheduler.",
+          "description": "Create a new task-graph, the `status` of the resulting JSON is a\ntask-graph status structure, you can find the `taskGraphId` in this\nstructure.\n\n**Referencing required tasks**, it is possible to reference other tasks\nin the task-graph that must be completed successfully before a task is\nscheduled. You just specify the `taskId` in the list of `required` tasks.\nSee the example below, where the second task requires the first task.\n```js\n{\n  ...\n  tasks: [\n    {\n      taskId:     \"XgvL0qtSR92cIWpcwdGKCA\",\n      requires:   [],\n      ...\n    },\n    {\n      taskId:     \"73GsfK62QNKAk2Hg1EEZTQ\",\n      requires:   [\"XgvL0qtSR92cIWpcwdGKCA\"],\n      task: {\n        payload: {\n          env: {\n            DEPENDS_ON:  \"XgvL0qtSR92cIWpcwdGKCA\"\n          }\n          ...\n        }\n        ...\n      },\n      ...\n    }\n  ]\n}\n```\n\n**Providing `schedulerId`**, the `schedulerId` on all task definitions\ngiven must be the `schedulerId` for the task-graph scheduler. In\nproduction this is `\"task-graph-scheduler\"`. A task-graph that doesn't\nhave this will not be accepted by the task-graph scheduler.\n\n**Providing `taskGroupId`**, the `taskGroupId` on all task definitions\ngiven must be the `taskGraphId` for this task-graph. A task-graph that\ndoesn't have this will not be accepted by the task-graph scheduler.\n\n**Task-graph scopes**, a task-graph is assigned a set of scopes, just\nlike tasks. Tasks within a task-graph cannot have scopes beyond those\nthe task-graph has. The task-graph scheduler will execute all requests\non behalf of a task-graph using the set of scopes assigned to the\ntask-graph. Thus, if you are submitting tasks to `my-worker-type` under\n`my-provisioner` it's important that your task-graph has the scope\nrequired to define tasks for this `provisionerId` and `workerType`.\nSee the queue for details on permissions required. Note, the task-graph\ndoes not require permissions to schedule the tasks. This is done with\nscopes provided by the task-graph scheduler.",
           "scopes": [
             [
-              "scheduler:put:task-graph"
+              "scheduler:create-task-graph"
             ]
           ],
           "input": "http://schemas.taskcluster.net/scheduler/v1/task-graph.json#",
@@ -636,7 +761,7 @@
           "description": "Add a set of tasks to an existing task-graph. The request format is very\nsimilar to the request format for creating task-graphs. But `routing`\nkey, `scopes`, `metadata` and `tags` cannot be modified and tasks added\nto the task-graph will be prefixed with the same routing key as the\nexisting tasks. See `createTaskGraph` for details in routing key\nprefixing.\n\n**Referencing required tasks**, just as when task-graphs are created,\neach task has a list of required tasks. It is possible to reference\nall `taskId`s within the task-graph.\n\n**Safety,** it is only _safe_ to call this API end-point while the\ntask-graph being modified is still running. If the task-graph is\n_finished_ or _blocked_, this method will leave the task-graph in this\nstate. Hence, it is only truly _safe_ to call this API end-point from\nwithin a task in the task-graph being modified.",
           "scopes": [
             [
-              "scheduler:post:extend-task-graph:<taskGraphId>"
+              "scheduler:extend-task-graph:<taskGraphId>"
             ]
           ],
           "input": "http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#",
@@ -677,6 +802,15 @@
           "title": "Inspect Task Graph",
           "description": "Inspect a task-graph, this returns all the information the task-graph\nscheduler knows about the task-graph and the state of its tasks.\n\n**Warning**, some of these fields are borderline internal to the\ntask-graph scheduler and we may choose to change or make them internal\nlater. Also note that note all of the information is formalized yet.\nThe JSON schema will be updated to reflect formalized values, we think\nit's safe to consider the values stable.\n\nTake these considerations into account when using the API end-point,\nas we do not promise it will remain fully backward compatible in\nthe future.",
           "output": "http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
         }
       ]
     }
@@ -686,7 +820,7 @@
     "reference": {
       "version": "0.2.0",
       "title": "Scheduler AMQP Exchanges",
-      "description": "The scheduler, typically available at `scheduler.taskcluster.net` is\nresponsible for accepting task-graphs and schedule tasks on the queue as\ntheir dependencies are completed successfully.\n\nThis document describes the AMQP exchanges offered by the scheduler,\nwhich allows third-party listeners to monitor task-graph submission and\nresolution. These exchanges targets the following audience:\n * Reporters, who displays the state of task-graphs or emails people on\n   failures, and\n * End-users, who wants notification of completed task-graphs\n\n**Remark**, the task-graph scheduler will prefix the task specific\nrouting key with `<schedulerId>.<taskGraphId>.`,\nthis makes it easy to use AMQP exchanges from the queue to monitor\nbeginning and end of individual tasks within a given task-graph.\n\nIn production the `schedulerId` is normally `task-graph-scheduler`.\nThis means that if you want notifications about task progress for a\ngiven task-graph, then you can use the pattern\n`task-graph-scheduler.<taskGraphId>.#` for the task specific\nrouting key (`routing`) when binding to queue exchanges.\nSee queue documentation for details on queue exchanges.\n\nNote that the first 6 routing key entries used for exchanges on the\ntask-graph scheduler is hardcoded to `_`. This is done to preserve\npositional equivalence with exchanges offered by the queue. As\ndescribed above the task-graph scheduler will prefix the task\nspecific routing key (`routing`) with\n`<schedulerId>.<taskGraphId>.`.",
+      "description": "The scheduler, typically available at `scheduler.taskcluster.net` is\nresponsible for accepting task-graphs and schedule tasks on the queue as\ntheir dependencies are completed successfully.\n\nThis document describes the AMQP exchanges offered by the scheduler,\nwhich allows third-party listeners to monitor task-graph submission and\nresolution. These exchanges targets the following audience:\n * Reporters, who displays the state of task-graphs or emails people on\n   failures, and\n * End-users, who wants notification of completed task-graphs\n\n**Remark**, the task-graph scheduler will require that the `schedulerId`\nfor tasks is set to the `schedulerId` for the task-graph scheduler. In\nproduction the `schedulerId` is typically `\"task-graph-scheduler\"`.\nFurthermore, the task-graph scheduler will also require that\n`taskGroupId` is equal to the `taskGraphId`.\n\nCombined these ensures that `schedulerId` and `taskGroupId`\nhave the same position in the routing keys for the queue exchanges.\nSee queue documentation for details on queue exchanges. Hence, making\nit easy to listen for all tasks in a given task-graph.\n\nNote that the first 6 routing key entries used for exchanges on the\ntask-graph scheduler is hardcoded to `_`. This is done to preserve\npositional equivalence with exchanges offered by the queue.",
       "exchangePrefix": "scheduler/v1/",
       "entries": [
         {
