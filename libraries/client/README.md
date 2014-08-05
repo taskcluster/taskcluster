@@ -139,7 +139,6 @@ var queue = new taskcluster.Queue(options);
  * `queue.getTask(taskId) : result`
  * `queue.defineTask(taskId, payload) : result`
  * `queue.scheduleTask(taskId) : result`
- * `queue.getTask(taskId) : result`
  * `queue.status(taskId) : result`
  * `queue.claimTask(taskId, runId, payload) : result`
  * `queue.reclaimTask(taskId, runId) : result`
@@ -153,6 +152,7 @@ var queue = new taskcluster.Queue(options);
  * `queue.getLatestArtifacts(taskId) : void`
  * `queue.getPendingTasks(provisionerId) : void`
  * `queue.getAMQPConnectionString() : result`
+ * `queue.ping() : void`
 
 ### Methods in `taskcluster.Scheduler`
 ```js
@@ -165,6 +165,7 @@ var scheduler = new taskcluster.Scheduler(options);
  * `scheduler.getTaskGraphStatus(taskGraphId) : result`
  * `scheduler.getTaskGraphInfo(taskGraphId) : result`
  * `scheduler.inspectTaskGraph(taskGraphId) : result`
+ * `scheduler.ping() : void`
 
 ### Exchanges in `taskcluster.QueueEvents`
 ```js
@@ -172,6 +173,7 @@ var scheduler = new taskcluster.Scheduler(options);
 //  - queue/v1/
 var queueEvents = new taskcluster.QueueEvents(options);
 ```
+ * `queueEvents.taskDefined(routingKeyPattern) : binding-info`
  * `queueEvents.taskPending(routingKeyPattern) : binding-info`
  * `queueEvents.taskRunning(routingKeyPattern) : binding-info`
  * `queueEvents.taskCompleted(routingKeyPattern) : binding-info`
