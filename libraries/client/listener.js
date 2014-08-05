@@ -225,6 +225,8 @@ Listener.prototype.close = function() {
     this._conn = this._channel = null;
     return conn.close();
   }
+  // Make sure this always returns a promise
+  return Promise.resolve(undefined);
 };
 
 // Export Listener
