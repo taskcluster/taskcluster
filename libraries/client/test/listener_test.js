@@ -4,6 +4,7 @@ suite('listener', function() {
   var assert          = require('assert');
   var mockEvents      = require('./mockevents');
   var slugid          = require('slugid');
+  var debug           = require('debug')('test:listener');
 
   var _publisher = null;
   setup(function() {
@@ -21,6 +22,7 @@ suite('listener', function() {
   // Create client from reference
   var MockEventsClient = taskcluster.createClient(reference);
   var mockEventsClient = new MockEventsClient();
+
 
   // Test that client provides us with binding information
   test('binding info', function() {
@@ -319,6 +321,79 @@ suite('listener', function() {
       }).then(function() {
         assert(count == 3, "We should only have got 3 messages");
       });
+    });
+  });
+
+
+  test('connection w. two consumers', function() {
+    this.timeout(3000);
+
+    // Create connection object
+    var connection = new taskcluster.Connection({
+      connectionString:     mockEvents.connectionString
+    });
+
+    // Create listeners
+    var listener1 = new taskcluster.Listener({
+      connection:           connection
+    });
+    listener1.bind(mockEventsClient.testExchange({testId: 'test1'}));
+    var listener2 = new taskcluster.Listener({
+      connection:           connection
+    });
+    listener2.bind(mockEventsClient.testExchange({testId: 'test2'}));
+
+    var result1 = new Promise(function(accept, reject) {
+      listener1.on('message', function(message) {
+        debug("got message 1");
+        assert(message.payload.text == "my message 1");
+        setTimeout(function() {
+          listener1.close().then(accept, reject)
+        }, 200);
+      });
+      listener1.on('error', function(err) {
+        reject(err);
+      });
+    });
+
+    var result2 = new Promise(function(accept, reject) {
+      listener2.on('message', function(message) {
+        debug("got message 2");
+        assert(message.payload.text == "my message 2");
+        setTimeout(function() {
+          listener2.close().then(accept, reject)
+        }, 200);
+      });
+      listener2.on('error', function(err) {
+        reject(err);
+      });
+    });
+
+    return Promise.all([
+      listener1.resume(),
+      listener2.resume()
+    ]).then(function() {
+      debug("Sending message 1");
+      return _publisher.testExchange({
+        text:           "my message 1"
+      }, {
+        testId:         'test1',
+        taskRoutingKey: 'hello.world'
+      });
+    }).then(function() {
+      // Wait for listener 1 to get message and close
+      return result1;
+    }).then(function() {
+      return _publisher.testExchange({
+        text:           "my message 2"
+      }, {
+        testId:         'test2',
+        taskRoutingKey: 'hello.world'
+      });
+    }).then(function() {
+      return result2;
+    }).then(function() {
+      return connection.close();
     });
   });
 });

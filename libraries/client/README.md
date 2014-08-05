@@ -303,9 +303,12 @@ listener.bind(queueEvents.taskCompleted({taskId: '<myTaskId>'}));
 ```
 
 ## Using the Listener
+TaskCluster relies on AMQP for exchanges of messages. You'll need an AMQP
+connection string for using the taskcluster AMQP listener.
+An outline of how to create an instance and use is given below. Note, you
+must call `resume()` before message starts arriving.
 
-TODO:
-```
+```js
 var listener = new taskcluster.Listener({
   prefetch:           5,            // Number of tasks to process in parallel
   connectionString:   'amqp://...', // AMQP connection string
@@ -322,6 +325,28 @@ listener.resume().then(...);        // Start getting new messages
 listener.pause().then(...);         // Pause retrieval of new messages
 listener.close();                   // Disconnect from AMQP
 ```
+
+**Using `Connection`**, instead of giving a `connectionString` it is also
+possible to give the `Listener` the key `connection` which must then be a
+`taskcluster.Connection` object. Using a `Connection` object it's possible
+to have multiple listeners using the same AMQP TCP connection, which is the
+recommended way of using AMQP. Notice, that the `Connection` will not be
+closed with the `Listener`s, so you must `close()` it manually.
+
+```js
+var connection = new taskcluster.Connection({
+  connectionString:   'amqp://...', // AMQP connection string
+});
+
+// Create listener
+var listener = new taskcluster.Listener({
+  connection:         connection,   // AMQP connection object
+});
+
+
+connection.close();                 // Disconnect from AMQP
+```
+
 
 ## Updating Builtin APIs
 When releasing a new version of the `taskcluster-client` library, we should

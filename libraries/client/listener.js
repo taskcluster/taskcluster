@@ -7,15 +7,117 @@ var _         = require('lodash');
 var assert    = require('assert');
 var slugid    = require('slugid');
 
-/** Create new Listener */
+
+/** AMQP Connection */
+var Connection = function(options) {
+  assert(options,                  "options is required");
+  assert(options.connectionString, "connectionString is required");
+
+  // Store options
+  this._options   = options;
+  this._conn       = null;
+  this._connecting = false;
+};
+
+// Inherit from events.EventEmitter
+util.inherits(Connection, events.EventEmitter);
+
+/** Returns a promise for a connection */
+Connection.prototype.connect = function() {
+  var that = this;
+
+  // Connection if we have one
+  if (this._conn) {
+    return Promise.resolve(this._conn);
+  }
+
+  // If currently connecting, give a promise for this result
+  var retval = new Promise(function(accept, reject) {
+    that.once('connection', function(err, conn) {
+      if (err) {
+        return reject(err);
+      }
+      return accept(conn);
+    });
+  });
+
+  // Connect if we're not already doing this
+  if (!this._connecting) {
+    this._connecting = true;
+    amqplib.connect(
+      this._options.connectionString
+    ).then(function(conn) {
+      // Save reference to the connection
+      that._conn = conn;
+
+      // Setup error handling
+      conn.on('error', function(err) {
+        debug("Connection error in Connection: %s", err, err.stack);
+        that.emit('error', err);
+      });
+
+      // We're no longer connecting, emit event notifying anybody waiting
+      that._connecting = false;
+      that.emit('connection', null, conn);
+    }).then(null, function(err) {
+      // Notify of connection error
+      that.emit('connection', err);
+    });
+  }
+
+  // Return promise waiting for event
+  return retval;
+
+};
+
+/** Close the connection */
+Connection.prototype.close = function() {
+  var conn = this._conn;
+  if (conn) {
+    this._conn = null;
+    return conn.close();
+  }
+  return Promise.resolve(undefined);
+};
+
+
+// Export Connection
+exports.Connection = Connection;
+
+/**
+ * Create new Listener
+ *
+ * options: {
+ *   prefetch:          // Number of messages unacknowledged to process at once
+ *   queueName:         // Queue name, undefined for exclusive auto-delete queue
+ *   connectionString:  // AMQP Connection string
+ *   connection:        // AMQP Connection object from below
+ *   maxLength:         // Maximum queue size, undefined for none
+ * }
+ *
+ * You must provide either `connection` or `connectionString`, if a
+ * `Connection` object is provided it will not closed when the listener is
+ * closed.
+ */
 var Listener = function(options) {
+  assert(options, "options are required");
+  assert(options.connectionString || options.connection,
+         "Connection or connectionString must be provided");
   this._bindings = [];
-  this._options = _.defaults(options || {}, {
+  this._options = _.defaults(options, {
     prefetch:               5,
     connectionString:       undefined,
+    connection:             undefined,
     queueName:              undefined,
     maxLength:              undefined
   });
+  // Ensure that we have connection object
+  this._connection = options.connection || null;
+  if (!this._connection) {
+    this._connection = new Connection({
+      connectionString:   options.connectionString
+    });
+  }
 };
 
 // Inherit from events.EventEmitter
@@ -42,9 +144,9 @@ Listener.prototype.bind = function(binding) {
   assert(binding.exchange,          "Can't bind to unspecified exchange!");
   assert(binding.routingKeyPattern, "routingKeyPattern is required!");
   this._bindings.push(binding);
-  if(binding.connected) {
-    return that._channel.bindQueue(
-      that._queueName,
+  if(this._channel) {
+    return this._channel.bindQueue(
+      this._queueName,
       binding.exchange,
       binding.routingKeyPattern
     );
@@ -55,27 +157,29 @@ Listener.prototype.bind = function(binding) {
 
 /** Connect, setup queue and binding to exchanges */
 Listener.prototype.connect = function() {
-  if (this._channel) return Promise.resolve(this._channel);
-  assert(this._options.connectionString, "connectionString is required");
   var that = this;
 
+  // Return channel if we have one
+  if (this._channel) {
+    return Promise.resolve(this._channel);
+  }
+
   // Create AMQP connection and channel
-  var channelCreated = amqplib.connect(
-    this._options.connectionString
-  ).then(function(conn) {
+  var channel = null;
+  var channelCreated = this._connection.connect().then(function(conn) {
     that._conn = conn;
     that._conn.on('error', function(err) {
       debug("Connection error in Listener: ", err.stack);
       that.emit('error', err);
     });
     return that._conn.createConfirmChannel();
-  }).then(function(channel) {
-    that._channel = channel;
-    that._channel.on('error', function(err) {
+  }).then(function(channel_) {
+    channel = channel_;
+    channel.on('error', function(err) {
       debug("Channel error in Listener: ", err.stack);
       that.emit('error', err);
     });
-    return that._channel.prefetch(that._options.prefetch);
+    return channel.prefetch(that._options.prefetch);
   });
 
   // Find queue name and decide if this is an exclusive queue
@@ -93,13 +197,14 @@ Listener.prototype.connect = function() {
     if (that._options.maxLength) {
       opts.maxLength =  that._options.maxLength;
     }
-    return that._channel.assertQueue(that._queueName, opts);
+    return channel.assertQueue(that._queueName, opts);
   });
 
   // Create bindings
   var bindingsCreated = queueCreated.then(function() {
+    that._channel = channel;
     return Promise.all(that._bindings.map(function(binding) {
-      return that._channel.bindQueue(
+      return channel.bindQueue(
         that._queueName,
         binding.exchange,
         binding.routingKeyPattern
@@ -109,8 +214,8 @@ Listener.prototype.connect = function() {
 
   // Begin consumption
   return bindingsCreated.then(function() {
-    return that._channel;
-  })
+    return channel;
+  });
 };
 
 /** Pause consumption of messages */
@@ -201,7 +306,7 @@ Listener.prototype._handle = function(msg) {
     });
   })).then(function() {
     return that._channel.ack(msg);
-  }).catch(function(err) {
+  }).then(null, function(err) {
     debug("Failed to process message %j from %s with error: %s, as JSON: %j",
           message, message.exchange, err, err, err.stack);
     if (message.redelivered) {
@@ -212,7 +317,7 @@ Listener.prototype._handle = function(msg) {
       // Nack and requeue
       return that._channel.nack(msg, false, true);
     }
-  }).catch(function(err) {
+  }).then(null, function(err) {
     debug("CRITICAL: Failed to nack message");
     that.emit('error', err);
   });
@@ -220,14 +325,24 @@ Listener.prototype._handle = function(msg) {
 
 /** Close the listener */
 Listener.prototype.close = function() {
-  var conn = this._conn;
-  if (conn) {
-    this._conn = this._channel = null;
-    return conn.close();
+  var connection = this._connection;
+
+  // If we were given connection by option, we shouldn't close it
+  if (connection === this._options.connection) {
+    var channel = this._channel;
+    if (channel) {
+      this._channel = null;
+      return channel.close();
+    }
+    return Promise.resolve(undefined);
   }
-  // Make sure this always returns a promise
-  return Promise.resolve(undefined);
+
+  // If not external connection close it
+  this._conn = null;
+  this._channel = null;
+  return connection.close();
 };
 
 // Export Listener
-module.exports = Listener;
+exports.Listener = Listener;
+

@@ -18,13 +18,13 @@
     "superagent-promise":               "0.1.2",
     "superagent-hawk":                  "0.0.3",
     "amqplib":                          "0.2.0",
-    "slugid":                           "1.0.1"
+    "slugid":                           "1.0.1",
+    "promise":                          "5.0.0"
   },
   "devDependencies": {
     "mocha":                            "1.18.2",
     "commander":                        "2.2.0",
     "cliff":                            "0.1.8",
-    "taskcluster-base":                 "0.3.2",
-    "promise":                          "5.0.0"
+    "taskcluster-base":                 "0.3.2"
   }
 }
