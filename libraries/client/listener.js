@@ -223,7 +223,7 @@ Listener.prototype.close = function() {
   var conn = this._conn;
   if (conn) {
     this._conn = this._channel = null;
-    return this._conn.close();
+    return conn.close();
   }
 };
 
