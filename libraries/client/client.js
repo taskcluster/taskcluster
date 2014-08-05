@@ -205,5 +205,6 @@ exports.config = function(options) {
   _defaultOptions = _.defaults(options, _defaultOptions);
 };
 
-// Export listener
-exports.Listener = require('./listener');
+// Export listener and connection
+exports.Listener   = require('./listener').Listener;
+exports.Connection = require('./listener').Connection;
