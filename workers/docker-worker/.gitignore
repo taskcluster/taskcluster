@@ -3,3 +3,6 @@
 /docker-worker-*
 /.env
 /worker_config
+/node_modules
+/test/settings/configure
+/test/settings/billingCycleRemaining

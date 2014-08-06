@@ -1,0 +1,2 @@
+#! /bin/bash
+node --harmony deploy/bin/configure.js $@

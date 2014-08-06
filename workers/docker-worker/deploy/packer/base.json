@@ -1,0 +1,38 @@
+{
+  "description": "taskcluster worker system dependencies",
+  "provisioners": [
+    {
+      "type": "shell",
+      "scripts": [
+        "deploy/packer/base/scripts/docker.sh",
+        "deploy/packer/base/scripts/node.sh",
+        "deploy/packer/base/scripts/lvm.sh",
+        "deploy/packer/base/scripts/btrfs.sh"
+      ]
+    }
+  ],
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "region": "us-west-2",
+      "source_ami": "ami-f33e4dc3",
+      "ami_virtualization_type": "hvm",
+      "instance_type": "m3.large",
+      "ssh_username": "ubuntu",
+      "ami_name": "taskcluster-docker-worker-base {{timestamp}}",
+      "tags": {
+        "OS_Version": "Ubuntu",
+        "Release": "Latest"
+      }
+    }
+  ],
+
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "output": "deploy/packer/base.box",
+      "keep_input_artifact": true
+    }
+  ]
+}
+

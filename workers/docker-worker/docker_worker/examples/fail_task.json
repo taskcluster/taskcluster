@@ -1,9 +1,0 @@
-{
-  "command": ["exit", "127"],
-
-  "machine": {
-    "image": "ubuntu",
-    "docker": true
-  }
-}
-

@@ -1,0 +1,75 @@
+#! /bin/bash
+
+cmd_help() {
+  echo "Usage: ./deploy/bin/build"
+  echo
+  echo 'Wrapper for the `packer` build tool with docker-worker specific logic.'
+  echo
+  echo "Commands:"
+  echo "  help: show this help message"
+  echo "  app: build the app packer target"
+  echo "  base: build the base packer target"
+}
+
+packer_run() {
+  echo $@
+  echo
+  echo
+  echo "packer $@"
+  time packer $@
+}
+
+template_vars() {
+  echo "deploy/config/$1.json"
+}
+
+packer_config() {
+  echo "deploy/packer/$1.json"
+}
+
+configure() {
+  local path=$(template_vars $1)
+  if [ ! -f $path ];
+  then
+    echo "$path missing running configure"
+    ./deploy/bin/configure $1
+    configure $1
+  fi
+}
+
+cmd_build_app() {
+  npm pack
+}
+
+cmd_app() {
+  configure app
+  packer_run \
+    build \
+    $@ \
+    -var-file $(template_vars app) \
+    -var "docker_worker=$(cmd_build_app)" \
+    $(packer_config app)
+}
+
+cmd_base() {
+  packer_run build $@ $(packer_config base)
+}
+
+if [ ! -x $(which packer) ];
+then
+  echo "This tool requires packer go download and install it first."
+  cmd_help
+  exit 1
+fi
+
+case "$1" in
+"app")
+  cmd_app ${@:2}
+  ;;
+"base")
+  cmd_base ${@:2}
+  ;;
+*)
+  cmd_help
+  ;;
+esac

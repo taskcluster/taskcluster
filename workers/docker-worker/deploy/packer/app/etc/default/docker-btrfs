@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Find instance storage devices
+devices=$(ls /dev/xvd* | grep -v '/dev/xvda');
+
+# Unmount block-device if already mounted, the first block-device always is
+for d in $devices; do umount $d || true; done
+
+# btrfsify the storage
+mkfs.btrfs -f -d single -L instance_storage $devices
+
+# fetch first device btrfs can mount any of them (they are all part of the same
+# fs)
+mount $(echo $devices | cut -d ' ' -f 1) /mnt
+
+mkdir -p /mnt/var/lib/docker
+mkdir -p /mnt/docker-tmp
+export TMPDIR="/mnt/docker-tmp"
+export DOCKER_OPTS=" -g /mnt/var/lib/docker -s btrfs"
