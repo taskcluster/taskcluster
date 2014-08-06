@@ -1,4 +1,4 @@
-{
+module.exports = {
   "Auth": {
     "referenceUrl": "http://references.taskcluster.net/auth/v1/api.json",
     "reference": {
@@ -1118,4 +1118,4 @@
       ]
     }
   }
-}
+};
