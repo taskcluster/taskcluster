@@ -7,24 +7,23 @@ var program     = require('commander');
 var _           = require('lodash');
 var Promise     = require('promise');
 
-// Path to apis.json file
-var apis_json   = path.join(__dirname, '..', 'apis.json');
 
-/** Load APIs from apis.json */
-var loadApis = function() {
-  return JSON.parse(fs.readFileSync(apis_json, {encoding: 'utf-8'}));
-};
+// Load apis
+var apis        = require('../apis');
 
-/** Save APIs to apis.json */
-var saveApis = function(apis) {
-  fs.writeFileSync(apis_json, JSON.stringify(apis, null, 2), {encoding: 'utf-8'});
+/** Save APIs to apis.js */
+var saveApis = function() {
+  // Path to apis.js file
+  var apis_js = path.join(__dirname, '..', 'apis.js');
+  // Create content
+  var content = "module.exports = " + JSON.stringify(apis, null, 2) + ";";
+  fs.writeFileSync(apis_json, content, {encoding: 'utf-8'});
 };
 
 program
   .command('list')
   .description("List API references and names stored")
   .action(function() {
-    var apis = loadApis();
     var rows = [
       ['Name', 'referenceUrl']
     ].concat(_.keys(apis).map(function(name) {
@@ -37,7 +36,6 @@ program
   .command('show <name>')
   .description("Show references for a specific API")
   .action(function(name, options) {
-    var apis  = loadApis();
     var api   = apis[name];
     if (api === undefined) {
       console.log("No API named: " + name);
@@ -54,7 +52,6 @@ program
   )
   .description("Add API reference with <name> with <referenceUrl>")
   .action(function(name, referenceUrl, options) {
-    var apis = loadApis();
     // Check that we don't overwrite unless there is a force
     if (apis[name] !== undefined && !options.force) {
       console.log("API named: " + name + " already exists");
@@ -79,7 +76,7 @@ program
         referenceUrl: referenceUrl,
         reference:    reference
       };
-      saveApis(apis);
+      saveApis();
       console.log("Add reference: " + name);
     }).catch(function(err) {
       console.log("Error adding reference: " + err);
@@ -90,8 +87,6 @@ program
   .command('update')
   .description("Update all API references")
   .action(function() {
-    var apis = loadApis();
-
     // Update remaining references
     Promise.all(Object.keys(apis).map(function(name) {
       var api = apis[name];
@@ -113,7 +108,7 @@ program
           api.reference = res.body;
         });
     })).then(function() {
-      saveApis(apis);
+      saveApis();
     });
   });
 
@@ -121,13 +116,12 @@ program
   .command('remove <name>')
   .description('Remove API with a name')
   .action(function(name, options) {
-    var apis = loadApis();
     if (apis[name] === undefined) {
       console.log("No API named: " + name);
       process.exit(1);
     }
     delete apis[name];
-    saveApis(apis);
+    saveApis();
     console.log("Removed: " + name);
   });
 

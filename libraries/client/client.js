@@ -180,21 +180,13 @@ exports.createClient = function(reference) {
 };
 
 
-// Load data from apis.json
-(function() {
-  var fs   = require('fs');
-  var path = require('path');
-  var data = fs.readFileSync(path.join(__dirname, 'apis.json'), {
-    encoding: 'utf-8'
-  });
-  var apis = JSON.parse(data);
+// Load data from apis.js
+var apis = require('./apis');
 
-  // Instantiate clients
-  _.forIn(apis, function(api, name) {
-    exports[name] = exports.createClient(api.reference);
-  });
-})();
-
+// Instantiate clients
+_.forIn(apis, function(api, name) {
+  exports[name] = exports.createClient(api.reference);
+});
 
 /**
  * Update default configuration
@@ -204,7 +196,3 @@ exports.createClient = function(reference) {
 exports.config = function(options) {
   _defaultOptions = _.defaults(options, _defaultOptions);
 };
-
-// Export listener and connection
-exports.Listener   = require('./listener').Listener;
-exports.Connection = require('./listener').Connection;
