@@ -4,16 +4,8 @@ var path        = require('path');
 var request     = require('superagent-promise');
 var _           = require('lodash');
 
-// Path to apis.json file
-var apis_json   = path.join(__dirname, '..', 'apis.json');
-
 // Path to readme.md
 var readme_md   = path.join(__dirname, '..', 'README.md');
-
-/** Load APIs from apis.json */
-var loadApis = function() {
-  return JSON.parse(fs.readFileSync(apis_json, {encoding: 'utf-8'}));
-};
 
 // Markers for start and end of documentation section
 var DOCS_START_MARKER = '<!-- START OF GENERATED DOCS -->';
@@ -24,7 +16,8 @@ var instanceName = function(name) {
   return name[0].toLowerCase() + name.substr(1);
 };
 
-var apis = loadApis();
+// Load APIs
+var apis = require('../apis');;
 
 var docs = [
   DOCS_START_MARKER
