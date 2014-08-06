@@ -7,6 +7,7 @@
   "scripts": {
     "test":       "./test/runtests.sh"
   },
+  "browser":      "./client.js",
   "repository": {
     "type":       "git",
     "url":        "https://github.com/taskcluster/taskcluster-client.git"
@@ -25,6 +26,8 @@
     "mocha":                            "1.18.2",
     "commander":                        "2.2.0",
     "cliff":                            "0.1.8",
-    "taskcluster-base":                 "0.3.2"
+    "taskcluster-base":                 "0.3.2",
+    "browserify":                       "5.9.1",
+    "mocha-phantomjs":                  "3.5.0"
   }
 }
