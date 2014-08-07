@@ -24,7 +24,7 @@ suite("api/validate", function() {
     title:    "Test End-Point",
     description:  "Place we can call to test something",
   }, function(req, res) {
-    res.send(200, "Hello World");
+    res.status(200).send("Hello World");
   });
 
   // Declare a method we can use to test valid output
@@ -61,7 +61,7 @@ suite("api/validate", function() {
     title:    "Test End-Point",
     description:  "Place we can call to test something",
   }, function(req, res) {
-    res.send(200, "Hello World");
+    res.status(200).send("Hello World");
   });
 
   // Declare a method we can test output validation skipping on
@@ -87,7 +87,7 @@ suite("api/validate", function() {
     assert(_mockAuthServer === null,  "_mockAuthServer must be null");
     assert(_apiServer === null,       "_apiServer must be null");
     return mockAuthServer({
-      port:         23243
+      port:         61243
     }).then(function(server) {
       _mockAuthServer = server;
     }).then(function() {
@@ -105,7 +105,7 @@ suite("api/validate", function() {
             clientId:     'test-client',
             accessToken:  'test-token'
           },
-          authBaseUrl:    'http://localhost:23243'
+          authBaseUrl:    'http://localhost:61243'
         });
 
         // Create application
@@ -115,7 +115,7 @@ suite("api/validate", function() {
         app.use(router);
 
         return new Promise(function(accept, reject) {
-          var server = app.listen(23525);
+          var server = app.listen(61515);
           server.once('listening', function() {
             accept(server)
           });
@@ -149,7 +149,7 @@ suite("api/validate", function() {
 
   // Test valid input
   test("input (valid)", function() {
-    var url = 'http://localhost:23525/test-input';
+    var url = 'http://localhost:61515/test-input';
     return request
       .get(url)
       .send({value: 5})
@@ -162,7 +162,7 @@ suite("api/validate", function() {
 
   // Test invalid input
   test("input (invalid)", function() {
-    var url = 'http://localhost:23525/test-input';
+    var url = 'http://localhost:61515/test-input';
     return request
       .get(url)
       .send({value: 11})
@@ -174,7 +174,7 @@ suite("api/validate", function() {
 
   // Test valid output
   test("output (valid)", function() {
-    var url = 'http://localhost:23525/test-output';
+    var url = 'http://localhost:61515/test-output';
     return request
       .get(url)
       .end()
@@ -186,7 +186,7 @@ suite("api/validate", function() {
 
   // test invalid output
   test("output (invalid)", function() {
-    var url = 'http://localhost:23525/test-invalid-output';
+    var url = 'http://localhost:61515/test-invalid-output';
     return request
       .get(url)
       .end()
@@ -197,7 +197,7 @@ suite("api/validate", function() {
 
   // test skipping input validation
   test("skip input validation", function() {
-    var url = 'http://localhost:23525/test-skip-input-validation';
+    var url = 'http://localhost:61515/test-skip-input-validation';
     return request
       .get(url)
       .send({value: 100})
@@ -210,7 +210,7 @@ suite("api/validate", function() {
 
   // test skipping output validation
   test("skip output validation", function() {
-    var url = 'http://localhost:23525/test-skip-output-validation';
+    var url = 'http://localhost:61515/test-skip-output-validation';
     return request
       .get(url)
       .end()

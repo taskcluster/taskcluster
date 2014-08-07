@@ -66,7 +66,7 @@ suite("validator", function() {
     var app = express();
     app.get('/test-schema.json', function(req, res) {
       var fileName = path.join(__dirname, 'schemas', 'test-schema.json');
-      res.json(200,
+      res.status(200).json(
         JSON.parse(fs.readFileSync(fileName, {encoding: 'utf8'}))
       );
     });
