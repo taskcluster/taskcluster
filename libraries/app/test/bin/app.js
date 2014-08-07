@@ -16,13 +16,13 @@ var launch = function() {
 
   // Respond 'Hello World' for /test
   app.get('/test', function(req, res) {
-    res.send(200, "Hello World");
+    res.status(200).send("Hello World");
   });
 
   // Respond request count in process for /request-count
   app.get('/request-count', function(req, res) {
     global_state += 1;
-    res.send(200, "Count: " + global_state);
+    res.status(200).send("Count: " + global_state);
   });
 
   // Kill process in crash case for testing
