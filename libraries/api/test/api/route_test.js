@@ -22,7 +22,7 @@ suite("api/route", function() {
     title:    "Test End-Point",
     description:  "Place we can call to test something",
   }, function(req, res) {
-    res.send(200, req.params.myparam);
+    res.status(200).send(req.params.myparam);
   });
 
   api.declare({
@@ -32,7 +32,7 @@ suite("api/route", function() {
     title:    "Test End-Point",
     description:  "Place we can call to test something",
   }, function(req, res) {
-    res.send(200, req.params.name);
+    res.status(200).send(req.params.name);
   });
 
   // Reference to mock authentication server
