@@ -205,9 +205,9 @@ mockAuthApi.declare({
   var clientId  = req.params.clientId;
   var client    = _.find(this.clients, {clientId: clientId});
   if (!client) {
-    res.json(404, {error: "ClientId not found"});
+    res.status(404).json({error: "ClientId not found"});
   }
-  res.json(200, client);
+  res.status(200).json(client);
 });
 
 /** Create a clientLoader with a fixed set of clients */
