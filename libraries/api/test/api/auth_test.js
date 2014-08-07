@@ -34,7 +34,7 @@ suite("api/auth", function() {
     if(req.satisfies({
       param:      'myfolder/resource'
     })) {
-      res.json(200, "OK");
+      res.status(200).json("OK");
     }
   });
 
@@ -46,7 +46,7 @@ suite("api/auth", function() {
     title:        "Test End-Point",
     description:  "Place we can call to test something",
   }, function(req, res) {
-    res.json(200, "OK");
+    res.status(200).json("OK");
   });
 
   // Declare a method we can test dynamic authorization
@@ -58,7 +58,7 @@ suite("api/auth", function() {
     description:  "Place we can call to test something",
   }, function(req, res) {
     if(req.satisfies([req.body.scopes])) {
-      return res.json(200, "OK");
+      return res.status(200).json("OK");
     }
   });
 
