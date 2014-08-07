@@ -52,9 +52,9 @@ api.declare({
 }, function(req, res) {
   var client = _clients[req.params.clientId];
   if (client) {
-    res.json(200, client);
+    res.status(200).json(client);
   } else {
-    res.json(404, {error: "ClientId not found"});
+    res.status(404).json({error: "ClientId not found"});
   }
 });
 
