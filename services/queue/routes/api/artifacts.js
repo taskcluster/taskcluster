@@ -47,7 +47,7 @@ api.declare({
   var past = new Date();
   past.setMinutes(past.getMinutes() - 15);
   if (expires < past) {
-    return res.json(400, {
+    return res.status(400).json({
       message:  "Expires must be in the future",
       error: {
         now:      new Date().toJSON(),
@@ -59,7 +59,7 @@ api.declare({
   return ctx.Task.load(taskId).then(function(task) {
     // if no task is found, we return 404
     if (!task || !task.runs[runId]) {
-      return res.json(404, {
+      return res.status(404).json({
         message:  "Task not found or already resolved"
       });
     }
@@ -166,7 +166,7 @@ api.declare({
           artifact.storageType !== input.storageType ||
           artifact.expires > expires ||
           !_.isEqual(artifact.details, details)) {
-        return res.json(409, {
+        return res.status(409).json({
           message:  "Artifact already exists with other properties"
         });
       }
@@ -216,7 +216,7 @@ var replyWithArtifact = function(taskId, runId, name, res) {
 
     // Handle error artifacts
     if (artifact.storageType === 'error') {
-      return res.json(403, {
+      return res.status(403).json({
         reason:     artifact.details.reason,
         message:    artifact.details.message
       });
@@ -234,7 +234,7 @@ var replyWithArtifact = function(taskId, runId, name, res) {
       throw err;
     }
     // Give a 404
-    return res.json(404, {
+    return res.status(404).json({
       message:  "Artifact not found or declared as error"
     });
   });
@@ -325,14 +325,14 @@ api.declare({
   }).then(function(task) {
     // Give a 404 if not found
     if (!task) {
-      return res.json(404, {
+      return res.status(404).json({
         message:  "Task not found"
       });
     }
 
     // Check that we have runs
     if (task.runs.length === 0) {
-      return res.json(404, {
+      return res.status(404).json({
         message:  "Task doesn't have any runs"
       });
     }
@@ -465,14 +465,14 @@ api.declare({
   }).then(function(task) {
     // Give a 404 if not found
     if (!task) {
-      return res.json(404, {
+      return res.status(404).json({
         message:  "Task not found"
       });
     }
 
     // Check that we have runs
     if (task.runs.length === 0) {
-      return res.json(404, {
+      return res.status(404).json({
         message:  "Task doesn't have any runs"
       });
     }

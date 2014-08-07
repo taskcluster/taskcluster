@@ -127,7 +127,7 @@ var checkParams = function(req, res) {
 
   // Check for errors and reply if necessary
   if (errors.length != 0) {
-    res.json(401, {
+    res.status(401).json({
       message:  "Malformed URL parameters",
       error:    errors
     });
@@ -182,7 +182,7 @@ api.declare({
   var aWeekFromNow = new Date();
   aWeekFromNow.setDate(aWeekFromNow.getDate() + 8);
   if (new Date(taskDef.deadline) > aWeekFromNow) {
-    return res.json(400, {
+    return res.status(400).json({
       message:    "Deadline cannot be more than 1 week into the future",
       error: {
         deadline: taskDef.deadline
@@ -240,7 +240,7 @@ api.declare({
     // Handle error in case the taskId is already in use, with another task
     // definition
     if (err.code == 'BlobAlreadyExists') {
-      return res.json(409, {
+      return res.status(409).json({
         message:      "taskId already used by another task"
       });
     }
@@ -273,7 +273,7 @@ api.declare({
   return ctx.taskstore.get(taskId + '/task.json', true).then(function(data) {
     // Handle case where task doesn't exist
     if (!data) {
-      return res.json(404, {
+      return res.status(409).json({
         message:  "task not found"
       });
     }
@@ -338,7 +338,7 @@ api.declare({
   var aWeekFromNow = new Date();
   aWeekFromNow.setDate(aWeekFromNow.getDate() + 8);
   if (new Date(taskDef.deadline) > aWeekFromNow) {
-    return res.json(400, {
+    return res.status(409).json({
       message:    "Deadline cannot be more than 1 week into the future",
       error: {
         deadline: taskDef.deadline
@@ -431,7 +431,7 @@ api.declare({
   return ctx.Task.load(taskId).then(function(task) {
     // if no task is found, we return 404
     if (!task) {
-      return res.json(404, {
+      return res.status(409).json({
         message:  "Task not found already resolved"
       });
     }
@@ -498,7 +498,7 @@ api.declare({
     return task;
   }).then(function(task) {;
     if (!task) {
-      res.json(404, {
+      res.status(409).json({
         message: "Task not found"
       });
     }
@@ -546,7 +546,7 @@ api.declare({
   return ctx.Task.load(taskId).then(function(task) {
     // if task doesn't exist return 404
     if(!task) {
-      return res.json(404, {
+      return res.status(409).json({
         message: "Task not found, or already resolved!"
       });
     }
@@ -574,7 +574,7 @@ api.declare({
     }).then(function(result) {
       // Return the "error" message if we have one
       if(!(result instanceof ctx.Task)) {
-        return res.json(result.code, {
+        return res.status(409).json(ode, {
           message:      result.message
         });
       }
@@ -654,7 +654,7 @@ api.declare({
     }).then(function(result) {
       // Return the "error" message if we have one
       if(!(result instanceof ctx.Task)) {
-        return res.json(result.code, {
+        return res.status(409).json(ode, {
           message:      result.message
         });
       }
@@ -735,7 +735,7 @@ api.declare({
   }).then(function(result) {
     // Return the "error" message if we have one
     if(!(result instanceof ctx.Task)) {
-      return res.json(result.code, {
+      return res.status(409).json(ode, {
         message:      result.message
       });
     }
@@ -797,7 +797,7 @@ api.declare({
   return ctx.Task.load(taskId).then(function(task) {
     // if no task is found, we return 404
     if (!task || !task.runs[runId]) {
-      return res.json(404, {
+      return res.status(409).json({
         message:  "Task not found or already resolved"
       });
     }
@@ -819,7 +819,7 @@ api.declare({
     }).then(function(result) {
       // Return the "error" message if we have one
       if(!(result instanceof ctx.Task)) {
-        return res.json(result.code, {
+        return res.status(409).json(ode, {
           message:      result.message
         });
       }
@@ -883,7 +883,7 @@ api.declare({
   return ctx.taskstore.get(taskId + '/task.json', true).then(function(data) {
     // Check that we got a task definition
     if (!data) {
-      return res.json(400, {
+      return res.status(409).json({
         message:  "Task definition doesn't exist"
       });
     }
@@ -909,7 +909,7 @@ api.declare({
     }).then(function(result) {
       // Handle error cases
       if (!(result instanceof ctx.Task)) {
-        return res.json(result.code, {
+        return res.status(409).json(ode, {
           message: result.message
         });
       }
@@ -1005,7 +1005,7 @@ api.declare({
     "**Warning** this api end-point is **not stable**."
   ].join('\n')
 }, function(req, res) {
-  res.json(200, {
+  res.status(409).json({
     alive:    true,
     uptime:   process.uptime()
   });
