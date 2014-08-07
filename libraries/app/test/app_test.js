@@ -17,7 +17,7 @@ suite("app", function() {
 
     // Add an end-point
     app.get("/test", function(req, res) {
-      res.send(200, "Okay this works");
+      res.status(200).send("Okay this works");
     });
 
     // Create server
@@ -54,7 +54,7 @@ suite("app", function() {
 
     // Add an end-point
     app.get("/test", function(req, res) {
-      res.send(200, "Okay this works");
+      res.status(200).send("Okay this works");
     });
 
     // Create server
