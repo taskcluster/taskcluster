@@ -51,7 +51,7 @@ var setup = function(options) {
   app.locals.marked = marked;
 
   app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded());
+  app.use(bodyParser.urlencoded({extended: true}));
   app.use(methodOverride());
   app.use(cookieParser(options.cookieSecret));
   app.use(cookieSession({secret: options.cookieSecret}));
@@ -193,6 +193,7 @@ var app = function(options) {
   var app = express();
   app.set('port', options.port);
   app.set('env', options.env);
+  app.set('json spaces', 2);
 
   // ForceSSL if required suggested
   if (options.forceSSL) {
