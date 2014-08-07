@@ -39,7 +39,7 @@ var schema = function(validator, options) {
       if (errors) {
         debug("Request payload for %s didn't follow schema %s",
               req.url, options.input);
-        res.json(400, {
+        res.status(400).json({
           'message':  "Request payload must follow the schema: " + options.input,
           'error':    errors
         });
@@ -54,7 +54,7 @@ var schema = function(validator, options) {
       if(options.output !== undefined && !options.skipOutputValidation) {
         var errors = validator.check(json, options.output);
         if (errors) {
-          res.json(500, {
+          res.status(500).json({
             'message':  "Internal Server Error",
           });
           debug("Reply for %s didn't match schema: %s got errors:\n%s",
@@ -63,7 +63,7 @@ var schema = function(validator, options) {
         }
       }
       // If JSON was valid or validation was skipped then reply with 200 OK
-      res.json(200, json);
+      res.status(200).json(json);
     };
 
     // Call next piece of middleware, typically the handler...
@@ -406,7 +406,7 @@ var authenticate = function(nonceManager, clientLoader, options) {
         var error = authenticate();
         if (error) {
           if (!noReply) {
-            res.json(error.code, error.payload);
+            res.status(error.code).json(error.payload);
           }
           return false;
         }
@@ -433,7 +433,7 @@ var authenticate = function(nonceManager, clientLoader, options) {
         // Test that we have scope intersection, and hence, is authorized
         var retval = scopeIntersect(authorizedScopes, scopesets);
         if (!retval && !noReply) {
-          res.json(401, {
+          res.status(401).json({
             message:  "Authorization Failed",
             error: {
               info:       "None of the scope-sets was satisfied",
@@ -479,7 +479,7 @@ var handle = function(handler, context) {
         "Error occurred handling: %s, err: %s, as JSON: %j, incidentId: %s",
         req.url, err, err, incidentId, err.stack
       );
-      res.json(500, {
+      res.status(500).json({
         message:        "Internal Server Error",
         error: {
           info:         "Ask administrator to lookup incidentId in log-file",
