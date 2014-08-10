@@ -958,6 +958,10 @@ api.declare({
 
   // When loaded reply
   ctx.Task.queryPending(provisionerId).then(function(tasks) {
+    return Promise.all(tasks.map(function(taskId) {
+      return ctx.Task.load(taskId);
+    }));
+  }).then(function(tasks) {
     return res.reply({
       tasks: tasks
     });
