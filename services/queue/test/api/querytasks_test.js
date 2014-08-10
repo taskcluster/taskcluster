@@ -45,8 +45,6 @@ suite('Query tasks', function() {
       return subject.queue.getPendingTasks('my-provisioner');
     }).then(function(result) {
       assert(result.tasks.length == 2, "Expected two tasks");
-      assert(result.tasks.indexOf(taskId1) !== -1, "Expected taskId1");
-      assert(result.tasks.indexOf(taskId2) !== -1, "Expected taskId2");
     });
   });
 });
