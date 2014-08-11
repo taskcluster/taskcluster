@@ -92,7 +92,9 @@ var launch = function(profile) {
   return Promise.all(
     publisherCreated,
     taskstore.createContainer(),
-    artifactStore.createContainer(),
+    artifactStore.createContainer().then(function() {
+      return artifactStore.setupCORS();
+    }),
     Artifact.createTable(),
     Task.ensureTables()
   ).then(function() {

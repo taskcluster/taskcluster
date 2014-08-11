@@ -49,6 +49,33 @@ BlobStore.prototype.createContainer = function() {
   });
 };
 
+/** Configure CORS on blob-store container */
+BlobStore.prototype.setupCORS = function() {
+  var that = this;
+  return new Promise(function(accept, reject) {
+    that.service.setServiceProperties({
+      StorageServiceProperties: {
+        Cors: {
+          CorsRule: [
+            {
+              AllowedOrigins:   ['*'],
+              AllowedMethods:   ['GET'],
+              AllowedHeaders:   [],
+              ExposedHeaders:   [],
+              MaxAgeInSeconds:  60 * 5
+            }
+          ]
+        }
+      }
+    }, function(err, response) {
+      if (err) {
+        return reject(err);
+      }
+      return accept(response);
+    });
+  });
+};
+
 
 /** Put JSON object and overwrite existing blob */
 BlobStore.prototype.put = function(key, json) {
