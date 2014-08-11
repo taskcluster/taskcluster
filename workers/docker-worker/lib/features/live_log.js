@@ -56,15 +56,24 @@ LiveLog.prototype = {
     var expiration =
       new Date(Date.now() + task.runtime.conf.get('logging:liveLogExpires'));
 
+    var options = {
+      storageType: 'azure',
+      expires: expiration,
+      contentType: 'text/plain'
+    };
+
+    task.runtime.log('create log', {
+      taskId: task.status.taskId,
+      runId: task.status.runId,
+      path: ARTIFACT_NAME,
+      options: options
+    });
+
     var artifact = yield queue.createArtifact(
       task.status.taskId,
       task.runId,
       ARTIFACT_NAME,
-      {
-        storageType: 'azure',
-        expires: expiration,
-        contentType: 'text/plain'
-      }
+      options
     );
 
     this.stream = azureBlobStreamFromUrl(artifact.putUrl);
