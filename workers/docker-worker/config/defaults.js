@@ -7,9 +7,10 @@ module.exports = {
 
   logging: {
     // Added to the current date to make up the expiry time for logs. This is
-    // hack to generate a year in ms...
-    liveLogExpires: Date.UTC(2020) - Date.UTC(2019),
-    bulkLogExpires: Date.UTC(2020) - Date.UTC(2019),
+    // hack to generate a year in ms... Note that two args (year, month) are
+    // required here instead of one due to some quirk of v8...
+    liveLogExpires: Date.UTC(2020, 0) - Date.UTC(2019, 0),
+    bulkLogExpires: Date.UTC(2020, 0) - Date.UTC(2019, 0),
   },
 
   // Taskcluster client `credentials`.
