@@ -6,10 +6,16 @@ var request = require('superagent-promise');
 var util = require('util');
 var waitForEvent = require('./wait_for_event');
 var features = require('./features');
+var co = require('co');
 
 var DockerProc = require('dockerode-process');
 var PassThrough = require('stream').PassThrough;
 var States = require('./states');
+
+// We must reclaim somewhat frequently (but not too frequently) this is the
+// divisor used to figure out when to issue the reclaim based on taken until for
+// example `2` would mean half the time between now and taken until.
+var RECLAIM_DIVISOR = 1.3;
 
 var PAYLOAD_SCHEMA =
   'http://schemas.taskcluster.net/docker-worker/v1/payload.json#';
@@ -152,23 +158,80 @@ Task.prototype = {
     );
   },
 
-  run: function* () {
-    var taskStart = new Date();
-    var stats = this.runtime.stats;
-    var queue = this.runtime.queue;
-    // Everything starts with the claiming of the task... In theory this should
-    // never fail unless we have multiple worker groups using different queue
-    // names.
-    stats.increment('tasks.attempted_claim');
+  claimTask: function* () {
+    this.runtime.stats.increment('tasks.claims');
     var claimConfig = {
       workerId: this.runtime.workerId,
       workerGroup: this.runtime.workerGroup
     };
 
-    var claim = this.claim = yield stats.timeGen(
+    this.claim = yield this.runtime.stats.timeGen(
       'tasks.time.claim',
-      queue.claimTask(this.status.taskId, this.runId, claimConfig)
+      this.runtime.queue.claimTask(this.status.taskId, this.runId, claimConfig)
     );
+
+    // Figure out when to issue the next claim...
+    var takenUntil = (new Date(this.claim.takenUntil) - new Date())
+    var nextClaim = takenUntil / RECLAIM_DIVISOR;
+
+    // This is tricky ensure we have logs...
+    this.runtime.log('next claim', {
+      taskId: this.status.taskId,
+      runId: this.runId,
+      time: nextClaim
+    });
+
+    // Figure out when we need to make the next claim...
+    this.clearClaimTimeout();
+    this.claimTimeoutId = setTimeout(co(this.claimTask.bind(this)), nextClaim);
+  },
+
+  clearClaimTimeout: function() {
+    if (this.claimTimeoutId) {
+      clearTimeout(this.claimTimeoutId);
+      this.claimTimeoutId = null;
+    }
+  },
+
+  claimAndRun: function* () {
+    // Issue the first claim... This also kicks off the reclaim timers.
+    yield this.claimTask();
+
+    this.runtime.log('claim and run', {
+      taskId: this.status.taskId,
+      runId: this.runId,
+      takenUntil: this.claim.takenUntil
+    });
+
+    var success;
+    try {
+      success = yield this.run();
+    } catch (e) {
+      // TODO: Reconsider if we should mark the task as failed or something else
+      //       at this point... I intentionally did not mark the task completed
+      //       here as to allow for a retry by another worker, etc...
+      this.clearTimeout();
+      throw e
+    }
+
+    // Called again outside so we don't run this twice in the same try/catch
+    // segment potentially causing a loop...
+    this.clearClaimTimeout();
+    // Mark the task appropriately now that all internal state is cleaned up.
+    yield this.completeRun(success);
+  },
+
+  /**
+  Primary handler for all docker related task activities this handles the
+  launching/configuration of all tasks as well as the features for the given
+  tasks.
+
+  @return {Boolean} success true/false for complete run.
+  */
+  run: function* () {
+    var taskStart = new Date();
+    var stats = this.runtime.stats;
+    var queue = this.runtime.queue;
 
     // Cork all writes to the stream until we are done setting up logs.
     this.stream.cork();
@@ -212,7 +275,8 @@ Task.prototype = {
         taskStart, // duration details...
         new Date()
       ));
-      return yield this.completeRun(false);
+      //
+      return false;
     }
 
     // start the timer to ensure we don't go overtime.
@@ -259,7 +323,7 @@ Task.prototype = {
     yield stats.timeGen('tasks.time.states.killed', this.states.killed(this));
 
     // If the results validation failed we consider this task failure.
-    return yield this.completeRun(success);
+    return success;
   }
 };
 

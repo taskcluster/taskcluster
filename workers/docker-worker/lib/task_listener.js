@@ -74,20 +74,33 @@ TaskListener.prototype = {
     // directly for greater control over the flow of messages.
     yield channel.consume(queueName, co(function* (msg) {
       self.runtime.log('listener begin consume');
+      var content;
       try {
         self.incrementPending();
         // All content from taskcluster should be a json payload.
-        var content = JSON.parse(msg.content);
+        content = JSON.parse(msg.content);
         yield self.runTask(content);
         var ack = channel.ack(msg);
         // Only indicate a completed task (which may trigger an idle state)
         // after an ack/nack.
         self.decrementPending();
       } catch (e) {
+        if (content) {
+          self.runtime.log('task error', {
+            taskId: content.status.taskId,
+            runId: content.runId,
+            message: e.toString(),
+            err: e
+          });
+        } else {
+          self.runtime.log('task error', {
+            message: e.toString(),
+            err: e
+          });
+        }
         var nack = channel.nack(msg, false, false);
         // Ensure we don't leak pending references.
         self.decrementPending();
-        console.error("Error processing message: %s", e.toString());
       }
     }));
   },
@@ -155,7 +168,7 @@ TaskListener.prototype = {
 
     // Run the task and collect runtime metrics.
     return yield* this.runtime.stats.timeGen(
-      'tasks.time.total', taskHandler.run()
+      'tasks.time.total', taskHandler.claimAndRun()
     );
   }
 };
