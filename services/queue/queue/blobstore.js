@@ -54,21 +54,20 @@ BlobStore.prototype.setupCORS = function() {
   var that = this;
   return new Promise(function(accept, reject) {
     that.service.setServiceProperties({
-      StorageServiceProperties: {
-        Cors: {
-          CorsRule: [
-            {
-              AllowedOrigins:   ['*'],
-              AllowedMethods:   ['GET'],
-              AllowedHeaders:   [],
-              ExposedHeaders:   [],
-              MaxAgeInSeconds:  60 * 5
-            }
-          ]
-        }
+      Cors: {
+        CorsRule: [
+          {
+            AllowedOrigins:   ['*'],
+            AllowedMethods:   ['GET'],
+            AllowedHeaders:   [],
+            ExposedHeaders:   ['content-length', 'content-type'],
+            MaxAgeInSeconds:  60 * 5
+          }
+        ]
       }
     }, function(err, response) {
       if (err) {
+        debug("Failed to configure CORS");
         return reject(err);
       }
       return accept(response);
