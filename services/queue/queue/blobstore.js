@@ -1,4 +1,4 @@
-var azure       = require('azure');
+var azure       = require('azure-storage');
 var _           = require('lodash');
 var Promise     = require('promise');
 var debug       = require('debug')('queue:blobstore');
