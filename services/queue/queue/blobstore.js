@@ -167,11 +167,11 @@ BlobStore.prototype.generateWriteSAS = function(key, options) {
     AccessPolicy: {
       Start:        start,
       Expiry:       options.expiry,
-      Permissions:  azure.Constants.BlobConstants.SharedAccessPermissions.WRITE
+      Permissions:  azure.BlobUtilities.SharedAccessPermissions.WRITE
     }
   });
 
-  return sas.url();
+  return this.service.getUrl(this.container, key, sas);
 };
 
 /** Create signed GET url */
@@ -186,12 +186,12 @@ BlobStore.prototype.createSignedGetUrl = function(key, options) {
     AccessPolicy: {
       Start:        start,
       Expiry:       options.expiry,
-      Permissions:  azure.Constants.BlobConstants.SharedAccessPermissions.READ
+      Permissions:  azure.BlobUtilities.SharedAccessPermissions.READ
     }
   });
 
   // Generate URL
-  return sas.url();
+  return this.service.getUrl(this.container, key, sas);
 };
 
 /** Delete a blob on azure blob storage */
