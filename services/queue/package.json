@@ -24,7 +24,7 @@
     "superagent-promise":               "0.1.2",
     "slugid":                           "1.0.1",
     "taskcluster-base":                 "0.3.7",
-    "azure":                            "0.9.12"
+    "azure-storage":                    "0.3.2"
   },
   "devDependencies": {
     "mocha":                            "1.18.2",
