@@ -11,12 +11,12 @@ var urlConversions = []struct {
 	expected string
 }{
 	{
-		"http://xfoo.com/queue/x/y/z",
-		"http://queue.taskcluster.net/x/y/z",
+		"https://xfoo.com/queue/x/y/z",
+		"https://queue.taskcluster.net/x/y/z",
 	},
 	{
-		"http://xfoo.com/scheduler/x/y/z",
-		"http://scheduler.taskcluster.net/x/y/z",
+		"https://xfoo.com/scheduler/x/y/z",
+		"https://scheduler.taskcluster.net/x/y/z",
 	},
 }
 
