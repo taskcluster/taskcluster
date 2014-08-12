@@ -112,12 +112,12 @@ suite('Post artifacts', function() {
       });
     }).then(function() {
       debug("### List artifacts");
-      return subject.queue.getArtifactsFromRun(taskId, 0);
+      return subject.queue.listArtifacts(taskId, 0);
     }).then(function(result) {
       assert(result.artifacts.length == 1, "Wrong length");
     }).then(function() {
       debug("### List artifacts from latest run");
-      return subject.queue.getLatestArtifacts(taskId);
+      return subject.queue.listLatestArtifacts(taskId);
     }).then(function(result) {
       assert(result.artifacts.length == 1, "Wrong length");
     }).then(function() {
