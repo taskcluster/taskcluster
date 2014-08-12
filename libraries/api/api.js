@@ -276,29 +276,13 @@ var authenticate = function(nonceManager, clientLoader, options) {
     });
   }
   return function(req, res, next) {
-    // Find port in case this request was forwarded by a proxy, say a HTTPS
-    // load balancer
-    var port = undefined; // Hawk defaults to parsing it from HOST header
-    if (req.headers['x-forwarded-port'] !== undefined) {
-      port = parseInt(req.headers['x-forwarded-port']);
-    }
-
-    // Restore originalUrl as needed by hawk for authentication
-    req.url = req.originalUrl;
-    // Technically, we always perform authentication, but we don't consider
-    // the result of `deferAuth` is true or `scopes` is undefined.
-    hawk.server.authenticate(req, getCredentials, {
-      // Not sure if JSON stringify is not deterministic by specification.
-      // I suspect not, so we'll postpone this till we're sure we want to do
-      // payload validation and how we want to do it.
-      //payload:      JSON.stringify(req.body),
-
-      // Provide nonce manager
-      nonceFunc:    nonceManager,
-
-      // Provide port
-      port:         port
-    }, function(err, credentials, artifacts) {
+    // Callback to handle request from hawk authentication. We currently always
+    // authenticate. We could postpone this if `options.deferAuth === true` or
+    // if `options.scopes === undefined`. But we should always do
+    // authentication if `req.satisfies` is called. In these case do
+    // authentication upfront and then ignores the result until `req.satisfies`
+    // is called
+    var authCallback = function(err, credentials, artifacts) {
       // Keep reference to set of authorized scopes, which will be extended
       // by authenticate()
       var authorizedScopes = [];
@@ -453,7 +437,59 @@ var authenticate = function(nonceManager, clientLoader, options) {
       } else {
         next();
       }
-    });
+    };
+
+    // Find port in case this request was forwarded by a proxy, say a HTTPS
+    // load balancer.
+    // TODO: Require that an option on the API says that it's okay to trust
+    //       trust the proxy. Otherwise one could use to fake the request port
+    //       from an intercepted signature. This is not a significant attack
+    //       vector :)
+    var port = undefined; // Hawk defaults to parsing it from HOST header
+    if (req.headers['x-forwarded-port'] !== undefined) {
+      port = parseInt(req.headers['x-forwarded-port']);
+    }
+
+    // Restore originalUrl as needed by hawk for authentication
+    req.url = req.originalUrl;
+
+    // Check that we're not using two authentication schemes, we could
+    // technically allow two. There are cases where we redirect and it would be
+    // smart to let bewit overwrite header authentication.
+    // But neither Azure or AWS accepts tolerates two authentication schemes,
+    // so this is probably a fair policy for now. We can always allow more.
+    if (req.headers && req.headers.authorization &&
+        req.query && req.query.bewit) {
+      return res.status(401).json({
+        message:  "Cannot use two authentication schemes at once " +
+                  "this request has both bewit in querystring and " +
+                  "and 'authorization' header"
+      });
+    }
+
+    // Check if we should use bewit authentication
+    if (req.query && req.query.bewit) {
+      hawk.uri.authenticate(req, getCredentials, {
+        // Provide port
+        port:         port
+      }, authCallback);
+    } else {
+      // If no bewit is present we run normal authentication... Even if there
+      // is no authentication header. Because we want the warning to say missing
+      // 'authentication' header. Not missing bewit signature.
+      hawk.server.authenticate(req, getCredentials, {
+        // Not sure if JSON stringify is not deterministic by specification.
+        // I suspect not, so we'll postpone this till we're sure we want to do
+        // payload validation and how we want to do it.
+        //payload:      JSON.stringify(req.body),
+
+        // Provide nonce manager
+        nonceFunc:    nonceManager,
+
+        // Provide port
+        port:         port
+      }, authCallback);
+    }
   };
 };
 
