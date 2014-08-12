@@ -7,6 +7,7 @@ var aws         = require('aws-sdk-promise');
 var Promise     = require('promise');
 var assert      = require('assert');
 var path        = require('path');
+var yaml        = require('js-yaml');
 
 var utils       = require('./utils');
 
@@ -122,26 +123,41 @@ var validator = function(options) {
     // Register JSON schemas from folder
     utils.listFolder(options.folder).forEach(function(filePath) {
       // We shall only import JSON files
-      if (!/\.json/g.test(filePath)) {
+      if (!/\.(json|ya?ml)$/.test(filePath)) {
         return;
       }
       try {
         // Load data from file
         var data = fs.readFileSync(filePath, {encoding: 'utf-8'});
 
-        // Parse JSON
-        var json = JSON.parse(data);
+        // Parse file to JSON
+        var json = null;
+        if (/\.ya?ml$/.test(filePath)) {
+          // Parse yaml file
+          json = yaml.safeLoad(data);
+        } else {
+          // Parse JSON file
+          json = JSON.parse(data);
+        }
 
         // Render JSON to JSON Schema, by substituting constants
         var schema = render(json, options.constants || {});
 
         // Register with the validator
         validator.register(schema);
+
+        // Find relative path and use it as name
+        var name = path.relative(options.folder, filePath);
+
+        // Replace .yaml and .yml with .json
+        name = name.replace(/\.ya?ml$/, '.json');
+
+        // Log that we loaded schema
         debug("Loaded: %s", filePath);
 
         // Schemas loaded from folder maybe published later
         schemasLoaded.push({
-          relPath:  path.relative(options.folder, filePath),
+          name:     name,
           schema:   schema
         });
       }
@@ -164,14 +180,14 @@ var validator = function(options) {
     // Publish schemas to S3
     var s3 = new aws.S3(options.aws);
     promises = promises.concat(schemasLoaded.map(function(entry) {
-      debug("Publishing: %s", entry.relPath);
+      debug("Publishing: %s", entry.name);
       return s3.putObject({
         Bucket:           options.schemaBucket,
-        Key:              options.schemaPrefix + entry.relPath,
+        Key:              options.schemaPrefix + entry.name,
         Body:             JSON.stringify(entry.schema, undefined, 4),
         ContentType:      'application/json'
       }).promise().catch(function(err) {
-        debug("Failed to publish: %s", entry.relPath);
+        debug("Failed to publish: %s", entry.name);
         throw err;
       });
     }));
