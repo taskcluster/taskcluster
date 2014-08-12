@@ -6,7 +6,7 @@ suite("api/auth", function() {
   var mockAuthServer  = require('../mockauthserver');
   var base            = require('../../');
   var express         = require('express');
-
+  var hawk            = require('hawk');
 
   // Reference to mock authentication server
   var _mockAuthServer = null;
@@ -408,6 +408,114 @@ suite("api/auth", function() {
       .end()
       .then(function(res) {
         assert(res.status === 401, "Request didn't failed");
+      });
+  });
+
+  test("getCredentials using bewit", function() {
+    var url = 'http://localhost:23243/client/test-client/credentials';
+    var bewit = hawk.uri.getBewit(url, {
+      credentials:    {
+        id:           'test-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      },
+      ttlSec:         60,
+      ext:            undefined
+    });
+    return request
+      .get(url + "?bewit=" + bewit)
+      .end()
+      .then(function(res) {
+        assert(res.ok,                                "Request failed");
+        assert(res.body.accessToken === 'test-token', "Got wrong token");
+      });
+  });
+
+  test("getCredentials using bewit (authorizedScopes)", function() {
+    var url = 'http://localhost:23243/client/test-client/credentials';
+    var bewit = hawk.uri.getBewit(url, {
+      credentials:    {
+        id:           'test-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      },
+      ttlSec:         60,
+      ext:            new Buffer(JSON.stringify({
+        authorizedScopes:    ['auth:credentials']
+      })).toString('base64')
+    });
+    return request
+      .get(url + "?bewit=" + bewit)
+      .end()
+      .then(function(res) {
+        assert(res.ok,                                "Request failed");
+        assert(res.body.accessToken === 'test-token', "Got wrong token");
+      });
+  });
+
+  test("getCredentials using bewit (authorizedScopes underscoped)", function() {
+    var url = 'http://localhost:23243/client/test-client/credentials';
+    var bewit = hawk.uri.getBewit(url, {
+      credentials:    {
+        id:           'test-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      },
+      ttlSec:         60,
+      ext:            new Buffer(JSON.stringify({
+        authorizedScopes:    []
+      })).toString('base64')
+    });
+    return request
+      .get(url + "?bewit=" + bewit)
+      .end()
+      .then(function(res) {
+        assert(res.status === 401, "Request didn't fail!");
+      });
+  });
+
+  test("getCredentials using bewit and header", function() {
+    var url = 'http://localhost:23243/client/test-client/credentials';
+    var bewit = hawk.uri.getBewit(url, {
+      credentials:    {
+        id:           'test-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      },
+      ttlSec:         60,
+      ext:            undefined
+    });
+    return request
+      .get(url + "?bewit=" + bewit)
+      .hawk({
+        id:           'test-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      })
+      .end()
+      .then(function(res) {
+        // Two authentication schemes is not allowed... so this should fail!
+        assert(res.status === 401, "Request didn't fail!!!");
+      });
+  });
+
+  test("getCredentials using bewit expired", function() {
+    var url = 'http://localhost:23243/client/test-client/credentials';
+    var bewit = hawk.uri.getBewit(url, {
+      credentials:    {
+        id:           'test-client',
+        key:          'test-token',
+        algorithm:    'sha256'
+      },
+      ttlSec:         -60 * 30,
+      ext:            undefined
+    });
+    return request
+      .get(url + "?bewit=" + bewit)
+      .end()
+      .then(function(res) {
+        // Two authentication schemes is not allowed... so this should fail!
+        assert(res.status === 401, "Request didn't fail!!!");
       });
   });
 });
