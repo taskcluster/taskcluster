@@ -4,6 +4,7 @@ suite('mockAuthServer', function() {
   var assert          = require('assert');
   var path            = require('path');
   var debug           = require('debug')('test:client_test');
+  var request         = require('superagent-promise');
 
   // Ensure the client is removed from the require cache so it can be reloaded
   // from scratch.
@@ -113,6 +114,67 @@ suite('mockAuthServer', function() {
       assert(err.statusCode === 401, "Wrong status code");
     });
   });
+
+  test('Build url', function() {
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
+    });
+    var Auth = new taskcluster.createClient(reference);
+    var auth = new Auth();
+    var url  = auth.buildUrl(auth.getCredentials, 'test-client');
+    assert(url === 'http://localhost:62351/v1/client/test-client/credentials',
+           "buildUrl generated wrong url");
+  });
+
+  test('Build url (missing parameter)', function() {
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
+    });
+    var Auth = new taskcluster.createClient(reference);
+    var auth = new Auth();
+    var err;
+    try {
+      var url  = auth.buildUrl(auth.getCredentials);
+    }
+    catch(e) {
+      err = e;
+    }
+    assert(err, "Expected error");
+  });
+
+  test('Build url (no method)', function() {
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
+    });
+    var Auth = new taskcluster.createClient(reference);
+    var auth = new Auth();
+    var err;
+    try {
+      var url  = auth.buildUrl('test-client');
+    }
+    catch(e) {
+      err = e;
+    }
+    assert(err, "Expected error");
+  });
+
+  test('Build signed url', function() {
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
+    });
+    var Auth = new taskcluster.createClient(reference);
+    var auth = new Auth({
+      credentials: {
+        clientId:       'test-client',
+        accessToken:    'test-token',
+      }
+    });
+    var url = auth.buildSignedUrl(auth.getCredentials, 'test-client');
+    return request.get(url).end().then(function(res) {
+      assert(res.ok, "Request failed");
+    });
+  });
+
 
   suite('getCredentials with environment variables', function() {
     var ACCESS_TOKEN = process.env.TASKCLUSTER_ACCESS_TOKEN,
