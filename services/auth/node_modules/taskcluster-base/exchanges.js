@@ -55,8 +55,8 @@ var Publisher = function(conn, channel, entries, options) {
         if (typeof(routingKey) !== 'string') {
           routingKey = entry.routingKey.map(function(key) {
             var word = routingKey[key.name];
-            if (!key.required) {
-              word = word || '_';
+            if (!key.required && (word === undefined || word === null)) {
+              word = '_';
             }
             // Convert numbers to strings
             if (typeof(word) === 'number') {
