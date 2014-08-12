@@ -146,10 +146,10 @@ var queue = new taskcluster.Queue(options);
  * `queue.reportCompleted(taskId, runId, payload) : result`
  * `queue.rerunTask(taskId) : result`
  * `queue.createArtifact(taskId, runId, name, payload) : result`
- * `queue.getArtifactFromRun(taskId, runId, name) : void`
- * `queue.getLatestArtifact(taskId, name) : void`
- * `queue.getArtifactsFromRun(taskId, runId) : void`
- * `queue.getLatestArtifacts(taskId) : void`
+ * `queue.getArtifact(taskId, runId, name) : void`
+ * `queue.getLastestArtifact(taskId, name) : void`
+ * `queue.listArtifacts(taskId, runId) : void`
+ * `queue.listLatestArtifacts(taskId) : void`
  * `queue.getPendingTasks(provisionerId) : void`
  * `queue.getAMQPConnectionString() : result`
  * `queue.ping() : void`

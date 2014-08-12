@@ -10,7 +10,7 @@ var b = browserify();
 b.add(path.join(__dirname, '..', 'browser.js'));
 
 // Open taskcluster-client.js and pipe bundle to it
-var file = fs.createWriteStream(path.join('..', 'taskcluster-client.js'));
+var file = fs.createWriteStream(path.join(__dirname, '..', 'taskcluster-client.js'));
 b.bundle().pipe(file);
 
 // Write to stdout so we know what happened

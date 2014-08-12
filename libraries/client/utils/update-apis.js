@@ -17,7 +17,7 @@ var saveApis = function() {
   var apis_js = path.join(__dirname, '..', 'apis.js');
   // Create content
   var content = "module.exports = " + JSON.stringify(apis, null, 2) + ";";
-  fs.writeFileSync(apis_json, content, {encoding: 'utf-8'});
+  fs.writeFileSync(apis_js, content, {encoding: 'utf-8'});
 };
 
 program
