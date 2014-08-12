@@ -244,7 +244,7 @@ var replyWithArtifact = function(taskId, runId, name, res) {
 api.declare({
   method:     'get',
   route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
-  name:       'getArtifactFromRun',
+  name:       'getArtifact',
   scopes: [
     'queue:get-artifact:<name>'
   ],
@@ -280,7 +280,7 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/task/:taskId/artifacts/:name(*)',
-  name:       'getLatestArtifact',
+  name:       'getLastestArtifact',
   scopes: [
     'queue:get-artifact:<name>'
   ],
@@ -411,7 +411,7 @@ var replyWithArtifacts = function(taskId, runId, res) {
 api.declare({
   method:     'get',
   route:      '/task/:taskId/runs/:runId/artifacts',
-  name:       'getArtifactsFromRun',
+  name:       'listArtifacts',
   title:      "Get Artifacts from Run",
   description: [
     "TODO: document this method"
@@ -438,7 +438,7 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/task/:taskId/artifacts',
-  name:       'getLatestArtifacts',
+  name:       'listLatestArtifacts',
   title:      "Get Artifacts from Latest Run",
   description: [
     "TODO: document this method"
