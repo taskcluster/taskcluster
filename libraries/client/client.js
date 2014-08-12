@@ -9,6 +9,8 @@ var request     = require('superagent-promise');
 var debug       = require('debug')('taskcluster-client');
 var _           = require('lodash');
 var assert      = require('assert');
+var hawk        = require('hawk');
+var url         = require('url');
 
 // Default options stored globally for convenience
 var _defaultOptions = {
@@ -65,6 +67,7 @@ exports.createClient = function(reference) {
     if (entry.input) {
       nb_args += 1;
     }
+
     // Create method on prototype
     Client.prototype[entry.name] = function() {
       debug("Calling: " + entry.name);
@@ -129,6 +132,8 @@ exports.createClient = function(reference) {
         return res.body;
       });
     };
+    // Add reference for buildUrl and signUrl
+    Client.prototype[entry.name].entryReference = entry;
   });
 
   // For each topic-exchange entry
@@ -174,6 +179,121 @@ exports.createClient = function(reference) {
       };
     };
   });
+
+  // Utility function to build the request URL for given method and
+  // input parameters
+  Client.prototype.buildUrl = function() {
+      // Convert arguments to actual array
+      var args = Array.prototype.slice.call(arguments);
+      if (args.length == 0) {
+        throw new Error("buildUrl(method, arg1, arg2, ...) takes a least one " +
+                        "argument!");
+      }
+      // Find the method
+      var method = args.shift();
+      var entry  = method.entryReference;
+      if (!entry || entry.type !== 'function') {
+        throw new Error("method in buildUrl(method, arg1, arg2, ...) must be " +
+                        "an API method from the same object!");
+      }
+
+      debug("build url for: " + entry.name);
+      // Validate number of arguments
+      if (args.length != entry.args.length) {
+        throw new Error("Function " + entry.name + "buildUrl() takes " +
+                        (entry.args.length + 1) + " arguments, but was given " +
+                        (args.length + 1) + " arguments");
+      }
+      // Substitute parameters into route
+      var endpoint = entry.route;
+      entry.args.forEach(function(arg) {
+        var value = args.shift();
+        // Replace with empty string in case of undefined or null argument
+        if (value === undefined || value === null) {
+          value = '';
+        }
+        endpoint = endpoint.replace('<' + arg + '>', value);
+      });
+
+      return this._options.baseUrl + endpoint;
+    };
+
+    // Utility function to construct a bewit URL for GET requests
+    Client.prototype.buildSignedUrl = function() {
+      // Convert arguments to actual array
+      var args = Array.prototype.slice.call(arguments);
+      if (args.length == 0) {
+        throw new Error("buildSignedUrl(method, arg1, arg2, ..., [options]) " +
+                        "takes a least one argument!");
+      }
+
+      // Find method and reference entry
+      var method = args[0];
+      var entry  = method.entryReference;
+      if (entry.method !== 'get') {
+        throw new Error("buildSignedUrl only works for GET requests");
+      }
+
+      // Default to 15 minutes before expiration
+      var expiration = 15 * 60;
+
+      // if longer than method + args, then we have options too
+      if (args.length > entry.args.length + 1) {
+        // Get request options
+        var options = args.pop();
+
+        // Get expiration from options
+        expiration = options.expiration || expiration;
+
+        // Complain if expiration isn't a number
+        if (typeof(expiration) !== 'number') {
+          throw new Error("options.expiration must be a number");
+        }
+      }
+
+      // Build URL
+      var requestUrl = this.buildUrl.apply(this, args);
+
+      // Check that we have credentials
+      if (!this._options.credentials.clientId) {
+        throw new Error("credentials must be given");
+      }
+      if (!this._options.credentials.accessToken) {
+        throw new Error("accessToken must be given");
+      }
+
+      // Generate meta-data to include
+      var ext = undefined;
+      // If set of authorized scopes is provided, we'll restrict the request
+      // to only use these scopes
+      if (this._options.authorizedScopes instanceof Array) {
+        ext = new Buffer(JSON.stringify({
+          authorizedScopes: this._options.authorizedScopes
+        })).toString('base64');
+      }
+
+      // Create bewit
+      var bewit = hawk.uri.getBewit(requestUrl, {
+        credentials:    {
+          id:         this._options.credentials.clientId,
+          key:        this._options.credentials.accessToken,
+          algorithm:  'sha256'
+        },
+        ttlSec:         expiration,
+        ext:            ext
+      });
+
+      // Add bewit to requestUrl
+      var urlParts = url.parse(requestUrl);
+      if (urlParts.search) {
+        urlParts.search += "&bewit=" + bewit;
+      } else {
+        urlParts.search = "?bewit=" + bewit;
+      }
+
+      // Return formatted URL
+      return url.format(urlParts);
+    };
 
   // Return client class
   return Client;
