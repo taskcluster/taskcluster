@@ -192,6 +192,69 @@ var schedulerEvents = new taskcluster.SchedulerEvents(options);
 
 <!-- END OF GENERATED DOCS -->
 
+## Construct Urls
+You can build a url for any request, but this feature is mostly useful for
+request that doesn't require any authentication. If you need authentication
+take a look at the section on building signed urls, which is possible for all
+`GET` requests. To construct a url for a request use the `buildUrl` method, as
+illustrated in the following example:
+
+```js
+// Create queue instance
+var queue = new taskcluster.Queue(...);
+
+// Build url to get a specific task
+var url = queue.buildUrl(
+  queue.getTask,    // Method to build url for.
+  taskId            // First parameter for the method, in this case taskId
+);
+```
+
+Please, note that the `payload` parameter cannot be encoded in urls. And must be
+sent when using a constructed urls. Again, this is not a problem as most methods
+that takes a `payload` also requires authentication.
+
+
+## Construct Signed Urls
+It's possible to build both signed urls for all `GET` requests. A signed url
+contains a query-string parameter called `bewit`, this parameter holds
+expiration time, signature and scope restrictions (if applied). The signature
+covers the following parameters:
+
+  * Expiration time,
+  * Url and query-string, and
+  * scope restrictions (if applied)
+
+These signed urls is very convenient if you want to grant somebody access to
+specific resource without proxying the request or sharing your credentials.
+For example it's fairly safe to provide someone with a signed url for a
+specific artifact that is protected by a scope. See example below.
+
+```js
+// Create queue instance
+var queue = new taskcluster.Queue(...);
+
+// Build signed url
+var signedUrl = queue.buildSignedUrl(
+  queue.getArtifactFromRun,   // method to build signed url for.
+  taskId,                     // TaskId parameter
+  runId,                      // RunId parameter
+  artifactName,               // Artifact name parameter
+  {
+    expiration:     60 * 10   // Expiration time in seconds
+});
+```
+
+Please, note that the `payload` parameter cannot be encoded in the signed url
+and must be sent as request payload. This should work fine, just remember that
+it's only possible to make signed urls for `GET` requests, which in most cases
+don't take a payload.
+
+Also please consider using a relatively limited expiration time, as it's not
+possible to retract a signed url without revoking your credentials.
+For more technical details on signed urls, see _bewit_ urls in
+[hawk](https://github.com/hueniverse/hawk).
+
 ## Create Client Class Dynamically
 You can create a Client class from a reference JSON object as illustrated
 below:

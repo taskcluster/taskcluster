@@ -20,13 +20,14 @@
     "superagent-hawk":                  "0.0.3",
     "amqplib":                          "0.2.0",
     "slugid":                           "1.0.1",
-    "promise":                          "5.0.0"
+    "promise":                          "5.0.0",
+    "hawk":                             "2.2.3"
   },
   "devDependencies": {
     "mocha":                            "1.18.2",
     "commander":                        "2.2.0",
     "cliff":                            "0.1.8",
-    "taskcluster-base":                 "0.3.2",
+    "taskcluster-base":                 "0.3.8",
     "browserify":                       "5.9.1",
     "mocha-phantomjs":                  "3.5.0"
   }
