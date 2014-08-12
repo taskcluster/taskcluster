@@ -266,7 +266,7 @@ module.exports = {
             "runId",
             "name"
           ],
-          "name": "getArtifactFromRun",
+          "name": "getArtifact",
           "title": "Get Artifact from Run",
           "description": "TODO: document this method",
           "scopes": [
@@ -283,7 +283,7 @@ module.exports = {
             "taskId",
             "name"
           ],
-          "name": "getLatestArtifact",
+          "name": "getLastestArtifact",
           "title": "Get Artifact from Latest Run",
           "description": "TODO: document this method",
           "scopes": [
@@ -300,7 +300,7 @@ module.exports = {
             "taskId",
             "runId"
           ],
-          "name": "getArtifactsFromRun",
+          "name": "listArtifacts",
           "title": "Get Artifacts from Run",
           "description": "TODO: document this method"
         },
@@ -311,7 +311,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
-          "name": "getLatestArtifacts",
+          "name": "listLatestArtifacts",
           "title": "Get Artifacts from Latest Run",
           "description": "TODO: document this method"
         },
@@ -1141,6 +1141,8 @@ var request     = require('superagent-promise');
 var debug       = require('debug')('taskcluster-client');
 var _           = require('lodash');
 var assert      = require('assert');
+var hawk        = require('hawk');
+var url         = require('url');
 
 // Default options stored globally for convenience
 var _defaultOptions = {
@@ -1197,6 +1199,7 @@ exports.createClient = function(reference) {
     if (entry.input) {
       nb_args += 1;
     }
+
     // Create method on prototype
     Client.prototype[entry.name] = function() {
       debug("Calling: " + entry.name);
@@ -1261,6 +1264,8 @@ exports.createClient = function(reference) {
         return res.body;
       });
     };
+    // Add reference for buildUrl and signUrl
+    Client.prototype[entry.name].entryReference = entry;
   });
 
   // For each topic-exchange entry
@@ -1307,6 +1312,121 @@ exports.createClient = function(reference) {
     };
   });
 
+  // Utility function to build the request URL for given method and
+  // input parameters
+  Client.prototype.buildUrl = function() {
+      // Convert arguments to actual array
+      var args = Array.prototype.slice.call(arguments);
+      if (args.length == 0) {
+        throw new Error("buildUrl(method, arg1, arg2, ...) takes a least one " +
+                        "argument!");
+      }
+      // Find the method
+      var method = args.shift();
+      var entry  = method.entryReference;
+      if (!entry || entry.type !== 'function') {
+        throw new Error("method in buildUrl(method, arg1, arg2, ...) must be " +
+                        "an API method from the same object!");
+      }
+
+      debug("build url for: " + entry.name);
+      // Validate number of arguments
+      if (args.length != entry.args.length) {
+        throw new Error("Function " + entry.name + "buildUrl() takes " +
+                        (entry.args.length + 1) + " arguments, but was given " +
+                        (args.length + 1) + " arguments");
+      }
+      // Substitute parameters into route
+      var endpoint = entry.route;
+      entry.args.forEach(function(arg) {
+        var value = args.shift();
+        // Replace with empty string in case of undefined or null argument
+        if (value === undefined || value === null) {
+          value = '';
+        }
+        endpoint = endpoint.replace('<' + arg + '>', value);
+      });
+
+      return this._options.baseUrl + endpoint;
+    };
+
+    // Utility function to construct a bewit URL for GET requests
+    Client.prototype.buildSignedUrl = function() {
+      // Convert arguments to actual array
+      var args = Array.prototype.slice.call(arguments);
+      if (args.length == 0) {
+        throw new Error("buildSignedUrl(method, arg1, arg2, ..., [options]) " +
+                        "takes a least one argument!");
+      }
+
+      // Find method and reference entry
+      var method = args[0];
+      var entry  = method.entryReference;
+      if (entry.method !== 'get') {
+        throw new Error("buildSignedUrl only works for GET requests");
+      }
+
+      // Default to 15 minutes before expiration
+      var expiration = 15 * 60;
+
+      // if longer than method + args, then we have options too
+      if (args.length > entry.args.length + 1) {
+        // Get request options
+        var options = args.pop();
+
+        // Get expiration from options
+        expiration = options.expiration || expiration;
+
+        // Complain if expiration isn't a number
+        if (typeof(expiration) !== 'number') {
+          throw new Error("options.expiration must be a number");
+        }
+      }
+
+      // Build URL
+      var requestUrl = this.buildUrl.apply(this, args);
+
+      // Check that we have credentials
+      if (!this._options.credentials.clientId) {
+        throw new Error("credentials must be given");
+      }
+      if (!this._options.credentials.accessToken) {
+        throw new Error("accessToken must be given");
+      }
+
+      // Generate meta-data to include
+      var ext = undefined;
+      // If set of authorized scopes is provided, we'll restrict the request
+      // to only use these scopes
+      if (this._options.authorizedScopes instanceof Array) {
+        ext = new Buffer(JSON.stringify({
+          authorizedScopes: this._options.authorizedScopes
+        })).toString('base64');
+      }
+
+      // Create bewit
+      var bewit = hawk.uri.getBewit(requestUrl, {
+        credentials:    {
+          id:         this._options.credentials.clientId,
+          key:        this._options.credentials.accessToken,
+          algorithm:  'sha256'
+        },
+        ttlSec:         expiration,
+        ext:            ext
+      });
+
+      // Add bewit to requestUrl
+      var urlParts = url.parse(requestUrl);
+      if (urlParts.search) {
+        urlParts.search += "&bewit=" + bewit;
+      } else {
+        urlParts.search = "?bewit=" + bewit;
+      }
+
+      // Return formatted URL
+      return url.format(urlParts);
+    };
+
   // Return client class
   return Client;
 };
@@ -1330,7 +1450,7 @@ exports.config = function(options) {
 };
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"./apis":1,"_process":31,"assert":5,"buffer":8,"debug":52,"lodash":53,"superagent":75,"superagent-hawk":57,"superagent-promise":74}],4:[function(require,module,exports){
+},{"./apis":1,"_process":31,"assert":5,"buffer":8,"debug":52,"hawk":53,"lodash":54,"superagent":76,"superagent-hawk":58,"superagent-promise":75,"url":49}],4:[function(require,module,exports){
 
 },{}],5:[function(require,module,exports){
 // http://wiki.commonjs.org/wiki/Unit_Testing/1.0
@@ -9417,6 +9537,564 @@ try {
 } catch(e){}
 
 },{}],53:[function(require,module,exports){
+/*
+    HTTP Hawk Authentication Scheme
+    Copyright (c) 2012-2014, Eran Hammer <eran@hammer.io>
+    BSD Licensed
+*/
+
+
+// Declare namespace
+
+var hawk = {
+    internals: {}
+};
+
+
+hawk.client = {
+
+    // Generate an Authorization header for a given request
+
+    /*
+        uri: 'http://example.com/resource?a=b' or object generated by hawk.utils.parseUri()
+        method: HTTP verb (e.g. 'GET', 'POST')
+        options: {
+
+            // Required
+
+            credentials: {
+                id: 'dh37fgj492je',
+                key: 'aoijedoaijsdlaksjdl',
+                algorithm: 'sha256'                                 // 'sha1', 'sha256'
+            },
+
+            // Optional
+
+            ext: 'application-specific',                        // Application specific data sent via the ext attribute
+            timestamp: Date.now() / 1000,                       // A pre-calculated timestamp in seconds
+            nonce: '2334f34f',                                  // A pre-generated nonce
+            localtimeOffsetMsec: 400,                           // Time offset to sync with server time (ignored if timestamp provided)
+            payload: '{"some":"payload"}',                      // UTF-8 encoded string for body hash generation (ignored if hash provided)
+            contentType: 'application/json',                    // Payload content-type (ignored if hash provided)
+            hash: 'U4MKKSmiVxk37JCCrAVIjV=',                    // Pre-calculated payload hash
+            app: '24s23423f34dx',                               // Oz application id
+            dlg: '234sz34tww3sd'                                // Oz delegated-by application id
+        }
+    */
+
+    header: function (uri, method, options) {
+
+        var result = {
+            field: '',
+            artifacts: {}
+        };
+
+        // Validate inputs
+
+        if (!uri || (typeof uri !== 'string' && typeof uri !== 'object') ||
+            !method || typeof method !== 'string' ||
+            !options || typeof options !== 'object') {
+
+            result.err = 'Invalid argument type';
+            return result;
+        }
+
+        // Application time
+
+        var timestamp = options.timestamp || hawk.utils.now(options.localtimeOffsetMsec);
+
+        // Validate credentials
+
+        var credentials = options.credentials;
+        if (!credentials ||
+            !credentials.id ||
+            !credentials.key ||
+            !credentials.algorithm) {
+
+            result.err = 'Invalid credentials object';
+            return result;
+        }
+
+        if (hawk.crypto.algorithms.indexOf(credentials.algorithm) === -1) {
+            result.err = 'Unknown algorithm';
+            return result;
+        }
+
+        // Parse URI
+
+        if (typeof uri === 'string') {
+            uri = hawk.utils.parseUri(uri);
+        }
+
+        // Calculate signature
+
+        var artifacts = {
+            ts: timestamp,
+            nonce: options.nonce || hawk.utils.randomString(6),
+            method: method,
+            resource: uri.relative,
+            host: uri.hostname,
+            port: uri.port,
+            hash: options.hash,
+            ext: options.ext,
+            app: options.app,
+            dlg: options.dlg
+        };
+
+        result.artifacts = artifacts;
+
+        // Calculate payload hash
+
+        if (!artifacts.hash &&
+            (options.payload || options.payload === '')) {
+
+            artifacts.hash = hawk.crypto.calculatePayloadHash(options.payload, credentials.algorithm, options.contentType);
+        }
+
+        var mac = hawk.crypto.calculateMac('header', credentials, artifacts);
+
+        // Construct header
+
+        var hasExt = artifacts.ext !== null && artifacts.ext !== undefined && artifacts.ext !== '';       // Other falsey values allowed
+        var header = 'Hawk id="' + credentials.id +
+                     '", ts="' + artifacts.ts +
+                     '", nonce="' + artifacts.nonce +
+                     (artifacts.hash ? '", hash="' + artifacts.hash : '') +
+                     (hasExt ? '", ext="' + hawk.utils.escapeHeaderAttribute(artifacts.ext) : '') +
+                     '", mac="' + mac + '"';
+
+        if (artifacts.app) {
+            header += ', app="' + artifacts.app +
+                      (artifacts.dlg ? '", dlg="' + artifacts.dlg : '') + '"';
+        }
+
+        result.field = header;
+
+        return result;
+    },
+
+
+    // Validate server response
+
+    /*
+        request:    object created via 'new XMLHttpRequest()' after response received
+        artifacts:  object received from header().artifacts
+        options: {
+            payload:    optional payload received
+            required:   specifies if a Server-Authorization header is required. Defaults to 'false'
+        }
+    */
+
+    authenticate: function (request, credentials, artifacts, options) {
+
+        options = options || {};
+
+        var getHeader = function (name) {
+
+            return request.getResponseHeader ? request.getResponseHeader(name) : request.getHeader(name);
+        };
+
+        var wwwAuthenticate = getHeader('www-authenticate');
+        if (wwwAuthenticate) {
+
+            // Parse HTTP WWW-Authenticate header
+
+            var attributes = hawk.utils.parseAuthorizationHeader(wwwAuthenticate, ['ts', 'tsm', 'error']);
+            if (!attributes) {
+                return false;
+            }
+
+            if (attributes.ts) {
+                var tsm = hawk.crypto.calculateTsMac(attributes.ts, credentials);
+                if (tsm !== attributes.tsm) {
+                    return false;
+                }
+
+                hawk.utils.setNtpOffset(attributes.ts - Math.floor((new Date()).getTime() / 1000));     // Keep offset at 1 second precision
+            }
+        }
+
+        // Parse HTTP Server-Authorization header
+
+        var serverAuthorization = getHeader('server-authorization');
+        if (!serverAuthorization &&
+            !options.required) {
+
+            return true;
+        }
+
+        var attributes = hawk.utils.parseAuthorizationHeader(serverAuthorization, ['mac', 'ext', 'hash']);
+        if (!attributes) {
+            return false;
+        }
+
+        var modArtifacts = {
+            ts: artifacts.ts,
+            nonce: artifacts.nonce,
+            method: artifacts.method,
+            resource: artifacts.resource,
+            host: artifacts.host,
+            port: artifacts.port,
+            hash: attributes.hash,
+            ext: attributes.ext,
+            app: artifacts.app,
+            dlg: artifacts.dlg
+        };
+
+        var mac = hawk.crypto.calculateMac('response', credentials, modArtifacts);
+        if (mac !== attributes.mac) {
+            return false;
+        }
+
+        if (!options.payload &&
+            options.payload !== '') {
+
+            return true;
+        }
+
+        if (!attributes.hash) {
+            return false;
+        }
+
+        var calculatedHash = hawk.crypto.calculatePayloadHash(options.payload, credentials.algorithm, getHeader('content-type'));
+        return (calculatedHash === attributes.hash);
+    },
+
+    message: function (host, port, message, options) {
+
+        // Validate inputs
+
+        if (!host || typeof host !== 'string' ||
+            !port || typeof port !== 'number' ||
+            message === null || message === undefined || typeof message !== 'string' ||
+            !options || typeof options !== 'object') {
+
+            return null;
+        }
+
+        // Application time
+
+        var timestamp = options.timestamp || hawk.utils.now(options.localtimeOffsetMsec);
+
+        // Validate credentials
+
+        var credentials = options.credentials;
+        if (!credentials ||
+            !credentials.id ||
+            !credentials.key ||
+            !credentials.algorithm) {
+
+            // Invalid credential object
+            return null;
+        }
+
+        if (hawk.crypto.algorithms.indexOf(credentials.algorithm) === -1) {
+            return null;
+        }
+
+        // Calculate signature
+
+        var artifacts = {
+            ts: timestamp,
+            nonce: options.nonce || hawk.utils.randomString(6),
+            host: host,
+            port: port,
+            hash: hawk.crypto.calculatePayloadHash(message, credentials.algorithm)
+        };
+
+        // Construct authorization
+
+        var result = {
+            id: credentials.id,
+            ts: artifacts.ts,
+            nonce: artifacts.nonce,
+            hash: artifacts.hash,
+            mac: hawk.crypto.calculateMac('message', credentials, artifacts)
+        };
+
+        return result;
+    },
+
+    authenticateTimestamp: function (message, credentials, updateClock) {           // updateClock defaults to true
+
+        var tsm = hawk.crypto.calculateTsMac(message.ts, credentials);
+        if (tsm !== message.tsm) {
+            return false;
+        }
+
+        if (updateClock !== false) {
+            hawk.utils.setNtpOffset(message.ts - Math.floor((new Date()).getTime() / 1000));    // Keep offset at 1 second precision
+        }
+
+        return true;
+    }
+};
+
+
+hawk.crypto = {
+
+    headerVersion: '1',
+
+    algorithms: ['sha1', 'sha256'],
+
+    calculateMac: function (type, credentials, options) {
+
+        var normalized = hawk.crypto.generateNormalizedString(type, options);
+
+        var hmac = CryptoJS['Hmac' + credentials.algorithm.toUpperCase()](normalized, credentials.key);
+        return hmac.toString(CryptoJS.enc.Base64);
+    },
+
+    generateNormalizedString: function (type, options) {
+
+        var normalized = 'hawk.' + hawk.crypto.headerVersion + '.' + type + '\n' +
+                         options.ts + '\n' +
+                         options.nonce + '\n' +
+                         (options.method || '').toUpperCase() + '\n' +
+                         (options.resource || '') + '\n' +
+                         options.host.toLowerCase() + '\n' +
+                         options.port + '\n' +
+                         (options.hash || '') + '\n';
+
+        if (options.ext) {
+            normalized += options.ext.replace('\\', '\\\\').replace('\n', '\\n');
+        }
+
+        normalized += '\n';
+
+        if (options.app) {
+            normalized += options.app + '\n' +
+                          (options.dlg || '') + '\n';
+        }
+
+        return normalized;
+    },
+
+    calculatePayloadHash: function (payload, algorithm, contentType) {
+
+        var hash = CryptoJS.algo[algorithm.toUpperCase()].create();
+        hash.update('hawk.' + hawk.crypto.headerVersion + '.payload\n');
+        hash.update(hawk.utils.parseContentType(contentType) + '\n');
+        hash.update(payload);
+        hash.update('\n');
+        return hash.finalize().toString(CryptoJS.enc.Base64);
+    },
+
+    calculateTsMac: function (ts, credentials) {
+
+        var hash = CryptoJS['Hmac' + credentials.algorithm.toUpperCase()]('hawk.' + hawk.crypto.headerVersion + '.ts\n' + ts + '\n', credentials.key);
+        return hash.toString(CryptoJS.enc.Base64);
+    }
+};
+
+
+// localStorage compatible interface
+
+hawk.internals.LocalStorage = function () {
+
+    this._cache = {};
+    this.length = 0;
+
+    this.getItem = function (key) {
+
+        return this._cache.hasOwnProperty(key) ? String(this._cache[key]) : null;
+    };
+
+    this.setItem = function (key, value) {
+
+        this._cache[key] = String(value);
+        this.length = Object.keys(this._cache).length;
+    };
+
+    this.removeItem = function (key) {
+
+        delete this._cache[key];
+        this.length = Object.keys(this._cache).length;
+    };
+
+    this.clear = function () {
+
+        this._cache = {};
+        this.length = 0;
+    };
+
+    this.key = function (i) {
+
+        return Object.keys(this._cache)[i || 0];
+    };
+};
+
+
+hawk.utils = {
+
+    storage: new hawk.internals.LocalStorage(),
+
+    setStorage: function (storage) {
+
+        var ntpOffset = hawk.utils.storage.getItem('hawk_ntp_offset');
+        hawk.utils.storage = storage;
+        if (ntpOffset) {
+            hawk.utils.setNtpOffset(ntpOffset);
+        }
+    },
+
+    setNtpOffset: function (offset) {
+
+        try {
+            hawk.utils.storage.setItem('hawk_ntp_offset', offset);
+        }
+        catch (err) {
+            console.error('[hawk] could not write to storage.');
+            console.error(err);
+        }
+    },
+
+    getNtpOffset: function () {
+
+        var offset = hawk.utils.storage.getItem('hawk_ntp_offset');
+        if (!offset) {
+            return 0;
+        }
+
+        return parseInt(offset, 10);
+    },
+
+    now: function (localtimeOffsetMsec) {
+
+        return Math.floor(((new Date()).getTime() + (localtimeOffsetMsec || 0)) / 1000) + hawk.utils.getNtpOffset();
+    },
+
+    escapeHeaderAttribute: function (attribute) {
+
+        return attribute.replace(/\\/g, '\\\\').replace(/\"/g, '\\"');
+    },
+
+    parseContentType: function (header) {
+
+        if (!header) {
+            return '';
+        }
+
+        return header.split(';')[0].replace(/^\s+|\s+$/g, '').toLowerCase();
+    },
+
+    parseAuthorizationHeader: function (header, keys) {
+
+        if (!header) {
+            return null;
+        }
+
+        var headerParts = header.match(/^(\w+)(?:\s+(.*))?$/);       // Header: scheme[ something]
+        if (!headerParts) {
+            return null;
+        }
+
+        var scheme = headerParts[1];
+        if (scheme.toLowerCase() !== 'hawk') {
+            return null;
+        }
+
+        var attributesString = headerParts[2];
+        if (!attributesString) {
+            return null;
+        }
+
+        var attributes = {};
+        var verify = attributesString.replace(/(\w+)="([^"\\]*)"\s*(?:,\s*|$)/g, function ($0, $1, $2) {
+
+            // Check valid attribute names
+
+            if (keys.indexOf($1) === -1) {
+                return;
+            }
+
+            // Allowed attribute value characters: !#$%&'()*+,-./:;<=>?@[]^_`{|}~ and space, a-z, A-Z, 0-9
+
+            if ($2.match(/^[ \w\!#\$%&'\(\)\*\+,\-\.\/\:;<\=>\?@\[\]\^`\{\|\}~]+$/) === null) {
+                return;
+            }
+
+            // Check for duplicates
+
+            if (attributes.hasOwnProperty($1)) {
+                return;
+            }
+
+            attributes[$1] = $2;
+            return '';
+        });
+
+        if (verify !== '') {
+            return null;
+        }
+
+        return attributes;
+    },
+
+    randomString: function (size) {
+
+        var randomSource = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        var len = randomSource.length;
+
+        var result = [];
+        for (var i = 0; i < size; ++i) {
+            result[i] = randomSource[Math.floor(Math.random() * len)];
+        }
+
+        return result.join('');
+    },
+
+    parseUri: function (input) {
+
+        // Based on: parseURI 1.2.2
+        // http://blog.stevenlevithan.com/archives/parseuri
+        // (c) Steven Levithan <stevenlevithan.com>
+        // MIT License
+
+        var keys = ['source', 'protocol', 'authority', 'userInfo', 'user', 'password', 'hostname', 'port', 'resource', 'relative', 'pathname', 'directory', 'file', 'query', 'fragment'];
+
+        var uriRegex = /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?(((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?)(?:#(.*))?)/;
+        var uriByNumber = input.match(uriRegex);
+        var uri = {};
+
+        for (var i = 0, il = keys.length; i < il; ++i) {
+            uri[keys[i]] = uriByNumber[i] || '';
+        }
+
+        if (uri.port === '') {
+            uri.port = (uri.protocol.toLowerCase() === 'http' ? '80' : (uri.protocol.toLowerCase() === 'https' ? '443' : ''));
+        }
+
+        return uri;
+    }
+};
+
+
+// $lab:coverage:off$
+
+// Based on: Crypto-JS v3.1.2
+// Copyright (c) 2009-2013, Jeff Mott. All rights reserved.
+// http://code.google.com/p/crypto-js/
+// http://code.google.com/p/crypto-js/wiki/License
+
+var CryptoJS = CryptoJS || function (h, r) { var k = {}, l = k.lib = {}, n = function () { }, f = l.Base = { extend: function (a) { n.prototype = this; var b = new n; a && b.mixIn(a); b.hasOwnProperty("init") || (b.init = function () { b.$super.init.apply(this, arguments) }); b.init.prototype = b; b.$super = this; return b }, create: function () { var a = this.extend(); a.init.apply(a, arguments); return a }, init: function () { }, mixIn: function (a) { for (var b in a) a.hasOwnProperty(b) && (this[b] = a[b]); a.hasOwnProperty("toString") && (this.toString = a.toString) }, clone: function () { return this.init.prototype.extend(this) } }, j = l.WordArray = f.extend({ init: function (a, b) { a = this.words = a || []; this.sigBytes = b != r ? b : 4 * a.length }, toString: function (a) { return (a || s).stringify(this) }, concat: function (a) { var b = this.words, d = a.words, c = this.sigBytes; a = a.sigBytes; this.clamp(); if (c % 4) for (var e = 0; e < a; e++) b[c + e >>> 2] |= (d[e >>> 2] >>> 24 - 8 * (e % 4) & 255) << 24 - 8 * ((c + e) % 4); else if (65535 < d.length) for (e = 0; e < a; e += 4) b[c + e >>> 2] = d[e >>> 2]; else b.push.apply(b, d); this.sigBytes += a; return this }, clamp: function () { var a = this.words, b = this.sigBytes; a[b >>> 2] &= 4294967295 << 32 - 8 * (b % 4); a.length = h.ceil(b / 4) }, clone: function () { var a = f.clone.call(this); a.words = this.words.slice(0); return a }, random: function (a) { for (var b = [], d = 0; d < a; d += 4) b.push(4294967296 * h.random() | 0); return new j.init(b, a) } }), m = k.enc = {}, s = m.Hex = { stringify: function (a) { var b = a.words; a = a.sigBytes; for (var d = [], c = 0; c < a; c++) { var e = b[c >>> 2] >>> 24 - 8 * (c % 4) & 255; d.push((e >>> 4).toString(16)); d.push((e & 15).toString(16)) } return d.join("") }, parse: function (a) { for (var b = a.length, d = [], c = 0; c < b; c += 2) d[c >>> 3] |= parseInt(a.substr(c, 2), 16) << 24 - 4 * (c % 8); return new j.init(d, b / 2) } }, p = m.Latin1 = { stringify: function (a) { var b = a.words; a = a.sigBytes; for (var d = [], c = 0; c < a; c++) d.push(String.fromCharCode(b[c >>> 2] >>> 24 - 8 * (c % 4) & 255)); return d.join("") }, parse: function (a) { for (var b = a.length, d = [], c = 0; c < b; c++) d[c >>> 2] |= (a.charCodeAt(c) & 255) << 24 - 8 * (c % 4); return new j.init(d, b) } }, t = m.Utf8 = { stringify: function (a) { try { return decodeURIComponent(escape(p.stringify(a))) } catch (b) { throw Error("Malformed UTF-8 data"); } }, parse: function (a) { return p.parse(unescape(encodeURIComponent(a))) } }, q = l.BufferedBlockAlgorithm = f.extend({ reset: function () { this._data = new j.init; this._nDataBytes = 0 }, _append: function (a) { "string" == typeof a && (a = t.parse(a)); this._data.concat(a); this._nDataBytes += a.sigBytes }, _process: function (a) { var b = this._data, d = b.words, c = b.sigBytes, e = this.blockSize, f = c / (4 * e), f = a ? h.ceil(f) : h.max((f | 0) - this._minBufferSize, 0); a = f * e; c = h.min(4 * a, c); if (a) { for (var g = 0; g < a; g += e) this._doProcessBlock(d, g); g = d.splice(0, a); b.sigBytes -= c } return new j.init(g, c) }, clone: function () { var a = f.clone.call(this); a._data = this._data.clone(); return a }, _minBufferSize: 0 }); l.Hasher = q.extend({ cfg: f.extend(), init: function (a) { this.cfg = this.cfg.extend(a); this.reset() }, reset: function () { q.reset.call(this); this._doReset() }, update: function (a) { this._append(a); this._process(); return this }, finalize: function (a) { a && this._append(a); return this._doFinalize() }, blockSize: 16, _createHelper: function (a) { return function (b, d) { return (new a.init(d)).finalize(b) } }, _createHmacHelper: function (a) { return function (b, d) { return (new u.HMAC.init(a, d)).finalize(b) } } }); var u = k.algo = {}; return k }(Math);
+(function () { var k = CryptoJS, b = k.lib, m = b.WordArray, l = b.Hasher, d = [], b = k.algo.SHA1 = l.extend({ _doReset: function () { this._hash = new m.init([1732584193, 4023233417, 2562383102, 271733878, 3285377520]) }, _doProcessBlock: function (n, p) { for (var a = this._hash.words, e = a[0], f = a[1], h = a[2], j = a[3], b = a[4], c = 0; 80 > c; c++) { if (16 > c) d[c] = n[p + c] | 0; else { var g = d[c - 3] ^ d[c - 8] ^ d[c - 14] ^ d[c - 16]; d[c] = g << 1 | g >>> 31 } g = (e << 5 | e >>> 27) + b + d[c]; g = 20 > c ? g + ((f & h | ~f & j) + 1518500249) : 40 > c ? g + ((f ^ h ^ j) + 1859775393) : 60 > c ? g + ((f & h | f & j | h & j) - 1894007588) : g + ((f ^ h ^ j) - 899497514); b = j; j = h; h = f << 30 | f >>> 2; f = e; e = g } a[0] = a[0] + e | 0; a[1] = a[1] + f | 0; a[2] = a[2] + h | 0; a[3] = a[3] + j | 0; a[4] = a[4] + b | 0 }, _doFinalize: function () { var b = this._data, d = b.words, a = 8 * this._nDataBytes, e = 8 * b.sigBytes; d[e >>> 5] |= 128 << 24 - e % 32; d[(e + 64 >>> 9 << 4) + 14] = Math.floor(a / 4294967296); d[(e + 64 >>> 9 << 4) + 15] = a; b.sigBytes = 4 * d.length; this._process(); return this._hash }, clone: function () { var b = l.clone.call(this); b._hash = this._hash.clone(); return b } }); k.SHA1 = l._createHelper(b); k.HmacSHA1 = l._createHmacHelper(b) })();
+(function (k) { for (var g = CryptoJS, h = g.lib, v = h.WordArray, j = h.Hasher, h = g.algo, s = [], t = [], u = function (q) { return 4294967296 * (q - (q | 0)) | 0 }, l = 2, b = 0; 64 > b;) { var d; a: { d = l; for (var w = k.sqrt(d), r = 2; r <= w; r++) if (!(d % r)) { d = !1; break a } d = !0 } d && (8 > b && (s[b] = u(k.pow(l, 0.5))), t[b] = u(k.pow(l, 1 / 3)), b++); l++ } var n = [], h = h.SHA256 = j.extend({ _doReset: function () { this._hash = new v.init(s.slice(0)) }, _doProcessBlock: function (q, h) { for (var a = this._hash.words, c = a[0], d = a[1], b = a[2], k = a[3], f = a[4], g = a[5], j = a[6], l = a[7], e = 0; 64 > e; e++) { if (16 > e) n[e] = q[h + e] | 0; else { var m = n[e - 15], p = n[e - 2]; n[e] = ((m << 25 | m >>> 7) ^ (m << 14 | m >>> 18) ^ m >>> 3) + n[e - 7] + ((p << 15 | p >>> 17) ^ (p << 13 | p >>> 19) ^ p >>> 10) + n[e - 16] } m = l + ((f << 26 | f >>> 6) ^ (f << 21 | f >>> 11) ^ (f << 7 | f >>> 25)) + (f & g ^ ~f & j) + t[e] + n[e]; p = ((c << 30 | c >>> 2) ^ (c << 19 | c >>> 13) ^ (c << 10 | c >>> 22)) + (c & d ^ c & b ^ d & b); l = j; j = g; g = f; f = k + m | 0; k = b; b = d; d = c; c = m + p | 0 } a[0] = a[0] + c | 0; a[1] = a[1] + d | 0; a[2] = a[2] + b | 0; a[3] = a[3] + k | 0; a[4] = a[4] + f | 0; a[5] = a[5] + g | 0; a[6] = a[6] + j | 0; a[7] = a[7] + l | 0 }, _doFinalize: function () { var d = this._data, b = d.words, a = 8 * this._nDataBytes, c = 8 * d.sigBytes; b[c >>> 5] |= 128 << 24 - c % 32; b[(c + 64 >>> 9 << 4) + 14] = k.floor(a / 4294967296); b[(c + 64 >>> 9 << 4) + 15] = a; d.sigBytes = 4 * b.length; this._process(); return this._hash }, clone: function () { var b = j.clone.call(this); b._hash = this._hash.clone(); return b } }); g.SHA256 = j._createHelper(h); g.HmacSHA256 = j._createHmacHelper(h) })(Math);
+(function () { var c = CryptoJS, k = c.enc.Utf8; c.algo.HMAC = c.lib.Base.extend({ init: function (a, b) { a = this._hasher = new a.init; "string" == typeof b && (b = k.parse(b)); var c = a.blockSize, e = 4 * c; b.sigBytes > e && (b = a.finalize(b)); b.clamp(); for (var f = this._oKey = b.clone(), g = this._iKey = b.clone(), h = f.words, j = g.words, d = 0; d < c; d++) h[d] ^= 1549556828, j[d] ^= 909522486; f.sigBytes = g.sigBytes = e; this.reset() }, reset: function () { var a = this._hasher; a.reset(); a.update(this._iKey) }, update: function (a) { this._hasher.update(a); return this }, finalize: function (a) { var b = this._hasher; a = b.finalize(a); b.reset(); return b.finalize(this._oKey.clone().concat(a)) } }) })();
+(function () { var h = CryptoJS, j = h.lib.WordArray; h.enc.Base64 = { stringify: function (b) { var e = b.words, f = b.sigBytes, c = this._map; b.clamp(); b = []; for (var a = 0; a < f; a += 3) for (var d = (e[a >>> 2] >>> 24 - 8 * (a % 4) & 255) << 16 | (e[a + 1 >>> 2] >>> 24 - 8 * ((a + 1) % 4) & 255) << 8 | e[a + 2 >>> 2] >>> 24 - 8 * ((a + 2) % 4) & 255, g = 0; 4 > g && a + 0.75 * g < f; g++) b.push(c.charAt(d >>> 6 * (3 - g) & 63)); if (e = c.charAt(64)) for (; b.length % 4;) b.push(e); return b.join("") }, parse: function (b) { var e = b.length, f = this._map, c = f.charAt(64); c && (c = b.indexOf(c), -1 != c && (e = c)); for (var c = [], a = 0, d = 0; d < e; d++) if (d % 4) { var g = f.indexOf(b.charAt(d - 1)) << 2 * (d % 4), h = f.indexOf(b.charAt(d)) >>> 6 - 2 * (d % 4); c[a >>> 2] |= (g | h) << 24 - 8 * (a % 4); a++ } return j.create(c, a) }, _map: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=" } })();
+
+hawk.crypto.internals = CryptoJS;
+
+
+// Export if used as a module
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = hawk;
+}
+
+// $lab:coverage:on$
+
+},{}],54:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -16205,7 +16883,7 @@ try {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],54:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 'use strict';
 
 var asap = require('asap')
@@ -16312,7 +16990,7 @@ function doResolve(fn, onFulfilled, onRejected) {
   }
 }
 
-},{"asap":56}],55:[function(require,module,exports){
+},{"asap":57}],56:[function(require,module,exports){
 'use strict';
 
 //This file contains then/promise specific extensions to the core promise API
@@ -16494,7 +17172,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 }
 
-},{"./core.js":54,"asap":56}],56:[function(require,module,exports){
+},{"./core.js":55,"asap":57}],57:[function(require,module,exports){
 (function (process){
 
 // Use the fastest possible means to execute a task in a future turn
@@ -16611,7 +17289,7 @@ module.exports = asap;
 
 
 }).call(this,require('_process'))
-},{"_process":31}],57:[function(require,module,exports){
+},{"_process":31}],58:[function(require,module,exports){
 var hawk = require('hawk');
 var extend = require('./lib/extend');
 
@@ -16655,7 +17333,7 @@ module.exports = function addHawk (superagent) {
 
   return superagent;
 };
-},{"./lib/extend":58,"hawk":59}],58:[function(require,module,exports){
+},{"./lib/extend":59,"hawk":60}],59:[function(require,module,exports){
 // shamelessly borrowed from https://github.com/segmentio/extend
 
 module.exports = function extend (object) {
@@ -16672,9 +17350,9 @@ module.exports = function extend (object) {
 
     return object;
 };
-},{}],59:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 module.exports = require('./lib');
-},{"./lib":62}],60:[function(require,module,exports){
+},{"./lib":63}],61:[function(require,module,exports){
 // Load modules
 
 var Url = require('url');
@@ -17043,7 +17721,7 @@ exports.message = function (host, port, message, options) {
 
 
 
-},{"./crypto":61,"./utils":64,"cryptiles":67,"hoek":69,"url":49}],61:[function(require,module,exports){
+},{"./crypto":62,"./utils":65,"cryptiles":68,"hoek":70,"url":49}],62:[function(require,module,exports){
 // Load modules
 
 var Crypto = require('crypto');
@@ -17156,7 +17834,7 @@ exports.calculateTsMac = function (ts, credentials) {
 };
 
 
-},{"./utils":64,"crypto":14,"url":49}],62:[function(require,module,exports){
+},{"./utils":65,"crypto":14,"url":49}],63:[function(require,module,exports){
 // Export sub-modules
 
 exports.error = exports.Error = require('boom');
@@ -17173,7 +17851,7 @@ exports.uri = {
 
 
 
-},{"./client":60,"./crypto":61,"./server":63,"./utils":64,"boom":65,"sntp":72}],63:[function(require,module,exports){
+},{"./client":61,"./crypto":62,"./server":64,"./utils":65,"boom":66,"sntp":73}],64:[function(require,module,exports){
 // Load modules
 
 var Boom = require('boom');
@@ -17699,7 +18377,7 @@ exports.authenticateMessage = function (host, port, message, authorization, cred
     });
 };
 
-},{"./crypto":61,"./utils":64,"boom":65,"cryptiles":67,"hoek":69}],64:[function(require,module,exports){
+},{"./crypto":62,"./utils":65,"boom":66,"cryptiles":68,"hoek":70}],65:[function(require,module,exports){
 (function (__dirname){
 // Load modules
 
@@ -17886,9 +18564,9 @@ exports.unauthorized = function (message) {
 
 
 }).call(this,"/node_modules/superagent-hawk/node_modules/hawk/lib")
-},{"boom":65,"hoek":69,"sntp":72}],65:[function(require,module,exports){
-arguments[4][59][0].apply(exports,arguments)
-},{"./lib":66}],66:[function(require,module,exports){
+},{"boom":66,"hoek":70,"sntp":73}],66:[function(require,module,exports){
+arguments[4][60][0].apply(exports,arguments)
+},{"./lib":67}],67:[function(require,module,exports){
 // Load modules
 
 var Http = require('http');
@@ -18097,9 +18775,9 @@ internals.Boom.passThrough = function (code, payload, contentType, headers) {
 
 
 
-},{"hoek":69,"http":25,"util":51}],67:[function(require,module,exports){
-arguments[4][59][0].apply(exports,arguments)
-},{"./lib":68}],68:[function(require,module,exports){
+},{"hoek":70,"http":25,"util":51}],68:[function(require,module,exports){
+arguments[4][60][0].apply(exports,arguments)
+},{"./lib":69}],69:[function(require,module,exports){
 // Load modules
 
 var Crypto = require('crypto');
@@ -18169,9 +18847,9 @@ exports.fixedTimeComparison = function (a, b) {
 
 
 
-},{"boom":65,"crypto":14}],69:[function(require,module,exports){
-arguments[4][59][0].apply(exports,arguments)
-},{"./lib":71}],70:[function(require,module,exports){
+},{"boom":66,"crypto":14}],70:[function(require,module,exports){
+arguments[4][60][0].apply(exports,arguments)
+},{"./lib":72}],71:[function(require,module,exports){
 (function (Buffer){
 // Declare internals
 
@@ -18306,7 +18984,7 @@ internals.safeCharCodes = (function () {
     return safe;
 }());
 }).call(this,require("buffer").Buffer)
-},{"buffer":8}],71:[function(require,module,exports){
+},{"buffer":8}],72:[function(require,module,exports){
 (function (process,Buffer){
 // Load modules
 
@@ -18895,9 +19573,9 @@ exports.nextTick = function (callback) {
 };
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"./escape":70,"_process":31,"buffer":8,"fs":4}],72:[function(require,module,exports){
-arguments[4][59][0].apply(exports,arguments)
-},{"./lib":73}],73:[function(require,module,exports){
+},{"./escape":71,"_process":31,"buffer":8,"fs":4}],73:[function(require,module,exports){
+arguments[4][60][0].apply(exports,arguments)
+},{"./lib":74}],74:[function(require,module,exports){
 (function (process,Buffer){
 // Load modules
 
@@ -19310,7 +19988,7 @@ exports.now = function () {
 
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"_process":31,"buffer":8,"dgram":4,"dns":4,"hoek":69}],74:[function(require,module,exports){
+},{"_process":31,"buffer":8,"dgram":4,"dns":4,"hoek":70}],75:[function(require,module,exports){
 /**
  * Promise wrapper for superagent
  */
@@ -19411,7 +20089,7 @@ request.put = function(url, data) {
 // Export the request builder
 module.exports = request;
 
-},{"promise":55,"superagent":75}],75:[function(require,module,exports){
+},{"promise":56,"superagent":76}],76:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -20462,7 +21140,7 @@ request.put = function(url, data, fn){
 
 module.exports = request;
 
-},{"emitter":76,"reduce":77}],76:[function(require,module,exports){
+},{"emitter":77,"reduce":78}],77:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -20628,7 +21306,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],77:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 
 /**
  * Reduce `arr` with `fn`.

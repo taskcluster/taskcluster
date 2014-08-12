@@ -265,7 +265,7 @@ module.exports = {
             "runId",
             "name"
           ],
-          "name": "getArtifactFromRun",
+          "name": "getArtifact",
           "title": "Get Artifact from Run",
           "description": "TODO: document this method",
           "scopes": [
@@ -282,7 +282,7 @@ module.exports = {
             "taskId",
             "name"
           ],
-          "name": "getLatestArtifact",
+          "name": "getLastestArtifact",
           "title": "Get Artifact from Latest Run",
           "description": "TODO: document this method",
           "scopes": [
@@ -299,7 +299,7 @@ module.exports = {
             "taskId",
             "runId"
           ],
-          "name": "getArtifactsFromRun",
+          "name": "listArtifacts",
           "title": "Get Artifacts from Run",
           "description": "TODO: document this method"
         },
@@ -310,7 +310,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
-          "name": "getLatestArtifacts",
+          "name": "listLatestArtifacts",
           "title": "Get Artifacts from Latest Run",
           "description": "TODO: document this method"
         },
