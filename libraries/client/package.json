@@ -18,7 +18,7 @@
     "superagent":                       "0.18.2",
     "superagent-promise":               "0.1.2",
     "superagent-hawk":                  "0.0.3",
-    "amqplib":                          "0.2.0",
+    "amqplib":                          "0.2.1",
     "slugid":                           "1.0.1",
     "promise":                          "5.0.0",
     "hawk":                             "2.2.3"
@@ -27,7 +27,7 @@
     "mocha":                            "1.18.2",
     "commander":                        "2.2.0",
     "cliff":                            "0.1.8",
-    "taskcluster-base":                 "0.3.8",
+    "taskcluster-base":                 "0.4.1",
     "browserify":                       "5.9.1",
     "mocha-phantomjs":                  "3.5.0"
   }

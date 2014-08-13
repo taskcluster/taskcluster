@@ -60,7 +60,7 @@ var listener = new taskcluster.Listener({
 var queueEvents = new taskcluster.QueueEvents();
 
 // Bind to task-completed events from queue that matches routing key pattern:
-//   '<myTaskId>.*.*.*.*.*.#'
+//   'primary.<myTaskId>.*.*.*.*.*.#'
 listener.bind(queueEvents.taskCompleted({taskId: '<myTaskId>'}));
 
 // Listen for messages
@@ -80,8 +80,21 @@ listener.resume().then(function() {
 });
 ```
 
+To bind to a custom routing-key like the task-specific routes that messages
+from the queue is CC'ed to, just provide the desired routing key to the
+method for exchange. See example below.
+
+```js
+var RawRoutingPattern = 'route.task.specific.routing.key';
+listener.bind(queueEvents.taskCompleted(RawRoutingPattern);
+```
+
+
+## Advanced Listening
+
 For advanced queue usage the `connect` method can be used to
-create and bind the queue and return an associated [amqplib] channel:
+create and bind the queue and return an associated
+[amqplib](http://www.squaremobius.net/amqp.node/doc/channel_api.html) channel:
 
 ```js
 var taskcluster = require('taskcluster-client');
