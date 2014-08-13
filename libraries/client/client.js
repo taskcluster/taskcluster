@@ -154,19 +154,29 @@ exports.createClient = function(reference) {
 
         // Construct routingkey pattern as string from reference
         routingKeyPattern = entry.routingKey.map(function(key) {
+          // Get value for key
           var value = routingKeyPattern[key.name];
+          // Routing key constant entries cannot be modified
+          if (key.constant) {
+            value =  key.constant;
+          }
+          // If number convert to string
           if (typeof(value) === 'number') {
             return '' + value;
           }
+          // Validate string and return
           if (typeof(value) === 'string') {
+            // Check for multiple words
             assert(key.multipleWords || value.indexOf('.') === -1,
                    "routingKey pattern '" + value + "' for " + key.name +
                    " cannot contain dots as it does not hold multiple words");
             return value;
           }
+          // Check that we haven't got an invalid value
           assert(value === null || value === undefined,
                 "Value: '" + value + "' is not supported as routingKey "+
                 "pattern for " + key.name);
+          // Return default pattern for entry not being matched
           return key.multipleWords ? '#' : '*';
         }).join('.');
       }

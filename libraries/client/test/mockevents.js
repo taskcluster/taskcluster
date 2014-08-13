@@ -14,6 +14,10 @@ exchanges.declare({
   description:        "",
   routingKey: [
     {
+      name:           'const',
+      summary:        "Constant test",
+      constant:       "my-constant"
+    }, {
       name:           'testId',
       summary:        "",
       multipleWords:  false,
@@ -40,8 +44,9 @@ exchanges.declare({
     }
   ],
   schema:             'http://localhost:1203/test-schema.json#',
-  messageBuilder:     function(msg)     { return msg; },
-  routingKeyBuilder:  function(msg, rk) { return rk; }
+  messageBuilder:     function(msg)         { return msg; },
+  routingKeyBuilder:  function(msg, rk)     { return rk; },
+  CCBuilder:          function(msg, rk, cc) { return cc || []; }
 });
 
 // Create validator to validate schema
