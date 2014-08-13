@@ -38,6 +38,13 @@ suite('Report task completed', function() {
 
   test("create, claim and complete (is idempotent)", function() {
     var taskId = slugid.v4();
+    var allowedToCompleteNow = false;
+    var isCompleted = subject.listenFor(subject.queueEvents.taskCompleted({
+      taskId:   taskId
+    })).then(function(message) {
+      assert(allowedToCompleteNow, "Completing at wrong time");
+      return message;
+    });
     debug("### Creating task");
     return subject.queue.createTask(taskId, taskDef).then(function() {
     }).then(function() {
@@ -48,6 +55,7 @@ suite('Report task completed', function() {
         workerId:       'my-worker'
       });
     }).then(function() {
+      allowedToCompleteNow = true;
       debug("### Reporting task completed");
       subject.scopes(
         'queue:report-task-completed',
@@ -55,6 +63,11 @@ suite('Report task completed', function() {
       );
       return subject.queue.reportCompleted(taskId, 0, {
         success:    true
+      });
+    }).then(function() {
+      return isCompleted.then(function(message) {
+        assert(message.payload.status.runs[0].state === 'completed',
+               "Expected message to say it was completed");
       });
     }).then(function() {
       debug("### Reporting task completed (again)");

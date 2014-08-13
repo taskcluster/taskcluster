@@ -826,7 +826,7 @@ api.declare({
 
       // Publish a completed message
       return ctx.publisher.taskCompleted({
-        status:       task.status(),
+        status:       result.status(),
         runId:        runId,
         success:      success,
         workerGroup:  workerGroup,
