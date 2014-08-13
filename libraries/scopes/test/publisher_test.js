@@ -5,6 +5,8 @@ suite("Exchanges.Publisher", function() {
   var fs      = require('fs');
   var debug   = require('debug')('base:test:publisher');
   var Promise = require('promise');
+  var slugid  = require('slugid');
+  var amqplib  = require('amqplib');
 
   // AMQP connection string for localhost in various test setups
   var connectionString = 'amqp://guest:guest@localhost:5672';
@@ -46,11 +48,16 @@ suite("Exchanges.Publisher", function() {
           multipleWords:  false,
           required:       false,
           maxSize:        3
+        }, {
+          name:           'myConstant',
+          summary:        "Some constant to test",
+          constant:       "-constant-"
         }
       ],
       schema:             'http://localhost:1203/exchange-test-schema.json#',
       messageBuilder:     function(msg) { return msg; },
-      routingKeyBuilder:  function(msg, rk) { return rk; }
+      routingKeyBuilder:  function(msg, rk) { return rk; },
+      CCBuilder:          function() {return "something.cced";}
     });
     // Create validator to validate schema
     var validator = new base.validator.Validator();
@@ -167,6 +174,84 @@ suite("Exchanges.Publisher", function() {
     }, function(err) {
       // Expected an error
       debug("Got expected Error: %s, %j", err, err);
+    });
+  });
+
+  // Test that we can publish messages and get them again
+  test("publish message (and receive)", function() {
+    var conn, channel, queue = slugid.v4();
+    var messages = [];
+    return amqplib.connect(connectionString).then(function(conn_) {
+      conn = conn_;
+      return conn.createConfirmChannel();
+    }).then(function(channel_) {
+      channel = channel_;
+      return channel.assertQueue(queue, {
+        exclusive:  true,
+        durable:    false,
+        autoDelete: true,
+      });
+    }).then(function() {
+      return Promise.all([
+        channel.bindQueue(queue, 'test-exchange', 'myid.#')
+      ]);
+    }).then(function() {
+      return channel.consume(queue, function(msg) {
+        msg.content = JSON.parse(msg.content.toString());
+        //console.log(JSON.stringify(msg, null, 2));
+        messages.push(msg);
+      });
+    }).then(function() {
+      return exchanges.connect().then(function(publisher) {
+        return publisher.testExchange({someString: "My message"}, {
+          testId:           "myid",
+          taskRoutingKey:   "some.string.with.dots",
+          state:            undefined // Optional
+        });
+      });
+    }).then(function() {
+      return new Promise(function(accept) {setTimeout(accept, 300);});
+    }).then(function() {
+      assert(messages.length === 1, "Didn't get exactly one message");
+    });
+  });
+
+  // Test that we can publish messages and get them again
+  test("publish message (and receive by CC)", function() {
+    var conn, channel, queue = slugid.v4();
+    var messages = [];
+    return amqplib.connect(connectionString).then(function(conn_) {
+      conn = conn_;
+      return conn.createConfirmChannel();
+    }).then(function(channel_) {
+      channel = channel_;
+      return channel.assertQueue(queue, {
+        exclusive:  true,
+        durable:    false,
+        autoDelete: true,
+      });
+    }).then(function() {
+      return Promise.all([
+        channel.bindQueue(queue, 'test-exchange', 'something.cced')
+      ]);
+    }).then(function() {
+      return channel.consume(queue, function(msg) {
+        msg.content = JSON.parse(msg.content.toString());
+        //console.log(JSON.stringify(msg, null, 2));
+        messages.push(msg);
+      });
+    }).then(function() {
+      return exchanges.connect().then(function(publisher) {
+        return publisher.testExchange({someString: "My message"}, {
+          testId:           "myid",
+          taskRoutingKey:   "some.string.with.dots",
+          state:            undefined // Optional
+        });
+      });
+    }).then(function() {
+      return new Promise(function(accept) {setTimeout(accept, 300);});
+    }).then(function() {
+      assert(messages.length === 1, "Didn't get exactly one message");
     });
   });
 });
