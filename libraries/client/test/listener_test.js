@@ -75,6 +75,117 @@ suite('listener', function() {
     return Promise.all([published, result]);
   });
 
+  // Bind and listen with listener (for CC)
+  test('bind and listen (for CC)', function() {
+    this.timeout(1500);
+
+    // Create listener
+    var listener = new taskcluster.Listener({
+      connectionString:     mockEvents.connectionString
+    });
+    listener.bind({
+      exchange: 'taskcluster-client/test/test-exchange',
+      routingKeyPattern: 'route.test'
+    });
+
+    var result = new Promise(function(accept, reject) {
+      listener.on('message', function(message) {
+        assert(message.payload.text == "my message");
+        setTimeout(function() {
+          listener.close().then(accept, reject)
+        }, 200);
+      });
+      listener.on('error', function(err) {
+        reject(err);
+      });
+    });
+
+    var published = listener.resume().then(function() {
+      return _publisher.testExchange({
+        text:           "my message"
+      }, {
+        testId:         'test',
+        taskRoutingKey: 'hello.world'
+      }, ['route.test']);
+    });
+
+    return Promise.all([published, result]);
+  });
+
+  // Bind and listen with listener (manual routing key)
+  test('bind and listen (manual constant routing key)', function() {
+    this.timeout(1500);
+
+    // Create listener
+    var listener = new taskcluster.Listener({
+      connectionString:     mockEvents.connectionString
+    });
+    listener.bind({
+      exchange: 'taskcluster-client/test/test-exchange',
+      routingKeyPattern: 'my-constant.#'
+    });
+
+    var result = new Promise(function(accept, reject) {
+      listener.on('message', function(message) {
+        assert(message.payload.text == "my message");
+        setTimeout(function() {
+          listener.close().then(accept, reject)
+        }, 200);
+      });
+      listener.on('error', function(err) {
+        reject(err);
+      });
+    });
+
+    var published = listener.resume().then(function() {
+      return _publisher.testExchange({
+        text:           "my message"
+      }, {
+        testId:         'test',
+        taskRoutingKey: 'hello.world'
+      });
+    });
+
+    return Promise.all([published, result]);
+  });
+
+  // Bind and listen with listener and non-match routing
+  test('bind and listen (without wrong routing key)', function() {
+    this.timeout(1500);
+
+    // Create listener
+    var listener = new taskcluster.Listener({
+      connectionString:     mockEvents.connectionString
+    });
+    listener.bind({
+      exchange: 'taskcluster-client/test/test-exchange',
+      routingKeyPattern: 'another.routing.key'
+    });
+
+    var result = new Promise(function(accept, reject) {
+      listener.on('message', function(message) {
+        reject(new Error("Didn't expect message"));
+      });
+      listener.on('error', function(err) {
+        reject(err);
+      });
+      setTimeout(accept, 500);
+    }).then(function() {
+      return listener.close();
+    });
+
+    var published = listener.resume().then(function() {
+      return _publisher.testExchange({
+        text:           "my message"
+      }, {
+        testId:         'test',
+        taskRoutingKey: 'hello.world'
+      }, ['route.test']);
+    });
+
+    return Promise.all([published, result]);
+  });
+
   // Test that routing key can be parsed if proper information is provided
   test('parse routing key', function() {
     this.timeout(1500);
