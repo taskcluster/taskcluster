@@ -113,7 +113,7 @@ Reaper.prototype.reap = function() {
       }
 
       // Publish message
-      return that._publisher.taskFailed(message, task.routing);
+      return that._publisher.taskFailed(message, task.routes);
     }));
   });
 
@@ -137,7 +137,7 @@ Reaper.prototype.reap = function() {
       }
 
       // Publish message
-      return that._publisher.taskFailed(message, task.routing);
+      return that._publisher.taskFailed(message, task.routes);
     }));
   });
 
@@ -151,7 +151,7 @@ Reaper.prototype.reap = function() {
       return that._publisher.taskPending({
         status:     task.status(),
         runId:      _.last(task.runs).runId
-      }, task.routing);
+      }, task.routes);
     }));
   });
 
