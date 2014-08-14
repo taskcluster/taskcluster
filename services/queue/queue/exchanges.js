@@ -1,4 +1,5 @@
 var base      = require('taskcluster-base');
+var assert    = require('assert');
 
 // Common schema prefix
 var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
@@ -112,11 +113,6 @@ var buildCommonRoutingKey = function(options) {
     }, {
       name:             'schedulerId',
       summary:          "`schedulerId` this task was created by.",
-      required:         true,
-      maxSize:          22
-    }, {
-      name:             'taskGroupId',
-      summary:          "`taskGroupId` this task was created in.",
       required:         true,
       maxSize:          22
     }, {

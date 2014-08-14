@@ -61,12 +61,14 @@ var RUN_FIELDS = [
 var TASK_DATE_FIELDS  = ['created', 'deadline'];
 var RUN_DATE_FIELDS   = ['takenUntil', 'scheduled', 'started', 'resolved'];
 
+var TASK_JSON_FIELDS  = ['routes'];
 
 /** Create database instance */
 var Task = function(rowInfo) {
   _.assign(this, rowInfo.taskRow);
   this.taskId       = slugid.encode(this.taskId);
   this.taskGroupId  = slugid.encode(this.taskGroupId);
+  this.routes       = JSON.parse(this.routes);
   this.runs         = _.sortBy(rowInfo.runRows, 'runId');
   this.runs.forEach(function(run) {
     run.taskId = slugid.encode(run.taskId);
@@ -153,7 +155,7 @@ Task.ensureTables = function() {
         table.integer('retriesLeft').notNullable();
 
         // Task-specific routes
-        table.json('routes').notNullable();
+        table.text('routes').notNullable();
 
         // Meta-data possibly for authentication
         table.string('owner', 255).notNullable();
@@ -242,6 +244,9 @@ var loadTaskInfo = function(taskInfo) {
     if (taskRow[field] !== null && taskRow[field] !== undefined) {
       taskRow[field] = new Date(taskRow[field]);
     }
+  });
+  TASK_JSON_FIELDS.forEach(function(field) {
+    taskRow[field] = JSON.stringify(taskRow[field]);
   });
   // Decode slugid to uuids
   var taskId = taskRow.taskId = deslug(taskInfo.taskId);
