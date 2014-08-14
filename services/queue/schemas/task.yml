@@ -138,7 +138,7 @@ required:
   - workerType
   - schedulerId
   - taskGroupId
-  - routing
+  - routes
   - retries
   - priority
   - created

@@ -27,7 +27,7 @@ suite('Post artifacts', function() {
     workerType:       'my-worker',
     schedulerId:      'my-scheduler',
     taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
-    routing:          "jonasfj-test.what-a-hack",
+    routes:           [],
     retries:          5,
     priority:         1,
     created:          created.toJSON(),

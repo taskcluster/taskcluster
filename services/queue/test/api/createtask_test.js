@@ -19,8 +19,11 @@ suite('Create task', function() {
     schedulerId:      'my-scheduler',
     taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
     // let's just test a large routing key too, 90 chars please :)
-    routing:          "jonasfj.what-a-hack.I suppose we might actually need " +
-                      "it when we add taskgraph scheduler...",
+    routes:           ["--- long routing key ---.--- long routing key ---." +
+                       "--- long routing key ---.--- long routing key ---." +
+                       "--- long routing key ---.--- long routing key ---." +
+                       "--- long routing key ---.--- long routing key ---." +
+                       "--- long routing key ---.--- long routing key ---"],
     retries:          5,
     priority:         1,
     created:          created.toJSON(),
@@ -47,7 +50,10 @@ suite('Create task', function() {
       taskId:   taskId
     }));
 
-    subject.scopes('queue:create-task:my-provisioner/my-worker');
+    subject.scopes(
+      'queue:create-task:my-provisioner/my-worker',
+      'queue:route:*'
+    );
     return subject.queue.createTask(taskId, taskDef).then(function(result) {
       return isDefined.then(function(message) {
         assert(_.isEqual(result.status, message.payload.status),
@@ -67,7 +73,10 @@ suite('Create task', function() {
 
   test("createTask (without required scopes)", function() {
     var taskId = slugid.v4();
-    subject.scopes('queue:create-task:my-provisioner/another-worker');
+    subject.scopes(
+      'queue:create-task:my-provisioner/another-worker',
+      'queue:route:wrong-route'
+    );
     return subject.queue.createTask(taskId, taskDef).then(function() {
       assert(false, "Expected an authentication error");
     }, function(err) {
@@ -100,7 +109,10 @@ suite('Create task', function() {
       taskId:   taskId
     }));
 
-    subject.scopes('queue:define-task:my-provisioner/my-worker');
+    subject.scopes(
+      'queue:define-task:my-provisioner/my-worker',
+      'queue:route:---*'
+    );
     return subject.queue.defineTask(taskId, taskDef).then(function() {
       return isDefined;
     }).then(function() {
