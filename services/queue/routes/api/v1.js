@@ -153,11 +153,22 @@ api.declare({
   deferAuth:  true,
   input:      SCHEMA_PREFIX_CONST + 'task.json#',
   output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
-  title:      "Create new task",
+  title:      "Create New Task",
   description: [
     "Create a new task, this is an **idempotent** operation, so repeat it if",
-    "you get an internal server error.",
-    "Deadline is at most 7 days into the future"
+    "you get an internal server error or network connection is dropped.",
+    "",
+    "**Task `deadline´**, the deadline property can be no more than 7 days",
+    "into the future. This is to limit the amount of pending tasks not being",
+    "taken care of. Ideally, you should use a much shorter deadline.",
+    "",
+    "**Task-Specific Routing-Keys**, using the `task.routing` property you may",
+    "defined task-specific routing-keys. If a task has a task-specific ",
+    "routing-key: `<route>`, then the poster will be required to posses the",
+    "scope `queue:route:<route>`. And when the an AMQP message about the task",
+    "is published the message will be CC'ed with the routing-key: ",
+    "`route.<route>`. This is useful if you want another component to listen",
+    "for completed tasks you have posted."
   ].join('\n')
 }, function(req, res) {
   // Validate parameters
@@ -169,12 +180,18 @@ api.declare({
   var taskId  = req.params.taskId;
   var taskDef = req.body;
 
+  // Find scopes required for task-specific routes
+  var routeScopes = taskDef.routes.map(function(route) {
+    return 'queue:route:' + route;
+  });
+
   // Authenticate request by providing parameters, and then validate that the
   // requester satisfies all the scopes assigned to the task
-  if(!req.satisfies({
+  if (!req.satisfies({
     provisionerId:  taskDef.provisionerId,
     workerType:     taskDef.workerType
-  }) || ! req.satisfies([taskDef.scopes])) {
+  }) || !req.satisfies([taskDef.scopes])
+     || !req.satisfies([routeScopes])) {
     return;
   }
 
@@ -208,7 +225,7 @@ api.declare({
       created:        taskDef.created,
       deadline:       taskDef.deadline,
       retriesLeft:    taskDef.retries,
-      routing:        taskDef.routing,
+      routes:         taskDef.routes,
       owner:          taskDef.metadata.owner,
       runs: [
         {
@@ -222,12 +239,12 @@ api.declare({
       // Publish message about a defined task
       return ctx.publisher.taskDefined({
         status:         task.status()
-      }, task.routing).then(function() {
+      }, task.routes).then(function() {
         // Publish message about a pending task
         return ctx.publisher.taskPending({
           status:         task.status(),
           runId:          _.last(task.runs).runId
-        }, task.routing);
+        }, task.routes);
       }).then(function() {
         // Reply to caller
         debug("New task created: %s", taskId);
@@ -325,12 +342,18 @@ api.declare({
   var taskId  = req.params.taskId;
   var taskDef = req.body;
 
+  // Find scopes required for task-specific routes
+  var routeScopes = taskDef.routes.map(function(route) {
+    return 'queue:route:' + route;
+  });
+
   // Authenticate request by providing parameters, and then validate that the
   // requester satisfies all the scopes assigned to the task
   if(!req.satisfies({
     provisionerId:  taskDef.provisionerId,
     workerType:     taskDef.workerType
-  }) || ! req.satisfies([taskDef.scopes])) {
+  }) || !req.satisfies([taskDef.scopes])
+     || !req.satisfies([routeScopes])) {
     return;
   }
 
@@ -364,7 +387,7 @@ api.declare({
       created:        taskDef.created,
       deadline:       taskDef.deadline,
       retriesLeft:    taskDef.retries,
-      routing:        taskDef.routing,
+      routes:         taskDef.routes,
       owner:          taskDef.metadata.owner,
       runs:           []
     }, true);
@@ -372,7 +395,7 @@ api.declare({
     // Publish message about a defined task
     return ctx.publisher.taskDefined({
       status:         task.status()
-    }, task.routing).then(function() {
+    }, task.routes).then(function() {
       // Reply to caller
       debug("New task defined: %s", taskId);
       return res.reply({
@@ -450,7 +473,7 @@ api.declare({
       return announced = ctx.publisher.taskPending({
         status:     task.status(),
         runId:      _.last(task.runs).runId
-      }, task.routing).then(function() {
+      }, task.routes).then(function() {
         // Wait for announcement to be completed, then reply to caller
         res.reply({
           status:     task.status()
@@ -586,7 +609,7 @@ api.declare({
         runId:        runId,
         takenUntil:   takenUntil.toJSON(),
         status:       result.status()
-      }, result.routing).then(function() {
+      }, result.routes).then(function() {
         // Reply to caller
         return res.reply({
           workerGroup:  workerGroup,
@@ -750,7 +773,7 @@ api.declare({
       runId:        runId,
       takenUntil:   takenUntil.toJSON(),
       status:       result.status()
-    }, result.routing).then(function() {
+    }, result.routes).then(function() {
       // Reply to caller
       return res.reply({
         workerGroup:  workerGroup,
@@ -831,7 +854,7 @@ api.declare({
         success:      success,
         workerGroup:  workerGroup,
         workerId:     workerId
-      }, task.routing).then(function() {
+      }, task.routes).then(function() {
         return res.reply({
           status:   result.status()
         });
@@ -918,7 +941,7 @@ api.declare({
       return ctx.publisher.taskPending({
         status:     result.status(),
         runId:      _.last(result.runs).runId
-      }, result.routing).then(function() {
+      }, result.routes).then(function() {
         // Reply to caller
         return res.reply({
           status:     result.status()
