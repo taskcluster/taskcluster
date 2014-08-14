@@ -31,7 +31,7 @@
     "debug": "^1.0.2",
     "dockerode": "^2.0.0",
     "dockerode-options": "^0.1.0",
-    "dockerode-process": "^0.5.0",
+    "dockerode-process": "^0.5.1",
     "dockerode-promise": "0.0.1",
     "jayschema": "^0.2.7",
     "middleware-object-hooks": "0.0.3",
