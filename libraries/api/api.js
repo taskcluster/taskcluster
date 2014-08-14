@@ -12,6 +12,7 @@ var fs            = require('fs');
 require('superagent-hawk')(require('superagent'));
 var request       = require('superagent-promise');
 var Validator     = require('./validator').Validator;
+var utils         = require('./utils');
 
 /**
  * Declare {input, output} schemas as options to validate
@@ -98,45 +99,10 @@ var Client = function(options) {
   this.scopes       = options.scopes;
 };
 
-/** Normalize scope sets */
-var normalizeScopeSets = function(scopesets) {
-  if (typeof(scopesets) == 'string') {
-    scopesets = [[scopesets]];
-  }
-  return scopesets.map(function(scopeset) {
-    if (typeof(scopeset) == 'string') {
-      return [scopeset];
-    }
-    return scopeset;
-  });
-};
-
-/** Auxiliary function to check if scopePatterns satisfies a scope-set */
-var scopeIntersect = function(scopePatterns, scopesets) {
-  var scopesets = normalizeScopeSets(scopesets);
-  if (typeof(scopePatterns) == 'string') {
-    scopePatterns = [scopePatterns];
-  }
-  assert(scopesets instanceof Array, "scopesets must be a string or an array");
-  return scopesets.some(function(scopeset) {
-    assert(scopesets instanceof Array, "scopeset must be a string or an array");
-    return scopeset.every(function(scope) {
-      return scopePatterns.some(function(pattern) {
-        if (scope === pattern) {
-          return true;
-        }
-        if (/\*$/.test(pattern)) {
-          return scope.indexOf(pattern.slice(0, -1)) === 0;
-        }
-        return false;
-      });
-    });
-  });
-}
 
 /** Check if the client satisfies any of the given scope-sets */
 Client.prototype.satisfies = function(scopesets) {
-  return scopeIntersect(this.scopes, scopesets);
+  return utils.scopeMatch(this.scopes, scopesets);
 };
 
 /** Check if client credentials are expired */
@@ -354,7 +320,7 @@ var authenticate = function(nonceManager, clientLoader, options) {
             // the scopes provided by clientLoader... This feature is used
             // when taskcluster components executes operations on behalf of
             // others who has a small set of scopes.
-            if (scopeIntersect(authorizedScopes, [ext.authorizedScopes])) {
+            if (utils.scopeMatch(authorizedScopes, [ext.authorizedScopes])) {
               // Allow the rest of the request to authenticated with a
               // limited set of scopes
               authorizedScopes = ext.authorizedScopes;
@@ -415,7 +381,7 @@ var authenticate = function(nonceManager, clientLoader, options) {
         }
 
         // Test that we have scope intersection, and hence, is authorized
-        var retval = scopeIntersect(authorizedScopes, scopesets);
+        var retval = utils.scopeMatch(authorizedScopes, scopesets);
         if (!retval && !noReply) {
           res.status(401).json({
             message:  "Authorization Failed",
@@ -702,7 +668,7 @@ API.prototype.reference = function(options) {
         description:    entry.description
       };
       if (entry.scopes) {
-        retval.scopes = normalizeScopeSets(entry.scopes);
+        retval.scopes = utils.normalizeScopeSets(entry.scopes);
       }
       if (entry.input) {
         retval.input  = entry.input;
