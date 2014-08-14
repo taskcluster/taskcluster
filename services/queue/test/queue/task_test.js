@@ -61,7 +61,7 @@ suite('queue/task', function() {
       created:        new Date().toJSON(),
       deadline:       new Date().toJSON(),
       retriesLeft:    4,
-      routing:        "my.routing.key",
+      routes:         ["my.routing.key", "another.routing.key"],
       owner:          "jonasfj@mozilla.com",
       runs:           [{
         runId:          0,
@@ -87,7 +87,7 @@ suite('queue/task', function() {
       created:        new Date().toJSON(),
       deadline:       new Date().toJSON(),
       retriesLeft:    4,
-      routing:        "my.routing.key",
+      routes:         ["my.routing.key", "another.routing.key"],
       owner:          "jonasfj@mozilla.com",
       runs:           [{
         runId:          0,
@@ -108,7 +108,7 @@ suite('queue/task', function() {
         created:        new Date().toJSON(),
         deadline:       new Date().toJSON(),
         retriesLeft:    4,
-        routing:        "my.routing.key",
+        routes:         ["my.routing.key", "another.routing.key"],
         owner:          "jonasfj@mozilla.com",
         runs:           [{
           runId:          0,
@@ -136,7 +136,7 @@ suite('queue/task', function() {
       created:        new Date().toJSON(),
       deadline:       new Date().toJSON(),
       retriesLeft:    4,
-      routing:        "my.routing.key",
+      routes:         ["my.routing.key", "another.routing.key"],
       owner:          "jonasfj@mozilla.com",
       runs:           [{
         runId:          0,
@@ -175,7 +175,7 @@ suite('queue/task', function() {
         created:        new Date().toJSON(),
         deadline:       new Date().toJSON(),
         retriesLeft:    4,
-        routing:        "my.routing.key",
+        routes:         ["my.routing.key", "another.routing.key"],
         owner:          "jonasfj@mozilla.com",
         runs:           [{
           runId:          0,
@@ -222,7 +222,7 @@ suite('queue/task', function() {
         created:        new Date().toJSON(),
         deadline:       new Date().toJSON(),
         retriesLeft:    0,
-        routing:        "my.routing.key",
+        routes:         ["my.routing.key", "another.routing.key"],
         owner:          "jonasfj@mozilla.com",
         runs:           [{
           runId:          0,
@@ -270,7 +270,7 @@ suite('queue/task', function() {
         created:        new Date().toJSON(),
         deadline:       deadline.toJSON(),
         retriesLeft:    5,
-        routing:        "my.routing.key",
+        routes:         ["my.routing.key", "another.routing.key"],
         owner:          "jonasfj@mozilla.com",
         runs:           [{
           runId:          0,
@@ -323,7 +323,7 @@ suite('queue/task', function() {
         created:        new Date().toJSON(),
         deadline:       deadline.toJSON(),
         retriesLeft:    5,
-        routing:        "my.routing.key",
+        routes:         ["my.routing.key", "another.routing.key"],
         owner:          "jonasfj@mozilla.com",
         runs:           [{
           runId:          0,
