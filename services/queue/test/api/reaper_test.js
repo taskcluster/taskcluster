@@ -20,7 +20,7 @@ suite('Reaper tests', function() {
       workerType:       'my-worker',
       schedulerId:      'my-scheduler',
       taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
-      routing:          "jonasfj-test.what-a-hack",
+      routes:           [],
       retries:          retries,
       priority:         1,
       created:          created.toJSON(),
