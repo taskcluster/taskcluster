@@ -27,9 +27,11 @@ var TASK_FIELDS = [
   'deadline',
   'retriesLeft',
 
-  // Meta-data for authentication and routing messages
-  'routing',
-  'owner'
+  // Task-specific routes
+  'routes',
+
+  // Meta-data possibly for authentication
+  'owner',
 ];
 
 // Fields on a run
@@ -150,8 +152,10 @@ Task.ensureTables = function() {
         table.timestamp('deadline').notNullable();
         table.integer('retriesLeft').notNullable();
 
-        // Meta-data for authentication and routing messages
-        table.string('routing', 128).notNullable();
+        // Task-specific routes
+        table.json('routes').notNullable();
+
+        // Meta-data possibly for authentication
         table.string('owner', 255).notNullable();
       });
     }).then(function() {
@@ -297,7 +301,7 @@ var transacting = function (f) {
  *   created:            // Date object as JSON
  *   deadline:           // Date object as JSON
  *   retriesLeft:        // Number of retries left
- *   routing:            // routing key from task definition
+ *   routes:             // routes from task definition
  *   owner:              // owner email from task definition
  *   runs: [{
  *     runId:            // RunId starting from 0
@@ -1095,7 +1099,7 @@ Task.prototype.serialize = function() {
     created:        this.created.toJSON(),
     deadline:       this.deadline.toJSON(),
     retriesLeft:    this.retriesLeft,
-    routing:        this.routing,
+    routes:         this.routes,
     owner:          this.owner,
     runs: _.sortBy(this.runs.map(function(run) {
       return {
