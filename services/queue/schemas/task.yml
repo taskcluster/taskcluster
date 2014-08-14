@@ -43,16 +43,16 @@ properties:
     type:           string
     pattern:        {$const: slugid-pattern}
   routes:
-    title:          "Task-Specific Routes"
+    title:          "Task Specific Routes"
     description: |
-      List of task-specific routes, AMQP messages will be CC'ed to these routes.
+      List of task specific routes, AMQP messages will be CC'ed to these routes.
     type:           array
     items:
-      title:        "Task-Specific Route"
+      title:        "Task Specific Route"
       description: |
-        A task-specific route, AMQP messages will be CC'ed with a routing key
+        A task specific route, AMQP messages will be CC'ed with a routing key
         matching `route.<task-specific route>`. It's possible to dot (`.`) in
-        the task-specific route to make sub-keys, etc. See the RabbitMQ
+        the task specific route to make sub-keys, etc. See the RabbitMQ
         [tutorial](http://www.rabbitmq.com/tutorials/tutorial-five-python.html)
         for examples on how to use routing-keys.
       type:         string
