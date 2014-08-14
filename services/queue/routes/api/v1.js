@@ -162,8 +162,8 @@ api.declare({
     "into the future. This is to limit the amount of pending tasks not being",
     "taken care of. Ideally, you should use a much shorter deadline.",
     "",
-    "**Task-Specific Routing-Keys**, using the `task.routing` property you may",
-    "defined task-specific routing-keys. If a task has a task-specific ",
+    "**Task specific routing-keys**, using the `task.routes` property you may",
+    "define task specific routing-keys. If a task has a task specific ",
     "routing-key: `<route>`, then the poster will be required to posses the",
     "scope `queue:route:<route>`. And when the an AMQP message about the task",
     "is published the message will be CC'ed with the routing-key: ",
@@ -180,7 +180,7 @@ api.declare({
   var taskId  = req.params.taskId;
   var taskDef = req.body;
 
-  // Find scopes required for task-specific routes
+  // Find scopes required for task specific routes
   var routeScopes = taskDef.routes.map(function(route) {
     return 'queue:route:' + route;
   });
