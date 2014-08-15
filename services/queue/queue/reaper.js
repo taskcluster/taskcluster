@@ -101,15 +101,17 @@ Reaper.prototype.reap = function() {
       debug("task failed: %s (by deadline expiration)", task.taskId);
       // Construct message
       var message = {
-        status:     task.status(),
+        status:     task.status()
       };
 
       // Add run information from last run, if one exists
       var lastRun = _.last(task.runs);
       if (lastRun) {
         message.runId         = lastRun.runId;
-        message.workerGroup   = lastRun.workerGroup;
-        message.workerId      = lastRun.workerId;
+        if (lastRun.workerGroup && lastRun.workerId) {
+          message.workerGroup   = lastRun.workerGroup;
+          message.workerId      = lastRun.workerId;
+        }
       }
 
       // Publish message
@@ -125,15 +127,17 @@ Reaper.prototype.reap = function() {
       debug("task failed: %s (by claim expiration without retry)", task.taskId);
       // Construct message
       var message = {
-        status:     task.status(),
+        status:     task.status()
       };
 
       // Add run information from last run, if one exists
       var lastRun = _.last(task.runs);
       if (lastRun) {
         message.runId         = lastRun.runId;
-        message.workerGroup   = lastRun.workerGroup;
-        message.workerId      = lastRun.workerId;
+        if (lastRun.workerGroup && lastRun.workerId) {
+          message.workerGroup   = lastRun.workerGroup;
+          message.workerId      = lastRun.workerId;
+        }
       }
 
       // Publish message
