@@ -224,7 +224,7 @@ suite('listener', function() {
 
   // Naive test that creation work when providing a name for the queue
   test('named queue', function() {
-    this.timeout(1500);
+    this.timeout(3000);
 
     // Create listener
     var listener = new taskcluster.Listener({
@@ -257,6 +257,18 @@ suite('listener', function() {
     });
 
     return Promise.all([published, result]);
+  });
+
+  test('deletion of named queue', function() {
+    this.timeout(1500);
+
+    // Create listener
+    var listener = new taskcluster.Listener({
+      queueName:            slugid.v4(),
+      connectionString:     mockEvents.connectionString
+    });
+
+    return listener.deleteQueue();
   });
 
   // Test routing with multi key
