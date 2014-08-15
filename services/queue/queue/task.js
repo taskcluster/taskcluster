@@ -897,8 +897,13 @@ Task.expireByDeadline = transacting(function(knex) {
     .forUpdate()
     .from('runs')
     .join('tasks', 'runs.taskId', 'tasks.taskId')
-    .where({
-      'runs.state':     'running'
+    .where(function() {
+      this.where({
+        'runs.state':     'running'
+      })
+      .orWhere({
+        'runs.state':     'pending'
+      });
     })
     .andWhere('tasks.deadline', '<', now);
 
@@ -913,10 +918,17 @@ Task.expireByDeadline = transacting(function(knex) {
           success:          false,
           resolved:         now
         })
-        .where({
+        .where(function() {
+          this.where({
+            'runs.state':     'running'
+          })
+          .orWhere({
+            'runs.state':     'pending'
+          });
+        })
+        .andWhere({
           taskId:           run.taskId,
           runId:            run.runId,
-          state:            'running'
         })
         .then(function(count) {
           // This shouldn't happen was we select for update
