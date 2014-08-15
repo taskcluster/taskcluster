@@ -399,6 +399,7 @@ var listener = new taskcluster.Listener({
 listener.connect().then(...);       // Setup listener and bind queue
 listener.resume().then(...);        // Start getting new messages
 listener.pause().then(...);         // Pause retrieval of new messages
+listener.deleteQueue();             // Delete named queue and disconnect
 listener.close();                   // Disconnect from AMQP
 ```
 
