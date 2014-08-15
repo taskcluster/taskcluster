@@ -323,6 +323,21 @@ Listener.prototype._handle = function(msg) {
   });
 };
 
+/**
+ * Deletes the underlying queue and closes the listener
+ *
+ * Use this if you want to delete a named queue, unnamed queues created with
+ * this listener will be automatically deleted, when the listener is closed.
+ */
+Listener.prototype.deleteQueue = function() {
+  var that = this;
+  return this.connect().then(function(channel) {
+    return channel.deleteQueue(that._queueName).then(function() {
+      that.close();
+    });
+  });
+};
+
 /** Close the listener */
 Listener.prototype.close = function() {
   var connection = this._connection;
