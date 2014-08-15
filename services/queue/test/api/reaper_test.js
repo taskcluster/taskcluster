@@ -89,7 +89,24 @@ suite('Reaper tests', function() {
     });
   });
 
-  test("Expire deadline", function() {
+  test("Expire deadline while pending", function() {
+    this.timeout(120 * 1000);
+    var taskId = slugid.v4();
+
+    var task = makeTask(10, 5);
+    return subject.queue.createTask(taskId, task).then(function() {
+      debug("Listen for the task to fail, by deadline expiration");
+      return subject.listenFor(subject.queueEvents.taskFailed({
+        taskId:   taskId,
+        runId:    0
+      }));
+    }).then(function(msg) {
+      assert(msg.payload.status.runs[0].reasonResolved === 'deadline-exceeded',
+             "reasonsResolved isn't right");
+    });
+  });
+
+  test("Expire deadline while running", function() {
     this.timeout(120 * 1000);
     var taskId = slugid.v4();
 
