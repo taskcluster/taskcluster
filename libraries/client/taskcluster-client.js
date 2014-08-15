@@ -781,7 +781,7 @@ module.exports = {
           ],
           "name": "createTaskGraph",
           "title": "Create new task-graph",
-          "description": "Create a new task-graph, the `status` of the resulting JSON is a\ntask-graph status structure, you can find the `taskGraphId` in this\nstructure.\n\n**Referencing required tasks**, it is possible to reference other tasks\nin the task-graph that must be completed successfully before a task is\nscheduled. You just specify the `taskId` in the list of `required` tasks.\nSee the example below, where the second task requires the first task.\n```js\n{\n  ...\n  tasks: [\n    {\n      taskId:     \"XgvL0qtSR92cIWpcwdGKCA\",\n      requires:   [],\n      ...\n    },\n    {\n      taskId:     \"73GsfK62QNKAk2Hg1EEZTQ\",\n      requires:   [\"XgvL0qtSR92cIWpcwdGKCA\"],\n      task: {\n        payload: {\n          env: {\n            DEPENDS_ON:  \"XgvL0qtSR92cIWpcwdGKCA\"\n          }\n          ...\n        }\n        ...\n      },\n      ...\n    }\n  ]\n}\n```\n\n**Providing `schedulerId`**, the `schedulerId` on all task definitions\ngiven must be the `schedulerId` for the task-graph scheduler. In\nproduction this is `\"task-graph-scheduler\"`. A task-graph that doesn't\nhave this will not be accepted by the task-graph scheduler.\n\n**Providing `taskGroupId`**, the `taskGroupId` on all task definitions\ngiven must be the `taskGraphId` for this task-graph. A task-graph that\ndoesn't have this will not be accepted by the task-graph scheduler.\n\n**Task-graph scopes**, a task-graph is assigned a set of scopes, just\nlike tasks. Tasks within a task-graph cannot have scopes beyond those\nthe task-graph has. The task-graph scheduler will execute all requests\non behalf of a task-graph using the set of scopes assigned to the\ntask-graph. Thus, if you are submitting tasks to `my-worker-type` under\n`my-provisioner` it's important that your task-graph has the scope\nrequired to define tasks for this `provisionerId` and `workerType`.\nSee the queue for details on permissions required. Note, the task-graph\ndoes not require permissions to schedule the tasks. This is done with\nscopes provided by the task-graph scheduler.",
+          "description": "Create a new task-graph, the `status` of the resulting JSON is a\ntask-graph status structure, you can find the `taskGraphId` in this\nstructure.\n\n**Referencing required tasks**, it is possible to reference other tasks\nin the task-graph that must be completed successfully before a task is\nscheduled. You just specify the `taskId` in the list of `required` tasks.\nSee the example below, where the second task requires the first task.\n```js\n{\n  ...\n  tasks: [\n    {\n      taskId:     \"XgvL0qtSR92cIWpcwdGKCA\",\n      requires:   [],\n      ...\n    },\n    {\n      taskId:     \"73GsfK62QNKAk2Hg1EEZTQ\",\n      requires:   [\"XgvL0qtSR92cIWpcwdGKCA\"],\n      task: {\n        payload: {\n          env: {\n            DEPENDS_ON:  \"XgvL0qtSR92cIWpcwdGKCA\"\n          }\n          ...\n        }\n        ...\n      },\n      ...\n    }\n  ]\n}\n```\n\n**Providing `schedulerId`**, the `schedulerId` on all task definitions\ngiven must be the `schedulerId` for the task-graph scheduler. In\nproduction this is `\"task-graph-scheduler\"`. A task-graph that doesn't\nhave this will not be accepted by the task-graph scheduler.\n\n**Providing `taskGroupId`**, the `taskGroupId` on all task definitions\ngiven must be the `taskGraphId` for this task-graph. A task-graph that\ndoesn't have this will not be accepted by the task-graph scheduler.\n\n**Task-graph scopes**, a task-graph is assigned a set of scopes, just\nlike tasks. Tasks within a task-graph cannot have scopes beyond those\nthe task-graph has. The task-graph scheduler will execute all requests\non behalf of a task-graph using the set of scopes assigned to the\ntask-graph. Thus, if you are submitting tasks to `my-worker-type` under\n`my-provisioner` it's important that your task-graph has the scope\nrequired to define tasks for this `provisionerId` and `workerType`.\nSee the queue for details on permissions required. Note, the task-graph\ndoes not require permissions to schedule the tasks. This is done with\nscopes provided by the task-graph scheduler.\n\n**Task-graph specific routing-keys**, using the `taskGraph.routes`\nproperty you may define task-graph specific routing-keys. If a task-graph\nhas a task-graph specific routing-key: `<route>`, then the poster will\nbe required to posses the scope `scheduler:route:<route>`. And when the\nan AMQP message about the task-graph is published the message will be\nCC'ed with the routing-key: `route.<route>`. This is useful if you want\nanother component to listen for completed tasks you have posted.",
           "scopes": [
             [
               "scheduler:create-task-graph"
@@ -799,7 +799,7 @@ module.exports = {
           ],
           "name": "extendTaskGraph",
           "title": "Extend existing task-graph",
-          "description": "Add a set of tasks to an existing task-graph. The request format is very\nsimilar to the request format for creating task-graphs. But `routing`\nkey, `scopes`, `metadata` and `tags` cannot be modified and tasks added\nto the task-graph will be prefixed with the same routing key as the\nexisting tasks. See `createTaskGraph` for details in routing key\nprefixing.\n\n**Referencing required tasks**, just as when task-graphs are created,\neach task has a list of required tasks. It is possible to reference\nall `taskId`s within the task-graph.\n\n**Safety,** it is only _safe_ to call this API end-point while the\ntask-graph being modified is still running. If the task-graph is\n_finished_ or _blocked_, this method will leave the task-graph in this\nstate. Hence, it is only truly _safe_ to call this API end-point from\nwithin a task in the task-graph being modified.",
+          "description": "Add a set of tasks to an existing task-graph. The request format is very\nsimilar to the request format for creating task-graphs. But `routes`\nkey, `scopes`, `metadata` and `tags` cannot be modified.\n\n**Referencing required tasks**, just as when task-graphs are created,\neach task has a list of required tasks. It is possible to reference\nall `taskId`s within the task-graph.\n\n**Safety,** it is only _safe_ to call this API end-point while the\ntask-graph being modified is still running. If the task-graph is\n_finished_ or _blocked_, this method will leave the task-graph in this\nstate. Hence, it is only truly _safe_ to call this API end-point from\nwithin a task in the task-graph being modified.",
           "scopes": [
             [
               "scheduler:extend-task-graph:<taskGraphId>"
@@ -861,7 +861,7 @@ module.exports = {
     "reference": {
       "version": "0.2.0",
       "title": "Scheduler AMQP Exchanges",
-      "description": "The scheduler, typically available at `scheduler.taskcluster.net` is\nresponsible for accepting task-graphs and schedule tasks on the queue as\ntheir dependencies are completed successfully.\n\nThis document describes the AMQP exchanges offered by the scheduler,\nwhich allows third-party listeners to monitor task-graph submission and\nresolution. These exchanges targets the following audience:\n * Reporters, who displays the state of task-graphs or emails people on\n   failures, and\n * End-users, who wants notification of completed task-graphs\n\n**Remark**, the task-graph scheduler will require that the `schedulerId`\nfor tasks is set to the `schedulerId` for the task-graph scheduler. In\nproduction the `schedulerId` is typically `\"task-graph-scheduler\"`.\nFurthermore, the task-graph scheduler will also require that\n`taskGroupId` is equal to the `taskGraphId`.\n\nCombined these ensures that `schedulerId` and `taskGroupId`\nhave the same position in the routing keys for the queue exchanges.\nSee queue documentation for details on queue exchanges. Hence, making\nit easy to listen for all tasks in a given task-graph.\n\nNote that the first 6 routing key entries used for exchanges on the\ntask-graph scheduler is hardcoded to `_`. This is done to preserve\npositional equivalence with exchanges offered by the queue.",
+      "description": "The scheduler, typically available at `scheduler.taskcluster.net` is\nresponsible for accepting task-graphs and schedule tasks on the queue as\ntheir dependencies are completed successfully.\n\nThis document describes the AMQP exchanges offered by the scheduler,\nwhich allows third-party listeners to monitor task-graph submission and\nresolution. These exchanges targets the following audience:\n * Reporters, who displays the state of task-graphs or emails people on\n   failures, and\n * End-users, who wants notification of completed task-graphs\n\n**Remark**, the task-graph scheduler will require that the `schedulerId`\nfor tasks is set to the `schedulerId` for the task-graph scheduler. In\nproduction the `schedulerId` is typically `\"task-graph-scheduler\"`.\nFurthermore, the task-graph scheduler will also require that\n`taskGroupId` is equal to the `taskGraphId`.\n\nCombined these requirements ensures that `schedulerId` and `taskGroupId`\nhave the same position in the routing keys for the queue exchanges.\nSee queue documentation for details on queue exchanges. Hence, making\nit easy to listen for all tasks in a given task-graph.\n\nNote that routing key entries 2 through 7 used for exchanges on the\ntask-graph scheduler is hardcoded to `_`. This is done to preserve\npositional equivalence with exchanges offered by the queue.",
       "exchangePrefix": "scheduler/v1/",
       "entries": [
         {
@@ -871,6 +871,14 @@ module.exports = {
           "title": "Task-Graph Running Message",
           "description": "When a task-graph is submitted it immediately starts running and a\nmessage is posted on this exchange to indicate that a task-graph have\nbeen submitted.",
           "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": false,
+              "maxSize": 7
+            },
             {
               "name": "taskId",
               "summary": "Always takes the value `_`",
@@ -928,11 +936,11 @@ module.exports = {
               "multipleWords": false
             },
             {
-              "name": "routing",
-              "summary": "task-graph specific routing key (`taskGraph.routing`)",
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "required": true,
-              "maxSize": 64
+              "maxSize": 1,
+              "required": false
             }
           ],
           "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#"
@@ -945,6 +953,14 @@ module.exports = {
           "description": "When a task-graph is submitted it immediately starts running and a\nmessage is posted on this exchange to indicate that a task-graph have\nbeen submitted.",
           "routingKey": [
             {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": false,
+              "maxSize": 7
+            },
+            {
               "name": "taskId",
               "summary": "Always takes the value `_`",
               "required": false,
@@ -1001,11 +1017,11 @@ module.exports = {
               "multipleWords": false
             },
             {
-              "name": "routing",
-              "summary": "task-graph specific routing key (`taskGraph.routing`)",
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "required": true,
-              "maxSize": 64
+              "maxSize": 1,
+              "required": false
             }
           ],
           "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#"
@@ -1018,6 +1034,14 @@ module.exports = {
           "description": "When a task is completed unsuccessfully and all reruns have been\nattempted, the task-graph will not complete successfully and it's\ndeclared to be _blocked_, by some task that consistently completes\nunsuccessfully.\n\nWhen a task-graph becomes blocked a messages is posted to this exchange.\nThe message features the `taskId` of the task that caused the task-graph\nto become blocked.",
           "routingKey": [
             {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": false,
+              "maxSize": 7
+            },
+            {
               "name": "taskId",
               "summary": "Always takes the value `_`",
               "required": false,
@@ -1074,11 +1098,11 @@ module.exports = {
               "multipleWords": false
             },
             {
-              "name": "routing",
-              "summary": "task-graph specific routing key (`taskGraph.routing`)",
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "required": true,
-              "maxSize": 64
+              "maxSize": 1,
+              "required": false
             }
           ],
           "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#"
@@ -1091,6 +1115,14 @@ module.exports = {
           "description": "When all tasks of a task-graph have completed successfully, the\ntask-graph is declared to be finished, and a message is posted to this\nexchange.",
           "routingKey": [
             {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": false,
+              "maxSize": 7
+            },
+            {
               "name": "taskId",
               "summary": "Always takes the value `_`",
               "required": false,
@@ -1147,11 +1179,11 @@ module.exports = {
               "multipleWords": false
             },
             {
-              "name": "routing",
-              "summary": "task-graph specific routing key (`taskGraph.routing`)",
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "required": true,
-              "maxSize": 64
+              "maxSize": 1,
+              "required": false
             }
           ],
           "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#"
