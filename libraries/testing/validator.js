@@ -1,5 +1,5 @@
 var debug       = require('debug')('base:validator');
-var JaySchema   = require('jayschema');
+var jjv         = require('jjv');
 var fs          = require('fs');
 var request     = require('superagent-promise');
 var _           = require('lodash');
@@ -40,13 +40,32 @@ var render = function(schema, constants) {
   return _.cloneDeep(schema, substitute);
 };
 
+// Slightly modified version of the regular expression from RFC 3986, Appx B,
+// See: http://tools.ietf.org/html/rfc3986#appendix-B
+// This regular expression is designed for parsing. So it won't catch many
+// errors. A more elaborate work is available here:
+//    http://jmrware.com/articles/2009/uri_regexp/URI_regex.html
+// but license information is absent.
+var URI_REGEXP = /^(([^:\/?#]+):)(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/;
 
 /** Validator wrapper class, with auxiliary methods */
 var Validator = function(schemas) {
-  this._validator = new JaySchema();
+  // Create validation environment
+  this._env = new jjv();
+
+  // Use modify input by applying default values, if no value is provided
+  this._env.defaultOptions.useDefault = true;
+
+  // Validate "format: uri" using our custom regular expression, otherwise it
+  // won't support localhost.
+  this._env.addFormat('uri', function (v) {
+    return URI_REGEXP.test(v);
+  });
+
+  // Load all schema given to constructor
   var that = this;
   (schemas || []).forEach(function(schema) {
-    that._validator.register(schema);
+    that.register(schema);
   });
 };
 
@@ -58,10 +77,10 @@ var Validator = function(schemas) {
  */
 Validator.prototype.check = function(json, schema) {
   // Validate json
-  var errors = this._validator.validate(json, schema);
+  var errors = this._env.validate(schema, json);
 
   // If there are no errors return null, this is better in an if-statement
-  if (errors.length == 0) {
+  if (!errors) {
     return null;
   }
   return errors;
@@ -79,13 +98,13 @@ Validator.prototype.load = function(url) {
       throw new Error("Failed to load from URL: " + url);
     }
     debug("Loaded: %s", url);
-    that._validator.register(res.body);
+    that.register(res.body);
   });
 };
 
 /** Register JSON schema with the validator */
 Validator.prototype.register = function(schema) {
-  this._validator.register(schema);
+  this._env.addSchema(schema);
 };
 
 /**
