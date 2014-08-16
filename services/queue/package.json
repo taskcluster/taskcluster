@@ -23,7 +23,7 @@
     "superagent":                       "0.18.2",
     "superagent-promise":               "0.1.2",
     "slugid":                           "1.0.1",
-    "taskcluster-base":                 "0.4.1",
+    "taskcluster-base":                 "0.4.3",
     "azure-storage":                    "0.3.2"
   },
   "devDependencies": {
