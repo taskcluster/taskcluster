@@ -1,0 +1,19 @@
+{
+  "id":           "http://localhost:1203/default-schema.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "test json schema",
+  "type":         "object",
+  "properties": {
+    "value": {
+      "type":           "integer",
+      "minimum":        {"$const": "my-constant"},
+      "maximum":        {"$const": "my-constant"}
+    },
+    "optionalValue": {
+      "type":           "string",
+      "default":        "my-default-value"
+    }
+  },
+  "additionalProperties":   false,
+  "required": ["value"]
+}
