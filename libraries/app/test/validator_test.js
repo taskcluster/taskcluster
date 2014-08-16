@@ -26,6 +26,99 @@ suite("validator", function() {
     });
   });
 
+  test("test $ref", function() {
+    return base.validator({
+      publish:      false,
+      folder:       path.join(__dirname, 'schemas'),
+      constants:    {"my-constant": 42}
+    }).then(function(validator) {
+      var errors = validator.check({
+        reference: {
+          value: 42
+        },
+        tid:  new Date().toJSON()
+      }, 'http://localhost:1203/ref-test-schema.json');
+      if(errors) {
+        console.log("Got unexpected errors:");
+        console.log(JSON.stringify(errors, null, 2));
+      }
+      assert(errors === null, "Got errors");
+    });
+  });
+
+  test("test default values (no key provided)", function() {
+    return base.validator({
+      publish:      false,
+      folder:       path.join(__dirname, 'schemas'),
+      constants:    {"my-constant": 42}
+    }).then(function(validator) {
+      var json = {
+        value: 42
+      };
+      var errors = validator.check(
+        json,
+        'http://localhost:1203/default-schema.json'
+      );
+      if(errors) {
+        console.log("Got unexpected errors:");
+        console.log(JSON.stringify(errors, null, 2));
+      }
+      assert(errors === null, "Got errors");
+      assert(json.value === 42, "value didn't change");
+      assert(json.optionalValue === 'my-default-value',
+             "didn't get default value");
+    });
+  });
+
+  test("test default values (value provided)", function() {
+    return base.validator({
+      publish:      false,
+      folder:       path.join(__dirname, 'schemas'),
+      constants:    {"my-constant": 42}
+    }).then(function(validator) {
+      var json = {
+        value: 42,
+        optionalValue: "procided-value"
+      };
+      var errors = validator.check(
+        json,
+        'http://localhost:1203/default-schema.json'
+      );
+      if(errors) {
+        console.log("Got unexpected errors:");
+        console.log(JSON.stringify(errors, null, 2));
+      }
+      assert(errors === null, "Got errors");
+      assert(json.value === 42, "value didn't change");
+      assert(json.optionalValue === 'procided-value',
+             "got default value");
+    });
+  });
+
+  test("test default values (array and object)", function() {
+    return base.validator({
+      publish:      false,
+      folder:       path.join(__dirname, 'schemas'),
+      constants:    {"my-constant": 42}
+    }).then(function(validator) {
+      var json = {};
+      var errors = validator.check(
+        json,
+        'http://localhost:1203/default-array-obj-schema.json'
+      );
+      if(errors) {
+        console.log("Got unexpected errors:");
+        console.log(JSON.stringify(errors, null, 2));
+      }
+      assert(errors === null, "Got errors");
+      assert(json.optObj.hello === 'world', "didn't get default value");
+      assert(json.optArray.length === 1, "didn't get default value");
+      assert(json.optArray[0] === 'my-default-value',
+             "didn't get default value");
+      assert(json.optEmpty.length === 0, "didn't get default value");
+    });
+  });
+
   test("load from folder (yml)", function() {
     return base.validator({
       publish:      false,
