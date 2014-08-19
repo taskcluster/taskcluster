@@ -369,14 +369,6 @@ var authenticate = function(nonceManager, clientLoader, options) {
         if (artifacts.ext) {
           var extdata = new Buffer(artifacts.ext, 'base64').toString('utf-8');
           var ext     = JSON.parse(extdata);
-          // TODO: Remove legacy support with can-delegate
-          if (ext.delegating) {
-            if (!req.satisfies('auth:can-delegate')) {
-              return;
-            }
-            // Change authorized scopes
-            authorizedScopes = ext.scopes;
-          }
           // Allow restriction of scopes
           if (ext.authorizedScopes instanceof Array) {
             // If we satisfy the authorized scopes, we use them to overwrite
