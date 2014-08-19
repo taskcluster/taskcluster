@@ -1,5 +1,6 @@
 var fs = require('fs');
 var settingsPath = require('../../test/settings').settingsPath;
+var debug = require('debug')('docker-worker:host:test');
 
 function* billingCycleUptime() {
   var path = settingsPath('billingCycleUptime');
@@ -26,6 +27,7 @@ function* configure() {
 
   try {
     var content = fs.readFileSync(path, 'utf8');
+    debug('configure read:', content);
     return JSON.parse(content)
   } catch (e) {
     return {};

@@ -92,8 +92,8 @@ ExtendTaskGraph.prototype = {
       ));
     } catch (error) {
       taskHandler.stream.write(taskHandler.fmtLog(
-        'Graph server error while extending task graph id %s : %s',
-        graphId, error
+        'Graph server error while extending task graph id %s : %s, %j',
+        graphId, error, error.body
       ));
       return;
     }

@@ -27,6 +27,18 @@ are for hacking on the worker itself.
 node --harmony bin/worker.js <config>
 ```
 
+### Configuration
+
+The [defaults](config/defaults.js) contains all configuration options
+for the docker worker in particular these are important:
+
+  - `taskcluster` the credentials needed to authenticate all pull jobs
+    from taskcluster.
+
+  - `registries` registry credentials
+
+  - `statsd` credentials for the statsd server.
+
 ### Directory Structure
 
   - [/bin - primary entrypoint for worker](/bin)
@@ -37,7 +49,7 @@ node --harmony bin/worker.js <config>
   - [/lib/task.js - handler for individual tasks](/lib/task_listener.js)
   - [/lib/features/ - individual features for worker](/lib/features/)
 
-### Running tests
+## Running tests
 
 The `./test/test.sh` script is used to run individual tests which are
 suffixed with `_test.js` for example: `./test/test.sh test/integration/live_log_test.js`.
@@ -51,7 +63,7 @@ npm test
 
 This will build the docker image for the tasks and run the entire suite.
 
-### Deploying the worker
+## Deploying the worker
 
 This repo contains a deployment script `./deploy/bin/build` (run `./deploy/bin/build
 --help` for all the options) which is a wrapper
@@ -65,7 +77,7 @@ fill out the missing credentials and save it as `docker-worker-opts.sh`.
 Schema changes are not deployed automatically so if the
 schema has been changed `./bin/update-schema.js` should be run.
 
-##### Block-Device Mapping
+### Block-Device Mapping
 The AMI built with packer will mount all available instances storage under
 `/mnt` and use this for storing docker images and containers. In order for this
 to work you must specify a block device mapping that maps `ephemeral[0-9]` to

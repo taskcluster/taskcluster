@@ -13,6 +13,20 @@ module.exports = {
     bulkLogExpires: Date.UTC(2020, 0) - Date.UTC(2019, 0),
   },
 
+  /**
+  Registries which we can authenticate against for pulls:
+
+    registries: {
+      // Note that these match based on the nearest path so the below
+      // will authenticate for quay.io/mozilla/xfoo, etc...
+      'quay.io/mozilla': {
+        username: '...',
+        password: '...'
+      }
+    }
+  */
+  registries: {},
+
   // Taskcluster client `credentials`.
   taskcluster: {
     clientId:    process.env.TASKCLUSTER_CLIENT_ID,

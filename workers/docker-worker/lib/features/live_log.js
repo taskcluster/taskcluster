@@ -54,7 +54,7 @@ LiveLog.prototype = {
 
     // Create date when this artifact should expire (see config).
     var expiration =
-      new Date(Date.now() + task.runtime.conf.get('logging:liveLogExpires'));
+      new Date(Date.now() + task.runtime.logging.liveLogExpires);
 
     var options = {
       storageType: 'azure',

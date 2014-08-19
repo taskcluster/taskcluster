@@ -34,6 +34,8 @@ suite('Extend Task Graph', function() {
       workerType: worker.workerType,
       provisionerId: worker.provisionerId,
       metadata: {
+        description: 'testing',
+        source: 'http://mytest/',
         owner: 'test@localhost.local'
       },
       payload: {
@@ -57,7 +59,9 @@ suite('Extend Task Graph', function() {
 
     var json = JSON.stringify(graph);
     var result = yield worker.postToScheduler(graphId, {
-      routing: '',
+      metadata: {
+        source: 'http://xfoobar.com'
+      },
       scopes: [
         'queue:define-task:' + worker.provisionerId + '/' + worker.workerType
       ],
@@ -81,7 +85,6 @@ suite('Extend Task Graph', function() {
         }
       }]
     });
-
 
     assert.equal(result.length, 2, 'two tasks ran in graph');
 

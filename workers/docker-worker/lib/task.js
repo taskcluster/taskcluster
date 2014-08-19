@@ -7,7 +7,12 @@ var util = require('util');
 var waitForEvent = require('./wait_for_event');
 var features = require('./features');
 var co = require('co');
+var dockerUtils = require('dockerode-process/utils');
+var wordwrap = require('wordwrap')(0, 80, { hard: true });
+var scopeMatch = require('taskcluster-base/utils').scopeMatch;
 
+var Promise = require('promise');
+var DockerImage = require('./docker_image');
 var DockerProc = require('dockerode-process');
 var PassThrough = require('stream').PassThrough;
 var States = require('./states');
@@ -19,6 +24,15 @@ var RECLAIM_DIVISOR = 1.3;
 
 var PAYLOAD_SCHEMA =
   'http://schemas.taskcluster.net/docker-worker/v1/payload.json#';
+
+// This string was super long but I wanted to say all these thing so I broke it
+// out into a constant even though most errors are closer to their code...
+var IMAGE_ERROR = 'Pulling docker image "%s" has failed this may indicate an ' +
+                  'Error with the registry used or an authentication error  ' +
+                  'in the worker try pulling the image locally. \n Error %s';
+
+// Prefix used in scope matching for authenticated docker images.
+var IMAGE_SCOPE_PREFIX = 'docker-worker:image:';
 
 /*
 @example
@@ -39,6 +53,17 @@ function taskEnvToDockerEnv(env) {
     map.push(name + '=' + env[name]);
     return map;
   }, []);
+}
+
+function pullImageStreamTo(docker, image, stream, options) {
+  return new Promise(function(accept, reject) {
+    var downloadProgress =
+      dockerUtils.pullImageIfMissing(docker, image, options);
+
+    downloadProgress.pipe(stream, { end: false });
+    downloadProgress.once('error', reject);
+    downloadProgress.once('end', accept);
+  });
 }
 
 
@@ -117,7 +142,9 @@ Task.prototype = {
 
   fmtLog: function() {
     var args = Array.prototype.slice.call(arguments);
-    return '[taskcluster] ' + util.format.apply(this, args) + '\r\n';
+    var str = '[taskcluster] ' + util.format.apply(this, args) + '\r\n';
+    // Ensure we generate somewhat nicely aligned 80 width lines.
+    return wordwrap(str);
   },
 
   logHeader: function() {
@@ -221,6 +248,47 @@ Task.prototype = {
     yield this.completeRun(success);
   },
 
+  pullDockerImage: function* () {
+    var payload = this.task.payload;
+    var dockerImage = new DockerImage(payload.image);
+
+    this.runtime.log('pull image', {
+      taskId: this.status.taskId,
+      runId: this.runId,
+      image: payload.image
+    });
+
+    // There are cases where we cannot authenticate a docker image based on how
+    // the name is formatted (such as `registry`) so simply pull here and do
+    // not check for credentials.
+    if (!dockerImage.canAuthenticate()) {
+      return pullImageStreamTo(this.runtime.docker, payload.image, this.stream);
+    }
+
+    var pullOptions = {};
+    // See if any credentials apply from our list of registries...
+    var credentials = dockerImage.credentials(this.runtime.registries);
+    if (credentials) {
+      // Validate scopes on the image if we have credentials for it...
+      if (!scopeMatch(this.task.scopes, IMAGE_SCOPE_PREFIX + payload.image)) {
+        throw new Error(
+          'Insufficient scopes to pull : "' + payload.image + '" try adding ' +
+          IMAGE_SCOPE_PREFIX + payload.image + ' to the .scopes array.'
+        );
+      }
+
+      // TODO: Ideally we would verify the authentication before allowing any
+      // pulls (some pulls just check if the image is cached) the reason being
+      // we have no way to invalidate images once they are on a machine aside
+      // from blowing up the entire machine.
+      pullOptions.authconfig = credentials;
+    }
+
+    return yield pullImageStreamTo(
+      this.runtime.docker, payload.image, this.stream, pullOptions
+    );
+  },
+
   /**
   Primary handler for all docker related task activities this handles the
   launching/configuration of all tasks as well as the features for the given
@@ -275,7 +343,23 @@ Task.prototype = {
         taskStart, // duration details...
         new Date()
       ));
-      //
+      return false;
+    }
+
+    // Download the docker image needed for this task... This may fail in
+    // unexpected ways and should be handled gracefully to indicate to the user
+    // that their task has failed due to a image specific problem rather then
+    // some general bug in taskcluster or the worker code.
+    try {
+      yield this.pullDockerImage();
+    } catch (e) {
+      this.stream.write(this.fmtLog(IMAGE_ERROR, this.task.payload.image, e));
+      this.stream.write(this.logFooter(
+        false, // unsuccessful task
+        -1, // negative exit code indicates infrastructure errors usually.
+        taskStart, // duration details...
+        new Date()
+      ));
       return false;
     }
 
@@ -294,7 +378,12 @@ Task.prototype = {
       ));
     }.bind(this), maxRuntimeMS);
 
-    var exitCode = yield* stats.timeGen('tasks.time.run', dockerProc.run());
+    var exitCode = yield* stats.timeGen('tasks.time.run', dockerProc.run({
+      // Do not pull the image as part of the docker run we handle it +
+      // authentication above...
+      pull: false
+    }));
+
     var success = exitCode === 0;
 
     clearTimeout(runtimeTimeoutId);

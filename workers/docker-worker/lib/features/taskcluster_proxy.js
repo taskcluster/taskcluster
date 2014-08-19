@@ -19,14 +19,14 @@ TaskclusterProxy.prototype = {
     var docker = task.runtime.docker;
 
     // Image name for the proxy container.
-    var image = task.runtime.conf.get('taskclusterProxyImage');
+    var image = task.runtime.taskclusterProxyImage;
 
     var assumedScope = 'assume:worker-id:' + task.runtime.workerGroup +
                        '/' + task.runtime.workerId;
 
     var cmd = [
-        '--client-id=' + task.runtime.conf.get('taskcluster:clientId'),
-        '--access-token=' + task.runtime.conf.get('taskcluster:accessToken'),
+        '--client-id=' + task.runtime.taskcluster.clientId,
+        '--access-token=' + task.runtime.taskcluster.accessToken,
         task.status.taskId,
         assumedScope
     ];
