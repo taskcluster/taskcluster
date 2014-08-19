@@ -152,7 +152,9 @@ var clientLoader = function(options) {
       .end().then(function(res) {
         if(!res.ok) {
           debug('Failed to fetch credentials for clientId: %s', clientId);
-          throw new Error("Failed to fetch credentials: " + res.text);
+          var err = new Error("Failed to fetch credentials: " + res.text);
+          err.message = "Failed to fetch credentials: " + res.text;
+          throw err;
         }
         return new Client(res.body);
       });
@@ -330,6 +332,8 @@ var authenticate = function(nonceManager, clientLoader, options) {
             if (err.output.payload.message) {
               message += ": " + err.output.payload.message;
             }
+          } else if(err.message) {
+            message = err.message;
           }
           debug(
             "Error occurred authenticating, err: %s, %j, incidentId: %s",
