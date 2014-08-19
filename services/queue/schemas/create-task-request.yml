@@ -1,4 +1,4 @@
-id:                 http://schemas.taskcluster.net/queue/v1/task.json#
+id:       http://schemas.taskcluster.net/queue/v1/create-task-request.json#
 $schema:            http://json-schema.org/draft-04/schema#
 title:              "Task Definition"
 description: |
@@ -34,6 +34,7 @@ properties:
     minLength:      {$const: identifier-min-length}
     maxLength:      {$const: identifier-max-length}
     pattern:        {$const: identifier-pattern}
+    default:        '-'
   taskGroupId:
     title:          "Task-Group Identifier"
     description: |
@@ -48,6 +49,7 @@ properties:
     description: |
       List of task specific routes, AMQP messages will be CC'ed to these routes.
     type:           array
+    default:        []
     items:
       title:        "Task Specific Route"
       description: |
@@ -70,11 +72,13 @@ properties:
     type:           integer
     minimum:        0
     maximum:        50
+    default:        5
   priority:
     title:          "Priority"
     description: |
       Task priority
     type:           number
+    default:        3
   created:          {$const: created}
   deadline:         {$const: deadline}
   scopes:
@@ -83,6 +87,7 @@ properties:
       List of scopes (or scope-patterns) that the task is
       authorized to use.
     type:           array
+    default:        []
     items:
       title:        "Scope"
       description: |
@@ -151,18 +156,12 @@ properties:
     additionalProperties:
       type:           string
       maxLength:      4096
+    default:          {}
 additionalProperties: false
 required:
   - provisionerId
   - workerType
-  - schedulerId
-  - taskGroupId
-  - routes
-  - retries
-  - priority
   - created
   - deadline
-  - scopes
   - payload
   - metadata
-  - tags
