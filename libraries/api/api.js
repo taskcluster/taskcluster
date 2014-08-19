@@ -110,6 +110,15 @@ Client.prototype.isExpired = function() {
   return this.expires < (new Date());
 };
 
+/** Create a clone of the client object */
+Client.prototype.clone = function() {
+  return new Client({
+    clientId:       this.clientId,
+    accessToken:    this.accessToken,
+    scopes:         _.cloneDeep(this.scopes),
+    expires:        new Date(this.expires)
+  });
+};
 
 /**
  * Create function to find a client from clientId
@@ -151,6 +160,56 @@ var clientLoader = function(options) {
 };
 
 /**
+ * Wrapper for a clientLoader that gives it the same interface, but caches
+ * results when found.
+ *
+ * options: {
+ *   size:            250,  // Max number of clients to keep in cache
+ *   expiration:      60    // Number of minutes to cache clients
+ * }
+ */
+var clientCache = function(clientLoader, options) {
+  options = _.defaults(options || {
+    size:             250,
+    expiration:       60
+  });
+  // Number of milliseconds to keep things in cache
+  var expiration = options.expiration * 60 * 60 * 1000;
+  var next = 0;
+  var N = options.size;
+  var cache = new Array(N);
+  var defaultClient = {
+    clientId:       null,
+    __validUntil:   0     // Monkey property we'll add
+  };
+  for (var i = 0; i < N; i++) {
+    cache[i] = defaultClient;
+  }
+  return function(clientId) {
+    // Search cache to see if we have a cached Client object
+    var now = new Date().getTime();
+    // TODO: There is a long list of optimizations one can do here... Like
+    //       start searching from next downwards, and then one can break
+    //       when validUntil < now. Furthermore, one can avoid duplicate
+    //       clientIds if a clientId twice at once, while not being cached.
+    for (var i = 0; i < N; i++) {
+      var client = cache[i];
+      if (client.clientId === clientId && client.__validUntil > now) {
+        return Promise.resolve(client.clone());
+      }
+    }
+    // Load clientId
+    return clientLoader(clientId).then(function(client) {
+      client.__validUntil = new Date().getTime() + expiration;
+      cache[next] = client;
+      next += 1;
+      next %= N;
+      return client.clone();
+    });
+  };
+};
+
+/**
  * Local nonce cache for hawk, using an over-approximation
  *
  * options:
@@ -171,12 +230,12 @@ var nonceManager = function(options) {
   });
   var nextnonce = 0;
   var N = options.size;
-  var noncedb = new Array(options.size);
-  for(var i = 0; i < options.size; i++) {
+  var noncedb = new Array(N);
+  for(var i = 0; i < N; i++) {
     noncedb[i] = {nonce: null, ts: null};
   }
   return function(nonce, ts, cb) {
-    for(var i = 0; i < options.size; i++) {
+    for (var i = 0; i < N; i++) {
       if (noncedb[i].nonce === nonce && noncedb[i].ts === ts) {
         debug("CRITICAL: Replay attack detected!");
         return cb(new Error("Signature already used"));
@@ -186,7 +245,7 @@ var nonceManager = function(options) {
     noncedb[nextnonce].ts     = ts;
     // Increment nextnonce
     nextnonce += 1;
-    nextnonce %= options.size;
+    nextnonce %= N;
     cb();
   };
 };
@@ -240,7 +299,7 @@ var authenticate = function(nonceManager, clientLoader, options) {
     }).catch(function(err) {
       cb(err);
     });
-  }
+  };
   return function(req, res, next) {
     // Callback to handle request from hawk authentication. We currently always
     // authenticate. We could postpone this if `options.deferAuth === true` or
@@ -287,7 +346,7 @@ var authenticate = function(nonceManager, clientLoader, options) {
             }
           };
         }
-        // Check that request is expired
+        // Check if credentials have expired
         if (credentials.client.isExpired()) {
           return {
             code:     401,
@@ -461,6 +520,7 @@ var authenticate = function(nonceManager, clientLoader, options) {
 
 // Export authentication utilities
 authenticate.Client       = Client;
+authenticate.clientCache  = clientCache;
 authenticate.clientLoader = clientLoader;
 authenticate.nonceManager = nonceManager;
 
@@ -587,9 +647,12 @@ API.prototype.router = function(options) {
   // Create clientLoader, if not provided
   if (!options.clientLoader) {
     assert(options.credentials, "Either credentials or clientLoader is required");
+    // Create clientLoader
     options.clientLoader = clientLoader(_.defaults({
       baseUrl:            options.authBaseUrl
     }, options.credentials));
+    // Wrap in a clientCache
+    options.clientLoader = clientCache(options.clientLoader);
   }
 
   // Create router
