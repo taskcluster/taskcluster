@@ -77,20 +77,20 @@ suite('queue/tasks_store', function() {
   });
 
   // Test that put if not match
-  test("putIfNotMatch (match)", function() {
+  test("putOrMatch (match)", function() {
     var key  = slugid.v4();
     var data = {message: "Hello World", list: [1, 2, 3]};
-    return blobstore.putIfNotMatch(key, data).then(function() {
-      return blobstore.putIfNotMatch(key, data);
+    return blobstore.putOrMatch(key, data).then(function() {
+      return blobstore.putOrMatch(key, data);
     });
   });
 
   // Test that put if not match
-  test("putIfNotMatch (mismatch)", function() {
+  test("putOrMatch (mismatch)", function() {
     var key  = slugid.v4();
     var data = {message: "Hello World", list: [1, 2, 3]};
-    return blobstore.putIfNotMatch(key, data).then(function() {
-      return blobstore.putIfNotMatch(key, {message: "Go away"});
+    return blobstore.putOrMatch(key, data).then(function() {
+      return blobstore.putOrMatch(key, {message: "Go away"});
     }).then(function() {
       assert(false, "Expected error");
     }).catch(function(err) {

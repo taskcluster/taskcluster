@@ -91,21 +91,5 @@ module.exports = {
                     "task was unsuccessful for task-specific reasons, not " +
                     "infrastructure failures",
     "type":         "boolean"
-  },
-
-  // Task scopes
-  "scopes": {
-    "title":        "Scopes",
-    "description":  "List of scopes (or scope-patterns) that the task is " +
-                    "authorized to use.",
-    "type":         "array",
-    "items": {
-      "title":        "Scope",
-      "description":  "A scope (or scope-patterns) which the task is " +
-                      "authorized to use. This can be a string or a string " +
-                      "ending with `*` which will authorize all scopes for " +
-                      "which the string is a prefix.",
-      "type":         "string"
-    }
   }
 };

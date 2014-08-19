@@ -23,13 +23,13 @@
     "superagent":                       "0.18.2",
     "superagent-promise":               "0.1.2",
     "slugid":                           "1.0.1",
-    "taskcluster-base":                 "0.4.3",
+    "taskcluster-base":                 "0.4.4",
     "azure-storage":                    "0.3.2"
   },
   "devDependencies": {
     "mocha":                            "1.18.2",
     "xmlbuilder":                       "2.3.0",
-    "taskcluster-client":               "0.11.0"
+    "taskcluster-client":               "0.14.5"
   },
   "engines": {
     "node":                             "0.10.x"
