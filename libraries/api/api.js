@@ -392,7 +392,7 @@ var authenticate = function(nonceManager, clientLoader, options) {
                             "limit scopes allowed. But your client does not " +
                             "have all the scopes you restrict to.",
                     authorizedScopesFromRequest: ext.authorizedScopes
-                }
+                  }
                 }
               };
             }
