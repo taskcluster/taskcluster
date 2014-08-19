@@ -151,7 +151,7 @@ api.declare({
   idempotent: true,
   scopes:     ['queue:create-task:<provisionerId>/<workerType>'],
   deferAuth:  true,
-  input:      SCHEMA_PREFIX_CONST + 'task.json#',
+  input:      SCHEMA_PREFIX_CONST + 'create-task-request.json#',
   output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
   title:      "Create New Task",
   description: [
@@ -195,6 +195,24 @@ api.declare({
     return;
   }
 
+  // Set created, if not provided
+  var match = undefined;
+  if (taskDef.created === undefined) {
+    taskDef.created = new Date();
+    match = function(data) {
+      if (data.version !== 1) {
+        return false;
+      }
+      taskDef. Date((data.definition || {}).created);
+
+    };
+  }
+
+  // Set taskGroupId to taskId if not provided
+  if (!taskDef.taskGroupId) {
+    taskDef.taskGroupId = taskId;
+  }
+
   // Validate that deadline is less than a week from now
   var aWeekFromNow = new Date();
   aWeekFromNow.setDate(aWeekFromNow.getDate() + 8);
@@ -208,7 +226,7 @@ api.declare({
   }
 
   // Conditional put to azure blob storage
-  return ctx.taskstore.putIfNotMatch(taskId + '/task.json', {
+  return ctx.taskstore.putOrMatch(taskId + '/task.json', {
     version:    1,
     definition: taskDef
   }).then(function() {
@@ -313,7 +331,7 @@ api.declare({
     'queue:create-task:<provisionerId>/<workerType>'
   ],
   deferAuth:  true,
-  input:      SCHEMA_PREFIX_CONST + 'task.json#',
+  input:      SCHEMA_PREFIX_CONST + 'create-task-request.json#',
   output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
   title:      "Define Task",
   description: [
@@ -369,8 +387,13 @@ api.declare({
     });
   }
 
+  // Set taskGroupId to taskId if not provided
+  if (!taskDef.taskGroupId) {
+    taskDef.taskGroupId = taskId;
+  }
+
   // Conditional put to azure blob storage
-  return ctx.taskstore.putIfNotMatch(taskId + '/task.json', {
+  return ctx.taskstore.putOrMatch(taskId + '/task.json', {
     version:    1,
     definition: taskDef
   }).then(function() {
@@ -597,7 +620,7 @@ api.declare({
     }).then(function(result) {
       // Return the "error" message if we have one
       if(!(result instanceof ctx.Task)) {
-        return res.status(409).json(ode, {
+        return res.status(409).json(result.code, {
           message:      result.message
         });
       }
@@ -677,7 +700,7 @@ api.declare({
     }).then(function(result) {
       // Return the "error" message if we have one
       if(!(result instanceof ctx.Task)) {
-        return res.status(409).json(ode, {
+        return res.status(409).json(result.code, {
           message:      result.message
         });
       }
@@ -758,7 +781,7 @@ api.declare({
   }).then(function(result) {
     // Return the "error" message if we have one
     if(!(result instanceof ctx.Task)) {
-      return res.status(409).json(ode, {
+      return res.status(409).json(result.code, {
         message:      result.message
       });
     }
@@ -842,7 +865,7 @@ api.declare({
     }).then(function(result) {
       // Return the "error" message if we have one
       if(!(result instanceof ctx.Task)) {
-        return res.status(409).json(ode, {
+        return res.status(409).json(result.code, {
           message:      result.message
         });
       }
@@ -932,7 +955,7 @@ api.declare({
     }).then(function(result) {
       // Handle error cases
       if (!(result instanceof ctx.Task)) {
-        return res.status(409).json(ode, {
+        return res.status(409).json(result.code, {
           message: result.message
         });
       }
