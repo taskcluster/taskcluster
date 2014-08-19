@@ -96,7 +96,9 @@ exports.createClient = function(reference) {
         req.send(args.pop());
       }
       // Authenticate, if credentials are provided
-      if (this._options.credentials) {
+      if (this._options.credentials &&
+          this._options.credentials.clientId &&
+          this._options.credentials.accessToken) {
         var extra = {};
         // If set of authorized scopes is provided, we'll restrict the request
         // to only use these scopes
