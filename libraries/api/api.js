@@ -667,10 +667,23 @@ API.prototype.router = function(options) {
   if (options.allowedCORSOrigin) {
     router.use(function(req, res, next) {
       res.header('Access-Control-Allow-Origin',   options.allowedCORSOrigin);
+      res.header('Access-Control-Allow-Methods', [
+        'OPTIONS',
+        'GET',
+        'HEAD',
+        'POST',
+        'PUT',
+        'DELETE',
+        'TRACE',
+        'CONNECT'
+      ].join(','));
+      res.header('Access-Control-Request-Method', '*');
       res.header('Access-Control-Allow-Headers',  [
         'X-Requested-With',
         'Content-Type',
-        'Authorization'
+        'Authorization',
+        'Accept',
+        'Origin'
       ].join(','));
       next();
     });
