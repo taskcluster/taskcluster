@@ -91,7 +91,7 @@ suite('Create task', function() {
     }).then(function() {
       // Verify that we can't modify the task
       return subject.queue.createTask(taskId, _.defaults({
-        routing: "try.with.another.routing.key"
+        workerType:   "another-worker"
       }, taskDef)).then(function() {
         assert(false, "This operation should have failed!");
       }, function(err) {

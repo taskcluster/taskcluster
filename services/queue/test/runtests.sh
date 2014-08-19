@@ -8,6 +8,7 @@ mocha                                 \
   test/queue/bucket_test.js           \
   test/queue/blobstore_test.js        \
   test/api/createtask_test.js         \
+  test/api/minimumtask_test.js        \
   test/api/gettask_test.js            \
   test/api/claimtask_test.js          \
   test/api/reportcompleted_test.js    \

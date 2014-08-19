@@ -115,12 +115,12 @@ BlobStore.prototype.putIfNotExists = function(key, json) {
 };
 
 /**
- * Put JSON if it doesn't match what is already there
+ * Put JSON check that it matches what is already there
  *
  * Causes an error, with `code` 'BlobAlreadyExists' if the blob already exists
- * and contains JSON different from what we're putting
+ * and contains JSON which doesn't satisfy match what we're putting
  */
-BlobStore.prototype.putIfNotMatch = function(key, json) {
+BlobStore.prototype.putOrMatch = function(key, json) {
   var that = this;
   return that.putIfNotExists(key, json).catch(function(err) {
     // Handle error if we're getting a warning that the blob already exists
@@ -128,7 +128,7 @@ BlobStore.prototype.putIfNotMatch = function(key, json) {
       throw err;
     }
     return that.get(key).then(function(result) {
-      if (!_.isEqual(result, json)) {
+      if (!_.isEqual(json, result)) {
         throw err;
       }
     });
