@@ -161,8 +161,8 @@ var queue = new taskcluster.Queue(options);
  * `queue.createArtifact(taskId, runId, name, payload) : result`
  * `queue.getArtifact(taskId, runId, name) : void`
  * `queue.getLastestArtifact(taskId, name) : void`
- * `queue.listArtifacts(taskId, runId) : void`
- * `queue.listLatestArtifacts(taskId) : void`
+ * `queue.listArtifacts(taskId, runId) : result`
+ * `queue.listLatestArtifacts(taskId) : result`
  * `queue.getPendingTasks(provisionerId) : void`
  * `queue.getAMQPConnectionString() : result`
  * `queue.ping() : void`
@@ -189,6 +189,7 @@ var queueEvents = new taskcluster.QueueEvents(options);
  * `queueEvents.taskDefined(routingKeyPattern) : binding-info`
  * `queueEvents.taskPending(routingKeyPattern) : binding-info`
  * `queueEvents.taskRunning(routingKeyPattern) : binding-info`
+ * `queueEvents.artifactCreated(routingKeyPattern) : binding-info`
  * `queueEvents.taskCompleted(routingKeyPattern) : binding-info`
  * `queueEvents.taskFailed(routingKeyPattern) : binding-info`
 
