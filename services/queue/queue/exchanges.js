@@ -75,7 +75,8 @@ var buildCommonRoutingKey = function(options) {
       name:             'routingKeyKind',
       summary:          "Identifier for the routing-key kind. This is " +
                         "always `'primary'` for the formalized routing key.",
-      constant:         'primary'
+      constant:         'primary',
+      required:         true
     },
     {
       name:             'taskId',
