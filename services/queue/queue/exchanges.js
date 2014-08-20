@@ -210,18 +210,43 @@ exchanges.declare({
   title:              "Task Running Messages",
   description: [
     "Whenever a task is claimed by a worker, a run is started on the worker,",
-    "and a message is posted on this exchange.",
-    "",
-    "**Notice**, that the `logsUrl` may return `404` during the run, but by",
-    "the end of the run the `logsUrl` will be valid. But this may not have",
-    "happened when this message is posted.",
-    "",
-    "The idea is that workers can choose to upload the `logs.json` file as the",
-    "first thing they do, in which case it'll often be available after a few",
-    "minutes. This is useful if the worker supports live logging."
+    "and a message is posted on this exchange."
   ].join('\n'),
   routingKey:         buildCommonRoutingKey({hasRun: true, hasWorker: true}),
   schema:             SCHEMA_PREFIX_CONST + 'task-running-message.json#',
+  messageBuilder:     commonMessageBuilder,
+  routingKeyBuilder:  commonRoutingKeyBuilder,
+  CCBuilder:          commonCCBuilder
+});
+
+
+/** Artifact created exchange */
+exchanges.declare({
+  exchange:           'artifact-created',
+  name:               'artifactCreated',
+  title:              "Artifact Creation Messages",
+  description: [
+    "Whenever the `createArtifact` end-point is called, the queue will create",
+    "a record of the artifact and post a message on this exchange. All of this",
+    "happens before the queue returns a signed URL for the caller to upload",
+    "the actual artifact with (pending on `storageType`).",
+    "",
+    "This means that the actual artifact is rarely available when this message",
+    "is posted. But it is not unreasonable to assume that the artifact will",
+    "will become available at some point later. Most signatures will expire in",
+    "30 minutes or so, forcing the uploader to call `createArtifact` with",
+    "the same payload again in-order to continue uploading the artifact.",
+    "",
+    "However, in most cases (especially for small artifacts) it's very",
+    "reasonable assume the artifact will be available within a few minutes.",
+    "This property means that this exchange is mostly useful for tools",
+    "monitoring task evaluation. One could also use it count number of",
+    "artifacts per task, or _index_ artifacts though in most cases it'll be",
+    "smarter to index artifacts after the task in question have completed",
+    "successfully."
+  ].join('\n'),
+  routingKey:         buildCommonRoutingKey({hasRun: true, hasWorker: true}),
+  schema:             SCHEMA_PREFIX_CONST + 'artifact-created-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder,
   CCBuilder:          commonCCBuilder
@@ -235,13 +260,9 @@ exchanges.declare({
   title:              "Task Completed Messages",
   description: [
     "When a task is completed by a worker a message is posted this exchange.",
-    "This message is routed using the `run-id`, `worker-group` and `worker-id`",
+    "This message is routed using the `runId`, `workerGroup` and `workerId`",
     "that completed the task. But information about additional runs is also",
-    "available from the task status structure.",
-    "",
-    "Upon task completion a result structure is made available, you'll find",
-    "the url in the `resultURL` property. See _task storage_ documentation for",
-    "details on the format of the file available through `resultUrl`."
+    "available from the task status structure."
   ].join('\n'),
   routingKey:         buildCommonRoutingKey({hasRun: true, hasWorker: true}),
   schema:             SCHEMA_PREFIX_CONST + 'task-completed-message.json#',
@@ -263,7 +284,7 @@ exchanges.declare({
     "canceled by another entity.",
     "",
     "The specific _reason_ is evident from that task status structure, refer",
-    "to the `reason` property."
+    "to the `reasonResolved` property for the last run."
   ].join('\n'),
   routingKey:         buildCommonRoutingKey(),
   schema:             SCHEMA_PREFIX_CONST + 'task-failed-message.json#',
@@ -271,4 +292,3 @@ exchanges.declare({
   routingKeyBuilder:  commonRoutingKeyBuilder,
   CCBuilder:          commonCCBuilder
 });
-

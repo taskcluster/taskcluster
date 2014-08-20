@@ -1,0 +1,56 @@
+id:       http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#
+$schema:  http://json-schema.org/draft-04/schema#"
+title:          "List Artifacts Response"
+description: |
+  List of artifacts for a given `taskId` and `runId`.
+type:           object
+properties:
+  artifacts:
+    title:        "Artifact List"
+    description: |
+      List of artifacts for given `taskId` and `runId`.
+    type:         array
+    items:
+      title:      "Artifact"
+      description: |
+        Information about an artifact for the given `taskId` and `runId`.
+      properties:
+        storageType:
+          title:    "Artifact Storage-Type"
+          description: |
+            This is the `storageType` for the request that was used to create
+            the artifact.
+          enum:
+            - s3
+            - azure
+            - reference
+            - error
+        name:
+          title:    "Artifact Name"
+          description: |
+            Name of the artifact that was created, this is useful if you want to
+            attempt to fetch the artifact.
+          type:         string
+          maxLength:    1024
+        expires:
+          title:    "Artifact Expiration"
+          description: |
+            Date and time after which the artifact created will be automatically
+            deleted by the queue.
+          type:         string
+          format:       date-time
+        contentType:
+          title:    "Content-Type"
+          description: |
+            Mimetype for the artifact that was created.
+          type:         string
+          maxLength:    255
+      additionalProperties: false
+      required:
+        - storageType
+        - name
+        - expires
+        - contentType
+additionalProperties: false
+required:
+  - artifacts
