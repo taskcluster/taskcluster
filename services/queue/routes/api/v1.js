@@ -477,7 +477,7 @@ api.declare({
   return ctx.Task.load(taskId).then(function(task) {
     // if no task is found, we return 404
     if (!task) {
-      return res.status(409).json({
+      return res.status(404).json({
         message:  "Task not found already resolved"
       });
     }
@@ -592,7 +592,7 @@ api.declare({
   return ctx.Task.load(taskId).then(function(task) {
     // if task doesn't exist return 404
     if(!task) {
-      return res.status(409).json({
+      return res.status(404).json({
         message: "Task not found, or already resolved!"
       });
     }
@@ -620,7 +620,7 @@ api.declare({
     }).then(function(result) {
       // Return the "error" message if we have one
       if(!(result instanceof ctx.Task)) {
-        return res.status(409).json(result.code, {
+        return res.status(result.code).json({
           message:      result.message
         });
       }
@@ -843,7 +843,7 @@ api.declare({
   return ctx.Task.load(taskId).then(function(task) {
     // if no task is found, we return 404
     if (!task || !task.runs[runId]) {
-      return res.status(409).json({
+      return res.status(404).json({
         message:  "Task not found or already resolved"
       });
     }

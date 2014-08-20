@@ -1,0 +1,81 @@
+id:       http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#
+$schema:  http://json-schema.org/draft-04/schema#"
+title:          "Artifact Created Message"
+description: |
+  Message reporting a new artifact has been created for a given task.
+type:           object
+properties:
+  version:   {$const: "message-version"}
+  status:    {$ref: "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
+  runId:
+    description: |
+      Id of the run on which artifact was created.
+    type:         integer
+    minimum:      {$const: "min-run-id"}
+    maximum:      {$const: "max-run-id"}
+  workerGroup:
+    description: |
+      Identifier for the worker-group within which the run with the created
+      artifacted is running.
+    type:         string
+    minLength:    {$const: "identifier-min-length"}
+    maxLength:    {$const: "identifier-max-length"}
+    pattern:      {$const: "identifier-pattern"}
+  workerId:
+    description: |
+      Identifier for the worker within which the run with the created artifact
+      is running.
+    type: "string"
+    minLength:    {$const: "identifier-min-length"}
+    maxLength:    {$const: "identifier-max-length"}
+    pattern:      {$const: "identifier-pattern"}
+  artifact:
+    title:        "Artifact Created"
+    description: |
+      Information about the artifact that was created
+    properties:
+      storageType:
+        title:    "Artifact Storage-Type"
+        description: |
+          This is the `storageType` for the request that was used to create the
+          artifact.
+        enum:
+          - s3
+          - azure
+          - reference
+          - error
+      name:
+        title:    "Artifact Name"
+        description: |
+          Name of the artifact that was created, this is useful if you want to
+          attempt to fetch the artifact. But keep in mind that just because an
+          artifact is created doesn't mean that it's immediately available.
+        type:         string
+        maxLength:    1024
+      expires:
+        title:    "Artifact Expiration"
+        description: |
+          Date and time after which the artifact created will be automatically
+          deleted by the queue.
+        type:         string
+        format:       date-time
+      contentType:
+        title:    "Content-Type"
+        description: |
+          Mimetype for the artifact that was created.
+        type:         string
+        maxLength:    255
+    additionalProperties: false
+    required:
+      - storageType
+      - name
+      - expires
+      - contentType
+additionalProperties: false
+required:
+  - version
+  - status
+  - runId
+  - workerGroup
+  - workerId
+  - artifact

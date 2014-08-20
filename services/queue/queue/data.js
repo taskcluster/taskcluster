@@ -109,5 +109,15 @@ Artifact.expireEntities = function(options) {
   });
 };
 
+/** Return JSON representation of artifact meta-data */
+Artifact.prototype.json = function() {
+  return {
+    storageType:      this.storageType,
+    name:             this.name,
+    expires:          this.expires.toJSON(),
+    contentType:      this.contentType
+  };
+};
+
 // Export Artifact
 exports.Artifact = Artifact;
