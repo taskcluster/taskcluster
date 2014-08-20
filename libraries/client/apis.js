@@ -70,7 +70,7 @@ module.exports = {
               "queue:create-task:<provisionerId>/<workerType>"
             ]
           ],
-          "input": "http://schemas.taskcluster.net/queue/v1/task.json#",
+          "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
         },
         {
@@ -103,7 +103,7 @@ module.exports = {
               "queue:create-task:<provisionerId>/<workerType>"
             ]
           ],
-          "input": "http://schemas.taskcluster.net/queue/v1/task.json#",
+          "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
         },
         {
@@ -246,7 +246,7 @@ module.exports = {
           ],
           "name": "createArtifact",
           "title": "Create Artifact",
-          "description": "TODO: document this method",
+          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 4 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\n\n**S3 artifacts**, is useful for static files which will be stored on S3.\nWhen creating an S3 artifact is create the queue will return a pre-signed\nURL to which you can do a `PUT` request to upload your artifact. Note\nthat `PUT` request **must** specify the `content-length` header and\n**must** give the `content-type` header the same value as in the request\nto `createArtifact`.\n\n**Azure artifacts**, are stored in _Azure Blob Storage_ service, which\ngiven the consistency guarantees and API interface offered by Azure is\nmore suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.",
           "scopes": [
             [
               "queue:create-artifact:<name>",
@@ -301,7 +301,8 @@ module.exports = {
           ],
           "name": "listArtifacts",
           "title": "Get Artifacts from Run",
-          "description": "TODO: document this method"
+          "description": "TODO: document this method",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json"
         },
         {
           "type": "function",
@@ -312,7 +313,8 @@ module.exports = {
           ],
           "name": "listLatestArtifacts",
           "title": "Get Artifacts from Latest Run",
-          "description": "TODO: document this method"
+          "description": "TODO: document this method",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json"
         },
         {
           "type": "function",
@@ -366,8 +368,8 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
+              "required": true,
               "multipleWords": false,
-              "required": false,
               "maxSize": 7
             },
             {
@@ -447,8 +449,8 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
+              "required": true,
               "multipleWords": false,
-              "required": false,
               "maxSize": 7
             },
             {
@@ -522,14 +524,14 @@ module.exports = {
           "exchange": "task-running",
           "name": "taskRunning",
           "title": "Task Running Messages",
-          "description": "Whenever a task is claimed by a worker, a run is started on the worker,\nand a message is posted on this exchange.\n\n**Notice**, that the `logsUrl` may return `404` during the run, but by\nthe end of the run the `logsUrl` will be valid. But this may not have\nhappened when this message is posted.\n\nThe idea is that workers can choose to upload the `logs.json` file as the\nfirst thing they do, in which case it'll often be available after a few\nminutes. This is useful if the worker supports live logging.",
+          "description": "Whenever a task is claimed by a worker, a run is started on the worker,\nand a message is posted on this exchange.",
           "routingKey": [
             {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
+              "required": true,
               "multipleWords": false,
-              "required": false,
               "maxSize": 7
             },
             {
@@ -600,17 +602,98 @@ module.exports = {
         },
         {
           "type": "topic-exchange",
-          "exchange": "task-completed",
-          "name": "taskCompleted",
-          "title": "Task Completed Messages",
-          "description": "When a task is completed by a worker a message is posted this exchange.\nThis message is routed using the `run-id`, `worker-group` and `worker-id`\nthat completed the task. But information about additional runs is also\navailable from the task status structure.\n\nUpon task completion a result structure is made available, you'll find\nthe url in the `resultURL` property. See _task storage_ documentation for\ndetails on the format of the file available through `resultUrl`.",
+          "exchange": "artifact-created",
+          "name": "artifactCreated",
+          "title": "Artifact Creation Messages",
+          "description": "Whenever the `createArtifact` end-point is called, the queue will create\na record of the artifact and post a message on this exchange. All of this\nhappens before the queue returns a signed URL for the caller to upload\nthe actual artifact with (pending on `storageType`).\n\nThis means that the actual artifact is rarely available when this message\nis posted. But it is not unreasonable to assume that the artifact will\nwill become available at some point later. Most signatures will expire in\n30 minutes or so, forcing the uploader to call `createArtifact` with\nthe same payload again in-order to continue uploading the artifact.\n\nHowever, in most cases (especially for small artifacts) it's very\nreasonable assume the artifact will be available within a few minutes.\nThis property means that this exchange is mostly useful for tools\nmonitoring task evaluation. One could also use it count number of\nartifacts per task, or _index_ artifacts though in most cases it'll be\nsmarter to index artifacts after the task in question have completed\nsuccessfully.",
           "routingKey": [
             {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
+              "required": true,
               "multipleWords": false,
-              "required": false,
+              "maxSize": 7
+            },
+            {
+              "name": "taskId",
+              "summary": "`taskId` for the task this message concerns",
+              "required": true,
+              "maxSize": 22,
+              "multipleWords": false
+            },
+            {
+              "name": "runId",
+              "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
+              "required": true,
+              "maxSize": 3,
+              "multipleWords": false
+            },
+            {
+              "name": "workerGroup",
+              "summary": "`workerGroup` of latest run for the task, `_` if no run is exists for the task.",
+              "required": true,
+              "maxSize": 22,
+              "multipleWords": false
+            },
+            {
+              "name": "workerId",
+              "summary": "`workerId` of latest run for the task, `_` if no run is exists for the task.",
+              "required": true,
+              "maxSize": 22,
+              "multipleWords": false
+            },
+            {
+              "name": "provisionerId",
+              "summary": "`provisionerId` this task is targeted at.",
+              "required": true,
+              "maxSize": 22,
+              "multipleWords": false
+            },
+            {
+              "name": "workerType",
+              "summary": "`workerType` this task must run on.",
+              "required": true,
+              "maxSize": 22,
+              "multipleWords": false
+            },
+            {
+              "name": "schedulerId",
+              "summary": "`schedulerId` this task was created by.",
+              "required": true,
+              "maxSize": 22,
+              "multipleWords": false
+            },
+            {
+              "name": "taskGroupId",
+              "summary": "`taskGroupId` this task was created in.",
+              "required": true,
+              "maxSize": 22,
+              "multipleWords": false
+            },
+            {
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+              "multipleWords": true,
+              "maxSize": 1,
+              "required": false
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#"
+        },
+        {
+          "type": "topic-exchange",
+          "exchange": "task-completed",
+          "name": "taskCompleted",
+          "title": "Task Completed Messages",
+          "description": "When a task is completed by a worker a message is posted this exchange.\nThis message is routed using the `runId`, `workerGroup` and `workerId`\nthat completed the task. But information about additional runs is also\navailable from the task status structure.",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "required": true,
+              "multipleWords": false,
               "maxSize": 7
             },
             {
@@ -684,14 +767,14 @@ module.exports = {
           "exchange": "task-failed",
           "name": "taskFailed",
           "title": "Task Failed Messages",
-          "description": "Whenever a task is concluded to be failed a message is posted to this\nexchange. This happens if the task isn't completed before its `deadlìne`,\nall retries failed (i.e. workers stopped responding) or the task was\ncanceled by another entity.\n\nThe specific _reason_ is evident from that task status structure, refer\nto the `reason` property.",
+          "description": "Whenever a task is concluded to be failed a message is posted to this\nexchange. This happens if the task isn't completed before its `deadlìne`,\nall retries failed (i.e. workers stopped responding) or the task was\ncanceled by another entity.\n\nThe specific _reason_ is evident from that task status structure, refer\nto the `reasonResolved` property for the last run.",
           "routingKey": [
             {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
+              "required": true,
               "multipleWords": false,
-              "required": false,
               "maxSize": 7
             },
             {
