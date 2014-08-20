@@ -9,8 +9,7 @@ import (
 )
 
 type delegationOptions struct {
-	Delegating bool     `json:"delegating"`
-	Scopes     []string `json:"scopes"`
+	Scopes     []string `json:"authorizedScopes"`
 }
 
 func getAuth(clientId string, accessToken string, http *http.Request) *hawk.Auth {
@@ -29,7 +28,7 @@ func Authorization(clientId string, accessToken string, http *http.Request) stri
 }
 
 func AuthorizationDelegate(clientId string, accessToken string, scopes []string, http *http.Request) (string, error) {
-	delgating := delegationOptions{true, scopes}
+	delgating := delegationOptions{scopes}
 	delgatingJson, err := json.Marshal(delgating)
 	if err != nil {
 		return "", err

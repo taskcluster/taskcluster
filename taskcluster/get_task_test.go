@@ -8,7 +8,7 @@ import (
 // XXX: This is a terrible test since it will eventually fail but the docker
 // worker tests will ensure this will work...
 func TestGetTask(t *testing.T) {
-	task, err := tc.GetTask("0H68C0ivQI2PWjWMs4D3Cw")
+	task, err := tc.GetTask("8sdvtNI9Rbq4HM06QSmd6w")
 
 	if err != nil {
 		t.Errorf("Error fetching task: %s", err)
