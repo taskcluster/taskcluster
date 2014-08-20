@@ -121,8 +121,8 @@ api.declare({
       return;
     }
 
-    // Create details for the artifact, depending on `storageType`
-    var details = _.pick(input, 'storageType', 'contentType');
+    // Create details for the artifact
+    var details = {};
     // Create return value
     var reply = null;
 
@@ -216,11 +216,20 @@ api.declare({
         });
       }
 
+      // Publish message about artifact creation
+      return ctx.publisher.artifactCreated({
+        status:         task.status(),
+        artifact:       artifact.json(),
+        workerGroup:    workerGroup,
+        workerId:       workerId,
+        runId:          runId
+      }, task.routes);
+    }).then(function() {
       // Wait for the reply promise to resolve and return it
       return reply.then(function(retval) {
         return res.reply(retval);
       });
-    });
+    })
   });
 });
 
@@ -395,58 +404,12 @@ api.declare({
 var replyWithArtifacts = function(taskId, runId, res) {
   var ctx = this;
   return ctx.Artifact.list(taskId, runId).then(function(artifacts) {
-    // Extra artifacts as JSON
-    var artifactsAsJSON = artifacts.map(function(artifact) {
-      // Handle S3 artifacts
-      if (artifact.storageType === 's3') {
-        return {
-          storageType:  's3',
-          name:         artifact.name,
-          expires:      artifact.expires.toJSON(),
-          contentType:  artifact.details.contentType
-        };
-      }
-
-      // Handle azure artifacts
-      if (artifact.storageType === 'azure') {
-        return {
-          storageType:  'azure',
-          name:         artifact.name,
-          expires:      artifact.expires.toJSON(),
-          contentType:  artifact.details.contentType
-        };
-      }
-
-      // Handle redirect artifacts
-      if (artifact.storageType === 'reference') {
-        return {
-          storageType:  'reference',
-          name:         artifact.name,
-          expires:      artifact.expires.toJSON(),
-          contentType:  artifact.details.contentType
-          // Note, we cannot expose the url to which this artifact will redirect
-          // here, as this will be a security concern. Especially, if someone
-          // decides to rely on secret URLs for security
-        };
-      }
-
-      // Handle error artifacts
-      if (artifact.storageType === 'error') {
-        return {
-          storageType:  'error',
-          name:         artifact.name,
-          expires:      artifact.expires.toJSON()
-          // Note, we cannot expose message or reason here as would be a
-          // security concern.
-        };
-      }
-
-      // We should never arrive here
-      assert(false, "Unknown artifact storageType: %s", artifact.storageType);
-    });
     // Reply with artifacts as extracted above
     res.reply({
-      artifacts: artifactsAsJSON
+      artifacts: artifacts.map(function(artifact) {
+        // Extra artifact as JSON
+        return artifact.json();
+      })
     });
   });
 };
@@ -457,6 +420,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId/runs/:runId/artifacts',
   name:       'listArtifacts',
+  output:     SCHEMA_PREFIX_CONST + 'list-artifacts-response.json',
   title:      "Get Artifacts from Run",
   description: [
     "TODO: document this method"
@@ -484,6 +448,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId/artifacts',
   name:       'listLatestArtifacts',
+  output:     SCHEMA_PREFIX_CONST + 'list-artifacts-response.json',
   title:      "Get Artifacts from Latest Run",
   description: [
     "TODO: document this method"

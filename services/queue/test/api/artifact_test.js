@@ -278,6 +278,9 @@ suite('Post artifacts', function() {
         workerId:       'my-worker'
       });
     }).then(function() {
+      artifactCreated = subject.listenFor(subject.queueEvents.artifactCreated({
+        taskId:   taskId
+      }));
       subject.scopes(
         'queue:create-artifact:public/error.json',
         'assume:worker-id:my-worker-group/my-worker'
@@ -288,6 +291,8 @@ suite('Post artifacts', function() {
         expires:      deadline.toJSON(),
         reason:       'file-missing-on-worker',
         message:      "Some user-defined message",
+      }).then(function() {
+        return artifactCreated;
       });
     }).then(function() {
       var name = 'public/error.json';
