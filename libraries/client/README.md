@@ -175,9 +175,9 @@ var scheduler = new taskcluster.Scheduler(options);
 ```
  * `scheduler.createTaskGraph(taskGraphId, payload) : result`
  * `scheduler.extendTaskGraph(taskGraphId, payload) : result`
- * `scheduler.getTaskGraphStatus(taskGraphId) : result`
- * `scheduler.getTaskGraphInfo(taskGraphId) : result`
- * `scheduler.inspectTaskGraph(taskGraphId) : result`
+ * `scheduler.status(taskGraphId) : result`
+ * `scheduler.info(taskGraphId) : result`
+ * `scheduler.inspect(taskGraphId) : result`
  * `scheduler.ping() : void`
 
 ### Exchanges in `taskcluster.QueueEvents`
