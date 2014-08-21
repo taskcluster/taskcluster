@@ -863,7 +863,7 @@ module.exports = {
           ],
           "name": "createTaskGraph",
           "title": "Create new task-graph",
-          "description": "Create a new task-graph, the `status` of the resulting JSON is a\ntask-graph status structure, you can find the `taskGraphId` in this\nstructure.\n\n**Referencing required tasks**, it is possible to reference other tasks\nin the task-graph that must be completed successfully before a task is\nscheduled. You just specify the `taskId` in the list of `required` tasks.\nSee the example below, where the second task requires the first task.\n```js\n{\n  ...\n  tasks: [\n    {\n      taskId:     \"XgvL0qtSR92cIWpcwdGKCA\",\n      requires:   [],\n      ...\n    },\n    {\n      taskId:     \"73GsfK62QNKAk2Hg1EEZTQ\",\n      requires:   [\"XgvL0qtSR92cIWpcwdGKCA\"],\n      task: {\n        payload: {\n          env: {\n            DEPENDS_ON:  \"XgvL0qtSR92cIWpcwdGKCA\"\n          }\n          ...\n        }\n        ...\n      },\n      ...\n    }\n  ]\n}\n```\n\n**Providing `schedulerId`**, the `schedulerId` on all task definitions\ngiven must be the `schedulerId` for the task-graph scheduler. In\nproduction this is `\"task-graph-scheduler\"`. A task-graph that doesn't\nhave this will not be accepted by the task-graph scheduler.\n\n**Providing `taskGroupId`**, the `taskGroupId` on all task definitions\ngiven must be the `taskGraphId` for this task-graph. A task-graph that\ndoesn't have this will not be accepted by the task-graph scheduler.\n\n**Task-graph scopes**, a task-graph is assigned a set of scopes, just\nlike tasks. Tasks within a task-graph cannot have scopes beyond those\nthe task-graph has. The task-graph scheduler will execute all requests\non behalf of a task-graph using the set of scopes assigned to the\ntask-graph. Thus, if you are submitting tasks to `my-worker-type` under\n`my-provisioner` it's important that your task-graph has the scope\nrequired to define tasks for this `provisionerId` and `workerType`.\nSee the queue for details on permissions required. Note, the task-graph\ndoes not require permissions to schedule the tasks. This is done with\nscopes provided by the task-graph scheduler.\n\n**Task-graph specific routing-keys**, using the `taskGraph.routes`\nproperty you may define task-graph specific routing-keys. If a task-graph\nhas a task-graph specific routing-key: `<route>`, then the poster will\nbe required to posses the scope `scheduler:route:<route>`. And when the\nan AMQP message about the task-graph is published the message will be\nCC'ed with the routing-key: `route.<route>`. This is useful if you want\nanother component to listen for completed tasks you have posted.",
+          "description": "Create a new task-graph, the `status` of the resulting JSON is a\ntask-graph status structure, you can find the `taskGraphId` in this\nstructure.\n\n**Referencing required tasks**, it is possible to reference other tasks\nin the task-graph that must be completed successfully before a task is\nscheduled. You just specify the `taskId` in the list of `required` tasks.\nSee the example below, where the second task requires the first task.\n```js\n{\n  ...\n  tasks: [\n    {\n      taskId:     \"XgvL0qtSR92cIWpcwdGKCA\",\n      requires:   [],\n      ...\n    },\n    {\n      taskId:     \"73GsfK62QNKAk2Hg1EEZTQ\",\n      requires:   [\"XgvL0qtSR92cIWpcwdGKCA\"],\n      task: {\n        payload: {\n          env: {\n            DEPENDS_ON:  \"XgvL0qtSR92cIWpcwdGKCA\"\n          }\n          ...\n        }\n        ...\n      },\n      ...\n    }\n  ]\n}\n```\n\n**The `schedulerId` property**, defaults to the `schedulerId` of this\nscheduler in production that is `\"task-graph-scheduler\"`. This\nproperty must be either undefined or set to `\"task-graph-scheduler\"`,\notherwise the task-graph will be rejected.\n\n**The `taskGroupId` property**, defaults to the `taskGraphId` of the\ntask-graph submitted, and if provided much be the `taskGraphId` of\nthe task-graph. Otherwise the task-graph will be rejected.\n\n**Task-graph scopes**, a task-graph is assigned a set of scopes, just\nlike tasks. Tasks within a task-graph cannot have scopes beyond those\nthe task-graph has. The task-graph scheduler will execute all requests\non behalf of a task-graph using the set of scopes assigned to the\ntask-graph. Thus, if you are submitting tasks to `my-worker-type` under\n`my-provisioner` it's important that your task-graph has the scope\nrequired to define tasks for this `provisionerId` and `workerType`.\nSee the queue for details on permissions required. Note, the task-graph\ndoes not require permissions to schedule the tasks. This is done with\nscopes provided by the task-graph scheduler.\n\n**Task-graph specific routing-keys**, using the `taskGraph.routes`\nproperty you may define task-graph specific routing-keys. If a task-graph\nhas a task-graph specific routing-key: `<route>`, then the poster will\nbe required to posses the scope `scheduler:route:<route>`. And when the\nan AMQP message about the task-graph is published the message will be\nCC'ed with the routing-key: `route.<route>`. This is useful if you want\nanother component to listen for completed tasks you have posted.",
           "scopes": [
             [
               "scheduler:create-task-graph"
@@ -897,7 +897,7 @@ module.exports = {
           "args": [
             "taskGraphId"
           ],
-          "name": "getTaskGraphStatus",
+          "name": "status",
           "title": "Task Graph Status",
           "description": "Get task-graph status, this will return the _task-graph status\nstructure_. which can be used to check if a task-graph is `running`,\n`blocked` or `finished`.\n\n**Note**, that `finished` implies successfully completion.",
           "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json"
@@ -909,7 +909,7 @@ module.exports = {
           "args": [
             "taskGraphId"
           ],
-          "name": "getTaskGraphInfo",
+          "name": "info",
           "title": "Task Graph Information",
           "description": "Get task-graph information, this includes the _task-graph status\nstructure_, along with `metadata` and `tags`, but not information\nabout all tasks.\n\nIf you want more detailed information use the `inspectTaskGraph`\nend-point instead.",
           "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json"
@@ -921,7 +921,7 @@ module.exports = {
           "args": [
             "taskGraphId"
           ],
-          "name": "inspectTaskGraph",
+          "name": "inspect",
           "title": "Inspect Task Graph",
           "description": "Inspect a task-graph, this returns all the information the task-graph\nscheduler knows about the task-graph and the state of its tasks.\n\n**Warning**, some of these fields are borderline internal to the\ntask-graph scheduler and we may choose to change or make them internal\nlater. Also note that note all of the information is formalized yet.\nThe JSON schema will be updated to reflect formalized values, we think\nit's safe to consider the values stable.\n\nTake these considerations into account when using the API end-point,\nas we do not promise it will remain fully backward compatible in\nthe future.",
           "output": "http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json"
@@ -957,8 +957,8 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
+              "required": true,
               "multipleWords": false,
-              "required": false,
               "maxSize": 7
             },
             {
@@ -1038,8 +1038,8 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
+              "required": true,
               "multipleWords": false,
-              "required": false,
               "maxSize": 7
             },
             {
@@ -1119,8 +1119,8 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
+              "required": true,
               "multipleWords": false,
-              "required": false,
               "maxSize": 7
             },
             {
@@ -1200,8 +1200,8 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
+              "required": true,
               "multipleWords": false,
-              "required": false,
               "maxSize": 7
             },
             {
