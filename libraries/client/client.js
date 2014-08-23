@@ -52,7 +52,7 @@ var _defaultOptions = {
 exports.createClient = function(reference) {
   // Client class constructor
   var Client = function(options) {
-    this._options = _.defaults(options || {}, {
+    this._options = _.defaults({}, options || {}, {
       baseUrl:          reference.baseUrl        || '',
       exchangePrefix:   reference.exchangePrefix || ''
     }, _defaultOptions);
@@ -326,5 +326,5 @@ _.forIn(apis, function(api, name) {
  * Example: `Client.config({credentials: {...}});`
  */
 exports.config = function(options) {
-  _defaultOptions = _.defaults(options, _defaultOptions);
+  _defaultOptions = _.defaults({}, options, _defaultOptions);
 };
