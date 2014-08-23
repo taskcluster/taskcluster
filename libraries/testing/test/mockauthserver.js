@@ -81,7 +81,7 @@ var clientLoader = function(clientId) {
  */
 var mockAuthServer = function(options) {
   // Set default options
-  _.defaults(options, {
+  options = _.defaults({}, options, {
     port:       1201
   });
 
