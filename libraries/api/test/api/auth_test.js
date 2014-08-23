@@ -156,51 +156,6 @@ suite("api/auth", function() {
   });
 
 
-  // Test getCredentials with by delegation
-  test("Auth by delegation", function() {
-    var url = 'http://localhost:23243/client/test-client/credentials';
-    return request
-      .get(url)
-      .hawk({
-        id:           'delegating-client',
-        key:          'test-token',
-        algorithm:    'sha256'
-      }, {
-        ext: new Buffer(JSON.stringify({
-          delegating:       true,
-          scopes:           ['auth:credenti*']
-        })).toString('base64')
-      })
-      .end()
-      .then(function(res) {
-        if(!res.ok) {
-          console.log(res.body);
-          assert(false, "Request failed");
-        }
-      });
-  });
-
-  // Test getCredentials with by delegation with can-delegate
-  test("No cheating by delegation", function() {
-    var url = 'http://localhost:23243/client/test-client/credentials';
-    return request
-      .get(url)
-      .hawk({
-        id:           'test-client',
-        key:          'test-token',
-        algorithm:    'sha256'
-      }, {
-        ext: new Buffer(JSON.stringify({
-          delegating:       true,
-          scopes:           ['auth:credenti*']
-        })).toString('base64')
-      })
-      .end()
-      .then(function(res) {
-        assert(res.status === 401, "Request didn't failed");
-      });
-  });
-
   test("Auth with restricted scopes", function() {
     var url = 'http://localhost:23243/client/test-client/credentials';
     return request
@@ -268,14 +223,9 @@ suite("api/auth", function() {
     return request
       .get(url)
       .hawk({
-        id:           'delegating-client',
-        key:          'test-token',
+        id:           'rockstar',
+        key:          'groupie',
         algorithm:    'sha256'
-      }, {
-        ext: new Buffer(JSON.stringify({
-          delegating:       true,
-          scopes:           ['service:myfolder/*']
-        })).toString('base64')
       })
       .end()
       .then(function(res) {
@@ -292,14 +242,9 @@ suite("api/auth", function() {
     return request
       .get(url)
       .hawk({
-        id:           'delegating-client',
-        key:          'test-token',
+        id:           'nobody',
+        key:          'nerd',
         algorithm:    'sha256'
-      }, {
-        ext: new Buffer(JSON.stringify({
-          delegating:       true,
-          scopes:           ['service:myfolde/*']
-        })).toString('base64')
       })
       .end()
       .then(function(res) {
@@ -336,14 +281,9 @@ suite("api/auth", function() {
         ]
       })
       .hawk({
-        id:           'delegating-client',
-        key:          'test-token',
+        id:           'rockstar',
+        key:          'groupie',
         algorithm:    'sha256'
-      }, {
-        ext: new Buffer(JSON.stringify({
-          delegating:       true,
-          scopes:           ['got-all/*', 'got-only/this']
-        })).toString('base64')
       })
       .end()
       .then(function(res) {
