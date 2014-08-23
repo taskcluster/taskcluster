@@ -24,7 +24,7 @@ var nconf       = require('nconf');
  */
 var config = function(options) {
   // Set default options
-  _.defaults(options, {
+  options = _.defaults({}, options, {
     defaults:         {},
     profile:          {},
     envs:             [],

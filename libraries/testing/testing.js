@@ -31,14 +31,14 @@ var uuid          = require('uuid');
  */
 var LocalApp = function(options) {
   events.EventEmitter.call(this);
-  this.options = _.defaults(options, {
+  this.options = _.defaults({}, options, {
     command:        undefined,
     args:           [],
     cwd:            process.cwd(),
     name:           'LocalApp',
     baseUrlPath:    '/'
   });
-  assert(options.command, "Command must be given");
+  assert(this.options.command, "Command must be given");
   this.onEarlyExit = this.onEarlyExit.bind(this);
 };
 
@@ -136,7 +136,7 @@ exports.LocalApp = LocalApp;
  * }
  */
 var schemas = function(options) {
-  _.defaults(options, {
+  options = _.defaults({}, options, {
     schemaPrefix:     ''  // Defaults to no schema prefix
   });
 
@@ -226,7 +226,7 @@ var createClientLoader = function(clients) {
 /** Create an mock authentication server for testing */
 var createMockAuthServer = function(options) {
   // Set default options
-  options = _.defaults(options || {}, {
+  options = _.defaults({}, options || {}, {
     port:       1207,
     env:        'development',
     forceSSL:   false,
