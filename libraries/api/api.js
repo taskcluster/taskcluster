@@ -136,7 +136,7 @@ Client.prototype.clone = function() {
  * return value with `API.router(...)` or `API.initialize(...)`.
  */
 var clientLoader = function(options) {
-  _.defaults(options, {
+  options = _.defaults({}, options, {
     baseUrl:          'https://auth.taskcluster.net/v1'
   });
   assert(options.clientId,    "ClientId is required");
@@ -171,7 +171,7 @@ var clientLoader = function(options) {
  * }
  */
 var clientCache = function(clientLoader, options) {
-  options = _.defaults(options || {
+  options = _.defaults({}, options || {
     size:             250,
     expiration:       60
   });
@@ -227,7 +227,7 @@ var clientCache = function(clientLoader, options) {
  * Ideally, nonces should probably be stored in something like memcache.
  */
 var nonceManager = function(options) {
-  options = _.defaults(options || {}, {
+  options = _.defaults({}, options || {}, {
     size:               250
   });
   var nextnonce = 0;
@@ -633,7 +633,7 @@ API.prototype.router = function(options) {
          "API.router() needs a validator");
 
   // Provide default options
-  _.defaults(options, {
+  options = _.defaults({}, options, {
     inputLimit:           '10mb',
     allowedCORSOrigin:    '*',
     context:              {},
@@ -792,7 +792,7 @@ API.prototype.reference = function(options) {
  */
 API.prototype.publish = function(options) {
   // Provide default options
-  _.defaults(options, {
+  options = _.defaults({}, options, {
     referenceBucket:    'references.taskcluster.net'
   });
   // Check that required options are provided
