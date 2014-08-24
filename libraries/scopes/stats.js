@@ -91,15 +91,22 @@ Series.prototype.reporter = function(drain) {
  *   connectionString:  '<protocol>://<user>:<pwd>@<host>:<port>/db/<database>',
  *
  *   // Max submission delay
- *   maxDelay:          60 * 5 // 5 minutes
+ *   maxDelay:          60 * 5, // 5 minutes
  *
  *   // Maximum number of pending points before writing
- *   maxPendingPoints:  250
+ *   maxPendingPoints:  250,
+ *
+ *   // Allow the connection string to use HTTP instead of HTTPS, this option
+ *   // is just to prevent accidental deployments with HTTP instead of HTTPS
+ *   // (there is no reason not to use HTTPS).
+ *   allowHTTP:         false
  * }
  */
 var Influx = function(options) {
   assert(options,                   "options are required");
   assert(options.connectionString,  "options.connectionString is missing");
+  assert(url.parse(options.connectionString).protocol === 'https:' ||
+         options.allowHTTP, "InfluxDB connectionString must use HTTPS!");
   options = _.defaults({}, options, {
     maxDelay:             60 * 5,
     maxPendingPoints:     250
@@ -238,3 +245,68 @@ Influx.prototype.pendingPoints = function() {
 // Export Influx
 exports.Influx = Influx;
 
+
+/**
+ * Create some express middleware that will send a point to `reporter` with
+ * the following columns:
+ *
+ * columns:
+ * {
+ *   duration:                stats.types.Number,  // Response time in ms
+ *   statusCode:              stats.types.Number,  // Response status code
+ *   requesstMethod:          stats.types.String,  // Request method
+ *   param<req.params...>:    stats.types.String   // Request URL parameters
+ * }
+ *
+ * As we include `req.params` prefixed with `param` it's necessary for the
+ * reporter to accept `additionalColumns` of type `String` or `Any`.
+ *
+ * You may define additional values to be submitted with the ping using the
+ * `additionalValues` object. This is useful if you create one middleware
+ * instance of each HTTP end-point and add a key like `name`.
+ */
+var createResponseTimer = function(reporter, additionalValues) {
+  return function(req, res, next) {
+    var sent = false;
+    var start = process.hrtime();
+    var send = function() {
+      try {
+        // Don't send twice
+        if (sent) {
+          return;
+        }
+        sent = true;
+
+        // Get duration
+        var d = process.hrtime(start);
+
+        var params = _.transform(req.params, function(result, value, key) {
+          // Prefix the parameter keys
+          result['param' + key[0].toUpperCase() + key.slice(1)] = value + '';
+        });
+
+        // Construct point
+        var point = _.defaults({
+          // Convert to milliseconds
+          duration:       d[0] * 1000 + (d[1] / 1000000),
+          requestMethod:  req.method.toLowerCase(),
+          statusCode:     res.statusCode
+        }, additionalValues, params);
+
+        // Send point to reporter
+        reporter(point);
+      }
+      catch(err) {
+        debug("Error while compiling response times: %s, %j",
+              err, err, err.stack);
+      }
+    };
+
+    res.once('finish', send);
+    res.once('close', send);
+    next();
+  };
+};
+
+// Export createResponseTimer
+exports.createResponseTimer = createResponseTimer;
