@@ -719,7 +719,7 @@ API.prototype.router = function(options) {
     // Statistics, if reporter is defined
     if (reporter) {
       middleware.push(stats.createResponseTimer(reporter, {
-        name:       entry.name,
+        method:     entry.name,
         component:  options.component
       }));
     }
