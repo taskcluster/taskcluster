@@ -13,6 +13,23 @@ require('superagent-hawk')(require('superagent'));
 var request       = require('superagent-promise');
 var Validator     = require('./validator').Validator;
 var utils         = require('./utils');
+var stats         = require('./stats');
+
+/** Structure for response times series */
+var ResponseTimes = new stats.Series({
+  name:                 'ResponseTimes',
+  columns: {
+    duration:           stats.types.Number,
+    statusCode:         stats.types.Number,
+    requestMethod:      stats.types.String,
+    method:             stats.types.String,
+    component:          stats.types.String
+  },
+  // Additional columns are req.params prefixed with "param", these should all
+  // be strings
+  additionalColumns:    stats.types.String
+});
+
 
 /**
  * Declare {input, output} schemas as options to validate
@@ -620,7 +637,9 @@ API.prototype.declare = function(options, handler) {
  *     clientId:          '...',  // TaskCluster clientId
  *     accessToken:       '...'   // Access token for clientId
  *     // Client must have the 'auth:credentials' scope.
- *   }
+ *   },
+ *   component:           'queue',      // Name of the component in stats
+ *   drain:               new Influx()  // drain for statistics
  * }
  *
  * The option `validator` must provided, and either `credentials` or
@@ -649,6 +668,13 @@ API.prototype.router = function(options) {
     }, options.credentials));
     // Wrap in a clientCache
     options.clientLoader = clientCache(options.clientLoader);
+  }
+
+  // Create statistics reporter
+  var reporter = null;
+  if (options.drain) {
+    assert(options.component, "The component must be named in statistics!");
+    reporter = ResponseTimes.reporter(options.drain);
   }
 
   // Create router
@@ -687,14 +713,26 @@ API.prototype.router = function(options) {
 
   // Add entries to router
   this._entries.forEach(function(entry) {
-    router[entry.method](
-      // Route pattern
-      entry.route,
-      // Middleware
+    // Route pattern
+    var middleware = [entry.route];
+
+    // Statistics, if reporter is defined
+    if (reporter) {
+      middleware.push(stats.createResponseTimer(reporter, {
+        name:       entry.name,
+        component:  options.component
+      }));
+    }
+
+    // Add authentication, schema validation and handler
+    middleware.push(
       authenticate(options.nonceManager, options.clientLoader, entry),
       schema(options.validator, entry),
       handle(entry.handler, options.context)
     );
+
+    // Create entry on router
+    router[entry.method].apply(router, middleware);
   });
 
   // Return router
