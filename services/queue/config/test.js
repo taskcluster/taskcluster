@@ -11,7 +11,8 @@ module.exports = {
     claimTimeout:                 30,
     artifactBucket:               'test-bucket-for-any-garbage',
     artifactContainer:            'artifacts',
-    taskContainer:                'tasks'
+    taskContainer:                'tasks',
+    responseTimeComponent:        'test-queue'
   },
 
   taskcluster: {
