@@ -1,4 +1,4 @@
-suite("api/route", function() {
+suite("api/responsetimer", function() {
   require('superagent-hawk')(require('superagent'));
   var request         = require('superagent-promise');
   var assert          = require('assert');
