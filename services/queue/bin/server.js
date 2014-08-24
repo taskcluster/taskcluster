@@ -28,7 +28,8 @@ var launch = function(profile) {
       'aws_accessKeyId',
       'aws_secretAccessKey',
       'azure_accountName',
-      'azure_accountKey'
+      'azure_accountKey',
+      'influx_connectionString'
     ],
     filename:     'taskcluster-queue'
   });
@@ -87,6 +88,13 @@ var launch = function(profile) {
     connectionString:   cfg.get('database:connectionString')
   });
 
+  // Create InfluxDB connection for submitting statistics
+  var influx = new base.stats.Influx({
+    connectionString:   cfg.get('influx:connectionString'),
+    maxDelay:           cfg.get('influx:maxDelay'),
+    maxPendingPoints:   cfg.get('influx:maxPendingPoints')
+  })
+
   // When: publisher, validator and containers are created, proceed
   debug("Waiting for resources to be created");
   return Promise.all(
@@ -118,7 +126,9 @@ var launch = function(profile) {
       publish:          cfg.get('queue:publishMetaData') === 'true',
       baseUrl:          cfg.get('server:publicUrl') + '/v1',
       referencePrefix:  'queue/v1/api.json',
-      aws:              cfg.get('aws')
+      aws:              cfg.get('aws'),
+      component:        cfg.get('queue:responseTimeComponent'),
+      drain:            influx
     });
   }).then(function(router) {
     debug("Configuring app");
