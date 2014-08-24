@@ -35,7 +35,10 @@ module.exports = {
 
     // Number of hours to wait extra before expiring artifacts
     // This is instead of expiring artifacts that have expiry set to just now.
-    artifactExpirationDelay:      '1'
+    artifactExpirationDelay:      '1',
+
+    // Component property in the responseTime statistics
+    responseTimeComponent:        'queue'
   },
 
   // TaskCluster configuration
@@ -86,6 +89,19 @@ module.exports = {
   amqp: {
     // URL for AMQP setup formatted as amqp://user:password@host:port/vhost
     url:                            undefined
+  },
+
+  // InfluxDB configuration
+  influx: {
+    // Usually provided as environment variables, must be on the form:
+    // https://<user>:<pwd>@<host>:<port>/db/<database>
+    connectionString:               undefined,
+
+    // Maximum delay before submitting pending points
+    maxDelay:                       5 * 60,
+
+    // Maximum pending points in memory
+    maxPendingPoints:               250
   },
 
   // AWS SDK configuration for publication of schemas and references
