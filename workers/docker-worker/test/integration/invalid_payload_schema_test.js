@@ -5,7 +5,7 @@ suite('Invalid payload schema', function() {
   test('invalid schema', co(function* () {
     var result = yield testworker({
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         // No command is an invalid schema.
         command: [],
         features: { bufferLog: true },

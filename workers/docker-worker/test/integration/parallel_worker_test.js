@@ -29,7 +29,7 @@ suite('Parallel workers', function() {
   test('tasks for two workers running in parallel', co(function* () {
     var taskTpl = {
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         command: cmd(
           // Sleep is used to ensure that each worker will get one task
           // (assumption being that both workers are in a running state and can

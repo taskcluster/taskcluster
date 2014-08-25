@@ -6,7 +6,7 @@ suite('setting env variables', function() {
     var expected = 'is woot';
     var result = yield testworker({
       payload: {
-        image:          'ubuntu',
+        image:          'taskcluster/test-ubuntu',
         env:            { WOOTBAR: expected },
         command:        ['/bin/bash', '-c', 'echo $WOOTBAR'],
         features: {

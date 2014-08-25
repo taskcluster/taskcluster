@@ -7,7 +7,7 @@ suite('logging to artifact', function() {
   test('artifact logger', co(function* () {
     var result = yield testworker({
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         command: [
           '/bin/bash',
           '-c',

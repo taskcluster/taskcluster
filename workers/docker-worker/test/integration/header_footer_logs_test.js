@@ -6,7 +6,7 @@ suite('Header/Footer logs', function() {
   test('Successful task', co(function* () {
     var result = yield testworker({
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         command: cmd(
           'exit 5'
         ),

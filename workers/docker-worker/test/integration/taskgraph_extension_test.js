@@ -39,7 +39,7 @@ suite('Extend Task Graph', function() {
         owner: 'test@localhost.local'
       },
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         command: cmd('echo "wooot custom!"'),
         features: {},
         artifacts: {},
@@ -73,7 +73,7 @@ suite('Extend Task Graph', function() {
             owner: 'tests@local.localhost'
           },
           payload: {
-            image: 'ubuntu',
+            image: 'taskcluster/test-ubuntu',
             command: cmd(
               'echo \'' + json + '\' > /graph.json'
             ),

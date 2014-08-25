@@ -40,7 +40,7 @@ suite('Shutdown on idle', function() {
     var res = yield {
       post: worker.postToQueue({
         payload: {
-          image: 'ubuntu',
+          image: 'taskcluster/test-ubuntu',
           command: cmd(
             'echo "Okay, this is now done"'
           ),
@@ -65,7 +65,7 @@ suite('Shutdown on idle', function() {
     var res = yield {
       post: worker.postToQueue({
         payload: {
-          image: 'ubuntu',
+          image: 'taskcluster/test-ubuntu',
           command: cmd(
             'echo "Okay, this is now done"'
           ),
@@ -84,7 +84,7 @@ suite('Shutdown on idle', function() {
     var idling = yield {
       post: worker.postToQueue({
         payload: {
-          image: 'ubuntu',
+          image: 'taskcluster/test-ubuntu',
           command: cmd(
             'echo "Okay, this is now done"'
           ),
@@ -98,7 +98,7 @@ suite('Shutdown on idle', function() {
     var working = yield {
       create: worker.postToQueue({
         payload: {
-          image: 'ubuntu',
+          image: 'taskcluster/test-ubuntu',
           command: cmd(
             'echo "Okay, this is now done"'
           ),

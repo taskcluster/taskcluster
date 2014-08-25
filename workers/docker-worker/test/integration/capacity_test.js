@@ -33,7 +33,7 @@ suite('Capacity', function() {
     for (var i = 0; i < CAPACITY; i++) {
       tasks.push(worker.postToQueue({
         payload: {
-          image: 'ubuntu',
+          image: 'taskcluster/test-ubuntu',
           command: cmd(
             'sleep ' + sleep
           ),

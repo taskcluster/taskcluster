@@ -6,7 +6,7 @@ suite('live logging', function() {
   test('live logging of content', co(function* () {
     var result = yield testworker({
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         command: [
           '/bin/bash',
           '-c',

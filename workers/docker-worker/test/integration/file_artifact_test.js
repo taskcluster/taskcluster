@@ -8,7 +8,7 @@ suite('artifact extration tests', function() {
   test('extract artifact', co(function* () {
     var result = yield testworker({
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         command: cmd(
           'mkdir /artifacts/',
           'echo "xfoo" > /artifacts/xfoo.txt',
@@ -55,7 +55,7 @@ suite('artifact extration tests', function() {
   test('attempt to upload directory as file', co(function* () {
     var result = yield testworker({
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         command: cmd('ls'),
         features: {
           // No need to actually issue live logging...
@@ -81,7 +81,7 @@ suite('artifact extration tests', function() {
   test('extract missing artifact', co(function*() {
     var result = yield testworker({
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         command: cmd(
           'echo "the user is:" > /username.txt',
           'whoami >> /username.txt',
@@ -112,7 +112,7 @@ suite('artifact extration tests', function() {
   test('both missing and found artifacts', co(function* () {
     var result = yield testworker({
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         command: cmd(
           'echo "the user is:" > /username.txt',
           'whoami >> /username.txt',

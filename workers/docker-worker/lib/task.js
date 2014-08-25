@@ -262,7 +262,9 @@ Task.prototype = {
     // the name is formatted (such as `registry`) so simply pull here and do
     // not check for credentials.
     if (!dockerImage.canAuthenticate()) {
-      return pullImageStreamTo(this.runtime.docker, payload.image, this.stream);
+      return yield pullImageStreamTo(
+        this.runtime.docker, payload.image, this.stream
+      );
     }
 
     var pullOptions = {};

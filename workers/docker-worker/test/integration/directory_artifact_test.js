@@ -8,7 +8,7 @@ suite('Directory artifact', function() {
   test('attempt to upload file as directory', co(function* () {
     var result = yield testworker({
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         command: cmd('echo "xfoo" > /xfoo.txt'),
         features: {
           // No need to actually issue live logging...
@@ -34,7 +34,7 @@ suite('Directory artifact', function() {
   test('upload an entire directory', co(function* () {
     var result = yield testworker({
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         command: cmd(
           'mkdir -p "/xfoo/wow"',
           'echo "xfoo" > /xfoo/wow/bar.txt',

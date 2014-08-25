@@ -6,7 +6,7 @@ suite('Task duration stats', function() {
   test('1s long task minimum', co(function* () {
     var result = yield testworker({
       payload: {
-        image: 'ubuntu',
+        image: 'taskcluster/test-ubuntu',
         command: cmd(
           'sleep 1'
         ),

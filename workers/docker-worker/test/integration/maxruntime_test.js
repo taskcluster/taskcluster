@@ -5,7 +5,7 @@ suite('worker timeouts', function() {
   test('worker sleep more than maxRunTime', co(function* () {
     var result = yield testworker({
       payload: {
-        image:          'ubuntu',
+        image:          'taskcluster/test-ubuntu',
         command:        [
           '/bin/bash', '-c', 'echo "Hello"; sleep 20; echo "done";'
         ],
