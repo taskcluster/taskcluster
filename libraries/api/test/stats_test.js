@@ -270,6 +270,28 @@ suite('stats', function() {
     assert(err, "Expected an error");
     assert(influx.pendingPoints() === 0, "We should have 0 points");
   });
+
+  test("startProcessUsageReporting (and stop)", function() {
+    // Create InfluxDB connection
+    var influx = new base.stats.Influx({
+      connectionString:   cfg.get('influxdb:connectionString')
+    });
+
+    // Start monitoring
+    base.stats.startProcessUsageReporting({
+      drain:      influx,
+      interval:   0.1,
+      component:  'taskcluster-base-test',
+      process:    'mocha'
+    });
+
+    return new Promise(function(accept) {
+      setTimeout(accept, 400);
+    }).then(function() {
+      assert(influx.pendingPoints() >= 2, "We should have at least 2 points");
+      base.stats.stopProcessUsageReporting();
+    });
+  });
 });
 
 
