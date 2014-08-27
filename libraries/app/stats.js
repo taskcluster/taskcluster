@@ -310,3 +310,90 @@ var createResponseTimer = function(reporter, additionalValues) {
 
 // Export createResponseTimer
 exports.createResponseTimer = createResponseTimer;
+
+
+/** Usage reports format for monitorProcessUsage */
+var UsageReports = new Series({
+  name:       'UsageReports',
+  columns: {
+    component:      types.String,
+    process:        types.String,
+    cpu:            types.Number,
+    memory:         types.Number
+  }
+});
+
+/** Interval handle for process usage monitoring */
+var _processUsageReportingInterval = null;
+
+/**
+ * Monitor CPU and memory for this instance.
+ *
+ * options: {
+ *   drain:        new Influx(...), // Place to send the pings
+ *   interval:     60,              // Report every 1 minute
+ *   component:    'queue',         // Identifier for the taskcluster component
+ *   process:      'server'         // Process name
+ * }
+ *
+ * Note, this is global in the current process.
+ */
+var startProcessUsageReporting = function(options) {
+  // Validate options
+  assert(options,           "Options are required");
+  assert(options.drain,     "A drain for the measurements must be provided!");
+  assert(options.component, "A component must be specified");
+  assert(options.process,   "A process name must be specified");
+
+  // Provide default options
+  options = _.defaults({}, options, {
+    interval:         60
+  });
+
+  // Clear reporting if already started
+  if (_processUsageReportingInterval) {
+    debug("WARNING: startProcessUsageReporting() already started!, options %j",
+          options);
+    clearInterval(_processUsageReportingInterval);
+    _processUsageReportingInterval = null;
+  }
+
+  // Lazy load the usage monitor module
+  var usage = require('usage');
+
+  // Create reporter
+  var reporter = UsageReports.reporter(options.drain);
+
+  // Set interval to report usage at interval
+  _processUsageReportingInterval = setInterval(function() {
+    // Lookup usage for the current process
+    usage.lookup(process.pid, {keepHistory: true}, function(err, result) {
+      // Check for error
+      if (err) {
+        debug("Failed to get usage statistics, err: %s, %j",
+              err, err, err.stack);
+        return;
+      }
+
+      // Report usage
+      reporter({
+        component:      options.component,
+        process:        options.process,
+        cpu:            result.cpu,
+        memory:         result.memory
+      });
+    });
+  }, options.interval * 1000);
+};
+
+/** Stop process usage reporting */
+var stopProcessUsageReporting = function() {
+  if (_processUsageReportingInterval) {
+    clearInterval(_processUsageReportingInterval);
+    _processUsageReportingInterval = null;
+  }
+}
+
+// Export startProcessUsageReporting and stopProcessUsageReporting
+exports.startProcessUsageReporting  = startProcessUsageReporting;
+exports.stopProcessUsageReporting   = stopProcessUsageReporting;
