@@ -17,11 +17,6 @@ var DockerProc = require('dockerode-process');
 var PassThrough = require('stream').PassThrough;
 var States = require('./states');
 
-// We must reclaim somewhat frequently (but not too frequently) this is the
-// divisor used to figure out when to issue the reclaim based on taken until for
-// example `2` would mean half the time between now and taken until.
-var RECLAIM_DIVISOR = 1.3;
-
 var PAYLOAD_SCHEMA =
   'http://schemas.taskcluster.net/docker-worker/v1/payload.json#';
 
@@ -185,6 +180,54 @@ Task.prototype = {
     );
   },
 
+  /**
+  Determine when the right time is to issue another reclaim then schedule it
+  via set timeout.
+  */
+  scheduleReclaim: function* (claim) {
+    // Figure out when to issue the next claim...
+    var takenUntil = (new Date(claim.takenUntil) - new Date())
+    var nextClaim = takenUntil / this.runtime.task.reclaimDivisor;
+
+    // This is tricky ensure we have logs...
+    this.runtime.log('next claim', {
+      taskId: this.status.taskId,
+      runId: this.runId,
+      time: nextClaim
+    });
+
+    // Figure out when we need to make the next claim...
+    this.clearClaimTimeout();
+
+    this.claimTimeoutId =
+      setTimeout(co(this.reclaimTask).bind(this), nextClaim);
+  },
+
+
+  /**
+  Clear next reclaim if one is pending...
+  */
+  clearClaimTimeout: function() {
+    if (this.claimTimeoutId) {
+      clearTimeout(this.claimTimeoutId);
+      this.claimTimeoutId = null;
+    }
+  },
+
+  /**
+  Reclaim the current task and schedule the next reclaim...
+  */
+  reclaimTask: function* () {
+    this.runtime.log('issue reclaim');
+    this.runtime.stats.increment('tasks.reclaims');
+    this.claim = yield this.runtime.stats.timeGen(
+      'tasks.time.reclaim',
+      this.runtime.queue.reclaimTask(this.status.taskId, this.runId)
+    );
+    this.runtime.log('issued reclaim', { claim: this.claim });
+    yield this.scheduleReclaim(this.claim);
+  },
+
   claimTask: function* () {
     this.runtime.stats.increment('tasks.claims');
     var claimConfig = {
@@ -197,27 +240,7 @@ Task.prototype = {
       this.runtime.queue.claimTask(this.status.taskId, this.runId, claimConfig)
     );
 
-    // Figure out when to issue the next claim...
-    var takenUntil = (new Date(this.claim.takenUntil) - new Date())
-    var nextClaim = takenUntil / RECLAIM_DIVISOR;
-
-    // This is tricky ensure we have logs...
-    this.runtime.log('next claim', {
-      taskId: this.status.taskId,
-      runId: this.runId,
-      time: nextClaim
-    });
-
-    // Figure out when we need to make the next claim...
-    this.clearClaimTimeout();
-    this.claimTimeoutId = setTimeout(co(this.claimTask.bind(this)), nextClaim);
-  },
-
-  clearClaimTimeout: function() {
-    if (this.claimTimeoutId) {
-      clearTimeout(this.claimTimeoutId);
-      this.claimTimeoutId = null;
-    }
+    yield this.scheduleReclaim(this.claim);
   },
 
   claimAndRun: function* () {
@@ -240,7 +263,6 @@ Task.prototype = {
       this.clearTimeout();
       throw e
     }
-
     // Called again outside so we don't run this twice in the same try/catch
     // segment potentially causing a loop...
     this.clearClaimTimeout();
@@ -370,6 +392,11 @@ Task.prototype = {
     var runtimeTimeoutId = setTimeout(function() {
       stats.increment('tasks.timed_out');
       stats.gauge('tasks.timed_out.max_run_time', this.task.payload.maxRunTime);
+      this.runtime.log('task max runtime timeout', {
+        maxRunTime: this.task.payload.maxRunTime,
+        taskId: this.status.taskId,
+        runId: this.runId
+      });
       // we don't wait for the promise to resolve just trigger kill here which
       // will cause run below to stop processing the task and give us an error
       // exit code.

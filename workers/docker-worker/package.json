@@ -48,6 +48,7 @@
     "taskcluster-base": "^0.4.2",
     "taskcluster-client": "^0.14.4",
     "temporary": "0.0.8",
+    "time-chunked-stream": "^1.0.0",
     "uuid": "^1.4.1",
     "wordwrap": "0.0.2"
   },

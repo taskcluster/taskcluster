@@ -10,6 +10,7 @@ var streamClosed = require('../stream_closed');
 
 var URL = require('url')
 var Promise = require('promise');
+var TimeChunkedStream = require('time-chunked-stream');
 var BlobStream = require('taskcluster-azure-blobstream');
 
 var ARTIFACT_NAME = 'public/logs/terminal_live.log';
@@ -76,7 +77,11 @@ LiveLog.prototype = {
       options
     );
 
-    this.stream = azureBlobStreamFromUrl(artifact.putUrl);
+    // XXX: Azure has hard limits on number of writes buffer them by interval.
+    this.stream = new TimeChunkedStream({
+      timeout: task.runtime.logging.liveLogChunkInterval
+    });
+    this.stream.pipe(azureBlobStreamFromUrl(artifact.putUrl));
     task.stream.pipe(this.stream);
   },
 
