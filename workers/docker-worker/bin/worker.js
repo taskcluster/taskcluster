@@ -34,7 +34,7 @@ program.usage(
 '      3. $PWD/docker-worker.conf.json \n' +
 '      4. ~/docker-worker.conf.json \n' +
 '      5. /etc/docker-worker.conf.json \n' +
-'      6. Host specific configuration (userdata, test data, etc..) ' +
+'      6. Host specific configuration (userdata, test data, etc..) \n' +
 '      7. Command line flags (capacity, workerId, etc...)'
 );
 
