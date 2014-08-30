@@ -1,4 +1,4 @@
-package stream
+package writer
 
 import (
 	"bytes"
@@ -8,6 +8,8 @@ import (
 	"sync"
 	"testing"
 )
+
+import . "github.com/visionmedia/go-debug"
 
 // Test structure which implements `Read` interface but EOF is suppressed until
 // ended = true.
