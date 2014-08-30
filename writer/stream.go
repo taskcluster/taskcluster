@@ -110,11 +110,11 @@ func (self *Stream) Consume() error {
 		self.debug("reading bytes %d", bytesRead)
 
 		if bytesRead > 0 {
-			self.debug("read %d total offset %d", bytesRead, self.Offset)
 			self.Offset += bytesRead
 		}
 
 		eof := readErr != nil && readErr == io.EOF
+		self.debug("read: %d total offset: %d eof: %v", bytesRead, self.Offset, eof)
 		event := Event{
 			Err:    readErr,
 			Offset: self.Offset,
