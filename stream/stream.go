@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 )
 
@@ -87,7 +86,6 @@ func (self *Stream) Consume() error {
 
 	defer func() {
 		self.File.Close()
-		log.Println("closed")
 	}()
 
 	buf := make([]byte, READ_BUFFER_SIZE)

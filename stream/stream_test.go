@@ -100,6 +100,10 @@ func TestStream(t *testing.T) {
 
 	lastOffset := 0
 	for event := range handle.Events {
+		if event.Err != nil && event.Err != io.EOF {
+			t.Fatal(event.Err)
+		}
+
 		if event.Offset != lastOffset {
 			expectedLen := event.Offset - lastOffset
 
