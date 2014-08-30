@@ -9,8 +9,6 @@ import (
 	"testing"
 )
 
-import . "github.com/visionmedia/go-debug"
-
 // Test structure which implements `Read` interface but EOF is suppressed until
 // ended = true.
 type PassThrough struct {

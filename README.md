@@ -3,6 +3,10 @@ continuous-log-serve
 
 continuous log serve prototype in go...
 
+## Dependencies:
+
+	- `go-debug`
+
 ## Goals:
   - Don't use up too much memory per log file (1-2mb) but don't block
     too freqently on IO.
