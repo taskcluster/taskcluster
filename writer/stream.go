@@ -135,6 +135,7 @@ func (self *Stream) Consume() error {
 
 		// If we are done reading the stream break the loop...
 		if eof {
+			self.Ended = true
 			self.debug("finishing consume eof")
 			break
 		}
