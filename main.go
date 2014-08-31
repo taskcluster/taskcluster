@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	"github.com/lightsofapollo/continuous-log-serve/writer"
@@ -18,14 +17,12 @@ import (
 var debug = Debug("continuous-log-serve")
 
 type Routes struct {
-	stream   *writer.Stream
-	reqGroup *sync.WaitGroup
+	stream *writer.Stream
 }
 
 func NewRoutes(stream *writer.Stream) *Routes {
 	return &Routes{
-		stream:   stream,
-		reqGroup: &sync.WaitGroup{},
+		stream: stream,
 	}
 }
 
@@ -47,7 +44,6 @@ func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
 	debug("wrote headers...")
 
 	// Finalize the stream with single zero byte length write
-	self.reqGroup.Add(1)
 	defer func() {
 		// Ensure we close our file handle...
 		file.Close()
@@ -58,7 +54,6 @@ func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
 
 		// Ensure that any last bytes are flushed first...
 		debug("send connection close...")
-		self.reqGroup.Done()
 	}()
 
 	// TODO: Implement byte range fetching...
