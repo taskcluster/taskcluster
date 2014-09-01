@@ -369,6 +369,14 @@ suite('Post artifacts', function() {
         contentType:  'text/html'
       });
     }).then(function() {
+      debug("### Send post artifact request (again w. new URL)");
+      return subject.queue.createArtifact(taskId, 0, 'public/redirect.json', {
+        storageType:  'reference',
+        expires:      deadline.toJSON(),
+        url:          'https://www.google.com',
+        contentType:  'text/html'
+      });
+    }).then(function() {
       var name = 'public/redirect.json';
       var url = urljoin(
         subject.baseUrl,
