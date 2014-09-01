@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
@@ -28,14 +29,21 @@ func NewRoutes(stream *writer.Stream) *Routes {
 
 func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
 	handle := self.stream.Observe()
+	defer func() {
+		// Ensure we close our file handle...
+		// Ensure the stream is cleaned up after errors, etc...
+		self.stream.Unobserve(handle)
+		debug("send connection close...")
+	}()
+
 	file, err := os.Open(self.stream.File.Name())
-	buffer := make([]byte, 8192)
 
 	req.Header.Set("Content-Type", "text/plain; charset=utf-8")
 	req.Header.Set("Content-Encoding", "chunked")
 
 	if err != nil {
 		writer.WriteHeader(500)
+		writer.Write([]byte("Could not open writer file..."))
 		return
 	}
 
@@ -43,85 +51,50 @@ func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
 	writer.WriteHeader(200)
 	debug("wrote headers...")
 
-	// Finalize the stream with single zero byte length write
-	defer func() {
-		// Ensure we close our file handle...
-		file.Close()
-		// Ensure the stream is cleaned up after errors, etc...
-		self.stream.Unobserve(handle)
-		// Write final chunks errors here are not important.
-		writer.Write(make([]byte, 0))
+	// Keep a record of the starting offset to verify we copied the right
+	// things...
+	startingOffset := self.stream.Offset
 
-		// Ensure that any last bytes are flushed first...
-		debug("send connection close...")
-	}()
+	// Begin by reading data from the file sink.
+	io.CopyN(writer, file, int64(self.stream.Offset))
 
-	// TODO: Implement byte range fetching...
+	if self.stream.Ended {
+		// Handle the edge case where the file has ended while we where coping bytes
+		// over above.
+		if startingOffset != self.stream.Offset {
+			io.Copy(writer, file) // copy drains entire file until EOF
+		}
+		return
+	}
 
-	ending := false
+	// Always trigger an initial flush before waiting for more data who knows
+	// when the events will filter in...
+	writer.(http.Flusher).Flush()
+
 	for {
-		debug("server begin read")
-		bytesRead, err := file.Read(buffer)
-
-		// Be careful to only write non zero length buffer (zero length buffer will
-		// end the http stream!)
-		if bytesRead > 0 {
-			debug("Write to server %d bytes", bytesRead)
-			// TODO: Handle write errors...
-			wrote, err := writer.Write(buffer[0:bytesRead])
-
-			// The intention here is speed over everything else so flush as soon as we
-			// have some bytes this will result in many more packets and more overhead
-			// from chunking but this is an okay trade off given the intention of the
-			// fastest live logging possible over http.
+		select {
+		case event := <-handle.Events:
+			// XXX: This should be safe from null deref since we always set a buffer
+			// but is a potential bug here...
+			_, writeErr := writer.Write((*event.Bytes)[0:event.Length])
+			log.Println(event.Length, (*event.Bytes)[0:event.Length])
+			// XXX: Make the flushing time based...
 			writer.(http.Flusher).Flush()
-			log.Println(wrote, bytesRead)
 
-			// Handle writer errors by aborting the connection...
-			if err != nil {
-				log.Println("Aborting http request writer failure...")
+			if writeErr != nil {
+				log.Println("Write error", writeErr)
 				return
 			}
 
-			// If we handled a successful read try reading again...
-			continue
-		}
-
-		// We issue the flush after completely emptying any underlying files...
-		//bufrw.Flush()
-
-		// If we are ending break the loop...
-		if ending {
-			debug("server ending read")
-			return
-		}
-
-		// If we are at the end of the sink wait until we have written more bytes to
-		// it.
-		if err == io.EOF {
-
-			// If the stream has ended then we cannot wait for more events are we are
-			// done so break the read loop...
-			if self.stream.Ended {
-				break
+			if event.Err != nil {
+				log.Println("Error handling event", event.Err)
+				return
 			}
 
-			debug("waiting for event...")
-			event := <-handle.Events
-			debug(
-				"got event offset: %d, end: %d, err: %v",
-				event.Offset, event.End, event.Err,
-			)
-			ending = event.End
-
-			// Handle errors which should close the stream...
-			if event.Err != nil && event.Err != io.EOF {
-				log.Println("Event error: %v", event.Err)
-				break
+			if event.End {
+				// Successful end...
+				return
 			}
-		} else if err != nil {
-			log.Println("Unknown error reading: %v", err)
-			break
 		}
 	}
 }
@@ -148,9 +121,18 @@ func inputHandler(conn net.Conn) {
 		}
 	}()
 
-	streamHandler := NewRoutes(stream)
+	mux := http.NewServeMux()
+	mux.Handle("/log", NewRoutes(stream))
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/heap", pprof.Handler("heap").ServeHTTP)
+	mux.HandleFunc("/debug/pprof/goroutine", pprof.Handler("goroutine").ServeHTTP)
+	mux.HandleFunc("/debug/pprof/threadcreate", pprof.Handler("threadcreate").ServeHTTP)
+
 	server := &http.Server{
-		Handler: streamHandler,
+		Handler: mux,
 	}
 
 	_, port, err := net.SplitHostPort(listener.Addr().String())
@@ -168,7 +150,7 @@ func inputHandler(conn net.Conn) {
 	}
 }
 
-func inputServer() {
+func main() {
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal("getwd error", err)
@@ -204,8 +186,4 @@ func inputServer() {
 		}
 		go inputHandler(conn)
 	}
-}
-
-func main() {
-	inputServer()
 }

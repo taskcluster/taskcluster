@@ -9,18 +9,18 @@ import (
 	. "github.com/visionmedia/go-debug"
 )
 
-// Buffer size for reading the logs... This is likely even large given that we
-// stream frequently but in small chunks...
-const READ_BUFFER_SIZE = 8192
+const READ_BUFFER_SIZE = 16 * 1024 // 16kb chosen at random
 
 type Event struct {
 	Err    error
-	Offset int
+	Bytes  *[]byte
+	Length int
 	End    bool
+	Offset int
 }
 
 type StreamHandle struct {
-	Events chan Event
+	Events chan *Event
 	Path   string
 }
 
@@ -75,7 +75,7 @@ func (self *Stream) Unobserve(handle *StreamHandle) error {
 }
 
 func (self *Stream) Observe() *StreamHandle {
-	events := make(chan Event)
+	events := make(chan *Event)
 	handle := StreamHandle{
 		Events: events,
 		Path:   self.File.Name(),
@@ -103,9 +103,9 @@ func (self *Stream) Consume() error {
 		}
 	}()
 
-	buf := make([]byte, READ_BUFFER_SIZE)
 	tee := io.TeeReader(*self.Reader, &self.File)
 	for {
+		buf := make([]byte, READ_BUFFER_SIZE)
 		bytesRead, readErr := tee.Read(buf)
 		self.debug("reading bytes %d", bytesRead)
 
@@ -113,18 +113,29 @@ func (self *Stream) Consume() error {
 			self.Offset += bytesRead
 		}
 
-		eof := readErr != nil && readErr == io.EOF
+		eof := readErr == io.EOF
+
+		// EOF in this context should not be sent as an event error it is handled in
+		// the .End case...
+		var eventErr error
+		if !eof && readErr != nil {
+			eventErr = readErr
+		}
+
 		self.debug("read: %d total offset: %d eof: %v", bytesRead, self.Offset, eof)
 		event := Event{
-			Err:    readErr,
+			Length: bytesRead,
 			Offset: self.Offset,
+			Bytes:  &buf,
+			Err:    eventErr,
 			End:    eof,
 		}
 
 		// Emit all the messages...
 		self.debug("notify %d event handlers", len(self.handles))
 		for idx := range self.handles {
-			self.handles[idx].Events <- event
+			// Events must be read only this will break stuff if used otherwise...
+			self.handles[idx].Events <- &event
 		}
 
 		// Return the reader errors (except for EOF) and abort.
