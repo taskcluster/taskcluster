@@ -4,7 +4,7 @@
   "description": "Docker task host for linux.",
   "main": "index.js",
   "bin": {
-    "docker-worker": "worker.js"
+    "docker-worker": "bin/worker.js"
   },
   "directories": {
     "test": "test"
