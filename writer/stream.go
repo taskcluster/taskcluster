@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/deckarep/golang-set"
 	. "github.com/visionmedia/go-debug"
 )
 
@@ -32,7 +33,7 @@ type Stream struct {
 	Reading bool
 
 	debug   DebugFunction
-	handles []StreamHandle
+	handles mapset.Set
 }
 
 func NewStream(read io.Reader) (*Stream, error) {
@@ -58,20 +59,14 @@ func NewStream(read io.Reader) (*Stream, error) {
 		Ended:   false,
 		File:    *file,
 
-		handles: make([]StreamHandle, 0),
+		handles: mapset.NewSet(),
 		debug:   debug,
 	}, nil
 }
 
-func (self *Stream) Unobserve(handle *StreamHandle) error {
+func (self *Stream) Unobserve(handle *StreamHandle) {
 	self.debug("unobserve")
-	for i := 0; i < len(self.handles); i++ {
-		if self.handles[i] == *handle {
-			self.handles = append(self.handles[:i], self.handles[i+1:]...)
-			return nil
-		}
-	}
-	return fmt.Errorf("Attempting to remove listener twice...")
+	self.handles.Remove(handle)
 }
 
 func (self *Stream) Observe() *StreamHandle {
@@ -81,7 +76,7 @@ func (self *Stream) Observe() *StreamHandle {
 		Path:   self.File.Name(),
 	}
 
-	self.handles = append(self.handles, handle)
+	self.handles.Add(&handle)
 	return &handle
 }
 
@@ -97,10 +92,8 @@ func (self *Stream) Consume() error {
 		self.File.Close()
 
 		// Cleanup all handles after the consumption is complete...
-		self.debug("removing %d handles", len(self.handles))
-		for idx := range self.handles {
-			self.Unobserve(&self.handles[idx])
-		}
+		self.debug("removing %d handles", self.handles.Cardinality())
+		self.handles.Clear()
 	}()
 
 	tee := io.TeeReader(*self.Reader, &self.File)
@@ -132,10 +125,8 @@ func (self *Stream) Consume() error {
 		}
 
 		// Emit all the messages...
-		self.debug("notify %d event handlers", len(self.handles))
-		for idx := range self.handles {
-			// Events must be read only this will break stuff if used otherwise...
-			self.handles[idx].Events <- &event
+		for handle := range self.handles.Iter() {
+			handle.(*StreamHandle).Events <- &event
 		}
 
 		// Return the reader errors (except for EOF) and abort.

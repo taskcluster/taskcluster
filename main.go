@@ -9,26 +9,48 @@ import (
 	"net/http/pprof"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
+	"time"
 
-	"github.com/lightsofapollo/continuous-log-serve/writer"
+	stream "github.com/lightsofapollo/continuous-log-serve/writer"
 	. "github.com/visionmedia/go-debug"
 )
 
 var debug = Debug("continuous-log-serve")
 
+var OBSERVE_TIMEOUT = time.Second * 10
+var OBSERVE_EVENT_TIMEOUT = time.Second * 30
+
 type Routes struct {
-	stream *writer.Stream
+	stream *stream.Stream
 }
 
-func NewRoutes(stream *writer.Stream) *Routes {
+func NewRoutes(stream *stream.Stream) *Routes {
 	return &Routes{
 		stream: stream,
 	}
 }
 
 func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
-	handle := self.stream.Observe()
+	// Ensure we don't lock up while trying to serve request...
+	timeout := time.After(OBSERVE_TIMEOUT)
+	// Begin listening (this involves locks so we use a timeout...)
+	pendingHandle := make(chan *stream.StreamHandle, 1)
+	go func() {
+		pendingHandle <- self.stream.Observe()
+	}()
+
+	var handle *stream.StreamHandle
+	select {
+	case handle = <-pendingHandle:
+	case <-timeout:
+		log.Println("Timeout while aquiring stream handle...")
+		writer.WriteHeader(500)
+		writer.Write([]byte("Cannot aquire stream... Please retry."))
+		return
+	}
+
 	defer func() {
 		// Ensure we close our file handle...
 		// Ensure the stream is cleaned up after errors, etc...
@@ -72,12 +94,25 @@ func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
 	writer.(http.Flusher).Flush()
 
 	for {
+		eventChan := make(chan *stream.Event, 1)
+		timeout := time.After(OBSERVE_EVENT_TIMEOUT)
+
+		go func() {
+			event := <-handle.Events
+			eventChan <- event
+		}()
+
+		// TODO: Add timeouts...
 		select {
-		case event := <-handle.Events:
+		case <-timeout:
+			log.Println("Timeout while waiting for event...")
+			// TODO: We need to "abort" the connection here rather then finish the
+			// request cleanly!
+			return
+		case event := <-eventChan:
 			// XXX: This should be safe from null deref since we always set a buffer
 			// but is a potential bug here...
 			_, writeErr := writer.Write((*event.Bytes)[0:event.Length])
-			log.Println(event.Length, (*event.Bytes)[0:event.Length])
 			// XXX: Make the flushing time based...
 			writer.(http.Flusher).Flush()
 
@@ -107,7 +142,7 @@ func inputHandler(conn net.Conn) {
 		log.Fatal("Could not create listener...")
 	}
 
-	stream, err := writer.NewStream(conn)
+	stream, err := stream.NewStream(conn)
 	if err != nil {
 		log.Fatal("Failed to open writer stream")
 	}
@@ -144,10 +179,16 @@ func inputHandler(conn net.Conn) {
 	log.Printf("http://localhost:%s/", port)
 
 	// Begin serving ...
-	err = server.Serve(listener)
-	if err != nil {
-		log.Fatal("Error serving request", err)
-	}
+	wait := sync.WaitGroup{}
+	wait.Add(1)
+	go func() {
+		err = server.Serve(listener)
+		if err != nil {
+			log.Fatal("Error serving request", err)
+		}
+		wait.Done()
+	}()
+	wait.Wait()
 }
 
 func main() {
