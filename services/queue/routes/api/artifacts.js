@@ -69,7 +69,18 @@ api.declare({
     "turns out to be a directory. Clients requesting an error artifact will",
     "get a `403` (Forbidden) response. This is mainly designed to ensure that",
     "dependent tasks can distinguish between artifacts that were suppose to",
-    "be generated and artifacts for which the name is misspelled."
+    "be generated and artifacts for which the name is misspelled.",
+    "",
+    "**Artifact immutability**, generally speaking you cannot overwrite an",
+    "artifact when created. But if you repeat the request with the same",
+    "properties the request will succeed as the operation is idempotent.",
+    "This is useful if you need to refresh a signed URL while uploading.",
+    "Do not abuse this to overwrite artifacts created by another entity!",
+    "Such as worker-host overwriting artifact created by worker-code.",
+    "",
+    "As a special case the `url` property on _reference artifacts_ can be",
+    "updated. You should only use this to update the `url` property for",
+    "reference artifacts your process has created."
   ].join('\n')
 }, function(req ,res) {
   // Validate parameters
@@ -201,8 +212,30 @@ api.declare({
       if (!err || err.code !== 'EntityAlreadyExists') {
         throw err;
       }
-      // Load artifact if it exists
-      return ctx.Artifact.load(taskId, runId, name);
+      // Load and update artifact if it exists
+      return ctx.Artifact.load(taskId, runId, name).then(function(artifact) {
+        // Update the artifact with new expires (assuming this allowed)
+        return artifact.modify(function() {
+          // Only modify if version, storage and expires are match
+          // If they don't match a 409 will be returned later using the same
+          // checks
+          if (this.version === 1 &&
+              this.storageType === input.storageType &&
+              this.expires <= expires) {
+
+            // Only reference artifacts can be updated
+            if (this.storageType === 'reference') {
+              this.details = _.defaults({}, details, this.details);
+            }
+
+            // Only update if details match, we'll handle 409 errors later with
+            // what is the same test
+            if (_.isEqual(this.details, details)) {
+              this.expires = expires;
+            }
+          }
+        });
+      });
     }).then(function(artifact) {
       // Check that it is created as we expected it
       // Just, in case it already existed and we're retrying the
@@ -223,13 +256,13 @@ api.declare({
         workerGroup:    workerGroup,
         workerId:       workerId,
         runId:          runId
-      }, task.routes);
-    }).then(function() {
-      // Wait for the reply promise to resolve and return it
-      return reply.then(function(retval) {
-        return res.reply(retval);
+      }, task.routes).then(function() {
+        // Wait for the reply promise to resolve and return it
+        return reply.then(function(retval) {
+          return res.reply(retval);
+        });
       });
-    })
+    });
   });
 });
 
