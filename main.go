@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"sync"
 
@@ -102,6 +103,17 @@ func getLog(
 	}
 }
 
+// Logic here mostly inspired by what docker does...
+func attachProfiler(router *http.ServeMux) {
+	router.HandleFunc("/debug/pprof/", pprof.Index)
+	router.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	router.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	router.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	router.HandleFunc("/debug/pprof/heap", pprof.Handler("heap").ServeHTTP)
+	router.HandleFunc("/debug/pprof/goroutine", pprof.Handler("goroutine").ServeHTTP)
+	router.HandleFunc("/debug/pprof/threadcreate", pprof.Handler("threadcreate").ServeHTTP)
+}
+
 func main() {
 	// TODO: Right now this is a collection of hacks until we build out something
 	// nice which can handle multiple log connections. Right now the intent is to
@@ -113,6 +125,11 @@ func main() {
 	mutex := sync.Mutex{}
 
 	routes := http.NewServeMux()
+
+	if os.Getenv("DEBUG") != "" {
+		attachProfiler(routes)
+	}
+
 	server := http.Server{
 		// Main put server listens on the public root for the worker.
 		Addr:    ":60022",
