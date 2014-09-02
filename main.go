@@ -87,8 +87,10 @@ func getLog(
 		if startingOffset != stream.Offset {
 			io.Copy(writer, file) // copy drains entire file until EOF
 		}
+		file.Close()
 		return
 	}
+	file.Close()
 
 	// Always trigger an initial flush before waiting for more data who knows
 	// when the events will filter in...
