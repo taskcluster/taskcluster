@@ -5,4 +5,4 @@
   - aggregate pending writes into single buffer and/or multiple write
     then flush when no longer writing.
   - cli
-  - http api
+  - http api [done]
