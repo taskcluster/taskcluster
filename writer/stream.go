@@ -10,7 +10,8 @@ import (
 	"gopkg.in/fatih/set.v0"
 )
 
-const READ_BUFFER_SIZE = 16 * 1024 // 16kb chosen at random
+const READ_BUFFER_SIZE = 16 * 1024 // XXX: 16kb chosen at random
+const MAX_PENDING_WRITE = 30       // XXX: 30 is chosen at random
 
 type Event struct {
 	Err    error
@@ -68,11 +69,12 @@ func (self *Stream) Unobserve(handle *StreamHandle) {
 
 func (self *Stream) Observe() *StreamHandle {
 	// Buffering the channel is very important to avoid writing blocks, etc..
-	events := make(chan *Event, 1)
+	events := make(chan *Event, MAX_PENDING_WRITE)
 
 	handle := StreamHandle{
 		Offset: 0,
 		Path:   self.File.Name(),
+		Abort:  make(chan error, 1), // must be buffered
 
 		events: events,
 	}
@@ -128,10 +130,13 @@ func (self *Stream) Consume() error {
 		// Emit all the messages...
 		handles := self.handles.List()
 		for i := 0; i < len(handles); i++ {
-			// do crazy shit
-			go func(handler interface{}, event *Event) {
-				handler.(*StreamHandle).events <- event
-			}(handles[i], &event)
+			handle := handles[i].(*StreamHandle)
+			pendingWrites := len(handle.events)
+			if pendingWrites >= (MAX_PENDING_WRITE - 1) {
+				handle.Abort <- fmt.Errorf("Too many pending writes %d", pendingWrites)
+				continue
+			}
+			handles[i].(*StreamHandle).events <- &event
 		}
 
 		// Return the reader errors (except for EOF) and abort.
