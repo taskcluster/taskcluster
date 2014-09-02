@@ -131,7 +131,10 @@ func (self *Stream) Consume() error {
 		// Emit all the messages...
 		handles := self.handles.List()
 		for i := 0; i < len(handles); i++ {
-			handles[i].(*StreamHandle).Events <- &event
+			// do crazy shit
+			go func(handler interface{}, event *Event) {
+				handler.(*StreamHandle).Events <- event
+			}(handles[i], &event)
 		}
 
 		// Return the reader errors (except for EOF) and abort.
