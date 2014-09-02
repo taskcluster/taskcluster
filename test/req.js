@@ -4,7 +4,6 @@ var OUTPUT_URL = 'http://localhost:60023/log';
 module.exports.client = function client(method, url) {
 	url = require('url').parse(url);
 	url.method = method;
-	console.log(url);
 	return require('http').request(url);
 }
 

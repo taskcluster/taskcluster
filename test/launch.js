@@ -3,6 +3,7 @@
 var Promise = require('promise');
 var spawn = require('child_process').spawn;
 var net = require('net');
+var waitForPort = require('./wait_for_port');
 
 var MAIN = __dirname + '/../main.go';
 
@@ -26,15 +27,8 @@ module.exports = function launch() {
       }
     };
 
-    function connect() {
-      var sock = net.connect(60022, function() {
-        proc.removeListener('error', reject);
-        sock.destroy();
-        accept(api);
-      });
-      sock.once('error', connect);
-    }
-    // Wait until the socket is open...
-    connect()
+    waitForPort(60022).then(function() {
+      return api;
+    }).then(accept, reject);
   });
 }
