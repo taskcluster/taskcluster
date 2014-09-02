@@ -11,8 +11,8 @@ import (
 	"gopkg.in/fatih/set.v0"
 )
 
-const READ_BUFFER_SIZE = 16 * 1024 // XXX: 16kb chosen at random
-const MAX_PENDING_WRITE = 30       // XXX: 30 is chosen at random
+const READ_BUFFER_SIZE = 4 * 1024 // XXX: 4kb chosen at random
+const MAX_PENDING_WRITE = 30      // XXX: 30 is chosen at random
 
 type Event struct {
 	Err    error

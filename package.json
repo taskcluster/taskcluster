@@ -1,0 +1,27 @@
+{
+  "name": "continuous-log-serve",
+  "version": "0.0.0",
+  "description": "Tests only for the go package...",
+  "private": true,
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "go build && mocha $(find test -name '*.js')"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/lightsofapollo/continuous-log-serve.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lightsofapollo/continuous-log-serve/issues"
+  },
+  "homepage": "https://github.com/lightsofapollo/continuous-log-serve",
+  "dependencies": {
+    "mocha": "^1.21.4",
+    "promise": "^5.0.0"
+  }
+}

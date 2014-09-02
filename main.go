@@ -31,6 +31,7 @@ func abort(writer http.ResponseWriter) error {
 func startLogServe(stream *stream.Stream) {
 	routes := http.NewServeMux()
 	routes.HandleFunc("/log", func(w http.ResponseWriter, r *http.Request) {
+		debug("output %s %s", r.Method, r.URL.String())
 		// TODO: Add method context switching here...
 		getLog(stream, w, r)
 	})
