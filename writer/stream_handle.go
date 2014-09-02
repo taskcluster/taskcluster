@@ -1,9 +1,13 @@
 package writer
 
 import (
+	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
+
+const INACTIVITY_TIMEOUT = 30 * time.Second
 
 type StreamHandle struct {
 	// Source pathname.
@@ -12,8 +16,6 @@ type StreamHandle struct {
 	// Current offset in StreamHandle.
 	Offset int
 
-	// In some situations we need to abort the request.
-	abort chan error
 	// Event notifications for WriteTo details..
 	events chan *Event // Should be buffered!
 }
@@ -30,6 +32,12 @@ func (self *StreamHandle) WriteTo(target io.Writer) (n int64, err error) {
 	for {
 		select {
 		case event := <-self.events:
+
+			// Handle aborts caused by closing run away channels...
+			if event == nil {
+				return int64(self.Offset), fmt.Errorf("nil event.. channel likely closed due to timeout")
+			}
+
 			// As bytes come in write them directly to the target.
 			written, writeErr := target.Write((*event.Bytes)[0:event.Length])
 			self.Offset += written
@@ -52,8 +60,8 @@ func (self *StreamHandle) WriteTo(target io.Writer) (n int64, err error) {
 			if event.End {
 				return int64(self.Offset), writeErr
 			}
-		case abortErr := <-self.abort:
-			return int64(self.Offset), abortErr
+		case <-time.After(INACTIVITY_TIMEOUT):
+			return int64(self.Offset), fmt.Errorf("Timeout after %v", INACTIVITY_TIMEOUT)
 		}
 	}
 }

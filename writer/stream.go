@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 
 	. "github.com/visionmedia/go-debug"
@@ -75,7 +76,6 @@ func (self *Stream) Observe() *StreamHandle {
 		Offset: 0,
 		Path:   self.File.Name(),
 
-		abort:  make(chan error, 1), // must be buffered
 		events: events,
 	}
 
@@ -133,7 +133,10 @@ func (self *Stream) Consume() error {
 			handle := handles[i].(*StreamHandle)
 			pendingWrites := len(handle.events)
 			if pendingWrites >= (MAX_PENDING_WRITE - 1) {
-				handle.abort <- fmt.Errorf("Too many pending writes %d", pendingWrites)
+				log.Println("Removing handle with %d pending writes", pendingWrites)
+				// Remove the handle from any future event writes...
+				self.Unobserve(handle)
+				close(handle.events)
 				continue
 			}
 			handles[i].(*StreamHandle).events <- &event
