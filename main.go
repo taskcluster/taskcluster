@@ -11,16 +11,12 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 
 	stream "github.com/lightsofapollo/continuous-log-serve/writer"
 	. "github.com/visionmedia/go-debug"
 )
 
 var debug = Debug("continuous-log-serve")
-
-var OBSERVE_TIMEOUT = time.Second * 10
-var OBSERVE_EVENT_TIMEOUT = time.Second * 30
 
 type Routes struct {
 	stream *stream.Stream
@@ -33,23 +29,7 @@ func NewRoutes(stream *stream.Stream) *Routes {
 }
 
 func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
-	// Ensure we don't lock up while trying to serve request...
-	timeout := time.After(OBSERVE_TIMEOUT)
-	// Begin listening (this involves locks so we use a timeout...)
-	pendingHandle := make(chan *stream.StreamHandle, 1)
-	go func() {
-		pendingHandle <- self.stream.Observe()
-	}()
-
-	var handle *stream.StreamHandle
-	select {
-	case handle = <-pendingHandle:
-	case <-timeout:
-		log.Println("Timeout while aquiring stream handle...")
-		writer.WriteHeader(500)
-		writer.Write([]byte("Cannot aquire stream... Please retry."))
-		return
-	}
+	handle := self.stream.Observe()
 
 	defer func() {
 		// Ensure we close our file handle...
@@ -94,13 +74,7 @@ func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
 	writer.(http.Flusher).Flush()
 
 	for {
-		timeout := time.After(OBSERVE_EVENT_TIMEOUT)
 		select {
-		case <-timeout:
-			log.Println("Timeout while waiting for event...")
-			// TODO: We need to "abort" the connection here rather then finish the
-			// request cleanly!
-			return
 		case event := <-handle.Events:
 			// XXX: This should be safe from null deref since we always set a buffer
 			// but is a potential bug here...
