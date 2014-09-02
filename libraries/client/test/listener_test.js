@@ -112,6 +112,41 @@ suite('listener', function() {
     return Promise.all([published, result]);
   });
 
+  // Bind and listen with listener (for CC using client)
+  test('bind and listen (for CC using client)', function() {
+    this.timeout(1500);
+
+    // Create listener
+    var listener = new taskcluster.Listener({
+      connectionString:     mockEvents.connectionString
+    });
+    listener.bind(mockEventsClient.testExchange('route.test'));
+
+    var result = new Promise(function(accept, reject) {
+      listener.on('message', function(message) {
+        assert(message.payload.text == "my message");
+        assert(message.routes[0] === 'test');
+        setTimeout(function() {
+          listener.close().then(accept, reject)
+        }, 200);
+      });
+      listener.on('error', function(err) {
+        reject(err);
+      });
+    });
+
+    var published = listener.resume().then(function() {
+      return _publisher.testExchange({
+        text:           "my message"
+      }, {
+        testId:         'test',
+        taskRoutingKey: 'hello.world'
+      }, ['route.test']);
+    });
+
+    return Promise.all([published, result]);
+  });
+
   // Bind and listen with listener (manual routing key)
   test('bind and listen (manual constant routing key)', function() {
     this.timeout(1500);
