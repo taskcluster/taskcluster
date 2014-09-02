@@ -94,25 +94,18 @@ func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
 	writer.(http.Flusher).Flush()
 
 	for {
-		eventChan := make(chan *stream.Event, 1)
 		timeout := time.After(OBSERVE_EVENT_TIMEOUT)
-
-		go func() {
-			event := <-handle.Events
-			eventChan <- event
-		}()
-
-		// TODO: Add timeouts...
 		select {
 		case <-timeout:
 			log.Println("Timeout while waiting for event...")
 			// TODO: We need to "abort" the connection here rather then finish the
 			// request cleanly!
 			return
-		case event := <-eventChan:
+		case event := <-handle.Events:
 			// XXX: This should be safe from null deref since we always set a buffer
 			// but is a potential bug here...
 			_, writeErr := writer.Write((*event.Bytes)[0:event.Length])
+			debug("writing %d bytes at offset %d", event.Length, event.Offset)
 			// XXX: Make the flushing time based...
 			writer.(http.Flusher).Flush()
 

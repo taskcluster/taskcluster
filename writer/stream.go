@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/deckarep/golang-set"
 	. "github.com/visionmedia/go-debug"
+	"gopkg.in/fatih/set.v0"
 )
 
 const READ_BUFFER_SIZE = 16 * 1024 // 16kb chosen at random
@@ -32,8 +32,10 @@ type Stream struct {
 	Ended   bool
 	Reading bool
 
-	debug   DebugFunction
-	handles mapset.Set
+	debug  DebugFunction
+	debugR DebugFunction
+
+	handles *set.Set
 }
 
 func NewStream(read io.Reader) (*Stream, error) {
@@ -51,7 +53,6 @@ func NewStream(read io.Reader) (*Stream, error) {
 		return nil, openErr
 	}
 
-	debug := Debug(fmt.Sprintf("stream [%s]", path))
 	return &Stream{
 		Offset:  0,
 		Reader:  &read,
@@ -59,8 +60,9 @@ func NewStream(read io.Reader) (*Stream, error) {
 		Ended:   false,
 		File:    *file,
 
-		handles: mapset.NewSet(),
-		debug:   debug,
+		handles: set.New(),
+		debug:   Debug("stream:control"),
+		debugR:  Debug("stream:read"),
 	}, nil
 }
 
@@ -70,7 +72,9 @@ func (self *Stream) Unobserve(handle *StreamHandle) {
 }
 
 func (self *Stream) Observe() *StreamHandle {
-	events := make(chan *Event)
+	// Buffering the channel is very important to avoid writing blocks, etc..
+	events := make(chan *Event, 1)
+
 	handle := StreamHandle{
 		Events: events,
 		Path:   self.File.Name(),
@@ -92,7 +96,7 @@ func (self *Stream) Consume() error {
 		self.File.Close()
 
 		// Cleanup all handles after the consumption is complete...
-		self.debug("removing %d handles", self.handles.Cardinality())
+		self.debug("removing %d handles", self.handles.Size())
 		self.handles.Clear()
 	}()
 
@@ -100,7 +104,7 @@ func (self *Stream) Consume() error {
 	for {
 		buf := make([]byte, READ_BUFFER_SIZE)
 		bytesRead, readErr := tee.Read(buf)
-		self.debug("reading bytes %d", bytesRead)
+		self.debugR("reading bytes %d", bytesRead)
 
 		if bytesRead > 0 {
 			self.Offset += bytesRead
@@ -115,7 +119,7 @@ func (self *Stream) Consume() error {
 			eventErr = readErr
 		}
 
-		self.debug("read: %d total offset: %d eof: %v", bytesRead, self.Offset, eof)
+		self.debugR("read: %d total offset: %d eof: %v", bytesRead, self.Offset, eof)
 		event := Event{
 			Length: bytesRead,
 			Offset: self.Offset,
@@ -125,20 +129,21 @@ func (self *Stream) Consume() error {
 		}
 
 		// Emit all the messages...
-		for handle := range self.handles.Iter() {
-			handle.(*StreamHandle).Events <- &event
+		handles := self.handles.List()
+		for i := 0; i < len(handles); i++ {
+			handles[i].(*StreamHandle).Events <- &event
 		}
 
 		// Return the reader errors (except for EOF) and abort.
 		if !eof && readErr != nil {
-			self.debug("Read error %v", readErr)
+			self.debugR("Read error %v", readErr)
 			return readErr
 		}
 
 		// If we are done reading the stream break the loop...
 		if eof {
 			self.Ended = true
-			self.debug("finishing consume eof")
+			self.debugR("finishing consume eof")
 			break
 		}
 	}
