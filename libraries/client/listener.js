@@ -248,8 +248,21 @@ Listener.prototype._handle = function(msg) {
     payload:      JSON.parse(msg.content.toString('utf8')),
     exchange:     msg.fields.exchange,
     routingKey:   msg.fields.routingKey,
-    redelivered:  msg.fields.redelivered
+    redelivered:  msg.fields.redelivered,
+    routes:       []
   };
+
+  // Find CC'ed routes
+  if (msg.properties && msg.properties.headers &&
+      msg.properties.headers.CC instanceof Array) {
+    message.routes = msg.properties.headers.CC.filter(function(route) {
+      // Only return the CC'ed routes that starts with "route."
+      return /^route\.(.*)$/.test(route);
+    }).map(function(route) {
+      // Remove the "route."
+      return /^route\.(.*)$/.exec(route)[1];
+    });
+  }
 
   // Find routing key reference, if any is available to us
   var routingKeyReference = null;
