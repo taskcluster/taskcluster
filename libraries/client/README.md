@@ -71,6 +71,7 @@ listener.on('message', function(message) {
   message.routing.taskId  // Element from parsed routing key
   message.routing.runId   // ...
   message.redelivered     // True, if message has been nack'ed and requeued
+  message.routes          // List of CC'ed routes, without the `route.` prefix
   return new Promise(...);
 });
 
