@@ -74,8 +74,8 @@ func (self *Stream) Observe() *StreamHandle {
 	handle := StreamHandle{
 		Offset: 0,
 		Path:   self.File.Name(),
-		Abort:  make(chan error, 1), // must be buffered
 
+		abort:  make(chan error, 1), // must be buffered
 		events: events,
 	}
 
@@ -133,7 +133,7 @@ func (self *Stream) Consume() error {
 			handle := handles[i].(*StreamHandle)
 			pendingWrites := len(handle.events)
 			if pendingWrites >= (MAX_PENDING_WRITE - 1) {
-				handle.Abort <- fmt.Errorf("Too many pending writes %d", pendingWrites)
+				handle.abort <- fmt.Errorf("Too many pending writes %d", pendingWrites)
 				continue
 			}
 			handles[i].(*StreamHandle).events <- &event

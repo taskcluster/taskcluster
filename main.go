@@ -89,23 +89,10 @@ func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
 
 	// Begin streaming any pending results...
 
-	// Handle writes it their own channel/goroutine so we can handle aborts.
-	writeChan := make(chan error, 1)
-	go func() {
-		_, writeToErr := handle.WriteTo(writer)
-		writeChan <- writeToErr
-	}()
-
-	// Process the request of the request dealing with success/failure...
-	select {
-	case abortErr := <-handle.Abort:
-		log.Println("Response error aborting", abortErr)
+	_, writeToErr := handle.WriteTo(writer)
+	if writeToErr != nil {
+		log.Println("Error during write...", writeToErr)
 		Abort(writer)
-	case writeErr := <-writeChan:
-		if writeErr != nil {
-			log.Println("Error during write...", writeErr)
-			Abort(writer)
-		}
 	}
 }
 

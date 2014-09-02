@@ -13,8 +13,7 @@ type StreamHandle struct {
 	Offset int
 
 	// In some situations we need to abort the request.
-	Abort chan error
-
+	abort chan error
 	// Event notifications for WriteTo details..
 	events chan *Event // Should be buffered!
 }
@@ -53,6 +52,8 @@ func (self *StreamHandle) WriteTo(target io.Writer) (n int64, err error) {
 			if event.End {
 				return int64(self.Offset), writeErr
 			}
+		case abortErr := <-self.abort:
+			return int64(self.Offset), abortErr
 		}
 	}
 }

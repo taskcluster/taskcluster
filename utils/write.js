@@ -1,6 +1,6 @@
 var net = require('net');
 
-var unix = __dirname + '/input.sock';
+var unix = __dirname + '/../input.sock';
 var idx = 0;
 var client = net.connect({ path: unix }, function() {
 	setInterval(function() {
