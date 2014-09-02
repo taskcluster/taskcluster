@@ -20,11 +20,6 @@ type Event struct {
 	Offset int
 }
 
-type StreamHandle struct {
-	Events chan *Event
-	Path   string
-}
-
 type Stream struct {
 	Offset  int
 	Reader  *io.Reader
@@ -76,8 +71,10 @@ func (self *Stream) Observe() *StreamHandle {
 	events := make(chan *Event, 1)
 
 	handle := StreamHandle{
-		Events: events,
+		Offset: 0,
 		Path:   self.File.Name(),
+
+		events: events,
 	}
 
 	self.handles.Add(&handle)
@@ -133,7 +130,7 @@ func (self *Stream) Consume() error {
 		for i := 0; i < len(handles); i++ {
 			// do crazy shit
 			go func(handler interface{}, event *Event) {
-				handler.(*StreamHandle).Events <- event
+				handler.(*StreamHandle).events <- event
 			}(handles[i], &event)
 		}
 

@@ -72,32 +72,10 @@ func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
 	// Always trigger an initial flush before waiting for more data who knows
 	// when the events will filter in...
 	writer.(http.Flusher).Flush()
+	_, writeToErr := handle.WriteTo(writer)
 
-	for {
-		select {
-		case event := <-handle.Events:
-			// XXX: This should be safe from null deref since we always set a buffer
-			// but is a potential bug here...
-			_, writeErr := writer.Write((*event.Bytes)[0:event.Length])
-			debug("writing %d bytes at offset %d", event.Length, event.Offset)
-			// XXX: Make the flushing time based...
-			writer.(http.Flusher).Flush()
-
-			if writeErr != nil {
-				log.Println("Write error", writeErr)
-				return
-			}
-
-			if event.Err != nil {
-				log.Println("Error handling event", event.Err)
-				return
-			}
-
-			if event.End {
-				// Successful end...
-				return
-			}
-		}
+	if writeToErr != nil {
+		log.Println("Error processing write", writeToErr)
 	}
 }
 
