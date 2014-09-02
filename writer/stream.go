@@ -7,21 +7,18 @@ import (
 	"os"
 
 	. "github.com/visionmedia/go-debug"
+	"gopkg.in/fatih/set.v0"
 )
 
-// Buffer size for reading the logs... This is likely even large given that we
-// stream frequently but in small chunks...
-const READ_BUFFER_SIZE = 8192
+const READ_BUFFER_SIZE = 16 * 1024 // XXX: 16kb chosen at random
+const MAX_PENDING_WRITE = 30       // XXX: 30 is chosen at random
 
 type Event struct {
 	Err    error
-	Offset int
+	Bytes  *[]byte
+	Length int
 	End    bool
-}
-
-type StreamHandle struct {
-	Events chan Event
-	Path   string
+	Offset int
 }
 
 type Stream struct {
@@ -31,8 +28,10 @@ type Stream struct {
 	Ended   bool
 	Reading bool
 
-	debug   DebugFunction
-	handles []StreamHandle
+	debug  DebugFunction
+	debugR DebugFunction
+
+	handles *set.Set
 }
 
 func NewStream(read io.Reader) (*Stream, error) {
@@ -50,7 +49,6 @@ func NewStream(read io.Reader) (*Stream, error) {
 		return nil, openErr
 	}
 
-	debug := Debug(fmt.Sprintf("stream [%s]", path))
 	return &Stream{
 		Offset:  0,
 		Reader:  &read,
@@ -58,30 +56,30 @@ func NewStream(read io.Reader) (*Stream, error) {
 		Ended:   false,
 		File:    *file,
 
-		handles: make([]StreamHandle, 0),
-		debug:   debug,
+		handles: set.New(),
+		debug:   Debug("stream:control"),
+		debugR:  Debug("stream:read"),
 	}, nil
 }
 
-func (self *Stream) Unobserve(handle *StreamHandle) error {
+func (self *Stream) Unobserve(handle *StreamHandle) {
 	self.debug("unobserve")
-	for i := 0; i < len(self.handles); i++ {
-		if self.handles[i] == *handle {
-			self.handles = append(self.handles[:i], self.handles[i+1:]...)
-			return nil
-		}
-	}
-	return fmt.Errorf("Attempting to remove listener twice...")
+	self.handles.Remove(handle)
 }
 
 func (self *Stream) Observe() *StreamHandle {
-	events := make(chan Event)
+	// Buffering the channel is very important to avoid writing blocks, etc..
+	events := make(chan *Event, MAX_PENDING_WRITE)
+
 	handle := StreamHandle{
-		Events: events,
+		Offset: 0,
 		Path:   self.File.Name(),
+
+		abort:  make(chan error, 1), // must be buffered
+		events: events,
 	}
 
-	self.handles = append(self.handles, handle)
+	self.handles.Add(&handle)
 	return &handle
 }
 
@@ -97,46 +95,60 @@ func (self *Stream) Consume() error {
 		self.File.Close()
 
 		// Cleanup all handles after the consumption is complete...
-		self.debug("removing %d handles", len(self.handles))
-		for idx := range self.handles {
-			self.Unobserve(&self.handles[idx])
-		}
+		self.debug("removing %d handles", self.handles.Size())
+		self.handles.Clear()
 	}()
 
-	buf := make([]byte, READ_BUFFER_SIZE)
 	tee := io.TeeReader(*self.Reader, &self.File)
 	for {
+		buf := make([]byte, READ_BUFFER_SIZE)
 		bytesRead, readErr := tee.Read(buf)
-		self.debug("reading bytes %d", bytesRead)
+		self.debugR("reading bytes %d", bytesRead)
 
 		if bytesRead > 0 {
 			self.Offset += bytesRead
 		}
 
-		eof := readErr != nil && readErr == io.EOF
-		self.debug("read: %d total offset: %d eof: %v", bytesRead, self.Offset, eof)
+		eof := readErr == io.EOF
+
+		// EOF in this context should not be sent as an event error it is handled in
+		// the .End case...
+		var eventErr error
+		if !eof && readErr != nil {
+			eventErr = readErr
+		}
+
+		self.debugR("read: %d total offset: %d eof: %v", bytesRead, self.Offset, eof)
 		event := Event{
-			Err:    readErr,
+			Length: bytesRead,
 			Offset: self.Offset,
+			Bytes:  &buf,
+			Err:    eventErr,
 			End:    eof,
 		}
 
 		// Emit all the messages...
-		self.debug("notify %d event handlers", len(self.handles))
-		for idx := range self.handles {
-			self.handles[idx].Events <- event
+		handles := self.handles.List()
+		for i := 0; i < len(handles); i++ {
+			handle := handles[i].(*StreamHandle)
+			pendingWrites := len(handle.events)
+			if pendingWrites >= (MAX_PENDING_WRITE - 1) {
+				handle.abort <- fmt.Errorf("Too many pending writes %d", pendingWrites)
+				continue
+			}
+			handles[i].(*StreamHandle).events <- &event
 		}
 
 		// Return the reader errors (except for EOF) and abort.
 		if !eof && readErr != nil {
-			self.debug("Read error %v", readErr)
+			self.debugR("Read error %v", readErr)
 			return readErr
 		}
 
 		// If we are done reading the stream break the loop...
 		if eof {
 			self.Ended = true
-			self.debug("finishing consume eof")
+			self.debugR("finishing consume eof")
 			break
 		}
 	}

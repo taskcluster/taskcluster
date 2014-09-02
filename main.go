@@ -6,39 +6,60 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
-	"github.com/lightsofapollo/continuous-log-serve/writer"
+	stream "github.com/lightsofapollo/continuous-log-serve/writer"
 	. "github.com/visionmedia/go-debug"
 )
 
 var debug = Debug("continuous-log-serve")
 
 type Routes struct {
-	stream   *writer.Stream
-	reqGroup *sync.WaitGroup
+	stream *stream.Stream
 }
 
-func NewRoutes(stream *writer.Stream) *Routes {
+func NewRoutes(stream *stream.Stream) *Routes {
 	return &Routes{
-		stream:   stream,
-		reqGroup: &sync.WaitGroup{},
+		stream: stream,
 	}
+}
+
+func Abort(writer http.ResponseWriter) error {
+	// We need to hijack and abort the request...
+	conn, _, err := writer.(http.Hijacker).Hijack()
+
+	if err != nil {
+		return err
+	}
+
+	// Force the connection closed to signal that the response was not
+	// completed...
+	conn.Close()
+	return nil
 }
 
 func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
 	handle := self.stream.Observe()
+
+	defer func() {
+		// Ensure we close our file handle...
+		// Ensure the stream is cleaned up after errors, etc...
+		self.stream.Unobserve(handle)
+		debug("send connection close...")
+	}()
+
 	file, err := os.Open(self.stream.File.Name())
-	buffer := make([]byte, 8192)
 
 	req.Header.Set("Content-Type", "text/plain; charset=utf-8")
 	req.Header.Set("Content-Encoding", "chunked")
 
 	if err != nil {
 		writer.WriteHeader(500)
+		writer.Write([]byte("Could not open writer file..."))
 		return
 	}
 
@@ -46,88 +67,32 @@ func (self *Routes) ServeHTTP(writer http.ResponseWriter, req *http.Request) {
 	writer.WriteHeader(200)
 	debug("wrote headers...")
 
-	// Finalize the stream with single zero byte length write
-	self.reqGroup.Add(1)
-	defer func() {
-		// Ensure we close our file handle...
-		file.Close()
-		// Ensure the stream is cleaned up after errors, etc...
-		self.stream.Unobserve(handle)
-		// Write final chunks errors here are not important.
-		writer.Write(make([]byte, 0))
+	// Keep a record of the starting offset to verify we copied the right
+	// things...
+	startingOffset := self.stream.Offset
 
-		// Ensure that any last bytes are flushed first...
-		debug("send connection close...")
-		self.reqGroup.Done()
-	}()
+	// Begin by reading data from the file sink.
+	io.CopyN(writer, file, int64(self.stream.Offset))
 
-	// TODO: Implement byte range fetching...
-
-	ending := false
-	for {
-		debug("server begin read")
-		bytesRead, err := file.Read(buffer)
-
-		// Be careful to only write non zero length buffer (zero length buffer will
-		// end the http stream!)
-		if bytesRead > 0 {
-			debug("Write to server %d bytes", bytesRead)
-			// TODO: Handle write errors...
-			wrote, err := writer.Write(buffer[0:bytesRead])
-
-			// The intention here is speed over everything else so flush as soon as we
-			// have some bytes this will result in many more packets and more overhead
-			// from chunking but this is an okay trade off given the intention of the
-			// fastest live logging possible over http.
-			writer.(http.Flusher).Flush()
-			log.Println(wrote, bytesRead)
-
-			// Handle writer errors by aborting the connection...
-			if err != nil {
-				log.Println("Aborting http request writer failure...")
-				return
-			}
-
-			// If we handled a successful read try reading again...
-			continue
+	if self.stream.Ended {
+		// Handle the edge case where the file has ended while we where coping bytes
+		// over above.
+		if startingOffset != self.stream.Offset {
+			io.Copy(writer, file) // copy drains entire file until EOF
 		}
+		return
+	}
 
-		// We issue the flush after completely emptying any underlying files...
-		//bufrw.Flush()
+	// Always trigger an initial flush before waiting for more data who knows
+	// when the events will filter in...
+	writer.(http.Flusher).Flush()
 
-		// If we are ending break the loop...
-		if ending {
-			debug("server ending read")
-			return
-		}
+	// Begin streaming any pending results...
 
-		// If we are at the end of the sink wait until we have written more bytes to
-		// it.
-		if err == io.EOF {
-
-			// If the stream has ended then we cannot wait for more events are we are
-			// done so break the read loop...
-			if self.stream.Ended {
-				break
-			}
-
-			debug("waiting for event...")
-			event := <-handle.Events
-			debug(
-				"got event offset: %d, end: %d, err: %v",
-				event.Offset, event.End, event.Err,
-			)
-			ending = event.End
-
-			// Handle errors which should close the stream...
-			if event.Err != nil && event.Err != io.EOF {
-				log.Println("Event error: %v", event.Err)
-				break
-			}
-		} else if err != nil {
-			log.Println("Unknown error reading: %v", err)
-			break
-		}
+	_, writeToErr := handle.WriteTo(writer)
+	if writeToErr != nil {
+		log.Println("Error during write...", writeToErr)
+		Abort(writer)
 	}
 }
 
@@ -139,7 +104,7 @@ func inputHandler(conn net.Conn) {
 		log.Fatal("Could not create listener...")
 	}
 
-	stream, err := writer.NewStream(conn)
+	stream, err := stream.NewStream(conn)
 	if err != nil {
 		log.Fatal("Failed to open writer stream")
 	}
@@ -153,9 +118,18 @@ func inputHandler(conn net.Conn) {
 		}
 	}()
 
-	streamHandler := NewRoutes(stream)
+	mux := http.NewServeMux()
+	mux.Handle("/log", NewRoutes(stream))
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/heap", pprof.Handler("heap").ServeHTTP)
+	mux.HandleFunc("/debug/pprof/goroutine", pprof.Handler("goroutine").ServeHTTP)
+	mux.HandleFunc("/debug/pprof/threadcreate", pprof.Handler("threadcreate").ServeHTTP)
+
 	server := &http.Server{
-		Handler: streamHandler,
+		Handler: mux,
 	}
 
 	_, port, err := net.SplitHostPort(listener.Addr().String())
@@ -167,13 +141,19 @@ func inputHandler(conn net.Conn) {
 	log.Printf("http://localhost:%s/", port)
 
 	// Begin serving ...
-	err = server.Serve(listener)
-	if err != nil {
-		log.Fatal("Error serving request", err)
-	}
+	wait := sync.WaitGroup{}
+	wait.Add(1)
+	go func() {
+		err = server.Serve(listener)
+		if err != nil {
+			log.Fatal("Error serving request", err)
+		}
+		wait.Done()
+	}()
+	wait.Wait()
 }
 
-func inputServer() {
+func main() {
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal("getwd error", err)
@@ -209,8 +189,4 @@ func inputServer() {
 		}
 		go inputHandler(conn)
 	}
-}
-
-func main() {
-	inputServer()
 }
