@@ -32,7 +32,8 @@ suite('Get task', function() {
     },
     tags: {
       purpose:        'taskcluster-testing'
-    }
+    },
+    extra: {}
   };
 
   test("getTask", function() {

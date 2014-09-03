@@ -38,6 +38,11 @@ suite('Create task', function() {
     },
     tags: {
       purpose:        'taskcluster-testing'
+    },
+    extra: {
+      myUsefulDetails: {
+        property:     "that is useful by external service!!"
+      }
     }
   };
 

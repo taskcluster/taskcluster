@@ -150,12 +150,28 @@ properties:
     title:            "Tags"
     description: |
       Arbitrary key-value tags (only strings limited to 4k). These can be used
-      to attached informal meta-data to a task. For example fields to be
-      displayed on treeherder or tbpl.
+      to attach informal meta-data to a task. Use this for informal tags that
+      tasks can be classified by. You can also think of strings here as
+      candidates for formal meta-data. Something like
+      `purpose: 'build' || 'test'` is a good example.
     type:             object
     additionalProperties:
       type:           string
       maxLength:      4096
+    default:          {}
+  extra:
+    title:            "Extra Data"
+    description: |
+      Object with properties that can hold any kind of extra data that should be
+      associated with the task. This can be data for the task which doesn't
+      fit into `payload`, or it can supplementary data for use in services
+      listening for events from this task. For example this could be details to
+      display on _treeherder_, or information for indexing the task. Please, try
+      to put all related information under one property, so `extra` data keys
+      for treeherder reporting and task indexing don't conflict, hence, we have
+      reusable services. **Warning**, do not stuff large data-sets in here,
+      task definitions should not take-up multiple MiBs.
+    type:             object
     default:          {}
 additionalProperties: false
 required:
