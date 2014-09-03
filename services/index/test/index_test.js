@@ -72,7 +72,7 @@ suite('Indexing', function() {
       });
     }).then(function() {
       debug("### Give indexing 1s to run");
-      return helper.sleep(5000);
+      return helper.sleep(1500);
     }).then(function() {
       debug("### Find task in index");
       return subject.index.find(myns + '.my-indexed-thing');
@@ -102,6 +102,51 @@ suite('Indexing', function() {
       assert(result.namespaces.some(function(ns) {
         return ns.name === 'another-ns';
       }), "Expected to find another-ns");
+    });
+  });
+
+  test("Run task and test indexing (with extra)", function() {
+    // Make task
+    var task = makeTask();
+    task.extra = {
+      index: {
+        rank:       42,
+        expires:    deadline.toJSON(),
+        data: {
+          hello:    "world"
+        }
+      }
+    };
+
+    // Submit task to queue
+    debug("### Posting task");
+    return subject.queue.createTask(
+      taskId,
+      task
+    ).then(function(result) {
+      // Claim task
+      debug("### Claim task");
+      return subject.queue.claimTask(taskId, 0, {
+        workerGroup:  'dummy-test-workergroup',
+        workerId:     'dummy-test-worker-id'
+      });
+    }).then(function() {
+      return helper.sleep(100);
+    }).then(function() {
+      debug("### Report task completed");
+      return subject.queue.reportCompleted(taskId, 0, {
+        success: true
+      });
+    }).then(function() {
+      debug("### Give indexing 1s to run");
+      return helper.sleep(1500);
+    }).then(function() {
+      debug("### Find task in index");
+      return subject.index.find(myns + '.my-indexed-thing');
+    }).then(function(result) {
+      assert(result.taskId === taskId, "Wrong taskId");
+      assert(result.rank === 42, "Expected rank 42");
+      assert(result.data.hello === 'world', "Expected data");
     });
   });
 });
