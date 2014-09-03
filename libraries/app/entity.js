@@ -370,17 +370,17 @@ Entity.queryPartitionKey = function(partitionKey) {
   assert(tableName, "Azure tableName not configured");
   assert(mapping,   "Property mapping not configured");
 
-  // Serialize RowKey
+  // Serialize PartitionKey
   partitionKey = mapping.PartitionKey.serialize(partitionKey);
 
   return new Promise(function(accept, reject) {
     var entities = [];
-    var fetchNext = function(continuationTokens) {
+    var fetchNext = function(continuationToken) {
       client.queryEntities(tableName, {
         query:        azureTable.Query.create('PartitionKey', '==', partitionKey),
         forceEtags:   true,
-        continuation: continuationTokens
-      }, function(err, data, continuationTokens) {
+        continuation: continuationToken
+      }, function(err, data, continuationToken) {
         // Reject if we hit an error
         if (err) {
           return reject(err);
@@ -391,17 +391,56 @@ Entity.queryPartitionKey = function(partitionKey) {
         }));
 
         // If there are no continuation tokens then we accept data fetched
-        if (!continuationTokens) {
+        if (!continuationToken) {
           return accept(entities);
         }
         // Fetch next set based on continuation tokens
-        fetchNext(continuationTokens);
+        fetchNext(continuationToken);
       });
     }
     fetchNext(undefined);
   });
 };
 
+/**
+ * Load a batch of entities with a given partitionKey
+ *
+ * Returns an array on the form `[entities, continuationToken]`, where
+ * `continuationToken` is `undefined` if this is the final batch.
+ */
+Entity.iteratePartitionKey = function(partitionKey, continuationToken) {
+  var Class = this;
+  assert(Class,     "Entity.create must be bound to an Entity subclass");
+  var client    = Class.prototype._azClient;
+  var tableName = Class.prototype._azTableName;
+  var mapping   = Class.prototype.__mapping;
+  assert(client,    "Azure credentials not configured");
+  assert(tableName, "Azure tableName not configured");
+  assert(mapping,   "Property mapping not configured");
+
+  // Serialize PartitionKey
+  partitionKey = mapping.PartitionKey.serialize(partitionKey);
+
+  return new Promise(function(accept, reject) {
+    client.queryEntities(tableName, {
+      query:        azureTable.Query.create('PartitionKey', '==', partitionKey),
+      forceEtags:   true,
+      continuation: continuationToken
+    }, function(err, data, continuationToken) {
+      // Reject if we hit an error
+      if (err) {
+        return reject(err);
+      }
+      // Create wrapper for each entity fetched
+      var entities = data.map(function(entity) {
+        return new Class(entity);
+      });
+
+      // Accept with continuationToken
+      accept([entities, continuationToken || undefined]);
+    });
+  });
+};
 
 /** Load all entities with a given rowKey */
 Entity.queryRowKey = function(rowKey) {
