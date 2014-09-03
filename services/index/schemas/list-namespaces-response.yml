@@ -1,0 +1,45 @@
+id:       http://schemas.taskcluster.net/index/v1/list-namespaces-response.json
+$schema:  http://json-schema.org/draft-04/schema#
+title:              "List Namespaces Response"
+description: |
+  Response from a request to list namespaces within a given namespace.
+type:               object
+properties:
+  namespaces:
+    title:          "Namespaces"
+    description: |
+      List of namespaces.
+    type:           array
+    items:
+      title:        "Namespace"
+      description: |
+        Representation of a namespace that contains indexed tasks.
+      type:         object
+      properties:
+        namespace:
+          title:          "Namespace"
+          description: |
+            Fully qualified name of the namespace, you can use this to list
+            namespaces or tasks under this namespace.
+          type:           string
+          pattern:        "^[^\/]*$"
+          maxLength:      255
+        name:
+          title:          "Name"
+          description: |
+            Name of namespace within it's parent namespace.
+        expires:
+          title:          "Expiration"
+          description: |
+            Date at which this entry, and by implication all entries below it,
+            expires from the task index.
+          type:           string
+          format:         date-time
+      additionalProperties: false
+      required:
+        - namespace
+        - name
+        - expires
+additionalProperties: false
+required:
+  - namespaces
