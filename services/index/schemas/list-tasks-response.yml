@@ -59,6 +59,12 @@ properties:
         - rank
         - data
         - expires
+  continuationToken:
+    title:                "Continuation Token"
+    description: |
+      A continuation token is returned if there are more results than listed
+      here. You can optionally provide the token in the request payload to
+      load the additional results.
 additionalProperties: false
 required:
   - tasks
