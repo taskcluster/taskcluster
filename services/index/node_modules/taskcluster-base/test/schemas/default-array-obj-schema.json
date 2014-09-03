@@ -1,0 +1,21 @@
+{
+  "id":           "http://localhost:1203/default-array-obj-schema.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "test json schema",
+  "type":         "object",
+  "properties": {
+    "optObj": {
+      "type":           "object",
+      "default":        {"hello": "world"}
+    },
+    "optArray": {
+      "type":           "array",
+      "default":        ["my-default-value"]
+    },
+    "optEmpty": {
+      "type":           "array",
+      "default":        []
+    }
+  },
+  "additionalProperties":   false
+}
