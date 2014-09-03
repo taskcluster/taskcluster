@@ -72,6 +72,7 @@ api.declare({
   method:         'get',
   route:          '/index/:namespace/list-namespaces',
   name:           'listNamespaces',
+  input:          SCHEMA_PREFIX_CONST + 'list-namespaces-request.json#',
   output:         SCHEMA_PREFIX_CONST + 'list-namespaces-response.json#',
   title:          "List Namespaces",
   description: [
@@ -81,11 +82,17 @@ api.declare({
   var ctx       = this;
   var namespace = req.params.namespace;
 
-  return ctx.Namespace.queryPartitionKey(namespace).then(function(namespaces) {
+  return ctx.Namespace.iteratePartitionKey(
+    namespace,
+    req.body.continuationToken
+  ).then(function(result) {
+    var namespaces        = result[0];
+    var continuationToken = result[1];
     return res.reply({
-      namespaces: namespaces.map(function(namespace) {
-        return namespace.json();
-      })
+      namespaces: namespaces.map(function(ns) {
+        return ns.json();
+      }),
+      continuationToken:  continuationToken
     });
   });
 });
@@ -95,6 +102,7 @@ api.declare({
   method:         'get',
   route:          '/index/:namespace/list-tasks',
   name:           'listTasks',
+  input:          SCHEMA_PREFIX_CONST + 'list-tasks-request.json#',
   output:         SCHEMA_PREFIX_CONST + 'list-tasks-response.json#',
   title:          "List Tasks",
   description: [
@@ -104,11 +112,17 @@ api.declare({
   var ctx       = this;
   var namespace = req.params.namespace;
 
-  return ctx.IndexedTask.queryPartitionKey(namespace).then(function(tasks) {
+  return ctx.IndexedTask.iteratePartitionKey(
+    namespace,
+    req.body.continuationToken
+  ).then(function(result) {
+    var tasks             = result[0];
+    var continuationToken = result[1];
     return res.reply({
       tasks: tasks.map(function(task) {
         return task.json();
-      })
+      }),
+      continuationToken:  continuationToken
     });
   });
 });
@@ -120,7 +134,7 @@ api.declare({
   name:           'insert',
   deferAuth:      true,
   scopes:         ['index:insert:<namespace>'],
-  input:          SCHEMA_PREFIX_CONST + 'insert-request.json#',
+  input:          SCHEMA_PREFIX_CONST + 'insert-task-request.json#',
   output:         SCHEMA_PREFIX_CONST + 'indexed-task-response.json#',
   title:          "Insert Task into Index",
   description: [
@@ -137,10 +151,13 @@ api.declare({
     return;
   }
 
+  // Parse date string
+  input.expires = new Date(input.expires);
+
   // Insert task
   return helpers.insertTask(
     req.params.namespace,
-    req.body,
+    input,
     ctx
   ).then(function(task) {
     res.reply(task.json());
