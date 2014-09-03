@@ -1,0 +1,228 @@
+{
+  "metadata": {
+    "apiVersion": "2014-06-30",
+    "endpointPrefix": "cognito-identity",
+    "jsonVersion": "1.1",
+    "serviceFullName": "Amazon Cognito Identity",
+    "signatureVersion": "v4",
+    "targetPrefix": "AWSCognitoIdentityService",
+    "protocol": "json"
+  },
+  "operations": {
+    "CreateIdentityPool": {
+      "input": {
+        "type": "structure",
+        "required": [
+          "IdentityPoolName",
+          "AllowUnauthenticatedIdentities"
+        ],
+        "members": {
+          "IdentityPoolName": {},
+          "AllowUnauthenticatedIdentities": {
+            "type": "boolean"
+          },
+          "SupportedLoginProviders": {
+            "shape": "S4"
+          }
+        }
+      },
+      "output": {
+        "shape": "S7"
+      }
+    },
+    "DeleteIdentityPool": {
+      "input": {
+        "type": "structure",
+        "required": [
+          "IdentityPoolId"
+        ],
+        "members": {
+          "IdentityPoolId": {}
+        }
+      }
+    },
+    "DescribeIdentityPool": {
+      "input": {
+        "type": "structure",
+        "required": [
+          "IdentityPoolId"
+        ],
+        "members": {
+          "IdentityPoolId": {}
+        }
+      },
+      "output": {
+        "shape": "S7"
+      }
+    },
+    "GetId": {
+      "input": {
+        "type": "structure",
+        "required": [
+          "AccountId",
+          "IdentityPoolId"
+        ],
+        "members": {
+          "AccountId": {},
+          "IdentityPoolId": {},
+          "Logins": {
+            "shape": "Sd"
+          }
+        }
+      },
+      "output": {
+        "type": "structure",
+        "members": {
+          "IdentityId": {}
+        }
+      }
+    },
+    "GetOpenIdToken": {
+      "input": {
+        "type": "structure",
+        "required": [
+          "IdentityId"
+        ],
+        "members": {
+          "IdentityId": {},
+          "Logins": {
+            "shape": "Sd"
+          }
+        }
+      },
+      "output": {
+        "type": "structure",
+        "members": {
+          "IdentityId": {},
+          "Token": {}
+        }
+      }
+    },
+    "ListIdentities": {
+      "input": {
+        "type": "structure",
+        "required": [
+          "IdentityPoolId",
+          "MaxResults"
+        ],
+        "members": {
+          "IdentityPoolId": {},
+          "MaxResults": {
+            "type": "integer"
+          },
+          "NextToken": {}
+        }
+      },
+      "output": {
+        "type": "structure",
+        "members": {
+          "IdentityPoolId": {},
+          "Identities": {
+            "type": "list",
+            "member": {
+              "type": "structure",
+              "members": {
+                "IdentityId": {},
+                "Logins": {
+                  "shape": "Sq"
+                }
+              }
+            }
+          },
+          "NextToken": {}
+        }
+      }
+    },
+    "ListIdentityPools": {
+      "input": {
+        "type": "structure",
+        "required": [
+          "MaxResults"
+        ],
+        "members": {
+          "MaxResults": {
+            "type": "integer"
+          },
+          "NextToken": {}
+        }
+      },
+      "output": {
+        "type": "structure",
+        "members": {
+          "IdentityPools": {
+            "type": "list",
+            "member": {
+              "type": "structure",
+              "members": {
+                "IdentityPoolId": {},
+                "IdentityPoolName": {}
+              }
+            }
+          },
+          "NextToken": {}
+        }
+      }
+    },
+    "UnlinkIdentity": {
+      "input": {
+        "type": "structure",
+        "required": [
+          "IdentityId",
+          "Logins",
+          "LoginsToRemove"
+        ],
+        "members": {
+          "IdentityId": {},
+          "Logins": {
+            "shape": "Sd"
+          },
+          "LoginsToRemove": {
+            "shape": "Sq"
+          }
+        }
+      }
+    },
+    "UpdateIdentityPool": {
+      "input": {
+        "shape": "S7"
+      },
+      "output": {
+        "shape": "S7"
+      }
+    }
+  },
+  "shapes": {
+    "S4": {
+      "type": "map",
+      "key": {},
+      "value": {}
+    },
+    "S7": {
+      "type": "structure",
+      "required": [
+        "IdentityPoolId",
+        "IdentityPoolName",
+        "AllowUnauthenticatedIdentities"
+      ],
+      "members": {
+        "IdentityPoolId": {},
+        "IdentityPoolName": {},
+        "AllowUnauthenticatedIdentities": {
+          "type": "boolean"
+        },
+        "SupportedLoginProviders": {
+          "shape": "S4"
+        }
+      }
+    },
+    "Sd": {
+      "type": "map",
+      "key": {},
+      "value": {}
+    },
+    "Sq": {
+      "type": "list",
+      "member": {}
+    }
+  }
+}
