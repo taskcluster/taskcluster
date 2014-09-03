@@ -328,8 +328,10 @@ Entity.create = function(properties) {
  */
 Entity.load = function(partitionKey, rowKey) {
   var Class = this;
-  assert(partitionKey,    "PartitionKey is required");
-  assert(partitionKey,    "RowKey is required");
+  assert(partitionKey !== undefined &&
+         partitionKey !== null,         "PartitionKey is required");
+  assert(rowKey !== undefined &&
+         rowKey !== null,               "RowKey is required");
   assert(Class,           "Entity.create must be bound to an Entity subclass");
   var client    = Class.prototype._azClient;
   var tableName = Class.prototype._azTableName;
