@@ -21,7 +21,7 @@ module.exports = function(stream) {
 
     if (number != self.current++) {
       var msg = 'Out of order expected %d got %d';
-      self.emit(util.format('error', msg), self.current, number);
+      self.emit('error', util.format(msg, self.current, number));
       return
     }
     self.emit('sequence', number);

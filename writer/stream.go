@@ -12,17 +12,18 @@ import (
 )
 
 const READ_BUFFER_SIZE = 4 * 1024 // XXX: 4kb chosen at random
-const MAX_PENDING_WRITE = 30      // XXX: 30 is chosen at random
 
 type Event struct {
+	Number int
 	Err    error
-	Bytes  *[]byte
+	Bytes  []byte
 	Length int
 	End    bool
 	Offset int
 }
 
 type Stream struct {
+	Path    string
 	Offset  int
 	Reader  *io.Reader
 	File    os.File
@@ -41,7 +42,9 @@ func NewStream(read io.Reader) (*Stream, error) {
 		return nil, err
 	}
 
+	debug := Debug("stream:control")
 	path := fmt.Sprintf(dir + "/stream")
+	debug("created at path", path)
 
 	file, openErr :=
 		os.OpenFile(path, os.O_APPEND|os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
@@ -51,6 +54,7 @@ func NewStream(read io.Reader) (*Stream, error) {
 	}
 
 	return &Stream{
+		Path:    path,
 		Offset:  0,
 		Reader:  &read,
 		Reading: false,
@@ -58,7 +62,7 @@ func NewStream(read io.Reader) (*Stream, error) {
 		File:    *file,
 
 		handles: set.New(),
-		debug:   Debug("stream:control"),
+		debug:   debug,
 		debugR:  Debug("stream:read"),
 	}, nil
 }
@@ -70,15 +74,7 @@ func (self *Stream) Unobserve(handle *StreamHandle) {
 
 func (self *Stream) Observe() *StreamHandle {
 	// Buffering the channel is very important to avoid writing blocks, etc..
-	events := make(chan *Event, MAX_PENDING_WRITE)
-
-	handle := StreamHandle{
-		Offset: 0,
-		Path:   self.File.Name(),
-
-		events: events,
-	}
-
+	handle := newStreamHandle(self)
 	self.handles.Add(&handle)
 	return &handle
 }
@@ -100,10 +96,13 @@ func (self *Stream) Consume() error {
 	}()
 
 	tee := io.TeeReader(*self.Reader, &self.File)
+	eventNumber := 0
 	for {
 		buf := make([]byte, READ_BUFFER_SIZE)
 		bytesRead, readErr := tee.Read(buf)
 		self.debugR("reading bytes %d", bytesRead)
+
+		startOffset := self.Offset
 
 		if bytesRead > 0 {
 			self.Offset += bytesRead
@@ -120,19 +119,21 @@ func (self *Stream) Consume() error {
 
 		self.debugR("read: %d total offset: %d eof: %v", bytesRead, self.Offset, eof)
 		event := Event{
+			Number: eventNumber,
 			Length: bytesRead,
-			Offset: self.Offset,
-			Bytes:  &buf,
+			Offset: startOffset,
+			Bytes:  buf,
 			Err:    eventErr,
 			End:    eof,
 		}
+		eventNumber++
 
 		// Emit all the messages...
 		handles := self.handles.List()
 		for i := 0; i < len(handles); i++ {
 			handle := handles[i].(*StreamHandle)
 			pendingWrites := len(handle.events)
-			if pendingWrites >= (MAX_PENDING_WRITE - 1) {
+			if pendingWrites >= (EVENT_BUFFER_SIZE - 1) {
 				log.Println("Removing handle with %d pending writes", pendingWrites)
 				// Remove the handle from any future event writes...
 				self.Unobserve(handle)

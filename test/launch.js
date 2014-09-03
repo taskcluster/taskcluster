@@ -5,8 +5,6 @@ var spawn = require('child_process').spawn;
 var net = require('net');
 var waitForPort = require('./wait_for_port');
 
-var MAIN = __dirname + '/../main.go';
-
 module.exports = function launch() {
   return new Promise(function(accept, reject) {
     var proc = spawn(__dirname + '/../continuous-log-serve', [], {

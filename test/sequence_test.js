@@ -6,6 +6,10 @@ suite('sequence verification', function() {
   var readUntilEnd = require('./read_until_end');
   var verifySeq = require('./sequence_verify')
 
+  var chunk = require('fs').readFileSync(
+    __dirname + '/chunk.txt', 'utf8'
+  ).trim();
+
   var handle;
   setup(function() {
     return launch().then(function(out) {
@@ -13,18 +17,22 @@ suite('sequence verification', function() {
     });
   });
 
-  var MAX_WRITE = 10;
+  var MAX_WRITE = 10000;
   test('read ' + MAX_WRITE + ' sequences', function(done) {
-    var writes = 0;
+    this.timeout('50s');
 
+    var writes = 0;
     var req = createReq.input();
 
     function write(callback) {
-      var msg  = 'wootbar|' + writes  + '\n';
+      var curWrite = writes;
+      var msg  = chunk + '|' + writes  + '\n';
       req.write(msg, callback);
 
       if (++writes < MAX_WRITE) {
-        process.nextTick(write);
+        setTimeout(function() {
+          process.nextTick(write);
+        });
       } else {
         req.end();
       }
@@ -39,7 +47,9 @@ suite('sequence verification', function() {
         var verify = verifySeq(res);
         verify.once('error', done);
         verify.on('sequence', function(seq) {
-          if (seq === MAX_WRITE - 1) done();
+          if (seq === MAX_WRITE - 1) {
+            done();
+          }
         });
       });
       output.end();

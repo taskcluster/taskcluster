@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net/http"
 	"net/http/pprof"
@@ -60,45 +59,14 @@ func getLog(
 		debug("send connection close...")
 	}()
 
-	file, err := os.Open(stream.File.Name())
-
 	req.Header.Set("Content-Type", "text/plain; charset=utf-8")
 	req.Header.Set("Content-Encoding", "chunked")
-
-	if err != nil {
-		writer.WriteHeader(500)
-		writer.Write([]byte("Could not open writer file..."))
-		return
-	}
 
 	// Send headers so its clear what we are trying to do...
 	writer.WriteHeader(200)
 	debug("wrote headers...")
 
-	// Keep a record of the starting offset to verify we copied the right
-	// things...
-	startingOffset := stream.Offset
-
-	// Begin by reading data from the file sink.
-	io.CopyN(writer, file, int64(stream.Offset))
-
-	if stream.Ended {
-		// Handle the edge case where the file has ended while we where coping bytes
-		// over above.
-		if startingOffset != stream.Offset {
-			io.Copy(writer, file) // copy drains entire file until EOF
-		}
-		file.Close()
-		return
-	}
-	file.Close()
-
-	// Always trigger an initial flush before waiting for more data who knows
-	// when the events will filter in...
-	writer.(http.Flusher).Flush()
-
 	// Begin streaming any pending results...
-
 	_, writeToErr := handle.WriteTo(writer)
 	if writeToErr != nil {
 		log.Println("Error during write...", writeToErr)
