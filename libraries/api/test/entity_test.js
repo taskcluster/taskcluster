@@ -356,33 +356,77 @@ suite("entity", function() {
   test("Item.queryPartitionKey", function() {
     var date  = new Date();
     var id    = slugid.v4();
-    var created_one = Item.create({
-      pk:       id,
-      rk:       "row-key1",
-      str:      "Hello World",
-      nb:       34,
-      json:     {Hello: "World"},
-      ID:       id,
-      date:     date
-    });
-    var created_two = Item.create({
-      pk:       id,
-      rk:       "row-key2",
-      str:      "Hello World",
-      nb:       34,
-      json:     {Hello: "World"},
-      ID:       id,
-      date:     date
-    });
-    return Promise.all(created_one, created_two).then(function() {
+    var createItem = function(number) {
+      return Item.create({
+        pk:       id,
+        rk:       "number-" + number,
+        str:      "Hello World",
+        nb:       number,
+        json:     {Hello: "World"},
+        ID:       id,
+        date:     date
+      });
+    };
+    var itemsCreated = [];
+    for(var i = 0; i < 1200; i++) {
+      itemsCreated.push(createItem(i));
+    }
+    return Promise.all(itemsCreated).then(function() {
       return Item.queryPartitionKey(id);
     }).then(function(items) {
-      assert(items.length == 2, "Expected two items");
+      assert(items.length == 1200, "Expected 1200 items");
       assert(items[0].pk    === id,             "pk mismatch");
       assert(items[0].str   === 'Hello World',  "str mismatch");
       assert(items[1].pk    === id,             "pk mismatch");
       assert(items[1].str   === 'Hello World',  "str mismatch");
       assert(items[0].rk    !== items[1].rk,    "rk mismatch");
+    });
+  });
+
+  // Test Item.iteratePartitionKey
+  test("Item.iteratePartitionKey", function() {
+    var date  = new Date();
+    var id    = slugid.v4();
+    var createItem = function(number) {
+      return Item.create({
+        pk:       id,
+        rk:       "number-" + number,
+        str:      "Hello World",
+        nb:       number,
+        json:     {Hello: "World"},
+        ID:       id,
+        date:     date
+      });
+    };
+    var itemsCreated = [];
+    for(var i = 0; i < 1200; i++) {
+      itemsCreated.push(createItem(i));
+    }
+    return Promise.all(itemsCreated).then(function() {
+      return Item.iteratePartitionKey(id);
+    }).then(function(result) {
+      var items             = result[0];
+      var continuationToken = result[1];
+      assert(continuationToken, "Expected a continuationToken");
+      assert(items.length > 2, "Expected more than two items");
+      assert(items[0].pk    === id,             "pk mismatch");
+      assert(items[0].str   === 'Hello World',  "str mismatch");
+      assert(items[1].pk    === id,             "pk mismatch");
+      assert(items[1].str   === 'Hello World',  "str mismatch");
+      assert(items[0].rk    !== items[1].rk,    "rk mismatch");
+      return Item.iteratePartitionKey(
+        id,
+        continuationToken
+      ).then(function(result) {
+        var items2             = result[0];
+        var continuationToken2 = result[1];
+        assert(!continuationToken2, "Didn't expected a continuationToken");
+        items2.forEach(function(item2) {
+          items.forEach(function(item) {
+            assert(item2.rk !== item.rk, "RowKeys should be different");
+          });
+        });
+      });
     });
   });
 
