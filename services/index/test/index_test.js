@@ -85,7 +85,7 @@ suite('Indexing', function() {
       assert(result.taskId === taskId, "Wrong taskId");
     }).then(function() {
       debug("### List task in namespace");
-      return subject.index.listTasks(myns);
+      return subject.index.listTasks(myns, {});
     }).then(function(result) {
       assert(result.tasks.length === 2, "Expected 2 tasks");
       result.tasks.forEach(function(task) {
@@ -93,7 +93,7 @@ suite('Indexing', function() {
       });
     }).then(function() {
       debug("### List namespaces in namespace");
-      return subject.index.listNamespaces(myns);
+      return subject.index.listNamespaces(myns, {});
     }).then(function(result) {
       assert(result.namespaces.length === 2, "Expected 2 namespaces");
       assert(result.namespaces.some(function(ns) {

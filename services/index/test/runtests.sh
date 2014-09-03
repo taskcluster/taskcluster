@@ -4,4 +4,5 @@
 # Run tests
 mocha                               \
   test/index_test.js                \
+  test/api_test.js                  \
   ;

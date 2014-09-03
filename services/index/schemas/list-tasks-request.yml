@@ -1,0 +1,14 @@
+id:       http://schemas.taskcluster.net/index/v1/list-tasks-request.json
+$schema:  http://json-schema.org/draft-04/schema#
+title:              "List Tasks Request"
+description: |
+  Request to list tasks within a given namespace.
+type:               object
+properties:
+  continuationToken:
+    title:                "Continuation Token"
+    description: |
+      A continuation token previously returned in a response to this list
+      request. This property is optional and should not be provided for first
+      requests.
+additionalProperties: false
