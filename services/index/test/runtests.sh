@@ -3,4 +3,5 @@
 
 # Run tests
 mocha                               \
+  test/index_test.js                \
   ;
