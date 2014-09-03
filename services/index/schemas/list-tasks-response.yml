@@ -1,0 +1,64 @@
+id:       http://schemas.taskcluster.net/index/v1/list-tasks-response.json
+$schema:  http://json-schema.org/draft-04/schema#
+title:              "List Tasks Response"
+description: |
+  Representation of an indexed task.
+type:               object
+properties:
+  tasks:
+    title:          "Tasks"
+    description: |
+      List of tasks.
+    type:           array
+    items:
+      title:        "Task"
+      description: |
+        Representation of a task.
+      type:         object
+      properties:
+        namespace:
+          title:          "Namespace"
+          description: |
+            Namespace of the indexed task, used to find the indexed task in the
+            index.
+          type:           string
+          pattern:        "^[^\/]*$"
+          maxLength:      255
+        taskId:
+          title:          "Task Identifier"
+          description: |
+            Unique task identifier, this is UUID encoded as
+            [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+            stripped of `=` padding.
+          type:           string
+          pattern:        {$const: slugid-pattern}
+        rank:
+          title:          "Rank"
+          description: |
+            If multiple tasks are indexed with the same `namespace` the task
+            with the highest `rank` will be stored and returned in later
+            requests. If two tasks has the same `rank` the latest task will be
+            stored.
+          type:           number
+        data:
+          title:          "Task Specific Data"
+          description: |
+            Data that was reported with the task. This is an arbitrary JSON
+            object.
+          type:           object
+        expires:
+          title:          "Expiration"
+          description: |
+            Date at which this entry expires from the task index.
+          type:           string
+          format:         'date-time'
+      additionalProperties: false
+      required:
+        - namespace
+        - taskId
+        - rank
+        - data
+        - expires
+additionalProperties: false
+required:
+  - tasks
