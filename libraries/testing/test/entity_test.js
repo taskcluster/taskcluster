@@ -129,6 +129,50 @@ suite("entity", function() {
     });
   });
 
+  // Test create with empty partition key
+  test("Item.create (empty partition key)", function() {
+    var date  = new Date();
+    var id    = slugid.v4();
+    return Item.create({
+      pk:       "",
+      rk:       id,
+      str:      "Hello World",
+      nb:       1337.2,
+      json:     {Hello: "World"},
+      ID:       id,
+      date:     date
+    }).then(function(item) {
+      assert(item.pk    === "",             "pk mismatch");
+      assert(item.rk    === id,             "row-key mismatch");
+      assert(item.str   === 'Hello World',  "str mismatch");
+      assert(item.nb    === 1337.2,         "nb mismatch");
+      assert(item.json.Hello  === "World",  "json mismatch");
+      assert(item.date  === date,           "Date mismatch");
+    });
+  });
+
+  // Test create with empty partition key
+  test("Item.create (empty rowkey key)", function() {
+    var date  = new Date();
+    var id    = slugid.v4();
+    return Item.create({
+      pk:       id,
+      rk:       "",
+      str:      "Hello World",
+      nb:       1337.2,
+      json:     {Hello: "World"},
+      ID:       id,
+      date:     date
+    }).then(function(item) {
+      assert(item.pk    === id,             "pk mismatch");
+      assert(item.rk    === "",             "row-key mismatch");
+      assert(item.str   === 'Hello World',  "str mismatch");
+      assert(item.nb    === 1337.2,         "nb mismatch");
+      assert(item.json.Hello  === "World",  "json mismatch");
+      assert(item.date  === date,           "Date mismatch");
+    });
+  });
+
   // Test instanceof
   test("item instanceof Item, AbstractItem, Entity", function() {
     return Item.create({
@@ -184,6 +228,7 @@ suite("entity", function() {
     }, function(err) {
       debug("Expected error: %j", err);
       assert(err, "Error expected");
+      assert(err.code == 'ResourceNotFound', "Expect code: ResourceNotFound");
     });
   });
 
