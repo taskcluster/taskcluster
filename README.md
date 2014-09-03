@@ -3,7 +3,7 @@
 ## TODO
   - byte range fetching
   - aggregate pending writes into single buffer and/or multiple write
-    then flush when no longer writing.
+    then flush when no longer writing. [done]
   - cli
   - http api [done]
 
