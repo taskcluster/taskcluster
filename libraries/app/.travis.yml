@@ -8,3 +8,6 @@ node_js:
 services:
 - rabbitmq
 script: npm test
+before_install:
+- openssl aes-256-cbc -K $encrypted_505377a1c128_key -iv $encrypted_505377a1c128_iv
+  -in taskcluster-base-test.conf.json.enc -out taskcluster-base-test.conf.json -d
