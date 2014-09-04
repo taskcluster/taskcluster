@@ -58,7 +58,7 @@ api.declare({
       throw err;
     }
     // Return a 404 error
-    return req.status(404).json({
+    return res.status(404).json({
       message:      'Indexed task not found',
       error: {
         namespace:  req.params.namespace
