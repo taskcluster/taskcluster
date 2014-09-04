@@ -14,6 +14,9 @@ module.exports = {
 
     // Name of AMQP queue, if a non-exclusive queue is to be used.
     listenerQueueName:            undefined,
+
+    // Component name in statistics
+    statsComponent:               'index'
   },
 
   // Server configuration
@@ -64,6 +67,19 @@ module.exports = {
   azure: {
     accountName:                    null,
     accountKey:                     null
+  },
+
+  // InfluxDB configuration
+  influx: {
+    // Usually provided as environment variables, must be on the form:
+    // https://<user>:<pwd>@<host>:<port>/db/<database>
+    connectionString:               undefined,
+
+    // Maximum delay before submitting pending points
+    maxDelay:                       5 * 60,
+
+    // Maximum pending points in memory
+    maxPendingPoints:               250
   },
 
   // AWS SDK configuration for publication of schemas and references
