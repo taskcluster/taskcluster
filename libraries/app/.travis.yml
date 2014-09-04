@@ -1,18 +1,10 @@
 env:
   global:
   - DEBUG=*
-  - aws_apiVersion=2014-01-01
-  - secure: LNhQFBH9NOkZYabqqFjkzZa75W5cAX8Z25StU3XAUOGr5p76wCY/voVYyiz4t3Wki0tU4xFtEa6jEUMJCdq2ELgbNp7zisAal7o1J3CnNyxKx2RPZlfQRjKkPl7tAwiU1Ra40dhdl3SZrUoRhhg2kq5dYV60YFNWQqMg+RScG1E=
-  - secure: ibk6vPk6kritop+vPJUT53F3E95olQP68I3iRGIJModka/0LQ3Anzs66faoProD+5MAmjZdkctHb1o3i1LMpeIS+CYKnrL5rQLDjhWp3FuEm6wtutGPKF8DXAB9oEwC6XziMJ6ALfSlXxy7tnFJ+QPe3T7rfeMAEKiUYSJrRK0M=
-  - secure: N5sG1kZjrFu9JmEyGSwv9BMrmojWQIAtRRuXhipYDSO4+V3cbkBLTSzWkMUUty8b5PKXsC8XxW/lSXuwVkVf2DZSUSBi20fbGE0przkDrXQI6/1+jwpyQUQz/5APhUYG/52HmqrF3LfNrh+RiKfjoOuEx20aBVUDIrljDUql8xM=
-  - secure: RV4qwhpAg3Kpu+tv1MXTJGh64MGlatd984zZ/z7el/WUHwg01qM9dcYekRNrtoJybAFTIVhon67ItMIdeJIH51Etn3kxU2BACjcI8D8z0tbdKl+BRm/4A4faPrHaUmSHH2s3ZO32EFDtCi2zjQa3d9WYJJkJQOgMQur/clJieuU=
-  - secure: bcNEsc5tb4DPnSd4kTe3DAYbH3oTcwhoE8yEqLvYbCNfTFheYxiCkAi705lIfpEgDbuGzZgg0gbD8wvqgAVGP9mDsbHOf+ae8cLhHSUAceCRSkilZF1hrEYoxjKijguV5PVbuEzSNexTl7HqFYicYY6P6/FLZ7gHCLM/FRo2aX4=
-  - secure: FhcDXQSsXADxTkiJDLHjSMyN1IDSuhmKToamOW9FuXOhNHT55fHqAcNDJiKw8OBEUZXqLZkjLvLwj2vu13hOQe0Nk1p/cw9nAQ3W/N78G79IqwCByLXYXLwaKCtsSzP1uK2SHhTNcooxMb8KdmBhVVqXTDFv4eLXowiipIX/Z5w=
-  - secure: gszjPxQ6mz73yiUotcVsl2dIkpzkzaUgzr6+mCocDbgIjtWRycmdRa2Lkg845B7SX4FXc6sufVgBWKqVuG01wl20GihCtcVWj0hJu1Hsfuxzpa7c/95KXNaAZH/OSvL0HdaD1H1Jjf9DWvRnchgUY0mTdqN3pte9QZG08O/JPGY=
-  - secure: BTFfQhPIU0q1tJey2QzJ3vwzLpRuHkFbZ9AK37sPxwoGErKxqp/BJoTmyffGTwVchTAu11MtVl3y+5pioCeQNmijocWF2QiO3FJtadBRT7np4ReItX89D5Kedr/JpCYWqgE0hFTHGsAs8CWqEGROtpQs8gHnCwHG7YlqpS+uzyY=
 language: node_js
 node_js:
 - '0.10'
+- '0.11'
 services:
 - rabbitmq
 script: npm test
