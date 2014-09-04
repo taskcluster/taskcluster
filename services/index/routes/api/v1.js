@@ -163,3 +163,21 @@ api.declare({
     res.reply(task.json());
   });
 });
+
+/** Check that the server is a alive */
+api.declare({
+  method:   'get',
+  route:    '/ping',
+  name:     'ping',
+  title:    "Ping Server",
+  description: [
+    "Documented later...",
+    "",
+    "**Warning** this api end-point is **not stable**."
+  ].join('\n')
+}, function(req, res) {
+  res.status(200).json({
+    alive:    true,
+    uptime:   process.uptime()
+  });
+});
