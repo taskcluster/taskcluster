@@ -5,6 +5,7 @@ module.exports = {
     namespaceTableName:           'DummyTestNamespaces',
     publishMetaData:              'false',
     listenerQueueName:            undefined,
+    statsComponent:               'test-index'
   },
 
   taskcluster: {
