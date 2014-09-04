@@ -133,8 +133,6 @@ func (self *Stream) Consume() error {
 		for i := 0; i < len(handles); i++ {
 			handle := handles[i].(*StreamHandle)
 
-			//log.Printf("SEND EVENT %d, %d bytes | (%d) %d-%d", event.Offset, event.Length, handle.Offset, handle.Start, handle.Stop)
-
 			// Don't write anything that starts after we end...
 			if event.Offset > handle.Stop || event.Offset+event.Length <= handle.Start {
 				continue
