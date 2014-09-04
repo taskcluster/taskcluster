@@ -4,7 +4,7 @@
   - [x] byte range fetching
   - [x] aggregate pending writes into single buffer and/or multiple write
     then flush when no longer writing.
-  - [] cli
+  - [ ] cli
   - [x] http api
 
 ## Performance
