@@ -1,11 +1,11 @@
 # continuous-log-serve
 
 ## TODO
-  - byte range fetching
-  - aggregate pending writes into single buffer and/or multiple write
-    then flush when no longer writing. [done]
-  - cli
-  - http api [done]
+  - [x] byte range fetching
+  - [x] aggregate pending writes into single buffer and/or multiple write
+    then flush when no longer writing.
+  - [] cli
+  - [x] http api
 
 ## Performance
 
