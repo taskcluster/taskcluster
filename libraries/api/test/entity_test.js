@@ -444,6 +444,7 @@ suite("entity", function() {
 
   // Test Item.queryProperty
   test("Item.queryProperty (without handler)", function() {
+    this.timeout(60 * 1000);
     var date  = new Date();
     var id    = slugid.v4();
     var id2   = slugid.v4();
@@ -467,6 +468,7 @@ suite("entity", function() {
 
   // Test Item.queryProperty with handler
   test("Item.queryProperty (with handler)", function() {
+    this.timeout(60 * 1000);
     var date  = new Date();
     var id    = slugid.v4();
     var id2   = slugid.v4();
