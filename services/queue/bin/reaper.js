@@ -16,9 +16,25 @@ var launch = function(profile) {
     envs: [
       'amqp_url',
       'database_connectionString',
+      'influx_connectionString'
     ],
     filename:     'taskcluster-queue'
   });
+
+  // Create InfluxDB connection for submitting statistics
+  var influx = new base.stats.Influx({
+    connectionString:   cfg.get('influx:connectionString'),
+    maxDelay:           cfg.get('influx:maxDelay'),
+    maxPendingPoints:   cfg.get('influx:maxPendingPoints')
+  });
+
+  // Start monitoring the process
+  base.stats.startProcessUsageReporting({
+    drain:      influx,
+    component:  cfg.get('queue:statsComponent'),
+    process:    'reaper'
+  });
+
 
   // Create Task subclass wrapping database access
   var Task = TaskModule.configure({
