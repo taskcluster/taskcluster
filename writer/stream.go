@@ -17,14 +17,14 @@ type Event struct {
 	Number int
 	Err    error
 	Bytes  []byte
-	Length int
+	Length int64
 	End    bool
-	Offset int
+	Offset int64
 }
 
 type Stream struct {
 	Path    string
-	Offset  int
+	Offset  int64
 	Reader  *io.Reader
 	File    os.File
 	Ended   bool
@@ -72,9 +72,9 @@ func (self *Stream) Unobserve(handle *StreamHandle) {
 	self.handles.Remove(handle)
 }
 
-func (self *Stream) Observe() *StreamHandle {
+func (self *Stream) Observe(start, stop int64) *StreamHandle {
 	// Buffering the channel is very important to avoid writing blocks, etc..
-	handle := newStreamHandle(self)
+	handle := newStreamHandle(self, start, stop)
 	self.handles.Add(&handle)
 	return &handle
 }
@@ -105,7 +105,7 @@ func (self *Stream) Consume() error {
 		startOffset := self.Offset
 
 		if bytesRead > 0 {
-			self.Offset += bytesRead
+			self.Offset += int64(bytesRead)
 		}
 
 		eof := readErr == io.EOF
@@ -120,7 +120,7 @@ func (self *Stream) Consume() error {
 		self.debugR("read: %d total offset: %d eof: %v", bytesRead, self.Offset, eof)
 		event := Event{
 			Number: eventNumber,
-			Length: bytesRead,
+			Length: int64(bytesRead),
 			Offset: startOffset,
 			Bytes:  buf,
 			Err:    eventErr,
@@ -132,6 +132,14 @@ func (self *Stream) Consume() error {
 		handles := self.handles.List()
 		for i := 0; i < len(handles); i++ {
 			handle := handles[i].(*StreamHandle)
+
+			//log.Printf("SEND EVENT %d, %d bytes | (%d) %d-%d", event.Offset, event.Length, handle.Offset, handle.Start, handle.Stop)
+
+			// Don't write anything that starts after we end...
+			if event.Offset > handle.Stop || event.Offset+event.Length <= handle.Start {
+				continue
+			}
+
 			pendingWrites := len(handle.events)
 			if pendingWrites >= (EVENT_BUFFER_SIZE - 1) {
 				log.Println("Removing handle with %d pending writes", pendingWrites)

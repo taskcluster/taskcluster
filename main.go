@@ -50,7 +50,17 @@ func getLog(
 	writer http.ResponseWriter,
 	req *http.Request,
 ) {
-	handle := stream.Observe()
+
+	rng, rngErr := ParseRange(req.Header)
+
+	if rngErr != nil {
+		log.Printf("Invalid range : %s", req.Header.Get("Range"))
+		writer.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+		writer.Write([]byte(rngErr.Error()))
+		return
+	}
+
+	handle := stream.Observe(rng.Start, rng.Stop)
 
 	defer func() {
 		// Ensure we close our file handle...

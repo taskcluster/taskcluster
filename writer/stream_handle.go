@@ -6,13 +6,20 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	. "github.com/visionmedia/go-debug"
 )
+
+var debug = Debug("stream:handle")
 
 const EVENT_BUFFER_SIZE = 100
 
 type StreamHandle struct {
+	Start int64
+	Stop  int64
+
 	// Current offset in StreamHandle.
-	Offset int
+	Offset int64
 
 	stream *Stream
 
@@ -23,9 +30,11 @@ type StreamHandle struct {
 	pendingEvents []*Event
 }
 
-func newStreamHandle(stream *Stream) StreamHandle {
+func newStreamHandle(stream *Stream, start, stop int64) StreamHandle {
 	return StreamHandle{
-		Offset: 0,
+		Offset: start,
+		Start:  start,
+		Stop:   stop,
 
 		stream:        stream,
 		events:        make(chan *Event, EVENT_BUFFER_SIZE),
@@ -34,16 +43,26 @@ func newStreamHandle(stream *Stream) StreamHandle {
 }
 
 func (self *StreamHandle) writeEvent(event *Event, w io.Writer) (int64, error) {
+	// Note that while we need to trim buffers here we don't need to exclude any
+	// since the stream type will only dispatch events which apply to handles
+	// with valid offsets...
+
+	eventEndOffset := event.Offset + event.Length
+
+	startOffset := self.Offset - event.Offset
+	var endOffset int64
+	if eventEndOffset > self.Stop {
+		endOffset = eventEndOffset - self.Stop
+	} else {
+		endOffset = event.Length
+	}
+
 	// As bytes come in write them directly to the target.
-	written, writeErr := w.Write(event.Bytes[0:event.Length])
+	written, writeErr := w.Write(event.Bytes[startOffset:endOffset])
 
 	// Should come before length equality check...
 	if writeErr != nil {
 		return int64(self.Offset), writeErr
-	}
-
-	if written != event.Length {
-		panic("Write error written != event.Length")
 	}
 
 	return int64(written), writeErr
@@ -53,38 +72,48 @@ func (self *StreamHandle) writeEvent(event *Event, w io.Writer) (int64, error) {
 // we want to optimize for reuse of buffers across reads/writes in the future we
 // can also extend this mechanism for reading from disk if events "fall behind"
 func (self *StreamHandle) WriteTo(target io.Writer) (n int64, err error) {
-	// Remember this interface is designed to drain the entire reader so we must
-	// be careful to send errors if something goes wrong as soon as possible...
 
-	// Pipe the existing file contents over...
-	file, err := os.Open(self.stream.Path)
-	if err != nil {
-		return 0, err
-	}
+	// Figure out if the current file sink is useful
+	initialOffset := int64(self.stream.Offset)
 
-	initialOffset := self.stream.Offset
-	// Begin by copying the initial data from the sink...
-	written, copyErr := io.CopyN(target, file, int64(initialOffset))
-	self.Offset += int(written)
-
-	if copyErr != nil {
-		return int64(self.Offset), copyErr
-	}
-
-	if self.stream.Ended {
-		// Handle the edge case where the file has ended while we where coping bytes
-		// over above.
-		if initialOffset != self.stream.Offset {
-			// copy drains entire file until EOF
-			finalWrite, _ := io.Copy(target, file)
-			self.Offset += int(finalWrite)
+	// Begin by fetching data from the sink first if we can.
+	if initialOffset > self.Start {
+		// Pipe the existing file contents over...
+		file, err := os.Open(self.stream.Path)
+		if err != nil {
+			return 0, err
 		}
+
+		// Determine how much to copy over based on the `Stop` value for this
+		// handle.
+		var offset int64
+		if self.Stop > initialOffset {
+			offset = initialOffset
+		} else {
+			offset = self.Stop
+		}
+
+		// Begin by copying the initial data from the sink...
+		written, copyErr := io.CopyN(target, file, offset)
 		file.Close()
+
+		self.Offset += written
+		if copyErr != nil {
+			return int64(self.Offset), copyErr
+		}
+	}
+
+	// If the stream is over or we drained enough of it then stop before event
+	// processing begins...
+	if self.stream.Ended || self.Offset >= self.Stop {
+		debug(
+			"Ending stream | ended: %v | offset: %d | stop: %s",
+			self.Offset, self.Stop, self.stream.Ended,
+		)
 		return int64(self.Offset), nil
 	}
 
 	flusher, canFlush := target.(http.Flusher)
-
 	if canFlush {
 		flusher.Flush()
 	}
@@ -114,12 +143,12 @@ func (self *StreamHandle) WriteTo(target io.Writer) (n int64, err error) {
 				}
 
 				written, writeErr := self.writeEvent(event, target)
-				self.Offset += int(written)
+				self.Offset += written
 				if writeErr != nil {
 					return int64(self.Offset), writeErr
 				}
 
-				if event.End {
+				if event.End || self.Offset >= self.Stop {
 					return int64(self.Offset), writeErr
 				}
 			}
