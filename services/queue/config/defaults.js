@@ -37,8 +37,8 @@ module.exports = {
     // This is instead of expiring artifacts that have expiry set to just now.
     artifactExpirationDelay:      '1',
 
-    // Component property in the responseTime statistics
-    responseTimeComponent:        'queue'
+    // Component property in the responseTime and process statistics
+    statsComponent:               'queue'
   },
 
   // TaskCluster configuration

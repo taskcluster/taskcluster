@@ -34,7 +34,6 @@ var launch = function(profile) {
     filename:     'taskcluster-queue'
   });
 
-
   // Setup AMQP exchanges and create a publisher
   // First create a validator and then publisher
   var validator = null;
@@ -93,7 +92,14 @@ var launch = function(profile) {
     connectionString:   cfg.get('influx:connectionString'),
     maxDelay:           cfg.get('influx:maxDelay'),
     maxPendingPoints:   cfg.get('influx:maxPendingPoints')
-  })
+  });
+
+  // Start monitoring the process
+  base.stats.startProcessUsageReporting({
+    drain:      influx,
+    component:  cfg.get('queue:statsComponent'),
+    process:    'server'
+  });
 
   // When: publisher, validator and containers are created, proceed
   debug("Waiting for resources to be created");
@@ -127,7 +133,7 @@ var launch = function(profile) {
       baseUrl:          cfg.get('server:publicUrl') + '/v1',
       referencePrefix:  'queue/v1/api.json',
       aws:              cfg.get('aws'),
-      component:        cfg.get('queue:responseTimeComponent'),
+      component:        cfg.get('queue:statsComponent'),
       drain:            influx
     });
   }).then(function(router) {

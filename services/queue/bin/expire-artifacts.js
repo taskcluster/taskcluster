@@ -22,9 +22,24 @@ var launch = function(profile) {
       'aws_secretAccessKey',
       'azure_accountName',
       'azure_accountKey',
-      'queue_artifactExpirationDelay'
+      'queue_artifactExpirationDelay',
+      'influx_connectionString'
     ],
     filename:     'taskcluster-queue'
+  });
+
+  // Create InfluxDB connection for submitting statistics
+  var influx = new base.stats.Influx({
+    connectionString:   cfg.get('influx:connectionString'),
+    maxDelay:           cfg.get('influx:maxDelay'),
+    maxPendingPoints:   cfg.get('influx:maxPendingPoints')
+  });
+
+  // Start monitoring the process
+  base.stats.startProcessUsageReporting({
+    drain:      influx,
+    component:  cfg.get('queue:statsComponent'),
+    process:    'expire-artifacts'
   });
 
   // Create artifactStore
