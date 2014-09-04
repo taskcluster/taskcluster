@@ -37,6 +37,14 @@ suite("API", function() {
       });
     });
   });
+
+  test('find (non-existing', function() {
+    return subject.index.find(slugid.v4() + '.' + slugid.v4()).then(function() {
+      assert(false, "This shouldn't have worked");
+    }, function(err) {
+      assert(err.statusCode === 404, "Should have returned 404");
+    });
+  });
 });
 
 
