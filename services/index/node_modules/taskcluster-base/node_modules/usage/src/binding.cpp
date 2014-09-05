@@ -1,18 +1,19 @@
 #include "binding.h"
+#include "nan.h"
 using namespace v8;
 
 void RegisterModule(Handle<Object> target) {
 
 #ifdef is_linux
-  target->Set(String::NewSymbol("HERTZ"), Number::New(sysconf(_SC_CLK_TCK)));
-  target->Set(String::NewSymbol("PAGE_SIZE"), Number::New(sysconf(_SC_PAGESIZE)));
+  target->Set(NanNew<String>("HERTZ"), NanNew<Number>(sysconf(_SC_CLK_TCK)));
+  target->Set(NanNew<String>("PAGE_SIZE"), NanNew<Number>(sysconf(_SC_PAGESIZE)));
 #endif
 
 #ifdef is_solaris
-  target->Set(String::NewSymbol("getUsage"),
+  target->Set(NanNew<String>("getUsage"),
     FunctionTemplate::New(GetUsage)->GetFunction());
 #endif
-  target->Set(String::NewSymbol("OS"), String::New(OS));
+  target->Set(NanNew<String>("OS"), NanNew<String>(OS));
 }
 
 NODE_MODULE(sysinfo, RegisterModule);
