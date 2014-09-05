@@ -19,7 +19,6 @@ suite('stats', function() {
     return;
   }
 
-
   test("Create Series", function() {
     var TestSeries = new base.stats.Series({
       name:               'TestSeries',
@@ -290,6 +289,115 @@ suite('stats', function() {
     }).then(function() {
       assert(influx.pendingPoints() >= 2, "We should have at least 2 points");
       base.stats.stopProcessUsageReporting();
+    });
+  });
+
+  // We don't have taskcluster-client to play with here, so instead we'll rely
+  // on a hardcoded message to write tests.
+  var EXAMPLE_MESSAGE = {
+    "payload": {
+      "status": {
+        "taskId": "5yfpbMMqSmSQ86t83vMZxA",
+        "provisionerId": "aws-provisioner",
+        "workerType": "cli",
+        "schedulerId": "-",
+        "taskGroupId": "5yfpbMMqSmSQ86t83vMZxA",
+        "priority": 3,
+        "deadline": "2014-09-05T00:49:58.600Z",
+        "retriesLeft": 5,
+        "state": "completed",
+        "runs": [
+          {
+            "runId": 0,
+            "state": "completed",
+            "reasonCreated": "scheduled",
+            "scheduled": "2014-09-05T00:20:03.022Z",
+            "reasonResolved": "completed",
+            "success": true,
+            "workerGroup": "us-west-2c",
+            "workerId": "i-b2c169bd",
+            "takenUntil": "2014-09-05T00:40:04.185Z",
+            "started": "2014-09-05T00:20:04.188Z",
+            "resolved": "2014-09-05T00:20:15.472Z"
+          }
+        ]
+      },
+      "runId": 0,
+      "success": true,
+      "workerGroup": "us-west-2c",
+      "workerId": "i-b2c169bd",
+      "version": 1
+    },
+    "exchange": "queue/v1/task-completed",
+    "routingKey": "primary.5yfpbMMqSmSQ86t83vMZxA.0.us-west-2c.i-b2c169bd.aws-provisioner.cli.-.5yfpbMMqSmSQ86t83vMZxA._",
+    "redelivered": false
+  };
+
+  test("createHandlerTimer", function() {
+    // Create message
+    var message = _.cloneDeep(EXAMPLE_MESSAGE);
+
+    // Create a message handler that waits 250 ms
+    var handler = function() {
+      return new Promise(function(accept) {
+        setTimeout(accept, 250);
+      });
+    };
+
+    // Create InfluxDB connection
+    var influx = new base.stats.Influx({
+      connectionString:   cfg.get('influxdb:connectionString')
+    });
+
+    // Wrap handler
+    var timedHandler = base.stats.createHandlerTimer(handler, {
+      drain:        influx,
+      component:    'taskcluster-base-test'
+    });
+
+    // Test that nothing has been reported yet
+    assert(influx.pendingPoints() === 0, "We shouldn't have any points");
+
+    // Test the timed handler
+    return timedHandler(message).then(function() {
+      assert(influx.pendingPoints() === 1, "We should have one point");
+    });
+  });
+
+  test("createHandlerTimer (error)", function() {
+    // Create message
+    var message = _.cloneDeep(EXAMPLE_MESSAGE);
+
+    // Create a message handler that waits 250 ms
+    var handler = function() {
+      return new Promise(function(accept) {
+        setTimeout(accept, 250);
+      }).then(function() {
+        throw new Error("An expected error");
+      });
+    };
+
+    // Create InfluxDB connection
+    var influx = new base.stats.Influx({
+      connectionString:   cfg.get('influxdb:connectionString')
+    });
+
+    // Wrap handler
+    var timedHandler = base.stats.createHandlerTimer(handler, {
+      drain:        influx,
+      component:    'taskcluster-base-test'
+    });
+
+    // Test that nothing has been reported yet
+    assert(influx.pendingPoints() === 0, "We shouldn't have any points");
+
+    // Test the timed handler
+    return timedHandler(message).then(function() {
+      assert(false, "We should have got an error!");
+    }, function(err) {
+      debug("Expected error: %j", err);
+    }).then(function() {
+      assert(influx.pendingPoints() === 1, "We should have one point");
     });
   });
 });
