@@ -85,7 +85,9 @@ var launch = function(profile) {
       queueEvents:        queueEvents,
       connectionString:   cfg.get('amqp:url'),
       queueName:          cfg.get('index:listenerQueueName'),
-      routePrefix:        cfg.get('index:routePrefix')
+      routePrefix:        cfg.get('index:routePrefix'),
+      drain:              influx,
+      component:          cfg.get('index:statsComponent')
     });
 
     // Start listening for events and handle them
