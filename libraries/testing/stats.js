@@ -312,6 +312,85 @@ var createResponseTimer = function(reporter, additionalValues) {
 exports.createResponseTimer = createResponseTimer;
 
 
+/** Handler reports format for createHandlerTimer */
+var HandlerReports = new Series({
+  name:       'HandlerReports',
+  columns: {
+    component:      types.String,
+    duration:       types.Number,
+    exchange:       types.String,
+    redelivered:    types.String,   // true || false
+    error:          types.String    // true || false
+  }
+});
+
+
+/**
+ * Create a handler timer for AMQP messages received through
+ * taskcluster-client. Please note, that this relies on that messages format.
+ *
+ * options:
+ * {
+ *   drain:        new Influx(...),  // Place to send events
+ *   component:    'queue'           // Identifier for taskcluster component
+ * }
+ */
+var createHandlerTimer = function(handler, options) {
+  assert(handler instanceof Function, "A handler must be provided");
+  assert(options,                     "options required");
+  assert(options.drain,               "options.drain is required");
+  assert(options.component,           "options.component is required");
+
+  // Create a reporter
+  var reporter = HandlerReports.reporter(options.drain);
+
+  // Wrap handler and let that be it
+  return function(message) {
+    // Create most of the point
+    var point = {
+      component:      options.component,
+      duration:       undefined,
+      exchange:       message.exchange || '',
+      redelivered:    (message.redelivered ? 'true' : 'false'),
+      error:          'false'
+    };
+
+    // Start timer
+    var start = process.hrtime();
+
+    // Handle the message
+    return Promise.resolve(handler(message)).then(function() {
+      // Get duration
+      var d = process.hrtime(start);
+
+      // Convert to milliseconds
+      point.duration = d[0] * 1000 + (d[1] / 1000000);
+
+      // Send point to reporter
+      reporter(point);
+    }, function(err) {
+      // Get duration
+      var d = process.hrtime(start);
+
+      // Convert to milliseconds
+      point.duration = d[0] * 1000 + (d[1] / 1000000);
+
+      // Flag and error
+      point.error = 'true';
+
+      // Send point to reporter
+      reporter(point);
+
+      // Re-throw the error
+      throw err;
+    });
+  };
+};
+
+// Export createHandlerTimer
+exports.createHandlerTimer = createHandlerTimer;
+
+
 /** Usage reports format for monitorProcessUsage */
 var UsageReports = new Series({
   name:       'UsageReports',
