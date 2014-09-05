@@ -316,6 +316,10 @@ api.declare({
     assert(data.version === 1, "version 1 was expected, don't know how to " +
            "read newer versions");
 
+    if (!data.definition.extra) {
+      console.error('fked up task %s', taskId);
+      data.definition.extra = {};
+    }
     // Return task definition
     return res.reply(data.definition);
   });
