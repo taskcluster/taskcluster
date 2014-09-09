@@ -1,9 +1,14 @@
 module.exports = {
+
+  // Hostname of this docker worker
+  host: 'localhost',
+
   // Run test only teardown and logging events.
   testMode: false,
 
   // Image used to  create the taskcluster proxy container.
   taskclusterProxyImage: 'taskcluster/proxy',
+  taskclusterLogImage: 'taskcluster/logserve',
 
   logging: {
     liveLogChunkInterval: 5000, // 5 seconds

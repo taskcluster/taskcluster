@@ -26,6 +26,7 @@ suite('aws mock server', function() {
     }));
   }
 
+  verify('/meta-data/public-hostname', 'publichost');
   verify('/meta-data/ami-id', 'ami-333333');
   verify('/meta-data/instance-type', 'c3.xlarge');
   verify('/meta-data/placement/availability-zone', 'us-west-2');

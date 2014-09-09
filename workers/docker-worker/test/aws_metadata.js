@@ -6,6 +6,8 @@ var app = require('koa')();
 
 function route(path) {
   switch (path) {
+    case '/meta-data/public-hostname':
+      return 'publichost';
     case '/user-data':
       return new Buffer(JSON.stringify({ capacity: 1 }));
     case '/meta-data/ami-id':

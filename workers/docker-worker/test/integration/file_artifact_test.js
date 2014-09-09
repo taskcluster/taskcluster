@@ -17,7 +17,7 @@ suite('artifact extration tests', function() {
         ),
         features: {
           // No need to actually issue live logging...
-          liveLog: false
+          localLiveLog: false
         },
         artifacts: {
           'public/xfoo': {

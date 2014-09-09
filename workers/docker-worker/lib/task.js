@@ -260,8 +260,8 @@ Task.prototype = {
       // TODO: Reconsider if we should mark the task as failed or something else
       //       at this point... I intentionally did not mark the task completed
       //       here as to allow for a retry by another worker, etc...
-      this.clearTimeout();
-      throw e
+      this.clearClaimTimeout();
+      throw e;
     }
     // Called again outside so we don't run this twice in the same try/catch
     // segment potentially causing a loop...
@@ -339,18 +339,10 @@ Task.prototype = {
       this.runtime.docker, this.dockerConfig(links)
     );
 
-    // Pipe the stream into the task handler stream. This has a small
-    // performance cost but allows us to send all kinds of additional (non
-    // docker) related logs to the "terminal.log" in an ordered fashion.
-    dockerProc.stdout.pipe(this.stream, {
-      end: false
-    });
-
     // Hooks prior to running the task.
     yield stats.timeGen('tasks.time.states.created', this.states.created(this));
 
-    // At this point all readers of our stream should be attached and we can
-    // uncork.
+    // Everything should have attached to the stream by now...
     this.stream.uncork();
 
     // Validate the schema!
@@ -361,12 +353,20 @@ Task.prototype = {
       // Inform the user that this task has failed due to some configuration
       // error on their part.
       this.stream.write(this.logSchemaErrors('`task.payload`', payloadErrors));
+
       this.stream.write(this.logFooter(
         false, // unsuccessful task
         -1, // negative exit code indicates infrastructure errors usually.
         taskStart, // duration details...
         new Date()
       ));
+
+      // Ensure the stream is completely ended...
+      yield this.stream.end.bind(this.stream);
+
+      yield stats.timeGen(
+        'tasks.time.states.validation_failed.killed', this.states.killed(this)
+      );
       return false;
     }
 
@@ -378,14 +378,26 @@ Task.prototype = {
       yield this.pullDockerImage();
     } catch (e) {
       this.stream.write(this.fmtLog(IMAGE_ERROR, this.task.payload.image, e));
-      this.stream.write(this.logFooter(
+
+      // Ensure that the stream has completely finished.
+      yield this.stream.end.bind(this.stream, this.logFooter(
         false, // unsuccessful task
         -1, // negative exit code indicates infrastructure errors usually.
         taskStart, // duration details...
         new Date()
       ));
+
+      yield stats.timeGen(
+        'tasks.time.states.pull_failed.killed', this.states.killed(this)
+      );
       return false;
     }
+
+
+    // Now that we know the stream is ready pipe data into it...
+    dockerProc.stdout.pipe(this.stream, {
+      end: false
+    });
 
     // start the timer to ensure we don't go overtime.
     var maxRuntimeMS = this.task.payload.maxRunTime * 1000;

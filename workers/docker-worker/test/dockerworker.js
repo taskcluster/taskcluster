@@ -76,6 +76,10 @@ DockerWorker.prototype = {
     });
 
     var startConfig = {
+      Privileged: true,
+      // Allow talking to other docker containers directly...
+      NetworkMode: 'host',
+
       Binds: [
         util.format('%s:%s', path.resolve(__dirname, '..'), '/worker')
       ]

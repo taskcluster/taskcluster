@@ -10,3 +10,6 @@ sudo tar xzf /tmp/node-$node_version.tar.gz \
 
 # test it out
 node --version
+
+# For node dependencies we need make, etc... =/
+sudo apt-get install -yq build-essential

@@ -53,6 +53,7 @@ function* configure (baseUrl) {
 
   // defaults per the metadata
   var config = yield {
+    host: getText(baseUrl + '/meta-data/public-hostname'),
     // Since this is aws configuration after all...
     provisionerId: 'aws-provisioner',
     workerId: getText(baseUrl + '/meta-data/instance-id'),

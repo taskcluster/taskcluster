@@ -154,7 +154,7 @@ TestWorker.prototype = {
 
       // Live logging of the task...
       log: getArtifact(
-        { taskId: taskId, runId: runId }, 'public/logs/terminal_live.log'
+        { taskId: taskId, runId: runId }, 'public/logs/live.log'
       ),
 
       // Generally useful for most of the tests...
@@ -219,7 +219,7 @@ TestWorker.prototype = {
       console.log('error during close:', e);
     }
 
-    var graph = yield this.scheduler.inspectTaskGraph(graphId);
+    var graph = yield this.scheduler.inspect(graphId);
     return yield graph.tasks.map(function(task) {
       // Note: that we assume runId 0 here which is fine locally since we know
       // the number of runs but not safe is we wanted to test reruns.

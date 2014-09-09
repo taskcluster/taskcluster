@@ -80,7 +80,7 @@ TaskListener.prototype = {
         // All content from taskcluster should be a json payload.
         content = JSON.parse(msg.content);
         yield self.runTask(content);
-        var ack = channel.ack(msg);
+        channel.ack(msg);
         // Only indicate a completed task (which may trigger an idle state)
         // after an ack/nack.
         self.decrementPending();

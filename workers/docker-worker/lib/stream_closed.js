@@ -9,7 +9,11 @@ module.exports = function waitForStream(stream) {
     // If the stream has a .closed property try to use this otherwise read the
     // internal writableState which is somewhat of a hack though is stable
     // between node versions...
-    if (stream.closed || stream._writableState.finished) return accept();
+    if (
+      stream.closed || stream._writableState && stream._writableState.finished
+    ) {
+      return accept();
+    }
     stream.once('finish', accept);
     stream.once('error', reject);
   }.bind(this));

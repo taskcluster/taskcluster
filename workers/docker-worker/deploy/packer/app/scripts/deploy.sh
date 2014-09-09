@@ -1,5 +1,9 @@
 #! /bin/bash -vex
 
+sudo apt-get update
+# For node dependencies we need make, etc... =/
+sudo apt-get install -yq build-essential
+
 # docker_worker_source that needs to be untar'ed
 docker_worker_source=$1
 upstart_conf=$2

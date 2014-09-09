@@ -63,6 +63,11 @@ npm test
 
 This will build the docker image for the tasks and run the entire suite.
 
+### Common problems
+
+  - Time synchronization : if your running docker in a VM your VM may
+    drift in time... This often results in stale warnings on the queue.
+
 ## Deploying the worker
 
 This repo contains a deployment script `./deploy/bin/build` (run `./deploy/bin/build

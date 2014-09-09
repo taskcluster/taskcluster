@@ -20,15 +20,11 @@ suite('configuration/aws', function() {
     server.close(done);
   });
 
-  test('billing cycle seconds', co(function* () {
-    var seconds = yield awsConfig.billingCycleRemaining();
-    assert.ok(typeof seconds === 'number');
-  }));
-
   test('configuration', co(function* () {
     var config = yield awsConfig.configure(url);
     // values are mocked from the local aws metadata server.
     assert.deepEqual(config, {
+      host: 'publichost',
       shutdown: true,
       shutdownSecondsStart: 12 * 60,
       shutdownSecondsStop: 2 * 60,

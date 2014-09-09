@@ -3,9 +3,12 @@ This module handles the creation of the "taskcluster" proxy container which
 allows tasks to talk directly to taskcluster services over a http proxy which
 grants a particular permission level based on the task scopes.
 */
+var waitForPort = require('../wait_for_port');
 
 // Alias used to link the proxy.
 var ALIAS = 'taskcluster';
+// Maximum time in MS to wait for the proxy socket to become available.
+var INIT_TIMEOUT = 2000;
 
 function TaskclusterProxy() {}
 
@@ -50,11 +53,20 @@ TaskclusterProxy.prototype = {
 
     // Terrible hack to get container promise proxy.
     this.container = docker.getContainer(this.container.id);
-    var name = (yield this.container.inspect()).Name.slice(1);
 
     // TODO: In theory the output of the proxy might be useful consider logging
     // this somehow.
     yield this.container.start({});
+
+    var inspect = yield this.container.inspect();
+    var name = inspect.Name.slice(1)
+
+    try {
+      // wait for the initial server response...
+      yield waitForPort(inspect.NetworkSettings.IPAddress, '80', INIT_TIMEOUT);
+    } catch (e) {
+      throw new Error('Failed to initialize taskcluster proxy service.')
+    }
 
     return [{ name: name, alias: ALIAS }];
   },

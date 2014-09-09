@@ -15,7 +15,8 @@ var Promise = require('promise');
 
 var ARTIFACT_NAME = 'public/logs/terminal_bulk.log';
 
-function BulkLog() {
+function BulkLog(artifact) {
+  this.artifactName = artifact || ARTIFACT_NAME;
   this.file = new temporary.File();
   debug('Created BulkLog using tempfile: ' + this.file.path);
 }
@@ -25,10 +26,12 @@ BulkLog.prototype = {
   created: function* (task) {
     // Pipe the task stream to a temp file on disk.
     this.stream = fs.createWriteStream(this.file.path);
-    task.stream.pipe(this.stream);
+    var end = this.stream.end;
+    task.stream.pipe(this.stream, { end: true });
   },
 
   killed: function* (task) {
+    //this.stream.end();
     // Ensure the stream is completely written prior to uploading the temp file.
     yield streamClosed(this.stream);
 
@@ -41,7 +44,7 @@ BulkLog.prototype = {
     var artifact = yield queue.createArtifact(
       task.status.taskId,
       task.runId,
-      ARTIFACT_NAME,
+      this.artifactName,
       {
         // Why s3? It's currently cheaper to store data in s3 this could easily
         // be used with azure simply by changing s3 -> azure.
@@ -73,10 +76,18 @@ BulkLog.prototype = {
     diskStream.pipe(req);
 
     // Wait until the request has completed and the file has been uploaded...
-    yield waitForEvent(req, 'end');
+    var result = yield waitForEvent(req, 'end');
 
     // Unlink the temp file.
     yield fs.unlink.bind(fs, this.file.path);
+
+    var url = queue.buildUrl(
+      queue.getArtifact,
+      task.status.taskId,
+      task.runId,
+      this.artifactName
+    );
+    return url;
   }
 
 };

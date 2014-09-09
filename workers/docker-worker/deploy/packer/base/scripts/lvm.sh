@@ -2,7 +2,7 @@
 
 # Update your sources
 sudo apt-get update
-sudo apt-get upgrade -y
+#sudo apt-get upgrade -y
 
 # Install LVM2
 sudo apt-get install -y lvm2

@@ -4,7 +4,7 @@ suite('Capacity', function() {
   var settings = require('../settings');
   var cmd = require('./helper/cmd');
 
-  var LocalWorker = require('../localworker');
+  var DockerWorker = require('../dockerworker');
   var TestWorker = require('../testworker');
 
   // Ensure we don't leave behind our test configurations.
@@ -18,7 +18,7 @@ suite('Capacity', function() {
       capacity: CAPACITY
     });
 
-    worker = new TestWorker(LocalWorker);
+    worker = new TestWorker(DockerWorker);
     yield worker.launch();
   }));
 
@@ -26,7 +26,7 @@ suite('Capacity', function() {
     yield worker.terminate();
   }));
 
-  test('5 tasks in parallel', co(function* () {
+  test(CAPACITY + ' tasks in parallel', co(function* () {
     var sleep = 2;
     var tasks = [];
 
@@ -48,10 +48,10 @@ suite('Capacity', function() {
     var results = yield tasks;
     var end = (Date.now() - start) / 1000;
 
-    assert.ok(end < (sleep * CAPACITY), 'tasks ran in parallel');
     assert.equal(results.length, CAPACITY, 'all 5 tasks must have completed');
     results.forEach(function(taskRes) {
       assert.ok(taskRes.run.success, 'all tasks are successful');
     });
+    assert.ok(end < (sleep * CAPACITY), 'tasks ran in parallel');
   }));
 });

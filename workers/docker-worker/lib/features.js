@@ -5,14 +5,22 @@ module is responsible for handling them.
 */
 
 module.exports = {
+  localLiveLog: {
+    title: 'Enable live logging (worker local)',
+    description: 'Logs are stored on the worker during the duration of tasks ' +
+                 'and available via http chunked streaming then uploaded to s3',
+    defaults: true,
+    module: require('./features/local_live_log')
+  },
+
   // the structure is [name] = { defaults: true/false, module: Handler }
-  liveLog: {
+  azureLiveLog: {
     title: 'Enable live logging (via azure blobs)',
     description: 'Useful for situations where it is impossible to reach the ' +
                  'worker and parsing the azure livelog is possible',
 
-    defaults: true,
-    module: require('./features/live_log')
+    defaults: false,
+    module: require('./features/azure_live_log')
   },
 
   bulkLog: {

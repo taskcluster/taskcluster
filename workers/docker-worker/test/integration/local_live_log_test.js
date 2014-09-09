@@ -1,10 +1,23 @@
 suite('live logging', function() {
   var co = require('co');
-  var request = require('superagent-promise');
-  var testworker = require('../post_task');
+  var cmd = require('./helper/cmd');
+
+  // Need to use the docker worker to ensure test works on OSX hots...
+  var DockerWorker = require('../dockerworker');
+  var TestWorker = require('../testworker');
+
+  var worker;
+  setup(co(function * () {
+    worker = new TestWorker(DockerWorker);
+    yield worker.launch();
+  }));
+
+  teardown(co(function* () {
+    yield worker.terminate();
+  }));
 
   test('live logging of content', co(function* () {
-    var result = yield testworker({
+    var result = yield worker.postToQueue({
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: [

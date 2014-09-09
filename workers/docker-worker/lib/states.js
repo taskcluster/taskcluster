@@ -19,10 +19,10 @@ Each "state" in the lifetime is a well defined function:
   - created : After the container has been created but prior to running the
               container. Useful for loggers, etc... No value is returned.
 
-  - stopped : Once the container has been completely stopped (either by timeout
-              or task completion).
+  - stopped : After the container has completely run (not run in cases where the
+              container has not run).
 
-  - removed : After the task container has been entirely removed. The intention
+  - killed:   After the task container has been entirely removed. The intention
               is for this to be used to cleanup any remaining linked containers.
 
 @constructor

@@ -13,7 +13,7 @@ var Promise = require('promise');
 var TimeChunkedStream = require('time-chunked-stream');
 var BlobStream = require('taskcluster-azure-blobstream');
 
-var ARTIFACT_NAME = 'public/logs/terminal_live.log';
+var ARTIFACT_NAME = 'public/logs/azure_live.log';
 
 /**
 Constructs a blob stream from a SAS url.
