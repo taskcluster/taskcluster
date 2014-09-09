@@ -116,8 +116,8 @@ module.exports = api;
 /** Get specific indexed task */
 api.declare({
   method:         'get',
-  route:          '/index/:namespace',
-  name:           'find',
+  route:          '/task/:namespace(*)',
+  name:           'findTask',
   output:         SCHEMA_PREFIX_CONST + 'indexed-task-response.json#',
   title:          "Find Indexed Task",
   description: [
@@ -126,9 +126,10 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   var ctx = this;
+  var namespace = req.params.namespace || '';
 
   // Get namespace and ensure that we have a least one dot
-  var namespace = req.params.namespace.split('.');
+  namespace = namespace.split('.');
 
   // Find name and namespace
   var name  = namespace.pop() || '';
@@ -155,7 +156,7 @@ api.declare({
 /** List namespaces inside another namespace */
 api.declare({
   method:         'get',
-  route:          '/index/:namespace/list-namespaces',
+  route:          '/namespaces/:namespace(*)',
   name:           'listNamespaces',
   input:          SCHEMA_PREFIX_CONST + 'list-namespaces-request.json#',
   output:         SCHEMA_PREFIX_CONST + 'list-namespaces-response.json#',
@@ -172,7 +173,7 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   var ctx       = this;
-  var namespace = req.params.namespace;
+  var namespace = req.params.namespace || '';
 
   return ctx.Namespace.iteratePartitionKey(
     namespace,
@@ -192,7 +193,7 @@ api.declare({
 /** List tasks in namespace */
 api.declare({
   method:         'get',
-  route:          '/index/:namespace?/list-tasks',
+  route:          '/tasks/:namespace(*)',
   name:           'listTasks',
   input:          SCHEMA_PREFIX_CONST + 'list-tasks-request.json#',
   output:         SCHEMA_PREFIX_CONST + 'list-tasks-response.json#',
@@ -209,7 +210,7 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   var ctx       = this;
-  var namespace = req.params.namespace || ''; // optional parameter
+  var namespace = req.params.namespace || '';
 
   return ctx.IndexedTask.iteratePartitionKey(
     namespace,
@@ -229,8 +230,8 @@ api.declare({
 /** Insert new task into the index */
 api.declare({
   method:         'put',
-  route:          '/index/:namespace',
-  name:           'insert',
+  route:          '/task/:namespace(*)',
+  name:           'insertTask',
   deferAuth:      true,
   scopes:         ['index:insert:<namespace>'],
   input:          SCHEMA_PREFIX_CONST + 'insert-task-request.json#',
@@ -243,10 +244,11 @@ api.declare({
 }, function(req, res) {
   var ctx   = this;
   var input = req.body;
+  var namespace = req.params.namespace || '';
 
   // Authenticate request by providing parameters
   if(!req.satisfies({
-    namespace:       req.params.namespace
+    namespace:       namespace
   })) {
     return;
   }
@@ -256,7 +258,7 @@ api.declare({
 
   // Insert task
   return helpers.insertTask(
-    req.params.namespace,
+    namespace,
     input,
     ctx
   ).then(function(task) {

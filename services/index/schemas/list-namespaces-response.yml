@@ -22,7 +22,6 @@ properties:
             Fully qualified name of the namespace, you can use this to list
             namespaces or tasks under this namespace.
           type:           string
-          pattern:        "^[^\/]*$"
           maxLength:      255
         name:
           title:          "Name"
