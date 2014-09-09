@@ -352,6 +352,7 @@ suite("entity", function() {
     });
   });
 
+  /*
   // Test Item.queryPartitionKey
   test("Item.queryPartitionKey, Item.iteratePartitionKey", function() {
     this.timeout(60 * 1000);
@@ -406,6 +407,74 @@ suite("entity", function() {
           });
         });
       });
+    });
+  });
+  */
+
+  // Test Item.queryPartitionKey
+  test("Item.queryPartitionKey", function() {
+    this.timeout(60 * 1000);
+    var date  = new Date();
+    var id    = slugid.v4();
+    var createItem = function(number) {
+      return Item.create({
+        pk:       id,
+        rk:       "number-" + number,
+        str:      "Hello World",
+        nb:       number,
+        json:     {Hello: "World"},
+        ID:       id,
+        date:     date
+      });
+    };
+    var itemsCreated = [];
+    for(var i = 0; i < 5; i++) {
+      itemsCreated.push(createItem(i));
+    }
+    return Promise.all(itemsCreated).then(function() {
+      return Item.queryPartitionKey(id);
+    }).then(function(items) {
+      assert(items.length == 5, "Expected 5 items");
+      assert(items[0].pk    === id,             "pk mismatch");
+      assert(items[0].str   === 'Hello World',  "str mismatch");
+      assert(items[1].pk    === id,             "pk mismatch");
+      assert(items[1].str   === 'Hello World',  "str mismatch");
+      assert(items[0].rk    !== items[1].rk,    "rk mismatch");
+    });
+  });
+
+  // Test Item.iteratePartitionKey
+  test("Item.iteratePartitionKey", function() {
+    this.timeout(60 * 1000);
+    var date  = new Date();
+    var id    = slugid.v4();
+    var createItem = function(number) {
+      return Item.create({
+        pk:       id,
+        rk:       "number-" + number,
+        str:      "Hello World",
+        nb:       number,
+        json:     {Hello: "World"},
+        ID:       id,
+        date:     date
+      });
+    };
+    var itemsCreated = [];
+    for(var i = 0; i < 5; i++) {
+      itemsCreated.push(createItem(i));
+    }
+    return Promise.all(itemsCreated).then(function() {
+      return Item.iteratePartitionKey(id);
+    }).then(function(result) {
+      var items             = result[0];
+      var continuationToken = result[1];
+      assert(continuationToken === undefined, "Unexpected continuationToken");
+      assert(items.length == 5, "Expected 5 items");
+      assert(items[0].pk    === id,             "pk mismatch");
+      assert(items[0].str   === 'Hello World',  "str mismatch");
+      assert(items[1].pk    === id,             "pk mismatch");
+      assert(items[1].str   === 'Hello World',  "str mismatch");
+      assert(items[0].rk    !== items[1].rk,    "rk mismatch");
     });
   });
 
