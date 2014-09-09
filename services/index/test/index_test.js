@@ -24,10 +24,13 @@ suite('Indexing', function() {
       "workerType":       "dummy-test-worker-type",
       "scopes":           [],
       "routes": [
+        subject.routePrefix + ".",
+        subject.routePrefix + "." + myns,
         subject.routePrefix + "." + myns + ".my-indexed-thing",
         subject.routePrefix + "." + myns + ".my-indexed-thing-again",
         subject.routePrefix + "." + myns + ".one-ns.my-indexed-thing",
-        subject.routePrefix + "." + myns + ".another-ns.my-indexed-thing-again"
+        subject.routePrefix + "." + myns + ".another-ns.my-indexed-thing-again",
+        subject.routePrefix + "." + myns + ".slash/test.my-indexed-thing"
       ],
       "retries":          3,
       "created":          created.toJSON(),
@@ -75,12 +78,17 @@ suite('Indexing', function() {
       return helper.sleep(2500);
     }).then(function() {
       debug("### Find task in index");
-      return subject.index.find(myns + '.my-indexed-thing');
+      return subject.index.findTask(myns + '.my-indexed-thing');
     }).then(function(result) {
       assert(result.taskId === taskId, "Wrong taskId");
     }).then(function() {
       debug("### Find task in index (again)");
-      return subject.index.find(myns + '.my-indexed-thing-again');
+      return subject.index.findTask(myns);
+    }).then(function(result) {
+      assert(result.taskId === taskId, "Wrong taskId");
+    }).then(function() {
+      debug("### Find task in index (again)");
+      return subject.index.findTask(myns + '.my-indexed-thing-again');
     }).then(function(result) {
       assert(result.taskId === taskId, "Wrong taskId");
     }).then(function() {
@@ -95,13 +103,18 @@ suite('Indexing', function() {
       debug("### List namespaces in namespace");
       return subject.index.listNamespaces(myns, {});
     }).then(function(result) {
-      assert(result.namespaces.length === 2, "Expected 2 namespaces");
+      assert(result.namespaces.length === 3, "Expected 3 namespaces");
       assert(result.namespaces.some(function(ns) {
         return ns.name === 'one-ns';
       }), "Expected to find one-ns");
       assert(result.namespaces.some(function(ns) {
         return ns.name === 'another-ns';
       }), "Expected to find another-ns");
+    }).then(function() {
+      debug("### Find task in index");
+      return subject.index.findTask(myns + '.slash/test.my-indexed-thing');
+    }).then(function(result) {
+      assert(result.taskId === taskId, "Wrong taskId");
     });
   });
 
@@ -142,11 +155,16 @@ suite('Indexing', function() {
       return helper.sleep(2500);
     }).then(function() {
       debug("### Find task in index");
-      return subject.index.find(myns + '.my-indexed-thing');
+      return subject.index.findTask(myns + '.my-indexed-thing');
     }).then(function(result) {
       assert(result.taskId === taskId, "Wrong taskId");
       assert(result.rank === 42, "Expected rank 42");
       assert(result.data.hello === 'world', "Expected data");
+    }).then(function() {
+      debug("### Find task in index (again)");
+      return subject.index.findTask("");
+    }).then(function(result) {
+      assert(result.taskId === taskId, "Wrong taskId");
     });
   });
 });

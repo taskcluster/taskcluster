@@ -9,11 +9,11 @@ var IndexedTask = base.Entity.configure({
     {
       key:                'PartitionKey',
       property:           'namespace',
-      type:               'encodedstring'
+      type:               'keystring'
     }, {
       key:                'RowKey',
       property:           'name',
-      type:               'encodedstring'
+      type:               'keystring'
     },
     { key: 'version',     type: 'number'    },
     { key: 'rank',        type: 'number'    },
@@ -28,8 +28,13 @@ exports.IndexedTask = IndexedTask;
 
 /** Get JSON representation of indexed task */
 IndexedTask.prototype.json = function() {
+  var ns = this.namespace + '.' + this.name;
+  // Remove separate if there is no need
+  if (this.namespace.length === 0 || this.name.length === 0) {
+    ns = this.namespace + this.name;
+  }
   return {
-    namespace:    this.namespace + '.' + this.name,
+    namespace:    ns,
     taskId:       this.taskId,
     rank:         this.rank,
     data:         _.cloneDeep(this.data),
@@ -43,11 +48,11 @@ var Namespace = base.Entity.configure({
     {
       key:                'PartitionKey',
       property:           'parent',
-      type:               'encodedstring'
+      type:               'keystring'
     }, {
       key:                'RowKey',
       property:           'name',
-      type:               'encodedstring'
+      type:               'keystring'
     },
     { key: 'version',     type: 'number'    },
     { key: 'expires',     type: 'date'      }
@@ -59,8 +64,13 @@ exports.Namespace = Namespace;
 
 /** JSON representation of namespace */
 Namespace.prototype.json = function() {
+  var ns = this.parent + '.' + this.name;
+  // Remove separate if there is no need
+  if (this.parent.length === 0 || this.name.length === 0) {
+    ns = this.parent + this.name;
+  }
   return {
-    namespace:  this.parent + '.' + this.name,
+    namespace:  ns,
     name:       this.name,
     expires:    this.expires.toJSON()
   };
