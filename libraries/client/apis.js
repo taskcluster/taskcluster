@@ -1284,11 +1284,11 @@ module.exports = {
         {
           "type": "function",
           "method": "get",
-          "route": "/index/<namespace>",
+          "route": "/task/<namespace>",
           "args": [
             "namespace"
           ],
-          "name": "find",
+          "name": "findTask",
           "title": "Find Indexed Task",
           "description": "Find task by namespace, if no task existing for the given namespace, this\nAPI end-point respond `404`.",
           "output": "http://schemas.taskcluster.net/index/v1/indexed-task-response.json#"
@@ -1296,7 +1296,7 @@ module.exports = {
         {
           "type": "function",
           "method": "get",
-          "route": "/index/<namespace>/list-namespaces",
+          "route": "/namespaces/<namespace>",
           "args": [
             "namespace"
           ],
@@ -1309,7 +1309,7 @@ module.exports = {
         {
           "type": "function",
           "method": "get",
-          "route": "/index/<namespace>/list-tasks",
+          "route": "/tasks/<namespace>",
           "args": [
             "namespace"
           ],
@@ -1322,11 +1322,11 @@ module.exports = {
         {
           "type": "function",
           "method": "put",
-          "route": "/index/<namespace>",
+          "route": "/task/<namespace>",
           "args": [
             "namespace"
           ],
-          "name": "insert",
+          "name": "insertTask",
           "title": "Insert Task into Index",
           "description": "Insert a task into the index. Please see the introduction above, for how\nto index successfully completed tasks automatically, using custom routes.",
           "scopes": [
