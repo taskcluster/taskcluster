@@ -11,13 +11,16 @@ suite("entity", function() {
     envs: [
       'azure_accountName',
       'azure_accountKey',
-      'azureTestTableName'
+      'azureTestTableName',
+      'influxdb_connectionString'
     ],
     filename:               'taskcluster-base-test'
   });
 
   // Check that we have configuration or abort
-  if (!cfg.get('azureTestTableName') || !cfg.get('azure')) {
+  if (!cfg.get('azureTestTableName') ||
+      !cfg.get('azure') ||
+      !cfg.get('influxdb:connectionString')) {
     console.log("\nWARNING:");
     console.log("Skipping 'entity' tests, missing config file: " +
                 "taskcluster-base-test.conf.json");
@@ -39,6 +42,25 @@ suite("entity", function() {
 
   // Item configured with table name and credentials for testing
   var Item = AbstractItem.configure({
+    credentials:  cfg.get('azure'),
+    tableName:    cfg.get('azureTestTableName')
+  });
+
+  // Configure an abstract Item with keystring to play with...
+  var AbstractKeyStringItem = base.Entity.configure({
+    mapping: [
+      {key: 'PartitionKey', property: 'pk',   type: 'keystring'},
+      {key: 'RowKey',       property: 'rk',   type: 'keystring'},
+      {key: 'str',          property: 'str',  type: 'string'},
+      {key: 'nb',           property: 'nb',   type: 'number'},
+      {key: 'js',           property: 'json', type: 'json'  },
+      {key: 'id',           property: 'ID',   type: 'slugid'},
+      {key: 'd',            property: 'date', type: 'date'  }
+    ]
+  });
+
+  // KeyStringItem configured with table name and credentials for testing
+  var KeyStringItem = AbstractKeyStringItem.configure({
     credentials:  cfg.get('azure'),
     tableName:    cfg.get('azureTestTableName')
   });
@@ -352,6 +374,8 @@ suite("entity", function() {
     });
   });
 
+
+
   /*
   // Test Item.queryPartitionKey
   test("Item.queryPartitionKey, Item.iteratePartitionKey", function() {
@@ -440,6 +464,34 @@ suite("entity", function() {
       assert(items[1].pk    === id,             "pk mismatch");
       assert(items[1].str   === 'Hello World',  "str mismatch");
       assert(items[0].rk    !== items[1].rk,    "rk mismatch");
+    });
+  });
+
+
+  // Test KeyStringItem.iteratePartitionKey with empty partition key
+  test("KeyStringItem.iteratePartitionKey (empty PartitionKey)", function() {
+    this.timeout(60 * 1000);
+    var date  = new Date();
+    var id    = slugid.v4();
+    var createItem = function(number) {
+      return KeyStringItem.create({
+        pk:       "",
+        rk:       id + '-' + number,
+        str:      "Hello World",
+        nb:       number,
+        json:     {Hello: "World"},
+        ID:       id,
+        date:     date
+      });
+    };
+    var itemsCreated = [];
+    for(var i = 0; i < 3; i++) {
+      itemsCreated.push(createItem(i));
+    }
+    return Promise.all(itemsCreated).then(function() {
+      return KeyStringItem.iteratePartitionKey("");
+    }).then(function(result) {
+      assert(result[0].length >= 3, "Expected at least 3 items");
     });
   });
 
