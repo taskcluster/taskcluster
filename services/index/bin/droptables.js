@@ -20,11 +20,11 @@ var launch = function(profile) {
 
   // Configure IndexedTask and Namespace entities
   var IndexedTask = data.IndexedTask.configure({
-    tableName:        cfg.get('scheduler:indexedTaskTableName'),
+    tableName:        cfg.get('index:indexedTaskTableName'),
     credentials:      cfg.get('azure')
   });
   var Namespace = data.Namespace.configure({
-    tableName:        cfg.get('scheduler:namespaceTableName'),
+    tableName:        cfg.get('index:namespaceTableName'),
     credentials:      cfg.get('azure')
   });
 
