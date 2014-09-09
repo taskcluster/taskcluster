@@ -54,7 +54,7 @@ Handlers.prototype.setup = function() {
   var that = this;
 
   // Create regular expression for parsing routes
-  this.routeRegexp = new RegExp('^' + this.routePrefix + '\\.([^\\/]*)$');
+  this.routeRegexp = new RegExp('^' + this.routePrefix + '\\.(.*)$');
 
   // Create listener
   this.listener = new taskcluster.Listener({

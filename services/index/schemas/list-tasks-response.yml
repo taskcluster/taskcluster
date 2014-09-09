@@ -22,7 +22,6 @@ properties:
             Namespace of the indexed task, used to find the indexed task in the
             index.
           type:           string
-          pattern:        "^[^\/]*$"
           maxLength:      255
         taskId:
           title:          "Task Identifier"
