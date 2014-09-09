@@ -181,6 +181,18 @@ var scheduler = new taskcluster.Scheduler(options);
  * `scheduler.inspect(taskGraphId) : result`
  * `scheduler.ping() : void`
 
+### Methods in `taskcluster.index`
+```js
+// Create index client instance with default baseUrl:
+//  - https://index.taskcluster.net/v1
+var index = new taskcluster.index(options);
+```
+ * `index.find(namespace) : result`
+ * `index.listNamespaces(namespace, payload) : result`
+ * `index.listTasks(namespace, payload) : result`
+ * `index.insert(namespace, payload) : result`
+ * `index.ping() : void`
+
 ### Exchanges in `taskcluster.QueueEvents`
 ```js
 // Create QueueEvents client instance with default exchangePrefix:
