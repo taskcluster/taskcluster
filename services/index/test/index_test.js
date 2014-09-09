@@ -72,7 +72,7 @@ suite('Indexing', function() {
       });
     }).then(function() {
       debug("### Give indexing 1s to run");
-      return helper.sleep(1500);
+      return helper.sleep(2500);
     }).then(function() {
       debug("### Find task in index");
       return subject.index.find(myns + '.my-indexed-thing');
@@ -139,7 +139,7 @@ suite('Indexing', function() {
       });
     }).then(function() {
       debug("### Give indexing 1s to run");
-      return helper.sleep(1500);
+      return helper.sleep(2500);
     }).then(function() {
       debug("### Find task in index");
       return subject.index.find(myns + '.my-indexed-thing');
