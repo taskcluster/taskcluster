@@ -192,7 +192,7 @@ api.declare({
 /** List tasks in namespace */
 api.declare({
   method:         'get',
-  route:          '/index/:namespace/list-tasks',
+  route:          '/index/:namespace?/list-tasks',
   name:           'listTasks',
   input:          SCHEMA_PREFIX_CONST + 'list-tasks-request.json#',
   output:         SCHEMA_PREFIX_CONST + 'list-tasks-response.json#',
@@ -209,7 +209,7 @@ api.declare({
   ].join('\n')
 }, function(req, res) {
   var ctx       = this;
-  var namespace = req.params.namespace;
+  var namespace = req.params.namespace || ''; // optional parameter
 
   return ctx.IndexedTask.iteratePartitionKey(
     namespace,
