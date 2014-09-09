@@ -8,11 +8,26 @@ suite("Exchanges.Publisher", function() {
   var slugid  = require('slugid');
   var amqplib  = require('amqplib');
 
+  // Load necessary configuration
+  var cfg = base.config({
+    envs: [
+      'influxdb_connectionString',
+    ],
+    filename:               'taskcluster-base-test'
+  });
+
+  if (!cfg.get('influxdb:connectionString')) {
+    console.log("Skipping 'publisher', missing config file: " +
+                "taskcluster-base-test.conf.json");
+    return;
+  }
+
   // AMQP connection string for localhost in various test setups
   var connectionString = 'amqp://guest:guest@localhost:5672';
 
+  var influx = null;
   var exchanges = null;
-  before(function() {
+  setup(function() {
     exchanges = new base.Exchanges({
       title:              "Title for my Events",
       description:        "Test exchanges used for testing things only"
@@ -57,7 +72,7 @@ suite("Exchanges.Publisher", function() {
       schema:             'http://localhost:1203/exchange-test-schema.json#',
       messageBuilder:     function(msg) { return msg; },
       routingKeyBuilder:  function(msg, rk) { return rk; },
-      CCBuilder:          function() {return "something.cced";}
+      CCBuilder:          function() {return ["something.cced"];}
     });
     // Create validator to validate schema
     var validator = new base.validator.Validator();
@@ -66,10 +81,18 @@ suite("Exchanges.Publisher", function() {
     var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
     validator.register(JSON.parse(schema));
 
-    // Set validator on exchanges
+    // Create influx db connection for report statistics
+    influx = new base.stats.Influx({
+      connectionString:   cfg.get('influxdb:connectionString')
+    });
+
+    // Set options on exchanges
     exchanges.configure({
       validator:              validator,
-      connectionString:       connectionString
+      connectionString:       connectionString,
+      drain:                  influx,
+      component:              'taskcluster-base-test',
+      process:                'mocha'
     });
   });
 
@@ -252,6 +275,20 @@ suite("Exchanges.Publisher", function() {
       return new Promise(function(accept) {setTimeout(accept, 300);});
     }).then(function() {
       assert(messages.length === 1, "Didn't get exactly one message");
+    });
+  });
+
+  // Test that we record statistics
+  test("publish message (record statistics)", function() {
+    assert(influx.pendingPoints() === 0, "We shouldn't have any points");
+    return exchanges.connect().then(function(publisher) {
+      return publisher.testExchange({someString: "My message"}, {
+        testId:           "myid",
+        taskRoutingKey:   "some.string.with.dots",
+        state:            undefined // Optional
+      });
+    }).then(function() {
+      assert(influx.pendingPoints() === 1, "We should have one point");
     });
   });
 });
