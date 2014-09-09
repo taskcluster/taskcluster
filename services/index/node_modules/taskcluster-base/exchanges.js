@@ -9,16 +9,35 @@ var aws           = require('aws-sdk-promise');
 var amqplib       = require('amqplib');
 var events        = require('events');
 var util          = require('util');
+var stats         = require('./stats');
+
+/** Exchange reports for statistics */
+var ExchangeReports = new stats.Series({
+  name:           'ExchangeReports',
+  columns: {
+    component:    stats.types.String, // Component name (e.g. 'queue')
+    process:      stats.types.String, // Process name (e.g. 'server')
+    duration:     stats.types.Number, // Time it took to send the message
+    routingKeys:  stats.types.Number, // 1 + number CCed routing keys
+    payloadSize:  stats.types.Number, // Size of message bytes
+    exchange:     stats.types.String, // true || false
+    error:        stats.types.String  // true || false
+  }
+});
 
 /** Class for publishing to a set of declared exchanges */
 var Publisher = function(conn, channel, entries, options) {
   events.EventEmitter.call(this);
   assert(options.validator instanceof Validator,
          "options.validator must be an instance of Validator");
+  assert(options.drain, "options.drain must be given");
+  assert(options.component, "component name for statistics is required");
+  assert(options.process,   "process name for statistics is required");
   this._conn = conn;
   this._channel = channel;
   this._entries = entries;
   this._options = options;
+  this._reporter = ExchangeReports.reporter(options.drain);
 
   var that = this;
   this._channel.on('error', function(err) {
@@ -35,66 +54,88 @@ var Publisher = function(conn, channel, entries, options) {
       // Copy arguments
       var args = Array.prototype.slice.call(arguments);
 
+      // Construct message and routing key from arguments
+      var message     = entry.messageBuilder.apply(undefined, args);
+      var routingKey  = entry.routingKeyBuilder.apply(undefined, args);
+      var CCs         = entry.CCBuilder.apply(undefined, args);
+      assert(CCs instanceof Array, "CCBuilder must return an array");
+
+      // Validate against schema
+      var errors = that._options.validator.check(message, entry.schema);
+      if (errors) {
+        debug("Failed validate message: %j against schema: %s, errors: %j",
+              message, entry.schema, errors);
+        var error = new Error("Message validation failed");
+        error.errors = errors;
+        throw error;
+      }
+
+      // Convert routingKey to string if needed
+      if (typeof(routingKey) !== 'string') {
+        routingKey = entry.routingKey.map(function(key) {
+          var word = routingKey[key.name];
+          if (key.constant) {
+            word = key.constant;
+          }
+          if (!key.required && (word === undefined || word === null)) {
+            word = '_';
+          }
+          // Convert numbers to strings
+          if (typeof(word) === 'number') {
+            word = '' + word;
+          }
+          assert(typeof(word) === 'string', "non-string routingKey entry: "
+                                            + key.name);
+          assert(word.length <= key.maxSize,
+                 "routingKey word: '" + word + "' for '" + key.name +
+                 "' is longer than maxSize: " + key.maxSize);
+          if (!key.multipleWords) {
+            assert(word.indexOf('.') === -1, "routingKey for " + key.name +
+                   " is not declared multipleWords and cannot contain '.' " +
+                   "as is the case with '" + word + "'");
+          }
+          return word;
+        }).join('.')
+      }
+      // Ensure the routing key is a string
+      assert(typeof(routingKey) === 'string', "routingKey must be a string");
+
+      // Serialize message to buffer
+      var payload = new Buffer(JSON.stringify(message), 'utf8');
+
+      // Find exchange name
+      var exchange = options.exchangePrefix + entry.exchange;
+
+      // Log that we're publishing a message
+      debug("Publishing message on exchange: %s", exchange);
+
       // Return promise
       return new Promise(function(accept, reject) {
-        // Construct message and routing key from arguments
-        var message     = entry.messageBuilder.apply(undefined, args);
-        var routingKey  = entry.routingKeyBuilder.apply(undefined, args);
-        var CCs         = entry.CCBuilder.apply(undefined, args);
-
-        // Validate against schema
-        var errors = that._options.validator.check(message, entry.schema);
-        if (errors) {
-          debug("Failed validate message: %j against schema: %s, errors: %j",
-                message, entry.schema, errors);
-          var error = new Error("Message validation failed");
-          error.errors = errors;
-          throw error;
-        }
-
-        // Convert routingKey to string if needed
-        if (typeof(routingKey) !== 'string') {
-          routingKey = entry.routingKey.map(function(key) {
-            var word = routingKey[key.name];
-            if (key.constant) {
-              word = key.constant;
-            }
-            if (!key.required && (word === undefined || word === null)) {
-              word = '_';
-            }
-            // Convert numbers to strings
-            if (typeof(word) === 'number') {
-              word = '' + word;
-            }
-            assert(typeof(word) === 'string', "non-string routingKey entry: "
-                                              + key.name);
-            assert(word.length <= key.maxSize,
-                   "routingKey word: '" + word + "' for '" + key.name +
-                   "' is longer than maxSize: " + key.maxSize);
-            if (!key.multipleWords) {
-              assert(word.indexOf('.') === -1, "routingKey for " + key.name +
-                     " is not declared multipleWords and cannot contain '.' " +
-                     "as is the case with '" + word + "'");
-            }
-            return word;
-          }).join('.')
-        }
-        // Ensure the routing key is a string
-        assert(typeof(routingKey) === 'string', "routingKey must be a string");
-
-        // Serialize message
-        var data = JSON.stringify(message);
-
-        // Find exchange name
-        var exchange = options.exchangePrefix + entry.exchange;
+        // Start timer
+        var start = process.hrtime();
 
         // Publish message
-        that._channel.publish(exchange, routingKey, new Buffer(data, 'utf8'), {
+        that._channel.publish(exchange, routingKey, payload, {
           persistent:         true,
           contentType:        'application/json',
           contentEncoding:    'utf-8',
           CC:                 CCs
         }, function(err, val) {
+          // Get duration
+          var d = process.hrtime(start);
+
+          // Report statistics
+          that._reporter({
+            component:      options.component,
+            process:        options.process,
+            duration:       d[0] * 1000 + (d[1] / 1000000),
+            routingKeys:    1 + CCs.length,
+            payloadSize:    payload.length,
+            exchange:       exchange,
+            error:          (err ? 'true' : 'false'),
+          });
+
+          // Handle errors
           if (err) {
             debug("Failed to publish message: %j and routingKey: %s, " +
                   "with error: %s, %j", message, routingKey, err, err);
@@ -286,6 +327,9 @@ Exchanges.prototype.configure = function(options) {
  * {
  *   connectionString:   '...',  // AMQP connection string
  *   validator:                  // Instance of base.validator.Validator
+ *   drain:             new stats.Influx(...),  // Statistics drain
+ *   component:         'queue'  // Component name in statistics
+ *   process:           'server' // process name in statistics
  * }
  *
  * This method will connect to AMQP server and return a instance of Publisher.
@@ -306,6 +350,9 @@ Exchanges.prototype.connect = function(options) {
   assert(options.connectionString, "ConnectionString must be provided");
   assert(options.validator instanceof Validator,
          "An instance of base.validator.Validator must be given");
+  assert(options.drain, "options.drain must be given");
+  assert(options.component, "component name for statistics is required");
+  assert(options.process,   "process name for statistics is required");
 
   // Clone entries for consistency
   var entries = _.cloneDeep(this._entries);
