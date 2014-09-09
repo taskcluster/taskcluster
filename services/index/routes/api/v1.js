@@ -68,6 +68,7 @@ var api = new base.API({
     "in `task.extra.index`, see example below:",
     "",
     "```js",
+    "{",
     "  payload:  { /* ... */ },",
     "  routes: [",
     "    // index.<namespace> prefixed routes, tasks CC'ed such a route will",
