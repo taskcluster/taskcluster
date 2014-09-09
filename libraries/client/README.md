@@ -187,10 +187,10 @@ var scheduler = new taskcluster.Scheduler(options);
 //  - https://index.taskcluster.net/v1
 var index = new taskcluster.index(options);
 ```
- * `index.find(namespace) : result`
+ * `index.findTask(namespace) : result`
  * `index.listNamespaces(namespace, payload) : result`
  * `index.listTasks(namespace, payload) : result`
- * `index.insert(namespace, payload) : result`
+ * `index.insertTask(namespace, payload) : result`
  * `index.ping() : void`
 
 ### Exchanges in `taskcluster.QueueEvents`
