@@ -14,6 +14,8 @@ var request       = require('superagent-promise');
 var Validator     = require('./validator').Validator;
 var utils         = require('./utils');
 var stats         = require('./stats');
+var crypto        = require('crypto');
+var hoek          = require('hoek');
 
 /** Structure for response times series */
 var ResponseTimes = new stats.Series({
@@ -135,6 +137,134 @@ Client.prototype.clone = function() {
     scopes:         _.cloneDeep(this.scopes),
     expires:        new Date(this.expires)
   });
+};
+
+/** Limit the client scopes and possibly use temporary keys */
+Client.prototype.limit = function(ext) {
+  // client to return;
+  var client = this;
+
+  // Attempt to parse ext
+  try {
+    var ext = JSON.parse(new Buffer(ext, 'base64').toString('utf-8'));
+  }
+  catch(err) {
+    debug("Failed to parse ext, leave error for signature validation!",
+          err, err.stack);
+    throw new Error("Failed to parse ext while looking for certificate or " +
+                    "authorizedScopes");
+  }
+
+  // Handle certificates
+  if (ext.certificate) {
+    var cert = ext.certificate;
+    // Validate the certificate
+    if (!(cert instanceof Object)) {
+      throw new Error("ext.certificate must be a JSON object");
+    }
+    if (cert.version !== 1) {
+      throw new Error("ext.certificate.version must be 1");
+    }
+    if (typeof(cert.seed) !== 'string') {
+      throw new Error('ext.certificate.seed must be a string');
+    }
+    if (cert.seed.length !== 44) {
+      throw new Error('ext.certificate.seed is too small');
+    }
+    if (typeof(cert.start) !== 'number') {
+      throw new Error('ext.certificate.start must be a number');
+    }
+    if (typeof(cert.expiry) !== 'number') {
+      throw new Error('ext.certificate.expiry must be a number');
+    }
+    if (!cert.scopes instanceof Array) {
+      throw new Error("ext.certificate.scopes must be an array");
+    }
+    if (cert.scopes.some(function(scope) {
+      return typeof(scope) !== 'string';
+    })) {
+      throw new Error("ext.certificate.scopes must be an array of strings");
+    }
+
+    // Check start and expiry
+    var now = new Date().getTime();
+    if (cert.start > now) {
+      throw new Error("ext.certificate.start > now");
+    }
+    if (cert.expiry < now) {
+      throw new Error("ext.certificate.expiry < now");
+    }
+    // Check max time between start and expiry
+    if (cert.expiry - cert.start > 32 * 24 * 60 * 60 * 1000) {
+      throw new Error("ext.certificate cannot last longer than 32 days!");
+    }
+
+    // Validate certificate scopes are subset of client
+    if (!client.satisfies([cert.scopes])) {
+      throw new Error("ext.certificate issuer doesn't have sufficient scopes");
+    }
+
+    // Generate certificate signature
+    var signature = crypto.createHmac('sha256', client.accessToken)
+      .update([
+        'version:'  + '1',
+        'seed:'     + cert.seed,
+        'start:'    + cert.start,
+        'expiry:'   + cert.expiry,
+        'scopes:',
+      ].concat(cert.scopes).join('\n'))
+      .digest('base64');
+
+    // Validate signature
+    if (typeof(cert.signature) !== 'string' || cert.signature !== signature) {
+      throw new Error("ext.certificate.signature is not valid");
+    }
+
+    // Regenerate temporary key
+    var temporaryKey = crypto.createHmac('sha256', client.accessToken)
+      .update(cert.seed)
+      .digest('base64')
+      .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
+      .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
+      .replace(/=/g,  '');  // Drop '==' padding
+
+    // Create new client object to return
+    client = new Client({
+      clientId:       client.clientId,
+      accessToken:    temporaryKey,
+      scopes:         cert.scopes,
+      expires:        new Date(cert.expiry)
+    });
+  }
+
+  // Handle scope restriction with authorizedScopes
+  if (ext.authorizedScopes) {
+    // Validate input format
+    if (!ext.authorizedScopes instanceof Array) {
+      throw new Error("ext.authorizedScopes must be an array");
+    }
+    if (ext.authorizedScopes.some(function(scope) {
+      return typeof(scope) !== 'string';
+    })) {
+      throw new Error("ext.authorizedScopes must be an array of strings");
+    }
+
+    // Validate authorizedScopes scopes are subset of client
+    if (!client.satisfies([ext.authorizedScopes])) {
+      throw new Error("ext.authorizedScopes oversteps your scopes");
+    }
+
+    // Create new client object to return
+    client = new Client({
+      clientId:       client.clientId,
+      accessToken:    client.accessToken,
+      scopes:         ext.authorizedScopes,
+      expires:        new Date(client.expires)
+    });
+  }
+
+  // Return client that was created
+  return client;
 };
 
 /**
@@ -307,8 +437,19 @@ var nonceManager = function(options) {
  * Reports 401 if authentication fails.
  */
 var authenticate = function(nonceManager, clientLoader, options) {
-  var getCredentials = function(clientId, cb) {
+  // Load credentials and deal with certificate and restrict scopes, if needed
+  var getCredentials = function(clientId, ext, cb) {
     clientLoader(clientId).then(function(client) {
+      // Limit client, if ext is provided
+      if (ext) {
+        // We check certificates and apply limitations to authorizedScopes here,
+        // if we've parsed ext incorrectly it could be a security issue, as
+        // scope elevation _might_ be possible. But it's a rather unlikely
+        // exploit... Besides we have plenty of obscurity to protect us here :)
+        client = client.limit(ext);
+      }
+
+      // Callback into hawk
       cb(null, {
         clientToken:    client.clientId,
         key:            client.accessToken,
@@ -359,7 +500,7 @@ var authenticate = function(nonceManager, clientLoader, options) {
           return {
             code: 401,
             payload: {
-              message:        "Internal Server Error",
+              message:        "Authentication Error",
               error: {
                 info:         message,
                 incidentId:   incidentId
@@ -381,40 +522,6 @@ var authenticate = function(nonceManager, clientLoader, options) {
 
         // Now we're authenticated
         authenticated = true;
-
-        // If we're restricting scopes
-        if (artifacts.ext) {
-          var extdata = new Buffer(artifacts.ext, 'base64').toString('utf-8');
-          var ext     = JSON.parse(extdata);
-          // Allow restriction of scopes
-          if (ext.authorizedScopes instanceof Array) {
-            // If we satisfy the authorized scopes, we use them to overwrite
-            // the scopes provided by clientLoader... This feature is used
-            // when taskcluster components executes operations on behalf of
-            // others who has a small set of scopes.
-            if (utils.scopeMatch(authorizedScopes, [ext.authorizedScopes])) {
-              // Allow the rest of the request to authenticated with a
-              // limited set of scopes
-              authorizedScopes = ext.authorizedScopes;
-            } else {
-              // Return an error, if you are trying to use scopes you're not
-              // authorized to use
-              return {
-                code:     401,
-                payload:  {
-                  message:  "Authentication Failed: Can't restrict to scopes " +
-                            "you do not have",
-                  error: {
-                    info:   "Your request provided ext.authorizedScopes, to " +
-                            "limit scopes allowed. But your client does not " +
-                            "have all the scopes you restrict to.",
-                    authorizedScopesFromRequest: ext.authorizedScopes
-                  }
-                }
-              };
-            }
-          }
-        }
       };
 
       /**
@@ -507,7 +614,22 @@ var authenticate = function(nonceManager, clientLoader, options) {
 
     // Check if we should use bewit authentication
     if (req.query && req.query.bewit) {
-      hawk.uri.authenticate(req, getCredentials, {
+      hawk.uri.authenticate(req, function(clientId, cb) {
+        var ext = undefined;
+
+        // Get bewit string
+        var bewitString = hoek.base64urlDecode(req.query.bewit);
+        if (!(bewitString instanceof Error)) {
+          // Split string as hawk does it
+          var parts = bewitString.split('\\');
+          if (parts.length === 4 && parts[3]) {
+            ext = parts[3];
+          }
+        }
+
+        // Get credentials with ext
+        getCredentials(clientId, ext, cb);
+      }, {
         // Provide port
         port:         port
       }, authCallback);
@@ -515,7 +637,24 @@ var authenticate = function(nonceManager, clientLoader, options) {
       // If no bewit is present we run normal authentication... Even if there
       // is no authentication header. Because we want the warning to say missing
       // 'authentication' header. Not missing bewit signature.
-      hawk.server.authenticate(req, getCredentials, {
+      hawk.server.authenticate(req, function(clientId, cb) {
+        var ext = undefined;
+
+        // If we have an authorization header, look for ext
+        if (req.headers && req.headers.authorization) {
+          // Parse attributes
+          var attrs = hawk.utils.parseAuthorizationHeader(
+            req.headers.authorization
+          );
+          // Extra ext
+          if (!(attrs instanceof Error)) {
+            ext = attrs.ext;
+          }
+        }
+
+        // Get credentials with ext
+        getCredentials(clientId, ext, cb);
+      }, {
         // Not sure if JSON stringify is not deterministic by specification.
         // I suspect not, so we'll postpone this till we're sure we want to do
         // payload validation and how we want to do it.
