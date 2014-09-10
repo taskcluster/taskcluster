@@ -233,7 +233,7 @@ api.declare({
   route:          '/task/:namespace(*)',
   name:           'insertTask',
   deferAuth:      true,
-  scopes:         ['index:insert:<namespace>'],
+  scopes:         ['index:insert-task:<namespace>'],
   input:          SCHEMA_PREFIX_CONST + 'insert-task-request.json#',
   output:         SCHEMA_PREFIX_CONST + 'indexed-task-response.json#',
   title:          "Insert Task into Index",
