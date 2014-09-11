@@ -19,7 +19,10 @@ var taskcluster = require('taskcluster-client');
 var queue = new taskcluster.Queue({
   credentials: {
     clientId:     '...',
-    accessToken:  '...'
+    accessToken:  '...',
+    // Certificate must also be provided if using temporary credentials,
+    // this can be either a JSON object or a JSON string.
+    certificate:  {...}
   }
 });
 
@@ -283,18 +286,27 @@ For more technical details on signed urls, see _bewit_ urls in
 [hawk](https://github.com/hueniverse/hawk).
 
 ## Generating Temporary Credentials
+If you have non-temporary taskcluster credentials you can generate a set of
+temporary credentials as follows. Notice that the credentials cannot last more
+than 31 days, and you can only revoke them by revoking the credentials that was
+used to issue them (this takes up to one hour).
 
+```js
+var credentials = taskcluster.createTemporaryCredentials({
+  // Validity of temporary credentials starts here
+  start:              new Date(),
+  // Expiration of temporary credentials
+  expiry:             new Date(new Date().getTime() + 5 * 60 * 1000),
+  // Scopes to grant the temporary credentials
+  scopes:             ['ScopeA', 'ScopeB', ...]
+  credentials: {      // Non-temporary taskcluster credentials
+    clientId:         '...'
+    accessToken:      '...'
+  }
+});
+```
 
-
-
-
-
-
-
-
-
-
-
+You cannot use temporary credentials to issue new temporary credentials.
 
 ## Create Client Class Dynamically
 You can create a Client class from a reference JSON object as illustrated

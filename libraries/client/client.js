@@ -59,6 +59,14 @@ exports.createClient = function(reference) {
       baseUrl:          reference.baseUrl        || '',
       exchangePrefix:   reference.exchangePrefix || ''
     }, _defaultOptions);
+
+    // Parse certificate if provided and parsing is necessary
+    if (this._options.credentials && this._options.credentials.certificate) {
+      this._options.certificate = this._options.credentials.certificate;
+      if (typeof(this._options.certificate) === 'string') {
+        this._options.certificate = JSON.parse(this._options.certificate);
+      }
+    }
   };
 
   // For each function entry create a method on the Client class
@@ -107,8 +115,8 @@ exports.createClient = function(reference) {
 
         // If there is a certificate we have temporary credentials, and we
         // must provide the certificate
-        if (this._options.credentials.certificate instanceof Object) {
-          ext.certificate = this._options.credentials.certificate;
+        if (this._options.certificate) {
+          ext.certificate = this._options.certificate;
         }
 
         // If set of authorized scopes is provided, we'll restrict the request
@@ -433,6 +441,6 @@ exports.createTemporaryCredentials = function(options) {
   return {
     clientId:     options.credentials.clientId,
     accessToken:  accessToken,
-    certificate:  cert
+    certificate:  JSON.stringify(cert)
   };
 };
