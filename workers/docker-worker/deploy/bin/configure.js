@@ -11,7 +11,7 @@ var CONFIG_ROOT = fsPath.resolve(TARGET_ROOT, '..', 'config/');
 
 var DESCRIPTIONS = {
   app: {
-    environment: 'Shell script file which can setup the environement ' +
+    environment: 'Shell script file which can setup the environment ' +
                  '(such as exporting environment variables)',
     source_ami: 'Base AMI which this image depends on.',
     loggly_account: 'Loggly account name',
