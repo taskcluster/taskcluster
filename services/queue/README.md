@@ -108,7 +108,8 @@ In order to operate on these resources the following access policy is needed:
       "Effect": "Allow",
       "Action": [
         "s3:GetBucketLocation",
-        "s3:ListBucket"
+        "s3:ListBucket",
+        "s3:PutBucketCORS"
       ],
       "Resource": [
         "arn:aws:s3:::<task-bucket>"
