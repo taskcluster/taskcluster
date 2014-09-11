@@ -110,7 +110,8 @@ var launch = function(profile) {
       return artifactStore.setupCORS();
     }),
     Artifact.createTable(),
-    Task.ensureTables()
+    Task.ensureTables(),
+    artifactBucket.setupCORS()
   ).then(function() {
     // Create API router and publish reference if needed
     debug("Creating API router");
