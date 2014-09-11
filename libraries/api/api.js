@@ -195,8 +195,8 @@ Client.prototype.limit = function(ext) {
       throw new Error("ext.certificate.expiry < now");
     }
     // Check max time between start and expiry
-    if (cert.expiry - cert.start > 32 * 24 * 60 * 60 * 1000) {
-      throw new Error("ext.certificate cannot last longer than 32 days!");
+    if (cert.expiry - cert.start > 31 * 24 * 60 * 60 * 1000) {
+      throw new Error("ext.certificate cannot last longer than 31 days!");
     }
 
     // Validate certificate scopes are subset of client
