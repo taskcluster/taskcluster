@@ -22,7 +22,6 @@ suite('Reaper tests', function() {
       taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
       routes:           [],
       retries:          retries,
-      priority:         1,
       created:          created.toJSON(),
       deadline:         deadline.toJSON(),
       scopes:           [],

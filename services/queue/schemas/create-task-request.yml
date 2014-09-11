@@ -73,12 +73,6 @@ properties:
     minimum:        0
     maximum:        50
     default:        5
-  priority:
-    title:          "Priority"
-    description: |
-      Task priority
-    type:           number
-    default:        3
   created:          {$const: created}
   deadline:         {$const: deadline}
   scopes:

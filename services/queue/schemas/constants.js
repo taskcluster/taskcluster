@@ -47,13 +47,6 @@ module.exports = {
   // used all bytes yet, but keep this in mind!
   "max-retries":    999,
 
-  // Priority of a task, for task.json
-  "priority": {
-    "title":        "Priority",
-    "description":  "Task priority",
-    "type":         "number"
-  },
-
   // Deadline of task
   "deadline": {
     "title":        "Deadline",

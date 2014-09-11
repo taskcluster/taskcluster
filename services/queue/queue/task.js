@@ -19,8 +19,7 @@ var TASK_FIELDS = [
   'schedulerId',
   'taskGroupId',
 
-  // Priority information
-  'priority',
+  // Ćreation time
   'created',
 
   // Task expiry details
@@ -146,8 +145,7 @@ Task.ensureTables = function() {
         table.string('schedulerId', 22).notNullable();
         table.uuid('taskGroupId').notNullable();
 
-        // Priority information
-        table.float('priority').notNullable();
+        // Creation time
         table.timestamp('created').notNullable();
 
         // Task expiry details
@@ -302,7 +300,6 @@ var transacting = function (f) {
  *   workerType:         // workerType
  *   schedulerId:        // schedulerId
  *   taskGroupId:        // taskGroupId
- *   priority:           // Priority (float)
  *   created:            // Date object as JSON
  *   deadline:           // Date object as JSON
  *   retriesLeft:        // Number of retries left
@@ -619,7 +616,7 @@ Task.claimWork = transacting(function(options, knex) {
       'tasks.provisionerId':  options.provisionerId,
       'tasks.workerType':     options.workerType
     })
-    .orderBy('tasks.priority') // TODO: * k + (deadline - now) ^ 2
+    .orderBy('runs.scheduled')
     .limit(1)
     .forUpdate()
     .then(function(rows) {
@@ -814,7 +811,8 @@ Task.expireClaimsWithRetries = transacting(function(knex) {
       'runs.state':     'running'
     })
     .andWhere('runs.takenUntil', '<', now)
-    .andWhere('tasks.retriesLeft', '>', 0);
+    .andWhere('tasks.retriesLeft', '>', 0)
+    .andWhere('tasks.deadline', '>', now);
 
   // For each run we find
   return foundRuns.then(function(runs) {
@@ -962,7 +960,8 @@ Task.expireClaimsWithoutRetries = transacting(function(knex) {
       'runs.state':         'running',
       'tasks.retriesLeft':  0
     })
-    .andWhere('runs.takenUntil', '<', now);
+    .andWhere('runs.takenUntil', '<', now)
+    .andWhere('tasks.deadline', '>', now);
 
   // Update runs
   return foundRuns.then(function(runs) {
@@ -1062,7 +1061,6 @@ Task.prototype.status = function() {
     workerType:     this.workerType,
     schedulerId:    this.schedulerId,
     taskGroupId:    this.taskGroupId,
-    priority:       this.priority,
     deadline:       this.deadline.toJSON(),
     retriesLeft:    this.retriesLeft,
     state:          state,
@@ -1112,7 +1110,6 @@ Task.prototype.serialize = function() {
     workerType:     this.workerType,
     schedulerId:    this.schedulerId,
     taskGroupId:    this.taskGroupId,
-    priority:       this.priority,
     created:        this.created.toJSON(),
     deadline:       this.deadline.toJSON(),
     retriesLeft:    this.retriesLeft,

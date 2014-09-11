@@ -57,7 +57,6 @@ suite('queue/task', function() {
       workerType:     'worker-type',
       schedulerId:    'my-scheduler',
       taskGroupId:    slugid.v4(),
-      priority:       5.4,
       created:        new Date().toJSON(),
       deadline:       new Date().toJSON(),
       retriesLeft:    4,
@@ -83,7 +82,6 @@ suite('queue/task', function() {
       workerType:     'worker-type',
       schedulerId:    'my-scheduler',
       taskGroupId:    slugid.v4(),
-      priority:       5.4,
       created:        new Date().toJSON(),
       deadline:       new Date().toJSON(),
       retriesLeft:    4,
@@ -104,7 +102,6 @@ suite('queue/task', function() {
         workerType:     'worker-type',
         schedulerId:    'my-scheduler',
         taskGroupId:    slugid.v4(),
-        priority:       5.4,
         created:        new Date().toJSON(),
         deadline:       new Date().toJSON(),
         retriesLeft:    4,
@@ -132,7 +129,6 @@ suite('queue/task', function() {
       workerType:     'worker-type',
       schedulerId:    'my-scheduler',
       taskGroupId:    slugid.v4(),
-      priority:       5.4,
       created:        new Date().toJSON(),
       deadline:       new Date().toJSON(),
       retriesLeft:    4,
@@ -171,9 +167,8 @@ suite('queue/task', function() {
         workerType:     'worker-type',
         schedulerId:    'my-scheduler',
         taskGroupId:    slugid.v4(),
-        priority:       5.4,
         created:        new Date().toJSON(),
-        deadline:       new Date().toJSON(),
+        deadline:       new Date(new Date().getTime() + 5 * 60 * 1000).toJSON(),
         retriesLeft:    4,
         routes:         ["my.routing.key", "another.routing.key"],
         owner:          "jonasfj@mozilla.com",
@@ -201,6 +196,10 @@ suite('queue/task', function() {
       assert(tasks[0].runs.length == 2, "Expected two runs");
       assert(tasks[0].runs[0].state == 'failed',  "1st run not failed");
       assert(tasks[0].runs[1].state == 'pending', "2nd run not pending");
+    }).then(function() {
+      return Task.expireClaimsWithRetries();
+    }).then(function(tasks) {
+      assert(tasks.length == 0, "Expected no tasks");
     });
   });
 
@@ -218,9 +217,8 @@ suite('queue/task', function() {
         workerType:     'worker-type',
         schedulerId:    'my-scheduler',
         taskGroupId:    slugid.v4(),
-        priority:       5.4,
         created:        new Date().toJSON(),
-        deadline:       new Date().toJSON(),
+        deadline:       new Date(new Date().getTime() + 5 * 60 * 1000).toJSON(),
         retriesLeft:    0,
         routes:         ["my.routing.key", "another.routing.key"],
         owner:          "jonasfj@mozilla.com",
@@ -247,6 +245,10 @@ suite('queue/task', function() {
       assert(tasks[0].taskId == taskId, "Expected taskId");
       assert(tasks[0].runs.length == 1, "Expected one run");
       assert(tasks[0].runs[0].state == 'failed',  "1st run not failed");
+    }).then(function() {
+      return Task.expireClaimsWithoutRetries();
+    }).then(function(tasks) {
+      assert(tasks.length == 0, "Expected no tasks");
     });
   });
 
@@ -266,7 +268,6 @@ suite('queue/task', function() {
         workerType:     'worker-type',
         schedulerId:    'my-scheduler',
         taskGroupId:    slugid.v4(),
-        priority:       5.4,
         created:        new Date().toJSON(),
         deadline:       deadline.toJSON(),
         retriesLeft:    5,
@@ -299,6 +300,10 @@ suite('queue/task', function() {
       assert(tasks[0].taskId == taskId, "Expected taskId");
       assert(tasks[0].runs.length == 1, "Expected one run");
       assert(tasks[0].runs[0].state == 'failed',  "1st run not failed");
+    }).then(function() {
+      return Task.expireByDeadline();
+    }).then(function(tasks) {
+      assert(tasks.length == 0, "Expected no tasks");
     });
   });
 
@@ -319,7 +324,6 @@ suite('queue/task', function() {
         workerType:     'worker-type',
         schedulerId:    'my-scheduler',
         taskGroupId:    slugid.v4(),
-        priority:       5.4,
         created:        new Date().toJSON(),
         deadline:       deadline.toJSON(),
         retriesLeft:    5,
