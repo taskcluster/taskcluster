@@ -115,6 +115,54 @@ suite('mockAuthServer', function() {
     });
   });
 
+  test('getCredentials using temporary credentials', function() {
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
+    });
+    var tempCreds = taskcluster.createTemporaryCredentials({
+      scopes: ['auth:credentials'],
+      expiry: new Date(new Date().getTime() + 60 * 1000),
+      credentials: {
+        clientId:       'test-client',
+        accessToken:    'test-token',
+      },
+    });
+    var Auth = new taskcluster.createClient(reference);
+    var auth = new Auth({
+      credentials: tempCreds
+    });
+    // Inspect the credentials
+    return auth.getCredentials('test-client').then(function(client) {
+      assert(client.clientId === 'test-client', "Expected clientId");
+    });
+  });
+
+  test('getCredentials using temporary credentials  (unauthorized)', function() {
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
+    });
+    var tempCreds = taskcluster.createTemporaryCredentials({
+      scopes: ['scope-not-authorized'],
+      expiry: new Date(new Date().getTime() + 60 * 1000),
+      credentials: {
+        clientId:       'test-client',
+        accessToken:    'test-token',
+      },
+    });
+    var Auth = new taskcluster.createClient(reference);
+    var auth = new Auth({
+      credentials: tempCreds
+    });
+    // Inspect the credentials
+    return auth.getCredentials('test-client').then(function(client) {
+      assert(false, "Expected and error");
+    }, function(err) {
+      debug("Got expected error: %s", err);
+      assert(err, "Expected an error");
+      assert(err.statusCode === 401, "Wrong status code");
+    });
+  });
+
   test('Build url', function() {
     var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
       baseUrl: 'http://localhost:62351/v1'

@@ -11,12 +11,15 @@ var _           = require('lodash');
 var assert      = require('assert');
 var hawk        = require('hawk');
 var url         = require('url');
+var crypto      = require('crypto');
+var slugid      = require('slugid');
 
 // Default options stored globally for convenience
 var _defaultOptions = {
   credentials: {
-    clientId: process.env.TASKCLUSTER_CLIENT_ID,
-    accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN,
+    clientId:     process.env.TASKCLUSTER_CLIENT_ID,
+    accessToken:  process.env.TASKCLUSTER_ACCESS_TOKEN,
+    certificate:  process.env.TASKCLUSTER_CERTIFICATE
   },
 
   authorization: {
@@ -99,14 +102,29 @@ exports.createClient = function(reference) {
       if (this._options.credentials &&
           this._options.credentials.clientId &&
           this._options.credentials.accessToken) {
-        var extra = {};
+        // Construct ext property
+        var ext = {};
+
+        // If there is a certificate we have temporary credentials, and we
+        // must provide the certificate
+        if (this._options.credentials.certificate instanceof Object) {
+          ext.certificate = this._options.credentials.certificate;
+        }
+
         // If set of authorized scopes is provided, we'll restrict the request
         // to only use these scopes
         if (this._options.authorizedScopes instanceof Array) {
-          extra.ext = new Buffer(JSON.stringify({
-            authorizedScopes: this._options.authorizedScopes
-          })).toString('base64');
+          ext.authorizedScopes = this._options.authorizedScopes;
         }
+
+        // Extra paramters to hand hawk
+        var extra = {};
+
+        // ext has any keys we better base64 encode it, and set ext on extra
+        if (_.keys(ext).length > 0) {
+          extra.ext = new Buffer(JSON.stringify(ext)).toString('base64');
+        }
+
         // Write hawk authentication header
         req.hawk({
           id:         this._options.credentials.clientId,
@@ -327,4 +345,94 @@ _.forIn(apis, function(api, name) {
  */
 exports.config = function(options) {
   _defaultOptions = _.defaults({}, options, _defaultOptions);
+};
+
+/**
+ * Construct a set of temporary credentials.
+ *
+ * options:
+ * {
+ *  start:        new Date(),   // Start time of credentials (defaults to now)
+ *  expiry:       new Date(),   // Credentials expiration time
+ *  scopes:       ['scope'...], // Scopes granted (defaults to empty-set)
+ *  credentials: {        // (defaults to use global config, if available)
+ *    clientId:    '...', // ClientId
+ *    accessToken: '...', // AccessToken for clientId
+ *  },
+ * }
+ *
+ * Returns an object on the form: {clientId, accessToken, certificate}
+ */
+exports.createTemporaryCredentials = function(options) {
+  assert(options, "options are required");
+
+  // Get now as default value for start
+  var now = new Date();
+  now.setMinutes(now.getMinutes() - 5); // subtract 5 min for clock drift
+
+  // Set default options
+  options = _.defaults({}, options, {
+    start:      now,
+    scopes:     []
+  }, _defaultOptions);
+
+  // Validate options
+  assert(options.credentials,             "options.credentials is required");
+  assert(options.credentials.clientId,
+         "options.credentials.clientId is required");
+  assert(options.credentials.accessToken,
+         "options.credentials.accessToken is required");
+  assert(options.credentials.certificate === undefined ||
+         options.credentials.certificate === null,
+         "temporary credentials cannot be used to make new temporary " +
+         "credentials; ensure that options.credentials.certificate is null");
+  assert(options.start instanceof Date,   "options.start must be a Date");
+  assert(options.expiry instanceof Date,  "options.expiry must be a Date");
+  assert(options.scopes instanceof Array, "options.scopes must be an array");
+  options.scopes.forEach(function(scope) {
+    assert(typeof(scope) === 'string',
+           "options.scopes must be an array of strings");
+  });
+  assert(options.expiry.getTime() - options.start.getTime() <=
+         31 * 24 * 60 * 60 * 1000, "Credentials can span more than 31 days");
+
+  // Construct certificate
+  var cert = {
+    version:    1,
+    scopes:     _.cloneDeep(options.scopes),
+    start:      options.start.getTime(),
+    expiry:     options.expiry.getTime(),
+    seed:       slugid.v4() + slugid.v4(),
+    signature:  null  // generated later
+  };
+
+  // Construct signature
+  cert.signature = crypto
+    .createHmac('sha256', options.credentials.accessToken)
+    .update(
+      [
+        'version:'  + cert.version,
+        'seed:'     + cert.seed,
+        'start:'    + cert.start,
+        'expiry:'   + cert.expiry,
+        'scopes:'
+      ].concat(cert.scopes).join('\n')
+    )
+    .digest('base64');
+
+  // Construct temporary key
+  var accessToken = crypto
+    .createHmac('sha256', options.credentials.accessToken)
+    .update(cert.seed)
+    .digest('base64')
+    .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
+    .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
+    .replace(/=/g,  '');  // Drop '==' padding
+
+  // Return the generated temporary credentials
+  return {
+    clientId:     options.credentials.clientId,
+    accessToken:  accessToken,
+    certificate:  cert
+  };
 };

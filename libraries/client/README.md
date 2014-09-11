@@ -282,6 +282,20 @@ possible to retract a signed url without revoking your credentials.
 For more technical details on signed urls, see _bewit_ urls in
 [hawk](https://github.com/hueniverse/hawk).
 
+## Generating Temporary Credentials
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Create Client Class Dynamically
 You can create a Client class from a reference JSON object as illustrated
 below:
