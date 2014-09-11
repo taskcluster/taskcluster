@@ -61,7 +61,10 @@ validator.register({
 exchanges.configure({
   validator:              validator,
   connectionString:       connectionString,
-  exchangePrefix:         'taskcluster-client/test/'
+  exchangePrefix:         'taskcluster-client/test/',
+  drain:                  new base.stats.NullDrain(),
+  component:              'taskcluster-client',
+  process:                'mocha'
 });
 
 // Export exchanges
