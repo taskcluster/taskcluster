@@ -338,7 +338,17 @@ api.declare({
   deferAuth:  true,
   title:      "Get Artifact from Run",
   description: [
-    "TODO: document this method"
+    "Get artifact by `<name>` from a specific run.",
+    "",
+    "**Public Artifacts**, in-order to get an artifact you need the scope",
+    "`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.",
+    "But if the artifact `name` starts with `public/`, authentication and",
+    "authorization is not necessary to fetch the artifact.",
+    "",
+    "**API Clients**, this method will redirect you to the artifact, if it is",
+    "stored externally. Either way, the response may not be JSON. So API",
+    "client users might want to generate a signed URL for this end-point and",
+    "use that URL with a normal HTTP client."
   ].join('\n')
 }, function(req ,res) {
   // Validate parameters
@@ -367,14 +377,28 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/task/:taskId/artifacts/:name(*)',
-  name:       'getLastestArtifact',
+  name:       'getLatestArtifact',
   scopes: [
     'queue:get-artifact:<name>'
   ],
   deferAuth:  true,
   title:      "Get Artifact from Latest Run",
   description: [
-    "TODO: document this method"
+    "Get artifact by `<name>` from the last run of a task.",
+    "",
+    "**Public Artifacts**, in-order to get an artifact you need the scope",
+    "`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.",
+    "But if the artifact `name` starts with `public/`, authentication and",
+    "authorization is not necessary to fetch the artifact.",
+    "",
+    "**API Clients**, this method will redirect you to the artifact, if it is",
+    "stored externally. Either way, the response may not be JSON. So API",
+    "client users might want to generate a signed URL for this end-point and",
+    "use that URL with a normal HTTP client.",
+    "",
+    "**Remark**, this end-point is slightly slower than",
+    "`queue.getArtifact`, so consider that if you already know the `runId` of",
+    "the latest run. Otherwise, just us the most convenient API end-point."
   ].join('\n')
 }, function(req ,res) {
   // Validate parameters
@@ -456,7 +480,7 @@ api.declare({
   output:     SCHEMA_PREFIX_CONST + 'list-artifacts-response.json',
   title:      "Get Artifacts from Run",
   description: [
-    "TODO: document this method"
+    "Returns a list of artifacts and associated meta-data for a given run."
   ].join('\n')
 }, function(req ,res) {
   // Validate parameters
@@ -484,7 +508,8 @@ api.declare({
   output:     SCHEMA_PREFIX_CONST + 'list-artifacts-response.json',
   title:      "Get Artifacts from Latest Run",
   description: [
-    "TODO: document this method"
+    "Returns a list of artifacts and associated meta-data for the latest run",
+    "from the given task."
   ].join('\n')
 }, function(req ,res) {
   var ctx = this;
