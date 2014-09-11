@@ -27,7 +27,7 @@
     "mocha":                            "1.21.4",
     "commander":                        "2.3.0",
     "cliff":                            "0.1.8",
-    "taskcluster-base":                 "0.4.6",
+    "taskcluster-base":                 "0.5.2",
     "browserify":                       "5.10.1",
     "mocha-phantomjs":                  "3.5.0"
   }
