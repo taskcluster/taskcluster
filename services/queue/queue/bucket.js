@@ -110,3 +110,18 @@ Bucket.prototype.deleteObjects = function(prefixes) {
   }).promise();
 };
 
+/** Setup CORS policy, so it can opened from a browser, when authenticated */
+Bucket.prototype.setupCORS = function() {
+  return this.s3.putBucketCors({
+    CORSConfiguration: {
+      CORSRules: [
+        {
+          AllowedOrigins: ['*'],
+          AllowedMethods: ['GET', 'PUT', 'HEAD', 'POST', 'DELETE'],
+          AllowedHeaders: ['*'],
+          MaxAgeSeconds:  60 * 60
+        }
+      ]
+    }
+  }).promise();
+};
