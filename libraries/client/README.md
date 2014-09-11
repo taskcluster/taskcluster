@@ -161,7 +161,7 @@ var queue = new taskcluster.Queue(options);
  * `queue.rerunTask(taskId) : result`
  * `queue.createArtifact(taskId, runId, name, payload) : result`
  * `queue.getArtifact(taskId, runId, name) : void`
- * `queue.getLastestArtifact(taskId, name) : void`
+ * `queue.getLatestArtifact(taskId, name) : void`
  * `queue.listArtifacts(taskId, runId) : result`
  * `queue.listLatestArtifacts(taskId) : result`
  * `queue.getPendingTasks(provisionerId) : void`
