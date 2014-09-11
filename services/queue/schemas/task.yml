@@ -70,11 +70,6 @@ properties:
     type:           integer
     minimum:        0
     maximum:        50
-  priority:
-    title:          "Priority"
-    description: |
-      Task priority
-    type:           number
   created:          {$const: created}
   deadline:         {$const: deadline}
   scopes:
@@ -175,7 +170,6 @@ required:
   - taskGroupId
   - routes
   - retries
-  - priority
   - created
   - deadline
   - scopes

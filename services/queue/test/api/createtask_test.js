@@ -25,7 +25,6 @@ suite('Create task', function() {
                        "--- long routing key ---.--- long routing key ---." +
                        "--- long routing key ---.--- long routing key ---"],
     retries:          5,
-    priority:         1,
     created:          created.toJSON(),
     deadline:         deadline.toJSON(),
     scopes:           [],

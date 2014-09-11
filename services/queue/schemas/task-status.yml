@@ -45,7 +45,6 @@ properties:
       task-graph scheduler, this is the `taskGraphId`.
     type:           string
     pattern:        {$const: slugid-pattern}
-  priority:         {$const: priority}
   deadline:         {$const: deadline}
   retriesLeft:
     title:          "Retries Left"
@@ -183,7 +182,6 @@ required:
   - workerType
   - schedulerId
   - taskGroupId
-  - priority
   - deadline
   - retriesLeft
   - state
