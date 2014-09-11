@@ -17,7 +17,8 @@ var dropdb = function(profile) {
 
   // Create database wrapper
   var Task = TaskModule.configure({
-    connectionString:   cfg.get('database:connectionString')
+    connectionString:   process.env.DATABASE_URL ||
+                        cfg.get('database:connectionString')
   });
 
   // Drop tables

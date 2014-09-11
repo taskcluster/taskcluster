@@ -76,6 +76,7 @@ module.exports = {
   // Database configuration
   database: {
     // Database connection string as pg://user:password@host:port/database
+    // This setting can be overwritten by DATABASE_URL if defined.
     connectionString:               undefined
   },
 
