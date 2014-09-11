@@ -137,7 +137,7 @@ suite('mockAuthServer', function() {
     });
   });
 
-  test('getCredentials using temporary credentials  (unauthorized)', function() {
+  test('getCredentials using temporary credentials (unauthorized)', function() {
     var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
       baseUrl: 'http://localhost:62351/v1'
     });
