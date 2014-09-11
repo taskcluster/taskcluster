@@ -20,7 +20,6 @@ suite('Report task completed', function() {
     taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
     routes:           [],
     retries:          5,
-    priority:         1,
     created:          created.toJSON(),
     deadline:         deadline.toJSON(),
     scopes:           [],
