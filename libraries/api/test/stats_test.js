@@ -96,6 +96,35 @@ suite('stats', function() {
     });
   });
 
+  test("Create reporter (with NullDrain)", function() {
+    // Create test series
+    var TestSeries = new base.stats.Series({
+      name:               'TestSeries',
+      columns: {
+        colA:             base.stats.types.String,
+        colB:             base.stats.types.Number,
+      },
+      additionalColumns:  base.stats.types.String,
+    });
+
+    // Create statistics drain with NullDrain
+    var drain = new base.stats.NullDrain();
+
+    // Create reporter
+    var reporter = TestSeries.reporter(drain);
+
+    // Report with reporter
+    reporter({
+      colA:   'A',
+      colB:   123
+    });
+
+    assert(drain.pendingPoints() === 1, "We should have 1 point");
+    return drain.close().then(function() {
+      assert(drain.pendingPoints() === 0, "Points should be submitted");
+    });
+  });
+
 
   test("Report wrong columns", function() {
     // Create test series
