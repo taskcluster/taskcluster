@@ -22,7 +22,7 @@ var queue = new taskcluster.Queue({
     accessToken:  '...',
     // Certificate must also be provided if using temporary credentials,
     // this can be either a JSON object or a JSON string.
-    certificate:  {...}
+    certificate:  {...}   // Only applicable for temporary credentials
   }
 });
 
