@@ -38,7 +38,8 @@ var launch = function(profile) {
 
   // Create Task subclass wrapping database access
   var Task = TaskModule.configure({
-    connectionString:   cfg.get('database:connectionString')
+    connectionString:   process.env.DATABASE_URL ||
+                        cfg.get('database:connectionString')
   });
 
   // Setup AMQP exchanges and create a publisher

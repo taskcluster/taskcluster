@@ -29,7 +29,7 @@ module.exports = {
   },
 
   database: {
-    // Provided by environment variable
+    // Provided by environment variable: DATABASE_URL
     connectionString:             undefined
   },
 
