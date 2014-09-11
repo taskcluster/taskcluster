@@ -268,7 +268,7 @@ module.exports = {
           ],
           "name": "getArtifact",
           "title": "Get Artifact from Run",
-          "description": "TODO: document this method",
+          "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.",
           "scopes": [
             [
               "queue:get-artifact:<name>"
@@ -283,9 +283,9 @@ module.exports = {
             "taskId",
             "name"
           ],
-          "name": "getLastestArtifact",
+          "name": "getLatestArtifact",
           "title": "Get Artifact from Latest Run",
-          "description": "TODO: document this method",
+          "description": "Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
           "scopes": [
             [
               "queue:get-artifact:<name>"
@@ -302,7 +302,7 @@ module.exports = {
           ],
           "name": "listArtifacts",
           "title": "Get Artifacts from Run",
-          "description": "TODO: document this method",
+          "description": "Returns a list of artifacts and associated meta-data for a given run.",
           "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json"
         },
         {
@@ -314,7 +314,7 @@ module.exports = {
           ],
           "name": "listLatestArtifacts",
           "title": "Get Artifacts from Latest Run",
-          "description": "TODO: document this method",
+          "description": "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.",
           "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json"
         },
         {
@@ -1332,7 +1332,7 @@ module.exports = {
           "description": "Insert a task into the index. Please see the introduction above, for how\nto index successfully completed tasks automatically, using custom routes.",
           "scopes": [
             [
-              "index:insert:<namespace>"
+              "index:insert-task:<namespace>"
             ]
           ],
           "input": "http://schemas.taskcluster.net/index/v1/insert-task-request.json#",
@@ -1374,12 +1374,15 @@ var _           = require('lodash');
 var assert      = require('assert');
 var hawk        = require('hawk');
 var url         = require('url');
+var crypto      = require('crypto');
+var slugid      = require('slugid');
 
 // Default options stored globally for convenience
 var _defaultOptions = {
   credentials: {
-    clientId: process.env.TASKCLUSTER_CLIENT_ID,
-    accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN,
+    clientId:     process.env.TASKCLUSTER_CLIENT_ID,
+    accessToken:  process.env.TASKCLUSTER_ACCESS_TOKEN,
+    certificate:  process.env.TASKCLUSTER_CERTIFICATE
   },
 
   authorization: {
@@ -1462,14 +1465,29 @@ exports.createClient = function(reference) {
       if (this._options.credentials &&
           this._options.credentials.clientId &&
           this._options.credentials.accessToken) {
-        var extra = {};
+        // Construct ext property
+        var ext = {};
+
+        // If there is a certificate we have temporary credentials, and we
+        // must provide the certificate
+        if (this._options.credentials.certificate instanceof Object) {
+          ext.certificate = this._options.credentials.certificate;
+        }
+
         // If set of authorized scopes is provided, we'll restrict the request
         // to only use these scopes
         if (this._options.authorizedScopes instanceof Array) {
-          extra.ext = new Buffer(JSON.stringify({
-            authorizedScopes: this._options.authorizedScopes
-          })).toString('base64');
+          ext.authorizedScopes = this._options.authorizedScopes;
         }
+
+        // Extra paramters to hand hawk
+        var extra = {};
+
+        // ext has any keys we better base64 encode it, and set ext on extra
+        if (_.keys(ext).length > 0) {
+          extra.ext = new Buffer(JSON.stringify(ext)).toString('base64');
+        }
+
         // Write hawk authentication header
         req.hawk({
           id:         this._options.credentials.clientId,
@@ -1692,8 +1710,98 @@ exports.config = function(options) {
   _defaultOptions = _.defaults({}, options, _defaultOptions);
 };
 
+/**
+ * Construct a set of temporary credentials.
+ *
+ * options:
+ * {
+ *  start:        new Date(),   // Start time of credentials (defaults to now)
+ *  expiry:       new Date(),   // Credentials expiration time
+ *  scopes:       ['scope'...], // Scopes granted (defaults to empty-set)
+ *  credentials: {        // (defaults to use global config, if available)
+ *    clientId:    '...', // ClientId
+ *    accessToken: '...', // AccessToken for clientId
+ *  },
+ * }
+ *
+ * Returns an object on the form: {clientId, accessToken, certificate}
+ */
+exports.createTemporaryCredentials = function(options) {
+  assert(options, "options are required");
+
+  // Get now as default value for start
+  var now = new Date();
+  now.setMinutes(now.getMinutes() - 5); // subtract 5 min for clock drift
+
+  // Set default options
+  options = _.defaults({}, options, {
+    start:      now,
+    scopes:     []
+  }, _defaultOptions);
+
+  // Validate options
+  assert(options.credentials,             "options.credentials is required");
+  assert(options.credentials.clientId,
+         "options.credentials.clientId is required");
+  assert(options.credentials.accessToken,
+         "options.credentials.accessToken is required");
+  assert(options.credentials.certificate === undefined ||
+         options.credentials.certificate === null,
+         "temporary credentials cannot be used to make new temporary " +
+         "credentials; ensure that options.credentials.certificate is null");
+  assert(options.start instanceof Date,   "options.start must be a Date");
+  assert(options.expiry instanceof Date,  "options.expiry must be a Date");
+  assert(options.scopes instanceof Array, "options.scopes must be an array");
+  options.scopes.forEach(function(scope) {
+    assert(typeof(scope) === 'string',
+           "options.scopes must be an array of strings");
+  });
+  assert(options.expiry.getTime() - options.start.getTime() <=
+         31 * 24 * 60 * 60 * 1000, "Credentials can span more than 31 days");
+
+  // Construct certificate
+  var cert = {
+    version:    1,
+    scopes:     _.cloneDeep(options.scopes),
+    start:      options.start.getTime(),
+    expiry:     options.expiry.getTime(),
+    seed:       slugid.v4() + slugid.v4(),
+    signature:  null  // generated later
+  };
+
+  // Construct signature
+  cert.signature = crypto
+    .createHmac('sha256', options.credentials.accessToken)
+    .update(
+      [
+        'version:'  + cert.version,
+        'seed:'     + cert.seed,
+        'start:'    + cert.start,
+        'expiry:'   + cert.expiry,
+        'scopes:'
+      ].concat(cert.scopes).join('\n')
+    )
+    .digest('base64');
+
+  // Construct temporary key
+  var accessToken = crypto
+    .createHmac('sha256', options.credentials.accessToken)
+    .update(cert.seed)
+    .digest('base64')
+    .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
+    .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
+    .replace(/=/g,  '');  // Drop '==' padding
+
+  // Return the generated temporary credentials
+  return {
+    clientId:     options.credentials.clientId,
+    accessToken:  accessToken,
+    certificate:  cert
+  };
+};
+
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"./apis":1,"_process":31,"assert":5,"buffer":8,"debug":52,"hawk":55,"lodash":56,"superagent":78,"superagent-hawk":60,"superagent-promise":77,"url":49}],4:[function(require,module,exports){
+},{"./apis":1,"_process":31,"assert":5,"buffer":8,"crypto":14,"debug":52,"hawk":55,"lodash":56,"slugid":60,"superagent":82,"superagent-hawk":64,"superagent-promise":81,"url":49}],4:[function(require,module,exports){
 
 },{}],5:[function(require,module,exports){
 // http://wiki.commonjs.org/wiki/Unit_Testing/1.0
@@ -17885,6 +17993,316 @@ module.exports = asap;
 
 }).call(this,require('_process'))
 },{"_process":31}],60:[function(require,module,exports){
+// The MIT License (MIT)
+//
+// Copyright (c) 2014 Jonas Finnemann Jensen
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+// Load slugid on to the window element
+window.slugid = require('./slugid');
+
+},{"./slugid":63}],61:[function(require,module,exports){
+(function (global){
+
+var rng;
+
+if (global.crypto && crypto.getRandomValues) {
+  // WHATWG crypto-based RNG - http://wiki.whatwg.org/wiki/Crypto
+  // Moderately fast, high quality
+  var _rnds8 = new Uint8Array(16);
+  rng = function whatwgRNG() {
+    crypto.getRandomValues(_rnds8);
+    return _rnds8;
+  };
+}
+
+if (!rng) {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var  _rnds = new Array(16);
+  rng = function() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      _rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return _rnds;
+  };
+}
+
+module.exports = rng;
+
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],62:[function(require,module,exports){
+(function (Buffer){
+//     uuid.js
+//
+//     Copyright (c) 2010-2012 Robert Kieffer
+//     MIT License - http://opensource.org/licenses/mit-license.php
+
+// Unique ID creation requires a high quality random # generator.  We feature
+// detect to determine the best RNG source, normalizing to a function that
+// returns 128-bits of randomness, since that's what's usually required
+var _rng = require('./rng');
+
+// Buffer class to use
+var BufferClass = typeof(Buffer) == 'function' ? Buffer : Array;
+
+// Maps for number <-> hex string conversion
+var _byteToHex = [];
+var _hexToByte = {};
+for (var i = 0; i < 256; i++) {
+  _byteToHex[i] = (i + 0x100).toString(16).substr(1);
+  _hexToByte[_byteToHex[i]] = i;
+}
+
+// **`parse()` - Parse a UUID into it's component bytes**
+function parse(s, buf, offset) {
+  var i = (buf && offset) || 0, ii = 0;
+
+  buf = buf || [];
+  s.toLowerCase().replace(/[0-9a-f]{2}/g, function(oct) {
+    if (ii < 16) { // Don't overflow!
+      buf[i + ii++] = _hexToByte[oct];
+    }
+  });
+
+  // Zero out remaining bytes if string was short
+  while (ii < 16) {
+    buf[i + ii++] = 0;
+  }
+
+  return buf;
+}
+
+// **`unparse()` - Convert UUID byte array (ala parse()) into a string**
+function unparse(buf, offset) {
+  var i = offset || 0, bth = _byteToHex;
+  return  bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]];
+}
+
+// **`v1()` - Generate time-based UUID**
+//
+// Inspired by https://github.com/LiosK/UUID.js
+// and http://docs.python.org/library/uuid.html
+
+// random #'s we need to init node and clockseq
+var _seedBytes = _rng();
+
+// Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
+var _nodeId = [
+  _seedBytes[0] | 0x01,
+  _seedBytes[1], _seedBytes[2], _seedBytes[3], _seedBytes[4], _seedBytes[5]
+];
+
+// Per 4.2.2, randomize (14 bit) clockseq
+var _clockseq = (_seedBytes[6] << 8 | _seedBytes[7]) & 0x3fff;
+
+// Previous uuid creation time
+var _lastMSecs = 0, _lastNSecs = 0;
+
+// See https://github.com/broofa/node-uuid for API details
+function v1(options, buf, offset) {
+  var i = buf && offset || 0;
+  var b = buf || [];
+
+  options = options || {};
+
+  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
+
+  // UUID timestamps are 100 nano-second units since the Gregorian epoch,
+  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
+  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
+  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
+  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime();
+
+  // Per 4.2.1.2, use count of uuid's generated during the current clock
+  // cycle to simulate higher resolution clock
+  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1;
+
+  // Time since last uuid creation (in msecs)
+  var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
+
+  // Per 4.2.1.2, Bump clockseq on clock regression
+  if (dt < 0 && options.clockseq === undefined) {
+    clockseq = clockseq + 1 & 0x3fff;
+  }
+
+  // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
+  // time interval
+  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
+    nsecs = 0;
+  }
+
+  // Per 4.2.1.2 Throw error if too many uuids are requested
+  if (nsecs >= 10000) {
+    throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
+  }
+
+  _lastMSecs = msecs;
+  _lastNSecs = nsecs;
+  _clockseq = clockseq;
+
+  // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
+  msecs += 12219292800000;
+
+  // `time_low`
+  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+  b[i++] = tl >>> 24 & 0xff;
+  b[i++] = tl >>> 16 & 0xff;
+  b[i++] = tl >>> 8 & 0xff;
+  b[i++] = tl & 0xff;
+
+  // `time_mid`
+  var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
+  b[i++] = tmh >>> 8 & 0xff;
+  b[i++] = tmh & 0xff;
+
+  // `time_high_and_version`
+  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
+  b[i++] = tmh >>> 16 & 0xff;
+
+  // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
+  b[i++] = clockseq >>> 8 | 0x80;
+
+  // `clock_seq_low`
+  b[i++] = clockseq & 0xff;
+
+  // `node`
+  var node = options.node || _nodeId;
+  for (var n = 0; n < 6; n++) {
+    b[i + n] = node[n];
+  }
+
+  return buf ? buf : unparse(b);
+}
+
+// **`v4()` - Generate random UUID**
+
+// See https://github.com/broofa/node-uuid for API details
+function v4(options, buf, offset) {
+  // Deprecated - 'format' argument, as supported in v1.2
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options == 'binary' ? new BufferClass(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || _rng)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ii++) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || unparse(rnds);
+}
+
+// Export public API
+var uuid = v4;
+uuid.v1 = v1;
+uuid.v4 = v4;
+uuid.parse = parse;
+uuid.unparse = unparse;
+uuid.BufferClass = BufferClass;
+
+module.exports = uuid;
+
+}).call(this,require("buffer").Buffer)
+},{"./rng":61,"buffer":8}],63:[function(require,module,exports){
+(function (Buffer){
+// The MIT License (MIT)
+//
+// Copyright (c) 2014 Jonas Finnemann Jensen
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+var uuid = require('uuid');
+
+/** Encode uuid as a short 22 byte slug */
+exports.encode = function(uuid_) {
+  var bytes   = uuid.parse(uuid_);
+  var base64  = (new Buffer(bytes)).toString('base64');
+  var slug = base64
+              .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
+              .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
+              .replace(/=/g,  '');  // Drop '==' padding
+  return slug;
+};
+
+/** Decode 22 byte slug to uuid */
+exports.decode = function(slug) {
+  var base64 = slug
+                  .replace(/-/g, '+')
+                  .replace(/_/g, '/')
+                  + '==';
+  return uuid.unparse(new Buffer(base64, 'base64'));
+};
+
+/** Generate a v4 (random) uuid and encode it to a slug */
+exports.v4 = function() {
+  var bytes   = uuid.v4(null, new Buffer(16));
+  var base64  = bytes.toString('base64');
+  var slug = base64
+              .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
+              .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
+              .replace(/=/g,  '');  // Drop '==' padding
+  return slug;
+};
+
+}).call(this,require("buffer").Buffer)
+},{"buffer":8,"uuid":62}],64:[function(require,module,exports){
 var hawk = require('hawk');
 var extend = require('./lib/extend');
 
@@ -17933,7 +18351,7 @@ module.exports = function addHawk (superagent) {
   return superagent;
 };
 
-},{"./lib/extend":61,"hawk":62}],61:[function(require,module,exports){
+},{"./lib/extend":65,"hawk":66}],65:[function(require,module,exports){
 // shamelessly borrowed from https://github.com/segmentio/extend
 
 module.exports = function extend (object) {
@@ -17950,9 +18368,9 @@ module.exports = function extend (object) {
 
     return object;
 };
-},{}],62:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 module.exports = require('./lib');
-},{"./lib":65}],63:[function(require,module,exports){
+},{"./lib":69}],67:[function(require,module,exports){
 // Load modules
 
 var Url = require('url');
@@ -18321,7 +18739,7 @@ exports.message = function (host, port, message, options) {
 
 
 
-},{"./crypto":64,"./utils":67,"cryptiles":70,"hoek":72,"url":49}],64:[function(require,module,exports){
+},{"./crypto":68,"./utils":71,"cryptiles":74,"hoek":76,"url":49}],68:[function(require,module,exports){
 // Load modules
 
 var Crypto = require('crypto');
@@ -18434,7 +18852,7 @@ exports.calculateTsMac = function (ts, credentials) {
 };
 
 
-},{"./utils":67,"crypto":14,"url":49}],65:[function(require,module,exports){
+},{"./utils":71,"crypto":14,"url":49}],69:[function(require,module,exports){
 // Export sub-modules
 
 exports.error = exports.Error = require('boom');
@@ -18451,7 +18869,7 @@ exports.uri = {
 
 
 
-},{"./client":63,"./crypto":64,"./server":66,"./utils":67,"boom":68,"sntp":75}],66:[function(require,module,exports){
+},{"./client":67,"./crypto":68,"./server":70,"./utils":71,"boom":72,"sntp":79}],70:[function(require,module,exports){
 // Load modules
 
 var Boom = require('boom');
@@ -18977,7 +19395,7 @@ exports.authenticateMessage = function (host, port, message, authorization, cred
     });
 };
 
-},{"./crypto":64,"./utils":67,"boom":68,"cryptiles":70,"hoek":72}],67:[function(require,module,exports){
+},{"./crypto":68,"./utils":71,"boom":72,"cryptiles":74,"hoek":76}],71:[function(require,module,exports){
 (function (__dirname){
 // Load modules
 
@@ -19164,9 +19582,9 @@ exports.unauthorized = function (message) {
 
 
 }).call(this,"/node_modules/superagent-hawk/node_modules/hawk/lib")
-},{"boom":68,"hoek":72,"sntp":75}],68:[function(require,module,exports){
-arguments[4][62][0].apply(exports,arguments)
-},{"./lib":69}],69:[function(require,module,exports){
+},{"boom":72,"hoek":76,"sntp":79}],72:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"./lib":73}],73:[function(require,module,exports){
 // Load modules
 
 var Http = require('http');
@@ -19375,9 +19793,9 @@ internals.Boom.passThrough = function (code, payload, contentType, headers) {
 
 
 
-},{"hoek":72,"http":25,"util":51}],70:[function(require,module,exports){
-arguments[4][62][0].apply(exports,arguments)
-},{"./lib":71}],71:[function(require,module,exports){
+},{"hoek":76,"http":25,"util":51}],74:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"./lib":75}],75:[function(require,module,exports){
 // Load modules
 
 var Crypto = require('crypto');
@@ -19447,9 +19865,9 @@ exports.fixedTimeComparison = function (a, b) {
 
 
 
-},{"boom":68,"crypto":14}],72:[function(require,module,exports){
-arguments[4][62][0].apply(exports,arguments)
-},{"./lib":74}],73:[function(require,module,exports){
+},{"boom":72,"crypto":14}],76:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"./lib":78}],77:[function(require,module,exports){
 (function (Buffer){
 // Declare internals
 
@@ -19584,7 +20002,7 @@ internals.safeCharCodes = (function () {
     return safe;
 }());
 }).call(this,require("buffer").Buffer)
-},{"buffer":8}],74:[function(require,module,exports){
+},{"buffer":8}],78:[function(require,module,exports){
 (function (process,Buffer){
 // Load modules
 
@@ -20173,9 +20591,9 @@ exports.nextTick = function (callback) {
 };
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"./escape":73,"_process":31,"buffer":8,"fs":4}],75:[function(require,module,exports){
-arguments[4][62][0].apply(exports,arguments)
-},{"./lib":76}],76:[function(require,module,exports){
+},{"./escape":77,"_process":31,"buffer":8,"fs":4}],79:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"./lib":80}],80:[function(require,module,exports){
 (function (process,Buffer){
 // Load modules
 
@@ -20588,7 +21006,7 @@ exports.now = function () {
 
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"_process":31,"buffer":8,"dgram":4,"dns":4,"hoek":72}],77:[function(require,module,exports){
+},{"_process":31,"buffer":8,"dgram":4,"dns":4,"hoek":76}],81:[function(require,module,exports){
 /**
  * Promise wrapper for superagent
  */
@@ -20689,7 +21107,7 @@ request.put = function(url, data) {
 // Export the request builder
 module.exports = request;
 
-},{"promise":58,"superagent":78}],78:[function(require,module,exports){
+},{"promise":58,"superagent":82}],82:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -21740,7 +22158,7 @@ request.put = function(url, data, fn){
 
 module.exports = request;
 
-},{"emitter":79,"reduce":80}],79:[function(require,module,exports){
+},{"emitter":83,"reduce":84}],83:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -21906,7 +22324,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],80:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 
 /**
  * Reduce `arr` with `fn`.

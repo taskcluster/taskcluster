@@ -267,7 +267,7 @@ module.exports = {
           ],
           "name": "getArtifact",
           "title": "Get Artifact from Run",
-          "description": "TODO: document this method",
+          "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.",
           "scopes": [
             [
               "queue:get-artifact:<name>"
@@ -282,9 +282,9 @@ module.exports = {
             "taskId",
             "name"
           ],
-          "name": "getLastestArtifact",
+          "name": "getLatestArtifact",
           "title": "Get Artifact from Latest Run",
-          "description": "TODO: document this method",
+          "description": "Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
           "scopes": [
             [
               "queue:get-artifact:<name>"
@@ -301,7 +301,7 @@ module.exports = {
           ],
           "name": "listArtifacts",
           "title": "Get Artifacts from Run",
-          "description": "TODO: document this method",
+          "description": "Returns a list of artifacts and associated meta-data for a given run.",
           "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json"
         },
         {
@@ -313,7 +313,7 @@ module.exports = {
           ],
           "name": "listLatestArtifacts",
           "title": "Get Artifacts from Latest Run",
-          "description": "TODO: document this method",
+          "description": "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.",
           "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json"
         },
         {
@@ -1331,7 +1331,7 @@ module.exports = {
           "description": "Insert a task into the index. Please see the introduction above, for how\nto index successfully completed tasks automatically, using custom routes.",
           "scopes": [
             [
-              "index:insert:<namespace>"
+              "index:insert-task:<namespace>"
             ]
           ],
           "input": "http://schemas.taskcluster.net/index/v1/insert-task-request.json#",
