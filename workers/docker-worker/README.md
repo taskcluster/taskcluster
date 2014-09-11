@@ -80,7 +80,18 @@ Overriding the defaults is easy, just copy the example configuration file
 fill out the missing credentials and save it as `docker-worker-opts.sh`.
 
 Schema changes are not deployed automatically so if the
-schema has been changed `./bin/update-schema.js` should be run.
+schema has been changed, the run the upload-schema.js script to update.
+
+Before running the upload schema script, ensure that AWS credentials are loaded 
+into your environment.  See [Configuring AWS with Node](http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html)
+
+Run the upload-schema.js script to update the schema:
+```
+chmod +x bin/upload-schema.js
+./bin/upload-schema.js
+```
+Or:
+`node --harmony bin/upload-schema.js`
 
 ### Block-Device Mapping
 The AMI built with packer will mount all available instances storage under

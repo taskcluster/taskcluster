@@ -1,3 +1,4 @@
+#!/usr/bin/env node --harmony
 /**
 The docker worker schema situation is not as easy as the queue or other http
 services. The worker consumes mostly from a private state pulling from trusted
