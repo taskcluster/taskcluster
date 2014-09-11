@@ -247,6 +247,40 @@ exports.Influx = Influx;
 
 
 /**
+ * Alternative statistics drain that acts like Influx,
+ * But drops all points when flushed, useful for tests, when you need to create
+ * a mock API or a mock exchange.
+ */
+var NullDrain = function() {
+  this._nbPendingPoints = 0;
+};
+
+/** Drop point counter */
+NullDrain.prototype.flush = function() {
+  this._nbPendingPoints = 0
+  return Promise.resolve(undefined);
+};
+
+/** Increment point counter */
+NullDrain.prototype.addPoint = function(point) {
+  debug("NullDrain.addPoint(%j)", point);
+  this._nbPendingPoints += 1;
+};
+
+/** Drop point counter */
+NullDrain.prototype.close = function() {
+  return this.flush();
+};
+
+/** Return number of points that would be pending */
+NullDrain.prototype.pendingPoints = function() {
+  return this._nbPendingPoints;
+};
+
+// Export NullDrain
+exports.NullDrain = NullDrain;
+
+/**
  * Create some express middleware that will send a point to `reporter` with
  * the following columns:
  *
