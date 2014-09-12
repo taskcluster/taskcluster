@@ -4,11 +4,12 @@
   "variables": {
     "docker_worker":        "",
     "source_ami":           "ami-49324a79",
-    "environment":   "",
+    "environment":          "",
     "loggly_account":       "",
     "loggly_auth":          "",
     "update_type":          "static",
-    "fs_type":              "aufs"
+    "fs_type":              "aufs",
+    "papertrail":           ""
   },
   "provisioners": [
     {
@@ -60,6 +61,7 @@
     },
     {
       "type":           "shell",
+      "environment_vars": ["PAPERTRAIL={{user `papertrail`}}"],
       "inline": [
         "/tmp/deploy.sh /tmp/{{user `docker_worker`}} /tmp/docker-worker.conf /tmp/docker-worker /tmp/docker"
       ]

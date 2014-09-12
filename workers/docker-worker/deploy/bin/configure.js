@@ -16,7 +16,8 @@ var DESCRIPTIONS = {
     source_ami: 'Base AMI which this image depends on.',
     loggly_account: 'Loggly account name',
     loggly_auth: 'Loggly authentication token',
-    fs_type: 'Docker filesystem type (aufs, btrfs)'
+    fs_type: 'Docker filesystem type (aufs, btrfs)',
+    papertrail: 'Papertrail host + port'
   },
   base: {}
 };

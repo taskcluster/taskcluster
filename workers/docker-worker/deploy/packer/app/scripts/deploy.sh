@@ -14,6 +14,11 @@ sudo mv $upstart_conf /etc/init/docker-worker.conf
 sudo mv $upstart_defaults /etc/default/docker-worker
 sudo mv $upstart_docker_defaults /etc/default/docker
 
+PAPERTRAIL_CONFIG='*.*'
+PAPERTRAIL_CONFIG="$PAPERTRAIL_CONFIG @$PAPERTRAIL"
+
+sudo sh -c "echo '$PAPERTRAIL_CONFIG' >> /etc/rsyslog.conf"
+
 target=$HOME/docker_worker
 mkdir -p $target
 cd $target
