@@ -8,6 +8,7 @@ var URL = require('url');
 var http = require('http');
 var waitForEvent = require('../wait_for_event');
 var waitForPort = require('../wait_for_port');
+var pullImage = require('../pull_image_to_stream');
 
 var BulkLog = require('./bulk_log');
 var Promise = require('promise');
@@ -41,6 +42,8 @@ TaskclusterLogs.prototype = {
 
     // Image name for the proxy container.
     var image = task.runtime.taskclusterLogImage;
+
+    yield pullImage(docker, image, process.stdout);
 
     var envs = [];
     if (process.env.DEBUG) {

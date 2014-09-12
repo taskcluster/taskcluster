@@ -7,7 +7,7 @@ var util = require('util');
 var waitForEvent = require('./wait_for_event');
 var features = require('./features');
 var co = require('co');
-var dockerUtils = require('dockerode-process/utils');
+var pullImage = require('./pull_image_to_stream');
 var wordwrap = require('wordwrap')(0, 80, { hard: true });
 var scopeMatch = require('taskcluster-base/utils').scopeMatch;
 
@@ -49,18 +49,6 @@ function taskEnvToDockerEnv(env) {
     return map;
   }, []);
 }
-
-function pullImageStreamTo(docker, image, stream, options) {
-  return new Promise(function(accept, reject) {
-    var downloadProgress =
-      dockerUtils.pullImageIfMissing(docker, image, options);
-
-    downloadProgress.pipe(stream, { end: false });
-    downloadProgress.once('error', reject);
-    downloadProgress.once('end', accept);
-  });
-}
-
 
 /**
 Convert the feature flags into a state handler.
@@ -284,7 +272,7 @@ Task.prototype = {
     // the name is formatted (such as `registry`) so simply pull here and do
     // not check for credentials.
     if (!dockerImage.canAuthenticate()) {
-      return yield pullImageStreamTo(
+      return yield pullImage(
         this.runtime.docker, payload.image, this.stream
       );
     }
@@ -308,7 +296,7 @@ Task.prototype = {
       pullOptions.authconfig = credentials;
     }
 
-    return yield pullImageStreamTo(
+    return yield pullImage(
       this.runtime.docker, payload.image, this.stream, pullOptions
     );
   },
