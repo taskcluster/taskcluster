@@ -10,6 +10,23 @@
     "protocol": "json"
   },
   "operations": {
+    "AddTagsToStream": {
+      "input": {
+        "type": "structure",
+        "required": [
+          "StreamName",
+          "Tags"
+        ],
+        "members": {
+          "StreamName": {},
+          "Tags": {
+            "type": "map",
+            "key": {},
+            "value": {}
+          }
+        }
+      }
+    },
     "CreateStream": {
       "input": {
         "type": "structure",
@@ -204,6 +221,46 @@
         }
       }
     },
+    "ListTagsForStream": {
+      "input": {
+        "type": "structure",
+        "required": [
+          "StreamName"
+        ],
+        "members": {
+          "StreamName": {},
+          "ExclusiveStartTagKey": {},
+          "Limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "output": {
+        "type": "structure",
+        "required": [
+          "Tags",
+          "HasMoreTags"
+        ],
+        "members": {
+          "Tags": {
+            "type": "list",
+            "member": {
+              "type": "structure",
+              "required": [
+                "Key"
+              ],
+              "members": {
+                "Key": {},
+                "Value": {}
+              }
+            }
+          },
+          "HasMoreTags": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
     "MergeShards": {
       "input": {
         "type": "structure",
@@ -246,6 +303,22 @@
         "members": {
           "ShardId": {},
           "SequenceNumber": {}
+        }
+      }
+    },
+    "RemoveTagsFromStream": {
+      "input": {
+        "type": "structure",
+        "required": [
+          "StreamName",
+          "TagKeys"
+        ],
+        "members": {
+          "StreamName": {},
+          "TagKeys": {
+            "type": "list",
+            "member": {}
+          }
         }
       }
     },

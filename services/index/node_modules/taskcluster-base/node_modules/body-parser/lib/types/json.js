@@ -1,5 +1,7 @@
 /*!
  * body-parser
+ * Copyright(c) 2014 Jonathan Ong
+ * Copyright(c) 2014 Douglas Christopher Wilson
  * MIT Licensed
  */
 
@@ -49,8 +51,10 @@ function json(options) {
   }
 
   function parse(body) {
-    if (0 === body.length) {
-      throw new Error('invalid json, empty body')
+    if (body.length === 0) {
+      // special-case empty json body, as it's a common client-side mistake
+      // TODO: maybe make this configurable or part of "strict" option
+      return {}
     }
 
     if (strict) {
@@ -99,7 +103,6 @@ function json(options) {
 
 
 function firstchar(str) {
-  if (!str) return ''
   var match = firstcharRegExp.exec(str)
   return match ? match[1] : ''
 }

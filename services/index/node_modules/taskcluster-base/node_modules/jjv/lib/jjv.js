@@ -50,9 +50,12 @@
   };
 
   var clone_stack = function (stack) {
-    var stack_last = stack.length-1, key = stack[stack_last].key;
-    var new_stack = stack.slice(0);
-    new_stack[stack_last].object[key] = clone(new_stack[stack_last].object[key]);
+    var new_stack = [ clone(stack[0]) ], key = new_stack[0].key, obj = new_stack[0].object;
+    for (var i = 1, len = stack.length; i< len; i++) {
+      obj = obj[key];
+      key = stack[i].key;
+      new_stack.push({ object: obj, key: key });
+    }
     return new_stack;
   };
 
@@ -96,7 +99,8 @@
       return typeof x === 'boolean';
     },
     'number': function (x) {
-      return typeof x === 'number' && !isNaN(x);
+      // Use x === x instead of !isNaN(x) for speed
+      return typeof x === 'number' && x === x;
     },
     'integer': function (x) {
       return typeof x === 'number' && x%1 === 0;
@@ -229,6 +233,9 @@
       return count <= p;
     },
     // ****** all *****
+    'constant': function (v, p) {
+      return JSON.stringify(v) == JSON.stringify(p);
+    },
     'enum': function (v, p) {
       var i, len, vs;
       if (typeof v === 'object') {
@@ -331,9 +338,10 @@
 
   var checkValidity = function (env, schema_stack, object_stack, options) {
     var i, len, count, hasProp, hasPattern;
-    var p, v, malformed = false, objerrs = {}, objerr, objreq, errors = {}, props, matched, isArray;
-    var sl = schema_stack.length-1, schema = schema_stack[sl];
+    var p, v, malformed = false, objerrs = {}, objerr, props, matched;
+    var sl = schema_stack.length-1, schema = schema_stack[sl], new_stack;
     var ol = object_stack.length-1, object = object_stack[ol].object, name = object_stack[ol].key, prop = object[name];
+    var errCount, minErrCount;
 
     if (schema.hasOwnProperty('$ref')) {
       schema_stack= resolveURI(env, schema_stack, schema.$ref);
@@ -369,6 +377,7 @@
 
     if (!options.useCoerce && !options.useDefault && !options.removeAdditional) {
       if (schema.hasOwnProperty('oneOf')) {
+        minErrCount = Infinity;
         for (i = 0, len = schema.oneOf.length, count = 0; i < len; i++) {
           objerr = checkValidity(env, schema_stack.concat(schema.oneOf[i]), object_stack, options);
           if (!objerr) {
@@ -376,7 +385,11 @@
             if (count > 1)
               break;
           } else {
-            objerrs = objerr;
+            errCount = objerr.schema ? Object.keys(objerr.schema).length : 1;
+            if (errCount < minErrCount) {
+                minErrCount = errCount;
+                objerrs = objerr;
+            }
           }
         }
         if (count > 1)
@@ -387,13 +400,24 @@
       }
 
       if (schema.hasOwnProperty('anyOf')) {
+        objerrs = null;
+        minErrCount = Infinity;
         for (i = 0, len = schema.anyOf.length; i < len; i++) {
           objerr = checkValidity(env, schema_stack.concat(schema.anyOf[i]), object_stack, options);
-          if (!objerr)
+          if (!objerr) {
+            objerrs = null;
             break;
+          }
+          else {
+            errCount = objerr.schema ? Object.keys(objerr.schema).length : 1;
+            if (errCount < minErrCount) {
+                minErrCount = errCount;
+                objerrs = objerr;
+            }
+          }
         }
-        if (objerr)
-          return objerr;
+        if (objerrs)
+          return objerrs;
       }
 
       if (schema.hasOwnProperty('not')) {
@@ -403,6 +427,7 @@
       }
     } else {
       if (schema.hasOwnProperty('oneOf')) {
+        minErrCount = Infinity;
         for (i = 0, len = schema.oneOf.length, count = 0; i < len; i++) {
           new_stack = clone_stack(object_stack);
           objerr = checkValidity(env, schema_stack.concat(schema.oneOf[i]), new_stack, options);
@@ -413,7 +438,11 @@
             else
               copy_stack(new_stack, object_stack);
           } else {
-            objerrs = objerr;
+            errCount = objerr.schema ? Object.keys(objerr.schema).length : 1;
+            if (errCount < minErrCount) {
+                minErrCount = errCount;
+                objerrs = objerr;
+            }
           }
         }
         if (count > 1)
@@ -424,20 +453,31 @@
       }
 
       if (schema.hasOwnProperty('anyOf')) {
+        objerrs = null;
+        minErrCount = Infinity;
         for (i = 0, len = schema.anyOf.length; i < len; i++) {
           new_stack = clone_stack(object_stack);
           objerr = checkValidity(env, schema_stack.concat(schema.anyOf[i]), new_stack, options);
           if (!objerr) {
             copy_stack(new_stack, object_stack);
+            objerrs = null;
             break;
           }
+          else {
+            errCount = objerr.schema ? Object.keys(objerr.schema).length : 1;
+            if (errCount < minErrCount) {
+                minErrCount = errCount;
+                objerrs = objerr;
+            }
+          }
         }
-        if (objerr)
-          return objerr;
+        if (objerrs)
+          return objerrs;
       }
 
       if (schema.hasOwnProperty('not')) {
-        objerr = checkValidity(env, schema_stack.concat(schema.not), clone_stack(object_stack), options);
+        new_stack = clone_stack(object_stack);
+        objerr = checkValidity(env, schema_stack.concat(schema.not), new_stack, options);
         if (!objerr)
           return {'not': true};
       }
@@ -693,5 +733,5 @@
   else if (typeof define === 'function' && define.amd)
     define(function () {return Environment;});
   else
-    window.jjv = Environment;
-})();
+    this.jjv = Environment;
+}).call(this);

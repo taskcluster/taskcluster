@@ -59,7 +59,11 @@ function importFile(node, file, literal, index) {
   nodes.filename = file;
 
   var str = fs.readFileSync(file, 'utf8');
-  if (literal && !this.resolveURL) return new nodes.Literal(str.replace(/\r\n?/g, '\n'));
+  if (literal && !this.resolveURL) {
+    literal = new nodes.Literal(str.replace(/\r\n?/g, '\n'));
+    literal.lineno = literal.column = 1;
+    return literal;
+  }
 
   // parse
   var block = new nodes.Block
@@ -69,7 +73,8 @@ function importFile(node, file, literal, index) {
     block = parser.parse();
   } catch (err) {
     err.filename = file;
-    err.lineno = parser.lexer.lineno;
+    err.lineno = parser.lexer.prev.lineno;
+    err.column = parser.lexer.prev.column;
     err.input = str;
     throw err;
   }
@@ -141,6 +146,7 @@ Evaluator.prototype.visit = function(node){
   } catch (err) {
     if (err.filename) throw err;
     err.lineno = node.lineno;
+    err.column = node.column;
     err.filename = node.filename;
     err.stylusStack = this.stack.toString();
     try {
@@ -657,8 +663,14 @@ Evaluator.prototype.visitProperty = function(prop){
  */
 
 Evaluator.prototype.visitRoot = function(block){
+  // normalize cached imports
+  if (block != this.root) {
+    block.constructor = nodes.Block;
+    return this.visit(block);
+  }
+
   for (var i = 0; i < block.nodes.length; ++i) {
-    block.index = this.rootIndex = i;
+    block.index = i;
     block.nodes[i] = this.visit(block.nodes[i]);
   }
   return block;
@@ -779,10 +791,13 @@ Evaluator.prototype.visitExtend = function(extend){
   var block = this.currentBlock;
   if ('group' != block.node.nodeName) block = this.closestGroup;
   extend.selectors.forEach(function(selector){
-    // Cloning the selector for when we are in a loop and don't want it to affect
-    // the selector nodes and cause the values to be different to expected
-    selector = this.interpolate(selector.clone()).trim();
-    block.node.extends.push(selector);
+    block.node.extends.push({
+      // Cloning the selector for when we are in a loop and don't want it to affect
+      // the selector nodes and cause the values to be different to expected
+      selector: this.interpolate(selector.clone()).trim(),
+      lineno: selector.lineno,
+      column: selector.column
+    });
   }, this);
   return nodes.null;
 };
@@ -1107,7 +1122,8 @@ Evaluator.prototype.mixinObject = function(object){
     block = parser.parse();
   } catch (err) {
     err.filename = this.filename;
-    err.lineno = parser.lexer.lineno;
+    err.lineno = parser.lexer.prev.lineno;
+    err.column = parser.lexer.prev.column;
     err.input = str;
     throw err;
   }
@@ -1207,6 +1223,7 @@ Evaluator.prototype.lookupProperty = function(name){
       case 'atrule':
       case 'media':
       case 'atblock':
+      case 'call':
         nodes = block.nodes;
         // scan siblings from the property index up
         if (i + 1 == top) {

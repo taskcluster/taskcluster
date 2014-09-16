@@ -102,6 +102,11 @@ function finalhandler(req, res, options) {
 function send(req, res, status, body) {
   function write() {
     res.statusCode = status
+
+    // security header for content sniffing
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+
+    // standard headers
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.setHeader('Content-Length', Buffer.byteLength(body, 'utf8'))
 
