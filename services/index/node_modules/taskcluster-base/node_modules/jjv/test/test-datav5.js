@@ -31,3 +31,16 @@ describe("$data v5 proposal", function () {
     expect(jjv.validate('range', {a: 2, b: 1})).not.to.be.null;
   });
 });
+
+describe("constant v5 proposal", function () {
+  it("normal constant", function () {
+    expect(jjv.validate({type: 'object', properties: {"x": {type: 'string', constant: 'foo'}}}, {x: 'foo'})).to.be.null;
+    expect(jjv.validate({type: 'object', properties: {"x": {type: 'string', constant: 'foo'}}}, {x: 'fxoo'})).not.to.be.null;
+  });
+
+  it("with $data json pointer", function () {
+    expect(jjv.validate({ type: 'object', properties: { "x": { type: 'string' }, "y": {constant: {$data: '1/x'}}}}, {x: 'foo', y: 'foo'})).to.be.null;
+    expect(jjv.validate({ type: 'object', properties: { "x": { type: 'string' }, "y": {constant: {$data: '1/x'}}}}, {x: 'bar', y: 'bar'})).to.be.null;
+    expect(jjv.validate({ type: 'object', properties: { "x": { type: 'string' }, "y": {constant: {$data: '1/x'}}}}, {x: 'foo', y: 'bar'})).not.to.be.null;
+  });
+});

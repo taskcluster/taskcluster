@@ -7,6 +7,8 @@ suite("api/auth", function() {
   var base            = require('../../');
   var express         = require('express');
   var hawk            = require('hawk');
+  var slugid          = require('slugid');
+  var crypto          = require('crypto');
 
   // Reference to mock authentication server
   var _mockAuthServer = null;
@@ -122,6 +124,7 @@ suite("api/auth", function() {
     });
   });
 
+
   // Test getCredentials from mockAuthServer
   test("getCredentials from mockAuthServer", function() {
     var url = 'http://localhost:23243/client/test-client/credentials';
@@ -213,7 +216,6 @@ suite("api/auth", function() {
       .end()
       .then(function(res) {
         assert(res.status === 401, "Request didn't fail as expected");
-        assert(res.body.error.authorizedScopesFromRequest, "wrong kind error");
       });
   });
 
@@ -393,6 +395,7 @@ suite("api/auth", function() {
       });
   });
 
+
   test("getCredentials using bewit (authorizedScopes underscoped)", function() {
     var url = 'http://localhost:23243/client/test-client/credentials';
     var bewit = hawk.uri.getBewit(url, {
@@ -413,6 +416,7 @@ suite("api/auth", function() {
         assert(res.status === 401, "Request didn't fail!");
       });
   });
+
 
   test("getCredentials using bewit and header", function() {
     var url = 'http://localhost:23243/client/test-client/credentials';
@@ -456,6 +460,67 @@ suite("api/auth", function() {
       .then(function(res) {
         // Two authentication schemes is not allowed... so this should fail!
         assert(res.status === 401, "Request didn't fail!!!");
+      });
+  });
+
+
+
+  test("Auth with temporary credentials", function() {
+    var url = 'http://localhost:23243/client/test-client/credentials';
+    var expiry = new Date();
+    expiry.setMinutes(expiry.getMinutes() + 5);
+
+    var certificate = {
+      version:          1,
+      scopes:           ['auth:credenti*'],
+      start:            new Date().getTime(),
+      expiry:           expiry.getTime(),
+      seed:             slugid.v4() + slugid.v4(),
+      signature:        null
+    };
+
+    var key = 'groupie';
+
+    // Create signature
+    var signature = crypto.createHmac('sha256', key)
+      .update(
+        [
+          'version:'  + certificate.version,
+          'seed:'     + certificate.seed,
+          'start:'    + certificate.start,
+          'expiry:'   + certificate.expiry,
+          'scopes:',
+        ].concat(certificate.scopes).join('\n')
+      )
+      .digest('base64');
+    certificate.signature = signature;
+
+    // Create temporary key
+    var tempKey = crypto.createHmac('sha256', key)
+      .update(certificate.seed)
+      .digest('base64')
+      .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
+      .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
+      .replace(/=/g,  '');  // Drop '==' padding
+
+    // Send request
+    return request
+      .get(url)
+      .hawk({
+        id:           'rockstar',
+        key:          tempKey,
+        algorithm:    'sha256'
+      }, {
+        ext: new Buffer(JSON.stringify({
+          certificate:  certificate
+        })).toString('base64')
+      })
+      .end()
+      .then(function(res) {
+        if(!res.ok) {
+          console.log(res.body);
+          assert(false, "Request failed");
+        }
       });
   });
 });

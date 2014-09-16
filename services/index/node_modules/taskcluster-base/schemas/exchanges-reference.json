@@ -70,17 +70,11 @@
                 "required": {
                   "type":         "boolean",
                   "description":  "True, if the key is always present, if `false` the value `_` will be used in place when no appropriate value is available for the key."
-                },
-                "maxSize": {
-                  "type":         "integer",
-                  "description":  "Maximum number of characters in this key.",
-                  "minimum":      1,
-                  "maximum":      255
                 }
               },
               "additionalProperties": false,
               "required": [
-                "name", "summary", "multipleWords", "required", "maxSize"
+                "name", "summary", "multipleWords", "required"
               ]
             }
           },

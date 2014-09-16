@@ -1,8 +1,11 @@
 # Accepts
 
-[![NPM version](https://badge.fury.io/js/accepts.svg)](http://badge.fury.io/js/accepts)
-[![Build Status](https://travis-ci.org/expressjs/accepts.svg?branch=master)](https://travis-ci.org/expressjs/accepts)
-[![Coverage Status](https://img.shields.io/coveralls/expressjs/accepts.svg?branch=master)](https://coveralls.io/r/expressjs/accepts)
+[![NPM version][npm-image]][npm-url]
+[![Build status][travis-image]][travis-url]
+[![Test coverage][coveralls-image]][coveralls-url]
+[![Dependency Status][david-image]][david-url]
+[![License][license-image]][license-url]
+[![Downloads][downloads-image]][downloads-url]
 
 Higher level content negotation based on [negotiator](https://github.com/federomero/negotiator). Extracted from [koa](https://github.com/koajs/koa) for general use.
 
@@ -76,26 +79,17 @@ accept.types() // -> [], no explicit types
 accept.types('text/html', 'text/json') // -> 'text/html', since it was first
 ```
 
-## License
-
-The MIT License (MIT)
-
-Copyright (c) 2013 Jonathan Ong me@jongleberry.com
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+[npm-image]: https://img.shields.io/npm/v/accepts.svg?style=flat-square
+[npm-url]: https://npmjs.org/package/accepts
+[github-tag]: http://img.shields.io/github/tag/jshttp/accepts.svg?style=flat-square
+[github-url]: https://github.com/jshttp/accepts/tags
+[travis-image]: https://img.shields.io/travis/jshttp/accepts.svg?style=flat-square
+[travis-url]: https://travis-ci.org/jshttp/accepts
+[coveralls-image]: https://img.shields.io/coveralls/jshttp/accepts.svg?style=flat-square
+[coveralls-url]: https://coveralls.io/r/jshttp/accepts?branch=master
+[david-image]: http://img.shields.io/david/jshttp/accepts.svg?style=flat-square
+[david-url]: https://david-dm.org/jshttp/accepts
+[license-image]: http://img.shields.io/npm/l/accepts.svg?style=flat-square
+[license-url]: LICENSE
+[downloads-image]: http://img.shields.io/npm/dm/accepts.svg?style=flat-square
+[downloads-url]: https://npmjs.org/package/accepts
