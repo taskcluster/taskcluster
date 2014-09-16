@@ -866,11 +866,11 @@ Task.expireClaimsWithRetries = transacting(function(knex) {
         .into('runs');
 
       // Wait for operations to finish and load task
-      return Promise.all(
+      return Promise.all([
         updatedRun,
         updateTask,
         insertRun
-      ).then(function() {
+      ]).then(function() {
         return that.load(slugid.encode(run.taskId), knex);
       }).then(function(task) {
         assert(task instanceof that, "Task must exist!");

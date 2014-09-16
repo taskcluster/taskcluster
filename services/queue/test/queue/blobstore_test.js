@@ -131,10 +131,10 @@ suite('queue/tasks_store', function() {
     var block1 = slugid.v4();
     var block2 = slugid.v4();
 
-    return Promise.all(
+    return Promise.all([
       uploader.putBlock(block1, '{"block1_says": "Hello world",\n'),
       uploader.putBlock(block2, '"block2_says": "Hello Again"}\n')
-    ).then(function() {
+    ]).then(function() {
       return uploader.putBlockList([block1, block2], 'application/json');
     }).then(function() {
       return blobstore.get(key);
