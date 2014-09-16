@@ -51,10 +51,10 @@ var launch = function(profile) {
   });
 
   debug("Waiting for resources to be created");
-  return Promise.all(
+  return Promise.all([
     taskstore.createContainer(),
     Task.ensureTables()
-  ).then(function() {
+  ]).then(function() {
     // Move old tasks from database
     return Task.moveTaskFromDatabase({
       store: function(task) {

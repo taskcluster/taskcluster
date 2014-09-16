@@ -34,6 +34,20 @@ var launch = function(profile) {
     filename:     'taskcluster-queue'
   });
 
+  // Create InfluxDB connection for submitting statistics
+  var influx = new base.stats.Influx({
+    connectionString:   cfg.get('influx:connectionString'),
+    maxDelay:           cfg.get('influx:maxDelay'),
+    maxPendingPoints:   cfg.get('influx:maxPendingPoints')
+  });
+
+  // Start monitoring the process
+  base.stats.startProcessUsageReporting({
+    drain:      influx,
+    component:  cfg.get('queue:statsComponent'),
+    process:    'server'
+  });
+
   // Setup AMQP exchanges and create a publisher
   // First create a validator and then publisher
   var validator = null;
@@ -53,7 +67,10 @@ var launch = function(profile) {
       validator:          validator,
       referencePrefix:    'queue/v1/exchanges.json',
       publish:            cfg.get('queue:publishMetaData') === 'true',
-      aws:                cfg.get('aws')
+      aws:                cfg.get('aws'),
+      drain:              influx,
+      component:          cfg.get('queue:statsComponent'),
+      process:            'server'
     });
   }).then(function(publisher_) {
     debug("Publisher created");
@@ -88,23 +105,9 @@ var launch = function(profile) {
                         cfg.get('database:connectionString')
   });
 
-  // Create InfluxDB connection for submitting statistics
-  var influx = new base.stats.Influx({
-    connectionString:   cfg.get('influx:connectionString'),
-    maxDelay:           cfg.get('influx:maxDelay'),
-    maxPendingPoints:   cfg.get('influx:maxPendingPoints')
-  });
-
-  // Start monitoring the process
-  base.stats.startProcessUsageReporting({
-    drain:      influx,
-    component:  cfg.get('queue:statsComponent'),
-    process:    'server'
-  });
-
   // When: publisher, validator and containers are created, proceed
   debug("Waiting for resources to be created");
-  return Promise.all(
+  return Promise.all([
     publisherCreated,
     taskstore.createContainer(),
     artifactStore.createContainer().then(function() {
@@ -113,7 +116,7 @@ var launch = function(profile) {
     Artifact.createTable(),
     Task.ensureTables(),
     artifactBucket.setupCORS()
-  ).then(function() {
+  ]).then(function() {
     // Create API router and publish reference if needed
     debug("Creating API router");
     return v1.setup({

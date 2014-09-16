@@ -156,7 +156,7 @@ exports.setup = function(options) {
         subject.queueEvents = new subject.QueueEvents();
       });
 
-      return Promise.all(serverLaunched, reaperLaunched);
+      return Promise.all([serverLaunched, reaperLaunched]);
     });
   });
 
@@ -169,7 +169,7 @@ exports.setup = function(options) {
     }
     // Kill server
     var serverDead = server.terminate();
-    return Promise.all(reaperDead, serverDead).then(function() {
+    return Promise.all([reaperDead, serverDead]).then(function() {
       return mockAuthServer.terminate();
     }).then(function() {
       return Promise.all(listeners.map(function(listener) {
