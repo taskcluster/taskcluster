@@ -211,10 +211,10 @@ suite('Post artifacts', function() {
 
       debug("### Uploading first block");
       var uploader = new BlobUploader(result.putUrl);
-      return Promise.all(
+      return Promise.all([
         uploader.putBlock(block1, '{"block1_says": "Hello world",\n'),
         uploader.putBlock(block2, '"block2_says": "Hello Again"}\n')
-      ).then(function() {
+      ]).then(function() {
         return uploader.putBlockList([block1, block2], 'application/json');
       });
     }).then(function() {
