@@ -90,9 +90,6 @@ suite("Exchanges.Publisher", function() {
     exchanges.configure({
       validator:              validator,
       connectionString:       connectionString,
-      drain:                  influx,
-      component:              'taskcluster-base-test',
-      process:                'mocha'
     });
   });
 
@@ -281,7 +278,11 @@ suite("Exchanges.Publisher", function() {
   // Test that we record statistics
   test("publish message (record statistics)", function() {
     assert(influx.pendingPoints() === 0, "We shouldn't have any points");
-    return exchanges.connect().then(function(publisher) {
+    return exchanges.connect({
+      drain:                  influx,
+      component:              'taskcluster-base-test',
+      process:                'mocha'
+    }).then(function(publisher) {
       return publisher.testExchange({someString: "My message"}, {
         testId:           "myid",
         taskRoutingKey:   "some.string.with.dots",
