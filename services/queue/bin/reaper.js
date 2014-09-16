@@ -51,15 +51,18 @@ var launch = function(profile) {
     return exchanges.connect({
       connectionString:   cfg.get('amqp:url'),
       exchangePrefix:     cfg.get('queue:exchangePrefix'),
-      validator:          validator
+      validator:          validator,
+      drain:              influx,
+      component:          cfg.get('queue:statsComponent'),
+      process:            'reaper'
     });
   });
 
   // Wait for publisher and database schema to be created
-  return Promise.all(
+  return Promise.all([
     publisherCreated,
     Task.ensureTables()
-  ).then(function(values) {
+  ]).then(function(values) {
     // Get the publisher
     var publisher = values.shift();
 
