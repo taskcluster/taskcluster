@@ -1,5 +1,6 @@
 /*!
  * body-parser
+ * Copyright(c) 2014 Douglas Christopher Wilson
  * MIT Licensed
  */
 
@@ -9,6 +10,7 @@
 
 var getBody = require('raw-body')
 var iconv = require('iconv-lite')
+var onFinished = require('on-finished')
 var typer = require('media-typer')
 var zlib = require('zlib')
 
@@ -32,7 +34,6 @@ module.exports = read
 function read(req, res, next, parse, options) {
   var length
   var stream
-  var waitend = true
 
   // flag as parsed
   req._body = true
@@ -57,24 +58,18 @@ function read(req, res, next, parse, options) {
     ? null
     : encoding
 
-  req.on('aborted', cleanup)
-  req.on('end', cleanup)
-  req.on('error', cleanup)
-
   // read body
   getBody(stream, options, function (err, body) {
-    if (err && waitend && req.readable) {
+    if (err) {
+      if (!err.status) {
+        err.status = 400
+      }
+
       // read off entire request
-      req.resume()
-      req.once('end', function onEnd() {
+      stream.resume()
+      onFinished(req, function onfinished() {
         next(err)
       })
-      return
-    }
-
-    if (err) {
-      if (!err.status) err.status = 400
-      next(err)
       return
     }
 
@@ -94,21 +89,16 @@ function read(req, res, next, parse, options) {
         ? iconv.decode(body, encoding)
         : body
       req.body = parse(body)
-    } catch (err){
-      err.body = body
-      err.status = 400
+    } catch (err) {
+      if (!err.status) {
+        err.body = body
+        err.status = 400
+      }
       return next(err)
     }
 
     next()
   })
-
-  function cleanup() {
-    waitend = false
-    req.removeListener('aborted', cleanup)
-    req.removeListener('end', cleanup)
-    req.removeListener('error', cleanup)
-  }
 }
 
 /**

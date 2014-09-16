@@ -6,6 +6,7 @@ var deprecate = require('depd')('express');
 var escapeHtml = require('escape-html');
 var http = require('http');
 var isAbsolute = require('./utils').isAbsolute;
+var onFinished = require('on-finished');
 var path = require('path');
 var mixin = require('utils-merge');
 var sign = require('cookie-signature').sign;
@@ -16,7 +17,6 @@ var contentDisposition = require('./utils').contentDisposition;
 var statusCodes = http.STATUS_CODES;
 var cookie = require('cookie');
 var send = require('send');
-var basename = path.basename;
 var extname = path.extname;
 var mime = send.mime;
 var resolve = path.resolve;
@@ -304,6 +304,30 @@ res.jsonp = function jsonp(obj) {
 };
 
 /**
+ * Send given HTTP status code.
+ *
+ * Sets the response status to `statusCode` and the body of the
+ * response to the standard description from node's http.STATUS_CODES
+ * or the statusCode number if no description.
+ *
+ * Examples:
+ *
+ *     res.sendStatus(200);
+ *
+ * @param {number} statusCode
+ * @api public
+ */
+
+res.sendStatus = function sendStatus(statusCode) {
+  var body = http.STATUS_CODES[statusCode] || String(statusCode);
+
+  this.statusCode = statusCode;
+  this.type('txt');
+
+  return this.send(body);
+};
+
+/**
  * Transfer the file at the given `path`.
  *
  * Automatically sets the _Content-Type_ response header field.
@@ -345,8 +369,8 @@ res.jsonp = function jsonp(obj) {
  */
 
 res.sendFile = function sendFile(path, options, fn) {
-  var done;
   var req = this.req;
+  var res = this;
   var next = req.next;
 
   if (!path) {
@@ -365,59 +389,20 @@ res.sendFile = function sendFile(path, options, fn) {
     throw new TypeError('path must be absolute or specify root to res.sendFile');
   }
 
-  // socket errors
-  req.socket.on('error', onerror);
-
-  // errors
-  function onerror(err) {
-    if (done) return;
-    done = true;
-
-    // clean up
-    cleanup();
-
-    // callback available
-    if (fn) return fn(err);
-
-    // delegate
-    next(err);
-  }
-
-  // streaming
-  function onstream(stream) {
-    if (done) return;
-    cleanup();
-    if (fn) stream.on('end', fn);
-  }
-
-  // cleanup
-  function cleanup() {
-    req.socket.removeListener('error', onerror);
-  }
-
-  // transfer
+  // create file stream
   var pathname = encodeURI(path);
   var file = send(req, pathname, options);
-  file.on('error', onerror);
-  file.on('directory', next);
-  file.on('stream', onstream);
 
-  if (options.headers) {
-    // set headers on successful transfer
-    file.on('headers', function headers(res) {
-      var obj = options.headers;
-      var keys = Object.keys(obj);
+  // transfer
+  sendfile(res, file, options, function (err) {
+    if (fn) return fn(err);
+    if (err && err.code === 'EISDIR') return next();
 
-      for (var i = 0; i < keys.length; i++) {
-        var k = keys[i];
-        res.setHeader(k, obj[k]);
-      }
-    });
-  }
-
-  // pipe
-  file.pipe(this);
-  this.on('finish', cleanup);
+    // next() all but aborted errors
+    if (err && err.code !== 'ECONNABORT') {
+      next(err);
+    }
+  });
 };
 
 /**
@@ -462,71 +447,31 @@ res.sendFile = function sendFile(path, options, fn) {
  */
 
 res.sendfile = function(path, options, fn){
-  options = options || {};
-  var self = this;
-  var req = self.req;
-  var next = this.req.next;
-  var done;
-
+  var req = this.req;
+  var res = this;
+  var next = req.next;
 
   // support function as second arg
-  if ('function' == typeof options) {
+  if (typeof options === 'function') {
     fn = options;
     options = {};
   }
 
-  // socket errors
-  req.socket.on('error', error);
+  options = options || {};
 
-  // errors
-  function error(err) {
-    if (done) return;
-    done = true;
-
-    // clean up
-    cleanup();
-
-    // callback available
-    if (fn) return fn(err);
-
-    // delegate
-    next(err);
-  }
-
-  // streaming
-  function stream(stream) {
-    if (done) return;
-    cleanup();
-    if (fn) stream.on('end', fn);
-  }
-
-  // cleanup
-  function cleanup() {
-    req.socket.removeListener('error', error);
-  }
+  // create file stream
+  var file = send(req, path, options);
 
   // transfer
-  var file = send(req, path, options);
-  file.on('error', error);
-  file.on('directory', next);
-  file.on('stream', stream);
+  sendfile(res, file, options, function (err) {
+    if (fn) return fn(err);
+    if (err && err.code === 'EISDIR') return next();
 
-  if (options.headers) {
-    // set headers on successful transfer
-    file.on('headers', function headers(res) {
-      var obj = options.headers;
-      var keys = Object.keys(obj);
-
-      for (var i = 0; i < keys.length; i++) {
-        var k = keys[i];
-        res.setHeader(k, obj[k]);
-      }
-    });
-  }
-
-  // pipe
-  file.pipe(this);
-  this.on('finish', cleanup);
+    // next() all but aborted errors
+    if (err && err.code !== 'ECONNABORT') {
+      next(err);
+    }
+  });
 };
 
 res.sendfile = deprecate.function(res.sendfile,
@@ -954,3 +899,69 @@ res.render = function(view, options, fn){
   // render
   app.render(view, options, fn);
 };
+
+// pipe the send file stream
+function sendfile(res, file, options, callback) {
+  var done = false;
+
+  // directory
+  function ondirectory() {
+    if (done) return;
+    done = true;
+
+    var err = new Error('EISDIR, read');
+    err.code = 'EISDIR';
+    callback(err);
+  }
+
+  // errors
+  function onerror(err) {
+    if (done) return;
+    done = true;
+    callback(err);
+  }
+
+  // ended
+  function onend() {
+    if (done) return;
+    done = true;
+    callback();
+  }
+
+  // finished
+  function onfinish(err) {
+    if (err) return onerror(err);
+    if (done) return;
+
+    setImmediate(function () {
+      if (done) return;
+      done = true;
+
+      // response finished before end of file
+      var err = new Error('Request aborted');
+      err.code = 'ECONNABORT';
+      callback(err);
+    });
+  }
+
+  file.on('end', onend);
+  file.on('error', onerror);
+  file.on('directory', ondirectory);
+  onFinished(res, onfinish);
+
+  if (options.headers) {
+    // set headers on successful transfer
+    file.on('headers', function headers(res) {
+      var obj = options.headers;
+      var keys = Object.keys(obj);
+
+      for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        res.setHeader(k, obj[k]);
+      }
+    });
+  }
+
+  // pipe
+  file.pipe(res);
+}
