@@ -11,6 +11,7 @@ var Runtime = require('../lib/runtime');
 var TaskListener = require('../lib/task_listener');
 var ShutdownManager = require('../lib/shutdown_manager');
 var Stats = require('../lib/stat');
+var GarbageCollector = require('../lib/gc');
 
 // Available target configurations.
 var allowedHosts = ['aws', 'test'];
@@ -131,6 +132,12 @@ co(function *() {
     workerId: config.workerId,
     workerGroup: config.workerGroup,
     workerType: config.workerType
+  });
+
+  config.gc = new GarbageCollector({
+    docker: config.docker,
+    log: config.log,
+    interval: 60 * 1000
   });
 
   var runtime = new Runtime(config);

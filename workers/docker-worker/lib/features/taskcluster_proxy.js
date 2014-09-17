@@ -76,8 +76,8 @@ TaskclusterProxy.prototype = {
 
   killed: function*(task) {
     var stats = task.runtime.stats;
-    yield stats.timeGen('tasks.time.killed_proxy', this.container.kill());
-    yield stats.timeGen('tasks.time.removed_proxy', this.container.remove());
+    console.log("in taskcluster proxy");
+    task.runtime.gc.removeContainer(this.container.id);
   }
 };
 

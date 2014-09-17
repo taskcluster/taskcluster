@@ -312,6 +312,7 @@ Task.prototype = {
     var taskStart = new Date();
     var stats = this.runtime.stats;
     var queue = this.runtime.queue;
+    var gc = this.runtime.gc;
 
     // Cork all writes to the stream until we are done setting up logs.
     this.stream.cork();
@@ -436,8 +437,8 @@ Task.prototype = {
     // Wait for the stream to end entirely before killing remaining containers.
     yield this.stream.end.bind(this.stream);
 
-    // Cleanup all containers.
-    yield *stats.timeGen('tasks.time.removed',dockerProc.remove());
+    // Garbage collect containers
+    gc.removeContainer(dockerProc.container.id);
     yield stats.timeGen('tasks.time.states.killed', this.states.killed(this));
 
     // If the results validation failed we consider this task failure.

@@ -163,8 +163,7 @@ TaskclusterLogs.prototype = {
     );
 
     // Cleanup all references to the live logging server...
-    yield stats.timeGen('tasks.time.killed_live_log', this.container.kill());
-    yield stats.timeGen('tasks.time.removed_live_log', this.container.remove());
+    task.runtime.gc.removeContainer(this.container.id);
   }
 };
 
