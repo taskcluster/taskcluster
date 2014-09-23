@@ -134,17 +134,21 @@ co(function *() {
     workerType: config.workerType
   });
 
-  config.gc = new GarbageCollector({
-    docker: config.docker,
-    log: config.log,
-    interval: 60 * 1000
-  });
+  var gcConfig = config.garbageCollection;
+  gcConfig.capacity = config.capacity,
+  gcConfig.docker = config.docker;
+  gcConfig.log = config.log
+
+  config.gc = new GarbageCollector(gcConfig);
 
   var runtime = new Runtime(config);
 
   // Build the listener and connect to the queue.
   var taskListener = new TaskListener(runtime);
+  runtime.gc.taskListener = taskListener;
+
   yield taskListener.connect();
+
   runtime.log('start');
 
   // Billing cycle logic is host specific so we cannot handle shutdowns without

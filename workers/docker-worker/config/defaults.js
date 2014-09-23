@@ -10,6 +10,14 @@ module.exports = {
   taskclusterProxyImage: 'taskcluster/proxy',
   taskclusterLogImage: 'taskcluster/logserve',
 
+  // Garbage Collection configuration
+  garbageCollection: {
+    imageExpiration: 2 * 60 * 60 * 1000,
+    interval: 60 * 1000,
+    diskspaceThreshold: 10 * 1000000000,
+    dockerVolume: '/mnt'
+  },
+
   logging: {
     liveLogChunkInterval: 5000, // 5 seconds
     // Added to the current date to make up the expiry time for logs. This is

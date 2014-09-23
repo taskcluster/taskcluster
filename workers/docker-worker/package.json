@@ -29,6 +29,7 @@
     "co-promise": "^1.0.0",
     "commander": "^2.2.0",
     "debug": "^1.0.2",
+    "diskspace": "^0.1.7",
     "docker-image-parser": "^1.0.0",
     "dockerode": "^2.0.2",
     "dockerode-options": "^0.1.0",

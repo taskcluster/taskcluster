@@ -7,7 +7,9 @@ var parseImage = require('docker-image-parser');
 function Image(image) {
   var parsed = parseImage(image);
   this.name = parsed.repository;
-  this.tag = parsed.tag;
+  // Default to using the 'latest' tag if none specified to avoid pulling the
+  // entire repository. Consistent with `docker run` defaults.
+  this.tag = parsed.tag || 'latest';
 }
 
 Image.prototype = {

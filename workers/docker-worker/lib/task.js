@@ -261,11 +261,12 @@ Task.prototype = {
   pullDockerImage: function* () {
     var payload = this.task.payload;
     var dockerImage = new DockerImage(payload.image);
+    var dockerImageName = dockerImage.fullPath();
 
     this.runtime.log('pull image', {
       taskId: this.status.taskId,
       runId: this.runId,
-      image: payload.image
+      image: dockerImageName
     });
 
     // There are cases where we cannot authenticate a docker image based on how
@@ -273,7 +274,7 @@ Task.prototype = {
     // not check for credentials.
     if (!dockerImage.canAuthenticate()) {
       return yield pullImage(
-        this.runtime.docker, payload.image, this.stream
+        this.runtime.docker, dockerImageName, this.stream
       );
     }
 
@@ -282,10 +283,10 @@ Task.prototype = {
     var credentials = dockerImage.credentials(this.runtime.registries);
     if (credentials) {
       // Validate scopes on the image if we have credentials for it...
-      if (!scopeMatch(this.task.scopes, IMAGE_SCOPE_PREFIX + payload.image)) {
+      if (!scopeMatch(this.task.scopes, IMAGE_SCOPE_PREFIX + dockerImageName)) {
         throw new Error(
-          'Insufficient scopes to pull : "' + payload.image + '" try adding ' +
-          IMAGE_SCOPE_PREFIX + payload.image + ' to the .scopes array.'
+          'Insufficient scopes to pull : "' + dockerImageName + '" try adding ' +
+          IMAGE_SCOPE_PREFIX + dockerImageName + ' to the .scopes array.'
         );
       }
 
@@ -297,7 +298,7 @@ Task.prototype = {
     }
 
     return yield pullImage(
-      this.runtime.docker, payload.image, this.stream, pullOptions
+      this.runtime.docker, dockerImageName, this.stream, pullOptions
     );
   },
 
@@ -381,6 +382,7 @@ Task.prototype = {
       );
       return false;
     }
+    gc.markImage(this.task.payload.image);
 
 
     // Now that we know the stream is ready pipe data into it...
