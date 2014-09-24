@@ -3,9 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Load superagent-hawk
-require('superagent-hawk')(require('superagent'));
+var superagent  = require('superagent-hawk')(require('superagent'));
 
-var request     = require('superagent-promise');
+var request     = require('superagent-promise').wrap(superagent);
 var debug       = require('debug')('taskcluster-client');
 var _           = require('lodash');
 var assert      = require('assert');
