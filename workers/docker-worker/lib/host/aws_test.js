@@ -31,6 +31,7 @@ suite('configuration/aws', function() {
       provisionerId: 'aws-provisioner',
       workerId: 'i-123456',
       workerType: 'ami-333333',
+      workerNodeType: 'c3.xlarge',
       workerGroup: 'us-west-2',
       capacity: 1
     });

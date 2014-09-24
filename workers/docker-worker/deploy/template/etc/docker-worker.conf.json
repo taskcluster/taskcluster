@@ -1,0 +1,11 @@
+{
+  "statsd": {
+    "prefix": "{{statsd.prefix}}",
+    "url": "udp://{{statsd.host}}:{{statsd.port}}"
+  },
+
+  "taskcluster": {
+    "clientId": "{{taskcluster.clientId}}",
+    "accessToken": "{{taskcluster.accessToken}}"
+  }
+}

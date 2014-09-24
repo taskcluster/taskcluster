@@ -1,0 +1,112 @@
+#! /bin/bash
+
+# Setting the actual hostname on a node is expensive and tricky to do well given
+# you have to reboot... The much saner approach is to craft the hostname and
+# hardcode it into syslog/diamond/etc.. The hostname for a docker-worker (on
+# aws) is split up into three parts $INSTANCE_ID-$INSTANCE_TYPE-$WORKER_TYPE.
+# This script can also output the DELIMITER in "." (period) for things like
+# graphite/statsd.
+
+
+PREFIX='docker-worker'
+DELIMITER='.'
+
+# Figure out the meta url before we begin
+if [ "$META_URL" == "" ];
+then
+  META_URL="http://169.254.169.254"
+fi
+
+# Fetch single field from userdata.
+userdata() {
+  local field=$1
+  value=$(curl -q $META_URL/latest/user-data 2> /dev/null | jq -r $field)
+  if [ "$value" == "null" ] || [ "$?" != "0" ];
+  then
+    value=""
+  fi
+  echo -n $value
+}
+
+# Fetch a field from userdata OR fallback to another url.
+userdata_or_url() {
+  local field=$1
+  local fallback_url=$2
+  value=$(userdata $field)
+  if [ "$value" == "" ];
+  then
+    value=$(curl $fallback_url 2>/dev/null)
+  fi
+  echo -n $value
+}
+
+userdata_or_value() {
+  local field=$1
+  local default=$2
+  value=$(userdata $field)
+  if [ "$value" == "" ];
+  then
+    value=$default
+  fi
+  echo -n $value
+}
+
+workerType=$(userdata_or_url '.workerType' "$META_URL/latest/meta-data/ami-id")
+workerGroup=$(userdata_or_url '.workerGroup' "$META_URL/latest/meta-data/placement/availability-zone")
+instanceType=$(curl $META_URL/latest/meta-data/instance-type 2>/dev/null)
+instanceId=$(curl $META_URL/latest/meta-data/instance-id 2>/dev/null)
+provisionerId=$(userdata_or_value '.provisionerId' 'aws-provisioner')
+
+cmd_instance() {
+  echo -n $PREFIX
+  echo -n $DELIMITER
+  echo -n $provisionerId
+  echo -n $DELIMITER
+  echo -n $workerGroup
+  echo -n $DELIMITER
+  echo -n $workerType | sed 's/\./-/'
+  echo -n $DELIMITER
+  echo -n $instanceType | sed 's/\./-/'
+  echo -n $DELIMITER
+  echo -n $instanceId
+}
+
+cmd_group() {
+  echo -n $PREFIX
+  echo -n $DELIMITER
+  echo -n $provisionerId
+  echo -n $DELIMITER
+  echo -n $workerGroup
+  echo -n $DELIMITER
+  echo -n $workerType | sed 's/\./-/'
+  echo -n $DELIMITER
+  echo -n $instanceType | sed 's/\./-/'
+}
+
+cmd_help() {
+  echo "Determine the hostname based on the instance id/worker-type"
+  echo "Note that the \$META_URL environment variable can be used to override"
+  echo "the default aws metadata url"
+  echo
+  echo "  Usage: $0 <command>"
+  echo
+  echo "  Commands:"
+  echo
+  echo "    help - show this help command."
+  echo "    instance - return the instance name."
+  echo "    group - return the group name."
+  echo
+}
+
+case "$1" in
+"instance")
+  cmd_instance
+  ;;
+"group")
+  cmd_group
+  ;;
+*)
+  cmd_help
+  ;;
+esac
+

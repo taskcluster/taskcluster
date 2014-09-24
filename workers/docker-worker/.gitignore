@@ -6,3 +6,4 @@
 /node_modules
 /test/settings/configure
 /test/settings/billingCycleRemaining
+/deploy.json

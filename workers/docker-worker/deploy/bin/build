@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -e
 
 cmd_help() {
   echo "Usage: ./deploy/bin/build"
@@ -20,34 +20,26 @@ packer_run() {
 }
 
 template_vars() {
-  echo "deploy/config/$1.json"
+  echo "deploy/target/packer/$1.json"
 }
 
 packer_config() {
   echo "deploy/packer/$1.json"
 }
 
-configure() {
-  local path=$(template_vars $1)
-  if [ ! -f $path ];
-  then
-    echo "$path missing running configure"
-    ./deploy/bin/configure $1
-    configure $1
-  fi
-}
-
-cmd_build_app() {
-  npm pack
-}
-
 cmd_app() {
-  configure app
+  # Package up the node app.
+  local npm_package=$(npm pack)
+
+  # Configure the deployment if needed...
+  make -j100 -C deploy
+
   packer_run \
     build \
     $@ \
     -var-file $(template_vars app) \
-    -var "docker_worker=$(cmd_build_app)" \
+    -var "templateContents=deploy/deploy.tar.gz" \
+    -var "npmPackage=$npm_package" \
     $(packer_config app)
 }
 

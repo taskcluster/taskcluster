@@ -1,24 +1,18 @@
 #! /bin/bash -vex
 
-sudo apt-get update
-# For node dependencies we need make, etc... =/
-sudo apt-get install -yq build-essential
+# pip deps
+sudo pip install python-statsd influxdb
+
+# template source which must override system files.
+template_source=$1
 
 # docker_worker_source that needs to be untar'ed
-docker_worker_source=$1
-upstart_conf=$2
-upstart_defaults=$3
-upstart_docker_defaults=$4
+docker_worker_source=$2
 
-sudo mv $upstart_conf /etc/init/docker-worker.conf
-sudo mv $upstart_defaults /etc/default/docker-worker
-sudo mv $upstart_docker_defaults /etc/default/docker
+# install the system configuration
+sudo tar xzf $template_source -C / --strip-components=1
 
-PAPERTRAIL_CONFIG='*.*'
-PAPERTRAIL_CONFIG="$PAPERTRAIL_CONFIG @$PAPERTRAIL"
-
-sudo sh -c "echo '$PAPERTRAIL_CONFIG' >> /etc/rsyslog.conf"
-
+# install the node app.
 target=$HOME/docker_worker
 mkdir -p $target
 cd $target

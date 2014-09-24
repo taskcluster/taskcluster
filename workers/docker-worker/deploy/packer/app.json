@@ -2,14 +2,13 @@
   "description": "taskcluster docker worker vm",
 
   "variables": {
-    "docker_worker":        "",
-    "source_ami":           "ami-49324a79",
-    "environment":          "",
-    "loggly_account":       "",
-    "loggly_auth":          "",
-    "update_type":          "static",
-    "fs_type":              "aufs",
-    "papertrail":           ""
+    "npmPackage":          "",
+    "templateContents":    "",
+    "sourceAMI":           "ami-95db9ba5",
+    "logglyAccount":       "",
+    "logglyAuth":          "",
+    "papertrail":          "",
+    "fsType":              ""
   },
   "provisioners": [
     {
@@ -21,39 +20,23 @@
       "type": "shell",
       "inline": [
         "chmod u+x /tmp/loggly.py",
-        "sudo python /tmp/loggly.py setup -y -s {{user `loggly_account`}} -a {{user `loggly_auth`}}"
+        "sudo python /tmp/loggly.py setup -y -s {{user `logglyAccount`}} -a {{user `logglyAuth`}}"
       ]
     },
     {
       "type":           "file",
-      "source":         "{{user `docker_worker`}}",
-      "destination":    "/tmp/{{user `docker_worker`}}"
+      "source":         "{{user `npmPackage`}}",
+      "destination":    "/tmp/docker-worker.tgz"
+    },
+    {
+      "type":           "file",
+      "source":         "{{user `templateContents`}}",
+      "destination":    "/tmp/deploy.tar.gz"
     },
     {
       "type":           "file",
       "source":         "deploy/packer/app/scripts/deploy.sh",
       "destination":    "/tmp/deploy.sh"
-    },
-    {
-      "type":           "shell",
-      "inline": [
-        "sudo apt-get install -y git lvm2 linux-image-extra-`uname -r`"
-      ]
-    },
-    {
-      "type":           "file",
-      "source":         "deploy/packer/app/docker-worker-{{user `update_type`}}.conf",
-      "destination":    "/tmp/docker-worker.conf"
-    },
-    {
-      "type":           "file",
-      "source":         "{{user `environment`}}",
-      "destination":    "/tmp/docker-worker"
-    },
-    {
-      "type":           "file",
-      "source":         "deploy/packer/app/etc/default/docker-{{user `fs_type`}}",
-      "destination":    "/tmp/docker"
     },
     {
       "type":           "shell",
@@ -63,7 +46,7 @@
       "type":           "shell",
       "environment_vars": ["PAPERTRAIL={{user `papertrail`}}"],
       "inline": [
-        "/tmp/deploy.sh /tmp/{{user `docker_worker`}} /tmp/docker-worker.conf /tmp/docker-worker /tmp/docker"
+        "/tmp/deploy.sh /tmp/deploy.tar.gz /tmp/docker-worker.tgz"
       ]
     }
   ],
@@ -71,10 +54,10 @@
     {
       "type":           "amazon-ebs",
       "region":         "us-west-2",
-      "source_ami":     "{{user `source_ami`}}",
+      "source_ami":     "{{user `sourceAMI`}}",
       "instance_type":  "m3.large",
       "ssh_username":   "ubuntu",
-      "ami_name":       "taskcluster-docker-worker-{{user `fs_type`}}-{{user `update_type`}} {{timestamp}}",
+      "ami_name":       "taskcluster-docker-worker-{{user `fsType`}}-{{timestamp}}",
       "tags": {
         "OS_Version":   "Ubuntu",
         "Release":      "Latest"

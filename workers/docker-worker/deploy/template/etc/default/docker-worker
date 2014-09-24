@@ -1,0 +1,4 @@
+# This file contains environment variable exports which are run during the
+# upstart boot process for the `docker-worker` where possible we should avoid
+# environment variables and use `/etc/docker-worker.conf.json` instead.
+export DEBUG='{{debug.level}}'

@@ -17,8 +17,23 @@ var GarbageCollector = require('../lib/gc');
 var allowedHosts = ['aws', 'test'];
 
 // All overridable configuration options from the CLI.
-var overridableFields =
-  ['capacity', 'workerId', 'workerType', 'workerGroup', 'provisionerId'];
+var overridableFields = [
+  'capacity',
+  'workerId',
+  'workerType',
+  'workerGroup',
+  'workerNodeType',
+  'provisionerId'
+];
+
+function sanitizeGraphPath() {
+  return Array.prototype.slice.call(arguments).reduce(function(result, v) {
+    if (!v) return result;
+    // Remove any dots which can get confused...
+    result.push(v.replace('.', '-'));
+    return result;
+  }, []).join('.');
+}
 
 // Terrible wrapper around program.option.
 function o() {
@@ -47,6 +62,7 @@ o('--provisioner-id <provisioner-id>','override provisioner id configuration');
 o('--worker-type <worker-type>', 'override workerType configuration');
 o('--worker-group <worker-group>', 'override workerGroup');
 o('--worker-id <worker-id>', 'override the worker id');
+o('--worker-node-type <worker-node-type>', 'override the worker node type');
 
 program.parse(process.argv);
 
@@ -116,10 +132,14 @@ co(function *() {
     host: statsdConf.hostname,
     port: statsdConf.port,
     // docker-worker.<worker-type>.<provisionerId>.
-    prefix: config.statsd.prefix +
-      'docker-worker.' +
-      config.workerType + '.' +
-      config.provisionerId + '.'
+    prefix: sanitizeGraphPath(
+      config.statsd.prefix,
+      'docker-worker',
+      config.provisionerId || 'unknown',
+      config.workerGroup || 'unknown',
+      config.workerType || 'unknown',
+      config.workerNodeType || 'unknown'
+    )
   });
 
   // Wrapped stats helper to support generators, etc...
@@ -131,7 +151,8 @@ co(function *() {
     provisionerId: config.provisionerId,
     workerId: config.workerId,
     workerGroup: config.workerGroup,
-    workerType: config.workerType
+    workerType: config.workerType,
+    workerNodeType: config.workerNodeType
   });
 
   var gcConfig = config.garbageCollection;

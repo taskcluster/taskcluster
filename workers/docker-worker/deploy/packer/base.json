@@ -4,10 +4,9 @@
     {
       "type": "shell",
       "scripts": [
-        "deploy/packer/base/scripts/docker.sh",
+        "deploy/packer/base/scripts/packages.sh",
         "deploy/packer/base/scripts/node.sh",
-        "deploy/packer/base/scripts/lvm.sh",
-        "deploy/packer/base/scripts/btrfs.sh"
+        "deploy/packer/base/scripts/diamond.sh"
       ]
     }
   ],

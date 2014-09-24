@@ -1,2 +1,10 @@
-#! /bin/bash
-node --harmony deploy/bin/configure.js $@
+#! /usr/bin/env node
+var spawn = require('child_process').spawn;
+
+var proc = spawn(
+  'node',
+  ['--harmony', __dirname + '/configure.js'].concat(process.argv.slice(2)),
+  { stdio: 'inherit' }
+);
+
+proc.once('exit', process.exit);

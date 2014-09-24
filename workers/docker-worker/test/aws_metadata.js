@@ -3,8 +3,13 @@ Stub for the aws metadata server.
 */
 
 var app = require('koa')();
+var PREFIX = '/latest';
 
 function route(path) {
+  if (path.indexOf(PREFIX) === 0) {
+    path = path.slice(PREFIX.length)
+  }
+
   switch (path) {
     case '/meta-data/public-hostname':
       return 'publichost';
@@ -24,7 +29,8 @@ function route(path) {
 }
 
 app.use(function* () {
-  this.body = route(this.url);
+  var url = route(this.url);
+  this.body = url;
 });
 
 module.exports = app;

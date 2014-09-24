@@ -59,6 +59,7 @@ function* configure (baseUrl) {
     workerId: getText(baseUrl + '/meta-data/instance-id'),
     workerType: getText(baseUrl + '/meta-data/ami-id'),
     workerGroup: getText(baseUrl + '/meta-data/placement/availability-zone'),
+    workerNodeType: getText(baseUrl + '/meta-data/instance-type')
   };
 
   log('metadata', config);
