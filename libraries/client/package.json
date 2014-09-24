@@ -16,7 +16,7 @@
     "lodash":                           "2.4.1",
     "debug":                            "1.0.4",
     "superagent":                       "0.18.2",
-    "superagent-promise":               "0.1.2",
+    "superagent-promise":               "0.2.0",
     "superagent-hawk":                  "0.0.4",
     "amqplib":                          "0.2.1",
     "slugid":                           "1.0.2",
