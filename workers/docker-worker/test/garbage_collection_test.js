@@ -3,7 +3,7 @@ suite('garbage collection tests', function () {
   var createLogger = require('../lib/log');
   var docker = require('../lib/docker')();
   var dockerUtils = require('dockerode-process/utils');
-  var pullImage = require('../lib/pull_image_to_stream'); 
+  var pullImage = require('../lib/pull_image_to_stream');
   var GarbageCollector = require('../lib/gc');
   var IMAGE = 'taskcluster/test-ubuntu';
   var streams = require('stream');
@@ -128,6 +128,37 @@ suite('garbage collection tests', function () {
 
       var c = docker.getContainer(container.id);
       yield c.remove({force: true});
+
+      yield waitForEvent(gc, 'gc:sweep:stop');
+      clearTimeout(gc.sweepTimeoutId);
+  }));
+
+  test('remove container that does not exist', co(function* () {
+    var gc = new GarbageCollector({
+      capacity: 1,
+      log: log,
+      docker: docker,
+      interval: 2 * 1000,
+      taskListener: {pending: 1}
+    });
+      clearTimeout(gc.sweepTimeoutId);
+
+      var container = yield docker.createContainer({Image: IMAGE});
+      gc.removeContainer(container.id);
+
+      container = docker.getContainer(container.id);
+      yield container.remove();
+
+      gc.sweep();
+
+      var error = yield waitForEvent(gc, 'gc:error');
+      var errorMessage = 'No such container. Will remove from marked ' +
+                         'containers list.';
+      assert.ok(error.container === container.id);
+      assert.ok(error.message === errorMessage),
+      assert.ok(!(error.container in gc.markedContainers),
+                'Container does not exist anymore but has not been ' +
+                'removed from the list of marked containers.');
 
       yield waitForEvent(gc, 'gc:sweep:stop');
       clearTimeout(gc.sweepTimeoutId);
@@ -282,4 +313,39 @@ suite('garbage collection tests', function () {
       clearTimeout(gc.sweepTimeoutId);
     })
   );
+
+  test('remove image that does not exist', co(function* () {
+    var gc = new GarbageCollector({
+      capacity: 2,
+      log: log,
+      docker: docker,
+      dockerVolume: '/',
+      interval: 2 * 1000,
+      taskListener: {pending: 1},
+      diskspaceThreshold: 1 * 100000000,
+      imageExpiration: 5
+    });
+
+    clearTimeout(gc.sweepTimeoutId);
+
+    var imageName = 'busybox:latest';
+    yield pullImage(docker, imageName, process.stdout);
+    gc.markImage(imageName);
+
+    var imageId = yield getImageId(docker, imageName);
+    var image = docker.getImage(imageId);
+    yield image.remove();
+
+    gc.sweep();
+
+    var removalError = yield waitForEvent(gc, 'gc:image:error');
+    var errorMessage = 'No such image. Will remove from marked images list.';
+    assert.ok(errorMessage === removalError.message);
+    assert.ok(imageName === removalError.image.name);
+    assert.ok(!(imageName in gc.markedImages),
+              'Image still appears in the list of marked images');
+
+    yield waitForEvent(gc, 'gc:sweep:stop');
+    clearTimeout(gc.sweepTimeoutId);
+  }));
 });

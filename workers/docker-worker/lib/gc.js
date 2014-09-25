@@ -116,10 +116,18 @@ GarbageCollector.prototype = {
           this.emit('gc:container:removed', containerId);
           this.log('container removed', {container: containerId});
         } catch(e) {
-          this.emit('gc:error', {message: e, container: containerId});
+          var message = e;
+          if (e.reason === 'no such container') {
+              message = 'No such container. Will remove from marked ' +
+                        'containers list.';
+              delete this.markedContainers[containerId];
+          } else {
+            this.markedContainers[containerId] -= 1;
+          }
+
+          this.emit('gc:error', {message: message, container: containerId});
           this.log('container removal error.',
-                   {container: containerId, err: e});
-          this.markedContainers[containerId] -= 1;
+                   {container: containerId, err: message});
         }
       } else {
         delete this.markedContainers[containerId];
@@ -158,9 +166,15 @@ GarbageCollector.prototype = {
           this.log('image removed', {image: imageDetails});
 
         } catch (e) {
-          this.emit('gc:image:error', {message: e, image: imageDetails});
+          var message = e;
+          if (e.reason === 'no such image') {
+            message = 'No such image. Will remove from marked images list.';
+            delete this.markedImages[image];
+          }
+
+          this.emit('gc:image:error', {message: message, image: imageDetails});
           this.log('image removal error.',
-                   {message: e, image: imageDetails});
+                   {message: message, image: imageDetails});
         }
       } else {
         var warning = 'Cannot remove image while it is running.';
