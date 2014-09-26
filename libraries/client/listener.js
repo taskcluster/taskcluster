@@ -145,8 +145,9 @@ Listener.prototype.bind = function(binding) {
   assert(binding.routingKeyPattern, "routingKeyPattern is required!");
   this._bindings.push(binding);
   if(this._channel) {
-    debug("Binding %s to %s with pattern %s",
-          this.queueName, binding.exchange, binding.routingKeyPattern);
+    debug("Binding %s to %s with pattern '%s'",
+          this.queueName || 'exclusive queue',
+          binding.exchange, binding.routingKeyPattern);
     return this._channel.bindQueue(
       this._queueName,
       binding.exchange,
@@ -207,7 +208,8 @@ Listener.prototype.connect = function() {
     that._channel = channel;
     return Promise.all(that._bindings.map(function(binding) {
       debug("Binding %s to %s with pattern %s",
-            that.queueName, binding.exchange, binding.routingKeyPattern);
+            that.queueName || 'exclusive queue',
+            binding.exchange, binding.routingKeyPattern);
       return channel.bindQueue(
         that._queueName,
         binding.exchange,
