@@ -19,5 +19,4 @@ deploy:
   on:
     repo: taskcluster/taskcluster-queue
 before_install:
-- openssl aes-256-cbc -K $encrypted_e05971c47e30_key -iv $encrypted_e05971c47e30_iv
-  -in taskcluster-queue.conf.json.enc -out taskcluster-queue.conf.json -d
+- openssl aes-256-cbc -K $encrypted_e05971c47e30_key -iv $encrypted_e05971c47e30_iv -in taskcluster-queue.conf.json.enc -out taskcluster-queue.conf.json -d
