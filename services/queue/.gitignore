@@ -1,2 +1,3 @@
 .vagrant/
 /taskcluster-queue.conf.json
+/node_modules/
