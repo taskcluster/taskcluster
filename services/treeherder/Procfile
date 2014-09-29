@@ -1,1 +1,1 @@
-worker: node worker.js
+handlers:         node bin/handlers.js          production
