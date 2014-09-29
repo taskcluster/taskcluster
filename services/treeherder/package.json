@@ -2,7 +2,6 @@
   "name":     "taskcluster-treeherder",
   "version":  "0.1.0",
   "private":  true,
-  "main":     "worker.js",
   "scripts": {
     "test":   "tests/runtests.sh"
   },
@@ -11,20 +10,19 @@
     "url":    "https://github.com/taskcluster/taskcluster-treeherder.git"
   },
   "dependencies": {
-    "nconf":                            "0.6.9",
-    "promise":                          "4.0.0",
+    "slugid":                           "1.0.2",
+    "mozilla-treeherder":               "0.4.2",
+    "promise":                          "6.0.0",
     "lodash":                           "2.4.1",
-    "uuid":                             "1.4.1",
-    "amqp":                             "0.1.8",
-    "debug":                            "0.7.4",
-    "superagent":                       "~0.16.0",
-    "superagent-promise":               "0.1.0",
-    "slugid":                           "1.0.1",
-    "mozilla-treeherder":               "0.2.0",
-    "taskcluster-client":               "git://github.com/taskcluster/taskcluster-client.git#8dc12043471e7ea4cefe53fea6ae25049bf849e9"
+    "debug":                            "2.0.0",
+    "taskcluster-client":               "0.15.8",
+    "taskcluster-base":                 "0.5.5"
   },
   "devDependencies": {
-    "nodeunit":                         "0.8.6"
+    "superagent":                       "0.19.0",
+    "superagent-promise":               "0.2.0",
+    "mocha":                            "1.21.4",
+    "url-join":                         "0.0.1"
   },
   "engines": {
     "node":                             "0.10.x"
