@@ -12,7 +12,7 @@ module.exports = {
     projects:                     '{}',
 
     // Treeherder baseUrl
-    baseUrl:                      'http://treeherder.mozilla.org/api/',
+    baseUrl:                      'https://treeherder.mozilla.org/api/',
 
     // Route prefix used form custom routes on the form:
     //   'route.<routePrefix>.<treeherderProject>'
