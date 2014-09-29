@@ -1,1 +1,2 @@
-taskcluster-treeherder.conf.json
+/taskcluster-treeherder.conf.json
+/node_modules/
