@@ -1,1 +1,2 @@
-taskcluster-index.conf.json
+/taskcluster-index.conf.json
+/node_modules/
