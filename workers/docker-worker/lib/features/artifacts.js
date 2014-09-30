@@ -132,12 +132,10 @@ Artifacts.prototype = {
         'Content-Type': contentType
       });
 
-      // Kick off the stream.
-      putReq.end();
+      // Stream tar entry to request before ending the request
+      stream.pipe(putReq);
 
-      // Looks weird but pipe should be after .end which creates the raw
-      // request. Superagent does a bad job at this =/.
-      stream.pipe(putReq.req);
+      putReq.end();
 
       // Wait until the response is sent.
       var res = yield waitForEvent(putReq, 'response');
@@ -150,6 +148,10 @@ Artifacts.prototype = {
           header.name,
           res.status
         ));
+
+        // Resume the stream if there is an uplaod failure otherwise
+        // stream will never emit 'finish'
+        stream.resume();
       }
 
       // Wait until the requset is fuly completed.

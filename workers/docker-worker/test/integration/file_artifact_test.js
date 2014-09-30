@@ -52,6 +52,75 @@ suite('artifact extration tests', function() {
     assert.equal(bodies.bar.trim(), 'bar');
   }));
 
+  test('upload 1mb artifact', co(function* () {
+    var result = yield testworker({
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd(
+          'mkdir /artifacts/',
+          'dd if=/dev/zero of=/artifacts/test.html  bs=1  count=1000000'
+        ),
+        features: {
+          // No need to actually issue live logging...
+          localLiveLog: false
+        },
+        artifacts: {
+          'public/test.html': {
+            type: 'file',
+            expires: expires(),
+            path: '/artifacts/test.html',
+          }
+        },
+        maxRunTime:         5 * 60
+      }
+    });
+
+    // Get task specific results
+    assert.ok(result.run.success, 'task was successful');
+    assert.ok('public/test.html' in result.artifacts,
+              'Artifact does not appear in the list of uploaded artifacts');
+
+    assert.ok(result.artifacts['public/test.html'].contentType === 'text/html');
+
+    var testContents = yield getArtifact(result, 'public/test.html');
+    assert.ok(Buffer.byteLength(testContents) === 1000000,
+              'Size of uploaded contents does not match original.');
+  }));
+
+  test('upload binary artifact', co(function* () {
+    var result = yield testworker({
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd(
+          'mkdir /artifacts/',
+          'dd if=/dev/zero of=/artifacts/test  bs=1  count=200000',
+          'tar -czvf artifacts.tar.gz /artifacts'
+        ),
+        features: {
+          // No need to actually issue live logging...
+          localLiveLog: false
+        },
+        artifacts: {
+          'public/test': {
+            type: 'file',
+            expires: expires(),
+            path: '/artifacts/test',
+          }
+        },
+        maxRunTime:         5 * 60
+      }
+    });
+
+    // Get task specific results
+    assert.ok(result.run.success, 'task was successful');
+    assert.ok('public/test' in result.artifacts,
+              'Artifact does not appear in the list of uploaded artifacts');
+    var contentType = 'application/octet-stream';
+    assert.ok(result.artifacts['public/test'].contentType === contentType);
+    // TODO handle response streams to validate content size
+
+  }));
+
   test('attempt to upload directory as file', co(function* () {
     var result = yield testworker({
       payload: {
@@ -59,7 +128,7 @@ suite('artifact extration tests', function() {
         command: cmd('ls'),
         features: {
           // No need to actually issue live logging...
-          liveLog: false
+          localLiveLog: false
         },
         artifacts: {
           'public/etc': {
@@ -105,7 +174,7 @@ suite('artifact extration tests', function() {
     );
 
     assert.ok(result.run.success, 'task was successful');
-    assert.ok(result.artifacts['my-missing.txt'])
+    assert.ok(result.artifacts['my-missing.txt']);
     assert.equal(result.artifacts['my-missing.txt'].storageType, 'error');
   }));
 
@@ -121,7 +190,8 @@ suite('artifact extration tests', function() {
         features: {
           bufferLog: true,
           azureLivelog: false,
-          extractArtifacts: true
+          extractArtifacts: true,
+          localLiveLog: false
         },
         artifacts: {
           // name -> source

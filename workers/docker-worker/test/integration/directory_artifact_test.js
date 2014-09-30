@@ -12,7 +12,7 @@ suite('Directory artifact', function() {
         command: cmd('echo "xfoo" > /xfoo.txt'),
         features: {
           // No need to actually issue live logging...
-          liveLog: false
+          localLiveLog: false
         },
         artifacts: {
           'public/xfoo': {
@@ -38,9 +38,12 @@ suite('Directory artifact', function() {
         command: cmd(
           'mkdir -p "/xfoo/wow"',
           'echo "xfoo" > /xfoo/wow/bar.txt',
-          'echo "text" > /xfoo/wow/another.txt'
+          'echo "text" > /xfoo/wow/another.txt',
+          'dd if=/dev/zero of=/xfoo/test.html  bs=1  count=1000000'
         ),
-        features: {},
+        features: {
+          localLiveLog: false
+        },
         artifacts: {
           'public/dir': {
             type: 'directory',
@@ -53,20 +56,30 @@ suite('Directory artifact', function() {
     });
 
     assert.ok(result.run.success, 'task was successful');
-    assert.ok(result.artifacts['public/dir/wow/bar.txt'], 'creates artifact');
-    assert.ok(
-      result.artifacts['public/dir/wow/another.txt'], 'creates artifact'
+
+    assert.deepEqual(
+      Object.keys(result.artifacts).sort(),
+      [
+        'public/dir/test.html',
+        'public/dir/wow/bar.txt',
+        'public/dir/wow/another.txt'
+      ].sort()
     );
 
     var bodies = yield {
       bar: getArtifact(result, 'public/dir/wow/bar.txt'),
-      another: getArtifact(result, 'public/dir/wow/another.txt')
-    }
+      another: getArtifact(result, 'public/dir/wow/another.txt'),
+    };
 
     assert.deepEqual(bodies, {
       bar: 'xfoo\n',
       another: 'text\n'
     });
+
+    var testHtml = yield getArtifact(result, 'public/dir/test.html');
+    assert.ok(Buffer.byteLength(testHtml) === 1000000,
+      'Size of uploaded contents of test.html does not match original.'
+    );
   }));
 
 });
