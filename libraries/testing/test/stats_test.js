@@ -321,6 +321,36 @@ suite('stats', function() {
     });
   });
 
+  test("startProcessUsageReporting (twice)", function() {
+    // Create InfluxDB connection
+    var influx = new base.stats.Influx({
+      connectionString:   cfg.get('influxdb:connectionString')
+    });
+
+    // Start monitoring
+    base.stats.startProcessUsageReporting({
+      drain:      influx,
+      interval:   0.1,
+      component:  'taskcluster-base-test',
+      process:    'mocha'
+    });
+
+    // Start monitoring
+    base.stats.startProcessUsageReporting({
+      drain:      influx,
+      interval:   0.1,
+      component:  'taskcluster-base-test',
+      process:    'mocha'
+    });
+
+    return new Promise(function(accept) {
+      setTimeout(accept, 400);
+    }).then(function() {
+      assert(influx.pendingPoints() >= 2, "We should have at least 2 points");
+      base.stats.stopProcessUsageReporting();
+    });
+  });
+
   // We don't have taskcluster-client to play with here, so instead we'll rely
   // on a hardcoded message to write tests.
   var EXAMPLE_MESSAGE = {
