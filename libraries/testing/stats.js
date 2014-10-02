@@ -465,8 +465,7 @@ var startProcessUsageReporting = function(options) {
 
   // Clear reporting if already started
   if (_processUsageReportingInterval) {
-    debug("WARNING: startProcessUsageReporting() already started!, options %j",
-          options);
+    debug("WARNING: startProcessUsageReporting() already started!");
     clearInterval(_processUsageReportingInterval);
     _processUsageReportingInterval = null;
   }
