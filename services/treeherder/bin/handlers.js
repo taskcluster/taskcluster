@@ -20,7 +20,8 @@ var launch = function(profile) {
       'treeherder_projects',
       'taskcluster_queueBaseUrl',
       'amqp_url',
-      'influx_connectionString'
+      'influx_connectionString',
+      'treeherder_listenerQueueName'
     ],
     filename:     'taskcluster-treeherder'
   });
@@ -88,7 +89,9 @@ if (!module.parent) {
   }
   // Launch with given profile
   launch(profile).then(function() {
-    debug("Launched handlers successfully");
+    debug(
+      "Launched handlers successfully", cfg.get('treeherder:listenerQueueName')
+    );
   }).catch(function(err) {
     debug("Failed to start handlers, err: %s, as JSON: %j", err, err, err.stack);
     // If we didn't launch the handlers we should crash
