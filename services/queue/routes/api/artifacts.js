@@ -212,6 +212,7 @@ api.declare({
       if (!err || err.code !== 'EntityAlreadyExists') {
         throw err;
       }
+      debug("Handling failure to insert entity, error above is a non-issue!");
       // Load and update artifact if it exists
       return ctx.Artifact.load(taskId, runId, name).then(function(artifact) {
         // Update the artifact with new expires (assuming this allowed)
