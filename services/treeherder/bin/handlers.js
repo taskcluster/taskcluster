@@ -89,9 +89,7 @@ if (!module.parent) {
   }
   // Launch with given profile
   launch(profile).then(function() {
-    debug(
-      "Launched handlers successfully", cfg.get('treeherder:listenerQueueName')
-    );
+    debug("Launched handlers successfully");
   }).catch(function(err) {
     debug("Failed to start handlers, err: %s, as JSON: %j", err, err, err.stack);
     // If we didn't launch the handlers we should crash
