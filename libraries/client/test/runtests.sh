@@ -3,8 +3,11 @@
 
 mocha                         \
   test/client_test.js         \
-  test/listener_test.js       \
+  test/amqplistener_test.js   \
+  test/weblistener_test.js    \
   ;
+
+./bin/update-apis.js browserify;
 
 mocha-phantomjs -R spec       \
   test/browserify_test.html   \
