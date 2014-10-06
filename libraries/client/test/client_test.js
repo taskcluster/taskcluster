@@ -11,7 +11,7 @@ suite('mockAuthServer', function() {
   function getNewClient() {
     // This is an absolute path to the client.js file. If this file is moved
     // then this obviously will break.
-    var clientPath = path.resolve(__dirname, '..', 'client.js');
+    var clientPath = path.resolve(__dirname, '..', 'lib', 'client.js');
     delete require.cache[clientPath];
     return require(clientPath);
   }

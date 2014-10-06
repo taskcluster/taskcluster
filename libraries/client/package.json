@@ -1,6 +1,6 @@
 {
   "name":         "taskcluster-client",
-  "version":      "0.15.8",
+  "version":      "0.16.0",
   "author":       "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description":  "Client for interfacing taskcluster components",
   "license":      "MPL-2.0",
@@ -21,7 +21,9 @@
     "amqplib":                          "0.2.1",
     "slugid":                           "1.0.2",
     "promise":                          "5.0.0",
-    "hawk":                             "2.2.3"
+    "hawk":                             "2.2.3",
+    "sockjs-client-node":               "0.1.1",
+    "url-join":                         "0.0.1"
   },
   "devDependencies": {
     "mocha":                            "1.21.4",
