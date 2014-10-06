@@ -27,6 +27,28 @@
           }
         });
       });
+
+      test('connect and close WebListener', function() {
+        var listener = new taskcluster.WebListener({
+          baseUrl: 'http://localhost:60002/v1'
+        });
+        return listener.connect().then(function() {
+          return listener.close();
+        });
+      });
+
+      test('connect, bind and close WebListener', function() {
+        var listener = new taskcluster.WebListener();
+        return listener.connect().then(function() {
+          // Test that we can bind
+          var queueEvents = new taskcluster.QueueEvents();
+          return listener.bind(queueEvents.taskDefined({
+            taskId: 'uTOskJejRr-DFMqUB_bpLw'  // don't care this doesn't exist
+          }));
+        }).then(function() {
+          return listener.close();
+        });
+      });
     });
     </script>
     <script>

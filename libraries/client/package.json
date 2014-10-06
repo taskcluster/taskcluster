@@ -19,7 +19,7 @@
     "superagent-promise":               "0.2.0",
     "superagent-hawk":                  "0.0.4",
     "amqplib":                          "0.2.1",
-    "slugid":                           "1.0.2",
+    "slugid":                           "1.0.3",
     "promise":                          "5.0.0",
     "hawk":                             "2.2.3",
     "sockjs-client-node":               "0.1.1",
