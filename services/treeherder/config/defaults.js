@@ -4,6 +4,9 @@ module.exports = {
     // Name of AMQP queue, if a non-exclusive queue is to be used.
     listenerQueueName:            undefined,
 
+    // Any number greater then 1 and we open the doors for races.
+    listenerPrefetch:             1,
+
     // Component name in statistics
     statsComponent:               'treeherder',
 
@@ -22,7 +25,7 @@ module.exports = {
   // Configuration of access to other taskcluster components
   taskcluster: {
     queueBaseUrl:                 undefined,
-    queueExchangePrefix:          undefined
+    queueExchangePrefix:          undefined,
   },
 
   // AMQP connection string

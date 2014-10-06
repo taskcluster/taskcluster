@@ -21,7 +21,8 @@ var launch = function(profile) {
       'taskcluster_queueBaseUrl',
       'amqp_url',
       'influx_connectionString',
-      'treeherder_listenerQueueName'
+      'treeherder_listenerQueueName',
+      'treeherder_listenerPrefetch'
     ],
     filename:     'taskcluster-treeherder'
   });
@@ -63,6 +64,7 @@ var launch = function(profile) {
     queue:              queue,
     queueEvents:        queueEvents,
     connectionString:   cfg.get('amqp:url'),
+    prefetch:           parseInt(cfg.get('treeherder:listenerPrefetch'), 10),
     queueName:          cfg.get('treeherder:listenerQueueName'),
     routePrefix:        cfg.get('treeherder:routePrefix'),
     projects:           projects,
