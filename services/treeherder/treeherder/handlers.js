@@ -37,6 +37,7 @@ var Handlers = function(options) {
   this.queue            = options.queue;
   this.queueEvents      = options.queueEvents;
   this.connectionString = options.connectionString;
+  this.prefetch         = options.prefetch;
   this.routePrefix      = options.routePrefix;
   this.projects         = options.projects;
   this.queueName        = options.queueName;  // Optional
@@ -54,7 +55,7 @@ Handlers.prototype.setup = function() {
   this.listener = new taskcluster.Listener({
     connectionString:     this.connectionString,
     queueName:            this.queueName,
-    prefetch:             1   // Avoid race conditions in Treeherder
+    prefetch:             this.prefetch
   });
 
   // Regular expression to parse route pattern:
