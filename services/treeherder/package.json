@@ -3,7 +3,7 @@
   "version":  "0.1.0",
   "private":  true,
   "scripts": {
-    "test":   "tests/runtests.sh"
+    "test":   "test/runtests.sh"
   },
   "repository": {
     "type":   "git",
