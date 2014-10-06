@@ -7,7 +7,6 @@ var assert    = require('assert');
 var urljoin   = require('url-join');
 var slugid    = require('slugid');
 
-
 // Ready states
 var readyState = {
   CONNECTING:   0,

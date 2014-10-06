@@ -3,14 +3,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 var _       = require('lodash');
-var SockJS  = require('./lib/sockjs.min.js');
+var SockJS  = require('./lib/sockjs');
 
 // Export methods and classes from lib/ with the exception of amqplistener, as
 // cannot be supported by browserify
-_.defaults(exports,
+var taskcluster = _.defaults({},
   require('./lib/client'),
   require('./lib/weblistener')
 );
 
 // Provide a SockJS client implementation for the WebListener
-exports.WebListener.SockJS = SockJS;
+taskcluster.WebListener.SockJS = SockJS;
+
+// Export taskcluster
+module.exports = taskcluster;
