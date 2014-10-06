@@ -1,4 +1,4 @@
-suite('listener', function() {
+suite('AMQPListener', function() {
   var taskcluster     = require('../');
   var Promise         = require('promise');
   var assert          = require('assert');
@@ -43,7 +43,7 @@ suite('listener', function() {
     this.timeout(1500);
 
     // Create listener
-    var listener = new taskcluster.Listener({
+    var listener = new taskcluster.AMQPListener({
       connectionString:     mockEvents.connectionString
     });
     listener.bind({
@@ -80,7 +80,7 @@ suite('listener', function() {
     this.timeout(1500);
 
     // Create listener
-    var listener = new taskcluster.Listener({
+    var listener = new taskcluster.AMQPListener({
       connectionString:     mockEvents.connectionString
     });
     listener.bind({
@@ -117,7 +117,7 @@ suite('listener', function() {
     this.timeout(1500);
 
     // Create listener
-    var listener = new taskcluster.Listener({
+    var listener = new taskcluster.AMQPListener({
       connectionString:     mockEvents.connectionString
     });
     listener.bind(mockEventsClient.testExchange('route.test'));
@@ -152,7 +152,7 @@ suite('listener', function() {
     this.timeout(1500);
 
     // Create listener
-    var listener = new taskcluster.Listener({
+    var listener = new taskcluster.AMQPListener({
       connectionString:     mockEvents.connectionString
     });
     listener.bind({
@@ -189,7 +189,7 @@ suite('listener', function() {
     this.timeout(1500);
 
     // Create listener
-    var listener = new taskcluster.Listener({
+    var listener = new taskcluster.AMQPListener({
       connectionString:     mockEvents.connectionString
     });
     listener.bind({
@@ -226,7 +226,7 @@ suite('listener', function() {
     this.timeout(1500);
 
     // Create listener
-    var listener = new taskcluster.Listener({
+    var listener = new taskcluster.AMQPListener({
       connectionString:     mockEvents.connectionString
     });
     listener.bind(mockEventsClient.testExchange({testId: 'test'}));
@@ -262,7 +262,7 @@ suite('listener', function() {
     this.timeout(3000);
 
     // Create listener
-    var listener = new taskcluster.Listener({
+    var listener = new taskcluster.AMQPListener({
       queueName:            slugid.v4(),
       connectionString:     mockEvents.connectionString
     });
@@ -298,7 +298,7 @@ suite('listener', function() {
     this.timeout(1500);
 
     // Create listener
-    var listener = new taskcluster.Listener({
+    var listener = new taskcluster.AMQPListener({
       queueName:            slugid.v4(),
       connectionString:     mockEvents.connectionString
     });
@@ -311,7 +311,7 @@ suite('listener', function() {
     this.timeout(1500);
 
     // Create listener
-    var listener = new taskcluster.Listener({
+    var listener = new taskcluster.AMQPListener({
       connectionString:     mockEvents.connectionString
     });
     listener.bind(mockEventsClient.testExchange({taskRoutingKey: '*.world'}));
@@ -348,7 +348,7 @@ suite('listener', function() {
     this.timeout(1500);
 
     // Create listener
-    var listener = new taskcluster.Listener({
+    var listener = new taskcluster.AMQPListener({
       queueName:            slugid.v4(),
       connectionString:     mockEvents.connectionString
     });
@@ -418,7 +418,7 @@ suite('listener', function() {
     this.timeout(1500);
 
     // Create listener
-    var listener = new taskcluster.Listener({
+    var listener = new taskcluster.AMQPListener({
       queueName:            slugid.v4(),
       connectionString:     mockEvents.connectionString,
       maxLength:            3
@@ -487,16 +487,16 @@ suite('listener', function() {
     this.timeout(3000);
 
     // Create connection object
-    var connection = new taskcluster.Connection({
+    var connection = new taskcluster.AMQPConnection({
       connectionString:     mockEvents.connectionString
     });
 
     // Create listeners
-    var listener1 = new taskcluster.Listener({
+    var listener1 = new taskcluster.AMQPListener({
       connection:           connection
     });
     listener1.bind(mockEventsClient.testExchange({testId: 'test1'}));
-    var listener2 = new taskcluster.Listener({
+    var listener2 = new taskcluster.AMQPListener({
       connection:           connection
     });
     listener2.bind(mockEventsClient.testExchange({testId: 'test2'}));

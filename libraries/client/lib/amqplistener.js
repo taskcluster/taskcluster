@@ -9,7 +9,7 @@ var slugid    = require('slugid');
 
 
 /** AMQP Connection */
-var Connection = function(options) {
+var AMQPConnection = function(options) {
   assert(options,                  "options is required");
   assert(options.connectionString, "connectionString is required");
 
@@ -20,10 +20,10 @@ var Connection = function(options) {
 };
 
 // Inherit from events.EventEmitter
-util.inherits(Connection, events.EventEmitter);
+util.inherits(AMQPConnection, events.EventEmitter);
 
 /** Returns a promise for a connection */
-Connection.prototype.connect = function() {
+AMQPConnection.prototype.connect = function() {
   var that = this;
 
   // Connection if we have one
@@ -71,7 +71,7 @@ Connection.prototype.connect = function() {
 };
 
 /** Close the connection */
-Connection.prototype.close = function() {
+AMQPConnection.prototype.close = function() {
   var conn = this._conn;
   if (conn) {
     this._conn = null;
@@ -81,17 +81,17 @@ Connection.prototype.close = function() {
 };
 
 
-// Export Connection
-exports.Connection = Connection;
+// Export AMQPConnection
+exports.AMQPConnection = AMQPConnection;
 
 /**
- * Create new Listener
+ * Create new AMQPListener
  *
  * options: {
  *   prefetch:          // Number of messages unacknowledged to process at once
  *   queueName:         // Queue name, undefined for exclusive auto-delete queue
  *   connectionString:  // AMQP Connection string
- *   connection:        // AMQP Connection object from below
+ *   connection:        // AMQPConnection object from below
  *   maxLength:         // Maximum queue size, undefined for none
  * }
  *
@@ -99,7 +99,7 @@ exports.Connection = Connection;
  * `Connection` object is provided it will not closed when the listener is
  * closed.
  */
-var Listener = function(options) {
+var AMQPListener = function(options) {
   assert(options, "options are required");
   assert(options.connectionString || options.connection,
          "Connection or connectionString must be provided");
@@ -114,14 +114,14 @@ var Listener = function(options) {
   // Ensure that we have connection object
   this._connection = options.connection || null;
   if (!this._connection) {
-    this._connection = new Connection({
+    this._connection = new AMQPConnection({
       connectionString:   options.connectionString
     });
   }
 };
 
 // Inherit from events.EventEmitter
-util.inherits(Listener, events.EventEmitter);
+util.inherits(AMQPListener, events.EventEmitter);
 
 /**
  * Bind listener to exchange with routing key and optional routing key
@@ -140,7 +140,7 @@ util.inherits(Listener, events.EventEmitter);
  * **Note,** the arguments for this method is easily constructed using an
  * instance of `Client`, see `createClient`.
  */
-Listener.prototype.bind = function(binding) {
+AMQPListener.prototype.bind = function(binding) {
   assert(binding.exchange,          "Can't bind to unspecified exchange!");
   assert(binding.routingKeyPattern, "routingKeyPattern is required!");
   this._bindings.push(binding);
@@ -159,7 +159,7 @@ Listener.prototype.bind = function(binding) {
 };
 
 /** Connect, setup queue and binding to exchanges */
-Listener.prototype.connect = function() {
+AMQPListener.prototype.connect = function() {
   var that = this;
 
   // Return channel if we have one
@@ -172,14 +172,14 @@ Listener.prototype.connect = function() {
   var channelCreated = this._connection.connect().then(function(conn) {
     that._conn = conn;
     that._conn.on('error', function(err) {
-      debug("Connection error in Listener: ", err.stack);
+      debug("Connection error in AMQPListener: ", err.stack);
       that.emit('error', err);
     });
     return that._conn.createConfirmChannel();
   }).then(function(channel_) {
     channel = channel_;
     channel.on('error', function(err) {
-      debug("Channel error in Listener: ", err.stack);
+      debug("Channel error in AMQPListener: ", err.stack);
       that.emit('error', err);
     });
     return channel.prefetch(that._options.prefetch);
@@ -225,9 +225,9 @@ Listener.prototype.connect = function() {
 };
 
 /** Pause consumption of messages */
-Listener.prototype.pause = function() {
+AMQPListener.prototype.pause = function() {
   if (!this._channel) {
-    debug("WARNING: Paused listener instance was wasn't connected yet");
+    debug("WARNING: Paused AMQPListener instance was wasn't connected yet");
     return;
   }
   assert(this._channel, "Can't pause when not connected");
@@ -235,7 +235,7 @@ Listener.prototype.pause = function() {
 };
 
 /** Connect or resume consumption of message */
-Listener.prototype.resume = function() {
+AMQPListener.prototype.resume = function() {
   var that = this;
   return this.connect().then(function(channel) {
     return channel.consume(that._queueName, function(msg) {
@@ -247,7 +247,7 @@ Listener.prototype.resume = function() {
 };
 
 /** Handle message*/
-Listener.prototype._handle = function(msg) {
+AMQPListener.prototype._handle = function(msg) {
   var that = this;
   // Construct message
   var message = {
@@ -348,7 +348,7 @@ Listener.prototype._handle = function(msg) {
  * Use this if you want to delete a named queue, unnamed queues created with
  * this listener will be automatically deleted, when the listener is closed.
  */
-Listener.prototype.deleteQueue = function() {
+AMQPListener.prototype.deleteQueue = function() {
   var that = this;
   return this.connect().then(function(channel) {
     return channel.deleteQueue(that._queueName).then(function() {
@@ -357,8 +357,8 @@ Listener.prototype.deleteQueue = function() {
   });
 };
 
-/** Close the listener */
-Listener.prototype.close = function() {
+/** Close the AMQPListener */
+AMQPListener.prototype.close = function() {
   var connection = this._connection;
 
   // If we were given connection by option, we shouldn't close it
@@ -377,6 +377,6 @@ Listener.prototype.close = function() {
   return connection.close();
 };
 
-// Export Listener
-exports.Listener = Listener;
+// Export AMQPListener
+exports.AMQPListener = AMQPListener;
 
