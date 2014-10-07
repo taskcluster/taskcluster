@@ -29,9 +29,7 @@
       });
 
       test('connect and close WebListener', function() {
-        var listener = new taskcluster.WebListener({
-          baseUrl: 'http://localhost:60002/v1'
-        });
+        var listener = new taskcluster.WebListener();
         return listener.connect().then(function() {
           return listener.close();
         });

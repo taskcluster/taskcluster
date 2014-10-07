@@ -1,23 +1,60 @@
-suite('AMQPListener', function() {
+suite('PulseListener', function() {
   var taskcluster     = require('../');
   var Promise         = require('promise');
   var assert          = require('assert');
   var mockEvents      = require('./mockevents');
   var slugid          = require('slugid');
   var debug           = require('debug')('test:listener');
+  var base            = require('taskcluster-base');
 
-  this.timeout(10000);
+  this.timeout(10 * 1000);
+
+  // Load configuration
+  var cfg = base.config({
+    defaults:     {},
+    profile:      {},
+    filename:     'taskcluster-client'
+  });
+
+  if(!cfg.get('pulse:password')) {
+    console.log("Skipping PulseListener tests due to missing config");
+    return;
+  }
+
+  // Pulse credentials
+  var credentials = {
+    username:   cfg.get('pulse:username'),
+    password:   cfg.get('pulse:password')
+  };
+
+  var connectionString = [
+    'amqps://',         // Ensure that we're using SSL
+    cfg.get('pulse:username'),
+    ':',
+    cfg.get('pulse:password'),
+    '@',
+    'pulse.mozilla.org',
+    ':',
+    5671                // Port for SSL
+  ].join('');
+
+  var exchangePrefix = [
+    'exchange',
+    cfg.get('pulse:username'),
+    'taskcluster-client',
+    'test'
+  ].join('/') + '/';
 
   mockEvents.configure({
-    connectionString:       mockEvents.connectionString,
-    exchangePrefix:         'taskcluster-client/test/',
+    connectionString:       connectionString,
+    exchangePrefix:         exchangePrefix
   });
 
   var _publisher = null;
   setup(function() {
     mockEvents.configure({
-      connectionString:       mockEvents.connectionString,
-      exchangePrefix:         'taskcluster-client/test/',
+      connectionString:       connectionString,
+      exchangePrefix:         exchangePrefix
     });
     return mockEvents.connect().then(function(publisher) {
       _publisher = publisher;
@@ -38,25 +75,25 @@ suite('AMQPListener', function() {
   // Test that client provides us with binding information
   test('binding info', function() {
     var info = mockEventsClient.testExchange({testId: 'test'});
-    assert(info.exchange === 'taskcluster-client/test/test-exchange');
+    assert(info.exchange === exchangePrefix + 'test-exchange');
     assert(info.routingKeyPattern === 'my-constant.test.#.*.*');
   });
 
   // Test that binding info is generated with number as routing keys
   test('binding info with number', function() {
     var info = mockEventsClient.testExchange({testId: 0});
-    assert(info.exchange === 'taskcluster-client/test/test-exchange');
+    assert(info.exchange === exchangePrefix + 'test-exchange');
     assert(info.routingKeyPattern === 'my-constant.0.#.*.*');
   });
 
   // Bind and listen with listener
   test('bind and listen', function() {
     // Create listener
-    var listener = new taskcluster.AMQPListener({
-      connectionString:     mockEvents.connectionString
+    var listener = new taskcluster.PulseListener({
+      credentials:          credentials
     });
     listener.bind({
-      exchange: 'taskcluster-client/test/test-exchange',
+      exchange: exchangePrefix + 'test-exchange',
       routingKeyPattern: '#'
     });
 
@@ -65,7 +102,7 @@ suite('AMQPListener', function() {
         assert(message.payload.text == "my message");
         setTimeout(function() {
           listener.close().then(accept, reject)
-        }, 200);
+        }, 500);
       });
       listener.on('error', function(err) {
         reject(err);
@@ -84,14 +121,15 @@ suite('AMQPListener', function() {
     return Promise.all([published, result]);
   });
 
+
   // Bind and listen with listener (for CC)
   test('bind and listen (for CC)', function() {
     // Create listener
-    var listener = new taskcluster.AMQPListener({
-      connectionString:     mockEvents.connectionString
+    var listener = new taskcluster.PulseListener({
+      credentials:          credentials
     });
     listener.bind({
-      exchange: 'taskcluster-client/test/test-exchange',
+      exchange: exchangePrefix + 'test-exchange',
       routingKeyPattern: 'route.test'
     });
 
@@ -100,7 +138,7 @@ suite('AMQPListener', function() {
         assert(message.payload.text == "my message");
         setTimeout(function() {
           listener.close().then(accept, reject)
-        }, 200);
+        }, 500);
       });
       listener.on('error', function(err) {
         reject(err);
@@ -122,8 +160,8 @@ suite('AMQPListener', function() {
   // Bind and listen with listener (for CC using client)
   test('bind and listen (for CC using client)', function() {
     // Create listener
-    var listener = new taskcluster.AMQPListener({
-      connectionString:     mockEvents.connectionString
+    var listener = new taskcluster.PulseListener({
+      credentials:          credentials
     });
     listener.bind(mockEventsClient.testExchange('route.test'));
 
@@ -133,7 +171,7 @@ suite('AMQPListener', function() {
         assert(message.routes[0] === 'test');
         setTimeout(function() {
           listener.close().then(accept, reject)
-        }, 200);
+        }, 500);
       });
       listener.on('error', function(err) {
         reject(err);
@@ -155,11 +193,11 @@ suite('AMQPListener', function() {
   // Bind and listen with listener (manual routing key)
   test('bind and listen (manual constant routing key)', function() {
     // Create listener
-    var listener = new taskcluster.AMQPListener({
-      connectionString:     mockEvents.connectionString
+    var listener = new taskcluster.PulseListener({
+      credentials:          credentials
     });
     listener.bind({
-      exchange: 'taskcluster-client/test/test-exchange',
+      exchange: exchangePrefix + 'test-exchange',
       routingKeyPattern: 'my-constant.#'
     });
 
@@ -168,7 +206,7 @@ suite('AMQPListener', function() {
         assert(message.payload.text == "my message");
         setTimeout(function() {
           listener.close().then(accept, reject)
-        }, 200);
+        }, 500);
       });
       listener.on('error', function(err) {
         reject(err);
@@ -190,11 +228,11 @@ suite('AMQPListener', function() {
   // Bind and listen with listener and non-match routing
   test('bind and listen (without wrong routing key)', function() {
     // Create listener
-    var listener = new taskcluster.AMQPListener({
-      connectionString:     mockEvents.connectionString
+    var listener = new taskcluster.PulseListener({
+      credentials:          credentials
     });
     listener.bind({
-      exchange: 'taskcluster-client/test/test-exchange',
+      exchange: exchangePrefix + 'test-exchange',
       routingKeyPattern: 'another.routing.key'
     });
 
@@ -224,11 +262,12 @@ suite('AMQPListener', function() {
     return Promise.all([published, result]);
   });
 
+
   // Test that routing key can be parsed if proper information is provided
   test('parse routing key', function() {
     // Create listener
-    var listener = new taskcluster.AMQPListener({
-      connectionString:     mockEvents.connectionString
+    var listener = new taskcluster.PulseListener({
+      credentials:          credentials
     });
     listener.bind(mockEventsClient.testExchange({testId: 'test'}));
 
@@ -239,7 +278,7 @@ suite('AMQPListener', function() {
         assert(message.routing.taskRoutingKey == 'hello.world');
         setTimeout(function() {
           listener.close().then(accept, reject)
-        }, 200);
+        }, 500);
       });
       listener.on('error', function(err) {
         reject(err);
@@ -261,9 +300,9 @@ suite('AMQPListener', function() {
   // Naive test that creation work when providing a name for the queue
   test('named queue', function() {
     // Create listener
-    var listener = new taskcluster.AMQPListener({
+    var listener = new taskcluster.PulseListener({
       queueName:            slugid.v4(),
-      connectionString:     mockEvents.connectionString
+      credentials:          credentials
     });
     listener.bind(mockEventsClient.testExchange({testId: 'test'}));
 
@@ -274,7 +313,7 @@ suite('AMQPListener', function() {
         assert(message.routing.taskRoutingKey == 'hello.world');
         setTimeout(function() {
           listener.close().then(accept, reject)
-        }, 200);
+        }, 500);
       });
       listener.on('error', function(err) {
         reject(err);
@@ -297,9 +336,9 @@ suite('AMQPListener', function() {
 
   test('deletion of named queue', function() {
     // Create listener
-    var listener = new taskcluster.AMQPListener({
+    var listener = new taskcluster.PulseListener({
       queueName:            slugid.v4(),
-      connectionString:     mockEvents.connectionString
+      credentials:          credentials
     });
 
     return listener.deleteQueue();
@@ -308,8 +347,8 @@ suite('AMQPListener', function() {
   // Test routing with multi key
   test('multi-word routing', function() {
     // Create listener
-    var listener = new taskcluster.AMQPListener({
-      connectionString:     mockEvents.connectionString
+    var listener = new taskcluster.PulseListener({
+      credentials:          credentials
     });
     listener.bind(mockEventsClient.testExchange({taskRoutingKey: '*.world'}));
 
@@ -320,7 +359,7 @@ suite('AMQPListener', function() {
         assert(message.routing.taskRoutingKey == 'hello.world');
         setTimeout(function() {
           listener.close().then(accept, reject)
-        }, 200);
+        }, 500);
       });
       listener.on('error', function(err) {
         reject(err);
@@ -343,9 +382,9 @@ suite('AMQPListener', function() {
   // Test pause and resume
   test('pause/resume', function() {
     // Create listener
-    var listener = new taskcluster.AMQPListener({
+    var listener = new taskcluster.PulseListener({
       queueName:            slugid.v4(),
-      connectionString:     mockEvents.connectionString
+      credentials:          credentials
     });
     listener.bind(mockEventsClient.testExchange({testId: 'test'}));
 
@@ -357,7 +396,7 @@ suite('AMQPListener', function() {
         if (count == 4) {
           setTimeout(function() {
             listener.close().then(accept, reject)
-          }, 200);
+          }, 500);
         }
         assert(count <= 4, "Shouldn't get more than 4 messages");
       });
@@ -380,7 +419,7 @@ suite('AMQPListener', function() {
           taskRoutingKey: 'hello.world'
         });
       }).then(function() {
-        return new Promise(function(accept) {setTimeout(accept, 200);});
+        return new Promise(function(accept) {setTimeout(accept, 500);});
       }).then(function() {
         assert(count == 2, "Should have two messages now");
         return listener.pause();
@@ -399,7 +438,7 @@ suite('AMQPListener', function() {
           taskRoutingKey: 'hello.world'
         });
       }).then(function() {
-        return new Promise(function(accept) {setTimeout(accept, 200);});
+        return new Promise(function(accept) {setTimeout(accept, 500);});
       }).then(function() {
         assert(count == 2, "Should have two messages now");
         return listener.resume();
@@ -413,9 +452,9 @@ suite('AMQPListener', function() {
   // Test pause and resume
   test('pause/resume with maxLength', function() {
     // Create listener
-    var listener = new taskcluster.AMQPListener({
+    var listener = new taskcluster.PulseListener({
       queueName:            slugid.v4(),
-      connectionString:     mockEvents.connectionString,
+      credentials:          credentials,
       maxLength:            3
     });
     listener.bind(mockEventsClient.testExchange({testId: 'test'}));
@@ -428,7 +467,7 @@ suite('AMQPListener', function() {
         if (message.payload.text == "end") {
           setTimeout(function() {
             listener.close().then(accept, reject)
-          }, 200);
+          }, 500);
         }
       });
       listener.on('error', function(err) {
@@ -466,7 +505,7 @@ suite('AMQPListener', function() {
           taskRoutingKey: 'hello.world'
         });
       }).then(function() {
-        return new Promise(function(accept) {setTimeout(accept, 200);});
+        return new Promise(function(accept) {setTimeout(accept, 500);});
       }).then(function() {
         return listener.resume();
       }).then(function() {
@@ -482,16 +521,14 @@ suite('AMQPListener', function() {
 
   test('connection w. two consumers', function() {
     // Create connection object
-    var connection = new taskcluster.AMQPConnection({
-      connectionString:     mockEvents.connectionString
-    });
+    var connection = new taskcluster.PulseConnection(credentials);
 
     // Create listeners
-    var listener1 = new taskcluster.AMQPListener({
+    var listener1 = new taskcluster.PulseListener({
       connection:           connection
     });
     listener1.bind(mockEventsClient.testExchange({testId: 'test1'}));
-    var listener2 = new taskcluster.AMQPListener({
+    var listener2 = new taskcluster.PulseListener({
       connection:           connection
     });
     listener2.bind(mockEventsClient.testExchange({testId: 'test2'}));
@@ -502,7 +539,7 @@ suite('AMQPListener', function() {
         assert(message.payload.text == "my message 1");
         setTimeout(function() {
           listener1.close().then(accept, reject)
-        }, 200);
+        }, 500);
       });
       listener1.on('error', function(err) {
         reject(err);
@@ -515,7 +552,7 @@ suite('AMQPListener', function() {
         assert(message.payload.text == "my message 2");
         setTimeout(function() {
           listener2.close().then(accept, reject)
-        }, 200);
+        }, 500);
       });
       listener2.on('error', function(err) {
         reject(err);
