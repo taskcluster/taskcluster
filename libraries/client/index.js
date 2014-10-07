@@ -9,6 +9,7 @@ var SockJS  = require('sockjs-client-node');
 _.defaults(exports,
   require('./lib/client'),
   require('./lib/amqplistener'),
+  require('./lib/pulselistener'),
   require('./lib/weblistener')
 );
 
