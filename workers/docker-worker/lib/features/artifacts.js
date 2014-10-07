@@ -134,7 +134,6 @@ Artifacts.prototype = {
 
       // Stream tar entry to request before ending the request
       stream.pipe(putReq);
-
       putReq.end();
 
       // Wait until the response is sent.

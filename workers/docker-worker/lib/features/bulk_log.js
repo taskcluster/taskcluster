@@ -10,10 +10,11 @@ var fs = require('fs');
 var request = require('superagent-promise');
 var debug = require('debug')('taskcluster-docker-worker:features:bulk_log');
 var fs = require('fs');
+var zlib = require('zlib');
 
 var Promise = require('promise');
 
-var ARTIFACT_NAME = 'public/logs/terminal_bulk.log';
+var ARTIFACT_NAME = 'public/logs/terminal_bulk.log.gz';
 
 function BulkLog(artifact) {
   this.artifactName = artifact || ARTIFACT_NAME;
@@ -24,10 +25,13 @@ function BulkLog(artifact) {
 BulkLog.prototype = {
 
   created: function* (task) {
+    // Eventually we want to save the content as gzip on s3 or azure so we
+    // incrementally compress it via streams.
+    var gzip = zlib.createGzip();
+
     // Pipe the task stream to a temp file on disk.
     this.stream = fs.createWriteStream(this.file.path);
-    var end = this.stream.end;
-    task.stream.pipe(this.stream, { end: true });
+    task.stream.pipe(gzip).pipe(this.stream);
   },
 
   killed: function* (task) {
@@ -54,7 +58,7 @@ BulkLog.prototype = {
       }
     );
 
-    var stat = yield fs.stat.bind(fs, this.file.path);
+     var stat = yield fs.stat.bind(fs, this.file.path);
 
     // Open a new stream to read the entire log from disk (this in theory could
     // be a huge file).
@@ -65,15 +69,12 @@ BulkLog.prototype = {
     // sent over in the artifact creation.)
     var req = request.put(artifact.putUrl).set({
       'Content-Type': 'text/plain',
-      'Content-Length': stat.size
+      'Content-Length': stat.size,
+      'Content-Encoding': 'gzip'
     });
 
-    // Kick off the stream.
-    req.end();
-
-    // Looks weird but pipe should be after .end which creates the raw
-    // request. Superagent does a bad job at this =/.
     diskStream.pipe(req);
+    req.end();
 
     // Wait until the request has completed and the file has been uploaded...
     var result = yield waitForEvent(req, 'end');

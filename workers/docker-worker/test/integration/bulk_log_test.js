@@ -31,7 +31,7 @@ suite('logging to artifact', function() {
     }
 
     var content = yield getArtifact(
-      result, result.artifacts['public/logs/terminal_bulk.log'].name
+      result, result.artifacts['public/logs/terminal_bulk.log.gz'].name
     );
 
     assert.ok(
