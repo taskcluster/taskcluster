@@ -1,9 +1,9 @@
-suite("Exchanges.Publisher", function() {
+suite("Exchanges (Publish)", function() {
   var assert  = require('assert');
   var base    = require('../');
   var path    = require('path');
   var fs      = require('fs');
-  var debug   = require('debug')('base:test:publisher');
+  var debug   = require('debug')('base:test:publish');
   var Promise = require('promise');
   var slugid  = require('slugid');
   var amqplib  = require('amqplib');
