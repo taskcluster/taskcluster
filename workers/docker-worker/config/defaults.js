@@ -10,6 +10,8 @@ module.exports = {
   taskclusterProxyImage: 'taskcluster/proxy',
   taskclusterLogImage: 'taskcluster/logserve',
 
+  alivenessCheckInterval: 30000, // 30 seconds
+
   // Garbage Collection configuration
   garbageCollection: {
     imageExpiration: 2 * 60 * 60 * 1000,

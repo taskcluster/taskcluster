@@ -172,6 +172,21 @@ co(function *() {
 
   runtime.log('start');
 
+  // Aliveness check logic... Mostly useful in combination with a log inactivity
+  // check like papertrail/logentries/loggly have.
+  function* alivenessCheck() {
+    var uptime = yield host.billingCycleUptime();
+    runtime.log('aliveness check', {
+      alive: true,
+      uptime: uptime,
+      interval: config.alivenessCheckInterval
+    });
+    setTimeout(co(alivenessCheck), config.alivenessCheckInterval)
+  }
+
+  // Always run the initial alivenss check during startup.
+  yield alivenessCheck();
+
   // Billing cycle logic is host specific so we cannot handle shutdowns without
   // both the host and the configuration to shutdown.
   if (host && config.shutdown) {
