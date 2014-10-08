@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "mocha":                            "1.21.4",
+    "taskcluster-base":                 "0.6.0",
     "commander":                        "2.3.0",
     "cliff":                            "0.1.8",
     "browserify":                       "5.10.1",
