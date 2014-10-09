@@ -1,13 +1,16 @@
 suite('garbage collection tests', function () {
   var co = require('co');
+  var fs = require('fs');
   var createLogger = require('../lib/log');
   var docker = require('../lib/docker')();
   var dockerUtils = require('dockerode-process/utils');
   var pullImage = require('../lib/pull_image_to_stream');
   var GarbageCollector = require('../lib/gc');
-  var IMAGE = 'taskcluster/test-ubuntu';
+  var VolumeCache = require('../lib/volume_cache');
   var streams = require('stream');
   var waitForEvent = require('../lib/wait_for_event');
+
+  var IMAGE = 'taskcluster/test-ubuntu';
 
   var log = createLogger({
     source: 'top', // top level logger details...
@@ -29,20 +32,7 @@ suite('garbage collection tests', function () {
   }
 
   setup(co(function* () {
-    yield new Promise(function(accept, reject) {
-      // pull the image (or use on in the cache and output status in stdout)
-      var pullStream =
-        dockerUtils.pullImageIfMissing(docker, IMAGE);
-
-      // pipe the pull stream into stdout but don't end
-      pullStream.pipe(process.stdout, { end: false });
-
-      pullStream.once('error', reject);
-      pullStream.once('end', function() {
-        pullStream.removeListener('error', reject);
-        accept();
-      }.bind(this));
-    }.bind(this));
+    yield pullImage(docker, IMAGE, process.stdout);
   }));
 
   test('remove container', co(function* () {
@@ -113,9 +103,9 @@ suite('garbage collection tests', function () {
 
       var container = yield docker.createContainer({Image: IMAGE});
       gc.removeContainer(container.id);
-      gc.markedContainers[container.id] = 0;
+      gc.markedContainers[container.id].retries = 0;
 
-      var error = yield waitForEvent(gc, 'gc:error');
+      var error = yield waitForEvent(gc, 'gc:container:error');
       assert.ok(error.container === container.id);
       assert.ok(error.message === 'Retry limit exceeded',
                 'Error message does not match \'Retry limit exceeded\'');
@@ -151,7 +141,7 @@ suite('garbage collection tests', function () {
 
       gc.sweep();
 
-      var error = yield waitForEvent(gc, 'gc:error');
+      var error = yield waitForEvent(gc, 'gc:container:error');
       var errorMessage = 'No such container. Will remove from marked ' +
                          'containers list.';
       assert.ok(error.container === container.id);
@@ -263,7 +253,7 @@ suite('garbage collection tests', function () {
       gc.markImage(imageName);
       gc.sweep();
 
-      var infoMessage = yield waitForEvent(gc, 'gc:info');
+      var infoMessage = yield waitForEvent(gc, 'gc:diskspace:info');
       var msg = 'Diskspace threshold not reached. Removing only expired images.';
       assert.ok(msg === infoMessage.message);
 
@@ -301,7 +291,7 @@ suite('garbage collection tests', function () {
       gc.markImage(imageName);
       gc.sweep();
 
-      var warningMessage = yield waitForEvent(gc, 'gc:warning');
+      var warningMessage = yield waitForEvent(gc, 'gc:diskspace:warning');
       var msg = 'Diskspace threshold reached. Removing all non-running images.';
       assert.ok(msg === warningMessage.message);
 
@@ -347,5 +337,49 @@ suite('garbage collection tests', function () {
 
     yield waitForEvent(gc, 'gc:sweep:stop');
     clearTimeout(gc.sweepTimeoutId);
+  }));
+
+  test('clear volume cache when diskspace threshold reached', co(function* () {
+    var gc = new GarbageCollector({
+      capacity: 2,
+      log: log,
+      docker: docker,
+      dockerVolume: '/',
+      interval: 2 * 1000,
+      taskListener: {pending: 1},
+      diskspaceThreshold: 500000 * 100000000,
+      imageExpiration: 5
+    });
+
+    clearTimeout(gc.sweepTimeoutId);
+
+    var localCacheDir = process.env.DOCKER_WORKER_CACHE_DIR || '/var/cache';
+    var stats = {
+      increment: function(stat) { return; },
+      timeGen: function* (stat, fn) { yield fn; }
+    }
+
+    var cache = new VolumeCache({
+      rootCachePath: localCacheDir,
+      log: log,
+      stats: stats
+    });
+
+    gc.addManager(cache);
+
+    var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+
+    var instance1 = yield cache.get(cacheName);
+    var instance2 = yield cache.get(cacheName);
+    cache.set(instance2.key, {mounted: false});
+
+    gc.sweep();
+
+    yield waitForEvent(gc, 'gc:sweep:stop');
+
+    clearTimeout(gc.sweepTimeoutId);
+
+    assert.ok(fs.existsSync(instance1.path));
+    assert.ok(!fs.existsSync(instance2.path));
   }));
 });

@@ -71,6 +71,38 @@ function buildStateHandlers(task) {
   return new States(handlers);
 }
 
+/**
+Create a list of cached volumes that will be mounted within the docker container.
+
+@param {object} volume cache
+@param {object} volumes to mount in the container
+ */
+function* buildVolumeBindings(taskVolumeBindings, volumeCache, taskScopes) {
+  var neededScopes = [];
+
+  for (var volumeName in taskVolumeBindings) {
+    neededScopes.push('docker-worker:cache:' + volumeName);
+  }
+
+  if (!scopeMatch(taskScopes, neededScopes)) {
+    throw new Error(
+      'Insufficient scopes to attach "' + volumeName + '" as a cached ' +
+      'volume.  Try adding ' + neededScopes + ' to the .scopes array.'
+    );
+  }
+
+  var bindings = [];
+  var caches = [];
+
+  for (var volumeName in taskVolumeBindings) {
+    var cacheInstance = yield volumeCache.get(volumeName);
+    var binding = cacheInstance.path + ':' + taskVolumeBindings[volumeName];
+    bindings.push(binding);
+    caches.push(cacheInstance.key);
+  }
+  return [caches, bindings];
+}
+
 function Task(runtime, runId, task, status) {
   this.runId = runId;
   this.task = task;
@@ -89,7 +121,7 @@ Task.prototype = {
 
   @param {Array[dockerode.Container]} [links] list of dockerode containers.
   */
-  dockerConfig: function(links) {
+  dockerConfig: function* (links) {
     var config = this.task.payload;
     var env = config.env || {};
 
@@ -112,12 +144,19 @@ Task.prototype = {
         StdinOnce: false,
         Env: taskEnvToDockerEnv(env)
       }
-    }
+    };
 
     if (links) {
       procConfig.start.Links = links.map(function(link) {
         return link.name + ':' + link.alias;
       });
+    }
+
+    if (this.task.payload.cache) {
+      var bindings = yield buildVolumeBindings(this.task.payload.cache,
+        this.runtime.volumeCache, this.task.scopes);
+      this.volumeCaches = bindings[0];
+      procConfig.start.Binds = bindings[1];
     }
 
     return procConfig;
@@ -174,7 +213,7 @@ Task.prototype = {
   */
   scheduleReclaim: function* (claim) {
     // Figure out when to issue the next claim...
-    var takenUntil = (new Date(claim.takenUntil) - new Date())
+    var takenUntil = (new Date(claim.takenUntil) - new Date());
     var nextClaim = takenUntil / this.runtime.task.reclaimDivisor;
 
     // This is tricky ensure we have logs...
@@ -325,10 +364,6 @@ Task.prototype = {
     var links =
       yield* stats.timeGen('tasks.time.states.linked', this.states.link(this));
 
-    var dockerProc = this.dockerProcess = new DockerProc(
-      this.runtime.docker, this.dockerConfig(links)
-    );
-
     // Hooks prior to running the task.
     yield stats.timeGen('tasks.time.states.created', this.states.created(this));
 
@@ -384,7 +419,28 @@ Task.prototype = {
     }
     gc.markImage(this.task.payload.image);
 
+    try {
+      var dockerConfig = yield this.dockerConfig(links);
+    } catch (e) {
+      this.stream.write(this.fmtLog('Docker configuration could not be ' +
+        'created.  This may indicate an authentication error when validating ' +
+        'scopes necessary for using caches. \n Error %s', e));
 
+      yield this.stream.end.bind(this.stream, this.logFooter(
+        false, // unsuccessful task
+        -1, // negative exit code indicates infrastructure errors usually.
+        taskStart, // duration details...
+        new Date()
+      ));
+
+      yield stats.timeGen(
+        'tasks.time.states.docker_configuration.killed', this.states.killed(this)
+      );
+      return false;
+    }
+
+    var dockerProc = this.dockerProcess = new DockerProc(
+      this.runtime.docker, dockerConfig);
     // Now that we know the stream is ready pipe data into it...
     dockerProc.stdout.pipe(this.stream, {
       end: false
@@ -440,7 +496,7 @@ Task.prototype = {
     yield this.stream.end.bind(this.stream);
 
     // Garbage collect containers
-    gc.removeContainer(dockerProc.container.id);
+    gc.removeContainer(dockerProc.container.id, this.volumeCaches);
     yield stats.timeGen('tasks.time.states.killed', this.states.killed(this));
 
     // If the results validation failed we consider this task failure.

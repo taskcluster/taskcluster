@@ -20,6 +20,10 @@ module.exports = {
     dockerVolume: '/mnt'
   },
 
+  cache: {
+    volumeCachePath: '/mnt/var/cache/docker-worker'
+  },
+
   logging: {
     liveLogChunkInterval: 5000, // 5 seconds
     // Added to the current date to make up the expiry time for logs. This is

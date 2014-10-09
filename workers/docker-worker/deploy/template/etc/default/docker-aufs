@@ -20,5 +20,6 @@ mount /dev/instance_storage/all /mnt
 
 mkdir -p /mnt/var/lib/docker
 mkdir -p /mnt/docker-tmp
+mkdir -p /mnt/var/cache/docker-worker
 export TMPDIR="/mnt/docker-tmp"
 export DOCKER_OPTS=" -g /mnt/var/lib/docker -s aufs"

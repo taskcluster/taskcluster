@@ -6,12 +6,13 @@ var loadConfig = require('taskcluster-base/config');
 var createLogger = require('../lib/log');
 var debug = require('debug')('docker-worker:bin:worker');
 
-var SDC = require('statsd-client')
+var SDC = require('statsd-client');
 var Runtime = require('../lib/runtime');
 var TaskListener = require('../lib/task_listener');
 var ShutdownManager = require('../lib/shutdown_manager');
 var Stats = require('../lib/stat');
 var GarbageCollector = require('../lib/gc');
+var VolumeCache = require('../lib/volume_cache');
 
 // Available target configurations.
 var allowedHosts = ['aws', 'test'];
@@ -83,7 +84,7 @@ co(function *() {
 
   // Load all base configuration that is on disk / environment variables /
   // flags.
-  var config = yield workerConf.load.bind(workerConf)
+  var config = yield workerConf.load.bind(workerConf);
 
   // Use a target specific configuration helper if available.
   var host;
@@ -158,9 +159,23 @@ co(function *() {
   var gcConfig = config.garbageCollection;
   gcConfig.capacity = config.capacity,
   gcConfig.docker = config.docker;
-  gcConfig.log = config.log
+  gcConfig.log = config.log;
 
   config.gc = new GarbageCollector(gcConfig);
+
+  config.volumeCache = new VolumeCache({
+    rootCachePath: config.cache.volumeCachePath,
+    log: config.log,
+    stats: config.stats
+  });
+
+  config.gc.on('gc:container:removed', function (container) {
+    container.caches.forEach(co(function* (cacheKey) {
+      yield config.volumeCache.release(cacheKey);
+    }));
+  });
+
+  config.gc.addManager(config.volumeCache);
 
   var runtime = new Runtime(config);
 

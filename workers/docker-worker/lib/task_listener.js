@@ -90,6 +90,7 @@ TaskListener.prototype = {
             taskId: content.status.taskId,
             runId: content.runId,
             message: e.toString(),
+            stack: e.stack,
             err: e
           });
         } else {

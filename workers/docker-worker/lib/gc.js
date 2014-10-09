@@ -70,11 +70,16 @@ function GarbageCollector(config) {
   this.markedImages = {};
   this.retries = 5;
   this.scheduleSweep(this.interval);
+  this.managers = [];
   EventEmitter.call(this);
 }
 
 GarbageCollector.prototype = {
   __proto__: EventEmitter.prototype,
+
+  addManager: function(manager) {
+    this.managers.push(manager);
+  },
 
   markImage: function(image) {
     var parsedImage = parseImage(image);
@@ -97,42 +102,58 @@ GarbageCollector.prototype = {
     }.bind(this));
   },
 
-  removeContainer: function (containerId) {
-    this.markedContainers[containerId] = this.retries;
+  removeContainer: function (containerId, volumeCaches) {
+    this.markedContainers[containerId] = {
+      retries: this.retries,
+      caches: volumeCaches || []
+    };
     this.emit('gc:container:marked', containerId);
   },
 
   removeContainers: function* () {
     for (var containerId in this.markedContainers) {
       // If a container can't be removed after 5 tries, more tries won't help
-      if (this.markedContainers[containerId] !== 0) {
+      if (this.markedContainers[containerId].retries !== 0) {
         var c = this.docker.getContainer(containerId);
+        var caches = this.markedContainers[containerId].caches
 
         try {
           // Even running containers should be removed otherwise shouldn't have
           // been marked for removal.
           yield c.remove({force: true});
           delete this.markedContainers[containerId];
-          this.emit('gc:container:removed', containerId);
-          this.log('container removed', {container: containerId});
+
+          this.emit('gc:container:removed', {
+            id: containerId,
+            caches: caches
+          });
+          this.log('container removed', {
+            container: containerId,
+            caches: caches
+          });
         } catch(e) {
           var message = e;
           if (e.reason === 'no such container') {
-              message = 'No such container. Will remove from marked ' +
-                        'containers list.';
-              delete this.markedContainers[containerId];
+            delete this.markedContainers[containerId];
+
+            message = 'No such container. Will remove from marked ' +
+                      'containers list.';
+            this.emit('gc:container:removed', {
+              id: containerId,
+              caches: caches
+            });
           } else {
-            this.markedContainers[containerId] -= 1;
+            this.markedContainers[containerId].retries -= 1;
           }
 
-          this.emit('gc:error', {message: message, container: containerId});
+          this.emit('gc:container:error', {message: message, container: containerId});
           this.log('container removal error.',
                    {container: containerId, err: message});
         }
       } else {
         delete this.markedContainers[containerId];
         this.ignoredContainers.push(containerId);
-        this.emit('gc:error',
+        this.emit('gc:container:error',
                   {message: 'Retry limit exceeded', container: containerId});
         this.log('container removal error',
                  {container: containerId, err: 'Retry limit exceeded'});
@@ -207,17 +228,21 @@ GarbageCollector.prototype = {
                                  (this.capacity - this.taskListener.pending),
                                  this.log);
         if (exceedsThreshold) {
-          this.emit('gc:warning',
+          this.emit('gc:diskspace:warning',
                     {message: 'Diskspace threshold reached. ' +
                               'Removing all non-running images.'
                     });
         } else {
-          this.emit('gc:info',
+          this.emit('gc:diskspace:info',
                     {message: 'Diskspace threshold not reached. ' +
                               'Removing only expired images.'
                     });
         }
         yield this.removeUnusedImages(exceedsThreshold);
+
+        for (var i = 0; i < this.managers.length; i++) {
+          yield this.managers[i].clear(exceedsThreshold);
+        }
       }
 
       this.log('garbage collection finished');
