@@ -13,6 +13,7 @@ services:
 - postgresql
 deploy:
   provider: heroku
+  strategy: git
   api_key:
     secure: JNWc7d7z9HNIKFg4RcBa4g/WEBV7HkDoFOxLojqOF6yDyNljtziO/aN4i8at3POJDPDaiRNTasiEzoFLBIOEiqDrwgyKbRSibVfxIZUWROt/+dzrOeh0C3if28OuPGVy3Puo+Q3ieIYrJ9pylIuQyQzB6h3H13dKpY3tcPVLVPU=
   app: queue-taskcluster-net
