@@ -69,7 +69,7 @@ BlobStore.prototype.setupCORS = function() {
       }
     }, function(err, response) {
       if (err) {
-        debug("Failed to configure CORS");
+        debug("Failed to configure CORS, err: %s, JSON: %j", err, err);
         return reject(err);
       }
       return accept(response);
