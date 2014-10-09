@@ -92,6 +92,11 @@ exports.setup = function(options) {
   // Setup server
   setup(function() {
     // Utility function to listen for a message
+    // Return an object with two properties/promises:
+    // {
+    //   ready:   Promise,  // Resolved when we've started to listen
+    //   message: Promise   // Resolved when we've received a message
+    // }
     subject.listenFor = function(binding) {
       // Create listener
       var listener = new taskcluster.AMQPListener({
@@ -106,12 +111,10 @@ exports.setup = function(options) {
         listener.on('message', accept);
         listener.on('error', reject);
       });
-      // Connect to AMQP server
-      return listener.connect().then(function() {
-        return listener.resume().then(function() {
-          return gotMessage;
-        });
-      });
+      return {
+        ready:      listener.resume(),
+        message:    gotMessage
+      };
     };
     // Drop database
     return dropdb(options.profile).then(function() {

@@ -268,6 +268,7 @@ suite('Post artifacts', function() {
   test("Post error artifact", function() {
     this.timeout(120 * 1000);
     var taskId = slugid.v4();
+    var artifactCreated;
     debug("### Creating task");
     return subject.queue.createTask(taskId, taskDef).then(function() {
       debug("### Claiming task");
@@ -280,6 +281,9 @@ suite('Post artifacts', function() {
       artifactCreated = subject.listenFor(subject.queueEvents.artifactCreated({
         taskId:   taskId
       }));
+      debug("### Start listenFor for artifact created message");
+      return artifactCreated.ready;
+    }).then(function() {
       subject.scopes(
         'queue:create-artifact:public/error.json',
         'assume:worker-id:my-worker-group/my-worker'
@@ -290,9 +294,10 @@ suite('Post artifacts', function() {
         expires:      deadline.toJSON(),
         reason:       'file-missing-on-worker',
         message:      "Some user-defined message",
-      }).then(function() {
-        return artifactCreated;
       });
+    }).then(function() {
+      debug("### Wait for artifact created message");
+      return artifactCreated.message;
     }).then(function() {
       var name = 'public/error.json';
       var url = urljoin(

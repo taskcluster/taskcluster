@@ -39,12 +39,17 @@ suite('Create task (w. defaults)', function() {
     subject.scopes(
       'queue:create-task:my-provisioner/my-worker'
     );
-    return subject.queue.createTask(taskId, taskDef).then(function(result) {
-      return isDefined.then(function(message) {
+    return Promise.all([
+      isDefined.ready,
+      isPending.ready
+    ]).then(function() {
+      return subject.queue.createTask(taskId, taskDef);
+    }).then(function(result) {
+      return isDefined.message.then(function(message) {
         assert(_.isEqual(result.status, message.payload.status),
                "Message and result should have the same status");
       }).then(function() {
-        return isPending.then(function(message) {
+        return isPending.message.then(function(message) {
           assert(_.isEqual(result.status, message.payload.status),
                  "Message and result should have the same status");
           return subject.queue.status(taskId);

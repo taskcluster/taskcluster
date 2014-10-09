@@ -52,10 +52,17 @@ suite('Rerun task', function() {
       runId:    1
     }));
 
-    debug("### Creating task");
-    return subject.queue.createTask(taskId, taskDef).then(function() {
+    return Promise.all([
+      isPending.ready,
+      isRunning.ready,
+      isCompleted.ready,
+      isPendingAgain.ready
+    ]).then(function() {
+      debug("### Creating task");
+      return subject.queue.createTask(taskId, taskDef);
+    }).then(function() {
       debug("### Waiting for pending message");
-      return isPending;
+      return isPending.message;
     }).then(function() {
       debug("### Claiming task");
       // First runId is always 0, so we should be able to claim it here
@@ -65,7 +72,7 @@ suite('Rerun task', function() {
       });
     }).then(function() {
       debug("### Waiting for running message");
-      return isRunning;
+      return isRunning.message;
     }).then(function() {
       debug("### Reporting task completed");
       return subject.queue.reportCompleted(taskId, 0, {
@@ -73,7 +80,7 @@ suite('Rerun task', function() {
       });
     }).then(function() {
       debug("### Waiting for completed message");
-      return isCompleted;
+      return isCompleted.message;
     }).then(function() {
       debug("### Requesting task rerun");
       subject.scopes(
@@ -83,7 +90,7 @@ suite('Rerun task', function() {
       return subject.queue.rerunTask(taskId);
     }).then(function() {
       debug("### Waiting for pending message again");
-      return isPendingAgain;
+      return isPendingAgain.message;
     }).then(function() {
       debug("### Requesting task rerun (again)");
       return subject.queue.rerunTask(taskId);
