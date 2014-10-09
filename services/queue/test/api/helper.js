@@ -94,7 +94,7 @@ exports.setup = function(options) {
     // Utility function to listen for a message
     subject.listenFor = function(binding) {
       // Create listener
-      var listener = new taskcluster.Listener({
+      var listener = new taskcluster.AMQPListener({
         connectionString:   cfg.get('amqp:url')
       });
       // Track it, so we can close it in teardown()
