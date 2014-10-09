@@ -40,12 +40,14 @@ suite('Report task completed', function() {
     var allowedToCompleteNow = false;
     var isCompleted = subject.listenFor(subject.queueEvents.taskCompleted({
       taskId:   taskId
-    })).then(function(message) {
+    }))
+    isCompleted.message = isCompleted.message.then(function(message) {
       assert(allowedToCompleteNow, "Completing at wrong time");
       return message;
     });
-    debug("### Creating task");
-    return subject.queue.createTask(taskId, taskDef).then(function() {
+    return isCompleted.ready.then(function() {
+      debug("### Creating task");
+      return subject.queue.createTask(taskId, taskDef);
     }).then(function() {
       debug("### Claiming task");
       // First runId is always 0, so we should be able to claim it here
@@ -64,7 +66,7 @@ suite('Report task completed', function() {
         success:    true
       });
     }).then(function() {
-      return isCompleted.then(function(message) {
+      return isCompleted.message.then(function(message) {
         assert(message.payload.status.runs[0].state === 'completed',
                "Expected message to say it was completed");
       });
