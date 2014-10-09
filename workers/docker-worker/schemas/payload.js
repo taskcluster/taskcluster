@@ -53,7 +53,7 @@ module.exports = {
       "description": "Image to use for the task (registry.xfoo/user/image)."
     },
     "cache": {
-      "title": "Caches available within the docker container",
+      "title": "Caches to mount point mapping.",
       "description": "Caches are mounted within the docker container at the mount point specified. Example: ```{ \"CACHE NAME\": \"/mount/path/in/container\" }```",
       "type": "object",
     },
