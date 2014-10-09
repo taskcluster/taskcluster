@@ -58,12 +58,21 @@ suite('Create task', function() {
       'queue:create-task:my-provisioner/my-worker',
       'queue:route:*'
     );
-    return subject.queue.createTask(taskId, taskDef).then(function(result) {
-      return isDefined.then(function(message) {
+    debug("### Start listening for messages");
+    return Promise.all([
+      isDefined.ready,
+      isPending.ready
+    ]).then(function() {
+      debug("### Create task");
+      return subject.queue.createTask(taskId, taskDef);
+    }).then(function(result) {
+      debug("### Wait for defined message");
+      return isDefined.message.then(function(message) {
         assert(_.isEqual(result.status, message.payload.status),
                "Message and result should have the same status");
       }).then(function() {
-        return isPending.then(function(message) {
+        debug("### Wait for pending message");
+        return isPending.message.then(function(message) {
           assert(_.isEqual(result.status, message.payload.status),
                  "Message and result should have the same status");
           return subject.queue.status(taskId);
@@ -117,11 +126,16 @@ suite('Create task', function() {
       'queue:define-task:my-provisioner/my-worker',
       'queue:route:---*'
     );
-    return subject.queue.defineTask(taskId, taskDef).then(function() {
-      return isDefined;
+    return Promise.all([
+      isDefined.ready,
+      gotMessage.ready
+    ]).then(function() {
+      return subject.queue.defineTask(taskId, taskDef);
+    }).then(function() {
+      return isDefined.message;
     }).then(function() {
       return new Promise(function(accept, reject) {
-        gotMessage.then(reject, reject);
+        gotMessage.message.then(reject, reject);
         setTimeout(accept, 1000);
       });
     });
@@ -132,12 +146,15 @@ suite('Create task', function() {
     var taskIsScheduled = false;
     var gotMessage = subject.listenFor(subject.queueEvents.taskPending({
       taskId:   taskId
-    })).then(function(message) {
+    }))
+    gotMessage.message = gotMessage.message.then(function(message) {
       assert(taskIsScheduled, "Got pending message before scheduleTask");
       return message;
     });
 
-    return subject.queue.defineTask(taskId, taskDef).then(function() {
+    return gotMessage.ready.then(function() {
+      return subject.queue.defineTask(taskId, taskDef);
+    }).then(function() {
       return helper.sleep(1000);
     }).then(function() {
       taskIsScheduled = true;
@@ -147,7 +164,7 @@ suite('Create task', function() {
       );
       return subject.queue.scheduleTask(taskId);
     }).then(function(result) {
-      return gotMessage.then(function(message) {
+      return gotMessage.message.then(function(message) {
         assert(_.isEqual(result.status, message.payload.status),
                "Message and result should have the same status");
       });

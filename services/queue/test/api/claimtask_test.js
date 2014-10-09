@@ -43,7 +43,11 @@ suite('Claim task', function() {
 
     var firstTakenUntil = new Date();
 
-    return subject.queue.createTask(taskId, taskDef).then(function() {
+    debug("### Start listening for task running message");
+    return gotMessage.ready.then(function() {
+      debug("### Creating task");
+      return subject.queue.createTask(taskId, taskDef);
+    }).then(function() {
       // Reduce scopes available to test minimum set of scopes required
       subject.scopes(
         'queue:claim-task',
@@ -56,7 +60,8 @@ suite('Claim task', function() {
         workerId:       'my-worker'
       });
     }).then(function(result) {
-      return gotMessage.then(function(message) {
+      debug("### Waiting for task running message");
+      return gotMessage.message.then(function(message) {
         assert(firstTakenUntil < new Date(result.takenUntil),
                "takenUntil must in the future");
         firstTakenUntil = new Date(result.takenUntil);
