@@ -24,7 +24,7 @@ var BlobStore = function(options) {
   this.service = azure.createBlobService(
     options.credentials.accountName,
     options.credentials.accountKey
-  );
+  ).withFilter(new azure.ExponentialRetryPolicyFilter());
 };
 
 // Export BlobStore
