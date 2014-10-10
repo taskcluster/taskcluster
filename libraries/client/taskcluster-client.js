@@ -1388,6 +1388,7 @@ var hawk        = require('hawk');
 var url         = require('url');
 var crypto      = require('crypto');
 var slugid      = require('slugid');
+var Promise     = require('promise');
 
 // Default options stored globally for convenience
 var _defaultOptions = {
@@ -1400,8 +1401,40 @@ var _defaultOptions = {
   authorization: {
     delegating: false,
     scopes: []
-  }
+  },
+
+  maxRetries:     5
 };
+
+
+/** Make a request for a Client instance */
+var makeRequest = function(client, method, url, payload) {
+  // Construct request object
+  var req = request[method](url);
+
+  // Send payload if defined
+  if (payload !== undefined) {
+    req.send(payload);
+  }
+
+  // Authenticate, if credentials are provided
+  if (client._options.credentials &&
+      client._options.credentials.clientId &&
+      client._options.credentials.accessToken) {
+    // Write hawk authentication header
+    req.hawk({
+      id:         client._options.credentials.clientId,
+      key:        client._options.credentials.accessToken,
+      algorithm:  'sha256'
+    }, {
+      ext:        client._extData
+    });
+  }
+
+  // Return request
+  return req;
+};
+
 
 /**
  * Create a client class from a JSON reference.
@@ -1417,12 +1450,14 @@ var _defaultOptions = {
  *   credentials: {
  *     clientId:    '...', // ClientId
  *     accessToken: '...', // AccessToken for clientId
+ *     certificate: {...}  // Certificate, if temporary credentials
  *   },
  *   // Limit the set of scopes requests with this client may make.
  *   // Note, that your clientId must have a superset of the these scopes.
  *   authorizedScopes:  ['scope1', 'scope2', ...]
  *   baseUrl:         'http://.../v1'   // baseUrl for API requests
  *   exchangePrefix:  'queue/v1/'       // exchangePrefix prefix
+ *   maxRetries:      5,                // Maximum number of attempts
  * }
  *
  * `baseUrl` and `exchangePrefix` defaults to values from reference.
@@ -1435,11 +1470,39 @@ exports.createClient = function(reference) {
       exchangePrefix:   reference.exchangePrefix || ''
     }, _defaultOptions);
 
-    // Parse certificate if provided and parsing is necessary
-    if (this._options.credentials && this._options.credentials.certificate) {
-      this._options.certificate = this._options.credentials.certificate;
-      if (typeof(this._options.certificate) === 'string') {
-        this._options.certificate = JSON.parse(this._options.certificate);
+    // Build ext for hawk requests
+    this._extData = undefined;
+    if (this._options.credentials &&
+        this._options.credentials.clientId &&
+        this._options.credentials.accessToken) {
+      var ext = {};
+
+      // If there is a certificate we have temporary credentials, and we
+      // must provide the certificate
+      if (this._options.credentials.certificate) {
+        ext.certificate = this._options.credentials.certificate;
+        // Parse as JSON if it's a string
+        if (typeof(ext.certificate) === 'string') {
+          try {
+            ext.certificate = JSON.parse(ext.certificate);
+          }
+          catch(err) {
+            debug("Failed to parse credentials.certificate, err: %s, JSON: %j",
+                  err, err);
+            throw new Error("JSON.parse(): Failed for configured certificate");
+          }
+        }
+      }
+
+      // If set of authorized scopes is provided, we'll restrict the request
+      // to only use these scopes
+      if (this._options.authorizedScopes instanceof Array) {
+        ext.authorizedScopes = this._options.authorizedScopes;
+      }
+
+      // ext has any keys we better base64 encode it, and set ext on extra
+      if (_.keys(ext).length > 0) {
+        this._extData = new Buffer(JSON.stringify(ext)).toString('base64');
       }
     }
   };
@@ -1456,7 +1519,6 @@ exports.createClient = function(reference) {
 
     // Create method on prototype
     Client.prototype[entry.name] = function() {
-      debug("Calling: " + entry.name);
       // Convert arguments to actual array
       var args = Array.prototype.slice.call(arguments);
       // Validate number of arguments
@@ -1475,64 +1537,89 @@ exports.createClient = function(reference) {
         }
         endpoint = endpoint.replace('<' + arg + '>', value);
       });
-      // Create request
-      var req = request[entry.method](this._options.baseUrl + endpoint);
+      // Create url for the request
+      var url = this._options.baseUrl + endpoint;
       // Add payload if one is given
+      var payload = undefined;
       if (entry.input) {
-        req.send(args.pop());
+        payload = args.pop();
       }
-      // Authenticate, if credentials are provided
-      if (this._options.credentials &&
-          this._options.credentials.clientId &&
-          this._options.credentials.accessToken) {
-        // Construct ext property
-        var ext = {};
 
-        // If there is a certificate we have temporary credentials, and we
-        // must provide the certificate
-        if (this._options.certificate) {
-          ext.certificate = this._options.certificate;
-        }
+      // Count request attempts
+      var attempts = 0;
+      var that = this;
 
-        // If set of authorized scopes is provided, we'll restrict the request
-        // to only use these scopes
-        if (this._options.authorizedScopes instanceof Array) {
-          ext.authorizedScopes = this._options.authorizedScopes;
-        }
-
-        // Extra paramters to hand hawk
-        var extra = {};
-
-        // ext has any keys we better base64 encode it, and set ext on extra
-        if (_.keys(ext).length > 0) {
-          extra.ext = new Buffer(JSON.stringify(ext)).toString('base64');
-        }
-
-        // Write hawk authentication header
-        req.hawk({
-          id:         this._options.credentials.clientId,
-          key:        this._options.credentials.accessToken,
-          algorithm:  'sha256'
-        }, extra);
-      }
-      // Send request and handle response
-      return req.end().then(function(res) {
-        if (!res.ok) {
-          debug("Error calling: %s, info: %j", entry.name, res.body);
-          var message = "Unknown Server Error";
-          if (res.status === 401) {
-            message = "Authentication Error";
+      // Return promise that we've used all retries
+      return new Promise(function(accept, reject) {
+        // Retry the request, after a delay depending on number of retries
+        var retryRequest = function() {
+          // Send request
+          var sendRequest = function() {
+            debug("Calling: %s, retry: %s", entry.name, attempts - 1);
+            // Make request and handle response or error
+            makeRequest(
+              that,
+              entry.method,
+              url,
+              payload
+            ).end().then(function(res) {
+              // If the response is not 200 OK (or 2xx)
+              if (!res.ok) {
+                // Decide if we should retry
+                if (attempts < that._options.maxRetries &&
+                    500 <= res.status &&  // Check if it's a 5xx error
+                    res.status < 600) {
+                  debug("Error calling: %s now retrying, info: %j",
+                        entry.name, res.body);
+                  return retryRequest();
+                }
+                // If not retrying, construct error object and reject
+                debug("Error calling: %s NOT retrying!, info: %j",
+                      entry.name, res.body);
+                var message = "Unknown Server Error";
+                if (res.status === 401) {
+                  message = "Authentication Error";
+                }
+                if (res.status === 500) {
+                  message = "Internal Server Error";
+                }
+                err = new Error(res.body.message || message);
+                err.body = res.body;
+                err.statusCode = res.status;
+                return reject(err);
+              }
+              // If request was successful, accept the result
+              debug("Success calling: %s, (%s retries)",
+                    entry.name, attempts - 1);
+              return accept(res.body);
+            }, function(err) {
+              // Decide if we should retry
+              if (attempts < that._options.maxRetries) {
+                debug("Request error calling %s (retrying), err: %s, JSON: %s",
+                      entry.name, err, err);
+                return retryRequest();
+              }
+              debug("Request error calling %s NOT retrying!, err: %s, JSON: %s",
+                    entry.name, err, err);
+              return reject(err);
+            });
           }
-          if (res.status === 500) {
-            message = "Internal Server Error";
+
+          // Increment attempt count, but track how many we had before
+          var retries = attempts;
+          attempts += 1;
+
+          // If this is the first retry, ie we haven't retried yet, we make the
+          // request immediately
+          if (retries === 0) {
+            sendRequest();
+          } else {
+            setTimeout(sendRequest, retries * retries * 100);
           }
-          err = new Error(res.body.message || message);
-          err.body = res.body;
-          err.statusCode = res.status;
-          throw err
-        }
-        debug("Success calling: " + entry.name);
-        return res.body;
+        };
+
+        // Start the retry request loop
+        retryRequest();
       });
     };
     // Add reference for buildUrl and signUrl
@@ -1675,16 +1762,6 @@ exports.createClient = function(reference) {
         throw new Error("accessToken must be given");
       }
 
-      // Generate meta-data to include
-      var ext = undefined;
-      // If set of authorized scopes is provided, we'll restrict the request
-      // to only use these scopes
-      if (this._options.authorizedScopes instanceof Array) {
-        ext = new Buffer(JSON.stringify({
-          authorizedScopes: this._options.authorizedScopes
-        })).toString('base64');
-      }
-
       // Create bewit
       var bewit = hawk.uri.getBewit(requestUrl, {
         credentials:    {
@@ -1693,7 +1770,7 @@ exports.createClient = function(reference) {
           algorithm:  'sha256'
         },
         ttlSec:         expiration,
-        ext:            ext
+        ext:            this._extData
       });
 
       // Add bewit to requestUrl
@@ -1821,7 +1898,7 @@ exports.createTemporaryCredentials = function(options) {
 };
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"./apis":2,"_process":34,"assert":7,"buffer":8,"crypto":15,"debug":55,"hawk":58,"lodash":59,"slugid":63,"superagent":85,"superagent-hawk":67,"superagent-promise":84,"url":52}],4:[function(require,module,exports){
+},{"./apis":2,"_process":34,"assert":7,"buffer":8,"crypto":15,"debug":55,"hawk":58,"lodash":59,"promise":61,"slugid":63,"superagent":85,"superagent-hawk":67,"superagent-promise":84,"url":52}],4:[function(require,module,exports){
 /* SockJS client, version 0.3.4, http://sockjs.org, MIT License
 
 Copyright (c) 2011-2012 VMware, Inc.
