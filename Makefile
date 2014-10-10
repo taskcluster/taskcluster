@@ -1,6 +1,7 @@
 .PHONY: test
 test:
-	pylint taskcluster --indent-string='  '
+	#pylint taskcluster --indent-string='  '
+	pep8 --ignore=E111 taskcluster
 	./bin/python setup.py test
 
 JS_CLIENT_BRANCH=master
