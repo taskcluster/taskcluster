@@ -43,10 +43,10 @@ var launch = function(profile) {
   });
 
   // Load validator and create client table before proceeding
-  return Promise.all(
+  return Promise.all([
     validatorLoaded,
     Client.createTable()
-  ).then(function() {
+  ]).then(function() {
     // Create API router and publish reference if needed
     return v1.setup({
       context: {
