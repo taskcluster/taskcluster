@@ -29,7 +29,7 @@
     "superagent-promise":               "0.2.0",
     "mocha":                            "1.21.4",
     "xmlbuilder":                       "2.4.4",
-    "taskcluster-client":               "0.17.0"
+    "taskcluster-client":               "0.17.1"
   },
   "engines": {
     "node":                             "0.10.x"
