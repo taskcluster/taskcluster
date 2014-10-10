@@ -223,6 +223,28 @@ suite('mockAuthServer', function() {
     });
   });
 
+  test('Build signed url (using temporary credentials)', function() {
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
+    });
+    var tempCreds = taskcluster.createTemporaryCredentials({
+      scopes: ['auth:credentials'],
+      expiry: new Date(new Date().getTime() + 60 * 1000),
+      credentials: {
+        clientId:       'test-client',
+        accessToken:    'test-token',
+      },
+    });
+
+    var Auth = new taskcluster.createClient(reference);
+    var auth = new Auth({
+      credentials: tempCreds
+    });
+    var url = auth.buildSignedUrl(auth.getCredentials, 'test-client');
+    return request.get(url).end().then(function(res) {
+      assert(res.ok, "Request failed");
+    });
+  });
 
   suite('getCredentials with environment variables', function() {
     var ACCESS_TOKEN = process.env.TASKCLUSTER_ACCESS_TOKEN,
