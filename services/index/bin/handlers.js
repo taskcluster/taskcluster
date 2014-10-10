@@ -72,11 +72,11 @@ var launch = function(profile) {
   });
 
   // When: validator and tables are created, proceed
-  return Promise.all(
+  return Promise.all([
     validatorCreated,
     IndexedTask.createTable(),
     Namespace.createTable()
-  ).then(function() {
+  ]).then(function() {
     // Create event handlers
     var handlers = new Handlers({
       IndexedTask:        IndexedTask,

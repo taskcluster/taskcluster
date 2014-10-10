@@ -140,17 +140,17 @@ exports.setup = function(options) {
         subject.queueEvents = new taskcluster.QueueEvents();
       });
 
-      return Promise.all(serverLaunched, handlers.launch());
+      return Promise.all([serverLaunched, handlers.launch()]);
     });
   });
 
   // Shutdown server
   teardown(function() {
     // Kill server and handlers
-    return Promise.all(
+    return Promise.all([
       handlers.terminate(),
       server.terminate()
-    ).then(function() {
+    ]).then(function() {
       return mockAuthServer.terminate();
     }).then(function() {
       return Promise.all(listeners.map(function(listener) {
