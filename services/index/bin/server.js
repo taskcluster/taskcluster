@@ -66,11 +66,11 @@ var launch = function(profile) {
   });
 
   // When: validator and tables are created, proceed
-  return Promise.all(
+  return Promise.all([
     validatorCreated,
     IndexedTask.createTable(),
     Namespace.createTable()
-  ).then(function() {
+  ]).then(function() {
     // Create API router and publish reference if needed
     return v1.setup({
       context: {

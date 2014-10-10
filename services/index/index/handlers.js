@@ -57,7 +57,7 @@ Handlers.prototype.setup = function() {
   this.routeRegexp = new RegExp('^' + this.routePrefix + '\\.(.*)$');
 
   // Create listener
-  this.listener = new taskcluster.Listener({
+  this.listener = new taskcluster.AMQPListener({
     connectionString:     this.connectionString,
     queueName:            this.queueName
   });
