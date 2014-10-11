@@ -33,7 +33,7 @@ suite('retry-test', function() {
 
   var getOccasionalInternalErrorCount = 0;
   api.declare({
-    method:       'get',
+    method:       'delete', // Just to ensure that delete works :)
     route:        '/internal-error-sometimes',
     name:         'getOccasionalInternalError',
     title:        "Test End-Point",
