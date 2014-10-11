@@ -1,0 +1,39 @@
+id:       http://schemas.taskcluster.net/auth/v1/create-client-request.json#
+$schema:  http://json-schema.org/draft-04/schema#
+title:                      "Get Client Credentials Response"
+description: |
+  Credentials, scopes and expiration date for a client
+type:                       object
+properties:
+  name:
+    description: |
+      Human readable name of this set of credentials, typical
+      component/server-name or IRC nickname of the user.
+    type:                   string
+    maxLength:              255
+  description:
+    description: |
+      Description of what these credentials are used for in markdown.
+      Please write a few details here, including who is the owner, point of
+      contact. Why it is scoped as is, think of this as documentation.
+    type:                   string
+    maxLength:              4096
+  scopes:
+    description: |
+      List of scopes the client is authorized to access
+    type:                   array
+    items:
+      description: |
+        Scopes the client is authorized to access
+      type:                 string
+  expires:
+    description: |
+      Date and time where the clients credentials are set to expire
+    type:                   string
+    format:                 date-time
+additionalProperties:       false
+required:
+  - name
+  - description
+  - scopes
+  - expires

@@ -1,7 +1,7 @@
 var debug       = require('debug')('routes:api:v1');
-var request     = require('superagent-promise');
 var assert      = require('assert');
 var base        = require('taskcluster-base');
+var slugid      = require('slugid');
 
 /** API end-point for version v1/ */
 var api = new base.API({
@@ -14,11 +14,17 @@ var api = new base.API({
 // Export API
 module.exports = api;
 
+// Common schema prefix
+var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/auth/v1/';
+
+// Note: No API end-point not requiring the 'auth:credentials' scopes should
+//       be allowed to return an accessToken.
+
 /** Get authorized scopes for a given client */
 api.declare({
   method:     'get',
   route:      '/client/:clientId/scopes',
-  name:       'inspect',
+  name:       'scopes',
   input:      undefined,
   output:     "http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#",
   scopes:     ['auth:inspect', 'auth:credentials'],
@@ -37,6 +43,14 @@ api.declare({
       scopes:       client.scopes,
       expires:      client.expires.toJSON()
     });
+  }, function(err) {
+    // Return 404, if client wasn't found
+    if (err.code === 'ResourceNotFound') {
+      return res.status(404).json({
+        message:    "Client not found"
+      });
+    }
+    throw err;
   });
 });
 
@@ -67,5 +81,296 @@ api.declare({
       scopes:       client.scopes,
       expires:      client.expires.toJSON()
     });
+  }, function(err) {
+    // Return 404, if client wasn't found
+    if (err.code === 'ResourceNotFound') {
+      return res.status(404).json({
+        message:    "Client not found"
+      });
+    }
+    throw err;
   });
 });
+
+
+/** Get all client information */
+api.declare({
+  method:     'get',
+  route:      '/client/:clientId',
+  name:       'client',
+  input:      undefined,
+  output:     undefined,
+  scopes:     ['auth:credentials'],
+  title:      "Get Client Information",
+  description: [
+    "Returns all information about a given client. This end-point is mostly",
+    "building tools to administrate clients. Do not use if you only want to",
+    "authenticate a request, see `getCredentials` for this purpose."
+  ].join('\n')
+}, function(req, res) {
+  return this.Client.load(req.params.clientId).then(function(client) {
+    return res.reply({
+      clientId:     client.clientId,
+      accessToken:  client.accessToken,
+      scopes:       client.scopes,
+      expires:      client.expires.toJSON(),
+      name:         client.name,
+      description:  client.details.notes
+    });
+  }, function(err) {
+    // Return 404, if client wasn't found
+    if (err.code === 'ResourceNotFound') {
+      return res.status(404).json({
+        message:    "Client not found"
+      });
+    }
+    throw err;
+  });
+});
+
+
+/** Create client information */
+api.declare({
+  method:     'put',
+  route:      '/client/:clientId',
+  name:       'createClient',
+  input:      SCHEMA_PREFIX_CONST + 'create-client-request.json#',
+  output:     undefined,
+  scopes:     [['auth:create-client', 'auth:credentials']],
+  title:      "Create Client",
+  description: [
+    "Create client with given `clientId`, `name`, `expires`, `scopes` and",
+    "`description`. The `accessToken` will always be generated server-side,",
+    "and will be returned from this request.",
+    "",
+    "**Required scopes**, in addition the scopes listed",
+    "above, the caller must also posses the all the scopes that is given to",
+    "the client that is created."
+  ].join('\n')
+}, function(req, res) {
+  var ctx       = this;
+  var clientId  = req.params.clientId;
+  var input     = req.body;
+
+  // Authenticate request checking that owner has delegate scopes
+  if (!req.satisfies([input.scopes])) {
+    return;
+  }
+
+  // Attempt to create the client
+  return ctx.Client.create({
+    version:      '0.2.0',
+    clientId:     clientId,
+    accessToken:  slugid.v4() + slugid.v4(),
+    scopes:       input.scopes,
+    expires:      new Date(input.expires),
+    name:         input.name,
+    details: {
+      notes:      input.description
+    }
+  }).then(undefined, function(err) {
+    if (err.code === 'EntityAlreadyExists') {
+      // If client already exists, we load it and check if it has the values
+      // we're trying to set, ensure the operation is idempotent
+      return ctx.Client.load(clientId).then(function(client) {
+        // If properties match, then we pretend the operation just happened
+        if (_.isEqual(client.scopes, input.scopes) &&
+            client.expires.getTime() === new Date(input.expires).getTime() &&
+            client.name === input.name &&
+            client.details.notes === input.description) {
+          return client;
+        }
+        res.status(409).json({
+          message:    "Client already exists"
+        });
+        return undefined;
+      });
+    }
+    debug("Failed to create client, err: %s, JSON: %j", err, err);
+    // Cause an internal error
+    throw err;
+  }).then(function(client) {
+    // Reply was already sent above
+    if (client === undefined) {
+      return;
+    }
+    // Send a reply
+    return res.reply({
+      clientId:     client.clientId,
+      accessToken:  client.accessToken,
+      scopes:       client.scopes,
+      expires:      client.expires.toJSON(),
+      name:         client.name,
+      description:  client.details.notes
+    });
+  });
+});
+
+
+/** Modify client information */
+api.declare({
+  method:     'post',
+  route:      '/client/:clientId/modify',
+  name:       'modifyClient',
+  input:      SCHEMA_PREFIX_CONST + 'create-client-request.json#',
+  output:     undefined,
+  scopes:     [['auth:modify-client', 'auth:credentials']],
+  title:      "Modify Client",
+  description: [
+    "Modify client `name`, `expires`, `scopes` and",
+    "`description`.",
+    "",
+    "**Required scopes**, in addition the scopes listed",
+    "above, the caller must also posses the all the scopes that is given to",
+    "the client that is updated."
+  ].join('\n')
+}, function(req, res) {
+  var ctx       = this;
+  var clientId  = req.params.clientId;
+  var input     = req.body;
+
+  // Authenticate request checking that owner has delegate scopes
+  if (!req.satisfies([input.scopes])) {
+    return;
+  }
+
+  // Load client
+  return ctx.Client.load(clientId).then(function(client) {
+    return client.modify(function() {
+      this.scopes         = input.scopes;
+      this.expires        = new Date(input.expires);
+      this.name           = input.name;
+      this.details.notes  = input.description;
+    }).then(function(client) {
+      return res.reply({
+        clientId:     client.clientId,
+        accessToken:  client.accessToken,
+        scopes:       client.scopes,
+        expires:      client.expires.toJSON(),
+        name:         client.name,
+        description:  client.details.notes
+      });
+    });
+  }, function(err) {
+    // Return 404, if client wasn't found
+    if (err.code === 'ResourceNotFound') {
+      return res.status(404).json({
+        message:    "Client not found"
+      });
+    }
+    throw err;
+  });
+});
+
+
+/** Delete client information */
+api.declare({
+  method:     'delete',
+  route:      '/client/:clientId',
+  name:       'removeClient',
+  input:      undefined,
+  output:     undefined,
+  scopes:     ['auth:remove-client'],
+  title:      "Remove Client",
+  description: [
+    "Delete a client with given `clientId`."
+  ].join('\n')
+}, function(req, res) {
+  var ctx       = this;
+  var clientId  = req.params.clientId;
+
+  // Remove client
+  return ctx.Client.remove(clientId).then(function() {
+    res.reply({});
+  });
+});
+
+
+/** Reset accessToken for a client */
+api.declare({
+  method:     'post',
+  route:      '/client/:clientId/reset-credentials',
+  name:       'resetCredentials',
+  input:      undefined,
+  output:     undefined,
+  scopes:     [['auth:reset-credentials', 'auth:credentials']],
+  title:      "Reset Client Credentials",
+  description: [
+    "Reset credentials for a client. This will generate a new `accessToken`.",
+    "as always the `accessToken` will be generated server-side and returned."
+  ].join('\n')
+}, function(req, res) {
+  var ctx       = this;
+  var clientId  = req.params.clientId;
+
+  // Load client
+  return ctx.Client.load(clientId).then(function(client) {
+    return client.modify(function() {
+      this.accessToken = slugid.v4() + slugid.v4();
+    }).then(function(client) {
+      return res.reply({
+        clientId:     client.clientId,
+        accessToken:  client.accessToken,
+        scopes:       client.scopes,
+        expires:      client.expires.toJSON(),
+        name:         client.name,
+        description:  client.details.notes
+      });
+    });
+  }, function(err) {
+    // Return 404, if client wasn't found
+    if (err.code === 'ResourceNotFound') {
+      return res.status(404).json({
+        message:    "Client not found"
+      });
+    }
+    throw err;
+  });
+});
+
+
+/** List all clients */
+api.declare({
+  method:     'get',
+  route:      '/list-clients',
+  name:       'listClients',
+  input:      undefined,
+  output:     undefined,
+  scopes:     ['auth:client-clients'],
+  title:      "List Clients",
+  description: [
+    "Return list with all clients"  // consider $top = 10
+  ].join('\n')
+}, function(req, res) {
+  return this.Client.loadAll().then(function(clients) {
+    return res.reply(clients.map(function(client) {
+      return {
+        clientId:     client.clientId,
+        scopes:       client.scopes,
+        expires:      client.expires.toJSON(),
+        name:         client.name,
+        description:  client.details.notes
+      };
+    }));
+  });
+});
+
+
+/** Check that the server is a alive */
+api.declare({
+  method:   'get',
+  route:    '/ping',
+  name:     'ping',
+  title:    "Ping Server",
+  description: [
+    "Documented later...",
+    "",
+    "**Warning** this api end-point is **not stable**."
+  ].join('\n')
+}, function(req, res) {
+  res.status(200).json({
+    alive:    true,
+    uptime:   process.uptime()
+  });
+});
+

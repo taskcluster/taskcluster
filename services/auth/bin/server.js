@@ -19,9 +19,26 @@ var launch = function(profile) {
       'azure_accountName',
       'azure_accountKey',
       'aws_accessKeyId',
-      'aws_secretAccessKey'
+      'aws_secretAccessKey',
+      'influx_connectionString',
+      'auth_root_clientId',
+      'auth_root_accessToken'
     ],
     filename:     'taskcluster-auth'
+  });
+
+  // Create InfluxDB connection for submitting statistics
+  var influx = new base.stats.Influx({
+    connectionString:   cfg.get('influx:connectionString'),
+    maxDelay:           cfg.get('influx:maxDelay'),
+    maxPendingPoints:   cfg.get('influx:maxPendingPoints')
+  });
+
+  // Start monitoring the process
+  base.stats.startProcessUsageReporting({
+    drain:      influx,
+    component:  cfg.get('auth:statsComponent'),
+    process:    'server'
   });
 
   // Configure client table
@@ -45,7 +62,10 @@ var launch = function(profile) {
   // Load validator and create client table before proceeding
   return Promise.all([
     validatorLoaded,
-    Client.createTable()
+    Client.createTable().then(function() {
+      // Create root credentials
+      return Client.createRootClient(cfg.get('auth:root'));
+    })
   ]).then(function() {
     // Create API router and publish reference if needed
     return v1.setup({
@@ -58,7 +78,9 @@ var launch = function(profile) {
       publish:          cfg.get('auth:publishMetaData') === 'true',
       baseUrl:          cfg.get('server:publicUrl') + '/v1',
       referencePrefix:  'auth/v1/api.json',
-      aws:              cfg.get('aws')
+      aws:              cfg.get('aws'),
+      component:        cfg.get('auth:statsComponent'),
+      drain:            influx
     });
   }).then(function(router) {
     // Create app

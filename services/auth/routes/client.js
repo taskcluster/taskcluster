@@ -1,12 +1,11 @@
 var Promise     = require('promise');
 var debug       = require('debug')('taskcluster-auth;routes:user');
-var uuid        = require('uuid');
 var slugid      = require('slugid');
 
 // Auxiliary function to handle errors
 var errorHandler = function(res, title) {
   return function(error) {
-    var iid = uuid.v4();
+    var iid = slugid.v4();
     debug("Error for incident id: %s, as JSON: %j",
           iid, error, error, error.stack);
     res.render('error', {

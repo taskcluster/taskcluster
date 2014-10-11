@@ -5,7 +5,16 @@ module.exports = {
     clientTableName:                'TestClients',
 
     // Publish references and schemas
-    publishMetaData:                'false'
+    publishMetaData:                'false',
+
+    // Name of component in statistics
+    statsComponent:                 'auth',
+
+    // root credentials artificially inserted when application is started
+    root: {
+      clientId:                     undefined,
+      accessToken:                  undefined
+    }
   },
 
   // Server configuration
@@ -36,6 +45,12 @@ module.exports = {
 
     // Azure table storage account key
     accountKey:                     undefined,
+  },
+
+  // InfluxDB for statistics
+  influx: {
+    // InfluxDB Connection string
+    connectionString:               undefined
   },
 
   // AWS SDK configuration for publication of schemas and references
