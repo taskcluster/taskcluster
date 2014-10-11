@@ -1410,7 +1410,7 @@ var _defaultOptions = {
 /** Make a request for a Client instance */
 var makeRequest = function(client, method, url, payload) {
   // Construct request object
-  var req = request[method](url);
+  var req = request(method.toUpperCase(), url);
 
   // Send payload if defined
   if (payload !== undefined) {
