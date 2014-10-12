@@ -332,16 +332,6 @@ Handlers.prototype.running = function(message, task, target) {
     };
     // If this is the run that started, we include logs
     if (message.payload.runId === run.runId) {
-      // Add log
-      result.job.log_references = [{
-        name:   "live.log",
-        url:    that.queue.buildUrl(
-                  that.queue.getArtifact,
-                  status.taskId,
-                  run.runId,
-                  'public/logs/live.log'
-                )
-      }];
 
       // Add link to task-inspector, again, treeherder is obscure, it doesn't
       // pick it up the first time....
@@ -369,7 +359,7 @@ Handlers.prototype.completed = function(message, task, target) {
   var that    = this;
   var status  = message.payload.status;
   return target.project.postJobs(status.runs.map(function(run) {
-    return {
+    var result = {
       project:            target.project.project,
       revision_hash:      target.revisionHash,
       job: {
@@ -403,6 +393,20 @@ Handlers.prototype.completed = function(message, task, target) {
         }
       }
     };
+
+    // The log must only be set after the task is completed and the log must
+    // also be gzipped.
+    result.job.log_references = [{
+      name:   "live_backing.log",
+      url:    that.queue.buildUrl(
+                that.queue.getArtifact,
+                status.taskId,
+                run.runId,
+                'public/logs/live_backing.log'
+              )
+    }];
+
+    return result;
   }));
 };
 
