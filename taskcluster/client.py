@@ -56,34 +56,28 @@ class Client(object):
 
     self.name = apiName
 
-    c = self.config = {}
     ref = api['reference']
 
     # I wonder if anyone cares about this?
     if os.environ.get('TASKCLUSTER_CLIENT_LIVE_API'):
       ref = json.loads(requests.get(config['referenceUrl']).text)
 
-    # Set default options for the Class
-    for opt in ('baseUrl', 'exchangePrefix'):
-      if opt in ref:
-        c[opt] = ref[opt]
-        log.debug('Setting default option %s to %s', opt, self.config[opt])
+    def addDefault(k, v):
+      assert not hasattr(self, k)
+      setattr(self, k, v)
+
+    # API level defaults.  Ideally
+    for opt in [x for x in ref if x != 'entries']:
+      addDefault(opt, ref[opt])
 
     for entry in [x for x in ref['entries'] if x['type'] == 'function']:
       apiFunc = entry['name']
       log.info('Creating instance method %s.%s.%s', __name__, apiName, apiFunc)
-      
-      assert not hasattr(self, apiFunc), \
-          'I will not overwrite existing function'
-
-      # We can't just setattr in the loop because if we do, we end up just
-      # setting all of the API functions to being the last entry of the API
-      # reference. Instead, we create a new scope so that we can add a lambda
-      # that actually works.
       def addApiCall(evt):
-        setattr(self, apiFunc,
-                lambda *args, **kwargs:
+        assert not hasattr(self, apiFunc)
+        setattr(self, apiFunc, lambda *args, **kwargs:
                 self._makeApiCall(evt, *args, **kwargs))
+
       addApiCall(entry)
 
   def _makeApiCall(self, entry, *args, **kwargs):
@@ -120,7 +114,14 @@ class Client(object):
     # should fail.  We don't yet know if we should fail because of two many
     # arguments because we might be overwriting positional ones with kw ones
     if len(reqArgs) > len(args) + len(kwargs):
-      raise TypeError('API Method was not given enough arguments')
+      raise TypeError('API Method was not given enough args')
+
+    # We also need to error out when we have more positional args than required
+    # because we'll need to go through the lists of provided and required args
+    # at the same time.  Not disqualifying early means we'll get IndexErrors
+    # if there are more positional arguments than required
+    if len(args) > len(reqArgs):
+      raise TypeError('API Method was called with too many positional args')
 
     i = 0
     for arg in args:
@@ -136,11 +137,13 @@ class Client(object):
 
     if len(reqArgs) != len(data):
       errMsg = 'API Method takes %d arguments, %d given' % (len(reqArgs), len(data))
+      log.error(errMsg)
       raise TypeError(errMsg)
 
     for reqArg in reqArgs:
       if reqArg not in data:
         errMsg = 'API Method requires a "%s" argument' % reqArg
+        log.error(errMsg)
         raise TypeError(errMsg)
 
     return data
@@ -160,7 +163,7 @@ class Client(object):
     the logic about doing failure retry and passes off the actual work
     of doing an HTTP request to another method."""
 
-    baseUrl = self.config['baseUrl']
+    baseUrl = self.baseUrl
     # urljoin ignores the last param of the baseUrl if the base
     # url doesn't end in /.  I wonder if it's better to just
     # do something basic like baseUrl + route instead
