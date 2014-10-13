@@ -7,6 +7,7 @@ import logging
 import functools
 import copy
 import urlparse
+import time
 
 
 # For finding apis.json
@@ -38,9 +39,19 @@ class Client(object):
   like to support them (because I like to use them). The result is that I'm
   going to make the payload a mandatory keyword argument for methods which have
   an input schema.
+
+  Failing API calls which are connection or server related (i.e. 500 series
+  errors) will be retried up to a maximum number of times with an exponential
+  backoff.  This functionality mirrors that of the JS Client library.  Success
+  and errors which aren't connection related are returned on the first
+  iteration.
   """
 
+  maxRetries = 5
+
   def __init__(self, apiName, api):
+    """ Initialize an API Client based on its definition """
+
     log.debug('Creating a client object for %s', apiName)
 
     self.name = apiName
@@ -60,12 +71,10 @@ class Client(object):
 
     for entry in [x for x in ref['entries'] if x['type'] == 'function']:
       apiFunc = entry['name']
-      log.info('Creating instance method for %s.%s.%s',
-               __name__, apiName, apiFunc)
+      log.info('Creating instance method %s.%s.%s', __name__, apiName, apiFunc)
       
       assert not hasattr(self, apiFunc), \
           'I will not overwrite existing function'
-      log.debug('Setting %s of %s - %s', apiFunc, self.name, self)
 
       # We can't just setattr in the loop because if we do, we end up just
       # setting all of the API functions to being the last entry of the API
@@ -160,28 +169,44 @@ class Client(object):
     fullUrl = urlparse.urljoin(baseUrl, route.lstrip('/'))
     log.debug('Full URL used is: %s', fullUrl)
   
-    # TODO: This is where retry logic should go if we have it 
-    apiData = self._makeSingleHttpRequest(method, fullUrl, payload)
+    retry = 0
+    response = None
+  
+    # We want to retry up to maxRetries number of times with an exponential
+    # backoff.  Times and count selected to match the JS client
+    while retry < self.maxRetries:
+      log.debug('Making attempt %d', retry)
+      response = self._makeSingleHttpRequest(method, fullUrl, payload)
 
-    log.debug('Got a response from the API')
+      # We only want to consider connection errors for retry.  Other errors,
+      # like a 404 saying that a resource wasn't found should be returned
+      # immediately
+      if response.status_code >= 500 and response.status_code < 600:
+        log.error('Received HTTP Status %d, retrying', response.status_code)
+        retry += 1
+        snooze = float(retry * retry) / 10.0
+        log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
+        time.sleep(snooze)
+      else:
+        break
+
+    # We want to make sure that calling code handles errors
+    response.raise_for_status()
+
+    # We want to send JSON data back to the caller
+    try:
+      apiData = response.json()
+    except ValueError:
+      errStr = 'Response contained malformed JSON data'
+      log.error(errStr)
+      raise exceptions.TaskclusterRestFailure(errStr, res=response)
 
     return apiData
 
 
   def _makeSingleHttpRequest(self, method, url, payload):
-    try:
-      return requests.request(method, url, data=payload).json()
-    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError,
-            requests.exceptions.TooManyRedirects, requests.exceptions.Timeout,
-            requests.exceptions.RequestException) as e:
-      # TODO: Handle these exceptions better!
-      errStr = 'Error connecting or talking to API host'
-      log.error(errStr)
-      raise exceptions.TaskclusterAPIFailure(errStr)
-    except ValueError as ve:
-      errStr = 'Could not parse response into JSON'
-      log.error(errStr)
-      raise exceptions.TaskclusterAPIFailure(errStr)
+    log.debug('Making a %s request to %s', method, url)
+    return requests.request(method, url, data=payload)
 
 
 
