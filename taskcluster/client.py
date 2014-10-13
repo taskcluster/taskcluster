@@ -18,7 +18,6 @@ log.setLevel(logging.DEBUG)
 if True or os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
   log.addHandler(logging.StreamHandler())
 log.addHandler(logging.NullHandler())
-log.info('Hello')
 
 API_CONFIG = json.loads(resource_string(__name__, 'apis.json'))
 
@@ -46,7 +45,7 @@ class Client(object):
       if opt in ref:
         c[opt] = ref[opt]
 
-    for entry in ref['entries']:
+    for entry in [x for x in ref['entries'] if x['type'] == 'function']:
       apiFunc = entry['name']
       log.info('Creating instance method for %s.%s.%s',
                __name__, apiName, apiFunc)
@@ -61,13 +60,63 @@ class Client(object):
       def addApiCall(evt):
         setattr(self, apiFunc,
                 lambda *args, **kwargs:
-                self.makeApiCall(evt, *args, **kwargs))
+                self._makeApiCall(evt, *args, **kwargs))
       addApiCall(entry)
 
-  def makeApiCall(self, entry, *args, **kwargs):
-    print json.dumps(entry, indent=2)
-    print args
-    print kwargs
+  def _makeApiCall(self, entry, *args, **kwargs):
+    apiArgs = self._processArgs(entry['args'], *args, **kwargs)
+    route = self._subArgsInRoute(entry['route'], apiArgs)
+    log.debug('Route is: %s', route)
+
+
+  def _processArgs(self, reqArgs, *args, **kwargs):
+    """ Take the list of required arguments, positional arguments
+    and keyword arguments and return a dictionary which maps the
+    value of the given arguments to the required parameters.
+
+    Keyword arguments will overwrite positional arguments.
+    """
+    
+    data = {}
+
+    # We know for sure that if we don't give enough arguments that the call
+    # should fail.  We don't yet know if we should fail because of two many
+    # arguments because we might be overwriting positional ones with kw ones
+    if len(reqArgs) > len(args) + len(kwargs):
+      raise TypeError('_processArgs() was not given enough arguments')
+
+    i = 0
+    for arg in args:
+      log.debug('Found a positional argument: %s', arg);
+      data[reqArgs[i]] = arg;
+      i += 1
+    
+    log.debug('After processing positional arguments, we have: %s', data)
+
+    data.update(kwargs)
+
+    log.debug('After keyword arguments, we have: %s', data)
+
+    if len(reqArgs) != len(data):
+      errMsg = 'API Method takes %d arguments, %d given' % (len(reqArgs), len(data))
+      raise TypeError(errMsg)
+
+    for reqArg in reqArgs:
+      if reqArg not in data:
+        errMsg = 'API Method requires a "%s" argument' % reqArg
+        raise TypeError(errMsg)
+
+    return data
+
+
+  def _subArgsInRoute(self, route, args):
+    """ Given a route like "/task/<taskId>/artifacts" and a mapping like
+    {"taskId": "12345"}, return a string like "/task/12345/artifacts"
+    """
+
+    # TODO: Let's just pretend this is a good idea  
+    return route.replace('<', '%(').replace('>', ')s') % args
+
 
 
 # This has to be done after the Client class is declared
