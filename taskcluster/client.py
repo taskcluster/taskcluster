@@ -118,8 +118,8 @@ class Client(object):
 
     # We also need to error out when we have more positional args than required
     # because we'll need to go through the lists of provided and required args
-    # at the same time.  Not disqualifying early means we'll get IndexErrors
-    # if there are more positional arguments than required
+    # at the same time.  Not disqualifying early means we'll get IndexErrors if
+    # there are more positional arguments than required
     if len(args) > len(reqArgs):
       raise TypeError('API Method was called with too many positional args')
 
@@ -164,9 +164,9 @@ class Client(object):
     of doing an HTTP request to another method."""
 
     baseUrl = self.baseUrl
-    # urljoin ignores the last param of the baseUrl if the base
-    # url doesn't end in /.  I wonder if it's better to just
-    # do something basic like baseUrl + route instead
+    # urljoin ignores the last param of the baseUrl if the base url doesn't end
+    # in /.  I wonder if it's better to just do something basic like baseUrl +
+    # route instead
     if not baseUrl.endswith('/'):
       baseUrl += '/'
     fullUrl = urlparse.urljoin(baseUrl, route.lstrip('/'))
@@ -174,9 +174,6 @@ class Client(object):
   
     retry = 0
     response = None
-  
-    # We want to retry up to maxRetries number of times with an exponential
-    # backoff.  Times and count selected to match the JS client
     while retry < self.maxRetries:
       log.debug('Making attempt %d', retry)
       response = self._makeSingleHttpRequest(method, fullUrl, payload)
