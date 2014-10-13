@@ -5,12 +5,16 @@ import os
 import json
 import logging
 import functools
+import copy
+import urlparse
 
 
 # For finding apis.json
 from pkg_resources import resource_string
-# import requests
+import requests
 # import hawk
+
+import exceptions
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -24,9 +28,17 @@ API_CONFIG = json.loads(resource_string(__name__, 'apis.json'))
 
 class Client(object):
   """ Instances of this class are API helpers for a specific API reference.
-  They know how to load their data from either a statically defined JSON
-  file which is packaged with the library, or by reading an environment
-  variable can load the individual api endpoints from the web"""
+  They know how to load their data from either a statically defined JSON file
+  which is packaged with the library, or by reading an environment variable can
+  load the individual api endpoints from the web
+  
+  A difference between the JS and Python client is that the payload for JS
+  client is always the last argument in the API method.  That works nicely
+  because JS doesn't have keyword arguments.  Python does have kwargs and I'd
+  like to support them (because I like to use them). The result is that I'm
+  going to make the payload a mandatory keyword argument for methods which have
+  an input schema.
+  """
 
   def __init__(self, apiName, api):
     log.debug('Creating a client object for %s', apiName)
@@ -44,11 +56,13 @@ class Client(object):
     for opt in ('baseUrl', 'exchangePrefix'):
       if opt in ref:
         c[opt] = ref[opt]
+        log.debug('Setting default option %s to %s', opt, self.config[opt])
 
     for entry in [x for x in ref['entries'] if x['type'] == 'function']:
       apiFunc = entry['name']
       log.info('Creating instance method for %s.%s.%s',
                __name__, apiName, apiFunc)
+      
       assert not hasattr(self, apiFunc), \
           'I will not overwrite existing function'
       log.debug('Setting %s of %s - %s', apiFunc, self.name, self)
@@ -64,9 +78,23 @@ class Client(object):
       addApiCall(entry)
 
   def _makeApiCall(self, entry, *args, **kwargs):
-    apiArgs = self._processArgs(entry['args'], *args, **kwargs)
+    """ This function is used to dispatch calls to other functions
+    for a given API Reference entry"""
+
+    payload = None
+
+    # I forget if **ing a {} results in a new {} or a reference
+    _kwargs = copy.deepcopy(kwargs)
+    if 'input' in entry and 'payload' in _kwargs:
+      payload = _kwargs['payload']
+      del _kwargs['payload']
+      log.debug('We have a payload!')
+
+    apiArgs = self._processArgs(entry['args'], *args, **_kwargs)
     route = self._subArgsInRoute(entry['route'], apiArgs)
     log.debug('Route is: %s', route)
+
+    return self._makeHttpRequest(entry['method'], route, payload)
 
 
   def _processArgs(self, reqArgs, *args, **kwargs):
@@ -83,7 +111,7 @@ class Client(object):
     # should fail.  We don't yet know if we should fail because of two many
     # arguments because we might be overwriting positional ones with kw ones
     if len(reqArgs) > len(args) + len(kwargs):
-      raise TypeError('_processArgs() was not given enough arguments')
+      raise TypeError('API Method was not given enough arguments')
 
     i = 0
     for arg in args:
@@ -115,7 +143,46 @@ class Client(object):
     """
 
     # TODO: Let's just pretend this is a good idea  
-    return route.replace('<', '%(').replace('>', ')s') % args
+    route = route.replace('<', '%(').replace('>', ')s') % args
+    return route.lstrip('/')
+
+  def _makeHttpRequest(self, method, route, payload):
+    """ Make an HTTP Request for the API endpoint.  This method wraps
+    the logic about doing failure retry and passes off the actual work
+    of doing an HTTP request to another method."""
+
+    baseUrl = self.config['baseUrl']
+    # urljoin ignores the last param of the baseUrl if the base
+    # url doesn't end in /.  I wonder if it's better to just
+    # do something basic like baseUrl + route instead
+    if not baseUrl.endswith('/'):
+      baseUrl += '/'
+    fullUrl = urlparse.urljoin(baseUrl, route.lstrip('/'))
+    log.debug('Full URL used is: %s', fullUrl)
+  
+    # TODO: This is where retry logic should go if we have it 
+    apiData = self._makeSingleHttpRequest(method, fullUrl, payload)
+
+    log.debug('Got a response from the API')
+
+    return apiData
+
+
+  def _makeSingleHttpRequest(self, method, url, payload):
+    try:
+      return requests.request(method, url, data=payload).json()
+    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError,
+            requests.exceptions.TooManyRedirects, requests.exceptions.Timeout,
+            requests.exceptions.RequestException) as e:
+      # TODO: Handle these exceptions better!
+      errStr = 'Error connecting or talking to API host'
+      log.error(errStr)
+      raise exceptions.TaskclusterAPIFailure(errStr)
+    except ValueError as ve:
+      errStr = 'Could not parse response into JSON'
+      log.error(errStr)
+      raise exceptions.TaskclusterAPIFailure(errStr)
+
 
 
 
