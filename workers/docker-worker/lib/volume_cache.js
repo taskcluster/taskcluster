@@ -106,7 +106,7 @@ VolumeCache.prototype = {
         } else {
           var cacheKey = cacheName + KEY_DELIMITER + instance;
           var instancePath = this.cache[cacheName][instance].path;
-          var statName = 'cache.volume.' + cacheKey + '.removed';
+          var statName = 'cache.volume.' + cacheName + '.instance_removed';
           yield this.stats.timeGen(statName, removeDir(instancePath));
           delete this.cache[cacheName][instance];
           this.log('cache volume removed',
@@ -172,7 +172,7 @@ VolumeCache.prototype = {
       logMessage = 'cache volume miss';
       instance = yield this.add(cacheName);
       this.set(instance.key, {mounted: true});
-      var statName = 'cache.volume.' + instance.key + '.miss';
+      var statName = 'cache.volume.' + cacheName + '.miss';
       this.stats.increment(statName);
     } else {
       logMessage = 'cache volume hit';
@@ -180,7 +180,7 @@ VolumeCache.prototype = {
         path: this.cache[cacheName][instanceId].path,
         lastUsed: this.cache[cacheName][instanceId].lastUsed
       };
-      var statName = 'cache.volume.' + instance.key + '.hit';
+      var statName = 'cache.volume.' + cacheName + '.hit';
       this.stats.increment(statName);
     }
     this.log(logMessage, instance);
