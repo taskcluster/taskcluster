@@ -32,7 +32,7 @@ class Client(object):
   They know how to load their data from either a statically defined JSON file
   which is packaged with the library, or by reading an environment variable can
   load the individual api endpoints from the web
-  
+
   A difference between the JS and Python client is that the payload for JS
   client is always the last argument in the API method.  That works nicely
   because JS doesn't have keyword arguments.  Python does have kwargs and I'd
@@ -73,6 +73,7 @@ class Client(object):
     for entry in [x for x in ref['entries'] if x['type'] == 'function']:
       apiFunc = entry['name']
       log.info('Creating instance method %s.%s.%s', __name__, apiName, apiFunc)
+
       def addApiCall(evt):
         assert not hasattr(self, apiFunc)
         setattr(self, apiFunc, lambda *args, **kwargs:
@@ -99,7 +100,6 @@ class Client(object):
 
     return self._makeHttpRequest(entry['method'], route, payload)
 
-
   def _processArgs(self, reqArgs, *args, **kwargs):
     """ Take the list of required arguments, positional arguments
     and keyword arguments and return a dictionary which maps the
@@ -107,7 +107,7 @@ class Client(object):
 
     Keyword arguments will overwrite positional arguments.
     """
-    
+
     data = {}
 
     # We know for sure that if we don't give enough arguments that the call
@@ -125,10 +125,10 @@ class Client(object):
 
     i = 0
     for arg in args:
-      log.debug('Found a positional argument: %s', arg);
-      data[reqArgs[i]] = arg;
+      log.debug('Found a positional argument: %s', arg)
+      data[reqArgs[i]] = arg
       i += 1
-    
+
     log.debug('After processing positional arguments, we have: %s', data)
 
     data.update(kwargs)
@@ -136,7 +136,7 @@ class Client(object):
     log.debug('After keyword arguments, we have: %s', data)
 
     if len(reqArgs) != len(data):
-      errMsg = 'API Method takes %d arguments, %d given' % (len(reqArgs), len(data))
+      errMsg = 'API Method takes %d args, %d given' % (len(reqArgs), len(data))
       log.error(errMsg)
       raise TypeError(errMsg)
 
@@ -148,13 +148,12 @@ class Client(object):
 
     return data
 
-
   def _subArgsInRoute(self, route, args):
     """ Given a route like "/task/<taskId>/artifacts" and a mapping like
     {"taskId": "12345"}, return a string like "/task/12345/artifacts"
     """
 
-    # TODO: Let's just pretend this is a good idea  
+    # TODO: Let's just pretend this is a good idea
     route = route.replace('<', '%(').replace('>', ')s') % args
     return route.lstrip('/')
 
@@ -171,7 +170,7 @@ class Client(object):
       baseUrl += '/'
     fullUrl = urlparse.urljoin(baseUrl, route.lstrip('/'))
     log.debug('Full URL used is: %s', fullUrl)
-  
+
     retry = 0
     response = None
     while retry < self.maxRetries:
@@ -203,12 +202,9 @@ class Client(object):
 
     return apiData
 
-
   def _makeSingleHttpRequest(self, method, url, payload):
     log.debug('Making a %s request to %s', method, url)
     return requests.request(method, url, data=payload)
-
-
 
 
 # This has to be done after the Client class is declared
