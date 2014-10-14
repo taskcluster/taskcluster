@@ -62,13 +62,9 @@ class Client(object):
     if os.environ.get('TASKCLUSTER_CLIENT_LIVE_API'):
       ref = json.loads(requests.get(config['referenceUrl']).text)
 
-    def addDefault(k, v):
-      assert not hasattr(self, k)
-      setattr(self, k, v)
-
     # API level defaults.  Ideally
     for opt in [x for x in ref if x != 'entries']:
-      addDefault(opt, ref[opt])
+      self.setOption(opt, ref[opt])
 
     for entry in [x for x in ref['entries'] if x['type'] == 'function']:
       apiFunc = entry['name']
@@ -80,6 +76,14 @@ class Client(object):
                 self._makeApiCall(evt, *args, **kwargs))
 
       addApiCall(entry)
+
+  def setOptions(self, options):
+    for opt in options:
+      self.setOption(opt, options[opt])
+
+  def setOption(self, k, v):
+    assert not hasattr(self, k)
+    setattr(self, k, v)
 
   def _makeApiCall(self, entry, *args, **kwargs):
     """ This function is used to dispatch calls to other functions
