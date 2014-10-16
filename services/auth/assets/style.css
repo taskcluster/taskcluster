@@ -1,5 +1,3 @@
-#signin {
-  cursor:       pointer;
-  margin-top:   12px;
-  margin-right: 15px;
+#credentials dt, #credentials dd {
+  padding-top: 5px;
 }

@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 var base    = require('taskcluster-base');
-var data    = require('../data');
+var data    = require('../auth/data');
 var v1      = require('../routes/api/v1');
 var routes  = require('../routes');
 var path    = require('path');
 var debug   = require('debug')('taskcluster-auth:bin:server');
 var Promise = require('promise');
+var persona = require('../auth/persona');
 
 /** Launch server */
 var launch = function(profile) {
@@ -94,8 +95,9 @@ var launch = function(profile) {
     // Mount API router
     app.use('/v1', router);
 
+
     // Setup middleware and authentication
-    var ensureAuth = app.setup({
+    var ensureAuth = persona.setup(app, {
       cookieSecret:   cfg.get('server:cookieSecret'),
       viewFolder:     path.join(__dirname, '..', 'views'),
       assetFolder:    path.join(__dirname, '..', 'assets'),
@@ -105,19 +107,13 @@ var launch = function(profile) {
 
     // Provide a client
     app.globals = {
-      Client:         Client
+      Client:         Client,
+      root:           cfg.get('auth:root')
     };
 
     // Route configuration
     app.get('/',                                       routes.index);
     app.get('/unauthorized',                           routes.unauthorized);
-    app.get('/client',                    ensureAuth,  routes.client.list);
-    app.get('/client/create',             ensureAuth,  routes.client.create);
-    app.get('/client/:clientId/view',     ensureAuth,  routes.client.view);
-    app.get('/client/:clientId/edit',     ensureAuth,  routes.client.edit);
-    app.get('/client/:clientId/delete',   ensureAuth,  routes.client.delete);
-    app.post('/client/update',            ensureAuth,  routes.client.update)
-
     // Create server
     return app.createServer();
   });
