@@ -1,0 +1,104 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    if title
+      title TaskCluster - Authentication
+    else
+      title TaskCluster - Authentication
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+
+    // Bootstrap
+    link(rel='stylesheet',
+         href='/assets/bootstrap/css/bootstrap.min.css')
+    link(rel='stylesheet',
+         href='/assets/bootstrap/css/bootstrap-theme.min.css')
+
+    // Custom styling
+    link(rel='stylesheet', href='/assets/style.css')
+
+    // jQuery and Bootstrap Javascript
+    script(src='/assets/jquery.min.js')
+    script(src='/assets/bootstrap/js/bootstrap.min.js')
+
+    // Persona login script and login script
+    script(src='https://login.persona.org/include.js')
+    script(src='/assets/login.js')
+  body.container
+    div.row
+      div.col-md-10.col-md-offset-1#content
+        h1 TaskCluster Authentication
+        hr
+        p
+          | Welcome to TaskCluster authentication interface. This site allows
+          | you to authentication against TaskCluster using Persona with an
+          | &nbsp;
+          code @mozilla.com
+          | address. Once authenticated you'll be issued a set of temporary
+          | TaskCluster credentials that will remain valid for 31 days. If you
+          | where redirected here from another site, you'll be offered the
+          | option of redirecting back to the orignal site with credentials as
+          | query string (assuming you want to delegate access).
+        p
+          b Note,&nbsp;
+          | we are working to allow authentication with any mozillians.org
+          | account. But this maybe take a while, pending API additions to
+          | mozillians.org.
+        br
+        h2 Temporary Credentials
+        hr
+        if user
+          dl.dl-horizontal#credentials
+            dt ClientId
+            dd
+              code #{credentials.clientId}
+            dt AccessToken
+            dd
+              code #{credentials.accessToken}
+            dt Certificate
+            dd
+              pre
+                | #{credentials.certificate}
+            dt
+            dd
+              a.btn.btn-danger(href="/logout?#{querystring}")
+                i.glyphicon.glyphicon-log-out
+                | &nbsp;Log out
+        else
+          if authFailed
+            div.alert.alert-warning
+              strong Authention Failed!
+              | &nbsp;Make sure you're logging with an &nbsp;
+              code @mozilla.com
+              | &nbsp;address...
+          form#persona-form(action='/?#{querystring}', method='post')
+            input#persona-assertion(type='hidden', name='assertion')
+            div.btn.btn-primary#signin
+              i.glyphicon.glyphicon-log-in
+              | &nbsp;Sign-in
+            | &nbsp;You must sign-in to access temporary credentials.
+        if query.target && query.description
+          br
+          h2 Delegate Temporary Credentials
+          hr
+          p
+            | The following site would like access to your temporary
+            | credentials.
+          dl.dl-horizontal
+            dt Target
+            dd
+              b
+                code #{query.target}
+            dt Description
+            dd !{marked(query.description, {sanitize: true})}
+            dt
+            dd
+              if user
+                a.btn.btn-primary(href=target)
+                  i.glyphicon.glyphicon-lock
+                  | &nbsp;Grant Access
+              else
+                a.btn.btn-primary.disabled(href=query.target)
+                  i.glyphicon.glyphicon-lock
+                  | &nbsp;Grant Access
+                | &nbsp;(Please sign-in first)
