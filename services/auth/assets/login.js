@@ -1,5 +1,5 @@
 $(function() {
-  $('.signin').click(function(){
+  $('#signin').click(function(){
     navigator.id.get(function(assertion) {
       if (assertion) {
         $('#persona-assertion').val(assertion);

@@ -156,4 +156,4 @@ Client.createRootClient = function(credentials) {
 };
 
 // Export client
-module.exports = Client;
+exports.Client = Client;
