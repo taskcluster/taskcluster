@@ -2,7 +2,7 @@ module.exports = {
   queue: {
     // Should be overwritten by environment variable
     publishMetaData:              'false',
-    exchangePrefix:               'queue/v1/',
+    exchangePrefix:               'v1/',
     artifactBucket:               'taskcluster-artifacts',
     artifactContainer:            'artifacts',
     taskContainer:                'tasks',
@@ -33,15 +33,17 @@ module.exports = {
     connectionString:             undefined
   },
 
+  // Pulse credentials
+  pulse: {
+    username:                     'taskcluster-queue',
+    // Provided by environment variable
+    password:                     undefined
+  },
+
   azure: {
     // Provided by environment variable
     accountName:                  undefined,
     accountKey:                   undefined
-  },
-
-  amqp: {
-    // Provided by environment variable
-    url:                          undefined
   },
 
   // Credentials are given by environment variables

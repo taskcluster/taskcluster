@@ -20,7 +20,8 @@ var launch = function(profile) {
     defaults:     require('../config/defaults'),
     profile:      require('../config/' + profile),
     envs: [
-      'amqp_url',
+      'pulse_username',
+      'pulse_password',
       'database_connectionString',
       'queue_publishMetaData',
       'taskcluster_credentials_clientId',
@@ -62,7 +63,7 @@ var launch = function(profile) {
     debug("Validator created");
     validator = validator_;
     return exchanges.setup({
-      connectionString:   cfg.get('amqp:url'),
+      credentials:        cfg.get('pulse'),
       exchangePrefix:     cfg.get('queue:exchangePrefix'),
       validator:          validator,
       referencePrefix:    'queue/v1/exchanges.json',

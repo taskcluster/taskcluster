@@ -29,14 +29,17 @@ module.exports = {
     port:                         60001
   },
 
+  /* TODO: See if this works:
+  pulse: {
+    username:   'guest',
+    password:   'guest',
+    hostname:   'localhost'
+  }
+  */
+
   // Local database
   database: {
     connectionString:             'postgres://queue:secret@localhost:5432/queue_v1',
-  },
-
-  // Use local AMQP installation
-  amqp: {
-    url:                          'amqp://guest:guest@localhost:5672'
   },
 
   aws: {
