@@ -5,7 +5,7 @@ module.exports = {
     publishMetaData:              'false',
 
     // Prefix for exchanges declared
-    exchangePrefix:               'queue/v1/',
+    exchangePrefix:               'v1/',
 
     // Settings for task reaper, note that this must be started as a separate
     // process bin/reaper.js run the reaper
@@ -86,10 +86,10 @@ module.exports = {
     accountKey:                     undefined
   },
 
-  // AMQP configuration
-  amqp: {
-    // URL for AMQP setup formatted as amqp://user:password@host:port/vhost
-    url:                            undefined
+  // Pulse credentials
+  pulse: {
+    username:                       undefined,
+    password:                       undefined
   },
 
   // InfluxDB configuration

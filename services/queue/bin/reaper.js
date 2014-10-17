@@ -14,7 +14,8 @@ var launch = function(profile) {
     defaults:     require('../config/defaults'),
     profile:      require('../config/' + profile),
     envs: [
-      'amqp_url',
+      'pulse_username',
+      'pulse_password',
       'database_connectionString',
       'influx_connectionString'
     ],
@@ -49,7 +50,7 @@ var launch = function(profile) {
     constants:        require('../schemas/constants'),
   }).then(function(validator) {
     return exchanges.connect({
-      connectionString:   cfg.get('amqp:url'),
+      credentials:        cfg.get('pulse'),
       exchangePrefix:     cfg.get('queue:exchangePrefix'),
       validator:          validator,
       drain:              influx,
