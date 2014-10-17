@@ -35,7 +35,7 @@ module.exports = {
           "args": [
             "clientId"
           ],
-          "name": "inspect",
+          "name": "scopes",
           "title": "Get Client Authorized Scopes",
           "description": "Returns the scopes the client is authorized to access and the date-time\nwhere the clients authorization is set to expire.\n\nThis API end-point allows you inspect clients without getting access to\ncredentials, as provide by the `getCredentials` request below.",
           "scopes": [
@@ -64,6 +64,114 @@ module.exports = {
             ]
           ],
           "output": "http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/client/<clientId>",
+          "args": [
+            "clientId"
+          ],
+          "name": "client",
+          "title": "Get Client Information",
+          "description": "Returns all information about a given client. This end-point is mostly\nbuilding tools to administrate clients. Do not use if you only want to\nauthenticate a request, see `getCredentials` for this purpose.",
+          "scopes": [
+            [
+              "auth:credentials"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "put",
+          "route": "/client/<clientId>",
+          "args": [
+            "clientId"
+          ],
+          "name": "createClient",
+          "title": "Create Client",
+          "description": "Create client with given `clientId`, `name`, `expires`, `scopes` and\n`description`. The `accessToken` will always be generated server-side,\nand will be returned from this request.\n\n**Required scopes**, in addition the scopes listed\nabove, the caller must also posses the all the scopes that is given to\nthe client that is created.",
+          "scopes": [
+            [
+              "auth:create-client",
+              "auth:credentials"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/client/<clientId>/modify",
+          "args": [
+            "clientId"
+          ],
+          "name": "modifyClient",
+          "title": "Modify Client",
+          "description": "Modify client `name`, `expires`, `scopes` and\n`description`.\n\n**Required scopes**, in addition the scopes listed\nabove, the caller must also posses the all the scopes that is given to\nthe client that is updated.",
+          "scopes": [
+            [
+              "auth:modify-client",
+              "auth:credentials"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#"
+        },
+        {
+          "type": "function",
+          "method": "delete",
+          "route": "/client/<clientId>",
+          "args": [
+            "clientId"
+          ],
+          "name": "removeClient",
+          "title": "Remove Client",
+          "description": "Delete a client with given `clientId`.",
+          "scopes": [
+            [
+              "auth:remove-client"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/client/<clientId>/reset-credentials",
+          "args": [
+            "clientId"
+          ],
+          "name": "resetCredentials",
+          "title": "Reset Client Credentials",
+          "description": "Reset credentials for a client. This will generate a new `accessToken`.\nas always the `accessToken` will be generated server-side and returned.",
+          "scopes": [
+            [
+              "auth:reset-credentials",
+              "auth:credentials"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/list-clients",
+          "args": [],
+          "name": "listClients",
+          "title": "List Clients",
+          "description": "Return list with all clients",
+          "scopes": [
+            [
+              "auth:client-clients"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
         }
       ]
     }
@@ -351,16 +459,6 @@ module.exports = {
         {
           "type": "function",
           "method": "get",
-          "route": "/settings/amqp-connection-string",
-          "args": [],
-          "name": "getAMQPConnectionString",
-          "title": "Fetch AMQP Connection String",
-          "description": "Most hosted AMQP services requires us to specify a virtual host, \nso hardcoding the AMQP connection string into various services would be \na bad solution. Hence, we offer all authorized queue consumers to fetch \nan AMQP connection string using the API end-point.\n\n**Warning**, this API end-point is not stable, and may change in the \nfuture the strategy of not hardcoding AMQP connection details into \nvarious components obviously makes sense. But as we have no method of \nnotifying consumers that the connection string have moved. This \napproach may not be optimal either. Thus, we may be choose to remove \nthis API end-point when `pulse.mozilla.org` is a stable AMQP service \nwe can rely on.",
-          "output": "http://schemas.taskcluster.net/queue/v1/amqp-connection-string-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
           "route": "/ping",
           "args": [],
           "name": "ping",
@@ -376,7 +474,7 @@ module.exports = {
       "version": "0.2.0",
       "title": "Queue AMQP Exchanges",
       "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes AMQP exchanges offered by the queue, which allows\nthird-party listeners to monitor tasks as they progress to resolution.\nThese exchanges targets the following audience:\n * Schedulers, who takes action after tasks are completed,\n * Workers, who wants to listen for new or canceled tasks (optional),\n * Tools, that wants to update their view as task progress.\n\nYou'll notice that all the exchanges in the document shares the same\nrouting key pattern. This makes it very easy to bind to all messages\nabout a certain kind tasks.\n\n**Task-graphs**, if the task-graph scheduler, documented elsewhere, is\nused to schedule a task-graph, the task submitted will have their\n`schedulerId` set to `'task-graph-scheduler'`, and their `taskGroupId` to\nthe `taskGraphId` as given to the task-graph scheduler. This is useful if\nyou wish to listen for all messages in a specific task-graph.\n\n**Task specific routes**, a task can define a task specific route using\nthe `task.routes` property. See task creation documentation for details\non permissions required to provide task specific routes. If a task has\nthe entry `'notify.by-email'` in as task specific route defined in\n`task.routes` all messages about this task will be CC'ed with the\nrouting-key `'route.notify.by-email'`.\n\nThese routes will always be prefixed `route.`, so that cannot interfere\nwith the _primary_ routing key as documented here. Notice that the\n_primary_ routing key is alwasys prefixed `primary.`. This is ensured\nin the routing key reference, so API clients will do this automatically.\n\nPlease, note that the way RabbitMQ works, the message will only arrive\nin your queue once, even though you may have bound to the exchange with\nmultiple routing key patterns that matches more of the CC'ed routing\nrouting keys.\n\n**Delivery guarantees**, most operations on the queue are idempotent,\nwhich means that if repeated with the same arguments then the requests\nwill ensure completion of the operation and return the same response.\nThis is useful if the server crashes or the TCP connection breaks, but\nwhen re-executing an idempotent operation, the queue will also resend\nany related AMQP messages. Hence, messages may be repeated.\n\nThis shouldn't be much of a problem, as the best you can achieve using\nconfirm messages with AMQP is at-least-once delivery semantics. Hence,\nthis only prevents you from obtaining at-most-once delivery semantics.\n\n**Remark**, some message generated by timeouts maybe dropped if the\nserver crashes at wrong time. Ideally, we'll address this in the\nfuture. For now we suggest you ignore this corner case, and notify us\nif this corner case is of concern to you.",
-      "exchangePrefix": "queue/v1/",
+      "exchangePrefix": "exchange/taskcluster-queue/v1/",
       "entries": [
         {
           "type": "topic-exchange",
@@ -389,71 +487,61 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
-              "required": true,
               "multipleWords": false,
-              "maxSize": 7
+              "required": true
             },
             {
               "name": "taskId",
               "summary": "`taskId` for the task this message concerns",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "runId",
               "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
-              "required": false,
-              "maxSize": 3,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerGroup",
               "summary": "`workerGroup` of latest run for the task, `_` if no run is exists for the task.",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerId",
               "summary": "`workerId` of latest run for the task, `_` if no run is exists for the task.",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "provisionerId",
               "summary": "`provisionerId` this task is targeted at.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerType",
               "summary": "`workerType` this task must run on.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "schedulerId",
               "summary": "`schedulerId` this task was created by.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "taskGroupId",
               "summary": "`taskGroupId` this task was created in.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "reserved",
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "maxSize": 1,
               "required": false
             }
           ],
@@ -470,71 +558,61 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
-              "required": true,
               "multipleWords": false,
-              "maxSize": 7
+              "required": true
             },
             {
               "name": "taskId",
               "summary": "`taskId` for the task this message concerns",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "runId",
               "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
-              "required": true,
-              "maxSize": 3,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerGroup",
               "summary": "`workerGroup` of latest run for the task, `_` if no run is exists for the task.",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerId",
               "summary": "`workerId` of latest run for the task, `_` if no run is exists for the task.",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "provisionerId",
               "summary": "`provisionerId` this task is targeted at.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerType",
               "summary": "`workerType` this task must run on.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "schedulerId",
               "summary": "`schedulerId` this task was created by.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "taskGroupId",
               "summary": "`taskGroupId` this task was created in.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "reserved",
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "maxSize": 1,
               "required": false
             }
           ],
@@ -551,71 +629,61 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
-              "required": true,
               "multipleWords": false,
-              "maxSize": 7
+              "required": true
             },
             {
               "name": "taskId",
               "summary": "`taskId` for the task this message concerns",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "runId",
               "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
-              "required": true,
-              "maxSize": 3,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerGroup",
               "summary": "`workerGroup` of latest run for the task, `_` if no run is exists for the task.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerId",
               "summary": "`workerId` of latest run for the task, `_` if no run is exists for the task.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "provisionerId",
               "summary": "`provisionerId` this task is targeted at.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerType",
               "summary": "`workerType` this task must run on.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "schedulerId",
               "summary": "`schedulerId` this task was created by.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "taskGroupId",
               "summary": "`taskGroupId` this task was created in.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "reserved",
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "maxSize": 1,
               "required": false
             }
           ],
@@ -632,71 +700,61 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
-              "required": true,
               "multipleWords": false,
-              "maxSize": 7
+              "required": true
             },
             {
               "name": "taskId",
               "summary": "`taskId` for the task this message concerns",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "runId",
               "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
-              "required": true,
-              "maxSize": 3,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerGroup",
               "summary": "`workerGroup` of latest run for the task, `_` if no run is exists for the task.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerId",
               "summary": "`workerId` of latest run for the task, `_` if no run is exists for the task.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "provisionerId",
               "summary": "`provisionerId` this task is targeted at.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerType",
               "summary": "`workerType` this task must run on.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "schedulerId",
               "summary": "`schedulerId` this task was created by.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "taskGroupId",
               "summary": "`taskGroupId` this task was created in.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "reserved",
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "maxSize": 1,
               "required": false
             }
           ],
@@ -713,71 +771,61 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
-              "required": true,
               "multipleWords": false,
-              "maxSize": 7
+              "required": true
             },
             {
               "name": "taskId",
               "summary": "`taskId` for the task this message concerns",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "runId",
               "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
-              "required": true,
-              "maxSize": 3,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerGroup",
               "summary": "`workerGroup` of latest run for the task, `_` if no run is exists for the task.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerId",
               "summary": "`workerId` of latest run for the task, `_` if no run is exists for the task.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "provisionerId",
               "summary": "`provisionerId` this task is targeted at.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerType",
               "summary": "`workerType` this task must run on.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "schedulerId",
               "summary": "`schedulerId` this task was created by.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "taskGroupId",
               "summary": "`taskGroupId` this task was created in.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "reserved",
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "maxSize": 1,
               "required": false
             }
           ],
@@ -794,71 +842,61 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
-              "required": true,
               "multipleWords": false,
-              "maxSize": 7
+              "required": true
             },
             {
               "name": "taskId",
               "summary": "`taskId` for the task this message concerns",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "runId",
               "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
-              "required": false,
-              "maxSize": 3,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerGroup",
               "summary": "`workerGroup` of latest run for the task, `_` if no run is exists for the task.",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerId",
               "summary": "`workerId` of latest run for the task, `_` if no run is exists for the task.",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "provisionerId",
               "summary": "`provisionerId` this task is targeted at.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "workerType",
               "summary": "`workerType` this task must run on.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "schedulerId",
               "summary": "`schedulerId` this task was created by.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "taskGroupId",
               "summary": "`taskGroupId` this task was created in.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "reserved",
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "maxSize": 1,
               "required": false
             }
           ],
@@ -965,7 +1003,7 @@ module.exports = {
       "version": "0.2.0",
       "title": "Scheduler AMQP Exchanges",
       "description": "The scheduler, typically available at `scheduler.taskcluster.net` is\nresponsible for accepting task-graphs and schedule tasks on the queue as\ntheir dependencies are completed successfully.\n\nThis document describes the AMQP exchanges offered by the scheduler,\nwhich allows third-party listeners to monitor task-graph submission and\nresolution. These exchanges targets the following audience:\n * Reporters, who displays the state of task-graphs or emails people on\n   failures, and\n * End-users, who wants notification of completed task-graphs\n\n**Remark**, the task-graph scheduler will require that the `schedulerId`\nfor tasks is set to the `schedulerId` for the task-graph scheduler. In\nproduction the `schedulerId` is typically `\"task-graph-scheduler\"`.\nFurthermore, the task-graph scheduler will also require that\n`taskGroupId` is equal to the `taskGraphId`.\n\nCombined these requirements ensures that `schedulerId` and `taskGroupId`\nhave the same position in the routing keys for the queue exchanges.\nSee queue documentation for details on queue exchanges. Hence, making\nit easy to listen for all tasks in a given task-graph.\n\nNote that routing key entries 2 through 7 used for exchanges on the\ntask-graph scheduler is hardcoded to `_`. This is done to preserve\npositional equivalence with exchanges offered by the queue.",
-      "exchangePrefix": "scheduler/v1/",
+      "exchangePrefix": "exchange/taskcluster-scheduler/scheduler/v1/",
       "entries": [
         {
           "type": "topic-exchange",
@@ -978,71 +1016,61 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
-              "required": true,
               "multipleWords": false,
-              "maxSize": 7
+              "required": true
             },
             {
               "name": "taskId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "runId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 3,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerGroup",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "provisionerId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerType",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "schedulerId",
               "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "taskGraphId",
               "summary": "Identifier for the task-graph this message concerns",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "reserved",
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "maxSize": 1,
               "required": false
             }
           ],
@@ -1059,71 +1087,61 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
-              "required": true,
               "multipleWords": false,
-              "maxSize": 7
+              "required": true
             },
             {
               "name": "taskId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "runId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 3,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerGroup",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "provisionerId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerType",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "schedulerId",
               "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "taskGraphId",
               "summary": "Identifier for the task-graph this message concerns",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "reserved",
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "maxSize": 1,
               "required": false
             }
           ],
@@ -1140,71 +1158,61 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
-              "required": true,
               "multipleWords": false,
-              "maxSize": 7
+              "required": true
             },
             {
               "name": "taskId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "runId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 3,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerGroup",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "provisionerId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerType",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "schedulerId",
               "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "taskGraphId",
               "summary": "Identifier for the task-graph this message concerns",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "reserved",
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "maxSize": 1,
               "required": false
             }
           ],
@@ -1221,71 +1229,61 @@ module.exports = {
               "name": "routingKeyKind",
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
               "constant": "primary",
-              "required": true,
               "multipleWords": false,
-              "maxSize": 7
+              "required": true
             },
             {
               "name": "taskId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "runId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 3,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerGroup",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "provisionerId",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "workerType",
               "summary": "Always takes the value `_`",
-              "required": false,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": false
             },
             {
               "name": "schedulerId",
               "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "taskGraphId",
               "summary": "Identifier for the task-graph this message concerns",
-              "required": true,
-              "maxSize": 22,
-              "multipleWords": false
+              "multipleWords": false,
+              "required": true
             },
             {
               "name": "reserved",
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
               "multipleWords": true,
-              "maxSize": 1,
               "required": false
             }
           ],

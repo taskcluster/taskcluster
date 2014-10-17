@@ -1,6 +1,6 @@
 {
   "name":         "taskcluster-client",
-  "version":      "0.17.3",
+  "version":      "0.17.4",
   "author":       "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description":  "Client for interfacing taskcluster components",
   "license":      "MPL-2.0",
@@ -14,23 +14,23 @@
   },
   "dependencies": {
     "lodash":                           "2.4.1",
-    "debug":                            "1.0.4",
-    "superagent":                       "0.18.2",
+    "debug":                            "2.1.0",
+    "superagent":                       "0.20.0",
     "superagent-promise":               "0.2.0",
     "superagent-hawk":                  "0.0.4",
     "amqplib":                          "0.2.1",
     "slugid":                           "1.0.3",
-    "promise":                          "5.0.0",
-    "hawk":                             "2.2.3",
+    "promise":                          "6.0.1",
+    "hawk":                             "2.3.0",
     "sockjs-client-node":               "0.1.1",
     "url-join":                         "0.0.1"
   },
   "devDependencies": {
-    "mocha":                            "1.21.4",
+    "mocha":                            "1.21.5",
     "taskcluster-base":                 "0.6.0",
-    "commander":                        "2.3.0",
-    "cliff":                            "0.1.8",
-    "browserify":                       "5.10.1",
-    "mocha-phantomjs":                  "3.5.0"
+    "commander":                        "2.4.0",
+    "cliff":                            "0.1.9",
+    "browserify":                       "6.1.0",
+    "mocha-phantomjs":                  "3.5.1"
   }
 }
