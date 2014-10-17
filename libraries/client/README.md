@@ -143,8 +143,15 @@ that either resolves without giving a value or rejects with an error.
 //  - https://auth.taskcluster.net/v1
 var auth = new taskcluster.Auth(options);
 ```
- * `auth.inspect(clientId) : result`
+ * `auth.scopes(clientId) : result`
  * `auth.getCredentials(clientId) : result`
+ * `auth.client(clientId) : void`
+ * `auth.createClient(clientId, payload) : void`
+ * `auth.modifyClient(clientId, payload) : void`
+ * `auth.removeClient(clientId) : void`
+ * `auth.resetCredentials(clientId) : void`
+ * `auth.listClients() : void`
+ * `auth.ping() : void`
 
 ### Methods in `taskcluster.Queue`
 ```js
@@ -168,7 +175,6 @@ var queue = new taskcluster.Queue(options);
  * `queue.listArtifacts(taskId, runId) : result`
  * `queue.listLatestArtifacts(taskId) : result`
  * `queue.getPendingTasks(provisionerId) : void`
- * `queue.getAMQPConnectionString() : result`
  * `queue.ping() : void`
 
 ### Methods in `taskcluster.Scheduler`
@@ -199,7 +205,7 @@ var index = new taskcluster.index(options);
 ### Exchanges in `taskcluster.QueueEvents`
 ```js
 // Create QueueEvents client instance with default exchangePrefix:
-//  - queue/v1/
+//  - exchange/taskcluster-queue/v1/
 var queueEvents = new taskcluster.QueueEvents(options);
 ```
  * `queueEvents.taskDefined(routingKeyPattern) : binding-info`
@@ -212,7 +218,7 @@ var queueEvents = new taskcluster.QueueEvents(options);
 ### Exchanges in `taskcluster.SchedulerEvents`
 ```js
 // Create SchedulerEvents client instance with default exchangePrefix:
-//  - scheduler/v1/
+//  - exchange/taskcluster-scheduler/scheduler/v1/
 var schedulerEvents = new taskcluster.SchedulerEvents(options);
 ```
  * `schedulerEvents.taskGraphRunning(routingKeyPattern) : binding-info`
