@@ -54,7 +54,8 @@ exports.setup = function(options) {
       'aws_secretAccessKey',
       'azure_accountName',
       'azure_accountKey',
-      'amqp_url'
+      'pulse_username',
+      'pulse_password'
     ],
     filename:     'taskcluster-queue'
   });
@@ -62,7 +63,7 @@ exports.setup = function(options) {
   // Skip tests if no AWS credentials is configured
   if (!cfg.get('aws:secretAccessKey') ||
       !cfg.get('azure:accountKey') ||
-      !cfg.get('amqp:url')) {
+      !cfg.get('pulse:password')) {
     console.log("Skip tests for " + options.title +
                 " due to missing credentials!");
     return;
@@ -99,8 +100,8 @@ exports.setup = function(options) {
     // }
     subject.listenFor = function(binding) {
       // Create listener
-      var listener = new taskcluster.AMQPListener({
-        connectionString:   cfg.get('amqp:url')
+      var listener = new taskcluster.PulseListener({
+        credentials:          cfg.get('pulse')
       });
       // Track it, so we can close it in teardown()
       listeners.push(listener);
@@ -153,7 +154,8 @@ exports.setup = function(options) {
         subject.scopes();
         // Create client for binding to reference
         var exchangeReference = exchanges.reference({
-          exchangePrefix:   cfg.get('queue:exchangePrefix')
+          exchangePrefix:   cfg.get('queue:exchangePrefix'),
+          credentials:      cfg.get('pulse')
         });
         subject.QueueEvents = taskcluster.createClient(exchangeReference);
         subject.queueEvents = new subject.QueueEvents();
