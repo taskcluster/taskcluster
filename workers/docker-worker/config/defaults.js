@@ -60,6 +60,12 @@ module.exports = {
     accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN
   },
 
+  // Pulse credentials
+  pulse: {
+    username:   process.env.PULSE_USERNAME,
+    password:   process.env.PULSE_PASSWORD
+  },
+
   // Statsd configuration options (these are totally optional).
   statsd: {
     prefix: process.env.STATSD_PREFIX || '',

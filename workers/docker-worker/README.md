@@ -54,6 +54,9 @@ for the docker worker in particular these are important:
   - `taskcluster` the credentials needed to authenticate all pull jobs
     from taskcluster.
 
+  - `pulse` the credentials for listening to [pulse](pulse.mozilla.org)
+    exchanges.
+
   - `registries` registry credentials
 
   - `statsd` credentials for the statsd server.

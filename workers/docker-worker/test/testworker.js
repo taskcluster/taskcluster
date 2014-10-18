@@ -18,7 +18,7 @@ var Graph = require('taskcluster-task-factory/graph');
 var LocalWorker = require('./localworker');
 var Queue  = require('taskcluster-client').Queue;
 var Scheduler = require('taskcluster-client').Scheduler;
-var Listener = require('taskcluster-client').Listener;
+var PulseListener = require('taskcluster-client').PulseListener;
 var Promise = require('promise');
 var EventEmitter = require('events').EventEmitter;
 
@@ -40,6 +40,8 @@ function TestWorker(Worker, workerType, workerId) {
   this.workerType = workerType || slugid.v4();
   this.workerId = workerId || this.workerType;
   this.worker = new Worker(PROVISIONER_ID, this.workerType, this.workerId);
+
+  this.pulse = config.get('pulse');
 
   this.queue = new Queue({
     credentials: config.get('taskcluster')
@@ -186,8 +188,8 @@ TestWorker.prototype = {
   postToScheduler: function* (graphId, graph) {
     // Create and bind the listener which will notify us when the worker
     // completes a task.
-    var listener = new Listener({
-      connectionString: (yield this.queue.getAMQPConnectionString()).url
+    var listener = new PulseListener({
+      credentials:      this.pulse
     });
 
     // Listen for either blocked or finished...
@@ -237,8 +239,8 @@ TestWorker.prototype = {
 
     // Create and bind the listener which will notify us when the worker
     // completes a task.
-    var listener = new Listener({
-      connectionString: (yield this.queue.getAMQPConnectionString()).url
+    var listener = new PulseListener({
+      credentials:      this.pulse
     });
 
     // listen for this one task and only this task...

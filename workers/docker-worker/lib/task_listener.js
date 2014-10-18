@@ -36,12 +36,6 @@ TaskListener.prototype = {
     var self = this;
     var queue = this.runtime.queue;
 
-    // Fetch the amqp connection details if none are present.
-    if (!this.runtime.amqp) {
-      this.runtime.log('fetch amqp connection');
-      this.runtime.amqp = (yield queue.getAMQPConnectionString()).url;
-    }
-
     // Share the queue between all workerTypes of the same provisioner.
     var queueName =
       QUEUE_PREFIX + this.runtime.provisionerId + '/' + this.runtime.workerType;
@@ -49,11 +43,11 @@ TaskListener.prototype = {
     var queueEvents = new taskcluster.QueueEvents();
 
     // Build the listener.
-    var listener = this.listener = new taskcluster.Listener({
-      prefetch: this.runtime.capacity,
-      connectionString: this.runtime.amqp,
+    var listener = this.listener = new taskcluster.PulseListener({
+      prefetch:     this.runtime.capacity,
+      credentials:  this.runtime.pulse,
       // Share the queue between all provisonerId + workerTypes.
-      queueName: queueName
+      queueName:    queueName
       // TOOD: Consider adding maxLength.
     });
 
@@ -67,12 +61,12 @@ TaskListener.prototype = {
       provisionerId: this.runtime.provisionerId
     });
 
-    debug('listen', { queueName: queueName, capacity: this.runtime.capacity });
+    debug('listen', { queueName: listener._queueName, capacity: this.runtime.capacity });
     var channel = yield listener.connect();
 
     // Rather then use `.consume` on the listener directly we use the channel
     // directly for greater control over the flow of messages.
-    yield channel.consume(queueName, co(function* (msg) {
+    yield channel.consume(listener._queueName, co(function* (msg) {
       self.runtime.log('listener begin consume');
       var content;
       try {

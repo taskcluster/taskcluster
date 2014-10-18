@@ -28,11 +28,11 @@ Runtime.prototype = {
   queue: null,
 
   /**
-  AMQP connection string.
+  Pulse credentials `{username: '...', password: '...'}`
 
-  @type String
+  @type {Object}
   */
-  amqp: null,
+  pulse: null,
 
   /**
   Capacity of the worker.
