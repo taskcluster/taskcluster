@@ -1,3 +1,5 @@
+var path = require('path');
+
 module.exports = {
   testMode: true,
   createQueue: false,
@@ -15,6 +17,6 @@ module.exports = {
   },
 
   cache: {
-    volumeCachePath: process.env.DOCKER_WORKER_CACHE_DIR || '/var/cache'
+    volumeCachePath: path.join(__dirname, '..', 'test', 'tmp')
   }
 };

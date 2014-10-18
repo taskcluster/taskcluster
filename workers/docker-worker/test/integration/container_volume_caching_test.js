@@ -9,12 +9,25 @@ suite('volume cache tests', function () {
   var DockerWorker = require('../dockerworker');
   var TestWorker = require('../testworker');
 
-  var cacheDir = process.env.DOCKER_WORKER_CACHE_DIR || '/var/cache';
+  var localCacheDir = path.join(__dirname, '..', 'tmp');
+
+  teardown(function () {
+    settings.cleanup();
+
+    if (fs.existsSync(localCacheDir)) {
+      rmrf.sync(localCacheDir);
+    }
+  });
 
   test('mount cached volume in docker worker', co(function* () {
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
     var neededScope = 'docker-worker:cache:' + cacheName;
-    var fullCacheDir = path.join(cacheDir, cacheName);
+    var fullCacheDir = path.join(localCacheDir, cacheName);
+    settings.configure({
+      cache: {
+        volumeCachePath: localCacheDir
+      }
+    });
 
     var task = {
       payload: {
@@ -42,10 +55,6 @@ suite('volume cache tests', function () {
 
     var objDir = fs.readdirSync(fullCacheDir);
     assert.ok(fs.existsSync(path.join(fullCacheDir, objDir[0], 'foo.txt')));
-
-    if (fs.existsSync(fullCacheDir)) {
-      rmrf.sync(fullCacheDir);
-    }
   }));
 
   test('mounted cached volumes are not reused between tasks', co(function* () {
@@ -53,11 +62,14 @@ suite('volume cache tests', function () {
     var neededScope = 'docker-worker:cache:' + cacheName;
 
     settings.configure({
+      cache: {
+        volumeCachePath: localCacheDir
+      },
       capacity: 2,
     });
 
     worker = new TestWorker(DockerWorker);
-    yield worker.launch()
+    yield worker.launch();
 
     var tasks = [];
 
@@ -97,10 +109,13 @@ suite('volume cache tests', function () {
 
   test('cached volumes can be reused between tasks', co(function* () {
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
-    var fullCacheDir = path.join(cacheDir, cacheName);
+    var fullCacheDir = path.join(localCacheDir, cacheName);
     var neededScope = 'docker-worker:cache:' + cacheName;
 
     settings.configure({
+      cache: {
+        volumeCachePath: localCacheDir
+      },
       capacity: 2,
       garbageCollection: {
         imageExpiration: 2 * 60 * 60 * 1000,
@@ -111,7 +126,7 @@ suite('volume cache tests', function () {
     });
 
     worker = new TestWorker(DockerWorker);
-    yield worker.launch()
+    yield worker.launch();
 
     var task = {
       payload: {
@@ -141,10 +156,6 @@ suite('volume cache tests', function () {
     assert.ok(result2.log.indexOf('This is a shared file') !== -1);
 
     yield worker.terminate();
-
-    if (fs.existsSync(fullCacheDir)) {
-      rmrf.sync(fullCacheDir);
-    }
   }));
 
   test('mount multiple cached volumes in docker worker', co(function* () {
@@ -155,8 +166,14 @@ suite('volume cache tests', function () {
     neededScopes.push('docker-worker:cache:' + cacheName1);
     neededScopes.push('docker-worker:cache:' + cacheName2);
 
-    var fullCache1Dir = path.join(cacheDir, cacheName1);
-    var fullCache2Dir = path.join(cacheDir, cacheName2);
+    var fullCache1Dir = path.join(localCacheDir, cacheName1);
+    var fullCache2Dir = path.join(localCacheDir, cacheName2);
+
+    settings.configure({
+      cache: {
+        volumeCachePath: localCacheDir
+      }
+    });
 
     var task = {
       payload: {
@@ -186,23 +203,15 @@ suite('volume cache tests', function () {
     var objDir = fs.readdirSync(fullCache1Dir);
     assert.ok(fs.existsSync(path.join(fullCache1Dir, objDir[0], 'foo.txt')));
 
-    if (fs.existsSync(fullCache1Dir)) {
-      rmrf.sync(fullCache1Dir);
-    }
-
     objDir = fs.readdirSync(fullCache2Dir);
     assert.ok(fs.existsSync(path.join(fullCache2Dir, objDir[0], 'bar.txt')));
-
-    if (fs.existsSync(fullCache2Dir)) {
-      rmrf.sync(fullCache2Dir);
-    }
   }));
 
   test('task unsuccesful when insufficient cache scope is provided',
     co(function* () {
       var cacheName = 'tmp-obj-dir-' + Date.now().toString();
       var neededScope = 'docker-worker:cache:1' + cacheName;
-      var fullCacheDir = path.join(cacheDir, cacheName);
+      var fullCacheDir = path.join(localCacheDir, cacheName);
 
       var task = {
         payload: {
@@ -233,12 +242,7 @@ suite('volume cache tests', function () {
         'Insufficient scopes error message did not appear in the log'
       );
 
-      var dirExists = fs.existsSync(fullCacheDir);
-      if (dirExists) {
-        rmrf.sync(fullCacheDir);
-      }
-
-      assert.ok(!dirExists,
+      assert.ok(!fs.existsSync(fullCacheDir),
         'Volume cache created cached volume directory when it should not ' +
         'have.'
       );
@@ -249,7 +253,7 @@ suite('volume cache tests', function () {
     co(function* () {
       var cacheName = 'tmp-obj-dir::-' + Date.now().toString();
       var neededScope = 'docker-worker:cache:' + cacheName;
-      var fullCacheDir = path.join(cacheDir, cacheName);
+      var fullCacheDir = path.join(localCacheDir, cacheName);
 
       var task = {
         payload: {
@@ -280,13 +284,7 @@ suite('volume cache tests', function () {
         'Invalid key name message did not appear in the logs'
       );
 
-      var dirExists = fs.existsSync(fullCacheDir);
-
-      if (dirExists) {
-        rmrf.sync(fullCacheDir);
-      }
-
-      assert.ok(!dirExists,
+      assert.ok(!fs.existsSync(fullCacheDir),
         'Volume cache created cached volume directory when it should not ' +
         'have.'
       );

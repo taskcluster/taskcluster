@@ -9,8 +9,13 @@ suite('garbage collection tests', function () {
   var VolumeCache = require('../lib/volume_cache');
   var streams = require('stream');
   var waitForEvent = require('../lib/wait_for_event');
+  var path = require('path');
+  var mkdirp = require('mkdirp');
+  var rmrf = require('rimraf');
 
   var IMAGE = 'taskcluster/test-ubuntu';
+
+  var localCacheDir = path.join(__dirname, 'tmp');
 
   var log = createLogger({
     source: 'top', // top level logger details...
@@ -34,6 +39,12 @@ suite('garbage collection tests', function () {
   setup(co(function* () {
     yield pullImage(docker, IMAGE, process.stdout);
   }));
+
+  teardown(function () {
+    if (fs.existsSync(localCacheDir)) {
+      rmrf.sync(localCacheDir);
+    }
+  });
 
   test('remove container', co(function* () {
     var testMarkedContainers = [];
@@ -353,11 +364,11 @@ suite('garbage collection tests', function () {
 
     clearTimeout(gc.sweepTimeoutId);
 
-    var localCacheDir = process.env.DOCKER_WORKER_CACHE_DIR || '/var/cache';
+
     var stats = {
       increment: function(stat) { return; },
       timeGen: function* (stat, fn) { yield fn; }
-    }
+    };
 
     var cache = new VolumeCache({
       rootCachePath: localCacheDir,
@@ -368,6 +379,7 @@ suite('garbage collection tests', function () {
     gc.addManager(cache);
 
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+    var fullPath = path.join(localCacheDir, cacheName);
 
     var instance1 = yield cache.get(cacheName);
     var instance2 = yield cache.get(cacheName);
