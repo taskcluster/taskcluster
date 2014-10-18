@@ -22,7 +22,7 @@
     "url-join":                         "0.0.1"
   },
   "devDependencies": {
-    "mocha":                            "1.21.4",
+    "mocha":                            "1.21.4"
   },
   "engines": {
     "node":                             "0.10.x",
