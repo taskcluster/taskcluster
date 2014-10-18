@@ -13,7 +13,7 @@ var slugid      = require('slugid');
  * {
  *   queue:              // taskcluster.Queue
  *   queueEvents:        // taskcluster.QueueEvents instance
- *   connectionString:   // AMQP connection string
+ *   pulse:              // Pulse credentials
  *   queueName:          // Queue name (optional)
  *   routePrefix:        // Routing-key prefix for
  *                       // "route.<routePrefix>.<project>.<revisionHash>"
@@ -28,7 +28,7 @@ var Handlers = function(options) {
          "And instance of taskcluster.Queue is required");
   assert(options.queueEvents instanceof taskcluster.QueueEvents,
          "An instance of taskcluster.QueueEvents is required");
-  assert(options.connectionString,  "Connection string must be provided");
+  assert(options.pulse,             "Connection string must be provided");
   assert(options.routePrefix,       "routePrefix is required");
   assert(options.projects,          "treeherder projects");
   assert(options.drain,             "statistics drains is required");
@@ -36,7 +36,7 @@ var Handlers = function(options) {
   // Store options on this for use in event handlers
   this.queue            = options.queue;
   this.queueEvents      = options.queueEvents;
-  this.connectionString = options.connectionString;
+  this.pulse            = options.pulse;
   this.prefetch         = options.prefetch;
   this.routePrefix      = options.routePrefix;
   this.projects         = options.projects;
@@ -52,8 +52,8 @@ Handlers.prototype.setup = function() {
   var that = this;
 
   // Create listener
-  this.listener = new taskcluster.Listener({
-    connectionString:     this.connectionString,
+  this.listener = new taskcluster.PulseListener({
+    credentials:          this.pulse,
     queueName:            this.queueName,
     prefetch:             this.prefetch
   });

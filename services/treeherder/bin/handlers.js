@@ -19,7 +19,8 @@ var launch = function(profile) {
       'treeherder_baseUrl',
       'treeherder_projects',
       'taskcluster_queueBaseUrl',
-      'amqp_url',
+      'pulse_username',
+      'pulse_password',
       'influx_connectionString',
       'treeherder_listenerQueueName',
       'treeherder_listenerPrefetch'
@@ -63,7 +64,7 @@ var launch = function(profile) {
   var handlers = new Handlers({
     queue:              queue,
     queueEvents:        queueEvents,
-    connectionString:   cfg.get('amqp:url'),
+    pulse:              cfg.get('pulse'),
     prefetch:           parseInt(cfg.get('treeherder:listenerPrefetch'), 10),
     queueName:          cfg.get('treeherder:listenerQueueName'),
     routePrefix:        cfg.get('treeherder:routePrefix'),

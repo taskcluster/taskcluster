@@ -15,7 +15,7 @@
     "promise":                          "6.0.0",
     "lodash":                           "2.4.1",
     "debug":                            "2.0.0",
-    "taskcluster-client":               "0.15.8",
+    "taskcluster-client":               "0.17.5",
     "taskcluster-base":                 "0.5.5"
   },
   "devDependencies": {
