@@ -97,5 +97,15 @@ module.exports = {
   'influxdb.database': {
     description: 'Influxdb database',
     value: parseUri('INFLUXDB_URL').database,
+  },
+
+  'pulse.username': {
+    description: 'Pulse username (see https://pulse.mozilla.org/profile)',
+    value: process.env.PULSE_USERNAME
+  },
+
+  'pulse.password': {
+    description: 'Pulse password (see https://pulse.mozilla.org/profile)',
+    value: process.env.PULSE_PASSWORD
   }
 };
