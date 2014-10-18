@@ -1,5 +1,6 @@
 module.exports = {
   testMode: true,
+  createQueue: false,
 
   // Disable statsd by default...
   statsd: {

@@ -60,6 +60,9 @@ module.exports = {
     accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN
   },
 
+  // When true will create durable queue on pulse.
+  createQueue: true,
+
   // Pulse credentials
   pulse: {
     username:   process.env.PULSE_USERNAME,

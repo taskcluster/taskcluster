@@ -37,8 +37,12 @@ TaskListener.prototype = {
     var queue = this.runtime.queue;
 
     // Share the queue between all workerTypes of the same provisioner.
-    var queueName =
-      QUEUE_PREFIX + this.runtime.provisionerId + '/' + this.runtime.workerType;
+    var queueName;
+    if (this.runtime.createQueue) {
+      queueName =
+        QUEUE_PREFIX +
+        this.runtime.provisionerId + '/' + this.runtime.workerType;
+    }
 
     var queueEvents = new taskcluster.QueueEvents();
 
@@ -61,7 +65,10 @@ TaskListener.prototype = {
       provisionerId: this.runtime.provisionerId
     });
 
-    debug('listen', { queueName: listener._queueName, capacity: this.runtime.capacity });
+    debug('listen', {
+      queueName: listener._queueName, capacity: this.runtime.capacity
+    });
+
     var channel = yield listener.connect();
 
     // Rather then use `.consume` on the listener directly we use the channel
