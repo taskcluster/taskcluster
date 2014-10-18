@@ -29,8 +29,9 @@ module.exports = {
   },
 
   // AMQP connection string
-  amqp: {
-    url:                          undefined
+  pulse: {
+    username:                          process.env.PULSE_USERNAME,
+    password:                          process.env.PULSE_PASSWORD
   },
 
   // InfluxDB configuration
