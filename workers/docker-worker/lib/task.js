@@ -170,10 +170,22 @@ Task.prototype = {
   },
 
   logHeader: function() {
-    return this.fmtLog(
-      'taskId: %s, workerId: %s \r\n',
+    var header = this.fmtLog(
+      'taskId: %s, workerId: %s',
       this.status.taskId, this.runtime.workerId
     );
+
+    // List caches if used...
+    if (this.task.payload.cache) {
+      for (var key in this.task.payload.cache) {
+        var path = this.task.payload.cache[key];
+        header += this.fmtLog(
+          'using cache "%s" -> %s', key, path
+        );
+      }
+    }
+
+    return header + '\r\n';
   },
 
   logFooter: function(success, exitCode, start, finish) {
