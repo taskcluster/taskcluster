@@ -6,6 +6,12 @@ module.exports = {
     listenerQueueName:            'index/incoming-tasks'
   },
 
+  pulse: {
+    username:                     'taskcluster-index',
+    // Provided by environment variable
+    password:                     undefined
+  },
+
   server: {
     publicUrl:                      'https://index.taskcluster.net',
     port:                           80,

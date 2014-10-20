@@ -15,7 +15,8 @@ var cfg = base.config({
     'aws_secretAccessKey',
     'azure_accountName',
     'azure_accountKey',
-    'amqp_url'
+    'pulse_username',
+    'pulse_password'
   ],
   filename:     'taskcluster-index'
 });
@@ -58,7 +59,7 @@ exports.setup = function(options) {
   // Skip tests if no AWS credentials is configured
   if (!cfg.get('azure:accountKey') ||
       !cfg.get('taskcluster:credentials:accessToken') ||
-      !cfg.get('amqp:url')) {
+      !cfg.get('pulse:password')) {
     console.log("Skip tests for " + options.title +
                 " due to missing credentials!");
     return;
@@ -90,8 +91,8 @@ exports.setup = function(options) {
     // Utility function to listen for a message
     subject.listenFor = function(binding) {
       // Create listener
-      var listener = new taskcluster.Listener({
-        connectionString:   cfg.get('amqp:url')
+      var listener = new taskcluster.PulseListener({
+        credentials:        cfg.get('pulse')
       });
       // Track it, so we can close it in teardown()
       listeners.push(listener);

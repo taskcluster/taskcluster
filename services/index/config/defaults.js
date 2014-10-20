@@ -12,7 +12,7 @@ module.exports = {
     // Publish references and schemas
     publishMetaData:              'false',
 
-    // Name of AMQP queue, if a non-exclusive queue is to be used.
+    // Name of pulse queue, if a non-exclusive queue is to be used.
     listenerQueueName:            undefined,
 
     // Component name in statistics
@@ -57,10 +57,10 @@ module.exports = {
     }
   },
 
-  // AMQP configuration
-  amqp: {
-    // URL for AMQP setup formatted as amqp://user:password@host:port/vhost
-    url:                            undefined
+  // Pulse credentials
+  pulse: {
+    username:                     undefined,
+    password:                     undefined
   },
 
   // Azure credentials (usually configured using environment variables)
