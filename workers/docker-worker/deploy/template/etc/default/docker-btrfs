@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -vex
 
 # Find instance storage devices
 devices=$(ls /dev/xvd* | grep -v '/dev/xvda');
@@ -6,13 +6,27 @@ devices=$(ls /dev/xvd* | grep -v '/dev/xvda');
 # Unmount block-device if already mounted, the first block-device always is
 for d in $devices; do umount $d || true; done
 
+echo "Formating 'instance_storage' as btrfs"
 # btrfsify the storage
-mkfs.btrfs -f -d single -L instance_storage $devices
 
+if ! mkfs.btrfs -f -d single -L instance_storage $devices;
+then
+    echo "Could not format 'instance_storage' as btrfs."
+    # Wait for the logical volume to become ready to be formatted.
+    # Small wait is better than zombie node.
+    sleep 5
+    exit 1
+else
+    echo "Succesfully formated 'instance_storage' as btrfs."
+fi
+
+
+echo "Mounting logical volume"
 # fetch first device btrfs can mount any of them (they are all part of the same
 # fs)
 mount $(echo $devices | cut -d ' ' -f 1) /mnt
 
+echo "Creating docker specific directories"
 mkdir -p /mnt/var/lib/docker
 mkdir -p /mnt/docker-tmp
 mkdir -p /mnt/var/cache/docker-worker
