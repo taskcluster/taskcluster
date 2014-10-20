@@ -16,7 +16,7 @@ var data        = require('./data');
  *   Namespace:          // data.Namespace
  *   queue:              // taskcluster.Queue
  *   queueEvents:        // taskcluster.QueueEvents instance
- *   connectionString:   // AMQP connection string
+ *   credentials:        // Pulse credentials
  *   queueName:          // Queue name (optional)
  *   routePrefix:        // Routing-key prefix for "route.<routePrefix>.#"
  *   drain:              // new base.Influx(...)
@@ -31,7 +31,9 @@ var Handlers = function(options) {
          "And instance of taskcluster.Queue is required");
   assert(options.queueEvents instanceof taskcluster.QueueEvents,
          "An instance of taskcluster.QueueEvents is required");
-  assert(options.connectionString,  "Connection string must be provided");
+  assert(options.credentials, "credentials must be provided");
+  assert(options.credentials.username, "credentials.username must be provided");
+  assert(options.credentials.password, "credentials.password must be provided");
   assert(options.routePrefix,       "routePrefix is required");
   assert(options.drain,             "statistics drains is required");
   assert(options.component,         "component name is needed for statistics");
@@ -40,7 +42,7 @@ var Handlers = function(options) {
   this.Namespace        = options.Namespace;
   this.queue            = options.queue;
   this.queueEvents      = options.queueEvents;
-  this.connectionString = options.connectionString;
+  this.credentials      = options.credentials;
   this.routePrefix      = options.routePrefix;
   this.queueName        = options.queueName;  // Optional
   this.drain            = options.drain;
@@ -57,8 +59,8 @@ Handlers.prototype.setup = function() {
   this.routeRegexp = new RegExp('^' + this.routePrefix + '\\.(.*)$');
 
   // Create listener
-  this.listener = new taskcluster.AMQPListener({
-    connectionString:     this.connectionString,
+  this.listener = new taskcluster.PulseListener({
+    credentials:          this.credentials,
     queueName:            this.queueName
   });
 

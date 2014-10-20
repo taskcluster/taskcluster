@@ -21,10 +21,6 @@ module.exports = {
     port:                         60020
   },
 
-  amqp: {
-    url:                          undefined
-  },
-
   aws: {
     region:                       'us-west-2'
   }
