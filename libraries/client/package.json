@@ -1,13 +1,13 @@
 {
   "name":         "taskcluster-client",
-  "version":      "0.17.5",
+  "version":      "0.17.6",
   "author":       "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description":  "Client for interfacing taskcluster components",
   "license":      "MPL-2.0",
   "scripts": {
     "test":       "./test/runtests.sh"
   },
-  "browser":      "./client.js",
+  "browser":      "./browser.js",
   "repository": {
     "type":       "git",
     "url":        "https://github.com/taskcluster/taskcluster-client.git"
@@ -31,6 +31,6 @@
     "commander":                        "2.4.0",
     "cliff":                            "0.1.9",
     "browserify":                       "6.1.0",
-    "mocha-phantomjs":                  "3.5.1"
+    "mocha-phantomjs":                  "3.5.0"
   }
 }
