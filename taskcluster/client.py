@@ -47,10 +47,28 @@ class Client(object):
   iteration.
   """
 
-  maxRetries = 5
+  _defaultOptions = {
+    'credentials': {
+      'clientId': os.environ.get('TASKCLUSTER_CLIENT_ID'),
+      'accessToken': os.environ.get('TASKCLUSTER_ACCESS_TOKEN')
+    },
+    'authorization': {
+      'delegating': False,
+      'scopes': []
+    },
+    'maxRetries': 5
+  }
+
+  @property
+  def options(self):
+    if not hasattr(self, '_options'):
+      self._options = {}
+    self._options.update(self._defaultOptions)
+    return self._options
 
   def __init__(self, apiName, api):
     """ Initialize an API Client based on its definition """
+    self._options = {}
 
     log.debug('Creating a client object for %s', apiName)
 
@@ -58,14 +76,15 @@ class Client(object):
 
     ref = api['reference']
 
+
     # I wonder if anyone cares about this?
     if os.environ.get('TASKCLUSTER_CLIENT_LIVE_API'):
       ref = json.loads(requests.get(config['referenceUrl']).text)
 
     # API level defaults.  Ideally
     for opt in [x for x in ref if x != 'entries']:
-      self.setOption(opt, ref[opt])
-
+      self.options[opt] = ref[opt]
+    
     for entry in [x for x in ref['entries'] if x['type'] == 'function']:
       apiFunc = entry['name']
       log.info('Creating instance method %s.%s.%s', __name__, apiName, apiFunc)
@@ -76,14 +95,6 @@ class Client(object):
                 self._makeApiCall(evt, *args, **kwargs))
 
       addApiCall(entry)
-
-  def setOptions(self, options):
-    for opt in options:
-      self.setOption(opt, options[opt])
-
-  def setOption(self, k, v):
-    assert not hasattr(self, k)
-    setattr(self, k, v)
 
   def _makeApiCall(self, entry, *args, **kwargs):
     """ This function is used to dispatch calls to other functions
@@ -175,7 +186,7 @@ class Client(object):
     the logic about doing failure retry and passes off the actual work
     of doing an HTTP request to another method."""
 
-    baseUrl = self.baseUrl
+    baseUrl = self.options['baseUrl']
     # urljoin ignores the last param of the baseUrl if the base url doesn't end
     # in /.  I wonder if it's better to just do something basic like baseUrl +
     # route instead
@@ -186,7 +197,7 @@ class Client(object):
 
     retry = 0
     response = None
-    while retry < self.maxRetries:
+    while retry < self.options['maxRetries']:
       log.debug('Making attempt %d', retry)
       response = self._makeSingleHttpRequest(method, fullUrl, payload)
 
@@ -227,3 +238,4 @@ class Client(object):
 THIS_MODULE = sys.modules[__name__]
 for key, value in list(API_CONFIG.items()):
   setattr(THIS_MODULE, key, Client(key, value))
+setattr(THIS_MODULE, 'config', Client._defaultOptions)

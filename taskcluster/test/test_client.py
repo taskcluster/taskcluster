@@ -39,9 +39,6 @@ class TestSubArgsInRoute(ClientTest):
     
     
 class TestProcessArgs(ClientTest):
-  def setUp(self):
-    self.client = subject.Client('testApi', base.createApiRef())
-
   def test_no_args(self):
     self.assertEqual({}, self.client._processArgs([]))
 
@@ -82,9 +79,6 @@ class TestProcessArgs(ClientTest):
 
 
 class TestMakeSingleHttpRequest(ClientTest):
-  def setUp(self):
-    self.client = subject.Client('testApi', base.createApiRef())
-  
   def test_success_no_payload(self):
     @httmock.all_requests
     def response_content(url, request):
@@ -133,9 +127,6 @@ class ObjWithDotJson(object):
       raise exc.TaskclusterRestFailure('Damn!', {})
 
 class TestMakeHttpRequest(ClientTest):
-  def setUp(self):
-    self.client = subject.Client('testApi', base.createApiRef())
-
   def test_success_first_try(self):
     with mock.patch.object(self.client, '_makeSingleHttpRequest') as p:
       expected = {'test': 'works'}
@@ -156,7 +147,7 @@ class TestMakeHttpRequest(ClientTest):
         ObjWithDotJson(200, expected)
       ]
       p.side_effect = sideEffect
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range (self.client.maxRetries)]
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range (self.client.options['maxRetries'])]
 
       v = self.client._makeHttpRequest('GET', 'http://www.example.com', {})
       p.assert_has_calls(expectedCalls)
@@ -165,8 +156,27 @@ class TestMakeHttpRequest(ClientTest):
   def test_failure(self):
     with mock.patch.object(self.client, '_makeSingleHttpRequest') as p:
       p.return_value = ObjWithDotJson(500, None)
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range (self.client.maxRetries)]
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range (self.client.options['maxRetries'])]
       with self.assertRaises(exc.TaskclusterRestFailure):
         v = self.client._makeHttpRequest('GET', 'http://www.example.com', {})
       p.assert_has_calls(expectedCalls)
 
+
+class TestOptions(ClientTest):
+  def setUp(self):
+    ClientTest.setUp(self)
+    self.client2 = subject.Client('testApi', base.createApiRef(baseUrl='http://notlocalhost:5888/v2'))
+
+  def test_they_share_defaults_even_when_changed_for_one(self):
+    self.client2._defaultOptions['john'] = 'ford'
+    self.assertIs(self.client._defaultOptions, self.client2._defaultOptions)
+    self.assertIs(self.client._defaultOptions, subject.config)
+
+  def test_defaults_should_be_included_for_normal_options(self):
+    self.assertEqual(self.client.options['maxRetries'], subject.config['maxRetries'])
+
+  def test_change_default_on_one_reflects_in_normal_options_of_the_other(self):
+    subject.config['john'] = 'dillinger'
+    self.assertEqual(self.client.options['john'], self.client2.options['john'])
+    subject.config['john'] = 'wayne'
+    self.assertEqual(self.client.options['john'], self.client2.options['john'])
