@@ -118,14 +118,14 @@ class Client(object):
     # should fail.  We don't yet know if we should fail because of two many
     # arguments because we might be overwriting positional ones with kw ones
     if len(reqArgs) > len(args) + len(kwargs):
-      raise TypeError('API Method was not given enough args')
+      raise exceptions.TaskclusterFailure('API Method was not given enough args')
 
     # We also need to error out when we have more positional args than required
     # because we'll need to go through the lists of provided and required args
     # at the same time.  Not disqualifying early means we'll get IndexErrors if
     # there are more positional arguments than required
     if len(args) > len(reqArgs):
-      raise TypeError('API Method was called with too many positional args')
+      raise exceptions.TaskclusterFailure('API Method was called with too many positional args')
 
     i = 0
     for arg in args:
@@ -142,13 +142,13 @@ class Client(object):
     if len(reqArgs) != len(data):
       errMsg = 'API Method takes %d args, %d given' % (len(reqArgs), len(data))
       log.error(errMsg)
-      raise TypeError(errMsg)
+      raise exceptions.TaskclusterFailure(errMsg)
 
     for reqArg in reqArgs:
       if reqArg not in data:
         errMsg = 'API Method requires a "%s" argument' % reqArg
         log.error(errMsg)
-        raise TypeError(errMsg)
+        raise exceptions.TaskclusterFailure(errMsg)
 
     return data
 
@@ -157,8 +157,17 @@ class Client(object):
     {"taskId": "12345"}, return a string like "/task/12345/artifacts"
     """
 
+    if route.count('<') != route.count('>'):
+      raise exceptions.TaskclusterFailure('Mismatched arguments in route')
+
+    if route.count('<') != len(args):
+      raise exceptions.TaskclusterFailure('Incorrect number of arguments for route')
+
     # TODO: Let's just pretend this is a good idea
-    route = route.replace('<', '%(').replace('>', ')s') % args
+    try:
+      route = route.replace('<', '%(').replace('>', ')s') % args
+    except KeyError as e:
+      raise exceptions.TaskclusterFailure('Argument not found in route')
     return route.lstrip('/')
 
   def _makeHttpRequest(self, method, route, payload):
@@ -193,16 +202,19 @@ class Client(object):
       else:
         break
 
-    # We want to make sure that calling code handles errors
-    response.raise_for_status()
-
     # We want to send JSON data back to the caller
     try:
+      # We want to make sure that calling code handles errors
+      response.raise_for_status()
       apiData = response.json()
-    except ValueError:
+    except requests.exceptions.RequestException as rerr:
+      errStr = 'Request failed to complete'
+      log.error(errStr)
+      raise exceptions.TaskclusterRestFailure(errStr, superExc=rerr)
+    except ValueError as ve:
       errStr = 'Response contained malformed JSON data'
       log.error(errStr)
-      raise exceptions.TaskclusterRestFailure(errStr, res=response)
+      raise exceptions.TaskclusterRestFailure(errStr, superExc=ve, res=response)
 
     return apiData
 
