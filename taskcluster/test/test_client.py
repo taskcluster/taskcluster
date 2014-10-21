@@ -7,10 +7,11 @@ import base
 import taskcluster.client as subject
 import taskcluster.exceptions as exc
 
-class TestSubArgsInRoute(base.TCTest):
+class ClientTest(base.TCTest):
   def setUp(self):
     self.client = subject.Client('testApi', base.createApiRef())
 
+class TestSubArgsInRoute(ClientTest):
   def test_valid_no_subs(self):
     provided = '/no/args/here'
     expected = 'no/args/here'
@@ -37,7 +38,7 @@ class TestSubArgsInRoute(base.TCTest):
       self.client._subArgsInRoute('adjfjlaksdfjs', {'should': 'fail'})
     
     
-class TestProcessArgs(base.TCTest):
+class TestProcessArgs(ClientTest):
   def setUp(self):
     self.client = subject.Client('testApi', base.createApiRef())
 
@@ -80,7 +81,7 @@ class TestProcessArgs(base.TCTest):
       self.client._processArgs(['test', 'test2'], 'enough', test='enough')
 
 
-class TestMakeSingleHttpRequest(base.TCTest):
+class TestMakeSingleHttpRequest(ClientTest):
   def setUp(self):
     self.client = subject.Client('testApi', base.createApiRef())
   
@@ -131,7 +132,7 @@ class ObjWithDotJson(object):
     if self.status_code >= 300 or self.status_code < 200:
       raise exc.TaskclusterRestFailure('Damn!', {})
 
-class TestMakeHttpRequest(base.TCTest):
+class TestMakeHttpRequest(ClientTest):
   def setUp(self):
     self.client = subject.Client('testApi', base.createApiRef())
 
