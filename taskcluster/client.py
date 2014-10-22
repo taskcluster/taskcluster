@@ -6,7 +6,10 @@ import json
 import logging
 import functools
 import copy
-import urlparse
+try:
+  import urlparse
+except ImportError:
+  import urllib.parse as urlparse
 import time
 
 
@@ -15,7 +18,7 @@ from pkg_resources import resource_string
 import requests
 # import hawk
 
-import exceptions
+from . import exceptions
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -24,7 +27,7 @@ if True or os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
   log.addHandler(logging.StreamHandler())
 log.addHandler(logging.NullHandler())
 
-API_CONFIG = json.loads(resource_string(__name__, 'apis.json'))
+API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
 
 
 class Client(object):
