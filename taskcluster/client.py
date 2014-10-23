@@ -85,10 +85,10 @@ class Client(object):
       ref = json.loads(requests.get(config['referenceUrl']).text)
 
     # API level defaults.  Ideally
-    for opt in [x for x in ref if x != 'entries']:
+    for opt in filter(lambda x: x != 'entires', ref):
       self.options[opt] = ref[opt]
     
-    for entry in [x for x in ref['entries'] if x['type'] == 'function']:
+    for entry in filter(lambda x: x['type'] == 'function', ref['entries']):
       apiFunc = entry['name']
       log.info('Creating instance method %s.%s.%s', __name__, apiName, apiFunc)
 
