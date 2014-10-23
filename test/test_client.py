@@ -127,6 +127,13 @@ class ObjWithDotJson(object):
       raise exc.TaskclusterRestFailure('Damn!', {})
 
 class TestMakeHttpRequest(ClientTest):
+  def setUp(self):
+    patcher = mock.patch('time.sleep')
+    timeSleep = patcher.start()
+    timeSleep.return_value = None
+    self.addCleanup(timeSleep.stop)
+    ClientTest.setUp(self)
+
   def test_success_first_try(self):
     with mock.patch.object(self.client, '_makeSingleHttpRequest') as p:
       expected = {'test': 'works'}
