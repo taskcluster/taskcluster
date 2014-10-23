@@ -66,7 +66,7 @@ class Client(object):
   def options(self):
     if not hasattr(self, '_options'):
       self._options = {}
-    self._options.update(self._defaultOptions)
+    self._options.update(Client._defaultOptions)
     return self._options
 
   def __init__(self, apiName, api):

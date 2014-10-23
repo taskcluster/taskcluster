@@ -180,3 +180,7 @@ class TestOptions(ClientTest):
     self.assertEqual(self.client.options['john'], self.client2.options['john'])
     subject.config['john'] = 'wayne'
     self.assertEqual(self.client.options['john'], self.client2.options['john'])
+
+  def test_defaults_should_work(self):
+    self.assertEqual(self.client.options['baseUrl'], 'https://localhost:8555/v1')
+    self.assertEqual(self.client2.options['baseUrl'], 'http://notlocalhost:5888/v2')
