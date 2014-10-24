@@ -1003,7 +1003,7 @@ module.exports = {
       "version": "0.2.0",
       "title": "Scheduler AMQP Exchanges",
       "description": "The scheduler, typically available at `scheduler.taskcluster.net` is\nresponsible for accepting task-graphs and schedule tasks on the queue as\ntheir dependencies are completed successfully.\n\nThis document describes the AMQP exchanges offered by the scheduler,\nwhich allows third-party listeners to monitor task-graph submission and\nresolution. These exchanges targets the following audience:\n * Reporters, who displays the state of task-graphs or emails people on\n   failures, and\n * End-users, who wants notification of completed task-graphs\n\n**Remark**, the task-graph scheduler will require that the `schedulerId`\nfor tasks is set to the `schedulerId` for the task-graph scheduler. In\nproduction the `schedulerId` is typically `\"task-graph-scheduler\"`.\nFurthermore, the task-graph scheduler will also require that\n`taskGroupId` is equal to the `taskGraphId`.\n\nCombined these requirements ensures that `schedulerId` and `taskGroupId`\nhave the same position in the routing keys for the queue exchanges.\nSee queue documentation for details on queue exchanges. Hence, making\nit easy to listen for all tasks in a given task-graph.\n\nNote that routing key entries 2 through 7 used for exchanges on the\ntask-graph scheduler is hardcoded to `_`. This is done to preserve\npositional equivalence with exchanges offered by the queue.",
-      "exchangePrefix": "exchange/taskcluster-scheduler/scheduler/v1/",
+      "exchangePrefix": "exchange/taskcluster-scheduler/v1/",
       "entries": [
         {
           "type": "topic-exchange",
@@ -1081,7 +1081,7 @@ module.exports = {
           "exchange": "task-graph-extended",
           "name": "taskGraphExtended",
           "title": "Task-Graph Extended Message",
-          "description": "When a task-graph is submitted it immediately starts running and a\nmessage is posted on this exchange to indicate that a task-graph have\nbeen submitted.",
+          "description": "When a task-graph is extended, that is additional tasks is added to the\ntask-graph, a message is posted on this exchange. This is useful if you\nare monitoring a task-graph and what to track states of the individual\ntasks in the task-graph.",
           "routingKey": [
             {
               "name": "routingKeyKind",
@@ -1292,7 +1292,7 @@ module.exports = {
       ]
     }
   },
-  "index": {
+  "Index": {
     "referenceUrl": "http://references.taskcluster.net/index/v1/api.json",
     "reference": {
       "version": "0.2.0",
