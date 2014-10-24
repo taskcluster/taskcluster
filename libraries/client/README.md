@@ -190,11 +190,11 @@ var scheduler = new taskcluster.Scheduler(options);
  * `scheduler.inspect(taskGraphId) : result`
  * `scheduler.ping() : void`
 
-### Methods in `taskcluster.index`
+### Methods in `taskcluster.Index`
 ```js
-// Create index client instance with default baseUrl:
+// Create Index client instance with default baseUrl:
 //  - https://index.taskcluster.net/v1
-var index = new taskcluster.index(options);
+var index = new taskcluster.Index(options);
 ```
  * `index.findTask(namespace) : result`
  * `index.listNamespaces(namespace, payload) : result`
@@ -218,7 +218,7 @@ var queueEvents = new taskcluster.QueueEvents(options);
 ### Exchanges in `taskcluster.SchedulerEvents`
 ```js
 // Create SchedulerEvents client instance with default exchangePrefix:
-//  - exchange/taskcluster-scheduler/scheduler/v1/
+//  - exchange/taskcluster-scheduler/v1/
 var schedulerEvents = new taskcluster.SchedulerEvents(options);
 ```
  * `schedulerEvents.taskGraphRunning(routingKeyPattern) : binding-info`
