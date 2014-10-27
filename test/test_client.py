@@ -9,6 +9,10 @@ import taskcluster.exceptions as exc
 
 class ClientTest(base.TCTest):
   def setUp(self):
+    entries = [
+      base.createApiEntryFunction(0, False),
+      #base.createApiEntryTopicExchange(),
+    ]
     self.client = subject.Client('testApi', base.createApiRef())
 
 class TestSubArgsInRoute(ClientTest):
@@ -191,3 +195,9 @@ class TestOptions(ClientTest):
   def test_defaults_should_work(self):
     self.assertEqual(self.client.options['baseUrl'], 'https://localhost:8555/v1')
     self.assertEqual(self.client2.options['baseUrl'], 'http://notlocalhost:5888/v2')
+
+
+# TODO: I should run the same things through the node client and compare the output
+class TestTopicExchange(ClientTest):
+  pass
+  

@@ -23,7 +23,7 @@ from . import exceptions
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 # Only for debugging XXX: turn off the True or thing when shipping
-if True or os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
+if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
   log.addHandler(logging.StreamHandler())
 log.addHandler(logging.NullHandler())
 
@@ -84,20 +84,40 @@ class Client(object):
     if os.environ.get('TASKCLUSTER_CLIENT_LIVE_API'):
       ref = json.loads(requests.get(config['referenceUrl']).text)
 
+    def setattrIfNotAttr(obj, name, value):
+      assert not hasattr(obj, name)
+      return setattr(obj, name, value)
+
     # API level defaults.  Ideally
     for opt in filter(lambda x: x != 'entires', ref):
       self.options[opt] = ref[opt]
     
     for entry in filter(lambda x: x['type'] == 'function', ref['entries']):
-      apiFunc = entry['name']
-      log.info('Creating instance method %s.%s.%s', __name__, apiName, apiFunc)
-
-      def addApiCall(evt):
-        assert not hasattr(self, apiFunc)
-        setattr(self, apiFunc, lambda *args, **kwargs:
-                self._makeApiCall(evt, *args, **kwargs))
-
+      def addApiCall(e):
+        setattrIfNotAttr(
+          self,
+          e['name'],
+          lambda *args, **kwargs: self._makeApiCall(e, *args, **kwargs)
+        )
       addApiCall(entry)
+
+    for entry in filter(lambda x: x['type'] == 'topic-exchange', ref['entries']):
+      def addTopicExchange(e):
+        setattrIfNotAttr(
+          self,
+          e['name'],
+          lambda x: self._makeTopicExchange(e, x)
+        )
+      addTopicExchange(entry)
+
+  def _makeTopicExchange(self, entry, pattern):
+    data = {
+      'exchange': self.options['exchangePrefix'] + entry['exchange']
+    }
+    if isinstance(pattern, basestring):
+      data['routingKey'] = pattern
+    return data
+
 
   def _makeApiCall(self, entry, *args, **kwargs):
     """ This function is used to dispatch calls to other functions

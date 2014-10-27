@@ -18,7 +18,25 @@ def createApiRef(**kwargs):
   default.update(kwargs)
   return {'reference': default}
 
-def createApiEntry(numArg, hasInput, method='get', **kwargs):
+def createApiEntryFunction(numArg, hasInput, method='get', **kwargs):
+  fullArgs = ['arg%d' % i for i in range(numArg)]
+  routeChunks = ['/<%s>' % j for j in fullArgs]
+  route = ''.join(routeChunks)
+  default = {
+    'type': 'function',
+    'method': method,
+    'route': route,
+    'name': 'Test API Endpoint',
+    'title': 'Test API Endpoint title',
+    'description': 'Test API Endpoint Description',
+    'output': 'http://localhost/schemas/v1/apiOutput'
+  }
+  if hasInput:
+    default['input'] = 'http://localhost/schemas/v1/apiInput'
+  default.update(kwargs)
+  return default
+
+def createApiEntryTopicExchange(numArg, hasInput, method='get', **kwargs):
   fullArgs = ['arg%d' % i for i in range(numArg)]
   routeChunks = ['/<%s>' % j for j in fullArgs]
   route = ''.join(routeChunks)
