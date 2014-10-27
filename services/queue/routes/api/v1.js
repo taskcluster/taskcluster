@@ -430,8 +430,8 @@ api.declare({
   }).catch(function(err) {
     // Handle error in case the taskId is already in use, with another task
     // definition
-    if (err.code == 'BlobAlreadyExists') {
-      return req.json(409, {
+    if (err.code === 'BlobAlreadyExists') {
+      return res.status(409).json({
         message:      "taskId already used by another task"
       });
     }
