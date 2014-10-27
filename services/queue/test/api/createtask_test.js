@@ -108,6 +108,7 @@ suite('Create task', function() {
       }, taskDef)).then(function() {
         assert(false, "This operation should have failed!");
       }, function(err) {
+        assert(err.statusCode === 409, "I would expect a 409 Conflict");
         debug("Expected error: %j", err, err);
       });
     });
@@ -167,6 +168,23 @@ suite('Create task', function() {
       return gotMessage.message.then(function(message) {
         assert(_.isEqual(result.status, message.payload.status),
                "Message and result should have the same status");
+      });
+    });
+  });
+
+  test("defineTask is idempotent", function() {
+    var taskId = slugid.v4();
+    return subject.queue.defineTask(taskId, taskDef).then(function(result) {
+      return subject.queue.defineTask(taskId, taskDef);
+    }).then(function() {
+      // Verify that we can't modify the task
+      return subject.queue.defineTask(taskId, _.defaults({
+        workerType:   "another-worker"
+      }, taskDef)).then(function() {
+        assert(false, "This operation should have failed!");
+      }, function(err) {
+        assert(err.statusCode === 409, "I would expect a 409 Conflict");
+        debug("Expected error: %j", err, err);
       });
     });
   });
