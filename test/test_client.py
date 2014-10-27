@@ -1,4 +1,6 @@
 import unittest
+import types
+
 import httmock
 import mock
 import requests
@@ -10,7 +12,7 @@ import taskcluster.exceptions as exc
 class ClientTest(base.TCTest):
   def setUp(self):
     entries = [
-      base.createApiEntryFunction(0, False),
+      base.createApiEntryFunction('simple', 0, False),
       #base.createApiEntryTopicExchange(),
     ]
     self.client = subject.Client('testApi', base.createApiRef())
@@ -195,6 +197,93 @@ class TestOptions(ClientTest):
   def test_defaults_should_work(self):
     self.assertEqual(self.client.options['baseUrl'], 'https://localhost:8555/v1')
     self.assertEqual(self.client2.options['baseUrl'], 'http://notlocalhost:5888/v2')
+
+
+class TestMakeApiCall(base.TCTest):
+  """ This class covers both the _makeApiCall function logic as well as the
+  logic involved in setting up the api member functions since these are very
+  related things"""
+
+  def setUp(self):
+    entries = [
+      base.createApiEntryFunction('no_args_no_input', 0, False),
+      base.createApiEntryFunction('two_args_no_input', 2, False),
+      base.createApiEntryFunction('no_args_with_input', 0, True),
+      base.createApiEntryFunction('two_args_with_input', 2, True),
+      base.createApiEntryFunction('NEVER_CALL_ME', 0, False)
+    ]
+
+    self.apiRef = base.createApiRef(entries=entries)
+
+    self.client = subject.Client('testApi', self.apiRef)
+    patcher = mock.patch.object(self.client, 'NEVER_CALL_ME')
+    never_call = patcher.start()
+    never_call.side_effect = AssertionError
+    self.addCleanup(never_call.stop)
+
+  def test_creates_methods(self):
+    self.assertIsInstance(self.client.no_args_no_input, types.FunctionType)
+
+  def test_methods_setup_correctly(self):
+    # Because of how scoping works, I've had trouble where the last API Entry
+    # dict is used for all entires, which is wrong.  This is to make sure that
+    # the scoping stuff isn't broken
+    self.assertIsNot(self.client.NEVER_CALL_ME, self.client.no_args_no_input)
+
+  def test_hits_no_args_no_input(self):
+    expected = 'works'
+    with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
+      patcher.return_value = expected
+
+      actual = self.client.no_args_no_input()
+      self.assertEqual(expected, actual)
+
+      patcher.assert_called_once_with('get', 'no_args_no_input', None)
+
+
+  def test_hits_two_args_no_input(self):
+    expected = 'works'
+    with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
+      patcher.return_value = expected
+
+      actual = self.client.two_args_no_input('argone', arg1='argtwo')
+      self.assertEqual(expected, actual)
+
+      patcher.assert_called_once_with('get', 'two_args_no_input/argone/argtwo', None)
+
+
+  def test_hits_no_args_with_input(self):
+    expected = 'works'
+    with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
+      patcher.return_value = expected
+
+      actual = self.client.no_args_with_input()
+      self.assertEqual(expected, actual)
+
+      patcher.assert_called_once_with('get', 'no_args_with_input', None)
+
+
+  def test_hits_two_args_with_input(self):
+    expected = 'works'
+    with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
+      patcher.return_value = expected
+
+      actual = self.client.two_args_with_input('argone', arg1='argtwo')
+      self.assertEqual(expected, actual)
+
+      patcher.assert_called_once_with('get', 'two_args_with_input/argone/argtwo', None)
+
+  def test_input_is_procesed(self):
+    expected = 'works'
+    expected_input = {'test': 'does work'}
+    with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
+      patcher.return_value = expected
+
+      actual = self.client.no_args_with_input(payload=expected_input)
+      self.assertEqual(expected, actual)
+
+      patcher.assert_called_once_with('get', 'no_args_with_input', expected_input)
+
 
 
 # TODO: I should run the same things through the node client and compare the output

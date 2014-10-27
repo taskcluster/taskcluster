@@ -18,25 +18,26 @@ def createApiRef(**kwargs):
   default.update(kwargs)
   return {'reference': default}
 
-def createApiEntryFunction(numArg, hasInput, method='get', **kwargs):
+def createApiEntryFunction(name, numArg, hasInput, method='get', **kwargs):
   fullArgs = ['arg%d' % i for i in range(numArg)]
   routeChunks = ['/<%s>' % j for j in fullArgs]
   route = ''.join(routeChunks)
   default = {
     'type': 'function',
     'method': method,
-    'route': route,
-    'name': 'Test API Endpoint',
+    'route': '/%s%s' %(name, route),
+    'name': name,
     'title': 'Test API Endpoint title',
     'description': 'Test API Endpoint Description',
-    'output': 'http://localhost/schemas/v1/apiOutput'
+    'output': 'http://localhost/schemas/v1/apiOutput',
+    'args': fullArgs,
   }
   if hasInput:
     default['input'] = 'http://localhost/schemas/v1/apiInput'
   default.update(kwargs)
   return default
 
-def createApiEntryTopicExchange(numArg, hasInput, method='get', **kwargs):
+def createApiEntryTopicExchange(name, numArg, hasInput, method='get', **kwargs):
   fullArgs = ['arg%d' % i for i in range(numArg)]
   routeChunks = ['/<%s>' % j for j in fullArgs]
   route = ''.join(routeChunks)
@@ -44,7 +45,7 @@ def createApiEntryTopicExchange(numArg, hasInput, method='get', **kwargs):
     'type': 'function',
     'method': method,
     'route': route,
-    'name': 'Test API Endpoint',
+    'name': name,
     'title': 'Test API Endpoint title',
     'description': 'Test API Endpoint Description',
     'output': 'http://localhost/schemas/v1/apiOutput'
