@@ -13,6 +13,7 @@ def createApiRef(**kwargs):
     'title': 'API Title',
     'description': 'API Description',
     'baseUrl': 'https://localhost:8555/v1',
+    'exchangePrefix': 'test/v1',
     'entries': []
   }
   default.update(kwargs)
@@ -37,20 +38,27 @@ def createApiEntryFunction(name, numArg, hasInput, method='get', **kwargs):
   default.update(kwargs)
   return default
 
-def createApiEntryTopicExchange(name, numArg, hasInput, method='get', **kwargs):
-  fullArgs = ['arg%d' % i for i in range(numArg)]
-  routeChunks = ['/<%s>' % j for j in fullArgs]
-  route = ''.join(routeChunks)
+def createApiEntryTopicExchange(name, exchange, **kwargs):
   default = {
-    'type': 'function',
-    'method': method,
-    'route': route,
+    'type': 'topic-exchange',
+    'exchange': exchange,
     'name': name,
-    'title': 'Test API Endpoint title',
-    'description': 'Test API Endpoint Description',
-    'output': 'http://localhost/schemas/v1/apiOutput'
+    'title': 'Test Topic Exchange',
+    'description': 'Test Topic Exchange Description',
   }
-  if hasInput:
-    default['input'] = 'http://localhost/schemas/v1/apiInput'
   default.update(kwargs)
   return default
+
+def createTopicExchangeKey(name, constant=None, multipleWords=False, maxSize=5, required=False, **kwargs):
+  default = {
+    'name': name,
+    'summary': 'A short description of the key',
+    'maxSize': maxSize,
+    'required': required,
+    'multipleWords': multipleWords
+  }
+  if constant:
+    default['constant'] = constant
+  default.update(kwargs)
+  return default
+

@@ -13,9 +13,9 @@ class ClientTest(base.TCTest):
   def setUp(self):
     entries = [
       base.createApiEntryFunction('simple', 0, False),
-      #base.createApiEntryTopicExchange(),
+      base.createApiEntryTopicExchange('simpleTe', 'topic-exchange'),
     ]
-    self.client = subject.Client('testApi', base.createApiRef())
+    self.client = subject.Client('testApi', base.createApiRef(entries=entries))
 
 class TestSubArgsInRoute(ClientTest):
   def test_valid_no_subs(self):
@@ -285,8 +285,37 @@ class TestMakeApiCall(base.TCTest):
       patcher.assert_called_once_with('get', 'no_args_with_input', expected_input)
 
 
-
 # TODO: I should run the same things through the node client and compare the output
-class TestTopicExchange(ClientTest):
-  pass
-  
+class TestTopicExchange(base.TCTest):
+
+  def setUp(self):
+    keys = [
+      base.createTopicExchangeKey('primary_key', constant='primary'),
+      base.createTopicExchangeKey('norm1'),
+      base.createTopicExchangeKey('norm2'),
+      base.createTopicExchangeKey('norm3'),
+      base.createTopicExchangeKey('multi_key', multipleWords=True),
+    ]
+    topicEntry = base.createApiEntryTopicExchange('topicName', 'topicExchange', routingKey=keys)
+    self.apiRef = base.createApiRef(entries=[topicEntry])
+    self.client = subject.Client('testApi', self.apiRef)
+
+  def test_string_pass_through(self):
+    expected = 'johnwrotethis'
+    actual = self.client.topicName(expected)
+    self.assertEqual(expected, actual['routingKeyPattern'])
+    
+  def test_exchange(self):
+    expected = 'test/v1/topicExchange'
+    actual = self.client.topicName('blahblah')
+    self.assertEqual(expected, actual['exchange'])
+
+  def test_constant(self):
+    expected = 'primary.*.*.*.#'
+    actual = self.client.topicName({})
+    self.assertEqual(expected, actual['routingKeyPattern'])
+
+  def test_does_insertion(self):
+    expected = 'primary.*.value2.*.#'
+    actual = self.client.topicName({'norm2': 'value2'})
+    self.assertEqual(expected, actual['routingKeyPattern'])

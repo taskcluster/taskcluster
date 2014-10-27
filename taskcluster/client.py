@@ -82,20 +82,19 @@ class Client(object):
 
     # I wonder if anyone cares about this?
     if os.environ.get('TASKCLUSTER_CLIENT_LIVE_API'):
-      ref = json.loads(requests.get(config['referenceUrl']).text)
+      ref = json.loads(requests.get(api['referenceUrl']).text)
 
-    def setattrIfNotAttr(obj, name, value):
-      assert not hasattr(obj, name)
-      return setattr(obj, name, value)
+    def setattrIfNotAttr(name, value):
+      assert not hasattr(self, name)
+      return setattr(self, name, value)
 
     # API level defaults.  Ideally
     for opt in filter(lambda x: x != 'entires', ref):
       self.options[opt] = ref[opt]
-    
+
     for entry in filter(lambda x: x['type'] == 'function', ref['entries']):
       def addApiCall(e):
         setattrIfNotAttr(
-          self,
           e['name'],
           lambda *args, **kwargs: self._makeApiCall(e, *args, **kwargs)
         )
@@ -104,18 +103,44 @@ class Client(object):
     for entry in filter(lambda x: x['type'] == 'topic-exchange', ref['entries']):
       def addTopicExchange(e):
         setattrIfNotAttr(
-          self,
           e['name'],
           lambda x: self._makeTopicExchange(e, x)
         )
       addTopicExchange(entry)
 
-  def _makeTopicExchange(self, entry, pattern):
+  def _makeTopicExchange(self, entry, routingKeyPattern):
     data = {
-      'exchange': self.options['exchangePrefix'] + entry['exchange']
+      'exchange': '%s/%s' % (self.options['exchangePrefix'], entry['exchange'])
     }
-    if isinstance(pattern, basestring):
-      data['routingKey'] = pattern
+    # If we are passed in a string, we can short-circuit this function
+    if isinstance(routingKeyPattern, basestring):
+      log.debug('Passing through string for topic exchange key')
+      data['routingKeyPattern'] = routingKeyPattern
+      return data
+
+    if not routingKeyPattern:
+      routingKeyPattern = {}
+
+    # There is no canonical meaning for the maxSize and required
+    # reference entry in the JS client, so we don't try to define
+    # them here, even though they sound pretty obvious
+    
+    routingKey = []
+    for key in entry['routingKey']:
+      if 'constant' in key:
+        value = key['constant']
+      elif key['name'] in routingKeyPattern:
+        log.debug('Found %s in routing key params', key['name'])
+        value = str(routingKeyPattern[key['name']])
+        if not key.get('multipleWords') and '.' in value:
+          raise TaskclusterTopicExchangeFailure('Cannot have periods in single word keys')
+      else:
+        value = '#' if key.get('multipleWords') else '*'
+        log.debug('Did not find %s in input params, using %s', key['name'], value)
+      
+      routingKey.append(value)
+
+    data['routingKeyPattern'] = '.'.join([str(x) for x in routingKey])
     return data
 
 

@@ -12,3 +12,7 @@ class TaskclusterRestFailure(TaskclusterFailure):
     TaskclusterFailure.__init__(self, msg)
     self.superExc = superExc
     self.res = res
+
+class TaskclusterTopicExchangeFailure(TaskclusterFailure):
+  """ Error while creating a Topic Exchange routing key """
+  pass
