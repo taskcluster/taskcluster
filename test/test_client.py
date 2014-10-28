@@ -11,11 +11,24 @@ import taskcluster.exceptions as exc
 
 class ClientTest(base.TCTest):
   def setUp(self):
-    entries = [
-      base.createApiEntryFunction('simple', 0, False),
-      base.createApiEntryTopicExchange('simpleTe', 'topic-exchange'),
+    keys = [
+      base.createTopicExchangeKey('primary_key', constant='primary'),
+      base.createTopicExchangeKey('norm1'),
+      base.createTopicExchangeKey('norm2'),
+      base.createTopicExchangeKey('norm3'),
+      base.createTopicExchangeKey('multi_key', multipleWords=True),
     ]
-    self.client = subject.Client('testApi', base.createApiRef(entries=entries))
+    topicEntry = base.createApiEntryTopicExchange('topicName', 'topicExchange', routingKey=keys)
+    entries = [
+      base.createApiEntryFunction('no_args_no_input', 0, False),
+      base.createApiEntryFunction('two_args_no_input', 2, False),
+      base.createApiEntryFunction('no_args_with_input', 0, True),
+      base.createApiEntryFunction('two_args_with_input', 2, True),
+      base.createApiEntryFunction('NEVER_CALL_ME', 0, False),
+      topicEntry
+    ]
+    self.apiRef = base.createApiRef(entries=entries)
+    self.client = subject.Client('testApi', self.apiRef)
 
 class TestSubArgsInRoute(ClientTest):
   def test_valid_no_subs(self):
@@ -199,23 +212,13 @@ class TestOptions(ClientTest):
     self.assertEqual(self.client2.options['baseUrl'], 'http://notlocalhost:5888/v2')
 
 
-class TestMakeApiCall(base.TCTest):
+class TestMakeApiCall(ClientTest):
   """ This class covers both the _makeApiCall function logic as well as the
   logic involved in setting up the api member functions since these are very
   related things"""
 
   def setUp(self):
-    entries = [
-      base.createApiEntryFunction('no_args_no_input', 0, False),
-      base.createApiEntryFunction('two_args_no_input', 2, False),
-      base.createApiEntryFunction('no_args_with_input', 0, True),
-      base.createApiEntryFunction('two_args_with_input', 2, True),
-      base.createApiEntryFunction('NEVER_CALL_ME', 0, False)
-    ]
-
-    self.apiRef = base.createApiRef(entries=entries)
-
-    self.client = subject.Client('testApi', self.apiRef)
+    ClientTest.setUp(self)
     patcher = mock.patch.object(self.client, 'NEVER_CALL_ME')
     never_call = patcher.start()
     never_call.side_effect = AssertionError
@@ -286,20 +289,7 @@ class TestMakeApiCall(base.TCTest):
 
 
 # TODO: I should run the same things through the node client and compare the output
-class TestTopicExchange(base.TCTest):
-
-  def setUp(self):
-    keys = [
-      base.createTopicExchangeKey('primary_key', constant='primary'),
-      base.createTopicExchangeKey('norm1'),
-      base.createTopicExchangeKey('norm2'),
-      base.createTopicExchangeKey('norm3'),
-      base.createTopicExchangeKey('multi_key', multipleWords=True),
-    ]
-    topicEntry = base.createApiEntryTopicExchange('topicName', 'topicExchange', routingKey=keys)
-    self.apiRef = base.createApiRef(entries=[topicEntry])
-    self.client = subject.Client('testApi', self.apiRef)
-
+class TestTopicExchange(ClientTest):
   def test_string_pass_through(self):
     expected = 'johnwrotethis'
     actual = self.client.topicName(expected)
@@ -319,3 +309,20 @@ class TestTopicExchange(base.TCTest):
     expected = 'primary.*.value2.*.#'
     actual = self.client.topicName({'norm2': 'value2'})
     self.assertEqual(expected, actual['routingKeyPattern'])
+
+
+class TestBuildUrl(ClientTest):
+  def test_build_url(self):
+    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1'
+    actual = self.client.buildUrl('two_args_no_input', 'arg0', arg1='arg1')
+    self.assertEqual(expected, actual)
+
+  def test_fails_to_build_url_for_missing_method(self):
+    with self.assertRaises(exc.TaskclusterFailure):
+      self.client.buildUrl('non-existing')
+
+  def test_fails_to_build_not_enough_args(self):
+    with self.assertRaises(exc.TaskclusterFailure):
+      self.client.buildUrl('two_args_no_input', 'not-enough-args')
+
+

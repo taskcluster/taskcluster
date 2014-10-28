@@ -78,6 +78,7 @@ class Client(object):
     self.name = apiName
 
     ref = api['reference']
+    self._api = ref
 
 
     # I wonder if anyone cares about this?
@@ -109,6 +110,7 @@ class Client(object):
       addTopicExchange(entry)
 
   def _makeTopicExchange(self, entry, routingKeyPattern):
+    # TODO: This should support using Kwargs because python has them and they're great
     data = {
       'exchange': '%s/%s' % (self.options['exchangePrefix'], entry['exchange'])
     }
@@ -143,6 +145,16 @@ class Client(object):
     data['routingKeyPattern'] = '.'.join([str(x) for x in routingKey])
     return data
 
+  def buildUrl(self, methodName, *args, **kwargs):
+    entry = None
+    for x in self._api['entries']:
+      if x['name'] == methodName:
+        entry = x
+    if not entry:
+      raise exceptions.TaskclusterFailure('Requested method "%s" not found in API Reference' % methodName)
+    apiArgs = self._processArgs(entry['args'], *args, **kwargs)
+    route = self._subArgsInRoute(entry['route'], apiArgs)
+    return self.options['baseUrl'] + '/' + route
 
   def _makeApiCall(self, entry, *args, **kwargs):
     """ This function is used to dispatch calls to other functions
