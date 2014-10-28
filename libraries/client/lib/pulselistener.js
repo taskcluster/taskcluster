@@ -127,6 +127,7 @@ exports.PulseConnection = PulseConnection;
  * given, then the connection will be closed along with the listener.
  */
 var PulseListener = function(options) {
+  var that = this;
   assert(options,             "options are required");
   assert(options.connection ||
          options.credentials, "options.connection or credentials is required");
@@ -140,6 +141,11 @@ var PulseListener = function(options) {
   this._connection = options.connection || null;
   if (!(this._connection instanceof PulseConnection)) {
     this._connection = new PulseConnection(options.credentials);
+    // If listener owner the connection, then connection errors are also
+    // listener errors
+    this._connection.on('error', function(err) {
+      that.emit('error', err);
+    });
   }
 };
 
@@ -194,14 +200,13 @@ PulseListener.prototype.connect = function() {
   var channel = null;
   var channelCreated = this._connection.connect().then(function(conn) {
     that._conn = conn;
-    that._conn.on('error', function(err) {
-      debug("Connection error in PulseListener: ", err.stack);
-      that.emit('error', err);
-    });
     return that._conn.createConfirmChannel();
   }).then(function(channel_) {
     channel = channel_;
     channel.on('error', function(err) {
+      // Prevent invalidation of the connection, by someone calling .close()
+      // this way channel.close() won't be called when .close() is called.
+      that._channel = null;
       debug("Channel error in PulseListener: ", err.stack);
       that.emit('error', err);
     });
