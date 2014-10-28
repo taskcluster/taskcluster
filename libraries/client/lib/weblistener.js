@@ -88,11 +88,11 @@ WebListener.prototype.connect = function() {
       that.removeListener('close', ready_reject);
       accept();
     }
-    ready_reject = function() {
+    ready_reject = function(err) {
       that.removeListener('ready', ready_accept);
       that.removeListener('error', ready_reject);
       that.removeListener('close', ready_reject);
-      reject();
+      reject(err);
     }
     that.on('ready', ready_accept);
     that.on('error', ready_reject);
