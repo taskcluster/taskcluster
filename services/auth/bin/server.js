@@ -2,7 +2,6 @@
 var base    = require('taskcluster-base');
 var data    = require('../auth/data');
 var v1      = require('../routes/api/v1');
-var routes  = require('../routes');
 var path    = require('path');
 var debug   = require('debug')('taskcluster-auth:bin:server');
 var Promise = require('promise');
@@ -111,9 +110,6 @@ var launch = function(profile) {
       root:           cfg.get('auth:root')
     };
 
-    // Route configuration
-    app.get('/',                                       routes.index);
-    app.get('/unauthorized',                           routes.unauthorized);
     // Create server
     return app.createServer();
   });
