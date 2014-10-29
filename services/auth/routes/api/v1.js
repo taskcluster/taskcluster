@@ -26,7 +26,7 @@ api.declare({
   route:      '/client/:clientId/scopes',
   name:       'scopes',
   input:      undefined,
-  output:     "http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#",
+  output:     SCHEMA_PREFIX_CONST + 'client-scopes-response.json#',
   scopes:     ['auth:inspect', 'auth:credentials'],
   title:      "Get Client Authorized Scopes",
   description: [
@@ -61,7 +61,7 @@ api.declare({
   route:      '/client/:clientId/credentials',
   name:       'getCredentials',
   input:      undefined,
-  output:     "http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#",
+  output:     SCHEMA_PREFIX_CONST + 'client-credentials-response.json#',
   scopes:     ['auth:credentials'],
   title:      "Get Client Credentials",
   description: [
@@ -99,7 +99,7 @@ api.declare({
   route:      '/client/:clientId',
   name:       'client',
   input:      undefined,
-  output:     undefined,
+  output:     SCHEMA_PREFIX_CONST + 'get-client-response.json#',
   scopes:     ['auth:credentials'],
   title:      "Get Client Information",
   description: [
@@ -135,7 +135,7 @@ api.declare({
   route:      '/client/:clientId',
   name:       'createClient',
   input:      SCHEMA_PREFIX_CONST + 'create-client-request.json#',
-  output:     undefined,
+  output:     SCHEMA_PREFIX_CONST + 'get-client-response.json#',
   scopes:     [['auth:create-client', 'auth:credentials']],
   title:      "Create Client",
   description: [
@@ -213,7 +213,7 @@ api.declare({
   route:      '/client/:clientId/modify',
   name:       'modifyClient',
   input:      SCHEMA_PREFIX_CONST + 'create-client-request.json#',
-  output:     undefined,
+  output:     SCHEMA_PREFIX_CONST + 'get-client-response.json#',
   scopes:     [['auth:modify-client', 'auth:credentials']],
   title:      "Modify Client",
   description: [
@@ -292,7 +292,7 @@ api.declare({
   route:      '/client/:clientId/reset-credentials',
   name:       'resetCredentials',
   input:      undefined,
-  output:     undefined,
+  output:     SCHEMA_PREFIX_CONST + 'get-client-response.json#',
   scopes:     [['auth:reset-credentials', 'auth:credentials']],
   title:      "Reset Client Credentials",
   description: [
@@ -335,7 +335,7 @@ api.declare({
   route:      '/list-clients',
   name:       'listClients',
   input:      undefined,
-  output:     undefined,
+  output:     SCHEMA_PREFIX_CONST + 'list-clients-response.json#',
   scopes:     ['auth:client-clients'],
   title:      "List Clients",
   description: [

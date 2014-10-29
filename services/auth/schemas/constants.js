@@ -9,5 +9,6 @@
  */
 module.exports = {
   // Slugid pattern, for when-ever that is useful
-  "slugid-pattern":           "^[a-zA-Z0-9-_]{22}",
+  "slugid-pattern":           "^[a-zA-Z0-9-_]{22}$",
+  "accessToken-pattern":      "^[a-zA-Z0-9-_]{22,66}$"
 };
