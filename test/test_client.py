@@ -30,6 +30,12 @@ class ClientTest(base.TCTest):
     self.apiRef = base.createApiRef(entries=entries)
     self.client = subject.Client('testApi', self.apiRef)
 
+    # Patch time.sleep so that we don't delay tests
+    sleepPatcher = mock.patch('time.sleep')
+    sleepSleep = sleepPatcher.start()
+    sleepSleep.return_value = None
+    self.addCleanup(sleepSleep.stop)
+
 class TestSubArgsInRoute(ClientTest):
   def test_valid_no_subs(self):
     provided = '/no/args/here'
@@ -147,10 +153,7 @@ class ObjWithDotJson(object):
 
 class TestMakeHttpRequest(ClientTest):
   def setUp(self):
-    patcher = mock.patch('time.sleep')
-    timeSleep = patcher.start()
-    timeSleep.return_value = None
-    self.addCleanup(timeSleep.stop)
+
     ClientTest.setUp(self)
 
   def test_success_first_try(self):
@@ -325,4 +328,16 @@ class TestBuildUrl(ClientTest):
     with self.assertRaises(exc.TaskclusterFailure):
       self.client.buildUrl('two_args_no_input', 'not-enough-args')
 
+class TestBuildSignedUrl(ClientTest):
+  def setUp(self):
+    ClientTest.setUp(self)
+    # Patch time.time so that we get constant bewits for 
+    timePatcher = mock.patch('time.time')
+    timePatch = timePatcher.start()
+    timePatch.return_value = 1
+    self.addCleanup(timePatch.stop)
 
+  def test_builds_surl(self):
+    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=MllrckEzNVRTckNMOXlPR0RlVy1UZ1w5MDFcOVRUZHZ4eVI1SDhyUTBCQmRMaV9zcS01eGlPOEhyRl82QkZNSE54TUJIST1c'
+    actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', arg1='arg1')
+    self.assertEqual(expected, actual)

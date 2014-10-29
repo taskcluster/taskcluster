@@ -16,7 +16,7 @@ import time
 # For finding apis.json
 from pkg_resources import resource_string
 import requests
-# import hawk
+import hawk
 
 from . import exceptions
 
@@ -59,11 +59,15 @@ class Client(object):
       'delegating': False,
       'scopes': []
     },
-    'maxRetries': 5
+    'maxRetries': 5,
+    'signedUrlExpiration': 15 * 60
   }
 
   @property
   def options(self):
+    # TODO: This currently overwrites instance options
+    # with default options.  Is this really how it should
+    # be?
     if not hasattr(self, '_options'):
       self._options = {}
     self._options.update(Client._defaultOptions)
@@ -155,6 +159,57 @@ class Client(object):
     apiArgs = self._processArgs(entry['args'], *args, **kwargs)
     route = self._subArgsInRoute(entry['route'], apiArgs)
     return self.options['baseUrl'] + '/' + route
+
+  def buildSignedUrl(self, methodName, *args, **kwargs):
+    if 'expiration' in kwargs:
+      expiration = kwargs['expiration']
+      del kwargs['expiration']
+    else:
+      expiration = self.options['signedUrlExpiration']
+    
+    expiration = int(expiration) # Mainly so that we throw if it's not a number
+
+    requestUrl = self.buildUrl(methodName, *args, **kwargs)
+
+    if not self.options['credentials']['clientId']:
+      raise exceptions.TaskclusterFailure('Missing Client ID for URL Signing') 
+    if not self.options['credentials']['accessToken']:
+      raise exceptions.TaskclusterFailure('Missing Access Token for URL Signing') 
+    
+    clientId = self.options['credentials']['clientId']
+    accessToken = self.options['credentials']['accessToken']
+
+    bewitOpts = {
+      'credentials': {
+        'id': clientId,
+        'key': accessToken,
+        'algorithm': 'sha256',
+      },
+      'ttl_sec': expiration,
+    }
+
+    if len(self.options['authorization']['scopes']) > 0:
+      ext = {authorizedScopes: self.options['authorization']['scopes']}
+      bewitOpts['ext'] = json.dumps(ext).encode('base64')
+
+    # NOTE: the version of PyHawk in pypi is broken.
+    # see: https://github.com/mozilla/PyHawk/pull/27
+    bewit = hawk.client.get_bewit(requestUrl, bewitOpts)
+    if not bewit:
+      raise exceptions.TaskclusterFailure('Did not receive a bewit')
+
+    u = urlparse.urlparse(requestUrl) 
+    #urlParts.query += 'bewit=%s' % bewit
+    print u
+    return urlparse.urlunparse((
+      u.scheme,
+      u.netloc,
+      u.path,
+      u.params,
+      u.query + 'bewit=%s' % bewit,
+      u.fragment,
+    ))
+
 
   def _makeApiCall(self, entry, *args, **kwargs):
     """ This function is used to dispatch calls to other functions
