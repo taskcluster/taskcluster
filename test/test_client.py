@@ -29,6 +29,10 @@ class ClientTest(base.TCTest):
     ]
     self.apiRef = base.createApiRef(entries=entries)
     self.client = subject.Client('testApi', self.apiRef)
+    subject.Client._defaultOptions['credentials'] = {
+      'clientId': 'clientid',
+      'accessToken': 'acctok',
+    }
 
     # Patch time.sleep so that we don't delay tests
     sleepPatcher = mock.patch('time.sleep')

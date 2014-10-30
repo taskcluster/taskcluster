@@ -84,7 +84,6 @@ class Client(object):
     ref = api['reference']
     self._api = ref
 
-
     # I wonder if anyone cares about this?
     if os.environ.get('TASKCLUSTER_CLIENT_LIVE_API'):
       ref = json.loads(requests.get(api['referenceUrl']).text)
@@ -179,6 +178,7 @@ class Client(object):
     clientId = self.options['credentials']['clientId']
     accessToken = self.options['credentials']['accessToken']
 
+    assert hawk.__version__ != '0.1.3', 'This version of PyHawk has a bug. see PyHawk PR27'
     bewitOpts = {
       'credentials': {
         'id': clientId,
