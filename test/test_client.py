@@ -28,7 +28,7 @@ class ClientTest(base.TCTest):
       topicEntry
     ]
     self.apiRef = base.createApiRef(entries=entries)
-    self.client = subject.BaseClient('testApi', self.apiRef)
+    self.client = subject.createApiClient('testApi', self.apiRef)
     subject.BaseClient._defaultOptions['credentials'] = {
       'clientId': 'clientId',
       'accessToken': 'accessToken',
@@ -198,7 +198,7 @@ class TestMakeHttpRequest(ClientTest):
 class TestOptions(ClientTest):
   def setUp(self):
     ClientTest.setUp(self)
-    self.client2 = subject.BaseClient('testApi', base.createApiRef(baseUrl='http://notlocalhost:5888/v2'))
+    self.client2 = subject.createApiClient('testApi', base.createApiRef(baseUrl='http://notlocalhost:5888/v2'))
 
   def test_they_share_defaults_even_when_changed_for_one(self):
     self.client2._defaultOptions['john'] = 'ford'

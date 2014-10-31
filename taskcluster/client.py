@@ -350,8 +350,12 @@ class BaseClient(object):
     return requests.request(method, url, data=payload)
 
 
+def createApiClient(name, reference):
+  return BaseClient(name, reference)
+
+
 # This has to be done after the Client class is declared
 THIS_MODULE = sys.modules[__name__]
 for key, value in API_CONFIG.items():
-  globals()[key] = BaseClient(key, value)
+  globals()[key] = createApiClient(key, value)
 globals()['config'] = BaseClient._defaultOptions
