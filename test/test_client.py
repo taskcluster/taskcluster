@@ -30,8 +30,8 @@ class ClientTest(base.TCTest):
     self.apiRef = base.createApiRef(entries=entries)
     self.client = subject.Client('testApi', self.apiRef)
     subject.Client._defaultOptions['credentials'] = {
-      'clientId': 'clientid',
-      'accessToken': 'acctok',
+      'clientId': 'clientId',
+      'accessToken': 'accessToken',
     }
 
     # Patch time.sleep so that we don't delay tests
@@ -342,6 +342,6 @@ class TestBuildSignedUrl(ClientTest):
     self.addCleanup(timePatch.stop)
 
   def test_builds_surl(self):
-    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=MllrckEzNVRTckNMOXlPR0RlVy1UZ1w5MDFcOVRUZHZ4eVI1SDhyUTBCQmRMaV9zcS01eGlPOEhyRl82QkZNSE54TUJIST1c'
+    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=Y2xpZW50SWRcOTAxXEZmWUx1WFQ5TTRLQUltamxESGdmcllEVEEzQy05SFBYcHo3NTBxUUNRQXc9XA=='
     actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', arg1='arg1')
     self.assertEqual(expected, actual)
