@@ -30,7 +30,7 @@ log.addHandler(logging.NullHandler())
 API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
 
 
-class Client(object):
+class BaseClient(object):
   """ Instances of this class are API helpers for a specific API reference.
   They know how to load their data from either a statically defined JSON file
   which is packaged with the library, or by reading an environment variable can
@@ -65,12 +65,13 @@ class Client(object):
 
   @property
   def options(self):
+    """A read only property which contains this API Client's options"""
     # TODO: This currently overwrites instance options
     # with default options.  Is this really how it should
     # be?
     if not hasattr(self, '_options'):
       self._options = {}
-    self._options.update(Client._defaultOptions)
+    self._options.update(BaseClient._defaultOptions)
     return self._options
 
   def __init__(self, apiName, api):
@@ -351,6 +352,6 @@ class Client(object):
 
 # This has to be done after the Client class is declared
 THIS_MODULE = sys.modules[__name__]
-for key, value in list(API_CONFIG.items()):
-  setattr(THIS_MODULE, key, Client(key, value))
-setattr(THIS_MODULE, 'config', Client._defaultOptions)
+for key, value in API_CONFIG.items():
+  globals()[key] = BaseClient(key, value)
+globals()['config'] = BaseClient._defaultOptions
