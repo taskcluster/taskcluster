@@ -22,8 +22,7 @@ apis.json:
 dev-env:
 	[ -d $(VENV) ] || $(PYTHON) -m virtualenv $(VENV)
 	[ -d .pyhawk ] || git clone 'https://github.com/jhford/pyhawk' .pyhawk
-	(cd .pyhawk && ../$(VENV)/bin/python setup.py install)
-	for x in "$(shell $(VENV)/bin/python devDep.py)" ; do $(VENV)/bin/python -m pip install $$x || true ; done 
+	$(VENV)/bin/python devDep.py
 	$(VENV)/bin/python setup.py develop
 
 .PHONY: clean
