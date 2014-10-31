@@ -1,6 +1,8 @@
 Taskcluster Client Library in Python
 ======================================
 
+[![Build Status](https://travis-ci.org/jhford/taskcluster-client.py.svg?branch=master)](https://travis-ci.org/jhford/taskcluster-client.py)
+
 This is a library used to interact with Taskcluster within Python programs.  It
 presents the entire REST API to consumers as well as being able to generate
 URLs Signed by Hawk credentials.  It can also generate routing keys for
@@ -61,7 +63,7 @@ There is a bug in the PyHawk library (as of 0.1.3) which breaks bewit
 generation for URLs that do not have a query string.  This is being addressed
 in [PyHawk PR 27](https://github.com/mozilla/PyHawk/pull/27). 
 
-There are a couple things:
+There are a couple things that would be nice:
 
 * Per-API client options
 * Using `urlparse.urlparse` and `urlparse.urlunparse` to construct URLs
