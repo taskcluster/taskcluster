@@ -8,11 +8,12 @@ tests_require = [
   'rednose==0.4.1',
   'mock==1.0.1',
   'setuptools-lint==0.3',
+  'pyflakes==0.8.1',
 ]
 
 install_requires = [
   'requests==2.4.3',
-  'PyHawk_with_a_single_extra_commit==0.1.4',
+  'PyHawk_with_a_single_extra_commit==0.1.5',
   #  'PyHawk==0.1.4',
 ]
 

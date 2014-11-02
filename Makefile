@@ -1,8 +1,9 @@
 .PHONY: test
 test:
-	pyflakes taskcluster
-	pyflakes test
+	$(VENV)/bin/pyflakes taskcluster
+	$(VENV)/bin/pyflakes test
 	$(VENV)/bin/python setup.py test
+	$(VENV)/bin/nosetests
 
 JS_CLIENT_BRANCH=master
 APIS_JSON=$(PWD)/taskcluster/apis.json
@@ -21,7 +22,6 @@ apis.json:
 .PHONY: dev-env
 dev-env:
 	[ -d $(VENV) ] || $(PYTHON) -m virtualenv $(VENV)
-	[ -d .pyhawk ] || git clone 'https://github.com/jhford/pyhawk' .pyhawk
 	$(VENV)/bin/python devDep.py
 	$(VENV)/bin/python setup.py develop
 

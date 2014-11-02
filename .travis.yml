@@ -9,8 +9,8 @@ python:
 #  - "pypy3"
 # command to install dependencies
 install:
-  - "pip install nose rednose mock httmock"
-  - "pip install ."
-  - "python setup.py develop"
+  - "pip install virtualenv"
+  - "make dev-env"
 # command to run tests
-script: nosetests
+script:
+  - "make test"
