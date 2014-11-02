@@ -12,7 +12,8 @@ tests_require = [
 
 install_requires = [
   'requests==2.4.3',
-  'PyHawk==0.1.4', # Note: this version is from gh.com/jhford/PyHawk
+  'PyHawk_with_a_single_extra_commit==0.1.4',
+  #  'PyHawk==0.1.4',
 ]
 
 if __name__ == '__main__':
