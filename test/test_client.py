@@ -28,7 +28,8 @@ class ClientTest(base.TCTest):
       topicEntry
     ]
     self.apiRef = base.createApiRef(entries=entries)
-    self.client = subject.createApiClient('testApi', self.apiRef)
+    self.clientClass = subject.createApiClient('testApi', self.apiRef)
+    self.client = self.clientClass()
     subject.BaseClient._defaultOptions['credentials'] = {
       'clientId': 'clientId',
       'accessToken': 'accessToken',
@@ -198,7 +199,8 @@ class TestMakeHttpRequest(ClientTest):
 class TestOptions(ClientTest):
   def setUp(self):
     ClientTest.setUp(self)
-    self.client2 = subject.createApiClient('testApi', base.createApiRef(baseUrl='http://notlocalhost:5888/v2'))
+    self.clientClass2 = subject.createApiClient('testApi', base.createApiRef(baseUrl='http://notlocalhost:5888/v2'))
+    self.client2 = self.clientClass2()
 
   def test_they_share_defaults_even_when_changed_for_one(self):
     self.client2._defaultOptions['john'] = 'ford'
@@ -232,7 +234,7 @@ class TestMakeApiCall(ClientTest):
     self.addCleanup(never_call.stop)
 
   def test_creates_methods(self):
-    self.assertIsInstance(self.client.no_args_no_input, types.FunctionType)
+    self.assertIsInstance(self.client.no_args_no_input, types.MethodType)
 
   def test_methods_setup_correctly(self):
     # Because of how scoping works, I've had trouble where the last API Entry

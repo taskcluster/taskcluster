@@ -29,3 +29,9 @@ dev-env:
 clean:
 	find . -name "*.py?" -exec rm {} +
 	rm -rf env-*
+
+.PHONY: docs
+docs:
+	rm -rf docs/_build
+	python makeRst.py > docs/client.rst
+	make -C docs html

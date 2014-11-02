@@ -74,45 +74,6 @@ class BaseClient(object):
     self._options.update(BaseClient._defaultOptions)
     return self._options
 
-  def __init__(self, apiName, api):
-    """ Initialize an API Client based on its definition """
-    self._options = {}
-
-    log.debug('Creating a client object for %s', apiName)
-
-    self.name = apiName
-
-    ref = api['reference']
-    self._api = ref
-
-    # I wonder if anyone cares about this?
-    if os.environ.get('TASKCLUSTER_CLIENT_LIVE_API'):
-      ref = json.loads(requests.get(api['referenceUrl']).text)
-
-    def setattrIfNotAttr(name, value):
-      assert not hasattr(self, name)
-      return setattr(self, name, value)
-
-    # API level defaults.  Ideally
-    for opt in filter(lambda x: x != 'entires', ref):
-      self.options[opt] = ref[opt]
-
-    for entry in filter(lambda x: x['type'] == 'function', ref['entries']):
-      def addApiCall(e):
-        setattrIfNotAttr(
-          e['name'],
-          lambda *args, **kwargs: self._makeApiCall(e, *args, **kwargs)
-        )
-      addApiCall(entry)
-
-    for entry in filter(lambda x: x['type'] == 'topic-exchange', ref['entries']):
-      def addTopicExchange(e):
-        setattrIfNotAttr(
-          e['name'],
-          lambda x: self._makeTopicExchange(e, x)
-        )
-      addTopicExchange(entry)
-
   def _makeTopicExchange(self, entry, routingKeyPattern):
     # TODO: This should support using Kwargs because python has them and they're great
     data = {
@@ -201,7 +162,6 @@ class BaseClient(object):
 
     u = urlparse.urlparse(requestUrl) 
     #urlParts.query += 'bewit=%s' % bewit
-    print u
     return urlparse.urlunparse((
       u.scheme,
       u.netloc,
@@ -350,12 +310,76 @@ class BaseClient(object):
     return requests.request(method, url, data=payload)
 
 
-def createApiClient(name, reference):
-  return BaseClient(name, reference)
+def createApiClient(name, api):
+  attributes = dict(
+    name=name,
+    _api=api['reference'],
+    __doc__=api.get('description'),
+    _options={}, 
+  )
+
+  for opt in filter(lambda x: x != 'entries', api['reference']):
+    attributes['_options'][opt] = api['reference'][opt]
+
+  for entry in api['reference']['entries']:
+    if entry['type'] == 'function':
+
+      def addApiCall(e):
+        def apiCall(self, *args, **kwargs):
+          return self._makeApiCall(e, *args, **kwargs)
+        return apiCall
+
+      f = addApiCall(entry)
+      docStr = "Call the %s api's %s method.  " % (name, entry['name'])
+
+      if entry['args'] and len(entry['args']) > 0:
+        docStr += "This method takes:\n\n"
+        docStr += '\n'.join(['- ``%s``' % x for x in entry['args']])
+        docStr += '\n\n'
+      else:
+        docStr += "This method takes no arguments.  "
+
+      if 'input' in entry:
+        docStr += "This method takes input ``%s``.  " % entry['input']
+
+      if 'output' in entry:
+        docStr += "This method gives output ``%s``" % entry['output']
+
+      docStr += '\n\nThis method does a ``%s`` to ``%s``.' % (entry['method'].upper(), entry['route'])
+
+      f.__doc__ = docStr
+
+    elif entry['type'] == 'topic-exchange':
+      def addTopicExchange(e):
+        def topicExchange(self, routingKeyPattern):
+          return self._makeTopicExchange(e, routingKeyPattern)
+        return topicExchange
+
+      f = addTopicExchange(entry)
+
+      docStr = 'Generate a routing key pattern for the %s exchange.  ' % entry['exchange']
+      docStr += 'This method takes a given routing key as a string or a '
+      docStr += 'dictionary.  For each given dictionary key, the corresponding '
+      docStr += 'routing key token takes its value.  For routing key tokens '
+      docStr += 'which are not specified by the dictionary, the * or # character '
+      docStr += 'is used depending on whether or not the key allows multiple words.\n\n'
+      docStr += 'This exchange takes the following keys:\n\n'
+      docStr += '\n'.join(['- ``%s``' % x['name'] for x in entry['routingKey']])
+
+      f.__doc__ = docStr
+  
+    # Give the function the right name
+    f.__name__ = str(entry['name'])
+    
+    # Add whichever function we created
+    attributes[entry['name']] = f
+
+
+
+  return type(name.encode('utf-8'), (BaseClient,), attributes)
 
 
 # This has to be done after the Client class is declared
-THIS_MODULE = sys.modules[__name__]
 for key, value in API_CONFIG.items():
   globals()[key] = createApiClient(key, value)
 globals()['config'] = BaseClient._defaultOptions
