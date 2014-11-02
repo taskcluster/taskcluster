@@ -1,4 +1,3 @@
-import unittest
 import types
 
 import httmock
@@ -11,6 +10,10 @@ import taskcluster.exceptions as exc
 
 class ClientTest(base.TCTest):
   def setUp(self):
+    subject.config['credentials'] = {
+      'clientId': 'clientId',
+      'accessToken': 'accessToken',
+    }
     keys = [
       base.createTopicExchangeKey('primary_key', constant='primary'),
       base.createTopicExchangeKey('norm1'),
@@ -30,11 +33,6 @@ class ClientTest(base.TCTest):
     self.apiRef = base.createApiRef(entries=entries)
     self.clientClass = subject.createApiClient('testApi', self.apiRef)
     self.client = self.clientClass()
-    subject.BaseClient._defaultOptions['credentials'] = {
-      'clientId': 'clientId',
-      'accessToken': 'accessToken',
-    }
-
     # Patch time.sleep so that we don't delay tests
     sleepPatcher = mock.patch('time.sleep')
     sleepSleep = sleepPatcher.start()
@@ -192,7 +190,7 @@ class TestMakeHttpRequest(ClientTest):
       p.return_value = ObjWithDotJson(500, None)
       expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range (self.client.options['maxRetries'])]
       with self.assertRaises(exc.TaskclusterRestFailure):
-        v = self.client._makeHttpRequest('GET', 'http://www.example.com', {})
+        self.client._makeHttpRequest('GET', 'http://www.example.com', {})
       p.assert_has_calls(expectedCalls)
 
 
@@ -203,18 +201,15 @@ class TestOptions(ClientTest):
     self.client2 = self.clientClass2()
 
   def test_they_share_defaults_even_when_changed_for_one(self):
-    self.client2._defaultOptions['john'] = 'ford'
-    self.assertIs(self.client._defaultOptions, self.client2._defaultOptions)
-    self.assertIs(self.client._defaultOptions, subject.config)
+    subject.config['john'] = 'ford'
+    self.assertEqual(self.client.options['john'], self.client2.options['john'])
 
   def test_defaults_should_be_included_for_normal_options(self):
     self.assertEqual(self.client.options['maxRetries'], subject.config['maxRetries'])
 
-  def test_change_default_on_one_reflects_in_normal_options_of_the_other(self):
-    subject.config['john'] = 'dillinger'
-    self.assertEqual(self.client.options['john'], self.client2.options['john'])
-    subject.config['john'] = 'wayne'
-    self.assertEqual(self.client.options['john'], self.client2.options['john'])
+  def test_can_set_an_option_on_one_without_touching_other(self):
+    self.client.setOption('john', 'dillinger')
+    self.assertEqual('dillinger', self.client.options['john'])
 
   def test_defaults_should_work(self):
     self.assertEqual(self.client.options['baseUrl'], 'https://localhost:8555/v1')

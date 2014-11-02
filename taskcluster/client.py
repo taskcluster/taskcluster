@@ -1,10 +1,8 @@
 """This module is used to interact with taskcluster rest apis"""
 
-import sys
 import os
 import json
 import logging
-import functools
 import copy
 try:
   import urlparse
@@ -29,6 +27,20 @@ log.addHandler(logging.NullHandler())
 
 API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
 
+# Default configuration
+_defaultConfig = config = {
+  'credentials': {
+    'clientId': os.environ.get('TASKCLUSTER_CLIENT_ID'),
+    'accessToken': os.environ.get('TASKCLUSTER_ACCESS_TOKEN')
+  },
+  'authorization': {
+    'delegating': False,
+    'scopes': []
+  },
+  'maxRetries': 5,
+  'signedUrlExpiration': 15 * 60
+}
+
 
 class BaseClient(object):
   """ Instances of this class are API helpers for a specific API reference.
@@ -50,29 +62,27 @@ class BaseClient(object):
   iteration.
   """
 
-  _defaultOptions = {
-    'credentials': {
-      'clientId': os.environ.get('TASKCLUSTER_CLIENT_ID'),
-      'accessToken': os.environ.get('TASKCLUSTER_ACCESS_TOKEN')
-    },
-    'authorization': {
-      'delegating': False,
-      'scopes': []
-    },
-    'maxRetries': 5,
-    'signedUrlExpiration': 15 * 60
-  }
+  def __init__(self, options=None):
+    if not options:
+      options = {}
+    # Remember, ._options is defined in the type() call below
+    self._options.update(options)
 
   @property
   def options(self):
-    """A read only property which contains this API Client's options"""
-    # TODO: This currently overwrites instance options
-    # with default options.  Is this really how it should
-    # be?
-    if not hasattr(self, '_options'):
-      self._options = {}
-    self._options.update(BaseClient._defaultOptions)
-    return self._options
+    """Hold all the API Level options.  This method returns
+    a dictionary that's a collation of the API level options
+    and the module level defaults.  It will return a new 
+    dictionary every time it's called"""
+    options = {}
+    options.update(_defaultConfig)
+    options.update(self._options)
+    return options
+
+  def setOption(self, key, value):
+    """ Set an API level option.  Options specified here will
+    override those specified in the module level .config dict"""
+    self._options[key] = value
 
   def _makeTopicExchange(self, entry, routingKeyPattern):
     # TODO: This should support using Kwargs because python has them and they're great
@@ -100,7 +110,7 @@ class BaseClient(object):
         log.debug('Found %s in routing key params', key['name'])
         value = str(routingKeyPattern[key['name']])
         if not key.get('multipleWords') and '.' in value:
-          raise TaskclusterTopicExchangeFailure('Cannot have periods in single word keys')
+          raise exceptions.TaskclusterTopicExchangeFailure('Cannot have periods in single word keys')
       else:
         value = '#' if key.get('multipleWords') else '*'
         log.debug('Did not find %s in input params, using %s', key['name'], value)
@@ -151,7 +161,7 @@ class BaseClient(object):
     }
 
     if len(self.options['authorization']['scopes']) > 0:
-      ext = {authorizedScopes: self.options['authorization']['scopes']}
+      ext = {'authorizedScopes': self.options['authorization']['scopes']}
       bewitOpts['ext'] = json.dumps(ext).encode('base64')
 
     # NOTE: the version of PyHawk in pypi is broken.
@@ -253,7 +263,7 @@ class BaseClient(object):
     # TODO: Let's just pretend this is a good idea
     try:
       route = route.replace('<', '%(').replace('>', ')s') % args
-    except KeyError as e:
+    except KeyError:
       raise exceptions.TaskclusterFailure('Argument not found in route')
     return route.lstrip('/')
 
@@ -382,4 +392,3 @@ def createApiClient(name, api):
 # This has to be done after the Client class is declared
 for key, value in API_CONFIG.items():
   globals()[key] = createApiClient(key, value)
-globals()['config'] = BaseClient._defaultOptions

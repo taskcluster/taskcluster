@@ -2,7 +2,7 @@
 test:
 	pyflakes taskcluster
 	pyflakes test
-	./bin/python setup.py test
+	$(VENV)/bin/python setup.py test
 
 JS_CLIENT_BRANCH=master
 APIS_JSON=$(PWD)/taskcluster/apis.json
