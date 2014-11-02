@@ -28,17 +28,28 @@ The main differences between the Python and JS library are:
     but in the Python client, you'd do:
     ```python
     from taskcluster import client
-    client.index.findTask('my-namespace')
+    index = client.index()
     ```
 
-* Options are shared between all instance of all API Clients.  To change the
-  options you can run:
+* Options can be shared between instances of API clients by setting the variable in the module
+  config dictionary:
 
     ```python
     from taskcluster import client, config
     config['credentials']['clientId'] = 'Bob'
     config['credentials']['accessToken'] = 'TokensRUs'
+    print client.index().options['credentials']['clientId']
     ```
+* Options can be set per API client with the `BaseClient.setOption(key, value)` method
+  and interogated with the `BaseClient.options` read-only property
+
+  ```python
+  from taskcluster import client
+  index = client.index()
+  index.options['baseUrl'] # returns u'https://index.taskcluster.net/v1'
+  index.setOptions('baseUrl', 'http://www.google.com')
+  index.options['baseUrl'] # returns 'https://www.google.com'
+  ```
 
 * Keyword arguments for API methods are supported.  The javascript client
   accepts only positional arguments.  Positional arguments are read first and
@@ -47,16 +58,19 @@ The main differences between the Python and JS library are:
 
     ```python
     from taskcluster import client
-    client.api.method('1', '2', '3', arg1='pie')
+    api = client.api()
+    api.method('1', '2', '3', arg1='pie')
     ```
-    Assuming apiMethod has a route of `/method/<arg1>/<arg2>/<arg3>`, this will result in a calle to `/method/pie/2/3`
+    Assuming apiMethod has a route of `/method/<arg1>/<arg2>/<arg3>`,
+    this will result in a calle to `/method/pie/2/3`
 
 * Method Payloads are specified through the `payload` keyword passed to the API
   method
 
     ```python
     from taskcluster import client
-    client.index.listNamespaces('mozilla-central', payload={'continuationToken': 'a_token'})
+    index = client.index()
+    index.listNamespaces('mozilla-central', payload={'continuationToken': 'a_token'})
     ```
 
 There is a bug in the PyHawk library (as of 0.1.3) which breaks bewit
