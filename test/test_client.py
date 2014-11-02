@@ -320,7 +320,21 @@ class TestTopicExchange(ClientTest):
     actual = self.client.topicName({'norm2': 'value2'})
     self.assertEqual(expected, actual['routingKeyPattern'])
 
+  def test_too_many_star_args(self):
+    with self.assertRaises(exc.TaskclusterTopicExchangeFailure):
+      self.client.topicName({'taskId': '123'}, 'another')
 
+  def test_both_args_and_kwargs(self):
+    with self.assertRaises(exc.TaskclusterTopicExchangeFailure):
+      self.client.topicName({'taskId': '123'}, taskId='123')
+
+  def test_no_args_no_kwargs(self):
+    expected = 'primary.*.*.*.#'
+    actual = self.client.topicName()
+    self.assertEqual(expected, actual['routingKeyPattern'])
+    actual = self.client.topicName({})
+    self.assertEqual(expected, actual['routingKeyPattern'])
+    
 
 class TestBuildUrl(ClientTest):
   def test_build_url(self):

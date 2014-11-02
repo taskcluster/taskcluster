@@ -85,29 +85,30 @@ class BaseClient(object):
     self._options[key] = value
 
   def _makeTopicExchange(self, entry, *args, **kwargs):
-    if len(args) >= 1:
+    if len(args) == 0 and not kwargs:
+      routingKeyPattern = {}
+    elif len(args) >= 1:
       if kwargs or len(args) != 1:
-        errStr = 'Pass either a single dictionary or only kwargs'
+        errStr = 'Pass either a string, single dictionary or only kwargs'
         raise exceptions.TaskclusterTopicExchangeFailure(errStr)
       routingKeyPattern = args[0]
     else:
       routingKeyPattern = kwargs
 
-    if type(routingKeyPattern) != dict:
-      errStr = 'routingKeyPattern must eventually be a dict'
-      raise exceptions.TaskclusterTopicExchangeFailure(errStr)
-
-
     data = {
       'exchange': '%s/%s' % (self.options['exchangePrefix'].rstrip('/'),
                              entry['exchange'].lstrip('/'))
     }
+
     # If we are passed in a string, we can short-circuit this function
     if isinstance(routingKeyPattern, basestring):
       log.debug('Passing through string for topic exchange key')
       data['routingKeyPattern'] = routingKeyPattern
       return data
 
+    if type(routingKeyPattern) != dict:
+      errStr = 'routingKeyPattern must eventually be a dict'
+      raise exceptions.TaskclusterTopicExchangeFailure(errStr)
 
     if not routingKeyPattern:
       routingKeyPattern = {}
