@@ -84,8 +84,20 @@ class BaseClient(object):
     override those specified in the module level .config dict"""
     self._options[key] = value
 
-  def _makeTopicExchange(self, entry, routingKeyPattern):
-    # TODO: This should support using Kwargs because python has them and they're great
+  def _makeTopicExchange(self, entry, *args, **kwargs):
+    if len(args) >= 1:
+      if kwargs or len(args) != 1:
+        errStr = 'Pass either a single dictionary or only kwargs'
+        raise exceptions.TaskclusterTopicExchangeFailure(errStr)
+      routingKeyPattern = args[0]
+    else:
+      routingKeyPattern = kwargs
+
+    if type(routingKeyPattern) != dict:
+      errStr = 'routingKeyPattern must eventually be a dict'
+      raise exceptions.TaskclusterTopicExchangeFailure(errStr)
+
+
     data = {
       'exchange': '%s/%s' % (self.options['exchangePrefix'].rstrip('/'),
                              entry['exchange'].lstrip('/'))
@@ -95,6 +107,7 @@ class BaseClient(object):
       log.debug('Passing through string for topic exchange key')
       data['routingKeyPattern'] = routingKeyPattern
       return data
+
 
     if not routingKeyPattern:
       routingKeyPattern = {}
@@ -362,8 +375,8 @@ def createApiClient(name, api):
 
     elif entry['type'] == 'topic-exchange':
       def addTopicExchange(e):
-        def topicExchange(self, routingKeyPattern):
-          return self._makeTopicExchange(e, routingKeyPattern)
+        def topicExchange(self, *args, **kwargs):
+          return self._makeTopicExchange(e, *args, **kwargs)
         return topicExchange
 
       f = addTopicExchange(entry)

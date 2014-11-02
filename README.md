@@ -64,6 +64,17 @@ The main differences between the Python and JS library are:
     Assuming apiMethod has a route of `/method/<arg1>/<arg2>/<arg3>`,
     this will result in a calle to `/method/pie/2/3`
 
+* Options for the topic exchange methods can be in the form of either a single
+  dictionary argument or keyword arguments.  Only one form is allowed
+
+    ```python
+    from taskcluster import client
+    qEvt = client.QueueEvents()
+    # The following calls are equivalent
+    qEvt.taskCompleted({'taskId': 'atask'})
+    qEvt.taskCompleted(taskId='atask')
+    ```
+
 * Method Payloads are specified through the `payload` keyword passed to the API
   method
 
