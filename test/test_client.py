@@ -301,7 +301,13 @@ class TestTopicExchange(ClientTest):
     
   def test_exchange(self):
     expected = 'test/v1/topicExchange'
-    actual = self.client.topicName('blahblah')
+    actual = self.client.topicName('')
+    self.assertEqual(expected, actual['exchange'])
+
+  def test_exchange_trailing_slash(self):
+    self.client.setOption('exchangePrefix', 'test/v1/')
+    expected = 'test/v1/topicExchange'
+    actual = self.client.topicName('')
     self.assertEqual(expected, actual['exchange'])
 
   def test_constant(self):
@@ -313,6 +319,7 @@ class TestTopicExchange(ClientTest):
     expected = 'primary.*.value2.*.#'
     actual = self.client.topicName({'norm2': 'value2'})
     self.assertEqual(expected, actual['routingKeyPattern'])
+
 
 
 class TestBuildUrl(ClientTest):

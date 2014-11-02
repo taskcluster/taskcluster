@@ -87,7 +87,8 @@ class BaseClient(object):
   def _makeTopicExchange(self, entry, routingKeyPattern):
     # TODO: This should support using Kwargs because python has them and they're great
     data = {
-      'exchange': '%s/%s' % (self.options['exchangePrefix'], entry['exchange'])
+      'exchange': '%s/%s' % (self.options['exchangePrefix'].rstrip('/'),
+                             entry['exchange'].lstrip('/'))
     }
     # If we are passed in a string, we can short-circuit this function
     if isinstance(routingKeyPattern, basestring):
