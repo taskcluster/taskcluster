@@ -201,7 +201,7 @@ class BaseClient(object):
     opts = self.options
     cred = opts.get('credentials')
     if not cred or not 'clientId' in cred or not 'accessToken' in cred:
-      raise exceptions.TaskclusterFailure('Invalid Hawk Credentials') 
+      raise exceptions.TaskclusterAuthFailure('Invalid Hawk Credentials') 
     
     clientId = self.options['credentials']['clientId']
     accessToken = self.options['credentials']['accessToken']
@@ -499,7 +499,7 @@ def createTemporaryCredentials(start, expiry, scopes, credentials):
   credentials.update(_cred)
 
   if not credentials or 'clientId' not in credentials or 'accessToken' not in credentials:
-    raise exceptions.TaskclusterError('No valid credentials')
+    raise exceptions.TaskclusterAuthFailure('No valid credentials')
 
   now = time.time()
   now = now - 60 * 5 # Subtract 5 minutes for clock drift
