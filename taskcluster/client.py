@@ -31,14 +31,18 @@ API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
 _defaultConfig = config = {
   'credentials': {
     'clientId': os.environ.get('TASKCLUSTER_CLIENT_ID'),
-    'accessToken': os.environ.get('TASKCLUSTER_ACCESS_TOKEN')
+    'accessToken': os.environ.get('TASKCLUSTER_ACCESS_TOKEN'),
+    'certificate': os.environ.get('TASKCLUSTER_CERTIFICATE'),
+    'algorithm': 'sha256',
   },
+  # This dict is in the JS client but doesn't seem to be consumed...
+  # Should we get rid of it in both?
   'authorization': {
     'delegating': False,
-    'scopes': []
+    'scopes': [],
   },
   'maxRetries': 5,
-  'signedUrlExpiration': 15 * 60
+  'signedUrlExpiration': 15 * 60,
 }
 
 
@@ -82,7 +86,29 @@ class BaseClient(object):
   def setOption(self, key, value):
     """ Set an API level option.  Options specified here will
     override those specified in the module level .config dict"""
+
     self._options[key] = value
+
+  def makeHawkExt(self):
+    """ Make an 'ext' for Hawk authentication """
+    o = self.options
+    c = o.get('credentials', {})
+    if c.get('clientId') and c.get('accessToken'):
+      ext = {}
+      cert = c.get('certificate')
+      if cert:
+        if isinstance(cert, basestring):
+          cert = json.loads(cert)
+        ext['certificate'] = cert
+    
+      if 'authorizedScopes' in o:
+        ext['authorizedScopes'] = o['authorizedScopes']
+
+      # .encode('base64') inserts a newline, which hawk doesn't
+      # like but doesn't strip itself
+      return json.dumps(ext).encode('base64').strip()
+    else:
+      return None
 
   def _makeTopicExchange(self, entry, *args, **kwargs):
     if len(args) == 0 and not kwargs:
@@ -157,15 +183,14 @@ class BaseClient(object):
 
     requestUrl = self.buildUrl(methodName, *args, **kwargs)
 
-    if not self.options['credentials']['clientId']:
-      raise exceptions.TaskclusterFailure('Missing Client ID for URL Signing') 
-    if not self.options['credentials']['accessToken']:
-      raise exceptions.TaskclusterFailure('Missing Access Token for URL Signing') 
+    opts = self.options
+    cred = opts.get('credentials')
+    if not cred or not 'clientId' in cred or not 'accessToken' in cred:
+      raise exceptions.TaskclusterFailure('Invalid Hawk Credentials') 
     
     clientId = self.options['credentials']['clientId']
     accessToken = self.options['credentials']['accessToken']
 
-    assert hawk.__version__ != '0.1.3', 'This version of PyHawk has a bug. see PyHawk PR27'
     bewitOpts = {
       'credentials': {
         'id': clientId,
@@ -173,11 +198,8 @@ class BaseClient(object):
         'algorithm': 'sha256',
       },
       'ttl_sec': expiration,
+      'ext': self.makeHawkExt(),
     }
-
-    if len(self.options['authorization']['scopes']) > 0:
-      ext = {'authorizedScopes': self.options['authorization']['scopes']}
-      bewitOpts['ext'] = json.dumps(ext).encode('base64')
 
     # NOTE: the version of PyHawk in pypi is broken.
     # see: https://github.com/mozilla/PyHawk/pull/27
@@ -332,7 +354,29 @@ class BaseClient(object):
 
   def _makeSingleHttpRequest(self, method, url, payload):
     log.debug('Making a %s request to %s', method, url)
-    return requests.request(method, url, data=payload)
+    opts = self.options
+    cred = opts.get('credentials')
+    if cred and 'clientId' in cred and 'accessToken' in cred:
+      cert = cred.get('certificate')
+
+      if cert and isinstance(cert, basestring):
+        cert = json.loads(cert)
+         
+      hawkOpts = {
+        'credentials': {
+          'id': cred['clientId'],
+          'key': cred['accessToken'],
+          'algorithm': cred.get('algorithm', 'sha256'),
+        },
+        'ext': self.makeHawkExt(),
+      }
+      header = hawk.client.header(url, method, hawkOpts)
+      headers = {'Authorization': header['field']}
+    else:
+      log.info('Not using hawk!')
+      headers = {}
+
+    return requests.request(method, url, data=payload, headers=headers)
 
 
 def createApiClient(name, api):

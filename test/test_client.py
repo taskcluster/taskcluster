@@ -360,6 +360,6 @@ class TestBuildSignedUrl(ClientTest):
     self.addCleanup(timePatch.stop)
 
   def test_builds_surl(self):
-    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=Y2xpZW50SWRcOTAxXEZmWUx1WFQ5TTRLQUltamxESGdmcllEVEEzQy05SFBYcHo3NTBxUUNRQXc9XA=='
+    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=Y2xpZW50SWRcOTAxXENVUHFtY1lSeW5Ua3NBS1BDaTJLUm5palgwR3hpWjFRUE9rMFViamc2U1U9XGUzMD0='
     actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', arg1='arg1')
     self.assertEqual(expected, actual)
