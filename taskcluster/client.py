@@ -366,7 +366,7 @@ class BaseClient(object):
       log.info('Not using hawk!')
       headers = {}
 
-    return requests.request(method, url, data=payload, headers=headers)
+    return requests.request(method.upper(), url, data=payload, headers=headers)
 
 
 def createApiClient(name, api):
