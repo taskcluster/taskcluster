@@ -53,12 +53,6 @@ _defaultConfig = config = {
     'certificate': os.environ.get('TASKCLUSTER_CERTIFICATE'),
     'algorithm': 'sha256',
   },
-  # This dict is in the JS client but doesn't seem to be consumed...
-  # Should we get rid of it in both?
-  'authorization': {
-    'delegating': False,
-    'scopes': [],
-  },
   'maxRetries': 5,
   'signedUrlExpiration': 15 * 60,
 }
