@@ -225,23 +225,17 @@ class TestMakeHttpRequest(ClientTest):
 class TestOptions(ClientTest):
   def setUp(self):
     ClientTest.setUp(self)
-    self.clientClass2 = subject.createApiClient('testApi', base.createApiRef(baseUrl='http://notlocalhost:5888/v2'))
-    self.client2 = self.clientClass2()
-
-  def test_they_share_defaults_even_when_changed_for_one(self):
-    subject.config['john'] = 'ford'
-    self.assertEqual(self.client.options['john'], self.client2.options['john'])
-
-  def test_defaults_should_be_included_for_normal_options(self):
-    self.assertEqual(self.client.options['maxRetries'], subject.config['maxRetries'])
-
-  def test_can_set_an_option_on_one_without_touching_other(self):
-    self.client.setOption('john', 'dillinger')
-    self.assertEqual('dillinger', self.client.options['john'])
+    self.clientClass2 = subject.createApiClient('testApi', base.createApiRef())
+    self.client2 = self.clientClass2({'baseUrl': 'http://notlocalhost:5888/v2'})
 
   def test_defaults_should_work(self):
     self.assertEqual(self.client.options['baseUrl'], 'https://localhost:8555/v1')
     self.assertEqual(self.client2.options['baseUrl'], 'http://notlocalhost:5888/v2')
+
+  def test_change_default_doesnt_change_previous_instances(self):
+    prevMaxRetries = subject._defaultConfig['maxRetries']
+    with mock.patch.dict(subject._defaultConfig, {'maxRetries': prevMaxRetries + 1}):
+      self.assertEqual(self.client.options['maxRetries'], prevMaxRetries)
 
 
 class TestMakeApiCall(ClientTest):
@@ -330,7 +324,7 @@ class TestTopicExchange(ClientTest):
     self.assertEqual(expected, actual['exchange'])
 
   def test_exchange_trailing_slash(self):
-    self.client.setOption('exchangePrefix', 'test/v1/')
+    self.client.options['exchangePrefix'] = 'test/v1/'
     expected = 'test/v1/topicExchange'
     actual = self.client.topicName('')
     self.assertEqual(expected, actual['exchange'])

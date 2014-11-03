@@ -72,27 +72,10 @@ class BaseClient(object):
   """
 
   def __init__(self, options=None):
-    if not options:
-      options = {}
-    # Remember, ._options is defined in the type() call below
-    self._options.update(options)
-
-  @property
-  def options(self):
-    """Hold all the API Level options.  This method returns
-    a dictionary that's a collation of the API level options
-    and the module level defaults.  It will return a new
-    dictionary every time it's called"""
-    options = {}
-    options.update(_defaultConfig)
-    options.update(self._options)
-    return options
-
-  def setOption(self, key, value):
-    """ Set an API level option.  Options specified here will
-    override those specified in the module level .config dict"""
-
-    self._options[key] = value
+    o = self.options = copy.deepcopy(self._options)
+    o.update(_defaultConfig)
+    if options:
+      o.update(options)
 
   def makeHawkExt(self):
     """ Make an 'ext' for Hawk authentication """
