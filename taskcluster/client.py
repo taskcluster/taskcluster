@@ -532,6 +532,8 @@ def createTemporaryCredentials(start, expiry, scopes, credentials):
     'certificate': _dmpJson(cert),
   }
 
+__all__ = ['createTemporaryCredentials', 'config']
 # This has to be done after the Client class is declared
 for key, value in API_CONFIG.items():
   globals()[key] = createApiClient(key, value)
+  __all__.append(key)

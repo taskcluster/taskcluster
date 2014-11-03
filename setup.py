@@ -8,8 +8,7 @@ tests_require = [
   'rednose==0.4.1',
   'mock==1.0.1',
   'setuptools-lint==0.3',
-  'pyflakes==0.8.1',
-  'pep8==1.5.7',
+  'flake8==2.2.5',
 ]
 
 install_requires = [

@@ -15,28 +15,19 @@ Javascript client library.
 The REST API methods are documented on
 [http://docs.taskcluster.net/](http://docs.taskcluster.net/)
 
-The main differences between the Python and JS library are:
+Here's how you'd do a simple call:
 
-* You don't need to instantiate individual API Client objects.  In the
-  Javascript client, you would do:
-
-    ```javascript
-    var taskcluster = require('taskcluster-client');
-    var index = new taskcluster.index();
-    index.findTask('my-namespace');
-    ```
-    but in the Python client, you'd do:
     ```python
-    from taskcluster import client
-    index = client.index()
+    import taskcluster
+    index = taskcluster.Index({'credentials': {'clientId': 'id', 'accessToken': 'accessToken'}})
+    index.ping()
     ```
 
 * Options can be shared between instances of API clients by setting the variable in the module
   config dictionary:
 
     ```python
-    from taskcluster import client, config
-    config['credentials']['clientId'] = 'Bob'
+    import taskcluster
     config['credentials']['accessToken'] = 'TokensRUs'
     print client.index().options['credentials']['clientId']
     ```

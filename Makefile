@@ -6,10 +6,7 @@ VENV := env-$(basename $(PYTHON))
 test: $(VENV)/bin/python
 	@# E111 -- I use two space indents, pep8 wants four
 	@# E121 -- PEP8 doesn't like how I write dicts
-	$(VENV)/bin/pep8 --ignore=$(PEP8_IGNORE) --max-line-length=120 taskcluster
-	$(VENV)/bin/pep8 --ignore=$(PEP8_IGNORE) --max-line-length=120 test
-	$(VENV)/bin/pyflakes taskcluster
-	$(VENV)/bin/pyflakes test
+	$(VENV)/bin/flake8 --ignore=$(PEP8_IGNORE) --max-line-length=120 taskcluster test
 	$(VENV)/bin/python setup.py test
 	$(VENV)/bin/nosetests
 
