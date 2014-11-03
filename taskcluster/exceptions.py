@@ -13,9 +13,11 @@ class TaskclusterRestFailure(TaskclusterFailure):
     self.superExc = superExc
     self.res = res
 
+
 class TaskclusterAuthFailure(TaskclusterFailure):
   """ Invalid Credentials """
   pass
+
 
 class TaskclusterTopicExchangeFailure(TaskclusterFailure):
   """ Error while creating a Topic Exchange routing key """

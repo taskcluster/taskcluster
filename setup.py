@@ -9,6 +9,7 @@ tests_require = [
   'mock==1.0.1',
   'setuptools-lint==0.3',
   'pyflakes==0.8.1',
+  'pep8==1.5.7',
 ]
 
 install_requires = [

@@ -19,6 +19,7 @@ def createApiRef(**kwargs):
   default.update(kwargs)
   return {'reference': default}
 
+
 def createApiEntryFunction(name, numArg, hasInput, method='get', **kwargs):
   fullArgs = ['arg%d' % i for i in range(numArg)]
   routeChunks = ['/<%s>' % j for j in fullArgs]
@@ -26,7 +27,7 @@ def createApiEntryFunction(name, numArg, hasInput, method='get', **kwargs):
   default = {
     'type': 'function',
     'method': method,
-    'route': '/%s%s' %(name, route),
+    'route': '/%s%s' % (name, route),
     'name': name,
     'title': 'Test API Endpoint title',
     'description': 'Test API Endpoint Description',
@@ -38,6 +39,7 @@ def createApiEntryFunction(name, numArg, hasInput, method='get', **kwargs):
   default.update(kwargs)
   return default
 
+
 def createApiEntryTopicExchange(name, exchange, **kwargs):
   default = {
     'type': 'topic-exchange',
@@ -48,6 +50,7 @@ def createApiEntryTopicExchange(name, exchange, **kwargs):
   }
   default.update(kwargs)
   return default
+
 
 def createTopicExchangeKey(name, constant=None, multipleWords=False, maxSize=5, required=False, **kwargs):
   default = {
@@ -61,4 +64,3 @@ def createTopicExchangeKey(name, constant=None, multipleWords=False, maxSize=5, 
     default['constant'] = constant
   default.update(kwargs)
   return default
-

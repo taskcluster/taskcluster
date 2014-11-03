@@ -8,6 +8,7 @@ import base
 import taskcluster.client as subject
 import taskcluster.exceptions as exc
 
+
 class ClientTest(base.TCTest):
   def setUp(self):
     subject.config['credentials'] = {
@@ -39,6 +40,7 @@ class ClientTest(base.TCTest):
     sleepSleep.return_value = None
     self.addCleanup(sleepSleep.stop)
 
+
 class TestSubArgsInRoute(ClientTest):
   def test_valid_no_subs(self):
     provided = '/no/args/here'
@@ -52,7 +54,7 @@ class TestSubArgsInRoute(ClientTest):
     arguments = {'argToSub': 'value'}
     result = self.client._subArgsInRoute(provided, arguments)
     self.assertEqual(expected, result)
-    
+
   def test_invalid_one_sub(self):
     with self.assertRaises(exc.TaskclusterFailure):
       self.client._subArgsInRoute('/one/<argToSub>/here', {'unused': 'value'})
@@ -60,12 +62,12 @@ class TestSubArgsInRoute(ClientTest):
   def test_invalid_route_no_sub(self):
     with self.assertRaises(exc.TaskclusterFailure):
       self.client._subArgsInRoute('adjfjlaksdfjs', {'should': 'fail'})
-    
+
   def test_invalid_route_no_arg(self):
     with self.assertRaises(exc.TaskclusterFailure):
       self.client._subArgsInRoute('adjfjlaksdfjs', {'should': 'fail'})
-    
-    
+
+
 class TestProcessArgs(ClientTest):
   def test_no_args(self):
     self.assertEqual({}, self.client._processArgs([]))
@@ -100,7 +102,7 @@ class TestProcessArgs(ClientTest):
   def test_invalid_missing_arg_positional(self):
     with self.assertRaises(exc.TaskclusterFailure):
       self.client._processArgs(['test', 'test2'], 'enough')
-      
+
   def test_invalid_not_enough_args_because_of_overwriting(self):
     with self.assertRaises(exc.TaskclusterFailure):
       self.client._processArgs(['test', 'test2'], 'enough', test='enough')
@@ -144,15 +146,16 @@ class TestMakeSingleHttpRequest(ClientTest):
 # This could probably be done better with Mock
 class ObjWithDotJson(object):
   def __init__(self, status_code, x):
-    self.status_code = status_code 
+    self.status_code = status_code
     self.x = x
 
   def json(self):
     return self.x
-  
+
   def raise_for_status(self):
     if self.status_code >= 300 or self.status_code < 200:
       raise exc.TaskclusterRestFailure('Damn!', {})
+
 
 class TestMakeHttpRequest(ClientTest):
   def setUp(self):
@@ -179,7 +182,7 @@ class TestMakeHttpRequest(ClientTest):
         ObjWithDotJson(200, expected)
       ]
       p.side_effect = sideEffect
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range (self.client.options['maxRetries'])]
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range(self.client.options['maxRetries'])]
 
       v = self.client._makeHttpRequest('GET', 'http://www.example.com', {})
       p.assert_has_calls(expectedCalls)
@@ -196,7 +199,7 @@ class TestMakeHttpRequest(ClientTest):
         ObjWithDotJson(200, expected)
       ]
       p.side_effect = sideEffect
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range (self.client.options['maxRetries'])]
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range(self.client.options['maxRetries'])]
 
       v = self.client._makeHttpRequest('GET', 'http://www.example.com', {})
       p.assert_has_calls(expectedCalls)
@@ -205,7 +208,7 @@ class TestMakeHttpRequest(ClientTest):
   def test_failure_status_code(self):
     with mock.patch.object(self.client, '_makeSingleHttpRequest') as p:
       p.return_value = ObjWithDotJson(500, None)
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range (self.client.options['maxRetries'])]
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range(self.client.options['maxRetries'])]
       with self.assertRaises(exc.TaskclusterRestFailure):
         self.client._makeHttpRequest('GET', 'http://www.example.com', {})
       p.assert_has_calls(expectedCalls)
@@ -213,7 +216,7 @@ class TestMakeHttpRequest(ClientTest):
   def test_failure_connection_errors(self):
     with mock.patch.object(self.client, '_makeSingleHttpRequest') as p:
       p.side_effect = requests.exceptions.RequestException
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range (self.client.options['maxRetries'])]
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range(self.client.options['maxRetries'])]
       with self.assertRaises(exc.TaskclusterRestFailure):
         self.client._makeHttpRequest('GET', 'http://www.example.com', {})
       p.assert_has_calls(expectedCalls)
@@ -272,7 +275,6 @@ class TestMakeApiCall(ClientTest):
 
       patcher.assert_called_once_with('get', 'no_args_no_input', None)
 
-
   def test_hits_two_args_no_input(self):
     expected = 'works'
     with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
@@ -283,7 +285,6 @@ class TestMakeApiCall(ClientTest):
 
       patcher.assert_called_once_with('get', 'two_args_no_input/argone/argtwo', None)
 
-
   def test_hits_no_args_with_input(self):
     expected = 'works'
     with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
@@ -293,7 +294,6 @@ class TestMakeApiCall(ClientTest):
       self.assertEqual(expected, actual)
 
       patcher.assert_called_once_with('get', 'no_args_with_input', None)
-
 
   def test_hits_two_args_with_input(self):
     expected = 'works'
@@ -323,7 +323,7 @@ class TestTopicExchange(ClientTest):
     expected = 'johnwrotethis'
     actual = self.client.topicName(expected)
     self.assertEqual(expected, actual['routingKeyPattern'])
-    
+
   def test_exchange(self):
     expected = 'test/v1/topicExchange'
     actual = self.client.topicName('')
@@ -359,7 +359,7 @@ class TestTopicExchange(ClientTest):
     self.assertEqual(expected, actual['routingKeyPattern'])
     actual = self.client.topicName({})
     self.assertEqual(expected, actual['routingKeyPattern'])
-    
+
 
 class TestBuildUrl(ClientTest):
   def test_build_url(self):
@@ -375,16 +375,20 @@ class TestBuildUrl(ClientTest):
     with self.assertRaises(exc.TaskclusterFailure):
       self.client.buildUrl('two_args_no_input', 'not-enough-args')
 
+
 class TestBuildSignedUrl(ClientTest):
   def setUp(self):
     ClientTest.setUp(self)
-    # Patch time.time so that we get constant bewits for 
+    # Patch time.time so that we get constant bewits for
     timePatcher = mock.patch('time.time')
     timePatch = timePatcher.start()
     timePatch.return_value = 1
     self.addCleanup(timePatch.stop)
 
   def test_builds_surl(self):
-    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=Y2xpZW50SWRcOTAxXENVUHFtY1lSeW5Ua3NBS1BDaTJLUm5palgwR3hpWjFRUE9rMFViamc2U1U9XGUzMD0='
+    expBewit = 'Y2xpZW50SWRcOTAxXENVUHFtY1lSeW5Ua' + \
+               '3NBS1BDaTJLUm5palgwR3hpWjFRUE9rMF' + \
+               'Viamc2U1U9XGUzMD0='
+    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=' + expBewit
     actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', arg1='arg1')
     self.assertEqual(expected, actual)

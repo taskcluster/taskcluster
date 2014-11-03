@@ -28,19 +28,22 @@ if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
   log.addHandler(logging.StreamHandler())
 log.addHandler(logging.NullHandler())
 
-API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8', ))
+API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
+
 
 def _b64encode(s):
-  """ Hawk pukes when there's a newline in base64 encoded strings """ 
+  """ Hawk pukes when there's a newline in base64 encoded strings """
   return base64.encodestring(s).strip().replace('\n', '')
+
 
 def _dmpJson(obj):
   """ Match JS's JSON.stringify.  When using the default seperators,
   base64 encoding JSON results in \n sequences in the output.  Hawk
   barfs in your face if you have that in the text"""
   d = json.dumps(obj, separators=(',', ':'))
-  assert '\n' not in d 
+  assert '\n' not in d
   return d
+
 
 # Default configuration
 _defaultConfig = config = {
@@ -91,7 +94,7 @@ class BaseClient(object):
   def options(self):
     """Hold all the API Level options.  This method returns
     a dictionary that's a collation of the API level options
-    and the module level defaults.  It will return a new 
+    and the module level defaults.  It will return a new
     dictionary every time it's called"""
     options = {}
     options.update(_defaultConfig)
@@ -115,7 +118,7 @@ class BaseClient(object):
         if isinstance(cert, basestring):
           cert = json.loads(cert)
         ext['certificate'] = cert
-    
+
       if 'authorizedScopes' in o:
         ext['authorizedScopes'] = o['authorizedScopes']
 
@@ -157,7 +160,7 @@ class BaseClient(object):
     # There is no canonical meaning for the maxSize and required
     # reference entry in the JS client, so we don't try to define
     # them here, even though they sound pretty obvious
-    
+
     routingKey = []
     for key in entry['routingKey']:
       if 'constant' in key:
@@ -170,7 +173,7 @@ class BaseClient(object):
       else:
         value = '#' if key.get('multipleWords') else '*'
         log.debug('Did not find %s in input params, using %s', key['name'], value)
-      
+
       routingKey.append(value)
 
     data['routingKeyPattern'] = '.'.join([str(x) for x in routingKey])
@@ -193,16 +196,16 @@ class BaseClient(object):
       del kwargs['expiration']
     else:
       expiration = self.options['signedUrlExpiration']
-    
-    expiration = int(expiration) # Mainly so that we throw if it's not a number
+
+    expiration = int(expiration)  # Mainly so that we throw if it's not a number
 
     requestUrl = self.buildUrl(methodName, *args, **kwargs)
 
     opts = self.options
     cred = opts.get('credentials')
-    if not cred or not 'clientId' in cred or not 'accessToken' in cred:
-      raise exceptions.TaskclusterAuthFailure('Invalid Hawk Credentials') 
-    
+    if not cred or 'clientId' not in cred or 'accessToken' not in cred:
+      raise exceptions.TaskclusterAuthFailure('Invalid Hawk Credentials')
+
     clientId = self.options['credentials']['clientId']
     accessToken = self.options['credentials']['accessToken']
 
@@ -222,8 +225,7 @@ class BaseClient(object):
     if not bewit:
       raise exceptions.TaskclusterFailure('Did not receive a bewit')
 
-    u = urlparse.urlparse(requestUrl) 
-    #urlParts.query += 'bewit=%s' % bewit
+    u = urlparse.urlparse(requestUrl)
     return urlparse.urlunparse((
       u.scheme,
       u.netloc,
@@ -232,7 +234,6 @@ class BaseClient(object):
       u.query + 'bewit=%s' % bewit,
       u.fragment,
     ))
-
 
   def _makeApiCall(self, entry, *args, **kwargs):
     """ This function is used to dispatch calls to other functions
@@ -387,7 +388,7 @@ class BaseClient(object):
 
       if cert and isinstance(cert, basestring):
         cert = json.loads(cert)
-         
+
       hawkOpts = {
         'credentials': {
           'id': cred['clientId'],
@@ -410,7 +411,7 @@ def createApiClient(name, api):
     name=name,
     _api=api['reference'],
     __doc__=api.get('description'),
-    _options={}, 
+    _options={},
   )
 
   for opt in filter(lambda x: x != 'entries', api['reference']):
@@ -462,10 +463,10 @@ def createApiClient(name, api):
       docStr += '\n'.join(['- ``%s``' % x['name'] for x in entry['routingKey']])
 
       f.__doc__ = docStr
-  
+
     # Give the function the right name
     f.__name__ = str(entry['name'])
-    
+
     # Add whichever function we created
     attributes[entry['name']] = f
 
@@ -475,6 +476,7 @@ def createApiClient(name, api):
 def makeB64UrlSafe(b64str):
   # see RFC 4648, sec. 5
   return b64str.replace('+', '-').replace('/', '_').replace('=', '')
+
 
 def slugId():
   return makeB64UrlSafe(str(uuid.uuid4()))
@@ -486,7 +488,7 @@ def createTemporaryCredentials(start, expiry, scopes, credentials):
   start: start time of credentials, seconds since epoch
   expiry: expiration time of credentials, seconds since epoch
   scopes: list of scopes granted
-  credentials: { 'clientId': None, 'accessToken': None } 
+  credentials: { 'clientId': None, 'accessToken': None }
                credentials to use to generate temporary credentials
 
   Returns a dictionary in the form:
@@ -502,7 +504,7 @@ def createTemporaryCredentials(start, expiry, scopes, credentials):
     raise exceptions.TaskclusterAuthFailure('No valid credentials')
 
   now = time.time()
-  now = now - 60 * 5 # Subtract 5 minutes for clock drift
+  now = now - 60 * 5  # Subtract 5 minutes for clock drift
 
   for scope in scopes:
     if not isinstance(scope, basestring):
@@ -510,15 +512,15 @@ def createTemporaryCredentials(start, expiry, scopes, credentials):
 
   # Credentials can only be valid for 31 days.  I hope that
   # this is validated on the server somehow...
-  
-  if expiry - start >= 31*24*60*60:
+
+  if expiry - start >= 31 * 24 * 60 * 60:
     raise exceptions.TaskclusterFailure('Only 31 days allowed')
 
   cert = dict(
     version=1,
     scopes=scopes,
-    start=start*1000,
-    expiry=expiry*1000,
+    start=start * 1000,
+    expiry=expiry * 1000,
     seed=slugId() + slugId(),
   )
 
