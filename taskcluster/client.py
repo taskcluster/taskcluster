@@ -32,7 +32,7 @@ API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
 
 
 def _b64encode(s):
-  """ Hawk pukes when there's a newline in base64 encoded strings """
+  """ HTTP Headers can't have new lines in them, let's  """
   return base64.encodestring(s).strip().replace('\n', '')
 
 
