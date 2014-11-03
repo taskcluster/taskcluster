@@ -347,11 +347,6 @@ class BaseClient(object):
     opts = self.options
     cred = opts.get('credentials')
     if cred and 'clientId' in cred and 'accessToken' in cred:
-      cert = cred.get('certificate')
-
-      if cert and isinstance(cert, basestring):
-        cert = json.loads(cert)
-
       hawkOpts = {
         'credentials': {
           'id': cred['clientId'],
