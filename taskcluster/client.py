@@ -65,7 +65,7 @@ class BaseClient(object):
   """
 
   def __init__(self, options=None):
-    o = self.options = copy.deepcopy(self._options)
+    o = self.options = copy.deepcopy(self.options)
     o.update(_defaultConfig)
     if options:
       o.update(options)
@@ -374,11 +374,13 @@ def createApiClient(name, api):
     name=name,
     _api=api['reference'],
     __doc__=api.get('description'),
-    _options={},
+    options={},
   )
 
-  for opt in filter(lambda x: x != 'entries', api['reference']):
-    attributes['_options'][opt] = api['reference'][opt]
+  copiedOptions = ('baseUrl', 'exchangePrefix')
+  for opt in copiedOptions:
+    if opt in api['reference']:
+      attributes['options'][opt] = api['reference'][opt]
 
   for entry in api['reference']['entries']:
     if entry['type'] == 'function':
