@@ -65,23 +65,10 @@ _defaultConfig = config = {
 
 
 class BaseClient(object):
-  """ Instances of this class are API helpers for a specific API reference.
-  They know how to load their data from either a statically defined JSON file
-  which is packaged with the library, or by reading an environment variable can
-  load the individual api endpoints from the web
-
-  A difference between the JS and Python client is that the payload for JS
-  client is always the last argument in the API method.  That works nicely
-  because JS doesn't have keyword arguments.  Python does have kwargs and I'd
-  like to support them (because I like to use them). The result is that I'm
-  going to make the payload a mandatory keyword argument for methods which have
-  an input schema.
-
-  Failing API calls which are connection or server related (i.e. 500 series
-  errors) will be retried up to a maximum number of times with an exponential
-  backoff.  This functionality mirrors that of the JS Client library.  Success
-  and errors which aren't connection related are returned on the first
-  iteration.
+  """ Base Class for API Client Classes. Each individual Client class
+  needs to set up its own methods for REST endpoints and Topic Exchange
+  routing key patterns.  The _makeApiCall() and _topicExchange() methods
+  help with this.
   """
 
   def __init__(self, options=None):
