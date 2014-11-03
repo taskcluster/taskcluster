@@ -28,7 +28,19 @@ if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
   log.addHandler(logging.StreamHandler())
 log.addHandler(logging.NullHandler())
 
-API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
+API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8', ))
+
+def _b64encode(s):
+  """ Hawk pukes when there's a newline in base64 encoded strings """ 
+  return base64.encodestring(s).strip().replace('\n', '')
+
+def _dmpJson(obj):
+  """ Match JS's JSON.stringify.  When using the default seperators,
+  base64 encoding JSON results in \n sequences in the output.  Hawk
+  barfs in your face if you have that in the text"""
+  d = json.dumps(obj, separators=(',', ':'))
+  assert '\n' not in d 
+  return d
 
 # Default configuration
 _defaultConfig = config = {
@@ -109,7 +121,7 @@ class BaseClient(object):
 
       # .encode('base64') inserts a newline, which hawk doesn't
       # like but doesn't strip itself
-      return json.dumps(ext).encode('base64').strip()
+      return _b64encode(_dmpJson(ext)).strip()
     else:
       return None
 
@@ -346,7 +358,7 @@ class BaseClient(object):
       apiData = response.json()
     except requests.exceptions.RequestException as rerr:
       errStr = 'Request failed to complete'
-      log.error(errStr)
+      log.error(errStr + '\n' + response.text)
       raise exceptions.TaskclusterRestFailure(errStr, superExc=rerr)
     except ValueError as ve:
       errStr = 'Response contained malformed JSON data'
@@ -374,7 +386,7 @@ class BaseClient(object):
         'ext': self.makeHawkExt(),
       }
       header = hawk.client.header(url, method, hawkOpts)
-      headers = {'Authorization': header['field']}
+      headers = {'Authorization': header['field'].strip()}
     else:
       log.info('Not using hawk!')
       headers = {}
@@ -446,8 +458,6 @@ def createApiClient(name, api):
     # Add whichever function we created
     attributes[entry['name']] = f
 
-
-
   return type(name.encode('utf-8'), (BaseClient,), attributes)
 
 
@@ -511,15 +521,15 @@ def createTemporaryCredentials(start, expiry, scopes, credentials):
 
   sig = hmac.new(credentials['accessToken'], sigStr, hashlib.sha256).digest()
 
-  cert['signature'] = base64.b64encode(sig)
+  cert['signature'] = _b64encode(sig)
 
   newToken = hmac.new(credentials['accessToken'], cert['seed']).digest()
-  newToken = makeB64UrlSafe(base64.b64encode(newToken))
+  newToken = makeB64UrlSafe(_b64encode(newToken))
 
   return {
     'clientId': credentials['clientId'],
     'accessToken': newToken,
-    'certificate': json.dumps(cert),
+    'certificate': _dmpJson(cert),
   }
 
 # This has to be done after the Client class is declared
