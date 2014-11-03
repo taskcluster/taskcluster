@@ -20,7 +20,7 @@ APIS_JS_HREF=https://raw.githubusercontent.com/taskcluster/taskcluster-client/ma
 .PHONY: apis.json
 apis.json:
 	@echo Downloading $(APIS_JS_HREF)
-	curl -L -o $(APIS_JSON) $(APIS_JS_HREF)
+	curl -L -o apis.js $(APIS_JS_HREF)
 	OUTPUT=$(APIS_JSON) node translateApis.js
 	@python -mjson.tool $(APIS_JSON) > /dev/null || echo "apis.json cannot be parsed by python's JSON"
 
