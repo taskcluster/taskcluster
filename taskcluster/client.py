@@ -481,7 +481,7 @@ def createTemporaryCredentials(start, expiry, scopes, credentials):
   # Credentials can only be valid for 31 days.  I hope that
   # this is validated on the server somehow...
 
-  if expiry - start >= 31 * 24 * 60 * 60:
+  if expiry - start > 31 * 24 * 60 * 60:
     raise exceptions.TaskclusterFailure('Only 31 days allowed')
 
   cert = dict(
