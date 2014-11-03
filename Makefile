@@ -40,5 +40,6 @@ clean:
 .PHONY: docs
 docs:
 	rm -rf docs/_build
-	python makeRst.py > docs/client.rst
-	make -C docs html
+	$(VENV)/bin/python -mpip install sphinx
+	$(VENV)/bin/python makeRst.py > docs/client.rst
+	make -C docs html SPHINXBUILD=$(abspath $(VENV)/bin/sphinx-build)
