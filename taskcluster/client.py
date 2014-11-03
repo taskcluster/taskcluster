@@ -9,7 +9,10 @@ try:
 except ImportError:
   import urllib.parse as urlparse
 import time
-
+import uuid
+import hashlib
+import hmac
+import base64
 
 # For finding apis.json
 from pkg_resources import resource_string
@@ -447,6 +450,77 @@ def createApiClient(name, api):
 
   return type(name.encode('utf-8'), (BaseClient,), attributes)
 
+
+def makeB64UrlSafe(b64str):
+  # see RFC 4648, sec. 5
+  return b64str.replace('+', '-').replace('/', '_').replace('=', '')
+
+def slugId():
+  return makeB64UrlSafe(str(uuid.uuid4()))
+
+
+def createTemporaryCredentials(start, expiry, scopes, credentials):
+  """ Create a set of temporary credentials
+
+  start: start time of credentials, seconds since epoch
+  expiry: expiration time of credentials, seconds since epoch
+  scopes: list of scopes granted
+  credentials: { 'clientId': None, 'accessToken': None } 
+               credentials to use to generate temporary credentials
+
+  Returns a dictionary in the form:
+    { 'clientId': str, 'accessToken: str, 'certificate': str}
+  """
+
+  _cred = credentials
+  credentials = {}
+  credentials.update(_defaultConfig['credentials'])
+  credentials.update(_cred)
+
+  if not credentials or 'clientId' not in credentials or 'accessToken' not in credentials:
+    raise exceptions.TaskclusterError('No valid credentials')
+
+  now = time.time()
+  now = now - 60 * 5 # Subtract 5 minutes for clock drift
+
+  for scope in scopes:
+    if not isinstance(scope, basestring):
+      raise exceptions.TaskclusterFailure('Scope must be string')
+
+  # Credentials can only be valid for 31 days.  I hope that
+  # this is validated on the server somehow...
+  
+  if expiry - start >= 31*24*60*60:
+    raise exceptions.TaskclusterFailure('Only 31 days allowed')
+
+  cert = dict(
+    version=1,
+    scopes=scopes,
+    start=start*1000,
+    expiry=expiry*1000,
+    seed=slugId() + slugId(),
+  )
+
+  sigStr = '\n'.join([
+    'version:' + str(cert['version']),
+    'seed:' + cert['seed'],
+    'start:' + str(cert['start']),
+    'expiry:' + str(cert['expiry']),
+    'scopes:'
+  ] + scopes)
+
+  sig = hmac.new(credentials['accessToken'], sigStr, hashlib.sha256).digest()
+
+  cert['signature'] = base64.b64encode(sig)
+
+  newToken = hmac.new(credentials['accessToken'], cert['seed']).digest()
+  newToken = makeB64UrlSafe(base64.b64encode(newToken))
+
+  return {
+    'clientId': credentials['clientId'],
+    'accessToken': newToken,
+    'certificate': json.dumps(cert),
+  }
 
 # This has to be done after the Client class is declared
 for key, value in API_CONFIG.items():
