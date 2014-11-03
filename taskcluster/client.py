@@ -335,16 +335,27 @@ class BaseClient(object):
 
     retry = 0
     response = None
+    error = None
     while retry < self.options['maxRetries']:
+      retry += 1
       log.debug('Making attempt %d', retry)
-      response = self._makeSingleHttpRequest(method, fullUrl, payload)
+      try:
+        response = self._makeSingleHttpRequest(method, fullUrl, payload)
+      except requests.exceptions.RequestException as rerr:
+        error = True
+        if retry >= self.options['maxRetries']:
+          raise exceptions.TaskclusterRestFailure('Last Attempt: %s' % rerr, superExc=rerr)
+        else:
+          log.warn('Retrying because of: %s' % rerr)
 
       # We only want to consider connection errors for retry.  Other errors,
       # like a 404 saying that a resource wasn't found should be returned
       # immediately
-      if response.status_code >= 500 and response.status_code < 600:
-        log.error('Received HTTP Status %d, retrying', response.status_code)
-        retry += 1
+      if response and response.status_code >= 500 and response.status_code < 600:
+        log.warn('Received HTTP Status %d, retrying', response.status_code)
+        error = True
+
+      if error:
         snooze = float(retry * retry) / 10.0
         log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
         time.sleep(snooze)
