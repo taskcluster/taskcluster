@@ -386,3 +386,12 @@ class TestBuildSignedUrl(ClientTest):
     expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=' + expBewit
     actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', arg1='arg1')
     self.assertEqual(expected, actual)
+
+
+class TestSlugId(base.TCTest):
+  def test_slug_id(self):
+    with mock.patch('uuid.uuid4') as p:
+      p.return_value = '8ed7ba5e-380b-4c08-aa9c-1c86382afe23'
+      expected = 'OGVkN2JhNWUtMzgwYi00YzA4LWFhOWMtMWM4NjM4MmFmZTIz'
+      actual = subject.slugId()
+      self.assertEqual(expected, actual)

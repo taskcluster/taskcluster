@@ -437,12 +437,15 @@ def createApiClient(name, api):
 
 
 def makeB64UrlSafe(b64str):
+  """ Make a base64 string URL Safe """
   # see RFC 4648, sec. 5
-  return b64str.replace('+', '-').replace('/', '_').replace('=', '')
+  return b64str.replace('+', '-').replace('/', '_')
 
 
 def slugId():
-  return makeB64UrlSafe(str(uuid.uuid4()))
+  """ Generate a taskcluster slugid.  This is a V4 UUID encoded into
+  URL-Safe Base64 (RFC 4648, sec 5) with '=' padding removed """
+  return makeB64UrlSafe(_b64encode(str(uuid.uuid4())).replace('=', ''))
 
 
 def createTemporaryCredentials(start, expiry, scopes, credentials):
@@ -508,7 +511,7 @@ def createTemporaryCredentials(start, expiry, scopes, credentials):
     'certificate': _dmpJson(cert),
   }
 
-__all__ = ['createTemporaryCredentials', 'config']
+__all__ = ['createTemporaryCredentials', 'config', 'slugId', 'makeB64UrlSafe']
 # This has to be done after the Client class is declared
 for key, value in API_CONFIG.items():
   globals()[key] = createApiClient(key, value)
