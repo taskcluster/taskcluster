@@ -51,7 +51,6 @@ _defaultConfig = config = {
     'clientId': os.environ.get('TASKCLUSTER_CLIENT_ID'),
     'accessToken': os.environ.get('TASKCLUSTER_ACCESS_TOKEN'),
     'certificate': os.environ.get('TASKCLUSTER_CERTIFICATE'),
-    'algorithm': 'sha256',
   },
   'maxRetries': 5,
   'signedUrlExpiration': 15 * 60,
@@ -357,7 +356,7 @@ class BaseClient(object):
         'credentials': {
           'id': cred['clientId'],
           'key': cred['accessToken'],
-          'algorithm': cred.get('algorithm', 'sha256'),
+          'algorithm': 'sha256',
         },
         'ext': self.makeHawkExt(),
       }
