@@ -1,3 +1,5 @@
 """ Python client for Taskcluster """
 
-from .client import *  # NOQA
+import client
+reload(client)
+from client import *  # NOQA
