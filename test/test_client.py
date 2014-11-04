@@ -168,7 +168,7 @@ class TestMakeHttpRequest(ClientTest):
       p.return_value = ObjWithDotJson(200, expected)
 
       v = self.client._makeHttpRequest('GET', 'http://www.example.com', {})
-      p.assert_called_once_with('GET', 'http://www.example.com', {})
+      p.assert_called_once_with('GET', 'http://www.example.com', {}, 'e30=')
       self.assertEqual(expected, v)
 
   def test_success_fifth_try_status_code(self):
@@ -182,7 +182,8 @@ class TestMakeHttpRequest(ClientTest):
         ObjWithDotJson(200, expected)
       ]
       p.side_effect = sideEffect
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range(self.client.options['maxRetries'])]
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}, 'e30=')
+                       for x in range(self.client.options['maxRetries'])]
 
       v = self.client._makeHttpRequest('GET', 'http://www.example.com', {})
       p.assert_has_calls(expectedCalls)
@@ -199,7 +200,8 @@ class TestMakeHttpRequest(ClientTest):
         ObjWithDotJson(200, expected)
       ]
       p.side_effect = sideEffect
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range(self.client.options['maxRetries'])]
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}, 'e30=')
+                       for x in range(self.client.options['maxRetries'])]
 
       v = self.client._makeHttpRequest('GET', 'http://www.example.com', {})
       p.assert_has_calls(expectedCalls)
@@ -208,7 +210,8 @@ class TestMakeHttpRequest(ClientTest):
   def test_failure_status_code(self):
     with mock.patch.object(self.client, '_makeSingleHttpRequest') as p:
       p.return_value = ObjWithDotJson(500, None)
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range(self.client.options['maxRetries'])]
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}, 'e30=')
+                       for x in range(self.client.options['maxRetries'])]
       with self.assertRaises(exc.TaskclusterRestFailure):
         self.client._makeHttpRequest('GET', 'http://www.example.com', {})
       p.assert_has_calls(expectedCalls)
@@ -216,7 +219,8 @@ class TestMakeHttpRequest(ClientTest):
   def test_failure_connection_errors(self):
     with mock.patch.object(self.client, '_makeSingleHttpRequest') as p:
       p.side_effect = requests.exceptions.RequestException
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}) for x in range(self.client.options['maxRetries'])]
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}, 'e30=')
+                       for x in range(self.client.options['maxRetries'])]
       with self.assertRaises(exc.TaskclusterRestFailure):
         self.client._makeHttpRequest('GET', 'http://www.example.com', {})
       p.assert_has_calls(expectedCalls)

@@ -89,7 +89,7 @@ class BaseClient(object):
       # like but doesn't strip itself
       return _b64encode(_dmpJson(ext)).strip()
     else:
-      return None
+      return {}
 
   def _makeTopicExchange(self, entry, *args, **kwargs):
     if len(args) == 0 and not kwargs:
@@ -304,7 +304,7 @@ class BaseClient(object):
       retry += 1
       log.debug('Making attempt %d', retry)
       try:
-        response = self._makeSingleHttpRequest(method, fullUrl, payload)
+        response = self._makeSingleHttpRequest(method, fullUrl, payload, self.makeHawkExt())
       except requests.exceptions.RequestException as rerr:
         error = True
         if retry >= self.options['maxRetries']:
@@ -342,7 +342,7 @@ class BaseClient(object):
 
     return apiData
 
-  def _makeSingleHttpRequest(self, method, url, payload):
+  def _makeSingleHttpRequest(self, method, url, payload, hawkExt=None):
     log.debug('Making a %s request to %s', method, url)
     opts = self.options
     cred = opts.get('credentials')
@@ -353,7 +353,7 @@ class BaseClient(object):
           'key': cred['accessToken'],
           'algorithm': 'sha256',
         },
-        'ext': self.makeHawkExt(),
+        'ext': hawkExt if hawkExt else {},
       }
       header = hawk.client.header(url, method, hawkOpts)
       headers = {'Authorization': header['field'].strip()}
