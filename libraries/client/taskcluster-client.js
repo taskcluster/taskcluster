@@ -1396,11 +1396,6 @@ var _defaultOptions = {
     certificate:  process.env.TASKCLUSTER_CERTIFICATE
   },
 
-  authorization: {
-    delegating: false,
-    scopes: []
-  },
-
   maxRetries:     5
 };
 
