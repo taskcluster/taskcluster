@@ -1,6 +1,13 @@
 PEP8_IGNORE=E111,E121
 PYTHON := python
 VENV := env-$(basename $(PYTHON))
+NODE_VER := v0.10.33
+NODE_PLAT := $(shell uname | tr A-Z a-z)-x64
+NODE_NAME := node-$(NODE_VER)-$(NODE_PLAT)
+NODE_BIN := $(PWD)/$(NODE_NAME)/bin/node
+NODE_URL := http://nodejs.org/dist/$(NODE_VER)/$(NODE_NAME).tar.gz
+NODE_SRC := $(PWD)/node_sources
+export NODE_PATH := $(PWD)/node_modules-$(NODE_VER)-$(NODE_PLAT)
 
 .PHONY: test
 test: $(VENV)/bin/python
@@ -12,13 +19,13 @@ test: $(VENV)/bin/python
 
 JS_CLIENT_BRANCH=master
 APIS_JSON=$(PWD)/taskcluster/apis.json
-APIS_JS_HREF=https://raw.githubusercontent.com/taskcluster/taskcluster-client/master/lib/apis.js
+APIS_JS_HREF=https://raw.githubusercontent.com/taskcluster/taskcluster-client/$(JS_CLIENT_BRANCH)/lib/apis.js
 
 .PHONY: apis.json
-apis.json:
+update-api: $(NODE_BIN)
 	@echo Downloading $(APIS_JS_HREF)
-	curl -L -o apis.js $(APIS_JS_HREF)
-	OUTPUT=$(APIS_JSON) node translateApis.js
+	curl -L -o $(NODE_SRC)/apis.js $(APIS_JS_HREF)
+	OUTPUT=$(APIS_JSON) $(NODE_BIN) $(NODE_SRC)/translateApis.js
 	@python -mjson.tool $(APIS_JSON) > /dev/null || echo "apis.json cannot be parsed by python's JSON"
 
 $(VENV)/bin/python:
@@ -40,3 +47,12 @@ docs:
 	$(VENV)/bin/python -mpip install sphinx
 	$(VENV)/bin/python makeRst.py > docs/client.rst
 	make -C docs html SPHINXBUILD=$(abspath $(VENV)/bin/sphinx-build)
+
+$(NODE_BIN):
+	curl -LO $(NODE_URL)
+	tar zxf node-$(NODE_VER)-$(NODE_PLAT).tar.gz
+
+# For convenience
+node: $(NODE_BIN)
+	rm $@
+	ln -s $(NODE_NAME) $@
