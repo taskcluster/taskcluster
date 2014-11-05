@@ -9,10 +9,9 @@ NODE_URL := http://nodejs.org/dist/$(NODE_VER)/$(NODE_NAME).tar.gz
 NODE_SRC := $(PWD)/node_sources
 export NODE_PATH := $(PWD)/$(NODE_NAME)/lib/node_modules
 NPM_INST := npm install --prefix $(PWD)/$(NODE_NAME) -g
-DEP_NODE = $(NODE_PATH)/$1/package.json
 
 .PHONY: test
-test: $(VENV)/bin/python $(call DEP_NODE,taskcluster-base)
+test: $(VENV)/bin/python $(NODE_BIN)
 	@# E111 -- I use two space indents, pep8 wants four
 	@# E121 -- PEP8 doesn't like how I write dicts
 	$(VENV)/bin/flake8 --ignore=$(PEP8_IGNORE) --max-line-length=120 taskcluster test
