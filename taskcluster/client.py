@@ -13,6 +13,7 @@ import uuid
 import hashlib
 import hmac
 import base64
+import datetime
 
 # For finding apis.json
 from pkg_resources import resource_string
@@ -36,11 +37,16 @@ def _b64encode(s):
   return base64.encodestring(s).strip().replace('\n', '')
 
 
-def _dmpJson(obj):
+def _dmpJson(obj, **kwargs):
   """ Match JS's JSON.stringify.  When using the default seperators,
   base64 encoding JSON results in \n sequences in the output.  Hawk
   barfs in your face if you have that in the text"""
-  d = json.dumps(obj, separators=(',', ':'))
+  def handleDateForJs(x):
+    if isinstance(x, datetime.datetime) or isinstance(x, datetime.date):
+      return x.isoformat()
+    else:
+      return x
+  d = json.dumps(obj, separators=(',', ':'), default=handleDateForJs, **kwargs)
   assert '\n' not in d
   return d
 

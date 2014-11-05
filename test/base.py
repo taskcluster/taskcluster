@@ -4,13 +4,15 @@ import unittest
 import os
 import sys
 import logging
-import json
 import signal
 import time
 import tempfile
 import socket
+import json
 
 import psutil
+
+from taskcluster.client import _dmpJson
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -87,17 +89,19 @@ def createTopicExchangeKey(name, constant=None, multipleWords=False, maxSize=5, 
   return default
 
 
-class MockAuthUser(object):
-  def __init__(self, clientId, accessToken, expiry):
+class AuthClient(object):
+  def __init__(self, clientId, accessToken, expires, scopes):
     self.clientId = clientId
     self.accessToken = accessToken
-    self.expiry = expiry
+    self.expires = expires
+    self.scopes = scopes
 
   def forNode(self):
     return {
       'clientId': self.clientId,
       'accessToken': self.accessToken,
-      'expiry': 'DATE:%f' % (self.expiry * 1000)
+      'expires': self.expires,
+      'scopes': self.scopes
     }
 
 
@@ -133,7 +137,7 @@ class MockAuthServer(object):
     self.command = [nodeBin, self.nodeScript]
     self.environment = {
       'PORT': str(port),
-      'CLIENTS': json.dumps([x.forNode() for x in clients]),
+      'CLIENTS': _dmpJson([x.forNode() for x in clients]),
       'NODE_PATH': os.environ.get('NODE_PATH', ''),
       'PATH': os.environ['PATH'],
       'DEBUG': '*',
@@ -221,6 +225,7 @@ class MockAuthServer(object):
   def stop(self):
     """ Stop the server, read its output and print the output
     to logs. """
+    log.info('Stopping Mock Auth Server')
     with open(self.tempout, 'r+b') as f:
       f.seek(0)
       nodeOutput = f.readlines()

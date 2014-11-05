@@ -1,5 +1,5 @@
 import types
-import time
+import datetime
 
 import httmock
 import mock
@@ -404,11 +404,15 @@ class TestSlugId(base.TCTest):
 
 class TestAuthentication(base.TCTest):
   def setUp(self):
-    self.mockUser = base.MockAuthUser('clientId', 'accessToken', time.time())
+    datetime.datetime.now()
     self.port = 5555
     self.baseUrl = 'http://localhost:%d/v1' % self.port
+    self.clients = [
+      base.AuthClient('rockstar', 'groupie', datetime.datetime(3000, 1, 1), ['*']),
+      base.AuthClient('expired', 'dead', datetime.datetime(1986, 1, 1), ['*']),
+    ]
 
-    self.mockAuth = base.MockAuthServer([self.mockUser], port=5555)
+    self.mockAuth = base.MockAuthServer([], port=5555)
     self.mockAuth.start()
     self.addCleanup(self.mockAuth.stop)
 
@@ -425,12 +429,12 @@ class TestAuthentication(base.TCTest):
     clientOpts = {
       'baseUrl': self.baseUrl,
       'credentials': {
-        'clientId': self.mockUser.clientId,
-        'accessToken': self.mockUser.accessToken,
+        'clientId': 'rockstar',
+        'accessToken': 'groupie',
       },
     }
     self.client = self.clientClass(clientOpts)
 
   def test_mock_is_up(self):
-    pass
-    # self.client.getCredentials(self.mockUser.clientId)
+    self.client.getCredentials('rockstar')
+    self.mockAuth.stop()
