@@ -64,4 +64,4 @@ run_node: $(NODE_BIN)
 	$(NODE_BIN)
 
 run_python: $(VENV)/bin/python
-	$(VENV)/bin/python
+	$(VENV)/bin/python testscript.py
