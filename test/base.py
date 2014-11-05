@@ -242,6 +242,6 @@ class MockAuthServer(object):
     if result == (0, 0):
       log.info('Child didnt end quick enough, killing')
       os.kill(self.childPid, signal.SIGKILL)
-      os.waitpid(self.childPid, None)
+      os.waitpid(self.childPid, 0)
     else:
       log.info('Child shutdown cleanly from SIGTERM')
