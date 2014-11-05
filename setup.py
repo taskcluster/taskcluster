@@ -9,6 +9,8 @@ tests_require = [
   'mock==1.0.1',
   'setuptools-lint==0.3',
   'flake8==2.2.5',
+  'subprocess32==3.2.6',
+  'psutil==2.1.3',
 ]
 
 install_requires = [

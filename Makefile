@@ -4,13 +4,15 @@ VENV := env-$(basename $(PYTHON))
 NODE_VER := v0.10.33
 NODE_PLAT := $(shell uname | tr A-Z a-z)-x64
 NODE_NAME := node-$(NODE_VER)-$(NODE_PLAT)
-NODE_BIN := $(PWD)/$(NODE_NAME)/bin/node
+export NODE_BIN := $(PWD)/$(NODE_NAME)/bin/node
 NODE_URL := http://nodejs.org/dist/$(NODE_VER)/$(NODE_NAME).tar.gz
 NODE_SRC := $(PWD)/node_sources
-export NODE_PATH := $(PWD)/node_modules-$(NODE_VER)-$(NODE_PLAT)
+export NODE_PATH := $(PWD)/$(NODE_NAME)/lib/node_modules
+NPM_INST := npm install --prefix $(PWD)/$(NODE_NAME) -g
+DEP_NODE = $(NODE_PATH)/$1/package.json
 
 .PHONY: test
-test: $(VENV)/bin/python
+test: $(VENV)/bin/python $(call DEP_NODE,taskcluster-base)
 	@# E111 -- I use two space indents, pep8 wants four
 	@# E121 -- PEP8 doesn't like how I write dicts
 	$(VENV)/bin/flake8 --ignore=$(PEP8_IGNORE) --max-line-length=120 taskcluster test
@@ -51,8 +53,16 @@ docs:
 $(NODE_BIN):
 	curl -LO $(NODE_URL)
 	tar zxf node-$(NODE_VER)-$(NODE_PLAT).tar.gz
+	$(NPM_INST) debug
+	$(NPM_INST) taskcluster-base
 
 # For convenience
 node: $(NODE_BIN)
-	rm $@
+	rm -f $@
 	ln -s $(NODE_NAME) $@
+
+run_node: $(NODE_BIN)
+	$(NODE_BIN)
+
+run_python: $(VENV)/bin/python
+	$(VENV)/bin/python

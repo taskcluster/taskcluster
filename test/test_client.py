@@ -1,4 +1,5 @@
 import types
+import time
 
 import httmock
 import mock
@@ -399,3 +400,37 @@ class TestSlugId(base.TCTest):
       expected = 'OGVkN2JhNWUtMzgwYi00YzA4LWFhOWMtMWM4NjM4MmFmZTIz'
       actual = subject.slugId()
       self.assertEqual(expected, actual)
+
+
+class TestAuthentication(base.TCTest):
+  def setUp(self):
+    self.mockUser = base.MockAuthUser('clientId', 'accessToken', time.time())
+    self.port = 5555
+    self.baseUrl = 'http://localhost:%d/v1' % self.port
+
+    self.mockAuth = base.MockAuthServer([self.mockUser], port=5555)
+    self.mockAuth.start()
+    self.addCleanup(self.mockAuth.stop)
+
+    entries = [
+      base.createApiEntryFunction(
+        'getCredentials',
+        0,
+        False,
+        route='/client/<clientId>/credentials'
+      ),
+    ]
+    self.apiRef = base.createApiRef(entries=entries)
+    self.clientClass = subject.createApiClient('Auth', self.apiRef)
+    clientOpts = {
+      'baseUrl': self.baseUrl,
+      'credentials': {
+        'clientId': self.mockUser.clientId,
+        'accessToken': self.mockUser.accessToken,
+      },
+    }
+    self.client = self.clientClass(clientOpts)
+
+  def test_mock_is_up(self):
+    pass
+    # self.client.getCredentials(self.mockUser.clientId)
