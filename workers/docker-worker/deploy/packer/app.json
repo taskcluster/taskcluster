@@ -4,7 +4,7 @@
   "variables": {
     "npmPackage":          "",
     "templateContents":    "",
-    "sourceAMI":           "ami-95db9ba5",
+    "sourceAMI":           "ami-092b6039",
     "logglyAccount":       "",
     "logglyAuth":          "",
     "papertrail":          "",
