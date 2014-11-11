@@ -1,5 +1,9 @@
 import types
 import datetime
+import socket
+import unittest
+import time
+realTimeTime = time.time
 
 import httmock
 import mock
@@ -402,19 +406,11 @@ class TestSlugId(base.TCTest):
       self.assertEqual(expected, actual)
 
 
-class TestAuthentication(base.TCTest):
+class TestAuthenticationMockServer(base.TCTest):
   def setUp(self):
     datetime.datetime.now()
     self.port = 5555
     self.baseUrl = 'http://localhost:%d/v1' % self.port
-    self.clients = [
-      base.AuthClient('rockstar', 'groupie', datetime.datetime(3000, 1, 1), ['*']),
-      base.AuthClient('expired', 'dead', datetime.datetime(1986, 1, 1), ['*']),
-    ]
-
-    self.mockAuth = base.MockAuthServer([], port=5555)
-    self.mockAuth.start()
-    self.addCleanup(self.mockAuth.stop)
 
     entries = [
       base.createApiEntryFunction(
@@ -427,17 +423,71 @@ class TestAuthentication(base.TCTest):
     self.apiRef = base.createApiRef(entries=entries)
     self.clientClass = subject.createApiClient('Auth', self.apiRef)
     clientOpts = {
-      'baseUrl': self.baseUrl,
-      'credentials': {
-        'clientId': 'rockstar',
-        'accessToken': 'groupie',
-      },
+      'baseUrl': self.baseUrl
     }
     self.client = self.clientClass(clientOpts)
 
-  def tearDown(self):
-    self.mockAuth.stop()
-
   def test_mock_is_up(self):
-    # self.client.getCredentials('rockstar')
-    pass
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+      s.connect(('127.0.0.1', self.port))
+    finally:
+      s.close()
+     
+  def test_mock_auth_works(self):
+    self.client.options['credentials']['clientId'] = 'admin'
+    self.client.options['credentials']['accessToken'] = 'adminToken'
+    result = self.client.getCredentials('admin')
+    self.assertEqual(result['accessToken'], 'adminToken')
+
+  def test_mock_auth_works_with_small_scope(self):
+    self.client.options['credentials']['clientId'] = 'goodScope'
+    self.client.options['credentials']['accessToken'] = 'goodScopeToken'
+    result = self.client.getCredentials('admin')
+    self.assertEqual(result['accessToken'], 'adminToken')
+
+  def test_mock_auth_expired(self):
+    self.client.options['credentials']['clientId'] = 'expired'
+    self.client.options['credentials']['accessToken'] = 'expiredToken'
+    with self.assertRaises(exc.TaskclusterAuthFailure):
+      self.client.getCredentials('admin')
+
+  def test_mock_auth_bad_scope(self):
+    self.client.options['credentials']['clientId'] = 'badScope'
+    self.client.options['credentials']['accessToken'] = 'badScopeToken'
+    with self.assertRaises(exc.TaskclusterAuthFailure):
+      self.client.getCredentials('admin')
+
+  @unittest.expectedFailure
+  def test_temporary_credentials(self):
+    cred = {'clientId': 'admin', 'accessToken': 'adminToken'}
+    tempCred = subject.createTemporaryCredentials(
+      realTimeTime(),
+      realTimeTime() + 60 * 60 * 24,
+      ['auth:credentials'],
+      cred
+    )
+    self.client.options['credentials']['clientId'] = tempCred['clientId']
+    self.client.options['credentials']['accessToken'] = tempCred['accessToken']
+    self.client.options['credentials']['certificate'] = tempCred['certificate']
+    result = self.client.getCredentials('admin')
+  
+  @unittest.expectedFailure
+  def test_mock_auth_signed_url(self):
+    self.client.options['credentials']['clientId'] = 'admin'
+    self.client.options['credentials']['accessToken'] = 'adminToken'
+    signedUrl = self.client.buildSignedUrl('getCredentials', 'admin')
+    response = requests.get(signedUrl)
+    response.raise_for_status()
+    response = response.json()
+    self.assertEqual(response['accessToken'], 'adminToken')
+
+  def test_mock_auth_signed_url_bad_credentials(self):
+    self.client.options['credentials']['clientId'] = 'expired'
+    self.client.options['credentials']['accessToken'] = 'expiredToken'
+    signedUrl = self.client.buildSignedUrl('getCredentials', 'admin')
+    r = requests.get(signedUrl)
+    with self.assertRaises(requests.exceptions.RequestException):
+      r.raise_for_status()
+    self.assertEqual(401, r.status_code)
+

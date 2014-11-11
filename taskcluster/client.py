@@ -339,9 +339,10 @@ class BaseClient(object):
       response.raise_for_status()
       apiData = response.json()
     except requests.exceptions.RequestException as rerr:
-      errStr = 'Request failed to complete'
-      log.error(errStr + '\n' + response.text)
-      raise exceptions.TaskclusterRestFailure(errStr, superExc=rerr)
+      if response.status_code == 401:
+        raise exceptions.TaskclusterAuthFailure('Server rejected our credentials')
+      else:
+        raise exceptions.TaskclusterRestFailure('Request failed', superExc=rerr)
     except ValueError as ve:
       errStr = 'Response contained malformed JSON data'
       log.error(errStr)

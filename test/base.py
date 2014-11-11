@@ -4,12 +4,7 @@ import unittest
 import os
 import logging
 import time
-import socket
 import json
-import threading
-import select
-
-import subprocess
 
 # Mocks really ought not to overwrite this
 _sleep = time.sleep

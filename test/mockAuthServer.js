@@ -5,24 +5,37 @@ var assert = require('assert');
 var debug = require('debug')('mock-server-for-python');
 
 var port = Number(process.env.PORT);
-
-try {
-	var clients = JSON.parse(process.env.CLIENTS);
-	debug('Parsed %d clients', clients.length);
-} catch (e) {
-	console.error(e, 'Error parsing CLIENTS environment variable');
-	process.exit(1);
+if (!port || typeof(port) !== 'number') {
+  console.error('You must specify a port number');
+  process.exit(-1);
 }
 
-clients.forEach(function(c) {
-	if (c.expiry) {
-		if (c.expiry.indexOf('DATE:') == 0) {
-			var d = new Date(Number(c.expiry.slice(5)));
-			debug('handled a date %s -> %s', c.expiry, d);
-			c.expiry = d;
-		}
-	}
-});
+var clients = [
+  {
+    clientId: 'admin',
+    accessToken: 'adminToken',
+    expires: new Date(3000, 0, 0),
+    scopes: ['*'],
+  },
+  {
+    clientId: 'expired',
+    accessToken: 'expiredToken',
+    expires: new Date(1999, 0, 0),
+    scopes: ['*'],
+  },
+  {
+    clientId: 'goodScope',
+    accessToken: 'goodScopeToken',
+    expires: new Date(3000, 0, 0),
+    scopes: ['auth:credentials'],
+  },
+  {
+    clientId: 'badScope',
+    accessToken: 'badScopeToken',
+    expires: new Date(3000, 0, 0),
+    scopes: ['not-a-scope'],
+  },
+];
 
 console.log('Starting mock server on port %d with clients:\n', port);
 console.log(JSON.stringify(clients, null, 2));
