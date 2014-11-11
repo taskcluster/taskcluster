@@ -3,6 +3,7 @@ import socket
 import unittest
 import time
 realTimeTime = time.time
+import datetime
 
 import httmock
 import mock
@@ -458,12 +459,12 @@ class TestAuthenticationMockServer(base.TCTest):
 
   @unittest.expectedFailure
   def test_temporary_credentials(self):
-    cred = {'clientId': 'admin', 'accessToken': 'adminToken'}
     tempCred = subject.createTemporaryCredentials(
-      realTimeTime() - 60 * 10,
-      realTimeTime() + 60 * 60 * 24,
+      'admin',
+      'adminToken',
+      datetime.datetime.utcnow() - datetime.timedelta(hours=10),
+      datetime.datetime.utcnow() + datetime.timedelta(hours=10),
       ['auth:credentials'],
-      cred
     )
     self.client.options['credentials']['clientId'] = tempCred['clientId']
     self.client.options['credentials']['accessToken'] = tempCred['accessToken']

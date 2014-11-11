@@ -14,6 +14,7 @@ import hashlib
 import hmac
 import base64
 import datetime
+import calendar
 
 # For finding apis.json
 from pkg_resources import resource_string
@@ -482,7 +483,7 @@ def createApiClient(name, api):
   return type(name.encode('utf-8'), (BaseClient,), attributes)
 
 
-def createTemporaryCredentials(start, expiry, scopes, credentials):
+def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
   """ Create a set of temporary credentials
 
   start: start time of credentials, seconds since epoch
@@ -495,16 +496,8 @@ def createTemporaryCredentials(start, expiry, scopes, credentials):
     { 'clientId': str, 'accessToken: str, 'certificate': str}
   """
 
-  _cred = credentials
-  credentials = {}
-  credentials.update(_defaultConfig['credentials'])
-  credentials.update(_cred)
-
-  if not credentials or 'clientId' not in credentials or 'accessToken' not in credentials:
-    raise exceptions.TaskclusterAuthFailure('No valid credentials')
-
-  now = time.time()
-  now = now - 60 * 5  # Subtract 5 minutes for clock drift
+  now = datetime.datetime.utcnow()
+  now = now - datetime.timedelta(minutes=10)  # Subtract 5 minutes for clock drift
 
   for scope in scopes:
     if not isinstance(scope, basestring):
@@ -513,14 +506,14 @@ def createTemporaryCredentials(start, expiry, scopes, credentials):
   # Credentials can only be valid for 31 days.  I hope that
   # this is validated on the server somehow...
 
-  if expiry - start > 31 * 24 * 60 * 60:
+  if expiry - start > datetime.timedelta(days=31):
     raise exceptions.TaskclusterFailure('Only 31 days allowed')
 
   cert = dict(
     version=1,
     scopes=scopes,
-    start=start * 1000,
-    expiry=expiry * 1000,
+    start=calendar.timegm(start.utctimetuple()),
+    expiry=calendar.timegm(expiry.utctimetuple()),
     seed=slugId() + slugId(),
   )
 
@@ -532,15 +525,15 @@ def createTemporaryCredentials(start, expiry, scopes, credentials):
     'scopes:'
   ] + scopes)
 
-  sig = hmac.new(credentials['accessToken'], sigStr, hashlib.sha256).digest()
+  sig = hmac.new(accessToken, sigStr, hashlib.sha256).digest()
 
   cert['signature'] = _b64encode(sig)
 
-  newToken = hmac.new(credentials['accessToken'], cert['seed']).digest()
-  newToken = makeB64UrlSafe(_b64encode(newToken))
+  newToken = hmac.new(accessToken, cert['seed'], hashlib.sha256).digest()
+  newToken = makeB64UrlSafe(_b64encode(newToken)).replace('=', '')
 
   return {
-    'clientId': credentials['clientId'],
+    'clientId': clientId,
     'accessToken': newToken,
     'certificate': _dmpJson(cert),
   }
