@@ -4,12 +4,9 @@ import unittest
 import os
 import logging
 import time
-import json
 
 # Mocks really ought not to overwrite this
 _sleep = time.sleep
-
-from taskcluster.client import _dmpJson
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)

@@ -433,7 +433,7 @@ class TestAuthenticationMockServer(base.TCTest):
       s.connect(('127.0.0.1', self.port))
     finally:
       s.close()
-     
+
   def test_mock_auth_works(self):
     self.client.options['credentials']['clientId'] = 'admin'
     self.client.options['credentials']['accessToken'] = 'adminToken'
@@ -471,7 +471,8 @@ class TestAuthenticationMockServer(base.TCTest):
     self.client.options['credentials']['accessToken'] = tempCred['accessToken']
     self.client.options['credentials']['certificate'] = tempCred['certificate']
     result = self.client.getCredentials('admin')
-  
+    self.assertEqual(result['accessToken'], 'adminToken')
+
   @unittest.expectedFailure
   def test_mock_auth_signed_url(self):
     self.client.options['credentials']['clientId'] = 'admin'
@@ -490,4 +491,3 @@ class TestAuthenticationMockServer(base.TCTest):
     with self.assertRaises(requests.exceptions.RequestException):
       r.raise_for_status()
     self.assertEqual(401, r.status_code)
-
