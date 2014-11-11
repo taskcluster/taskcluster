@@ -12,6 +12,9 @@ The library builds the REST API methods from the same [API Reference
 format](http://docs.taskcluster.net/tools/references/index.html) as the
 Javascript client library.
 
+''NOTE:'' Temporary credentials are implemented, but they don't work from this
+library right now
+
 The REST API methods are documented on
 [http://docs.taskcluster.net/](http://docs.taskcluster.net/)
 
