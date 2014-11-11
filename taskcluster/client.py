@@ -37,6 +37,22 @@ def _b64encode(s):
   return base64.encodestring(s).strip().replace('\n', '')
 
 
+def makeB64UrlSafe(b64str):
+  """ Make a base64 string URL Safe """
+  # see RFC 4648, sec. 5
+  return b64str.replace('+', '-').replace('/', '_')
+
+
+def _b64UrlEncode(s):
+  return makeB64UrlSafe(_b64encode(s))
+
+
+def slugId():
+  """ Generate a taskcluster slugid.  This is a V4 UUID encoded into
+  URL-Safe Base64 (RFC 4648, sec 5) with '=' padding removed """
+  return makeB64UrlSafe(_b64encode(str(uuid.uuid4())).replace('=', ''))
+
+
 def _dmpJson(obj, **kwargs):
   """ Match JS's JSON.stringify.  When using the default seperators,
   base64 encoding JSON results in \n sequences in the output.  Hawk
@@ -94,7 +110,7 @@ class BaseClient(object):
 
       # .encode('base64') inserts a newline, which hawk doesn't
       # like but doesn't strip itself
-      return _b64encode(_dmpJson(ext)).strip()
+      return makeB64UrlSafe(_b64encode(_dmpJson(ext)).strip())
     else:
       return {}
 
@@ -161,13 +177,20 @@ class BaseClient(object):
     return self.options['baseUrl'] + '/' + route
 
   def buildSignedUrl(self, methodName, *args, **kwargs):
+    """ Build a signed URL.  This URL contains the credentials needed to access
+    a resource.  The underlying hawk protocol (or our server) has somewhat
+    undefined behaviour.  Your signed URL could have an expiration that's a
+    little longer than you asked for.  If a signed URL is returned, it is
+    expected to work, but we might not be able to generate a valid one.  If
+    that happens, try again with a different expiration kwarg."""
+
     if 'expiration' in kwargs:
       expiration = kwargs['expiration']
       del kwargs['expiration']
     else:
       expiration = self.options['signedUrlExpiration']
 
-    expiration = int(expiration)  # Mainly so that we throw if it's not a number
+    expiration = float(expiration)  # Mainly so that we throw if it's not a number
 
     requestUrl = self.buildUrl(methodName, *args, **kwargs)
 
@@ -189,11 +212,40 @@ class BaseClient(object):
       'ext': self.makeHawkExt(),
     }
 
-    # NOTE: the version of PyHawk in pypi is broken.
-    # see: https://github.com/mozilla/PyHawk/pull/27
-    bewit = hawk.client.get_bewit(requestUrl, bewitOpts)
+    def genBewit():
+      _bewit = hawk.client.get_bewit(requestUrl, bewitOpts)
+      return _bewit
+    
+    # The following code probably looks really dumb, I assure you there's a
+    # reason for it.  A bewit is base64 encoded data.  The issue here is that
+    # the server doesn't know how to handle decoded data that contains the dash
+    # (-) or underscore(_) chars.  I'm not sure exactly what is breaking in
+    # this chain, but we can non-deterministically generate valid ones if we
+    # change the expiration time of the bewit generation.  Each iteration of
+    # the loop changes the ttl_sec value by 0.01 sec, we do 10000 iterations
+    # which means our URL could be valid for up to 100 seconds longer than
+    # requested.  Because we check the returned bewit for validity, we are sure
+    # that a returned bewit is in fact valid.  This is awful, but it's the only
+    # way I can get it to work reliably
+    for i in range(10000):
+      bewit = genBewit()
+      bewitDecoded = bewit.decode('base64')
+      if '_' not in bewitDecoded and '-' not in bewitDecoded:
+        log.debug('#'*80)
+        log.debug('Found a valid bewit, ttl_sec is: %0.5f', bewitOpts['ttl_sec'])
+        log.debug('#'*80)
+        log.info('Had to generate %i bewits before valid one found!', i)
+        break
+      else: 
+        log.debug('Found an invalid bewit, ttl_sec is: %0.5f', bewitOpts['ttl_sec'])
+      log.debug('The last bewit was invalid...')
+      bewitOpts['ttl_sec'] += 0.01
+    
     if not bewit:
       raise exceptions.TaskclusterFailure('Did not receive a bewit')
+    
+    if '_' in bewitDecoded or '-' in bewitDecoded:
+      raise exceptions.TaskclusterFailure('Not sure why this causes server side failure!')
 
     u = urlparse.urlparse(requestUrl)
     return urlparse.urlunparse((
@@ -439,18 +491,6 @@ def createApiClient(name, api):
     attributes[entry['name']] = f
 
   return type(name.encode('utf-8'), (BaseClient,), attributes)
-
-
-def makeB64UrlSafe(b64str):
-  """ Make a base64 string URL Safe """
-  # see RFC 4648, sec. 5
-  return b64str.replace('+', '-').replace('/', '_')
-
-
-def slugId():
-  """ Generate a taskcluster slugid.  This is a V4 UUID encoded into
-  URL-Safe Base64 (RFC 4648, sec 5) with '=' padding removed """
-  return makeB64UrlSafe(_b64encode(str(uuid.uuid4())).replace('=', ''))
 
 
 def createTemporaryCredentials(start, expiry, scopes, credentials):

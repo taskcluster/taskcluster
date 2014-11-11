@@ -408,7 +408,6 @@ class TestSlugId(base.TCTest):
 
 class TestAuthenticationMockServer(base.TCTest):
   def setUp(self):
-    datetime.datetime.now()
     self.port = 5555
     self.baseUrl = 'http://localhost:%d/v1' % self.port
 
@@ -462,7 +461,7 @@ class TestAuthenticationMockServer(base.TCTest):
   def test_temporary_credentials(self):
     cred = {'clientId': 'admin', 'accessToken': 'adminToken'}
     tempCred = subject.createTemporaryCredentials(
-      realTimeTime(),
+      realTimeTime() - 60 * 10,
       realTimeTime() + 60 * 60 * 24,
       ['auth:credentials'],
       cred
@@ -473,8 +472,8 @@ class TestAuthenticationMockServer(base.TCTest):
     result = self.client.getCredentials('admin')
     self.assertEqual(result['accessToken'], 'adminToken')
 
-  @unittest.expectedFailure
   def test_mock_auth_signed_url(self):
+    # This test is being annoying.  It rarely works but when it does
     self.client.options['credentials']['clientId'] = 'admin'
     self.client.options['credentials']['accessToken'] = 'adminToken'
     signedUrl = self.client.buildSignedUrl('getCredentials', 'admin')
