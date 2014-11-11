@@ -14,9 +14,17 @@ NPM_INST := npm install --prefix $(PWD)/$(NODE_NAME) -g
 test: $(VENV)/bin/python $(NODE_BIN)
 	@# E111 -- I use two space indents, pep8 wants four
 	@# E121 -- PEP8 doesn't like how I write dicts
-	$(VENV)/bin/flake8 --ignore=$(PEP8_IGNORE) --max-line-length=120 taskcluster test
-	$(VENV)/bin/python setup.py test
-	$(VENV)/bin/nosetests
+	PORT=5555 $(NODE_BIN) test/mockAuthServer.js &> server.log & \
+	serverpid=$$! ; \
+	$(VENV)/bin/flake8 --ignore=$(PEP8_IGNORE) --max-line-length=120 taskcluster test && \
+	$(VENV)/bin/python setup.py test && \
+	$(VENV)/bin/nosetests && \
+	status=$$? ; \
+	kill $$serverpid && \
+	exit $$status
+	@# Note that this is outside of the shell above.  We only want to do it
+	@# if the above works flawlessly...
+	rm -f server.log
 
 JS_CLIENT_BRANCH=master
 APIS_JSON=$(PWD)/taskcluster/apis.json
