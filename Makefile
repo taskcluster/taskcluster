@@ -14,6 +14,11 @@ NPM_INST := npm install --prefix $(PWD)/$(NODE_NAME) -g
 test: $(VENV)/bin/python $(NODE_BIN)
 	@# E111 -- I use two space indents, pep8 wants four
 	@# E121 -- PEP8 doesn't like how I write dicts
+
+	@# We want to make sure that no server is already running since
+	@# it might be left over from a previous test run
+	nc localhost 5555 -w 0 ; \
+	if [ $$? -ne 0 ] ; then exit 0 ; else exit 1 ; fi
 	PORT=5555 $(NODE_BIN) test/mockAuthServer.js &> server.log & \
 	serverpid=$$! ; \
 	$(VENV)/bin/flake8 --ignore=$(PEP8_IGNORE) --max-line-length=120 taskcluster test && \
