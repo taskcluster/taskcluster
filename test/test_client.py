@@ -445,6 +445,12 @@ class TestAuthenticationMockServer(base.TCTest):
     result = self.client.getCredentials('admin')
     self.assertEqual(result['accessToken'], 'adminToken')
 
+  def test_mock_auth_invalid(self):
+    self.client.options['credentials']['clientId'] = 'unknown'
+    self.client.options['credentials']['accessToken'] = 'adminToken'
+    with self.assertRaises(exc.TaskclusterAuthFailure):
+      self.client.getCredentials('admin')
+
   def test_mock_auth_expired(self):
     self.client.options['credentials']['clientId'] = 'expired'
     self.client.options['credentials']['accessToken'] = 'expiredToken'
