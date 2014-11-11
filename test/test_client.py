@@ -1,5 +1,4 @@
 import types
-import datetime
 import socket
 import unittest
 import time
