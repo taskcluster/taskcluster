@@ -472,7 +472,6 @@ class TestAuthenticationMockServer(base.TCTest):
     self.assertEqual(result['accessToken'], 'adminToken')
 
   def test_mock_auth_signed_url(self):
-    # This test is being annoying.  It rarely works but when it does
     self.client.options['credentials']['clientId'] = 'admin'
     self.client.options['credentials']['accessToken'] = 'adminToken'
     signedUrl = self.client.buildSignedUrl('getCredentials', 'admin')
