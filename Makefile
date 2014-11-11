@@ -20,7 +20,7 @@ test: $(VENV)/bin/python $(NODE_BIN)
 	$(VENV)/bin/python setup.py test && \
 	$(VENV)/bin/nosetests && \
 	status=$$? ; \
-	kill $$serverpid && \
+	kill $$serverpid && true ; \
 	exit $$status
 	@# Note that this is outside of the shell above.  We only want to do it
 	@# if the above works flawlessly...
