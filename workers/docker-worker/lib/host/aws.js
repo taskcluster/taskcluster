@@ -64,14 +64,12 @@ function* configure (baseUrl) {
 
   log('metadata', config);
 
-  // Shutdown configuration options (notice these can be override toon...)
-  config.shutdown = true; // Shutdown idle nodes by default on aws.
-
-  // Number of seconds left in cycle when we can trigger a shutdown.
-  config.shutdownSecondsStart = minutes(12);
-
-  // Number of seconds left where we do _not_ shutdown (wait for another cycle).
-  config.shutdownSecondsStop = minutes(2);
+  // AWS Specific shutdown parameters notice this can also be overridden.
+  config.shutdown = {
+    enabled: true,
+    // Always wait 2 minutes minimum prior to shutting down this node.
+    minimumCycleSeconds: minutes(2),
+  };
 
   // query the user data for any instance specific overrides set by the
   // provisioner.

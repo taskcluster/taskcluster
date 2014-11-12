@@ -20,6 +20,12 @@ module.exports = {
     dockerVolume: '/mnt'
   },
 
+  // Shutdown configuration...
+  shutdown: {
+    enabled: false,
+    minimumCycleSeconds: undefined
+  },
+
   cache: {
     volumeCachePath: '/mnt/var/cache/docker-worker'
   },

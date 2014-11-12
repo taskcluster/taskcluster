@@ -14,25 +14,26 @@ suite('Shutdown on idle', function() {
   setup(co(function * () {
     settings.billingCycleInterval(40);
     settings.configure({
-      shutdown: true,
-      shutdownSecondsStart: 10,
-      shutdownSecondsStop: 2
+      shutdown: {
+        enabled: true,
+        minimumCycleSeconds: 2 // always wait 2 seconds before shutdown...
+      }
     });
 
     worker = new TestWorker(DockerWorker);
   }));
 
   test('shutdown without ever working a task', co(function* () {
-    settings.billingCycleUptime(69);
+    settings.billingCycleUptime(30);
     var res = yield {
       start: worker.launch(),
       pendingShutdown: waitForEvent(worker, 'pending shutdown'),
       exit: waitForEvent(worker, 'exit')
     };
-    assert.equal(res.pendingShutdown.time, 1);
+    assert.equal(res.pendingShutdown.time, 8);
   }));
 
-  test('idle with timer shutdown', co(function *() {
+  test('with timer shutdown', co(function *() {
     yield worker.launch();
     yield waitForEvent(worker, 'pending shutdown');
     settings.billingCycleUptime(469);
@@ -40,6 +41,9 @@ suite('Shutdown on idle', function() {
     var res = yield {
       post: worker.postToQueue({
         payload: {
+          features: {
+            localLiveLog: false,
+          },
           image: 'taskcluster/test-ubuntu',
           command: cmd(
             'echo "Okay, this is now done"'
@@ -50,40 +54,28 @@ suite('Shutdown on idle', function() {
       pendingShutdown: waitForEvent(worker, 'pending shutdown'),
       exit: waitForEvent(worker, 'exit')
     };
-    assert.equal(res.pendingShutdown.time, 1);
+    assert.equal(res.pendingShutdown.time, 9);
   }));
 
-  test('idle immediate shutdown', co(function *() {
-    // So we don't immediately shutdown.
-    settings.billingCycleUptime(55);
+  test('in range of shutdown', co(function *() {
+    // We are very close to end of the cycle so might as well wait for some more
+    // work rather then shutting down...
+    settings.billingCycleUptime(79);
     yield worker.launch();
-
-    // Wait for the next shutdown tick so we can run the task...
-    yield waitForEvent(worker, 'pending shutdown');
-    settings.billingCycleUptime(75);
-
-    var res = yield {
-      post: worker.postToQueue({
-        payload: {
-          image: 'taskcluster/test-ubuntu',
-          command: cmd(
-            'echo "Okay, this is now done"'
-          ),
-          maxRunTime: 60 * 60
-        }
-      }),
-      pendingShutdown: waitForEvent(worker, 'pending shutdown'),
-      exit: waitForEvent(worker, 'exit')
-    };
-    assert.equal(res.pendingShutdown.time, 0);
+    var res = yield waitForEvent(worker, 'pending shutdown');
+    // 2 seconds prior to the next billing interval.
+    assert.equal(res.time, 39);
   }));
 
-  test('idle then working', co(function *() {
-    settings.billingCycleUptime(39);
+  test('cancel idle', co(function *() {
+    settings.billingCycleUptime(20);
     yield worker.launch();
     var idling = yield {
       post: worker.postToQueue({
         payload: {
+          features: {
+            localLiveLog: false,
+          },
           image: 'taskcluster/test-ubuntu',
           command: cmd(
             'echo "Okay, this is now done"'
@@ -93,11 +85,14 @@ suite('Shutdown on idle', function() {
       }),
       pendingShutdown: waitForEvent(worker, 'pending shutdown')
     };
-    assert.equal(idling.pendingShutdown.time, 31);
+    assert.equal(idling.pendingShutdown.time, 18);
 
     var working = yield {
       create: worker.postToQueue({
         payload: {
+          features: {
+            localLiveLog: false,
+          },
           image: 'taskcluster/test-ubuntu',
           command: cmd(
             'echo "Okay, this is now done"'

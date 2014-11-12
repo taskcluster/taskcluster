@@ -15,16 +15,25 @@ ShutdownManager.prototype = {
   idleTimeout: null,
 
   shutdown: co(function* () {
+    // Add some vague assurance that we are not still claiming tasks.
+    yield this.taskListener.close();
+
     this.config.log('shutdown');
     spawn('shutdown', ['-h', 'now']);
   }),
 
   /**
   Calculate when we should shutdown this worker.
+
+  The most important bit here is we never should return 0 we should always wait
+  at least some duration prior to shutting down the worker.
+
+  @return {Number} shutdown time in seconds.
   */
   nextShutdownTime: function* () {
-    var shutdownStartRange = this.config.shutdownSecondsStart;
-    var shutdownStopRange = this.config.shutdownSecondsStop;
+    // Minimum wait time before a shutdown if the billing cycle is over _before_
+    // the minimum then we wait until the next cycle.
+    var minimumCycleSeconds = this.config.shutdown.minimumCycleSeconds;
 
     var stats = yield {
       uptime: this.host.billingCycleUptime(),
@@ -33,25 +42,21 @@ ShutdownManager.prototype = {
 
     this.config.log('uptime', stats);
 
-    // Remaining time in the billing cycle
+
+    // Remainder of the cycle in seconds.
     var remainder = stats.interval - (stats.uptime % stats.interval);
+
+    // Note: the most important part of this logic is it never returns 0 so we
+    // always have some leeway to accept more work as part of a billing cycle.
 
     // We are so close to the end of this billing cycle we go another before
     // trigger a shutdown.
-    if (remainder <= shutdownStopRange) {
-      // Trigger it when only shutdownStopRange remains on the _next_ billing
-      // cycle.
-      return remainder + (stats.interval - shutdownStartRange);
+    if (remainder <= minimumCycleSeconds) {
+      return remainder + (stats.interval - minimumCycleSeconds);
     }
 
-    // Remainder of this billing cycle falls within the range where we can
-    // immediately shutdown.
-    if (remainder <= shutdownStartRange) {
-      return 0;
-    }
-
-    // We are somewhere in our billing cycle before shutdownStartRange.
-    return remainder - shutdownStartRange;
+    // We are somewhere in the billing cycle but not close to the end...
+    return Math.max(remainder - minimumCycleSeconds, minimumCycleSeconds);
   },
 
   onIdle: co(function* () {
@@ -73,6 +78,11 @@ ShutdownManager.prototype = {
   }),
 
   observe: function (taskListener) {
+    if (!this.config.shutdown.enabled) {
+      this.config.log('shutdowns disabled');
+      return;
+    }
+
     this.taskListener = taskListener;
     this.taskListener.on('idle', this.onIdle);
     this.taskListener.on('working', this.onWorking);
