@@ -378,6 +378,40 @@ suite('PulseListener', function() {
     return Promise.all([published, result]);
   });
 
+  // Test listener.once
+  test('bind and listen  (using listener.once)', function() {
+    // Create listener
+    var listener = new taskcluster.PulseListener({
+      credentials:          credentials
+    });
+    listener.bind({
+      exchange: exchangePrefix + 'test-exchange',
+      routingKeyPattern: '#'
+    });
+
+    var result = new Promise(function(accept, reject) {
+      listener.once('message', function(message) {
+        assert(message.payload.text == "my message");
+        setTimeout(function() {
+          listener.close().then(accept, reject)
+        }, 500);
+      });
+      listener.once('error', function(err) {
+        reject(err);
+      });
+    });
+
+    var published = listener.resume().then(function() {
+      return _publisher.testExchange({
+        text:           "my message"
+      }, {
+        testId:         'test',
+        taskRoutingKey: 'hello.world'
+      });
+    });
+
+    return Promise.all([published, result]);
+  });
 
   // Test pause and resume
   test('pause/resume', function() {
