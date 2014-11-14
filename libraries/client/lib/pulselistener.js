@@ -354,7 +354,7 @@ PulseListener.prototype._handle = function(msg) {
   // Process handlers
   Promise.all(this.listeners('message').map(function(handler) {
     return Promise.resolve(null).then(function() {
-      return handler(message);
+      return handler.call(that, message);
     });
   })).then(function() {
     return that._channel.ack(msg);
