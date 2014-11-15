@@ -291,17 +291,20 @@ AMQPListener.prototype._handle = function(msg) {
         }
         routing[ref.name] = keys.shift();
       }
-      // then handle non-multi keys from the end
-      for(var j = routingKeyReference.length - 1; j > i; j--) {
-        var ref = routingKeyReference[j];
-        if (ref.multipleWords) {
-          break;
+      // If we reached a multi key
+      if (i < routingKeyReference.length) {
+        // then handle non-multi keys from the end
+        for(var j = routingKeyReference.length - 1; j > i; j--) {
+          var ref = routingKeyReference[j];
+          if (ref.multipleWords) {
+            break;
+          }
+          routing[ref.name] = keys.pop();
         }
-        routing[ref.name] = keys.pop();
+        // Check that we only have one multiWord routing key
+        assert(i == j, "i != j really shouldn't be the case");
+        routing[routingKeyReference[i].name] = keys.join('.');
       }
-      // Check that we only have one multiWord routing key
-      assert(i == j, "i != j really shouldn't be the case");
-      routing[routingKeyReference[i].name] = keys.join('.');
 
       // Provide parsed routing key
       message.routing = routing;
