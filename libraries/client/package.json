@@ -31,6 +31,7 @@
     "commander":                        "2.4.0",
     "cliff":                            "0.1.9",
     "browserify":                       "6.1.0",
-    "mocha-phantomjs":                  "3.5.0"
+    "mocha-phantomjs":                  "3.5.1",
+    "phantomjs":                        "^1.9.8"
   }
 }
