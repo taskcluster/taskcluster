@@ -86,6 +86,7 @@ suite('PulseListener', function() {
     assert(info.routingKeyPattern === 'my-constant.0.#.*.*');
   });
 
+
   // Bind and listen with listener
   test('bind and listen', function() {
     // Create listener
@@ -120,7 +121,6 @@ suite('PulseListener', function() {
 
     return Promise.all([published, result]);
   });
-
 
   // Bind and listen with listener (for CC)
   test('bind and listen (for CC)', function() {
@@ -372,6 +372,66 @@ suite('PulseListener', function() {
       }, {
         testId:         'test',
         taskRoutingKey: 'hello.world'
+      });
+    });
+
+    return Promise.all([published, result]);
+  });
+
+  // Test listener without multi-word
+  test('parse without multi-words', function() {
+    // Create listener
+    var listener = new taskcluster.PulseListener({
+      credentials:          credentials
+    });
+    listener.bind(mockEventsClient.simpleTestExchange({testId: 'test'}));
+
+    var result = new Promise(function(accept, reject) {
+      listener.once('message', function(message) {
+        assert(message.payload.text == "my message");
+        setTimeout(function() {
+          listener.close().then(accept, reject)
+        }, 500);
+      });
+      listener.once('error', function(err) {
+        reject(err);
+      });
+    });
+
+    var published = listener.resume().then(function() {
+      return _publisher.simpleTestExchange({
+        text:           "my message"
+      }, {
+        testId:         'test'
+      });
+    });
+
+    return Promise.all([published, result]);
+  });
+
+  // Test listener without any routing keys
+  test('parse without any routing keys', function() {
+    // Create listener
+    var listener = new taskcluster.PulseListener({
+      credentials:          credentials
+    });
+    listener.bind(mockEventsClient.reallySimpleTestExchange());
+
+    var result = new Promise(function(accept, reject) {
+      listener.once('message', function(message) {
+        assert(message.payload.text == "my message");
+        setTimeout(function() {
+          listener.close().then(accept, reject)
+        }, 500);
+      });
+      listener.once('error', function(err) {
+        reject(err);
+      });
+    });
+
+    var published = listener.resume().then(function() {
+      return _publisher.reallySimpleTestExchange({
+        text:           "my message"
       });
     });
 
