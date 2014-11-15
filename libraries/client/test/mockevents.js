@@ -49,6 +49,40 @@ exchanges.declare({
   CCBuilder:          function(msg, rk, cc) { return cc || []; }
 });
 
+exchanges.declare({
+  exchange:           'simple-test-exchange',
+  name:               'simpleTestExchange',
+  title:              "",
+  description:        "",
+  routingKey: [
+    {
+      name:           'testId',
+      summary:        "",
+      multipleWords:  false,
+      required:       true,
+      maxSize:        22
+    }
+  ],
+  schema:             'http://localhost:1203/test-schema.json#',
+  messageBuilder:     function(msg)         { return msg; },
+  routingKeyBuilder:  function(msg, rk)     { return rk; },
+  CCBuilder:          function(msg, rk, cc) { return cc || []; }
+});
+
+
+exchanges.declare({
+  exchange:           'really-simple-test-exchange',
+  name:               'reallySimpleTestExchange',
+  title:              "",
+  description:        "",
+  routingKey: [
+  ],
+  schema:             'http://localhost:1203/test-schema.json#',
+  messageBuilder:     function(msg)         { return msg; },
+  routingKeyBuilder:  function()            { return {}; },
+  CCBuilder:          function(msg, rk, cc) { return cc || []; }
+});
+
 // Create validator to validate schema
 var validator = new base.validator.Validator();
 validator.register({
