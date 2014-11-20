@@ -513,3 +513,17 @@ class TestAuthenticationMockServer(base.TCTest):
     with self.assertRaises(requests.exceptions.RequestException):
       r.raise_for_status()
     self.assertEqual(401, r.status_code)
+
+
+class ProductionTest(base.TCTest):
+
+  def setUp(self):
+    self.i = subject.Index()
+
+  def test_ping(self):
+    result = self.i.ping()
+    self.assertEqual(result['alive'], True)
+
+  def test_listnamespace(self):
+    result = self.i.listNamespaces('')
+    assert 'namespaces' in result
