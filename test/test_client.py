@@ -112,6 +112,18 @@ class TestProcessArgs(ClientTest):
     with self.assertRaises(exc.TaskclusterFailure):
       self.client._processArgs(['test', 'test2'], 'enough', test='enough')
 
+  def test_invalid_positional_not_string_empty_dict(self):
+    with self.assertRaises(exc.TaskclusterFailure):
+      self.client._processArgs(['a'], {})
+
+  def test_invalid_positional_not_string_non_empty_dict(self):
+    with self.assertRaises(exc.TaskclusterFailure):
+      self.client._processArgs(['a'], {'john': 'ford'})
+
+  def test_invalid_positional_not_string_int(self):
+    with self.assertRaises(exc.TaskclusterFailure):
+      self.client._processArgs(['a'], 4)
+
 
 class TestMakeSingleHttpRequest(ClientTest):
   def test_success_no_payload(self):

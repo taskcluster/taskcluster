@@ -278,6 +278,10 @@ class BaseClient(object):
 
     data = {}
 
+    for arg in list(args) + [kwargs[x] for x in kwargs if x != 'payload']:
+      if not isinstance(arg, basestring):
+        raise exceptions.TaskclusterFailure('Argument is not a string')
+
     # We know for sure that if we don't give enough arguments that the call
     # should fail.  We don't yet know if we should fail because of two many
     # arguments because we might be overwriting positional ones with kw ones
