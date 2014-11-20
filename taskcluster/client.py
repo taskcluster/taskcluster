@@ -402,7 +402,7 @@ class BaseClient(object):
     log.debug('Making a %s request to %s', method, url)
     opts = self.options
     cred = opts.get('credentials')
-    if cred and 'clientId' in cred and 'accessToken' in cred:
+    if cred and 'clientId' in cred and 'accessToken' in cred and cred['clientId'] and cred['accessToken']:
       hawkOpts = {
         'credentials': {
           'id': cred['clientId'],
