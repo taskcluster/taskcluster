@@ -4,6 +4,7 @@ import unittest
 import time
 realTimeTime = time.time
 import datetime
+import uuid
 
 import httmock
 import mock
@@ -140,7 +141,7 @@ class TestMakeSingleHttpRequest(ClientTest):
   def test_success_payload(self):
     @httmock.all_requests
     def response_content(url, request):
-      self.assertEqual(request.body, 'i=j')
+      self.assertEqual(request.body, '{"i": "j"}')
       return {'status_code': 200, 'content': {'k': 'l'}}
 
     with httmock.HTTMock(response_content):
@@ -418,8 +419,8 @@ class TestBuildSignedUrl(ClientTest):
 class TestSlugId(base.TCTest):
   def test_slug_id(self):
     with mock.patch('uuid.uuid4') as p:
-      p.return_value = '8ed7ba5e-380b-4c08-aa9c-1c86382afe23'
-      expected = 'OGVkN2JhNWUtMzgwYi00YzA4LWFhOWMtMWM4NjM4MmFmZTIz'
+      p.return_value = uuid.UUID('bed97923-7616-4ec8-85ed-4b695f67ac2e')
+      expected = 'vtl5I3YWTsiF7UtpX2esLg'
       actual = subject.slugId()
       self.assertEqual(expected, actual)
 
@@ -527,3 +528,13 @@ class ProductionTest(base.TCTest):
   def test_listnamespace(self):
     result = self.i.listNamespaces('')
     assert 'namespaces' in result
+
+  def test_insert_to_index(self):
+    payload = {
+      'taskId': 'a' * 22,
+      'rank': 1,
+      'data': {'test': 'data'},
+      'expires': '2015-09-09T19:19:15.879Z'
+    }
+    result = self.i.insertTask('testing', payload=payload)
+    self.assertEqual(payload['expires'], result['expires'])
