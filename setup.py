@@ -22,16 +22,17 @@ install_requires = [
 if __name__ == '__main__':
   setup(
     name='taskcluster',
-    version='0.0.5',
+    version='0.0.6',
     description='Python client for Taskcluster',
     author='John Ford',
     author_email='jhford@mozilla.com',
     url='taskcluster.github.io/taskcluster-client.py',
     packages=['taskcluster'],
     package_data={
-      'taskcluster.client': ['apis.json']
+      'taskcluster': ['**.json']
     },
     install_requires=install_requires,
     test_suite="nose.collector",
-    tests_require=tests_require
+    tests_require=tests_require,
+    zip_safe=False,
   )
