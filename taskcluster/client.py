@@ -259,6 +259,8 @@ class BaseClient(object):
       payload = _kwargs['payload']
       del _kwargs['payload']
       log.debug('We have a payload!')
+      if not payload:
+        raise exceptions.TaskclusterFailure('This method requires a payload kwarg')
 
     apiArgs = self._processArgs(entry['args'], *args, **_kwargs)
     route = self._subArgsInRoute(entry['route'], apiArgs)
@@ -275,6 +277,10 @@ class BaseClient(object):
     """
 
     data = {}
+
+    for arg in list(args) + [kwargs[x] for x in kwargs if x != 'payload']:
+      if not isinstance(arg, basestring):
+        raise exceptions.TaskclusterFailure('Argument is not a string')
 
     # We know for sure that if we don't give enough arguments that the call
     # should fail.  We don't yet know if we should fail because of two many
