@@ -319,6 +319,12 @@ class TestMakeApiCall(ClientTest):
 
       patcher.assert_called_once_with('get', 'no_args_with_input', expected_input)
 
+  def test_missing_input_raises(self):
+    with self.assertRaises(exc.TaskclusterFailure):
+      self.client.no_args_with_input({'malformed': 'payload'})
+    with self.assertRaises(exc.TaskclusterFailure):
+      self.client.no_args_with_input()
+
 
 # TODO: I should run the same things through the node client and compare the output
 class TestTopicExchange(ClientTest):

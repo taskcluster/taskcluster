@@ -259,6 +259,8 @@ class BaseClient(object):
       payload = _kwargs['payload']
       del _kwargs['payload']
       log.debug('We have a payload!')
+      if not payload:
+        raise exceptions.TaskclusterFailure('This method requires a payload kwarg')
 
     apiArgs = self._processArgs(entry['args'], *args, **_kwargs)
     route = self._subArgsInRoute(entry['route'], apiArgs)
