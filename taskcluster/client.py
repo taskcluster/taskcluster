@@ -57,7 +57,7 @@ def _b64UrlEncode(s):
 def slugId():
   """ Generate a taskcluster slugid.  This is a V4 UUID encoded into
   URL-Safe Base64 (RFC 4648, sec 5) with '=' padding removed """
-  return makeB64UrlSafe(_b64encode(str(uuid.uuid4())).replace('=', ''))
+  return makeB64UrlSafe(_b64encode(uuid.uuid4().bytes).replace('=', ''))
 
 
 def _dmpJson(obj, **kwargs):
