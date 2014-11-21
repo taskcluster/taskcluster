@@ -417,7 +417,7 @@ class BaseClient(object):
       log.info('Not using hawk!')
       headers = {}
     if payload:
-      payload = json.dumps(payload)
+      payload = _dmpJson(payload)
       headers['Content-Type'] = 'application/json'
 
     return requests.request(method.upper(), url, data=payload, headers=headers)

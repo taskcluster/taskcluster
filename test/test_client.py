@@ -47,6 +47,19 @@ class ClientTest(base.TCTest):
     self.addCleanup(sleepSleep.stop)
 
 
+class TestJsonSerialization(base.TCTest):
+  def test_spacing(self):
+    expected = '{"a":"b"}'
+    actual = subject._dmpJson({'a': 'b'})
+    self.assertEqual(expected, actual)
+
+  def test_date(self):
+    d = datetime.datetime.now()
+    expected = '{"a":"%s"}' % d.isoformat()
+    actual = subject._dmpJson({'a': d})
+    self.assertEqual(expected, actual)
+
+
 class TestSubArgsInRoute(ClientTest):
   def test_valid_no_subs(self):
     provided = '/no/args/here'
@@ -141,7 +154,7 @@ class TestMakeSingleHttpRequest(ClientTest):
   def test_success_payload(self):
     @httmock.all_requests
     def response_content(url, request):
-      self.assertEqual(request.body, '{"i": "j"}')
+      self.assertEqual(request.body, '{"i":"j"}')
       return {'status_code': 200, 'content': {'k': 'l'}}
 
     with httmock.HTTMock(response_content):
