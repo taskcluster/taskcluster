@@ -253,19 +253,15 @@ class BaseClient(object):
 
     # I forget if **ing a {} results in a new {} or a reference
     _kwargs = copy.deepcopy(kwargs)
+    _args = list(args)
 
     payload = None
 
     if 'input' in entry:
-      if 'payload' in _kwargs:
-        payload = _kwargs['payload']
-        del _kwargs['payload']
-      elif len(args) > 0:
-        payload = args.pop()
-      else:
-        raise exceptions.TaskclusterFailure('This method requires a payload kwarg')
+      if len(args) == len(entry['args']) + 1:
+        payload = _args.pop()
 
-    apiArgs = self._processArgs(entry['args'], *args, **_kwargs)
+    apiArgs = self._processArgs(entry['args'], *_args, **_kwargs)
     route = self._subArgsInRoute(entry['route'], apiArgs)
     log.debug('Route is: %s', route)
 
@@ -281,26 +277,47 @@ class BaseClient(object):
 
     data = {}
 
-    # For each required argument
-    for reqArg in reqArgs:
-      # Take argument from keyword arguments if given this way
-      if reqArg in kwargs:
-        data[reqArg] = kwargs[reqArg]
-      else:
-        # If not given as keyword argument, ensure that we have a positional
-        # argument ready
-        if len(args) == 0:
-          raise exceptions.TaskclusterFailure(
-            "API method requires argument for: %s" % reqArg
-          )
-        # Take the first positional argument
-        data[reqArg] = args.pop(0)
+    # These all need to be rendered down to a string, let's just check that
+    # they are up front and fail fast
+    for arg in list(args) + [x for x in kwargs]:
+      if not isinstance(arg, basestring):
+        raise exceptions.TaskclusterFailure('Argument is not a string')
 
-      # If argument found isn't a string, we complain
-      if not isinstance(data[reqArg], basestring):
-        raise exceptions.TaskclusterFailure(
-          "Argument for %s is not a string" % reqArg
-        )
+    # We know for sure that if we don't give enough arguments that the call
+    # should fail.  We don't yet know if we should fail because of two many
+    # arguments because we might be overwriting positional ones with kw ones
+    if len(reqArgs) > len(args) + len(kwargs):
+      raise exceptions.TaskclusterFailure('API Method was not given enough args')
+
+    # We also need to error out when we have more positional args than required
+    # because we'll need to go through the lists of provided and required args
+    # at the same time.  Not disqualifying early means we'll get IndexErrors if
+    # there are more positional arguments than required
+    if len(args) > len(reqArgs):
+      raise exceptions.TaskclusterFailure('API Method was called with too many positional args')
+
+    i = 0
+    for arg in args:
+      log.debug('Found a positional argument: %s', arg)
+      data[reqArgs[i]] = arg
+      i += 1
+
+    log.debug('After processing positional arguments, we have: %s', data)
+
+    data.update(kwargs)
+
+    log.debug('After keyword arguments, we have: %s', data)
+
+    if len(reqArgs) != len(data):
+      errMsg = 'API Method takes %d args, %d given' % (len(reqArgs), len(data))
+      log.error(errMsg)
+      raise exceptions.TaskclusterFailure(errMsg)
+
+    for reqArg in reqArgs:
+      if reqArg not in data:
+        errMsg = 'API Method requires a "%s" argument' % reqArg
+        log.error(errMsg)
+        raise exceptions.TaskclusterFailure(errMsg)
 
     return data
 
@@ -309,7 +326,16 @@ class BaseClient(object):
     {"taskId": "12345"}, return a string like "/task/12345/artifacts"
     """
 
+    if route.count('<') != route.count('>'):
+      raise exceptions.TaskclusterFailure('Mismatched arguments in route')
+
+    if route.count('<') != len(args):
+      raise exceptions.TaskclusterFailure('Incorrect number of arguments for route')
+
     for arg, val in args.iteritems():
+      toReplace = "<%s>" % arg
+      if toReplace not in route:
+        raise exceptions.TaskclusterFailure('Argument not found in route')
       route = route.replace("<%s>" % arg, val)
 
     return route.lstrip('/')
