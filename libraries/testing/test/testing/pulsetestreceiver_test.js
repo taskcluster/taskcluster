@@ -1,3 +1,5 @@
+"use strict";
+
 suite('testing.PulseTestReceiver', function() {
   var base          = require('../../');
   var assert        = require('assert');
