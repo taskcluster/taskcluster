@@ -660,6 +660,11 @@ var authenticate = function(nonceManager, clientLoader, options) {
         // payload validation and how we want to do it.
         //payload:      JSON.stringify(req.body),
 
+        // We found that clients often hit time skew bugs (particularly on OSX)
+        // since all our services require https we hardcode the allowed skew to
+        // a very high number (15 min) similar to AWS.
+        timestampSkewSec: 15 * 60,
+
         // Provide nonce manager
         nonceFunc:    nonceManager,
 
