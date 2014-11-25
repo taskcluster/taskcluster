@@ -52,6 +52,7 @@ dev-env: $(VENV)/bin/python
 
 .PHONY: clean
 clean:
+	rm -rf node-$(NODE_VER)-$(NODE_PLAT) node_modules
 	find . -name "*.py?" -exec rm {} +
 	rm -rf env-*
 
