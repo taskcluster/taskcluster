@@ -1,3 +1,5 @@
+"use strict";
+
 var express       = require('express');
 var debug         = require('debug')('base:api');
 var Promise       = require('promise');
