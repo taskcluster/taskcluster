@@ -54,7 +54,7 @@ var taskcluster   = require('taskcluster-client');
  * All internal state, ie. the names given to `listenFor` and `waitFor`
  * will be reset between all tests.
  */
-var PulseTestReceiver = function(credentials) {
+var PulseTestReceiver = function(credentials, mocha) {
   var that = this;
   this._connection        = new taskcluster.PulseConnection(credentials);
   this._listeners         = null;
@@ -63,22 +63,25 @@ var PulseTestReceiver = function(credentials) {
   // **Note**, the before(), beforeEach(9, afterEach() and after() functions
   // below are mocha hooks. Ie. they are called by mocha, that is also the
   // reason that `PulseTestReceiver` only works in the context of a mocha test.
+  if (!mocha) {
+    mocha = require('mocha');
+  }
 
   // Before all tests we ask the pulseConnection to connect, why not it offers
   // slightly better performance, and we want tests to run fast
-  before(function() {
+  mocha.before(function() {
     return that._connection.connect();
   });
 
   // Before each test we create list of listeners and mapping from "name" to
   // promised messages
-  beforeEach(function() {
+  mocha.beforeEach(function() {
     that._listeners         = [];
     that._promisedMessages  = {};
   });
 
   // After each test we clean-up all the listeners created
-  afterEach(function() {
+  mocha.afterEach(function() {
     // Because listener is created with a PulseConnection they only have an
     // AMQP channel each, and not a full TCP connection, hence, .close()
     // should be pretty fast too. Also unnecessary as they get clean-up when
@@ -95,7 +98,7 @@ var PulseTestReceiver = function(credentials) {
   // After all tests we close the PulseConnection, as we haven't named any of
   // the queues, they are all auto-delete queues and will be deleted if they
   // weren't cleaned up in `afterEach()`
-  after(function() {
+  mocha.after(function() {
     return that._connection.close().then(function() {
       that._connection = null;
     });
