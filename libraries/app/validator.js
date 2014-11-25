@@ -1,3 +1,5 @@
+"use strict";
+
 var debug       = require('debug')('base:validator');
 var jjv         = require('jjv');
 var fs          = require('fs');
