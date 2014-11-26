@@ -79,7 +79,8 @@ module.exports = {
             [
               "auth:credentials"
             ]
-          ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
         },
         {
           "type": "function",
@@ -97,7 +98,8 @@ module.exports = {
               "auth:credentials"
             ]
           ],
-          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#"
+          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
         },
         {
           "type": "function",
@@ -115,7 +117,8 @@ module.exports = {
               "auth:credentials"
             ]
           ],
-          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#"
+          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
         },
         {
           "type": "function",
@@ -148,7 +151,8 @@ module.exports = {
               "auth:reset-credentials",
               "auth:credentials"
             ]
-          ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
         },
         {
           "type": "function",
@@ -162,7 +166,8 @@ module.exports = {
             [
               "auth:client-clients"
             ]
-          ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/list-clients-response.json#"
         },
         {
           "type": "function",
@@ -22830,7 +22835,9 @@ function Response(req, options) {
   options = options || {};
   this.req = req;
   this.xhr = this.req.xhr;
-  this.text = this.xhr.responseText;
+  this.text = this.req.method !='HEAD' 
+     ? this.xhr.responseText 
+     : null;
   this.setStatusProperties(this.xhr.status);
   this.header = this.headers = parseHeader(this.xhr.getAllResponseHeaders());
   // getAllResponseHeaders sometimes falsely returns "" for CORS requests, but
@@ -22986,16 +22993,18 @@ function Request(method, url) {
   this.header = {};
   this._header = {};
   this.on('end', function(){
+    var err = null;
+    var res = null;
+
     try {
-      var res = new Response(self);
-      if ('HEAD' == method) res.text = null;
-      self.callback(null, res);
+      res = new Response(self); 
     } catch(e) {
-      var err = new Error('Parser is unable to parse the response');
+      err = new Error('Parser is unable to parse the response');
       err.parse = true;
       err.original = e;
-      self.callback(err);
     }
+
+    self.callback(err, res);
   });
 }
 
@@ -23342,6 +23351,7 @@ Request.prototype.send = function(data){
 
 Request.prototype.callback = function(err, res){
   var fn = this._callback;
+  this.clearTimeout();
   if (2 == fn.length) return fn(err, res);
   if (err) return this.emit('error', err);
   fn(res);
