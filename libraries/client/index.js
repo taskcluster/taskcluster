@@ -12,6 +12,9 @@ _.defaults(exports,
   require('./lib/weblistener')
 );
 
+// Export utils as taskcluster.utils...
+exports.utils = require('./lib/utils');
+
 // Provide a SockJS client implementation for the WebListener
 Object.defineProperty(exports.WebListener, 'SockJS', {
   enumerable: true,
