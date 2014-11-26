@@ -1,4 +1,3 @@
-PEP8_IGNORE=E111,E121
 PYTHON := python
 VENV := env-$(basename $(PYTHON))
 NODE_VER := v0.10.33
@@ -12,24 +11,9 @@ NPM_INST := npm install --prefix $(PWD)/$(NODE_NAME) -g
 
 .PHONY: test
 test: $(VENV)/bin/python $(NODE_BIN)
-	@# E111 -- I use two space indents, pep8 wants four
-	@# E121 -- PEP8 doesn't like how I write dicts
-
-	@# We want to make sure that no server is already running since
-	@# it might be left over from a previous test run
-	nc localhost 5555 -w 0 ; \
-	if [ $$? -ne 0 ] ; then exit 0 ; else exit 1 ; fi
-	PORT=5555 $(NODE_BIN) test/mockAuthServer.js &> server.log & \
-	serverpid=$$! ; \
-	$(VENV)/bin/flake8 --ignore=$(PEP8_IGNORE) --max-line-length=120 taskcluster test && \
-	$(VENV)/bin/python setup.py test && \
-	$(VENV)/bin/nosetests && \
-	status=$$? ; \
-	kill $$serverpid && true ; \
-	exit $$status
-	@# Note that this is outside of the shell above.  We only want to do it
-	@# if the above works flawlessly...
-	rm -f server.log
+	rm -rf *.egg
+	FLAKE8=$(VENV)/bin/flake8 PYTHON=$(VENV)/bin/python \
+	NODE_BIN=$(NODE_BIN) NOSE=$(VENV)/bin/nosetests ./test.sh
 
 JS_CLIENT_BRANCH=master
 APIS_JSON=$(PWD)/taskcluster/apis.json
@@ -43,7 +27,8 @@ update-api: $(NODE_BIN)
 	@python -mjson.tool $(APIS_JSON) > /dev/null || echo "apis.json cannot be parsed by python's JSON"
 
 $(VENV)/bin/python:
-	[ -d $(VENV) ] || $(PYTHON) -m virtualenv $(VENV)
+	[ -d $(VENV) ] || $(PYTHON) -m virtualenv $(VENV) || virtualenv $(VENV)
+	$(VENV)/bin/pip install setuptools
 	$(VENV)/bin/python devDep.py
 	$(VENV)/bin/python setup.py develop
 
@@ -52,6 +37,7 @@ dev-env: $(VENV)/bin/python
 
 .PHONY: clean
 clean:
+	rm -rf *.egg
 	find . -name "*.py?" -exec rm {} +
 	rm -rf env-*
 
