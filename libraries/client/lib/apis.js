@@ -58,7 +58,8 @@ module.exports = {
             [
               "auth:credentials"
             ]
-          ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
         },
         {
           "type": "function",
@@ -76,7 +77,8 @@ module.exports = {
               "auth:credentials"
             ]
           ],
-          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#"
+          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
         },
         {
           "type": "function",
@@ -94,7 +96,8 @@ module.exports = {
               "auth:credentials"
             ]
           ],
-          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#"
+          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
         },
         {
           "type": "function",
@@ -127,7 +130,8 @@ module.exports = {
               "auth:reset-credentials",
               "auth:credentials"
             ]
-          ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
         },
         {
           "type": "function",
@@ -141,7 +145,8 @@ module.exports = {
             [
               "auth:client-clients"
             ]
-          ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/list-clients-response.json#"
         },
         {
           "type": "function",

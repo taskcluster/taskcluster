@@ -145,12 +145,12 @@ var auth = new taskcluster.Auth(options);
 ```
  * `auth.scopes(clientId) : result`
  * `auth.getCredentials(clientId) : result`
- * `auth.client(clientId) : void`
- * `auth.createClient(clientId, payload) : void`
- * `auth.modifyClient(clientId, payload) : void`
+ * `auth.client(clientId) : result`
+ * `auth.createClient(clientId, payload) : result`
+ * `auth.modifyClient(clientId, payload) : result`
  * `auth.removeClient(clientId) : void`
- * `auth.resetCredentials(clientId) : void`
- * `auth.listClients() : void`
+ * `auth.resetCredentials(clientId) : result`
+ * `auth.listClients() : result`
  * `auth.ping() : void`
 
 ### Methods in `taskcluster.Queue`
