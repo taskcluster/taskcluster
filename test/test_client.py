@@ -76,54 +76,57 @@ class TestSubArgsInRoute(ClientTest):
 
 class TestProcessArgs(ClientTest):
   def test_no_args(self):
-    self.assertEqual({}, self.client._processArgs([]))
+    self.assertEqual({}, self.client._processArgs({'args': []}))
 
   def test_positional_args_only(self):
     expected = {'test': 'works', 'test2': 'still works'}
-    actual = self.client._processArgs(['test', 'test2'], 'works', 'still works')
+    entry = {'args': ['test', 'test2']}
+    actual = self.client._processArgs(entry, 'works', 'still works')
     self.assertEqual(expected, actual)
 
   def test_keyword_args_only(self):
     expected = {'test': 'works', 'test2': 'still works'}
-    actual = self.client._processArgs(['test', 'test2'], test2='still works', test='works')
+    entry = {'args': ['test', 'test2']}
+    actual = self.client._processArgs(entry, test2='still works', test='works')
     self.assertEqual(expected, actual)
 
   def test_keyword_overwrites_positional(self):
     expected = {'test': 'works'}
-    actual = self.client._processArgs(['test'], 'broken', test='works')
+    entry = {'args': ['test']}
+    actual = self.client._processArgs(entry, 'broken', test='works')
     self.assertEqual(expected, actual)
 
   def test_invalid_not_enough_args(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['test'])
+      self.client._processArgs({'args': ['test']})
 
   def test_invalid_too_many_positional_args(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['test'], 'enough', 'one too many')
+      self.client._processArgs({'args': ['test']}, 'enough', 'one too many')
 
   def test_invalid_too_many_keyword_args(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['test'], test='enough', test2='one too many')
+      self.client._processArgs({'args': ['test']}, test='enough', test2='one too many')
 
   def test_invalid_missing_arg_positional(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['test', 'test2'], 'enough')
+      self.client._processArgs({'args': ['test', 'test2']}, 'enough')
 
   def test_invalid_not_enough_args_because_of_overwriting(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['test', 'test2'], 'enough', test='enough')
+      self.client._processArgs({'args': ['test', 'test2']}, 'enough', test='enough')
 
   def test_invalid_positional_not_string_empty_dict(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['a'], {})
+      self.client._processArgs({'args': ['test']}, {})
 
   def test_invalid_positional_not_string_non_empty_dict(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['a'], {'john': 'ford'})
+      self.client._processArgs({'args': ['test']}, {'john': 'ford'})
 
   def test_invalid_positional_not_string_int(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['a'], 4)
+      self.client._processArgs({'args': ['test']}, 4)
 
 
 class TestMakeSingleHttpRequest(ClientTest):
@@ -306,20 +309,20 @@ class TestMakeApiCall(ClientTest):
     with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
       patcher.return_value = expected
 
-      actual = self.client.no_args_with_input()
+      actual = self.client.no_args_with_input({})
       self.assertEqual(expected, actual)
 
-      patcher.assert_called_once_with('get', 'no_args_with_input', None)
+      patcher.assert_called_once_with('get', 'no_args_with_input', {})
 
   def test_hits_two_args_with_input(self):
     expected = 'works'
     with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
       patcher.return_value = expected
 
-      actual = self.client.two_args_with_input('argone', arg1='argtwo')
+      actual = self.client.two_args_with_input('argone', {}, arg1='argtwo')
       self.assertEqual(expected, actual)
 
-      patcher.assert_called_once_with('get', 'two_args_with_input/argone/argtwo', None)
+      patcher.assert_called_once_with('get', 'two_args_with_input/argone/argtwo', {})
 
   def test_input_is_procesed(self):
     expected = 'works'
@@ -331,6 +334,16 @@ class TestMakeApiCall(ClientTest):
       self.assertEqual(expected, actual)
 
       patcher.assert_called_once_with('get', 'no_args_with_input', expected_input)
+
+  def test_mixed_args_kwargs(self):
+    expected = 'works'
+    with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
+      patcher.return_value = expected
+
+      actual = self.client.two_args_with_input('argone', {}, arg1='argtwo')
+      self.assertEqual(expected, actual)
+
+      patcher.assert_called_once_with('get', 'two_args_with_input/argone/argtwo', {})
 
   def test_missing_input_raises(self):
     with self.assertRaises(exc.TaskclusterFailure):
@@ -517,7 +530,7 @@ class ProductionTest(base.TCTest):
     self.assertEqual(result['alive'], True)
 
   def test_listnamespace(self):
-    result = self.i.listNamespaces('')
+    result = self.i.listNamespaces('', {})
     assert 'namespaces' in result
 
   def test_insert_to_index(self):

@@ -140,7 +140,7 @@ class BaseClient(object):
         entry = x
     if not entry:
       raise exceptions.TaskclusterFailure('Requested method "%s" not found in API Reference' % methodName)
-    apiArgs = self._processArgs(entry['args'], *args, **kwargs)
+    apiArgs = self._processArgs(entry, *args, **kwargs)
     route = self._subArgsInRoute(entry['route'], apiArgs)
     return self.options['baseUrl'] + '/' + route
 
@@ -213,23 +213,23 @@ class BaseClient(object):
     for a given API Reference entry"""
 
     payload = None
-
-    # I forget if **ing a {} results in a new {} or a reference
+    _args = args[:]
     _kwargs = copy.deepcopy(kwargs)
-    if 'input' in entry and 'payload' in _kwargs:
-      payload = _kwargs['payload']
-      del _kwargs['payload']
-      log.debug('We have a payload!')
-      if not payload:
-        raise exceptions.TaskclusterFailure('This method requires a payload kwarg')
 
-    apiArgs = self._processArgs(entry['args'], *args, **_kwargs)
+    if 'input' in entry:
+      if len(args) > 0:
+        payload = _args.pop()
+      else:
+        raise exceptions.TaskclusterFailure('Payload is required as last positional arg')
+
+    apiArgs = self._processArgs(entry, *_args, **_kwargs)
+
     route = self._subArgsInRoute(entry['route'], apiArgs)
     log.debug('Route is: %s', route)
 
     return self._makeHttpRequest(entry['method'], route, payload)
 
-  def _processArgs(self, reqArgs, *args, **kwargs):
+  def _processArgs(self, entry, *args, **kwargs):
     """ Take the list of required arguments, positional arguments
     and keyword arguments and return a dictionary which maps the
     value of the given arguments to the required parameters.
@@ -237,11 +237,14 @@ class BaseClient(object):
     Keyword arguments will overwrite positional arguments.
     """
 
+    reqArgs = entry['args']
     data = {}
 
-    for arg in list(args) + [kwargs[x] for x in kwargs if x != 'payload']:
+    # These all need to be rendered down to a string, let's just check that
+    # they are up front and fail fast
+    for arg in list(args) + [kwargs[x] for x in kwargs]:
       if not isinstance(arg, basestring):
-        raise exceptions.TaskclusterFailure('Argument is not a string')
+        raise exceptions.TaskclusterFailure('Argument %s is not a string' % arg)
 
     # We know for sure that if we don't give enough arguments that the call
     # should fail.  We don't yet know if we should fail because of two many
@@ -286,17 +289,12 @@ class BaseClient(object):
     {"taskId": "12345"}, return a string like "/task/12345/artifacts"
     """
 
-    if route.count('<') != route.count('>'):
-      raise exceptions.TaskclusterFailure('Mismatched arguments in route')
+    for arg, val in args.iteritems():
+      toReplace = "<%s>" % arg
+      if toReplace not in route:
+        raise exceptions.TaskclusterFailure('Argument not found in route')
+      route = route.replace("<%s>" % arg, val)
 
-    if route.count('<') != len(args):
-      raise exceptions.TaskclusterFailure('Incorrect number of arguments for route')
-
-    # TODO: Let's just pretend this is a good idea
-    try:
-      route = route.replace('<', '%(').replace('>', ')s') % args
-    except KeyError:
-      raise exceptions.TaskclusterFailure('Argument not found in route')
     return route.lstrip('/')
 
   def _makeHttpRequest(self, method, route, payload):

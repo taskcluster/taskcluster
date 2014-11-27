@@ -11,7 +11,6 @@ NPM_INST := npm install --prefix $(PWD)/$(NODE_NAME) -g
 
 .PHONY: test
 test: $(VENV)/bin/python $(NODE_BIN)
-	rm -rf *.egg
 	FLAKE8=$(VENV)/bin/flake8 PYTHON=$(VENV)/bin/python \
 	NODE_BIN=$(NODE_BIN) NOSE=$(VENV)/bin/nosetests ./test.sh
 
@@ -37,6 +36,7 @@ dev-env: $(VENV)/bin/python
 
 .PHONY: clean
 clean:
+	rm -rf node-$(NODE_VER)-$(NODE_PLAT) node_modules
 	rm -rf *.egg
 	find . -name "*.py?" -exec rm {} +
 	rm -rf env-*
