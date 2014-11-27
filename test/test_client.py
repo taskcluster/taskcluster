@@ -49,13 +49,13 @@ class ClientTest(base.TCTest):
 
 class TestSubArgsInRoute(ClientTest):
   def test_valid_no_subs(self):
-    provided = '/no/args/here'
+    provided = {'route': '/no/args/here', 'name': 'test'}
     expected = 'no/args/here'
     result = self.client._subArgsInRoute(provided, {})
     self.assertEqual(expected, result)
 
   def test_valid_one_sub(self):
-    provided = '/one/<argToSub>/here'
+    provided = {'route': '/one/<argToSub>/here', 'name': 'test'}
     expected = 'one/value/here'
     arguments = {'argToSub': 'value'}
     result = self.client._subArgsInRoute(provided, arguments)
@@ -63,70 +63,70 @@ class TestSubArgsInRoute(ClientTest):
 
   def test_invalid_one_sub(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._subArgsInRoute('/one/<argToSub>/here', {'unused': 'value'})
+      self.client._subArgsInRoute({'route': '/one/<argToSub>/here', 'name': 'test'}, {'unused': 'value'})
 
   def test_invalid_route_no_sub(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._subArgsInRoute('adjfjlaksdfjs', {'should': 'fail'})
+      self.client._subArgsInRoute({'route': 'askldjflkasdf', 'name': 'test'}, {'should': 'fail'})
 
   def test_invalid_route_no_arg(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._subArgsInRoute('adjfjlaksdfjs', {'should': 'fail'})
+      self.client._subArgsInRoute({'route': 'askldjflkasdf', 'name': 'test'}, {'should': 'fail'})
 
 
 class TestProcessArgs(ClientTest):
   def test_no_args(self):
-    self.assertEqual({}, self.client._processArgs({'args': []}))
+    self.assertEqual({}, self.client._processArgs({'args': [], 'name': 'test'}))
 
   def test_positional_args_only(self):
     expected = {'test': 'works', 'test2': 'still works'}
-    entry = {'args': ['test', 'test2']}
+    entry = {'args': ['test', 'test2'], 'name': 'test'}
     actual = self.client._processArgs(entry, 'works', 'still works')
     self.assertEqual(expected, actual)
 
   def test_keyword_args_only(self):
     expected = {'test': 'works', 'test2': 'still works'}
-    entry = {'args': ['test', 'test2']}
+    entry = {'args': ['test', 'test2'], 'name': 'test'}
     actual = self.client._processArgs(entry, test2='still works', test='works')
     self.assertEqual(expected, actual)
 
   def test_keyword_overwrites_positional(self):
     expected = {'test': 'works'}
-    entry = {'args': ['test']}
+    entry = {'args': ['test'], 'name': 'test'}
     actual = self.client._processArgs(entry, 'broken', test='works')
     self.assertEqual(expected, actual)
 
   def test_invalid_not_enough_args(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs({'args': ['test']})
+      self.client._processArgs({'args': ['test'], 'name': 'test'})
 
   def test_invalid_too_many_positional_args(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs({'args': ['test']}, 'enough', 'one too many')
+      self.client._processArgs({'args': ['test'], 'name': 'test'}, 'enough', 'one too many')
 
   def test_invalid_too_many_keyword_args(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs({'args': ['test']}, test='enough', test2='one too many')
+      self.client._processArgs({'args': ['test'], 'name': 'test'}, test='enough', test2='one too many')
 
   def test_invalid_missing_arg_positional(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs({'args': ['test', 'test2']}, 'enough')
+      self.client._processArgs({'args': ['test', 'test2'], 'name': 'test'}, 'enough')
 
   def test_invalid_not_enough_args_because_of_overwriting(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs({'args': ['test', 'test2']}, 'enough', test='enough')
+      self.client._processArgs({'args': ['test', 'test2'], 'name': 'test'}, 'enough', test='enough')
 
   def test_invalid_positional_not_string_empty_dict(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs({'args': ['test']}, {})
+      self.client._processArgs({'args': ['test'], 'name': 'test'}, {})
 
   def test_invalid_positional_not_string_non_empty_dict(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs({'args': ['test']}, {'john': 'ford'})
+      self.client._processArgs({'args': ['test'], 'name': 'test'}, {'john': 'ford'})
 
   def test_invalid_positional_not_string_int(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs({'args': ['test']}, 4)
+      self.client._processArgs({'args': ['test'], 'name': 'test'}, 4)
 
 
 class TestMakeSingleHttpRequest(ClientTest):
