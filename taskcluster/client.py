@@ -213,7 +213,7 @@ class BaseClient(object):
     for a given API Reference entry"""
 
     payload = None
-    _args = args[:]
+    _args = list(args)
     _kwargs = copy.deepcopy(kwargs)
 
     if 'input' in entry:
@@ -224,6 +224,7 @@ class BaseClient(object):
 
     apiArgs = self._processArgs(entry, *_args, **_kwargs)
     route = self._subArgsInRoute(entry, apiArgs)
+
     log.debug('Route is: %s', route)
 
     return self._makeHttpRequest(entry['method'], route, payload)
@@ -300,7 +301,7 @@ class BaseClient(object):
     for arg, val in args.iteritems():
       toReplace = "<%s>" % arg
       if toReplace not in route:
-        raise exceptions.TaskclusterFailure('Arg %s not found in route for %s' % (arg, entry['name']))
+        raise exceptions.TaskclusterFailure('Argument not found in route')
       route = route.replace("<%s>" % arg, val)
 
     return route.lstrip('/')

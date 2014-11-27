@@ -329,7 +329,7 @@ class TestMakeApiCall(ClientTest):
     with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
       patcher.return_value = expected
 
-      actual = self.client.no_args_with_input(payload=expected_input)
+      actual = self.client.no_args_with_input(expected_input)
       self.assertEqual(expected, actual)
 
       patcher.assert_called_once_with('get', 'no_args_with_input', expected_input)
@@ -557,5 +557,5 @@ class ProductionTest(base.TCTest):
       'data': {'test': 'data'},
       'expires': '2015-09-09T19:19:15.879Z'
     }
-    result = self.i.insertTask('testing', payload=payload)
+    result = self.i.insertTask('testing', payload)
     self.assertEqual(payload['expires'], result['expires'])
