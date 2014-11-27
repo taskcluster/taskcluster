@@ -180,7 +180,7 @@ class BaseClient(object):
     if not entry:
       raise exceptions.TaskclusterFailure('Requested method "%s" not found in API Reference' % methodName)
     apiArgs = self._processArgs(entry, *args, **kwargs)
-    route = self._subArgsInRoute(entry['route'], apiArgs)
+    route = self._subArgsInRoute(entry, apiArgs)
     return self.options['baseUrl'] + '/' + route
 
   def buildSignedUrl(self, methodName, *args, **kwargs):
@@ -264,7 +264,7 @@ class BaseClient(object):
         raise exceptions.TaskclusterFailure('Payload is required as last positional arg')
 
     apiArgs = self._processArgs(entry, *_args, **_kwargs)
-    route = self._subArgsInRoute(entry['route'], apiArgs)
+    route = self._subArgsInRoute(entry, apiArgs)
     log.debug('Route is: %s', route)
 
     return self._makeHttpRequest(entry['method'], route, payload)
@@ -284,20 +284,21 @@ class BaseClient(object):
     # they are up front and fail fast
     for arg in list(args) + [kwargs[x] for x in kwargs]:
       if not isinstance(arg, basestring):
-        raise exceptions.TaskclusterFailure('Argument %s is not a string' % arg)
+        raise exceptions.TaskclusterFailure('Arguments "%s" to %s is not a string' % (arg, entry['name']))
 
     # We know for sure that if we don't give enough arguments that the call
     # should fail.  We don't yet know if we should fail because of two many
     # arguments because we might be overwriting positional ones with kw ones
     if len(reqArgs) > len(args) + len(kwargs):
-      raise exceptions.TaskclusterFailure('API Method was not given enough args')
+      raise exceptions.TaskclusterFailure('%s takes %d args, only %d were given' % (
+                                          entry['name'], len(reqArgs), len(args) + len(kwargs)))
 
     # We also need to error out when we have more positional args than required
     # because we'll need to go through the lists of provided and required args
     # at the same time.  Not disqualifying early means we'll get IndexErrors if
     # there are more positional arguments than required
     if len(args) > len(reqArgs):
-      raise exceptions.TaskclusterFailure('API Method was called with too many positional args')
+      raise exceptions.TaskclusterFailure('%s called with too many positional args', entry['name'])
 
     i = 0
     for arg in args:
@@ -312,27 +313,32 @@ class BaseClient(object):
     log.debug('After keyword arguments, we have: %s', data)
 
     if len(reqArgs) != len(data):
-      errMsg = 'API Method takes %d args, %d given' % (len(reqArgs), len(data))
+      errMsg = '%s takes %s args, %s given' % (
+        entry['name'],
+        ','.join(reqArgs),
+        data.keys())
       log.error(errMsg)
       raise exceptions.TaskclusterFailure(errMsg)
 
     for reqArg in reqArgs:
       if reqArg not in data:
-        errMsg = 'API Method requires a "%s" argument' % reqArg
+        errMsg = '%s requires a "%s" argument which was not provided' % (entry['name'], reqArg)
         log.error(errMsg)
         raise exceptions.TaskclusterFailure(errMsg)
 
     return data
 
-  def _subArgsInRoute(self, route, args):
+  def _subArgsInRoute(self, entry, args):
     """ Given a route like "/task/<taskId>/artifacts" and a mapping like
     {"taskId": "12345"}, return a string like "/task/12345/artifacts"
     """
 
+    route = entry['route']
+
     for arg, val in args.iteritems():
       toReplace = "<%s>" % arg
       if toReplace not in route:
-        raise exceptions.TaskclusterFailure('Argument not found in route')
+        raise exceptions.TaskclusterFailure('Arg %s not found in route for %s' % (arg, entry['name']))
       route = route.replace("<%s>" % arg, val)
 
     return route.lstrip('/')
