@@ -179,7 +179,7 @@ class BaseClient(object):
         entry = x
     if not entry:
       raise exceptions.TaskclusterFailure('Requested method "%s" not found in API Reference' % methodName)
-    apiArgs = self._processArgs(entry['args'], *args, **kwargs)
+    apiArgs = self._processArgs(entry, *args, **kwargs)
     route = self._subArgsInRoute(entry['route'], apiArgs)
     return self.options['baseUrl'] + '/' + route
 
@@ -258,16 +258,18 @@ class BaseClient(object):
     payload = None
 
     if 'input' in entry:
-      if len(args) == len(entry['args']) + 1:
+      if len(args) > 0:
         payload = _args.pop()
+      else:
+        raise exceptions.TaskclusterFailure('Payload is required as last positional arg')
 
-    apiArgs = self._processArgs(entry['args'], *_args, **_kwargs)
+    apiArgs = self._processArgs(entry, *_args, **_kwargs)
     route = self._subArgsInRoute(entry['route'], apiArgs)
     log.debug('Route is: %s', route)
 
     return self._makeHttpRequest(entry['method'], route, payload)
 
-  def _processArgs(self, reqArgs, *args, **kwargs):
+  def _processArgs(self, entry, *args, **kwargs):
     """ Take the list of required arguments, positional arguments
     and keyword arguments and return a dictionary which maps the
     value of the given arguments to the required parameters.
@@ -275,13 +277,14 @@ class BaseClient(object):
     Keyword arguments will overwrite positional arguments.
     """
 
+    reqArgs = entry['args']
     data = {}
 
     # These all need to be rendered down to a string, let's just check that
     # they are up front and fail fast
-    for arg in list(args) + [x for x in kwargs]:
+    for arg in list(args) + [kwargs[x] for x in kwargs]:
       if not isinstance(arg, basestring):
-        raise exceptions.TaskclusterFailure('Argument is not a string')
+        raise exceptions.TaskclusterFailure('Argument %s is not a string' % arg)
 
     # We know for sure that if we don't give enough arguments that the call
     # should fail.  We don't yet know if we should fail because of two many
@@ -325,12 +328,6 @@ class BaseClient(object):
     """ Given a route like "/task/<taskId>/artifacts" and a mapping like
     {"taskId": "12345"}, return a string like "/task/12345/artifacts"
     """
-
-    if route.count('<') != route.count('>'):
-      raise exceptions.TaskclusterFailure('Mismatched arguments in route')
-
-    if route.count('<') != len(args):
-      raise exceptions.TaskclusterFailure('Incorrect number of arguments for route')
 
     for arg, val in args.iteritems():
       toReplace = "<%s>" % arg
