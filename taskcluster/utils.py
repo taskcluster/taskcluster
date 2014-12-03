@@ -6,7 +6,7 @@ r = re.compile('^(\s*(\d+)\s*d(ays?)?)?' +
                '(\s*(\d+)\s*h(ours?)?)?' +
                '(\s*(\d+)\s*m(in(utes?)?)?)?\s*$')
 
-def fromNow(offset = ""):
+def fromNow(offset):
   # Parse offset
   m = r.match(offset)
   if m is None:
