@@ -3,7 +3,8 @@
 import client
 reload(client)
 
-import util
-reload(util)
+import utils
+reload(utils)
 
 from client import *  # NOQA
+from utils import *  # NOQA
