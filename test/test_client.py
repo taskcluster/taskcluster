@@ -103,11 +103,10 @@ class TestProcessArgs(ClientTest):
     actual = self.client._processArgs(entry, test2='still works', test='works')
     self.assertEqual(expected, actual)
 
-  def test_keyword_overwrites_positional(self):
-    expected = {'test': 'works'}
+  def test_keyword_and_positional(self):
     entry = {'args': ['test'], 'name': 'test'}
-    actual = self.client._processArgs(entry, 'broken', test='works')
-    self.assertEqual(expected, actual)
+    with self.assertRaises(exc.TaskclusterFailure):
+      self.client._processArgs(entry, 'broken', test='works')
 
   def test_invalid_not_enough_args(self):
     with self.assertRaises(exc.TaskclusterFailure):
@@ -312,7 +311,7 @@ class TestMakeApiCall(ClientTest):
     with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
       patcher.return_value = expected
 
-      actual = self.client.two_args_no_input('argone', arg1='argtwo')
+      actual = self.client.two_args_no_input('argone', 'argtwo')
       self.assertEqual(expected, actual)
 
       patcher.assert_called_once_with('get', 'two_args_no_input/argone/argtwo', None)
@@ -332,7 +331,7 @@ class TestMakeApiCall(ClientTest):
     with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
       patcher.return_value = expected
 
-      actual = self.client.two_args_with_input('argone', {}, arg1='argtwo')
+      actual = self.client.two_args_with_input('argone', 'argtwo', {})
       self.assertEqual(expected, actual)
 
       patcher.assert_called_once_with('get', 'two_args_with_input/argone/argtwo', {})
@@ -348,15 +347,19 @@ class TestMakeApiCall(ClientTest):
 
       patcher.assert_called_once_with('get', 'no_args_with_input', expected_input)
 
-  def test_mixed_args_kwargs(self):
+  def test_kwargs(self):
     expected = 'works'
     with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
       patcher.return_value = expected
 
-      actual = self.client.two_args_with_input('argone', {}, arg1='argtwo')
+      actual = self.client.two_args_with_input({}, arg0='argone', arg1='argtwo')
       self.assertEqual(expected, actual)
 
       patcher.assert_called_once_with('get', 'two_args_with_input/argone/argtwo', {})
+
+  def test_mixing_kw_and_positional_fails(self):
+    with self.assertRaises(exc.TaskclusterFailure):
+      self.client.two_args_no_input('arg1', arg2='arg2')
 
   def test_missing_input_raises(self):
     with self.assertRaises(exc.TaskclusterFailure):
@@ -408,9 +411,14 @@ class TestTopicExchange(ClientTest):
 
 
 class TestBuildUrl(ClientTest):
-  def test_build_url(self):
+  def test_build_url_positional(self):
     expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1'
-    actual = self.client.buildUrl('two_args_no_input', 'arg0', arg1='arg1')
+    actual = self.client.buildUrl('two_args_no_input', 'arg0', 'arg1')
+    self.assertEqual(expected, actual)
+
+  def test_build_url_keyword(self):
+    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1'
+    actual = self.client.buildUrl('two_args_no_input', arg0='arg0', arg1='arg1')
     self.assertEqual(expected, actual)
 
   def test_fails_to_build_url_for_missing_method(self):
@@ -431,12 +439,21 @@ class TestBuildSignedUrl(ClientTest):
     timePatch.return_value = 1
     self.addCleanup(timePatch.stop)
 
-  def test_builds_surl(self):
+  def test_builds_surl_positional(self):
     expBewit = 'Y2xpZW50SWRcOTAxXENVUHFtY1lSeW5Ua' + \
                '3NBS1BDaTJLUm5palgwR3hpWjFRUE9rMF' + \
                'Viamc2U1U9XGUzMD0='
     expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=' + expBewit
-    actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', arg1='arg1')
+    actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', 'arg1')
+    self.assertEqual(expected, actual)
+
+
+  def test_builds_surl_keyword(self):
+    expBewit = 'Y2xpZW50SWRcOTAxXENVUHFtY1lSeW5Ua' + \
+               '3NBS1BDaTJLUm5palgwR3hpWjFRUE9rMF' + \
+               'Viamc2U1U9XGUzMD0='
+    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=' + expBewit
+    actual = self.client.buildSignedUrl('two_args_no_input', arg0='arg0', arg1='arg1')
     self.assertEqual(expected, actual)
 
 

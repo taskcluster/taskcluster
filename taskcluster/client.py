@@ -286,6 +286,9 @@ class BaseClient(object):
       if not isinstance(arg, basestring):
         raise exceptions.TaskclusterFailure('Arguments "%s" to %s is not a string' % (arg, entry['name']))
 
+    if len(args) > 0 and len(kwargs) > 0:
+      raise exceptions.TaskclusterFailure('Specify either positional or key word arguments')
+
     # We know for sure that if we don't give enough arguments that the call
     # should fail.  We don't yet know if we should fail because of two many
     # arguments because we might be overwriting positional ones with kw ones
