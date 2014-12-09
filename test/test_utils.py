@@ -1,6 +1,3 @@
-import types
-import socket
-import unittest
 import datetime
 import uuid
 
@@ -24,6 +21,7 @@ class UTC(datetime.tzinfo):
       return datetime.timedelta(0)
 
 utc = UTC()
+
 
 class StringDateTests(base.TCTest):
   def test_naive(self):
@@ -69,8 +67,9 @@ class DumpJsonTests(base.TCTest):
       minute=1,
       second=1
     )
-    expected = '{"date": "2000-01-01T01:01:01Z"}'
+    expected = '{"date":"2000-01-01T01:01:01Z"}'
     actual = subject.dumpJson({'date': dateObj})
+    self.assertEqual(expected, actual)
 
   def test_serializes_aware_date(self):
     dateObj = datetime.datetime(
@@ -82,8 +81,9 @@ class DumpJsonTests(base.TCTest):
       second=1,
       tzinfo=utc
     )
-    expected = '{"date": "2000-01-01T01:01:01Z"}'
+    expected = '{"date":"2000-01-01T01:01:01Z"}'
     actual = subject.dumpJson({'date': dateObj})
+    self.assertEqual(expected, actual)
 
 
 class TestBase64Utils(base.TCTest):
@@ -102,6 +102,7 @@ class TestBase64Utils(base.TCTest):
     expected = '+/'
     actual = subject.makeB64UrlUnsafe('-_')
     self.assertEqual(expected, actual)
+
 
 class TestSlugId(base.TCTest):
   def test_slug_id(self):

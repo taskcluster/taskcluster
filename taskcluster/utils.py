@@ -18,9 +18,9 @@ def fromNow(offset):
 
   # Offset datetime from utc
   date = datetime.datetime.utcnow() + datetime.timedelta(
-    days    = int(m.group(2) or 0),
-    hours   = int(m.group(5) or 0),
-    minutes = int(m.group(8) or 0)
+    days=int(m.group(2) or 0),
+    hours=int(m.group(5) or 0),
+    minutes=int(m.group(8) or 0)
   )
 
   return stringDate(date)
@@ -74,4 +74,4 @@ def encodeStringForB64Header(s):
 def slugId():
   """ Generate a taskcluster slugid.  This is a V4 UUID encoded into
   URL-Safe Base64 (RFC 4648, sec 5) with '=' padding removed """
-  return makeB64UrlSafe(encodeStringForB64Header(uuid.uuid4().bytes).replace('=', ''))  
+  return makeB64UrlSafe(encodeStringForB64Header(uuid.uuid4().bytes).replace('=', ''))

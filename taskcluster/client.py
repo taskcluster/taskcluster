@@ -9,10 +9,8 @@ try:
 except ImportError:
   import urllib.parse as urlparse
 import time
-import uuid
 import hashlib
 import hmac
-import base64
 import datetime
 import calendar
 
@@ -32,7 +30,6 @@ if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
 log.addHandler(logging.NullHandler())
 
 API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
-
 
 
 # Default configuration
