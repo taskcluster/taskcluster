@@ -47,19 +47,6 @@ class ClientTest(base.TCTest):
     self.addCleanup(sleepSleep.stop)
 
 
-class TestJsonSerialization(base.TCTest):
-  def test_spacing(self):
-    expected = '{"a":"b"}'
-    actual = subject._dmpJson({'a': 'b'})
-    self.assertEqual(expected, actual)
-
-  def test_date(self):
-    d = datetime.datetime.now()
-    expected = '{"a":"%s"}' % d.isoformat()
-    actual = subject._dmpJson({'a': d})
-    self.assertEqual(expected, actual)
-
-
 class TestSubArgsInRoute(ClientTest):
   def test_valid_no_subs(self):
     provided = {'route': '/no/args/here', 'name': 'test'}
@@ -453,17 +440,17 @@ class TestBuildSignedUrl(ClientTest):
                '3NBS1BDaTJLUm5palgwR3hpWjFRUE9rMF' + \
                'Viamc2U1U9XGUzMD0='
     expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=' + expBewit
-    actual = self.client.buildSignedUrl('two_args_no_input', arg0='arg0', arg1='arg1')
+    actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', 'arg1')
     self.assertEqual(expected, actual)
 
 
-class TestSlugId(base.TCTest):
-  def test_slug_id(self):
-    with mock.patch('uuid.uuid4') as p:
-      p.return_value = uuid.UUID('bed97923-7616-4ec8-85ed-4b695f67ac2e')
-      expected = 'vtl5I3YWTsiF7UtpX2esLg'
-      actual = subject.slugId()
-      self.assertEqual(expected, actual)
+  def test_builds_surl_keyword(self):
+    expBewit = 'Y2xpZW50SWRcOTAxXENVUHFtY1lSeW5Ua' + \
+               '3NBS1BDaTJLUm5palgwR3hpWjFRUE9rMF' + \
+               'Viamc2U1U9XGUzMD0='
+    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=' + expBewit
+    actual = self.client.buildSignedUrl('two_args_no_input', arg0='arg0', arg1='arg1')
+    self.assertEqual(expected, actual)
 
 
 class TestAuthenticationMockServer(base.TCTest):

@@ -22,6 +22,7 @@ import requests
 import hawk
 
 from . import exceptions
+from . import utils
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -32,46 +33,6 @@ log.addHandler(logging.NullHandler())
 
 API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
 
-
-def _b64encode(s):
-  """ HTTP Headers can't have new lines in them, let's  """
-  return base64.encodestring(s).strip().replace('\n', '')
-
-
-def makeB64UrlSafe(b64str):
-  """ Make a base64 string URL Safe """
-  # see RFC 4648, sec. 5
-  return b64str.replace('+', '-').replace('/', '_')
-
-
-def makeB64UrlUnsafe(b64str):
-  """ Make a base64 string URL Safe """
-  # see RFC 4648, sec. 5
-  return b64str.replace('-', '+').replace('_', '/')
-
-
-def _b64UrlEncode(s):
-  return makeB64UrlSafe(_b64encode(s))
-
-
-def slugId():
-  """ Generate a taskcluster slugid.  This is a V4 UUID encoded into
-  URL-Safe Base64 (RFC 4648, sec 5) with '=' padding removed """
-  return makeB64UrlSafe(_b64encode(uuid.uuid4().bytes).replace('=', ''))
-
-
-def _dmpJson(obj, **kwargs):
-  """ Match JS's JSON.stringify.  When using the default seperators,
-  base64 encoding JSON results in \n sequences in the output.  Hawk
-  barfs in your face if you have that in the text"""
-  def handleDateForJs(x):
-    if isinstance(x, datetime.datetime) or isinstance(x, datetime.date):
-      return x.isoformat()
-    else:
-      return x
-  d = json.dumps(obj, separators=(',', ':'), default=handleDateForJs, **kwargs)
-  assert '\n' not in d
-  return d
 
 
 # Default configuration
@@ -117,7 +78,7 @@ class BaseClient(object):
 
       # .encode('base64') inserts a newline, which hawk doesn't
       # like but doesn't strip itself
-      return makeB64UrlSafe(_b64encode(_dmpJson(ext)).strip())
+      return utils.makeB64UrlSafe(utils.encodeStringForB64Header(utils.dumpJson(ext)).strip())
     else:
       return {}
 
@@ -225,8 +186,8 @@ class BaseClient(object):
       _bewit = hawk.client.get_bewit(requestUrl, bewitOpts)
       decoded = _bewit.decode('base64')
       decodedParts = decoded.split('\\')
-      decodedParts[2] = makeB64UrlUnsafe(decodedParts[2])
-      return makeB64UrlSafe(_b64encode('\\'.join(decodedParts)))
+      decodedParts[2] = utils.makeB64UrlUnsafe(decodedParts[2])
+      return utils.makeB64UrlSafe(utils.encodeStringForB64Header('\\'.join(decodedParts)))
 
     bewit = genBewit()
     bewitDecoded = bewit.decode('base64')
@@ -251,11 +212,9 @@ class BaseClient(object):
     """ This function is used to dispatch calls to other functions
     for a given API Reference entry"""
 
-    # I forget if **ing a {} results in a new {} or a reference
-    _kwargs = copy.deepcopy(kwargs)
-    _args = list(args)
-
     payload = None
+    _args = list(args)
+    _kwargs = copy.deepcopy(kwargs)
 
     if 'input' in entry:
       if len(args) > 0:
@@ -425,7 +384,7 @@ class BaseClient(object):
       log.info('Not using hawk!')
       headers = {}
     if payload:
-      payload = _dmpJson(payload)
+      payload = utils.dumpJson(payload)
       headers['Content-Type'] = 'application/json'
 
     return requests.request(method.upper(), url, data=payload, headers=headers)
@@ -531,7 +490,7 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
     scopes=scopes,
     start=calendar.timegm(start.utctimetuple()),
     expiry=calendar.timegm(expiry.utctimetuple()),
-    seed=slugId() + slugId(),
+    seed=utils.slugId() + utils.slugId(),
   )
 
   sigStr = '\n'.join([
@@ -544,18 +503,18 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
 
   sig = hmac.new(accessToken, sigStr, hashlib.sha256).digest()
 
-  cert['signature'] = _b64encode(sig)
+  cert['signature'] = utils.encodeStringForB64Header(sig)
 
   newToken = hmac.new(accessToken, cert['seed'], hashlib.sha256).digest()
-  newToken = makeB64UrlSafe(_b64encode(newToken)).replace('=', '')
+  newToken = utils.makeB64UrlSafe(utils.encodeStringForB64Header(newToken)).replace('=', '')
 
   return {
     'clientId': clientId,
     'accessToken': newToken,
-    'certificate': _dmpJson(cert),
+    'certificate': utils.dumpJson(cert),
   }
 
-__all__ = ['createTemporaryCredentials', 'config', 'slugId', 'makeB64UrlSafe']
+__all__ = ['createTemporaryCredentials', 'config']
 # This has to be done after the Client class is declared
 for key, value in API_CONFIG.items():
   globals()[key] = createApiClient(key, value)
