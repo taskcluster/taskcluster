@@ -4,8 +4,7 @@ suite('Claim task', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
-  var helper      = require('./helper');
-  var subject     = helper.setup({title: "Claim task"});
+  var helper      = require('./helper')();
 
   // Create datetime for created and deadline as 3 days later
   var created = new Date();
@@ -37,37 +36,36 @@ suite('Claim task', function() {
 
   test("can claimTask", function() {
     var taskId = slugid.v4();
-    var gotMessage = subject.listenFor(subject.queueEvents.taskRunning({
-      taskId:   taskId
-    }));
 
     var firstTakenUntil = new Date();
 
     debug("### Start listening for task running message");
-    return gotMessage.ready.then(function() {
+    return helper.events.listenFor('running', helper.queueEvents.taskRunning({
+      taskId:   taskId
+    })).then(function() {
       debug("### Creating task");
-      return subject.queue.createTask(taskId, taskDef);
+      return helper.queue.createTask(taskId, taskDef);
     }).then(function() {
       // Reduce scopes available to test minimum set of scopes required
-      subject.scopes(
+      helper.scopes(
         'queue:claim-task',
         'assume:worker-type:my-provisioner/my-worker',
         'assume:worker-id:my-worker-group/my-worker'
       );
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
     }).then(function(result) {
       debug("### Waiting for task running message");
-      return gotMessage.message.then(function(message) {
+      return helper.events.waitFor('running').then(function(message) {
         assert(firstTakenUntil < new Date(result.takenUntil),
                "takenUntil must in the future");
         firstTakenUntil = new Date(result.takenUntil);
         assert(_.isEqual(result.status, message.payload.status),
                "Message and result should have the same status");
-        return subject.queue.status(taskId);
+        return helper.queue.status(taskId);
       }).then(function(result2) {
         assert(_.isEqual(result.status, result2.status),
                "Task status shouldn't have changed");
@@ -76,7 +74,7 @@ suite('Claim task', function() {
       return helper.sleep(1000);
     }).then(function() {
       // Again we talking about the first run, so runId must still be 0
-      return subject.queue.reclaimTask(taskId, 0);
+      return helper.queue.reclaimTask(taskId, 0);
     }).then(function(result) {
       assert(firstTakenUntil < new Date(result.takenUntil),
              "takenUntil must have been updated");
@@ -86,19 +84,19 @@ suite('Claim task', function() {
 
   test("claimTask is idempotent", function() {
     var taskId = slugid.v4();
-    return subject.queue.createTask(taskId, taskDef).then(function() {
+    return helper.queue.createTask(taskId, taskDef).then(function() {
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
     }).then(function() {
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
     }).then(function() {
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker2'
       }).then(function() {
@@ -115,15 +113,15 @@ suite('Claim task', function() {
     var created = new Date();
     var deadline = new Date();
     deadline.setDate(created.getDate() + 3);
-    return subject.queue.createTask(taskId, taskDef).then(function() {
+    return helper.queue.createTask(taskId, taskDef).then(function() {
       // Reduce scopes available to test minimum set of scopes required
-      subject.scopes(
+      helper.scopes(
         'queue:claim-task',
         'assume:worker-type:my-provisioner/my-worker',
         'assume:worker-id:my-worker-group/my-worker'
       );
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimWork('my-provisioner', 'my-worker', {
+      return helper.queue.claimWork('my-provisioner', 'my-worker', {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
@@ -134,14 +132,14 @@ suite('Claim task', function() {
 
   test("claimTask requires scopes", function() {
     var taskId = slugid.v4();
-    return subject.queue.createTask(taskId, taskDef).then(function() {
+    return helper.queue.createTask(taskId, taskDef).then(function() {
       // leave out a required scope
-      subject.scopes(
+      helper.scopes(
         'assume:worker-type:my-provisioner/my-worker',
         'assume:worker-id:my-worker-group/my-worker'
       );
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       }).then(function() {
@@ -151,12 +149,12 @@ suite('Claim task', function() {
       });
     }).then(function() {
       // leave out a required scope
-      subject.scopes(
+      helper.scopes(
         'queue:claim-task',
         'assume:worker-id:my-worker-group/my-worker'
       );
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       }).then(function() {
@@ -166,12 +164,12 @@ suite('Claim task', function() {
       });
     }).then(function() {
       // leave out a required scope
-      subject.scopes(
+      helper.scopes(
         'queue:claim-task',
         'assume:worker-type:my-provisioner/my-worker'
       );
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       }).then(function() {

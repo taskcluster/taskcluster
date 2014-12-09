@@ -1,0 +1,23 @@
+id:       http://schemas.taskcluster.net/queue/v1/task-exception-request.json#
+$schema:  http://json-schema.org/draft-04/schema#
+title:    Task Exception Request
+description: |
+  Request for a run of a task to be resolved with an exception
+type:     object
+properties:
+  reason:
+    enum:
+      - worker-shutdown
+      - malformed-payload
+    description: |
+      Reason that the task is resolved with an exception. This is a subset
+      of the values for `resolvedReason` given in the task status structure.
+      Please, report `worker-shutdown` if the run failed because the worker
+      had to shutdown (spot node disappearing).
+      And report `malformed-payload` if the `task.payload` doesn't match the
+      schema for the worker payload, or referenced dependencies doesn't exists.
+      In either case, you should still log the error to a log file under the
+      specific run.
+additionalProperties:   false
+required:
+  - reason

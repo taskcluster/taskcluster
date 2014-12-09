@@ -818,8 +818,11 @@ api.declare({
   route:      '/task/:taskId/runs/:runId/completed',
   name:       'reportCompleted',
   scopes: [
-    [
+    [ //TODO: Remove the report-task-completed, and require queue:resolve-task
       'queue:report-task-completed',
+      'assume:worker-id:<workerGroup>/<workerId>'
+    ], [
+      'queue:resolve-task',
       'assume:worker-id:<workerGroup>/<workerId>'
     ]
   ],
@@ -828,7 +831,10 @@ api.declare({
   output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
   title:      "Report Run Completed",
   description: [
-    "Report a run completed, resolving the run as `completed`."
+    "Report a task completed, resolving the run as `completed`.",
+    "",
+    "For legacy, reasons the `success` parameter is accepted. This will be",
+    "removed in the future."
   ].join('\n')
 }, function(req, res) {
   // Validate parameters
@@ -840,7 +846,7 @@ api.declare({
 
   var taskId        = req.params.taskId;
   var runId         = parseInt(req.params.runId);
-  var success       = req.body.success;
+  var targetState   = req.body.success ? 'completed' : 'failed';
 
   return ctx.Task.load(taskId).then(function(task) {
     // if no task is found, we return 404
@@ -861,22 +867,206 @@ api.declare({
       return;
     }
 
-    // Report task run as completed
-    return ctx.Task.completeTask(taskId, runId, {
-      success:    success
-    }).then(function(result) {
+    // Resolve task run
+    return ctx.Task.resolveTask(
+      taskId,
+      runId,
+      targetState,
+      targetState
+    ).then(function(result) {
       // Return the "error" message if we have one
       if(!(result instanceof ctx.Task)) {
-        return res.status(409).json(result.code, {
+        return res.status(result.code).json({
           message:      result.message
         });
       }
 
-      // Publish a completed message
-      return ctx.publisher.taskCompleted({
+
+      // Publish message
+      var published = null;
+      if (targetState === 'completed') {
+        published = ctx.publisher.taskCompleted({
+          status:       result.status(),
+          runId:        runId,
+          workerGroup:  workerGroup,
+          workerId:     workerId
+        }, task.routes);
+      } else {
+        published = ctx.publisher.taskFailed({
+          status:       result.status(),
+          runId:        runId,
+          workerGroup:  workerGroup,
+          workerId:     workerId
+        }, task.routes);
+      }
+
+      return published.then(function() {
+        return res.reply({
+          status:   result.status()
+        });
+      });
+    });
+  });
+});
+
+
+/** Report task failed */
+api.declare({
+  method:     'post',
+  route:      '/task/:taskId/runs/:runId/failed',
+  name:       'reportFailed',
+  scopes: [
+    [
+      'queue:resolve-task',
+      'assume:worker-id:<workerGroup>/<workerId>'
+    ]
+  ],
+  deferAuth:  true,
+  input:      undefined,  // No input at this point
+  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  title:      "Report Run Failed",
+  description: [
+    "Report a run failed, resolving the run as `failed`. Use this to resolve",
+    "a run that failed because the task specific code behaved unexpectedly.",
+    "For example the task exited non-zero, or didn't produce expected output.",
+    "",
+    "Don't use this if the task couldn't be run because if malformed payload,",
+    "or other unexpected condition. In these cases we have a task exception,",
+    "which should be reported with `reportException`."
+  ].join('\n')
+}, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
+  var ctx = this;
+
+  var taskId        = req.params.taskId;
+  var runId         = parseInt(req.params.runId);
+
+  return ctx.Task.load(taskId).then(function(task) {
+    // if no task is found, we return 404
+    if (!task || !task.runs[runId]) {
+      return res.status(404).json({
+        message:  "Task not found or already resolved"
+      });
+    }
+
+    var workerGroup = task.runs[runId].workerGroup;
+    var workerId    = task.runs[runId].workerId;
+
+    // Authenticate request by providing parameters
+    if(!req.satisfies({
+      workerGroup:  workerGroup,
+      workerId:     workerId
+    })) {
+      return;
+    }
+
+    // Resolve task run
+    return ctx.Task.resolveTask(
+      taskId,
+      runId,
+      'failed',
+      'failed'
+    ).then(function(result) {
+      // Return the "error" message if we have one
+      if(!(result instanceof ctx.Task)) {
+        return res.status(result.code).json({
+          message:      result.message
+        });
+      }
+
+
+      // Publish message
+      return ctx.publisher.taskFailed({
         status:       result.status(),
         runId:        runId,
-        success:      success,
+        workerGroup:  workerGroup,
+        workerId:     workerId
+      }, task.routes).then(function() {
+        return res.reply({
+          status:   result.status()
+        });
+      });
+    });
+  });
+});
+
+/** Report task exception */
+api.declare({
+  method:     'post',
+  route:      '/task/:taskId/runs/:runId/exception',
+  name:       'reportException',
+  scopes: [
+    [
+      'queue:resolve-task',
+      'assume:worker-id:<workerGroup>/<workerId>'
+    ]
+  ],
+  deferAuth:  true,
+  input:      SCHEMA_PREFIX_CONST + 'task-exception-request.json#',
+  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  title:      "Report Run Completed",
+  description: [
+    "Resolve a run as _exception_. Generally, you will want to report tasks as",
+    "failed instead of exception. But if the payload is malformed, or",
+    "dependencies referenced does not exists you should also report exception.",
+    "However, do not report exception if an external resources is unavailable",
+    "because of network failure, etc. Only if you can validate that the",
+    "resource does not exist."
+  ].join('\n')
+}, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
+  var ctx = this;
+
+  var taskId        = req.params.taskId;
+  var runId         = parseInt(req.params.runId);
+  var reason        = req.body.reason;
+
+  return ctx.Task.load(taskId).then(function(task) {
+    // if no task is found, we return 404
+    if (!task || !task.runs[runId]) {
+      return res.status(404).json({
+        message:  "Task not found or already resolved"
+      });
+    }
+
+    var workerGroup = task.runs[runId].workerGroup;
+    var workerId    = task.runs[runId].workerId;
+
+    // Authenticate request by providing parameters
+    if(!req.satisfies({
+      workerGroup:  workerGroup,
+      workerId:     workerId
+    })) {
+      return;
+    }
+
+    // Resolve task run
+    return ctx.Task.resolveTask(
+      taskId,
+      runId,
+      'exception',
+      reason
+    ).then(function(result) {
+      // Return the "error" message if we have one
+      if(!(result instanceof ctx.Task)) {
+        return res.status(result.code).json({
+          message:      result.message
+        });
+      }
+
+
+      // Publish message
+      return ctx.publisher.taskException({
+        status:       result.status(),
+        runId:        runId,
         workerGroup:  workerGroup,
         workerId:     workerId
       }, task.routes).then(function() {

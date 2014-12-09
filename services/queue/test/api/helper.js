@@ -7,6 +7,7 @@ var dropdb      = require('../../bin/dropdb');
 var v1          = require('../../routes/api/v1');
 var exchanges   = require('../../queue/exchanges');
 var taskcluster = require('taskcluster-client');
+var mocha       = require('mocha');
 
 // Some default clients for the mockAuthServer
 var defaultClients = [
@@ -23,32 +24,25 @@ var defaultClients = [
   }
 ];
 
-/** Return a promise that sleeps for `delay` ms before resolving */
-exports.sleep = function(delay) {
-  new Promise(function(accept) {
-    setTimeout(accept, delay);
-  });
-}
+var defaultProfile = 'test';
 
-/** Setup testing */
-exports.setup = function(options) {
-  // Provide default configuration
-  options = _.defaults(options || {}, {
-    title:      'untitled test',
-    profile:    'test',
-    clients:    []
-  });
+module.exports = function(options) {
+  options = options || {};
 
-  // Add clients
-  options.clients = (options.clients || []).concat(defaultClients);
+  // Create helper
+  var helper = {};
 
-  // Create subject to be tested by test
-  var subject = {};
+  // Return a promise that sleeps for `delay` ms before resolving
+  helper.sleep = function(delay) {
+    new Promise(function(accept) {
+      setTimeout(accept, delay);
+    });
+  };
 
   // Load configuration
-  var cfg = subject.cfg = base.config({
+  var cfg = helper.cfg = base.config({
     defaults:     require('../../config/defaults'),
-    profile:      require('../../config/' + options.profile),
+    profile:      require('../../config/' + defaultProfile),
     envs: [
       'aws_accessKeyId',
       'aws_secretAccessKey',
@@ -64,15 +58,17 @@ exports.setup = function(options) {
   if (!cfg.get('aws:secretAccessKey') ||
       !cfg.get('azure:accountKey') ||
       !cfg.get('pulse:password')) {
-    console.log("Skip tests for " + options.title +
-                " due to missing credentials!");
+    console.log("Skip tests due to missing credentials!");
     return;
   }
+
+  // Configure PulseTestReceiver
+  helper.events = new base.testing.PulseTestReceiver(cfg.get('pulse'), mocha);
 
   // Configure server
   var server = new base.testing.LocalApp({
     command:      path.join(__dirname, '..', '..', 'bin', 'server.js'),
-    args:         [options.profile],
+    args:         [defaultProfile],
     name:         'server.js',
     baseUrlPath:  '/v1'
   });
@@ -80,49 +76,21 @@ exports.setup = function(options) {
   // Configure reaper
   var reaper = new base.testing.LocalApp({
     command:      path.join(__dirname, '..', '..', 'bin', 'reaper.js'),
-    args:         [options.profile],
+    args:         [defaultProfile],
     name:         'reaper.js'
   });
 
   // Hold reference to mockAuthServer
   var mockAuthServer = null;
 
-  // Hold reference to all listeners created with `subject.listenFor`
-  var listeners = [];
-
   // Setup server
   setup(function() {
-    // Utility function to listen for a message
-    // Return an object with two properties/promises:
-    // {
-    //   ready:   Promise,  // Resolved when we've started to listen
-    //   message: Promise   // Resolved when we've received a message
-    // }
-    subject.listenFor = function(binding) {
-      // Create listener
-      var listener = new taskcluster.PulseListener({
-        credentials:          cfg.get('pulse')
-      });
-      // Track it, so we can close it in teardown()
-      listeners.push(listener);
-      // Bind to binding
-      listener.bind(binding);
-      // Wait for a message
-      var gotMessage = new Promise(function(accept, reject) {
-        listener.on('message', accept);
-        listener.on('error', reject);
-      });
-      return {
-        ready:      listener.resume(),
-        message:    gotMessage
-      };
-    };
     // Drop database
-    return dropdb(options.profile).then(function() {
+    return dropdb(defaultProfile).then(function() {
       // Create mock authentication server
       return base.testing.createMockAuthServer({
         port:     60007, // This is hardcoded into config/test.js
-        clients:  options.clients
+        clients:  defaultClients
       }).then(function(mockAuthServer_) {
         mockAuthServer = mockAuthServer_;
       });
@@ -136,13 +104,13 @@ exports.setup = function(options) {
       // Launch server
       var serverLaunched = server.launch().then(function(baseUrl) {
         // Create client for working with API
-        subject.baseUrl = baseUrl;
+        helper.baseUrl = baseUrl;
         var reference = v1.reference({baseUrl: baseUrl});
-        subject.Queue = taskcluster.createClient(reference);
+        helper.Queue = taskcluster.createClient(reference);
         // Utility to create an Queue instance with limited scopes
-        subject.scopes = function() {
+        helper.scopes = function() {
           var scopes = Array.prototype.slice.call(arguments);
-          subject.queue = new subject.Queue({
+          helper.queue = new helper.Queue({
             baseUrl:          baseUrl,
             credentials: {
               clientId:       'test-client',
@@ -151,14 +119,14 @@ exports.setup = function(options) {
             authorizedScopes: (scopes.length > 0 ? scopes : undefined)
           });
         };
-        subject.scopes();
+        helper.scopes();
         // Create client for binding to reference
         var exchangeReference = exchanges.reference({
           exchangePrefix:   cfg.get('queue:exchangePrefix'),
           credentials:      cfg.get('pulse')
         });
-        subject.QueueEvents = taskcluster.createClient(exchangeReference);
-        subject.queueEvents = new subject.QueueEvents();
+        helper.QueueEvents = taskcluster.createClient(exchangeReference);
+        helper.queueEvents = new helper.QueueEvents();
       });
 
       return Promise.all([serverLaunched, reaperLaunched]);
@@ -176,14 +144,8 @@ exports.setup = function(options) {
     var serverDead = server.terminate();
     return Promise.all([reaperDead, serverDead]).then(function() {
       return mockAuthServer.terminate();
-    }).then(function() {
-      return Promise.all(listeners.map(function(listener) {
-        return listener.close();
-      })).then(function() {
-        listeners = [];
-      });
     });
   });
 
-  return subject;
+  return helper;
 };
