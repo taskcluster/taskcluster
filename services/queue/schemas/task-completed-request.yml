@@ -1,0 +1,15 @@
+id:       http://schemas.taskcluster.net/queue/v1/task-completed-request.json#
+$schema:  http://json-schema.org/draft-04/schema#
+title:    Task Completed Request
+description: |
+  Request for a task to be declared completed
+type:     object
+properties:
+  success:
+    type:         boolean
+    default:      true
+    description: |
+      True, if task is completed, and false if task is failed. This property
+      is optional and only present for backwards compatibility. It will be
+      removed in the future.
+additionalProperties:   false

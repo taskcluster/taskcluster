@@ -194,7 +194,7 @@ suite('queue/task', function() {
       assert(tasks[0], "Expected 1 task");
       assert(tasks[0].taskId == taskId, "Expected taskId");
       assert(tasks[0].runs.length == 2, "Expected two runs");
-      assert(tasks[0].runs[0].state == 'failed',  "1st run not failed");
+      assert(tasks[0].runs[0].state == 'exception',  "1st run not failed");
       assert(tasks[0].runs[1].state == 'pending', "2nd run not pending");
     }).then(function() {
       return Task.expireClaimsWithRetries();
@@ -244,7 +244,7 @@ suite('queue/task', function() {
       assert(tasks[0], "Expected 1 task");
       assert(tasks[0].taskId == taskId, "Expected taskId");
       assert(tasks[0].runs.length == 1, "Expected one run");
-      assert(tasks[0].runs[0].state == 'failed',  "1st run not failed");
+      assert(tasks[0].runs[0].state == 'exception',  "1st run not exception");
     }).then(function() {
       return Task.expireClaimsWithoutRetries();
     }).then(function(tasks) {
@@ -299,7 +299,7 @@ suite('queue/task', function() {
       assert(tasks[0], "Expected 1 task");
       assert(tasks[0].taskId == taskId, "Expected taskId");
       assert(tasks[0].runs.length == 1, "Expected one run");
-      assert(tasks[0].runs[0].state == 'failed',  "1st run not failed");
+      assert(tasks[0].runs[0].state == 'exception',  "1st run not exception");
     }).then(function() {
       return Task.expireByDeadline();
     }).then(function(tasks) {
@@ -334,7 +334,6 @@ suite('queue/task', function() {
           state:          'completed',
           reasonCreated:  'new-task',
           reaonReasolve:  'completed',
-          success:        true,
           workerGroup:    'mygroup',
           workerId:       'myid',
           scheduled:      new Date(),
