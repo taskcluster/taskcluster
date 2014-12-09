@@ -416,15 +416,6 @@ class TestBuildSignedUrl(ClientTest):
     self.assertEqual(expected, actual)
 
 
-class TestSlugId(base.TCTest):
-  def test_slug_id(self):
-    with mock.patch('uuid.uuid4') as p:
-      p.return_value = uuid.UUID('bed97923-7616-4ec8-85ed-4b695f67ac2e')
-      expected = 'vtl5I3YWTsiF7UtpX2esLg'
-      actual = subject.slugId()
-      self.assertEqual(expected, actual)
-
-
 class TestAuthenticationMockServer(base.TCTest):
   def setUp(self):
     self.port = 5555
