@@ -260,7 +260,8 @@ exchanges.declare({
   name:               'taskCompleted',
   title:              "Task Completed Messages",
   description: [
-    "When a task is completed by a worker a message is posted this exchange.",
+    "When a task is successfully completed by a worker a message is posted",
+    "this exchange.",
     "This message is routed using the `runId`, `workerGroup` and `workerId`",
     "that completed the task. But information about additional runs is also",
     "available from the task status structure."
@@ -279,13 +280,9 @@ exchanges.declare({
   name:               'taskFailed',
   title:              "Task Failed Messages",
   description: [
-    "Whenever a task is concluded to be failed a message is posted to this",
-    "exchange. This happens if the task isn't completed before its `deadlìne`,",
-    "all retries failed (i.e. workers stopped responding) or the task was",
-    "canceled by another entity.",
-    "",
-    "The specific _reason_ is evident from that task status structure, refer",
-    "to the `reasonResolved` property for the last run."
+    "When a task ran, but failed to complete successfully a message is posted",
+    "to this exchange. This is same as worker ran task-specific code, but the",
+    "task specific code exited non-zero.",
   ].join('\n'),
   routingKey:         buildCommonRoutingKey(),
   schema:             SCHEMA_PREFIX_CONST + 'task-failed-message.json#',
@@ -293,3 +290,26 @@ exchanges.declare({
   routingKeyBuilder:  commonRoutingKeyBuilder,
   CCBuilder:          commonCCBuilder
 });
+
+
+/** Task exception exchange */
+exchanges.declare({
+  exchange:           'task-exception',
+  name:               'taskException',
+  title:              "Task Exception Messages",
+  description: [
+    "Whenever TaskCluster fails to run a message is posted to this exchange.",
+    "This happens if the task isn't completed before its `deadlìne`,",
+    "all retries failed (i.e. workers stopped responding), the task was",
+    "canceled by another entity, or the task carried a malformed payload.",
+    "",
+    "The specific _reason_ is evident from that task status structure, refer",
+    "to the `reasonResolved` property for the last run."
+  ].join('\n'),
+  routingKey:         buildCommonRoutingKey(),
+  schema:             SCHEMA_PREFIX_CONST + 'task-exception-message.json#',
+  messageBuilder:     commonMessageBuilder,
+  routingKeyBuilder:  commonRoutingKeyBuilder,
+  CCBuilder:          commonCCBuilder
+});
+

@@ -107,7 +107,7 @@ Reaper.prototype.reap = function() {
       // Add run information from last run, if one exists
       var lastRun = _.last(task.runs);
       if (lastRun) {
-        message.runId         = lastRun.runId;
+        message.runId = lastRun.runId;
         if (lastRun.workerGroup && lastRun.workerId) {
           message.workerGroup   = lastRun.workerGroup;
           message.workerId      = lastRun.workerId;
@@ -115,7 +115,7 @@ Reaper.prototype.reap = function() {
       }
 
       // Publish message
-      return that._publisher.taskFailed(message, task.routes);
+      return that._publisher.taskException(message, task.routes);
     }));
   });
 
@@ -141,7 +141,7 @@ Reaper.prototype.reap = function() {
       }
 
       // Publish message
-      return that._publisher.taskFailed(message, task.routes);
+      return that._publisher.taskException(message, task.routes);
     }));
   });
 

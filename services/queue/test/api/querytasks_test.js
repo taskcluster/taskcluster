@@ -4,8 +4,7 @@ suite('Query tasks', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
-  var helper      = require('./helper');
-  var subject     = helper.setup({title: "Query task"});
+  var helper      = require('./helper')();
 
   // Create datetime for created and deadline as 3 days later
   var created = new Date();
@@ -38,10 +37,10 @@ suite('Query tasks', function() {
   test("getPendingTasks", function() {
     var taskId1 = slugid.v4();
     var taskId2 = slugid.v4();
-    return subject.queue.createTask(taskId1, taskDef).then(function() {
-      return subject.queue.createTask(taskId2, taskDef);
+    return helper.queue.createTask(taskId1, taskDef).then(function() {
+      return helper.queue.createTask(taskId2, taskDef);
     }).then(function() {
-      return subject.queue.getPendingTasks('my-provisioner');
+      return helper.queue.getPendingTasks('my-provisioner');
     }).then(function(result) {
       assert(result.tasks.length == 2, "Expected two tasks");
     });
