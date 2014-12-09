@@ -73,16 +73,4 @@ module.exports = {
 
   // Slugid pattern, for when-ever that is useful
   "slugid-pattern":  "^[a-zA-Z0-9-_]{22}$",
-
-  // Task success
-  "success": {
-    "title":        "Success",
-    "description":  "Boolean, indicating successful completion, `false` indicates " +
-                    "that the task was completed by the given run, but the " +
-                    "completion was unsuccessful. This differs from task failures " +
-                    "as the completion was reported to the queue, and thus, the " +
-                    "task was unsuccessful for task-specific reasons, not " +
-                    "infrastructure failures",
-    "type":         "boolean"
-  }
 };

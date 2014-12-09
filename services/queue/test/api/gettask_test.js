@@ -4,8 +4,7 @@ suite('Get task', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
-  var helper      = require('./helper');
-  var subject     = helper.setup({title: "get task"});
+  var helper      = require('./helper')();
 
   // Create datetime for created and deadline as 3 days later
   var created = new Date();
@@ -38,8 +37,8 @@ suite('Get task', function() {
   test("getTask", function() {
     var taskId = slugid.v4();
 
-    return subject.queue.createTask(taskId, taskDef).then(function(result) {
-      return subject.queue.getTask(taskId);
+    return helper.queue.createTask(taskId, taskDef).then(function(result) {
+      return helper.queue.getTask(taskId);
     }).then(function(taskDef2) {
       assert(_.isEqual(taskDef, taskDef2), "Task should be what we uploaded");
     });

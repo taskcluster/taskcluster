@@ -4,11 +4,7 @@ suite('Reaper tests', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
-  var helper      = require('./helper');
-  var subject     = helper.setup({
-    title:          "Reaper tests",
-    startReaper:    true
-  });
+  var helper      = require('./helper')({startReaper: true});
 
   var makeTask = function(timeToDeadline, retries) {
     var created = new Date();
@@ -42,25 +38,25 @@ suite('Reaper tests', function() {
     this.timeout(120 * 1000);
     var taskId = slugid.v4();
     var task = makeTask(120, 5);
-    var isPending = subject.listenFor(subject.queueEvents.taskPending({
+
+    return helper.events.listenFor('pending', helper.queueEvents.taskPending({
       taskId:   taskId,
       runId:    1
-    }));
-    return isPending.ready.then(function() {
-      return subject.queue.createTask(taskId, task);
+    })).then(function() {
+      return helper.queue.createTask(taskId, task);
     }).then(function() {
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
     }).then(function() {
       debug("Listen for the task to become pending again");
-      return isPending.message;
+      return helper.events.waitFor('pending');
     }).then(function(msg) {
       assert(msg.payload.status.retriesLeft === 4, "Expected 4 retries left");
       // Let's try to reclaim the old run, this should fail
-      return subject.queue.reclaimTask(taskId, 0).then(function() {
+      return helper.queue.reclaimTask(taskId, 0).then(function() {
         assert(false, "It shouldn't be possible to reclaim this run");
       }, function(err) {
         debug("Expected error: %j", err);
@@ -72,21 +68,21 @@ suite('Reaper tests', function() {
     this.timeout(120 * 1000);
     var taskId = slugid.v4();
     var task = makeTask(120, 0);
-    var isFailed = subject.listenFor(subject.queueEvents.taskFailed({
+
+    return helper.events.listenFor('exp', helper.queueEvents.taskException({
       taskId:   taskId,
       runId:    0
-    }));
-    return isFailed.ready.then(function() {
-      return subject.queue.createTask(taskId, task);
+    })).then(function() {
+      return helper.queue.createTask(taskId, task);
     }).then(function() {
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
     }).then(function() {
       debug("Listen for the task to fail, by claim-expired expiration");
-      return isFailed.message;
+      return helper.events.waitFor('exp');
     }).then(function(msg) {
       assert(msg.payload.status.runs[0].reasonResolved === 'claim-expired',
              "reasonsResolved isn't right");
@@ -97,17 +93,16 @@ suite('Reaper tests', function() {
   test("Expire deadline while pending", function() {
     this.timeout(120 * 1000);
     var taskId = slugid.v4();
-    var isFailed = subject.listenFor(subject.queueEvents.taskFailed({
+    var task = makeTask(10, 5);
+
+    return helper.events.listenFor('exp', helper.queueEvents.taskException({
       taskId:   taskId,
       runId:    0
-    }));
-
-    var task = makeTask(10, 5);
-    return isFailed.ready.then(function() {
-      return subject.queue.createTask(taskId, task);
+    })).then(function() {
+      return helper.queue.createTask(taskId, task);
     }).then(function() {
       debug("Listen for the task to fail, by deadline expiration");
-      return isFailed.message;
+      return helper.events.waitFor('exp');
     }).then(function(msg) {
       assert(msg.payload.status.runs[0].reasonResolved === 'deadline-exceeded',
              "reasonsResolved isn't right");
@@ -117,23 +112,22 @@ suite('Reaper tests', function() {
   test("Expire deadline while running", function() {
     this.timeout(120 * 1000);
     var taskId = slugid.v4();
-    var isFailed = subject.listenFor(subject.queueEvents.taskFailed({
+    var task = makeTask(10, 5);
+
+    return helper.events.listenFor('exp', helper.queueEvents.taskException({
       taskId:   taskId,
       runId:    0
-    }));
-
-    var task = makeTask(10, 5);
-    return isFailed.ready.then(function() {
-      return subject.queue.createTask(taskId, task);
+    })).then(function() {
+      return helper.queue.createTask(taskId, task);
     }).then(function() {
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
     }).then(function() {
       debug("Listen for the task to fail, by deadline expiration");
-      return isFailed.message;
+      return helper.events.waitFor('exp');
     }).then(function(msg) {
       assert(msg.payload.status.runs[0].reasonResolved === 'deadline-exceeded',
              "reasonsResolved isn't right");

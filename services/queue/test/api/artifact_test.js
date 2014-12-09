@@ -8,13 +8,10 @@ suite('Post artifacts', function() {
   var assert        = require('assert');
   var urljoin       = require('url-join');
   var BlobUploader  = require('../queue/azure-blob-uploader-sas');
-  var helper        = require('./helper');
   var Bucket        = require('../../queue/bucket');
   var BlobStore     = require('../../queue/blobstore');
   var data          = require('../../queue/data');
-  var subject       = helper.setup({
-    title:    "Post artifacts",
-  });
+  var helper        = require('./helper')();
 
   // Create datetime for created and deadline as 3 days later
   var created = new Date();
@@ -49,20 +46,20 @@ suite('Post artifacts', function() {
 
     var taskId = slugid.v4();
     debug("### Creating task");
-    return subject.queue.createTask(taskId, taskDef).then(function() {
+    return helper.queue.createTask(taskId, taskDef).then(function() {
       debug("### Claiming task");
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
     }).then(function() {
-      subject.scopes(
+      helper.scopes(
         'queue:create-artifact:public/s3.json',
         'assume:worker-id:my-worker-group/my-worker'
       );
       debug("### Send post artifact request");
-      return subject.queue.createArtifact(taskId, 0, 'public/s3.json', {
+      return helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
         storageType:  's3',
         expires:      deadline.toJSON(),
         contentType:  'application/json'
@@ -77,13 +74,13 @@ suite('Post artifacts', function() {
     }).then(function() {
       /*debug("### Get artifact from queue");
       var name = 'public/s3.json';
-      return subject.queue.getArtifactFromRun(taskId, 0, name);
+      return helper.queue.getArtifactFromRun(taskId, 0, name);
     }).then(function(artifact) {
       assert(artifact.message === 'Hello World', "Got wrong message");*/
     }).then(function() {
       var name = 'public/s3.json';
       var url = urljoin(
-        subject.baseUrl,
+        helper.baseUrl,
         'task',       taskId,
         'runs',       0,
         'artifacts',  name
@@ -98,7 +95,7 @@ suite('Post artifacts', function() {
     }).then(function() {
       var name = 'public/s3.json';
       var url = urljoin(
-        subject.baseUrl,
+        helper.baseUrl,
         'task',       taskId,
         'artifacts',  name
       );
@@ -111,12 +108,12 @@ suite('Post artifacts', function() {
       });
     }).then(function() {
       debug("### List artifacts");
-      return subject.queue.listArtifacts(taskId, 0);
+      return helper.queue.listArtifacts(taskId, 0);
     }).then(function(result) {
       assert(result.artifacts.length == 1, "Wrong length");
     }).then(function() {
       debug("### List artifacts from latest run");
-      return subject.queue.listLatestArtifacts(taskId);
+      return helper.queue.listLatestArtifacts(taskId);
     }).then(function(result) {
       assert(result.artifacts.length == 1, "Wrong length");
     }).then(function() {
@@ -126,20 +123,20 @@ suite('Post artifacts', function() {
 
       // Create artifactStore
       var artifactStore = new BlobStore({
-        container:          subject.cfg.get('queue:artifactContainer'),
-        credentials:        subject.cfg.get('azure')
+        container:          helper.cfg.get('queue:artifactContainer'),
+        credentials:        helper.cfg.get('azure')
       });
 
       // Create artifact bucket
       var artifactBucket = new Bucket({
-        bucket:             subject.cfg.get('queue:artifactBucket'),
-        credentials:        subject.cfg.get('aws')
+        bucket:             helper.cfg.get('queue:artifactBucket'),
+        credentials:        helper.cfg.get('aws')
       });
 
       // Create artifacts table
       var Artifact = data.Artifact.configure({
-        tableName:          subject.cfg.get('queue:artifactTableName'),
-        credentials:        subject.cfg.get('azure')
+        tableName:          helper.cfg.get('queue:artifactTableName'),
+        credentials:        helper.cfg.get('azure')
       });
 
       // Expire artifacts
@@ -158,20 +155,20 @@ suite('Post artifacts', function() {
 
     var taskId = slugid.v4();
     debug("### Creating task");
-    return subject.queue.createTask(taskId, taskDef).then(function() {
+    return helper.queue.createTask(taskId, taskDef).then(function() {
       debug("### Claiming task");
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
     }).then(function() {
-      subject.scopes(
+      helper.scopes(
         'queue:create-artifact:public/another-s3.json',
         'assume:worker-id:my-worker-group/my-worker'
       );
       debug("### Send post artifact request");
-      return subject.queue.createArtifact(taskId, 0, 'public/s3.json', {
+      return helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
         storageType:  's3',
         expires:      deadline.toJSON(),
         contentType:  'application/json'
@@ -187,20 +184,20 @@ suite('Post artifacts', function() {
     this.timeout(120 * 1000);
     var taskId = slugid.v4();
     debug("### Creating task");
-    return subject.queue.createTask(taskId, taskDef).then(function() {
+    return helper.queue.createTask(taskId, taskDef).then(function() {
       debug("### Claiming task");
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
     }).then(function() {
-      subject.scopes(
+      helper.scopes(
         'queue:create-artifact:public/azure.json',
         'assume:worker-id:my-worker-group/my-worker'
       );
       debug("### Send post artifact request");
-      return subject.queue.createArtifact(taskId, 0, 'public/azure.json', {
+      return helper.queue.createArtifact(taskId, 0, 'public/azure.json', {
         storageType:  'azure',
         expires:      deadline.toJSON(),
         contentType:  'application/json'
@@ -220,7 +217,7 @@ suite('Post artifacts', function() {
     }).then(function() {
       var name = 'public/azure.json';
       var url = urljoin(
-        subject.baseUrl,
+        helper.baseUrl,
         'task',       taskId,
         'artifacts',  name
       );
@@ -238,20 +235,20 @@ suite('Post artifacts', function() {
 
       // Create artifactStore
       var artifactStore = new BlobStore({
-        container:          subject.cfg.get('queue:artifactContainer'),
-        credentials:        subject.cfg.get('azure')
+        container:          helper.cfg.get('queue:artifactContainer'),
+        credentials:        helper.cfg.get('azure')
       });
 
       // Create artifact bucket
       var artifactBucket = new Bucket({
-        bucket:             subject.cfg.get('queue:artifactBucket'),
-        credentials:        subject.cfg.get('aws')
+        bucket:             helper.cfg.get('queue:artifactBucket'),
+        credentials:        helper.cfg.get('aws')
       });
 
       // Create artifacts table
       var Artifact = data.Artifact.configure({
-        tableName:          subject.cfg.get('queue:artifactTableName'),
-        credentials:        subject.cfg.get('azure')
+        tableName:          helper.cfg.get('queue:artifactTableName'),
+        credentials:        helper.cfg.get('azure')
       });
 
       // Expire artifacts
@@ -270,26 +267,27 @@ suite('Post artifacts', function() {
     var taskId = slugid.v4();
     var artifactCreated;
     debug("### Creating task");
-    return subject.queue.createTask(taskId, taskDef).then(function() {
+    return helper.queue.createTask(taskId, taskDef).then(function() {
       debug("### Claiming task");
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
     }).then(function() {
-      artifactCreated = subject.listenFor(subject.queueEvents.artifactCreated({
-        taskId:   taskId
-      }));
       debug("### Start listenFor for artifact created message");
-      return artifactCreated.ready;
+      return helper.events.listenFor('artifact-created',
+          helper.queueEvents.artifactCreated({
+          taskId:   taskId
+        })
+      );
     }).then(function() {
-      subject.scopes(
+      helper.scopes(
         'queue:create-artifact:public/error.json',
         'assume:worker-id:my-worker-group/my-worker'
       );
       debug("### Send post artifact request");
-      return subject.queue.createArtifact(taskId, 0, 'public/error.json', {
+      return helper.queue.createArtifact(taskId, 0, 'public/error.json', {
         storageType:  'error',
         expires:      deadline.toJSON(),
         reason:       'file-missing-on-worker',
@@ -297,11 +295,11 @@ suite('Post artifacts', function() {
       });
     }).then(function() {
       debug("### Wait for artifact created message");
-      return artifactCreated.message;
+      return helper.events.waitFor('artifact-created');
     }).then(function() {
       var name = 'public/error.json';
       var url = urljoin(
-        subject.baseUrl,
+        helper.baseUrl,
         'task',       taskId,
         'runs',       0,
         'artifacts',  name
@@ -322,20 +320,20 @@ suite('Post artifacts', function() {
 
       // Create artifactStore
       var artifactStore = new BlobStore({
-        container:          subject.cfg.get('queue:artifactContainer'),
-        credentials:        subject.cfg.get('azure')
+        container:          helper.cfg.get('queue:artifactContainer'),
+        credentials:        helper.cfg.get('azure')
       });
 
       // Create artifact bucket
       var artifactBucket = new Bucket({
-        bucket:             subject.cfg.get('queue:artifactBucket'),
-        credentials:        subject.cfg.get('aws')
+        bucket:             helper.cfg.get('queue:artifactBucket'),
+        credentials:        helper.cfg.get('aws')
       });
 
       // Create artifacts table
       var Artifact = data.Artifact.configure({
-        tableName:          subject.cfg.get('queue:artifactTableName'),
-        credentials:        subject.cfg.get('azure')
+        tableName:          helper.cfg.get('queue:artifactTableName'),
+        credentials:        helper.cfg.get('azure')
       });
 
       // Expire artifacts
@@ -353,20 +351,20 @@ suite('Post artifacts', function() {
     this.timeout(120 * 1000);
     var taskId = slugid.v4();
     debug("### Creating task");
-    return subject.queue.createTask(taskId, taskDef).then(function() {
+    return helper.queue.createTask(taskId, taskDef).then(function() {
       debug("### Claiming task");
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
     }).then(function() {
-      subject.scopes(
+      helper.scopes(
         'queue:create-artifact:public/redirect.json',
         'assume:worker-id:my-worker-group/my-worker'
       );
       debug("### Send post artifact request");
-      return subject.queue.createArtifact(taskId, 0, 'public/redirect.json', {
+      return helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
         storageType:  'reference',
         expires:      deadline.toJSON(),
         url:          'https://google.com',
@@ -374,7 +372,7 @@ suite('Post artifacts', function() {
       });
     }).then(function() {
       debug("### Send post artifact request (again w. new URL)");
-      return subject.queue.createArtifact(taskId, 0, 'public/redirect.json', {
+      return helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
         storageType:  'reference',
         expires:      deadline.toJSON(),
         url:          'https://www.google.com',
@@ -383,7 +381,7 @@ suite('Post artifacts', function() {
     }).then(function() {
       var name = 'public/redirect.json';
       var url = urljoin(
-        subject.baseUrl,
+        helper.baseUrl,
         'task',       taskId,
         'runs',       0,
         'artifacts',  name
@@ -401,20 +399,20 @@ suite('Post artifacts', function() {
 
       // Create artifactStore
       var artifactStore = new BlobStore({
-        container:          subject.cfg.get('queue:artifactContainer'),
-        credentials:        subject.cfg.get('azure')
+        container:          helper.cfg.get('queue:artifactContainer'),
+        credentials:        helper.cfg.get('azure')
       });
 
       // Create artifact bucket
       var artifactBucket = new Bucket({
-        bucket:             subject.cfg.get('queue:artifactBucket'),
-        credentials:        subject.cfg.get('aws')
+        bucket:             helper.cfg.get('queue:artifactBucket'),
+        credentials:        helper.cfg.get('aws')
       });
 
       // Create artifacts table
       var Artifact = data.Artifact.configure({
-        tableName:          subject.cfg.get('queue:artifactTableName'),
-        credentials:        subject.cfg.get('azure')
+        tableName:          helper.cfg.get('queue:artifactTableName'),
+        credentials:        helper.cfg.get('azure')
       });
 
       // Expire artifacts

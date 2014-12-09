@@ -64,6 +64,7 @@ properties:
       - running
       - completed
       - failed
+      - exception
   runs:
     title:          "List of Runs"
     description: |
@@ -91,6 +92,7 @@ properties:
             - running
             - completed
             - failed
+            - exception
         reasonCreated:
           title:          "Reason Created"
           description: |
@@ -103,21 +105,18 @@ properties:
         reasonResolved:
           title:          "Reason Resolved"
           description: |
-            Reason that run was resolved `failed` or `completed`, this is mainly
-            useful for runs resolved as `failed`.
+            Reason that run was resolved, this is mainly
+            useful for runs resolved as `exception`.
             Note, **more reasons may be added in the future**, also this
             property is only available after the run is resolved.
           enum:
             - completed
+            - failed
             - deadline-exceeded
             - canceled
             - claim-expired
-        success:
-          title:          "Run Success"
-          description: |
-            True, if the run was completed successfully, ie. exit code is zero.
-            Only present when the run is completed.
-          type:         boolean
+            - worker-shutdown
+            - malformed-payload
         workerGroup:
           title:        "Worker Group"
           description: |
@@ -165,7 +164,7 @@ properties:
           title:        "Resolved"
           description: |
             Date-time at which this run was resolved, ie. when the run changed
-            state from `running` to either `completed` or `failed`.
+            state from `running` to either `completed`, `failed` or `exception`.
             This property is only present after the run as been resolved.
           type:         string
           format:       date-time

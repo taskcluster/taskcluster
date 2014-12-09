@@ -4,8 +4,7 @@ suite('Create task (w. defaults)', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
-  var helper      = require('./helper');
-  var subject     = helper.setup({title: "create task (w. defaults)"});
+  var helper      = require('./helper')();
 
   // Create datetime for created and deadline as 3 days later
   var created = new Date();
@@ -29,30 +28,28 @@ suite('Create task (w. defaults)', function() {
 
   test("All possible defaults", function() {
     var taskId = slugid.v4();
-    var isDefined = subject.listenFor(subject.queueEvents.taskDefined({
-      taskId:   taskId
-    }));
-    var isPending = subject.listenFor(subject.queueEvents.taskPending({
-      taskId:   taskId
-    }));
 
-    subject.scopes(
+    helper.scopes(
       'queue:create-task:my-provisioner/my-worker'
     );
     return Promise.all([
-      isDefined.ready,
-      isPending.ready
+      helper.events.listenFor('is-defined',  helper.queueEvents.taskDefined({
+        taskId:   taskId
+      })),
+      helper.events.listenFor('is-pending',  helper.queueEvents.taskPending({
+        taskId:   taskId
+      }))
     ]).then(function() {
-      return subject.queue.createTask(taskId, taskDef);
+      return helper.queue.createTask(taskId, taskDef);
     }).then(function(result) {
-      return isDefined.message.then(function(message) {
+      return helper.events.waitFor('is-defined').then(function(message) {
         assert(_.isEqual(result.status, message.payload.status),
                "Message and result should have the same status");
       }).then(function() {
-        return isPending.message.then(function(message) {
+        return helper.events.waitFor('is-pending').then(function(message) {
           assert(_.isEqual(result.status, message.payload.status),
                  "Message and result should have the same status");
-          return subject.queue.status(taskId);
+          return helper.queue.status(taskId);
         }).then(function(result2) {
           assert(_.isEqual(result.status, result2.status),
                  "Task status shouldn't have changed");

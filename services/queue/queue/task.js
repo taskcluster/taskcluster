@@ -43,7 +43,6 @@ var RUN_FIELDS = [
   // Status information
   'reasonCreated',
   'reasonResolved',
-  'success',
 
   // Run-time information
   'workerGroup',
@@ -182,7 +181,6 @@ Task.ensureTables = function() {
         table.string('state', 255).notNullable();
         table.string('reasonCreated', 255).notNullable();
         table.string('reasonResolved', 255).nullable();
-        table.boolean('success').nullable();
 
         // Run-time information
         table.string('workerGroup', 255).nullable();
@@ -307,10 +305,9 @@ var transacting = function (f) {
  *   owner:              // owner email from task definition
  *   runs: [{
  *     runId:            // RunId starting from 0
- *     state:            // pending | running | completed | failed
+ *     state:            // pending | running | completed | failed | exception
  *     reasonCreated:    // new-task | retry | rerun
  *     reasonResolved:   // null | completed | deadline-exceeded | canceled | claim-expired
- *     success:          // true | false | null
  *     workerGroup:      // workerGroup or null
  *     workerId:         // workerId or null
  *     takenUntil:       // Date object as JSON or null
@@ -638,27 +635,22 @@ Task.claimWork = transacting(function(options, knex) {
     });
 });
 
-/** Complete a task
- *
- * options:
- * {
- *   success:  true || false // if run was successful (exited non-zero)
- * }
+/** Resolve a task
  *
  * returns promise for Task object, or object on the form:
  * {code: 404 || 409, message: "Explanation"}
  */
-Task.completeTask = transacting(function(taskId, runId, options, knex) {
+Task.resolveTask = transacting(function(taskId, runId,
+                                        targetState, reasonResolved, knex) {
   var that = this;
 
   // Update row
   var updated = knex
     ('runs')
     .update({
-      reasonResolved:   'completed',
-      success:          options.success,
+      reasonResolved:   reasonResolved,
       resolved:         new Date(),
-      state:            'completed'
+      state:            targetState
     })
     .where({
       taskId:     deslug(taskId),
@@ -690,8 +682,8 @@ Task.completeTask = transacting(function(taskId, runId, options, knex) {
           return that.load(taskId, knex).then(function(task) {
             assert(task instanceof that, "task must exist here");
             // Check if it's resolved the way we wanted to resolve it
-            if (task.runs[runId].state !== 'completed' ||
-                task.runs[runId].success !== options.success) {
+            if (task.runs[runId].state !== targetState ||
+                task.runs[runId].reasonResolved !== reasonResolved) {
               return {
                 code:     409,
                 message:  "Run not claimed or reported as failed"
@@ -730,7 +722,7 @@ Task.rerunTask = transacting(function(taskId, options, knex) {
   // Load task status structure from database or blob storage if not in database
   var loadedTask = that.load(taskId).then(function(task) {
     if (!task) {
-      return fetch().then(function(data) {
+      return options.fetch().then(function(data) {
         if (!data) {
           return null;
         }
@@ -792,7 +784,7 @@ Task.rerunTask = transacting(function(taskId, options, knex) {
 
 /**
  * Find `running` runs with `takenUntil` < now and `retriesLeft` > 0
- * Update the runs to 'failed' with `reasonResolved` as 'claim-expired' and
+ * Update the runs to 'exception' with `reasonResolved` as 'claim-expired' and
  * schedule a new pending run
  *
  * Return promise for the list of tasks which just had a run scheduled.
@@ -817,13 +809,12 @@ Task.expireClaimsWithRetries = transacting(function(knex) {
   // For each run we find
   return foundRuns.then(function(runs) {
     return Promise.all(runs.map(function(run) {
-      // Update run to failed
+      // Update run to exception
       var updatedRun = knex
         ('runs')
         .update({
-          state:            'failed',
+          state:            'exception',
           reasonResolved:   'claim-expired',
-          success:          false,
           resolved:         now
         })
         .where({
@@ -881,7 +872,7 @@ Task.expireClaimsWithRetries = transacting(function(knex) {
 });
 
 /**
- * Find runs where the deadline is exceeded and then declare the runs failed.
+ * Find runs where the deadline is exceeded and then declare the runs exception.
  *
  * Return a promise for a list of tasks
  */
@@ -911,9 +902,8 @@ Task.expireByDeadline = transacting(function(knex) {
       return knex
         ('runs')
         .update({
-          state:            'failed',
+          state:            'exception',
           reasonResolved:   'deadline-exceeded',
-          success:          false,
           resolved:         now
         })
         .where(function() {
@@ -942,7 +932,7 @@ Task.expireByDeadline = transacting(function(knex) {
 
 /**
  * Find runs where takenUntil < now and retriesLeft is 0 and declare the
- * runs failed.
+ * runs exception.
  *
  * Return a promise for a list of tasks
  */
@@ -969,9 +959,8 @@ Task.expireClaimsWithoutRetries = transacting(function(knex) {
       return knex
         ('runs')
         .update({
-          state:            'failed',
+          state:            'exception',
           reasonResolved:   'claim-expired',
-          success:          false,
           resolved:         now
         })
         .where({
@@ -1022,7 +1011,8 @@ Task.moveTaskFromDatabase = transacting(function(options, knex) {
         return that.load(slugid.encode(task.taskId), knex).then(function(task) {
           assert(task instanceof that, "Task must exist");
           task.runs.forEach(function(run) {
-            assert(run.state == 'failed' || run.state == 'completed',
+            assert(run.state == 'failed' || run.state == 'completed' ||
+                   run.state == 'exception',
                    "Expected task to be resolved past its deadline");
           });
           // Store the task in permanent storage
@@ -1075,9 +1065,6 @@ Task.prototype.status = function() {
       if (run.reasonResolved != null) {
         r.reasonResolved = run.reasonResolved;
       }
-      if (run.success != null) {
-        r.success = run.success;
-      }
       if (run.workerGroup != null) {
         r.workerGroup = run.workerGroup;
       }
@@ -1121,7 +1108,6 @@ Task.prototype.serialize = function() {
         state:          run.state,
         reasonCreated:  run.reasonCreated,
         reasonResolved: run.reasonResolved,
-        success:        run.success,
         workerGroup:    run.workerGroup,
         workerId:       run.workerId,
         takenUntil:     run.takenUntil  ? run.takenUntil.toJSON() : null,

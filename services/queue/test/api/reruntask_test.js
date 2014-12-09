@@ -4,8 +4,7 @@ suite('Rerun task', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
-  var helper      = require('./helper');
-  var subject     = helper.setup({title: "Rerun task"});
+  var helper      = require('./helper')();
 
   // Create datetime for created and deadline as 3 days later
   var created = new Date();
@@ -37,63 +36,59 @@ suite('Rerun task', function() {
 
   test("create, claim, complete and rerun (is idempotent)", function() {
     var taskId = slugid.v4();
-    var isPending = subject.listenFor(subject.queueEvents.taskPending({
-      taskId:   taskId,
-      runId:    0
-    }));
-    var isRunning = subject.listenFor(subject.queueEvents.taskRunning({
-      taskId:   taskId
-    }));
-    var isCompleted = subject.listenFor(subject.queueEvents.taskCompleted({
-      taskId:   taskId
-    }));
-    var isPendingAgain = subject.listenFor(subject.queueEvents.taskPending({
-      taskId:   taskId,
-      runId:    1
-    }));
 
     return Promise.all([
-      isPending.ready,
-      isRunning.ready,
-      isCompleted.ready,
-      isPendingAgain.ready
+      helper.events.listenFor('pending', helper.queueEvents.taskPending({
+        taskId:   taskId,
+        runId:    0
+      })),
+      helper.events.listenFor('running', helper.queueEvents.taskRunning({
+        taskId:   taskId
+      })),
+      helper.events.listenFor('completed', helper.queueEvents.taskCompleted({
+        taskId:   taskId
+      })),
+      helper.events.listenFor('pending-again', helper.queueEvents.taskPending({
+        taskId:   taskId,
+        runId:    1
+      }))
     ]).then(function() {
       debug("### Creating task");
-      return subject.queue.createTask(taskId, taskDef);
+      return helper.queue.createTask(taskId, taskDef);
     }).then(function() {
       debug("### Waiting for pending message");
-      return isPending.message;
+      return helper.events.waitFor('pending');
     }).then(function() {
       debug("### Claiming task");
       // First runId is always 0, so we should be able to claim it here
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:    'my-worker-group',
         workerId:       'my-worker'
       });
     }).then(function() {
       debug("### Waiting for running message");
-      return isRunning.message;
+      return helper.events.waitFor('running');
     }).then(function() {
       debug("### Reporting task completed");
-      return subject.queue.reportCompleted(taskId, 0, {
+      return helper.queue.reportCompleted(taskId, 0, {
         success:    true
       });
     }).then(function() {
       debug("### Waiting for completed message");
-      return isCompleted.message;
+      return helper.events.waitFor('completed');
     }).then(function() {
       debug("### Requesting task rerun");
-      subject.scopes(
+      helper.scopes(
         'queue:rerun-task',
         'assume:scheduler-id:my-scheduler/dSlITZ4yQgmvxxAi4A8fHQ'
       );
-      return subject.queue.rerunTask(taskId);
+      return helper.queue.rerunTask(taskId);
     }).then(function() {
       debug("### Waiting for pending message again");
-      return isPendingAgain.message;
+      return helper.events.waitFor('pending-again');
     }).then(function() {
       debug("### Requesting task rerun (again)");
-      return subject.queue.rerunTask(taskId);
+      return helper.queue.rerunTask(taskId);
     });
   });
 });

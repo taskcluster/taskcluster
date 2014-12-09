@@ -4,8 +4,7 @@ suite('Create task', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
-  var helper      = require('./helper');
-  var subject     = helper.setup({title: "create task"});
+  var helper      = require('./helper')();
 
   // Create datetime for created and deadline as 3 days later
   var created = new Date();
@@ -47,35 +46,33 @@ suite('Create task', function() {
 
   test("createTask", function() {
     var taskId = slugid.v4();
-    var isDefined = subject.listenFor(subject.queueEvents.taskDefined({
-      taskId:   taskId
-    }));
-    var isPending = subject.listenFor(subject.queueEvents.taskPending({
-      taskId:   taskId
-    }));
 
-    subject.scopes(
+    helper.scopes(
       'queue:create-task:my-provisioner/my-worker',
       'queue:route:*'
     );
     debug("### Start listening for messages");
     return Promise.all([
-      isDefined.ready,
-      isPending.ready
+      helper.events.listenFor('is-defined', helper.queueEvents.taskDefined({
+        taskId:   taskId
+      })),
+      helper.events.listenFor('is-pending', helper.queueEvents.taskPending({
+        taskId:   taskId
+      }))
     ]).then(function() {
       debug("### Create task");
-      return subject.queue.createTask(taskId, taskDef);
+      return helper.queue.createTask(taskId, taskDef);
     }).then(function(result) {
       debug("### Wait for defined message");
-      return isDefined.message.then(function(message) {
+      return helper.events.waitFor('is-defined').then(function(message) {
         assert(_.isEqual(result.status, message.payload.status),
                "Message and result should have the same status");
       }).then(function() {
         debug("### Wait for pending message");
-        return isPending.message.then(function(message) {
+        return helper.events.waitFor('is-pending').then(function(message) {
           assert(_.isEqual(result.status, message.payload.status),
                  "Message and result should have the same status");
-          return subject.queue.status(taskId);
+          return helper.queue.status(taskId);
         }).then(function(result2) {
           assert(_.isEqual(result.status, result2.status),
                  "Task status shouldn't have changed");
@@ -86,11 +83,11 @@ suite('Create task', function() {
 
   test("createTask (without required scopes)", function() {
     var taskId = slugid.v4();
-    subject.scopes(
+    helper.scopes(
       'queue:create-task:my-provisioner/another-worker',
       'queue:route:wrong-route'
     );
-    return subject.queue.createTask(taskId, taskDef).then(function() {
+    return helper.queue.createTask(taskId, taskDef).then(function() {
       assert(false, "Expected an authentication error");
     }, function(err) {
       debug("Got expected authentication error: %s", err);
@@ -99,11 +96,11 @@ suite('Create task', function() {
 
   test("createTask is idempotent", function() {
     var taskId = slugid.v4();
-    return subject.queue.createTask(taskId, taskDef).then(function(result) {
-      return subject.queue.createTask(taskId, taskDef);
+    return helper.queue.createTask(taskId, taskDef).then(function(result) {
+      return helper.queue.createTask(taskId, taskDef);
     }).then(function() {
       // Verify that we can't modify the task
-      return subject.queue.createTask(taskId, _.defaults({
+      return helper.queue.createTask(taskId, _.defaults({
         workerType:   "another-worker"
       }, taskDef)).then(function() {
         assert(false, "This operation should have failed!");
@@ -116,27 +113,25 @@ suite('Create task', function() {
 
   test("defineTask", function() {
     var taskId = slugid.v4();
-    var isDefined = subject.listenFor(subject.queueEvents.taskDefined({
-      taskId:   taskId
-    }));
-    var gotMessage = subject.listenFor(subject.queueEvents.taskPending({
-      taskId:   taskId
-    }));
 
-    subject.scopes(
+    helper.scopes(
       'queue:define-task:my-provisioner/my-worker',
       'queue:route:---*'
     );
     return Promise.all([
-      isDefined.ready,
-      gotMessage.ready
+      helper.events.listenFor('is-defined', helper.queueEvents.taskDefined({
+        taskId:   taskId
+      })),
+      helper.events.listenFor('is-pending', helper.queueEvents.taskPending({
+        taskId:   taskId
+      }))
     ]).then(function() {
-      return subject.queue.defineTask(taskId, taskDef);
+      return helper.queue.defineTask(taskId, taskDef);
     }).then(function() {
-      return isDefined.message;
+      return helper.events.waitFor('is-defined');
     }).then(function() {
       return new Promise(function(accept, reject) {
-        gotMessage.message.then(reject, reject);
+        helper.events.waitFor('is-pending').then(reject, reject);
         setTimeout(accept, 1000);
       });
     });
@@ -145,40 +140,39 @@ suite('Create task', function() {
   test("defineTask and scheduleTask", function() {
     var taskId = slugid.v4();
     var taskIsScheduled = false;
-    var gotMessage = subject.listenFor(subject.queueEvents.taskPending({
-      taskId:   taskId
-    }))
-    gotMessage.message = gotMessage.message.then(function(message) {
-      assert(taskIsScheduled, "Got pending message before scheduleTask");
-      return message;
-    });
 
-    return gotMessage.ready.then(function() {
-      return subject.queue.defineTask(taskId, taskDef);
-    }).then(function() {
-      return helper.sleep(1000);
-    }).then(function() {
-      taskIsScheduled = true;
-      subject.scopes(
-        'queue:schedule-task',
-        'assume:scheduler-id:my-scheduler/dSlITZ4yQgmvxxAi4A8fHQ'
-      );
-      return subject.queue.scheduleTask(taskId);
-    }).then(function(result) {
-      return gotMessage.message.then(function(message) {
-        assert(_.isEqual(result.status, message.payload.status),
-               "Message and result should have the same status");
+    return helper.events.listenFor('pending', helper.queueEvents.taskPending({
+      taskId: taskId
+    })).then(function() {
+      var gotMessage = helper.events.waitFor('pending').then(function(message) {
+        assert(taskIsScheduled, "Got pending message before scheduleTask");
+        return message;
+      });
+      return helper.queue.defineTask(taskId, taskDef).then(function() {
+        return helper.sleep(1000);
+      }).then(function() {
+        taskIsScheduled = true;
+        helper.scopes(
+          'queue:schedule-task',
+          'assume:scheduler-id:my-scheduler/dSlITZ4yQgmvxxAi4A8fHQ'
+        );
+        return helper.queue.scheduleTask(taskId);
+      }).then(function(result) {
+        return gotMessage.then(function(message) {
+          assert(_.isEqual(result.status, message.payload.status),
+                 "Message and result should have the same status");
+        });
       });
     });
   });
 
   test("defineTask is idempotent", function() {
     var taskId = slugid.v4();
-    return subject.queue.defineTask(taskId, taskDef).then(function(result) {
-      return subject.queue.defineTask(taskId, taskDef);
+    return helper.queue.defineTask(taskId, taskDef).then(function(result) {
+      return helper.queue.defineTask(taskId, taskDef);
     }).then(function() {
       // Verify that we can't modify the task
-      return subject.queue.defineTask(taskId, _.defaults({
+      return helper.queue.defineTask(taskId, _.defaults({
         workerType:   "another-worker"
       }, taskDef)).then(function() {
         assert(false, "This operation should have failed!");
