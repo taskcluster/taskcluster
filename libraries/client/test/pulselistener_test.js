@@ -7,7 +7,7 @@ suite('PulseListener', function() {
   var debug           = require('debug')('test:listener');
   var base            = require('taskcluster-base');
 
-  this.timeout(10 * 1000);
+  this.timeout(60 * 1000);
 
   // Load configuration
   var cfg = base.config({
@@ -56,7 +56,9 @@ suite('PulseListener', function() {
       connectionString:       connectionString,
       exchangePrefix:         exchangePrefix
     });
+    debug("Connecting");
     return mockEvents.connect().then(function(publisher) {
+      debug("Connected");
       _publisher = publisher;
     });
   });
