@@ -1008,7 +1008,7 @@ api.declare({
   deferAuth:  true,
   input:      SCHEMA_PREFIX_CONST + 'task-exception-request.json#',
   output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
-  title:      "Report Run Completed",
+  title:      "Report Task Exception",
   description: [
     "Resolve a run as _exception_. Generally, you will want to report tasks as",
     "failed instead of exception. But if the payload is malformed, or",
