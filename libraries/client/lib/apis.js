@@ -749,7 +749,7 @@ module.exports = {
           "exchange": "task-completed",
           "name": "taskCompleted",
           "title": "Task Completed Messages",
-          "description": "When a task is completed by a worker a message is posted this exchange.\nThis message is routed using the `runId`, `workerGroup` and `workerId`\nthat completed the task. But information about additional runs is also\navailable from the task status structure.",
+          "description": "When a task is successfully completed by a worker a message is posted\nthis exchange.\nThis message is routed using the `runId`, `workerGroup` and `workerId`\nthat completed the task. But information about additional runs is also\navailable from the task status structure.",
           "routingKey": [
             {
               "name": "routingKeyKind",
@@ -820,7 +820,7 @@ module.exports = {
           "exchange": "task-failed",
           "name": "taskFailed",
           "title": "Task Failed Messages",
-          "description": "Whenever a task is concluded to be failed a message is posted to this\nexchange. This happens if the task isn't completed before its `deadlìne`,\nall retries failed (i.e. workers stopped responding) or the task was\ncanceled by another entity.\n\nThe specific _reason_ is evident from that task status structure, refer\nto the `reasonResolved` property for the last run.",
+          "description": "When a task ran, but failed to complete successfully a message is posted\nto this exchange. This is same as worker ran task-specific code, but the\ntask specific code exited non-zero.",
           "routingKey": [
             {
               "name": "routingKeyKind",
@@ -885,6 +885,77 @@ module.exports = {
             }
           ],
           "schema": "http://schemas.taskcluster.net/queue/v1/task-failed-message.json#"
+        },
+        {
+          "type": "topic-exchange",
+          "exchange": "task-exception",
+          "name": "taskException",
+          "title": "Task Exception Messages",
+          "description": "Whenever TaskCluster fails to run a message is posted to this exchange.\nThis happens if the task isn't completed before its `deadlìne`,\nall retries failed (i.e. workers stopped responding), the task was\ncanceled by another entity, or the task carried a malformed payload.\n\nThe specific _reason_ is evident from that task status structure, refer\nto the `reasonResolved` property for the last run.",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "taskId",
+              "summary": "`taskId` for the task this message concerns",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "runId",
+              "summary": "`runId` of latest run for the task, `_` if no run is exists for the task.",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerGroup",
+              "summary": "`workerGroup` of latest run for the task, `_` if no run is exists for the task.",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerId",
+              "summary": "`workerId` of latest run for the task, `_` if no run is exists for the task.",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "provisionerId",
+              "summary": "`provisionerId` this task is targeted at.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "workerType",
+              "summary": "`workerType` this task must run on.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "schedulerId",
+              "summary": "`schedulerId` this task was created by.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "taskGroupId",
+              "summary": "`taskGroupId` this task was created in.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+              "multipleWords": true,
+              "required": false
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/queue/v1/task-exception-message.json#"
         }
       ]
     }
