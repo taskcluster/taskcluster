@@ -76,7 +76,7 @@ Handlers.prototype.setup = function() {
     this.listener.bind(this.queueEvents.taskPending(routingPattern)),
     this.listener.bind(this.queueEvents.taskRunning(routingPattern)),
     this.listener.bind(this.queueEvents.taskCompleted(routingPattern)),
-    this.listener.bind(this.queueEvents.taskFailed(routingPattern))
+    this.listener.bind(this.queueEvents.taskFailed(routingPattern)),
     this.listener.bind(this.queueEvents.taskException(routingPattern))
   ]);
 
