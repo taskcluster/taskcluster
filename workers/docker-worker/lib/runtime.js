@@ -64,7 +64,12 @@ Runtime.prototype = {
   /**
   The provisioner who is responsible for this worker.
   */
-  provisionerId: null
+  provisionerId: null,
+
+  /**
+  Used to decrypt secure environment variables
+  */
+  privateKey: null
 };
 
 module.exports = Runtime;

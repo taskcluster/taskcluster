@@ -1,0 +1,5 @@
+#! /usr/bin/env node
+var fs = require('fs');
+var path = require('path');
+var configFile = JSON.parse(fs.readFileSync(path.resolve(process.argv[2])));
+console.log(path.resolve(configFile[process.argv[3]]));

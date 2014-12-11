@@ -234,8 +234,8 @@ TestWorker.prototype = {
 
   @param {Object} task partial definition to upload.
   */
-  postToQueue: function* (task) {
-    var taskId = slugid.v4();
+  postToQueue: function* (task, specifiedTaskId) {
+    var taskId = specifiedTaskId ? specifiedTaskId : slugid.v4();
 
     // Create and bind the listener which will notify us when the worker
     // completes a task.

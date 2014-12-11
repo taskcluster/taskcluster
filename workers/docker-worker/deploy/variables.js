@@ -32,6 +32,10 @@ module.exports = {
     value: '*'
   },
 
+  'privateKeyLocation': {
+    description: 'Location of private RSA key for docker-worker'
+  },
+
   'taskcluster.clientId': {
     description: 'Taskcluster client id',
     value: process.env.TASKCLUSTER_CLIENT_ID

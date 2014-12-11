@@ -66,6 +66,15 @@ module.exports = {
       },
       "description": "Example: `['/bin/bash', '-c', 'ls']`."
     },
+    "encryptedEnv": {
+      "title": "List of encrypted environment variable mappings.",
+      "description": "List of base64 encoded asymmetric encrypted environment variables. See http://docs.taskcluster.net/docker-worker/#encrypted-environment-variables",
+      "type": "array",
+      "items": {
+        "title": "Base64 encoded encrypted environment variable object.",
+        "type": "string"
+      }
+    },
     "env": {
       "title": "Environment variable mappings.",
       "description": "Example: ```\n{\n  \"PATH\": '/borked/path' \n  \"ENV_NAME\": \"VALUE\" \n}\n```",

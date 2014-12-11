@@ -13,6 +13,7 @@ var ShutdownManager = require('../lib/shutdown_manager');
 var Stats = require('../lib/stat');
 var GarbageCollector = require('../lib/gc');
 var VolumeCache = require('../lib/volume_cache');
+var PrivateKey = require('../lib/private_key');
 
 // Available target configurations.
 var allowedHosts = ['aws', 'test'];
@@ -179,6 +180,10 @@ co(function *() {
 
   var runtime = new Runtime(config);
 
+  // Instantiate PrivateKey object for decrypting secure data
+  // (currently encrypted environment variables)
+  runtime.privateKey = new PrivateKey(runtime.dockerWorkerPrivateKey);
+  
   // Build the listener and connect to the queue.
   var taskListener = new TaskListener(runtime);
   runtime.gc.taskListener = taskListener;

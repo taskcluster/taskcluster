@@ -129,6 +129,9 @@ Task.prototype = {
     env.TASK_ID = this.status.taskId;
     env.RUN_ID = this.runId;
 
+    yield this.runtime.privateKey.decryptEnvVariables(
+        this.task.payload, this.status.taskId);
+
     var procConfig = {
       start: {},
       create: {
