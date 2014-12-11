@@ -77,6 +77,7 @@ Handlers.prototype.setup = function() {
     this.listener.bind(this.queueEvents.taskRunning(routingPattern)),
     this.listener.bind(this.queueEvents.taskCompleted(routingPattern)),
     this.listener.bind(this.queueEvents.taskFailed(routingPattern))
+    this.listener.bind(this.queueEvents.taskException(routingPattern))
   ]);
 
   // Create message handler
@@ -136,6 +137,9 @@ Handlers.prototype.setup = function() {
         if (message.exchange === that.queueEvents.taskFailed().exchange) {
           return that.failed(message, task, target);
         }
+        if (message.exchange === that.queueEvents.taskException().exchange) {
+          return that.exception(message, task, target);
+        }
 
         debug("WARNING: got message from unknown exchange: %s, message: %j",
               message.exchange, message);
@@ -176,16 +180,22 @@ var stateFromRun = function(run) {
   if (run.state === 'failed') {
     return 'completed';
   }
+  if (run.state === 'exception') {
+    return 'completed';
+  }
   return run.state;
 };
 
 /** Get treeherder result from run */
 var resultFromRun = function(run) {
-  if (run.state === 'failed') {
-    return 'exception';
-  }
   if (run.state === 'completed') {
-    return run.success ? 'success' : 'testfailed';
+    return 'success';
+  }
+  if (run.state === 'failed') {
+    return 'testfailed';
+  }
+  if (run.state === 'exception') {
+    return 'exception';
   }
   return 'unknown';
 };
@@ -412,6 +422,62 @@ Handlers.prototype.completed = function(message, task, target) {
 
 /** Handle notifications of failed task */
 Handlers.prototype.failed = function(message, task, target) {
+  var that    = this;
+  var status  = message.payload.status;
+  return target.project.postJobs(status.runs.map(function(run) {
+    var result = {
+      project:            target.project.project,
+      revision_hash:      target.revisionHash,
+      job: {
+        job_guid:         slugid.decode(status.taskId) + '/' + run.runId,
+        build_platform: {
+            platform:     status.workerType,
+            os_name:      '-',
+            architecture: '-'
+        },
+        machine_platform: {
+            platform:     status.workerType,
+            os_name:      '-',
+            architecture: '-'
+        },
+        name:             task.metadata.name,
+        reason:           'scheduled',  // use reasonCreated or reasonResolved
+        job_symbol:       task.extra.treeherder.symbol,
+        group_name:       task.extra.treeherder.groupName,
+        group_symbol:     task.extra.treeherder.groupSymbol,
+        product_name:     task.extra.treeherder.productName,
+        submit_timestamp: timestamp(run.scheduled),
+        start_timestamp:  (run.started ? timestamp(run.started) : undefined),
+        end_timestamp:    (run.resolved ? timestamp(run.resolved) : undefined),
+        state:            stateFromRun(run),
+        result:           resultFromRun(run),
+        who:              task.metadata.owner,
+        // You _must_ pass option collection until
+        // https://github.com/mozilla/treeherder-service/issues/112
+        option_collection: {
+          opt:    true
+        }
+      }
+    };
+
+    // The log must only be set after the task is completed and the log must
+    // also be gzipped.
+    result.job.log_references = [{
+      name:   "live_backing.log",
+      url:    that.queue.buildUrl(
+                that.queue.getArtifact,
+                status.taskId,
+                run.runId,
+                'public/logs/live_backing.log'
+              )
+    }];
+
+    return result;
+  }));
+};
+
+/** Handle notifications of task exception */
+Handlers.prototype.exception = function(message, task, target) {
   var that    = this;
   var status  = message.payload.status;
   return target.project.postJobs(status.runs.map(function(run) {
