@@ -117,11 +117,6 @@ Handlers.prototype.completed = function(message) {
     return;
   }
 
-  // Indexing if task is successful
-  if (!message.payload.success) {
-    return;
-  }
-
   // Get task definition
   return this.queue.getTask(message.payload.status.taskId).then(function(task) {
     // Create default expiration date
