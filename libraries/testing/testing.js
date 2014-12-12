@@ -32,9 +32,10 @@ var taskcluster   = require('taskcluster-client');
  *     var taskId = slugid.v4();
  *
  *     // Start listening for a message with the above taskId
- *     receiver.listenFor('my-create-task-message', queueEvents.taskCreated({
- *       taskId:     taskId
- *     })).then(function() {
+ *     return receiver.listenFor(
+ *       'my-create-task-message',
+ *       queueEvents.taskCreated({taskId: taskId})
+ *     ).then(function() {
  *       // We are now listen for a message with the taskId
  *       // So let's create a task with it
  *       return queue.createTask(taskId, {...});
