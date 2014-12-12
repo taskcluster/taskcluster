@@ -168,6 +168,8 @@ var queue = new taskcluster.Queue(options);
  * `queue.reclaimTask(taskId, runId) : result`
  * `queue.claimWork(provisionerId, workerType, payload) : result`
  * `queue.reportCompleted(taskId, runId, payload) : result`
+ * `queue.reportFailed(taskId, runId) : result`
+ * `queue.reportException(taskId, runId, payload) : result`
  * `queue.rerunTask(taskId) : result`
  * `queue.createArtifact(taskId, runId, name, payload) : result`
  * `queue.getArtifact(taskId, runId, name) : void`
@@ -214,6 +216,7 @@ var queueEvents = new taskcluster.QueueEvents(options);
  * `queueEvents.artifactCreated(routingKeyPattern) : binding-info`
  * `queueEvents.taskCompleted(routingKeyPattern) : binding-info`
  * `queueEvents.taskFailed(routingKeyPattern) : binding-info`
+ * `queueEvents.taskException(routingKeyPattern) : binding-info`
 
 ### Exchanges in `taskcluster.SchedulerEvents`
 ```js
