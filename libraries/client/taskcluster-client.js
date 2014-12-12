@@ -341,14 +341,57 @@ module.exports = {
           ],
           "name": "reportCompleted",
           "title": "Report Run Completed",
-          "description": "Report a run completed, resolving the run as `completed`.",
+          "description": "Report a task completed, resolving the run as `completed`.\n\nFor legacy, reasons the `success` parameter is accepted. This will be\nremoved in the future.",
           "scopes": [
             [
               "queue:report-task-completed",
               "assume:worker-id:<workerGroup>/<workerId>"
+            ],
+            [
+              "queue:resolve-task",
+              "assume:worker-id:<workerGroup>/<workerId>"
             ]
           ],
           "input": "http://schemas.taskcluster.net/queue/v1/task-completed-request.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/failed",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "reportFailed",
+          "title": "Report Run Failed",
+          "description": "Report a run failed, resolving the run as `failed`. Use this to resolve\na run that failed because the task specific code behaved unexpectedly.\nFor example the task exited non-zero, or didn't produce expected output.\n\nDon't use this if the task couldn't be run because if malformed payload,\nor other unexpected condition. In these cases we have a task exception,\nwhich should be reported with `reportException`.",
+          "scopes": [
+            [
+              "queue:resolve-task",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/exception",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "reportException",
+          "title": "Report Task Exception",
+          "description": "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. But if the payload is malformed, or\ndependencies referenced does not exists you should also report exception.\nHowever, do not report exception if an external resources is unavailable\nbecause of network failure, etc. Only if you can validate that the\nresource does not exist.",
+          "scopes": [
+            [
+              "queue:resolve-task",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/task-exception-request.json#",
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
         },
         {
