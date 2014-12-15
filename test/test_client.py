@@ -89,6 +89,12 @@ class TestProcessArgs(ClientTest):
     actual = self.client._processArgs(entry, test2='still works', test='works')
     self.assertEqual(expected, actual)
 
+  def test_int_args(self):
+    expected = {'test': 'works', 'test2': 42}
+    entry = {'args': ['test', 'test2'], 'name': 'test'}
+    actual = self.client._processArgs(entry, 'works', 42)
+    self.assertEqual(expected, actual)
+
   def test_keyword_and_positional(self):
     entry = {'args': ['test'], 'name': 'test'}
     with self.assertRaises(exc.TaskclusterFailure):
@@ -121,10 +127,6 @@ class TestProcessArgs(ClientTest):
   def test_invalid_positional_not_string_non_empty_dict(self):
     with self.assertRaises(exc.TaskclusterFailure):
       self.client._processArgs({'args': ['test'], 'name': 'test'}, {'john': 'ford'})
-
-  def test_invalid_positional_not_string_int(self):
-    with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs({'args': ['test'], 'name': 'test'}, 4)
 
 
 class TestMakeSingleHttpRequest(ClientTest):
