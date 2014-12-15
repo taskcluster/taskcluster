@@ -148,3 +148,10 @@ class TestMakeSingleHttpRequest(base.TCTest):
       d = subject.makeSingleHttpRequest('GET', 'http://www.example.com', {}, {})
       with self.assertRaises(requests.exceptions.RequestException):
         d.raise_for_status()
+
+
+class TestPutfile(base.TCTest):
+  def test_success_put_file(self):
+    with mock.patch.object(subject, 'makeSingleHttpRequest') as p:
+      subject.putFile('setup.py', 'http://www.example.com', 'text/plain')
+      p.assert_called_once_with('put', 'http://www.example.com', mock.ANY, mock.ANY)

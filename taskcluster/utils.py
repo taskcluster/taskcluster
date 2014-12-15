@@ -127,3 +127,14 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
 def makeSingleHttpRequest(method, url, payload, headers):
   log.debug('Making a %s request to %s', method, url)
   return requests.request(method.upper(), url, data=payload, headers=headers)
+
+
+def putFile(filename, url, contentType):
+  with open(filename, 'rb') as f:
+    contentLength = os.fstat(f.fileno()).st_size
+    result = makeHttpRequest('put', url, f,
+                             headers={
+                                 'Content-Length': contentLength,
+                                 'Content-Type': contentType,
+                             })
+    return result
