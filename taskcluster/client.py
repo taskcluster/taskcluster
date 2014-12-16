@@ -9,10 +9,8 @@ try:
 except ImportError:
   import urllib.parse as urlparse
 import time
-import uuid
 import hashlib
 import hmac
-import base64
 import datetime
 import calendar
 
@@ -22,6 +20,7 @@ import requests
 import hawk
 
 from . import exceptions
+from . import utils
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -31,47 +30,6 @@ if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
 log.addHandler(logging.NullHandler())
 
 API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
-
-
-def _b64encode(s):
-  """ HTTP Headers can't have new lines in them, let's  """
-  return base64.encodestring(s).strip().replace('\n', '')
-
-
-def makeB64UrlSafe(b64str):
-  """ Make a base64 string URL Safe """
-  # see RFC 4648, sec. 5
-  return b64str.replace('+', '-').replace('/', '_')
-
-
-def makeB64UrlUnsafe(b64str):
-  """ Make a base64 string URL Safe """
-  # see RFC 4648, sec. 5
-  return b64str.replace('-', '+').replace('_', '/')
-
-
-def _b64UrlEncode(s):
-  return makeB64UrlSafe(_b64encode(s))
-
-
-def slugId():
-  """ Generate a taskcluster slugid.  This is a V4 UUID encoded into
-  URL-Safe Base64 (RFC 4648, sec 5) with '=' padding removed """
-  return makeB64UrlSafe(_b64encode(uuid.uuid4().bytes).replace('=', ''))
-
-
-def _dmpJson(obj, **kwargs):
-  """ Match JS's JSON.stringify.  When using the default seperators,
-  base64 encoding JSON results in \n sequences in the output.  Hawk
-  barfs in your face if you have that in the text"""
-  def handleDateForJs(x):
-    if isinstance(x, datetime.datetime) or isinstance(x, datetime.date):
-      return x.isoformat()
-    else:
-      return x
-  d = json.dumps(obj, separators=(',', ':'), default=handleDateForJs, **kwargs)
-  assert '\n' not in d
-  return d
 
 
 # Default configuration
@@ -117,7 +75,7 @@ class BaseClient(object):
 
       # .encode('base64') inserts a newline, which hawk doesn't
       # like but doesn't strip itself
-      return makeB64UrlSafe(_b64encode(_dmpJson(ext)).strip())
+      return utils.makeB64UrlSafe(utils.encodeStringForB64Header(utils.dumpJson(ext)).strip())
     else:
       return {}
 
@@ -179,8 +137,8 @@ class BaseClient(object):
         entry = x
     if not entry:
       raise exceptions.TaskclusterFailure('Requested method "%s" not found in API Reference' % methodName)
-    apiArgs = self._processArgs(entry['args'], *args, **kwargs)
-    route = self._subArgsInRoute(entry['route'], apiArgs)
+    apiArgs = self._processArgs(entry, *args, **kwargs)
+    route = self._subArgsInRoute(entry, apiArgs)
     return self.options['baseUrl'] + '/' + route
 
   def buildSignedUrl(self, methodName, *args, **kwargs):
@@ -225,8 +183,8 @@ class BaseClient(object):
       _bewit = hawk.client.get_bewit(requestUrl, bewitOpts)
       decoded = _bewit.decode('base64')
       decodedParts = decoded.split('\\')
-      decodedParts[2] = makeB64UrlUnsafe(decodedParts[2])
-      return makeB64UrlSafe(_b64encode('\\'.join(decodedParts)))
+      decodedParts[2] = utils.makeB64UrlUnsafe(decodedParts[2])
+      return utils.makeB64UrlSafe(utils.encodeStringForB64Header('\\'.join(decodedParts)))
 
     bewit = genBewit()
     bewitDecoded = bewit.decode('base64')
@@ -252,23 +210,22 @@ class BaseClient(object):
     for a given API Reference entry"""
 
     payload = None
-
-    # I forget if **ing a {} results in a new {} or a reference
+    _args = list(args)
     _kwargs = copy.deepcopy(kwargs)
-    if 'input' in entry and 'payload' in _kwargs:
-      payload = _kwargs['payload']
-      del _kwargs['payload']
-      log.debug('We have a payload!')
-      if not payload:
-        raise exceptions.TaskclusterFailure('This method requires a payload kwarg')
 
-    apiArgs = self._processArgs(entry['args'], *args, **_kwargs)
-    route = self._subArgsInRoute(entry['route'], apiArgs)
+    if 'input' in entry:
+      if len(args) > 0:
+        payload = _args.pop()
+      else:
+        raise exceptions.TaskclusterFailure('Payload is required as last positional arg')
+
+    apiArgs = self._processArgs(entry, *_args, **_kwargs)
+    route = self._subArgsInRoute(entry, apiArgs)
     log.debug('Route is: %s', route)
 
     return self._makeHttpRequest(entry['method'], route, payload)
 
-  def _processArgs(self, reqArgs, *args, **kwargs):
+  def _processArgs(self, entry, *args, **kwargs):
     """ Take the list of required arguments, positional arguments
     and keyword arguments and return a dictionary which maps the
     value of the given arguments to the required parameters.
@@ -276,24 +233,31 @@ class BaseClient(object):
     Keyword arguments will overwrite positional arguments.
     """
 
+    reqArgs = entry['args']
     data = {}
 
-    for arg in list(args) + [kwargs[x] for x in kwargs if x != 'payload']:
+    # These all need to be rendered down to a string, let's just check that
+    # they are up front and fail fast
+    for arg in list(args) + [kwargs[x] for x in kwargs]:
       if not isinstance(arg, basestring):
-        raise exceptions.TaskclusterFailure('Argument is not a string')
+        raise exceptions.TaskclusterFailure('Arguments "%s" to %s is not a string' % (arg, entry['name']))
+
+    if len(args) > 0 and len(kwargs) > 0:
+      raise exceptions.TaskclusterFailure('Specify either positional or key word arguments')
 
     # We know for sure that if we don't give enough arguments that the call
     # should fail.  We don't yet know if we should fail because of two many
     # arguments because we might be overwriting positional ones with kw ones
     if len(reqArgs) > len(args) + len(kwargs):
-      raise exceptions.TaskclusterFailure('API Method was not given enough args')
+      raise exceptions.TaskclusterFailure('%s takes %d args, only %d were given' % (
+                                          entry['name'], len(reqArgs), len(args) + len(kwargs)))
 
     # We also need to error out when we have more positional args than required
     # because we'll need to go through the lists of provided and required args
     # at the same time.  Not disqualifying early means we'll get IndexErrors if
     # there are more positional arguments than required
     if len(args) > len(reqArgs):
-      raise exceptions.TaskclusterFailure('API Method was called with too many positional args')
+      raise exceptions.TaskclusterFailure('%s called with too many positional args', entry['name'])
 
     i = 0
     for arg in args:
@@ -308,34 +272,34 @@ class BaseClient(object):
     log.debug('After keyword arguments, we have: %s', data)
 
     if len(reqArgs) != len(data):
-      errMsg = 'API Method takes %d args, %d given' % (len(reqArgs), len(data))
+      errMsg = '%s takes %s args, %s given' % (
+        entry['name'],
+        ','.join(reqArgs),
+        data.keys())
       log.error(errMsg)
       raise exceptions.TaskclusterFailure(errMsg)
 
     for reqArg in reqArgs:
       if reqArg not in data:
-        errMsg = 'API Method requires a "%s" argument' % reqArg
+        errMsg = '%s requires a "%s" argument which was not provided' % (entry['name'], reqArg)
         log.error(errMsg)
         raise exceptions.TaskclusterFailure(errMsg)
 
     return data
 
-  def _subArgsInRoute(self, route, args):
+  def _subArgsInRoute(self, entry, args):
     """ Given a route like "/task/<taskId>/artifacts" and a mapping like
     {"taskId": "12345"}, return a string like "/task/12345/artifacts"
     """
 
-    if route.count('<') != route.count('>'):
-      raise exceptions.TaskclusterFailure('Mismatched arguments in route')
+    route = entry['route']
 
-    if route.count('<') != len(args):
-      raise exceptions.TaskclusterFailure('Incorrect number of arguments for route')
+    for arg, val in args.iteritems():
+      toReplace = "<%s>" % arg
+      if toReplace not in route:
+        raise exceptions.TaskclusterFailure('Arg %s not found in route for %s' % (arg, entry['name']))
+      route = route.replace("<%s>" % arg, val)
 
-    # TODO: Let's just pretend this is a good idea
-    try:
-      route = route.replace('<', '%(').replace('>', ')s') % args
-    except KeyError:
-      raise exceptions.TaskclusterFailure('Argument not found in route')
     return route.lstrip('/')
 
   def _makeHttpRequest(self, method, route, payload):
@@ -417,7 +381,7 @@ class BaseClient(object):
       log.info('Not using hawk!')
       headers = {}
     if payload:
-      payload = _dmpJson(payload)
+      payload = utils.dumpJson(payload)
       headers['Content-Type'] = 'application/json'
 
     return requests.request(method.upper(), url, data=payload, headers=headers)
@@ -523,7 +487,7 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
     scopes=scopes,
     start=calendar.timegm(start.utctimetuple()),
     expiry=calendar.timegm(expiry.utctimetuple()),
-    seed=slugId() + slugId(),
+    seed=utils.slugId() + utils.slugId(),
   )
 
   sigStr = '\n'.join([
@@ -536,18 +500,18 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
 
   sig = hmac.new(accessToken, sigStr, hashlib.sha256).digest()
 
-  cert['signature'] = _b64encode(sig)
+  cert['signature'] = utils.encodeStringForB64Header(sig)
 
   newToken = hmac.new(accessToken, cert['seed'], hashlib.sha256).digest()
-  newToken = makeB64UrlSafe(_b64encode(newToken)).replace('=', '')
+  newToken = utils.makeB64UrlSafe(utils.encodeStringForB64Header(newToken)).replace('=', '')
 
   return {
     'clientId': clientId,
     'accessToken': newToken,
-    'certificate': _dmpJson(cert),
+    'certificate': utils.dumpJson(cert),
   }
 
-__all__ = ['createTemporaryCredentials', 'config', 'slugId', 'makeB64UrlSafe']
+__all__ = ['createTemporaryCredentials', 'config']
 # This has to be done after the Client class is declared
 for key, value in API_CONFIG.items():
   globals()[key] = createApiClient(key, value)

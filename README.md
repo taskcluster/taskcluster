@@ -18,7 +18,7 @@ library right now
 The REST API methods are documented on
 [http://docs.taskcluster.net/](http://docs.taskcluster.net/)
 
-Here's how you'd do a simple call:
+* Here's a simple command:
 
     ```python
     import taskcluster
@@ -26,37 +26,26 @@ Here's how you'd do a simple call:
     index.ping()
     ```
 
-* Options can be shared between instances of API clients by setting the variable in the module
-  config dictionary:
+* Keyword arguments for API methods are supported.  The javascript client
+  accepts only positional arguments.  You may use either positional arguments
+  or keyword, never both.  If the method requires an input payload, you must
+  specify it as the last positional argument.  If you are using keyword
+  arguments, the payload is the first argument.
 
     ```python
     import taskcluster
-    config['credentials']['accessToken'] = 'TokensRUs'
-    print client.index().options['credentials']['clientId']
-    ```
-* Options can be set per API client with the `BaseClient.setOption(key, value)` method
-  and interogated with the `BaseClient.options` read-only property
-
-  ```python
-  from taskcluster import client
-  index = client.index()
-  index.options['baseUrl'] # returns u'https://index.taskcluster.net/v1'
-  index.setOptions('baseUrl', 'http://www.google.com')
-  index.options['baseUrl'] # returns 'https://www.google.com'
-  ```
-
-* Keyword arguments for API methods are supported.  The javascript client
-  accepts only positional arguments.  Positional arguments are read first and
-  interpreted as the corresponding argument in the route for the API.  Keyword
-  arguments are then read and overwrite values set by positional arguments:
-
-    ```python
-    from taskcluster import client
-    api = client.api()
-    api.method('1', '2', '3', arg1='pie')
+    api = taskcluster.api()
+    api.method('1', '2', '3', {'data': 'here'})
     ```
     Assuming apiMethod has a route of `/method/<arg1>/<arg2>/<arg3>`,
     this will result in a calle to `/method/pie/2/3`
+
+    The same call can be achieved using keyword arguments of:
+
+    ```python
+    import taskcluster
+    api = taskcluster.api()
+    api.method({'data': 'here'}, arg1='1', arg2='2', arg3='3')
 
 * Options for the topic exchange methods can be in the form of either a single
   dictionary argument or keyword arguments.  Only one form is allowed
@@ -70,7 +59,8 @@ Here's how you'd do a simple call:
     ```
 
 * Method Payloads are specified through the `payload` keyword passed to the API
-  method
+  method.  When using positional arguments, it's the last argument.  When using
+  keyword arguments, the payload is the first and only positional argument
 
     ```python
     from taskcluster import client
@@ -81,11 +71,3 @@ Here's how you'd do a simple call:
 There is a bug in the PyHawk library (as of 0.1.3) which breaks bewit
 generation for URLs that do not have a query string.  This is being addressed
 in [PyHawk PR 27](https://github.com/mozilla/PyHawk/pull/27). 
-
-There are a couple things that would be nice:
-
-* Per-API client options
-* Using `urlparse.urlparse` and `urlparse.urlunparse` to construct URLs
-* Support `*args` and `**kwargs` for `Client.topicName`
-* Building signed URLs should be done using the Node client and compared
-  to the result of the same operation with this client

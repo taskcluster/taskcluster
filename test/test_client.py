@@ -4,7 +4,6 @@ import unittest
 import time
 realTimeTime = time.time
 import datetime
-import uuid
 
 import httmock
 import mock
@@ -47,28 +46,15 @@ class ClientTest(base.TCTest):
     self.addCleanup(sleepSleep.stop)
 
 
-class TestJsonSerialization(base.TCTest):
-  def test_spacing(self):
-    expected = '{"a":"b"}'
-    actual = subject._dmpJson({'a': 'b'})
-    self.assertEqual(expected, actual)
-
-  def test_date(self):
-    d = datetime.datetime.now()
-    expected = '{"a":"%s"}' % d.isoformat()
-    actual = subject._dmpJson({'a': d})
-    self.assertEqual(expected, actual)
-
-
 class TestSubArgsInRoute(ClientTest):
   def test_valid_no_subs(self):
-    provided = '/no/args/here'
+    provided = {'route': '/no/args/here', 'name': 'test'}
     expected = 'no/args/here'
     result = self.client._subArgsInRoute(provided, {})
     self.assertEqual(expected, result)
 
   def test_valid_one_sub(self):
-    provided = '/one/<argToSub>/here'
+    provided = {'route': '/one/<argToSub>/here', 'name': 'test'}
     expected = 'one/value/here'
     arguments = {'argToSub': 'value'}
     result = self.client._subArgsInRoute(provided, arguments)
@@ -76,67 +62,69 @@ class TestSubArgsInRoute(ClientTest):
 
   def test_invalid_one_sub(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._subArgsInRoute('/one/<argToSub>/here', {'unused': 'value'})
+      self.client._subArgsInRoute({'route': '/one/<argToSub>/here', 'name': 'test'}, {'unused': 'value'})
 
   def test_invalid_route_no_sub(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._subArgsInRoute('adjfjlaksdfjs', {'should': 'fail'})
+      self.client._subArgsInRoute({'route': 'askldjflkasdf', 'name': 'test'}, {'should': 'fail'})
 
   def test_invalid_route_no_arg(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._subArgsInRoute('adjfjlaksdfjs', {'should': 'fail'})
+      self.client._subArgsInRoute({'route': 'askldjflkasdf', 'name': 'test'}, {'should': 'fail'})
 
 
 class TestProcessArgs(ClientTest):
   def test_no_args(self):
-    self.assertEqual({}, self.client._processArgs([]))
+    self.assertEqual({}, self.client._processArgs({'args': [], 'name': 'test'}))
 
   def test_positional_args_only(self):
     expected = {'test': 'works', 'test2': 'still works'}
-    actual = self.client._processArgs(['test', 'test2'], 'works', 'still works')
+    entry = {'args': ['test', 'test2'], 'name': 'test'}
+    actual = self.client._processArgs(entry, 'works', 'still works')
     self.assertEqual(expected, actual)
 
   def test_keyword_args_only(self):
     expected = {'test': 'works', 'test2': 'still works'}
-    actual = self.client._processArgs(['test', 'test2'], test2='still works', test='works')
+    entry = {'args': ['test', 'test2'], 'name': 'test'}
+    actual = self.client._processArgs(entry, test2='still works', test='works')
     self.assertEqual(expected, actual)
 
-  def test_keyword_overwrites_positional(self):
-    expected = {'test': 'works'}
-    actual = self.client._processArgs(['test'], 'broken', test='works')
-    self.assertEqual(expected, actual)
+  def test_keyword_and_positional(self):
+    entry = {'args': ['test'], 'name': 'test'}
+    with self.assertRaises(exc.TaskclusterFailure):
+      self.client._processArgs(entry, 'broken', test='works')
 
   def test_invalid_not_enough_args(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['test'])
+      self.client._processArgs({'args': ['test'], 'name': 'test'})
 
   def test_invalid_too_many_positional_args(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['test'], 'enough', 'one too many')
+      self.client._processArgs({'args': ['test'], 'name': 'test'}, 'enough', 'one too many')
 
   def test_invalid_too_many_keyword_args(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['test'], test='enough', test2='one too many')
+      self.client._processArgs({'args': ['test'], 'name': 'test'}, test='enough', test2='one too many')
 
   def test_invalid_missing_arg_positional(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['test', 'test2'], 'enough')
+      self.client._processArgs({'args': ['test', 'test2'], 'name': 'test'}, 'enough')
 
   def test_invalid_not_enough_args_because_of_overwriting(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['test', 'test2'], 'enough', test='enough')
+      self.client._processArgs({'args': ['test', 'test2'], 'name': 'test'}, 'enough', test='enough')
 
   def test_invalid_positional_not_string_empty_dict(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['a'], {})
+      self.client._processArgs({'args': ['test'], 'name': 'test'}, {})
 
   def test_invalid_positional_not_string_non_empty_dict(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['a'], {'john': 'ford'})
+      self.client._processArgs({'args': ['test'], 'name': 'test'}, {'john': 'ford'})
 
   def test_invalid_positional_not_string_int(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client._processArgs(['a'], 4)
+      self.client._processArgs({'args': ['test'], 'name': 'test'}, 4)
 
 
 class TestMakeSingleHttpRequest(ClientTest):
@@ -309,7 +297,7 @@ class TestMakeApiCall(ClientTest):
     with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
       patcher.return_value = expected
 
-      actual = self.client.two_args_no_input('argone', arg1='argtwo')
+      actual = self.client.two_args_no_input('argone', 'argtwo')
       self.assertEqual(expected, actual)
 
       patcher.assert_called_once_with('get', 'two_args_no_input/argone/argtwo', None)
@@ -319,20 +307,20 @@ class TestMakeApiCall(ClientTest):
     with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
       patcher.return_value = expected
 
-      actual = self.client.no_args_with_input()
+      actual = self.client.no_args_with_input({})
       self.assertEqual(expected, actual)
 
-      patcher.assert_called_once_with('get', 'no_args_with_input', None)
+      patcher.assert_called_once_with('get', 'no_args_with_input', {})
 
   def test_hits_two_args_with_input(self):
     expected = 'works'
     with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
       patcher.return_value = expected
 
-      actual = self.client.two_args_with_input('argone', arg1='argtwo')
+      actual = self.client.two_args_with_input('argone', 'argtwo', {})
       self.assertEqual(expected, actual)
 
-      patcher.assert_called_once_with('get', 'two_args_with_input/argone/argtwo', None)
+      patcher.assert_called_once_with('get', 'two_args_with_input/argone/argtwo', {})
 
   def test_input_is_procesed(self):
     expected = 'works'
@@ -340,14 +328,26 @@ class TestMakeApiCall(ClientTest):
     with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
       patcher.return_value = expected
 
-      actual = self.client.no_args_with_input(payload=expected_input)
+      actual = self.client.no_args_with_input(expected_input)
       self.assertEqual(expected, actual)
 
       patcher.assert_called_once_with('get', 'no_args_with_input', expected_input)
 
-  def test_missing_input_raises(self):
+  def test_kwargs(self):
+    expected = 'works'
+    with mock.patch.object(self.client, '_makeHttpRequest') as patcher:
+      patcher.return_value = expected
+
+      actual = self.client.two_args_with_input({}, arg0='argone', arg1='argtwo')
+      self.assertEqual(expected, actual)
+
+      patcher.assert_called_once_with('get', 'two_args_with_input/argone/argtwo', {})
+
+  def test_mixing_kw_and_positional_fails(self):
     with self.assertRaises(exc.TaskclusterFailure):
-      self.client.no_args_with_input({'malformed': 'payload'})
+      self.client.two_args_no_input('arg1', arg2='arg2')
+
+  def test_missing_input_raises(self):
     with self.assertRaises(exc.TaskclusterFailure):
       self.client.no_args_with_input()
 
@@ -397,9 +397,14 @@ class TestTopicExchange(ClientTest):
 
 
 class TestBuildUrl(ClientTest):
-  def test_build_url(self):
+  def test_build_url_positional(self):
     expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1'
-    actual = self.client.buildUrl('two_args_no_input', 'arg0', arg1='arg1')
+    actual = self.client.buildUrl('two_args_no_input', 'arg0', 'arg1')
+    self.assertEqual(expected, actual)
+
+  def test_build_url_keyword(self):
+    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1'
+    actual = self.client.buildUrl('two_args_no_input', arg0='arg0', arg1='arg1')
     self.assertEqual(expected, actual)
 
   def test_fails_to_build_url_for_missing_method(self):
@@ -420,22 +425,21 @@ class TestBuildSignedUrl(ClientTest):
     timePatch.return_value = 1
     self.addCleanup(timePatch.stop)
 
-  def test_builds_surl(self):
+  def test_builds_surl_positional(self):
     expBewit = 'Y2xpZW50SWRcOTAxXENVUHFtY1lSeW5Ua' + \
                '3NBS1BDaTJLUm5palgwR3hpWjFRUE9rMF' + \
                'Viamc2U1U9XGUzMD0='
     expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=' + expBewit
-    actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', arg1='arg1')
+    actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', 'arg1')
     self.assertEqual(expected, actual)
 
-
-class TestSlugId(base.TCTest):
-  def test_slug_id(self):
-    with mock.patch('uuid.uuid4') as p:
-      p.return_value = uuid.UUID('bed97923-7616-4ec8-85ed-4b695f67ac2e')
-      expected = 'vtl5I3YWTsiF7UtpX2esLg'
-      actual = subject.slugId()
-      self.assertEqual(expected, actual)
+  def test_builds_surl_keyword(self):
+    expBewit = 'Y2xpZW50SWRcOTAxXENVUHFtY1lSeW5Ua' + \
+               '3NBS1BDaTJLUm5palgwR3hpWjFRUE9rMF' + \
+               'Viamc2U1U9XGUzMD0='
+    expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=' + expBewit
+    actual = self.client.buildSignedUrl('two_args_no_input', arg0='arg0', arg1='arg1')
+    self.assertEqual(expected, actual)
 
 
 class TestAuthenticationMockServer(base.TCTest):
@@ -539,7 +543,7 @@ class ProductionTest(base.TCTest):
     self.assertEqual(result['alive'], True)
 
   def test_listnamespace(self):
-    result = self.i.listNamespaces('')
+    result = self.i.listNamespaces('', {})
     assert 'namespaces' in result
 
   def test_insert_to_index(self):
@@ -549,5 +553,5 @@ class ProductionTest(base.TCTest):
       'data': {'test': 'data'},
       'expires': '2015-09-09T19:19:15.879Z'
     }
-    result = self.i.insertTask('testing', payload=payload)
+    result = self.i.insertTask('testing', payload)
     self.assertEqual(payload['expires'], result['expires'])
