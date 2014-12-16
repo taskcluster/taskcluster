@@ -2,8 +2,9 @@
 
 import client
 reload(client)
-from client import *  # NOQA
 
 import utils
 reload(utils)
+
+from client import *  # NOQA
 from utils import *  # NOQA
