@@ -1,9 +1,10 @@
 package taskcluster_test
 
 import (
-	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
 	"net/url"
 	"testing"
+
+	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
 )
 
 var urlConversions = []struct {
@@ -17,6 +18,14 @@ var urlConversions = []struct {
 	{
 		"https://xfoo.com/scheduler/x/y/z",
 		"https://scheduler.taskcluster.net/x/y/z",
+	},
+	{
+		"https://xfoo.com/index/x/y/z",
+		"https://index.taskcluster.net/x/y/z",
+	},
+	{
+		"https://xfoo.com/aws-provisioner/x/y/z",
+		"https://aws-provisioner.taskcluster.net/x/y/z",
 	},
 }
 
