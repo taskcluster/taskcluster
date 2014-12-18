@@ -2,7 +2,9 @@ import datetime
 import uuid
 
 import taskcluster.utils as subject
+import httmock
 import mock
+import requests
 
 import base
 
@@ -111,3 +113,38 @@ class TestSlugId(base.TCTest):
       expected = 'vtl5I3YWTsiF7UtpX2esLg'
       actual = subject.slugId()
       self.assertEqual(expected, actual)
+
+
+class TestMakeSingleHttpRequest(base.TCTest):
+  def test_success_no_payload(self):
+    @httmock.all_requests
+    def response_content(url, request):
+      return {'status_code': 200, 'content': {}}
+
+    with httmock.HTTMock(response_content):
+      d = subject.makeSingleHttpRequest('GET', 'http://www.example.com', {}, {})
+      self.assertEqual(d.json(), {})
+      self.assertEqual(d.status_code, 200)
+      d.raise_for_status()
+
+  def test_success_payload(self):
+    @httmock.all_requests
+    def response_content(url, request):
+      self.assertEqual(request.body, 'i=j')
+      return {'status_code': 200, 'content': {'k': 'l'}}
+
+    with httmock.HTTMock(response_content):
+      d = subject.makeSingleHttpRequest('GET', 'http://www.example.com', {'i': 'j'}, {})
+      self.assertEqual(d.json(), {'k': 'l'})
+      self.assertEqual(d.status_code, 200)
+      d.raise_for_status()
+
+  def test_failure(self):
+    @httmock.all_requests
+    def response_content(url, requet):
+      return {'status_code': 404}
+
+    with httmock.HTTMock(response_content):
+      d = subject.makeSingleHttpRequest('GET', 'http://www.example.com', {}, {})
+      with self.assertRaises(requests.exceptions.RequestException):
+        d.raise_for_status()
