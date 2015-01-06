@@ -7,6 +7,7 @@ suite('api', function() {
   var _           = require('lodash');
   var subject     = helper.setup({title: "api-tests"});
 
+
   test('ping', function() {
     return subject.auth.ping();
   });
@@ -120,6 +121,52 @@ suite('api', function() {
         return client.clientId === subject.root.clientId;
       }), "Expected root client amongst clients");
       assert(clients.length > 0, "should have at least the root client");
+    });
+  });
+
+  test('azureTableSAS', function() {
+    return subject.auth.azureTableSAS(
+      'testaccount',
+      'TestTable'
+    ).then(function(result) {
+      assert(typeof(result.sas) === 'string', "Expected some form of string");
+      assert(new Date(result.expiry).getTime() > new Date().getTime(),
+             "Expected expiry to be in the future");
+    });
+  });
+
+
+  test('azureTableSAS (allowed table)', function() {
+    // Restrict access a bit
+    var auth = new subject.Auth({
+      baseUrl:          subject.baseUrl,
+      credentials:      subject.root,
+      authorizedScopes: ['auth:azure-table-access:testaccount/allowedTable']
+    });
+    return auth.azureTableSAS(
+      'testaccount',
+      'allowedTable'
+    ).then(function(result) {
+      assert(typeof(result.sas) === 'string', "Expected some form of string");
+      assert(new Date(result.expiry).getTime() > new Date().getTime(),
+             "Expected expiry to be in the future");
+    });
+  });
+
+  test('azureTableSAS (unauthorized table)', function() {
+    // Restrict access a bit
+    var auth = new subject.Auth({
+      baseUrl:          subject.baseUrl,
+      credentials:      subject.root,
+      authorizedScopes: ['auth:azure-table-access:testaccount/allowedTable']
+    });
+    return auth.azureTableSAS(
+      'testaccount',
+      'unauthorizedTable'
+    ).then(function(result) {
+      assert(false, "Expected an authentication error!");
+    }, function(err) {
+      assert(err.statusCode == 401, "Expected authorization error!");
     });
   });
 });

@@ -25,7 +25,8 @@
     "cookie-session":                   "1.0.2",
     "express":                          "4.9.0",
     "body-parser":                      "1.8.1",
-    "taskcluster-client":               "0.17.2"
+    "taskcluster-client":               "0.17.2",
+    "azure-table-node":                 "1.4.1"
   },
   "devDependencies": {
     "mocha":                            "1.21.5"

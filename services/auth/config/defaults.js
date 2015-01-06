@@ -14,6 +14,12 @@ module.exports = {
     root: {
       clientId:                     undefined,
       accessToken:                  undefined
+    },
+
+    // Accounts that auth can delegate access to
+    azureAccounts: {
+      taskclusterdev:               undefined,
+      taskcluster:                  undefined
     }
   },
 
@@ -44,7 +50,7 @@ module.exports = {
     accountName:                    undefined,
 
     // Azure table storage account key
-    accountKey:                     undefined,
+    accountKey:                     undefined
   },
 
   // InfluxDB for statistics
