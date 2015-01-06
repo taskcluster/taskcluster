@@ -379,8 +379,8 @@ api.declare({
     return;
   }
 
-  console.log("ctx.azureAccounts");
-  console.log(Object.keys(ctx.azureAccounts));
+  debug("ctx.azureAccounts");
+  debug(Object.keys(ctx.azureAccounts));
 
   // Check that the account exists
   if (!ctx.azureAccounts[account]) {
