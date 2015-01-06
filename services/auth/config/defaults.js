@@ -16,11 +16,8 @@ module.exports = {
       accessToken:                  undefined
     },
 
-    // Accounts that auth can delegate access to
-    azureAccounts: {
-      taskclusterdev:               undefined,
-      taskcluster:                  undefined
-    }
+    // Accounts that auth can delegate access to, as JSON
+    azureAccounts:                  "{}"
   },
 
   // Server configuration

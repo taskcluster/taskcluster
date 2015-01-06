@@ -22,7 +22,8 @@ var launch = function(profile) {
       'aws_secretAccessKey',
       'influx_connectionString',
       'auth_root_clientId',
-      'auth_root_accessToken'
+      'auth_root_accessToken',
+      'auth_azureAccounts'
     ],
     filename:     'taskcluster-auth'
   });
@@ -72,7 +73,7 @@ var launch = function(profile) {
       context: {
         validator:      validator,
         Client:         Client,
-        azureAccounts:  cfg.get('auth:azureAccounts')
+        azureAccounts:  JSON.parse(cfg.get('auth:azureAccounts'))
       },
       validator:        validator,
       clientLoader:     Client.createClientLoader(),
