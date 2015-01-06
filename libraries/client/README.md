@@ -151,6 +151,7 @@ var auth = new taskcluster.Auth(options);
  * `auth.removeClient(clientId) : void`
  * `auth.resetCredentials(clientId) : result`
  * `auth.listClients() : result`
+ * `auth.azureTableSAS(account, table) : result`
  * `auth.ping() : void`
 
 ### Methods in `taskcluster.Queue`
