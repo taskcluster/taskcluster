@@ -71,7 +71,8 @@ var launch = function(profile) {
     return v1.setup({
       context: {
         validator:      validator,
-        Client:         Client
+        Client:         Client,
+        azureAccounts:  cfg.get('auth:azureAccounts')
       },
       validator:        validator,
       clientLoader:     Client.createClientLoader(),
