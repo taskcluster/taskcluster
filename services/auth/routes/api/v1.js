@@ -379,9 +379,6 @@ api.declare({
     return;
   }
 
-  debug("ctx.azureAccounts");
-  debug(Object.keys(ctx.azureAccounts));
-
   // Check that the account exists
   if (!ctx.azureAccounts[account]) {
     return res.status(404).json({
