@@ -1,0 +1,23 @@
+id:       http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
+$schema:  http://json-schema.org/draft-04/schema#
+title:                      "Azure Shared-Access-Signature Response"
+description: |
+  Response to a request for an Shared-Access-Signature to access and Azure
+  Table Storage table.
+type:                       object
+properties:
+  sas:
+    description: |
+      Shared-Access-Signature string. This is the querystring parameters to
+      be appened after `?` or `&` depending on whether or not a querystring is
+      already present in the URL.
+    type:                 string
+  expiry:
+    description: |
+      Date and time of when the Shared-Access-Signature expires.
+    type:                   string
+    format:                 date-time
+additionalProperties:       false
+required:
+  - sas
+  - expiry
