@@ -379,15 +379,10 @@ api.declare({
     return;
   }
 
-  debug("ctx.azureAccounts: %s", account);
-  debug(Object.keys(ctx.azureAccounts));
-  debug("typeof(ctx.azureAccounts[account]): %j", typeof(ctx.azureAccounts[account]));
-  debug("ctx.azureAccounts: %j", ctx.azureAccounts);
-
   // Check that the account exists
   if (!ctx.azureAccounts[account]) {
     return res.status(404).json({
-      message:    "Account '" + account + "'' not found, can't delegate access"
+      message:    "Account '" + account + "' not found, can't delegate access"
     });
   }
 
