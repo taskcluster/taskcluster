@@ -151,6 +151,24 @@ module.exports = {
         {
           "type": "function",
           "method": "get",
+          "route": "/azure/<account>/table/<table>/read-write",
+          "args": [
+            "account",
+            "table"
+          ],
+          "name": "azureTableSAS",
+          "title": "Get Shared-Access-Signature for Azure Table",
+          "description": "Get an SAS string for use with azure table storage",
+          "scopes": [
+            [
+              "auth:azure-table-access:<account>/<table>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
           "route": "/ping",
           "args": [],
           "name": "ping",
