@@ -2,6 +2,7 @@ var debug       = require('debug')('routes:api:v1');
 var assert      = require('assert');
 var base        = require('taskcluster-base');
 var slugid      = require('slugid');
+var azureTable  = require('azure-table-node');
 
 /** API end-point for version v1/ */
 var api = new base.API({
@@ -352,6 +353,56 @@ api.declare({
         description:  client.details.notes
       };
     }));
+  });
+});
+
+api.declare({
+  method:     'get',
+  route:      '/azure/:account/table/:table/read-write',
+  name:       'azureTableSAS',
+  input:      undefined,
+  output:     SCHEMA_PREFIX_CONST + 'azure-table-access-response.json#',
+  deferAuth:  true,
+  scopes:     ['auth:azure-table-access:<account>/<table>'],
+  title:      "Get Shared-Access-Signature for Azure Table",
+  description: [
+    "Get an SAS string for use with azure table storage"
+  ].join('\n')
+}, function(req, res) {
+  // Get parameters
+  var account = req.params.account;
+  var table   = req.params.table;
+  var ctx     = this;
+
+  // Check that the client is authorized to access given account and table
+  if (!req.satisfies({account: account, table: table})) {
+    return;
+  }
+
+  // Check that the account exists
+  if (!ctx.azureAccounts[account]) {
+    return res.status(404).json({
+      message:    "Account not found, can't delegate access"
+    });
+  }
+
+  // Construct client
+  var client = azureTable.createClient({
+    accountName:    account,
+    accountKey:     ctx.azureAccounts[account],
+    accountUrl:     ["https://", account, ".table.core.windows.net/"].join('')
+  });
+
+  // Construct SAS
+  var expiry  = new Date(Date.now() + 25 * 60 * 1000);
+  var sas     = client.generateSAS(table, 'raud', expiry, {
+    start:  new Date(Date.now() - 15 * 60 * 1000)
+  });
+
+  // Return the generated SAS
+  return res.reply({
+    sas:      sas,
+    expiry:   expiry.toJSON()
   });
 });
 
