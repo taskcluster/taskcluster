@@ -238,8 +238,8 @@ class BaseClient(object):
     # These all need to be rendered down to a string, let's just check that
     # they are up front and fail fast
     for arg in list(args) + [kwargs[x] for x in kwargs]:
-      if not isinstance(arg, basestring):
-        raise exceptions.TaskclusterFailure('Arguments "%s" to %s is not a string' % (arg, entry['name']))
+      if not isinstance(arg, basestring) and not isinstance(arg, int):
+        raise exceptions.TaskclusterFailure('Arguments "%s" to %s is not a string or int' % (arg, entry['name']))
 
     if len(args) > 0 and len(kwargs) > 0:
       raise exceptions.TaskclusterFailure('Specify either positional or key word arguments')
@@ -297,7 +297,7 @@ class BaseClient(object):
       toReplace = "<%s>" % arg
       if toReplace not in route:
         raise exceptions.TaskclusterFailure('Arg %s not found in route for %s' % (arg, entry['name']))
-      route = route.replace("<%s>" % arg, val)
+      route = route.replace("<%s>" % arg, str(val))
 
     return route.lstrip('/')
 
