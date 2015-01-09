@@ -31,6 +31,10 @@ suite("Entity (create/load)", function() {
     });
   });
 
+  test("Item.ensureTable", function() {
+    return Item.ensureTable();
+  });
+
   var id = slugid.v4();
 
   test("Item.create", function() {
