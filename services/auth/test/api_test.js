@@ -124,9 +124,10 @@ suite('api', function() {
     });
   });
 
+
   test('azureTableSAS', function() {
     return subject.auth.azureTableSAS(
-      'testaccount',
+      subject.testaccount,
       'TestTable'
     ).then(function(result) {
       assert(typeof(result.sas) === 'string', "Expected some form of string");
@@ -141,10 +142,12 @@ suite('api', function() {
     var auth = new subject.Auth({
       baseUrl:          subject.baseUrl,
       credentials:      subject.root,
-      authorizedScopes: ['auth:azure-table-access:testaccount/allowedTable']
+      authorizedScopes: [
+        'auth:azure-table-access:' + subject.testaccount + '/allowedTable'
+      ]
     });
     return auth.azureTableSAS(
-      'testaccount',
+      subject.testaccount,
       'allowedTable'
     ).then(function(result) {
       assert(typeof(result.sas) === 'string', "Expected some form of string");
@@ -158,10 +161,12 @@ suite('api', function() {
     var auth = new subject.Auth({
       baseUrl:          subject.baseUrl,
       credentials:      subject.root,
-      authorizedScopes: ['auth:azure-table-access:testaccount/allowedTable']
+      authorizedScopes: [
+        'auth:azure-table-access:' + subject.testaccount + '/allowedTable'
+      ]
     });
     return auth.azureTableSAS(
-      'testaccount',
+      subject.testaccount,
       'unauthorizedTable'
     ).then(function(result) {
       assert(false, "Expected an authentication error!");

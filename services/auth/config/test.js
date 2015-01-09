@@ -15,7 +15,8 @@ module.exports = {
       clientId:       'ctVNevJPRbe6ICL5-nhZkw',
       accessToken:    'EO-5D7oBTYWMTJ79HYGf-guFVXRtIbRKWoXOyb9EpkIQ'
     },
-    azureAccounts:    "{\"testaccount\": \"blablablabla\"}"
+    // Must be configured locally
+    azureAccounts:    "{}"
   },
 
   // Server configuration

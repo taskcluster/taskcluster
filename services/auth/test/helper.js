@@ -4,7 +4,6 @@ var path        = require('path');
 var _           = require('lodash');
 var base        = require('taskcluster-base');
 var v1          = require('../routes/api/v1');
-//var exchanges   = require('../auth/exchanges');
 var taskcluster = require('taskcluster-client');
 
 // Load configuration
@@ -30,6 +29,7 @@ exports.setup = function(options) {
 
   // Create subject to be tested by test
   var subject = {};
+  subject.testaccount = _.keys(JSON.parse(cfg.get('auth:azureAccounts')))[0];
 
   // Skip tests if no AWS credentials is configured
   if (!cfg.get('azure:accountKey') ||
