@@ -478,8 +478,9 @@ Entity.setup = function(options) {
   subClass.prototype.__table = options.table;
 
   // Default client, notice that it's already expired
-  var client  = null;
-  var expiry  = -1;
+  var client          = null;
+  var promisedClient  = null;
+  var expiry          = -1;
 
   // Check if we're setting up to fetch credentials for auth.taskcluster.net
   if (options.account) {
@@ -492,12 +493,19 @@ Entity.setup = function(options) {
         return Promise.resolve(client);
       }
 
+      // If we are in the process of fetching a client, we just return the
+      // promise for this
+      if (promisedClient) {
+        return promisedClient;
+      }
+
       // Fetch SAS from auth.taskcluster.net
       var auth = new taskcluster.Auth({
         credentials:    options.credentials,
         baseUrl:        options.authBaseUrl
       });
-      return auth.azureTableSAS(
+      // Create a promise for a client
+      promisedClient = auth.azureTableSAS(
         options.account,
         options.table
       ).then(function(result) {
@@ -512,8 +520,12 @@ Entity.setup = function(options) {
             ".table.core.windows.net/"
           ].join('')
         });
+        // We now have a client, so forget about the promise for one
+        promisedClient = null;
         return client;
       });
+
+      return promisedClient;
     };
   } else {
     // Create client using credentials already present
