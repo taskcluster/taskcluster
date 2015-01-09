@@ -385,7 +385,9 @@ mockAuthApi.declare({
       credentials:      ctx.credentials,
       baseUrl:          ctx.authBaseUrl
     });
-    return auth.azureTableSAS(account, table).catch(function() {
+    return auth.azureTableSAS(account, table).then(function(result) {
+      return res.reply(result);
+    }, function() {
       return res.status(404).json({
         message:    "Account '" + account + "' not found, can't delegate access"
       });
