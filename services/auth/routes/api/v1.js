@@ -3,6 +3,7 @@ var assert      = require('assert');
 var base        = require('taskcluster-base');
 var slugid      = require('slugid');
 var azureTable  = require('azure-table-node');
+var Promise     = require('promise');
 
 /** API end-point for version v1/ */
 var api = new base.API({
@@ -366,7 +367,8 @@ api.declare({
   scopes:     ['auth:azure-table-access:<account>/<table>'],
   title:      "Get Shared-Access-Signature for Azure Table",
   description: [
-    "Get an SAS string for use with azure table storage"
+    "Get an SAS string for use with a specific Azure Table Storage table.",
+    "Note, this will create the table, if it doesn't already exists."
   ].join('\n')
 }, function(req, res) {
   // Get parameters
@@ -393,16 +395,31 @@ api.declare({
     accountUrl:     ["https://", account, ".table.core.windows.net/"].join('')
   });
 
-  // Construct SAS
-  var expiry  = new Date(Date.now() + 25 * 60 * 1000);
-  var sas     = client.generateSAS(table, 'raud', expiry, {
-    start:  new Date(Date.now() - 15 * 60 * 1000)
+  // Ensure that the table is created
+  var createdTable = new Promise(function(accept, reject) {
+    client.createTable(table, {
+      ignoreIfExists:     true
+    }, function(err, data) {
+      if (err) {
+        return reject(err);
+      }
+      accept(data);
+    });
   });
 
-  // Return the generated SAS
-  return res.reply({
-    sas:      sas,
-    expiry:   expiry.toJSON()
+  // Once the table is created, construct and return SAS
+  return createdTable.then(function() {
+    // Construct SAS
+    var expiry  = new Date(Date.now() + 25 * 60 * 1000);
+    var sas     = client.generateSAS(table, 'raud', expiry, {
+      start:  new Date(Date.now() - 15 * 60 * 1000)
+    });
+
+    // Return the generated SAS
+    return res.reply({
+      sas:      sas,
+      expiry:   expiry.toJSON()
+    });
   });
 });
 
