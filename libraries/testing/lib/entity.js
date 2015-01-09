@@ -597,7 +597,11 @@ Entity.setup = function(options) {
   return subClass;
 };
 
-/** Create the underlying Azure Storage Table, errors if it exists */
+/**
+ * Create the underlying Azure Storage Table, errors if it exists
+ *
+ * Remark, this doesn't work, if authenticated with SAS.
+ */
 Entity.createTable = function() {
   var Class       = this;
   var ClassProps  = Class.prototype;
@@ -610,7 +614,10 @@ Entity.createTable = function() {
   ));
 };
 
-/** Ensure existence of the underlying Azure Storage Table */
+/** Ensure existence of the underlying Azure Storage Table
+ *
+ * Remark, this doesn't work, if authenticated with SAS.
+ */
 Entity.ensureTable = function() {
   var Class       = this;
   var ClassProps  = Class.prototype;
@@ -623,14 +630,15 @@ Entity.ensureTable = function() {
   ));
 };
 
-/** Delete the underlying Azure Storage Table */
+/** Delete the underlying Azure Storage Table
+ *
+ * Remark, this doesn't work, if authenticated with SAS.
+ */
 Entity.removeTable = function(ignoreErrors) {
   var Class       = this;
   var ClassProps  = Class.prototype;
 
-  return ClassProps.__aux.deleteTable({
-    ignoreIfExists:     true
-  }).catch(rethrowDebug(
+  return ClassProps.__aux.deleteTable().catch(rethrowDebug(
     "deleteTable: Failed to delete table '%s' with err: %j",
     ClassProps.__table
   ));
