@@ -137,7 +137,7 @@ suite("Entity (SAS from auth.taskcluster.net)", function() {
   var Item;
   test("Item = ItemV1.setup", function() {
     Item = ItemV1.setup({
-      account:      'taskclusterdev',
+      account:      cfg.get('azure:accountName'),
       table:        cfg.get('azureTestTableName'),
       credentials:  {
         clientId:         'authed-client',
@@ -146,7 +146,6 @@ suite("Entity (SAS from auth.taskcluster.net)", function() {
       authBaseUrl:  'http://localhost:23244'
     });
   });
-
 
   test("Item.create && Item.load", function() {
     var id = slugid.v4();
@@ -173,7 +172,7 @@ suite("Entity (SAS from auth.taskcluster.net)", function() {
     returnExpiredSAS = true;  // This means we call for each operation
     var id = slugid.v4();
     var Item2 = ItemV1.setup({
-      account:      'taskclusterdev',
+      account:      cfg.get('azure:accountName'),
       table:        cfg.get('azureTestTableName'),
       credentials:  {
         clientId:         'authed-client',
