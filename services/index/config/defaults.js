@@ -9,6 +9,9 @@ module.exports = {
     indexedTaskTableName:         'IndexedTasks',
     namespaceTableName:           'Namespaces',
 
+    // Azure account
+    azureAccount:                 undefined,
+
     // Publish references and schemas
     publishMetaData:              'false',
 
@@ -61,12 +64,6 @@ module.exports = {
   pulse: {
     username:                     undefined,
     password:                     undefined
-  },
-
-  // Azure credentials (usually configured using environment variables)
-  azure: {
-    accountName:                    null,
-    accountKey:                     null
   },
 
   // InfluxDB configuration

@@ -42,7 +42,10 @@ var insertTask = function(namespace, input, options) {
   var expires = new Date(input.expires);
 
   // Attempt to load indexed task
-  return options.IndexedTask.load(namespace, name).then(function(task) {
+  return options.IndexedTask.load({
+    namespace:    namespace,
+    name:         name
+  }).then(function(task) {
     return task.modify(function() {
       // Update if we prefer input over what we have
       if (this.rank <= input.rank) {
@@ -66,7 +69,6 @@ var insertTask = function(namespace, input, options) {
       expires
     ).then(function() {
       return options.IndexedTask.create({
-        version:      1,
         namespace:    namespace,
         name:         name,
         rank:         input.rank,

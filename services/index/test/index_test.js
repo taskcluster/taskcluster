@@ -74,11 +74,10 @@ suite('Indexing', function() {
         success: true
       });
     }).then(function() {
-      debug("### Give indexing 1s to run");
-      return helper.sleep(2500);
-    }).then(function() {
       debug("### Find task in index");
-      return subject.index.findTask(myns + '.my-indexed-thing');
+      return helper.poll(function() {
+        return subject.index.findTask(myns + '.my-indexed-thing');
+      });
     }).then(function(result) {
       assert(result.taskId === taskId, "Wrong taskId");
     }).then(function() {
@@ -151,11 +150,10 @@ suite('Indexing', function() {
         success: true
       });
     }).then(function() {
-      debug("### Give indexing 1s to run");
-      return helper.sleep(2500);
-    }).then(function() {
       debug("### Find task in index");
-      return subject.index.findTask(myns + '.my-indexed-thing');
+      return helper.poll(function() {
+        return subject.index.findTask(myns + '.my-indexed-thing');
+      });
     }).then(function(result) {
       assert(result.taskId === taskId, "Wrong taskId");
       assert(result.rank === 42, "Expected rank 42");

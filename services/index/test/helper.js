@@ -13,8 +13,9 @@ var cfg = base.config({
   envs: [
     'aws_accessKeyId',
     'aws_secretAccessKey',
-    'azure_accountName',
-    'azure_accountKey',
+    'taskcluster_authBaseUrl',
+    'taskcluster_credentials_clientId',
+    'taskcluster_credentials_accessToken',
     'pulse_username',
     'pulse_password'
   ],
@@ -29,7 +30,7 @@ var defaultClients = [
     // auth:credentials assigned to our test client
     clientId:     cfg.get('taskcluster:credentials:clientId'),
     accessToken:  cfg.get('taskcluster:credentials:accessToken'),
-    scopes:       ['auth:credentials'],
+    scopes:       ['auth:*'],
     expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
   }, {
     clientId:     'test-client',  // Used in default Index creation
@@ -46,6 +47,24 @@ exports.sleep = function(delay) {
   });
 }
 
+/** Poll a function that returns a promise, until it resolves */
+exports.poll = function(doPoll, attempts, interval) {
+  attempts = attempts || 90;
+  interval = interval || 1000;
+  var pollAgain = function() {
+    return doPoll().catch(function(err) {
+      if (attempts > 0) {
+        attempts -= 1;
+        return exports.sleep(interval).then(function() {
+          return pollAgain();
+        });
+      }
+      throw err;
+    });
+  };
+  return pollAgain();
+};
+
 /** Setup testing */
 exports.setup = function(options) {
   // Provide default configuration
@@ -57,7 +76,7 @@ exports.setup = function(options) {
   var subject = {};
 
   // Skip tests if no AWS credentials is configured
-  if (!cfg.get('azure:accountKey') ||
+  if (!cfg.get('index:azureAccount') ||
       !cfg.get('taskcluster:credentials:accessToken') ||
       !cfg.get('pulse:password')) {
     console.log("Skip tests for " + options.title +
@@ -115,8 +134,9 @@ exports.setup = function(options) {
     subject.routePrefix = cfg.get('index:routePrefix');
     // Create mock authentication server
     return base.testing.createMockAuthServer({
-      port:     60021, // This is hardcoded into config/test.js
-      clients:  defaultClients
+      port:         60021, // This is hardcoded into config/test.js
+      clients:      defaultClients,
+      credentials:  cfg.get('taskcluster:credentials')
     }).then(function(mockAuthServer_) {
       mockAuthServer = mockAuthServer_;
     }).then(function() {
