@@ -18,12 +18,11 @@ var launch = function(profile) {
       'taskcluster_authBaseUrl',
       'taskcluster_credentials_clientId',
       'taskcluster_credentials_accessToken',
+      'index_azureAccount',
       'pulse_username',
       'pulse_password',
       'aws_accessKeyId',
       'aws_secretAccessKey',
-      'azure_accountName',
-      'azure_accountKey',
       'influx_connectionString'
     ],
     filename:     'taskcluster-index'
@@ -44,13 +43,17 @@ var launch = function(profile) {
   });
 
   // Configure IndexedTask and Namespace entities
-  var IndexedTask = data.IndexedTask.configure({
-    tableName:        cfg.get('index:indexedTaskTableName'),
-    credentials:      cfg.get('azure')
+  var IndexedTask = data.IndexedTask.setup({
+    account:          cfg.get('index:azureAccount'),
+    table:            cfg.get('index:indexedTaskTableName'),
+    credentials:      cfg.get('taskcluster:credentials'),
+    authBaseUrl:      cfg.get('taskcluster:authBaseUrl')
   });
-  var Namespace = data.Namespace.configure({
-    tableName:        cfg.get('index:namespaceTableName'),
-    credentials:      cfg.get('azure')
+  var Namespace = data.Namespace.setup({
+    account:          cfg.get('index:azureAccount'),
+    table:            cfg.get('index:namespaceTableName'),
+    credentials:      cfg.get('taskcluster:credentials'),
+    authBaseUrl:      cfg.get('taskcluster:authBaseUrl')
   });
 
   // Create a validator
@@ -72,12 +75,8 @@ var launch = function(profile) {
     exchangePrefix: cfg.get('taskcluster:queueExchangePrefix')
   });
 
-  // When: validator and tables are created, proceed
-  return Promise.all([
-    validatorCreated,
-    IndexedTask.createTable(),
-    Namespace.createTable()
-  ]).then(function() {
+  // When: validator is created, proceed
+  return validatorCreated.then(function() {
     // Create event handlers
     var handlers = new Handlers({
       IndexedTask:        IndexedTask,

@@ -136,7 +136,10 @@ api.declare({
   namespace = namespace.join('.');
 
   // Load indexed task
-  return ctx.IndexedTask.load(namespace, name).then(function(task) {
+  return ctx.IndexedTask.load({
+    namespace:    namespace,
+    name:         name
+  }).then(function(task) {
     return res.reply(task.json());
   }, function(err) {
     // Re-throw the error, if it's not a 404
@@ -175,20 +178,23 @@ api.declare({
   var ctx       = this;
   var namespace = req.params.namespace || '';
 
-  return ctx.Namespace.iteratePartitionKey(
-    namespace,
-    req.body.continuationToken
-  ).then(function(result) {
-    var namespaces        = result[0];
-    var continuationToken = result[1];
-    return res.reply({
-      namespaces: namespaces.map(function(ns) {
-        return ns.json();
-      }),
-      continuationToken:  continuationToken
+  // Query with given namespace
+  return ctx.Namespace.query({
+    parent:      namespace
+  }, {
+    continuation:   req.body.continuationToken
+  }).then(function(data) {
+    var retval = {};
+    retval.namespaces = data.entries.map(function(ns) {
+      return ns.json();
     });
+    if (data.continuation) {
+      retval.continuationToken = data.continuation;
+    }
+    return res.reply(retval);
   });
 });
+
 
 /** List tasks in namespace */
 api.declare({
@@ -212,18 +218,19 @@ api.declare({
   var ctx       = this;
   var namespace = req.params.namespace || '';
 
-  return ctx.IndexedTask.iteratePartitionKey(
-    namespace,
-    req.body.continuationToken
-  ).then(function(result) {
-    var tasks             = result[0];
-    var continuationToken = result[1];
-    return res.reply({
-      tasks: tasks.map(function(task) {
-        return task.json();
-      }),
-      continuationToken:  continuationToken
+  return ctx.IndexedTask.query({
+    namespace:    namespace
+  }, {
+    continuation: req.body.continuationToken
+  }).then(function(data) {
+    var retval = {};
+    retval.tasks = data.entries.map(function(task) {
+      return task.json();
     });
+    if (data.continuation) {
+      retval.continuationToken = data.continuation;
+    }
+    return res.reply(retval);
   });
 });
 
