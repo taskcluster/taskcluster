@@ -5,7 +5,6 @@ var debug       = require('debug')('index:handlers');
 var _           = require('lodash');
 var base        = require('taskcluster-base');
 var helpers     = require('./helpers');
-var data        = require('./data');
 
 /**
  * Create handlers

@@ -41,6 +41,7 @@ properties:
         - expires
   continuationToken:
     title:                "Continuation Token"
+    type:                 string
     description: |
       A continuation token is returned if there are more results than listed
       here. You can optionally provide the token in the request payload to
