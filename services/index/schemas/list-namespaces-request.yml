@@ -7,6 +7,7 @@ type:               object
 properties:
   continuationToken:
     title:                "Continuation Token"
+    type:                 string
     description: |
       A continuation token previously returned in a response to this list
       request. This property is optional and should not be provided for first

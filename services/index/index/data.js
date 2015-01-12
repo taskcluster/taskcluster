@@ -5,22 +5,17 @@ var _           = require('lodash');
 
 /** Entities for indexed tasks */
 var IndexedTask = base.Entity.configure({
-  mapping: [
-    {
-      key:                'PartitionKey',
-      property:           'namespace',
-      type:               'keystring'
-    }, {
-      key:                'RowKey',
-      property:           'name',
-      type:               'keystring'
-    },
-    { key: 'version',     type: 'number'    },
-    { key: 'rank',        type: 'number'    },
-    { key: 'taskId',      type: 'slugid'    },
-    { key: 'data',        type: 'json'      },
-    { key: 'expires',     type: 'date'      }
-  ]
+  version:          1,
+  partitionKey:     base.Entity.keys.HashKey('namespace'),
+  rowKey:           base.Entity.keys.StringKey('name'),
+  properties: {
+    namespace:      base.Entity.types.String,
+    name:           base.Entity.types.String,
+    rank:           base.Entity.types.Number,
+    taskId:         base.Entity.types.SlugId,
+    data:           base.Entity.types.JSON,
+    expires:        base.Entity.types.Date
+  }
 });
 
 // Export IndexedTask
@@ -42,21 +37,17 @@ IndexedTask.prototype.json = function() {
   };
 };
 
+
 /** Entities for namespaces */
 var Namespace = base.Entity.configure({
-  mapping: [
-    {
-      key:                'PartitionKey',
-      property:           'parent',
-      type:               'keystring'
-    }, {
-      key:                'RowKey',
-      property:           'name',
-      type:               'keystring'
-    },
-    { key: 'version',     type: 'number'    },
-    { key: 'expires',     type: 'date'      }
-  ]
+  version:          1,
+  partitionKey:     base.Entity.keys.HashKey('parent'),
+  rowKey:           base.Entity.keys.StringKey('name'),
+  properties: {
+    parent:         base.Entity.types.String,
+    name:           base.Entity.types.String,
+    expires:        base.Entity.types.Date
+  }
 });
 
 // Export Namespace
@@ -75,7 +66,6 @@ Namespace.prototype.json = function() {
     expires:    this.expires.toJSON()
   };
 };
-
 
 /** Create namespace structure */
 Namespace.ensureNamespace = function(namespace, expires) {
@@ -104,7 +94,10 @@ Namespace.ensureNamespace = function(namespace, expires) {
   var parent  = namespace.join('.');
 
   // Load namespace, to check if it exists and if we should update expires
-  return Class.load(parent, name).then(function(folder) {
+  return Class.load({
+    parent:   parent,
+    name:     name
+  }).then(function(folder) {
     // Modify the namespace
     return folder.modify(function() {
       // Check if we need to update expires
@@ -132,7 +125,6 @@ Namespace.ensureNamespace = function(namespace, expires) {
       return Class.create({
         parent:       parent,
         name:         name,
-        version:      1,
         expires:      expires
       }).then(null, function(err) {
         // Re-throw error if it's because the entity was constructed while we
@@ -141,7 +133,10 @@ Namespace.ensureNamespace = function(namespace, expires) {
           throw err;
         }
 
-        return Class.load(parent, name);
+        return Class.load({
+          parent:   parent,
+          name:     name
+        });
       });
     });
   });
