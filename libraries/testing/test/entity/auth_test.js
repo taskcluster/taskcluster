@@ -195,4 +195,32 @@ suite("Entity (SAS from auth.taskcluster.net)", function() {
       assert(callCount === 2, "We should only have called once!");
     });
   });
+
+  test("Load in parallel, only gets SAS once", function() {
+    callCount = 0;
+    returnExpiredSAS = false;  // This means we call for each operation
+    var Item3 = ItemV1.setup({
+      account:      cfg.get('azure:accountName'),
+      table:        cfg.get('azureTestTableName'),
+      credentials:  {
+        clientId:         'authed-client',
+        accessToken:      'test-token'
+      },
+      authBaseUrl:  'http://localhost:23244'
+    });
+    return Promise.all([
+      Item3.create({
+        id:     slugid.v4(),
+        name:   'my-test-item1',
+        count:  1
+      }),
+      Item3.create({
+        id:     slugid.v4(),
+        name:   'my-test-item2',
+        count:  1
+      })
+    ]).then(function() {
+      assert(callCount === 1, "We should only have called once!");
+    });
+  });
 });
