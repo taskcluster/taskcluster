@@ -22,8 +22,10 @@
     "slugid":                           "1.0.3",
     "promise":                          "6.0.1",
     "hawk":                             "2.3.0",
-    "sockjs-client-node":               "0.1.1",
     "url-join":                         "0.0.1"
+  },
+  "optionalDependencies": {
+    "sockjs-client-node":               "0.1.1"
   },
   "devDependencies": {
     "mocha":                            "1.21.5",
