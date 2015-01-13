@@ -158,7 +158,7 @@ api.declare({
 
 /** List namespaces inside another namespace */
 api.declare({
-  method:         'get',
+  method:         'post',
   route:          '/namespaces/:namespace(*)',
   name:           'listNamespaces',
   input:          SCHEMA_PREFIX_CONST + 'list-namespaces-request.json#',
@@ -199,7 +199,7 @@ api.declare({
 
 /** List tasks in namespace */
 api.declare({
-  method:         'get',
+  method:         'post',
   route:          '/tasks/:namespace(*)',
   name:           'listTasks',
   input:          SCHEMA_PREFIX_CONST + 'list-tasks-request.json#',
