@@ -158,7 +158,7 @@ module.exports = {
           ],
           "name": "azureTableSAS",
           "title": "Get Shared-Access-Signature for Azure Table",
-          "description": "Get an SAS string for use with azure table storage",
+          "description": "Get an SAS string for use with a specific Azure Table Storage table.\nNote, this will create the table, if it doesn't already exists.",
           "scopes": [
             [
               "auth:azure-table-access:<account>/<table>"
@@ -1430,7 +1430,7 @@ module.exports = {
         },
         {
           "type": "function",
-          "method": "get",
+          "method": "post",
           "route": "/namespaces/<namespace>",
           "args": [
             "namespace"
@@ -1443,7 +1443,7 @@ module.exports = {
         },
         {
           "type": "function",
-          "method": "get",
+          "method": "post",
           "route": "/tasks/<namespace>",
           "args": [
             "namespace"
