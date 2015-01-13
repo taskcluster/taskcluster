@@ -182,6 +182,7 @@ api.declare({
   return ctx.Namespace.query({
     parent:      namespace
   }, {
+    limit:          req.body.limit,
     continuation:   req.body.continuationToken
   }).then(function(data) {
     var retval = {};
@@ -221,6 +222,7 @@ api.declare({
   return ctx.IndexedTask.query({
     namespace:    namespace
   }, {
+    limit:        req.body.limit,
     continuation: req.body.continuationToken
   }).then(function(data) {
     var retval = {};

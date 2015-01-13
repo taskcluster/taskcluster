@@ -5,6 +5,15 @@ description: |
   Request to list namespaces within a given namespace.
 type:               object
 properties:
+  limit:
+    title:                "Result limit"
+    type:                 integer
+    minimum:              1
+    maximum:              1000
+    default:              1000
+    description: |
+      Maximum number of results per page. If there are more results than this
+      a continuation token will be return.
   continuationToken:
     title:                "Continuation Token"
     type:                 string
