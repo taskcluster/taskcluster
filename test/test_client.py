@@ -5,13 +5,13 @@ import time
 realTimeTime = time.time
 import datetime
 
-import httmock
 import mock
 import requests
 
 import base
 import taskcluster.client as subject
 import taskcluster.exceptions as exc
+import taskcluster.utils as utils
 
 
 class ClientTest(base.TCTest):
@@ -129,41 +129,6 @@ class TestProcessArgs(ClientTest):
       self.client._processArgs({'args': ['test'], 'name': 'test'}, {'john': 'ford'})
 
 
-class TestMakeSingleHttpRequest(ClientTest):
-  def test_success_no_payload(self):
-    @httmock.all_requests
-    def response_content(url, request):
-      return {'status_code': 200, 'content': {}}
-
-    with httmock.HTTMock(response_content):
-      d = self.client._makeSingleHttpRequest('GET', 'http://www.example.com', {})
-      self.assertEqual(d.json(), {})
-      self.assertEqual(d.status_code, 200)
-      d.raise_for_status()
-
-  def test_success_payload(self):
-    @httmock.all_requests
-    def response_content(url, request):
-      self.assertEqual(request.body, '{"i":"j"}')
-      return {'status_code': 200, 'content': {'k': 'l'}}
-
-    with httmock.HTTMock(response_content):
-      d = self.client._makeSingleHttpRequest('GET', 'http://www.example.com', {'i': 'j'})
-      self.assertEqual(d.json(), {'k': 'l'})
-      self.assertEqual(d.status_code, 200)
-      d.raise_for_status()
-
-  def test_failure(self):
-    @httmock.all_requests
-    def response_content(url, requet):
-      return {'status_code': 404}
-
-    with httmock.HTTMock(response_content):
-      d = self.client._makeSingleHttpRequest('GET', 'http://www.example.com', {})
-      with self.assertRaises(requests.exceptions.RequestException):
-        d.raise_for_status()
-
-
 # This could probably be done better with Mock
 class ObjWithDotJson(object):
   def __init__(self, status_code, x):
@@ -184,16 +149,16 @@ class TestMakeHttpRequest(ClientTest):
     ClientTest.setUp(self)
 
   def test_success_first_try(self):
-    with mock.patch.object(self.client, '_makeSingleHttpRequest') as p:
+    with mock.patch.object(utils, 'makeSingleHttpRequest') as p:
       expected = {'test': 'works'}
       p.return_value = ObjWithDotJson(200, expected)
 
       v = self.client._makeHttpRequest('GET', 'http://www.example.com', {})
-      p.assert_called_once_with('GET', 'http://www.example.com', {}, 'e30=')
+      p.assert_called_once_with('GET', 'http://www.example.com', {}, mock.ANY)
       self.assertEqual(expected, v)
 
   def test_success_fifth_try_status_code(self):
-    with mock.patch.object(self.client, '_makeSingleHttpRequest') as p:
+    with mock.patch.object(utils, 'makeSingleHttpRequest') as p:
       expected = {'test': 'works'}
       sideEffect = [
         ObjWithDotJson(500, None),
@@ -203,7 +168,7 @@ class TestMakeHttpRequest(ClientTest):
         ObjWithDotJson(200, expected)
       ]
       p.side_effect = sideEffect
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}, 'e30=')
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}, mock.ANY)
                        for x in range(self.client.options['maxRetries'])]
 
       v = self.client._makeHttpRequest('GET', 'http://www.example.com', {})
@@ -211,7 +176,7 @@ class TestMakeHttpRequest(ClientTest):
       self.assertEqual(expected, v)
 
   def test_success_fifth_try_connection_errors(self):
-    with mock.patch.object(self.client, '_makeSingleHttpRequest') as p:
+    with mock.patch.object(utils, 'makeSingleHttpRequest') as p:
       expected = {'test': 'works'}
       sideEffect = [
         requests.exceptions.RequestException,
@@ -221,7 +186,7 @@ class TestMakeHttpRequest(ClientTest):
         ObjWithDotJson(200, expected)
       ]
       p.side_effect = sideEffect
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}, 'e30=')
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}, mock.ANY)
                        for x in range(self.client.options['maxRetries'])]
 
       v = self.client._makeHttpRequest('GET', 'http://www.example.com', {})
@@ -229,18 +194,18 @@ class TestMakeHttpRequest(ClientTest):
       self.assertEqual(expected, v)
 
   def test_failure_status_code(self):
-    with mock.patch.object(self.client, '_makeSingleHttpRequest') as p:
+    with mock.patch.object(utils, 'makeSingleHttpRequest') as p:
       p.return_value = ObjWithDotJson(500, None)
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}, 'e30=')
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}, mock.ANY)
                        for x in range(self.client.options['maxRetries'])]
       with self.assertRaises(exc.TaskclusterRestFailure):
         self.client._makeHttpRequest('GET', 'http://www.example.com', {})
       p.assert_has_calls(expectedCalls)
 
   def test_failure_connection_errors(self):
-    with mock.patch.object(self.client, '_makeSingleHttpRequest') as p:
+    with mock.patch.object(utils, 'makeSingleHttpRequest') as p:
       p.side_effect = requests.exceptions.RequestException
-      expectedCalls = [mock.call('GET', 'http://www.example.com', {}, 'e30=')
+      expectedCalls = [mock.call('GET', 'http://www.example.com', {}, mock.ANY)
                        for x in range(self.client.options['maxRetries'])]
       with self.assertRaises(exc.TaskclusterRestFailure):
         self.client._makeHttpRequest('GET', 'http://www.example.com', {})

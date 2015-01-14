@@ -8,15 +8,14 @@ try:
   import urlparse
 except ImportError:
   import urllib.parse as urlparse
-import time
 import hashlib
 import hmac
 import datetime
 import calendar
+import requests
 
 # For finding apis.json
 from pkg_resources import resource_string
-import requests
 import hawk
 
 from . import exceptions
@@ -316,34 +315,29 @@ class BaseClient(object):
     fullUrl = urlparse.urljoin(baseUrl, route.lstrip('/'))
     log.debug('Full URL used is: %s', fullUrl)
 
-    retry = 0
-    response = None
-    error = None
-    while retry < self.options['maxRetries']:
-      retry += 1
-      log.debug('Making attempt %d', retry)
-      try:
-        response = self._makeSingleHttpRequest(method, fullUrl, payload, self.makeHawkExt())
-      except requests.exceptions.RequestException as rerr:
-        error = True
-        if retry >= self.options['maxRetries']:
-          raise exceptions.TaskclusterRestFailure('Last Attempt: %s' % rerr, superExc=rerr)
-        else:
-          log.warn('Retrying because of: %s' % rerr)
+    opts = self.options
+    cred = opts.get('credentials')
+    hawkExt = self.makeHawkExt()
+    if cred and 'clientId' in cred and 'accessToken' in cred and cred['clientId'] and cred['accessToken']:
+      hawkOpts = {
+        'credentials': {
+          'id': cred['clientId'],
+          'key': cred['accessToken'],
+          'algorithm': 'sha256',
+        },
+        'ext': hawkExt if hawkExt else {},
+      }
+      header = hawk.client.header(fullUrl, method, hawkOpts)
+      headers = {'Authorization': header['field'].strip()}
+    else:
+      log.info('Not using hawk!')
+      headers = {}
+    if payload:
+      payload = utils.dumpJson(payload)
+      headers['Content-Type'] = 'application/json'
 
-      # We only want to consider connection errors for retry.  Other errors,
-      # like a 404 saying that a resource wasn't found should be returned
-      # immediately
-      if response and response.status_code >= 500 and response.status_code < 600:
-        log.warn('Received HTTP Status %d, retrying', response.status_code)
-        error = True
-
-      if error:
-        snooze = float(retry * retry) / 10.0
-        log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
-        time.sleep(snooze)
-      else:
-        break
+    response = utils.makeHttpRequest(method, fullUrl, payload, headers,
+                                     retries=self.options['maxRetries'])
 
     # We want to send JSON data back to the caller
     try:
@@ -361,30 +355,6 @@ class BaseClient(object):
       raise exceptions.TaskclusterRestFailure(errStr, superExc=ve, res=response)
 
     return apiData
-
-  def _makeSingleHttpRequest(self, method, url, payload, hawkExt=None):
-    log.debug('Making a %s request to %s', method, url)
-    opts = self.options
-    cred = opts.get('credentials')
-    if cred and 'clientId' in cred and 'accessToken' in cred and cred['clientId'] and cred['accessToken']:
-      hawkOpts = {
-        'credentials': {
-          'id': cred['clientId'],
-          'key': cred['accessToken'],
-          'algorithm': 'sha256',
-        },
-        'ext': hawkExt if hawkExt else {},
-      }
-      header = hawk.client.header(url, method, hawkOpts)
-      headers = {'Authorization': header['field'].strip()}
-    else:
-      log.info('Not using hawk!')
-      headers = {}
-    if payload:
-      payload = utils.dumpJson(payload)
-      headers['Content-Type'] = 'application/json'
-
-    return requests.request(method.upper(), url, data=payload, headers=headers)
 
 
 def createApiClient(name, api):
