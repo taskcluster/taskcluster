@@ -1183,7 +1183,9 @@ api.declare({
   description: [
     "Documented later...",
     "",
-    "**Warning** this api end-point is **not stable**."
+    "**Warning** this api end-point is **not stable**.",
+    "",
+    "**This end-point is deprecated!**"
   ].join('\n')
 }, function(req, res) {
   // Validate parameters
@@ -1203,6 +1205,82 @@ api.declare({
     return res.reply({
       tasks: tasks
     });
+  });
+});
+
+/** Count pending tasks */
+api.declare({
+  method:     'get',
+  route:      '/pending/:provisionerId',
+  name:       'pendingTaskCount',
+  scopes:     ['queue:pending-tasks:<provisionerId>'],
+  deferAuth:  true,
+  output:     undefined,  // TODO: define schema later
+  title:      "Get Number of Pending Tasks",
+  description: [
+    "Documented later...",
+    "",
+    "**Warning: This is an experimental end-point!**"
+  ].join('\n')
+}, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
+  var ctx           = this;
+  var provisionerId = req.params.provisionerId;
+
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    provisionerId:  provisionerId
+  })) {
+    return;
+  }
+
+  return ctx.Task.pendingTasks(provisionerId).then(function(result) {
+    return res.reply(result);
+  });
+});
+
+/** Count pending tasks for workerType */
+api.declare({
+  method:     'get',
+  route:      '/pending/:provisionerId/:workerType',
+  name:       'pendingTasks',
+  scopes:     ['queue:pending-tasks:<provisionerId>/<workerType>'],
+  deferAuth:  true,
+  output:     undefined,  // TODO: define schema later
+  title:      "Get Number of Pending Tasks",
+  description: [
+    "Documented later...",
+    "This probably the end-point that will remain after rewriting to azure",
+    "queue storage...",
+    "",
+    "**Warning: This is an experimental end-point!**"
+  ].join('\n')
+}, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
+  var ctx           = this;
+  var provisionerId = req.params.provisionerId;
+  var workerType    = req.params.workerType;
+
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    provisionerId:  provisionerId,
+    workerType:     workerType
+  })) {
+    return;
+  }
+
+  // This implementation is stupid... but it works, just disregard
+  // implementation details...
+  return ctx.Task.pendingTasks(provisionerId).then(function(result) {
+    return res.reply(result[workerType] || 0);
   });
 });
 
