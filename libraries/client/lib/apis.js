@@ -499,7 +499,40 @@ module.exports = {
           ],
           "name": "getPendingTasks",
           "title": "Fetch pending tasks for provisioner",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.\n\n**This end-point is deprecated!**"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/pending/<provisionerId>",
+          "args": [
+            "provisionerId"
+          ],
+          "name": "pendingTaskCount",
+          "title": "Get Number of Pending Tasks",
+          "description": "Documented later...\n\n**Warning: This is an experimental end-point!**",
+          "scopes": [
+            [
+              "queue:pending-tasks:<provisionerId>"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/pending/<provisionerId>/<workerType>",
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "name": "pendingTasks",
+          "title": "Get Number of Pending Tasks",
+          "description": "Documented later...\nThis probably the end-point that will remain after rewriting to azure\nqueue storage...\n\n**Warning: This is an experimental end-point!**",
+          "scopes": [
+            [
+              "queue:pending-tasks:<provisionerId>/<workerType>"
+            ]
+          ]
         },
         {
           "type": "function",

@@ -178,6 +178,8 @@ var queue = new taskcluster.Queue(options);
  * `queue.listArtifacts(taskId, runId) : result`
  * `queue.listLatestArtifacts(taskId) : result`
  * `queue.getPendingTasks(provisionerId) : void`
+ * `queue.pendingTaskCount(provisionerId) : void`
+ * `queue.pendingTasks(provisionerId, workerType) : void`
  * `queue.ping() : void`
 
 ### Methods in `taskcluster.Scheduler`
