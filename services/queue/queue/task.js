@@ -448,6 +448,30 @@ Task.queryPending = transacting(function(provisionerId, knex) {
     });
 });
 
+/** Query tasks for a mapping from workerType to number of pending tasks */
+Task.pendingTasks = transacting(function(provisionerId, knex) {
+  var Class = this;
+  return knex
+    .select(knex.raw(
+      'count(distinct "tasks"."taskId") as "pending", ' +
+      '"tasks"."workerType"'
+    ))
+    .from('tasks')
+    .leftOuterJoin('runs', 'tasks.taskId', 'runs.taskId')
+    .where({
+      'tasks.provisionerId':  provisionerId,
+      'runs.state':           'pending'
+    })
+    .groupBy('tasks.workerType')
+    .then(function(result) {
+      var map = {};
+      result.forEach(function(r) {
+        map[r.workerType] = parseInt(r.pending);
+      })
+      return map;
+    });
+});
+
 
 /**
  * Claim a run for the first time.

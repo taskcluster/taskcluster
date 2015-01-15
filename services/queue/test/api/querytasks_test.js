@@ -45,4 +45,28 @@ suite('Query tasks', function() {
       assert(result.tasks.length == 2, "Expected two tasks");
     });
   });
+
+  test("pendingTaskCount", function() {
+    var taskId1 = slugid.v4();
+    var taskId2 = slugid.v4();
+    return helper.queue.createTask(taskId1, taskDef).then(function() {
+      return helper.queue.createTask(taskId2, taskDef);
+    }).then(function() {
+      return helper.queue.pendingTaskCount('my-provisioner');
+    }).then(function(result) {
+      assert(result['my-worker'] === 2, "Expected two tasks from my-worker");
+    });
+  });
+
+  test("pendingTasks", function() {
+    var taskId1 = slugid.v4();
+    var taskId2 = slugid.v4();
+    return helper.queue.createTask(taskId1, taskDef).then(function() {
+      return helper.queue.createTask(taskId2, taskDef);
+    }).then(function() {
+      return helper.queue.pendingTasks('my-provisioner', 'my-worker');
+    }).then(function(result) {
+      assert(result === 2, "Expected two tasks from my-worker");
+    });
+  });
 });

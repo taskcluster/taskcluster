@@ -355,4 +355,84 @@ suite('queue/task', function() {
       });
     });
   });
+
+  test("pendingTasks", function() {
+    var provisionerId = slugid.v4();
+    return Promise.all([
+      Task.create({
+        version:        1,
+        taskId:         slugid.v4(),
+        provisionerId:  provisionerId,
+        workerType:     'workerType1',
+        schedulerId:    'my-scheduler',
+        taskGroupId:    slugid.v4(),
+        created:        new Date().toJSON(),
+        deadline:       new Date().toJSON(),
+        retriesLeft:    4,
+        routes:         ["my.routing.key", "another.routing.key"],
+        owner:          "jonasfj@mozilla.com",
+        runs:           [{
+          runId:          0,
+          state:          'pending',
+          reasonCreated:  'new-task',
+          scheduled:      new Date().toJSON()
+        }]
+      }),
+      Task.create({
+        version:        1,
+        taskId:         slugid.v4(),
+        provisionerId:  provisionerId,
+        workerType:     'workerType2',
+        schedulerId:    'my-scheduler',
+        taskGroupId:    slugid.v4(),
+        created:        new Date().toJSON(),
+        deadline:       new Date().toJSON(),
+        retriesLeft:    4,
+        routes:         ["my.routing.key", "another.routing.key"],
+        owner:          "jonasfj@mozilla.com",
+        runs:           [{
+          runId:          0,
+          // I know this wrong, but I want correct reporting, even if the
+          // there is something wrong in the database
+          state:          'pending',
+          reasonCreated:  'new-task',
+          scheduled:      new Date().toJSON()
+        }, {
+          runId:          1,
+          state:          'pending',
+          reasonCreated:  'new-task',
+          scheduled:      new Date().toJSON()
+        }]
+      }),
+      Task.create({
+        version:        1,
+        taskId:         slugid.v4(),
+        provisionerId:  provisionerId,
+        workerType:     'workerType2',
+        schedulerId:    'my-scheduler',
+        taskGroupId:    slugid.v4(),
+        created:        new Date().toJSON(),
+        deadline:       new Date().toJSON(),
+        retriesLeft:    4,
+        routes:         ["my.routing.key", "another.routing.key"],
+        owner:          "jonasfj@mozilla.com",
+        runs:           [{
+          runId:          0,
+          state:          'running',
+          reasonCreated:  'new-task',
+          scheduled:      new Date().toJSON()
+        }, {
+          runId:          1,
+          state:          'pending',
+          reasonCreated:  'new-task',
+          scheduled:      new Date().toJSON()
+        }]
+      })
+    ]).then(function() {
+      return Task.pendingTasks(provisionerId);
+    }).then(function(result) {
+      assert(result.workerType1 === 1, "Wrong result!");
+      assert(result.workerType2 === 2, "Wrong result!");
+    });
+  });
 });
