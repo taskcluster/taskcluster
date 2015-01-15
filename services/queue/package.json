@@ -1,4 +1,4 @@
-{
+  {
   "name":     "taskcluster-queue",
   "version":  "1.0.0",
   "private":  true,
@@ -16,20 +16,20 @@
     "url-join":                         "0.0.1",
     "knex":                             "0.7.3",
     "pg.js":                            "3.5.0",
-    "promise":                          "6.0.0",
+    "promise":                          "6.1.0",
     "lodash":                           "2.4.1",
     "uuid":                             "2.0.1",
-    "debug":                            "2.0.0",
+    "debug":                            "2.1.1",
     "slugid":                           "1.0.3",
     "taskcluster-base":                 "0.6.3",
-    "azure-storage":                    "0.3.3"
+    "azure-storage":                    "0.4.2"
   },
   "devDependencies": {
-    "superagent":                       "0.20.0",
+    "superagent":                       "0.21.0",
     "superagent-promise":               "0.2.0",
-    "mocha":                            "1.21.4",
-    "xmlbuilder":                       "2.4.4",
-    "taskcluster-client":               "0.17.1"
+    "mocha":                            "2.1.0",
+    "xmlbuilder":                       "2.4.5",
+    "taskcluster-client":               "0.19.2"
   },
   "engines": {
     "node":                             "0.10.x"
