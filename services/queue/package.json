@@ -22,7 +22,8 @@
     "debug":                            "2.1.1",
     "slugid":                           "1.0.3",
     "taskcluster-base":                 "0.6.3",
-    "azure-storage":                    "0.4.2"
+    "azure-storage":                    "0.4.2",
+    "thirty-two":                       "0.0.2"
   },
   "devDependencies": {
     "superagent":                       "0.21.0",
