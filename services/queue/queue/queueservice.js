@@ -92,6 +92,7 @@ QueueService.prototype.ensureQueue = function(provisionerId, workerType) {
 QueueService.prototype.putMessage = function(provisionerId, workerType,
                                              msg, deadline) {
   assert(deadline instanceof Date, "deadline must be a date");
+  assert(isFinite(deadline), "deadline must be a valid date");
   var ttl = Math.floor((deadline.getTime() - new Date().getTime()) / 1000);
   var that = this;
   return this.ensureQueue(provisionerId, workerType).then(function(name) {
@@ -146,7 +147,6 @@ QueueService.prototype.signedUrl = function(provisionerId, workerType) {
         '/messages/<messageId>?popreceipt=<receipt>&',
         sas
       ].join(''),
-      start:  start,
       expiry: expiry
     };
   });

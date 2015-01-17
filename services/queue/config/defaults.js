@@ -38,7 +38,10 @@ module.exports = {
     artifactExpirationDelay:      '1',
 
     // Component property in the responseTime and process statistics
-    statsComponent:               'queue'
+    statsComponent:               'queue',
+
+    // Prefix for azure queues (at most 6 characters)
+    queuePrefix:                  'queue'
   },
 
   // TaskCluster configuration
