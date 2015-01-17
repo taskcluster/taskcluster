@@ -136,7 +136,7 @@ QueueService.prototype.signedUrl = function(provisionerId, workerType) {
         that.accountName,
         '.queue.core.windows.net/',
         name,
-        '/messages?numofmessages=1&visibilitytimeout=60&',
+        '/messages?numofmessages=1&visibilitytimeout=300&',
         sas
       ].join(''),
       deleteMessage: [

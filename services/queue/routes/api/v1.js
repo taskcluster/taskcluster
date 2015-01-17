@@ -617,14 +617,14 @@ api.declare({
 
   // Construct signedUrl for accessing the azure queue for this
   // provisionerId and workerType
-  return this.queueService.signedUrl(
+  return ctx.queueService.signedUrl(
     provisionerId,
     workerType
   ).then(function(result) {
     res.reply({
       signedGetMessageUrl:      result.getMessage,
       signedDeleteMessageUrl:   result.deleteMessage,
-      expires:                  result.toJSON()
+      expires:                  result.expiry.toJSON()
     });
   });
 });

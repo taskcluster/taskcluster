@@ -34,9 +34,27 @@ module.exports = function(options) {
 
   // Return a promise that sleeps for `delay` ms before resolving
   helper.sleep = function(delay) {
-    new Promise(function(accept) {
+    return new Promise(function(accept) {
       setTimeout(accept, delay);
     });
+  };
+
+  /** Poll a function that returns a promise, until it resolves */
+  helper.poll = function(doPoll, attempts, interval) {
+    attempts = attempts || 90;
+    interval = interval || 1000;
+    var pollAgain = function() {
+      return doPoll().catch(function(err) {
+        if (attempts > 0) {
+          attempts -= 1;
+          return helper.sleep(interval).then(function() {
+            return pollAgain();
+          });
+        }
+        throw err;
+      });
+    };
+    return pollAgain();
   };
 
   // Load configuration
