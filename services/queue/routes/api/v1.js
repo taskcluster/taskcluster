@@ -591,7 +591,6 @@ api.declare({
     ]
   ],
   deferAuth:  true,
-  input:      SCHEMA_PREFIX_CONST + 'access-tasks-request.json#',
   output:     SCHEMA_PREFIX_CONST + 'access-tasks-response.json#',
   title:      "Get Access to Pending Tasks",
   description: [
@@ -622,7 +621,11 @@ api.declare({
     provisionerId,
     workerType
   ).then(function(result) {
-    res.reply(result);
+    res.reply({
+      signedGetMessageUrl:      result.getMessage,
+      signedDeleteMessageUrl:   result.deleteMessage,
+      expires:                  result.toJSON()
+    });
   });
 });
 
