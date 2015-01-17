@@ -1,15 +1,16 @@
 #!/usr/bin/env node
-var debug       = require('debug')('queue:bin:server');
-var base        = require('taskcluster-base');
-var v1          = require('../routes/api/v1');
-var path        = require('path');
-var Promise     = require('promise');
-var exchanges   = require('../queue/exchanges');
-var TaskModule  = require('../queue/task.js')
-var _           = require('lodash');
-var BlobStore   = require('../queue/blobstore');
-var data        = require('../queue/data');
-var Bucket      = require('../queue/bucket');
+var debug         = require('debug')('queue:bin:server');
+var base          = require('taskcluster-base');
+var v1            = require('../routes/api/v1');
+var path          = require('path');
+var Promise       = require('promise');
+var exchanges     = require('../queue/exchanges');
+var TaskModule    = require('../queue/task.js')
+var _             = require('lodash');
+var BlobStore     = require('../queue/blobstore');
+var data          = require('../queue/data');
+var Bucket        = require('../queue/bucket');
+var QueueService  = require('../queue/queueservice');
 
 /** Launch server */
 var launch = function(profile) {
@@ -106,6 +107,12 @@ var launch = function(profile) {
                         cfg.get('database:connectionString')
   });
 
+  // Create QueueService to manage azure queues
+  var queueService = new QueueService({
+    prefix:       cfg.get('queue:queuePrefix'),
+    credentials:  cfg.get('azure')
+  });
+
   // When: publisher, validator and containers are created, proceed
   debug("Waiting for resources to be created");
   return Promise.all([
@@ -130,6 +137,7 @@ var launch = function(profile) {
         validator:      validator,
         Artifact:       Artifact,
         claimTimeout:   cfg.get('queue:claimTimeout'),
+        queueService:   queueService,
         cfg:            cfg   // To be deprecated
       },
       validator:        validator,

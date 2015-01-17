@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-var base        = require('taskcluster-base');
-var path        = require('path');
-var debug       = require('debug')('queue:bin:reaper');
-var Promise     = require('promise');
-var exchanges   = require('../queue/exchanges')
-var TaskModule  = require('../queue/task.js')
-var Reaper      = require('../queue/reaper');
+var base          = require('taskcluster-base');
+var path          = require('path');
+var debug         = require('debug')('queue:bin:reaper');
+var Promise       = require('promise');
+var exchanges     = require('../queue/exchanges')
+var TaskModule    = require('../queue/task.js')
+var Reaper        = require('../queue/reaper');
+var QueueService  = require('../queue/queueservice');
+
 
 /** Launch server */
 var launch = function(profile) {
@@ -43,6 +45,12 @@ var launch = function(profile) {
                         cfg.get('database:connectionString')
   });
 
+  // Create QueueService to manage azure queues
+  var queueService = new QueueService({
+    prefix:       cfg.get('queue:queuePrefix'),
+    credentials:  cfg.get('azure')
+  });
+
   // Setup AMQP exchanges and create a publisher
   // First create a validator, though
   var publisherCreated = base.validator({
@@ -73,6 +81,7 @@ var launch = function(profile) {
       errorLimit:   Number(cfg.get('queue:reaper:errorLimit')),
       Task:         Task,
       publisher:    publisher,
+      queueService: queueService,
       start:        true
     });
 
