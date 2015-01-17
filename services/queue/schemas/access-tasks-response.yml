@@ -1,0 +1,49 @@
+id:       http://schemas.taskcluster.net/queue/v1/access-tasks-response.json#
+$schema:  http://json-schema.org/draft-04/schema#"
+title:          "Access Tasks Response"
+description: |
+  Response to request to access tasks.
+type:           object
+properties:
+  signedGetMessageUrl:
+    type:       string
+    format:     uri
+    title:      "Signed Get Message URL"
+    description: |
+      Signed URL to get message from the Azure Queue Storage queue, that holds
+      messages for the given `provisionerId` and `workerType`. Note that this
+      URL returns XML, see documentation for the Azure Queue Storage
+      [REST API](http://msdn.microsoft.com/en-us/library/azure/dd179474.aspx)
+      for details. Please, note that you can tweak both the `numofmessages` and
+      `visibilitytimeout` in the URL, if you wish to fetch multiple messages at
+      the same time.
+      **Remark** Remember to delete messages once, you have claimed the task,
+      mentioned in the message.
+  signedDeleteMessageUrl:
+    type:       string
+      format:     uri
+      title:      "Signed URL-pattern to delete Messages"
+      description: |
+      Signed URL-pattern to delete messages from the Azure Queue Storage queue,
+      that holds message for the given `provisionerId` and `workerTyp`.
+      Note, that this is a URL-pattern, you must substitute `<messageId>` and
+      `<receipt>` with the `MessageId` and URI-encoded `PopReceipt` from the
+      the get message response. Additionally, this URL-pattern requires a
+      `DELETE` request.
+      For details documentation for the Azure Queue Storage
+      [REST API](http://msdn.microsoft.com/en-us/library/azure/dd179347.aspx).
+      **Remark** Remember to delete messages once, you have claimed the task,
+      mentioned in the message, or if claiming the task fails `409` indicating
+      that it has already been claimed. If you don't do this correctly, the
+      messages will become visible in the Azure Queue Storage queue again.
+  expires:
+    title:    "Signed URL Expiration"
+    description: |
+      Date and time after which the signed URLs provided in this response
+      expires and not longer works for authentication.
+    type:         string
+    format:       date-time
+required:
+  - signedGetMessageUrl
+  - signedDeleteMessageUrl
+  - expires
