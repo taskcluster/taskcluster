@@ -4,6 +4,7 @@ var Promise     = require('promise');
 var debug       = require('debug')('queue:queue');
 var assert      = require('assert');
 var base32      = require('thirty-two');
+var querystring = require('querystring');
 
 /** Decode Url-safe base64, our identifiers satisfies these requirements */
 var decodeUrlSafeBase64 = function(data) {
@@ -34,6 +35,9 @@ var QueueService = function(options) {
     options.credentials.accountKey
   ).withFilter(new azure.ExponentialRetryPolicyFilter());
 
+  // Store account name of use in SAS signed Urls
+  this.accountName = options.credentials.accountName;
+
   // Promises that queues are created, return the queue name
   this.queues = {};
 };
@@ -51,13 +55,19 @@ QueueService.prototype.ensureQueue = function(provisionerId, workerType) {
 
   // Create promise, if it doesn't exist
   if (!retval) {
-    assert(/^[A-Za-z0-9_-]$/.test(provisionerId), "Expected identifier");
-    assert(/^[A-Za-z0-9_-]$/.test(workerType), "Expected identifier");
+    assert(/^[A-Za-z0-9_-]{1,22}$/.test(provisionerId), "Expected identifier");
+    assert(/^[A-Za-z0-9_-]{1,22}$/.test(workerType), "Expected identifier");
     // Construct queue name
     var name = [
       this.prefix,    // prefix all queues
-      base32.encode(decodeUrlSafeBase64(provisionerId)).toString('utf8'),
-      base32.encode(decodeUrlSafeBase64(workerType)).toString('utf8'),
+      base32.encode(decodeUrlSafeBase64(provisionerId))
+        .toString('utf8')
+        .toLowerCase()
+        .replace(/=*$/, ''),
+      base32.encode(decodeUrlSafeBase64(workerType))
+        .toString('utf8')
+        .toLowerCase()
+        .replace(/=*$/, ''),
       '1'             // priority, currently just hardcoded to 1
     ].join('-');
 
@@ -79,7 +89,8 @@ QueueService.prototype.ensureQueue = function(provisionerId, workerType) {
 };
 
 /** Put a message into a queue */
-QueueService.prototype.putMessage = function(provisionerId, workerType, msg) {
+QueueService.prototype.putMessage = function(provisionerId, workerType,
+                                             msg, deadline) {
   var that = this;
   return this.ensureQueue(provisionerId, workerType).then(function(name) {
     return new Promise(function(accept, reject) {
@@ -97,3 +108,44 @@ QueueService.prototype.putMessage = function(provisionerId, workerType, msg) {
 };
 
 
+QueueService.prototype.signedUrl = function(provisionerId, workerType) {
+  // Set start of the signature to 15 min in the past
+  var start = new Date();
+  start.setMinutes(start.getMinutes() - 15);
+
+  // Set the expiry of the signature to 30 min in the future
+  var expiry = new Date();
+  expiry.setMinutes(expiry.getMinutes() + 30);
+
+  var that = this;
+  return this.ensureQueue(provisionerId, workerType).then(function(name) {
+    var sas = that.service.generateSharedAccessSignature(name, {
+      AccessPolicy: {
+        Permissions:  azure.QueueUtilities.SharedAccessPermissions.PROCESS,
+        Start:        start,
+        Expiry:       expiry
+      }
+    });
+
+    return {
+      getMessage: [
+        'https://',
+        that.accountName,
+        '.queue.core.windows.net/',
+        name,
+        '/messages?numofmessages=1&visibilitytimeout=60&',
+        sas
+      ].join(''),
+      deleteMessage: [
+        'https://',
+        that.accountName,
+        '.queue.core.windows.net/',
+        name,
+        '/messages/<messageId>?popreceipt=<receipt>&',
+        sas
+      ].join(''),
+      start:  start,
+      expiry: expiry
+    };
+  });
+};
