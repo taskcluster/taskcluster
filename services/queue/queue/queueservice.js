@@ -91,12 +91,14 @@ QueueService.prototype.ensureQueue = function(provisionerId, workerType) {
 /** Put a message into a queue */
 QueueService.prototype.putMessage = function(provisionerId, workerType,
                                              msg, deadline) {
+  assert(deadline instanceof Date, "deadline must be a date");
+  var ttl = Math.floor((deadline.getTime() - new Date().getTime()) / 1000);
   var that = this;
   return this.ensureQueue(provisionerId, workerType).then(function(name) {
     return new Promise(function(accept, reject) {
       that.service.createMessage(name, JSON.stringify(msg), {
-        messagettl:           7 * 24 * 60 * 60,
-        visibilityTimeout:    0
+        messagettl:         ttl,
+        visibilityTimeout:  0
       }, function(err) {
         if(err) {
           return reject(err);

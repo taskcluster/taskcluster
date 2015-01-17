@@ -48,11 +48,13 @@ suite('queue/QueueService', function() {
 
   // Test that putMessage works
   test("putMessage", function() {
+    var deadline = new Date();
+    deadline.setMinutes(deadline.getMinutes() + 10);
     return queueService.putMessage('no-provisioner', workerType, {
       message: "test",
       num:    34,
       text: "<lalal ></"
-    });
+    }, deadline);
   });
 
   test("signedUrl", function() {
