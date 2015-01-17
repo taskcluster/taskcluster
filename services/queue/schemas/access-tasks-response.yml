@@ -21,9 +21,9 @@ properties:
       mentioned in the message.
   signedDeleteMessageUrl:
     type:       string
-      format:     uri
-      title:      "Signed URL-pattern to delete Messages"
-      description: |
+    format:     uri
+    title:      "Signed URL-pattern to delete Messages"
+    description: |
       Signed URL-pattern to delete messages from the Azure Queue Storage queue,
       that holds message for the given `provisionerId` and `workerTyp`.
       Note, that this is a URL-pattern, you must substitute `<messageId>` and
