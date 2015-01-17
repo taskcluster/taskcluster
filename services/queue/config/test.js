@@ -12,7 +12,8 @@ module.exports = {
     artifactBucket:               'test-bucket-for-any-garbage',
     artifactContainer:            'artifacts',
     taskContainer:                'tasks',
-    responseTimeComponent:        'test-queue'
+    responseTimeComponent:        'test-queue',
+    queuePrefix:                  'hacks'
   },
 
   taskcluster: {
