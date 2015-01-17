@@ -15,6 +15,7 @@ var debug   = require('debug')('queue:reaper');
  *   Task:          // Task from queue/task.js
  *   publisher:     // publisher from base.Exchanges
  *   start:         // Start immediately (defaults to false)
+ *   queueService:  // QueueService from queue/queueservice.js
  * }
  */
 var Reaper = function(options) {
@@ -31,14 +32,16 @@ var Reaper = function(options) {
          "options.interval must be a positive number");
   assert(options.Task, "Task must be a Task instance");
   assert(options.publisher, "publisher must be a provided");
+  assert(options.queueService, "queueService must be provided");
 
   // Set properties
-  this._Task        = options.Task;
-  this._publisher   = options.publisher;
-  this._interval    = options.interval;
-  this._errorLimit  = options.errorLimit;
-  this._errorCount  = 0;
-  this._timeout = null;
+  this._Task          = options.Task;
+  this._queueService  = options.queueService;
+  this._publisher     = options.publisher;
+  this._interval      = options.interval;
+  this._errorLimit    = options.errorLimit;
+  this._errorCount    = 0;
+  this._timeout       = null;
 
   // Auto start reaper
   if (options.start) {
@@ -151,11 +154,22 @@ Reaper.prototype.reap = function() {
     debug("retry after claim expiration: " + tasks.length);
     return Promise.all(tasks.map(function(task) {
       debug("task retried: %s (by claim expiration)", task.taskId);
-      // Publish message
-      return that._publisher.taskPending({
-        status:     task.status(),
-        runId:      _.last(task.runs).runId
-      }, task.routes);
+
+      // Put message in appropriate azure queue
+      return that._queueService.queueService.putMessage(
+        task.provisionerId,
+        task.workerType, {
+          status:   task.status(),
+          runId:    _.last(task.runs).runId
+        },
+        new Date(task.deadline)
+      ).then(function() {
+        // Publish message
+        return that._publisher.taskPending({
+          status:     task.status(),
+          runId:      _.last(task.runs).runId
+        }, task.routes);
+      });
     }));
   });
 

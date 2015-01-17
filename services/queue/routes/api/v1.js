@@ -23,6 +23,7 @@ var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
  *   validator:      // base.validator
  *   Artifacts:      // base.Entity subclass
  *   claimTimeout:   // Number of seconds before a claim expires
+ *   queueService:   // Azure QueueService object from queueservice.js
  *   cfg:            // Configuration object
  * }
  */
@@ -257,6 +258,16 @@ api.declare({
       return ctx.publisher.taskDefined({
         status:         task.status()
       }, task.routes).then(function() {
+        // Put message in appropriate azure queue
+        return ctx.queueService.putMessage(
+          taskDef.provisionerId,
+          taskDef.workerType, {
+            status:   task.status(),
+            runId:    _.last(task.runs).runId
+          },
+          new Date(taskDef.deadline)
+        );
+      }).then(function() {
         // Publish message about a pending task
         return ctx.publisher.taskPending({
           status:         task.status(),
@@ -494,14 +505,24 @@ api.declare({
 
     // If allowed, schedule the task in question
     return ctx.Task.schedule(taskId).then(function(task) {
-      // Make sure it's announced
-      return announced = ctx.publisher.taskPending({
-        status:     task.status(),
-        runId:      _.last(task.runs).runId
-      }, task.routes).then(function() {
-        // Wait for announcement to be completed, then reply to caller
-        res.reply({
-          status:     task.status()
+      // Put message in appropriate azure queue
+      return ctx.queueService.putMessage(
+        task.provisionerId,
+        task.workerType, {
+          status:   task.status(),
+          runId:    _.last(task.runs).runId
+        },
+        new Date(task.deadline)
+      ).then(function() {
+        // Make sure it's announced
+        return ctx.publisher.taskPending({
+          status:     task.status(),
+          runId:      _.last(task.runs).runId
+        }, task.routes).then(function() {
+          // Wait for announcement to be completed, then reply to caller
+          res.reply({
+            status:     task.status()
+          });
         });
       });
     });
@@ -556,6 +577,55 @@ api.declare({
     });
   });
 });
+
+
+/** Claim a task */
+api.declare({
+  method:     'get',
+  route:      '/access-tasks/:provisionerId/:workerType',
+  name:       'accessTasks',
+  scopes: [
+    [
+      'queue:access-tasks',
+      'assume:worker-type:<provisionerId>/<workerType>'
+    ]
+  ],
+  deferAuth:  true,
+  input:      SCHEMA_PREFIX_CONST + 'access-tasks-request.json#',
+  output:     SCHEMA_PREFIX_CONST + 'access-tasks-response.json#',
+  title:      "Get Access to Pending Tasks",
+  description: [
+    "Get a signed url to get and delete message from azure queue."
+  ].join('\n')
+}, function(req, res) {
+    // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
+  var ctx = this;
+
+  var provisionerId = req.params.provisionerId;
+  var workerType    = req.params.workerType;
+
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    provisionerId:  provisionerId,
+    workerType:     workerType
+  })) {
+    return;
+  }
+
+  // Construct signedUrl for accessing the azure queue for this
+  // provisionerId and workerType
+  return this.queueService.signedUrl(
+    provisionerId,
+    workerType
+  ).then(function(result) {
+    res.reply(result);
+  });
+});
+
 
 /** Claim a task */
 api.declare({
@@ -744,7 +814,9 @@ api.declare({
     "**Note**, that if no tasks are _pending_ this method will not assign a",
     "task to you. Instead it will return `204` and you should wait a while",
     "before polling the queue again. To avoid polling declare a RabbitMQ queue",
-    "for your `workerType` claim work using `claimTaskRun`."
+    "for your `workerType` claim work using `claimTaskRun`.",
+    "",
+    "**This API end-point is deprecated, and will be dropped in the future!**"
   ].join('\n')
 }, function(req, res) {
   // Validate parameters
@@ -1152,14 +1224,24 @@ api.declare({
         });
       }
 
-      // Publish message
-      return ctx.publisher.taskPending({
-        status:     result.status(),
-        runId:      _.last(result.runs).runId
-      }, result.routes).then(function() {
-        // Reply to caller
-        return res.reply({
-          status:     result.status()
+      // Put message in appropriate azure queue
+      return ctx.queueService.putMessage(
+        result.provisionerId,
+        result.workerType, {
+          status:   result.status(),
+          runId:    _.last(result.runs).runId
+        },
+        new Date(result.deadline)
+      ).then(function() {
+        // Publish message
+        return ctx.publisher.taskPending({
+          status:     result.status(),
+          runId:      _.last(result.runs).runId
+        }, result.routes).then(function() {
+          // Reply to caller
+          return res.reply({
+            status:     result.status()
+          });
         });
       });
     });
