@@ -1,2 +1,2 @@
-# taskclient-client.go
+# taskcluster-client.go
 A go (golang) port of taskcluster-client
