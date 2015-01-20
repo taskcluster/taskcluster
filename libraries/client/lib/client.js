@@ -382,8 +382,8 @@ exports.createClient = function(reference) {
         throw new Error("accessToken must be given");
       }
 
-      // Create bewit
-      var bewit = hawk.uri.getBewit(requestUrl, {
+      // Create bewit (this is messed up, function differs in browser)
+      var bewit = (hawk.client.getBewit || hawk.client.bewit)(requestUrl, {
         credentials:    {
           id:         this._options.credentials.clientId,
           key:        this._options.credentials.accessToken,
