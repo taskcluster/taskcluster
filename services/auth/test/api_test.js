@@ -49,6 +49,15 @@ suite('api', function() {
       name:         "test-client",
       description:  "Client used by automatic tests, file a bug and delete if" +
                     " you ever see this client!"
+    }).then(function() {
+      // Test that create client is idempotent
+      return subject.auth.createClient(clientId, {
+        scopes:       ['auth:*'],
+        expires:      new Date(3000, 1, 1), // far out in the future
+        name:         "test-client",
+        description:  "Client used by automatic tests, file a bug and delete if" +
+                      " you ever see this client!"
+      });
     }).then(function(result) {
       accessToken = result.accessToken;
       assert(result.accessToken, "accessToken missing!");
