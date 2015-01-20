@@ -4,6 +4,7 @@ var base        = require('taskcluster-base');
 var slugid      = require('slugid');
 var azureTable  = require('azure-table-node');
 var Promise     = require('promise');
+var _           = require('lodash');
 
 /** API end-point for version v1/ */
 var api = new base.API({
