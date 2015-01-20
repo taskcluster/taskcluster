@@ -35,7 +35,7 @@
         });
       });
 
-      test('connect, bind and close WebListener', function() {
+      test("connect, bind and close WebListener", function() {
         var listener = new taskcluster.WebListener();
         return listener.connect().then(function() {
           // Test that we can bind
@@ -46,6 +46,16 @@
         }).then(function() {
           return listener.close();
         });
+      });
+
+      test("Build signed url (in browser)", function() {
+        var auth = new taskcluster.Auth({
+          credentials: {
+            clientId:       'test-client',
+            accessToken:    'test-token',
+          }
+        });
+        var url = auth.buildSignedUrl(auth.getCredentials, 'test-client');
       });
     });
     </script>
