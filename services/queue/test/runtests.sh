@@ -16,6 +16,6 @@ mocha                                 \
   test/api/querytasks_test.js         \
   test/api/reaper_test.js             \
   test/api/reruntask_test.js          \
-  test/api/accesstasks_test.js        \
+  test/api/polltask_test.js           \
   ;
 

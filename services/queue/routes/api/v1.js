@@ -4,6 +4,7 @@ var slugid    = require('slugid');
 var assert    = require('assert');
 var _         = require('lodash');
 var base      = require('taskcluster-base');
+var xml2js     = require('xml2js');
 
 // Common schema prefix
 var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
@@ -579,22 +580,24 @@ api.declare({
 });
 
 
-/** Claim a task */
+/** Poll for a task */
 api.declare({
   method:     'get',
-  route:      '/access-tasks/:provisionerId/:workerType',
-  name:       'accessTasks',
+  route:      '/poll-task-url/:provisionerId/:workerType',
+  name:       'pollTaskUrl',
   scopes: [
     [
-      'queue:access-tasks',
+      'queue:poll-task',
       'assume:worker-type:<provisionerId>/<workerType>'
     ]
   ],
   deferAuth:  true,
-  output:     SCHEMA_PREFIX_CONST + 'access-tasks-response.json#',
+  output:     SCHEMA_PREFIX_CONST + 'poll-task-response.json#',
   title:      "Get Access to Pending Tasks",
   description: [
-    "Get a signed url to get and delete message from azure queue."
+    "Get a signed url to get a message from azure queue.",
+    "Once messages are polled from here, you can upload the fill response text",
+    "to `claimWork`."
   ].join('\n')
 }, function(req, res) {
     // Validate parameters
@@ -622,9 +625,194 @@ api.declare({
     workerType
   ).then(function(result) {
     res.reply({
-      signedGetMessageUrl:      result.getMessage,
-      signedDeleteMessageUrl:   result.deleteMessage,
+      signedPollTaskUrl:        result.getMessage,
       expires:                  result.expiry.toJSON()
+    });
+  });
+});
+
+/** Fetch work for a worker */
+api.declare({
+  method:     'post',
+  route:      '/claim-work/:provisionerId/:workerType',
+  name:       'claimWork',
+  scopes: [
+    [
+      'queue:claim-task',
+      'assume:worker-type:<provisionerId>/<workerType>',
+      'assume:worker-id:<workerGroup>/<workerId>'
+    ]
+  ],
+  deferAuth:  true,
+  input:      SCHEMA_PREFIX_CONST + 'claim-work-request.json#',
+  output:     SCHEMA_PREFIX_CONST + 'task-claim-response.json#',
+  title:      "Claim work for a worker",
+  description: [
+    "Claim work for a worker, returns information about an appropriate task",
+    "claimed for the worker. Similar to `claimTask`, which can be",
+    "used to claim a specific task, or reclaim a specific task extending the",
+    "`takenUntil` timeout for the run.",
+    "",
+    "**Note**, that if no tasks are _pending_ this method will not assign a",
+    "task to you. Instead it will return `204` and you should wait a while",
+    "before polling the queue again. To avoid polling taskcluster queue",
+    "you should poll the URL from `pollTaskUrl` and call this end-point with",
+    "XML message returned from this URL.",
+    "Note, you can grep the XML message for the keyword `<MessageText>`."
+  ].join('\n')
+}, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
+  var ctx = this;
+
+  var provisionerId   = req.params.provisionerId;
+  var workerType      = req.params.workerType;
+
+  var workerGroup     = req.body.workerGroup;
+  var workerId        = req.body.workerId;
+
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    provisionerId:  provisionerId,
+    workerType:     workerType,
+    workerGroup:    workerGroup,
+    workerId:       workerId
+  })) {
+    return;
+  }
+
+  // If xmlMessage is included we have delete the message from azure queue
+  // and then try to claim that specific task.
+  if (req.body.xmlMessage) {
+    return new Promise(function(accept, reject) {
+      xml2js.parseString(req.body.xmlMessage, function(err, xmlRoot) {
+        if (err) {
+          return reject(err);
+        }
+        accept(xmlRoot);
+      });
+    }).then(function(xmlRoot) {
+      // Validate that we have a message
+      if (!xmlRoot.QueueMessagesList ||
+          !(xmlRoot.QueueMessagesList.QueueMessage instanceof Array) ||
+          !xmlRoot.QueueMessagesList.QueueMessage[0]) {
+        debug("Failed to read valid XML: %j", xmlRoot);
+        throw new Error("Invalid XML");
+      }
+      // Get queue message, that we're reading
+      var queueMessage = xmlRoot.QueueMessagesList.QueueMessage[0];
+      // Get message text from MessageText and base64 decode
+      var message = JSON.parse(
+        new Buffer(queueMessage.MessageText[0], 'base64').toString()
+      );
+
+      // Load task status structure to validate that we're allowed to claim it
+      return ctx.Task.load(message.status.taskId).then(function(task) {
+        // if task doesn't exist return 404
+        if(!task) {
+          return res.status(404).json({
+            message: "Task not found, or already resolved!"
+          });
+        }
+
+        // Validate that workerType is as was declared
+        if (task.provisionerId  !== provisionerId ||
+            task.workerType     !== workerType) {
+          return res.status(400).json({
+            message: "Wrong workerType"
+          });
+        }
+
+        // Set takenUntil to now + 20 min
+        var takenUntil = new Date();
+        var claimTimeout = parseInt(ctx.claimTimeout);
+        takenUntil.setSeconds(takenUntil.getSeconds() + claimTimeout);
+
+        // Claim run
+        return ctx.Task.claimTaskRun(message.status.taskId, message.runId, {
+          workerGroup:    workerGroup,
+          workerId:       workerId,
+          takenUntil:     takenUntil
+        }).then(function(result) {
+          // Return the "error" message if we have one
+          if(!(result instanceof ctx.Task)) {
+            return res.status(result.code).json({
+              message:      result.message
+            });
+          }
+
+          // Announce that the run is running
+          return ctx.publisher.taskRunning({
+            workerGroup:  workerGroup,
+            workerId:     workerId,
+            runId:        message.runId,
+            takenUntil:   takenUntil.toJSON(),
+            status:       result.status()
+          }, result.routes).then(function() {
+            // Reply to caller
+            return res.reply({
+              workerGroup:  workerGroup,
+              workerId:     workerId,
+              runId:        message.runId,
+              takenUntil:   takenUntil.toJSON(),
+              status:       result.status()
+            });
+          });
+        }).then(function() {
+          // Delete message from azure queue
+          return ctx.queueService.deleteMessage(
+            provisionerId,
+            workerType,
+            queueMessage.MessageId,
+            queueMessage.PopReceipt
+          );
+        });
+      });
+    });
+  }
+
+
+
+  // Set takenUntil to now + 20 min
+  var takenUntil = new Date();
+  takenUntil.setSeconds(takenUntil.getSeconds() + 20 * 60);
+
+  // Claim an arbitrary task
+  return ctx.Task.claimWork({
+    provisionerId:  provisionerId,
+    workerType:     workerType,
+    workerGroup:    workerGroup,
+    workerId:       workerId
+  }).then(function(result) {
+    // Return the "error" message if we have one
+    if(!(result instanceof ctx.Task)) {
+      return res.status(409).json(result.code, {
+        message:      result.message
+      });
+    }
+
+    // Get runId from run that was claimed
+    var runId = _.last(result.runs).runId;
+
+    // Announce that the run is running
+    return ctx.publisher.taskRunning({
+      workerGroup:  workerGroup,
+      workerId:     workerId,
+      runId:        runId,
+      takenUntil:   takenUntil.toJSON(),
+      status:       result.status()
+    }, result.routes).then(function() {
+      // Reply to caller
+      return res.reply({
+        workerGroup:  workerGroup,
+        workerId:     workerId,
+        runId:        runId,
+        takenUntil:   takenUntil.toJSON(),
+        status:       result.status()
+      });
     });
   });
 });
@@ -647,7 +835,9 @@ api.declare({
   output:     SCHEMA_PREFIX_CONST + 'task-claim-response.json#',
   title:      "Claim task",
   description: [
-    "claim a task, more to be added later..."
+    "claim a task, more to be added later...",
+    "",
+    "**This API end-point is deprecated and will be removed in the future"
   ].join('\n')
 }, function(req, res) {
   // Validate parameters
@@ -780,100 +970,6 @@ api.declare({
         });
       }
 
-      // Reply to caller
-      return res.reply({
-        workerGroup:  workerGroup,
-        workerId:     workerId,
-        runId:        runId,
-        takenUntil:   takenUntil.toJSON(),
-        status:       result.status()
-      });
-    });
-  });
-});
-
-/** Fetch work for a worker */
-api.declare({
-  method:     'post',
-  route:      '/claim-work/:provisionerId/:workerType',
-  name:       'claimWork',
-  scopes: [
-    [
-      'queue:claim-task',
-      'assume:worker-type:<provisionerId>/<workerType>',
-      'assume:worker-id:<workerGroup>/<workerId>'
-    ]
-  ],
-  deferAuth:  true,
-  input:      SCHEMA_PREFIX_CONST + 'task-claim-request.json#',
-  output:     SCHEMA_PREFIX_CONST + 'task-claim-response.json#',
-  title:      "Claim work for a worker",
-  description: [
-    "Claim work for a worker, returns information about an appropriate task",
-    "claimed for the worker. Similar to `claimTaskRun`, which can be",
-    "used to claim a specific task, or reclaim a specific task extending the",
-    "`takenUntil` timeout for the run.",
-    "",
-    "**Note**, that if no tasks are _pending_ this method will not assign a",
-    "task to you. Instead it will return `204` and you should wait a while",
-    "before polling the queue again. To avoid polling declare a RabbitMQ queue",
-    "for your `workerType` claim work using `claimTaskRun`.",
-    "",
-    "**This API end-point is deprecated, and will be dropped in the future!**"
-  ].join('\n')
-}, function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
-  var ctx = this;
-
-  var provisionerId   = req.params.provisionerId;
-  var workerType      = req.params.workerType;
-
-  var workerGroup     = req.body.workerGroup;
-  var workerId        = req.body.workerId;
-
-  // Authenticate request by providing parameters
-  if(!req.satisfies({
-    provisionerId:  provisionerId,
-    workerType:     workerType,
-    workerGroup:    workerGroup,
-    workerId:       workerId
-  })) {
-    return;
-  }
-
-  // Set takenUntil to now + 20 min
-  var takenUntil = new Date();
-  takenUntil.setSeconds(takenUntil.getSeconds() + 20 * 60);
-
-  // Claim an arbitrary task
-  return ctx.Task.claimWork({
-    provisionerId:  provisionerId,
-    workerType:     workerType,
-    workerGroup:    workerGroup,
-    workerId:       workerId
-  }).then(function(result) {
-    // Return the "error" message if we have one
-    if(!(result instanceof ctx.Task)) {
-      return res.status(409).json(result.code, {
-        message:      result.message
-      });
-    }
-
-    // Get runId from run that was claimed
-    var runId = _.last(result.runs).runId;
-
-    // Announce that the run is running
-    return ctx.publisher.taskRunning({
-      workerGroup:  workerGroup,
-      workerId:     workerId,
-      runId:        runId,
-      takenUntil:   takenUntil.toJSON(),
-      status:       result.status()
-    }, result.routes).then(function() {
       // Reply to caller
       return res.reply({
         workerGroup:  workerGroup,
