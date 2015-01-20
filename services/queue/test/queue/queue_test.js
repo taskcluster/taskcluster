@@ -100,6 +100,37 @@ suite('queue/QueueService', function() {
     });
   });
 
+  test("signedUrl, getMessage, deleteMessage (method)", function() {
+    return queueService.signedUrl(
+      'no-provisioner',
+      workerType
+    ).then(function(urls) {
+      return request
+      .get(urls.getMessage)
+      .buffer()
+      .end()
+      .then(function(res) {
+        assert(res.ok, "Request failed!");
+        return new Promise(function(accept, reject) {
+          xml2js.parseString(res.text, function(err, json) {
+            if (err) {
+              return reject(err);
+            }
+            accept(json);
+          });
+        });
+      }).then(function(json) {
+        var msg = json.QueueMessagesList.QueueMessage[0];
+        return queueService.deleteMessage(
+          'no-provisioner',
+          workerType,
+          msg.MessageId,
+          msg.PopReceipt
+        );
+      });
+    });
+  });
+
   test("signedUrl, getMessage from empty queue", function() {
     return queueService.signedUrl(
       'no-provisioner',

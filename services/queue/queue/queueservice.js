@@ -110,6 +110,22 @@ QueueService.prototype.putMessage = function(provisionerId, workerType,
   });
 };
 
+/** Delete message from azure queue */
+QueueService.prototype.deleteMessage = function(provisionerId, workerType,
+                                                msgId, receipt) {
+  var that = this;
+  return this.ensureQueue(provisionerId, workerType).then(function(name) {
+    return new Promise(function(accept, reject) {
+      that.service.deleteMessage(name, msgId, receipt, function(err) {
+        if (err) {
+          return reject(err);
+        }
+        accept();
+      });
+    });
+  });
+};
+
 
 QueueService.prototype.signedUrl = function(provisionerId, workerType) {
   // Set start of the signature to 15 min in the past

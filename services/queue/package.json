@@ -23,15 +23,15 @@
     "slugid":                           "1.0.3",
     "taskcluster-base":                 "0.6.3",
     "azure-storage":                    "0.4.2",
-    "thirty-two":                       "0.0.2"
+    "thirty-two":                       "0.0.2",
+    "xml2js":                           "0.4.4"
   },
   "devDependencies": {
     "superagent":                       "0.21.0",
     "superagent-promise":               "0.2.0",
     "mocha":                            "2.1.0",
     "xmlbuilder":                       "2.4.5",
-    "taskcluster-client":               "0.19.2",
-    "xml2js":                           "0.4.4"
+    "taskcluster-client":               "0.19.2"
   },
   "engines": {
     "node":                             "0.10.x"
