@@ -18,7 +18,16 @@ type Entry struct {
 	Output      string
 }
 
+type APIDefinition struct {
+	Url    string
+	Schema string
+}
+
 func main() {
+
+}
+
+func real() {
 	var f map[string]interface{}
 	bytes, err := ioutil.ReadFile("apis.json")
 	if err != nil {

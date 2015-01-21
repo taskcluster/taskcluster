@@ -6,7 +6,6 @@ go:
 
 before_script:
   - go generate ./...
-  - echo "GO version: ${TRAVIS_GO_VERSION}"
 
 # currently cannot customise per user fork, see:
 # https://github.com/travis-ci/travis-ci/issues/1094
