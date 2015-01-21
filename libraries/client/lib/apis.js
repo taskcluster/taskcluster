@@ -1137,6 +1137,19 @@ module.exports = {
         {
           "type": "function",
           "method": "get",
+          "route": "/task-graph/<taskGraphId>/inspect/<taskId>",
+          "args": [
+            "taskGraphId",
+            "taskId"
+          ],
+          "name": "inspectTask",
+          "title": "Inspect Task from a Task-Graph",
+          "description": "Inspect a task from a task-graph, this returns all the information the\ntask-graph scheduler knows about the specific task.\n\n**Warning**, some of these fields are borderline internal to the\ntask-graph scheduler and we may choose to change or make them internal\nlater. Also note that note all of the information is formalized yet.\nThe JSON schema will be updated to reflect formalized values, we think\nit's safe to consider the values stable.\n\nTake these considerations into account when using the API end-point,\nas we do not promise it will remain fully backward compatible in\nthe future.",
+          "output": "http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json"
+        },
+        {
+          "type": "function",
+          "method": "get",
           "route": "/ping",
           "args": [],
           "name": "ping",
