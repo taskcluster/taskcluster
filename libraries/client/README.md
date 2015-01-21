@@ -193,6 +193,7 @@ var scheduler = new taskcluster.Scheduler(options);
  * `scheduler.status(taskGraphId) : result`
  * `scheduler.info(taskGraphId) : result`
  * `scheduler.inspect(taskGraphId) : result`
+ * `scheduler.inspectTask(taskGraphId, taskId) : result`
  * `scheduler.ping() : void`
 
 ### Methods in `taskcluster.Index`
