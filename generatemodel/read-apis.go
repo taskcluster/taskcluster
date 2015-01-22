@@ -35,9 +35,6 @@ func main() {
 		fmt.Println("Could not load json file!")
 	}
 	exitOnFail()
-
-	fmt.Printf("Error has type: %T and message is: %v\n", err, err)
-	exitOnFail()
 	err = json.Unmarshal(bytes, &apis)
 	exitOnFail()
 	for _, api := range apis {
