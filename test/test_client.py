@@ -4,6 +4,7 @@ import unittest
 import time
 realTimeTime = time.time
 import datetime
+import os
 
 import mock
 import requests
@@ -500,25 +501,26 @@ class TestAuthenticationMockServer(base.TCTest):
     self.assertEqual(401, r.status_code)
 
 
-class ProductionTest(base.TCTest):
+if not os.environ.get('NO_TESTS_OVER_WIRE'):
+  class ProductionTest(base.TCTest):
 
-  def setUp(self):
-    self.i = subject.Index()
+    def setUp(self):
+      self.i = subject.Index()
 
-  def test_ping(self):
-    result = self.i.ping()
-    self.assertEqual(result['alive'], True)
+    def test_ping(self):
+      result = self.i.ping()
+      self.assertEqual(result['alive'], True)
 
-  def test_listnamespace(self):
-    result = self.i.listNamespaces('', {})
-    assert 'namespaces' in result
+    def test_listnamespace(self):
+      result = self.i.listNamespaces('', {})
+      assert 'namespaces' in result
 
-  def test_insert_to_index(self):
-    payload = {
-      'taskId': 'a' * 22,
-      'rank': 1,
-      'data': {'test': 'data'},
-      'expires': '2015-09-09T19:19:15.879Z'
-    }
-    result = self.i.insertTask('testing', payload)
-    self.assertEqual(payload['expires'], result['expires'])
+    def test_insert_to_index(self):
+      payload = {
+        'taskId': 'a' * 22,
+        'rank': 1,
+        'data': {'test': 'data'},
+        'expires': '2015-09-09T19:19:15.879Z'
+      }
+      result = self.i.insertTask('testing', payload)
+      self.assertEqual(payload['expires'], result['expires'])

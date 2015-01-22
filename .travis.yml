@@ -7,6 +7,8 @@ python:
 #  - "3.4"
   - "pypy"
 #  - "pypy3"
+env:
+  NO_TESTS_OVER_WIRE=1
 # command to install dependencies
 install:
   - "pip install virtualenv"
