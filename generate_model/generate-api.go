@@ -1,4 +1,4 @@
-package main
+package generate_model
 
 import (
 	"encoding/json"
@@ -7,27 +7,7 @@ import (
 	// tcClient "github.com/petemoore/taskcluster-client.go/lib"
 )
 
-type Entry struct {
-	Type        string
-	Method      string
-	Route       string
-	Args        []string
-	Name        string
-	Title       string
-	Description [][]string
-	Output      string
-}
-
-type APIDefinition struct {
-	Url    string
-	Schema string
-}
-
-func main() {
-
-}
-
-func real() {
+func api() {
 	var f map[string]interface{}
 	bytes, err := ioutil.ReadFile("apis.json")
 	if err != nil {
