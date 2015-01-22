@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -22,9 +23,20 @@ type APIDefinition struct {
 
 //go:generate
 func main() {
+	endpoints := flag.String("f", "", "the json file to load which defines all the api endpoints to parse")
+	flag.Parse()
+	if *endpoints == "" {
+		log.Fatal("Please specify a json file to load the api endpoints from with -f option")
+	}
 	var apis []APIDefinition
 	var bytes []byte
-	bytes, err = ioutil.ReadFile("apis.json")
+	bytes, err = ioutil.ReadFile(*endpoints)
+	if err != nil {
+		fmt.Println("Could not load json file!")
+	}
+	exitOnFail()
+
+	fmt.Printf("Error has type: %T and message is: %v\n", err, err)
 	exitOnFail()
 	err = json.Unmarshal(bytes, &apis)
 	exitOnFail()
