@@ -18,6 +18,7 @@ var launch = function(profile) {
     envs: [
       'pulse_username',
       'pulse_password',
+      'queue_signatureSecret',
       'database_connectionString',
       'influx_connectionString'
     ],
@@ -47,8 +48,9 @@ var launch = function(profile) {
 
   // Create QueueService to manage azure queues
   var queueService = new QueueService({
-    prefix:       cfg.get('queue:queuePrefix'),
-    credentials:  cfg.get('azure')
+    prefix:           cfg.get('queue:queuePrefix'),
+    credentials:      cfg.get('azure'),
+    signatureSecret:  cfg.get('queue:signatureSecret')
   });
 
   // Setup AMQP exchanges and create a publisher
