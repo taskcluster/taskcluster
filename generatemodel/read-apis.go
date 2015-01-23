@@ -21,7 +21,6 @@ type APIDefinition struct {
 	SchemaURL string `json:"schema"`
 }
 
-//go:generate
 func main() {
 	endpoints := flag.String("f", "", "the json file to load which defines all the api endpoints to parse")
 	flag.Parse()
@@ -44,7 +43,7 @@ func main() {
 		exitOnFail()
 		defer resp.Body.Close()
 		fmt.Printf("Schema URL is %v\n", api.SchemaURL)
-		loadJson(resp.Body)
+		loadJson(resp.Body, api.SchemaURL)
 	}
 	fmt.Println("All done.")
 }
