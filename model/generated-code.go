@@ -27,7 +27,7 @@ func (result ScopesResult) String() string {
 		"Client ID:    %v\n"+
 			"Scopes:       %v\n"+
 			"Expires:      %v\n",
-		result.ClientId, result.AccessToken, result.Scopes, result.Expires)
+		result.ClientId, result.Scopes, result.Expires)
 }
 
 type GetCredentialsResult struct {
