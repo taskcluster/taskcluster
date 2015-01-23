@@ -30,8 +30,9 @@ suite('queue/QueueService', function() {
   }
 
   var queueService = new QueueService({
-    prefix:       cfg.get('queue:queuePrefix'),
-    credentials:  cfg.get('azure')
+    prefix:           cfg.get('queue:queuePrefix'),
+    credentials:      cfg.get('azure'),
+    signatureSecret:  "A very public secret"
   });
 
   var workerType = 'no-worker';
@@ -64,11 +65,21 @@ suite('queue/QueueService', function() {
     );
   });
 
-  test("signedUrl, getMessage, deleteMessage", function() {
-    return queueService.signedUrl(
+  test("putTask, getMessage, validateSignature, deleteMessage", function() {
+    var deadline = new Date();
+    deadline.setMinutes(deadline.getMinutes() + 5);
+    var taskId = slugid.v4();
+    return queueService.putTask(
       'no-provisioner',
-      workerType
-    ).then(function(urls) {
+      workerType + '1',
+      taskId, 0,
+      deadline
+    ).then(function() {
+      return queueService.signedUrl(
+        'no-provisioner',
+        workerType + '1'
+      );
+    }).then(function(urls) {
       return request
       .get(urls.getMessage)
       .buffer()
@@ -85,45 +96,18 @@ suite('queue/QueueService', function() {
         });
       }).then(function(json) {
         var msg = json.QueueMessagesList.QueueMessage[0];
-        return request
-          .del(
-            urls.deleteMessage
-              .replace('<messageId>', msg.MessageId)
-              .replace('<receipt>', encodeURIComponent(msg.PopReceipt))
-          )
-          .buffer()
-          .end()
-          .then(function(res) {
-            assert(res.ok, "Delete request failed");
-          });
-      });
-    });
-  });
-
-  test("signedUrl, getMessage, deleteMessage (method)", function() {
-    return queueService.signedUrl(
-      'no-provisioner',
-      workerType
-    ).then(function(urls) {
-      return request
-      .get(urls.getMessage)
-      .buffer()
-      .end()
-      .then(function(res) {
-        assert(res.ok, "Request failed!");
-        return new Promise(function(accept, reject) {
-          xml2js.parseString(res.text, function(err, json) {
-            if (err) {
-              return reject(err);
-            }
-            accept(json);
-          });
-        });
-      }).then(function(json) {
-        var msg = json.QueueMessagesList.QueueMessage[0];
+        var payload = new Buffer(msg.MessageText[0], 'base64').toString();
+        payload = JSON.parse(payload);
+        assert(queueService.validateSignature(
+          'no-provisioner',
+          workerType + '1',
+          payload.taskId, payload.runId,
+          deadline,
+          payload.signature
+        ), "Failed to validate signature");
         return queueService.deleteMessage(
           'no-provisioner',
-          workerType,
+          workerType + '1',
           msg.MessageId,
           msg.PopReceipt
         );
