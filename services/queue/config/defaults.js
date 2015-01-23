@@ -41,7 +41,11 @@ module.exports = {
     statsComponent:               'queue',
 
     // Prefix for azure queues (at most 6 characters)
-    queuePrefix:                  'queue'
+    queuePrefix:                  'queue',
+
+    // Secret to be used for signing messages that we put in azure queue,
+    // this protects us from workers trying to claim task they didn't get.
+    signatureSecret:              'public secret'
   },
 
   // TaskCluster configuration

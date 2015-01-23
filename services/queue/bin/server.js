@@ -25,6 +25,7 @@ var launch = function(profile) {
       'pulse_password',
       'database_connectionString',
       'queue_publishMetaData',
+      'queue_signatureSecret',
       'taskcluster_credentials_clientId',
       'taskcluster_credentials_accessToken',
       'aws_accessKeyId',
@@ -109,8 +110,9 @@ var launch = function(profile) {
 
   // Create QueueService to manage azure queues
   var queueService = new QueueService({
-    prefix:       cfg.get('queue:queuePrefix'),
-    credentials:  cfg.get('azure')
+    prefix:           cfg.get('queue:queuePrefix'),
+    credentials:      cfg.get('azure'),
+    signatureSecret:  cfg.get('queue:signatureSecret')
   });
 
   // When: publisher, validator and containers are created, proceed
