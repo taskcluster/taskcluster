@@ -260,12 +260,11 @@ api.declare({
         status:         task.status()
       }, task.routes).then(function() {
         // Put message in appropriate azure queue
-        return ctx.queueService.putMessage(
+        return ctx.queueService.putTask(
           taskDef.provisionerId,
-          taskDef.workerType, {
-            status:   task.status(),
-            runId:    _.last(task.runs).runId
-          },
+          taskDef.workerType,
+          taskId,
+           _.last(task.runs).runId,
           new Date(taskDef.deadline)
         );
       }).then(function() {
@@ -507,12 +506,11 @@ api.declare({
     // If allowed, schedule the task in question
     return ctx.Task.schedule(taskId).then(function(task) {
       // Put message in appropriate azure queue
-      return ctx.queueService.putMessage(
+      return ctx.queueService.putTask(
         task.provisionerId,
-        task.workerType, {
-          status:   task.status(),
-          runId:    _.last(task.runs).runId
-        },
+        task.workerType,
+        taskId,
+         _.last(task.runs).runId,
         new Date(task.deadline)
       ).then(function() {
         // Make sure it's announced
@@ -584,20 +582,20 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/poll-task-url/:provisionerId/:workerType',
-  name:       'pollTaskUrl',
+  name:       'pollTaskUrls',
   scopes: [
     [
-      'queue:poll-task',
+      'queue:poll-task-urls',
       'assume:worker-type:<provisionerId>/<workerType>'
     ]
   ],
   deferAuth:  true,
-  output:     SCHEMA_PREFIX_CONST + 'poll-task-response.json#',
-  title:      "Get Access to Pending Tasks",
+  output:     SCHEMA_PREFIX_CONST + 'poll-task-urls-response.json#',
+  title:      "Get Urls to Poll Pending Tasks",
   description: [
     "Get a signed url to get a message from azure queue.",
-    "Once messages are polled from here, you can upload the fill response text",
-    "to `claimWork`."
+    "Once messages are polled from here, you can claim the referenced task",
+    "with `claimTask`."
   ].join('\n')
 }, function(req, res) {
     // Validate parameters
@@ -625,7 +623,9 @@ api.declare({
     workerType
   ).then(function(result) {
     res.reply({
-      signedPollTaskUrl:        result.getMessage,
+      signedPollTaskUrls: [
+        result.getMessage
+      ],
       expires:                  result.expiry.toJSON()
     });
   });
@@ -655,10 +655,9 @@ api.declare({
     "",
     "**Note**, that if no tasks are _pending_ this method will not assign a",
     "task to you. Instead it will return `204` and you should wait a while",
-    "before polling the queue again. To avoid polling taskcluster queue",
-    "you should poll the URL from `pollTaskUrl` and call this end-point with",
-    "XML message returned from this URL.",
-    "Note, you can grep the XML message for the keyword `<MessageText>`."
+    "before polling the queue again.",
+    "",
+    "**WARNING, this API end-point is deprecated and will be removed**."
   ].join('\n')
 }, function(req, res) {
   // Validate parameters
@@ -683,98 +682,6 @@ api.declare({
   })) {
     return;
   }
-
-  // If xmlMessage is included we have delete the message from azure queue
-  // and then try to claim that specific task.
-  if (req.body.xmlMessage) {
-    return new Promise(function(accept, reject) {
-      xml2js.parseString(req.body.xmlMessage, function(err, xmlRoot) {
-        if (err) {
-          return reject(err);
-        }
-        accept(xmlRoot);
-      });
-    }).then(function(xmlRoot) {
-      // Validate that we have a message
-      if (!xmlRoot.QueueMessagesList ||
-          !(xmlRoot.QueueMessagesList.QueueMessage instanceof Array) ||
-          !xmlRoot.QueueMessagesList.QueueMessage[0]) {
-        debug("Failed to read valid XML: %j", xmlRoot);
-        throw new Error("Invalid XML");
-      }
-      // Get queue message, that we're reading
-      var queueMessage = xmlRoot.QueueMessagesList.QueueMessage[0];
-      // Get message text from MessageText and base64 decode
-      var message = JSON.parse(
-        new Buffer(queueMessage.MessageText[0], 'base64').toString()
-      );
-
-      // Load task status structure to validate that we're allowed to claim it
-      return ctx.Task.load(message.status.taskId).then(function(task) {
-        // if task doesn't exist return 404
-        if(!task) {
-          return res.status(404).json({
-            message: "Task not found, or already resolved!"
-          });
-        }
-
-        // Validate that workerType is as was declared
-        if (task.provisionerId  !== provisionerId ||
-            task.workerType     !== workerType) {
-          return res.status(400).json({
-            message: "Wrong workerType"
-          });
-        }
-
-        // Set takenUntil to now + 20 min
-        var takenUntil = new Date();
-        var claimTimeout = parseInt(ctx.claimTimeout);
-        takenUntil.setSeconds(takenUntil.getSeconds() + claimTimeout);
-
-        // Claim run
-        return ctx.Task.claimTaskRun(message.status.taskId, message.runId, {
-          workerGroup:    workerGroup,
-          workerId:       workerId,
-          takenUntil:     takenUntil
-        }).then(function(result) {
-          // Return the "error" message if we have one
-          if(!(result instanceof ctx.Task)) {
-            return res.status(result.code).json({
-              message:      result.message
-            });
-          }
-
-          // Announce that the run is running
-          return ctx.publisher.taskRunning({
-            workerGroup:  workerGroup,
-            workerId:     workerId,
-            runId:        message.runId,
-            takenUntil:   takenUntil.toJSON(),
-            status:       result.status()
-          }, result.routes).then(function() {
-            // Reply to caller
-            return res.reply({
-              workerGroup:  workerGroup,
-              workerId:     workerId,
-              runId:        message.runId,
-              takenUntil:   takenUntil.toJSON(),
-              status:       result.status()
-            });
-          });
-        }).then(function() {
-          // Delete message from azure queue
-          return ctx.queueService.deleteMessage(
-            provisionerId,
-            workerType,
-            queueMessage.MessageId,
-            queueMessage.PopReceipt
-          );
-        });
-      });
-    });
-  }
-
-
 
   // Set takenUntil to now + 20 min
   var takenUntil = new Date();
@@ -837,7 +744,8 @@ api.declare({
   description: [
     "claim a task, more to be added later...",
     "",
-    "**This API end-point is deprecated and will be removed in the future"
+    "**Warning,** in the future this API end-point will require the presents",
+    "of `receipt`, `messageId` and `signature` in the body."
   ].join('\n')
 }, function(req, res) {
   // Validate parameters
@@ -852,6 +760,10 @@ api.declare({
 
   var workerGroup = req.body.workerGroup;
   var workerId    = req.body.workerId;
+
+  var messageId   = req.body.messageId;
+  var receipt     = req.body.receipt;
+  var signature   = req.body.signature;
 
   // Load task status structure to validate that we're allowed to claim it
   return ctx.Task.load(taskId).then(function(task) {
@@ -872,6 +784,21 @@ api.declare({
       return;
     }
 
+    // Validate signature, if present
+    if (signature) {
+      var valid = ctx.queueService.validateSignature(
+        task.provisionerId, task.workerType,
+        taskId, runId,
+        task.deadline,
+        signature
+      );
+      if (!valid) {
+        return res.status(401).json({
+          messsage: "Message was faked!"
+        });
+      }
+    }
+
     // Set takenUntil to now + 20 min
     var takenUntil = new Date();
     var claimTimeout = parseInt(ctx.claimTimeout);
@@ -885,19 +812,42 @@ api.declare({
     }).then(function(result) {
       // Return the "error" message if we have one
       if(!(result instanceof ctx.Task)) {
-        return res.status(result.code).json({
+        res.status(result.code).json({
           message:      result.message
         });
+        if (messageId && receipt && signature) {
+          // Delete message from azure queue
+          return ctx.queueService.deleteMessage(
+            task.provisionerId,
+            task.workerType,
+            messageId,
+            receipt
+          );
+        }
+        return;
       }
 
-      // Announce that the run is running
-      return ctx.publisher.taskRunning({
-        workerGroup:  workerGroup,
-        workerId:     workerId,
-        runId:        runId,
-        takenUntil:   takenUntil.toJSON(),
-        status:       result.status()
-      }, result.routes).then(function() {
+      // Delete message from azure queue
+      var messageDeleted = Promise.resolve();
+      if (messageId && receipt && signature) {
+        messageDeleted = ctx.queueService.deleteMessage(
+          task.provisionerId,
+          task.workerType,
+          messageId,
+          receipt
+        );
+      }
+
+      return messageDeleted.then(function() {
+        // Announce that the run is running
+        return ctx.publisher.taskRunning({
+          workerGroup:  workerGroup,
+          workerId:     workerId,
+          runId:        runId,
+          takenUntil:   takenUntil.toJSON(),
+          status:       result.status()
+        }, result.routes);
+      }).then(function() {
         // Reply to caller
         return res.reply({
           workerGroup:  workerGroup,
@@ -906,7 +856,7 @@ api.declare({
           takenUntil:   takenUntil.toJSON(),
           status:       result.status()
         });
-      })
+      });
     });
   });
 });
@@ -1324,12 +1274,11 @@ api.declare({
       }
 
       // Put message in appropriate azure queue
-      return ctx.queueService.putMessage(
+      return ctx.queueService.putTask(
         result.provisionerId,
-        result.workerType, {
-          status:   result.status(),
-          runId:    _.last(result.runs).runId
-        },
+        result.workerType,
+        taskId,
+         _.last(result.runs).runId,
         new Date(result.deadline)
       ).then(function() {
         // Publish message

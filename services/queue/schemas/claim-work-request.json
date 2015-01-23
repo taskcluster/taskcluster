@@ -18,10 +18,6 @@
       "minLength":      {"$const": "identifier-min-length"},
       "maxLength":      {"$const": "identifier-max-length"},
       "pattern":        {"$const": "identifier-pattern"}
-    },
-    "xmlMessage": {
-      "description":  "Raw XML response from azure queue, as returned by the `pollTask` request. This is optional, without `claimWork` will poll the azure queue as a first step.",
-      "type":         "string"
     }
   },
   "additionalProperties":   false,
