@@ -631,100 +631,6 @@ api.declare({
   });
 });
 
-/** Fetch work for a worker */
-api.declare({
-  method:     'post',
-  route:      '/claim-work/:provisionerId/:workerType',
-  name:       'claimWork',
-  scopes: [
-    [
-      'queue:claim-task',
-      'assume:worker-type:<provisionerId>/<workerType>',
-      'assume:worker-id:<workerGroup>/<workerId>'
-    ]
-  ],
-  deferAuth:  true,
-  input:      SCHEMA_PREFIX_CONST + 'claim-work-request.json#',
-  output:     SCHEMA_PREFIX_CONST + 'task-claim-response.json#',
-  title:      "Claim work for a worker",
-  description: [
-    "Claim work for a worker, returns information about an appropriate task",
-    "claimed for the worker. Similar to `claimTask`, which can be",
-    "used to claim a specific task, or reclaim a specific task extending the",
-    "`takenUntil` timeout for the run.",
-    "",
-    "**Note**, that if no tasks are _pending_ this method will not assign a",
-    "task to you. Instead it will return `204` and you should wait a while",
-    "before polling the queue again.",
-    "",
-    "**WARNING, this API end-point is deprecated and will be removed**."
-  ].join('\n')
-}, function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
-  var ctx = this;
-
-  var provisionerId   = req.params.provisionerId;
-  var workerType      = req.params.workerType;
-
-  var workerGroup     = req.body.workerGroup;
-  var workerId        = req.body.workerId;
-
-  // Authenticate request by providing parameters
-  if(!req.satisfies({
-    provisionerId:  provisionerId,
-    workerType:     workerType,
-    workerGroup:    workerGroup,
-    workerId:       workerId
-  })) {
-    return;
-  }
-
-  // Set takenUntil to now + 20 min
-  var takenUntil = new Date();
-  takenUntil.setSeconds(takenUntil.getSeconds() + 20 * 60);
-
-  // Claim an arbitrary task
-  return ctx.Task.claimWork({
-    provisionerId:  provisionerId,
-    workerType:     workerType,
-    workerGroup:    workerGroup,
-    workerId:       workerId
-  }).then(function(result) {
-    // Return the "error" message if we have one
-    if(!(result instanceof ctx.Task)) {
-      return res.status(409).json(result.code, {
-        message:      result.message
-      });
-    }
-
-    // Get runId from run that was claimed
-    var runId = _.last(result.runs).runId;
-
-    // Announce that the run is running
-    return ctx.publisher.taskRunning({
-      workerGroup:  workerGroup,
-      workerId:     workerId,
-      runId:        runId,
-      takenUntil:   takenUntil.toJSON(),
-      status:       result.status()
-    }, result.routes).then(function() {
-      // Reply to caller
-      return res.reply({
-        workerGroup:  workerGroup,
-        workerId:     workerId,
-        runId:        runId,
-        takenUntil:   takenUntil.toJSON(),
-        status:       result.status()
-      });
-    });
-  });
-});
-
-
 /** Claim a task */
 api.declare({
   method:     'post',
@@ -932,6 +838,98 @@ api.declare({
   });
 });
 
+/** Fetch work for a worker */
+api.declare({
+  method:     'post',
+  route:      '/claim-work/:provisionerId/:workerType',
+  name:       'claimWork',
+  scopes: [
+    [
+      'queue:claim-task',
+      'assume:worker-type:<provisionerId>/<workerType>',
+      'assume:worker-id:<workerGroup>/<workerId>'
+    ]
+  ],
+  deferAuth:  true,
+  input:      SCHEMA_PREFIX_CONST + 'claim-work-request.json#',
+  output:     SCHEMA_PREFIX_CONST + 'task-claim-response.json#',
+  title:      "Claim work for a worker",
+  description: [
+    "Claim work for a worker, returns information about an appropriate task",
+    "claimed for the worker. Similar to `claimTask`, which can be",
+    "used to claim a specific task, or reclaim a specific task extending the",
+    "`takenUntil` timeout for the run.",
+    "",
+    "**Note**, that if no tasks are _pending_ this method will not assign a",
+    "task to you. Instead it will return `204` and you should wait a while",
+    "before polling the queue again.",
+    "",
+    "**WARNING, this API end-point is deprecated and will be removed**."
+  ].join('\n')
+}, function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
+  var ctx = this;
+
+  var provisionerId   = req.params.provisionerId;
+  var workerType      = req.params.workerType;
+
+  var workerGroup     = req.body.workerGroup;
+  var workerId        = req.body.workerId;
+
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    provisionerId:  provisionerId,
+    workerType:     workerType,
+    workerGroup:    workerGroup,
+    workerId:       workerId
+  })) {
+    return;
+  }
+
+  // Set takenUntil to now + 20 min
+  var takenUntil = new Date();
+  takenUntil.setSeconds(takenUntil.getSeconds() + 20 * 60);
+
+  // Claim an arbitrary task
+  return ctx.Task.claimWork({
+    provisionerId:  provisionerId,
+    workerType:     workerType,
+    workerGroup:    workerGroup,
+    workerId:       workerId
+  }).then(function(result) {
+    // Return the "error" message if we have one
+    if(!(result instanceof ctx.Task)) {
+      return res.status(409).json(result.code, {
+        message:      result.message
+      });
+    }
+
+    // Get runId from run that was claimed
+    var runId = _.last(result.runs).runId;
+
+    // Announce that the run is running
+    return ctx.publisher.taskRunning({
+      workerGroup:  workerGroup,
+      workerId:     workerId,
+      runId:        runId,
+      takenUntil:   takenUntil.toJSON(),
+      status:       result.status()
+    }, result.routes).then(function() {
+      // Reply to caller
+      return res.reply({
+        workerGroup:  workerGroup,
+        workerId:     workerId,
+        runId:        runId,
+        takenUntil:   takenUntil.toJSON(),
+        status:       result.status()
+      });
+    });
+  });
+});
 
 /** Report task completed */
 api.declare({
