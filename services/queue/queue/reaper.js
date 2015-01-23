@@ -156,12 +156,11 @@ Reaper.prototype.reap = function() {
       debug("task retried: %s (by claim expiration)", task.taskId);
 
       // Put message in appropriate azure queue
-      return that._queueService.putMessage(
+      return that.queueService.putTask(
         task.provisionerId,
-        task.workerType, {
-          status:   task.status(),
-          runId:    _.last(task.runs).runId
-        },
+        task.workerType,
+        task.taskId,
+         _.last(task.runs).runId,
         new Date(task.deadline)
       ).then(function() {
         // Publish message

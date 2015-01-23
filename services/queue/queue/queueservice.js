@@ -5,6 +5,8 @@ var debug       = require('debug')('queue:queue');
 var assert      = require('assert');
 var base32      = require('thirty-two');
 var querystring = require('querystring');
+var crypto      = require('crypto');
+var cryptiles   = require('cryptiles');
 
 /** Decode Url-safe base64, our identifiers satisfies these requirements */
 var decodeUrlSafeBase64 = function(data) {
@@ -19,14 +21,17 @@ var decodeUrlSafeBase64 = function(data) {
  *   credentials: {
  *     accountName:        // Azure storage account name
  *     accountKey:         // Azure storage account key
- *   }
+ *   },
+ *   signatureSecret:      // Secret for generating signatures
  * }
  */
 var QueueService = function(options) {
   assert(options, "options is required");
   assert(/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(options.prefix), "Invalid prefix");
   assert(options.prefix.length <= 6, "Prefix is too long");
+  assert(options.signatureSecret, "a signatureSecret must be given");
   this.prefix = options.prefix;
+  this.signatureSecret = options.signatureSecret;
 
   // Documentation for the QueueService object can be found here:
   // http://dl.windowsazure.com/nodestoragedocs/index.html
@@ -110,6 +115,38 @@ QueueService.prototype.putMessage = function(provisionerId, workerType,
   });
 };
 
+QueueService.prototype.validateSignature = function(provisionerId, workerType,
+                                                    taskId, runId, deadline,
+                                                    signature) {
+  assert(deadline instanceof Date, "deadline must be a date");
+  assert(typeof(signature) === 'string', "signature must be a string");
+  var sigB = crypto.createHmac('sha256', this.signatureSecret).update([
+    deadline.getTime(),
+    provisionerId,
+    workerType,
+    taskId,
+    runId
+  ].join('\n')).digest('base64');
+  return cryptiles.fixedTimeComparison(signature, sigB);
+};
+
+QueueService.prototype.putTask = function(provisionerId, workerType,
+                                          taskId, runId, deadline) {
+  assert(deadline instanceof Date, "deadline must be a date");
+  var sig = crypto.createHmac('sha256', this.signatureSecret).update([
+    deadline.getTime(),
+    provisionerId,
+    workerType,
+    taskId,
+    runId
+  ].join('\n')).digest('base64');
+  return this.putMessage(provisionerId, workerType, {
+    taskId:     taskId,
+    runId:      runId,
+    signature:  sig
+  }, deadline);
+};
+
 /** Delete message from azure queue */
 QueueService.prototype.deleteMessage = function(provisionerId, workerType,
                                                 msgId, receipt) {
@@ -152,15 +189,7 @@ QueueService.prototype.signedUrl = function(provisionerId, workerType) {
         that.accountName,
         '.queue.core.windows.net/',
         name,
-        '/messages?numofmessages=1&visibilitytimeout=300&',
-        sas
-      ].join(''),
-      deleteMessage: [
-        'https://',
-        that.accountName,
-        '.queue.core.windows.net/',
-        name,
-        '/messages/<messageId>?popreceipt=<receipt>&',
+        '/messages?visibilitytimeout=300&',
         sas
       ].join(''),
       expiry: expiry
