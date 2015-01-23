@@ -2,9 +2,9 @@ package model
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	hawk "github.com/tent/hawk-go"
-	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -16,46 +16,54 @@ type Auth struct {
 	AccessToken string
 }
 
-type ScopesResponse struct {
+type ScopesResult struct {
+	ClientId string
+	Scopes   []string
+	Expires  string
+}
+
+func (result ScopesResult) String() string {
+	return fmt.Sprintf(
+		"Client ID:    %v\n"+
+			"Scopes:       %v\n"+
+			"Expires:      %v\n",
+		result.ClientId, result.AccessToken, result.Scopes, result.Expires)
+}
+
+type GetCredentialsResult struct {
 	ClientId    string
 	AccessToken string
 	Scopes      []string
 	Expires     string
 }
 
-type GetCredentialsResponse struct {
-	ClientId    string
-	AccessToken string
-	Scopes      []string
-	Expires     string
-	Name        string
-	Description string
-}
-
-func (auth Auth) Scopes(clientId string) ScopesResponse {
+func (auth Auth) Scopes(clientId string) ScopesResult {
 	credentials := &hawk.Credentials{
 		ID:   auth.ClientId,
 		Key:  auth.AccessToken,
 		Hash: sha256.New,
 	}
-	httpRequest, _ := http.NewRequest("GET", fmt.Sprintf("https://auth.taskcluster.net/v1/client/%v/scopes", auth.ClientId), nil)
+	httpRequest, err := http.NewRequest("GET", fmt.Sprintf("https://auth.taskcluster.net/v1/client/%v/scopes", auth.ClientId), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
 	httpRequest.Header.Set("Authorization", reqAuth)
 	httpClient := &http.Client{}
 	response, err := httpClient.Do(httpRequest)
 	if err != nil {
 		log.Fatal(err)
-	} else {
-		defer response.Body.Close()
-		contents, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("%s\n", string(contents))
 	}
-	return ScopesResponse{}
+	defer response.Body.Close()
+	var scopes ScopesResult
+	json := json.NewDecoder(response.Body)
+	err = json.Decode(&scopes)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return scopes
 }
 
-func (auth Auth) GetCredentials(clientId string) GetCredentialsResponse {
-	return GetCredentialsResponse{}
+func (auth Auth) GetCredentials(clientId string) GetCredentialsResult {
+	return GetCredentialsResult{}
 }
