@@ -4,16 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
+var err error
+
 type JsonSchemaTopLevel struct {
-	ID          string `json:"id"`
-	Schema      string `json:"$schema"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Type        string `json:"type"`
-	Items       []Item `json:"items"`
+	ID          string                 `json:"id"`
+	Schema      string                 `json:"$schema"`
+	Title       string                 `json:"title"`
+	Description string                 `json:"description"`
+	Type        string                 `json:"type"`
+	Items       map[string]interface{} `json:"items"`
 }
 
 func (top JsonSchemaTopLevel) String() string {
@@ -23,6 +26,7 @@ func (top JsonSchemaTopLevel) String() string {
 	result += fmt.Sprintf("Title        = '%v'\n", top.Title)
 	result += fmt.Sprintf("Description  = '%v'\n", top.Description)
 	result += fmt.Sprintf("Type         = '%v'\n", top.Type)
+	//	result += fmt.Sprintf("Items        = '%v'\n", top.Items)
 	for i, item := range top.Items {
 		result += fmt.Sprintf("Item %-6v= \n%v", i, item)
 	}
@@ -49,11 +53,20 @@ type Property struct {
 func LoadJsonSchema(url string) {
 	fmt.Printf("Loading json schema from: %v\n", url)
 	var resp *http.Response
-	resp, _ = http.Get(url)
+	resp, err = http.Get(url)
+	exitOnFail()
 	defer resp.Body.Close()
 	var bytes []byte
-	bytes, _ = ioutil.ReadAll(resp.Body)
+	bytes, err = ioutil.ReadAll(resp.Body)
+	exitOnFail()
 	m := new(JsonSchemaTopLevel)
-	json.Unmarshal(bytes, m)
+	err = json.Unmarshal(bytes, m)
+	exitOnFail()
 	fmt.Println(m.String())
+}
+
+func exitOnFail() {
+	if err != nil {
+		log.Fatal(err)
+	}
 }
