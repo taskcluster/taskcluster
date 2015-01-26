@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -18,7 +19,7 @@ type API struct {
 	Entries     []APIEntry `json:"entries"`
 }
 
-func (api API) String() string {
+func (api *API) String() string {
 	var result string = fmt.Sprintf(
 		"Version     = '%v'\n"+
 			"Title       = '%v'\n"+
@@ -29,6 +30,12 @@ func (api API) String() string {
 		result += fmt.Sprintf("Entry %-6v= \n%v", i, entry.String())
 	}
 	return result
+}
+
+func (api *API) postPopulate() {
+	for i := range api.Entries {
+		api.Entries[i].postPopulate()
+	}
 }
 
 type APIEntry struct {
@@ -44,7 +51,12 @@ type APIEntry struct {
 	Description string     `json:"description"`
 }
 
-func (entry APIEntry) String() string {
+func (apiEntry *APIEntry) postPopulate() {
+	fmt.Printf("Input URL: %v\n", apiEntry.Input)
+	fmt.Printf("Output URL: %v\n", apiEntry.Output)
+}
+
+func (entry *APIEntry) String() string {
 	return fmt.Sprintf(
 		"    Entry Type        = '%v'\n"+
 			"    Entry Method      = '%v'\n"+
@@ -75,7 +87,7 @@ type Exchange struct {
 	Entries        []ExchangeEntry `json:"entries"`
 }
 
-func (exchange Exchange) String() string {
+func (exchange *Exchange) String() string {
 	var result string = fmt.Sprintf(
 		"Version         = '%v'\n"+
 			"Title           = '%v'\n"+
@@ -89,6 +101,12 @@ func (exchange Exchange) String() string {
 	return result
 }
 
+func (exchange *Exchange) postPopulate() {
+	for i := range exchange.Entries {
+		exchange.Entries[i].postPopulate()
+	}
+}
+
 type ExchangeEntry struct {
 	Type        string         `json:"type"`
 	Exchange    string         `json:"exchange"`
@@ -99,7 +117,15 @@ type ExchangeEntry struct {
 	Schema      string         `json:"schema"`
 }
 
-func (entry ExchangeEntry) String() string {
+func (exchange *ExchangeEntry) postPopulate() {
+	fmt.Printf("Downloading Exchange Entry Exchange from %v...\n", exchange.Exchange)
+	var resp *http.Response
+	resp, err = http.Get(exchange.Exchange)
+	exitOnFail()
+	defer resp.Body.Close()
+}
+
+func (entry *ExchangeEntry) String() string {
 	var result string = fmt.Sprintf(
 		"    Entry Type        = '%v'\n"+
 			"    Entry Exchange    = '%v'\n"+
@@ -123,7 +149,7 @@ type RouteElement struct {
 	Required      bool   `json:"required"`
 }
 
-func (re RouteElement) String() string {
+func (re *RouteElement) String() string {
 	return fmt.Sprintf(
 		"        Element Name      = '%v'\n"+
 			"        Element Summary   = '%v'\n"+

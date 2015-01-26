@@ -2,28 +2,23 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
-	// "reflect"
-	// tcClient "github.com/petemoore/taskcluster-client.go/lib"
 )
 
-func loadJson(reader io.Reader, schema string) {
+func loadJson(reader io.Reader, schema *string) APIModel {
 	var bytes []byte
 	bytes, err = ioutil.ReadAll(reader)
 	exitOnFail()
-	fmt.Println("===========================================================")
-	switch schema {
+	var m APIModel
+	switch *schema {
 	case "http://schemas.taskcluster.net/base/v1/api-reference.json":
-		m := API{}
-		err = json.Unmarshal(bytes, &m)
-		exitOnFail()
-		fmt.Println(m)
+		m = new(API)
 	case "http://schemas.taskcluster.net/base/v1/exchanges-reference.json":
-		m := Exchange{}
-		err = json.Unmarshal(bytes, &m)
-		exitOnFail()
-		fmt.Println(m)
+		m = new(Exchange)
 	}
+	err = json.Unmarshal(bytes, m)
+	m.postPopulate()
+	exitOnFail()
+	return m
 }

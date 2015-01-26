@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	err error
+	err  error
+	apis []APIDefinition
 )
 
 // APIDefinition represents the definition of a REST API, comprising of the URL to the defintion
@@ -19,6 +20,12 @@ var (
 type APIDefinition struct {
 	URL       string `json:"url"`
 	SchemaURL string `json:"schema"`
+	Data      APIModel
+}
+
+type APIModel interface {
+	String() string
+	postPopulate()
 }
 
 func main() {
@@ -27,23 +34,26 @@ func main() {
 	if *endpoints == "" {
 		log.Fatal("Please specify a json file to load the api endpoints from with -f option")
 	}
-	var apis []APIDefinition
 	var bytes []byte
 	bytes, err = ioutil.ReadFile(*endpoints)
 	if err != nil {
-		fmt.Println("Could not load json file!")
+		fmt.Printf("Could not load json file '%v'!\n", *endpoints)
 	}
 	exitOnFail()
 	err = json.Unmarshal(bytes, &apis)
 	exitOnFail()
-	for _, api := range apis {
-		fmt.Printf("Downloading API endpoint from %v...\n", api.URL)
+	for i := range apis {
+		fmt.Printf("Downloading API endpoint from %v...\n", apis[i].URL)
 		var resp *http.Response
-		resp, err = http.Get(api.URL)
+		resp, err = http.Get(apis[i].URL)
 		exitOnFail()
 		defer resp.Body.Close()
-		fmt.Printf("Schema URL is %v\n", api.SchemaURL)
-		loadJson(resp.Body, api.SchemaURL)
+		fmt.Printf("Schema URL is %v\n", apis[i].SchemaURL)
+		data := loadJson(resp.Body, &apis[i].SchemaURL)
+		apis[i].Data = data
+	}
+	for _, api := range apis {
+		fmt.Printf("Value: %v\n", api.Data)
 	}
 	fmt.Println("All done.")
 }
