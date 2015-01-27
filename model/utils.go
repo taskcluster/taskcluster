@@ -8,10 +8,6 @@ import (
 	"net/http"
 )
 
-var (
-	err error
-)
-
 func loadJson(reader io.Reader, schema *string) APIModel {
 	var bytes []byte
 	bytes, err = ioutil.ReadAll(reader)
@@ -55,4 +51,14 @@ func LoadAPIs(bytes []byte) ([]APIDefinition, map[string]*JsonSchemaTopLevel) {
 		apis[i].Data = data
 	}
 	return apis, schemas
+}
+
+func cacheJsonSchema(url string) {
+	// if url is not provided, there is nothing to download
+	if url == "" {
+		return
+	}
+	if _, ok := schemas[url]; !ok {
+		schemas[url] = LoadJsonSchema(url)
+	}
 }

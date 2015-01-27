@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-// indents a block of text with an indent string
+// indents a block of text with an indent string, see http://play.golang.org/p/nV1_VLau7C
 func Indent(text, indent string) string {
 	if text[len(text)-1:] == "\n" {
 		result := ""

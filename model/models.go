@@ -7,6 +7,7 @@ import (
 var (
 	apis    []APIDefinition
 	schemas map[string]*JsonSchemaTopLevel = make(map[string]*JsonSchemaTopLevel)
+	err     error
 )
 
 //////////////////////////////////////////////////////////////////
@@ -58,16 +59,6 @@ type APIEntry struct {
 func (entry *APIEntry) postPopulate() {
 	cacheJsonSchema(entry.Input)
 	cacheJsonSchema(entry.Output)
-}
-
-func cacheJsonSchema(url string) {
-	// if url is not provided, there is nothing to download
-	if url == "" {
-		return
-	}
-	if _, ok := schemas[url]; !ok {
-		schemas[url] = LoadJsonSchema(url)
-	}
 }
 
 func (entry *APIEntry) String() string {
