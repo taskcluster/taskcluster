@@ -25,7 +25,7 @@ func loadJson(reader io.Reader, schema *string) APIModel {
 	return m
 }
 
-func LoadJsonSchema(url string) *JsonSchemaTopLevel {
+func loadJsonSchema(url string) *JsonSchemaTopLevel {
 	var resp *http.Response
 	resp, err = http.Get(url)
 	utils.ExitOnFail(err)
@@ -47,8 +47,7 @@ func LoadAPIs(bytes []byte) ([]APIDefinition, map[string]*JsonSchemaTopLevel) {
 		resp, err = http.Get(apis[i].URL)
 		utils.ExitOnFail(err)
 		defer resp.Body.Close()
-		data := loadJson(resp.Body, &apis[i].SchemaURL)
-		apis[i].Data = data
+		apis[i].Data = loadJson(resp.Body, &apis[i].SchemaURL)
 	}
 	return apis, schemas
 }
@@ -59,6 +58,6 @@ func cacheJsonSchema(url string) {
 		return
 	}
 	if _, ok := schemas[url]; !ok {
-		schemas[url] = LoadJsonSchema(url)
+		schemas[url] = loadJsonSchema(url)
 	}
 }
