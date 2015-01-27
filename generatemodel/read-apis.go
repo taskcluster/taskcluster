@@ -60,6 +60,6 @@ func main() {
 
 func exitOnFail() {
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
