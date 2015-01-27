@@ -25,6 +25,31 @@ suite("Entity (migration validate-keys)", function() {
     });
   });
 
+  test("Can migrate (with context)", function() {
+    base.Entity.configure({
+      version:        1,
+      partitionKey:   base.Entity.keys.StringKey('pk'),
+      rowKey:         base.Entity.keys.StringKey('rk'),
+      properties: {
+        pk:           base.Entity.types.String,
+        rk:           base.Entity.types.Number
+      },
+      context:        ['myKey', 'anotherKey']
+    }).configure({
+      version:        2,
+      properties: {
+        pk:           base.Entity.types.String,
+        rk:           base.Entity.types.Number,
+        value:        base.Entity.types.String
+      },
+      context:        ['anotherKey'], // Should overwrite old context
+      migrate: function(item) {
+        item.value = "none";
+        return item;
+      }
+    });
+  });
+
   test("Can't define key with missing property", function() {
     assert.throws(function() {
       base.Entity.configure({
