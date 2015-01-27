@@ -40,6 +40,16 @@ func (top JsonSchemaTopLevel) String() string {
 	return result
 }
 
+func (top JsonSchemaTopLevel) postPopulate() {
+	for propertyName := range top.Properties {
+		top.Properties[propertyName].postPopulate()
+	}
+	top.Items.postPopulate()
+	for itemsName := range top.OneOf {
+		top.OneOf[itemsName].postPopulate()
+	}
+}
+
 type Items struct {
 	Title                string              `json:"title"`
 	Description          string              `json:"description"`
@@ -60,6 +70,12 @@ func (items Items) String() string {
 	result += fmt.Sprintf("AdditionalProperties  = '%v'\n", items.AdditionalProperties)
 	result += fmt.Sprintf("Required              = '%v'\n", items.Required)
 	return result
+}
+
+func (items Items) postPopulate() {
+	for propertyName := range items.Properties {
+		items.Properties[propertyName].postPopulate()
+	}
 }
 
 type Property struct {
@@ -92,4 +108,8 @@ func (property Property) String() string {
 	result += fmt.Sprintf("Items        =\n")
 	result += utils.Indent(property.Items.String(), "  ")
 	return result
+}
+
+func (property Property) postPopulate() {
+	cacheJsonSchema(property.Ref)
 }

@@ -20,6 +20,10 @@ func Indent(text, indent string) string {
 	return result[:len(result)-1]
 }
 
+func Underline(text string) string {
+	return text + "\n" + strings.Repeat("=", len(text)) + "\n"
+}
+
 func ExitOnFail(err error) {
 	if err != nil {
 		panic(err)

@@ -7,7 +7,6 @@ import (
 	"github.com/petemoore/taskcluster-client-go/utils"
 	"io/ioutil"
 	"log"
-	"strings"
 )
 
 var (
@@ -27,16 +26,13 @@ func main() {
 	}
 	utils.ExitOnFail(err)
 	apis, schemas := model.LoadAPIs(bytes)
-	fmt.Println("\n\n")
 	for _, api := range apis {
-		fmt.Println(api.URL)
-		fmt.Println(strings.Repeat("=", len(api.URL)))
+		fmt.Print(utils.Underline(api.URL))
 		fmt.Println(api.Data)
 		fmt.Println()
 	}
 	for i, schema := range schemas {
-		fmt.Println(i)
-		fmt.Println(strings.Repeat("=", len(i)))
+		fmt.Print(utils.Underline(i))
 		fmt.Println(*schema)
 		fmt.Println()
 	}

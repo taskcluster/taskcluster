@@ -36,6 +36,7 @@ func loadJsonSchema(url string) *JsonSchemaTopLevel {
 	m := new(JsonSchemaTopLevel)
 	err = json.Unmarshal(bytes, m)
 	utils.ExitOnFail(err)
+	m.postPopulate()
 	return m
 }
 
