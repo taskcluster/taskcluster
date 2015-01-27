@@ -42,18 +42,18 @@ type Items struct {
 }
 
 type Property struct {
-	Ref         string   `json:"$ref"`
-	Title       string   `json:"title"`
-	Description string   `json:"description"`
-	Type        string   `json:"type"`
-	Pattern     string   `json:"pattern"`
-	MinLength   int      `json:"minLength"`
-	MaxLength   int      `json:"maxLength"`
-	Minimum     int      `json:"minimum"`
-	Maximum     int      `json:"maximum"`
-	Format      string   `json:"format"`
-	Enum        []string `json:"enum"`
-	Items       Items    `json:"items"`
+	Ref         string        `json:"$ref"`
+	Title       string        `json:"title"`
+	Description string        `json:"description"`
+	Type        string        `json:"type"`
+	Pattern     string        `json:"pattern"`
+	MinLength   int           `json:"minLength"`
+	MaxLength   int           `json:"maxLength"`
+	Minimum     int           `json:"minimum"`
+	Maximum     int           `json:"maximum"`
+	Format      string        `json:"format"`
+	Enum        []interface{} `json:"enum"` // may be a string or int or bool etc
+	Items       Items         `json:"items"`
 }
 
 func (top JsonSchemaTopLevel) String() string {
@@ -108,8 +108,7 @@ func (property Property) String() string {
 	return result
 }
 
-func LoadJsonSchema(url string) {
-	fmt.Printf("Loading json schema from: %v\n", url)
+func LoadJsonSchema(url string) *JsonSchemaTopLevel {
 	var resp *http.Response
 	resp, err = http.Get(url)
 	exitOnFail()
@@ -120,7 +119,7 @@ func LoadJsonSchema(url string) {
 	m := new(JsonSchemaTopLevel)
 	err = json.Unmarshal(bytes, m)
 	exitOnFail()
-	fmt.Println(m.String())
+	return m
 }
 
 func exitOnFail() {

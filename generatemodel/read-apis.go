@@ -4,15 +4,18 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/petemoore/taskcluster-client-go/model"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
-	// tcClient "github.com/petemoore/taskcluster-client.go/lib"
+	"strings"
 )
 
 var (
-	err  error
-	apis []APIDefinition
+	err     error
+	apis    []APIDefinition
+	schemas map[string]*model.JsonSchemaTopLevel = make(map[string]*model.JsonSchemaTopLevel)
 )
 
 // APIDefinition represents the definition of a REST API, comprising of the URL to the defintion
@@ -48,12 +51,21 @@ func main() {
 		resp, err = http.Get(apis[i].URL)
 		exitOnFail()
 		defer resp.Body.Close()
-		fmt.Printf("Schema URL is %v\n", apis[i].SchemaURL)
 		data := loadJson(resp.Body, &apis[i].SchemaURL)
 		apis[i].Data = data
 	}
+	fmt.Println("\n\n")
 	for _, api := range apis {
-		fmt.Printf("Value: %v\n", api.Data)
+		fmt.Println(api.URL)
+		fmt.Println(strings.Repeat("=", len(api.URL)))
+		fmt.Println(api.Data)
+		fmt.Println()
+	}
+	for i, schema := range schemas {
+		fmt.Println(i)
+		fmt.Println(strings.Repeat("=", len(i)))
+		fmt.Println(*schema)
+		fmt.Println()
 	}
 	fmt.Println("All done.")
 }
@@ -62,4 +74,21 @@ func exitOnFail() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func loadJson(reader io.Reader, schema *string) APIModel {
+	var bytes []byte
+	bytes, err = ioutil.ReadAll(reader)
+	exitOnFail()
+	var m APIModel
+	switch *schema {
+	case "http://schemas.taskcluster.net/base/v1/api-reference.json":
+		m = new(API)
+	case "http://schemas.taskcluster.net/base/v1/exchanges-reference.json":
+		m = new(Exchange)
+	}
+	err = json.Unmarshal(bytes, m)
+	m.postPopulate()
+	exitOnFail()
+	return m
 }

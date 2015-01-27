@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+	"github.com/petemoore/taskcluster-client-go/model"
 )
+
+var ()
 
 //////////////////////////////////////////////////////////////////
 //
@@ -51,9 +53,22 @@ type APIEntry struct {
 	Description string     `json:"description"`
 }
 
-func (apiEntry *APIEntry) postPopulate() {
-	fmt.Printf("Input URL: %v\n", apiEntry.Input)
-	fmt.Printf("Output URL: %v\n", apiEntry.Output)
+func (entry *APIEntry) postPopulate() {
+	loadJsonSchema(entry.Input)
+	loadJsonSchema(entry.Output)
+}
+
+func loadJsonSchema(url string) {
+	// if url is not provided, there is nothing to download
+	if url == "" {
+		return
+	}
+	if _, ok := schemas[url]; ok {
+		fmt.Printf("Using cached version of Exchange Entry Schema %v...\n", url)
+	} else {
+		fmt.Printf("Downloading Exchange Entry Schema from %v...\n", url)
+		schemas[url] = model.LoadJsonSchema(url)
+	}
 }
 
 func (entry *APIEntry) String() string {
@@ -117,12 +132,8 @@ type ExchangeEntry struct {
 	Schema      string         `json:"schema"`
 }
 
-func (exchange *ExchangeEntry) postPopulate() {
-	fmt.Printf("Downloading Exchange Entry Exchange from %v...\n", exchange.Exchange)
-	var resp *http.Response
-	resp, err = http.Get(exchange.Exchange)
-	exitOnFail()
-	defer resp.Body.Close()
+func (entry *ExchangeEntry) postPopulate() {
+	loadJsonSchema(entry.Schema)
 }
 
 func (entry *ExchangeEntry) String() string {
