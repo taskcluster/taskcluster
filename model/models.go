@@ -1,11 +1,13 @@
-package main
+package model
 
 import (
 	"fmt"
-	"github.com/petemoore/taskcluster-client-go/model"
 )
 
-var ()
+var (
+	apis    []APIDefinition
+	schemas map[string]*JsonSchemaTopLevel = make(map[string]*JsonSchemaTopLevel)
+)
 
 //////////////////////////////////////////////////////////////////
 //
@@ -54,20 +56,17 @@ type APIEntry struct {
 }
 
 func (entry *APIEntry) postPopulate() {
-	loadJsonSchema(entry.Input)
-	loadJsonSchema(entry.Output)
+	cacheJsonSchema(entry.Input)
+	cacheJsonSchema(entry.Output)
 }
 
-func loadJsonSchema(url string) {
+func cacheJsonSchema(url string) {
 	// if url is not provided, there is nothing to download
 	if url == "" {
 		return
 	}
-	if _, ok := schemas[url]; ok {
-		fmt.Printf("Using cached version of Exchange Entry Schema %v...\n", url)
-	} else {
-		fmt.Printf("Downloading Exchange Entry Schema from %v...\n", url)
-		schemas[url] = model.LoadJsonSchema(url)
+	if _, ok := schemas[url]; !ok {
+		schemas[url] = LoadJsonSchema(url)
 	}
 }
 
@@ -133,7 +132,7 @@ type ExchangeEntry struct {
 }
 
 func (entry *ExchangeEntry) postPopulate() {
-	loadJsonSchema(entry.Schema)
+	cacheJsonSchema(entry.Schema)
 }
 
 func (entry *ExchangeEntry) String() string {
@@ -168,4 +167,17 @@ func (re *RouteElement) String() string {
 			"        Element M Words   = '%v'\n"+
 			"        Element Required  = '%v'\n",
 		re.Name, re.Summary, re.Constant, re.MultipleWords, re.Required)
+}
+
+type APIModel interface {
+	String() string
+	postPopulate()
+}
+
+// APIDefinition represents the definition of a REST API, comprising of the URL to the defintion
+// of the API in json format, together with a URL to a json schema to validate the definition
+type APIDefinition struct {
+	URL       string `json:"url"`
+	SchemaURL string `json:"schema"`
+	Data      APIModel
 }

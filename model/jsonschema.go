@@ -1,23 +1,9 @@
 package model
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"strings"
+	"github.com/petemoore/taskcluster-client-go/utils"
 )
-
-var err error
-
-// indents a block of text with an indent string
-func indent(text, indent string) string {
-	result := ""
-	for _, j := range strings.Split(text, "\n") {
-		result += indent + j + "\n"
-	}
-	return result
-}
 
 type JsonSchemaTopLevel struct {
 	ID                   string              `json:"id"`
@@ -32,6 +18,28 @@ type JsonSchemaTopLevel struct {
 	Required             []string            `json:"required"`
 }
 
+func (top JsonSchemaTopLevel) String() string {
+	result := fmt.Sprintf("ID                    = '%v'\n", top.ID)
+	result += fmt.Sprintf("Schema                = '%v'\n", top.Schema)
+	result += fmt.Sprintf("Title                 = '%v'\n", top.Title)
+	result += fmt.Sprintf("Description           = '%v'\n", top.Description)
+	result += fmt.Sprintf("Type                  = '%v'\n", top.Type)
+	result += fmt.Sprintf("Items                 =\n")
+	result += utils.Indent(top.Items.String(), "  ")
+	result += fmt.Sprintf("OneOf                 =\n")
+	for i, j := range top.OneOf {
+		result += fmt.Sprintf("  Option %v:\n", i)
+		result += utils.Indent(j.String(), "    ")
+	}
+	result += fmt.Sprintf("Properties            =\n")
+	for i, j := range top.Properties {
+		result += "  '" + i + "' =\n" + utils.Indent(j.String(), "    ")
+	}
+	result += fmt.Sprintf("AdditionalProperties  = '%v'\n", top.AdditionalProperties)
+	result += fmt.Sprintf("Required              = '%v'\n", top.Required)
+	return result
+}
+
 type Items struct {
 	Title                string              `json:"title"`
 	Description          string              `json:"description"`
@@ -39,6 +47,19 @@ type Items struct {
 	Properties           map[string]Property `json:"properties"`
 	AdditionalProperties bool                `json:"additionalProperties"`
 	Required             []string            `json:"required"`
+}
+
+func (items Items) String() string {
+	result := fmt.Sprintf("Title                 = '%v'\n", items.Title)
+	result += fmt.Sprintf("Description           = '%v'\n", items.Description)
+	result += fmt.Sprintf("Type                  = '%v'\n", items.Type)
+	result += fmt.Sprintf("Properties            =\n")
+	for i, j := range items.Properties {
+		result += "  '" + i + "' =\n" + utils.Indent(j.String(), "    ")
+	}
+	result += fmt.Sprintf("AdditionalProperties  = '%v'\n", items.AdditionalProperties)
+	result += fmt.Sprintf("Required              = '%v'\n", items.Required)
+	return result
 }
 
 type Property struct {
@@ -56,41 +77,6 @@ type Property struct {
 	Items       Items         `json:"items"`
 }
 
-func (top JsonSchemaTopLevel) String() string {
-	result := fmt.Sprintf("ID                    = '%v'\n", top.ID)
-	result += fmt.Sprintf("Schema                = '%v'\n", top.Schema)
-	result += fmt.Sprintf("Title                 = '%v'\n", top.Title)
-	result += fmt.Sprintf("Description           = '%v'\n", top.Description)
-	result += fmt.Sprintf("Type                  = '%v'\n", top.Type)
-	result += fmt.Sprintf("Items                 =\n")
-	result += indent(top.Items.String(), "  ")
-	result += fmt.Sprintf("OneOf                 =\n")
-	for i, j := range top.OneOf {
-		result += fmt.Sprintf("  Option %v:\n", i)
-		result += indent(j.String(), "    ")
-	}
-	result += fmt.Sprintf("Properties            =\n")
-	for i, j := range top.Properties {
-		result += "  '" + i + "' =\n" + indent(j.String(), "    ")
-	}
-	result += fmt.Sprintf("AdditionalProperties  = '%v'\n", top.AdditionalProperties)
-	result += fmt.Sprintf("Required              = '%v'\n", top.Required)
-	return result
-}
-
-func (items Items) String() string {
-	result := fmt.Sprintf("Title                 = '%v'\n", items.Title)
-	result += fmt.Sprintf("Description           = '%v'\n", items.Description)
-	result += fmt.Sprintf("Type                  = '%v'\n", items.Type)
-	result += fmt.Sprintf("Properties            =\n")
-	for i, j := range items.Properties {
-		result += "  '" + i + "' =\n" + indent(j.String(), "    ")
-	}
-	result += fmt.Sprintf("AdditionalProperties  = '%v'\n", items.AdditionalProperties)
-	result += fmt.Sprintf("Required              = '%v'\n", items.Required)
-	return result
-}
-
 func (property Property) String() string {
 	result := fmt.Sprintf("$Ref         = '%v'\n", property.Ref)
 	result += fmt.Sprintf("Title        = '%v'\n", property.Title)
@@ -104,26 +90,6 @@ func (property Property) String() string {
 	result += fmt.Sprintf("Format       = '%v'\n", property.Format)
 	result += fmt.Sprintf("Enum         = '%v'\n", property.Enum)
 	result += fmt.Sprintf("Items        =\n")
-	result += indent(property.Items.String(), "  ")
+	result += utils.Indent(property.Items.String(), "  ")
 	return result
-}
-
-func LoadJsonSchema(url string) *JsonSchemaTopLevel {
-	var resp *http.Response
-	resp, err = http.Get(url)
-	exitOnFail()
-	defer resp.Body.Close()
-	var bytes []byte
-	bytes, err = ioutil.ReadAll(resp.Body)
-	exitOnFail()
-	m := new(JsonSchemaTopLevel)
-	err = json.Unmarshal(bytes, m)
-	exitOnFail()
-	return m
-}
-
-func exitOnFail() {
-	if err != nil {
-		panic(err)
-	}
 }
