@@ -104,6 +104,7 @@ Entity.prototype.__rowKeyDefinition           = undefined;
 Entity.prototype.__lockedPropertiesDefinition = undefined;
 
 // Define properties set in configure
+Entity.prototype.__context      = undefined;  // List of required context keys
 Entity.prototype.__deserialize  = undefined;  // Method to deserialize entities
 Entity.prototype.__mapping      = undefined;  // Schema mapping to types
 Entity.prototype.__version      = 0;          // Schema version
@@ -164,9 +165,12 @@ var wrapEntityClass = function (Class) {
  *     prop3:           Entity.types.Number,
  *     prop4:           Entity.types.JSON
  *   },
+ *   context: [                               // Required context keys
+ *     'prop5'                                // Constant specified in setup()
+ *   ],
  *   migrate: function(itemV1) {              // Migration function, if not v1
  *     return // transform item from version 1 to version 2
- *   }
+ *   },
  * }
  *
  * When creating a subclass of `Entity` using this method, you must provide all
@@ -243,12 +247,21 @@ var wrapEntityClass = function (Class) {
  * credentials and table name. This allows for multiple tables with the same
  * abstract definition, and improves testability by removing configuration
  * from global module scope.
+ *
+ * Notice that it is possible to require custom context properties to be
+ * injected with `Entity.setup` using the `context` option. This option takes
+ * a list of property names. These property names must then be specified with
+ * `Entity.setup({context: {myProp: ...}})`. This is a good way to inject
+ * configuration keys and constants for use in Entity instance methods.
  */
 Entity.configure = function(options) {
   assert(options,                                 "options must be given");
   assert(typeof(options.version) === 'number',    "version must be a number");
   assert(typeof(options.properties) === 'object', "properties must be given");
-
+  options = _.defaults({}, options, {
+    context:      []
+  });
+  assert(options.context instanceof Array,        "context must be an array");
 
   // Identify the parent class, that is always `this` so we can use it on
   // subclasses
@@ -263,6 +276,20 @@ Entity.configure = function(options) {
 
   // Inherit class methods too (ie. static members)
   _.assign(subClass, Parent);
+
+  // Validate options.context
+  options.context.forEach(function(key) {
+    assert(typeof(key) === 'string',
+           "elements of options.context must be strings");
+    assert(RESERVED_PROPERTY_NAMES.indexOf(key) === -1,
+           "Property name '" + key + "' is reserved, and cannot be specified " +
+           "in options.context");
+    assert(options.properties[key] === undefined,
+           "Property name '" + key + "' is defined 'properties' and cannot " +
+           "be specified in options.context");
+  });
+  // Store context for validation of context given in Entity.setup()
+  subClass.prototype.__context = options.context.slice();
 
   // Validate property names
   _.forIn(options.properties, function(Type, property) {
@@ -365,7 +392,7 @@ Entity.configure = function(options) {
              "entity.Version is greater than configured version!");
       // Migrate, if necessary
       if (entity.Version < options.version) {
-        return options.migrate(deserialize(entity));
+        return options.migrate.call(this, deserialize(entity));
       }
       // Deserialize properties, if not migrated
       var properties = {};
@@ -396,7 +423,8 @@ Entity.configure = function(options) {
  *     clientId:        "...",              // TaskCluster clientId
  *     accessToken:     "...",              // TaskCluster accessToken
  *   },
- *   authBaseUrl:       "..."               // baseUrl for auth (optional)
+ *   authBaseUrl:       "...",              // baseUrl for auth (optional)
+ *   context:           {...}               // Extend prototype (optional)
  * }
  *
  * Using the `options` format provided above a shared-access-signature will be
@@ -417,11 +445,16 @@ Entity.configure = function(options) {
  *   },
  * }
  *
+ * In `Entity.configure` the `context` options is a list of property names,
+ * these properties **must** be specified in when `Entity.setup` is called.
+ * They will be used to extend the subclass prototype. This is typically used
+ * to inject configuration constants for use in Entity instance methods.
+ *
  * Once you have configured properties, version, migration, keys, using
  * `Entity.configure`, you can call `Entity.setup` on your new subclass.
  * This will again create a new subclass that is ready for use, with azure
  * credentials, etc. This new subclass cannot be configured further, nor can
- * `setup` be called again. Notice, that the subclass is return as a promise.
+ * `setup` be called again.
  */
 Entity.setup = function(options) {
   // Validate options
@@ -429,6 +462,9 @@ Entity.setup = function(options) {
   assert(options.table,                       "options.table must be given");
   assert(typeof(options.table) === 'string',  "options.table isn't a string");
   assert(options.credentials,                 "credentials is required");
+  options = _.defaults({}, options, {
+    context:      {}
+  });
 
   // Identify the parent class, that is always `this` so we can use it on
   // subclasses
@@ -472,6 +508,19 @@ Entity.setup = function(options) {
       enumerable: true,
       get:        function() {return this.__properties[property];}
     });
+  });
+
+  // Validate that we have all context properties required
+  subClass.prototype.__context.forEach(function(key) {
+    assert(options.context[key] !== undefined, "Context key '" + key +
+           "' must be specified!");
+  });
+
+  // Set properties from options.context
+  _.forIn(options.context, function(val, key) {
+    assert(subClass.prototype.__context.indexOf(key) !== -1,
+           "context key '" + key + "' was not declared in Entity.configure");
+    subClass.prototype[key] = val;
   });
 
   // Set azure table name
@@ -944,6 +993,7 @@ var VALID_ROW_MATCH       = ['exact', 'partial', 'none'];
  *   prop2:              "val2",                   // Same as Entity.op.equal
  *   prop3:              Entity.op.lessThan(42)    // Filter on prop3 < 42
  * }, {
+ *   continuation:       '...',        // Continuation token to continue from
  *   matchPartition:     'none',       // Require 'exact' or 'none' partitionKey
  *   matchRow:           'none',       // Require 'exact' or 'none' rowKey
  *   limit:              1000,         // Max number of parallel handler calls
