@@ -11,7 +11,16 @@ var (
 	// keep a record of generated struct names, so that we don't reuse old names
 	// map[string]bool acts like a set of strings
 	structs map[string]bool = make(map[string]bool)
+	// for sorting schemas by schemaURL
+	schemaURLs []string
 )
+
+type SortedAPIDefs []APIDefinition
+
+// needed so that SortedAPIDefs can implement sort.Interface
+func (a SortedAPIDefs) Len() int           { return len(a) }
+func (a SortedAPIDefs) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a SortedAPIDefs) Less(i, j int) bool { return a[i].URL < a[j].URL }
 
 //////////////////////////////////////////////////////////////////
 //

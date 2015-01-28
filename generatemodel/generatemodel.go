@@ -9,9 +9,10 @@ import (
 )
 
 var (
-	err     error
-	apis    []model.APIDefinition
-	schemas map[string]*model.JsonSchemaTopLevel = make(map[string]*model.JsonSchemaTopLevel)
+	err        error
+	apis       []model.APIDefinition
+	schemas    map[string]*model.JsonSchemaTopLevel = make(map[string]*model.JsonSchemaTopLevel)
+	schemaURLs []string
 
 	version = "generatemodel 1.0"
 	usage   = `
@@ -42,7 +43,7 @@ func main() {
 		fmt.Printf("Could not load json file '%v'!\n", arguments["-f"].(string))
 	}
 	utils.ExitOnFail(err)
-	apis, schemas = model.LoadAPIs(bytes)
+	apis, schemaURLs, schemas = model.LoadAPIs(bytes)
 	//printAllData()
 	model.GenerateCode(arguments["-o"].(string))
 }

@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strings"
 )
 
@@ -52,8 +53,9 @@ func cacheJsonSchema(url string) {
 	}
 }
 
-func LoadAPIs(bytes []byte) ([]APIDefinition, map[string]*JsonSchemaTopLevel) {
+func LoadAPIs(bytes []byte) ([]APIDefinition, []string, map[string]*JsonSchemaTopLevel) {
 	err = json.Unmarshal(bytes, &apis)
+	sort.Sort(SortedAPIDefs(apis))
 	utils.ExitOnFail(err)
 	for i := range apis {
 		var resp *http.Response
@@ -62,7 +64,13 @@ func LoadAPIs(bytes []byte) ([]APIDefinition, map[string]*JsonSchemaTopLevel) {
 		defer resp.Body.Close()
 		apis[i].Data = loadJson(resp.Body, &apis[i].SchemaURL)
 	}
-	return apis, schemas
+	// now all data should be loaded, let's sort the schemas
+	schemaURLs = make([]string, len(schemas))
+	for url := range schemas {
+		schemaURLs = append(schemaURLs, url)
+	}
+	sort.Strings(schemaURLs)
+	return apis, schemaURLs, schemas
 }
 
 func GenerateCode(generatedFile string) {
