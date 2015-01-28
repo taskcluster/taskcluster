@@ -8,6 +8,9 @@ var (
 	apis    []APIDefinition
 	schemas map[string]*JsonSchemaTopLevel = make(map[string]*JsonSchemaTopLevel)
 	err     error
+	// keep a record of generated struct names, so that we don't reuse old names
+	// map[string]bool acts like a set of strings
+	structs map[string]bool = make(map[string]bool)
 )
 
 //////////////////////////////////////////////////////////////////

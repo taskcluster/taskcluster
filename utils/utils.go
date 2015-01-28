@@ -6,6 +6,9 @@ import (
 
 // indents a block of text with an indent string, see http://play.golang.org/p/nV1_VLau7C
 func Indent(text, indent string) string {
+	if text == "" {
+		return text
+	}
 	if text[len(text)-1:] == "\n" {
 		result := ""
 		for _, j := range strings.Split(text[:len(text)-1], "\n") {

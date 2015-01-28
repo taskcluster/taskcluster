@@ -16,6 +16,7 @@ type JsonSchemaTopLevel struct {
 	Properties           map[string]Property `json:"properties"`
 	AdditionalProperties bool                `json:"additionalProperties"`
 	Required             []string            `json:"required"`
+	StructName           string
 }
 
 func (top JsonSchemaTopLevel) String() string {

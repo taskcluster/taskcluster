@@ -1,5 +1,3 @@
 package client
 
-import (
-// "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
-)
+//go:generate generatemodel -f ../model/apis.json -o generated-code.go

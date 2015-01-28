@@ -15,13 +15,13 @@ type Auth struct {
 	AccessToken string
 }
 
-type ScopesResult struct {
+type ScopesResponse struct {
 	ClientId string
 	Scopes   []string
 	Expires  string
 }
 
-func (result ScopesResult) String() string {
+func (result ScopesResponse) String() string {
 	return fmt.Sprintf(
 		"Client ID:    %v\n"+
 			"Scopes:       %v\n"+
@@ -29,14 +29,14 @@ func (result ScopesResult) String() string {
 		result.ClientId, result.Scopes, result.Expires)
 }
 
-type GetCredentialsResult struct {
+type GetCredentialsResponse struct {
 	ClientId    string
 	AccessToken string
 	Scopes      []string
 	Expires     string
 }
 
-func (auth Auth) Scopes(clientId string) ScopesResult {
+func (auth Auth) Scopes(clientId string) ScopesResponse {
 	credentials := &hawk.Credentials{
 		ID:   auth.ClientId,
 		Key:  auth.AccessToken,
@@ -54,7 +54,7 @@ func (auth Auth) Scopes(clientId string) ScopesResult {
 		panic(err)
 	}
 	defer response.Body.Close()
-	var scopes ScopesResult
+	var scopes ScopesResponse
 	json := json.NewDecoder(response.Body)
 	err = json.Decode(&scopes)
 	if err != nil {
@@ -63,6 +63,6 @@ func (auth Auth) Scopes(clientId string) ScopesResult {
 	return scopes
 }
 
-func (auth Auth) GetCredentials(clientId string) GetCredentialsResult {
-	return GetCredentialsResult{}
+func (auth Auth) GetCredentials(clientId string) GetCredentialsResponse {
+	return GetCredentialsResponse{}
 }
