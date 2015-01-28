@@ -19,6 +19,8 @@ var launch = function(profile) {
       'pulse_username',
       'pulse_password',
       'queue_signatureSecret',
+      'azure_accountName',
+      'azure_accountKey',
       'database_connectionString',
       'influx_connectionString'
     ],
