@@ -269,6 +269,25 @@ module.exports = {
         },
         {
           "type": "function",
+          "method": "get",
+          "route": "/poll-task-url/<provisionerId>/<workerType>",
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "name": "pollTaskUrls",
+          "title": "Get Urls to Poll Pending Tasks",
+          "description": "Get a signed url to get a message from azure queue.\nOnce messages are polled from here, you can claim the referenced task\nwith `claimTask`.",
+          "scopes": [
+            [
+              "queue:poll-task-urls",
+              "assume:worker-type:<provisionerId>/<workerType>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#"
+        },
+        {
+          "type": "function",
           "method": "post",
           "route": "/task/<taskId>/runs/<runId>/claim",
           "args": [
@@ -277,7 +296,7 @@ module.exports = {
           ],
           "name": "claimTask",
           "title": "Claim task",
-          "description": "claim a task, more to be added later...",
+          "description": "claim a task, more to be added later...\n\n**Warning,** in the future this API end-point will require the presents\nof `receipt`, `messageId` and `signature` in the body.",
           "scopes": [
             [
               "queue:claim-task",
@@ -317,7 +336,7 @@ module.exports = {
           ],
           "name": "claimWork",
           "title": "Claim work for a worker",
-          "description": "Claim work for a worker, returns information about an appropriate task\nclaimed for the worker. Similar to `claimTaskRun`, which can be\nused to claim a specific task, or reclaim a specific task extending the\n`takenUntil` timeout for the run.\n\n**Note**, that if no tasks are _pending_ this method will not assign a\ntask to you. Instead it will return `204` and you should wait a while\nbefore polling the queue again. To avoid polling declare a RabbitMQ queue\nfor your `workerType` claim work using `claimTaskRun`.",
+          "description": "Claim work for a worker, returns information about an appropriate task\nclaimed for the worker. Similar to `claimTask`, which can be\nused to claim a specific task, or reclaim a specific task extending the\n`takenUntil` timeout for the run.\n\n**Note**, that if no tasks are _pending_ this method will not assign a\ntask to you. Instead it will return `204` and you should wait a while\nbefore polling the queue again.\n\n**WARNING, this API end-point is deprecated and will be removed**.",
           "scopes": [
             [
               "queue:claim-task",
@@ -325,7 +344,7 @@ module.exports = {
               "assume:worker-id:<workerGroup>/<workerId>"
             ]
           ],
-          "input": "http://schemas.taskcluster.net/queue/v1/task-claim-request.json#",
+          "input": "http://schemas.taskcluster.net/queue/v1/claim-work-request.json#",
           "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#"
         },
         {

@@ -165,6 +165,7 @@ var queue = new taskcluster.Queue(options);
  * `queue.defineTask(taskId, payload) : result`
  * `queue.scheduleTask(taskId) : result`
  * `queue.status(taskId) : result`
+ * `queue.pollTaskUrls(provisionerId, workerType) : result`
  * `queue.claimTask(taskId, runId, payload) : result`
  * `queue.reclaimTask(taskId, runId) : result`
  * `queue.claimWork(provisionerId, workerType, payload) : result`
