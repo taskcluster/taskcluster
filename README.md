@@ -19,3 +19,14 @@ func main() {
 	fmt.Printf(scopes.String())
 }
 ```
+
+With suitable/valid authorization parameters provided, this should return content like:
+
+```
+pmoore@Elisandra:~/go/src/github.com/petemoore/taskcluster-client-go master $ hack
+Client ID:    hdjhtkehgfgdhrb437f$2h
+Scopes:       [*]
+Expires:      2017-01-31T23:00:00.000Z
+```
+
+Please note this client API is currently under development, so is not yet ready for use!
