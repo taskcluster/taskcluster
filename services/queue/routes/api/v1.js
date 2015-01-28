@@ -4,7 +4,6 @@ var slugid    = require('slugid');
 var assert    = require('assert');
 var _         = require('lodash');
 var base      = require('taskcluster-base');
-var xml2js     = require('xml2js');
 
 // Common schema prefix
 var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
