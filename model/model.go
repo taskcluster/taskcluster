@@ -246,7 +246,7 @@ func LoadAPIs(bytes []byte) ([]APIDefinition, []string, map[string]*JsonSchemaTo
 		apis[i].Data = loadJson(resp.Body, &apis[i].SchemaURL)
 	}
 	// now all data should be loaded, let's sort the schemas
-	schemaURLs = make([]string, len(schemas))
+	schemaURLs = make([]string, 0, len(schemas))
 	for url := range schemas {
 		schemaURLs = append(schemaURLs, url)
 	}
@@ -263,16 +263,16 @@ func GenerateCode(generatedFile string) {
 
 package client
 `
-	content += generateResponseStructs()
+	content += generateStructs()
 	generatedBytes := []byte(content)
 	err := ioutil.WriteFile(generatedFile, generatedBytes, 0644)
 	utils.ExitOnFail(err)
 }
 
-func generateResponseStructs() string {
+func generateStructs() string {
 	content := ""
 	// Loop through all json schemas that were found referenced inside the API json schemas...
-	for i := range schemas {
+	for _, i := range schemaURLs {
 		// Capitalise words, and remove spaces and dashes, to acheive struct names in Camel Case,
 		// but starting with an upper case letter so that the structs are exported...
 		structName := strings.NewReplacer(" ", "", "-", "").Replace(strings.Title(schemas[i].Title))
