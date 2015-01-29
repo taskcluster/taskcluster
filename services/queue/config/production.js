@@ -28,11 +28,6 @@ module.exports = {
     trustProxy:                   true
   },
 
-  database: {
-    // Provided by environment variable: DATABASE_URL
-    connectionString:             undefined
-  },
-
   // Pulse credentials
   pulse: {
     username:                     'taskcluster-queue',

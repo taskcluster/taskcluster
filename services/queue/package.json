@@ -11,29 +11,27 @@
     "url": "https://github.com/taskcluster/taskcluster-queue.git"
   },
   "dependencies": {
-    "aws-sdk": "2.0.19",
-    "aws-sdk-promise": "0.0.0",
-    "azure-storage": "0.4.2",
-    "cryptiles": "2.0.4",
-    "debug": "2.1.1",
-    "knex": "0.7.3",
-    "lodash": "2.4.1",
-    "pg.js": "3.5.0",
-    "promise": "6.1.0",
-    "slugid": "1.0.3",
-    "taskcluster-base": "0.6.3",
-    "thirty-two": "0.0.2",
-    "url-join": "0.0.1",
-    "uuid": "2.0.1",
-    "xml2js": "^0.4.4"
+    "aws-sdk":              "2.0.19",
+    "aws-sdk-promise":      "0.0.0",
+    "azure-storage":        "0.4.2",
+    "cryptiles":            "2.0.4",
+    "debug":                "2.1.1",
+    "lodash":               "^3.0.0",
+    "promise":              "6.1.0",
+    "slugid":               "1.0.3",
+    "taskcluster-base":     "^0.7.4",
+    "thirty-two":           "0.0.2",
+    "url-join":             "0.0.1",
+    "uuid":                 "2.0.1",
+    "xml2js":               "^0.4.4"
   },
   "devDependencies": {
-    "superagent": "0.21.0",
-    "superagent-promise": "0.2.0",
-    "mocha": "2.1.0",
-    "xmlbuilder": "2.4.5",
-    "taskcluster-client": "0.19.2",
-    "xml2js": "0.4.4"
+    "superagent":           "0.21.0",
+    "superagent-promise":   "0.2.0",
+    "mocha":                "2.1.0",
+    "xmlbuilder":           "^2.4.6",
+    "taskcluster-client":   "^0.19.5",
+    "xml2js":               "0.4.4"
   },
   "engines": {
     "node": "0.10.x"
