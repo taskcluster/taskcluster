@@ -3,20 +3,22 @@ package model
 import (
 	"fmt"
 	"github.com/petemoore/taskcluster-client-go/utils"
+	"sort"
 )
 
 type JsonSchemaTopLevel struct {
-	ID                   string              `json:"id"`
-	Schema               string              `json:"$schema"`
-	Title                string              `json:"title"`
-	Description          string              `json:"description"`
-	Type                 string              `json:"type"`
-	Items                Items               `json:"items"`
-	OneOf                []Items             `json:"oneOf"`
-	Properties           map[string]Property `json:"properties"`
-	AdditionalProperties bool                `json:"additionalProperties"`
-	Required             []string            `json:"required"`
+	ID                   string               `json:"id"`
+	Schema               string               `json:"$schema"`
+	Title                string               `json:"title"`
+	Description          string               `json:"description"`
+	Type                 string               `json:"type"`
+	Items                Items                `json:"items"`
+	OneOf                []Items              `json:"oneOf"`
+	Properties           map[string]*Property `json:"properties"`
+	AdditionalProperties bool                 `json:"additionalProperties"`
+	Required             []string             `json:"required"`
 	StructName           string
+	SortedPropertyNames  []string
 }
 
 func (top JsonSchemaTopLevel) String() string {
@@ -41,7 +43,7 @@ func (top JsonSchemaTopLevel) String() string {
 	return result
 }
 
-func (top JsonSchemaTopLevel) postPopulate() {
+func (top *JsonSchemaTopLevel) postPopulate() {
 	for propertyName := range top.Properties {
 		top.Properties[propertyName].postPopulate()
 	}
@@ -49,15 +51,22 @@ func (top JsonSchemaTopLevel) postPopulate() {
 	for itemsName := range top.OneOf {
 		top.OneOf[itemsName].postPopulate()
 	}
+	// now all data should be loaded, let's sort the top.Properties
+	top.SortedPropertyNames = make([]string, 0, len(top.Properties))
+	for propertyName := range top.Properties {
+		top.SortedPropertyNames = append(top.SortedPropertyNames, propertyName)
+	}
+	sort.Strings(top.SortedPropertyNames)
+	fmt.Printf("Sorted Property Names: %v\n", top.SortedPropertyNames)
 }
 
 type Items struct {
-	Title                string              `json:"title"`
-	Description          string              `json:"description"`
-	Type                 string              `json:"type"`
-	Properties           map[string]Property `json:"properties"`
-	AdditionalProperties bool                `json:"additionalProperties"`
-	Required             []string            `json:"required"`
+	Title                string               `json:"title"`
+	Description          string               `json:"description"`
+	Type                 string               `json:"type"`
+	Properties           map[string]*Property `json:"properties"`
+	AdditionalProperties bool                 `json:"additionalProperties"`
+	Required             []string             `json:"required"`
 }
 
 func (items Items) String() string {
@@ -73,7 +82,7 @@ func (items Items) String() string {
 	return result
 }
 
-func (items Items) postPopulate() {
+func (items *Items) postPopulate() {
 	for propertyName := range items.Properties {
 		items.Properties[propertyName].postPopulate()
 	}
@@ -111,6 +120,6 @@ func (property Property) String() string {
 	return result
 }
 
-func (property Property) postPopulate() {
+func (property *Property) postPopulate() {
 	cacheJsonSchema(property.Ref)
 }

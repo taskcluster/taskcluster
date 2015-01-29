@@ -284,7 +284,7 @@ func generateStructs() string {
 		schemas[i].StructName = structName
 		content += "\n"
 		content += fmt.Sprintf("type %v struct {\n", structName)
-		for j := range schemas[i].Properties {
+		for _, j := range schemas[i].SortedPropertyNames {
 			typ := schemas[i].Properties[j].Type
 			if typ == "array" {
 				if jsonType := schemas[i].Properties[j].Items.Type; jsonType == "" {
