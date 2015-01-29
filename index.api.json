@@ -1,0 +1,14 @@
+<html>
+<head><title>404 Not Found</title></head>
+<body>
+<h1>404 Not Found</h1>
+<ul>
+<li>Code: NoSuchKey</li>
+<li>Message: The specified key does not exist.</li>
+<li>Key: $api/v1/api.json</li>
+<li>RequestId: 3EA1CC8972923227</li>
+<li>HostId: fHdI6O7xqlJqhp4DGIgaUkZduunee0ry9ylF8Vy8EDCsHE/1M0IuiioQtQRUfFk/lYcYotXdpB8=</li>
+</ul>
+<hr/>
+</body>
+</html>
