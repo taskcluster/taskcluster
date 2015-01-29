@@ -7,17 +7,6 @@ module.exports = {
     // Prefix for exchanges declared
     exchangePrefix:               'v1/',
 
-    // Settings for task reaper, note that this must be started as a separate
-    // process bin/reaper.js run the reaper
-    reaper: {
-      // Timeout between dealing with timed tasks
-      interval:                   180,
-
-      // Number of times reaping is allowed to fail in a row, before the process
-      // crashes as sign if illness
-      errorLimit:                 5
-    },
-
     // Number of seconds before the claim to a run expires
     claimTimeout:                 20 * 60,
 
@@ -78,13 +67,6 @@ module.exports = {
 
     // Trust a forwarding proxy
     trustProxy:                     false,
-  },
-
-  // Database configuration
-  database: {
-    // Database connection string as pg://user:password@host:port/database
-    // This setting can be overwritten by DATABASE_URL if defined.
-    connectionString:               undefined
   },
 
   // Azure credentials configuration
