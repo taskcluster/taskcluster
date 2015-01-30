@@ -11,8 +11,9 @@ var data          = require('../queue/data');
 var Bucket        = require('../queue/bucket');
 var QueueService  = require('../queue/queueservice');
 
+
 /** Launch server */
-var launch = function(profile) {
+var launch = async function(profile) {
   debug("Launching with profile: %s", profile);
 
   // Load configuration
@@ -47,35 +48,6 @@ var launch = function(profile) {
     drain:      influx,
     component:  cfg.get('queue:statsComponent'),
     process:    'server'
-  });
-
-  // Setup AMQP exchanges and create a publisher
-  // First create a validator and then publisher
-  var validator = null;
-  var publisher = null;
-  var publisherCreated = base.validator({
-    folder:           path.join(__dirname, '..', 'schemas'),
-    constants:        require('../schemas/constants'),
-    publish:          cfg.get('queue:publishMetaData') === 'true',
-    schemaPrefix:     'queue/v1/',
-    aws:              cfg.get('aws')
-  }).then(function(validator_) {
-    debug("Validator created");
-    validator = validator_;
-    return exchanges.setup({
-      credentials:        cfg.get('pulse'),
-      exchangePrefix:     cfg.get('queue:exchangePrefix'),
-      validator:          validator,
-      referencePrefix:    'queue/v1/exchanges.json',
-      publish:            cfg.get('queue:publishMetaData') === 'true',
-      aws:                cfg.get('aws'),
-      drain:              influx,
-      component:          cfg.get('queue:statsComponent'),
-      process:            'server'
-    });
-  }).then(function(publisher_) {
-    debug("Publisher created");
-    publisher = publisher_;
   });
 
   // Create artifact bucket instances
@@ -120,55 +92,78 @@ var launch = function(profile) {
 
   // When: publisher, validator and containers are created, proceed
   debug("Waiting for resources to be created");
-  return Promise.all([
-    publisherCreated,
-    artifactStore.createContainer().then(function() {
-      return artifactStore.setupCORS();
-    }),
+  var validator, publisher;
+  await Promise.all([
+    (async () => {
+      validator = await base.validator({
+        folder:           path.join(__dirname, '..', 'schemas'),
+        constants:        require('../schemas/constants'),
+        publish:          cfg.get('queue:publishMetaData') === 'true',
+        schemaPrefix:     'queue/v1/',
+        aws:              cfg.get('aws')
+      });
+
+      publisher = await exchanges.setup({
+        credentials:        cfg.get('pulse'),
+        exchangePrefix:     cfg.get('queue:exchangePrefix'),
+        validator:          validator,
+        referencePrefix:    'queue/v1/exchanges.json',
+        publish:            cfg.get('queue:publishMetaData') === 'true',
+        aws:                cfg.get('aws'),
+        drain:              influx,
+        component:          cfg.get('queue:statsComponent'),
+        process:            'server'
+      });
+    })(),
+    (async () => {
+      await artifactStore.createContainer();
+      await artifactStore.setupCORS();
+    })(),
     Task.ensureTable(),
     Artifact.ensureTable(),
     publicArtifactBucket.setupCORS(),
     privateArtifactBucket.setupCORS()
-  ]).then(function() {
-    // Create API router and publish reference if needed
-    debug("Creating API router");
-    return v1.setup({
-      context: {
-        Task:           Task,
-        Artifact:       Artifact,
-        publisher:      publisher,
-        validator:      validator,
-        claimTimeout:   cfg.get('queue:claimTimeout'),
-        queueService:   queueService
-      },
-      validator:        validator,
-      authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
-      credentials:      cfg.get('taskcluster:credentials'),
-      publish:          cfg.get('queue:publishMetaData') === 'true',
-      baseUrl:          cfg.get('server:publicUrl') + '/v1',
-      referencePrefix:  'queue/v1/api.json',
-      aws:              cfg.get('aws'),
-      component:        cfg.get('queue:statsComponent'),
-      drain:            influx
-    });
-  }).then(function(router) {
-    debug("Configuring app");
+  ]);
 
-    // Create app
-    var app = base.app({
-      port:           Number(process.env.PORT || cfg.get('server:port')),
-      env:            cfg.get('server:env'),
-      forceSSL:       cfg.get('server:forceSSL'),
-      trustProxy:     cfg.get('server:trustProxy')
-    });
+  // Create API router and publish reference if needed
+  debug("Creating API router");
 
-    // Mount API router
-    app.use('/v1', router);
-
-    // Create server
-    debug("Launching server");
-    return app.createServer();
+  var router = await v1.setup({
+    context: {
+      Task:           Task,
+      Artifact:       Artifact,
+      publisher:      publisher,
+      validator:      validator,
+      claimTimeout:   cfg.get('queue:claimTimeout'),
+      queueService:   queueService
+    },
+    validator:        validator,
+    authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
+    credentials:      cfg.get('taskcluster:credentials'),
+    publish:          cfg.get('queue:publishMetaData') === 'true',
+    baseUrl:          cfg.get('server:publicUrl') + '/v1',
+    referencePrefix:  'queue/v1/api.json',
+    aws:              cfg.get('aws'),
+    component:        cfg.get('queue:statsComponent'),
+    drain:            influx
   });
+
+  debug("Configuring app");
+
+  // Create app
+  var app = base.app({
+    port:           Number(process.env.PORT || cfg.get('server:port')),
+    env:            cfg.get('server:env'),
+    forceSSL:       cfg.get('server:forceSSL'),
+    trustProxy:     cfg.get('server:trustProxy')
+  });
+
+  // Mount API router
+  app.use('/v1', router);
+
+  // Create server
+  debug("Launching server");
+  return app.createServer();
 };
 
 // If server.js is executed start the server
