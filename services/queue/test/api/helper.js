@@ -7,6 +7,7 @@ var v1          = require('../../routes/v1');
 var exchanges   = require('../../queue/exchanges');
 var taskcluster = require('taskcluster-client');
 var mocha       = require('mocha');
+var server      = require('../../bin/server');
 
 // Some default clients for the mockAuthServer
 var defaultClients = [
@@ -82,61 +83,53 @@ module.exports = function(options) {
   // Configure PulseTestReceiver
   helper.events = new base.testing.PulseTestReceiver(cfg.get('pulse'), mocha);
 
-  // Configure server
-  var server = new base.testing.LocalApp({
-    command:      path.join(__dirname, '..', '..', 'bin', 'server.js'),
-    args:         [defaultProfile],
-    name:         'server.js',
-    baseUrlPath:  '/v1'
-  });
 
   // Hold reference to mockAuthServer
   var mockAuthServer = null;
+  var web = null;
 
   // Setup server
-  setup(function() {
+  setup(async function() {
     // Create mock authentication server
-    return base.testing.createMockAuthServer({
+    mockAuthServer = await base.testing.createMockAuthServer({
       port:     60007, // This is hardcoded into config/test.js
       clients:  defaultClients
-    }).then(function(mockAuthServer_) {
-      mockAuthServer = mockAuthServer_;
-    }).then(function() {
-      return server.launch();
-    }).then(function(baseUrl) {
-      // Create client for working with API
-      helper.baseUrl = baseUrl;
-      var reference = v1.reference({baseUrl: baseUrl});
-      helper.Queue = taskcluster.createClient(reference);
-      // Utility to create an Queue instance with limited scopes
-      helper.scopes = function() {
-        var scopes = Array.prototype.slice.call(arguments);
-        helper.queue = new helper.Queue({
-          baseUrl:          baseUrl,
-          credentials: {
-            clientId:       'test-client',
-            accessToken:    'none'
-          },
-          authorizedScopes: (scopes.length > 0 ? scopes : undefined)
-        });
-      };
-      helper.scopes();
-      // Create client for binding to reference
-      var exchangeReference = exchanges.reference({
-        exchangePrefix:   cfg.get('queue:exchangePrefix'),
-        credentials:      cfg.get('pulse')
-      });
-      helper.QueueEvents = taskcluster.createClient(exchangeReference);
-      helper.queueEvents = new helper.QueueEvents();
     });
+
+    web = await server(defaultProfile);
+
+    // Create client for working with API
+    helper.baseUrl = 'http://localhost:' + web.address().port + '/v1';
+    var reference = v1.reference({baseUrl: helper.baseUrl});
+    helper.Queue = taskcluster.createClient(reference);
+    // Utility to create an Queue instance with limited scopes
+    helper.scopes = function() {
+      var scopes = Array.prototype.slice.call(arguments);
+      helper.queue = new helper.Queue({
+        baseUrl:          helper.baseUrl,
+        credentials: {
+          clientId:       'test-client',
+          accessToken:    'none'
+        },
+        authorizedScopes: (scopes.length > 0 ? scopes : undefined)
+      });
+    };
+
+    helper.scopes();
+    // Create client for binding to reference
+    var exchangeReference = exchanges.reference({
+      exchangePrefix:   cfg.get('queue:exchangePrefix'),
+      credentials:      cfg.get('pulse')
+    });
+    helper.QueueEvents = taskcluster.createClient(exchangeReference);
+    helper.queueEvents = new helper.QueueEvents();
   });
 
   // Shutdown server
-  teardown(function() {
+  teardown(async function() {
     // Kill server
-    return server.terminate().then(function() {
-      return mockAuthServer.terminate();
-    });
+    await web.terminate();
+    await mockAuthServer.terminate();
   });
 
   return helper;
