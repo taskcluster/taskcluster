@@ -2,12 +2,13 @@ var base    = require('taskcluster-base');
 var debug   = require('debug')('queue:data');
 var assert  = require('assert');
 var Promise = require('promise');
+var _       = require('lodash');
 
 /** Entity for tracking tasks and associated state */
 var Task = base.Entity.configure({
   version:          1,
-  partitionKey      base.Entity.keys.StringKey('taskId'),
-  rowKey:           base.Entity.keys.ConstantKey('task')
+  partitionKey:     base.Entity.keys.StringKey('taskId'),
+  rowKey:           base.Entity.keys.ConstantKey('task'),
   properties: {
     taskId:         base.Entity.types.SlugId,
     provisionerId:  base.Entity.types.String,
@@ -55,6 +56,21 @@ var Task = base.Entity.configure({
   }
 });
 
+/** Construct task status structure */
+Task.prototype.status = function() {
+  return {
+    taskId:           this.taskId,
+    provisionerId:    this.provisionerId,
+    workerType:       this.workerType,
+    schedulerId:      this.schedulerId,
+    taskGroupId:      this.taskGroupId,
+    deadline:         this.deadline.toJSON(),
+    retriesLeft:      this.retriesLeft,
+    state:            (_.last(this.runs) || {state: 'unscheduled'}).state,
+    runs:             _.cloneDeep(this.runs)
+  };
+};
+
 
 // Export Task
 exports.Task = Task;
@@ -62,8 +78,8 @@ exports.Task = Task;
 /** Entity for tracking artifacts */
 var Artifact = base.Entity.configure({
   version:          1,
-  partitionKey      base.Entity.keys.CompositeKey('taskId', 'runId'),
-  rowKey:           base.Entity.keys.StringKey('name')
+  partitionKey:     base.Entity.keys.CompositeKey('taskId', 'runId'),
+  rowKey:           base.Entity.keys.StringKey('name'),
   properties: {
     taskId:         base.Entity.types.SlugId,
     runId:          base.Entity.types.Number,
@@ -92,10 +108,9 @@ var Artifact = base.Entity.configure({
     expires:        base.Entity.types.Date
   },
   context: [
-    'blobStore',              // BlobStore instance wrapper Azure Blob Storage
-    's3',                     // S3 client with credentials
-    'privateArtifactBucket',  // Private artifact bucket name
-    'publicArtifactBucket'    // Public artifact bucket name
+    'blobStore',      // BlobStore instance wrapping Azure Blob Storage
+    'privateBucket',  // Private artifact bucket wrapping S3
+    'publicBucket'    // Public artifact bucket wrapping S3
   ]
 });
 
@@ -124,25 +139,25 @@ Artifact.prototype.remove = function(ignoreError) {
 
   // Handle S3 artifacts
   if (this.storageType === 's3') {
-    // Validate that we can delete this object
-    if (this.details.bucket !== this.publicArtifactBucket &&
-        this.details.bucket !== this.privateArtifactBucket) {
+    debug("Deleting expired s3 artifact from bucket: %s, prefix: %s",
+          this.details.bucket, this.details.prefix);
+    // Delete the right bucket
+    if (this.details.bucket === this.publicBucket.bucket) {
+      deleted = this.publicBucket.deleteObject(this.details.prefix);
+    } else if (this.details.bucket === this.privateBucket.bucket) {
+      deleted = this.privateBucket.deleteObject(this.details.prefix);
+    } else {
       debug("[alert-operator] Expiring artifact with bucket: %s, which isn't " +
             "configured for use. Please investigate taskId: %s, runId: %s",
             this.details.bucket, this.taskId, this.runId);
       return;
     }
-    // Delete object
-    debug("Deleting expired s3 artifact from bucket: %s, prefix: %s",
-          this.details.bucket, this.details.prefix);
-    deleted = this.s3.deleteObject({
-      Bucket:       this.details.bucket,
-      Key:          this.details.prefix
-    }).promise();
   }
 
   // Handle azure artifact
   if (this.storageType === 'azure') {
+    debug("Deleting expired azure artifact from container: %s, path: %s",
+          container, path);
     // Validate that this is the configured container
     if (this.details.container !== this.blobStore.container) {
       debug("[alert-operator] Expiring artifact with container: %s, which " +
@@ -150,8 +165,6 @@ Artifact.prototype.remove = function(ignoreError) {
             this.details.container, this.taskId, this.runId);
       return;
     }
-    debug("Deleting expired azure artifact from container: %s, path: %s",
-          container, path);
     deleted = this.blobStore.deleteBlob(this.path, true);
   }
 

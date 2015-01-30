@@ -10,14 +10,15 @@ module.exports = {
     // Number of seconds before the claim to a run expires
     claimTimeout:                 20 * 60,
 
-    // S3 bucket where artifacts are stored
-    artifactBucket:               'taskcluster-artifacts',
+    // S3 buckets where artifacts are stored
+    publicArtifactBucket:         'taskcluster-artifacts',
+    privateArtifactBucket:        'taskcluster-artifacts',
 
     // Azure blob container for artifacts
     artifactContainer:            'artifacts',
 
-    // Azure task storage container (for task information and archived status)
-    taskContainer:                'tasks',
+    // Azure table name for tasks (status and definition)
+    taskTableName:                'Tasks',
 
     // Azure table name for artifacts meta-data
     artifactTableName:            'Artifacts',
