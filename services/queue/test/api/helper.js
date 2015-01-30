@@ -3,8 +3,7 @@ var Promise     = require('promise');
 var path        = require('path');
 var _           = require('lodash');
 var base        = require('taskcluster-base');
-var dropdb      = require('../../bin/dropdb');
-var v1          = require('../../routes/api/v1');
+var v1          = require('../../routes/v1');
 var exchanges   = require('../../queue/exchanges');
 var taskcluster = require('taskcluster-client');
 var mocha       = require('mocha');
@@ -91,76 +90,51 @@ module.exports = function(options) {
     baseUrlPath:  '/v1'
   });
 
-  // Configure reaper
-  var reaper = new base.testing.LocalApp({
-    command:      path.join(__dirname, '..', '..', 'bin', 'reaper.js'),
-    args:         [defaultProfile],
-    name:         'reaper.js'
-  });
-
   // Hold reference to mockAuthServer
   var mockAuthServer = null;
 
   // Setup server
   setup(function() {
-    // Drop database
-    return dropdb(defaultProfile).then(function() {
-      // Create mock authentication server
-      return base.testing.createMockAuthServer({
-        port:     60007, // This is hardcoded into config/test.js
-        clients:  defaultClients
-      }).then(function(mockAuthServer_) {
-        mockAuthServer = mockAuthServer_;
-      });
+    // Create mock authentication server
+    return base.testing.createMockAuthServer({
+      port:     60007, // This is hardcoded into config/test.js
+      clients:  defaultClients
+    }).then(function(mockAuthServer_) {
+      mockAuthServer = mockAuthServer_;
     }).then(function() {
-      // Launch reaper
-      var reaperLaunched = Promise.resolve(null);
-      if (options.startReaper) {
-        reaperLaunched = reaper.launch();
-      }
-
-      // Launch server
-      var serverLaunched = server.launch().then(function(baseUrl) {
-        // Create client for working with API
-        helper.baseUrl = baseUrl;
-        var reference = v1.reference({baseUrl: baseUrl});
-        helper.Queue = taskcluster.createClient(reference);
-        // Utility to create an Queue instance with limited scopes
-        helper.scopes = function() {
-          var scopes = Array.prototype.slice.call(arguments);
-          helper.queue = new helper.Queue({
-            baseUrl:          baseUrl,
-            credentials: {
-              clientId:       'test-client',
-              accessToken:    'none'
-            },
-            authorizedScopes: (scopes.length > 0 ? scopes : undefined)
-          });
-        };
-        helper.scopes();
-        // Create client for binding to reference
-        var exchangeReference = exchanges.reference({
-          exchangePrefix:   cfg.get('queue:exchangePrefix'),
-          credentials:      cfg.get('pulse')
+      return server.launch();
+    }).then(function(baseUrl) {
+      // Create client for working with API
+      helper.baseUrl = baseUrl;
+      var reference = v1.reference({baseUrl: baseUrl});
+      helper.Queue = taskcluster.createClient(reference);
+      // Utility to create an Queue instance with limited scopes
+      helper.scopes = function() {
+        var scopes = Array.prototype.slice.call(arguments);
+        helper.queue = new helper.Queue({
+          baseUrl:          baseUrl,
+          credentials: {
+            clientId:       'test-client',
+            accessToken:    'none'
+          },
+          authorizedScopes: (scopes.length > 0 ? scopes : undefined)
         });
-        helper.QueueEvents = taskcluster.createClient(exchangeReference);
-        helper.queueEvents = new helper.QueueEvents();
+      };
+      helper.scopes();
+      // Create client for binding to reference
+      var exchangeReference = exchanges.reference({
+        exchangePrefix:   cfg.get('queue:exchangePrefix'),
+        credentials:      cfg.get('pulse')
       });
-
-      return Promise.all([serverLaunched, reaperLaunched]);
+      helper.QueueEvents = taskcluster.createClient(exchangeReference);
+      helper.queueEvents = new helper.QueueEvents();
     });
   });
 
   // Shutdown server
   teardown(function() {
-    // Kill reaper if needed
-    var reaperDead = Promise.resolve(null);
-    if (options.startReaper) {
-      reaperDead = reaper.terminate();
-    }
     // Kill server
-    var serverDead = server.terminate();
-    return Promise.all([reaperDead, serverDead]).then(function() {
+    return server.terminate().then(function() {
       return mockAuthServer.terminate();
     });
   });

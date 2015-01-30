@@ -3,9 +3,10 @@ module.exports = {
     // Should be overwritten by environment variable
     publishMetaData:              'false',
     exchangePrefix:               'v1/',
-    artifactBucket:               'taskcluster-artifacts',
+    publicArtifactBucket:         'taskcluster-artifacts',
+    privateArtifactBucket:        'taskcluster-artifacts',
     artifactContainer:            'artifacts',
-    taskContainer:                'tasks',
+    taskTableName:                'Tasks',
     artifactTableName:            'Artifacts'
   },
 

@@ -3,10 +3,10 @@ module.exports = {
     publishMetaData:              'false',
     // For testing purposes we let claims expire very fast
     claimTimeout:                 30,
-    artifactBucket:               'test-bucket-for-any-garbage',
+    publicArtifactBucket:         'test-bucket-for-any-garbage',
+    privateArtifactBucket:        'test-bucket-for-any-garbage',
     artifactContainer:            'artifacts',
-    taskContainer:                'tasks',
-    responseTimeComponent:        'test-queue'
+    statsComponent:               'test-queue'
   },
 
   server: {
