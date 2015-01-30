@@ -29,7 +29,7 @@ suite('queue/bucket_test', function() {
 
   // Create bucket instance
   var bucket = new Bucket({
-    bucket:       cfg.get('queue:artifactBucket'),
+    bucket:       cfg.get('queue:publicArtifactBucket'),
     credentials:  cfg.get('aws')
   });
 

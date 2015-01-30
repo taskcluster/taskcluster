@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 var debug         = require('debug')('queue:bin:server');
 var base          = require('taskcluster-base');
-var v1            = require('../routes/api/v1');
+var v1            = require('../routes/v1');
 var path          = require('path');
 var Promise       = require('promise');
 var exchanges     = require('../queue/exchanges');
-var TaskModule    = require('../queue/task.js')
 var _             = require('lodash');
 var BlobStore     = require('../queue/blobstore');
 var data          = require('../queue/data');
@@ -23,7 +22,6 @@ var launch = function(profile) {
     envs: [
       'pulse_username',
       'pulse_password',
-      'database_connectionString',
       'queue_publishMetaData',
       'queue_signatureSecret',
       'taskcluster_credentials_clientId',
@@ -80,32 +78,37 @@ var launch = function(profile) {
     publisher = publisher_;
   });
 
-  // Create artifact bucket instance for API implementation
-  var artifactBucket = new Bucket({
-    bucket:             cfg.get('queue:artifactBucket'),
+  // Create artifact bucket instances
+  var publicArtifactBucket = new Bucket({
+    bucket:             cfg.get('queue:publicArtifactBucket'),
+    credentials:        cfg.get('aws')
+  });
+  var privateArtifactBucket = new Bucket({
+    bucket:             cfg.get('queue:privateArtifactBucket'),
     credentials:        cfg.get('aws')
   });
 
-  // Create taskstore and artifactStore
-  var taskstore     = new BlobStore({
-    container:          cfg.get('queue:taskContainer'),
-    credentials:        cfg.get('azure')
-  });
+  // Create artifactStore
   var artifactStore = new BlobStore({
     container:          cfg.get('queue:artifactContainer'),
     credentials:        cfg.get('azure')
   });
 
   // Create artifacts table
-  var Artifact = data.Artifact.configure({
-    tableName:          cfg.get('queue:artifactTableName'),
-    credentials:        cfg.get('azure')
+  var Artifact = data.Artifact.setup({
+    table:              cfg.get('queue:artifactTableName'),
+    credentials:        cfg.get('azure'),
+    context: {
+      blobStore:        artifactStore,
+      publicBucket:     publicArtifactBucket,
+      privateBucket:    privateArtifactBucket
+    }
   });
 
-  // Create Task subclass wrapping database access
-  var Task = TaskModule.configure({
-    connectionString:   process.env.DATABASE_URL ||
-                        cfg.get('database:connectionString')
+  // Create task table
+  var Task = data.Task.setup({
+    table:              cfg.get('queue:taskTableName'),
+    credentials:        cfg.get('azure')
   });
 
   // Create QueueService to manage azure queues
@@ -119,28 +122,24 @@ var launch = function(profile) {
   debug("Waiting for resources to be created");
   return Promise.all([
     publisherCreated,
-    taskstore.createContainer(),
     artifactStore.createContainer().then(function() {
       return artifactStore.setupCORS();
     }),
-    Artifact.createTable(),
-    Task.ensureTables(),
-    artifactBucket.setupCORS()
+    Task.ensureTable(),
+    Artifact.ensureTable(),
+    publicArtifactBucket.setupCORS(),
+    privateArtifactBucket.setupCORS()
   ]).then(function() {
     // Create API router and publish reference if needed
     debug("Creating API router");
     return v1.setup({
       context: {
         Task:           Task,
-        taskstore:      taskstore,
-        artifactBucket: artifactBucket,
-        artifactStore:  artifactStore,
+        Artifact:       Artifact,
         publisher:      publisher,
         validator:      validator,
-        Artifact:       Artifact,
         claimTimeout:   cfg.get('queue:claimTimeout'),
-        queueService:   queueService,
-        cfg:            cfg   // To be deprecated
+        queueService:   queueService
       },
       validator:        validator,
       authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),

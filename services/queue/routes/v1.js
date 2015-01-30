@@ -12,19 +12,12 @@ var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
  *
  * In this API implementation we shall assume the following context:
  * {
- *   Task:           // Task subclass from queue/Task.js
- *   taskstore:      // Azure blob storage container used for task definitions
- *                   // Stores:
- *                   //   - <taskId>/task.json
- *                   //   - <taskId>/status.json (serialized task status)
- *   artifactBucket: // S3 bucket used for artifacts
- *   artifactStore:  // Azure blob storage container used for artifacts
+ *   Task:           // data.Task instance
+ *   Artifacts:      // data.Task instance
  *   publisher:      // publisher from base.Exchanges
  *   validator:      // base.validator
- *   Artifacts:      // base.Entity subclass
  *   claimTimeout:   // Number of seconds before a claim expires
  *   queueService:   // Azure QueueService object from queueservice.js
- *   cfg:            // Configuration object
  * }
  */
 var api = new base.API({
