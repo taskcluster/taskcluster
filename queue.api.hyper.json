@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/hyper-schema"
+  "version": "0.2.0",
+  "title": "Queue API Documentation",
+  "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
+  "baseUrl": "https://queue.taskcluster.net/v1",
+  "links": [
+    {
+      "type": "function",
+      "method": "put",
+      "href": "/task/<taskId>",
+	  "rel": "create",
+      "args": [
+        "taskId"
+      ],
+      "name": "createTask",
+      "title": "Create New Task",
+      "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 7 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then the poster will be required to posses the\nscope `queue:route:<route>`. And when the an AMQP message about the task\nis published the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.",
+      "scopes": [
+        [
+          "queue:create-task:<provisionerId>/<workerType>"
+        ]
+      ],
+      "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
+      "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+    }
+  ]
+}
