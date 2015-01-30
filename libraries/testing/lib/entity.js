@@ -760,7 +760,7 @@ Entity.load = function(properties) {
  * the remote state you're deleting. Using `Entity.prototype.remove` removal
  * will fail, if the remove entity has been modified.
  */
-Entity.remove = function(properties) {
+Entity.remove = function(properties, ignoreIfNotExists) {
   properties = properties || {};
   var Class       = this;
   var ClassProps  = Class.prototype;
@@ -771,18 +771,28 @@ Entity.remove = function(properties) {
     __etag:           undefined
   }, {
     force:            true
+  }).catch(function(err) {
+    // Re-throw error if we're not supposed to ignore it
+    if (!ignoreIfNotExists || !err || err.code !== 'ResourceNotFound') {
+      throw err;
+    }
   }).catch(rethrowDebug("Failed to delete entity, err: %j"));
 };
 
 
 /** Remove entity if not modified, unless `ignoreChanges` is set */
-Entity.prototype.remove = function(ignoreChanges) {
+Entity.prototype.remove = function(ignoreChanges, ignoreIfNotExists) {
   return this.__aux.deleteEntity({
     PartitionKey:     this.__partitionKey.exact(this.__properties),
     RowKey:           this.__rowKey.exact(this.__properties),
     __etag:           ignoreChanges ? undefined : this.__etag
   }, {
     force:            ignoreChanges ? true : false
+  }).catch(function(err) {
+    // Re-throw error if we're not supposed to ignore it
+    if (!ignoreIfNotExists || !err || err.code !== 'ResourceNotFound') {
+      throw err;
+    }
   }).catch(rethrowDebug("Failed to delete entity, err: %j"));
 };
 

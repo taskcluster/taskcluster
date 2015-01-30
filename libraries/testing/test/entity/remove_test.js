@@ -75,6 +75,13 @@ suite("Entity (remove)", function() {
     });
   });
 
+  test("Item.remove (ignoreIfNotExists)", function() {
+    return Item.remove({
+      id:     slugid.v4(),
+      name:   'my-test-item'
+    }, true);
+  });
+
   test("Item.create, item.remove (abort if changed)", function() {
     var id = slugid.v4();
     return Item.create({
@@ -113,6 +120,19 @@ suite("Entity (remove)", function() {
         });
       }).then(function() {
         return itemA.remove(true);
+      });
+    });
+  });
+
+  test("Item.create, item.remove (ignoreIfNotExists)", function() {
+    var id = slugid.v4();
+    return Item.create({
+      id:     id,
+      name:   'my-test-item',
+      count:  1
+    }).then(function(itemA) {
+      return itemA.remove(false, false).then(function() {
+        return itemA.remove(false, true);
       });
     });
   });
