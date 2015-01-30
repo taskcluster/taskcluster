@@ -111,17 +111,27 @@ Bucket.prototype.deleteObjects = function(prefixes) {
 };
 
 /** Setup CORS policy, so it can opened from a browser, when authenticated */
-Bucket.prototype.setupCORS = function() {
+Bucket.prototype.setupCORS = async function() {
+  var rules = [
+    {
+      AllowedOrigins: ['*'],
+      AllowedMethods: ['GET', 'PUT', 'HEAD', 'POST', 'DELETE'],
+      AllowedHeaders: ['*'],
+      MaxAgeSeconds:  60 * 60,
+      ExposeHeaders:  []
+    }
+  ];
+  // Fetch CORS to see if they as expected already
+  var req = await this.s3.getBucketCors().promise();
+  if (_.isEqual(req.data.CORSRules, rules)) {
+    debug("CORS already set for bucket: %s", this.bucket);
+    return;
+  }
+
+  // Set CURS
   return this.s3.putBucketCors({
     CORSConfiguration: {
-      CORSRules: [
-        {
-          AllowedOrigins: ['*'],
-          AllowedMethods: ['GET', 'PUT', 'HEAD', 'POST', 'DELETE'],
-          AllowedHeaders: ['*'],
-          MaxAgeSeconds:  60 * 60
-        }
-      ]
+      CORSRules: rules
     }
   }).promise();
 };
