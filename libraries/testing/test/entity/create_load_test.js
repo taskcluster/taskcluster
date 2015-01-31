@@ -45,12 +45,51 @@ suite("Entity (create/load)", function() {
     });
   });
 
+  test("Item.create (won't overwrite)", function() {
+    return Item.create({
+      id:     id,
+      name:   'my-test-item5',
+      count:  1
+    }).then(function() {
+      return Item.create({
+        id:     id,
+        name:   'my-test-item5',
+        count:  1
+      }).then(function() {
+        assert(false, "Expected error");
+      }, function(err) {
+        assert(err.code === 'EntityAlreadyExists',
+               "Expected EntityAlreadyExists");
+      });
+    });
+  });
+
   test("Item.load", function() {
     return Item.load({
       id:     id,
       name:   'my-test-item',
     }).then(function(item) {
       assert(item.count === 1);
+    });
+  });
+
+  test("Item.load (missing)", function() {
+    return Item.load({
+      id:     slugid.v4(),
+      name:   'my-test-item',
+    }).then(function() {
+      assert(false, "Expected an error");
+    }, function(err) {
+      assert(err.code === 'ResourceNotFound');
+    });
+  });
+
+  test("Item.load (ignoreIfNotExists)", function() {
+    return Item.load({
+      id:     slugid.v4(),
+      name:   'my-test-item',
+    }, true).then(function(item) {
+      assert(item === null, "Expected an null to be returned");
     });
   });
 
