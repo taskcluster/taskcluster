@@ -46,6 +46,7 @@ properties:
     type:           string
     pattern:        {$const: slugid-pattern}
   deadline:         {$const: deadline}
+  expires:          {$const: expires}
   retriesLeft:
     title:          "Retries Left"
     description: |
@@ -182,6 +183,7 @@ required:
   - schedulerId
   - taskGroupId
   - deadline
+  - expires
   - retriesLeft
   - state
   - runs
