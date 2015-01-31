@@ -76,8 +76,8 @@ type APIEntry struct {
 }
 
 func (entry *APIEntry) postPopulate() {
-	cacheJsonSchema(entry.Input)
-	cacheJsonSchema(entry.Output)
+	cacheJsonSchema(&entry.Input)
+	cacheJsonSchema(&entry.Output)
 }
 
 func (entry *APIEntry) String() string {
@@ -142,7 +142,7 @@ type ExchangeEntry struct {
 }
 
 func (entry *ExchangeEntry) postPopulate() {
-	cacheJsonSchema(entry.Schema)
+	cacheJsonSchema(&entry.Schema)
 }
 
 func (entry *ExchangeEntry) String() string {
@@ -224,13 +224,13 @@ func loadJsonSchema(url string) *JsonSubSchema {
 	return m
 }
 
-func cacheJsonSchema(url string) {
+func cacheJsonSchema(url *string) {
 	// if url is not provided, there is nothing to download
-	if url == "" {
+	if url == nil || *url == "" {
 		return
 	}
-	if _, ok := schemas[url]; !ok {
-		schemas[url] = loadJsonSchema(url)
+	if _, ok := schemas[*url]; !ok {
+		schemas[*url] = loadJsonSchema(*url)
 	}
 }
 
@@ -275,7 +275,7 @@ func generateStructs() string {
 	for _, i := range schemaURLs {
 		// Capitalise words, and remove spaces and dashes, to acheive struct names in Camel Case,
 		// but starting with an upper case letter so that the structs are exported...
-		structName := strings.NewReplacer(" ", "", "-", "").Replace(strings.Title(schemas[i].Title))
+		structName := strings.NewReplacer(" ", "", "-", "").Replace(strings.Title(*schemas[i].Title))
 		for k, baseName := 0, structName; structs[structName]; {
 			k++
 			structName = fmt.Sprintf("%v%v", baseName, k)
@@ -284,17 +284,17 @@ func generateStructs() string {
 		schemas[i].StructName = structName
 		content += "\n"
 		content += fmt.Sprintf("type %v struct {\n", structName)
-		for _, j := range schemas[i].SortedPropertyNames {
-			typ := schemas[i].Properties[j].Type
+		for _, j := range schemas[i].Properties.SortedPropertyNames {
+			typ := *schemas[i].Properties.Properties[j].Type
 			if typ == "array" {
-				if jsonType := schemas[i].Properties[j].Items.Type; jsonType == "" {
-					typ = "[]" + schemas[i].Properties[j].Items.Title
+				if jsonType := schemas[i].Properties.Properties[j].Items.Type; *jsonType == "" {
+					typ = "[]" + *schemas[i].Properties.Properties[j].Items.Title
 				} else {
-					typ = "[]" + jsonType
+					typ = "[]" + *jsonType
 				}
 			}
 			// comment the struct member with the description from the json
-			comment := utils.Indent(schemas[i].Properties[j].Description, "\t// ")
+			comment := utils.Indent(*schemas[i].Properties.Properties[j].Description, "\t// ")
 			if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 				comment += "\n"
 			}

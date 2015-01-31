@@ -44,8 +44,8 @@ func main() {
 	}
 	utils.ExitOnFail(err)
 	apis, schemaURLs, schemas = model.LoadAPIs(bytes)
-	//printAllData()
-	model.GenerateCode(arguments["-o"].(string))
+	printAllData()
+	//model.GenerateCode(arguments["-o"].(string))
 }
 
 func printAllData() {
@@ -56,7 +56,7 @@ func printAllData() {
 	}
 	for i, schema := range schemas {
 		fmt.Print(utils.Underline(i))
-		fmt.Println(*schema)
+		fmt.Println(schema.String())
 		fmt.Println()
 	}
 }

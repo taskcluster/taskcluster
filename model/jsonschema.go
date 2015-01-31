@@ -3,26 +3,24 @@ package model
 import (
 	"fmt"
 	"github.com/petemoore/taskcluster-client-go/utils"
+	"reflect"
 	"sort"
 )
 
 type Items []JsonSubSchema
 
-func (items *Items) String() string {
-	for i, j := range *items {
-		result += "  '" + i + "' =\n" + utils.Indent(j.String(), "    ")
+func (items Items) String() string {
+	result := ""
+	for i, j := range items {
+		result += "  Item '" + string(i) + "' =\n" + utils.Indent(j.String(), "    ")
 	}
-	return ""
+	return result
 }
 
-func (i *Items) postPopulate() {
-	// now all data should be loaded, let's sort the subSchema.Properties
-	subSchema.SortedPropertyNames = make([]string, 0, len(subSchema.Properties))
-	for propertyName := range subSchema.Properties {
-		subSchema.SortedPropertyNames = append(subSchema.SortedPropertyNames, propertyName)
+func (items Items) postPopulate() {
+	for i := range items {
+		items[i].postPopulate()
 	}
-	sort.Strings(subSchema.SortedPropertyNames)
-	fmt.Printf("Sorted Property Names: %v\n", subSchema.SortedPropertyNames)
 }
 
 type Enum []interface{}
@@ -32,13 +30,23 @@ type Properties struct {
 	SortedPropertyNames []string
 }
 
+func (p Properties) postPopulate() {
+	// now all data should be loaded, let's sort the p.Properties
+	p.SortedPropertyNames = make([]string, 0, len(p.Properties))
+	for propertyName := range p.Properties {
+		p.SortedPropertyNames = append(p.SortedPropertyNames, propertyName)
+	}
+	sort.Strings(p.SortedPropertyNames)
+	fmt.Printf("Sorted Property Names: %v\n", p.SortedPropertyNames)
+}
+
 type JsonSubSchema struct {
 	AdditionalItems      *bool          `json:"additionalItems"`
 	AdditionalProperties *bool          `json:"additionalProperties"`
-	AllOf                *Items         `json:"allOf"`
-	AnyOf                *Items         `json:"anyOf"`
+	AllOf                Items          `json:"allOf"`
+	AnyOf                Items          `json:"anyOf"`
 	Description          *string        `json:"description"`
-	Enum                 *Enum          `json:"enum"` // may be a string or int or bool etc
+	Enum                 Enum           `json:"enum"` // may be a string or int or bool etc
 	Format               *string        `json:"format"`
 	ID                   *string        `json:"id"`
 	Items                *JsonSubSchema `json:"items"`
@@ -46,11 +54,11 @@ type JsonSubSchema struct {
 	MaxLength            *int           `json:"maxLength"`
 	Minimum              *int           `json:"minimum"`
 	MinLength            *int           `json:"minLength"`
-	OneOf                *Items         `json:"oneOf"`
+	OneOf                Items          `json:"oneOf"`
 	Pattern              *string        `json:"pattern"`
-	Properties           *Properties    `json:"properties"`
+	Properties           Properties     `json:"properties"`
 	Ref                  *string        `json:"$ref"`
-	Required             *Required      `json:"required"`
+	Required             Required       `json:"required"`
 	Schema               *string        `json:"$schema"`
 	Title                *string        `json:"title"`
 	Type                 *string        `json:"type"`
@@ -59,42 +67,78 @@ type JsonSubSchema struct {
 	StructName string
 }
 
-func describe(name string, value *interface{}) string {
-	if value == nil {
-		return ""
+func describe(name string, value interface{}) string {
+	if !reflect.ValueOf(value).IsValid() {
+		if !reflect.ValueOf(value).IsNil() {
+			// return fmt.Sprintf("%-22fv = '%v'\n", value)
+			return "III\n"
+		} else {
+			return "AAA\n"
+		}
 	}
-	return fmt.Sprintf("%-22f = '%v'\n", *value)
+	return "BBB\n"
 }
 
-func (subSchema JsonSubSchema) String() string {
-	result += describe("Additional Properties", *subschema.AdditionalProperties)
-	result += describe("All Of", *subschema.AllOf)
-	result += describe("Any Of", *subschema.AnyOf)
-	result += describe("Description", *subschema.Description)
-	result += describe("Enum", *subschema.Enum)
-	result += describe("Format", *subschema.Format)
-	result += describe("ID", *subschema.ID)
-	result += describe("Items", *subschema.Items, "    ")
-	result += describe("Maximum", *subschema.Maximum)
-	result += describe("MaxLength", *subschema.MaxLength)
-	result += describe("Minimum", *subschema.Minimum)
-	result += describe("MinLength", *subschema.MinLength)
-	result += describe("OneOf", *subschema.OneOf)
-	result += describe("Pattern", *subschema.Pattern)
-	result += describe("Properties", *subschema.Properties)
-	result += describe("Ref", *subschema.Ref)
-	result += describe("Required", *subschema.Required)
-	result += describe("Schema", *subschema.Schema)
-	result += describe("Title", *subschema.Title)
-	result += describe("Type", *subschema.Type)
+func describePtr(name string, value interface{}) string {
+	if !reflect.ValueOf(value).IsValid() {
+		if !reflect.ValueOf(value).IsNil() {
+			// return fmt.Sprintf("%-22fv = '%v'\n", reflect.Indirect(reflect.ValueOf(value)).InterfaceData())
+			return "HHH\n"
+		} else {
+			return "CCC\n"
+		}
+	}
+	return "DDD\n"
+}
+
+func (subSchema *JsonSubSchema) String() string {
+	result := ""
+	result += describePtr("Additional Properties", subSchema.AdditionalProperties)
+	result += describe("All Of", subSchema.AllOf)
+	result += describe("Any Of", subSchema.AnyOf)
+	result += describePtr("Description", subSchema.Description)
+	result += describe("Enum", subSchema.Enum)
+	result += describePtr("Format", subSchema.Format)
+	result += describePtr("ID", subSchema.ID)
+	result += describePtr("Items", subSchema.Items)
+	result += describePtr("Maximum", subSchema.Maximum)
+	result += describePtr("MaxLength", subSchema.MaxLength)
+	result += describePtr("Minimum", subSchema.Minimum)
+	result += describePtr("MinLength", subSchema.MinLength)
+	result += describe("OneOf", subSchema.OneOf)
+	result += describePtr("Pattern", subSchema.Pattern)
+	result += describe("Properties", subSchema.Properties)
+	result += describePtr("Ref", subSchema.Ref)
+	result += describe("Required", subSchema.Required)
+	result += describePtr("Schema", subSchema.Schema)
+	result += describePtr("Title", subSchema.Title)
+	result += describePtr("Type", subSchema.Type)
 	return result
 }
 
+type CanPopulate interface {
+	postPopulate()
+}
+
+func postPopulateIfNotNil(canPopulate CanPopulate) {
+	if !reflect.ValueOf(canPopulate).IsValid() {
+		if !reflect.ValueOf(canPopulate).IsNil() {
+			fmt.Println("Populating...")
+			canPopulate.postPopulate()
+			fmt.Println("EEE\n")
+		} else {
+			fmt.Println("FFF\n")
+		}
+	} else {
+		fmt.Println("GGG\n")
+	}
+}
+
 func (subSchema *JsonSubSchema) postPopulate() {
-	subSchema.AllOf.postPopulate()
-	subSchema.AnyOf.postPopulate()
-	subSchema.OneOf.postPopulate()
-	subSchema.Items.postPopulate()
-	subSchema.Properties.postPopulate()
+	postPopulateIfNotNil(subSchema.AllOf)
+	postPopulateIfNotNil(subSchema.AnyOf)
+	postPopulateIfNotNil(subSchema.OneOf)
+	postPopulateIfNotNil(subSchema.Items)
+	postPopulateIfNotNil(subSchema.Properties)
 	cacheJsonSchema(subSchema.Ref)
 }
