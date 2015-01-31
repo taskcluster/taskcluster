@@ -36,6 +36,39 @@ suite("Entity (modify)", function() {
       assert(item.count === 1);
       return item.modify(function() {
         this.count += 1;
+      }).then(function(item2) {
+        assert(item instanceof Item);
+        assert(item.id === id);
+        assert(item.count === 2);
+        assert(item2 instanceof Item);
+        assert(item2.id === id);
+        assert(item2.count === 2);
+        assert(item === item2);
+      });
+    }).then(function() {
+      return Item.load({
+        id:     id,
+        name:   'my-test-item',
+      });
+    }).then(function(item) {
+      assert(item instanceof Item);
+      assert(item.id === id);
+      assert(item.count === 2);
+    });
+  });
+
+  test("Item.create, Item.modify (first argument), Item.load", function() {
+    var id = slugid.v4();
+    return Item.create({
+      id:     id,
+      name:   'my-test-item',
+      count:  1
+    }).then(function(item) {
+      assert(item instanceof Item);
+      assert(item.id === id);
+      assert(item.count === 1);
+      return item.modify(function(item) {
+        item.count += 1;
       });
     }).then(function(item) {
       assert(item instanceof Item);
