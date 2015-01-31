@@ -56,7 +56,7 @@ type JsonSubSchema struct {
 	MinLength            *int           `json:"minLength"`
 	OneOf                Items          `json:"oneOf"`
 	Pattern              *string        `json:"pattern"`
-	Properties           Properties     `json:"properties"`
+	Properties           *Properties    `json:"properties"`
 	Ref                  *string        `json:"$ref"`
 	Required             Required       `json:"required"`
 	Schema               *string        `json:"$schema"`
@@ -68,27 +68,21 @@ type JsonSubSchema struct {
 }
 
 func describe(name string, value interface{}) string {
-	if !reflect.ValueOf(value).IsValid() {
+	if reflect.ValueOf(value).IsValid() {
 		if !reflect.ValueOf(value).IsNil() {
-			// return fmt.Sprintf("%-22fv = '%v'\n", value)
-			return "III\n"
-		} else {
-			return "AAA\n"
+			return fmt.Sprintf("%-22fv = '%v'\n", name, value)
 		}
 	}
-	return "BBB\n"
+	return ""
 }
 
 func describePtr(name string, value interface{}) string {
-	if !reflect.ValueOf(value).IsValid() {
+	if reflect.ValueOf(value).IsValid() {
 		if !reflect.ValueOf(value).IsNil() {
-			// return fmt.Sprintf("%-22fv = '%v'\n", reflect.Indirect(reflect.ValueOf(value)).InterfaceData())
-			return "HHH\n"
-		} else {
-			return "CCC\n"
+			return fmt.Sprintf("%-22v = '%v'\n", name, reflect.Indirect(reflect.ValueOf(value)).Interface())
 		}
 	}
-	return "DDD\n"
+	return ""
 }
 
 func (subSchema *JsonSubSchema) String() string {
@@ -107,7 +101,7 @@ func (subSchema *JsonSubSchema) String() string {
 	result += describePtr("MinLength", subSchema.MinLength)
 	result += describe("OneOf", subSchema.OneOf)
 	result += describePtr("Pattern", subSchema.Pattern)
-	result += describe("Properties", subSchema.Properties)
+	result += describePtr("Properties", subSchema.Properties)
 	result += describePtr("Ref", subSchema.Ref)
 	result += describe("Required", subSchema.Required)
 	result += describePtr("Schema", subSchema.Schema)
@@ -121,16 +115,11 @@ type CanPopulate interface {
 }
 
 func postPopulateIfNotNil(canPopulate CanPopulate) {
-	if !reflect.ValueOf(canPopulate).IsValid() {
+	if reflect.ValueOf(canPopulate).IsValid() {
 		if !reflect.ValueOf(canPopulate).IsNil() {
 			fmt.Println("Populating...")
 			canPopulate.postPopulate()
-			fmt.Println("EEE\n")
-		} else {
-			fmt.Println("FFF\n")
 		}
-	} else {
-		fmt.Println("GGG\n")
 	}
 }
 
