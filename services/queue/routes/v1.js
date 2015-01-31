@@ -225,25 +225,25 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
     return {code: 400, json: {
       message:    "Created timestamp cannot be in the past (max 15min drift)",
       error:      {created: taskDef.created}
-    };
+    }};
   }
   if (created.getTime() > new Date().getTime() + 15 * 60 * 1000) {
     return {code: 400, json: {
       message:    "Created timestamp cannot be in the future (max 15min drift)",
       error:      {created: taskDef.created}
-    };
+    }};
   }
   if (created.getTime() > deadline.getTime()) {
     return {code: 400, json: {
       message:    "Deadline cannot be past created",
       error:      {created: taskDef.created, deadline: taskDef.deadline}
-    };
+    }};
   }
   if (deadline.getTime() < new Date().getTime()) {
     return {code: 400, json: {
       message:    "Deadline cannot be in the past",
       error:      {deadline: taskDef.deadline}
-    };
+    }};
   }
 
   var msToDeadline = (deadline.getTime() - new Date().getTime());
@@ -252,7 +252,7 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
     return {code: 400, json: {
       message:    "Deadline cannot be more than 5 days into the future",
       error:      {deadline: taskDef.deadline}
-    };
+    }};
   }
 
   // Set expires, if not defined
@@ -267,7 +267,7 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
     return {code: 400, json: {
       message:    "Expires cannot be before the deadline",
       error:      {deadline: taskDef.deadline, expires: taskDef.expires}
-    };
+    }};
   }
 
   return null;
@@ -343,7 +343,7 @@ api.declare({
   try {
     let task = await this.Task.create({
       taskId:           taskId,
-      provisionerId:    taskDef.provisionerId
+      provisionerId:    taskDef.provisionerId,
       workerType:       taskDef.workerType,
       schedulerId:      taskDef.schedulerId,
       taskGroupId:      taskDef.taskGroupId,
@@ -408,7 +408,7 @@ api.declare({
     this.publisher.taskPending({
       status:         task.status(),
       runId:          0
-    }, task.routes);
+    }, task.routes)
   ]);
 
   // Reply
@@ -485,7 +485,7 @@ api.declare({
   try {
     let task = await this.Task.create({
       taskId:           taskId,
-      provisionerId:    taskDef.provisionerId
+      provisionerId:    taskDef.provisionerId,
       workerType:       taskDef.workerType,
       schedulerId:      taskDef.schedulerId,
       taskGroupId:      taskDef.taskGroupId,
@@ -627,12 +627,12 @@ api.declare({
       this.publisher.taskPending({
         status:         task.status(),
         runId:          0
-      }, task.routes);
+      }, task.routes)
     ]);
   }
 
   return res.reply({
-    status:     ask.status();
+    status:     task.status()
   });
 });
 
@@ -728,15 +728,121 @@ api.declare({
       this.publisher.taskPending({
         status:         task.status(),
         runId:          runId
-      }, task.routes);
+      }, task.routes)
     ]);
   }
 
   return res.reply({
-    status:     ask.status();
+    status:     task.status()
   });
 });
 
+
+/** Cancel a task */
+api.declare({
+  method:     'post',
+  route:      '/task/:taskId/cancel',
+  name:       'cancelTask',
+  scopes:     [
+    [
+      'queue:cancel-task',
+      'assume:scheduler-id:<schedulerId>/<taskGroupId>'
+    ]
+  ],
+  deferAuth:  true,
+  input:      undefined, // No input accepted
+  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  title:      "Cancel Task",
+  description: [
+    "This method will cancel a task that is either `unscheduled`, `pending` or",
+    "`running`. It will resolve the current run as `exception` with",
+    "`resolvedReason` set to `canceled`. If the task isn't scheduled yet, ie.",
+    "it doesn't have any runs, an initial run will be added and resolved as",
+    "described above. Hence, after canceling a task, it cannot be scheduled",
+    "with `queue.scheduleTask`, but a new run can be created with",
+    "`queue.rerun`.",
+    "",
+    "**Remark** this operation is idempotent, if you try to cancel a task that",
+    "isn't `unscheduled`, `pending` or `running`, this operation will just",
+    "return the current task status."
+  ].join('\n')
+}, async function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
+  // Load Task entity
+  var taskId  = req.params.taskId;
+  var task    = await this.Task.load({taskId: taskId}, true);
+
+  // Report 404, if task entity doesn't exist
+  if (!task) {
+    return res.status(404).json({
+      message:  "Task not found"
+    });
+  }
+
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    schedulerId:    task.schedulerId,
+    taskGroupId:    task.taskGroupId
+  })) {
+    return;
+  }
+
+  /*
+    if task.claim:
+      azure.deleteMessage(receipt) // ignore: IfNotExist and PopReceiptMismatch
+    Task.modify ->
+      task.claim = {};
+
+      If runs.length > 0:
+        run.state = exception
+        run.reasonResolved = canceled
+      else:
+        Add runId: 0 with state = exception, etc...
+
+    If lastRun.state == exception && lastRun.reasonResovled == 'canceled'
+      Publish task-exception message  // So we're sure the message is deleted
+
+  */
+
+  // Ensure the last run isn't running
+  await task.modify((task) => {
+    var state = task.state();
+    // Don't modify if the last is resolved
+    if (_.contains(['completed', 'failed', 'exception'], state)) {
+      return;
+    }
+
+    if (state)
+    // Add a new run
+    task.runs.push({
+      runId:          task.runs.length,
+      state:          'pending',
+      reasonCreated:  'rerun',
+      scheduled:      new Date().toJSON()
+    });
+  });
+
+  // Put message in appropriate azure queue, and publish message to pulse,
+  // if the initial run is pending
+  if (task.state() === 'pending') {
+    var runId = task.runs.length - 1;
+    await Promise.all([
+      this.queueService.putPendingMessage(task, runId),
+      this.publisher.taskPending({
+        status:         task.status(),
+        runId:          runId
+      }, task.routes)
+    ]);
+  }
+
+  return res.reply({
+    status:     task.status()
+  });
+});
 
 /** Poll for a task */
 api.declare({
@@ -1318,6 +1424,7 @@ api.declare({
     "**Warning** this api end-point is **not stable**."
   ].join('\n')
 }, function(req, res) {
+
   res.status(200).json({
     alive:    true,
     uptime:   process.uptime()

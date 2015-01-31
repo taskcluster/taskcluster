@@ -9,6 +9,7 @@ suite('queue/QueueService', function() {
   var request       = require('superagent-promise');
   var debug         = require('debug')('queue:test:queueservice');
   var xml2js        = require('xml2js');
+  var data          = require(../../queue/data);
 
   // Load configuration
   var cfg = base.config({
@@ -32,14 +33,14 @@ suite('queue/QueueService', function() {
   var queueService = new QueueService({
     prefix:           cfg.get('queue:queuePrefix'),
     credentials:      cfg.get('azure'),
-    signatureSecret:  "A very public secret"
+    signatureSecret:  "A very public secret",
+    deadlineQueue:    cfg.get('queue:deadlineQueue')
   });
 
   var workerType = 'no-worker';
 
-  // Create ensureQueue
-  test("ensureQueue", function() {
-    return queueService.ensureQueue(
+  test("ensurePendingQueue", function() {
+    return queueService.ensurePendingQueue(
       'no-provisioner',
       workerType
     ).then(function() {
