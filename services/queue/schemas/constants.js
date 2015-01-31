@@ -52,7 +52,18 @@ module.exports = {
     "title":        "Deadline",
     "description":  "Deadline of the task, `pending` and `running` runs are " +
                     "resolved as **failed** if not resolved by other means " +
-                    "before the deadline",
+                    "before the deadline. Note, deadline cannot be more than" +
+                    "5 days into the future",
+    "type":         "string",
+    "format":       "date-time"
+  },
+
+  // Expiration of task
+  "expires": {
+    "title":        "Expiration",
+    "description":  "Task expiration, time at which task definition and " +
+                    "status is deleted. Notice that all artifacts for the " +
+                    "must have an expiration that is no later than this.",
     "type":         "string",
     "format":       "date-time"
   },

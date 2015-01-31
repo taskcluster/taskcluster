@@ -137,6 +137,142 @@ api.checkParams = checkParams;
 // Export api
 module.exports = api;
 
+/** Get task */
+api.declare({
+  method:     'get',
+  route:      '/task/:taskId',
+  name:       'task',
+  idempotent: true,
+  scopes:     undefined,
+  output:     SCHEMA_PREFIX_CONST + 'task.json#',
+  title:      "Get Task Definition",
+  description: [
+    "This end-point will return the task-definition. Note, that the task",
+    "definition may have been modified by "
+  ].join('\n')
+}, async function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
+  // Load Task entity
+  let task = await this.Task.load({
+    taskId:     req.params.taskId
+  }, true);
+
+  // Handle cases where the task doesn't exist
+  if (!task) {
+    return res.status(404).json({
+      message: "Task not found"
+    });
+  }
+
+  // Create task definition
+  let definition = await task.definition();
+
+  return res.reply(definition);
+});
+
+
+/** Get task status */
+api.declare({
+  method:   'get',
+  route:    '/task/:taskId/status',
+  name:     'status',
+  scopes:   undefined,  // Still no auth required
+  input:    undefined,  // No input is accepted
+  output:   SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  title:    "Get task status",
+  description: [
+    "Get task status structure from `taskId`"
+  ].join('\n')
+}, async function(req, res) {
+  // Validate parameters
+  if (!checkParams(req, res)) {
+    return;
+  }
+
+  // Load Task entity
+  let task = await this.Task.load({
+    taskId:     req.params.taskId
+  }, true);
+
+  // Handle cases where the task doesn't exist
+  if (!task) {
+    return res.status(404).json({
+      message: "Task not found"
+    });
+  }
+
+  // Reply with task status
+  return res.reply({
+    status:   task.status()
+  });
+});
+
+/** Construct default values and validate dates */
+var patchAndValidateTaskDef = function(taskId, taskDef) {
+  // Set taskGroupId to taskId if not provided
+  if (!taskDef.taskGroupId) {
+    taskDef.taskGroupId = taskId;
+  }
+
+  // Ensure: created < now < deadline (with drift up to 15 min)
+  var created   = new Date(taskDef.created);
+  var deadline  = new Date(taskDef.deadline);
+  if (created.getTime() < new Date().getTime() - 15 * 60 * 1000) {
+    return {code: 400, json: {
+      message:    "Created timestamp cannot be in the past (max 15min drift)",
+      error:      {created: taskDef.created}
+    };
+  }
+  if (created.getTime() > new Date().getTime() + 15 * 60 * 1000) {
+    return {code: 400, json: {
+      message:    "Created timestamp cannot be in the future (max 15min drift)",
+      error:      {created: taskDef.created}
+    };
+  }
+  if (created.getTime() > deadline.getTime()) {
+    return {code: 400, json: {
+      message:    "Deadline cannot be past created",
+      error:      {created: taskDef.created, deadline: taskDef.deadline}
+    };
+  }
+  if (deadline.getTime() < new Date().getTime()) {
+    return {code: 400, json: {
+      message:    "Deadline cannot be in the past",
+      error:      {deadline: taskDef.deadline}
+    };
+  }
+
+  var msToDeadline = (deadline.getTime() - new Date().getTime());
+  // Validate that deadline is less than 5 days from now, allow 15 min drift
+  if (msToDeadline > 5 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
+    return {code: 400, json: {
+      message:    "Deadline cannot be more than 5 days into the future",
+      error:      {deadline: taskDef.deadline}
+    };
+  }
+
+  // Set expires, if not defined
+  if (!taskDef.expires) {
+    var expires = new Date(taskDef.deadline);
+    expires.setFullYear(expires.getFullYear() + 1);
+    taskDef.expires = expires.toJSON();
+  }
+
+  // Validate that expires is past deadline
+  if (deadline.getTime() > new Date(taskDef.deadline).getTime()) {
+    return {code: 400, json: {
+      message:    "Expires cannot be before the deadline",
+      error:      {deadline: taskDef.deadline, expires: taskDef.expires}
+    };
+  }
+
+  return null;
+};
+
 /** Create tasks */
 api.declare({
   method:     'put',
@@ -152,9 +288,13 @@ api.declare({
     "Create a new task, this is an **idempotent** operation, so repeat it if",
     "you get an internal server error or network connection is dropped.",
     "",
-    "**Task `deadline´**, the deadline property can be no more than 7 days",
+    "**Task `deadline´**, the deadline property can be no more than 5 days",
     "into the future. This is to limit the amount of pending tasks not being",
     "taken care of. Ideally, you should use a much shorter deadline.",
+    "",
+    "**Task expiration**, the `expires` property must be greater than the",
+    "task `deadline`. If not provided it will default to `deadline` + one",
+    "year. Notice, that artifacts created by task must expire before the task.",
     "",
     "**Task specific routing-keys**, using the `task.routes` property you may",
     "define task specific routing-keys. If a task has a task specific ",
@@ -164,13 +304,12 @@ api.declare({
     "`route.<route>`. This is useful if you want another component to listen",
     "for completed tasks you have posted."
   ].join('\n')
-}, function(req, res) {
+}, async function(req, res) {
   // Validate parameters
   if (!checkParams(req, res)) {
     return;
   }
 
-  var ctx = this;
   var taskId  = req.params.taskId;
   var taskDef = req.body;
 
@@ -189,141 +328,92 @@ api.declare({
     return;
   }
 
-  // Set created, if not provided
-  var match = undefined;
-  if (taskDef.created === undefined) {
-    taskDef.created = new Date();
-    match = function(data) {
-      if (data.version !== 1) {
-        return false;
-      }
-      taskDef. Date((data.definition || {}).created);
-
-    };
+  // Patch default values and validate timestamps
+  var detail = patchAndValidateTaskDef(taskId, taskDef);
+  if (detail) {
+    return res.status(detail.code).json(detail.json);
   }
 
-  // Set taskGroupId to taskId if not provided
-  if (!taskDef.taskGroupId) {
-    taskDef.taskGroupId = taskId;
-  }
+  // Insert entry in deadline queue (garbage entries are acceptable)
+  await this.queueService.putDeadlineMessage(
+    taskId, new Date(taskDef.deadline)
+  );
 
-  // Validate that deadline is less than a week from now
-  var aWeekFromNow = new Date();
-  aWeekFromNow.setDate(aWeekFromNow.getDate() + 8);
-  if (new Date(taskDef.deadline) > aWeekFromNow) {
-    return res.status(400).json({
-      message:    "Deadline cannot be more than 1 week into the future",
-      error: {
-        deadline: taskDef.deadline
-      }
+  // Try to create Task entity
+  try {
+    let task = await this.Task.create({
+      taskId:           taskId,
+      provisionerId:    taskDef.provisionerId
+      workerType:       taskDef.workerType,
+      schedulerId:      taskDef.schedulerId,
+      taskGroupId:      taskDef.taskGroupId,
+      routes:           taskDef.routes,
+      retries:          taskDef.retries,
+      retriesLeft:      taskDef.retries,
+      created:          new Date(taskDef.created),
+      deadline:         new Date(taskDef.deadline),
+      expires:          new Date(taskDef.expires),
+      scopes:           taskDef.scopes,
+      payload:          taskDef.payload,
+      metadata:         taskDef.metadata,
+      tags:             taskDef.tags,
+      extra:            taskDef.extra,
+      runs:             [{
+        runId:          0,
+        state:          'pending',
+        reasonCreated:  'scheduled',
+        scheduled:      new Date().toJSON()
+      }],
+      claim:            {}
     });
   }
+  catch (err) {
+    // We can handle cases where entity already exists, not that, we re-throw
+    if (!err || err.code !== 'EntityAlreadyExists') {
+      throw err;
+    }
 
-  // Conditional put to azure blob storage
-  return ctx.taskstore.putOrMatch(taskId + '/task.json', {
-    version:    1,
-    definition: taskDef
-  }).then(function() {
-    // Create task in database, load it if it exists, task creation should be
-    // an idempotent operation
-    return ctx.Task.create({
-      version:        1,
-      taskId:         taskId,
-      provisionerId:  taskDef.provisionerId,
-      workerType:     taskDef.workerType,
-      schedulerId:    taskDef.schedulerId,
-      taskGroupId:    taskDef.taskGroupId,
-      created:        taskDef.created,
-      deadline:       taskDef.deadline,
-      retriesLeft:    taskDef.retries,
-      routes:         taskDef.routes,
-      owner:          taskDef.metadata.owner,
-      runs: [
-        {
-          runId:          0,
-          state:          'pending',
-          reasonCreated:  'scheduled',
-          scheduled:      new Date().toJSON()
-        }
-      ]
-    }, true).then(function(task) {
-      // Publish message about a defined task
-      return ctx.publisher.taskDefined({
-        status:         task.status()
-      }, task.routes).then(function() {
-        // Put message in appropriate azure queue
-        return ctx.queueService.putTask(
-          taskDef.provisionerId,
-          taskDef.workerType,
-          taskId,
-           _.last(task.runs).runId,
-          new Date(taskDef.deadline)
-        );
-      }).then(function() {
-        // Publish message about a pending task
-        return ctx.publisher.taskPending({
-          status:         task.status(),
-          runId:          _.last(task.runs).runId
-        }, task.routes);
-      }).then(function() {
-        // Reply to caller
-        debug("New task created: %s", taskId);
-        return res.reply({
-          status:       task.status()
-        });
-      });
-    });
-  }, function(err) {
-    // Handle error in case the taskId is already in use, with another task
-    // definition
-    if (err.code == 'BlobAlreadyExists') {
+    // load task, and task definition
+    let task = await this.Task.load({taskId: taskId});
+    let def  = await task.definition();
+
+    // Compare the two task definitions and ensure there is a at-least one run
+    // otherwise the task would have been created with defineTask, and we don't
+    // offer an idempotent operation in that case
+    if (!_.isEqual(taskDef, def) || task.runs.length === 0) {
       return res.status(409).json({
         message:      "taskId already used by another task"
       });
     }
-    throw err;
-  });
-});
-
-/** Get task */
-api.declare({
-  method:     'get',
-  route:      '/task/:taskId',
-  name:       'getTask',
-  idempotent: true,
-  scopes:     undefined,
-  output:     SCHEMA_PREFIX_CONST + 'task.json#',
-  title:      "Fetch Task",
-  description: [
-    "Get task definition from queue."
-  ].join('\n')
-}, function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
   }
 
-  var ctx = this;
-  var taskId  = req.params.taskId;
+  // If first run isn't pending, all message must have been published before,
+  // this can happen if we came from the catch-branch (it's unlikely to happen)
+  if (task.runs[0].state === 'pending') {
+    return res.reply({
+      status:   task.status()
+    });
+  }
 
-  // Fetch task from azure blob storage
-  return ctx.taskstore.get(taskId + '/task.json', true).then(function(data) {
-    // Handle case where task doesn't exist
-    if (!data) {
-      return res.status(409).json({
-        message:  "task not found"
-      });
-    }
-    // Check version of data stored
-    assert(data.version === 1, "version 1 was expected, don't know how to " +
-           "read newer versions");
+  // Publish task-defined message, we want this arriving before the task-pending
+  // message, so we have to await publication here
+  await this.publisher.taskDefined({
+    status:         task.status(),
+    runId:          0
+  }, task.routes);
 
-    if (!data.definition.extra) {
-      console.error('fked up task %s', taskId);
-      data.definition.extra = {};
-    }
-    // Return task definition
-    return res.reply(data.definition);
+  // Put message in appropriate azure queue, and publish message to pulse
+  await Promise.all([
+    this.queueService.putPendingMessage(task, 0),
+    this.publisher.taskPending({
+      status:         task.status(),
+      runId:          0
+    }, task.routes);
+  ]);
+
+  // Reply
+  return res.reply({
+    status:         task.status()
   });
 });
 
@@ -356,13 +446,12 @@ api.declare({
     "**Note** this operation is **idempotent**, as long as you upload the same",
     "task definition as previously defined this operation is safe to retry."
   ].join('\n')
-}, function(req, res) {
+}, async function(req, res) {
   // Validate parameters
   if (!checkParams(req, res)) {
     return;
   }
 
-  var ctx = this;
   var taskId  = req.params.taskId;
   var taskDef = req.body;
 
@@ -381,67 +470,79 @@ api.declare({
     return;
   }
 
-  // Validate that deadline is less than a week from now
-  var aWeekFromNow = new Date();
-  aWeekFromNow.setDate(aWeekFromNow.getDate() + 8);
-  if (new Date(taskDef.deadline) > aWeekFromNow) {
-    return res.status(409).json({
-      message:    "Deadline cannot be more than 1 week into the future",
-      error: {
-        deadline: taskDef.deadline
-      }
-    });
+  // Patch default values and validate timestamps
+  var detail = patchAndValidateTaskDef(taskId, taskDef);
+  if (detail) {
+    return res.status(detail.code).json(detail.json);
   }
 
-  // Set taskGroupId to taskId if not provided
-  if (!taskDef.taskGroupId) {
-    taskDef.taskGroupId = taskId;
-  }
+  // Insert entry in deadline queue (garbage entries are acceptable)
+  await this.queueService.putDeadlineMessage(
+    taskId, new Date(taskDef.deadline)
+  );
 
-  // Conditional put to azure blob storage
-  return ctx.taskstore.putOrMatch(taskId + '/task.json', {
-    version:    1,
-    definition: taskDef
-  }).then(function() {
-    // Create task in database, load it if it exists, task creation should be
-    // an idempotent operation
-    return ctx.Task.create({
-      version:        1,
-      taskId:         taskId,
-      provisionerId:  taskDef.provisionerId,
-      workerType:     taskDef.workerType,
-      schedulerId:    taskDef.schedulerId,
-      taskGroupId:    taskDef.taskGroupId,
-      created:        taskDef.created,
-      deadline:       taskDef.deadline,
-      retriesLeft:    taskDef.retries,
-      routes:         taskDef.routes,
-      owner:          taskDef.metadata.owner,
-      runs:           []
-    }, true);
-  }).then(function(task) {
-    // Publish message about a defined task
-    return ctx.publisher.taskDefined({
-      status:         task.status()
-    }, task.routes).then(function() {
-      // Reply to caller
-      debug("New task defined: %s", taskId);
-      return res.reply({
-        status:       task.status()
-      });
+  // Try to create Task entity
+  try {
+    let task = await this.Task.create({
+      taskId:           taskId,
+      provisionerId:    taskDef.provisionerId
+      workerType:       taskDef.workerType,
+      schedulerId:      taskDef.schedulerId,
+      taskGroupId:      taskDef.taskGroupId,
+      routes:           taskDef.routes,
+      retries:          taskDef.retries,
+      retriesLeft:      taskDef.retries,
+      created:          new Date(taskDef.created),
+      deadline:         new Date(taskDef.deadline),
+      expires:          new Date(taskDef.expires),
+      scopes:           taskDef.scopes,
+      payload:          taskDef.payload,
+      metadata:         taskDef.metadata,
+      tags:             taskDef.tags,
+      extra:            taskDef.extra,
+      runs:             [],
+      claim:            {}
     });
-  }).catch(function(err) {
-    // Handle error in case the taskId is already in use, with another task
-    // definition
-    if (err.code === 'BlobAlreadyExists') {
+  }
+  catch (err) {
+    // We can handle cases where entity already exists, not that, we re-throw
+    if (!err || err.code !== 'EntityAlreadyExists') {
+      throw err;
+    }
+
+    // load task, and task definition
+    let task = await this.Task.load({taskId: taskId});
+    let def  = await task.definition();
+
+    // Compare the two task definitions
+    // (ignore runs as this method don't create them)
+    if (!_.isEqual(taskDef, def)) {
       return res.status(409).json({
         message:      "taskId already used by another task"
       });
     }
-    throw err;
+  }
+
+  // If runs are present, then we don't need to publish messages as this must
+  // have happened already...
+  // this can happen if we came from the catch-branch (it's unlikely to happen)
+  if (task.runs.length > 0) {
+    return res.reply({
+      status:   task.status()
+    });
+  }
+
+  // Publish task-defined message
+  await this.publisher.taskDefined({
+    status:         task.status(),
+    runId:          0
+  }, task.routes);
+
+  // Reply
+  return res.reply({
+    status:         task.status()
   });
 });
-
 
 
 /** Schedule previously defined tasks */
@@ -469,103 +570,170 @@ api.declare({
     "if called with `taskId` that is already scheduled, or even resolved.",
     "To reschedule a task previously resolved, use `rerunTask`."
   ].join('\n')
-}, function(req, res) {
+}, async function(req, res) {
   // Validate parameters
   if (!checkParams(req, res)) {
     return;
   }
 
-  var ctx = this;
+  // Load Task entity
   var taskId = req.params.taskId;
+  var task = await this.Task.load({taskId: taskId}, true);
 
-  // Load task status structure to find schedulerId and taskGroupId
-  return ctx.Task.load(taskId).then(function(task) {
-    // if no task is found, we return 404
-    if (!task) {
-      return res.status(404).json({
-        message:  "Task not found already resolved"
-      });
-    }
+  // If task entity doesn't exists, we return 404
+  if (!task) {
+    return res.status(404).json({
+      message:    "Task not found"
+    });
+  }
 
-    // Authenticate request by providing parameters
-    if(!req.satisfies({
-      schedulerId:    task.schedulerId,
-      taskGroupId:    task.taskGroupId
-    })) {
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    schedulerId:    task.schedulerId,
+    taskGroupId:    task.taskGroupId
+  })) {
+    return;
+  }
+
+  // Validate deadline
+  if (task.deadline.getTime() < new Date().getTime()) {
+    return res.status(409).json({
+      message:    "Task can't be scheduled past it's deadline",
+      error:      {deadline: task.deadline.toJSON()}
+    });
+  }
+
+  // Ensure that we have an initial run
+  await task.modify((task) => {
+    // Don't modify if there already is a run
+    if (task.runs.length > 0) {
       return;
     }
 
-    // If allowed, schedule the task in question
-    return ctx.Task.schedule(taskId).then(function(task) {
-      // Put message in appropriate azure queue
-      return ctx.queueService.putTask(
-        task.provisionerId,
-        task.workerType,
-        taskId,
-         _.last(task.runs).runId,
-        new Date(task.deadline)
-      ).then(function() {
-        // Make sure it's announced
-        return ctx.publisher.taskPending({
-          status:     task.status(),
-          runId:      _.last(task.runs).runId
-        }, task.routes).then(function() {
-          // Wait for announcement to be completed, then reply to caller
-          res.reply({
-            status:     task.status()
-          });
-        });
-      });
+    // Add initial run (runId = 0)
+    task.runs.push({
+      runId:          0,
+      state:          'pending',
+      reasonCreated:  'scheduled',
+      scheduled:      new Date().toJSON()
     });
+  });
+
+  // Put message in appropriate azure queue, and publish message to pulse,
+  // if the initial run is pending
+  if (task.runs[0].state === 'pending') {
+    await Promise.all([
+      this.queueService.putPendingMessage(task, 0),
+      this.publisher.taskPending({
+        status:         task.status(),
+        runId:          0
+      }, task.routes);
+    ]);
+  }
+
+  return res.reply({
+    status:     ask.status();
   });
 });
 
-
-/** Get task status */
+/** Rerun a previously resolved task */
 api.declare({
-  method:   'get',
-  route:    '/task/:taskId/status',
-  name:     'status',
-  scopes:   undefined,  // Still no auth required
-  input:    undefined,  // No input is accepted
-  output:   SCHEMA_PREFIX_CONST + 'task-status-response.json#',
-  title:    "Get task status",
+  method:     'post',
+  route:      '/task/:taskId/rerun',
+  name:       'rerunTask',
+  scopes:     [
+    [
+      'queue:rerun-task',
+      'assume:scheduler-id:<schedulerId>/<taskGroupId>'
+    ]
+  ],
+  deferAuth:  true,
+  input:      undefined, // No input accepted
+  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  title:      "Rerun a Resolved Task",
   description: [
-    "Get task status structure from `taskId`"
+    "This method _reruns_ a previously resolved task, even if it was",
+    "_completed_. This is useful if your task completes unsuccessfully, and",
+    "you just want to run it from scratch again. This will also reset the",
+    "number of `retries` allowed.",
+    "",
+    "Remember that `retries` in the task status counts the number of runs that",
+    "the queue have started because the worker stopped responding, for example",
+    "because a spot node died.",
+    "",
+    "**Remark** this operation is idempotent, if you try to rerun a task that",
+    "isn't either `failed` or `completed`, this operation will just return the",
+    "current task status."
   ].join('\n')
-}, function(req, res) {
+}, async function(req, res) {
   // Validate parameters
   if (!checkParams(req, res)) {
     return;
   }
 
-  var ctx     = this;
+  // Load Task entity
   var taskId  = req.params.taskId;
+  var task    = await this.Task.load({taskId: taskId}, true);
 
-  // Try to load status from database
-  return ctx.Task.load(taskId).then(function(task) {
-    if (!task) {
-      // Try to load status from blob storage
-      return ctx.taskstore.get(
-        taskId + '/status.json',
-        true  // Return null if doesn't exists
-      ).then(function(taskData) {
-        if (taskData) {
-          return ctx.Task.deserialize(taskData);
-        }
-      });
-    }
-    return task;
-  }).then(function(task) {;
-    if (!task) {
-      res.status(409).json({
-        message: "Task not found"
-      });
-    }
-    // Reply with task status
-    return res.reply({
-      status: task.status()
+  // Report 404, if task entity doesn't exist
+  if (!task) {
+    return res.status(404).json({
+      message:  "Task not found"
     });
+  }
+
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    schedulerId:    task.schedulerId,
+    taskGroupId:    task.taskGroupId
+  })) {
+    return;
+  }
+
+  // Validate deadline
+  if (task.deadline.getTime() < new Date().getTime()) {
+    return res.status(409).json({
+      message:    "Task can't be scheduled past it's deadline",
+      error:      {deadline: task.deadline.toJSON()}
+    });
+  }
+
+  // Ensure that we have a pending or running run
+  // If creating a new one, then reset retriesLeft
+  await task.modify((task) => {
+    // Don't modify if there already is an active run
+    var state = task.state();
+    if (state === 'pending' || state === 'running') {
+      return;
+    }
+
+    // Add a new run
+    task.runs.push({
+      runId:          task.runs.length,
+      state:          'pending',
+      reasonCreated:  'rerun',
+      scheduled:      new Date().toJSON()
+    });
+
+    // Reset retries left
+    task.retriesLeft = task.retries;
+  });
+
+  // Put message in appropriate azure queue, and publish message to pulse,
+  // if the initial run is pending
+  if (task.state() === 'pending') {
+    var runId = task.runs.length - 1;
+    await Promise.all([
+      this.queueService.putPendingMessage(task, runId),
+      this.publisher.taskPending({
+        status:         task.status(),
+        runId:          runId
+      }, task.routes);
+    ]);
+  }
+
+  return res.reply({
+    status:     ask.status();
   });
 });
 
@@ -830,98 +998,6 @@ api.declare({
   });
 });
 
-/** Fetch work for a worker */
-api.declare({
-  method:     'post',
-  route:      '/claim-work/:provisionerId/:workerType',
-  name:       'claimWork',
-  scopes: [
-    [
-      'queue:claim-task',
-      'assume:worker-type:<provisionerId>/<workerType>',
-      'assume:worker-id:<workerGroup>/<workerId>'
-    ]
-  ],
-  deferAuth:  true,
-  input:      SCHEMA_PREFIX_CONST + 'claim-work-request.json#',
-  output:     SCHEMA_PREFIX_CONST + 'task-claim-response.json#',
-  title:      "Claim work for a worker",
-  description: [
-    "Claim work for a worker, returns information about an appropriate task",
-    "claimed for the worker. Similar to `claimTask`, which can be",
-    "used to claim a specific task, or reclaim a specific task extending the",
-    "`takenUntil` timeout for the run.",
-    "",
-    "**Note**, that if no tasks are _pending_ this method will not assign a",
-    "task to you. Instead it will return `204` and you should wait a while",
-    "before polling the queue again.",
-    "",
-    "**WARNING, this API end-point is deprecated and will be removed**."
-  ].join('\n')
-}, function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
-  var ctx = this;
-
-  var provisionerId   = req.params.provisionerId;
-  var workerType      = req.params.workerType;
-
-  var workerGroup     = req.body.workerGroup;
-  var workerId        = req.body.workerId;
-
-  // Authenticate request by providing parameters
-  if(!req.satisfies({
-    provisionerId:  provisionerId,
-    workerType:     workerType,
-    workerGroup:    workerGroup,
-    workerId:       workerId
-  })) {
-    return;
-  }
-
-  // Set takenUntil to now + 20 min
-  var takenUntil = new Date();
-  takenUntil.setSeconds(takenUntil.getSeconds() + 20 * 60);
-
-  // Claim an arbitrary task
-  return ctx.Task.claimWork({
-    provisionerId:  provisionerId,
-    workerType:     workerType,
-    workerGroup:    workerGroup,
-    workerId:       workerId
-  }).then(function(result) {
-    // Return the "error" message if we have one
-    if(!(result instanceof ctx.Task)) {
-      return res.status(409).json(result.code, {
-        message:      result.message
-      });
-    }
-
-    // Get runId from run that was claimed
-    var runId = _.last(result.runs).runId;
-
-    // Announce that the run is running
-    return ctx.publisher.taskRunning({
-      workerGroup:  workerGroup,
-      workerId:     workerId,
-      runId:        runId,
-      takenUntil:   takenUntil.toJSON(),
-      status:       result.status()
-    }, result.routes).then(function() {
-      // Reply to caller
-      return res.reply({
-        workerGroup:  workerGroup,
-        workerId:     workerId,
-        runId:        runId,
-        takenUntil:   takenUntil.toJSON(),
-        status:       result.status()
-      });
-    });
-  });
-});
 
 /** Report task completed */
 api.declare({
@@ -929,23 +1005,17 @@ api.declare({
   route:      '/task/:taskId/runs/:runId/completed',
   name:       'reportCompleted',
   scopes: [
-    [ //TODO: Remove the report-task-completed, and require queue:resolve-task
-      'queue:report-task-completed',
-      'assume:worker-id:<workerGroup>/<workerId>'
-    ], [
+    [
       'queue:resolve-task',
       'assume:worker-id:<workerGroup>/<workerId>'
     ]
   ],
   deferAuth:  true,
-  input:      SCHEMA_PREFIX_CONST + 'task-completed-request.json#',
+  input:      undefined,  // No input at this point
   output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
   title:      "Report Run Completed",
   description: [
-    "Report a task completed, resolving the run as `completed`.",
-    "",
-    "For legacy, reasons the `success` parameter is accepted. This will be",
-    "removed in the future."
+    "Report a task completed, resolving the run as `completed`."
   ].join('\n')
 }, function(req, res) {
   // Validate parameters
@@ -1190,178 +1260,9 @@ api.declare({
 });
 
 
-/** Rerun a previously resolved task */
-api.declare({
-  method:     'post',
-  route:      '/task/:taskId/rerun',
-  name:       'rerunTask',
-  scopes:     [
-    [
-      'queue:rerun-task',
-      'assume:scheduler-id:<schedulerId>/<taskGroupId>'
-    ]
-  ],
-  deferAuth:  true,
-  input:      undefined, // No input accepted
-  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
-  title:      "Rerun a Resolved Task",
-  description: [
-    "This method _reruns_ a previously resolved task, even if it was",
-    "_completed_. This is useful if your task completes unsuccessfully, and",
-    "you just want to run it from scratch again. This will also reset the",
-    "number of `retries` allowed.",
-    "",
-    "Remember that `retries` in the task status counts the number of runs that",
-    "the queue have started because the worker stopped responding, for example",
-    "because a spot node died.",
-    "",
-    "**Remark** this operation is idempotent, if you try to rerun a task that",
-    "isn't either `failed` or `completed`, this operation will just return the",
-    "current task status."
-  ].join('\n')
-}, function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
-  var ctx     = this;
-  var taskId  = req.params.taskId;
-
-  // Fetch task from blob storage and validate scopes and find retries
-  return ctx.taskstore.get(taskId + '/task.json', true).then(function(data) {
-    // Check that we got a task definition
-    if (!data) {
-      return res.status(409).json({
-        message:  "Task definition doesn't exist"
-      });
-    }
-
-    // Check version of task information loaded
-    assert(data.version === 1, "Expect task definition format version 1, "+
-                               "don't know how to read newer versions");
-
-    // Authenticate request by providing parameters
-    if(!req.satisfies({
-      schedulerId:    data.definition.schedulerId,
-      taskGroupId:    data.definition.taskGroupId
-    })) {
-      return;
-    }
-
-    // Rerun the task
-    return ctx.Task.rerunTask(taskId, {
-      retries:  data.definition.retries,
-      fetch:    function() {
-                  return ctx.taskstore.get(taskId  + '/status.json', true);
-                }
-    }).then(function(result) {
-      // Handle error cases
-      if (!(result instanceof ctx.Task)) {
-        return res.status(409).json(result.code, {
-          message: result.message
-        });
-      }
-
-      // Put message in appropriate azure queue
-      return ctx.queueService.putTask(
-        result.provisionerId,
-        result.workerType,
-        taskId,
-         _.last(result.runs).runId,
-        new Date(result.deadline)
-      ).then(function() {
-        // Publish message
-        return ctx.publisher.taskPending({
-          status:     result.status(),
-          runId:      _.last(result.runs).runId
-        }, result.routes).then(function() {
-          // Reply to caller
-          return res.reply({
-            status:     result.status()
-          });
-        });
-      });
-    });
-  });
-});
-
 
 // Load artifacts.js so API end-points declared in that file is loaded
 require('./artifacts');
-
-
-/** Fetch pending tasks */
-api.declare({
-  method:   'get',
-  route:    '/pending-tasks/:provisionerId',
-  name:     'getPendingTasks',
-  scopes:   undefined,  // Still no auth required
-  input:    undefined,  // TODO: define schema later
-  output:   undefined,  // TODO: define schema later
-  title:    "Fetch pending tasks for provisioner",
-  description: [
-    "Documented later...",
-    "",
-    "**Warning** this api end-point is **not stable**.",
-    "",
-    "**This end-point is deprecated!**"
-  ].join('\n')
-}, function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
-  var ctx           = this;
-  var provisionerId = req.params.provisionerId;
-
-  // When loaded reply
-  ctx.Task.queryPending(provisionerId).then(function(tasks) {
-    return Promise.all(tasks.map(function(taskId) {
-      return ctx.Task.load(taskId);
-    }));
-  }).then(function(tasks) {
-    return res.reply({
-      tasks: tasks
-    });
-  });
-});
-
-/** Count pending tasks */
-api.declare({
-  method:     'get',
-  route:      '/pending/:provisionerId',
-  name:       'pendingTaskCount',
-  scopes:     ['queue:pending-tasks:<provisionerId>'],
-  deferAuth:  true,
-  output:     undefined,  // TODO: define schema later
-  title:      "Get Number of Pending Tasks",
-  description: [
-    "Documented later...",
-    "",
-    "**Warning: This is an experimental end-point!**"
-  ].join('\n')
-}, function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
-  var ctx           = this;
-  var provisionerId = req.params.provisionerId;
-
-  // Authenticate request by providing parameters
-  if(!req.satisfies({
-    provisionerId:  provisionerId
-  })) {
-    return;
-  }
-
-  return ctx.Task.pendingTasks(provisionerId).then(function(result) {
-    return res.reply(result);
-  });
-});
 
 /** Count pending tasks for workerType */
 api.declare({

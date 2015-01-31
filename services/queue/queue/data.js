@@ -39,10 +39,10 @@ var Task = base.Entity.configure({
     extra:          base.Entity.types.JSON,
     /**
      * List of run objects with the following keys:
-     * - runId
-     * - state
-     * - reasonCreated
-     * - reasonResolved
+     * - runId          (required)
+     * - state          (required)
+     * - reasonCreated  (required)
+     * - reasonResolved (required)
      * - workerGroup
      * - workerId
      * - takenUntil
@@ -52,9 +52,38 @@ var Task = base.Entity.configure({
      * See schema for task status structure for details.
      * Remark that `runId` always match the index in the array.
      */
-    runs:           base.Entity.types.JSON
+    runs:           base.Entity.types.JSON,
+    /**
+     * Internal data holding message claim in azure queue
+     *
+     * Properties:
+     *  - messageId
+     *  - receipt
+     * Or no properties, if there is no current claim on the task.
+     */
+    claim:          base.Entity.types.JSON
   }
 });
+
+/** Return promise for the task definition */
+Task.prototype.definition = function() {
+  return Promise.resolve({
+    provisionerId:  this.provisionerId,
+    workerType:     this.workerType,
+    schedulerId:    this.schedulerId,
+    taskGroupId:    this.taskGroupId,
+    routes:         _.cloneDeep(this.routes),
+    retries:        this.retries,
+    created:        this.created.toJSON(),
+    deadline:       this.deadline.toJSON(),
+    expires:        this.expires.toJSON(),
+    scopes:         _.cloneDeep(this.scopes),
+    payload:        _.cloneDeep(this.payload),
+    metadata:       _.cloneDeep(this.metadata),
+    tags:           _.cloneDeep(this.tags),
+    extra:          _.cloneDeep(this.extra)
+  });
+};
 
 /** Construct task status structure */
 Task.prototype.status = function() {
@@ -65,12 +94,17 @@ Task.prototype.status = function() {
     schedulerId:      this.schedulerId,
     taskGroupId:      this.taskGroupId,
     deadline:         this.deadline.toJSON(),
+    expires:          this.expires.toJSON(),
     retriesLeft:      this.retriesLeft,
-    state:            (_.last(this.runs) || {state: 'unscheduled'}).state,
+    state:            this.state(),
     runs:             _.cloneDeep(this.runs)
   };
 };
 
+/** Get state of latest run, or 'unscheduled' if no runs */
+Task.prototype.state = function() {
+  return (_.last(this.runs) || {state: 'unscheduled'}).state;
+};
 
 // Export Task
 exports.Task = Task;
