@@ -6,120 +6,95 @@ import (
 	"sort"
 )
 
-type JsonSchemaTopLevel struct {
-	ID                   string               `json:"id"`
-	Schema               string               `json:"$schema"`
-	Title                string               `json:"title"`
-	Description          string               `json:"description"`
-	Type                 string               `json:"type"`
-	Items                Items                `json:"items"`
-	OneOf                []Items              `json:"oneOf"`
-	Properties           map[string]*Property `json:"properties"`
-	AdditionalProperties bool                 `json:"additionalProperties"`
-	Required             []string             `json:"required"`
-	StructName           string
-	SortedPropertyNames  []string
-}
+type Items []JsonSubSchema
 
-func (top JsonSchemaTopLevel) String() string {
-	result := fmt.Sprintf("ID                    = '%v'\n", top.ID)
-	result += fmt.Sprintf("Schema                = '%v'\n", top.Schema)
-	result += fmt.Sprintf("Title                 = '%v'\n", top.Title)
-	result += fmt.Sprintf("Description           = '%v'\n", top.Description)
-	result += fmt.Sprintf("Type                  = '%v'\n", top.Type)
-	result += fmt.Sprintf("Items                 =\n")
-	result += utils.Indent(top.Items.String(), "  ")
-	result += fmt.Sprintf("OneOf                 =\n")
-	for i, j := range top.OneOf {
-		result += fmt.Sprintf("  Option %v:\n", i)
-		result += utils.Indent(j.String(), "    ")
-	}
-	result += fmt.Sprintf("Properties            =\n")
-	for i, j := range top.Properties {
+func (items *Items) String() string {
+	for i, j := range *items {
 		result += "  '" + i + "' =\n" + utils.Indent(j.String(), "    ")
 	}
-	result += fmt.Sprintf("AdditionalProperties  = '%v'\n", top.AdditionalProperties)
-	result += fmt.Sprintf("Required              = '%v'\n", top.Required)
+	return ""
+}
+
+func (i *Items) postPopulate() {
+	// now all data should be loaded, let's sort the subSchema.Properties
+	subSchema.SortedPropertyNames = make([]string, 0, len(subSchema.Properties))
+	for propertyName := range subSchema.Properties {
+		subSchema.SortedPropertyNames = append(subSchema.SortedPropertyNames, propertyName)
+	}
+	sort.Strings(subSchema.SortedPropertyNames)
+	fmt.Printf("Sorted Property Names: %v\n", subSchema.SortedPropertyNames)
+}
+
+type Enum []interface{}
+type Required []string
+type Properties struct {
+	Properties          map[string]*JsonSubSchema
+	SortedPropertyNames []string
+}
+
+type JsonSubSchema struct {
+	AdditionalItems      *bool          `json:"additionalItems"`
+	AdditionalProperties *bool          `json:"additionalProperties"`
+	AllOf                *Items         `json:"allOf"`
+	AnyOf                *Items         `json:"anyOf"`
+	Description          *string        `json:"description"`
+	Enum                 *Enum          `json:"enum"` // may be a string or int or bool etc
+	Format               *string        `json:"format"`
+	ID                   *string        `json:"id"`
+	Items                *JsonSubSchema `json:"items"`
+	Maximum              *int           `json:"maximum"`
+	MaxLength            *int           `json:"maxLength"`
+	Minimum              *int           `json:"minimum"`
+	MinLength            *int           `json:"minLength"`
+	OneOf                *Items         `json:"oneOf"`
+	Pattern              *string        `json:"pattern"`
+	Properties           *Properties    `json:"properties"`
+	Ref                  *string        `json:"$ref"`
+	Required             *Required      `json:"required"`
+	Schema               *string        `json:"$schema"`
+	Title                *string        `json:"title"`
+	Type                 *string        `json:"type"`
+
+	// non-json fields used for sorting/tracking
+	StructName string
+}
+
+func describe(name string, value *interface{}) string {
+	if value == nil {
+		return ""
+	}
+	return fmt.Sprintf("%-22f = '%v'\n", *value)
+}
+
+func (subSchema JsonSubSchema) String() string {
+	result += describe("Additional Properties", *subschema.AdditionalProperties)
+	result += describe("All Of", *subschema.AllOf)
+	result += describe("Any Of", *subschema.AnyOf)
+	result += describe("Description", *subschema.Description)
+	result += describe("Enum", *subschema.Enum)
+	result += describe("Format", *subschema.Format)
+	result += describe("ID", *subschema.ID)
+	result += describe("Items", *subschema.Items, "    ")
+	result += describe("Maximum", *subschema.Maximum)
+	result += describe("MaxLength", *subschema.MaxLength)
+	result += describe("Minimum", *subschema.Minimum)
+	result += describe("MinLength", *subschema.MinLength)
+	result += describe("OneOf", *subschema.OneOf)
+	result += describe("Pattern", *subschema.Pattern)
+	result += describe("Properties", *subschema.Properties)
+	result += describe("Ref", *subschema.Ref)
+	result += describe("Required", *subschema.Required)
+	result += describe("Schema", *subschema.Schema)
+	result += describe("Title", *subschema.Title)
+	result += describe("Type", *subschema.Type)
 	return result
 }
 
-func (top *JsonSchemaTopLevel) postPopulate() {
-	for propertyName := range top.Properties {
-		top.Properties[propertyName].postPopulate()
-	}
-	top.Items.postPopulate()
-	for itemsName := range top.OneOf {
-		top.OneOf[itemsName].postPopulate()
-	}
-	// now all data should be loaded, let's sort the top.Properties
-	top.SortedPropertyNames = make([]string, 0, len(top.Properties))
-	for propertyName := range top.Properties {
-		top.SortedPropertyNames = append(top.SortedPropertyNames, propertyName)
-	}
-	sort.Strings(top.SortedPropertyNames)
-	fmt.Printf("Sorted Property Names: %v\n", top.SortedPropertyNames)
-}
-
-type Items struct {
-	Title                string               `json:"title"`
-	Description          string               `json:"description"`
-	Type                 string               `json:"type"`
-	Properties           map[string]*Property `json:"properties"`
-	AdditionalProperties bool                 `json:"additionalProperties"`
-	Required             []string             `json:"required"`
-}
-
-func (items Items) String() string {
-	result := fmt.Sprintf("Title                 = '%v'\n", items.Title)
-	result += fmt.Sprintf("Description           = '%v'\n", items.Description)
-	result += fmt.Sprintf("Type                  = '%v'\n", items.Type)
-	result += fmt.Sprintf("Properties            =\n")
-	for i, j := range items.Properties {
-		result += "  '" + i + "' =\n" + utils.Indent(j.String(), "    ")
-	}
-	result += fmt.Sprintf("AdditionalProperties  = '%v'\n", items.AdditionalProperties)
-	result += fmt.Sprintf("Required              = '%v'\n", items.Required)
-	return result
-}
-
-func (items *Items) postPopulate() {
-	for propertyName := range items.Properties {
-		items.Properties[propertyName].postPopulate()
-	}
-}
-
-type Property struct {
-	Ref         string        `json:"$ref"`
-	Title       string        `json:"title"`
-	Description string        `json:"description"`
-	Type        string        `json:"type"`
-	Pattern     string        `json:"pattern"`
-	MinLength   int           `json:"minLength"`
-	MaxLength   int           `json:"maxLength"`
-	Minimum     int           `json:"minimum"`
-	Maximum     int           `json:"maximum"`
-	Format      string        `json:"format"`
-	Enum        []interface{} `json:"enum"` // may be a string or int or bool etc
-	Items       Items         `json:"items"`
-}
-
-func (property Property) String() string {
-	result := fmt.Sprintf("$Ref         = '%v'\n", property.Ref)
-	result += fmt.Sprintf("Title        = '%v'\n", property.Title)
-	result += fmt.Sprintf("Description  = '%v'\n", property.Description)
-	result += fmt.Sprintf("Type         = '%v'\n", property.Type)
-	result += fmt.Sprintf("Pattern      = '%v'\n", property.Pattern)
-	result += fmt.Sprintf("MinLength    = '%v'\n", property.MinLength)
-	result += fmt.Sprintf("MaxLength    = '%v'\n", property.MaxLength)
-	result += fmt.Sprintf("Minimum      = '%v'\n", property.Minimum)
-	result += fmt.Sprintf("Maximum      = '%v'\n", property.Maximum)
-	result += fmt.Sprintf("Format       = '%v'\n", property.Format)
-	result += fmt.Sprintf("Enum         = '%v'\n", property.Enum)
-	result += fmt.Sprintf("Items        =\n")
-	result += utils.Indent(property.Items.String(), "  ")
-	return result
-}
-
-func (property *Property) postPopulate() {
-	cacheJsonSchema(property.Ref)
+func (subSchema *JsonSubSchema) postPopulate() {
+	subSchema.AllOf.postPopulate()
+	subSchema.AnyOf.postPopulate()
+	subSchema.OneOf.postPopulate()
+	subSchema.Items.postPopulate()
+	subSchema.Properties.postPopulate()
+	cacheJsonSchema(subSchema.Ref)
 }

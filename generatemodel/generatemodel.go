@@ -11,7 +11,7 @@ import (
 var (
 	err        error
 	apis       []model.APIDefinition
-	schemas    map[string]*model.JsonSchemaTopLevel = make(map[string]*model.JsonSchemaTopLevel)
+	schemas    map[string]*model.JsonSubSchema = make(map[string]*model.JsonSubSchema)
 	schemaURLs []string
 
 	version = "generatemodel 1.0"

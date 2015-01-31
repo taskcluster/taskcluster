@@ -13,7 +13,7 @@ import (
 
 var (
 	apis    []APIDefinition
-	schemas map[string]*JsonSchemaTopLevel = make(map[string]*JsonSchemaTopLevel)
+	schemas map[string]*JsonSubSchema = make(map[string]*JsonSubSchema)
 	err     error
 	// keep a record of generated struct names, so that we don't reuse old names
 	// map[string]bool acts like a set of strings
@@ -209,7 +209,7 @@ func loadJson(reader io.Reader, schema *string) APIModel {
 	return m
 }
 
-func loadJsonSchema(url string) *JsonSchemaTopLevel {
+func loadJsonSchema(url string) *JsonSubSchema {
 	var resp *http.Response
 	resp, err = http.Get(url)
 	utils.ExitOnFail(err)
@@ -217,7 +217,7 @@ func loadJsonSchema(url string) *JsonSchemaTopLevel {
 	var bytes []byte
 	bytes, err = ioutil.ReadAll(resp.Body)
 	utils.ExitOnFail(err)
-	m := new(JsonSchemaTopLevel)
+	m := new(JsonSubSchema)
 	err = json.Unmarshal(bytes, m)
 	utils.ExitOnFail(err)
 	m.postPopulate()
@@ -234,7 +234,7 @@ func cacheJsonSchema(url string) {
 	}
 }
 
-func LoadAPIs(bytes []byte) ([]APIDefinition, []string, map[string]*JsonSchemaTopLevel) {
+func LoadAPIs(bytes []byte) ([]APIDefinition, []string, map[string]*JsonSubSchema) {
 	err = json.Unmarshal(bytes, &apis)
 	sort.Sort(SortedAPIDefs(apis))
 	utils.ExitOnFail(err)
