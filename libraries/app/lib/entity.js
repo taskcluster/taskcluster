@@ -738,8 +738,11 @@ Entity.create = function(properties) {
 /**
  * Load Entity subclass from azure given PartitionKey and RowKey,
  * This method return a promise for the subclass instance.
+ *
+ * If `ignoreIfNotExists` is true, this method will return `null` if the entity
+ * to be loaded doesn't exist.
  */
-Entity.load = function(properties) {
+Entity.load = function(properties, ignoreIfNotExists) {
   properties = properties || {};
   var Class       = this;
   var ClassProps  = Class.prototype;
@@ -751,7 +754,12 @@ Entity.load = function(properties) {
   return ClassProps.__aux.getEntity(
     partitionKey,
     rowKey
-  ).then(wrapEntityClass(Class));
+  ).then(wrapEntityClass(Class), function(err) {
+    if (ignoreIfNotExists && err && err.code === 'ResourceNotFound') {
+      return null; // Ignore entity that doesn't exists
+    }
+    throw err;
+  });
 };
 
 
@@ -825,7 +833,8 @@ Entity.prototype.reload = function() {
 
 /**
  * Modify an entity, the `modifier` is a function that is called with
- * a clone of the entity as `this`, it should apply modifications to `this`.
+ * a clone of the entity as `this` and first argument, it should apply
+ * modifications to `this` (or first argument).
  * This function shouldn't have side-effects (or these should be contained),
  * as the `modifier` may be called more than once, if the update operation
  * fails.
@@ -836,7 +845,21 @@ Entity.prototype.reload = function() {
  * invoke the modifier again and try to save again. This model fit very well
  * with the optimistic concurrency model used in Azure Table Storage.
  *
- * **Note** modifier may return a promise.
+ * **Note** modifier is allowed to return a promise.
+ *
+ * Example:
+ *
+ * ```js
+ * entity.modify(function() {
+ *   this.property = "new value";
+ * });
+ * ```
+ * Or using first argument, when binding modifier or using ES6 arrow-functions:
+ * ```js
+ * entity.modify(function(entity) {
+ *   entity.property = "new value";
+ * });
+ * ```
  */
 Entity.prototype.modify = function(modifier) {
   var that = this;
@@ -856,7 +879,10 @@ Entity.prototype.modify = function(modifier) {
   // Attempt to modify this object
   var attemptsLeft = MAX_MODIFY_ATTEMPTS;
   var attemptModify = function() {
-    var modified = Promise.resolve(modifier.call(that.__properties));
+    var modified = Promise.resolve(modifier.call(
+      that.__properties,
+      that.__properties
+    ));
     return modified.then(function() {
       var isChanged     = false;
       var entityChanges = {};
