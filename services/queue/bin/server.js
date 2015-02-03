@@ -11,7 +11,6 @@ var data          = require('../queue/data');
 var Bucket        = require('../queue/bucket');
 var QueueService  = require('../queue/queueservice');
 
-
 /** Launch server */
 var launch = async function(profile) {
   debug("Launching with profile: %s", profile);
@@ -87,7 +86,8 @@ var launch = async function(profile) {
   var queueService = new QueueService({
     prefix:           cfg.get('queue:queuePrefix'),
     credentials:      cfg.get('azure'),
-    signatureSecret:  cfg.get('queue:signatureSecret')
+    signatureSecret:  cfg.get('queue:signatureSecret'),
+    deadlineQueue:    cfg.get('queue:deadlineQueue')
   });
 
   // When: publisher, validator and containers are created, proceed
