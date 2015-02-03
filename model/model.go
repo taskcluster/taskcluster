@@ -253,8 +253,9 @@ func GenerateCode(goOutput, modelData string) {
 	content := `
 // The following code is AUTO-GENERATED. Please DO NOT edit.
 // To update this generated code, run the following command:
-// 
-// go generate
+// in the client subdirectory:
+//
+// go generate && go fmt
 
 package client
 `
@@ -274,7 +275,7 @@ package client
 }
 
 func generateStructs() string {
-	content := ""
+	content := "type ("
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	for _, i := range schemaURLs {
 		schemas[i].StructName = utils.Normalise(*schemas[i].Title, structs)
@@ -288,8 +289,8 @@ func generateStructs() string {
 				comment += "\n"
 			}
 		}
-		content += comment
-		content += fmt.Sprintf("type %v struct {\n", schemas[i].StructName)
+		content += utils.Indent(comment, "\t")
+		content += fmt.Sprintf("\t%v struct {\n", schemas[i].StructName)
 		if s := schemas[i].Properties; s != nil {
 			members := make(map[string]bool, len(s.SortedPropertyNames))
 			for _, j := range s.SortedPropertyNames {
@@ -315,12 +316,12 @@ func generateStructs() string {
 				if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 					comment += "\n"
 				}
-				content += comment
+				content += utils.Indent(comment, "\t")
 				// struct member name and type, as part of struct definition
-				content += fmt.Sprintf("\t%v %v\n", memberName, typ)
+				content += fmt.Sprintf("\t\t%v %v\n", memberName, typ)
 			}
 		}
-		content += "}\n"
+		content += "\t}\n"
 	}
-	return content
+	return content + ")\n"
 }
