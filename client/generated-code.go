@@ -286,7 +286,19 @@ type (
 	// List of artifacts for a given `taskId` and `runId`.
 	ListArtifactsResponse struct {
 		// List of artifacts for given `taskId` and `runId`.
-		Artifacts array
+		Artifacts []struct {
+			// Mimetype for the artifact that was created.
+			ContentType string
+			// Date and time after which the artifact created will be automatically
+			// deleted by the queue.
+			Expires string
+			// Name of the artifact that was created, this is useful if you want to
+			// attempt to fetch the artifact.
+			Name string
+			// This is the `storageType` for the request that was used to create
+			// the artifact.
+			StorageType interface{}
+		}
 	}
 
 	// Response to request for poll task urls.
@@ -353,7 +365,7 @@ type (
 		// True, if task is completed, and false if task is failed. This property
 		// is optional and only present for backwards compatibility. It will be
 		// removed in the future.
-		Success boolean
+		Success bool
 	}
 
 	// Message reporting that a task has been defined. The task may or may not be
@@ -618,7 +630,7 @@ type (
 			// Number of reruns that haven't been used yet.
 			RerunsLeft int
 			// true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.
-			Satisfied boolean
+			Satisfied bool
 			// State of the task as considered by the scheduler
 			State interface{}
 			// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
@@ -641,7 +653,7 @@ type (
 		// Number of reruns that haven't been used yet.
 		RerunsLeft int
 		// true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.
-		Satisfied boolean
+		Satisfied bool
 		// State of the task as considered by the scheduler
 		State interface{}
 		// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.

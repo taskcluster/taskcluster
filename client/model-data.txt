@@ -2615,6 +2615,7 @@ Properties
           Title                  = 'Artifact Storage-Type'
       Required               = '[storageType name expires contentType]'
       Title                  = 'Artifact'
+      Type                   = 'object'
     Title                  = 'Artifact List'
     Type                   = 'array'
 Required               = '[artifacts]'

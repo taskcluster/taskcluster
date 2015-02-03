@@ -85,8 +85,6 @@ func (jsonSubSchema *JsonSubSchema) StructDefinition(withComments bool) string {
 			case "array":
 				if jsonType := s.Properties[j].Items.Type; jsonType != nil {
 					switch *jsonType {
-					case "":
-						typ = "[]" + *s.Properties[j].Items.Title
 					case "object":
 						typ = "[]" + s.Properties[j].Items.StructDefinition(false)
 					default:
@@ -100,6 +98,8 @@ func (jsonSubSchema *JsonSubSchema) StructDefinition(withComments bool) string {
 				typ = "int"
 			case "integer":
 				typ = "int"
+			case "boolean":
+				typ = "bool"
 			}
 			// comment the struct member with the description from the json
 			comment = ""
