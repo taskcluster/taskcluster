@@ -19,7 +19,7 @@
     "lodash":               "^3.0.0",
     "promise":              "6.1.0",
     "slugid":               "1.0.3",
-    "taskcluster-base":     "^0.7.5",
+    "taskcluster-base":     "taskcluster/taskcluster-base#testing-utils",
     "thirty-two":           "0.0.2",
     "url-join":             "0.0.1",
     "uuid":                 "2.0.1",
