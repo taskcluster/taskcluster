@@ -90,7 +90,7 @@ type (
 		// If multiple tasks are indexed with the same `namespace` the task with the
 		// highest `rank` will be stored and returned in later requests. If two tasks
 		// has the same `rank` the latest task will be stored.
-		Rank number
+		Rank int
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
@@ -109,7 +109,7 @@ type (
 		// If multiple tasks are indexed with the same `namespace` the task with the
 		// highest `rank` will be stored and returned in later requests. If two tasks
 		// has the same `rank` the latest task will be stored.
-		Rank number
+		Rank int
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
@@ -124,7 +124,7 @@ type (
 		ContinuationToken string
 		// Maximum number of results per page. If there are more results than this
 		// a continuation token will be return.
-		Limit integer
+		Limit int
 	}
 
 	// Response from a request to list namespaces within a given namespace.
@@ -134,7 +134,16 @@ type (
 		// load the additional results.
 		ContinuationToken string
 		// List of namespaces.
-		Namespaces []object
+		Namespaces []struct {
+			// Date at which this entry, and by implication all entries below it,
+			// expires from the task index.
+			Expires string
+			// Name of namespace within it's parent namespace.
+			Name unknown
+			// Fully qualified name of the namespace, you can use this to list
+			// namespaces or tasks under this namespace.
+			Namespace string
+		}
 	}
 
 	// Request to list tasks within a given namespace.
@@ -145,7 +154,7 @@ type (
 		ContinuationToken string
 		// Maximum number of results per page. If there are more results than this
 		// a continuation token will be return.
-		Limit integer
+		Limit int
 	}
 
 	// Representation of an indexed task.
@@ -155,7 +164,26 @@ type (
 		// load the additional results.
 		ContinuationToken string
 		// List of tasks.
-		Tasks []object
+		Tasks []struct {
+			// Data that was reported with the task. This is an arbitrary JSON
+			// object.
+			Data struct {
+			}
+			// Date at which this entry expires from the task index.
+			Expires string
+			// Namespace of the indexed task, used to find the indexed task in the
+			// index.
+			Namespace string
+			// If multiple tasks are indexed with the same `namespace` the task
+			// with the highest `rank` will be stored and returned in later
+			// requests. If two tasks has the same `rank` the latest task will be
+			// stored.
+			Rank int
+			// Unique task identifier, this is UUID encoded as
+			// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+			// stripped of `=` padding.
+			TaskId string
+		}
 	}
 
 	// Message reporting a new artifact has been created for a given task.
@@ -163,7 +191,7 @@ type (
 		// Information about the artifact that was created
 		Artifact unknown
 		// Id of the run on which artifact was created.
-		RunId  integer
+		RunId  int
 		Status unknown
 		// Message version
 		Version unknown
@@ -227,7 +255,7 @@ type (
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
 		// these events are to be expected.
-		Retries integer
+		Retries int
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		Routes []string
 		// Identifier for the scheduler that _defined_ this task, this can be an
@@ -297,7 +325,7 @@ type (
 	// Response to a successful task claim
 	TaskClaimResponse struct {
 		// `run-id` assigned to this run of the task
-		RunId  integer
+		RunId  int
 		Status unknown
 		// Time at which the run expires and is resolved as `failed`, if the run isn't reclaimed.
 		TakenUntil string
@@ -310,7 +338,7 @@ type (
 	// Message reporting that a task has complete successfully.
 	TaskCompletedMessage struct {
 		// Id of the run that completed the task
-		RunId  integer
+		RunId  int
 		Status unknown
 		// Message version
 		Version unknown
@@ -340,7 +368,7 @@ type (
 	TaskExceptionMessage struct {
 		// Id of the last run for the task, not provided if `deadline`
 		// was exceeded before a run was started.
-		RunId  integer
+		RunId  int
 		Status unknown
 		// Message version
 		Version unknown
@@ -369,7 +397,7 @@ type (
 	// Message reporting that a task failed to complete successfully.
 	TaskFailedMessage struct {
 		// Id of the run that failed.
-		RunId  integer
+		RunId  int
 		Status unknown
 		// Message version
 		Version unknown
@@ -382,7 +410,7 @@ type (
 	// Message reporting that a task is now pending
 	TaskPendingMessage struct {
 		// Id of run that became pending, `run-id`s always starts from 0
-		RunId  integer
+		RunId  int
 		Status unknown
 		// Message version
 		Version unknown
@@ -391,7 +419,7 @@ type (
 	// Message reporting that a given run of a task have started
 	TaskRunningMessage struct {
 		// Id of the run that just started, always starts from 0
-		RunId  integer
+		RunId  int
 		Status unknown
 		// Time at which the run expires and is resolved as `failed`, if the run
 		// isn't reclaimed.
@@ -416,9 +444,45 @@ type (
 		// Unique identifier for the provisioner that this task must be scheduled on
 		ProvisionerId string
 		// Number of retries left for the task in case of infrastructure issues
-		RetriesLeft integer
+		RetriesLeft int
 		// List of runs, ordered so that index `i` has `runId == i`
-		Runs []object
+		Runs []struct {
+			// Reason for the creation of this run,
+			// **more reasons may be added in the future**."
+			ReasonCreated unknown
+			// Reason that run was resolved, this is mainly
+			// useful for runs resolved as `exception`.
+			// Note, **more reasons may be added in the future**, also this
+			// property is only available after the run is resolved.
+			ReasonResolved unknown
+			// Date-time at which this run was resolved, ie. when the run changed
+			// state from `running` to either `completed`, `failed` or `exception`.
+			// This property is only present after the run as been resolved.
+			Resolved string
+			// Id of this task run, `run-id`s always starts from `0`
+			RunId int
+			// Date-time at which this run was scheduled, ie. when the run was
+			// created in state `pending`.
+			Scheduled string
+			// Date-time at which this run was claimed, ie. when the run changed
+			// state from `pending` to `running`. This property is only present
+			// after the run has been claimed.
+			Started string
+			// State of this run
+			State unknown
+			// Time at which the run expires and is resolved as `failed`, if the
+			// run isn't reclaimed. Note, only present after the run has been
+			// claimed.
+			TakenUntil string
+			// Identifier for group that worker who executes this run is a part of,
+			// this identifier is mainly used for efficient routing.
+			// Note, this property is only present after the run is claimed.
+			WorkerGroup string
+			// Identifier for worker evaluating this run within given
+			// `workerGroup`. Note, this property is only available after the run
+			// has been claimed.
+			WorkerId string
+		}
 		// Identifier for the scheduler that _defined_ this task.
 		SchedulerId string
 		// State of this task. This is just an auxiliary property derived from state
@@ -480,7 +544,7 @@ type (
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
 		// these events are to be expected.
-		Retries integer
+		Retries int
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		Routes []string
 		// Identifier for the scheduler that _defined_ this task, this can be an
@@ -511,7 +575,15 @@ type (
 	// Definition of a task-graph that can be scheduled
 	TaskGraphDefinition struct {
 		// List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.
-		Tasks []object
+		Tasks []struct {
+			// List of required `taskId`s
+			Requires []string
+			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
+			Reruns int
+			Task   unknown
+			// Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.
+			TaskId string
+		}
 	}
 
 	// Information about a **task-graph** as known by the scheduler, with all the state of all individual tasks.
@@ -532,7 +604,26 @@ type (
 		Tags struct {
 		}
 		// Mapping from task-labels to task information and state.
-		Tasks []object
+		Tasks []struct {
+			// List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.
+			Dependents []string
+			// Human readable name from the task definition
+			Name string
+			// List of required `taskId`s
+			Requires []string
+			// List of `taskId`s that have yet to complete successfully, before this task can be scheduled.
+			RequiresLeft []string
+			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
+			Reruns int
+			// Number of reruns that haven't been used yet.
+			RerunsLeft int
+			// true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.
+			Satisfied boolean
+			// State of the task as considered by the scheduler
+			State unknown
+			// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
+			TaskId string
+		}
 	}
 
 	// Information about a **task** in a task-graph as known by the scheduler.
@@ -546,9 +637,9 @@ type (
 		// List of `taskId`s that have yet to complete successfully, before this task can be scheduled.
 		RequiresLeft []string
 		// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
-		Reruns integer
+		Reruns int
 		// Number of reruns that haven't been used yet.
-		RerunsLeft integer
+		RerunsLeft int
 		// true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.
 		Satisfied boolean
 		// State of the task as considered by the scheduler
@@ -652,6 +743,14 @@ type (
 		Tags struct {
 		}
 		// List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.
-		Tasks []object
+		Tasks []struct {
+			// List of required `taskId`s
+			Requires []string
+			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
+			Reruns int
+			Task   unknown
+			// Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.
+			TaskId string
+		}
 	}
 )

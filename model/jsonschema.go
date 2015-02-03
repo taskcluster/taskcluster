@@ -81,18 +81,25 @@ func (jsonSubSchema *JsonSubSchema) StructDefinition(withComments bool) string {
 			if p := s.Properties[j].Type; p != nil {
 				typ = *p
 			}
-			if typ == "array" {
+			switch typ {
+			case "array":
 				if jsonType := s.Properties[j].Items.Type; jsonType != nil {
-					if *jsonType == "" {
+					switch *jsonType {
+					case "":
 						typ = "[]" + *s.Properties[j].Items.Title
-					} else {
+					case "object":
+						typ = "[]" + s.Properties[j].Items.StructDefinition(false)
+					default:
 						typ = "[]" + *jsonType
 					}
 				}
-			}
-			// recursive call to build structs inside structs
-			if typ == "object" {
+			case "object":
+				// recursive call to build structs inside structs
 				typ = s.Properties[j].StructDefinition(false)
+			case "number":
+				typ = "int"
+			case "integer":
+				typ = "int"
 			}
 			// comment the struct member with the description from the json
 			comment = ""
