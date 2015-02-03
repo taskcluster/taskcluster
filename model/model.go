@@ -293,6 +293,16 @@ func generateStructs() string {
 		structs[structName] = true
 		schemas[i].StructName = structName
 		content += "\n"
+		comment := ""
+		if d := schemas[i].Description; d != nil {
+			if desc := *d; desc != "" {
+				comment = utils.Indent(desc, "// ")
+			}
+			if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+				comment += "\n"
+			}
+		}
+		content += comment
 		content += fmt.Sprintf("type %v struct {\n", structName)
 		if s := schemas[i].Properties; s != nil {
 			for _, j := range s.SortedPropertyNames {
@@ -310,9 +320,9 @@ func generateStructs() string {
 					}
 				}
 				// comment the struct member with the description from the json
-				comment := "No comment"
-				if s.Properties[j].Description != nil {
-					comment = utils.Indent(*s.Properties[j].Description, "\t// ")
+				comment = ""
+				if d := s.Properties[j].Description; d != nil {
+					comment = utils.Indent(*d, "\t// ")
 				}
 				if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 					comment += "\n"

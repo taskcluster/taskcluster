@@ -5,6 +5,8 @@
 
 package client
 
+// Response to a request for an Shared-Access-Signature to access and Azure
+// Table Storage table.
 type AzureSharedAccessSignatureResponse struct {
 	// Date and time of when the Shared-Access-Signature expires.
 	expiry string
@@ -14,6 +16,7 @@ type AzureSharedAccessSignatureResponse struct {
 	sas string
 }
 
+// Credentials, scopes and expiration date for a client
 type GetClientCredentialsResponse struct {
 	// AccessToken used for authenticating requests
 	accessToken string
@@ -25,6 +28,7 @@ type GetClientCredentialsResponse struct {
 	scopes []string
 }
 
+// Scopes and expiration date for a client
 type GetClientScopesResponse struct {
 	// ClientId of the client scopes is requested about
 	clientId string
@@ -34,6 +38,7 @@ type GetClientScopesResponse struct {
 	scopes []string
 }
 
+// Credentials, scopes and expiration date for a client
 type GetClientCredentialsResponse1 struct {
 	// Description of what these credentials are used for in markdown.
 	// Please write a few details here, including who is the owner, point of
@@ -48,6 +53,7 @@ type GetClientCredentialsResponse1 struct {
 	scopes []string
 }
 
+// Get all detaisl about a client, useful for tools modifying a client
 type GetClientResponse struct {
 	// AccessToken used for authenticating requests
 	accessToken string
@@ -66,9 +72,11 @@ type GetClientResponse struct {
 	scopes []string
 }
 
+// Get a list of all clients, including basic information, but not credentials.
 type ListClientsResponse struct {
 }
 
+// Representation of an indexed task.
 type IndexedTaskResponse struct {
 	// Data that was reported with the task. This is an arbitrary JSON object.
 	data object
@@ -86,6 +94,7 @@ type IndexedTaskResponse struct {
 	taskId string
 }
 
+// Representation of an a task to be indexed.
 type InsertTaskRequest struct {
 	// This is an arbitrary JSON object. Feel free to put whatever data you want
 	// here, but do limit it, you'll get errors if you store more than 32KB.
@@ -103,6 +112,7 @@ type InsertTaskRequest struct {
 	taskId string
 }
 
+// Request to list namespaces within a given namespace.
 type ListNamespacesRequest struct {
 	// A continuation token previously returned in a response to this list
 	// request. This property is optional and should not be provided for first
@@ -113,6 +123,7 @@ type ListNamespacesRequest struct {
 	limit integer
 }
 
+// Response from a request to list namespaces within a given namespace.
 type ListNamespacesResponse struct {
 	// A continuation token is returned if there are more results than listed
 	// here. You can optionally provide the token in the request payload to
@@ -122,6 +133,7 @@ type ListNamespacesResponse struct {
 	namespaces []object
 }
 
+// Request to list tasks within a given namespace.
 type ListTasksRequest struct {
 	// A continuation token previously returned in a response to this list
 	// request. This property is optional and should not be provided for first
@@ -132,6 +144,7 @@ type ListTasksRequest struct {
 	limit integer
 }
 
+// Representation of an indexed task.
 type ListTasksResponse struct {
 	// A continuation token is returned if there are more results than listed
 	// here. You can optionally provide the token in the request payload to
@@ -141,12 +154,12 @@ type ListTasksResponse struct {
 	tasks []object
 }
 
+// Message reporting a new artifact has been created for a given task.
 type ArtifactCreatedMessage struct {
 	// Information about the artifact that was created
 	artifact unknown
 	// Id of the run on which artifact was created.
 	runId  integer
-	No     comment
 	status unknown
 	// Message version
 	version unknown
@@ -158,6 +171,7 @@ type ArtifactCreatedMessage struct {
 	workerId string
 }
 
+// Request to claim work
 type WorkClaimRequest struct {
 	// Identifier for group that worker claiming the task is a part of.
 	workerGroup string
@@ -165,6 +179,7 @@ type WorkClaimRequest struct {
 	workerId string
 }
 
+// Definition of a task that can be scheduled
 type TaskDefinition struct {
 	// Creation time of task
 	created string
@@ -219,11 +234,13 @@ type TaskDefinition struct {
 	workerType string
 }
 
+// List of artifacts for a given `taskId` and `runId`.
 type ListArtifactsResponse struct {
 	// List of artifacts for given `taskId` and `runId`.
 	artifacts array
 }
 
+// Response to request for poll task urls.
 type PollTaskUrlsResponse struct {
 	// Date and time after which the signed URLs provided in this response
 	// expires and not longer works for authentication.
@@ -234,12 +251,15 @@ type PollTaskUrlsResponse struct {
 	signedPollTaskUrls []string
 }
 
+// Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.
 type PostArtifactRequest struct {
 }
 
+// Response to a request for posting an artifact. Note that the `storageType` property is referenced in the request as well.
 type PostArtifactResponse struct {
 }
 
+// Request to claim (or reclaim) a task
 type TaskClaimRequest struct {
 	// MessageId from Azure Queue message
 	messageId string
@@ -253,10 +273,10 @@ type TaskClaimRequest struct {
 	workerId string
 }
 
+// Response to a successful task claim
 type TaskClaimResponse struct {
 	// `run-id` assigned to this run of the task
 	runId  integer
-	No     comment
 	status unknown
 	// Time at which the run expires and is resolved as `failed`, if the run isn't reclaimed.
 	takenUntil string
@@ -266,10 +286,10 @@ type TaskClaimResponse struct {
 	workerId string
 }
 
+// Message reporting that a task has complete successfully.
 type TaskCompletedMessage struct {
 	// Id of the run that completed the task
 	runId  integer
-	No     comment
 	status unknown
 	// Message version
 	version unknown
@@ -279,6 +299,7 @@ type TaskCompletedMessage struct {
 	workerId string
 }
 
+// Request for a task to be declared completed
 type TaskCompletedRequest struct {
 	// True, if task is completed, and false if task is failed. This property
 	// is optional and only present for backwards compatibility. It will be
@@ -286,18 +307,19 @@ type TaskCompletedRequest struct {
 	success boolean
 }
 
+// Message reporting that a task has been defined. The task may or may not be
+// _scheduled_ too.
 type TaskDefinedMessage struct {
-	No     comment
 	status unknown
 	// Message version
 	version unknown
 }
 
+// Message reporting that TaskCluster have failed to run a task.
 type TaskExceptionMessage struct {
 	// Id of the last run for the task, not provided if `deadline`
 	// was exceeded before a run was started.
 	runId  integer
-	No     comment
 	status unknown
 	// Message version
 	version unknown
@@ -310,6 +332,7 @@ type TaskExceptionMessage struct {
 	workerId string
 }
 
+// Request for a run of a task to be resolved with an exception
 type TaskExceptionRequest struct {
 	// Reason that the task is resolved with an exception. This is a subset
 	// of the values for `resolvedReason` given in the task status structure.
@@ -322,10 +345,10 @@ type TaskExceptionRequest struct {
 	reason unknown
 }
 
+// Message reporting that a task failed to complete successfully.
 type TaskFailedMessage struct {
 	// Id of the run that failed.
 	runId  integer
-	No     comment
 	status unknown
 	// Message version
 	version unknown
@@ -335,19 +358,19 @@ type TaskFailedMessage struct {
 	workerId string
 }
 
+// Message reporting that a task is now pending
 type TaskPendingMessage struct {
 	// Id of run that became pending, `run-id`s always starts from 0
 	runId  integer
-	No     comment
 	status unknown
 	// Message version
 	version unknown
 }
 
+// Message reporting that a given run of a task have started
 type TaskRunningMessage struct {
 	// Id of the run that just started, always starts from 0
 	runId  integer
-	No     comment
 	status unknown
 	// Time at which the run expires and is resolved as `failed`, if the run
 	// isn't reclaimed.
@@ -360,11 +383,12 @@ type TaskRunningMessage struct {
 	workerId string
 }
 
+// Response to a task status request
 type TaskStatusResponse struct {
-	No     comment
 	status unknown
 }
 
+// A representation of **task status** as known by the queue
 type TaskStatusStructure struct {
 	// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
 	deadline string
@@ -391,6 +415,7 @@ type TaskStatusStructure struct {
 	workerType string
 }
 
+// Definition of a task that can be scheduled
 type TaskDefinition1 struct {
 	// Creation time of task
 	created string
@@ -445,15 +470,16 @@ type TaskDefinition1 struct {
 	workerType string
 }
 
+// Definition of a task-graph that can be scheduled
 type TaskGraphDefinition struct {
 	// List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.
 	tasks []object
 }
 
+// Information about a **task-graph** as known by the scheduler, with all the state of all individual tasks.
 type InspectTaskGraphResponse struct {
 	// Required task metadata
 	metadata object
-	No       comment
 	status   unknown
 	// Arbitrary key-value tags (only strings limited to 4k)
 	tags object
@@ -461,6 +487,7 @@ type InspectTaskGraphResponse struct {
 	tasks []object
 }
 
+// Information about a **task** in a task-graph as known by the scheduler.
 type InspectTaskGraphTaskResponse struct {
 	// List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.
 	dependents []string
@@ -482,8 +509,8 @@ type InspectTaskGraphTaskResponse struct {
 	taskId string
 }
 
+// Message that all reruns of a task has failed it is now blocking the task-graph from finishing.
 type BlockedTaskGraphMessage struct {
-	No     comment
 	status unknown
 	// Unique `taskId` that is blocking this task-graph from completion.
 	taskId string
@@ -491,46 +518,47 @@ type BlockedTaskGraphMessage struct {
 	version unknown
 }
 
+// Messages as posted to `scheduler/v1/task-graph-extended` informing the world that a task-graph have been extended.
 type TaskGraphExtendedMessage struct {
-	No     comment
 	status unknown
 	// Message version
 	version unknown
 }
 
+// Message that all tasks in a task-graph have now completed successfully and the graph is _finished_.
 type TaskGraphFinishedMessage struct {
-	No     comment
 	status unknown
 	// Message version
 	version unknown
 }
 
+// Response for a request for task-graph information
 type TaskGraphInfoResponse struct {
 	// Required task metadata
 	metadata object
-	No       comment
 	status   unknown
 	// Arbitrary key-value tags (only strings limited to 4k)
 	tags object
 }
 
+// Messages as posted to `scheduler/v1/task-graph-running` informing the world that a new task-graph have been submitted.
 type NewTaskGraphMessage struct {
-	No     comment
 	status unknown
 	// Message version
 	version unknown
 }
 
+// Response containing the status structure for a task-graph
 type TaskGraphStatusResponse struct {
-	No     comment
 	status unknown
 }
 
+// Response containing the status structure for a task-graph
 type TaskGraphStatusResponse1 struct {
-	No     comment
 	status unknown
 }
 
+// A representation of **task-graph status** as known by the scheduler, without the state of all individual tasks.
 type TaskGraphStatusStructure struct {
 	// Unique identifier for task-graph scheduler managing the given task-graph
 	schedulerId string
@@ -540,6 +568,7 @@ type TaskGraphStatusStructure struct {
 	taskGraphId string
 }
 
+// Definition of a task-graph that can be scheduled
 type TaskGraphDefinition1 struct {
 	// Required task metadata"
 	metadata object
