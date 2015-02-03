@@ -77,7 +77,7 @@ func (jsonSubSchema *JsonSubSchema) StructDefinition(withComments bool) string {
 		members := make(map[string]bool, len(s.SortedPropertyNames))
 		for _, j := range s.SortedPropertyNames {
 			memberName := utils.Normalise(j, members)
-			typ := "unknown"
+			typ := "interface{}"
 			if p := s.Properties[j].Type; p != nil {
 				typ = *p
 			}
