@@ -1,18 +1,110 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/petemoore/taskcluster-client-go/utils"
 	"reflect"
 	"sort"
+	"strconv"
 )
 
-type Items []JsonSubSchema
+type (
+	// Note that all members are backed by pointers, so that nil value can signify non-existence.
+	// Otherwise we could not differentiate whether a zero value is non-existence or actually the
+	// zero value. For example, if a bool is false, we don't know if it was explictly set to false
+	// in the json we read, or whether it was not given. Unmarshaling into a pointer means pointer
+	// will be nil pointer if it wasn't read, or a pointer to true/false if it was read from json.
+	JsonSubSchema struct {
+		AdditionalItems      *bool                 `json:"additionalItems"`
+		AdditionalProperties *AdditionalProperties `json:"additionalProperties"`
+		AllOf                Items                 `json:"allOf"`
+		AnyOf                Items                 `json:"anyOf"`
+		Default              interface{}           `json:"default"`
+		Description          *string               `json:"description"`
+		Enum                 interface{}           `json:"enum"`
+		Format               *string               `json:"format"`
+		ID                   *string               `json:"id"`
+		Items                *JsonSubSchema        `json:"items"`
+		Maximum              *int                  `json:"maximum"`
+		MaxLength            *int                  `json:"maxLength"`
+		Minimum              *int                  `json:"minimum"`
+		MinLength            *int                  `json:"minLength"`
+		OneOf                Items                 `json:"oneOf"`
+		Pattern              *string               `json:"pattern"`
+		Properties           *Properties           `json:"properties"`
+		Ref                  *string               `json:"$ref"`
+		Required             []string              `json:"required"`
+		Schema               *string               `json:"$schema"`
+		Title                *string               `json:"title"`
+		Type                 *string               `json:"type"`
+
+		// non-json fields used for sorting/tracking
+		StructName string
+	}
+
+	Items []JsonSubSchema
+
+	Properties struct {
+		Properties          map[string]*JsonSubSchema
+		SortedPropertyNames []string
+	}
+
+	AdditionalProperties struct {
+		Boolean    *bool
+		Properties *JsonSubSchema
+	}
+)
+
+func (p Properties) String() string {
+	result := ""
+	for _, i := range p.SortedPropertyNames {
+		result += "Property '" + i + "' =\n" + utils.Indent(p.Properties[i].String(), "  ")
+	}
+	return result
+}
+
+func (p *Properties) postPopulate() {
+	// now all data should be loaded, let's sort the p.Properties
+	if p.Properties != nil {
+		p.SortedPropertyNames = make([]string, 0, len(p.Properties))
+		for propertyName := range p.Properties {
+			p.SortedPropertyNames = append(p.SortedPropertyNames, propertyName)
+			// subschemas also need to be triggered to postPopulate...
+			p.Properties[propertyName].postPopulate()
+		}
+		sort.Strings(p.SortedPropertyNames)
+	}
+}
+
+func (p *Properties) UnmarshalJSON(bytes []byte) (err error) {
+	errX := json.Unmarshal(bytes, &p.Properties)
+	return errX
+}
+
+func (aP *AdditionalProperties) UnmarshalJSON(bytes []byte) (err error) {
+	b, p := new(bool), new(JsonSubSchema)
+	if err = json.Unmarshal(bytes, b); err == nil {
+		aP.Boolean = b
+		return
+	}
+	if err = json.Unmarshal(bytes, p); err == nil {
+		aP.Properties = p
+	}
+	return
+}
+
+func (aP AdditionalProperties) String() string {
+	if aP.Boolean != nil {
+		return strconv.FormatBool(*aP.Boolean)
+	}
+	return aP.Properties.String()
+}
 
 func (items Items) String() string {
 	result := ""
 	for i, j := range items {
-		result += "  Item '" + string(i) + "' =\n" + utils.Indent(j.String(), "    ")
+		result += fmt.Sprintf("Item '%v' =\n", i) + utils.Indent(j.String(), "  ")
 	}
 	return result
 }
@@ -23,60 +115,17 @@ func (items Items) postPopulate() {
 	}
 }
 
-type Enum []interface{}
-type Required []string
-type Properties struct {
-	Properties          map[string]*JsonSubSchema
-	SortedPropertyNames []string
-}
-
-func (p Properties) postPopulate() {
-	// now all data should be loaded, let's sort the p.Properties
-	p.SortedPropertyNames = make([]string, 0, len(p.Properties))
-	for propertyName := range p.Properties {
-		p.SortedPropertyNames = append(p.SortedPropertyNames, propertyName)
-	}
-	sort.Strings(p.SortedPropertyNames)
-	fmt.Printf("Sorted Property Names: %v\n", p.SortedPropertyNames)
-}
-
-type JsonSubSchema struct {
-	AdditionalItems      *bool          `json:"additionalItems"`
-	AdditionalProperties *bool          `json:"additionalProperties"`
-	AllOf                Items          `json:"allOf"`
-	AnyOf                Items          `json:"anyOf"`
-	Description          *string        `json:"description"`
-	Enum                 Enum           `json:"enum"` // may be a string or int or bool etc
-	Format               *string        `json:"format"`
-	ID                   *string        `json:"id"`
-	Items                *JsonSubSchema `json:"items"`
-	Maximum              *int           `json:"maximum"`
-	MaxLength            *int           `json:"maxLength"`
-	Minimum              *int           `json:"minimum"`
-	MinLength            *int           `json:"minLength"`
-	OneOf                Items          `json:"oneOf"`
-	Pattern              *string        `json:"pattern"`
-	Properties           *Properties    `json:"properties"`
-	Ref                  *string        `json:"$ref"`
-	Required             Required       `json:"required"`
-	Schema               *string        `json:"$schema"`
-	Title                *string        `json:"title"`
-	Type                 *string        `json:"type"`
-
-	// non-json fields used for sorting/tracking
-	StructName string
-}
-
-func describe(name string, value interface{}) string {
+func describeList(name string, value interface{}) string {
 	if reflect.ValueOf(value).IsValid() {
 		if !reflect.ValueOf(value).IsNil() {
-			return fmt.Sprintf("%-22fv = '%v'\n", name, value)
+			return fmt.Sprintf("%v\n", name) + utils.Indent(fmt.Sprintf("%v", reflect.Indirect(reflect.ValueOf(value)).Interface()), "  ")
 		}
 	}
 	return ""
 }
 
-func describePtr(name string, value interface{}) string {
+// If item is not null, then return a description of it. If it is a pointer, dereference it first.
+func describe(name string, value interface{}) string {
 	if reflect.ValueOf(value).IsValid() {
 		if !reflect.ValueOf(value).IsNil() {
 			return fmt.Sprintf("%-22v = '%v'\n", name, reflect.Indirect(reflect.ValueOf(value)).Interface())
@@ -85,28 +134,28 @@ func describePtr(name string, value interface{}) string {
 	return ""
 }
 
-func (subSchema *JsonSubSchema) String() string {
+func (subSchema JsonSubSchema) String() string {
 	result := ""
-	result += describePtr("Additional Properties", subSchema.AdditionalProperties)
+	result += describe("Additional Properties", subSchema.AdditionalProperties)
 	result += describe("All Of", subSchema.AllOf)
 	result += describe("Any Of", subSchema.AnyOf)
-	result += describePtr("Description", subSchema.Description)
+	result += describe("Description", subSchema.Description)
 	result += describe("Enum", subSchema.Enum)
-	result += describePtr("Format", subSchema.Format)
-	result += describePtr("ID", subSchema.ID)
-	result += describePtr("Items", subSchema.Items)
-	result += describePtr("Maximum", subSchema.Maximum)
-	result += describePtr("MaxLength", subSchema.MaxLength)
-	result += describePtr("Minimum", subSchema.Minimum)
-	result += describePtr("MinLength", subSchema.MinLength)
-	result += describe("OneOf", subSchema.OneOf)
-	result += describePtr("Pattern", subSchema.Pattern)
-	result += describePtr("Properties", subSchema.Properties)
-	result += describePtr("Ref", subSchema.Ref)
+	result += describe("Format", subSchema.Format)
+	result += describe("ID", subSchema.ID)
+	result += describeList("Items", subSchema.Items)
+	result += describe("Maximum", subSchema.Maximum)
+	result += describe("MaxLength", subSchema.MaxLength)
+	result += describe("Minimum", subSchema.Minimum)
+	result += describe("MinLength", subSchema.MinLength)
+	result += describeList("OneOf", subSchema.OneOf)
+	result += describe("Pattern", subSchema.Pattern)
+	result += describeList("Properties", subSchema.Properties)
+	result += describe("Ref", subSchema.Ref)
 	result += describe("Required", subSchema.Required)
-	result += describePtr("Schema", subSchema.Schema)
-	result += describePtr("Title", subSchema.Title)
-	result += describePtr("Type", subSchema.Type)
+	result += describe("Schema", subSchema.Schema)
+	result += describe("Title", subSchema.Title)
+	result += describe("Type", subSchema.Type)
 	return result
 }
 
@@ -117,7 +166,6 @@ type CanPopulate interface {
 func postPopulateIfNotNil(canPopulate CanPopulate) {
 	if reflect.ValueOf(canPopulate).IsValid() {
 		if !reflect.ValueOf(canPopulate).IsNil() {
-			fmt.Println("Populating...")
 			canPopulate.postPopulate()
 		}
 	}

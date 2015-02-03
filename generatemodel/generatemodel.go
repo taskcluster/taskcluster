@@ -5,7 +5,7 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	"github.com/petemoore/taskcluster-client-go/model"
 	"github.com/petemoore/taskcluster-client-go/utils"
-	"io/ioutil"
+	"os"
 )
 
 var (
@@ -23,13 +23,17 @@ go generate commands in the model package. See go generate --help and ../build.s
 this is used by the build process for this taskcluster-client-go go project.
 
   Usage:
-      generatemodel -f JSON-INPUT-FILE -o GO-OUTPUT-FILE
+      generatemodel -f JSON-INPUT-FILE -o GO-OUTPUT-FILE -m MODEL-DATA-FILE
       generatemodel --help
 
   Options:
     -h --help             Display this help text.
     -f JSON-INPUT-FILE    Input file to read list of TaskCluster APIs from.
     -o GO-OUTPUT-FILE     File to store generated code in.
+    -m MODEL-DATA-FILE    When all api descriptions have been downloaded and
+                          parsed, and their dependencies have also been
+                          processed, an overview of all the processed data
+                          will be written to this file.
 `
 )
 
@@ -37,26 +41,11 @@ func main() {
 	// Parse the docopt string and exit on any error or help message.
 	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
 
-	var bytes []byte
-	bytes, err = ioutil.ReadFile(arguments["-f"].(string))
+	apiFile, err := os.Open(arguments["-f"].(string))
 	if err != nil {
 		fmt.Printf("Could not load json file '%v'!\n", arguments["-f"].(string))
 	}
 	utils.ExitOnFail(err)
-	apis, schemaURLs, schemas = model.LoadAPIs(bytes)
-	printAllData()
-	//model.GenerateCode(arguments["-o"].(string))
-}
-
-func printAllData() {
-	for _, api := range apis {
-		fmt.Print(utils.Underline(api.URL))
-		fmt.Println(api.Data)
-		fmt.Println()
-	}
-	for i, schema := range schemas {
-		fmt.Print(utils.Underline(i))
-		fmt.Println(schema.String())
-		fmt.Println()
-	}
+	apis, schemaURLs, schemas = model.LoadAPIs(apiFile)
+	model.GenerateCode(arguments["-o"].(string), arguments["-m"].(string))
 }

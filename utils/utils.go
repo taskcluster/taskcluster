@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"fmt"
+	"io/ioutil"
 	"strings"
 )
 
@@ -29,6 +31,13 @@ func Underline(text string) string {
 
 func ExitOnFail(err error) {
 	if err != nil {
+		fmt.Printf("%v\n%T\n", err, err)
 		panic(err)
 	}
+}
+
+func WriteStringToFile(content, file string) {
+	bytes := []byte(content)
+	err := ioutil.WriteFile(file, bytes, 0644)
+	ExitOnFail(err)
 }

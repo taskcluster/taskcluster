@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/petemoore/taskcluster-client-go/utils"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"sort"
 	"strings"
@@ -193,9 +192,6 @@ type APIDefinition struct {
 }
 
 func loadJson(reader io.Reader, schema *string) APIModel {
-	var bytes []byte
-	bytes, err = ioutil.ReadAll(reader)
-	utils.ExitOnFail(err)
 	var m APIModel
 	switch *schema {
 	case "http://schemas.taskcluster.net/base/v1/api-reference.json":
@@ -203,9 +199,10 @@ func loadJson(reader io.Reader, schema *string) APIModel {
 	case "http://schemas.taskcluster.net/base/v1/exchanges-reference.json":
 		m = new(Exchange)
 	}
-	err = json.Unmarshal(bytes, m)
-	m.postPopulate()
+	decoder := json.NewDecoder(reader)
+	err = decoder.Decode(m)
 	utils.ExitOnFail(err)
+	m.postPopulate()
 	return m
 }
 
@@ -214,11 +211,9 @@ func loadJsonSchema(url string) *JsonSubSchema {
 	resp, err = http.Get(url)
 	utils.ExitOnFail(err)
 	defer resp.Body.Close()
-	var bytes []byte
-	bytes, err = ioutil.ReadAll(resp.Body)
-	utils.ExitOnFail(err)
+	decoder := json.NewDecoder(resp.Body)
 	m := new(JsonSubSchema)
-	err = json.Unmarshal(bytes, m)
+	err = decoder.Decode(m)
 	utils.ExitOnFail(err)
 	m.postPopulate()
 	return m
@@ -234,10 +229,11 @@ func cacheJsonSchema(url *string) {
 	}
 }
 
-func LoadAPIs(bytes []byte) ([]APIDefinition, []string, map[string]*JsonSubSchema) {
-	err = json.Unmarshal(bytes, &apis)
-	sort.Sort(SortedAPIDefs(apis))
+func LoadAPIs(reader io.Reader) ([]APIDefinition, []string, map[string]*JsonSubSchema) {
+	decoder := json.NewDecoder(reader)
+	err = decoder.Decode(&apis)
 	utils.ExitOnFail(err)
+	sort.Sort(SortedAPIDefs(apis))
 	for i := range apis {
 		var resp *http.Response
 		resp, err = http.Get(apis[i].URL)
@@ -254,7 +250,7 @@ func LoadAPIs(bytes []byte) ([]APIDefinition, []string, map[string]*JsonSubSchem
 	return apis, schemaURLs, schemas
 }
 
-func GenerateCode(generatedFile string) {
+func GenerateCode(goOutput, modelData string) {
 	content := `
 // The following code is AUTO-GENERATED. Please DO NOT edit.
 // To update this generated code, run the following command:
@@ -264,43 +260,67 @@ func GenerateCode(generatedFile string) {
 package client
 `
 	content += generateStructs()
-	generatedBytes := []byte(content)
-	err := ioutil.WriteFile(generatedFile, generatedBytes, 0644)
-	utils.ExitOnFail(err)
+	utils.WriteStringToFile(content, goOutput)
+
+	content = ""
+	for _, api := range apis {
+		content += utils.Underline(api.URL)
+		content += api.Data.String() + "\n\n"
+	}
+	for _, url := range schemaURLs {
+		content += (utils.Underline(url))
+		content += schemas[url].String() + "\n\n"
+	}
+	utils.WriteStringToFile(content, modelData)
 }
 
 func generateStructs() string {
 	content := ""
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	for _, i := range schemaURLs {
-		// Capitalise words, and remove spaces and dashes, to acheive struct names in Camel Case,
+		// Capitalise words, and remove spaces and dashes, to acheive struct names in CamelCase,
 		// but starting with an upper case letter so that the structs are exported...
 		structName := strings.NewReplacer(" ", "", "-", "").Replace(strings.Title(*schemas[i].Title))
-		for k, baseName := 0, structName; structs[structName]; {
-			k++
+		// If structName already exists, add an integer suffix to name. Start with "1" and increment
+		// by 1 until an unused structName is found. Example: if structName FooBar was generated four
+		// times, the first instance would be called FooBar, then the next would be FooBar1, the next
+		// FooBar2 and the last would be assigned a structName of FooBar3. We do this to guarantee
+		// we don't use duplicate struct names for different logical schemas.
+		for k, baseName := 1, structName; structs[structName]; {
 			structName = fmt.Sprintf("%v%v", baseName, k)
+			k++
 		}
 		structs[structName] = true
 		schemas[i].StructName = structName
 		content += "\n"
 		content += fmt.Sprintf("type %v struct {\n", structName)
-		for _, j := range schemas[i].Properties.SortedPropertyNames {
-			typ := *schemas[i].Properties.Properties[j].Type
-			if typ == "array" {
-				if jsonType := schemas[i].Properties.Properties[j].Items.Type; *jsonType == "" {
-					typ = "[]" + *schemas[i].Properties.Properties[j].Items.Title
-				} else {
-					typ = "[]" + *jsonType
+		if s := schemas[i].Properties; s != nil {
+			for _, j := range s.SortedPropertyNames {
+				typ := "unknown"
+				if p := s.Properties[j].Type; p != nil {
+					typ = *p
 				}
+				if typ == "array" {
+					if jsonType := s.Properties[j].Items.Type; jsonType != nil {
+						if *jsonType == "" {
+							typ = "[]" + *s.Properties[j].Items.Title
+						} else {
+							typ = "[]" + *jsonType
+						}
+					}
+				}
+				// comment the struct member with the description from the json
+				comment := "No comment"
+				if s.Properties[j].Description != nil {
+					comment = utils.Indent(*s.Properties[j].Description, "\t// ")
+				}
+				if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+					comment += "\n"
+				}
+				content += comment
+				// struct member name and type, as part of struct definition
+				content += fmt.Sprintf("\t%v %v\n", j, typ)
 			}
-			// comment the struct member with the description from the json
-			comment := utils.Indent(*schemas[i].Properties.Properties[j].Description, "\t// ")
-			if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
-				comment += "\n"
-			}
-			content += comment
-			// struct member name and type, as part of struct definition
-			content += fmt.Sprintf("\t%v %v\n", j, typ)
 		}
 		content += "}\n"
 	}

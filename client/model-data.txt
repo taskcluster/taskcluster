@@ -1,0 +1,4014 @@
+http://references.taskcluster.net/auth/v1/api.json
+==================================================
+Version     = '0.2.0'
+Title       = 'Authentication API'
+Description = 'Authentication related API end-points for taskcluster.'
+Base URL    = 'https://auth.taskcluster.net/v1'
+Entry 0     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/client/<clientId>/scopes'
+    Entry Args        = '[clientId]'
+    Entry Name        = 'scopes'
+    Entry Scopes      = '[[auth:inspect] [auth:credentials]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#'
+    Entry Title       = 'Get Client Authorized Scopes'
+    Entry Description = 'Returns the scopes the client is authorized to access and the date-time
+where the clients authorization is set to expire.
+
+This API end-point allows you inspect clients without getting access to
+credentials, as provide by the `getCredentials` request below.'
+Entry 1     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/client/<clientId>/credentials'
+    Entry Args        = '[clientId]'
+    Entry Name        = 'getCredentials'
+    Entry Scopes      = '[[auth:credentials]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#'
+    Entry Title       = 'Get Client Credentials'
+    Entry Description = 'Returns the clients `accessToken` as needed for verifying signatures.
+This API end-point also returns the list of scopes the client is
+authorized for and the date-time where the client authorization expires
+
+Remark, **if you don't need** the `accessToken` but only want to see what
+scopes a client is authorized for, you should use the `getScopes`
+function described above.'
+Entry 2     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/client/<clientId>'
+    Entry Args        = '[clientId]'
+    Entry Name        = 'client'
+    Entry Scopes      = '[[auth:credentials]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#'
+    Entry Title       = 'Get Client Information'
+    Entry Description = 'Returns all information about a given client. This end-point is mostly
+building tools to administrate clients. Do not use if you only want to
+authenticate a request, see `getCredentials` for this purpose.'
+Entry 3     = 
+    Entry Type        = 'function'
+    Entry Method      = 'put'
+    Entry Route       = '/client/<clientId>'
+    Entry Args        = '[clientId]'
+    Entry Name        = 'createClient'
+    Entry Scopes      = '[[auth:create-client auth:credentials]]'
+    Entry Input       = 'http://schemas.taskcluster.net/auth/v1/create-client-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#'
+    Entry Title       = 'Create Client'
+    Entry Description = 'Create client with given `clientId`, `name`, `expires`, `scopes` and
+`description`. The `accessToken` will always be generated server-side,
+and will be returned from this request.
+
+**Required scopes**, in addition the scopes listed
+above, the caller must also posses the all the scopes that is given to
+the client that is created.'
+Entry 4     = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/client/<clientId>/modify'
+    Entry Args        = '[clientId]'
+    Entry Name        = 'modifyClient'
+    Entry Scopes      = '[[auth:modify-client auth:credentials]]'
+    Entry Input       = 'http://schemas.taskcluster.net/auth/v1/create-client-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#'
+    Entry Title       = 'Modify Client'
+    Entry Description = 'Modify client `name`, `expires`, `scopes` and
+`description`.
+
+**Required scopes**, in addition the scopes listed
+above, the caller must also posses the all the scopes that is given to
+the client that is updated.'
+Entry 5     = 
+    Entry Type        = 'function'
+    Entry Method      = 'delete'
+    Entry Route       = '/client/<clientId>'
+    Entry Args        = '[clientId]'
+    Entry Name        = 'removeClient'
+    Entry Scopes      = '[[auth:remove-client]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Remove Client'
+    Entry Description = 'Delete a client with given `clientId`.'
+Entry 6     = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/client/<clientId>/reset-credentials'
+    Entry Args        = '[clientId]'
+    Entry Name        = 'resetCredentials'
+    Entry Scopes      = '[[auth:reset-credentials auth:credentials]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#'
+    Entry Title       = 'Reset Client Credentials'
+    Entry Description = 'Reset credentials for a client. This will generate a new `accessToken`.
+as always the `accessToken` will be generated server-side and returned.'
+Entry 7     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/list-clients'
+    Entry Args        = '[]'
+    Entry Name        = 'listClients'
+    Entry Scopes      = '[[auth:client-clients]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/list-clients-response.json#'
+    Entry Title       = 'List Clients'
+    Entry Description = 'Return list with all clients'
+Entry 8     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/azure/<account>/table/<table>/read-write'
+    Entry Args        = '[account table]'
+    Entry Name        = 'azureTableSAS'
+    Entry Scopes      = '[[auth:azure-table-access:<account>/<table>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#'
+    Entry Title       = 'Get Shared-Access-Signature for Azure Table'
+    Entry Description = 'Get an SAS string for use with a specific Azure Table Storage table.
+Note, this will create the table, if it doesn't already exists.'
+Entry 9     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Name        = 'ping'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Documented later...
+
+**Warning** this api end-point is **not stable**.'
+
+
+http://references.taskcluster.net/index/v1/api.json
+===================================================
+Version     = '0.2.0'
+Title       = 'Task Index API Documentation'
+Description = 'The task index, typically available at `index.taskcluster.net`, is
+responsible for indexing tasks. In order to ensure that tasks can be
+located by recency and/or arbitrary strings. Common use-cases includes
+
+ * Locate tasks by git or mercurial `<revision>`, or
+ * Locate latest task from given `<branch>`, such as a release.
+
+**Index hierarchy**, tasks are indexed in a dot `.` separated hierarchy
+called a namespace. For example a task could be indexed in
+`<revision>.linux-64.release-build`. In this case the following
+namespaces is created.
+
+ 1. `<revision>`, and,
+ 2. `<revision>.linux-64`
+
+The inside the namespace `<revision>` you can find the namespace
+`<revision>.linux-64` inside which you can find the indexed task
+`<revision>.linux-64.release-build`. In this example you'll be able to
+find build for a given revision.
+
+**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults
+to `0`). If another task is already indexed in the same namespace with
+the same lower or equal `rank`, the task will be overwritten. For example
+consider a task indexed as `mozilla-central.linux-64.release-build`, in
+this case on might choose to use a unix timestamp or mercurial revision
+number as `rank`. This way the latest completed linux 64 bit release
+build is always available at `mozilla-central.linux-64.release-build`.
+
+**Indexed Data**, when a task is located in the index you will get the
+`taskId` and an additional user-defined JSON blob that was indexed with
+task. You can use this to store additional information you would like to
+get additional from the index.
+
+**Entry Expiration**, all indexed entries must have an expiration date.
+Typically this defaults to one year, if not specified. If you are
+indexing tasks to make it easy to find artifacts, consider using the
+expiration date that the artifacts is assigned.
+
+**Indexing Routes**, tasks can be indexed using the API below, but the
+most common way to index tasks is adding a custom route on the following
+form `index.<namespace>`. In-order to add this route to a task you'll
+need the following scope `queue:route:index.<namespace>`. When a task has
+this route, it'll be indexed when the task is **completed successfully**.
+The task will be indexed with `rank`, `data` and `expires` as specified
+in `task.extra.index`, see example below:
+
+```js
+{
+  payload:  { /* ... */ },
+  routes: [
+    // index.<namespace> prefixed routes, tasks CC'ed such a route will
+    // be indexed under the given <namespace>
+    "index.mozilla-central.linux-64.release-build",
+    "index.<revision>.linux-64.release-build"
+  ],
+  extra: {
+    // Optional details for indexing service
+    index: {
+      // Ordering, this taskId will overwrite any thing that has
+      // rank <= 4000 (defaults to zero)
+      rank:       4000,
+
+      // Specify when the entries expires (Defaults to 1 year)
+      expires:          new Date().toJSON(),
+
+      // A little informal data to store along with taskId
+      // (less 16 kb when encoded as JSON)
+      data: {
+        hgRevision:   "...",
+        commitMessae: "...",
+        whatever...
+      }
+    },
+    // Extra properties for other services...
+  }
+  // Other task properties...
+}
+```
+
+**Remark**, when indexing tasks using custom routes, it's also possible
+to listen for messages about these tasks. Which is quite convenient, for
+example one could bind to `route.index.mozilla-central.*.release-build`,
+and pick up all messages about release builds. Hence, it is a
+good idea to document task index hierarchies, as these make up extension
+points in their own.'
+Base URL    = 'https://index.taskcluster.net/v1'
+Entry 0     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task/<namespace>'
+    Entry Args        = '[namespace]'
+    Entry Name        = 'findTask'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/index/v1/indexed-task-response.json#'
+    Entry Title       = 'Find Indexed Task'
+    Entry Description = 'Find task by namespace, if no task existing for the given namespace, this
+API end-point respond `404`.'
+Entry 1     = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/namespaces/<namespace>'
+    Entry Args        = '[namespace]'
+    Entry Name        = 'listNamespaces'
+    Entry Scopes      = '[]'
+    Entry Input       = 'http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#'
+    Entry Title       = 'List Namespaces'
+    Entry Description = 'List the namespaces immediately under a given namespace. This end-point
+list up to 1000 namespaces. If more namespaces are present a
+`continuationToken` will be returned, which can be given in the next
+request. For the initial request, the payload should be an empty JSON
+object.
+
+**Remark**, this end-point is designed for humans browsing for tasks, not
+services, as that makes little sense.'
+Entry 2     = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/tasks/<namespace>'
+    Entry Args        = '[namespace]'
+    Entry Name        = 'listTasks'
+    Entry Scopes      = '[]'
+    Entry Input       = 'http://schemas.taskcluster.net/index/v1/list-tasks-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#'
+    Entry Title       = 'List Tasks'
+    Entry Description = 'List the tasks immediately under a given namespace. This end-point
+list up to 1000 tasks. If more tasks are present a
+`continuationToken` will be returned, which can be given in the next
+request. For the initial request, the payload should be an empty JSON
+object.
+
+**Remark**, this end-point is designed for humans browsing for tasks, not
+services, as that makes little sense.'
+Entry 3     = 
+    Entry Type        = 'function'
+    Entry Method      = 'put'
+    Entry Route       = '/task/<namespace>'
+    Entry Args        = '[namespace]'
+    Entry Name        = 'insertTask'
+    Entry Scopes      = '[[index:insert-task:<namespace>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/index/v1/insert-task-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/index/v1/indexed-task-response.json#'
+    Entry Title       = 'Insert Task into Index'
+    Entry Description = 'Insert a task into the index. Please see the introduction above, for how
+to index successfully completed tasks automatically, using custom routes.'
+Entry 4     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Name        = 'ping'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Documented later...
+
+**Warning** this api end-point is **not stable**.'
+
+
+http://references.taskcluster.net/queue/v1/api.json
+===================================================
+Version     = '0.2.0'
+Title       = 'Queue API Documentation'
+Description = 'The queue, typically available at `queue.taskcluster.net`, is responsible
+for accepting tasks and track their state as they are executed by
+workers. In order ensure they are eventually resolved.
+
+This document describes the API end-points offered by the queue. These 
+end-points targets the following audience:
+ * Schedulers, who create tasks to be executed,
+ * Workers, who execute tasks, and
+ * Tools, that wants to inspect the state of a task.'
+Base URL    = 'https://queue.taskcluster.net/v1'
+Entry 0     = 
+    Entry Type        = 'function'
+    Entry Method      = 'put'
+    Entry Route       = '/task/<taskId>'
+    Entry Args        = '[taskId]'
+    Entry Name        = 'createTask'
+    Entry Scopes      = '[[queue:create-task:<provisionerId>/<workerType>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Create New Task'
+    Entry Description = 'Create a new task, this is an **idempotent** operation, so repeat it if
+you get an internal server error or network connection is dropped.
+
+**Task `deadline´**, the deadline property can be no more than 7 days
+into the future. This is to limit the amount of pending tasks not being
+taken care of. Ideally, you should use a much shorter deadline.
+
+**Task specific routing-keys**, using the `task.routes` property you may
+define task specific routing-keys. If a task has a task specific 
+routing-key: `<route>`, then the poster will be required to posses the
+scope `queue:route:<route>`. And when the an AMQP message about the task
+is published the message will be CC'ed with the routing-key: 
+`route.<route>`. This is useful if you want another component to listen
+for completed tasks you have posted.'
+Entry 1     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task/<taskId>'
+    Entry Args        = '[taskId]'
+    Entry Name        = 'getTask'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task.json#'
+    Entry Title       = 'Fetch Task'
+    Entry Description = 'Get task definition from queue.'
+Entry 2     = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/define'
+    Entry Args        = '[taskId]'
+    Entry Name        = 'defineTask'
+    Entry Scopes      = '[[queue:define-task:<provisionerId>/<workerType>] [queue:create-task:<provisionerId>/<workerType>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Define Task'
+    Entry Description = 'Define a task without scheduling it. This API end-point allows you to
+upload a task definition without having scheduled. The task won't be
+reported as pending until it is scheduled, see the scheduleTask API 
+end-point.
+
+The purpose of this API end-point is allow schedulers to upload task
+definitions without the tasks becoming _pending_ immediately. This useful
+if you have a set of dependent tasks. Then you can upload all the tasks
+and when the dependencies of a tasks have been resolved, you can schedule
+the task by calling `/task/:taskId/schedule`. This eliminates the need to
+store tasks somewhere else while waiting for dependencies to resolve.
+
+**Note** this operation is **idempotent**, as long as you upload the same
+task definition as previously defined this operation is safe to retry.'
+Entry 3     = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/schedule'
+    Entry Args        = '[taskId]'
+    Entry Name        = 'scheduleTask'
+    Entry Scopes      = '[[queue:schedule-task assume:scheduler-id:<schedulerId>/<taskGroupId>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Schedule Defined Task'
+    Entry Description = 'If you have define a task using `defineTask` API end-point, then you
+can schedule the task to be scheduled using this method.
+This will announce the task as pending and workers will be allowed, to
+claim it and resolved the task.
+
+**Note** this operation is **idempotent** and will not fail or complain
+if called with `taskId` that is already scheduled, or even resolved.
+To reschedule a task previously resolved, use `rerunTask`.'
+Entry 4     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task/<taskId>/status'
+    Entry Args        = '[taskId]'
+    Entry Name        = 'status'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Get task status'
+    Entry Description = 'Get task status structure from `taskId`'
+Entry 5     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/poll-task-url/<provisionerId>/<workerType>'
+    Entry Args        = '[provisionerId workerType]'
+    Entry Name        = 'pollTaskUrls'
+    Entry Scopes      = '[[queue:poll-task-urls assume:worker-type:<provisionerId>/<workerType>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#'
+    Entry Title       = 'Get Urls to Poll Pending Tasks'
+    Entry Description = 'Get a signed url to get a message from azure queue.
+Once messages are polled from here, you can claim the referenced task
+with `claimTask`.'
+Entry 6     = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/runs/<runId>/claim'
+    Entry Args        = '[taskId runId]'
+    Entry Name        = 'claimTask'
+    Entry Scopes      = '[[queue:claim-task assume:worker-type:<provisionerId>/<workerType> assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
+    Entry Title       = 'Claim task'
+    Entry Description = 'claim a task, more to be added later...
+
+**Warning,** in the future this API end-point will require the presents
+of `receipt`, `messageId` and `signature` in the body.'
+Entry 7     = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/runs/<runId>/reclaim'
+    Entry Args        = '[taskId runId]'
+    Entry Name        = 'reclaimTask'
+    Entry Scopes      = '[[queue:claim-task assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
+    Entry Title       = 'Reclaim task'
+    Entry Description = 'reclaim a task more to be added later...'
+Entry 8     = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/claim-work/<provisionerId>/<workerType>'
+    Entry Args        = '[provisionerId workerType]'
+    Entry Name        = 'claimWork'
+    Entry Scopes      = '[[queue:claim-task assume:worker-type:<provisionerId>/<workerType> assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
+    Entry Title       = 'Claim work for a worker'
+    Entry Description = 'Claim work for a worker, returns information about an appropriate task
+claimed for the worker. Similar to `claimTask`, which can be
+used to claim a specific task, or reclaim a specific task extending the
+`takenUntil` timeout for the run.
+
+**Note**, that if no tasks are _pending_ this method will not assign a
+task to you. Instead it will return `204` and you should wait a while
+before polling the queue again.
+
+**WARNING, this API end-point is deprecated and will be removed**.'
+Entry 9     = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/runs/<runId>/completed'
+    Entry Args        = '[taskId runId]'
+    Entry Name        = 'reportCompleted'
+    Entry Scopes      = '[[queue:report-task-completed assume:worker-id:<workerGroup>/<workerId>] [queue:resolve-task assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-completed-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Report Run Completed'
+    Entry Description = 'Report a task completed, resolving the run as `completed`.
+
+For legacy, reasons the `success` parameter is accepted. This will be
+removed in the future.'
+Entry 10    = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/runs/<runId>/failed'
+    Entry Args        = '[taskId runId]'
+    Entry Name        = 'reportFailed'
+    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Report Run Failed'
+    Entry Description = 'Report a run failed, resolving the run as `failed`. Use this to resolve
+a run that failed because the task specific code behaved unexpectedly.
+For example the task exited non-zero, or didn't produce expected output.
+
+Don't use this if the task couldn't be run because if malformed payload,
+or other unexpected condition. In these cases we have a task exception,
+which should be reported with `reportException`.'
+Entry 11    = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/runs/<runId>/exception'
+    Entry Args        = '[taskId runId]'
+    Entry Name        = 'reportException'
+    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-exception-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Report Task Exception'
+    Entry Description = 'Resolve a run as _exception_. Generally, you will want to report tasks as
+failed instead of exception. But if the payload is malformed, or
+dependencies referenced does not exists you should also report exception.
+However, do not report exception if an external resources is unavailable
+because of network failure, etc. Only if you can validate that the
+resource does not exist.'
+Entry 12    = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/rerun'
+    Entry Args        = '[taskId]'
+    Entry Name        = 'rerunTask'
+    Entry Scopes      = '[[queue:rerun-task assume:scheduler-id:<schedulerId>/<taskGroupId>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Rerun a Resolved Task'
+    Entry Description = 'This method _reruns_ a previously resolved task, even if it was
+_completed_. This is useful if your task completes unsuccessfully, and
+you just want to run it from scratch again. This will also reset the
+number of `retries` allowed.
+
+Remember that `retries` in the task status counts the number of runs that
+the queue have started because the worker stopped responding, for example
+because a spot node died.
+
+**Remark** this operation is idempotent, if you try to rerun a task that
+isn't either `failed` or `completed`, this operation will just return the
+current task status.'
+Entry 13    = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/runs/<runId>/artifacts/<name>'
+    Entry Args        = '[taskId runId name]'
+    Entry Name        = 'createArtifact'
+    Entry Scopes      = '[[queue:create-artifact:<name> assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json'
+    Entry Title       = 'Create Artifact'
+    Entry Description = 'This API end-point creates an artifact for a specific run of a task. This
+should **only** be used by a worker currently operating on this task, or
+from a process running within the task (ie. on the worker).
+
+All artifacts must specify when they `expires`, the queue will
+automatically take care of deleting artifacts past their
+expiration point. This features makes it feasible to upload large
+intermediate artifacts from data processing applications, as the
+artifacts can be set to expire a few days later.
+
+We currently support 4 different `storageType`s, each storage type have
+slightly different features and in some cases difference semantics.
+
+**S3 artifacts**, is useful for static files which will be stored on S3.
+When creating an S3 artifact is create the queue will return a pre-signed
+URL to which you can do a `PUT` request to upload your artifact. Note
+that `PUT` request **must** specify the `content-length` header and
+**must** give the `content-type` header the same value as in the request
+to `createArtifact`.
+
+**Azure artifacts**, are stored in _Azure Blob Storage_ service, which
+given the consistency guarantees and API interface offered by Azure is
+more suitable for artifacts that will be modified during the execution
+of the task. For example docker-worker has a feature that persists the
+task log to Azure Blob Storage every few seconds creating a somewhat
+live log. A request to create an Azure artifact will return a URL
+featuring a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),
+refer to MSDN for further information on how to use these.
+
+**Reference artifacts**, only consists of meta-data which the queue will
+store for you. These artifacts really only have a `url` property and
+when the artifact is requested the client will be redirect the URL
+provided with a `303` (See Other) redirect. Please note that we cannot
+delete artifacts you upload to other service, we can only delete the
+reference to the artifact, when it expires.
+
+**Error artifacts**, only consists of meta-data which the queue will
+store for you. These artifacts are only meant to indicate that you the
+worker or the task failed to generate a specific artifact, that you
+would otherwise have uploaded. For example docker-worker will upload an
+error artifact, if the file it was supposed to upload doesn't exists or
+turns out to be a directory. Clients requesting an error artifact will
+get a `403` (Forbidden) response. This is mainly designed to ensure that
+dependent tasks can distinguish between artifacts that were suppose to
+be generated and artifacts for which the name is misspelled.
+
+**Artifact immutability**, generally speaking you cannot overwrite an
+artifact when created. But if you repeat the request with the same
+properties the request will succeed as the operation is idempotent.
+This is useful if you need to refresh a signed URL while uploading.
+Do not abuse this to overwrite artifacts created by another entity!
+Such as worker-host overwriting artifact created by worker-code.
+
+As a special case the `url` property on _reference artifacts_ can be
+updated. You should only use this to update the `url` property for
+reference artifacts your process has created.'
+Entry 14    = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task/<taskId>/runs/<runId>/artifacts/<name>'
+    Entry Args        = '[taskId runId name]'
+    Entry Name        = 'getArtifact'
+    Entry Scopes      = '[[queue:get-artifact:<name>]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Get Artifact from Run'
+    Entry Description = 'Get artifact by `<name>` from a specific run.
+
+**Public Artifacts**, in-order to get an artifact you need the scope
+`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
+But if the artifact `name` starts with `public/`, authentication and
+authorization is not necessary to fetch the artifact.
+
+**API Clients**, this method will redirect you to the artifact, if it is
+stored externally. Either way, the response may not be JSON. So API
+client users might want to generate a signed URL for this end-point and
+use that URL with a normal HTTP client.'
+Entry 15    = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task/<taskId>/artifacts/<name>'
+    Entry Args        = '[taskId name]'
+    Entry Name        = 'getLatestArtifact'
+    Entry Scopes      = '[[queue:get-artifact:<name>]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Get Artifact from Latest Run'
+    Entry Description = 'Get artifact by `<name>` from the last run of a task.
+
+**Public Artifacts**, in-order to get an artifact you need the scope
+`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
+But if the artifact `name` starts with `public/`, authentication and
+authorization is not necessary to fetch the artifact.
+
+**API Clients**, this method will redirect you to the artifact, if it is
+stored externally. Either way, the response may not be JSON. So API
+client users might want to generate a signed URL for this end-point and
+use that URL with a normal HTTP client.
+
+**Remark**, this end-point is slightly slower than
+`queue.getArtifact`, so consider that if you already know the `runId` of
+the latest run. Otherwise, just us the most convenient API end-point.'
+Entry 16    = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task/<taskId>/runs/<runId>/artifacts'
+    Entry Args        = '[taskId runId]'
+    Entry Name        = 'listArtifacts'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json'
+    Entry Title       = 'Get Artifacts from Run'
+    Entry Description = 'Returns a list of artifacts and associated meta-data for a given run.'
+Entry 17    = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task/<taskId>/artifacts'
+    Entry Args        = '[taskId]'
+    Entry Name        = 'listLatestArtifacts'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json'
+    Entry Title       = 'Get Artifacts from Latest Run'
+    Entry Description = 'Returns a list of artifacts and associated meta-data for the latest run
+from the given task.'
+Entry 18    = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/pending-tasks/<provisionerId>'
+    Entry Args        = '[provisionerId]'
+    Entry Name        = 'getPendingTasks'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Fetch pending tasks for provisioner'
+    Entry Description = 'Documented later...
+
+**Warning** this api end-point is **not stable**.
+
+**This end-point is deprecated!**'
+Entry 19    = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/pending/<provisionerId>'
+    Entry Args        = '[provisionerId]'
+    Entry Name        = 'pendingTaskCount'
+    Entry Scopes      = '[[queue:pending-tasks:<provisionerId>]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Get Number of Pending Tasks'
+    Entry Description = 'Documented later...
+
+**Warning: This is an experimental end-point!**'
+Entry 20    = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/pending/<provisionerId>/<workerType>'
+    Entry Args        = '[provisionerId workerType]'
+    Entry Name        = 'pendingTasks'
+    Entry Scopes      = '[[queue:pending-tasks:<provisionerId>/<workerType>]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Get Number of Pending Tasks'
+    Entry Description = 'Documented later...
+This probably the end-point that will remain after rewriting to azure
+queue storage...
+
+**Warning: This is an experimental end-point!**'
+Entry 21    = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Name        = 'ping'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Documented later...
+
+**Warning** this api end-point is **not stable**.'
+
+
+http://references.taskcluster.net/queue/v1/exchanges.json
+=========================================================
+Version         = '0.2.0'
+Title           = 'Queue AMQP Exchanges'
+Description     = 'The queue, typically available at `queue.taskcluster.net`, is responsible
+for accepting tasks and track their state as they are executed by
+workers. In order ensure they are eventually resolved.
+
+This document describes AMQP exchanges offered by the queue, which allows
+third-party listeners to monitor tasks as they progress to resolution.
+These exchanges targets the following audience:
+ * Schedulers, who takes action after tasks are completed,
+ * Workers, who wants to listen for new or canceled tasks (optional),
+ * Tools, that wants to update their view as task progress.
+
+You'll notice that all the exchanges in the document shares the same
+routing key pattern. This makes it very easy to bind to all messages
+about a certain kind tasks.
+
+**Task-graphs**, if the task-graph scheduler, documented elsewhere, is
+used to schedule a task-graph, the task submitted will have their
+`schedulerId` set to `'task-graph-scheduler'`, and their `taskGroupId` to
+the `taskGraphId` as given to the task-graph scheduler. This is useful if
+you wish to listen for all messages in a specific task-graph.
+
+**Task specific routes**, a task can define a task specific route using
+the `task.routes` property. See task creation documentation for details
+on permissions required to provide task specific routes. If a task has
+the entry `'notify.by-email'` in as task specific route defined in
+`task.routes` all messages about this task will be CC'ed with the
+routing-key `'route.notify.by-email'`.
+
+These routes will always be prefixed `route.`, so that cannot interfere
+with the _primary_ routing key as documented here. Notice that the
+_primary_ routing key is alwasys prefixed `primary.`. This is ensured
+in the routing key reference, so API clients will do this automatically.
+
+Please, note that the way RabbitMQ works, the message will only arrive
+in your queue once, even though you may have bound to the exchange with
+multiple routing key patterns that matches more of the CC'ed routing
+routing keys.
+
+**Delivery guarantees**, most operations on the queue are idempotent,
+which means that if repeated with the same arguments then the requests
+will ensure completion of the operation and return the same response.
+This is useful if the server crashes or the TCP connection breaks, but
+when re-executing an idempotent operation, the queue will also resend
+any related AMQP messages. Hence, messages may be repeated.
+
+This shouldn't be much of a problem, as the best you can achieve using
+confirm messages with AMQP is at-least-once delivery semantics. Hence,
+this only prevents you from obtaining at-most-once delivery semantics.
+
+**Remark**, some message generated by timeouts maybe dropped if the
+server crashes at wrong time. Ideally, we'll address this in the
+future. For now we suggest you ignore this corner case, and notify us
+if this corner case is of concern to you.'
+Exchange Prefix = 'exchange/taskcluster-queue/v1/'
+Entry 0     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'task-defined'
+    Entry Name        = 'taskDefined'
+    Entry Title       = 'Task Defined Messages'
+    Entry Description = 'When a task is created or just defined a message is posted to this
+exchange.
+
+This message exchange is mainly useful when tasks are scheduled by a
+scheduler that uses `defineTask` as this does not make the task
+`pending`. Thus, no `taskPending` message is published.
+Please, note that messages are also published on this exchange if defined
+using `createTask`.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'taskId'
+        Element Summary   = '`taskId` for the task this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'runId'
+        Element Summary   = '`runId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 3     = 
+        Element Name      = 'workerGroup'
+        Element Summary   = '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 4     = 
+        Element Name      = 'workerId'
+        Element Summary   = '`workerId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 5     = 
+        Element Name      = 'provisionerId'
+        Element Summary   = '`provisionerId` this task is targeted at.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 6     = 
+        Element Name      = 'workerType'
+        Element Summary   = '`workerType` this task must run on.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 7     = 
+        Element Name      = 'schedulerId'
+        Element Summary   = '`schedulerId` this task was created by.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 8     = 
+        Element Name      = 'taskGroupId'
+        Element Summary   = '`taskGroupId` this task was created in.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 9     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/queue/v1/task-defined-message.json#'
+Entry 1     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'task-pending'
+    Entry Name        = 'taskPending'
+    Entry Title       = 'Task Pending Messages'
+    Entry Description = 'When a task becomes `pending` a message is posted to this exchange.
+
+This is useful for workers who doesn't want to constantly poll the queue
+for new tasks. The queue will also be authority for task states and
+claims. But using this exchange workers should be able to distribute work
+efficiently and they would be able to reduce their polling interval
+significantly without affecting general responsiveness.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'taskId'
+        Element Summary   = '`taskId` for the task this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'runId'
+        Element Summary   = '`runId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 3     = 
+        Element Name      = 'workerGroup'
+        Element Summary   = '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 4     = 
+        Element Name      = 'workerId'
+        Element Summary   = '`workerId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 5     = 
+        Element Name      = 'provisionerId'
+        Element Summary   = '`provisionerId` this task is targeted at.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 6     = 
+        Element Name      = 'workerType'
+        Element Summary   = '`workerType` this task must run on.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 7     = 
+        Element Name      = 'schedulerId'
+        Element Summary   = '`schedulerId` this task was created by.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 8     = 
+        Element Name      = 'taskGroupId'
+        Element Summary   = '`taskGroupId` this task was created in.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 9     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#'
+Entry 2     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'task-running'
+    Entry Name        = 'taskRunning'
+    Entry Title       = 'Task Running Messages'
+    Entry Description = 'Whenever a task is claimed by a worker, a run is started on the worker,
+and a message is posted on this exchange.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'taskId'
+        Element Summary   = '`taskId` for the task this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'runId'
+        Element Summary   = '`runId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 3     = 
+        Element Name      = 'workerGroup'
+        Element Summary   = '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 4     = 
+        Element Name      = 'workerId'
+        Element Summary   = '`workerId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 5     = 
+        Element Name      = 'provisionerId'
+        Element Summary   = '`provisionerId` this task is targeted at.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 6     = 
+        Element Name      = 'workerType'
+        Element Summary   = '`workerType` this task must run on.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 7     = 
+        Element Name      = 'schedulerId'
+        Element Summary   = '`schedulerId` this task was created by.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 8     = 
+        Element Name      = 'taskGroupId'
+        Element Summary   = '`taskGroupId` this task was created in.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 9     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/queue/v1/task-running-message.json#'
+Entry 3     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'artifact-created'
+    Entry Name        = 'artifactCreated'
+    Entry Title       = 'Artifact Creation Messages'
+    Entry Description = 'Whenever the `createArtifact` end-point is called, the queue will create
+a record of the artifact and post a message on this exchange. All of this
+happens before the queue returns a signed URL for the caller to upload
+the actual artifact with (pending on `storageType`).
+
+This means that the actual artifact is rarely available when this message
+is posted. But it is not unreasonable to assume that the artifact will
+will become available at some point later. Most signatures will expire in
+30 minutes or so, forcing the uploader to call `createArtifact` with
+the same payload again in-order to continue uploading the artifact.
+
+However, in most cases (especially for small artifacts) it's very
+reasonable assume the artifact will be available within a few minutes.
+This property means that this exchange is mostly useful for tools
+monitoring task evaluation. One could also use it count number of
+artifacts per task, or _index_ artifacts though in most cases it'll be
+smarter to index artifacts after the task in question have completed
+successfully.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'taskId'
+        Element Summary   = '`taskId` for the task this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'runId'
+        Element Summary   = '`runId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 3     = 
+        Element Name      = 'workerGroup'
+        Element Summary   = '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 4     = 
+        Element Name      = 'workerId'
+        Element Summary   = '`workerId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 5     = 
+        Element Name      = 'provisionerId'
+        Element Summary   = '`provisionerId` this task is targeted at.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 6     = 
+        Element Name      = 'workerType'
+        Element Summary   = '`workerType` this task must run on.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 7     = 
+        Element Name      = 'schedulerId'
+        Element Summary   = '`schedulerId` this task was created by.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 8     = 
+        Element Name      = 'taskGroupId'
+        Element Summary   = '`taskGroupId` this task was created in.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 9     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#'
+Entry 4     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'task-completed'
+    Entry Name        = 'taskCompleted'
+    Entry Title       = 'Task Completed Messages'
+    Entry Description = 'When a task is successfully completed by a worker a message is posted
+this exchange.
+This message is routed using the `runId`, `workerGroup` and `workerId`
+that completed the task. But information about additional runs is also
+available from the task status structure.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'taskId'
+        Element Summary   = '`taskId` for the task this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'runId'
+        Element Summary   = '`runId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 3     = 
+        Element Name      = 'workerGroup'
+        Element Summary   = '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 4     = 
+        Element Name      = 'workerId'
+        Element Summary   = '`workerId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 5     = 
+        Element Name      = 'provisionerId'
+        Element Summary   = '`provisionerId` this task is targeted at.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 6     = 
+        Element Name      = 'workerType'
+        Element Summary   = '`workerType` this task must run on.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 7     = 
+        Element Name      = 'schedulerId'
+        Element Summary   = '`schedulerId` this task was created by.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 8     = 
+        Element Name      = 'taskGroupId'
+        Element Summary   = '`taskGroupId` this task was created in.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 9     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/queue/v1/task-completed-message.json#'
+Entry 5     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'task-failed'
+    Entry Name        = 'taskFailed'
+    Entry Title       = 'Task Failed Messages'
+    Entry Description = 'When a task ran, but failed to complete successfully a message is posted
+to this exchange. This is same as worker ran task-specific code, but the
+task specific code exited non-zero.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'taskId'
+        Element Summary   = '`taskId` for the task this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'runId'
+        Element Summary   = '`runId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 3     = 
+        Element Name      = 'workerGroup'
+        Element Summary   = '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 4     = 
+        Element Name      = 'workerId'
+        Element Summary   = '`workerId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 5     = 
+        Element Name      = 'provisionerId'
+        Element Summary   = '`provisionerId` this task is targeted at.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 6     = 
+        Element Name      = 'workerType'
+        Element Summary   = '`workerType` this task must run on.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 7     = 
+        Element Name      = 'schedulerId'
+        Element Summary   = '`schedulerId` this task was created by.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 8     = 
+        Element Name      = 'taskGroupId'
+        Element Summary   = '`taskGroupId` this task was created in.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 9     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#'
+Entry 6     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'task-exception'
+    Entry Name        = 'taskException'
+    Entry Title       = 'Task Exception Messages'
+    Entry Description = 'Whenever TaskCluster fails to run a message is posted to this exchange.
+This happens if the task isn't completed before its `deadlìne`,
+all retries failed (i.e. workers stopped responding), the task was
+canceled by another entity, or the task carried a malformed payload.
+
+The specific _reason_ is evident from that task status structure, refer
+to the `reasonResolved` property for the last run.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'taskId'
+        Element Summary   = '`taskId` for the task this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'runId'
+        Element Summary   = '`runId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 3     = 
+        Element Name      = 'workerGroup'
+        Element Summary   = '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 4     = 
+        Element Name      = 'workerId'
+        Element Summary   = '`workerId` of latest run for the task, `_` if no run is exists for the task.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 5     = 
+        Element Name      = 'provisionerId'
+        Element Summary   = '`provisionerId` this task is targeted at.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 6     = 
+        Element Name      = 'workerType'
+        Element Summary   = '`workerType` this task must run on.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 7     = 
+        Element Name      = 'schedulerId'
+        Element Summary   = '`schedulerId` this task was created by.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 8     = 
+        Element Name      = 'taskGroupId'
+        Element Summary   = '`taskGroupId` this task was created in.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 9     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/queue/v1/task-exception-message.json#'
+
+
+http://references.taskcluster.net/scheduler/v1/api.json
+=======================================================
+Version     = '0.2.0'
+Title       = 'Task-Graph Scheduler API Documentation'
+Description = 'The task-graph scheduler, typically available at
+`scheduler.taskcluster.net`, is responsible for accepting task-graphs and
+scheduling tasks for evaluation by the queue as their dependencies are
+satisfied.
+
+This document describes API end-points offered by the task-graph
+scheduler. These end-points targets the following audience:
+ * Post-commit hooks, that wants to submit task-graphs for testing,
+ * End-users, who wants to execute a set of dependent tasks, and
+ * Tools, that wants to inspect the state of a task-graph.'
+Base URL    = 'https://scheduler.taskcluster.net/v1'
+Entry 0     = 
+    Entry Type        = 'function'
+    Entry Method      = 'put'
+    Entry Route       = '/task-graph/<taskGraphId>'
+    Entry Args        = '[taskGraphId]'
+    Entry Name        = 'createTaskGraph'
+    Entry Scopes      = '[[scheduler:create-task-graph]]'
+    Entry Input       = 'http://schemas.taskcluster.net/scheduler/v1/task-graph.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#'
+    Entry Title       = 'Create new task-graph'
+    Entry Description = 'Create a new task-graph, the `status` of the resulting JSON is a
+task-graph status structure, you can find the `taskGraphId` in this
+structure.
+
+**Referencing required tasks**, it is possible to reference other tasks
+in the task-graph that must be completed successfully before a task is
+scheduled. You just specify the `taskId` in the list of `required` tasks.
+See the example below, where the second task requires the first task.
+```js
+{
+  ...
+  tasks: [
+    {
+      taskId:     "XgvL0qtSR92cIWpcwdGKCA",
+      requires:   [],
+      ...
+    },
+    {
+      taskId:     "73GsfK62QNKAk2Hg1EEZTQ",
+      requires:   ["XgvL0qtSR92cIWpcwdGKCA"],
+      task: {
+        payload: {
+          env: {
+            DEPENDS_ON:  "XgvL0qtSR92cIWpcwdGKCA"
+          }
+          ...
+        }
+        ...
+      },
+      ...
+    }
+  ]
+}
+```
+
+**The `schedulerId` property**, defaults to the `schedulerId` of this
+scheduler in production that is `"task-graph-scheduler"`. This
+property must be either undefined or set to `"task-graph-scheduler"`,
+otherwise the task-graph will be rejected.
+
+**The `taskGroupId` property**, defaults to the `taskGraphId` of the
+task-graph submitted, and if provided much be the `taskGraphId` of
+the task-graph. Otherwise the task-graph will be rejected.
+
+**Task-graph scopes**, a task-graph is assigned a set of scopes, just
+like tasks. Tasks within a task-graph cannot have scopes beyond those
+the task-graph has. The task-graph scheduler will execute all requests
+on behalf of a task-graph using the set of scopes assigned to the
+task-graph. Thus, if you are submitting tasks to `my-worker-type` under
+`my-provisioner` it's important that your task-graph has the scope
+required to define tasks for this `provisionerId` and `workerType`.
+See the queue for details on permissions required. Note, the task-graph
+does not require permissions to schedule the tasks. This is done with
+scopes provided by the task-graph scheduler.
+
+**Task-graph specific routing-keys**, using the `taskGraph.routes`
+property you may define task-graph specific routing-keys. If a task-graph
+has a task-graph specific routing-key: `<route>`, then the poster will
+be required to posses the scope `scheduler:route:<route>`. And when the
+an AMQP message about the task-graph is published the message will be
+CC'ed with the routing-key: `route.<route>`. This is useful if you want
+another component to listen for completed tasks you have posted.'
+Entry 1     = 
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task-graph/<taskGraphId>/extend'
+    Entry Args        = '[taskGraphId]'
+    Entry Name        = 'extendTaskGraph'
+    Entry Scopes      = '[[scheduler:extend-task-graph:<taskGraphId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#'
+    Entry Title       = 'Extend existing task-graph'
+    Entry Description = 'Add a set of tasks to an existing task-graph. The request format is very
+similar to the request format for creating task-graphs. But `routes`
+key, `scopes`, `metadata` and `tags` cannot be modified.
+
+**Referencing required tasks**, just as when task-graphs are created,
+each task has a list of required tasks. It is possible to reference
+all `taskId`s within the task-graph.
+
+**Safety,** it is only _safe_ to call this API end-point while the
+task-graph being modified is still running. If the task-graph is
+_finished_ or _blocked_, this method will leave the task-graph in this
+state. Hence, it is only truly _safe_ to call this API end-point from
+within a task in the task-graph being modified.'
+Entry 2     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task-graph/<taskGraphId>/status'
+    Entry Args        = '[taskGraphId]'
+    Entry Name        = 'status'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json'
+    Entry Title       = 'Task Graph Status'
+    Entry Description = 'Get task-graph status, this will return the _task-graph status
+structure_. which can be used to check if a task-graph is `running`,
+`blocked` or `finished`.
+
+**Note**, that `finished` implies successfully completion.'
+Entry 3     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task-graph/<taskGraphId>/info'
+    Entry Args        = '[taskGraphId]'
+    Entry Name        = 'info'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json'
+    Entry Title       = 'Task Graph Information'
+    Entry Description = 'Get task-graph information, this includes the _task-graph status
+structure_, along with `metadata` and `tags`, but not information
+about all tasks.
+
+If you want more detailed information use the `inspectTaskGraph`
+end-point instead.'
+Entry 4     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task-graph/<taskGraphId>/inspect'
+    Entry Args        = '[taskGraphId]'
+    Entry Name        = 'inspect'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json'
+    Entry Title       = 'Inspect Task Graph'
+    Entry Description = 'Inspect a task-graph, this returns all the information the task-graph
+scheduler knows about the task-graph and the state of its tasks.
+
+**Warning**, some of these fields are borderline internal to the
+task-graph scheduler and we may choose to change or make them internal
+later. Also note that note all of the information is formalized yet.
+The JSON schema will be updated to reflect formalized values, we think
+it's safe to consider the values stable.
+
+Take these considerations into account when using the API end-point,
+as we do not promise it will remain fully backward compatible in
+the future.'
+Entry 5     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task-graph/<taskGraphId>/inspect/<taskId>'
+    Entry Args        = '[taskGraphId taskId]'
+    Entry Name        = 'inspectTask'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json'
+    Entry Title       = 'Inspect Task from a Task-Graph'
+    Entry Description = 'Inspect a task from a task-graph, this returns all the information the
+task-graph scheduler knows about the specific task.
+
+**Warning**, some of these fields are borderline internal to the
+task-graph scheduler and we may choose to change or make them internal
+later. Also note that note all of the information is formalized yet.
+The JSON schema will be updated to reflect formalized values, we think
+it's safe to consider the values stable.
+
+Take these considerations into account when using the API end-point,
+as we do not promise it will remain fully backward compatible in
+the future.'
+Entry 6     = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Name        = 'ping'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Documented later...
+
+**Warning** this api end-point is **not stable**.'
+
+
+http://references.taskcluster.net/scheduler/v1/exchanges.json
+=============================================================
+Version         = '0.2.0'
+Title           = 'Scheduler AMQP Exchanges'
+Description     = 'The scheduler, typically available at `scheduler.taskcluster.net` is
+responsible for accepting task-graphs and schedule tasks on the queue as
+their dependencies are completed successfully.
+
+This document describes the AMQP exchanges offered by the scheduler,
+which allows third-party listeners to monitor task-graph submission and
+resolution. These exchanges targets the following audience:
+ * Reporters, who displays the state of task-graphs or emails people on
+   failures, and
+ * End-users, who wants notification of completed task-graphs
+
+**Remark**, the task-graph scheduler will require that the `schedulerId`
+for tasks is set to the `schedulerId` for the task-graph scheduler. In
+production the `schedulerId` is typically `"task-graph-scheduler"`.
+Furthermore, the task-graph scheduler will also require that
+`taskGroupId` is equal to the `taskGraphId`.
+
+Combined these requirements ensures that `schedulerId` and `taskGroupId`
+have the same position in the routing keys for the queue exchanges.
+See queue documentation for details on queue exchanges. Hence, making
+it easy to listen for all tasks in a given task-graph.
+
+Note that routing key entries 2 through 7 used for exchanges on the
+task-graph scheduler is hardcoded to `_`. This is done to preserve
+positional equivalence with exchanges offered by the queue.'
+Exchange Prefix = 'exchange/taskcluster-scheduler/v1/'
+Entry 0     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'task-graph-running'
+    Entry Name        = 'taskGraphRunning'
+    Entry Title       = 'Task-Graph Running Message'
+    Entry Description = 'When a task-graph is submitted it immediately starts running and a
+message is posted on this exchange to indicate that a task-graph have
+been submitted.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'taskId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 2     = 
+        Element Name      = 'runId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 3     = 
+        Element Name      = 'workerGroup'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 4     = 
+        Element Name      = 'workerId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 5     = 
+        Element Name      = 'provisionerId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 6     = 
+        Element Name      = 'workerType'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 7     = 
+        Element Name      = 'schedulerId'
+        Element Summary   = 'Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 8     = 
+        Element Name      = 'taskGraphId'
+        Element Summary   = 'Identifier for the task-graph this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 9     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#'
+Entry 1     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'task-graph-extended'
+    Entry Name        = 'taskGraphExtended'
+    Entry Title       = 'Task-Graph Extended Message'
+    Entry Description = 'When a task-graph is extended, that is additional tasks is added to the
+task-graph, a message is posted on this exchange. This is useful if you
+are monitoring a task-graph and what to track states of the individual
+tasks in the task-graph.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'taskId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 2     = 
+        Element Name      = 'runId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 3     = 
+        Element Name      = 'workerGroup'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 4     = 
+        Element Name      = 'workerId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 5     = 
+        Element Name      = 'provisionerId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 6     = 
+        Element Name      = 'workerType'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 7     = 
+        Element Name      = 'schedulerId'
+        Element Summary   = 'Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 8     = 
+        Element Name      = 'taskGraphId'
+        Element Summary   = 'Identifier for the task-graph this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 9     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#'
+Entry 2     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'task-graph-blocked'
+    Entry Name        = 'taskGraphBlocked'
+    Entry Title       = 'Task-Graph Blocked Message'
+    Entry Description = 'When a task is completed unsuccessfully and all reruns have been
+attempted, the task-graph will not complete successfully and it's
+declared to be _blocked_, by some task that consistently completes
+unsuccessfully.
+
+When a task-graph becomes blocked a messages is posted to this exchange.
+The message features the `taskId` of the task that caused the task-graph
+to become blocked.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'taskId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 2     = 
+        Element Name      = 'runId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 3     = 
+        Element Name      = 'workerGroup'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 4     = 
+        Element Name      = 'workerId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 5     = 
+        Element Name      = 'provisionerId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 6     = 
+        Element Name      = 'workerType'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 7     = 
+        Element Name      = 'schedulerId'
+        Element Summary   = 'Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 8     = 
+        Element Name      = 'taskGraphId'
+        Element Summary   = 'Identifier for the task-graph this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 9     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#'
+Entry 3     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'task-graph-finished'
+    Entry Name        = 'taskGraphFinished'
+    Entry Title       = 'Task-Graph Finished Message'
+    Entry Description = 'When all tasks of a task-graph have completed successfully, the
+task-graph is declared to be finished, and a message is posted to this
+exchange.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'taskId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 2     = 
+        Element Name      = 'runId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 3     = 
+        Element Name      = 'workerGroup'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 4     = 
+        Element Name      = 'workerId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 5     = 
+        Element Name      = 'provisionerId'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 6     = 
+        Element Name      = 'workerType'
+        Element Summary   = 'Always takes the value `_`'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 7     = 
+        Element Name      = 'schedulerId'
+        Element Summary   = 'Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 8     = 
+        Element Name      = 'taskGraphId'
+        Element Summary   = 'Identifier for the task-graph this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 9     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#'
+
+
+http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
+========================================================================
+Additional Properties  = 'false'
+Description            = 'Response to a request for an Shared-Access-Signature to access and Azure
+Table Storage table.
+'
+ID                     = 'http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#'
+Properties
+  Property 'expiry' =
+    Description            = 'Date and time of when the Shared-Access-Signature expires.
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+  Property 'sas' =
+    Description            = 'Shared-Access-Signature string. This is the querystring parameters to
+    be appened after `?` or `&` depending on whether or not a querystring is
+    already present in the URL.
+    '
+    Type                   = 'string'
+Required               = '[sas expiry]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Azure Shared-Access-Signature Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#
+========================================================================
+Additional Properties  = 'false'
+Description            = 'Credentials, scopes and expiration date for a client
+'
+ID                     = 'http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#'
+Properties
+  Property 'accessToken' =
+    Description            = 'AccessToken used for authenticating requests
+    '
+    Pattern                = '^[a-zA-Z0-9-_]{22,66}$'
+    Type                   = 'string'
+  Property 'clientId' =
+    Description            = 'ClientId of the client scopes is requested about
+    '
+    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Type                   = 'string'
+  Property 'expires' =
+    Description            = 'Date and time where the clients credentials are set to expire
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+  Property 'scopes' =
+    Description            = 'List of scopes the client is authorized to access
+    '
+    Items
+      Description            = 'Scope the client is authorized to access
+      '
+      Type                   = 'string'
+    Type                   = 'array'
+Required               = '[clientId accessToken scopes expires]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Get Client Credentials Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#
+===================================================================
+Additional Properties  = 'false'
+Description            = 'Scopes and expiration date for a client
+'
+ID                     = 'http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#'
+Properties
+  Property 'clientId' =
+    Description            = 'ClientId of the client scopes is requested about
+    '
+    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Type                   = 'string'
+  Property 'expires' =
+    Description            = 'Date and time where the clients credentials are set to expire
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+  Property 'scopes' =
+    Description            = 'List of scopes the client is authorized to access
+    '
+    Items
+      Description            = 'Scope the client is authorized to access
+      '
+      Type                   = 'string'
+    Type                   = 'array'
+Required               = '[clientId scopes expires]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Get Client Scopes Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/auth/v1/create-client-request.json#
+==================================================================
+Additional Properties  = 'false'
+Description            = 'Credentials, scopes and expiration date for a client
+'
+ID                     = 'http://schemas.taskcluster.net/auth/v1/create-client-request.json#'
+Properties
+  Property 'description' =
+    Description            = 'Description of what these credentials are used for in markdown.
+    Please write a few details here, including who is the owner, point of
+    contact. Why it is scoped as is, think of this as documentation.
+    '
+    MaxLength              = '4096'
+    Type                   = 'string'
+  Property 'expires' =
+    Description            = 'Date and time where the clients credentials are set to expire
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+  Property 'name' =
+    Description            = 'Human readable name of this set of credentials, typical
+    component/server-name or IRC nickname of the user.
+    '
+    MaxLength              = '255'
+    Type                   = 'string'
+  Property 'scopes' =
+    Description            = 'List of scopes the client is authorized to access
+    '
+    Items
+      Description            = 'Scopes the client is authorized to access
+      '
+      Type                   = 'string'
+    Type                   = 'array'
+Required               = '[name description scopes expires]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Get Client Credentials Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/auth/v1/get-client-response.json#
+================================================================
+Additional Properties  = 'false'
+Description            = 'Get all detaisl about a client, useful for tools modifying a client
+'
+ID                     = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#'
+Properties
+  Property 'accessToken' =
+    Description            = 'AccessToken used for authenticating requests
+    '
+    Pattern                = '^[a-zA-Z0-9-_]{22,66}$'
+    Type                   = 'string'
+  Property 'clientId' =
+    Description            = 'ClientId of the client scopes is requested about
+    '
+    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Type                   = 'string'
+  Property 'description' =
+    Description            = 'Description of what these credentials are used for in markdown.
+    Should include who is the owner, point of contact.
+    Why it is scoped as is, think of this as documentation.
+    '
+    MaxLength              = '4096'
+    Type                   = 'string'
+  Property 'expires' =
+    Description            = 'Date and time where the clients credentials are set to expire
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+  Property 'name' =
+    Description            = 'Human readable name of this set of credentials, typical
+    component/server-name or IRC nickname of the user.
+    '
+    MaxLength              = '255'
+    Type                   = 'string'
+  Property 'scopes' =
+    Description            = 'List of scopes the client is authorized to access
+    '
+    Items
+      Description            = 'Scope the client is authorized to access
+      '
+      Type                   = 'string'
+    Type                   = 'array'
+Required               = '[clientId accessToken scopes expires name description]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Get Client Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/auth/v1/list-clients-response.json#
+==================================================================
+Description            = 'Get a list of all clients, including basic information, but not credentials.
+'
+ID                     = 'http://schemas.taskcluster.net/auth/v1/list-clients-response.json#'
+Items
+  Additional Properties  = 'false'
+  Description            = 'Information about a client.
+  '
+  Properties
+    Property 'clientId' =
+      Description            = 'ClientId of the client scopes is requested about
+      '
+      Pattern                = '^[a-zA-Z0-9-_]{22}$'
+      Type                   = 'string'
+    Property 'description' =
+      Description            = 'Description of what these credentials are used for in markdown.
+      Should include who is the owner, point of contact.
+      Why it is scoped as is, think of this as documentation.
+      '
+      MaxLength              = '4096'
+      Type                   = 'string'
+    Property 'expires' =
+      Description            = 'Date and time where the clients credentials are set to expire
+      '
+      Format                 = 'date-time'
+      Type                   = 'string'
+    Property 'name' =
+      Description            = 'Human readable name of this set of credentials, typical
+      component/server-name or IRC nickname of the user.
+      '
+      MaxLength              = '255'
+      Type                   = 'string'
+    Property 'scopes' =
+      Description            = 'List of scopes the client is authorized to access
+      '
+      Items
+        Description            = 'Scope the client is authorized to access
+        '
+        Type                   = 'string'
+      Type                   = 'array'
+  Required               = '[clientId scopes expires name description]'
+  Type                   = 'object'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'List Clients Response'
+Type                   = 'array'
+
+
+http://schemas.taskcluster.net/index/v1/indexed-task-response.json#
+===================================================================
+Additional Properties  = 'false'
+Description            = 'Representation of an indexed task.
+'
+ID                     = 'http://schemas.taskcluster.net/index/v1/indexed-task-response.json'
+Properties
+  Property 'data' =
+    Description            = 'Data that was reported with the task. This is an arbitrary JSON object.
+    '
+    Title                  = 'Task Specific Data'
+    Type                   = 'object'
+  Property 'expires' =
+    Description            = 'Date at which this entry expires from the task index.
+    '
+    Format                 = 'date-time'
+    Title                  = 'Expiration'
+    Type                   = 'string'
+  Property 'namespace' =
+    Description            = 'Namespace of the indexed task, used to find the indexed task in the index.
+    '
+    MaxLength              = '255'
+    Title                  = 'Namespace'
+    Type                   = 'string'
+  Property 'rank' =
+    Description            = 'If multiple tasks are indexed with the same `namespace` the task with the
+    highest `rank` will be stored and returned in later requests. If two tasks
+    has the same `rank` the latest task will be stored.
+    '
+    Title                  = 'Rank'
+    Type                   = 'number'
+  Property 'taskId' =
+    Description            = 'Unique task identifier, this is UUID encoded as
+    [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+    stripped of `=` padding.
+    '
+    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Title                  = 'Task Identifier'
+    Type                   = 'string'
+Required               = '[namespace taskId rank data expires]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Indexed Task Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/index/v1/insert-task-request.json#
+=================================================================
+Additional Properties  = 'false'
+Description            = 'Representation of an a task to be indexed.
+'
+ID                     = 'http://schemas.taskcluster.net/index/v1/insert-task-request.json'
+Properties
+  Property 'data' =
+    Description            = 'This is an arbitrary JSON object. Feel free to put whatever data you want
+    here, but do limit it, you'll get errors if you store more than 32KB.
+    So stay well, below that limit.
+    '
+    Title                  = 'Task Specific Data'
+    Type                   = 'object'
+  Property 'expires' =
+    Description            = 'Date at which this entry expires from the task index.
+    '
+    Format                 = 'date-time'
+    Title                  = 'Expiration'
+    Type                   = 'string'
+  Property 'rank' =
+    Description            = 'If multiple tasks are indexed with the same `namespace` the task with the
+    highest `rank` will be stored and returned in later requests. If two tasks
+    has the same `rank` the latest task will be stored.
+    '
+    Title                  = 'Rank'
+    Type                   = 'number'
+  Property 'taskId' =
+    Description            = 'Unique task identifier, this is UUID encoded as
+    [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+    stripped of `=` padding.
+    '
+    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Title                  = 'Task Identifier'
+    Type                   = 'string'
+Required               = '[taskId rank data expires]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Insert Task Request'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#
+=====================================================================
+Additional Properties  = 'false'
+Description            = 'Request to list namespaces within a given namespace.
+'
+ID                     = 'http://schemas.taskcluster.net/index/v1/list-namespaces-request.json'
+Properties
+  Property 'continuationToken' =
+    Description            = 'A continuation token previously returned in a response to this list
+    request. This property is optional and should not be provided for first
+    requests.
+    '
+    Title                  = 'Continuation Token'
+    Type                   = 'string'
+  Property 'limit' =
+    Description            = 'Maximum number of results per page. If there are more results than this
+    a continuation token will be return.
+    '
+    Maximum                = '1000'
+    Minimum                = '1'
+    Title                  = 'Result limit'
+    Type                   = 'integer'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'List Namespaces Request'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#
+======================================================================
+Additional Properties  = 'false'
+Description            = 'Response from a request to list namespaces within a given namespace.
+'
+ID                     = 'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json'
+Properties
+  Property 'continuationToken' =
+    Description            = 'A continuation token is returned if there are more results than listed
+    here. You can optionally provide the token in the request payload to
+    load the additional results.
+    '
+    Title                  = 'Continuation Token'
+    Type                   = 'string'
+  Property 'namespaces' =
+    Description            = 'List of namespaces.
+    '
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Representation of a namespace that contains indexed tasks.
+      '
+      Properties
+        Property 'expires' =
+          Description            = 'Date at which this entry, and by implication all entries below it,
+          expires from the task index.
+          '
+          Format                 = 'date-time'
+          Title                  = 'Expiration'
+          Type                   = 'string'
+        Property 'name' =
+          Description            = 'Name of namespace within it's parent namespace.
+          '
+          Title                  = 'Name'
+        Property 'namespace' =
+          Description            = 'Fully qualified name of the namespace, you can use this to list
+          namespaces or tasks under this namespace.
+          '
+          MaxLength              = '255'
+          Title                  = 'Namespace'
+          Type                   = 'string'
+      Required               = '[namespace name expires]'
+      Title                  = 'Namespace'
+      Type                   = 'object'
+    Title                  = 'Namespaces'
+    Type                   = 'array'
+Required               = '[namespaces]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'List Namespaces Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/index/v1/list-tasks-request.json#
+================================================================
+Additional Properties  = 'false'
+Description            = 'Request to list tasks within a given namespace.
+'
+ID                     = 'http://schemas.taskcluster.net/index/v1/list-tasks-request.json'
+Properties
+  Property 'continuationToken' =
+    Description            = 'A continuation token previously returned in a response to this list
+    request. This property is optional and should not be provided for first
+    requests.
+    '
+    Title                  = 'Continuation Token'
+    Type                   = 'string'
+  Property 'limit' =
+    Description            = 'Maximum number of results per page. If there are more results than this
+    a continuation token will be return.
+    '
+    Maximum                = '1000'
+    Minimum                = '1'
+    Title                  = 'Result limit'
+    Type                   = 'integer'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'List Tasks Request'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/index/v1/list-tasks-response.json#
+=================================================================
+Additional Properties  = 'false'
+Description            = 'Representation of an indexed task.
+'
+ID                     = 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json'
+Properties
+  Property 'continuationToken' =
+    Description            = 'A continuation token is returned if there are more results than listed
+    here. You can optionally provide the token in the request payload to
+    load the additional results.
+    '
+    Title                  = 'Continuation Token'
+    Type                   = 'string'
+  Property 'tasks' =
+    Description            = 'List of tasks.
+    '
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Representation of a task.
+      '
+      Properties
+        Property 'data' =
+          Description            = 'Data that was reported with the task. This is an arbitrary JSON
+          object.
+          '
+          Title                  = 'Task Specific Data'
+          Type                   = 'object'
+        Property 'expires' =
+          Description            = 'Date at which this entry expires from the task index.
+          '
+          Format                 = 'date-time'
+          Title                  = 'Expiration'
+          Type                   = 'string'
+        Property 'namespace' =
+          Description            = 'Namespace of the indexed task, used to find the indexed task in the
+          index.
+          '
+          MaxLength              = '255'
+          Title                  = 'Namespace'
+          Type                   = 'string'
+        Property 'rank' =
+          Description            = 'If multiple tasks are indexed with the same `namespace` the task
+          with the highest `rank` will be stored and returned in later
+          requests. If two tasks has the same `rank` the latest task will be
+          stored.
+          '
+          Title                  = 'Rank'
+          Type                   = 'number'
+        Property 'taskId' =
+          Description            = 'Unique task identifier, this is UUID encoded as
+          [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+          stripped of `=` padding.
+          '
+          Pattern                = '^[a-zA-Z0-9-_]{22}$'
+          Title                  = 'Task Identifier'
+          Type                   = 'string'
+      Required               = '[namespace taskId rank data expires]'
+      Title                  = 'Task'
+      Type                   = 'object'
+    Title                  = 'Tasks'
+    Type                   = 'array'
+Required               = '[tasks]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'List Tasks Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#
+======================================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting a new artifact has been created for a given task.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#'
+Properties
+  Property 'artifact' =
+    Additional Properties  = 'false'
+    Description            = 'Information about the artifact that was created
+    '
+    Properties
+      Property 'contentType' =
+        Description            = 'Mimetype for the artifact that was created.
+        '
+        MaxLength              = '255'
+        Title                  = 'Content-Type'
+        Type                   = 'string'
+      Property 'expires' =
+        Description            = 'Date and time after which the artifact created will be automatically
+        deleted by the queue.
+        '
+        Format                 = 'date-time'
+        Title                  = 'Artifact Expiration'
+        Type                   = 'string'
+      Property 'name' =
+        Description            = 'Name of the artifact that was created, this is useful if you want to
+        attempt to fetch the artifact. But keep in mind that just because an
+        artifact is created doesn't mean that it's immediately available.
+        '
+        MaxLength              = '1024'
+        Title                  = 'Artifact Name'
+        Type                   = 'string'
+      Property 'storageType' =
+        Description            = 'This is the `storageType` for the request that was used to create the
+        artifact.
+        '
+        Enum                   = '[s3 azure reference error]'
+        Title                  = 'Artifact Storage-Type'
+    Required               = '[storageType name expires contentType]'
+    Title                  = 'Artifact Created'
+  Property 'runId' =
+    Description            = 'Id of the run on which artifact was created.
+    '
+    Maximum                = '1000'
+    Minimum                = '0'
+    Type                   = 'integer'
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+  Property 'workerGroup' =
+    Description            = 'Identifier for the worker-group within which the run with the created
+    artifacted is running.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+  Property 'workerId' =
+    Description            = 'Identifier for the worker within which the run with the created artifact
+    is running.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+Required               = '[version status runId workerGroup workerId artifact]'
+Schema                 = 'http://json-schema.org/draft-04/schema#"'
+Title                  = 'Artifact Created Message'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/claim-work-request.json#
+================================================================
+Additional Properties  = 'false'
+Description            = 'Request to claim work'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#'
+Properties
+  Property 'workerGroup' =
+    Description            = 'Identifier for group that worker claiming the task is a part of.'
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+  Property 'workerId' =
+    Description            = 'Identifier for worker within the given workerGroup'
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+Required               = '[workerGroup workerId]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Work Claim Request'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/create-task-request.json#
+=================================================================
+Additional Properties  = 'false'
+Description            = 'Definition of a task that can be scheduled
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+Properties
+  Property 'created' =
+    Description            = 'Creation time of task'
+    Format                 = 'date-time'
+    Title                  = 'Created'
+    Type                   = 'string'
+  Property 'deadline' =
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline'
+    Format                 = 'date-time'
+    Title                  = 'Deadline'
+    Type                   = 'string'
+  Property 'extra' =
+    Description            = 'Object with properties that can hold any kind of extra data that should be
+    associated with the task. This can be data for the task which doesn't
+    fit into `payload`, or it can supplementary data for use in services
+    listening for events from this task. For example this could be details to
+    display on _treeherder_, or information for indexing the task. Please, try
+    to put all related information under one property, so `extra` data keys
+    for treeherder reporting and task indexing don't conflict, hence, we have
+    reusable services. **Warning**, do not stuff large data-sets in here,
+    task definitions should not take-up multiple MiBs.
+    '
+    Title                  = 'Extra Data'
+    Type                   = 'object'
+  Property 'metadata' =
+    Additional Properties  = 'false'
+    Description            = 'Required task metadata
+    '
+    Properties
+      Property 'description' =
+        Description            = 'Human readable description of the task, please **explain** what the
+        task does. A few lines of documentation is not going to hurt you.
+        '
+        MaxLength              = '32768'
+        Title                  = 'Description'
+        Type                   = 'string'
+      Property 'name' =
+        Description            = 'Human readable name of task, used to very briefly given an idea about
+        what the task does.
+        '
+        MaxLength              = '255'
+        Title                  = 'Name'
+        Type                   = 'string'
+      Property 'owner' =
+        Description            = 'E-mail of person who caused this task, e.g. the person who did
+        `hg push`. The person we should contact to ask why this task is here.
+        '
+        Format                 = 'email'
+        MaxLength              = '255'
+        Title                  = 'Owner'
+        Type                   = 'string'
+      Property 'source' =
+        Description            = 'Link to source of this task, should specify a file, revision and
+        repository. This should be place someone can go an do a git/hg blame
+        to who came up with recipe for this task.
+        '
+        Format                 = 'uri'
+        MaxLength              = '4096'
+        Title                  = 'Source'
+        Type                   = 'string'
+    Required               = '[name description owner source]'
+    Title                  = 'Meta-data'
+    Type                   = 'object'
+  Property 'payload' =
+    Description            = 'Task-specific payload following worker-specific format. For example the
+    `docker-worker` requires keys like: `image`, `commands` and
+    `features`. Refer to the documentation of `docker-worker` for details.
+    '
+    Title                  = 'Task Payload'
+    Type                   = 'object'
+  Property 'provisionerId' =
+    Description            = 'Unique identifier for a provisioner, that can supply specified
+    `workerType`
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Provisioner Id'
+    Type                   = 'string'
+  Property 'retries' =
+    Description            = 'Number of times to retry the task in case of infrastructure issues.
+    An _infrastructure issue_ is a worker node that crashes or is shutdown,
+    these events are to be expected.
+    '
+    Maximum                = '50'
+    Minimum                = '0'
+    Title                  = 'Retries'
+    Type                   = 'integer'
+  Property 'routes' =
+    Description            = 'List of task specific routes, AMQP messages will be CC'ed to these routes.
+    '
+    Items
+      Description            = 'A task specific route, AMQP messages will be CC'ed with a routing key
+      matching `route.<task-specific route>`. It's possible to dot (`.`) in
+      the task specific route to make sub-keys, etc. See the RabbitMQ
+      [tutorial](http://www.rabbitmq.com/tutorials/tutorial-five-python.html)
+      for examples on how to use routing-keys.
+      '
+      MaxLength              = '249'
+      MinLength              = '1'
+      Title                  = 'Task Specific Route'
+      Type                   = 'string'
+    Title                  = 'Task Specific Routes'
+    Type                   = 'array'
+  Property 'schedulerId' =
+    Description            = 'Identifier for the scheduler that _defined_ this task, this can be an
+    identifier for a user or a service like the `"task-graph-scheduler"`.
+    Along with the `taskGroupId` this is used to form the permission scope
+    `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
+    this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Scheduler Identifier'
+    Type                   = 'string'
+  Property 'scopes' =
+    Description            = 'List of scopes (or scope-patterns) that the task is
+    authorized to use.
+    '
+    Items
+      Description            = 'A scope (or scope-patterns) which the task is
+      authorized to use. This can be a string or a string
+      ending with `*` which will authorize all scopes for
+      which the string is a prefix.
+      '
+      Title                  = 'Scope'
+      Type                   = 'string'
+    Title                  = 'Scopes'
+    Type                   = 'array'
+  Property 'tags' =
+    Additional Properties  = 'MaxLength              = '4096'
+    Type                   = 'string'
+    '
+    Description            = 'Arbitrary key-value tags (only strings limited to 4k). These can be used
+    to attach informal meta-data to a task. Use this for informal tags that
+    tasks can be classified by. You can also think of strings here as
+    candidates for formal meta-data. Something like
+    `purpose: 'build' || 'test'` is a good example.
+    '
+    Title                  = 'Tags'
+    Type                   = 'object'
+  Property 'taskGroupId' =
+    Description            = 'Identifier for a group of tasks scheduled together with this task, by
+    scheduler identified by `schedulerId`. For tasks scheduled by the
+    task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
+    property isn't specified.
+    '
+    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Title                  = 'Task-Group Identifier'
+    Type                   = 'string'
+  Property 'workerType' =
+    Description            = 'Unique identifier for a worker-type within a specific provisioner
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Worker Type'
+    Type                   = 'string'
+Required               = '[provisionerId workerType created deadline payload metadata]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Definition'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json
+====================================================================
+Additional Properties  = 'false'
+Description            = 'List of artifacts for a given `taskId` and `runId`.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#'
+Properties
+  Property 'artifacts' =
+    Description            = 'List of artifacts for given `taskId` and `runId`.
+    '
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Information about an artifact for the given `taskId` and `runId`.
+      '
+      Properties
+        Property 'contentType' =
+          Description            = 'Mimetype for the artifact that was created.
+          '
+          MaxLength              = '255'
+          Title                  = 'Content-Type'
+          Type                   = 'string'
+        Property 'expires' =
+          Description            = 'Date and time after which the artifact created will be automatically
+          deleted by the queue.
+          '
+          Format                 = 'date-time'
+          Title                  = 'Artifact Expiration'
+          Type                   = 'string'
+        Property 'name' =
+          Description            = 'Name of the artifact that was created, this is useful if you want to
+          attempt to fetch the artifact.
+          '
+          MaxLength              = '1024'
+          Title                  = 'Artifact Name'
+          Type                   = 'string'
+        Property 'storageType' =
+          Description            = 'This is the `storageType` for the request that was used to create
+          the artifact.
+          '
+          Enum                   = '[s3 azure reference error]'
+          Title                  = 'Artifact Storage-Type'
+      Required               = '[storageType name expires contentType]'
+      Title                  = 'Artifact'
+    Title                  = 'Artifact List'
+    Type                   = 'array'
+Required               = '[artifacts]'
+Schema                 = 'http://json-schema.org/draft-04/schema#"'
+Title                  = 'List Artifacts Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#
+=====================================================================
+Description            = 'Response to request for poll task urls.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#'
+Properties
+  Property 'expires' =
+    Description            = 'Date and time after which the signed URLs provided in this response
+    expires and not longer works for authentication.
+    '
+    Format                 = 'date-time'
+    Title                  = 'Signed URL Expiration'
+    Type                   = 'string'
+  Property 'signedPollTaskUrls' =
+    Description            = 'List of signed URLs to poll tasks from, they must be called in the order
+    they are given. As the first entry in this array **may** have higher
+    priority.
+    '
+    Items
+      Description            = 'Signed URL to get message from the Azure Queue Storage queue, that holds
+      messages for the given `provisionerId` and `workerType`. Note that this
+      URL returns XML, see documentation for the Azure Queue Storage
+      [REST API](http://msdn.microsoft.com/en-us/library/azure/dd179474.aspx)
+      for details. When you have a message you can use `claimTask` to claim
+      the task. You will need to parse the XML reponse and base64 decode and
+      JSON parse the `MessageText`, also note that `claimTask` requires
+      the `PopReceipt` and `MessageId`.
+      **Remark**, you are allowed to append `&numofmessages=N`, where N < 32,
+      to the URLs if you wish to obtain more than one message at the time.
+      '
+      Format                 = 'uri'
+      Title                  = 'Signed Get Message URL'
+      Type                   = 'string'
+    Type                   = 'array'
+Required               = '[signedPollTaskUrls expires]'
+Schema                 = 'http://json-schema.org/draft-04/schema#"'
+Title                  = 'Poll Task Urls Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/post-artifact-request.json
+==================================================================
+Description            = 'Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#'
+OneOf
+  Item '0' =
+    Additional Properties  = 'false'
+    Description            = 'Request for a signed PUT URL that will allow you to upload an artifact to an S3 bucket managed by the queue.'
+    Properties
+      Property 'contentType' =
+        Description            = 'Artifact mime-type, when uploading artifact to the signed `PUT` URL returned from this request this must given with the `ContentType` header. Please, provide correct mime-type, this make tooling a lot easier, specifically, always using `application/json` for JSON artifacts.'
+        MaxLength              = '255'
+        Type                   = 'string'
+      Property 'expires' =
+        Description            = 'Date-time after which the artifact should be deleted. Note, that these will be collected over time, and artifacts may remain available after expiration. S3 based artifacts are identified in azure table storage and explicitly deleted on S3 after expiration.'
+        Format                 = 'date-time'
+        Type                   = 'string'
+      Property 'storageType' =
+        Description            = 'Artifact storage type, in this case `'s3'`'
+        Enum                   = '[s3]'
+    Required               = '[storageType expires contentType]'
+    Title                  = 'S3 Artifact Request'
+    Type                   = 'object'
+  Item '1' =
+    Additional Properties  = 'false'
+    Description            = 'Request for an Azure Shared Access Signature (SAS) that will allow you to upload an artifact to an Azure blob storage container managed by the queue.'
+    Properties
+      Property 'contentType' =
+        Description            = 'Artifact mime-type, when uploading artifact please use the same `Content-Type`, consistently using the correct mime-type make tooling a lot easier, specifically, always using `application/json` for JSON artifacts.'
+        MaxLength              = '255'
+        Type                   = 'string'
+      Property 'expires' =
+        Description            = 'Date-time after which the artifact should be deleted. Note, that these will be collected over time, and artifacts may remain available after expiration. Azure based artifacts are identified in azure table storage and explicitly deleted in the azure storage container after expiration.'
+        Format                 = 'date-time'
+        Type                   = 'string'
+      Property 'storageType' =
+        Description            = 'Artifact storage type, in this case `azure`'
+        Enum                   = '[azure]'
+    Required               = '[storageType expires contentType]'
+    Title                  = 'Azure Artifact Request'
+    Type                   = 'object'
+  Item '2' =
+    Additional Properties  = 'false'
+    Description            = 'Request the queue to redirect to a URL for a given artifact. This allows you to reference artifacts that aren't managed by the queue. The queue will still authenticate the request, so depending on the level of secrecy required, secret URLs **might** work. Note, this is mainly useful for public artifacts, for example temporary files directly stored on the worker host and only available there for a specific amount of time.'
+    Properties
+      Property 'contentType' =
+        Description            = 'Artifact mime-type for the resource to which the queue should redirect. Please use the same `Content-Type`, consistently using the correct mime-type make tooling a lot easier, specifically, always using `application/json` for JSON artifacts.'
+        MaxLength              = '255'
+        Type                   = 'string'
+      Property 'expires' =
+        Description            = 'Date-time after which the queue should no longer redirect to this URL. Note, that the queue will and cannot delete the resource your URL references, you are responsible for doing that yourself.'
+        Format                 = 'date-time'
+        Type                   = 'string'
+      Property 'storageType' =
+        Description            = 'Artifact storage type, in this case `reference`'
+        Enum                   = '[reference]'
+      Property 'url' =
+        Description            = 'URL to which the queue should redirect using a `303` (See other) redirect.'
+        Format                 = 'uri'
+        Type                   = 'string'
+    Required               = '[storageType expires url contentType]'
+    Title                  = 'Redirect Artifact Request'
+    Type                   = 'object'
+  Item '3' =
+    Additional Properties  = 'false'
+    Description            = 'Request the queue to reply `403` (forbidden) with `reason` and `message` to any `GET` request for this artifact. This is mainly useful as a way for a task to declare that it failed to provide an artifact it wanted to upload.'
+    Properties
+      Property 'expires' =
+        Description            = 'Date-time after which the queue should stop replying with the error and forget about the artifact.'
+        Format                 = 'date-time'
+        Type                   = 'string'
+      Property 'message' =
+        Description            = 'Human readable explanation of why the artifact is missing'
+        MaxLength              = '4096'
+        Type                   = 'string'
+      Property 'reason' =
+        Description            = 'Reason why the artifact doesn't exist.'
+        Enum                   = '[file-missing-on-worker invalid-resource-on-worker too-large-file-on-worker]'
+      Property 'storageType' =
+        Description            = 'Artifact storage type, in this case `error`'
+        Enum                   = '[error]'
+    Required               = '[storageType expires reason message]'
+    Title                  = 'Error Artifact Request'
+    Type                   = 'object'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Post Artifact Request'
+
+
+http://schemas.taskcluster.net/queue/v1/post-artifact-response.json
+===================================================================
+Description            = 'Response to a request for posting an artifact. Note that the `storageType` property is referenced in the request as well.'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#'
+OneOf
+  Item '0' =
+    Additional Properties  = 'false'
+    Description            = 'Response to a request for a signed PUT URL that will allow you to upload an artifact to an S3 bucket managed by the queue.'
+    Properties
+      Property 'contentType' =
+        Description            = 'Artifact mime-type, must be specified as header when uploading with the signed `putUrl`.'
+        MaxLength              = '255'
+        Type                   = 'string'
+      Property 'expires' =
+        Description            = 'Date-time after which the signed `putUrl` no longer works'
+        Format                 = 'date-time'
+        Type                   = 'string'
+      Property 'putUrl' =
+        Description            = 'URL to which a `PUT` request can be made to upload the artifact requested. Note, the `Content-Length` must be specified correctly, and the `ContentType` header must be set the value specified below.'
+        Format                 = 'uri'
+        Type                   = 'string'
+      Property 'storageType' =
+        Description            = 'Artifact storage type, in this case `'s3'`'
+        Enum                   = '[s3]'
+    Required               = '[storageType putUrl expires contentType]'
+    Title                  = 'S3 Artifact Response'
+    Type                   = 'object'
+  Item '1' =
+    Additional Properties  = 'false'
+    Description            = 'Response to a request for an Azure Shared Access Signature (SAS) that will allow you to upload an artifact to an Azure blob storage container managed by the queue.'
+    Properties
+      Property 'contentType' =
+        Description            = 'Artifact mime-type, should be specified with the `x-ms-blob-content-type` when committing the block.'
+        MaxLength              = '255'
+        Type                   = 'string'
+      Property 'expires' =
+        Description            = 'Date-time after which Shared Access Signature (SAS) will seize to work.'
+        Format                 = 'date-time'
+        Type                   = 'string'
+      Property 'putUrl' =
+        Description            = 'Shared Access Signature (SAS) with write permissions, see [Azure REST API](http://msdn.microsoft.com/en-US/library/azure/dn140256.aspx) reference for details on how to use this.'
+        Format                 = 'uri'
+        Type                   = 'string'
+      Property 'storageType' =
+        Description            = 'Artifact storage type, in this case `azure`'
+        Enum                   = '[azure]'
+    Required               = '[storageType expires contentType putUrl]'
+    Title                  = 'Azure Artifact Response'
+    Type                   = 'object'
+  Item '2' =
+    Additional Properties  = 'false'
+    Description            = 'Response to a request for the queue to redirect to a URL for a given artifact.'
+    Properties
+      Property 'storageType' =
+        Description            = 'Artifact storage type, in this case `reference`'
+        Enum                   = '[reference]'
+    Required               = '[storageType]'
+    Title                  = 'Redirect Artifact Response'
+    Type                   = 'object'
+  Item '3' =
+    Additional Properties  = 'false'
+    Description            = 'Response to a request for the queue to reply `403` (forbidden) with `reason` and `message` to any `GET` request for this artifact.'
+    Properties
+      Property 'storageType' =
+        Description            = 'Artifact storage type, in this case `error`'
+        Enum                   = '[error]'
+    Required               = '[storageType]'
+    Title                  = 'Error Artifact Response'
+    Type                   = 'object'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Post Artifact Response'
+
+
+http://schemas.taskcluster.net/queue/v1/task-claim-request.json#
+================================================================
+Additional Properties  = 'false'
+Description            = 'Request to claim (or reclaim) a task'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#'
+Properties
+  Property 'messageId' =
+    Description            = 'MessageId from Azure Queue message'
+    Type                   = 'string'
+  Property 'receipt' =
+    Description            = 'PopReceipt from Azure Queue message'
+    Type                   = 'string'
+  Property 'signature' =
+    Description            = 'Signature from the MessageText in Azure Queue message'
+    Type                   = 'string'
+  Property 'workerGroup' =
+    Description            = 'Identifier for group that worker claiming the task is a part of.'
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+  Property 'workerId' =
+    Description            = 'Identifier for worker within the given workerGroup'
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+Required               = '[workerGroup workerId]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Claim Request'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/task-claim-response.json#
+=================================================================
+Additional Properties  = 'false'
+Description            = 'Response to a successful task claim'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
+Properties
+  Property 'runId' =
+    Description            = '`run-id` assigned to this run of the task'
+    Maximum                = '1000'
+    Minimum                = '0'
+    Type                   = 'integer'
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
+  Property 'takenUntil' =
+    Description            = 'Time at which the run expires and is resolved as `failed`, if the run isn't reclaimed.'
+    Format                 = 'date-time'
+    Type                   = 'string'
+  Property 'workerGroup' =
+    Description            = 'Identifier for the worker-group within which this run started.'
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+  Property 'workerId' =
+    Description            = 'Identifier for the worker executing this run.'
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+Required               = '[status runId workerGroup workerId takenUntil]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Claim Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/task-completed-message.json#
+====================================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that a task has complete successfully.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-completed-message.json#'
+Properties
+  Property 'runId' =
+    Description            = 'Id of the run that completed the task
+    '
+    Maximum                = '1000'
+    Minimum                = '0'
+    Type                   = 'integer'
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+  Property 'workerGroup' =
+    Description            = 'Identifier for the worker-group within which this run ran.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+  Property 'workerId' =
+    Description            = 'Identifier for the worker that executed this run.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+Required               = '[version status runId workerGroup workerId]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Completed Message'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/task-completed-request.json#
+====================================================================
+Additional Properties  = 'false'
+Description            = 'Request for a task to be declared completed
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-completed-request.json#'
+Properties
+  Property 'success' =
+    Description            = 'True, if task is completed, and false if task is failed. This property
+    is optional and only present for backwards compatibility. It will be
+    removed in the future.
+    '
+    Type                   = 'boolean'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Completed Request'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/task-defined-message.json#
+==================================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that a task has been defined. The task may or may not be
+_scheduled_ too.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-defined-message.json#'
+Properties
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+Required               = '[version status]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Defined Message'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/task-exception-message.json#
+====================================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that TaskCluster have failed to run a task.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-exception-message.json#'
+Properties
+  Property 'runId' =
+    Description            = 'Id of the last run for the task, not provided if `deadline`
+    was exceeded before a run was started.
+    '
+    Maximum                = '1000'
+    Minimum                = '0'
+    Type                   = 'integer'
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+  Property 'workerGroup' =
+    Description            = 'Identifier for the worker-group within which the last attempt of the task
+    ran. Not provided, if `deadline` was exceeded before a run was started.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+  Property 'workerId' =
+    Description            = 'Identifier for the last worker that failed to report, causing the task
+    to fail. Not provided, if `deadline` was exceeded before a run
+    was started.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+Required               = '[version status]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Exception Message'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/task-exception-request.json#
+====================================================================
+Additional Properties  = 'false'
+Description            = 'Request for a run of a task to be resolved with an exception
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-exception-request.json#'
+Properties
+  Property 'reason' =
+    Description            = 'Reason that the task is resolved with an exception. This is a subset
+    of the values for `resolvedReason` given in the task status structure.
+    Please, report `worker-shutdown` if the run failed because the worker
+    had to shutdown (spot node disappearing).
+    And report `malformed-payload` if the `task.payload` doesn't match the
+    schema for the worker payload, or referenced dependencies doesn't exists.
+    In either case, you should still log the error to a log file under the
+    specific run.
+    '
+    Enum                   = '[worker-shutdown malformed-payload]'
+Required               = '[reason]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Exception Request'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/task-failed-message.json#
+=================================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that a task failed to complete successfully.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#'
+Properties
+  Property 'runId' =
+    Description            = 'Id of the run that failed.
+    '
+    Maximum                = '1000'
+    Minimum                = '0'
+    Type                   = 'integer'
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+  Property 'workerGroup' =
+    Description            = 'Identifier for the worker-group within which this run ran.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+  Property 'workerId' =
+    Description            = 'Identifier for the worker that executed this run.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+Required               = '[version status runId workerGroup workerId]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Failed Message'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/task-pending-message.json#
+==================================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that a task is now pending
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#'
+Properties
+  Property 'runId' =
+    Description            = 'Id of run that became pending, `run-id`s always starts from 0
+    '
+    Maximum                = '1000'
+    Minimum                = '0'
+    Type                   = 'integer'
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+Required               = '[version status runId]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Pending Message'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/task-running-message.json#
+==================================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that a given run of a task have started
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-running-message.json#'
+Properties
+  Property 'runId' =
+    Description            = 'Id of the run that just started, always starts from 0
+    '
+    Maximum                = '1000'
+    Minimum                = '0'
+    Type                   = 'integer'
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
+  Property 'takenUntil' =
+    Description            = 'Time at which the run expires and is resolved as `failed`, if the run
+    isn't reclaimed.
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+  Property 'workerGroup' =
+    Description            = 'Identifier for the worker-group within which this run started.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+  Property 'workerId' =
+    Description            = 'Identifier for the worker executing this run.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+Required               = '[version status runId workerGroup workerId takenUntil]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Running Message'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/task-status-response.json#
+==================================================================
+Additional Properties  = 'false'
+Description            = 'Response to a task status request'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+Properties
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
+Required               = '[status]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Status Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/task-status.json#
+=========================================================
+Additional Properties  = 'false'
+Description            = 'A representation of **task status** as known by the queue
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.json'
+Properties
+  Property 'deadline' =
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline'
+    Format                 = 'date-time'
+    Title                  = 'Deadline'
+    Type                   = 'string'
+  Property 'provisionerId' =
+    Description            = 'Unique identifier for the provisioner that this task must be scheduled on
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Provisioner Id'
+    Type                   = 'string'
+  Property 'retriesLeft' =
+    Description            = 'Number of retries left for the task in case of infrastructure issues
+    '
+    Maximum                = '999'
+    Minimum                = '0'
+    Title                  = 'Retries Left'
+    Type                   = 'integer'
+  Property 'runs' =
+    Description            = 'List of runs, ordered so that index `i` has `runId == i`
+    '
+    Items
+      Additional Properties  = 'false'
+      Description            = 'JSON object with information about a run
+      '
+      Properties
+        Property 'reasonCreated' =
+          Description            = 'Reason for the creation of this run,
+          **more reasons may be added in the future**."
+          '
+          Enum                   = '[scheduled retry rerun]'
+          Title                  = 'Reason Created'
+        Property 'reasonResolved' =
+          Description            = 'Reason that run was resolved, this is mainly
+          useful for runs resolved as `exception`.
+          Note, **more reasons may be added in the future**, also this
+          property is only available after the run is resolved.
+          '
+          Enum                   = '[completed failed deadline-exceeded canceled claim-expired worker-shutdown malformed-payload]'
+          Title                  = 'Reason Resolved'
+        Property 'resolved' =
+          Description            = 'Date-time at which this run was resolved, ie. when the run changed
+          state from `running` to either `completed`, `failed` or `exception`.
+          This property is only present after the run as been resolved.
+          '
+          Format                 = 'date-time'
+          Title                  = 'Resolved'
+          Type                   = 'string'
+        Property 'runId' =
+          Description            = 'Id of this task run, `run-id`s always starts from `0`
+          '
+          Maximum                = '1000'
+          Minimum                = '0'
+          Title                  = 'Run Identifier'
+          Type                   = 'integer'
+        Property 'scheduled' =
+          Description            = 'Date-time at which this run was scheduled, ie. when the run was
+          created in state `pending`.
+          '
+          Format                 = 'date-time'
+          Title                  = 'Scheduled'
+          Type                   = 'string'
+        Property 'started' =
+          Description            = 'Date-time at which this run was claimed, ie. when the run changed
+          state from `pending` to `running`. This property is only present
+          after the run has been claimed.
+          '
+          Format                 = 'date-time'
+          Title                  = 'Started'
+          Type                   = 'string'
+        Property 'state' =
+          Description            = 'State of this run
+          '
+          Enum                   = '[pending running completed failed exception]'
+          Title                  = 'Run State'
+        Property 'takenUntil' =
+          Description            = 'Time at which the run expires and is resolved as `failed`, if the
+          run isn't reclaimed. Note, only present after the run has been
+          claimed.
+          '
+          Format                 = 'date-time'
+          Title                  = 'Taken Until'
+          Type                   = 'string'
+        Property 'workerGroup' =
+          Description            = 'Identifier for group that worker who executes this run is a part of,
+          this identifier is mainly used for efficient routing.
+          Note, this property is only present after the run is claimed.
+          '
+          MaxLength              = '22'
+          MinLength              = '1'
+          Pattern                = '^([a-zA-Z0-9-_]*)$'
+          Title                  = 'Worker Group'
+          Type                   = 'string'
+        Property 'workerId' =
+          Description            = 'Identifier for worker evaluating this run within given
+          `workerGroup`. Note, this property is only available after the run
+          has been claimed.
+          '
+          MaxLength              = '22'
+          MinLength              = '1'
+          Pattern                = '^([a-zA-Z0-9-_]*)$'
+          Title                  = 'Worker Identifier'
+          Type                   = 'string'
+      Required               = '[runId state reasonCreated scheduled]'
+      Title                  = 'Run Information'
+      Type                   = 'object'
+    Title                  = 'List of Runs'
+    Type                   = 'array'
+  Property 'schedulerId' =
+    Description            = 'Identifier for the scheduler that _defined_ this task.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Scheduler Identifier'
+    Type                   = 'string'
+  Property 'state' =
+    Description            = 'State of this task. This is just an auxiliary property derived from state
+    of latests run, or `unscheduled` if none.
+    '
+    Enum                   = '[unscheduled pending running completed failed exception]'
+    Title                  = 'State'
+  Property 'taskGroupId' =
+    Description            = 'Identifier for a group of tasks scheduled together with this task, by
+    scheduler identified by `schedulerId`. For tasks scheduled by the
+    task-graph scheduler, this is the `taskGraphId`.
+    '
+    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Title                  = 'Task-Group Identifier'
+    Type                   = 'string'
+  Property 'taskId' =
+    Description            = 'Unique task identifier, this is UUID encoded as
+    [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+    stripped of `=` padding.
+    '
+    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Title                  = 'Task Identifier'
+    Type                   = 'string'
+  Property 'workerType' =
+    Description            = 'Identifier for worker type within the specified provisioner
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Worker Type'
+    Type                   = 'string'
+Required               = '[taskId provisionerId workerType schedulerId taskGroupId deadline retriesLeft state runs]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Status Structure'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/queue/v1/task.json#
+==================================================
+Additional Properties  = 'false'
+Description            = 'Definition of a task that can be scheduled
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task.json#'
+Properties
+  Property 'created' =
+    Description            = 'Creation time of task'
+    Format                 = 'date-time'
+    Title                  = 'Created'
+    Type                   = 'string'
+  Property 'deadline' =
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline'
+    Format                 = 'date-time'
+    Title                  = 'Deadline'
+    Type                   = 'string'
+  Property 'extra' =
+    Description            = 'Object with properties that can hold any kind of extra data that should be
+    associated with the task. This can be data for the task which doesn't
+    fit into `payload`, or it can supplementary data for use in services
+    listening for events from this task. For example this could be details to
+    display on _treeherder_, or information for indexing the task. Please, try
+    to put all related information under one property, so `extra` data keys
+    for treeherder reporting and task indexing don't conflict, hence, we have
+    reusable services. **Warning**, do not stuff large data-sets in here,
+    task definitions should not take-up multiple MiBs.
+    '
+    Title                  = 'Extra Data'
+    Type                   = 'object'
+  Property 'metadata' =
+    Additional Properties  = 'false'
+    Description            = 'Required task metadata
+    '
+    Properties
+      Property 'description' =
+        Description            = 'Human readable description of the task, please **explain** what the
+        task does. A few lines of documentation is not going to hurt you.
+        '
+        MaxLength              = '32768'
+        Title                  = 'Description'
+        Type                   = 'string'
+      Property 'name' =
+        Description            = 'Human readable name of task, used to very briefly given an idea about
+        what the task does.
+        '
+        MaxLength              = '255'
+        Title                  = 'Name'
+        Type                   = 'string'
+      Property 'owner' =
+        Description            = 'E-mail of person who caused this task, e.g. the person who did
+        `hg push`. The person we should contact to ask why this task is here.
+        '
+        Format                 = 'email'
+        MaxLength              = '255'
+        Title                  = 'Owner'
+        Type                   = 'string'
+      Property 'source' =
+        Description            = 'Link to source of this task, should specify a file, revision and
+        repository. This should be place someone can go an do a git/hg blame
+        to who came up with recipe for this task.
+        '
+        Format                 = 'uri'
+        MaxLength              = '4096'
+        Title                  = 'Source'
+        Type                   = 'string'
+    Required               = '[name description owner source]'
+    Title                  = 'Meta-data'
+    Type                   = 'object'
+  Property 'payload' =
+    Description            = 'Task-specific payload following worker-specific format. For example the
+    `docker-worker` requires keys like: `image`, `commands` and
+    `features`. Refer to the documentation of `docker-worker` for details.
+    '
+    Title                  = 'Task Payload'
+    Type                   = 'object'
+  Property 'provisionerId' =
+    Description            = 'Unique identifier for a provisioner, that can supply specified
+    `workerType`
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Provisioner Id'
+    Type                   = 'string'
+  Property 'retries' =
+    Description            = 'Number of times to retry the task in case of infrastructure issues.
+    An _infrastructure issue_ is a worker node that crashes or is shutdown,
+    these events are to be expected.
+    '
+    Maximum                = '50'
+    Minimum                = '0'
+    Title                  = 'Retries'
+    Type                   = 'integer'
+  Property 'routes' =
+    Description            = 'List of task specific routes, AMQP messages will be CC'ed to these routes.
+    '
+    Items
+      Description            = 'A task specific route, AMQP messages will be CC'ed with a routing key
+      matching `route.<task-specific route>`. It's possible to dot (`.`) in
+      the task specific route to make sub-keys, etc. See the RabbitMQ
+      [tutorial](http://www.rabbitmq.com/tutorials/tutorial-five-python.html)
+      for examples on how to use routing-keys.
+      '
+      MaxLength              = '249'
+      MinLength              = '1'
+      Title                  = 'Task Specific Route'
+      Type                   = 'string'
+    Title                  = 'Task Specific Routes'
+    Type                   = 'array'
+  Property 'schedulerId' =
+    Description            = 'Identifier for the scheduler that _defined_ this task, this can be an
+    identifier for a user or a service like the `"task-graph-scheduler"`.
+    Along with the `taskGroupId` this is used to form the permission scope
+    `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
+    this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Scheduler Identifier'
+    Type                   = 'string'
+  Property 'scopes' =
+    Description            = 'List of scopes (or scope-patterns) that the task is
+    authorized to use.
+    '
+    Items
+      Description            = 'A scope (or scope-patterns) which the task is
+      authorized to use. This can be a string or a string
+      ending with `*` which will authorize all scopes for
+      which the string is a prefix.
+      '
+      Title                  = 'Scope'
+      Type                   = 'string'
+    Title                  = 'Scopes'
+    Type                   = 'array'
+  Property 'tags' =
+    Additional Properties  = 'MaxLength              = '4096'
+    Type                   = 'string'
+    '
+    Description            = 'Arbitrary key-value tags (only strings limited to 4k). These can be used
+    to attach informal meta-data to a task. Use this for informal tags that
+    tasks can be classified by. You can also think of strings here as
+    candidates for formal meta-data. Something like
+    `purpose: 'build' || 'test'` is a good example.
+    '
+    Title                  = 'Tags'
+    Type                   = 'object'
+  Property 'taskGroupId' =
+    Description            = 'Identifier for a group of tasks scheduled together with this task, by
+    scheduler identified by `schedulerId`. For tasks scheduled by the
+    task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
+    property isn't specified.
+    '
+    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Title                  = 'Task-Group Identifier'
+    Type                   = 'string'
+  Property 'workerType' =
+    Description            = 'Unique identifier for a worker-type within a specific provisioner
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Worker Type'
+    Type                   = 'string'
+Required               = '[provisionerId workerType schedulerId taskGroupId routes retries created deadline scopes payload metadata tags extra]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Definition'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#
+===========================================================================
+Additional Properties  = 'false'
+Description            = 'Definition of a task-graph that can be scheduled'
+ID                     = 'http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#'
+Properties
+  Property 'tasks' =
+    Description            = 'List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.'
+    Items
+      Description            = 'Representation of a tasks in the task-graph'
+      Properties
+        Property 'requires' =
+          Description            = 'List of required `taskId`s'
+          Items
+            Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
+            Pattern                = '^[a-zA-Z0-9-_]{22}'
+            Title                  = 'Required `taskId`'
+            Type                   = 'string'
+          Title                  = 'Required tasks'
+          Type                   = 'array'
+        Property 'reruns' =
+          Description            = 'Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.'
+          Maximum                = '100'
+          Minimum                = '0'
+          Title                  = 'Re-runs'
+          Type                   = 'integer'
+        Property 'task' =
+          Ref                    = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+        Property 'taskId' =
+          Description            = 'Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.'
+          Pattern                = '^[a-zA-Z0-9-_]{22}'
+          Title                  = 'Task Identifier'
+          Type                   = 'string'
+      Required               = '[taskId task]'
+      Title                  = 'Task Node'
+      Type                   = 'object'
+    Title                  = 'Tasks'
+    Type                   = 'array'
+Required               = '[tasks]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task-Graph Definition'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json
+============================================================================
+Additional Properties  = 'false'
+Description            = 'Information about a **task-graph** as known by the scheduler, with all the state of all individual tasks.'
+ID                     = 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#'
+Properties
+  Property 'metadata' =
+    Additional Properties  = 'false'
+    Description            = 'Required task metadata'
+    Properties
+      Property 'description' =
+        Description            = 'Human readable description of task-graph, **explain** what it does!'
+        MaxLength              = '32768'
+        Title                  = 'Description'
+        Type                   = 'string'
+      Property 'name' =
+        Description            = 'Human readable name of task-graph'
+        MaxLength              = '255'
+        Title                  = 'Name'
+        Type                   = 'string'
+      Property 'owner' =
+        Description            = 'E-mail of person who caused this task-graph, e.g. the person who did `hg push`'
+        Format                 = 'email'
+        MaxLength              = '255'
+        Title                  = 'Owner'
+        Type                   = 'string'
+      Property 'source' =
+        Description            = 'Link to source of this task-graph, should specify file, revision and repository'
+        Format                 = 'uri'
+        MaxLength              = '4096'
+        Title                  = 'Source'
+        Type                   = 'string'
+    Required               = '[name description owner source]'
+    Title                  = 'Meta-data'
+    Type                   = 'object'
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#'
+  Property 'tags' =
+    Additional Properties  = 'MaxLength              = '4096'
+    Type                   = 'string'
+    '
+    Description            = 'Arbitrary key-value tags (only strings limited to 4k)'
+    Title                  = 'Tags'
+    Type                   = 'object'
+  Property 'tasks' =
+    Description            = 'Mapping from task-labels to task information and state.'
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Information about a tasks in the task-graph'
+      Properties
+        Property 'dependents' =
+          Description            = 'List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.'
+          Items
+            Description            = '`taskId` for task that requires this task to be _successfully completed_ before it can be scheduled.'
+            Pattern                = '^[a-zA-Z0-9-_]{22}'
+            Title                  = 'Dependent `taskId`'
+            Type                   = 'string'
+          Title                  = 'Dependent tasks'
+          Type                   = 'array'
+        Property 'name' =
+          Description            = 'Human readable name from the task definition'
+          MaxLength              = '255'
+          Title                  = 'Name'
+          Type                   = 'string'
+        Property 'requires' =
+          Description            = 'List of required `taskId`s'
+          Items
+            Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
+            Pattern                = '^[a-zA-Z0-9-_]{22}'
+            Title                  = 'Required `taskId`'
+            Type                   = 'string'
+          Title                  = 'Required tasks'
+          Type                   = 'array'
+        Property 'requiresLeft' =
+          Description            = 'List of `taskId`s that have yet to complete successfully, before this task can be scheduled.'
+          Items
+            Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
+            Pattern                = '^[a-zA-Z0-9-_]{22}'
+            Title                  = 'Required `taskId`'
+            Type                   = 'string'
+          Title                  = 'Required tasks left'
+          Type                   = 'array'
+        Property 'reruns' =
+          Description            = 'Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.'
+          Maximum                = '999'
+          Minimum                = '0'
+          Title                  = 'Re-runs'
+          Type                   = 'integer'
+        Property 'rerunsLeft' =
+          Description            = 'Number of reruns that haven't been used yet.'
+          Maximum                = '999'
+          Minimum                = '0'
+          Title                  = 'Re-runs Left'
+          Type                   = 'integer'
+        Property 'satisfied' =
+          Description            = 'true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.'
+          Title                  = 'Task Satisfied'
+          Type                   = 'boolean'
+        Property 'state' =
+          Description            = 'State of the task as considered by the scheduler'
+          Enum                   = '[unscheduled scheduled completed failed exception]'
+          Title                  = 'Task Node State'
+        Property 'taskId' =
+          Description            = 'Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.'
+          Pattern                = '^[a-zA-Z0-9-_]{22}'
+          Title                  = 'Task Identifier'
+          Type                   = 'string'
+      Required               = '[taskId name requires requiresLeft reruns rerunsLeft state satisfied dependents]'
+      Title                  = 'Task Information'
+      Type                   = 'object'
+    Title                  = 'Tasks'
+    Type                   = 'array'
+Required               = '[status tasks metadata tags]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Inspect Task-Graph Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json
+=================================================================================
+Additional Properties  = 'false'
+Description            = 'Information about a **task** in a task-graph as known by the scheduler.'
+ID                     = 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json#'
+Properties
+  Property 'dependents' =
+    Description            = 'List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.'
+    Items
+      Description            = '`taskId` for task that requires this task to be _successfully completed_ before it can be scheduled.'
+      Pattern                = '^[a-zA-Z0-9-_]{22}'
+      Title                  = 'Dependent `taskId`'
+      Type                   = 'string'
+    Title                  = 'Dependent tasks'
+    Type                   = 'array'
+  Property 'name' =
+    Description            = 'Human readable name from the task definition'
+    MaxLength              = '255'
+    Title                  = 'Name'
+    Type                   = 'string'
+  Property 'requires' =
+    Description            = 'List of required `taskId`s'
+    Items
+      Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
+      Pattern                = '^[a-zA-Z0-9-_]{22}'
+      Title                  = 'Required `taskId`'
+      Type                   = 'string'
+    Title                  = 'Required tasks'
+    Type                   = 'array'
+  Property 'requiresLeft' =
+    Description            = 'List of `taskId`s that have yet to complete successfully, before this task can be scheduled.'
+    Items
+      Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
+      Pattern                = '^[a-zA-Z0-9-_]{22}'
+      Title                  = 'Required `taskId`'
+      Type                   = 'string'
+    Title                  = 'Required tasks left'
+    Type                   = 'array'
+  Property 'reruns' =
+    Description            = 'Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.'
+    Maximum                = '999'
+    Minimum                = '0'
+    Title                  = 'Re-runs'
+    Type                   = 'integer'
+  Property 'rerunsLeft' =
+    Description            = 'Number of reruns that haven't been used yet.'
+    Maximum                = '999'
+    Minimum                = '0'
+    Title                  = 'Re-runs Left'
+    Type                   = 'integer'
+  Property 'satisfied' =
+    Description            = 'true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.'
+    Title                  = 'Task Satisfied'
+    Type                   = 'boolean'
+  Property 'state' =
+    Description            = 'State of the task as considered by the scheduler'
+    Enum                   = '[unscheduled scheduled completed failed exception]'
+    Title                  = 'Task Node State'
+  Property 'taskId' =
+    Description            = 'Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.'
+    Pattern                = '^[a-zA-Z0-9-_]{22}'
+    Title                  = 'Task Identifier'
+    Type                   = 'string'
+Required               = '[taskId name requires requiresLeft reruns rerunsLeft state satisfied dependents]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Inspect Task-Graph Task Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#
+============================================================================
+Additional Properties  = 'false'
+Description            = 'Message that all reruns of a task has failed it is now blocking the task-graph from finishing.'
+ID                     = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#'
+Properties
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#'
+  Property 'taskId' =
+    Description            = 'Unique `taskId` that is blocking this task-graph from completion.'
+    Pattern                = '^[a-zA-Z0-9-_]{22}'
+    Type                   = 'string'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+Required               = '[version status taskId]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Blocked Task-Graph Message'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#
+=============================================================================
+Additional Properties  = 'false'
+Description            = 'Messages as posted to `scheduler/v1/task-graph-extended` informing the world that a task-graph have been extended.'
+ID                     = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#'
+Properties
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+Required               = '[version status]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task-Graph Extended Message'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#
+=============================================================================
+Additional Properties  = 'false'
+Description            = 'Message that all tasks in a task-graph have now completed successfully and the graph is _finished_.'
+ID                     = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#'
+Properties
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+Required               = '[version status]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task-Graph Finished Message'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json
+=========================================================================
+Additional Properties  = 'false'
+Description            = 'Response for a request for task-graph information'
+ID                     = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json#'
+Properties
+  Property 'metadata' =
+    Additional Properties  = 'false'
+    Description            = 'Required task metadata'
+    Properties
+      Property 'description' =
+        Description            = 'Human readable description of task-graph, **explain** what it does!'
+        MaxLength              = '32768'
+        Title                  = 'Description'
+        Type                   = 'string'
+      Property 'name' =
+        Description            = 'Human readable name of task-graph'
+        MaxLength              = '255'
+        Title                  = 'Name'
+        Type                   = 'string'
+      Property 'owner' =
+        Description            = 'E-mail of person who caused this task-graph, e.g. the person who did `hg push`'
+        Format                 = 'email'
+        MaxLength              = '255'
+        Title                  = 'Owner'
+        Type                   = 'string'
+      Property 'source' =
+        Description            = 'Link to source of this task-graph, should specify file, revision and repository'
+        Format                 = 'uri'
+        MaxLength              = '4096'
+        Title                  = 'Source'
+        Type                   = 'string'
+    Required               = '[name description owner source]'
+    Title                  = 'Meta-data'
+    Type                   = 'object'
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#'
+  Property 'tags' =
+    Additional Properties  = 'MaxLength              = '4096'
+    Type                   = 'string'
+    '
+    Description            = 'Arbitrary key-value tags (only strings limited to 4k)'
+    Title                  = 'Tags'
+    Type                   = 'object'
+Required               = '[status metadata tags]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task-Graph Info Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#
+============================================================================
+Additional Properties  = 'false'
+Description            = 'Messages as posted to `scheduler/v1/task-graph-running` informing the world that a new task-graph have been submitted.'
+ID                     = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#'
+Properties
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+Required               = '[version status]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'New Task-Graph Message'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json
+===========================================================================
+Additional Properties  = 'false'
+Description            = 'Response containing the status structure for a task-graph'
+ID                     = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#'
+Properties
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#'
+Required               = '[status]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task-Graph Status Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#
+============================================================================
+Additional Properties  = 'false'
+Description            = 'Response containing the status structure for a task-graph'
+ID                     = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#'
+Properties
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#'
+Required               = '[status]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task-Graph Status Response'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#
+===================================================================
+Additional Properties  = 'false'
+Description            = 'A representation of **task-graph status** as known by the scheduler, without the state of all individual tasks.'
+ID                     = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#'
+Properties
+  Property 'schedulerId' =
+    Description            = 'Unique identifier for task-graph scheduler managing the given task-graph'
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+  Property 'state' =
+    Description            = 'Task-graph state, this enum is **frozen** new values will **not** be added.'
+    Enum                   = '[running blocked finished]'
+  Property 'taskGraphId' =
+    Description            = 'Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.'
+    Pattern                = '^[a-zA-Z0-9-_]{22}'
+    Type                   = 'string'
+Required               = '[taskGraphId schedulerId state]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task-Graph Status Structure'
+Type                   = 'object'
+
+
+http://schemas.taskcluster.net/scheduler/v1/task-graph.json#
+============================================================
+Additional Properties  = 'false'
+Description            = 'Definition of a task-graph that can be scheduled
+'
+ID                     = 'http://schemas.taskcluster.net/scheduler/v1/task-graph.json#'
+Properties
+  Property 'metadata' =
+    Additional Properties  = 'false'
+    Description            = 'Required task metadata"
+    '
+    Properties
+      Property 'description' =
+        Description            = 'Human readable description of task-graph, **explain** what it does!
+        '
+        MaxLength              = '32768'
+        Title                  = 'Description'
+        Type                   = 'string'
+      Property 'name' =
+        Description            = 'Human readable name of task-graph, give people finding this an idea
+        what this graph is about.
+        '
+        MaxLength              = '255'
+        Title                  = 'Name'
+        Type                   = 'string'
+      Property 'owner' =
+        Description            = 'E-mail of person who caused this task-graph, e.g. the person who did
+        `hg push` or whatever triggered it.
+        '
+        Format                 = 'email'
+        MaxLength              = '255'
+        Title                  = 'Owner'
+        Type                   = 'string'
+      Property 'source' =
+        Description            = 'Link to source of this task-graph, should specify file, revision and
+        repository
+        '
+        Format                 = 'uri'
+        MaxLength              = '4096'
+        Title                  = 'Source'
+        Type                   = 'string'
+    Required               = '[name description owner source]'
+    Title                  = 'Meta-data'
+    Type                   = 'object'
+  Property 'routes' =
+    Description            = 'List of task-graph specific routes, AMQP messages will be CC'ed to these
+    routes prefixed by `'route.'`.
+    '
+    Items
+      Description            = 'A task-graph specific route, AMQP messages will be CC'ed with a
+      routing key matching `route.<task-graph specific route>`. It's possible
+      to dot (`.`) in the task-graph specific route to make sub-keys, etc.
+      See the RabbitMQ
+      [tutorial](http://www.rabbitmq.com/tutorials/tutorial-five-python.html)
+      for examples on how to use routing-keys.
+      '
+      MaxLength              = '249'
+      MinLength              = '1'
+      Title                  = 'Task-Graph specific route'
+      Type                   = 'string'
+    Title                  = 'Task-graph specific routes'
+    Type                   = 'array'
+  Property 'scopes' =
+    Description            = 'List of scopes (or scope-patterns) that tasks of the task-graph is
+    authorized to use.
+    '
+    Items
+      Description            = 'A scope (or scope-patterns) which a task of the task-graph is
+      authorized to use. This can be a string or a string ending with `*`
+      which will authorize all scopes for which the string is a prefix.
+      '
+      Title                  = 'Scope'
+      Type                   = 'string'
+    Title                  = 'Scopes'
+    Type                   = 'array'
+  Property 'tags' =
+    Additional Properties  = 'MaxLength              = '4096'
+    Type                   = 'string'
+    '
+    Description            = 'Arbitrary key-value tags (only strings limited to 4k)
+    '
+    Title                  = 'Tags'
+    Type                   = 'object'
+  Property 'tasks' =
+    Description            = 'List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.'
+    Items
+      Description            = 'Representation of a tasks in the task-graph'
+      Properties
+        Property 'requires' =
+          Description            = 'List of required `taskId`s'
+          Items
+            Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
+            Pattern                = '^[a-zA-Z0-9-_]{22}'
+            Title                  = 'Required `taskId`'
+            Type                   = 'string'
+          Title                  = 'Required tasks'
+          Type                   = 'array'
+        Property 'reruns' =
+          Description            = 'Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.'
+          Maximum                = '100'
+          Minimum                = '0'
+          Title                  = 'Re-runs'
+          Type                   = 'integer'
+        Property 'task' =
+          Ref                    = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+        Property 'taskId' =
+          Description            = 'Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.'
+          Pattern                = '^[a-zA-Z0-9-_]{22}'
+          Title                  = 'Task Identifier'
+          Type                   = 'string'
+      Required               = '[taskId task]'
+      Title                  = 'Task Node'
+      Type                   = 'object'
+    Title                  = 'Tasks'
+    Type                   = 'array'
+Required               = '[tasks metadata]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task-Graph Definition'
+Type                   = 'object'
+
+
