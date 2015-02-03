@@ -56,19 +56,23 @@ type (
 	}
 )
 
-func (jsonSubSchema *JsonSubSchema) StructDefinition() string {
-	content := "\n"
+func (jsonSubSchema *JsonSubSchema) StructDefinition(withComments bool) string {
+	content := ""
 	comment := ""
-	if d := jsonSubSchema.Description; d != nil {
-		if desc := *d; desc != "" {
-			comment = utils.Indent(desc, "// ")
+	if withComments {
+		content += "\n"
+		if d := jsonSubSchema.Description; d != nil {
+			if desc := *d; desc != "" {
+				comment = utils.Indent(desc, "// ")
+			}
+			if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+				comment += "\n"
+			}
 		}
-		if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
-			comment += "\n"
-		}
+		content += comment
+		content += fmt.Sprintf("%v ", jsonSubSchema.StructName)
 	}
-	content += utils.Indent(comment, "\t")
-	content += fmt.Sprintf("\t%v struct {\n", jsonSubSchema.StructName)
+	content += fmt.Sprintf("struct {\n")
 	if s := jsonSubSchema.Properties; s != nil {
 		members := make(map[string]bool, len(s.SortedPropertyNames))
 		for _, j := range s.SortedPropertyNames {
@@ -86,6 +90,10 @@ func (jsonSubSchema *JsonSubSchema) StructDefinition() string {
 					}
 				}
 			}
+			// recursive call to build structs inside structs
+			if typ == "object" {
+				typ = s.Properties[j].StructDefinition(false)
+			}
 			// comment the struct member with the description from the json
 			comment = ""
 			if d := s.Properties[j].Description; d != nil {
@@ -94,12 +102,16 @@ func (jsonSubSchema *JsonSubSchema) StructDefinition() string {
 			if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 				comment += "\n"
 			}
-			content += utils.Indent(comment, "\t")
+			content += comment
 			// struct member name and type, as part of struct definition
-			content += fmt.Sprintf("\t\t%v %v\n", memberName, typ)
+			content += fmt.Sprintf("\t%v %v\n", memberName, typ)
 		}
 	}
-	return content + "\t}\n"
+	content += "}"
+	if withComments {
+		content += "\n"
+	}
+	return content
 }
 
 func (p Properties) String() string {

@@ -81,7 +81,8 @@ type (
 	// Representation of an indexed task.
 	IndexedTaskResponse struct {
 		// Data that was reported with the task. This is an arbitrary JSON object.
-		Data object
+		Data struct {
+		}
 		// Date at which this entry expires from the task index.
 		Expires string
 		// Namespace of the indexed task, used to find the indexed task in the index.
@@ -101,7 +102,8 @@ type (
 		// This is an arbitrary JSON object. Feel free to put whatever data you want
 		// here, but do limit it, you'll get errors if you store more than 32KB.
 		// So stay well, below that limit.
-		Data object
+		Data struct {
+		}
 		// Date at which this entry expires from the task index.
 		Expires string
 		// If multiple tasks are indexed with the same `namespace` the task with the
@@ -196,13 +198,29 @@ type (
 		// for treeherder reporting and task indexing don't conflict, hence, we have
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
-		Extra object
+		Extra struct {
+		}
 		// Required task metadata
-		Metadata object
+		Metadata struct {
+			// Human readable description of the task, please **explain** what the
+			// task does. A few lines of documentation is not going to hurt you.
+			Description string
+			// Human readable name of task, used to very briefly given an idea about
+			// what the task does.
+			Name string
+			// E-mail of person who caused this task, e.g. the person who did
+			// `hg push`. The person we should contact to ask why this task is here.
+			Owner string
+			// Link to source of this task, should specify a file, revision and
+			// repository. This should be place someone can go an do a git/hg blame
+			// to who came up with recipe for this task.
+			Source string
+		}
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
-		Payload object
+		Payload struct {
+		}
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		ProvisionerId string
@@ -226,7 +244,8 @@ type (
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-		Tags object
+		Tags struct {
+		}
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
@@ -432,13 +451,29 @@ type (
 		// for treeherder reporting and task indexing don't conflict, hence, we have
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
-		Extra object
+		Extra struct {
+		}
 		// Required task metadata
-		Metadata object
+		Metadata struct {
+			// Human readable description of the task, please **explain** what the
+			// task does. A few lines of documentation is not going to hurt you.
+			Description string
+			// Human readable name of task, used to very briefly given an idea about
+			// what the task does.
+			Name string
+			// E-mail of person who caused this task, e.g. the person who did
+			// `hg push`. The person we should contact to ask why this task is here.
+			Owner string
+			// Link to source of this task, should specify a file, revision and
+			// repository. This should be place someone can go an do a git/hg blame
+			// to who came up with recipe for this task.
+			Source string
+		}
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
-		Payload object
+		Payload struct {
+		}
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		ProvisionerId string
@@ -462,7 +497,8 @@ type (
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-		Tags object
+		Tags struct {
+		}
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
@@ -481,10 +517,20 @@ type (
 	// Information about a **task-graph** as known by the scheduler, with all the state of all individual tasks.
 	InspectTaskGraphResponse struct {
 		// Required task metadata
-		Metadata object
-		Status   unknown
+		Metadata struct {
+			// Human readable description of task-graph, **explain** what it does!
+			Description string
+			// Human readable name of task-graph
+			Name string
+			// E-mail of person who caused this task-graph, e.g. the person who did `hg push`
+			Owner string
+			// Link to source of this task-graph, should specify file, revision and repository
+			Source string
+		}
+		Status unknown
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags object
+		Tags struct {
+		}
 		// Mapping from task-labels to task information and state.
 		Tasks []object
 	}
@@ -537,10 +583,20 @@ type (
 	// Response for a request for task-graph information
 	TaskGraphInfoResponse struct {
 		// Required task metadata
-		Metadata object
-		Status   unknown
+		Metadata struct {
+			// Human readable description of task-graph, **explain** what it does!
+			Description string
+			// Human readable name of task-graph
+			Name string
+			// E-mail of person who caused this task-graph, e.g. the person who did `hg push`
+			Owner string
+			// Link to source of this task-graph, should specify file, revision and repository
+			Source string
+		}
+		Status unknown
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags object
+		Tags struct {
+		}
 	}
 
 	// Messages as posted to `scheduler/v1/task-graph-running` informing the world that a new task-graph have been submitted.
@@ -573,7 +629,19 @@ type (
 	// Definition of a task-graph that can be scheduled
 	TaskGraphDefinition1 struct {
 		// Required task metadata"
-		Metadata object
+		Metadata struct {
+			// Human readable description of task-graph, **explain** what it does!
+			Description string
+			// Human readable name of task-graph, give people finding this an idea
+			// what this graph is about.
+			Name string
+			// E-mail of person who caused this task-graph, e.g. the person who did
+			// `hg push` or whatever triggered it.
+			Owner string
+			// Link to source of this task-graph, should specify file, revision and
+			// repository
+			Source string
+		}
 		// List of task-graph specific routes, AMQP messages will be CC'ed to these
 		// routes prefixed by `'route.'`.
 		Routes []string
@@ -581,7 +649,8 @@ type (
 		// authorized to use.
 		Scopes []string
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags object
+		Tags struct {
+		}
 		// List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.
 		Tasks []object
 	}
