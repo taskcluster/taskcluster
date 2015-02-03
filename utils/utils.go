@@ -41,3 +41,20 @@ func WriteStringToFile(content, file string) {
 	err := ioutil.WriteFile(file, bytes, 0644)
 	ExitOnFail(err)
 }
+
+func Normalise(name string, dict map[string]bool) string {
+	// Capitalise words, and remove spaces and dashes, to acheive struct names in CamelCase,
+	// but starting with an upper case letter so that the structs are exported...
+	normalisedName := strings.NewReplacer(" ", "", "-", "").Replace(strings.Title(name))
+	// If name already exists, add an integer suffix to name. Start with "1" and increment
+	// by 1 until an unused name is found. Example: if name FooBar was generated four times
+	// , the first instance would be called FooBar, then the next would be FooBar1, the next
+	// FooBar2 and the last would be assigned a name of FooBar3. We do this to guarantee we
+	// don't use duplicate names for different logical entities.
+	for k, baseName := 1, normalisedName; dict[normalisedName]; {
+		normalisedName = fmt.Sprintf("%v%v", baseName, k)
+		k++
+	}
+	dict[normalisedName] = true
+	return normalisedName
+}

@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"sort"
-	"strings"
 )
 
 var (
@@ -278,20 +277,7 @@ func generateStructs() string {
 	content := ""
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	for _, i := range schemaURLs {
-		// Capitalise words, and remove spaces and dashes, to acheive struct names in CamelCase,
-		// but starting with an upper case letter so that the structs are exported...
-		structName := strings.NewReplacer(" ", "", "-", "").Replace(strings.Title(*schemas[i].Title))
-		// If structName already exists, add an integer suffix to name. Start with "1" and increment
-		// by 1 until an unused structName is found. Example: if structName FooBar was generated four
-		// times, the first instance would be called FooBar, then the next would be FooBar1, the next
-		// FooBar2 and the last would be assigned a structName of FooBar3. We do this to guarantee
-		// we don't use duplicate struct names for different logical schemas.
-		for k, baseName := 1, structName; structs[structName]; {
-			structName = fmt.Sprintf("%v%v", baseName, k)
-			k++
-		}
-		structs[structName] = true
-		schemas[i].StructName = structName
+		schemas[i].StructName = utils.Normalise(*schemas[i].Title, structs)
 		content += "\n"
 		comment := ""
 		if d := schemas[i].Description; d != nil {
@@ -303,9 +289,11 @@ func generateStructs() string {
 			}
 		}
 		content += comment
-		content += fmt.Sprintf("type %v struct {\n", structName)
+		content += fmt.Sprintf("type %v struct {\n", schemas[i].StructName)
 		if s := schemas[i].Properties; s != nil {
+			members := make(map[string]bool, len(s.SortedPropertyNames))
 			for _, j := range s.SortedPropertyNames {
+				memberName := utils.Normalise(j, members)
 				typ := "unknown"
 				if p := s.Properties[j].Type; p != nil {
 					typ = *p
@@ -329,7 +317,7 @@ func generateStructs() string {
 				}
 				content += comment
 				// struct member name and type, as part of struct definition
-				content += fmt.Sprintf("\t%v %v\n", j, typ)
+				content += fmt.Sprintf("\t%v %v\n", memberName, typ)
 			}
 		}
 		content += "}\n"
