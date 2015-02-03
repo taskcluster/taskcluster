@@ -56,6 +56,52 @@ type (
 	}
 )
 
+func (jsonSubSchema *JsonSubSchema) StructDefinition() string {
+	content := "\n"
+	comment := ""
+	if d := jsonSubSchema.Description; d != nil {
+		if desc := *d; desc != "" {
+			comment = utils.Indent(desc, "// ")
+		}
+		if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+			comment += "\n"
+		}
+	}
+	content += utils.Indent(comment, "\t")
+	content += fmt.Sprintf("\t%v struct {\n", jsonSubSchema.StructName)
+	if s := jsonSubSchema.Properties; s != nil {
+		members := make(map[string]bool, len(s.SortedPropertyNames))
+		for _, j := range s.SortedPropertyNames {
+			memberName := utils.Normalise(j, members)
+			typ := "unknown"
+			if p := s.Properties[j].Type; p != nil {
+				typ = *p
+			}
+			if typ == "array" {
+				if jsonType := s.Properties[j].Items.Type; jsonType != nil {
+					if *jsonType == "" {
+						typ = "[]" + *s.Properties[j].Items.Title
+					} else {
+						typ = "[]" + *jsonType
+					}
+				}
+			}
+			// comment the struct member with the description from the json
+			comment = ""
+			if d := s.Properties[j].Description; d != nil {
+				comment = utils.Indent(*d, "\t// ")
+			}
+			if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+				comment += "\n"
+			}
+			content += utils.Indent(comment, "\t")
+			// struct member name and type, as part of struct definition
+			content += fmt.Sprintf("\t\t%v %v\n", memberName, typ)
+		}
+	}
+	return content + "\t}\n"
+}
+
 func (p Properties) String() string {
 	result := ""
 	for _, i := range p.SortedPropertyNames {

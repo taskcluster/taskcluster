@@ -13,9 +13,6 @@ var (
 	apis    []APIDefinition
 	schemas map[string]*JsonSubSchema = make(map[string]*JsonSubSchema)
 	err     error
-	// keep a record of generated struct names, so that we don't reuse old names
-	// map[string]bool acts like a set of strings
-	structs map[string]bool = make(map[string]bool)
 	// for sorting schemas by schemaURL
 	schemaURLs []string
 )
@@ -246,6 +243,14 @@ func LoadAPIs(reader io.Reader) ([]APIDefinition, []string, map[string]*JsonSubS
 		schemaURLs = append(schemaURLs, url)
 	}
 	sort.Strings(schemaURLs)
+	// finally, now we can generate normalised names
+	// for schemas
+	// keep a record of generated struct names, so that we don't reuse old names
+	// map[string]bool acts like a set of strings
+	structs := make(map[string]bool)
+	for _, i := range schemaURLs {
+		schemas[i].StructName = utils.Normalise(*schemas[i].Title, structs)
+	}
 	return apis, schemaURLs, schemas
 }
 
@@ -275,53 +280,10 @@ package client
 }
 
 func generateStructs() string {
-	content := "type ("
+	content := "type (" // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	for _, i := range schemaURLs {
-		schemas[i].StructName = utils.Normalise(*schemas[i].Title, structs)
-		content += "\n"
-		comment := ""
-		if d := schemas[i].Description; d != nil {
-			if desc := *d; desc != "" {
-				comment = utils.Indent(desc, "// ")
-			}
-			if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
-				comment += "\n"
-			}
-		}
-		content += utils.Indent(comment, "\t")
-		content += fmt.Sprintf("\t%v struct {\n", schemas[i].StructName)
-		if s := schemas[i].Properties; s != nil {
-			members := make(map[string]bool, len(s.SortedPropertyNames))
-			for _, j := range s.SortedPropertyNames {
-				memberName := utils.Normalise(j, members)
-				typ := "unknown"
-				if p := s.Properties[j].Type; p != nil {
-					typ = *p
-				}
-				if typ == "array" {
-					if jsonType := s.Properties[j].Items.Type; jsonType != nil {
-						if *jsonType == "" {
-							typ = "[]" + *s.Properties[j].Items.Title
-						} else {
-							typ = "[]" + *jsonType
-						}
-					}
-				}
-				// comment the struct member with the description from the json
-				comment = ""
-				if d := s.Properties[j].Description; d != nil {
-					comment = utils.Indent(*d, "\t// ")
-				}
-				if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
-					comment += "\n"
-				}
-				content += utils.Indent(comment, "\t")
-				// struct member name and type, as part of struct definition
-				content += fmt.Sprintf("\t\t%v %v\n", memberName, typ)
-			}
-		}
-		content += "\t}\n"
+		content += utils.Indent(schemas[i].StructDefinition(), "\t")
 	}
 	return content + ")\n"
 }
