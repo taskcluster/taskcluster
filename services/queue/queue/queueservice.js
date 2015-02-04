@@ -7,7 +7,6 @@ var base32      = require('thirty-two');
 var querystring = require('querystring');
 var crypto      = require('crypto');
 var cryptiles   = require('cryptiles');
-var data        = require('./data');
 
 /** Decode Url-safe base64, our identifiers satisfies these requirements */
 var decodeUrlSafeBase64 = function(data) {
@@ -17,6 +16,15 @@ var decodeUrlSafeBase64 = function(data) {
 /** Get seconds until `target` relative to now (by default) */
 var secondsTo = function(target, relativeTo = new Date()) {
   return Math.floor((target.getTime() - relativeTo.getTime()) / 1000);
+};
+
+/** Validate task description object */
+var validateTask = function(task) {
+  assert(typeof(task.taskId) === 'string', "Expected task.taskId");
+  assert(typeof(task.provisionerId) === 'string',
+         "Expected task.provisionerId");
+  assert(typeof(task.workerType) === 'string', "Expected task.workerType");
+  assert(task.deadline instanceof Date, "Expected task.deadline");
 };
 
 /**
@@ -213,29 +221,43 @@ class QueueService {
    * Do **NOT** use this for validation of signatures, please use the
    * `validateSignature` method to avoid timing attacks.
    */
-  generateSignature(task, runId) {
-    assert(task instanceof data.Task, "Expect a Task entity");
+  generateSignature(task, runId, salt) {
+    validateTask(task);
     assert(typeof(runId) === 'number', "Expected runId as number");
+    assert(typeof(salt) === 'string', "Expected salt as string");
     return crypto.createHmac('sha256', this.signatureSecret).update([
       task.deadline.getTime(),
       task.provisionerId,
       task.workerType,
       task.taskId,
-      runId
+      runId,
+      salt
     ].join('\n')).digest('base64');
   }
 
   /** Validate signature from pending task message */
-  validateSignature(task, runId, signature) {
+  validateSignature(task, runId, salt, signature) {
+    validateTask(task);
     assert(typeof(signature) === 'string', "signature must be a string");
     return cryptiles.fixedTimeComparison(signature,
-      this.generateSignature(task, runId)
+      this.generateSignature(task, runId, salt)
     );
   }
 
-  /** Enqueue message about a new pending task in appropriate queue */
-  async putPendingMessage(task, runId) {
-    assert(task instanceof data.Task, "Expect a Task entity");
+  /**
+   * Enqueue message about a new pending task in appropriate queue
+   *
+   *
+   * The `task` argument is an object with the properties:
+   *  - `taskId`
+   *  - `provisionerId`
+   *  - `workerType`, and
+   *  - `deadline`
+   *
+   * Notice that a data.Task entity fits this description perfectly.
+   */
+  async putPendingMessage(task, runId, salt) {
+    validateTask(task);
     assert(typeof(runId) === 'number', "Expected runId as number");
 
     // Find name of azure queue
@@ -244,15 +266,12 @@ class QueueService {
       task.workerType
     );
 
-    // Generate signature
-    var sig = this.generateSignature(task, runId);
-
     // Put message queue
     return new Promise((accept, reject) => {
       this.service.createMessage(queueName, JSON.stringify({
         taskId:     task.taskId,
         runId:      runId,
-        signature:  sig
+        signature:  this.generateSignature(task, runId, salt)
       }), {
         messagettl:         secondsTo(task.deadline),
         visibilityTimeout:  0
@@ -261,22 +280,24 @@ class QueueService {
   }
 
   /**
-   * Update message to given task and runId, using messageId and receipt
+   * Update message to given task and runId, using `messageId` and `receipt`
+   * from the `claim` object.
    *
    * The updated message will become visible in `delay` ms. This method returns
-   * a promise for an object containing the new receipt:
+   * a promise for a claim object containing the new receipt:
    * ```js
    * {
    *   messageId:     // Message id (should be same as input)
    *   receipt:       // Receipt on the claim for the message
-   *   takenUntil:    // Date object for when message is visible again
+   *   expires:       // Date object for when message is visible again
    * }
    * ```
    */
-  async updatePendingTaskMessage(task, runId, delay, messageId, receipt) {
-    assert(task instanceof data.Task, "Expect a Task entity");
-    assert(typeof(runId) === 'number', "Expected runId as number");
-    assert(typeof(delay) === 'number', "Expected delay as number");
+  async updatePendingTaskMessage(task, runId, salt, delay, claim) {
+    validateTask(task);
+    assert(typeof(runId) === 'number',  "Expected runId as number");
+    assert(typeof(salt) === 'string',   "Expected salt as string");
+    assert(typeof(delay) === 'number',  "Expected delay as number");
 
     delay = Math.floor(delay / 1000);
 
@@ -290,11 +311,12 @@ class QueueService {
     var text = JSON.stringify({
       taskId:         task.taskId,
       runId:          runId,
-      signature:      this.generateSignature(task, runId)
+      signature:      this.generateSignature(task, runId, salt)
     });
 
     // Update message
     var message = await new Promise((accept, reject) => {
+      var {messageId, receipt} = claim;
       this.service.updateMessage(queueName, messageId, receipt, delay, {
         // See: https://github.com/Azure/azure-storage-node/issues/43
         messagetext:  text,
@@ -305,13 +327,13 @@ class QueueService {
     return {
       messageId:    message.messageid,
       receipt:      message.popreceipt,
-      takenUntil:   new Date(message.timenextvisible)
+      expires:      new Date(message.timenextvisible)
     };
   }
 
   /** Delete pending task message from azure queue */
-  async deletePendingTaskMessage(task, messageId, receipt) {
-    assert(task instanceof data.Task, "Expect a Task entity");
+  async deletePendingTaskMessage(task, claim) {
+    validateTask(task);
 
     // Find name of azure queue
     var queueName = await this.ensurePendingQueue(
@@ -319,6 +341,7 @@ class QueueService {
       task.workerType
     );
 
+    var {messageId, receipt} = claim;
     return new Promise((accept, reject) => {
       this.service.deleteMessage(queueName, messageId, receipt, (err) => {
         err ? reject(err) : accept()

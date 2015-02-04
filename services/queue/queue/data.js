@@ -54,12 +54,16 @@ var Task = base.Entity.configure({
      */
     runs:           base.Entity.types.JSON,
     /**
-     * Internal data holding message claim in azure queue
+     * Internal data holding references to a message in azure queue
      *
      * Properties:
-     *  - messageId
-     *  - receipt
-     * Or no properties, if there is no current claim on the task.
+     *  - `messageId`, present if there is claim on the task
+     *  - `receipt`, present with `messageId`
+     *  - `salt`, present if not resolved or unscheduled.
+     *
+     * The `salt` is included in signatures in the azure queue messages, hence,
+     * by updating the `salt` we can invalidate existing messages, as they will
+     * have an invalid signature.
      */
     claim:          base.Entity.types.JSON
   }
@@ -104,6 +108,15 @@ Task.prototype.status = function() {
 /** Get state of latest run, or 'unscheduled' if no runs */
 Task.prototype.state = function() {
   return (_.last(this.runs) || {state: 'unscheduled'}).state;
+};
+
+/**
+ * Test if there is a claim to task stored in `task.claim`
+ *
+ * Please, note that the claim may still be timed out and invalid.
+ */
+Task.prototype.hasClaim = function() {
+  return this.claim && this.claim.messageId && this.claim.receipt;
 };
 
 // Export Task

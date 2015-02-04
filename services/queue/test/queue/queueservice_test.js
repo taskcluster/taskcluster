@@ -9,8 +9,6 @@ suite('queue/QueueService', function() {
   var request       = require('superagent-promise');
   var debug         = require('debug')('queue:test:queueservice');
   var xml2js        = require('xml2js');
-  var data          = require('../../queue/data');
-  var util          = require('util');
 
   // Load configuration
   var cfg = base.config({
@@ -30,10 +28,6 @@ suite('queue/QueueService', function() {
                 "taskcluster-queue.conf.json");
     return;
   }
-
-  // Create a simple hack to fake creation of Task instances
-  var MockTask = function(props) {_.assign(this, props)};
-  util.inherits(MockTask , data.Task);
 
   var queueService = new QueueService({
     prefix:             cfg.get('queue:queuePrefix'),
@@ -76,12 +70,12 @@ suite('queue/QueueService', function() {
   test("put, get, update, timeout, delete, validate signature", async () => {
     var taskId  = slugid.v4();
     var runId   = 0;
-    var task    = new MockTask({
+    var task    = {
       taskId:             taskId,
       provisionerId:      provisionerId,
       workerType:         workerType,
       deadline:           new Date(new Date().getTime() + 5 * 60 * 1000)
-    });
+    }
 
     // Put message into pending queue
     debug("### Putting message in pending queue");
@@ -131,11 +125,14 @@ suite('queue/QueueService', function() {
 
     // Update message, to prove that we can
     debug("### Updating claimed message");
-    var result = await queueService.updatePendingTaskMessage(
-      task, runId + 1, 1000, message.MessageId, message.PopReceipt
+    var claim = await queueService.updatePendingTaskMessage(
+      task, runId + 1, 1000, {
+        messageId:    message.MessageId,
+        receipt:      message.PopReceipt
+      }
     );
-    debug("Message will be visible at: %s", result.takenUntil);
-    assert(result.messageId === message.MessageId,
+    debug("Message will be visible at: %s", claim.expires);
+    assert(claim.messageId === message.MessageId,
            "Expected the same messageId!");
 
     // Let the message expire, and then take it again
@@ -163,7 +160,7 @@ suite('queue/QueueService', function() {
       // Check that we got the right task, notice they have life time of 5 min,
       // so waiting 5 min should fix this issue.. Another option is to create
       // a unique queue for each test run. Probably not needed.
-      assert(payload.taskId === taskId, "Got wrong taskId, try agian in 5 min");
+      assert(payload.taskId === taskId, "Got wrong taskId, try again in 5 min");
 
       return [message, payload];
     }, 10, 500).catch(function() {
@@ -179,10 +176,84 @@ suite('queue/QueueService', function() {
 
     // Delete message
     debug("### Delete pending message");
-    return queueService.deletePendingTaskMessage(
-      task,
-      message2.MessageId,
-      message2.PopReceipt
+    return queueService.deletePendingTaskMessage(task, {
+      messageId:  message2.MessageId,
+      receipt:    message2.PopReceipt
+    });
+  });
+
+  test("put, get, timeout, delete (error)", async () => {
+    var taskId  = slugid.v4();
+    var runId   = 0;
+    var task    = {
+      taskId:             taskId,
+      provisionerId:      provisionerId,
+      workerType:         workerType,
+      deadline:           new Date(new Date().getTime() + 5 * 60 * 1000)
+    };
+
+    // Put message into pending queue
+    debug("### Putting message in pending queue");
+    await queueService.putPendingMessage(task, runId);
+
+    // Get signedPollUrl
+    var {signedPollUrl} = await queueService.signedPendingPollUrl(
+      provisionerId, workerType
     );
+
+    // Get a message
+    debug("### Polling for queue for message");
+    var [message, payload] = await base.testing.poll(async () => {
+      // Poll azure queue
+      debug(" - polling");
+      var res = await request.get(signedPollUrl).buffer().end();
+      assert(res.ok, "Request failed");
+
+      // Parse XML
+      var json = await new Promise((accept, reject) => {
+        xml2js.parseString(res.text, (err, json) => {
+          err ? reject(err) : accept(json)
+        });
+      });
+
+      // Get message (will if fail if there is no message)
+      var message = json.QueueMessagesList.QueueMessage[0];
+
+      // Load the payload
+      var payload = new Buffer(message.MessageText[0], 'base64').toString();
+      payload = JSON.parse(payload);
+      debug("Received message with payload: %j", payload);
+
+      // Check that we got the right task, notice they have life time of 5 min,
+      // so waiting 5 min should fix this issue.. Another option is to create
+      // a unique queue for each test run. Probably not needed.
+      assert(payload.taskId === taskId, "Got wrong taskId, try agian in 5 min");
+
+      return [message, payload];
+    }).catch(function() {
+      throw new Error("Failed to poll queue");
+    });
+
+    // Validate signature
+    var valid = queueService.validateSignature(task, runId, payload.signature);
+    assert(valid, "Signature was invalid!");
+
+    // Update message, to prove that we can
+    debug("### Updating claimed message");
+    var claim = await queueService.updatePendingTaskMessage(
+      task, runId + 1, 1000, {
+        messageId:    message.MessageId,
+        receipt:      message.PopReceipt
+      }
+    );
+    debug("Message will be visible at: %s", claim.expires);
+    assert(claim.messageId === message.MessageId,
+           "Expected the same messageId!");
+
+    await base.testing.sleep(60 * 1000);
+
+    // Delete message
+    debug("### Delete pending message");
+    return queueService.deletePendingTaskMessage(task, claim);
   });
 });
