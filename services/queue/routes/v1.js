@@ -8,6 +8,62 @@ var base      = require('taskcluster-base');
 // Common schema prefix
 var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
 
+/**
+ * **Azure Queue Invariants**
+ *
+ * We use azure queue storage queues for 3 purposes:
+ *   A) distribution of tasks to workers,
+ *   B) expiration of task-claims, and
+ *   C) resolution by deadline expiration.
+ *
+ * Messages for the purposes of (A) and (B) are stored on queues specific the
+ * tasks _provisionerId_ and _workerType_. All messages in azure queues are
+ * advisory. Meaning that duplicating them, or forgetting to delete them and
+ * handling them twice shall not cause issues.
+ *
+ * That said we do need a few invariants, this comment doesn't attempt to
+ * formally establish correctness. Instead we just seek to explain the
+ * intuition, so others have a chance and understanding what is going on.
+ *
+ *  i)  For any `pending` or `running` task there is exactly one _valid_ message
+ *      with payload `{taskId, runId, signature}` in a _workerType_ specific
+ *      queue, such that the message becomes visible when any current claim on
+ *      the task has expired (if there is a claim on the task).
+ *  ii) For any unresolved task there is a message with it's `taskId` in the
+ *      queue for deadline resolution, such that the message becomes visible
+ *      after the tasks deadline has expired.
+ *
+ * To ensure (i) we include a _salt_ in the signature for the messages. This
+ * salt is stored in the Task entity. Hence, by modifying the salt we can
+ * invalidate existing messages for a specific task, hence, preserving (i).
+ * Also note that it's always safe to add a message to the azure queue, the
+ * message only becomes valid when the salt used in it's signature is stored
+ * in the Task entity for that given task. We could employ this pattern to
+ * ensure preservation of invariant (i); but often we shall set the salt first
+ * and then put the message. The result of this pattern is that if end-points
+ * creating new runs aren't retried in case of errors then the resulting run
+ * which may or may not be created, may be resolved by deadline if it is
+ * created. This isn't optimal, but it's same semantics we have to pulse
+ * messages, if failed requests are retried, semantics is undefined. The first
+ * patten that avoids this would, however, introduce significant delays.
+ *
+ * By preservation of (i) it is easy to see that (A) and (B) can be satisfied,
+ * as worker poll from the workerType specific azure queue. For any error
+ * conditions and races we can rely on the salt to ensure that truth is
+ * always atomically stored in the Task entity.
+ *
+ * (C) is trivially achieved with (ii), as we just poll from the deadline
+ * resolution queue, for each message we get we load the associated task and
+ * check if it needs to be resolved by deadline.
+
+ * Note, that because (ii) is so loose (the advisory nature of the messages)
+ * many messages may exists for the same `taskId`, and some messages may
+ * that arrives before the task deadline is reached is also possible. It also
+ * possible that messages arrives for a `taskId` that doesn't exist.
+ * Hence, when polling the queue, you have to load the task and evaluate if
+ * any action is necessary (that's all the messages advices).
+ */
+
 /** API end-point for version v1/
  *
  * In this API implementation we shall assume the following context:
@@ -335,9 +391,17 @@ api.declare({
   }
 
   // Insert entry in deadline queue (garbage entries are acceptable)
-  await this.queueService.putDeadlineMessage(
-    taskId, new Date(taskDef.deadline)
-  );
+  await Promise.all([
+    this.queueService.putDeadlineMessage(
+      taskId, new Date(taskDef.deadline)
+    ),
+    this.queueService.putPendingMessage({
+      taskId:           taskId,
+      provisionerId:    taskDef.provisionerId,
+      workerType:       taskDef.workerType,
+      deadline:         new Date(taskDef.deadline),
+    }, 0)
+  ]);
 
   // Try to create Task entity
   try {
@@ -403,13 +467,10 @@ api.declare({
   }, task.routes);
 
   // Put message in appropriate azure queue, and publish message to pulse
-  await Promise.all([
-    this.queueService.putPendingMessage(task, 0),
-    this.publisher.taskPending({
-      status:         task.status(),
-      runId:          0
-    }, task.routes)
-  ]);
+  await this.publisher.taskPending({
+    status:         task.status(),
+    runId:          0
+  }, task.routes);
 
   // Reply
   return res.reply({
@@ -760,7 +821,8 @@ api.declare({
     "it doesn't have any runs, an initial run will be added and resolved as",
     "described above. Hence, after canceling a task, it cannot be scheduled",
     "with `queue.scheduleTask`, but a new run can be created with",
-    "`queue.rerun`.",
+    "`queue.rerun`. These semantics is equivalent to calling",
+    "`queue.scheduleTask` immediately followed by `queue.cancelTask`.",
     "",
     "**Remark** this operation is idempotent, if you try to cancel a task that",
     "isn't `unscheduled`, `pending` or `running`, this operation will just",
@@ -791,52 +853,74 @@ api.declare({
     return;
   }
 
-  /*
-    if task.claim:
-      azure.deleteMessage(receipt) // ignore: IfNotExist and PopReceiptMismatch
-    Task.modify ->
-      task.claim = {};
+  // Validate deadline
+  if (task.deadline.getTime() < new Date().getTime()) {
+    return res.status(409).json({
+      message:    "Task can't be cancel task past it's deadline",
+      error:      {deadline: task.deadline.toJSON()}
+    });
+  }
 
-      If runs.length > 0:
-        run.state = exception
-        run.reasonResolved = canceled
-      else:
-        Add runId: 0 with state = exception, etc...
-
-    If lastRun.state == exception && lastRun.reasonResovled == 'canceled'
-      Publish task-exception message  // So we're sure the message is deleted
-
-  */
-
-  // Ensure the last run isn't running
-  await task.modify((task) => {
+  // List of messageIds deleted from azure queue storage
+  var deletedMessages = [];
+  // Modify the task
+  await task.modify(async (task) => {
     var state = task.state();
-    // Don't modify if the last is resolved
-    if (_.contains(['completed', 'failed', 'exception'], state)) {
-      return;
+    var run   = _.last(task.runs);
+
+    // Delete any claimed messages, but only try once... remember that modify
+    // may call this function multiple times to resolve consistency issues
+    var hasClaimToDelete = (task.claim.messageId &&
+                            !_.includes(deletedMessages, task.claim.messageId));
+    if (state === 'running' && hasClaimToDelete) {
+      try {
+        await this.queueService.deletePendingTaskMessage(task, task.claim);
+        deletedMessages.push(task.claim.messageId);
+      }
+      catch(err) {
+        // Ignore errors (after all azure messages just advisory)
+        debug("cancelTask: Ignoring insignificant error deleting azure " +
+              "queue message: %s, %j", err, err);
+      }
     }
 
-    if (state)
-    // Add a new run
-    task.runs.push({
-      runId:          task.runs.length,
-      state:          'pending',
-      reasonCreated:  'rerun',
-      scheduled:      new Date().toJSON()
-    });
+    // If we have a pending task or running task, we cancel the ongoing run
+    if (state === 'pending' || state === 'running') {
+      run.state           = 'exception';
+      run.reasonResovled  = 'canceled';
+      run.resolved        = new Date().toJSON();
+    }
+
+    // If the task wasn't scheduled, we'll add a run and resolved it canceled.
+    // This is the equivalent of calling scheduleTask and cancelTask, ie.
+    // the resulting run state is the same as that of a canceled pending run
+    // in that the run doesn't have a `started` time, nor a `workerGroup` or
+    // `workerId`.
+    if (state === 'unscheduled') {
+      task.runs.push({
+        runId:            task.runs.length,
+        state:            'exception',
+        reasonCreated:    'scheduled',
+        reasonResovled:   'canceled',
+        scheduled:        new Date().toJSON(),
+        resolved:         new Date().toJSON()
+      });
+    }
   });
 
-  // Put message in appropriate azure queue, and publish message to pulse,
-  // if the initial run is pending
-  if (task.state() === 'pending') {
-    var runId = task.runs.length - 1;
-    await Promise.all([
-      this.queueService.putPendingMessage(task, runId),
-      this.publisher.taskPending({
-        status:         task.status(),
-        runId:          runId
-      }, task.routes)
-    ]);
+  // Get the last run, there should always be one
+  var run = _.last(task.runs);
+  if (!run) {
+    debug("[alert-operator] There should exist a run after cancelTask! " +
+          " taskId: %s, status: %j", task.taskId, task.status());
+  }
+
+  // Publish message about last run, if it was canceled
+  if (run.state === 'exception' && run.reasonResolved === 'canceled') {
+    await this.publisher.taskException(_.defaults({
+      status:     task.status(),
+      runId:      run.runId
+    }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
   }
 
   return res.reply({
