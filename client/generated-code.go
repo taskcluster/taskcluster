@@ -18,6 +18,8 @@ type (
 		// be appened after `?` or `&` depending on whether or not a querystring is
 		// already present in the URL.
 		Sas string
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Credentials, scopes and expiration date for a client
@@ -30,6 +32,8 @@ type (
 		Expires string
 		// List of scopes the client is authorized to access
 		Scopes []string
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Scopes and expiration date for a client
@@ -40,6 +44,8 @@ type (
 		Expires string
 		// List of scopes the client is authorized to access
 		Scopes []string
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Credentials, scopes and expiration date for a client
@@ -74,6 +80,8 @@ type (
 		Name string
 		// List of scopes the client is authorized to access
 		Scopes []string
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Get a list of all clients, including basic information, but not credentials.
@@ -97,6 +105,8 @@ type (
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
 		TaskId string
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Representation of an a task to be indexed.
@@ -146,6 +156,8 @@ type (
 			// namespaces or tasks under this namespace.
 			Namespace string
 		}
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Request to list tasks within a given namespace.
@@ -186,6 +198,8 @@ type (
 			// stripped of `=` padding.
 			TaskId string
 		}
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Message reporting a new artifact has been created for a given task.
@@ -301,6 +315,8 @@ type (
 			// the artifact.
 			StorageType interface{}
 		}
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Response to request for poll task urls.
@@ -312,6 +328,8 @@ type (
 		// they are given. As the first entry in this array **may** have higher
 		// priority.
 		SignedPollTaskUrls []string
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.
@@ -347,6 +365,8 @@ type (
 		WorkerGroup string
 		// Identifier for the worker executing this run.
 		WorkerId string
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Message reporting that a task has complete successfully.
@@ -449,6 +469,8 @@ type (
 	// Response to a task status request
 	TaskStatusResponse struct {
 		Status interface{}
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// A representation of **task status** as known by the queue
@@ -584,6 +606,8 @@ type (
 		TaskGroupId string
 		// Unique identifier for a worker-type within a specific provisioner
 		WorkerType string
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Definition of a task-graph that can be scheduled
@@ -638,6 +662,8 @@ type (
 			// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 			TaskId string
 		}
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Information about a **task** in a task-graph as known by the scheduler.
@@ -660,6 +686,8 @@ type (
 		State interface{}
 		// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		TaskId string
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Message that all reruns of a task has failed it is now blocking the task-graph from finishing.
@@ -702,6 +730,8 @@ type (
 		// Arbitrary key-value tags (only strings limited to 4k)
 		Tags struct {
 		}
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// Messages as posted to `scheduler/v1/task-graph-running` informing the world that a new task-graph have been submitted.
@@ -714,6 +744,8 @@ type (
 	// Response containing the status structure for a task-graph
 	TaskGraphStatusResponse struct {
 		Status interface{}
+		// The HTTP response from the API endpoint (useful for troubleshooting)
+		APIResponse *http.Response
 	}
 
 	// A representation of **task-graph status** as known by the scheduler, without the state of all individual tasks.

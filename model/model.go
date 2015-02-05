@@ -87,8 +87,14 @@ type APIEntry struct {
 }
 
 func (entry *APIEntry) postPopulate() {
-	cacheJsonSchema(&entry.Input)
-	cacheJsonSchema(&entry.Output)
+	if entry.Input != "" {
+		cacheJsonSchema(&entry.Input)
+		schemas[entry.Input].IsInputSchema = true
+	}
+	if entry.Output != "" {
+		cacheJsonSchema(&entry.Output)
+		schemas[entry.Output].IsOutputSchema = true
+	}
 }
 
 func (entry *APIEntry) String() string {

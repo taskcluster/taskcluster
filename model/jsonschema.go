@@ -40,7 +40,9 @@ type (
 		Type                 *string               `json:"type"`
 
 		// non-json fields used for sorting/tracking
-		StructName string
+		StructName     string
+		IsInputSchema  bool
+		IsOutputSchema bool
 	}
 
 	Items []JsonSubSchema
@@ -112,6 +114,10 @@ func (jsonSubSchema *JsonSubSchema) StructDefinition(withComments bool) string {
 			content += comment
 			// struct member name and type, as part of struct definition
 			content += fmt.Sprintf("\t%v %v\n", memberName, typ)
+		}
+		if withComments && jsonSubSchema.IsOutputSchema {
+			content += "\t// The HTTP response from the API endpoint (useful for troubleshooting)\n"
+			content += "\tAPIResponse *http.Response\n"
 		}
 	}
 	content += "}"
