@@ -108,8 +108,14 @@ func (entry *APIEntry) String() string {
 }
 
 func (entry *APIEntry) getMethodDefinitions(apiName string) string {
-	content := ""
-	content += fmt.Sprintf("func (a %v) %v(clientId string) GetClientScopesResponse {\n\treturn apiCall().(GetClientScopesResponse)\n}\n\n", apiName, entry.MethodName)
+	comment := ""
+	if entry.Description != "" {
+		comment = utils.Indent(entry.Description, "// ")
+	}
+	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+		comment += "\n"
+	}
+	content := comment + fmt.Sprintf("func (a %v) %v(clientId string) GetClientScopesResponse {\n\treturn apiCall().(GetClientScopesResponse)\n}\n\n", apiName, entry.MethodName)
 	return content
 }
 
