@@ -52,15 +52,20 @@ func (api *API) String() string {
 }
 
 func (api *API) postPopulate() {
+
+	// make sure each entry defined for this API has a unique generated method name
+	methods := make(map[string]bool)
+
 	for i := range api.Entries {
 		api.Entries[i].postPopulate()
+		api.Entries[i].MethodName = utils.Normalise(api.Entries[i].Name, methods)
 	}
 }
 
-func (api *API) getMethodDefinitions() string {
+func (api *API) getMethodDefinitions(apiName string) string {
 	content := ""
 	for _, entry := range api.Entries {
-		content += entry.getMethodDefinitions()
+		content += entry.getMethodDefinitions(apiName)
 	}
 	return content
 }
@@ -76,6 +81,8 @@ type APIEntry struct {
 	Output      string     `json:"output"`
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
+
+	MethodName string
 }
 
 func (entry *APIEntry) postPopulate() {
@@ -100,9 +107,9 @@ func (entry *APIEntry) String() string {
 		entry.Title, entry.Description)
 }
 
-func (entry *APIEntry) getMethodDefinitions() string {
+func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 	content := ""
-	content += fmt.Sprintf("func (auth Auth) %v(clientId string) GetClientScopesResponse {\n\treturn apiCall().(GetClientScopesResponse)}\n", entry.Name)
+	content += fmt.Sprintf("func (a %v) %v(clientId string) GetClientScopesResponse {\n\treturn apiCall().(GetClientScopesResponse)\n}\n\n", apiName, entry.MethodName)
 	return content
 }
 
@@ -140,7 +147,7 @@ func (exchange *Exchange) postPopulate() {
 	}
 }
 
-func (exchange *Exchange) getMethodDefinitions() string {
+func (exchange *Exchange) getMethodDefinitions(exchangeName string) string {
 	return ""
 }
 
@@ -195,7 +202,7 @@ func (re *RouteElement) String() string {
 type APIModel interface {
 	String() string
 	postPopulate()
-	getMethodDefinitions() string
+	getMethodDefinitions(name string) string
 }
 
 // APIDefinition represents the definition of a REST API, comprising of the URL to the defintion
@@ -203,7 +210,12 @@ type APIModel interface {
 type APIDefinition struct {
 	URL       string `json:"url"`
 	SchemaURL string `json:"schema"`
+	Name      string `json:"name"`
 	Data      APIModel
+}
+
+func (a APIDefinition) getMethodDefinitions() string {
+	return a.Data.getMethodDefinitions(a.Name)
 }
 
 func loadJson(reader io.Reader, schema *string) APIModel {
@@ -320,7 +332,7 @@ func generateStructs() string {
 func generateMethods() string {
 	content := ""
 	for i := range apis {
-		content += apis[i].Data.getMethodDefinitions()
+		content += apis[i].getMethodDefinitions()
 	}
 	return content
 }

@@ -1,20 +1,26 @@
 [
     {
+        "name": "AuthAPI",
         "url": "http://references.taskcluster.net/auth/v1/api.json",
         "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json"
     }, {
+        "name": "QueueAPI",
         "url": "http://references.taskcluster.net/queue/v1/api.json",
         "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json"
     }, {
+        "name": "QueueExchanges",
         "url": "http://references.taskcluster.net/queue/v1/exchanges.json",
         "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json"
     }, {
+        "name": "SchedulerAPI",
         "url": "http://references.taskcluster.net/scheduler/v1/api.json",
         "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json"
     }, {
+        "name": "SchedulerExchanges",
         "url": "http://references.taskcluster.net/scheduler/v1/exchanges.json",
         "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json"
     }, {
+        "name": "IndexAPI",
         "url": "http://references.taskcluster.net/index/v1/api.json",
         "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json"
     }

@@ -762,135 +762,178 @@ type (
 	}
 )
 
-func (auth Auth) scopes(clientId string) GetClientScopesResponse {
+func (a AuthAPI) Scopes(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) getCredentials(clientId string) GetClientScopesResponse {
+
+func (a AuthAPI) GetCredentials(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) client(clientId string) GetClientScopesResponse {
+
+func (a AuthAPI) Client(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) createClient(clientId string) GetClientScopesResponse {
+
+func (a AuthAPI) CreateClient(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) modifyClient(clientId string) GetClientScopesResponse {
+
+func (a AuthAPI) ModifyClient(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) removeClient(clientId string) GetClientScopesResponse {
+
+func (a AuthAPI) RemoveClient(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) resetCredentials(clientId string) GetClientScopesResponse {
+
+func (a AuthAPI) ResetCredentials(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) listClients(clientId string) GetClientScopesResponse {
+
+func (a AuthAPI) ListClients(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) azureTableSAS(clientId string) GetClientScopesResponse {
+
+func (a AuthAPI) AzureTableSAS(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) ping(clientId string) GetClientScopesResponse {
+
+func (a AuthAPI) Ping(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) findTask(clientId string) GetClientScopesResponse {
+
+func (a IndexAPI) FindTask(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) listNamespaces(clientId string) GetClientScopesResponse {
+
+func (a IndexAPI) ListNamespaces(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) listTasks(clientId string) GetClientScopesResponse {
+
+func (a IndexAPI) ListTasks(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) insertTask(clientId string) GetClientScopesResponse {
+
+func (a IndexAPI) InsertTask(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) ping(clientId string) GetClientScopesResponse {
+
+func (a IndexAPI) Ping(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) createTask(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) CreateTask(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) getTask(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) GetTask(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) defineTask(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) DefineTask(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) scheduleTask(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) ScheduleTask(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) status(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) Status(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) pollTaskUrls(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) PollTaskUrls(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) claimTask(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) ClaimTask(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) reclaimTask(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) ReclaimTask(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) claimWork(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) ClaimWork(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) reportCompleted(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) ReportCompleted(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) reportFailed(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) ReportFailed(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) reportException(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) ReportException(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) rerunTask(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) RerunTask(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) createArtifact(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) CreateArtifact(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) getArtifact(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) GetArtifact(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) getLatestArtifact(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) GetLatestArtifact(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) listArtifacts(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) ListArtifacts(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) listLatestArtifacts(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) ListLatestArtifacts(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) getPendingTasks(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) GetPendingTasks(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) pendingTaskCount(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) PendingTaskCount(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) pendingTasks(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) PendingTasks(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) ping(clientId string) GetClientScopesResponse {
+
+func (a QueueAPI) Ping(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) createTaskGraph(clientId string) GetClientScopesResponse {
+
+func (a SchedulerAPI) CreateTaskGraph(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) extendTaskGraph(clientId string) GetClientScopesResponse {
+
+func (a SchedulerAPI) ExtendTaskGraph(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) status(clientId string) GetClientScopesResponse {
+
+func (a SchedulerAPI) Status(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) info(clientId string) GetClientScopesResponse {
+
+func (a SchedulerAPI) Info(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) inspect(clientId string) GetClientScopesResponse {
+
+func (a SchedulerAPI) Inspect(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) inspectTask(clientId string) GetClientScopesResponse {
+
+func (a SchedulerAPI) InspectTask(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
-func (auth Auth) ping(clientId string) GetClientScopesResponse {
+
+func (a SchedulerAPI) Ping(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
