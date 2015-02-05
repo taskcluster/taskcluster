@@ -240,7 +240,7 @@ func cacheJsonSchema(url *string) {
 		return
 	}
 	// workaround for problem where some urls don't end with a #
-	if *url[len(*url)-1:] != "#" {
+	if (*url)[len(*url)-1:] != "#" {
 		*url += "#"
 	}
 	if _, ok := schemas[*url]; !ok {
@@ -277,7 +277,7 @@ func LoadAPIs(reader io.Reader) ([]APIDefinition, []string, map[string]*JsonSubS
 	//////////////////////////////////////////////////////////////////////////////
 	// these next two lines are a temporary hack while waiting for https://github.com/taskcluster/taskcluster-queue/pull/31
 	x := "object"
-	schemas["http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json"].Properties.Properties["artifacts"].Items.Type = &x
+	schemas["http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#"].Properties.Properties["artifacts"].Items.Type = &x
 	//////////////////////////////////////////////////////////////////////////////
 	return apis, schemaURLs, schemas
 }

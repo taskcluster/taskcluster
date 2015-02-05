@@ -326,8 +326,8 @@ type (
 		MessageId string
 		// PopReceipt from Azure Queue message
 		Receipt string
-		// Signature from the MessageText in Azure Queue message
-		Signature string
+		// Opaque token from the JSON parsed and base64 decoded MessageText in the Azure Queue message
+		Token string
 		// Identifier for group that worker claiming the task is a part of.
 		WorkerGroup string
 		// Identifier for worker within the given workerGroup
@@ -711,11 +711,6 @@ type (
 
 	// Response containing the status structure for a task-graph
 	TaskGraphStatusResponse struct {
-		Status interface{}
-	}
-
-	// Response containing the status structure for a task-graph
-	TaskGraphStatusResponse1 struct {
 		Status interface{}
 	}
 

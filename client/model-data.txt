@@ -436,7 +436,7 @@ Entry 6     =
     Entry Description = 'claim a task, more to be added later...
 
 **Warning,** in the future this API end-point will require the presents
-of `receipt`, `messageId` and `signature` in the body.'
+of `receipt`, `messageId` and `token` in the body.'
 Entry 7     = 
     Entry Type        = 'function'
     Entry Method      = 'post'
@@ -544,8 +544,8 @@ Entry 13    =
     Entry Args        = '[taskId runId name]'
     Entry Name        = 'createArtifact'
     Entry Scopes      = '[[queue:create-artifact:<name> assume:worker-id:<workerGroup>/<workerId>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json'
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#'
     Entry Title       = 'Create Artifact'
     Entry Description = 'This API end-point creates an artifact for a specific run of a task. This
 should **only** be used by a worker currently operating on this task, or
@@ -657,7 +657,7 @@ Entry 16    =
     Entry Name        = 'listArtifacts'
     Entry Scopes      = '[]'
     Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#'
     Entry Title       = 'Get Artifacts from Run'
     Entry Description = 'Returns a list of artifacts and associated meta-data for a given run.'
 Entry 17    = 
@@ -668,7 +668,7 @@ Entry 17    =
     Entry Name        = 'listLatestArtifacts'
     Entry Scopes      = '[]'
     Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#'
     Entry Title       = 'Get Artifacts from Latest Run'
     Entry Description = 'Returns a list of artifacts and associated meta-data for the latest run
 from the given task.'
@@ -1420,7 +1420,7 @@ Entry 2     =
     Entry Name        = 'status'
     Entry Scopes      = '[]'
     Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json'
+    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#'
     Entry Title       = 'Task Graph Status'
     Entry Description = 'Get task-graph status, this will return the _task-graph status
 structure_. which can be used to check if a task-graph is `running`,
@@ -1435,7 +1435,7 @@ Entry 3     =
     Entry Name        = 'info'
     Entry Scopes      = '[]'
     Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json'
+    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json#'
     Entry Title       = 'Task Graph Information'
     Entry Description = 'Get task-graph information, this includes the _task-graph status
 structure_, along with `metadata` and `tags`, but not information
@@ -1451,7 +1451,7 @@ Entry 4     =
     Entry Name        = 'inspect'
     Entry Scopes      = '[]'
     Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json'
+    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#'
     Entry Title       = 'Inspect Task Graph'
     Entry Description = 'Inspect a task-graph, this returns all the information the task-graph
 scheduler knows about the task-graph and the state of its tasks.
@@ -1473,7 +1473,7 @@ Entry 5     =
     Entry Name        = 'inspectTask'
     Entry Scopes      = '[]'
     Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json'
+    Entry Output      = 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json#'
     Entry Title       = 'Inspect Task from a Task-Graph'
     Entry Description = 'Inspect a task from a task-graph, this returns all the information the
 task-graph scheduler knows about the specific task.
@@ -2572,8 +2572,8 @@ Title                  = 'Task Definition'
 Type                   = 'object'
 
 
-http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json
-====================================================================
+http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#
+=====================================================================
 Additional Properties  = 'false'
 Description            = 'List of artifacts for a given `taskId` and `runId`.
 '
@@ -2664,8 +2664,8 @@ Title                  = 'Poll Task Urls Response'
 Type                   = 'object'
 
 
-http://schemas.taskcluster.net/queue/v1/post-artifact-request.json
-==================================================================
+http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#
+===================================================================
 Description            = 'Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.'
 ID                     = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#'
 OneOf
@@ -2752,8 +2752,8 @@ Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Post Artifact Request'
 
 
-http://schemas.taskcluster.net/queue/v1/post-artifact-response.json
-===================================================================
+http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#
+====================================================================
 Description            = 'Response to a request for posting an artifact. Note that the `storageType` property is referenced in the request as well.'
 ID                     = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#'
 OneOf
@@ -2837,8 +2837,8 @@ Properties
   Property 'receipt' =
     Description            = 'PopReceipt from Azure Queue message'
     Type                   = 'string'
-  Property 'signature' =
-    Description            = 'Signature from the MessageText in Azure Queue message'
+  Property 'token' =
+    Description            = 'Opaque token from the JSON parsed and base64 decoded MessageText in the Azure Queue message'
     Type                   = 'string'
   Property 'workerGroup' =
     Description            = 'Identifier for group that worker claiming the task is a part of.'
@@ -3530,8 +3530,8 @@ Title                  = 'Task-Graph Definition'
 Type                   = 'object'
 
 
-http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json
-============================================================================
+http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#
+=============================================================================
 Additional Properties  = 'false'
 Description            = 'Information about a **task-graph** as known by the scheduler, with all the state of all individual tasks.'
 ID                     = 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#'
@@ -3648,8 +3648,8 @@ Title                  = 'Inspect Task-Graph Response'
 Type                   = 'object'
 
 
-http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json
-=================================================================================
+http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json#
+==================================================================================
 Additional Properties  = 'false'
 Description            = 'Information about a **task** in a task-graph as known by the scheduler.'
 ID                     = 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json#'
@@ -3772,8 +3772,8 @@ Title                  = 'Task-Graph Finished Message'
 Type                   = 'object'
 
 
-http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json
-=========================================================================
+http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json#
+==========================================================================
 Additional Properties  = 'false'
 Description            = 'Response for a request for task-graph information'
 ID                     = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json#'
@@ -3836,20 +3836,6 @@ Properties
 Required               = '[version status]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'New Task-Graph Message'
-Type                   = 'object'
-
-
-http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json
-===========================================================================
-Additional Properties  = 'false'
-Description            = 'Response containing the status structure for a task-graph'
-ID                     = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#'
-Properties
-  Property 'status' =
-    Ref                    = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#'
-Required               = '[status]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Task-Graph Status Response'
 Type                   = 'object'
 
 
