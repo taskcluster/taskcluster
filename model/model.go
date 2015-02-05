@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"sort"
+	"strings"
 )
 
 var (
@@ -115,7 +116,11 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 		comment += "\n"
 	}
-	content := comment + fmt.Sprintf("func (a %v) %v(clientId string) GetClientScopesResponse {\n\treturn apiCall().(GetClientScopesResponse)\n}\n\n", apiName, entry.MethodName)
+	parameters := ""
+	if len(entry.Args) > 0 {
+		parameters += strings.Join(entry.Args, " string, ") + " string"
+	}
+	content := comment + fmt.Sprintf("func (a %v) %v(%v) GetClientScopesResponse {\n\treturn apiCall().(GetClientScopesResponse)\n}\n\n", apiName, entry.MethodName, parameters)
 	return content
 }
 
