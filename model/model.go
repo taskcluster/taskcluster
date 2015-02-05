@@ -309,8 +309,10 @@ func cacheJsonSchema(url *string) {
 	if (*url)[len(*url)-1:] != "#" {
 		*url += "#"
 	}
+	// only fetch if we haven't fetched already...
 	if _, ok := schemas[*url]; !ok {
 		schemas[*url] = loadJsonSchema(*url)
+		schemas[*url].SourceURL = *url
 	}
 }
 

@@ -43,6 +43,7 @@ type (
 		StructName     string
 		IsInputSchema  bool
 		IsOutputSchema bool
+		SourceURL      string
 	}
 
 	Items []JsonSubSchema
@@ -70,6 +71,9 @@ func (jsonSubSchema *JsonSubSchema) StructDefinition(withComments bool) string {
 			if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 				comment += "\n"
 			}
+		}
+		if url := jsonSubSchema.SourceURL; url != "" {
+			comment += "//\n// See " + url + "\n"
 		}
 		content += comment
 		content += fmt.Sprintf("%v ", jsonSubSchema.StructName)

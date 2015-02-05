@@ -11,6 +11,8 @@ import "net/http"
 type (
 	// Response to a request for an Shared-Access-Signature to access and Azure
 	// Table Storage table.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
 	AzureSharedAccessSignatureResponse struct {
 		// Date and time of when the Shared-Access-Signature expires.
 		Expiry string
@@ -23,6 +25,8 @@ type (
 	}
 
 	// Credentials, scopes and expiration date for a client
+	//
+	// See http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#
 	GetClientCredentialsResponse struct {
 		// AccessToken used for authenticating requests
 		AccessToken string
@@ -37,6 +41,8 @@ type (
 	}
 
 	// Scopes and expiration date for a client
+	//
+	// See http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#
 	GetClientScopesResponse struct {
 		// ClientId of the client scopes is requested about
 		ClientId string
@@ -49,6 +55,8 @@ type (
 	}
 
 	// Credentials, scopes and expiration date for a client
+	//
+	// See http://schemas.taskcluster.net/auth/v1/create-client-request.json#
 	GetClientCredentialsResponse1 struct {
 		// Description of what these credentials are used for in markdown.
 		// Please write a few details here, including who is the owner, point of
@@ -64,6 +72,8 @@ type (
 	}
 
 	// Get all detaisl about a client, useful for tools modifying a client
+	//
+	// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#
 	GetClientResponse struct {
 		// AccessToken used for authenticating requests
 		AccessToken string
@@ -85,10 +95,14 @@ type (
 	}
 
 	// Get a list of all clients, including basic information, but not credentials.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/list-clients-response.json#
 	ListClientsResponse struct {
 	}
 
 	// Representation of an indexed task.
+	//
+	// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#
 	IndexedTaskResponse struct {
 		// Data that was reported with the task. This is an arbitrary JSON object.
 		Data struct {
@@ -110,6 +124,8 @@ type (
 	}
 
 	// Representation of an a task to be indexed.
+	//
+	// See http://schemas.taskcluster.net/index/v1/insert-task-request.json#
 	InsertTaskRequest struct {
 		// This is an arbitrary JSON object. Feel free to put whatever data you want
 		// here, but do limit it, you'll get errors if you store more than 32KB.
@@ -129,6 +145,8 @@ type (
 	}
 
 	// Request to list namespaces within a given namespace.
+	//
+	// See http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#
 	ListNamespacesRequest struct {
 		// A continuation token previously returned in a response to this list
 		// request. This property is optional and should not be provided for first
@@ -140,6 +158,8 @@ type (
 	}
 
 	// Response from a request to list namespaces within a given namespace.
+	//
+	// See http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#
 	ListNamespacesResponse struct {
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
@@ -161,6 +181,8 @@ type (
 	}
 
 	// Request to list tasks within a given namespace.
+	//
+	// See http://schemas.taskcluster.net/index/v1/list-tasks-request.json#
 	ListTasksRequest struct {
 		// A continuation token previously returned in a response to this list
 		// request. This property is optional and should not be provided for first
@@ -172,6 +194,8 @@ type (
 	}
 
 	// Representation of an indexed task.
+	//
+	// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#
 	ListTasksResponse struct {
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
@@ -203,6 +227,8 @@ type (
 	}
 
 	// Message reporting a new artifact has been created for a given task.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#
 	ArtifactCreatedMessage struct {
 		// Information about the artifact that was created
 		Artifact interface{}
@@ -220,6 +246,8 @@ type (
 	}
 
 	// Request to claim work
+	//
+	// See http://schemas.taskcluster.net/queue/v1/claim-work-request.json#
 	WorkClaimRequest struct {
 		// Identifier for group that worker claiming the task is a part of.
 		WorkerGroup string
@@ -228,6 +256,8 @@ type (
 	}
 
 	// Definition of a task that can be scheduled
+	//
+	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
 	TaskDefinition struct {
 		// Creation time of task
 		Created string
@@ -300,6 +330,8 @@ type (
 	}
 
 	// List of artifacts for a given `taskId` and `runId`.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#
 	ListArtifactsResponse struct {
 		// List of artifacts for given `taskId` and `runId`.
 		Artifacts []struct {
@@ -320,6 +352,8 @@ type (
 	}
 
 	// Response to request for poll task urls.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#
 	PollTaskUrlsResponse struct {
 		// Date and time after which the signed URLs provided in this response
 		// expires and not longer works for authentication.
@@ -333,14 +367,20 @@ type (
 	}
 
 	// Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#
 	PostArtifactRequest struct {
 	}
 
 	// Response to a request for posting an artifact. Note that the `storageType` property is referenced in the request as well.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#
 	PostArtifactResponse struct {
 	}
 
 	// Request to claim (or reclaim) a task
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-claim-request.json#
 	TaskClaimRequest struct {
 		// MessageId from Azure Queue message
 		MessageId string
@@ -355,6 +395,8 @@ type (
 	}
 
 	// Response to a successful task claim
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#
 	TaskClaimResponse struct {
 		// `run-id` assigned to this run of the task
 		RunId  int
@@ -370,6 +412,8 @@ type (
 	}
 
 	// Message reporting that a task has complete successfully.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#
 	TaskCompletedMessage struct {
 		// Id of the run that completed the task
 		RunId  int
@@ -383,6 +427,8 @@ type (
 	}
 
 	// Request for a task to be declared completed
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-completed-request.json#
 	TaskCompletedRequest struct {
 		// True, if task is completed, and false if task is failed. This property
 		// is optional and only present for backwards compatibility. It will be
@@ -392,6 +438,8 @@ type (
 
 	// Message reporting that a task has been defined. The task may or may not be
 	// _scheduled_ too.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-defined-message.json#
 	TaskDefinedMessage struct {
 		Status interface{}
 		// Message version
@@ -399,6 +447,8 @@ type (
 	}
 
 	// Message reporting that TaskCluster have failed to run a task.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#
 	TaskExceptionMessage struct {
 		// Id of the last run for the task, not provided if `deadline`
 		// was exceeded before a run was started.
@@ -416,6 +466,8 @@ type (
 	}
 
 	// Request for a run of a task to be resolved with an exception
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-exception-request.json#
 	TaskExceptionRequest struct {
 		// Reason that the task is resolved with an exception. This is a subset
 		// of the values for `resolvedReason` given in the task status structure.
@@ -429,6 +481,8 @@ type (
 	}
 
 	// Message reporting that a task failed to complete successfully.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#
 	TaskFailedMessage struct {
 		// Id of the run that failed.
 		RunId  int
@@ -442,6 +496,8 @@ type (
 	}
 
 	// Message reporting that a task is now pending
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#
 	TaskPendingMessage struct {
 		// Id of run that became pending, `run-id`s always starts from 0
 		RunId  int
@@ -451,6 +507,8 @@ type (
 	}
 
 	// Message reporting that a given run of a task have started
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#
 	TaskRunningMessage struct {
 		// Id of the run that just started, always starts from 0
 		RunId  int
@@ -467,6 +525,8 @@ type (
 	}
 
 	// Response to a task status request
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-status-response.json#
 	TaskStatusResponse struct {
 		Status interface{}
 		// The HTTP response from the API endpoint (useful for troubleshooting)
@@ -474,6 +534,8 @@ type (
 	}
 
 	// A representation of **task status** as known by the queue
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 	TaskStatusStructure struct {
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
 		Deadline string
@@ -537,6 +599,8 @@ type (
 	}
 
 	// Definition of a task that can be scheduled
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task.json#
 	TaskDefinition1 struct {
 		// Creation time of task
 		Created string
@@ -611,6 +675,8 @@ type (
 	}
 
 	// Definition of a task-graph that can be scheduled
+	//
+	// See http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#
 	TaskGraphDefinition struct {
 		// List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.
 		Tasks []struct {
@@ -625,6 +691,8 @@ type (
 	}
 
 	// Information about a **task-graph** as known by the scheduler, with all the state of all individual tasks.
+	//
+	// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#
 	InspectTaskGraphResponse struct {
 		// Required task metadata
 		Metadata struct {
@@ -667,6 +735,8 @@ type (
 	}
 
 	// Information about a **task** in a task-graph as known by the scheduler.
+	//
+	// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json#
 	InspectTaskGraphTaskResponse struct {
 		// List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.
 		Dependents []string
@@ -691,6 +761,8 @@ type (
 	}
 
 	// Message that all reruns of a task has failed it is now blocking the task-graph from finishing.
+	//
+	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#
 	BlockedTaskGraphMessage struct {
 		Status interface{}
 		// Unique `taskId` that is blocking this task-graph from completion.
@@ -700,6 +772,8 @@ type (
 	}
 
 	// Messages as posted to `scheduler/v1/task-graph-extended` informing the world that a task-graph have been extended.
+	//
+	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#
 	TaskGraphExtendedMessage struct {
 		Status interface{}
 		// Message version
@@ -707,6 +781,8 @@ type (
 	}
 
 	// Message that all tasks in a task-graph have now completed successfully and the graph is _finished_.
+	//
+	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#
 	TaskGraphFinishedMessage struct {
 		Status interface{}
 		// Message version
@@ -714,6 +790,8 @@ type (
 	}
 
 	// Response for a request for task-graph information
+	//
+	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json#
 	TaskGraphInfoResponse struct {
 		// Required task metadata
 		Metadata struct {
@@ -735,6 +813,8 @@ type (
 	}
 
 	// Messages as posted to `scheduler/v1/task-graph-running` informing the world that a new task-graph have been submitted.
+	//
+	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#
 	NewTaskGraphMessage struct {
 		Status interface{}
 		// Message version
@@ -742,6 +822,8 @@ type (
 	}
 
 	// Response containing the status structure for a task-graph
+	//
+	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#
 	TaskGraphStatusResponse struct {
 		Status interface{}
 		// The HTTP response from the API endpoint (useful for troubleshooting)
@@ -749,6 +831,8 @@ type (
 	}
 
 	// A representation of **task-graph status** as known by the scheduler, without the state of all individual tasks.
+	//
+	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#
 	TaskGraphStatusStructure struct {
 		// Unique identifier for task-graph scheduler managing the given task-graph
 		SchedulerId string
@@ -759,6 +843,8 @@ type (
 	}
 
 	// Definition of a task-graph that can be scheduled
+	//
+	// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#
 	TaskGraphDefinition1 struct {
 		// Required task metadata"
 		Metadata struct {
