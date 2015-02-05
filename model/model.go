@@ -122,7 +122,7 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 	}
 
 	if entry.Input != "" {
-		p := "payload " + schemas[entry.Input].StructName
+		p := "payload *" + schemas[entry.Input].StructName
 		if parameters == "" {
 			parameters = p
 		} else {
@@ -130,12 +130,15 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 		}
 	}
 
-	responseType := "UNKNOWN"
+	responseType := "*http.Response"
 	if entry.Output != "" {
-		responseType = schemas[entry.Output].StructName
+		responseType = "*" + schemas[entry.Output].StructName
 	}
 
-	content := comment + fmt.Sprintf("func (a %v) %v(%v) %v {\n\treturn apiCall().(%v)\n}\n\n", apiName, entry.MethodName, parameters, responseType, responseType)
+	content := fmt.Sprintf("func (a *%v) %v(%v) %v {\n", apiName, entry.MethodName, parameters, responseType)
+	content += fmt.Sprintf("\treturn apiCall().(%v)\n", responseType)
+	content += "}\n"
+	content += "\n"
 	return content
 }
 
@@ -329,6 +332,8 @@ func GenerateCode(goOutput, modelData string) {
 // go generate && go fmt
 
 package client
+
+import "net/http"
 `
 	content += generateStructs()
 	content += generateMethods()
