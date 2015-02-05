@@ -37,6 +37,8 @@ type API struct {
 	Description string     `json:"description"`
 	BaseURL     string     `json:"baseUrl"`
 	Entries     []APIEntry `json:"entries"`
+
+	apiDef APIDefinition
 }
 
 func (api *API) String() string {
@@ -60,6 +62,7 @@ func (api *API) postPopulate() {
 	for i := range api.Entries {
 		api.Entries[i].postPopulate()
 		api.Entries[i].MethodName = utils.Normalise(api.Entries[i].Name, methods)
+		api.Entries[i].API = api
 	}
 }
 
@@ -69,6 +72,10 @@ func (api *API) getMethodDefinitions(apiName string) string {
 		content += entry.getMethodDefinitions(apiName)
 	}
 	return content
+}
+
+func (api *API) setAPIDefinition(apiDef APIDefinition) {
+	api.apiDef = apiDef
 }
 
 type APIEntry struct {
@@ -84,6 +91,7 @@ type APIEntry struct {
 	Description string     `json:"description"`
 
 	MethodName string
+	API        *API
 }
 
 func (entry *APIEntry) postPopulate() {
@@ -122,6 +130,8 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 		comment += "\n"
 	}
+	comment += "//\n"
+	comment += fmt.Sprintf("// See %v/#%v\n", entry.API.apiDef.DocRoot, entry.Name)
 	parameters := ""
 	if len(entry.Args) > 0 {
 		parameters += strings.Join(entry.Args, " string, ") + " string"
@@ -141,7 +151,8 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 		responseType = "*" + schemas[entry.Output].StructName
 	}
 
-	content := fmt.Sprintf("func (a *%v) %v(%v) %v {\n", apiName, entry.MethodName, parameters, responseType)
+	content := comment
+	content += fmt.Sprintf("func (a *%v) %v(%v) %v {\n", apiName, entry.MethodName, parameters, responseType)
 	content += fmt.Sprintf("\treturn apiCall().(%v)\n", responseType)
 	content += "}\n"
 	content += "\n"
@@ -160,6 +171,8 @@ type Exchange struct {
 	Description    string          `json:"description"`
 	ExchangePrefix string          `json:"exchangePrefix"`
 	Entries        []ExchangeEntry `json:"entries"`
+
+	apiDef APIDefinition
 }
 
 func (exchange *Exchange) String() string {
@@ -184,6 +197,10 @@ func (exchange *Exchange) postPopulate() {
 
 func (exchange *Exchange) getMethodDefinitions(exchangeName string) string {
 	return ""
+}
+
+func (exchange *Exchange) setAPIDefinition(apiDef APIDefinition) {
+	exchange.apiDef = apiDef
 }
 
 type ExchangeEntry struct {
@@ -238,6 +255,7 @@ type APIModel interface {
 	String() string
 	postPopulate()
 	getMethodDefinitions(name string) string
+	setAPIDefinition(apiDef APIDefinition)
 }
 
 // APIDefinition represents the definition of a REST API, comprising of the URL to the defintion
@@ -246,6 +264,7 @@ type APIDefinition struct {
 	URL       string `json:"url"`
 	SchemaURL string `json:"schema"`
 	Name      string `json:"name"`
+	DocRoot   string `json:"docroot"`
 	Data      APIModel
 }
 
@@ -306,6 +325,7 @@ func LoadAPIs(reader io.Reader) ([]APIDefinition, []string, map[string]*JsonSubS
 		utils.ExitOnFail(err)
 		defer resp.Body.Close()
 		apis[i].Data = loadJson(resp.Body, &apis[i].SchemaURL)
+		apis[i].Data.setAPIDefinition(apis[i])
 	}
 	// now all data should be loaded, let's sort the schemas
 	schemaURLs = make([]string, 0, len(schemas))

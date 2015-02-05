@@ -797,184 +797,631 @@ type (
 )
 type AuthAPI Auth
 
+// Returns the scopes the client is authorized to access and the date-time
+// where the clients authorization is set to expire.
+//
+// This API end-point allows you inspect clients without getting access to
+// credentials, as provide by the `getCredentials` request below.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#scopes
 func (a *AuthAPI) Scopes(clientId string) *GetClientScopesResponse {
 	return apiCall().(*GetClientScopesResponse)
 }
 
+// Returns the clients `accessToken` as needed for verifying signatures.
+// This API end-point also returns the list of scopes the client is
+// authorized for and the date-time where the client authorization expires
+//
+// Remark, **if you don't need** the `accessToken` but only want to see what
+// scopes a client is authorized for, you should use the `getScopes`
+// function described above.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#getCredentials
 func (a *AuthAPI) GetCredentials(clientId string) *GetClientCredentialsResponse {
 	return apiCall().(*GetClientCredentialsResponse)
 }
 
+// Returns all information about a given client. This end-point is mostly
+// building tools to administrate clients. Do not use if you only want to
+// authenticate a request, see `getCredentials` for this purpose.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#client
 func (a *AuthAPI) Client(clientId string) *GetClientResponse {
 	return apiCall().(*GetClientResponse)
 }
 
+// Create client with given `clientId`, `name`, `expires`, `scopes` and
+// `description`. The `accessToken` will always be generated server-side,
+// and will be returned from this request.
+//
+// **Required scopes**, in addition the scopes listed
+// above, the caller must also posses the all the scopes that is given to
+// the client that is created.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#createClient
 func (a *AuthAPI) CreateClient(clientId string, payload *GetClientCredentialsResponse1) *GetClientResponse {
 	return apiCall().(*GetClientResponse)
 }
 
+// Modify client `name`, `expires`, `scopes` and
+// `description`.
+//
+// **Required scopes**, in addition the scopes listed
+// above, the caller must also posses the all the scopes that is given to
+// the client that is updated.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#modifyClient
 func (a *AuthAPI) ModifyClient(clientId string, payload *GetClientCredentialsResponse1) *GetClientResponse {
 	return apiCall().(*GetClientResponse)
 }
 
+// Delete a client with given `clientId`.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#removeClient
 func (a *AuthAPI) RemoveClient(clientId string) *http.Response {
 	return apiCall().(*http.Response)
 }
 
+// Reset credentials for a client. This will generate a new `accessToken`.
+// as always the `accessToken` will be generated server-side and returned.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#resetCredentials
 func (a *AuthAPI) ResetCredentials(clientId string) *GetClientResponse {
 	return apiCall().(*GetClientResponse)
 }
 
+// Return list with all clients
+//
+// See http://docs.taskcluster.net/auth/api-docs/#listClients
 func (a *AuthAPI) ListClients() *ListClientsResponse {
 	return apiCall().(*ListClientsResponse)
 }
 
+// Get an SAS string for use with a specific Azure Table Storage table.
+// Note, this will create the table, if it doesn't already exists.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#azureTableSAS
 func (a *AuthAPI) AzureTableSAS(account string, table string) *AzureSharedAccessSignatureResponse {
 	return apiCall().(*AzureSharedAccessSignatureResponse)
 }
 
+// Documented later...
+//
+// **Warning** this api end-point is **not stable**.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#ping
 func (a *AuthAPI) Ping() *http.Response {
 	return apiCall().(*http.Response)
 }
 
 type IndexAPI Auth
 
+// Find task by namespace, if no task existing for the given namespace, this
+// API end-point respond `404`.
+//
+// See http://docs.taskcluster.net/services/index/#findTask
 func (a *IndexAPI) FindTask(namespace string) *IndexedTaskResponse {
 	return apiCall().(*IndexedTaskResponse)
 }
 
+// List the namespaces immediately under a given namespace. This end-point
+// list up to 1000 namespaces. If more namespaces are present a
+// `continuationToken` will be returned, which can be given in the next
+// request. For the initial request, the payload should be an empty JSON
+// object.
+//
+// **Remark**, this end-point is designed for humans browsing for tasks, not
+// services, as that makes little sense.
+//
+// See http://docs.taskcluster.net/services/index/#listNamespaces
 func (a *IndexAPI) ListNamespaces(namespace string, payload *ListNamespacesRequest) *ListNamespacesResponse {
 	return apiCall().(*ListNamespacesResponse)
 }
 
+// List the tasks immediately under a given namespace. This end-point
+// list up to 1000 tasks. If more tasks are present a
+// `continuationToken` will be returned, which can be given in the next
+// request. For the initial request, the payload should be an empty JSON
+// object.
+//
+// **Remark**, this end-point is designed for humans browsing for tasks, not
+// services, as that makes little sense.
+//
+// See http://docs.taskcluster.net/services/index/#listTasks
 func (a *IndexAPI) ListTasks(namespace string, payload *ListTasksRequest) *ListTasksResponse {
 	return apiCall().(*ListTasksResponse)
 }
 
+// Insert a task into the index. Please see the introduction above, for how
+// to index successfully completed tasks automatically, using custom routes.
+//
+// See http://docs.taskcluster.net/services/index/#insertTask
 func (a *IndexAPI) InsertTask(namespace string, payload *InsertTaskRequest) *IndexedTaskResponse {
 	return apiCall().(*IndexedTaskResponse)
 }
 
+// Documented later...
+//
+// **Warning** this api end-point is **not stable**.
+//
+// See http://docs.taskcluster.net/services/index/#ping
 func (a *IndexAPI) Ping() *http.Response {
 	return apiCall().(*http.Response)
 }
 
 type QueueAPI Auth
 
+// Create a new task, this is an **idempotent** operation, so repeat it if
+// you get an internal server error or network connection is dropped.
+//
+// **Task `deadline´**, the deadline property can be no more than 7 days
+// into the future. This is to limit the amount of pending tasks not being
+// taken care of. Ideally, you should use a much shorter deadline.
+//
+// **Task specific routing-keys**, using the `task.routes` property you may
+// define task specific routing-keys. If a task has a task specific
+// routing-key: `<route>`, then the poster will be required to posses the
+// scope `queue:route:<route>`. And when the an AMQP message about the task
+// is published the message will be CC'ed with the routing-key:
+// `route.<route>`. This is useful if you want another component to listen
+// for completed tasks you have posted.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#createTask
 func (a *QueueAPI) CreateTask(taskId string, payload *TaskDefinition) *TaskStatusResponse {
 	return apiCall().(*TaskStatusResponse)
 }
 
+// Get task definition from queue.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#getTask
 func (a *QueueAPI) GetTask(taskId string) *TaskDefinition1 {
 	return apiCall().(*TaskDefinition1)
 }
 
+// Define a task without scheduling it. This API end-point allows you to
+// upload a task definition without having scheduled. The task won't be
+// reported as pending until it is scheduled, see the scheduleTask API
+// end-point.
+//
+// The purpose of this API end-point is allow schedulers to upload task
+// definitions without the tasks becoming _pending_ immediately. This useful
+// if you have a set of dependent tasks. Then you can upload all the tasks
+// and when the dependencies of a tasks have been resolved, you can schedule
+// the task by calling `/task/:taskId/schedule`. This eliminates the need to
+// store tasks somewhere else while waiting for dependencies to resolve.
+//
+// **Note** this operation is **idempotent**, as long as you upload the same
+// task definition as previously defined this operation is safe to retry.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#defineTask
 func (a *QueueAPI) DefineTask(taskId string, payload *TaskDefinition) *TaskStatusResponse {
 	return apiCall().(*TaskStatusResponse)
 }
 
+// If you have define a task using `defineTask` API end-point, then you
+// can schedule the task to be scheduled using this method.
+// This will announce the task as pending and workers will be allowed, to
+// claim it and resolved the task.
+//
+// **Note** this operation is **idempotent** and will not fail or complain
+// if called with `taskId` that is already scheduled, or even resolved.
+// To reschedule a task previously resolved, use `rerunTask`.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#scheduleTask
 func (a *QueueAPI) ScheduleTask(taskId string) *TaskStatusResponse {
 	return apiCall().(*TaskStatusResponse)
 }
 
+// Get task status structure from `taskId`
+//
+// See http://docs.taskcluster.net/queue/api-docs/#status
 func (a *QueueAPI) Status(taskId string) *TaskStatusResponse {
 	return apiCall().(*TaskStatusResponse)
 }
 
+// Get a signed url to get a message from azure queue.
+// Once messages are polled from here, you can claim the referenced task
+// with `claimTask`.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#pollTaskUrls
 func (a *QueueAPI) PollTaskUrls(provisionerId string, workerType string) *PollTaskUrlsResponse {
 	return apiCall().(*PollTaskUrlsResponse)
 }
 
+// claim a task, more to be added later...
+//
+// **Warning,** in the future this API end-point will require the presents
+// of `receipt`, `messageId` and `token` in the body.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#claimTask
 func (a *QueueAPI) ClaimTask(taskId string, runId string, payload *TaskClaimRequest) *TaskClaimResponse {
 	return apiCall().(*TaskClaimResponse)
 }
 
+// reclaim a task more to be added later...
+//
+// See http://docs.taskcluster.net/queue/api-docs/#reclaimTask
 func (a *QueueAPI) ReclaimTask(taskId string, runId string) *TaskClaimResponse {
 	return apiCall().(*TaskClaimResponse)
 }
 
+// Claim work for a worker, returns information about an appropriate task
+// claimed for the worker. Similar to `claimTask`, which can be
+// used to claim a specific task, or reclaim a specific task extending the
+// `takenUntil` timeout for the run.
+//
+// **Note**, that if no tasks are _pending_ this method will not assign a
+// task to you. Instead it will return `204` and you should wait a while
+// before polling the queue again.
+//
+// **WARNING, this API end-point is deprecated and will be removed**.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#claimWork
 func (a *QueueAPI) ClaimWork(provisionerId string, workerType string, payload *WorkClaimRequest) *TaskClaimResponse {
 	return apiCall().(*TaskClaimResponse)
 }
 
+// Report a task completed, resolving the run as `completed`.
+//
+// For legacy, reasons the `success` parameter is accepted. This will be
+// removed in the future.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#reportCompleted
 func (a *QueueAPI) ReportCompleted(taskId string, runId string, payload *TaskCompletedRequest) *TaskStatusResponse {
 	return apiCall().(*TaskStatusResponse)
 }
 
+// Report a run failed, resolving the run as `failed`. Use this to resolve
+// a run that failed because the task specific code behaved unexpectedly.
+// For example the task exited non-zero, or didn't produce expected output.
+//
+// Don't use this if the task couldn't be run because if malformed payload,
+// or other unexpected condition. In these cases we have a task exception,
+// which should be reported with `reportException`.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#reportFailed
 func (a *QueueAPI) ReportFailed(taskId string, runId string) *TaskStatusResponse {
 	return apiCall().(*TaskStatusResponse)
 }
 
+// Resolve a run as _exception_. Generally, you will want to report tasks as
+// failed instead of exception. But if the payload is malformed, or
+// dependencies referenced does not exists you should also report exception.
+// However, do not report exception if an external resources is unavailable
+// because of network failure, etc. Only if you can validate that the
+// resource does not exist.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#reportException
 func (a *QueueAPI) ReportException(taskId string, runId string, payload *TaskExceptionRequest) *TaskStatusResponse {
 	return apiCall().(*TaskStatusResponse)
 }
 
+// This method _reruns_ a previously resolved task, even if it was
+// _completed_. This is useful if your task completes unsuccessfully, and
+// you just want to run it from scratch again. This will also reset the
+// number of `retries` allowed.
+//
+// Remember that `retries` in the task status counts the number of runs that
+// the queue have started because the worker stopped responding, for example
+// because a spot node died.
+//
+// **Remark** this operation is idempotent, if you try to rerun a task that
+// isn't either `failed` or `completed`, this operation will just return the
+// current task status.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#rerunTask
 func (a *QueueAPI) RerunTask(taskId string) *TaskStatusResponse {
 	return apiCall().(*TaskStatusResponse)
 }
 
+// This API end-point creates an artifact for a specific run of a task. This
+// should **only** be used by a worker currently operating on this task, or
+// from a process running within the task (ie. on the worker).
+//
+// All artifacts must specify when they `expires`, the queue will
+// automatically take care of deleting artifacts past their
+// expiration point. This features makes it feasible to upload large
+// intermediate artifacts from data processing applications, as the
+// artifacts can be set to expire a few days later.
+//
+// We currently support 4 different `storageType`s, each storage type have
+// slightly different features and in some cases difference semantics.
+//
+// **S3 artifacts**, is useful for static files which will be stored on S3.
+// When creating an S3 artifact is create the queue will return a pre-signed
+// URL to which you can do a `PUT` request to upload your artifact. Note
+// that `PUT` request **must** specify the `content-length` header and
+// **must** give the `content-type` header the same value as in the request
+// to `createArtifact`.
+//
+// **Azure artifacts**, are stored in _Azure Blob Storage_ service, which
+// given the consistency guarantees and API interface offered by Azure is
+// more suitable for artifacts that will be modified during the execution
+// of the task. For example docker-worker has a feature that persists the
+// task log to Azure Blob Storage every few seconds creating a somewhat
+// live log. A request to create an Azure artifact will return a URL
+// featuring a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),
+// refer to MSDN for further information on how to use these.
+//
+// **Reference artifacts**, only consists of meta-data which the queue will
+// store for you. These artifacts really only have a `url` property and
+// when the artifact is requested the client will be redirect the URL
+// provided with a `303` (See Other) redirect. Please note that we cannot
+// delete artifacts you upload to other service, we can only delete the
+// reference to the artifact, when it expires.
+//
+// **Error artifacts**, only consists of meta-data which the queue will
+// store for you. These artifacts are only meant to indicate that you the
+// worker or the task failed to generate a specific artifact, that you
+// would otherwise have uploaded. For example docker-worker will upload an
+// error artifact, if the file it was supposed to upload doesn't exists or
+// turns out to be a directory. Clients requesting an error artifact will
+// get a `403` (Forbidden) response. This is mainly designed to ensure that
+// dependent tasks can distinguish between artifacts that were suppose to
+// be generated and artifacts for which the name is misspelled.
+//
+// **Artifact immutability**, generally speaking you cannot overwrite an
+// artifact when created. But if you repeat the request with the same
+// properties the request will succeed as the operation is idempotent.
+// This is useful if you need to refresh a signed URL while uploading.
+// Do not abuse this to overwrite artifacts created by another entity!
+// Such as worker-host overwriting artifact created by worker-code.
+//
+// As a special case the `url` property on _reference artifacts_ can be
+// updated. You should only use this to update the `url` property for
+// reference artifacts your process has created.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#createArtifact
 func (a *QueueAPI) CreateArtifact(taskId string, runId string, name string, payload *PostArtifactRequest) *PostArtifactResponse {
 	return apiCall().(*PostArtifactResponse)
 }
 
+// Get artifact by `<name>` from a specific run.
+//
+// **Public Artifacts**, in-order to get an artifact you need the scope
+// `queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
+// But if the artifact `name` starts with `public/`, authentication and
+// authorization is not necessary to fetch the artifact.
+//
+// **API Clients**, this method will redirect you to the artifact, if it is
+// stored externally. Either way, the response may not be JSON. So API
+// client users might want to generate a signed URL for this end-point and
+// use that URL with a normal HTTP client.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#getArtifact
 func (a *QueueAPI) GetArtifact(taskId string, runId string, name string) *http.Response {
 	return apiCall().(*http.Response)
 }
 
+// Get artifact by `<name>` from the last run of a task.
+//
+// **Public Artifacts**, in-order to get an artifact you need the scope
+// `queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
+// But if the artifact `name` starts with `public/`, authentication and
+// authorization is not necessary to fetch the artifact.
+//
+// **API Clients**, this method will redirect you to the artifact, if it is
+// stored externally. Either way, the response may not be JSON. So API
+// client users might want to generate a signed URL for this end-point and
+// use that URL with a normal HTTP client.
+//
+// **Remark**, this end-point is slightly slower than
+// `queue.getArtifact`, so consider that if you already know the `runId` of
+// the latest run. Otherwise, just us the most convenient API end-point.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#getLatestArtifact
 func (a *QueueAPI) GetLatestArtifact(taskId string, name string) *http.Response {
 	return apiCall().(*http.Response)
 }
 
+// Returns a list of artifacts and associated meta-data for a given run.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#listArtifacts
 func (a *QueueAPI) ListArtifacts(taskId string, runId string) *ListArtifactsResponse {
 	return apiCall().(*ListArtifactsResponse)
 }
 
+// Returns a list of artifacts and associated meta-data for the latest run
+// from the given task.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#listLatestArtifacts
 func (a *QueueAPI) ListLatestArtifacts(taskId string) *ListArtifactsResponse {
 	return apiCall().(*ListArtifactsResponse)
 }
 
+// Documented later...
+//
+// **Warning** this api end-point is **not stable**.
+//
+// **This end-point is deprecated!**
+//
+// See http://docs.taskcluster.net/queue/api-docs/#getPendingTasks
 func (a *QueueAPI) GetPendingTasks(provisionerId string) *http.Response {
 	return apiCall().(*http.Response)
 }
 
+// Documented later...
+//
+// **Warning: This is an experimental end-point!**
+//
+// See http://docs.taskcluster.net/queue/api-docs/#pendingTaskCount
 func (a *QueueAPI) PendingTaskCount(provisionerId string) *http.Response {
 	return apiCall().(*http.Response)
 }
 
+// Documented later...
+// This probably the end-point that will remain after rewriting to azure
+// queue storage...
+//
+// **Warning: This is an experimental end-point!**
+//
+// See http://docs.taskcluster.net/queue/api-docs/#pendingTasks
 func (a *QueueAPI) PendingTasks(provisionerId string, workerType string) *http.Response {
 	return apiCall().(*http.Response)
 }
 
+// Documented later...
+//
+// **Warning** this api end-point is **not stable**.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#ping
 func (a *QueueAPI) Ping() *http.Response {
 	return apiCall().(*http.Response)
 }
 
 type SchedulerAPI Auth
 
+// Create a new task-graph, the `status` of the resulting JSON is a
+// task-graph status structure, you can find the `taskGraphId` in this
+// structure.
+//
+// **Referencing required tasks**, it is possible to reference other tasks
+// in the task-graph that must be completed successfully before a task is
+// scheduled. You just specify the `taskId` in the list of `required` tasks.
+// See the example below, where the second task requires the first task.
+// ```js
+// {
+//   ...
+//   tasks: [
+//     {
+//       taskId:     "XgvL0qtSR92cIWpcwdGKCA",
+//       requires:   [],
+//       ...
+//     },
+//     {
+//       taskId:     "73GsfK62QNKAk2Hg1EEZTQ",
+//       requires:   ["XgvL0qtSR92cIWpcwdGKCA"],
+//       task: {
+//         payload: {
+//           env: {
+//             DEPENDS_ON:  "XgvL0qtSR92cIWpcwdGKCA"
+//           }
+//           ...
+//         }
+//         ...
+//       },
+//       ...
+//     }
+//   ]
+// }
+// ```
+//
+// **The `schedulerId` property**, defaults to the `schedulerId` of this
+// scheduler in production that is `"task-graph-scheduler"`. This
+// property must be either undefined or set to `"task-graph-scheduler"`,
+// otherwise the task-graph will be rejected.
+//
+// **The `taskGroupId` property**, defaults to the `taskGraphId` of the
+// task-graph submitted, and if provided much be the `taskGraphId` of
+// the task-graph. Otherwise the task-graph will be rejected.
+//
+// **Task-graph scopes**, a task-graph is assigned a set of scopes, just
+// like tasks. Tasks within a task-graph cannot have scopes beyond those
+// the task-graph has. The task-graph scheduler will execute all requests
+// on behalf of a task-graph using the set of scopes assigned to the
+// task-graph. Thus, if you are submitting tasks to `my-worker-type` under
+// `my-provisioner` it's important that your task-graph has the scope
+// required to define tasks for this `provisionerId` and `workerType`.
+// See the queue for details on permissions required. Note, the task-graph
+// does not require permissions to schedule the tasks. This is done with
+// scopes provided by the task-graph scheduler.
+//
+// **Task-graph specific routing-keys**, using the `taskGraph.routes`
+// property you may define task-graph specific routing-keys. If a task-graph
+// has a task-graph specific routing-key: `<route>`, then the poster will
+// be required to posses the scope `scheduler:route:<route>`. And when the
+// an AMQP message about the task-graph is published the message will be
+// CC'ed with the routing-key: `route.<route>`. This is useful if you want
+// another component to listen for completed tasks you have posted.
+//
+// See http://docs.taskcluster.net/scheduler/api-docs/#createTaskGraph
 func (a *SchedulerAPI) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1) *TaskGraphStatusResponse {
 	return apiCall().(*TaskGraphStatusResponse)
 }
 
+// Add a set of tasks to an existing task-graph. The request format is very
+// similar to the request format for creating task-graphs. But `routes`
+// key, `scopes`, `metadata` and `tags` cannot be modified.
+//
+// **Referencing required tasks**, just as when task-graphs are created,
+// each task has a list of required tasks. It is possible to reference
+// all `taskId`s within the task-graph.
+//
+// **Safety,** it is only _safe_ to call this API end-point while the
+// task-graph being modified is still running. If the task-graph is
+// _finished_ or _blocked_, this method will leave the task-graph in this
+// state. Hence, it is only truly _safe_ to call this API end-point from
+// within a task in the task-graph being modified.
+//
+// See http://docs.taskcluster.net/scheduler/api-docs/#extendTaskGraph
 func (a *SchedulerAPI) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition) *TaskGraphStatusResponse {
 	return apiCall().(*TaskGraphStatusResponse)
 }
 
+// Get task-graph status, this will return the _task-graph status
+// structure_. which can be used to check if a task-graph is `running`,
+// `blocked` or `finished`.
+//
+// **Note**, that `finished` implies successfully completion.
+//
+// See http://docs.taskcluster.net/scheduler/api-docs/#status
 func (a *SchedulerAPI) Status(taskGraphId string) *TaskGraphStatusResponse {
 	return apiCall().(*TaskGraphStatusResponse)
 }
 
+// Get task-graph information, this includes the _task-graph status
+// structure_, along with `metadata` and `tags`, but not information
+// about all tasks.
+//
+// If you want more detailed information use the `inspectTaskGraph`
+// end-point instead.
+//
+// See http://docs.taskcluster.net/scheduler/api-docs/#info
 func (a *SchedulerAPI) Info(taskGraphId string) *TaskGraphInfoResponse {
 	return apiCall().(*TaskGraphInfoResponse)
 }
 
+// Inspect a task-graph, this returns all the information the task-graph
+// scheduler knows about the task-graph and the state of its tasks.
+//
+// **Warning**, some of these fields are borderline internal to the
+// task-graph scheduler and we may choose to change or make them internal
+// later. Also note that note all of the information is formalized yet.
+// The JSON schema will be updated to reflect formalized values, we think
+// it's safe to consider the values stable.
+//
+// Take these considerations into account when using the API end-point,
+// as we do not promise it will remain fully backward compatible in
+// the future.
+//
+// See http://docs.taskcluster.net/scheduler/api-docs/#inspect
 func (a *SchedulerAPI) Inspect(taskGraphId string) *InspectTaskGraphResponse {
 	return apiCall().(*InspectTaskGraphResponse)
 }
 
+// Inspect a task from a task-graph, this returns all the information the
+// task-graph scheduler knows about the specific task.
+//
+// **Warning**, some of these fields are borderline internal to the
+// task-graph scheduler and we may choose to change or make them internal
+// later. Also note that note all of the information is formalized yet.
+// The JSON schema will be updated to reflect formalized values, we think
+// it's safe to consider the values stable.
+//
+// Take these considerations into account when using the API end-point,
+// as we do not promise it will remain fully backward compatible in
+// the future.
+//
+// See http://docs.taskcluster.net/scheduler/api-docs/#inspectTask
 func (a *SchedulerAPI) InspectTask(taskGraphId string, taskId string) *InspectTaskGraphTaskResponse {
 	return apiCall().(*InspectTaskGraphTaskResponse)
 }
 
+// Documented later...
+//
+// **Warning** this api end-point is **not stable**.
+//
+// See http://docs.taskcluster.net/scheduler/api-docs/#ping
 func (a *SchedulerAPI) Ping() *http.Response {
 	return apiCall().(*http.Response)
 }

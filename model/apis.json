@@ -2,26 +2,32 @@
     {
         "name": "AuthAPI",
         "url": "http://references.taskcluster.net/auth/v1/api.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json"
+        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
+        "docroot": "http://docs.taskcluster.net/auth/api-docs"
     }, {
         "name": "QueueAPI",
         "url": "http://references.taskcluster.net/queue/v1/api.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json"
+        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
+        "docroot": "http://docs.taskcluster.net/queue/api-docs"
     }, {
         "name": "QueueExchanges",
         "url": "http://references.taskcluster.net/queue/v1/exchanges.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json"
+        "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json",
+        "docroot": "http://docs.taskcluster.net/queue/exchanges"
     }, {
         "name": "SchedulerAPI",
         "url": "http://references.taskcluster.net/scheduler/v1/api.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json"
+        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
+        "docroot": "http://docs.taskcluster.net/scheduler/api-docs"
     }, {
         "name": "SchedulerExchanges",
         "url": "http://references.taskcluster.net/scheduler/v1/exchanges.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json"
+        "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json",
+        "docroot": "http://docs.taskcluster.net/scheduler/events"
     }, {
         "name": "IndexAPI",
         "url": "http://references.taskcluster.net/index/v1/api.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json"
+        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
+        "docroot": "http://docs.taskcluster.net/services/index"
     }
 ]
