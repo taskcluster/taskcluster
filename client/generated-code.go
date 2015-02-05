@@ -779,15 +779,15 @@ func (a AuthAPI) Scopes(clientId string) GetClientScopesResponse {
 // Remark, **if you don't need** the `accessToken` but only want to see what
 // scopes a client is authorized for, you should use the `getScopes`
 // function described above.
-func (a AuthAPI) GetCredentials(clientId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a AuthAPI) GetCredentials(clientId string) GetClientCredentialsResponse {
+	return apiCall().(GetClientCredentialsResponse)
 }
 
 // Returns all information about a given client. This end-point is mostly
 // building tools to administrate clients. Do not use if you only want to
 // authenticate a request, see `getCredentials` for this purpose.
-func (a AuthAPI) Client(clientId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a AuthAPI) Client(clientId string) GetClientResponse {
+	return apiCall().(GetClientResponse)
 }
 
 // Create client with given `clientId`, `name`, `expires`, `scopes` and
@@ -797,8 +797,8 @@ func (a AuthAPI) Client(clientId string) GetClientScopesResponse {
 // **Required scopes**, in addition the scopes listed
 // above, the caller must also posses the all the scopes that is given to
 // the client that is created.
-func (a AuthAPI) CreateClient(clientId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a AuthAPI) CreateClient(clientId string, payload GetClientCredentialsResponse1) GetClientResponse {
+	return apiCall().(GetClientResponse)
 }
 
 // Modify client `name`, `expires`, `scopes` and
@@ -807,45 +807,45 @@ func (a AuthAPI) CreateClient(clientId string) GetClientScopesResponse {
 // **Required scopes**, in addition the scopes listed
 // above, the caller must also posses the all the scopes that is given to
 // the client that is updated.
-func (a AuthAPI) ModifyClient(clientId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a AuthAPI) ModifyClient(clientId string, payload GetClientCredentialsResponse1) GetClientResponse {
+	return apiCall().(GetClientResponse)
 }
 
 // Delete a client with given `clientId`.
-func (a AuthAPI) RemoveClient(clientId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a AuthAPI) RemoveClient(clientId string) UNKNOWN {
+	return apiCall().(UNKNOWN)
 }
 
 // Reset credentials for a client. This will generate a new `accessToken`.
 // as always the `accessToken` will be generated server-side and returned.
-func (a AuthAPI) ResetCredentials(clientId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a AuthAPI) ResetCredentials(clientId string) GetClientResponse {
+	return apiCall().(GetClientResponse)
 }
 
 // Return list with all clients
-func (a AuthAPI) ListClients() GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a AuthAPI) ListClients() ListClientsResponse {
+	return apiCall().(ListClientsResponse)
 }
 
 // Get an SAS string for use with a specific Azure Table Storage table.
 // Note, this will create the table, if it doesn't already exists.
-func (a AuthAPI) AzureTableSAS(account string, table string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a AuthAPI) AzureTableSAS(account string, table string) AzureSharedAccessSignatureResponse {
+	return apiCall().(AzureSharedAccessSignatureResponse)
 }
 
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
-func (a AuthAPI) Ping() GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a AuthAPI) Ping() UNKNOWN {
+	return apiCall().(UNKNOWN)
 }
 
 type IndexAPI Auth
 
 // Find task by namespace, if no task existing for the given namespace, this
 // API end-point respond `404`.
-func (a IndexAPI) FindTask(namespace string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a IndexAPI) FindTask(namespace string) IndexedTaskResponse {
+	return apiCall().(IndexedTaskResponse)
 }
 
 // List the namespaces immediately under a given namespace. This end-point
@@ -856,8 +856,8 @@ func (a IndexAPI) FindTask(namespace string) GetClientScopesResponse {
 //
 // **Remark**, this end-point is designed for humans browsing for tasks, not
 // services, as that makes little sense.
-func (a IndexAPI) ListNamespaces(namespace string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a IndexAPI) ListNamespaces(namespace string, payload ListNamespacesRequest) ListNamespacesResponse {
+	return apiCall().(ListNamespacesResponse)
 }
 
 // List the tasks immediately under a given namespace. This end-point
@@ -868,21 +868,21 @@ func (a IndexAPI) ListNamespaces(namespace string) GetClientScopesResponse {
 //
 // **Remark**, this end-point is designed for humans browsing for tasks, not
 // services, as that makes little sense.
-func (a IndexAPI) ListTasks(namespace string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a IndexAPI) ListTasks(namespace string, payload ListTasksRequest) ListTasksResponse {
+	return apiCall().(ListTasksResponse)
 }
 
 // Insert a task into the index. Please see the introduction above, for how
 // to index successfully completed tasks automatically, using custom routes.
-func (a IndexAPI) InsertTask(namespace string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a IndexAPI) InsertTask(namespace string, payload InsertTaskRequest) IndexedTaskResponse {
+	return apiCall().(IndexedTaskResponse)
 }
 
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
-func (a IndexAPI) Ping() GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a IndexAPI) Ping() UNKNOWN {
+	return apiCall().(UNKNOWN)
 }
 
 type QueueAPI Auth
@@ -901,13 +901,13 @@ type QueueAPI Auth
 // is published the message will be CC'ed with the routing-key:
 // `route.<route>`. This is useful if you want another component to listen
 // for completed tasks you have posted.
-func (a QueueAPI) CreateTask(taskId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) CreateTask(taskId string, payload TaskDefinition) TaskStatusResponse {
+	return apiCall().(TaskStatusResponse)
 }
 
 // Get task definition from queue.
-func (a QueueAPI) GetTask(taskId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) GetTask(taskId string) TaskDefinition1 {
+	return apiCall().(TaskDefinition1)
 }
 
 // Define a task without scheduling it. This API end-point allows you to
@@ -924,8 +924,8 @@ func (a QueueAPI) GetTask(taskId string) GetClientScopesResponse {
 //
 // **Note** this operation is **idempotent**, as long as you upload the same
 // task definition as previously defined this operation is safe to retry.
-func (a QueueAPI) DefineTask(taskId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) DefineTask(taskId string, payload TaskDefinition) TaskStatusResponse {
+	return apiCall().(TaskStatusResponse)
 }
 
 // If you have define a task using `defineTask` API end-point, then you
@@ -936,33 +936,33 @@ func (a QueueAPI) DefineTask(taskId string) GetClientScopesResponse {
 // **Note** this operation is **idempotent** and will not fail or complain
 // if called with `taskId` that is already scheduled, or even resolved.
 // To reschedule a task previously resolved, use `rerunTask`.
-func (a QueueAPI) ScheduleTask(taskId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) ScheduleTask(taskId string) TaskStatusResponse {
+	return apiCall().(TaskStatusResponse)
 }
 
 // Get task status structure from `taskId`
-func (a QueueAPI) Status(taskId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) Status(taskId string) TaskStatusResponse {
+	return apiCall().(TaskStatusResponse)
 }
 
 // Get a signed url to get a message from azure queue.
 // Once messages are polled from here, you can claim the referenced task
 // with `claimTask`.
-func (a QueueAPI) PollTaskUrls(provisionerId string, workerType string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) PollTaskUrls(provisionerId string, workerType string) PollTaskUrlsResponse {
+	return apiCall().(PollTaskUrlsResponse)
 }
 
 // claim a task, more to be added later...
 //
 // **Warning,** in the future this API end-point will require the presents
 // of `receipt`, `messageId` and `token` in the body.
-func (a QueueAPI) ClaimTask(taskId string, runId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) ClaimTask(taskId string, runId string, payload TaskClaimRequest) TaskClaimResponse {
+	return apiCall().(TaskClaimResponse)
 }
 
 // reclaim a task more to be added later...
-func (a QueueAPI) ReclaimTask(taskId string, runId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) ReclaimTask(taskId string, runId string) TaskClaimResponse {
+	return apiCall().(TaskClaimResponse)
 }
 
 // Claim work for a worker, returns information about an appropriate task
@@ -975,16 +975,16 @@ func (a QueueAPI) ReclaimTask(taskId string, runId string) GetClientScopesRespon
 // before polling the queue again.
 //
 // **WARNING, this API end-point is deprecated and will be removed**.
-func (a QueueAPI) ClaimWork(provisionerId string, workerType string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) ClaimWork(provisionerId string, workerType string, payload WorkClaimRequest) TaskClaimResponse {
+	return apiCall().(TaskClaimResponse)
 }
 
 // Report a task completed, resolving the run as `completed`.
 //
 // For legacy, reasons the `success` parameter is accepted. This will be
 // removed in the future.
-func (a QueueAPI) ReportCompleted(taskId string, runId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) ReportCompleted(taskId string, runId string, payload TaskCompletedRequest) TaskStatusResponse {
+	return apiCall().(TaskStatusResponse)
 }
 
 // Report a run failed, resolving the run as `failed`. Use this to resolve
@@ -994,8 +994,8 @@ func (a QueueAPI) ReportCompleted(taskId string, runId string) GetClientScopesRe
 // Don't use this if the task couldn't be run because if malformed payload,
 // or other unexpected condition. In these cases we have a task exception,
 // which should be reported with `reportException`.
-func (a QueueAPI) ReportFailed(taskId string, runId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) ReportFailed(taskId string, runId string) TaskStatusResponse {
+	return apiCall().(TaskStatusResponse)
 }
 
 // Resolve a run as _exception_. Generally, you will want to report tasks as
@@ -1004,8 +1004,8 @@ func (a QueueAPI) ReportFailed(taskId string, runId string) GetClientScopesRespo
 // However, do not report exception if an external resources is unavailable
 // because of network failure, etc. Only if you can validate that the
 // resource does not exist.
-func (a QueueAPI) ReportException(taskId string, runId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) ReportException(taskId string, runId string, payload TaskExceptionRequest) TaskStatusResponse {
+	return apiCall().(TaskStatusResponse)
 }
 
 // This method _reruns_ a previously resolved task, even if it was
@@ -1020,8 +1020,8 @@ func (a QueueAPI) ReportException(taskId string, runId string) GetClientScopesRe
 // **Remark** this operation is idempotent, if you try to rerun a task that
 // isn't either `failed` or `completed`, this operation will just return the
 // current task status.
-func (a QueueAPI) RerunTask(taskId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) RerunTask(taskId string) TaskStatusResponse {
+	return apiCall().(TaskStatusResponse)
 }
 
 // This API end-point creates an artifact for a specific run of a task. This
@@ -1080,8 +1080,8 @@ func (a QueueAPI) RerunTask(taskId string) GetClientScopesResponse {
 // As a special case the `url` property on _reference artifacts_ can be
 // updated. You should only use this to update the `url` property for
 // reference artifacts your process has created.
-func (a QueueAPI) CreateArtifact(taskId string, runId string, name string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) CreateArtifact(taskId string, runId string, name string, payload PostArtifactRequest) PostArtifactResponse {
+	return apiCall().(PostArtifactResponse)
 }
 
 // Get artifact by `<name>` from a specific run.
@@ -1095,8 +1095,8 @@ func (a QueueAPI) CreateArtifact(taskId string, runId string, name string) GetCl
 // stored externally. Either way, the response may not be JSON. So API
 // client users might want to generate a signed URL for this end-point and
 // use that URL with a normal HTTP client.
-func (a QueueAPI) GetArtifact(taskId string, runId string, name string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) GetArtifact(taskId string, runId string, name string) UNKNOWN {
+	return apiCall().(UNKNOWN)
 }
 
 // Get artifact by `<name>` from the last run of a task.
@@ -1114,19 +1114,19 @@ func (a QueueAPI) GetArtifact(taskId string, runId string, name string) GetClien
 // **Remark**, this end-point is slightly slower than
 // `queue.getArtifact`, so consider that if you already know the `runId` of
 // the latest run. Otherwise, just us the most convenient API end-point.
-func (a QueueAPI) GetLatestArtifact(taskId string, name string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) GetLatestArtifact(taskId string, name string) UNKNOWN {
+	return apiCall().(UNKNOWN)
 }
 
 // Returns a list of artifacts and associated meta-data for a given run.
-func (a QueueAPI) ListArtifacts(taskId string, runId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) ListArtifacts(taskId string, runId string) ListArtifactsResponse {
+	return apiCall().(ListArtifactsResponse)
 }
 
 // Returns a list of artifacts and associated meta-data for the latest run
 // from the given task.
-func (a QueueAPI) ListLatestArtifacts(taskId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) ListLatestArtifacts(taskId string) ListArtifactsResponse {
+	return apiCall().(ListArtifactsResponse)
 }
 
 // Documented later...
@@ -1134,15 +1134,15 @@ func (a QueueAPI) ListLatestArtifacts(taskId string) GetClientScopesResponse {
 // **Warning** this api end-point is **not stable**.
 //
 // **This end-point is deprecated!**
-func (a QueueAPI) GetPendingTasks(provisionerId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) GetPendingTasks(provisionerId string) UNKNOWN {
+	return apiCall().(UNKNOWN)
 }
 
 // Documented later...
 //
 // **Warning: This is an experimental end-point!**
-func (a QueueAPI) PendingTaskCount(provisionerId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) PendingTaskCount(provisionerId string) UNKNOWN {
+	return apiCall().(UNKNOWN)
 }
 
 // Documented later...
@@ -1150,15 +1150,15 @@ func (a QueueAPI) PendingTaskCount(provisionerId string) GetClientScopesResponse
 // queue storage...
 //
 // **Warning: This is an experimental end-point!**
-func (a QueueAPI) PendingTasks(provisionerId string, workerType string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) PendingTasks(provisionerId string, workerType string) UNKNOWN {
+	return apiCall().(UNKNOWN)
 }
 
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
-func (a QueueAPI) Ping() GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a QueueAPI) Ping() UNKNOWN {
+	return apiCall().(UNKNOWN)
 }
 
 type SchedulerAPI Auth
@@ -1225,8 +1225,8 @@ type SchedulerAPI Auth
 // an AMQP message about the task-graph is published the message will be
 // CC'ed with the routing-key: `route.<route>`. This is useful if you want
 // another component to listen for completed tasks you have posted.
-func (a SchedulerAPI) CreateTaskGraph(taskGraphId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a SchedulerAPI) CreateTaskGraph(taskGraphId string, payload TaskGraphDefinition1) TaskGraphStatusResponse {
+	return apiCall().(TaskGraphStatusResponse)
 }
 
 // Add a set of tasks to an existing task-graph. The request format is very
@@ -1242,8 +1242,8 @@ func (a SchedulerAPI) CreateTaskGraph(taskGraphId string) GetClientScopesRespons
 // _finished_ or _blocked_, this method will leave the task-graph in this
 // state. Hence, it is only truly _safe_ to call this API end-point from
 // within a task in the task-graph being modified.
-func (a SchedulerAPI) ExtendTaskGraph(taskGraphId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a SchedulerAPI) ExtendTaskGraph(taskGraphId string, payload TaskGraphDefinition) TaskGraphStatusResponse {
+	return apiCall().(TaskGraphStatusResponse)
 }
 
 // Get task-graph status, this will return the _task-graph status
@@ -1251,8 +1251,8 @@ func (a SchedulerAPI) ExtendTaskGraph(taskGraphId string) GetClientScopesRespons
 // `blocked` or `finished`.
 //
 // **Note**, that `finished` implies successfully completion.
-func (a SchedulerAPI) Status(taskGraphId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a SchedulerAPI) Status(taskGraphId string) TaskGraphStatusResponse {
+	return apiCall().(TaskGraphStatusResponse)
 }
 
 // Get task-graph information, this includes the _task-graph status
@@ -1261,8 +1261,8 @@ func (a SchedulerAPI) Status(taskGraphId string) GetClientScopesResponse {
 //
 // If you want more detailed information use the `inspectTaskGraph`
 // end-point instead.
-func (a SchedulerAPI) Info(taskGraphId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a SchedulerAPI) Info(taskGraphId string) TaskGraphInfoResponse {
+	return apiCall().(TaskGraphInfoResponse)
 }
 
 // Inspect a task-graph, this returns all the information the task-graph
@@ -1277,8 +1277,8 @@ func (a SchedulerAPI) Info(taskGraphId string) GetClientScopesResponse {
 // Take these considerations into account when using the API end-point,
 // as we do not promise it will remain fully backward compatible in
 // the future.
-func (a SchedulerAPI) Inspect(taskGraphId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a SchedulerAPI) Inspect(taskGraphId string) InspectTaskGraphResponse {
+	return apiCall().(InspectTaskGraphResponse)
 }
 
 // Inspect a task from a task-graph, this returns all the information the
@@ -1293,13 +1293,13 @@ func (a SchedulerAPI) Inspect(taskGraphId string) GetClientScopesResponse {
 // Take these considerations into account when using the API end-point,
 // as we do not promise it will remain fully backward compatible in
 // the future.
-func (a SchedulerAPI) InspectTask(taskGraphId string, taskId string) GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a SchedulerAPI) InspectTask(taskGraphId string, taskId string) InspectTaskGraphTaskResponse {
+	return apiCall().(InspectTaskGraphTaskResponse)
 }
 
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
-func (a SchedulerAPI) Ping() GetClientScopesResponse {
-	return apiCall().(GetClientScopesResponse)
+func (a SchedulerAPI) Ping() UNKNOWN {
+	return apiCall().(UNKNOWN)
 }

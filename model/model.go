@@ -120,7 +120,22 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 	if len(entry.Args) > 0 {
 		parameters += strings.Join(entry.Args, " string, ") + " string"
 	}
-	content := comment + fmt.Sprintf("func (a %v) %v(%v) GetClientScopesResponse {\n\treturn apiCall().(GetClientScopesResponse)\n}\n\n", apiName, entry.MethodName, parameters)
+
+	if entry.Input != "" {
+		p := "payload " + schemas[entry.Input].StructName
+		if parameters == "" {
+			parameters = p
+		} else {
+			parameters += ", " + p
+		}
+	}
+
+	responseType := "UNKNOWN"
+	if entry.Output != "" {
+		responseType = schemas[entry.Output].StructName
+	}
+
+	content := comment + fmt.Sprintf("func (a %v) %v(%v) %v {\n\treturn apiCall().(%v)\n}\n\n", apiName, entry.MethodName, parameters, responseType, responseType)
 	return content
 }
 
