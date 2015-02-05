@@ -57,6 +57,14 @@ func (api *API) postPopulate() {
 	}
 }
 
+func (api *API) getMethodDefinitions() string {
+	content := ""
+	for _, entry := range api.Entries {
+		content += entry.getMethodDefinitions()
+	}
+	return content
+}
+
 type APIEntry struct {
 	Type        string     `json:"type"`
 	Method      string     `json:"method"`
@@ -92,6 +100,12 @@ func (entry *APIEntry) String() string {
 		entry.Title, entry.Description)
 }
 
+func (entry *APIEntry) getMethodDefinitions() string {
+	content := ""
+	content += fmt.Sprintf("func (auth Auth) %v(clientId string) GetClientScopesResponse {\n\treturn apiCall().(GetClientScopesResponse)}\n", entry.Name)
+	return content
+}
+
 ////////////////////////////////////////////////////////////////////////
 //
 // From: http://schemas.taskcluster.net/base/v1/exchanges-reference.json
@@ -124,6 +138,10 @@ func (exchange *Exchange) postPopulate() {
 	for i := range exchange.Entries {
 		exchange.Entries[i].postPopulate()
 	}
+}
+
+func (exchange *Exchange) getMethodDefinitions() string {
+	return ""
 }
 
 type ExchangeEntry struct {
@@ -177,6 +195,7 @@ func (re *RouteElement) String() string {
 type APIModel interface {
 	String() string
 	postPopulate()
+	getMethodDefinitions() string
 }
 
 // APIDefinition represents the definition of a REST API, comprising of the URL to the defintion
@@ -219,6 +238,10 @@ func cacheJsonSchema(url *string) {
 	// if url is not provided, there is nothing to download
 	if url == nil || *url == "" {
 		return
+	}
+	// workaround for problem where some urls don't end with a #
+	if *url[len(*url)-1:] != "#" {
+		*url += "#"
 	}
 	if _, ok := schemas[*url]; !ok {
 		schemas[*url] = loadJsonSchema(*url)
@@ -270,6 +293,7 @@ func GenerateCode(goOutput, modelData string) {
 package client
 `
 	content += generateStructs()
+	content += generateMethods()
 	utils.WriteStringToFile(content, goOutput)
 
 	content = ""
@@ -291,4 +315,12 @@ func generateStructs() string {
 		content += utils.Indent(schemas[i].StructDefinition(true), "\t")
 	}
 	return content + ")\n"
+}
+
+func generateMethods() string {
+	content := ""
+	for i := range apis {
+		content += apis[i].Data.getMethodDefinitions()
+	}
+	return content
 }

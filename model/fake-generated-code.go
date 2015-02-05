@@ -8,20 +8,26 @@ import (
 	"net/http"
 )
 
-type Auth struct {
-	// Client ID required by Hawk
-	ClientId string
-	// Access Token required by Hawk
-	AccessToken string
-}
+type (
+	Auth struct {
+		// Client ID required by Hawk
+		ClientId string
+		// Access Token required by Hawk
+		AccessToken string
+	}
 
-type ScopesResponse struct {
-	ClientId string
-	Scopes   []string
-	Expires  string
-}
+	// Scopes and expiration date for a client
+	GetClientScopesResponse struct {
+		// ClientId of the client scopes is requested about
+		ClientId string
+		// Date and time where the clients credentials are set to expire
+		Expires string
+		// List of scopes the client is authorized to access
+		Scopes []string
+	}
+)
 
-func (result ScopesResponse) String() string {
+func (result GetClientScopesResponse) String() string {
 	return fmt.Sprintf(
 		"Client ID:    %v\n"+
 			"Scopes:       %v\n"+
@@ -36,7 +42,10 @@ type GetCredentialsResponse struct {
 	Expires     string
 }
 
-func (auth Auth) Scopes(clientId string) ScopesResponse {
+func issueApiCall() {
+}
+
+func (auth Auth) Scopes(clientId string) GetClientScopesResponse {
 	credentials := &hawk.Credentials{
 		ID:   auth.ClientId,
 		Key:  auth.AccessToken,
@@ -54,7 +63,7 @@ func (auth Auth) Scopes(clientId string) ScopesResponse {
 		panic(err)
 	}
 	defer response.Body.Close()
-	var scopes ScopesResponse
+	var scopes GetClientScopesResponse
 	json := json.NewDecoder(response.Body)
 	err = json.Decode(&scopes)
 	if err != nil {
