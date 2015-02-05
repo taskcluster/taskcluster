@@ -761,6 +761,7 @@ type (
 		}
 	}
 )
+type AuthAPI Auth
 
 // Returns the scopes the client is authorized to access and the date-time
 // where the clients authorization is set to expire.
@@ -839,6 +840,8 @@ func (a AuthAPI) Ping(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
 
+type IndexAPI Auth
+
 // Find task by namespace, if no task existing for the given namespace, this
 // API end-point respond `404`.
 func (a IndexAPI) FindTask(clientId string) GetClientScopesResponse {
@@ -881,6 +884,8 @@ func (a IndexAPI) InsertTask(clientId string) GetClientScopesResponse {
 func (a IndexAPI) Ping(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
+
+type QueueAPI Auth
 
 // Create a new task, this is an **idempotent** operation, so repeat it if
 // you get an internal server error or network connection is dropped.
@@ -1155,6 +1160,8 @@ func (a QueueAPI) PendingTasks(clientId string) GetClientScopesResponse {
 func (a QueueAPI) Ping(clientId string) GetClientScopesResponse {
 	return apiCall().(GetClientScopesResponse)
 }
+
+type SchedulerAPI Auth
 
 // Create a new task-graph, the `status` of the resulting JSON is a
 // task-graph status structure, you can find the `taskGraphId` in this

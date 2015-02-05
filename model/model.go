@@ -63,7 +63,7 @@ func (api *API) postPopulate() {
 }
 
 func (api *API) getMethodDefinitions(apiName string) string {
-	content := ""
+	content := "type " + apiName + " Auth\n\n"
 	for _, entry := range api.Entries {
 		content += entry.getMethodDefinitions(apiName)
 	}
