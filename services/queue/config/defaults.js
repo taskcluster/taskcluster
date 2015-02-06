@@ -33,9 +33,8 @@ module.exports = {
     // Prefix for azure queues (at most 6 characters)
     queuePrefix:                  'queue',
 
-    // Secret to be used for signing messages that we put in azure queue,
-    // this protects us from workers trying to claim task they didn't get.
-    signatureSecret:              'public secret',
+    // Name of azure queue for tracking claim expiration
+    claimQueue:                   'claim-queue',
 
     // Name of azure queue for tracking deadlines
     deadlineQueue:                'deadline-queue'
