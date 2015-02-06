@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/json"
+	// "fmt"
 	hawk "github.com/tent/hawk-go"
+	"io"
 	"net/http"
+	// "net/http/httputil"
 	"reflect"
 )
 
@@ -36,7 +39,12 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	if err != nil {
 		panic(err)
 	}
-	httpRequest, err := http.NewRequest(method, auth.BaseURL+route, bytes.NewReader(jsonPayload))
+
+	var ioReader io.Reader = nil
+	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
+		ioReader = bytes.NewReader(jsonPayload)
+	}
+	httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
 	if err != nil {
 		panic(err)
 	}
@@ -44,6 +52,10 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	httpRequest.Header.Set("Authorization", reqAuth)
 	httpClient := &http.Client{}
 	response, err := httpClient.Do(httpRequest)
+	// fullRequest, err := httputil.DumpRequestOut(httpRequest, true)
+	// fmt.Println(string(fullRequest))
+	// fullResponse, err := httputil.DumpResponse(response, true)
+	// fmt.Println(string(fullResponse))
 	if err != nil {
 		panic(err)
 	}
@@ -56,5 +68,6 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 			panic(err)
 		}
 	}
+	// fmt.Printf("ClientId: %v\nAccessToken: %v\nPayload: %v\nURL: %v\nMethod: %v\nResult: %v\n", auth.ClientId, auth.AccessToken, string(jsonPayload), auth.BaseURL+route, method, result)
 	return result, response
 }
