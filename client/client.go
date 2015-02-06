@@ -1,14 +1,12 @@
 package client
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/json"
-	"fmt"
 	hawk "github.com/tent/hawk-go"
 	"net/http"
 )
-
-type HttpMethod int
 
 //go:generate generatemodel -f ../model/apis.json -o generated-code.go -m model-data.txt
 
@@ -26,13 +24,18 @@ type (
 	}
 )
 
-func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) interface{} {
+func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) *http.Response {
+	// not sure if we need to regenerate this with each call, will leave in here for now...
 	credentials := &hawk.Credentials{
 		ID:   auth.ClientId,
 		Key:  auth.AccessToken,
 		Hash: sha256.New,
 	}
-	httpRequest, err := http.NewRequest("GET", fmt.Sprintf("https://auth.taskcluster.net/v1/client/%v/scopes", auth.ClientId), nil)
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		panic(err)
+	}
+	httpRequest, err := http.NewRequest(method, auth.BaseURL+route, bytes.NewReader(jsonPayload))
 	if err != nil {
 		panic(err)
 	}
@@ -44,11 +47,10 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 		panic(err)
 	}
 	defer response.Body.Close()
-	var scopes interface{}
 	json := json.NewDecoder(response.Body)
-	err = json.Decode(&scopes)
+	err = json.Decode(&result)
 	if err != nil {
 		panic(err)
 	}
-	return scopes
+	return response
 }

@@ -185,8 +185,14 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 	}
 
 	content := comment
-	content += fmt.Sprintf("func (a *%v) %v(%v) *%v {\n", apiName, entry.MethodName, inputParams, responseType)
-	content += fmt.Sprintf("\treturn a.apiCall(%v, \"%v\", \"%v\", new(%v)).(*%v)\n", apiArgsPayload, strings.ToUpper(entry.Method), strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1), responseType, responseType)
+	content += "func (a *" + apiName + ") " + entry.MethodName + "(" + inputParams + ") *" + responseType + " {\n"
+	if entry.Output != "" {
+		content += "\tresponseObject := new(" + responseType + ")\n"
+		content += "\tresponseObject.APIResponse = a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", responseObject)\n"
+		content += "\treturn responseObject\n"
+	} else {
+		content += "\treturn a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", new(" + responseType + "))\n"
+	}
 	content += "}\n"
 	content += "\n"
 	return content
