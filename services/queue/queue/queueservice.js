@@ -5,8 +5,7 @@ var debug       = require('debug')('queue:queue');
 var assert      = require('assert');
 var base32      = require('thirty-two');
 var querystring = require('querystring');
-var crypto      = require('crypto');
-var cryptiles   = require('cryptiles');
+var url         = require('url');
 
 /** Decode Url-safe base64, our identifiers satisfies these requirements */
 var decodeUrlSafeBase64 = function(data) {
@@ -41,30 +40,27 @@ class QueueService {
    * options:
    * {
    *   prefix:               // Prefix for all pending-task queues, max 6 chars
-   *   signatureSecret:      // Secret for generating signatures
    *   pendingPollTimeout:   // Timeout embedded in signed poll URL (ms)
    *   credentials: {
    *     accountName:        // Azure storage account name
    *     accountKey:         // Azure storage account key
    *   },
+   *   claimQueue:           // Queue name for the claim expiration queue
    *   deadlineQueue:        // Queue name for the deadline queue
-   *   deadlineDelay:        // Delay before deadline expiration (ms)
-   *                         // Default 15 min, should be high to allow drift!
    * }
    */
   constructor(options) {
     assert(options, "options is required");
     assert(/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(options.prefix), "Invalid prefix");
-    assert(options.prefix.length <= 6, "Prefix is too long");
-    assert(options.signatureSecret, "a signatureSecret must be given");
-    assert(options.deadlineQueue, "A deadlineQueue name must be given");
+    assert(options.prefix.length <= 6,  "Prefix is too long");
+    assert(options.claimQueue,          "A claimQueue name must be given");
+    assert(options.deadlineQueue,       "A deadlineQueue name must be given");
     options = _.defaults({}, options, {
-      deadlineDelay:        15 * 60 * 1000,
       pendingPollTimeout:   300 * 1000
     });
 
-    this.prefix = options.prefix;
-    this.signatureSecret = options.signatureSecret;
+    this.prefix             = options.prefix;
+    this.signatureSecret    = options.signatureSecret;
     this.pendingPollTimeout = options.pendingPollTimeout;
 
     // Documentation for the QueueService object can be found here:
@@ -80,10 +76,30 @@ class QueueService {
     // Promises that queues are created, return the queue name
     this.queues = {};
 
+    // Store claimQueue  name, and remember if we've created it
+    this.claimQueue         = options.claimQueue;
+    this.claimQueueReady    = null;
+
     // Store deadlineQueue name, and remember if we've created it
-    this.deadlineQueue = options.deadlineQueue;
-    this.deadlineDelay = options.deadlineDelay;
+    this.deadlineQueue      = options.deadlineQueue;
     this.deadlineQueueReady = null;
+  }
+
+  /** Ensure existence of the claim queue */
+  ensureClaimQueue() {
+    if (this.claimQueueReady) {
+      return this.claimQueueReady;
+    }
+    return this.claimQueueReady = new Promise((accept, reject) => {
+      this.service.createQueueIfNotExists(this.claimQueue, {}, (err) => {
+        if (err) {
+          // Don't cache negative results
+          this.claimQueueReady = null;
+          return reject(err);
+        }
+        accept();
+      });
+    });
   }
 
   /** Ensure existence of the deadline queue */
@@ -103,23 +119,88 @@ class QueueService {
     });
   }
 
-  /** Enqueue message to become visible when deadline has expired */
-  async putDeadlineMessage(taskId, deadline) {
-    assert(taskId, "taskId must be given");
-    assert(deadline instanceof Date, "deadline must be a date");
-    assert(isFinite(deadline), "deadline must be a valid date");
+  /** Enqueue message to become visible when claim has expired */
+  async putClaimMessage(taskId, takenUntil) {
+    assert(taskId,                      "taskId must be given");
+    assert(takenUntil instanceof Date,  "takenUntil must be a date");
+    assert(isFinite(takenUntil),        "takenUntil must be a valid date");
 
-    await this.ensureDeadlineQueue();
-
-    var msToDeadline = (deadline.getTime() - new Date().getTime());
-    var timeout      = Math.floor((msToDeadline + this.deadlineDelay) / 1000);
+    await this.ensureClaimQueue();
     return new Promise((accept, reject) => {
-      this.service.createMessage(this.deadlineQueue, JSON.stringify({
-        taskId:             taskId
+      this.service.createMessage(this.claimQueue, JSON.stringify({
+        taskId:             taskId,
+        takenUntil:         takenUntil.toJSON()
       }), {
         ttl:                7 * 24 * 60 * 60,
-        visibilityTimeout:  timeout
+        visibilityTimeout:  secondsTo(takenUntil)
       }, function(err) { err ? reject(err) : accept() });
+    });
+  }
+
+  /** Enqueue message to become visible when deadline has expired */
+  async putDeadlineMessage(taskId, deadline) {
+    assert(taskId,                      "taskId must be given");
+    assert(deadline instanceof Date,    "deadline must be a date");
+    assert(isFinite(deadline),          "deadline must be a valid date");
+
+    await this.ensureDeadlineQueue();
+    return new Promise((accept, reject) => {
+      this.service.createMessage(this.deadlineQueue, JSON.stringify({
+        taskId:             taskId,
+        deadline:           deadline.toJSON()
+      }), {
+        ttl:                7 * 24 * 60 * 60,
+        visibilityTimeout:  secondsTo(deadline)
+      }, function(err) { err ? reject(err) : accept() });
+    });
+  }
+
+  /**
+   * Poll claim expiration queue, returns promise for list of message objects
+   * on the form:
+   *
+   * ```js
+   * [
+   *   {
+   *     taskId:      '<taskId>',     // Task to check
+   *     takenUntil:  [Date object],  // claim-expiration when submitted
+   *     remove:      function() {},  // Delete message call when handled
+   *   },
+   *   ... // up-to to 32 objects in one list
+   * ]
+   * ```
+   *
+   * Note, messages must be handled within 10 minutes.
+   */
+  async pollClaimQueue() {
+    // Ensure the claim queue exists
+    await this.ensureClaimQueue();
+
+    // Get messages
+    var messages = await new Promise((accept, reject) => {
+      this.service.getMessages(this.claimQueue, {
+        numOfMessages:        32,
+        peekOnly:             false,
+        visibilityTimeout:    10 * 60,
+      }, (err, messages) => { err ? reject(err) : accept(messages) });
+    });
+
+    // Convert to neatly consumable format
+    return messages.map((message) => {
+      var payload = JSON.parse(message.messagetext);
+      return {
+        taskId:     payload.taskId,
+        takenUntil: new Date(payload.takenUntil),
+        remove:     () => {
+          return new Promise((accept, reject) => {
+            this.service.deleteMessage(
+              this.claimQueue,
+              message.messageid, message.popreceipt,
+              (err) => { err ? reject(err) : accept() }
+            );
+          });
+        }
+      };
     });
   }
 
@@ -130,18 +211,15 @@ class QueueService {
    * ```js
    * [
    *   {
-   *     taskId:    '<taskId>',     // Task to check
-   *     remove:    function() {},  // Function to call when message is handled
+   *     taskId:      '<taskId>',     // Task to check
+   *     deadline:    [Date object],  // Deadline of task when submitted
+   *     remove:      function() {},  // Delete message call when handled
    *   },
    *   ... // up-to to 32 objects in one list
    * ]
    * ```
    *
-   * Note, messages must be handled within 10 minutes. Also note that a
-   * message with a `taskId` doesn't necessarily mean that the task exists, or
-   * that this task is to be resolved by deadline expiration. It just means
-   * that we must load the task (if it exists) and check if it needs to be
-   * resolved by deadline.
+   * Note, messages must be handled within 10 minutes.
    */
   async pollDeadlineQueue() {
     // Ensure the deadline queue exists
@@ -161,6 +239,7 @@ class QueueService {
       var payload = JSON.parse(message.messagetext);
       return {
         taskId:     payload.taskId,
+        deadline:   new Date(payload.deadline),
         remove:     () => {
           return new Promise((accept, reject) => {
             this.service.deleteMessage(
@@ -216,35 +295,6 @@ class QueueService {
   }
 
   /**
-   * Generate signature for a pending task message.
-   *
-   * Do **NOT** use this for validation of signatures, please use the
-   * `validateSignature` method to avoid timing attacks.
-   */
-  generateSignature(task, runId, salt) {
-    validateTask(task);
-    assert(typeof(runId) === 'number', "Expected runId as number");
-    assert(typeof(salt) === 'string', "Expected salt as string");
-    return crypto.createHmac('sha256', this.signatureSecret).update([
-      task.deadline.getTime(),
-      task.provisionerId,
-      task.workerType,
-      task.taskId,
-      runId,
-      salt
-    ].join('\n')).digest('base64');
-  }
-
-  /** Validate signature from pending task message */
-  validateSignature(task, runId, salt, signature) {
-    validateTask(task);
-    assert(typeof(signature) === 'string', "signature must be a string");
-    return cryptiles.fixedTimeComparison(signature,
-      this.generateSignature(task, runId, salt)
-    );
-  }
-
-  /**
    * Enqueue message about a new pending task in appropriate queue
    *
    *
@@ -256,7 +306,7 @@ class QueueService {
    *
    * Notice that a data.Task entity fits this description perfectly.
    */
-  async putPendingMessage(task, runId, salt) {
+  async putPendingMessage(task, runId) {
     validateTask(task);
     assert(typeof(runId) === 'number', "Expected runId as number");
 
@@ -270,82 +320,11 @@ class QueueService {
     return new Promise((accept, reject) => {
       this.service.createMessage(queueName, JSON.stringify({
         taskId:     task.taskId,
-        runId:      runId,
-        signature:  this.generateSignature(task, runId, salt)
+        runId:      runId
       }), {
         messagettl:         secondsTo(task.deadline),
         visibilityTimeout:  0
       }, (err) => { err ? reject(err) : accept() });
-    });
-  }
-
-  /**
-   * Update message to given task and runId, using `messageId` and `receipt`
-   * from the `claim` object.
-   *
-   * The updated message will become visible in `delay` ms. This method returns
-   * a promise for a claim object containing the new receipt:
-   * ```js
-   * {
-   *   messageId:     // Message id (should be same as input)
-   *   receipt:       // Receipt on the claim for the message
-   *   expires:       // Date object for when message is visible again
-   * }
-   * ```
-   */
-  async updatePendingTaskMessage(task, runId, salt, delay, claim) {
-    validateTask(task);
-    assert(typeof(runId) === 'number',  "Expected runId as number");
-    assert(typeof(salt) === 'string',   "Expected salt as string");
-    assert(typeof(delay) === 'number',  "Expected delay as number");
-
-    delay = Math.floor(delay / 1000);
-
-    // Find name of azure queue
-    var queueName = await this.ensurePendingQueue(
-      task.provisionerId,
-      task.workerType
-    );
-
-    // Construct message text
-    var text = JSON.stringify({
-      taskId:         task.taskId,
-      runId:          runId,
-      signature:      this.generateSignature(task, runId, salt)
-    });
-
-    // Update message
-    var message = await new Promise((accept, reject) => {
-      var {messageId, receipt} = claim;
-      this.service.updateMessage(queueName, messageId, receipt, delay, {
-        // See: https://github.com/Azure/azure-storage-node/issues/43
-        messagetext:  text,
-        messageText:  text
-      }, (err, message) => { err ? reject(err) : accept(message) });
-    });
-
-    return {
-      messageId:    message.messageid,
-      receipt:      message.popreceipt,
-      expires:      new Date(message.timenextvisible)
-    };
-  }
-
-  /** Delete pending task message from azure queue */
-  async deletePendingTaskMessage(task, claim) {
-    validateTask(task);
-
-    // Find name of azure queue
-    var queueName = await this.ensurePendingQueue(
-      task.provisionerId,
-      task.workerType
-    );
-
-    var {messageId, receipt} = claim;
-    return new Promise((accept, reject) => {
-      this.service.deleteMessage(queueName, messageId, receipt, (err) => {
-        err ? reject(err) : accept()
-      });
     });
   }
 
@@ -372,11 +351,19 @@ class QueueService {
 
     var pendingPollTimeout = Math.floor(this.pendingPollTimeout / 1000);
     return {
-      expiry:         expiry,
-      signedPollUrl:  `https://${this.accountName}.` +
-                      `queue.core.windows.net/${queueName}` +
-                      `/messages?visibilitytimeout=${pendingPollTimeout}` +
-                      `&${sas}`
+      expiry:           expiry,
+      signedPollUrl: url.format({
+        protocol:       'https',
+        host:           `${this.accountName}.queue.core.windows.net`,
+        pathname:       `/${queueName}/messages`,
+        search:         `?visibilitytimeout=${pendingPollTimeout}&${sas}`
+      }),
+      signedDeleteUrl: url.format({
+        protocol:       'https',
+        host:           `${this.accountName}.queue.core.windows.net`,
+        pathname:       `/${queueName}/messages/{{messageId}}`,
+        search:         '?popreceipt={{popReceipt}}'
+      })
     };
   }
 

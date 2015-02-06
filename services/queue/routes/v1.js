@@ -16,52 +16,37 @@ var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
  *   B) expiration of task-claims, and
  *   C) resolution by deadline expiration.
  *
- * Messages for the purposes of (A) and (B) are stored on queues specific the
- * tasks _provisionerId_ and _workerType_. All messages in azure queues are
- * advisory. Meaning that duplicating them, or forgetting to delete them and
+ * Messages for the purposes of (A) are stored on queues specific the
+ * _provisionerId_ and _workerType_ of the tasks. All messages in azure queues
+ * are advisory. Meaning that duplicating them, or forgetting to delete them and
  * handling them twice shall not cause issues.
  *
  * That said we do need a few invariants, this comment doesn't attempt to
  * formally establish correctness. Instead we just seek to explain the
  * intuition, so others have a chance and understanding what is going on.
  *
- *  i)  For any `pending` or `running` task there is exactly one _valid_ message
- *      with payload `{taskId, runId, signature}` in a _workerType_ specific
- *      queue, such that the message becomes visible when any current claim on
- *      the task has expired (if there is a claim on the task).
- *  ii) For any unresolved task there is a message with it's `taskId` in the
- *      queue for deadline resolution, such that the message becomes visible
- *      after the tasks deadline has expired.
+ *  i)    For any `pending` task there is at least one message with payload
+ *        `{taskId, runId}` in a _workerType_ specific queue.
  *
- * To ensure (i) we include a _salt_ in the signature for the messages. This
- * salt is stored in the Task entity. Hence, by modifying the salt we can
- * invalidate existing messages for a specific task, hence, preserving (i).
- * Also note that it's always safe to add a message to the azure queue, the
- * message only becomes valid when the salt used in it's signature is stored
- * in the Task entity for that given task. We could employ this pattern to
- * ensure preservation of invariant (i); but often we shall set the salt first
- * and then put the message. The result of this pattern is that if end-points
- * creating new runs aren't retried in case of errors then the resulting run
- * which may or may not be created, may be resolved by deadline if it is
- * created. This isn't optimal, but it's same semantics we have to pulse
- * messages, if failed requests are retried, semantics is undefined. The first
- * patten that avoids this would, however, introduce significant delays.
+ *  ii)   For any `running` task there is at least one message with payload
+ *        `{taskId, takenUntil}` in the queue for claim expiration, such that
+ *        the message becomes visible after the claim on the current run has
+ *        expired.
  *
- * By preservation of (i) it is easy to see that (A) and (B) can be satisfied,
- * as worker poll from the workerType specific azure queue. For any error
- * conditions and races we can rely on the salt to ensure that truth is
- * always atomically stored in the Task entity.
+ *  iii)  For any unresolved task there is at least one message with payload
+ *        `{taskId, deadline}` in the queue for deadline resolution, such that
+ *        the message becomes visible after the tasks deadline has expired.
  *
- * (C) is trivially achieved with (ii), as we just poll from the deadline
- * resolution queue, for each message we get we load the associated task and
- * check if it needs to be resolved by deadline.
-
- * Note, that because (ii) is so loose (the advisory nature of the messages)
- * many messages may exists for the same `taskId`, and some messages may
- * that arrives before the task deadline is reached is also possible. It also
- * possible that messages arrives for a `taskId` that doesn't exist.
- * Hence, when polling the queue, you have to load the task and evaluate if
- * any action is necessary (that's all the messages advices).
+ * Using invariants above it's easy to ensure (A), (B) and (C), so long as we
+ * always remember that a message is only advisory. Hence, if the task mentioned
+ * doesn't exist, or is already resolved, then no error is reported and no
+ * action is taken.
+ *
+ * To avoid the case, where we ignore the only message during expiration of
+ * claims (B) due to server clock drift, we shall put the `takenUntil` time
+ * into the message, so we just check if it has been updated to see if the
+ * message is recent. We shall employ the same trick to ensure that clock drift
+ * can't cause the last deadline message to get ignored either.
  */
 
 /** API end-point for version v1/
