@@ -69,7 +69,7 @@ properties:
       these events are to be expected.
     type:           integer
     minimum:        0
-    maximum:        50
+    maximum:        49
   created:          {$const: created}
   deadline:         {$const: deadline}
   expires:

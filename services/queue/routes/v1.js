@@ -8,6 +8,9 @@ var base      = require('taskcluster-base');
 // Common schema prefix
 var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
 
+// Maximum number runs allowed
+var MAX_RUNS_ALLOWED    = 50;
+
 /**
  * **Azure Queue Invariants**
  *
@@ -749,21 +752,40 @@ api.declare({
       return;
     }
 
+    // Don't create more than MAX_RUNS_ALLOWED runs
+    if (task.runs.length >= MAX_RUNS_ALLOWED) {
+      return;
+    }
+
     // Add a new run
     task.runs.push({
-      state:          'pending',
-      reasonCreated:  'rerun',
-      scheduled:      new Date().toJSON()
+      state:            'pending',
+      reasonCreated:    'rerun',
+      scheduled:        new Date().toJSON()
     });
 
+    // Calculate maximum number of retries allowed
+    var allowedRetries  = MAX_RUNS_ALLOWED - task.runs.length;
+
     // Reset retries left
-    task.retriesLeft = task.retries;
-    task.takenUntil = new Date(0);
+    task.retriesLeft    = Math.min(task.retries, allowedRetries);
+    task.takenUntil     = new Date(0);
   });
+
+  var state = task.state();
+
+  // If not running or pending, and we couldn't create more runs then we have
+  // a conflict
+  if (state !== 'pending' && state !== 'running' &&
+      task.runs.length >= MAX_RUNS_ALLOWED) {
+    return res.status(409).json({
+      message:    "Maximum number of runs reached"
+    });
+  }
 
   // Put message in appropriate azure queue, and publish message to pulse,
   // if the initial run is pending
-  if (task.state() === 'pending') {
+  if (state === 'pending') {
     var runId = task.runs.length - 1;
     await Promise.all([
       this.queueService.putPendingMessage(task, runId),
