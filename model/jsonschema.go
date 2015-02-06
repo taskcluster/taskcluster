@@ -59,7 +59,7 @@ type (
 	}
 )
 
-func (jsonSubSchema *JsonSubSchema) StructDefinition(withComments bool) string {
+func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool) string {
 	content := ""
 	comment := ""
 	if withComments {
@@ -92,14 +92,14 @@ func (jsonSubSchema *JsonSubSchema) StructDefinition(withComments bool) string {
 				if jsonType := s.Properties[j].Items.Type; jsonType != nil {
 					switch *jsonType {
 					case "object":
-						typ = "[]" + s.Properties[j].Items.StructDefinition(false)
+						typ = "[]" + s.Properties[j].Items.TypeDefinition(false)
 					default:
 						typ = "[]" + *jsonType
 					}
 				}
 			case "object":
 				// recursive call to build structs inside structs
-				typ = s.Properties[j].StructDefinition(false)
+				typ = s.Properties[j].TypeDefinition(false)
 			case "number":
 				typ = "int"
 			case "integer":

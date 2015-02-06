@@ -422,7 +422,7 @@ func generateStructs() string {
 	content := "type (" // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	for _, i := range schemaURLs {
-		content += utils.Indent(schemas[i].StructDefinition(true), "\t")
+		content += utils.Indent(schemas[i].TypeDefinition(true), "\t")
 	}
 	return content + ")\n\n"
 }
