@@ -179,19 +179,19 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 		}
 	}
 
-	responseType := "http.Response"
+	responseType := "*http.Response"
 	if entry.Output != "" {
-		responseType = schemas[entry.Output].StructName
+		responseType = "(*" + schemas[entry.Output].StructName + ", *http.Response)"
 	}
 
 	content := comment
-	content += "func (a *" + apiName + ") " + entry.MethodName + "(" + inputParams + ") *" + responseType + " {\n"
+	content += "func (a *" + apiName + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
 	if entry.Output != "" {
-		content += "\tresponseObject := new(" + responseType + ")\n"
-		content += "\tresponseObject.APIResponse = a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", responseObject)\n"
-		content += "\treturn responseObject\n"
+		content += "\tresponseObject, httpResponse := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", new(" + schemas[entry.Output].StructName + "))\n"
+		content += "\treturn responseObject.(*" + schemas[entry.Output].StructName + "), httpResponse\n"
 	} else {
-		content += "\treturn a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", new(" + responseType + "))\n"
+		content += "\t_, httpResponse := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", nil)\n"
+		content += "\treturn httpResponse\n"
 	}
 	content += "}\n"
 	content += "\n"

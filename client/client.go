@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	hawk "github.com/tent/hawk-go"
 	"net/http"
+	"reflect"
 )
 
 //go:generate generatemodel -f ../model/apis.json -o generated-code.go -m model-data.txt
@@ -24,7 +25,7 @@ type (
 	}
 )
 
-func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) *http.Response {
+func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {
 	// not sure if we need to regenerate this with each call, will leave in here for now...
 	credentials := &hawk.Credentials{
 		ID:   auth.ClientId,
@@ -47,10 +48,13 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 		panic(err)
 	}
 	defer response.Body.Close()
-	json := json.NewDecoder(response.Body)
-	err = json.Decode(&result)
-	if err != nil {
-		panic(err)
+	// if result is nil, it means there is no response body json
+	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
+		json := json.NewDecoder(response.Body)
+		err = json.Decode(&result)
+		if err != nil {
+			panic(err)
+		}
 	}
-	return response
+	return result, response
 }

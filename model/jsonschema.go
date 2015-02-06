@@ -107,10 +107,6 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool) string {
 				// struct member name and type, as part of struct definition
 				typ += fmt.Sprintf("\t%v %v\n", memberName, subType)
 			}
-			if withComments && jsonSubSchema.IsOutputSchema {
-				typ += "\t// The HTTP response from the API endpoint (useful for troubleshooting)\n"
-				typ += "\tAPIResponse *http.Response\n"
-			}
 			typ += "}"
 		} else {
 			typ = "interface{}"
