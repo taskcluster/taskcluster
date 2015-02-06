@@ -375,18 +375,9 @@ api.declare({
     return res.status(detail.code).json(detail.json);
   }
 
-  // Insert entry in deadline queue (garbage entries are acceptable)
-  await Promise.all([
-    this.queueService.putDeadlineMessage(
-      taskId, new Date(taskDef.deadline)
-    ),
-    this.queueService.putPendingMessage({
-      taskId:           taskId,
-      provisionerId:    taskDef.provisionerId,
-      workerType:       taskDef.workerType,
-      deadline:         new Date(taskDef.deadline),
-    }, 0)
-  ]);
+  // Insert entry in deadline queue
+  var deadline = new Date(taskDef.deadline);
+  await this.queueService.putDeadlineMessage(taskId, deadline);
 
   // Try to create Task entity
   try {
@@ -400,7 +391,7 @@ api.declare({
       retries:          taskDef.retries,
       retriesLeft:      taskDef.retries,
       created:          new Date(taskDef.created),
-      deadline:         new Date(taskDef.deadline),
+      deadline:         deadline,
       expires:          new Date(taskDef.expires),
       scopes:           taskDef.scopes,
       payload:          taskDef.payload,
@@ -413,7 +404,7 @@ api.declare({
         reasonCreated:  'scheduled',
         scheduled:      new Date().toJSON()
       }],
-      claim:            {}
+      takenUntil:       new Date(0)
     });
   }
   catch (err) {
@@ -438,24 +429,32 @@ api.declare({
 
   // If first run isn't pending, all message must have been published before,
   // this can happen if we came from the catch-branch (it's unlikely to happen)
-  if (task.runs[0].state === 'pending') {
+  if (task.runs[0].state !== 'pending') {
     return res.reply({
       status:   task.status()
     });
   }
 
-  // Publish task-defined message, we want this arriving before the task-pending
-  // message, so we have to await publication here
-  await this.publisher.taskDefined({
-    status:         task.status(),
-    runId:          0
-  }, task.routes);
+  await Promise.all([
+    // Put message into the task pending queue
+    this.queueService.putPendingMessage(task, 0),
 
-  // Put message in appropriate azure queue, and publish message to pulse
-  await this.publisher.taskPending({
-    status:         task.status(),
-    runId:          0
-  }, task.routes);
+    // Publish pulse messages
+    async () => {
+      // Publish task-defined message, we want this arriving before the
+      // task-pending message, so we have to await publication here
+      await this.publisher.taskDefined({
+        status:         task.status(),
+        runId:          0
+      }, task.routes);
+
+      // Put message in appropriate azure queue, and publish message to pulse
+      await this.publisher.taskPending({
+        status:         task.status(),
+        runId:          0
+      }, task.routes);
+    }
+  ]);
 
   // Reply
   return res.reply({
@@ -523,9 +522,8 @@ api.declare({
   }
 
   // Insert entry in deadline queue (garbage entries are acceptable)
-  await this.queueService.putDeadlineMessage(
-    taskId, new Date(taskDef.deadline)
-  );
+  var deadline = new Date(taskDef.deadline);
+  await this.queueService.putDeadlineMessage(taskId, deadline);
 
   // Try to create Task entity
   try {
@@ -539,7 +537,7 @@ api.declare({
       retries:          taskDef.retries,
       retriesLeft:      taskDef.retries,
       created:          new Date(taskDef.created),
-      deadline:         new Date(taskDef.deadline),
+      deadline:         deadline,
       expires:          new Date(taskDef.expires),
       scopes:           taskDef.scopes,
       payload:          taskDef.payload,
@@ -547,7 +545,7 @@ api.declare({
       tags:             taskDef.tags,
       extra:            taskDef.extra,
       runs:             [],
-      claim:            {}
+      takenUntil:       new Date(0)
     });
   }
   catch (err) {
@@ -846,28 +844,10 @@ api.declare({
     });
   }
 
-  // List of messageIds deleted from azure queue storage
-  var deletedMessages = [];
   // Modify the task
   await task.modify(async (task) => {
     var state = task.state();
     var run   = _.last(task.runs);
-
-    // Delete any claimed messages, but only try once... remember that modify
-    // may call this function multiple times to resolve consistency issues
-    var hasClaimToDelete = (task.claim.messageId &&
-                            !_.includes(deletedMessages, task.claim.messageId));
-    if (state === 'running' && hasClaimToDelete) {
-      try {
-        await this.queueService.deletePendingTaskMessage(task, task.claim);
-        deletedMessages.push(task.claim.messageId);
-      }
-      catch(err) {
-        // Ignore errors (after all azure messages just advisory)
-        debug("cancelTask: Ignoring insignificant error deleting azure " +
-              "queue message: %s, %j", err, err);
-      }
-    }
 
     // If we have a pending task or running task, we cancel the ongoing run
     if (state === 'pending' || state === 'running') {
@@ -928,17 +908,15 @@ api.declare({
   output:     SCHEMA_PREFIX_CONST + 'poll-task-urls-response.json#',
   title:      "Get Urls to Poll Pending Tasks",
   description: [
-    "Get a signed url to get a message from azure queue.",
+    "Get a signed URLs to get and delete messages from azure queue.",
     "Once messages are polled from here, you can claim the referenced task",
-    "with `claimTask`."
+    "with `claimTask`, and afterwards you should always delete the message."
   ].join('\n')
-}, function(req, res) {
+}, async function(req, res) {
     // Validate parameters
   if (!checkParams(req, res)) {
     return;
   }
-
-  var ctx = this;
 
   var provisionerId = req.params.provisionerId;
   var workerType    = req.params.workerType;
@@ -953,16 +931,21 @@ api.declare({
 
   // Construct signedUrl for accessing the azure queue for this
   // provisionerId and workerType
-  return ctx.queueService.signedUrl(
-    provisionerId,
-    workerType
-  ).then(function(result) {
-    res.reply({
-      signedPollTaskUrls: [
-        result.getMessage
-      ],
-      expires:                  result.expiry.toJSON()
-    });
+  var {
+    signedPollUrl,
+    signedDeleteUrl,
+    expiry
+  } = await this.queueService.signedPendingPollUrl(provisionerId, workerType);
+
+  // Return signed URLs
+  res.reply({
+    signedPollTaskUrls: [
+      {
+        signedPollUrl:        signedPollUrl,
+        signedDeleteUrl:      signedDeleteUrl
+      }
+    ],
+    expires:                  expiry.toJSON()
   });
 });
 
