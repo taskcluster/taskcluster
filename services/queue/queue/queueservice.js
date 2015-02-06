@@ -47,6 +47,7 @@ class QueueService {
    *   },
    *   claimQueue:           // Queue name for the claim expiration queue
    *   deadlineQueue:        // Queue name for the deadline queue
+   *   //TODO: add deadlineDelay for consistency issues with rerunTask/scheduleTask
    * }
    */
   constructor(options) {

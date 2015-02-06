@@ -8,24 +8,53 @@ properties:
   signedPollTaskUrls:
     type:       array
     description: |
-      List of signed URLs to poll tasks from, they must be called in the order
-      they are given. As the first entry in this array **may** have higher
-      priority.
+      List of signed URLs for queues to poll tasks from, they must be called
+      in the order they are given. As the first entry in this array **may**
+      have higher priority.
     items:
-      type:       string
-      format:     uri
-      title:      "Signed Get Message URL"
+      type:       object
+      title:      "Signed URLs for a queue"
       description: |
-        Signed URL to get message from the Azure Queue Storage queue, that holds
-        messages for the given `provisionerId` and `workerType`. Note that this
-        URL returns XML, see documentation for the Azure Queue Storage
-        [REST API](http://msdn.microsoft.com/en-us/library/azure/dd179474.aspx)
-        for details. When you have a message you can use `claimTask` to claim
-        the task. You will need to parse the XML reponse and base64 decode and
-        JSON parse the `MessageText`, also note that `claimTask` requires
-        the `PopReceipt` and `MessageId`.
-        **Remark**, you are allowed to append `&numofmessages=N`, where N < 32,
-        to the URLs if you wish to obtain more than one message at the time.
+        Object holding two signed URLs for an azure queue, one for fetching
+        messages, and another for deleting messages. Remember to `claimTask`
+        before deleting the message, and delete message even if the `claimTask`
+        operation fails with a 400 status code. Don't delete it on other status
+        codes!
+      properties:
+        signedPollUrl:
+          type:     string
+          format:   uri
+          title:    "Signed Get Message URL"
+          description: |
+            Signed URL to get message from the Azure Queue Storage queue,
+            that holds messages for the given `provisionerId` and `workerType`.
+            Note that this URL returns XML, see documentation for the Azure
+            Queue Storage
+            [REST API](http://msdn.microsoft.com/en-us/library/azure/dd179474.aspx)
+            for details.
+            When you have a message you can use `claimTask` to claim the task.
+            You will need to parse the XML reponse and base64 decode and
+            JSON parse the `MessageText`.
+            After you have called `claimTask` you **must** us the
+            `signedDeleteUrl` to delete the message.
+            **Remark**, you are allowed to append `&numofmessages=N`,
+            where N < 32, to the URLs if you wish to obtain more than one
+            message at the time.
+        signedDeleteUrl:
+          type:     string
+          format:   uri
+          title:    "Signed Delete Message URL"
+          description: |
+            Signed URL to delete messages that have been received using the
+            `signedPollUrl`. You **must** do this to avoid receiving the same
+            message again.
+            To use this URL you must substitute `{{messageId}}` and
+            `{{popReceipt}}` with `MessageId` and `PopReceipt` from the XML
+            response the `signedPollUrl` gave you. Note this URL only works
+            with `DELETE` request.
+      required:
+        - signedPollUrl
+        - signedDeleteUrl
   expires:
     title:    "Signed URL Expiration"
     description: |
