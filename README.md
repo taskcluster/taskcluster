@@ -10,13 +10,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/petemoore/taskcluster-client-go/model"
+	"github.com/petemoore/taskcluster-client-go/client"
 )
 
 func main() {
-	authApi := model.Auth{ClientId: "HKHww8sqrhvbfnde1b29tQ", AccessToken: "3W_LrgrPSc47645fhdgfjtygHHFdhgfFBhdvrnwGaX5Q"}
-	scopes := authApi.Scopes("hjfdhdSHBRhgbdsBFv42tQ")
-	fmt.Printf(scopes.String())
+	authApi := client.NewAuthAPI("hhskdjg476fau1ie1b29tQ", "3W_Lrghkjsdfn467834kgf0SRnKRiWSaKF9urnwGaX5Q")
+	scopes, _ := authApi.Scopes("hdjskhfb4nvrh673g4mvfd")
+	fmt.Printf("Client ID: %v\n", scopes.ClientId)
+	fmt.Printf("Expires:   %v\n", scopes.Expires)
+	fmt.Printf("Scopes:    %v\n", scopes.Scopes)
 }
 ```
 
