@@ -67,7 +67,17 @@ func (api *API) postPopulate() {
 }
 
 func (api *API) getMethodDefinitions(apiName string) string {
-	content := "type " + apiName + " struct {\n\tAuth\n}\n\n"
+	comment := ""
+	if api.Description != "" {
+		comment = utils.Indent(api.Description, "// ")
+	}
+	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+		comment += "\n"
+	}
+	comment += "//\n"
+	comment += fmt.Sprintf("// See: %v\n", api.apiDef.URL)
+	content := comment
+	content += "type " + apiName + " struct {\n\tAuth\n}\n\n"
 	for _, entry := range api.Entries {
 		content += entry.getMethodDefinitions(apiName)
 	}
