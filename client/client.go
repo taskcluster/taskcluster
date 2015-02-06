@@ -29,10 +29,15 @@ type (
 		ClientId string
 		// Access Token required by Hawk
 		AccessToken string
+		// By default set to production base url for API service, but can be changed to hit a
+		// different service, e.g. a staging API endpoint, or a taskcluster-proxy endpoint
+		BaseURL string
+		// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
+		Authenticate bool
 	}
 )
 
-func (auth *Auth) apiCall(inputArgs []string, payload interface{}, method HttpMethod, route string, result interface{}) interface{} {
+func (auth *Auth) apiCall(payload interface{}, method HttpMethod, route string, result interface{}) interface{} {
 	credentials := &hawk.Credentials{
 		ID:   auth.ClientId,
 		Key:  auth.AccessToken,

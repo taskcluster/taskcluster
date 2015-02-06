@@ -74,10 +74,31 @@ func (api *API) getMethodDefinitions(apiName string) string {
 	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 		comment += "\n"
 	}
+	exampleVarName := strings.ToLower(string(apiName[0])) + apiName[1:]
 	comment += "//\n"
 	comment += fmt.Sprintf("// See: %v\n", api.apiDef.URL)
 	content := comment
 	content += "type " + apiName + " struct {\n\tAuth\n}\n\n"
+	content += "// Returns a pointer to " + apiName + ", configured to run against production.\n"
+	content += "// If you wish to point at a different API endpoint url, set the BaseURL struct\n"
+	content += "// member to your chosen location. You may also disable authentication (for\n"
+	content += "// example if you wish to use the taskcluster-proxy) by setting Authenticate\n"
+	content += "// struct member to false.\n"
+	content += "//\n"
+	content += "// For example:\n"
+	content += "//  " + exampleVarName + " := New" + apiName + "(\"123\", \"456\")                        // set clientId and accessToken\n"
+	content += "//  " + exampleVarName + ".Authenticate = false          " + strings.Repeat(" ", len(apiName)) + "              // disable authentication (true by default)\n"
+	content += "//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"   // alternative API endpoint\n"
+	content += "//  " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)\n" // just an example function - the first one of the given API
+	content += "func New" + apiName + "(clientId string, accessToken string) *" + apiName + " {\n"
+	content += "\tr := &" + apiName + "{}\n"
+	content += "\tr.ClientId = clientId\n"
+	content += "\tr.AccessToken = accessToken\n"
+	content += "\tr.BaseURL = \"" + api.BaseURL + "\"\n"
+	content += "\tr.Authenticate = true\n"
+	content += "\treturn r\n"
+	content += "}\n"
+	content += "\n"
 	for _, entry := range api.Entries {
 		content += entry.getMethodDefinitions(apiName)
 	}
@@ -143,7 +164,6 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 	comment += "//\n"
 	comment += fmt.Sprintf("// See %v/#%v\n", entry.API.apiDef.DocRoot, entry.Name)
 	inputParams := ""
-	apiCallInputArgs := strings.Join(entry.Args, ", ")
 	if len(entry.Args) > 0 {
 		inputParams += strings.Join(entry.Args, " string, ") + " string"
 	}
@@ -166,7 +186,7 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 
 	content := comment
 	content += fmt.Sprintf("func (a *%v) %v(%v) *%v {\n", apiName, entry.MethodName, inputParams, responseType)
-	content += fmt.Sprintf("\treturn a.apiCall([]string{%v}, %v, %v, \"%v\", new(%v)).(*%v)\n", apiCallInputArgs, apiArgsPayload, strings.ToUpper(entry.Method), entry.Route, responseType, responseType)
+	content += fmt.Sprintf("\treturn a.apiCall(%v, %v, \"%v\", new(%v)).(*%v)\n", apiArgsPayload, strings.ToUpper(entry.Method), strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1), responseType, responseType)
 	content += "}\n"
 	content += "\n"
 	return content
