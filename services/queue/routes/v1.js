@@ -399,7 +399,6 @@ api.declare({
       tags:             taskDef.tags,
       extra:            taskDef.extra,
       runs:             [{
-        runId:          0,
         state:          'pending',
         reasonCreated:  'scheduled',
         scheduled:      new Date().toJSON()
@@ -656,7 +655,6 @@ api.declare({
 
     // Add initial run (runId = 0)
     task.runs.push({
-      runId:          0,
       state:          'pending',
       reasonCreated:  'scheduled',
       scheduled:      new Date().toJSON()
@@ -753,7 +751,6 @@ api.declare({
 
     // Add a new run
     task.runs.push({
-      runId:          task.runs.length,
       state:          'pending',
       reasonCreated:  'rerun',
       scheduled:      new Date().toJSON()
@@ -761,6 +758,7 @@ api.declare({
 
     // Reset retries left
     task.retriesLeft = task.retries;
+    task.takenUntil = new Date(0);
   });
 
   // Put message in appropriate azure queue, and publish message to pulse,
@@ -863,7 +861,6 @@ api.declare({
     // `workerId`.
     if (state === 'unscheduled') {
       task.runs.push({
-        runId:            task.runs.length,
         state:            'exception',
         reasonCreated:    'scheduled',
         reasonResovled:   'canceled',
@@ -882,9 +879,10 @@ api.declare({
 
   // Publish message about last run, if it was canceled
   if (run.state === 'exception' && run.reasonResolved === 'canceled') {
+    var runId = task.runs.length - 1;
     await this.publisher.taskException(_.defaults({
       status:     task.status(),
-      runId:      run.runId
+      runId:      runId
     }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
   }
 
@@ -939,7 +937,7 @@ api.declare({
 
   // Return signed URLs
   res.reply({
-    signedPollTaskUrls: [
+    queues: [
       {
         signedPollUrl:        signedPollUrl,
         signedDeleteUrl:      signedDeleteUrl
@@ -966,122 +964,110 @@ api.declare({
   output:     SCHEMA_PREFIX_CONST + 'task-claim-response.json#',
   title:      "Claim task",
   description: [
-    "claim a task, more to be added later...",
-    "",
-    "**Warning,** in the future this API end-point will require the presents",
-    "of `receipt`, `messageId` and `signature` in the body."
+    "claim a task, more to be added later..."
   ].join('\n')
-}, function(req, res) {
+}, async function(req, res) {
   // Validate parameters
   if (!checkParams(req, res)) {
     return;
   }
 
-  var ctx = this;
-
-  var taskId = req.params.taskId;
-  var runId  = parseInt(req.params.runId);
+  var taskId      = req.params.taskId;
+  var runId       = parseInt(req.params.runId);
 
   var workerGroup = req.body.workerGroup;
   var workerId    = req.body.workerId;
 
-  var messageId   = req.body.messageId;
-  var receipt     = req.body.receipt;
-  var signature   = req.body.signature;
+  // Load Task entity
+  let task = await this.Task.load({
+    taskId:     taskId
+  }, true);
 
-  // Load task status structure to validate that we're allowed to claim it
-  return ctx.Task.load(taskId).then(function(task) {
-    // if task doesn't exist return 404
-    if(!task) {
-      return res.status(404).json({
-        message: "Task not found, or already resolved!"
-      });
-    }
+  // Handle cases where the task doesn't exist
+  if (!task) {
+    return res.status(404).json({
+      message: "Task not found"
+    });
+  }
 
-    // Authenticate request by providing parameters
-    if(!req.satisfies({
-      provisionerId:  task.provisionerId,
-      workerType:     task.workerType,
-      workerGroup:    workerGroup,
-      workerId:       workerId
-    })) {
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    provisionerId:  task.provisionerId,
+    workerType:     task.workerType,
+    workerGroup:    workerGroup,
+    workerId:       workerId
+  })) {
+    return;
+  }
+
+  // Set takenUntil to now + 20 min
+  var takenUntil = new Date();
+  takenUntil.setSeconds(takenUntil.getSeconds() + this.claimTimeout);
+
+  var msgPut = false;
+  await task.modify(async (task) => {
+    var run = task.runs[runId];
+
+    // No modifications required if there is no run, or the run isn't pending
+    if (task.runs.length - 1 !== runId || run.state !== 'pending') {
       return;
     }
 
-    // Validate signature, if present
-    if (signature) {
-      var valid = ctx.queueService.validateSignature(
-        task.provisionerId, task.workerType,
-        taskId, runId,
-        task.deadline,
-        signature
-      );
-      if (!valid) {
-        return res.status(401).json({
-          messsage: "Message was faked!"
-        });
-      }
+    // Put claim-expiration message in queue, if not already done, remember
+    // that the modifier given to task.modify may be called more than once!
+    if (!msgPut) {
+      await this.queueService.putClaimMessage(taskId, takenUntil);
+      msgPut = true;
     }
 
-    // Set takenUntil to now + 20 min
-    var takenUntil = new Date();
-    var claimTimeout = parseInt(ctx.claimTimeout);
-    takenUntil.setSeconds(takenUntil.getSeconds() + claimTimeout);
+    // Change state of the run (claiming it)
+    run.state         = 'running';
+    run.workerGroup   = workerGroup;
+    run.workerId      = workerId;
+    run.takenUntil    = takenUntil.toJSON();
+    run.started       = new Date().toJSON();
 
-    // Claim run
-    return ctx.Task.claimTaskRun(taskId, runId, {
-      workerGroup:    workerGroup,
-      workerId:       workerId,
-      takenUntil:     takenUntil
-    }).then(function(result) {
-      // Return the "error" message if we have one
-      if(!(result instanceof ctx.Task)) {
-        res.status(result.code).json({
-          message:      result.message
-        });
-        if (messageId && receipt && signature) {
-          // Delete message from azure queue
-          return ctx.queueService.deleteMessage(
-            task.provisionerId,
-            task.workerType,
-            messageId,
-            receipt
-          );
-        }
-        return;
-      }
+    // Set takenUntil on the task
+    task.takenUntil   = takenUntil;
+  });
 
-      // Delete message from azure queue
-      var messageDeleted = Promise.resolve();
-      if (messageId && receipt && signature) {
-        messageDeleted = ctx.queueService.deleteMessage(
-          task.provisionerId,
-          task.workerType,
-          messageId,
-          receipt
-        );
-      }
+  // Find run that we (may) have modified
+  var run = task.runs[runId];
 
-      return messageDeleted.then(function() {
-        // Announce that the run is running
-        return ctx.publisher.taskRunning({
-          workerGroup:  workerGroup,
-          workerId:     workerId,
-          runId:        runId,
-          takenUntil:   takenUntil.toJSON(),
-          status:       result.status()
-        }, result.routes);
-      }).then(function() {
-        // Reply to caller
-        return res.reply({
-          workerGroup:  workerGroup,
-          workerId:     workerId,
-          runId:        runId,
-          takenUntil:   takenUntil.toJSON(),
-          status:       result.status()
-        });
-      });
+  // If the run doesn't exist return 404
+  if (!run) {
+    return res.status(404).json({
+      message: "Run not found"
     });
+  }
+  // If the run wasn't claimed by this workerGroup/workerId, then we return
+  // 409 as it must have claimed by someone else
+  if (task.runs.length - 1  !== runId ||
+      run.state             !== 'running' ||
+      run.workerGroup       !== workerGroup ||
+      run.workerId          !== workerId) {
+    return res.status(409).json({
+      message:  "Run claimed by another worker"
+    });
+  }
+
+  // Publish task running message, it's important that we publish even if this
+  // is a retry request and we didn't make any changes in task.modify
+  await this.publisher.taskRunning({
+    status:       task.status(),
+    runId:        runId,
+    workerGroup:  workerGroup,
+    workerId:     workerId,
+    takenUntil:   run.takenUntil
+  }, task.routes);
+
+  // Reply to caller
+  return res.reply({
+    status:       task.status(),
+    runId:        runId,
+    workerGroup:  workerGroup,
+    workerId:     workerId,
+    takenUntil:   run.takenUntil
   });
 });
 
@@ -1103,58 +1089,181 @@ api.declare({
   description: [
     "reclaim a task more to be added later..."
   ].join('\n')
-}, function(req, res) {
+}, async function(req, res) {
   // Validate parameters
   if (!checkParams(req, res)) {
     return;
   }
 
-  var ctx = this;
-
   var taskId = req.params.taskId;
   var runId  = parseInt(req.params.runId);
 
-  return ctx.Task.load(taskId).then(function(task) {
-    var workerGroup = task.runs[runId].workerGroup;
-    var workerId    = task.runs[runId].workerId;
+  // Load Task entity
+  let task = await this.Task.load({
+    taskId:     taskId
+  }, true);
 
-    // Authenticate request by providing parameters
-    if(!req.satisfies({
-      workerGroup:    workerGroup,
-      workerId:       workerId
-    })) {
+  // Handle cases where the task doesn't exist
+  if (!task) {
+    return res.status(404).json({
+      message: "Task not found"
+    });
+  }
+
+  // Handle cases where the run doesn't exist
+  var run = task.runs[runId];
+  if (!run) {
+    return res.status(404).json({
+      message: "Run not found"
+    });
+  }
+
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    workerGroup:    run.workerGroup,
+    workerId:       run.workerId
+  })) {
+    return;
+  }
+
+  // Set takenUntil to now + 20 min
+  var takenUntil = new Date();
+  takenUntil.setSeconds(takenUntil.getSeconds() + this.claimTimeout);
+
+  var msgPut = false;
+  await task.modify(async (task) => {
+    var run = task.runs[runId];
+
+    // No modifications required if there is no run or run isn't running
+    if (task.runs.length - 1 !== runId || run.state !== 'running') {
       return;
     }
 
-    // Set takenUntil to now + claimTimeout
-    var takenUntil = new Date();
-    var claimTimeout = parseInt(ctx.claimTimeout);
-    takenUntil.setSeconds(takenUntil.getSeconds() + claimTimeout);
+    // Don't update takenUntil if it's further into the future than the one
+    // we're proposing
+    if (new Date(run.takenUntil).getTime() >= takenUntil.getTime()) {
+      return;
+    }
 
-    // Reclaim run
-    return ctx.Task.reclaimTaskRun(taskId, runId, {
-      workerGroup:    workerGroup,
-      workerId:       workerId,
-      takenUntil:     takenUntil
-    }).then(function(result) {
-      // Return the "error" message if we have one
-      if(!(result instanceof ctx.Task)) {
-        return res.status(result.code).json({
-          message:      result.message
-        });
-      }
+    // Put claim-expiration message in queue, if not already done, remember
+    // that the modifier given to task.modify may be called more than once!
+    if (!msgPut) {
+      await this.queueService.putClaimMessage(taskId, takenUntil);
+      msgPut = true;
+    }
 
-      // Reply to caller
-      return res.reply({
-        workerGroup:  workerGroup,
-        workerId:     workerId,
-        runId:        runId,
-        takenUntil:   takenUntil.toJSON(),
-        status:       result.status()
-      });
+    // Update takenUntil
+    run.takenUntil  = takenUntil.toJSON();
+    task.takenUntil = takenUntil;
+  });
+
+  // Find the run that we (may) have modified
+  run = task.runs[runId];
+
+  // If run isn't running we had a conflict
+  if (task.runs.length - 1 !== runId || run.state !== 'running') {
+    return res.status(409).json({
+      message: "Run is resolved, or not running"
     });
+  }
+
+  // Reply to caller
+  return res.reply({
+    status:       task.status(),
+    runId:        runId,
+    workerGroup:  run.workerGroup,
+    workerId:     run.workerId,
+    takenUntil:   takenUntil.toJSON()
   });
 });
+
+
+/**
+ * Resolve a run of a task as `target` ('completed' or 'failed').
+ * This function assumes the same context as the API.
+ */
+var resolveTask = async function(req, res, taskId, runId, target) {
+  assert(target === 'completed' ||
+         target === 'failed', "Expected a valid target");
+
+  // Load Task entity
+  let task = await this.Task.load({
+    taskId:     taskId
+  }, true);
+
+  // Handle cases where the task doesn't exist
+  if (!task) {
+    return res.status(404).json({
+      message: "Task not found"
+    });
+  }
+
+  // Handle cases where the run doesn't exist
+  var run = task.runs[runId];
+  if (!run) {
+    return res.status(404).json({
+      message: "Run not found"
+    });
+  }
+
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    workerGroup:    run.workerGroup,
+    workerId:       run.workerId
+  })) {
+    return;
+  }
+
+  await task.modify((task) => {
+    var run = task.runs[runId];
+
+    // No modification is, run isn't running or the run isn't last
+    if (task.runs.length - 1 !== runId || run.state !== 'running') {
+      return;
+    }
+
+    // Update run
+    run.state           = target;               // completed or failed
+    run.reasonResovled  = target;               // completed or failed
+    run.resolved        = new Date().toJSON();
+
+    // Clear takenUntil on task
+    task.takenUntil     = new Date(0);
+  });
+
+  // Find the run that we (may) have modified
+  run = task.runs[runId];
+
+  // If run isn't resolved to target, we had a conflict
+  if (task.runs.length - 1  !== runId ||
+      run.state             !== target ||
+      run.resolvedReason    !== target) {
+    return res.status(409).json({
+      message: "Run is resolved, or not running"
+    });
+  }
+
+  // Post message about task resolution
+  if (target === 'completed') {
+    await this.publisher.taskCompleted({
+      status:       task.status(),
+      runId:        runId,
+      workerGroup:  run.workerGroup,
+      workerId:     run.workerId
+    }, task.routes);
+  } else {
+    await this.publisher.taskFailed({
+      status:       task.status(),
+      runId:        runId,
+      workerGroup:  run.workerGroup,
+      workerId:     run.workerId
+    }, task.routes);
+  }
+
+  return res.reply({
+    status:   task.status()
+  });
+};
 
 
 /** Report task completed */
@@ -1181,71 +1290,13 @@ api.declare({
     return;
   }
 
-  var ctx = this;
+  var taskId = req.params.taskId;
+  var runId  = parseInt(req.params.runId);
+  // Backwards compatibility with very old workers, should be dropped in the
+  // future
+  var target = req.body.success === false ? 'failed' : 'completed';
 
-  var taskId        = req.params.taskId;
-  var runId         = parseInt(req.params.runId);
-  var targetState   = req.body.success ? 'completed' : 'failed';
-
-  return ctx.Task.load(taskId).then(function(task) {
-    // if no task is found, we return 404
-    if (!task || !task.runs[runId]) {
-      return res.status(404).json({
-        message:  "Task not found or already resolved"
-      });
-    }
-
-    var workerGroup = task.runs[runId].workerGroup;
-    var workerId    = task.runs[runId].workerId;
-
-    // Authenticate request by providing parameters
-    if(!req.satisfies({
-      workerGroup:  workerGroup,
-      workerId:     workerId
-    })) {
-      return;
-    }
-
-    // Resolve task run
-    return ctx.Task.resolveTask(
-      taskId,
-      runId,
-      targetState,
-      targetState
-    ).then(function(result) {
-      // Return the "error" message if we have one
-      if(!(result instanceof ctx.Task)) {
-        return res.status(result.code).json({
-          message:      result.message
-        });
-      }
-
-
-      // Publish message
-      var published = null;
-      if (targetState === 'completed') {
-        published = ctx.publisher.taskCompleted({
-          status:       result.status(),
-          runId:        runId,
-          workerGroup:  workerGroup,
-          workerId:     workerId
-        }, task.routes);
-      } else {
-        published = ctx.publisher.taskFailed({
-          status:       result.status(),
-          runId:        runId,
-          workerGroup:  workerGroup,
-          workerId:     workerId
-        }, task.routes);
-      }
-
-      return published.then(function() {
-        return res.reply({
-          status:   result.status()
-        });
-      });
-    });
-  });
+  return resolveTask(req, res, taskId, runId, target);
 });
 
 
@@ -1279,58 +1330,10 @@ api.declare({
     return;
   }
 
-  var ctx = this;
-
   var taskId        = req.params.taskId;
   var runId         = parseInt(req.params.runId);
 
-  return ctx.Task.load(taskId).then(function(task) {
-    // if no task is found, we return 404
-    if (!task || !task.runs[runId]) {
-      return res.status(404).json({
-        message:  "Task not found or already resolved"
-      });
-    }
-
-    var workerGroup = task.runs[runId].workerGroup;
-    var workerId    = task.runs[runId].workerId;
-
-    // Authenticate request by providing parameters
-    if(!req.satisfies({
-      workerGroup:  workerGroup,
-      workerId:     workerId
-    })) {
-      return;
-    }
-
-    // Resolve task run
-    return ctx.Task.resolveTask(
-      taskId,
-      runId,
-      'failed',
-      'failed'
-    ).then(function(result) {
-      // Return the "error" message if we have one
-      if(!(result instanceof ctx.Task)) {
-        return res.status(result.code).json({
-          message:      result.message
-        });
-      }
-
-
-      // Publish message
-      return ctx.publisher.taskFailed({
-        status:       result.status(),
-        runId:        runId,
-        workerGroup:  workerGroup,
-        workerId:     workerId
-      }, task.routes).then(function() {
-        return res.reply({
-          status:   result.status()
-        });
-      });
-    });
-  });
+  return resolveTask(req, res, taskId, runId, 'failed');
 });
 
 /** Report task exception */
@@ -1356,64 +1359,111 @@ api.declare({
     "because of network failure, etc. Only if you can validate that the",
     "resource does not exist."
   ].join('\n')
-}, function(req, res) {
+}, async function(req, res) {
   // Validate parameters
   if (!checkParams(req, res)) {
     return;
   }
 
-  var ctx = this;
-
   var taskId        = req.params.taskId;
   var runId         = parseInt(req.params.runId);
   var reason        = req.body.reason;
 
-  return ctx.Task.load(taskId).then(function(task) {
-    // if no task is found, we return 404
-    if (!task || !task.runs[runId]) {
-      return res.status(404).json({
-        message:  "Task not found or already resolved"
-      });
-    }
+  // Load Task entity
+  let task = await this.Task.load({
+    taskId:     taskId
+  }, true);
 
-    var workerGroup = task.runs[runId].workerGroup;
-    var workerId    = task.runs[runId].workerId;
+  // Handle cases where the task doesn't exist
+  if (!task) {
+    return res.status(404).json({
+      message: "Task not found"
+    });
+  }
 
-    // Authenticate request by providing parameters
-    if(!req.satisfies({
-      workerGroup:  workerGroup,
-      workerId:     workerId
-    })) {
+  // Handle cases where the run doesn't exist
+  var run = task.runs[runId];
+  if (!run) {
+    return res.status(404).json({
+      message: "Run not found"
+    });
+  }
+
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    workerGroup:    run.workerGroup,
+    workerId:       run.workerId
+  })) {
+    return;
+  }
+
+  await task.modify((task) => {
+    var run = task.runs[runId];
+
+    // No modification is, run isn't running or the run isn't last
+    if (task.runs.length - 1 !== runId || run.state !== 'running') {
       return;
     }
 
-    // Resolve task run
-    return ctx.Task.resolveTask(
-      taskId,
-      runId,
-      'exception',
-      reason
-    ).then(function(result) {
-      // Return the "error" message if we have one
-      if(!(result instanceof ctx.Task)) {
-        return res.status(result.code).json({
-          message:      result.message
-        });
-      }
+    // Update run
+    run.state           = 'exception';
+    run.reasonResovled  = reason;
+    run.resolved        = new Date().toJSON();
 
+    // Clear takenUntil on task
+    task.takenUntil     = new Date(0);
 
-      // Publish message
-      return ctx.publisher.taskException({
-        status:       result.status(),
-        runId:        runId,
-        workerGroup:  workerGroup,
-        workerId:     workerId
-      }, task.routes).then(function() {
-        return res.reply({
-          status:   result.status()
-        });
+    // Add retry, if not retries is allowed
+    if (task.retriesLeft > 0) {
+      task.retriesLeft -= 1;
+      task.runs.push({
+        state:            'pending',
+        reasonCreated:    'retry',
+        scheduled:        new Date().toJSON()
       });
+    }
+  });
+
+  // Find the run that we (may) have modified
+  run = task.runs[runId];
+
+  // If run isn't resolved to exception with reason, we had a conflict
+  if (!run ||
+      task.runs.length - 1  > runId + 1 ||
+      run.state             !== 'exception' ||
+      run.resolvedReason    !== reason) {
+    return res.status(409).json({
+      message: "Run is resolved, or not running"
     });
+  }
+
+  // Publish message
+  await this.publisher.taskException({
+    status:       task.status(),
+    runId:        runId,
+    workerGroup:  workerGroup,
+    workerId:     workerId
+  }, task.routes);
+
+  // If a newRun was created and it is a retry with state pending then we better
+  // publish messages about it
+  var newRun = task.runs[runId + 1];
+  if (newRun &&
+      task.runs.length - 1  === runId + 1 &&
+      newRun.state          === 'pending' &&
+      newRun.reasonCreated  === 'retry') {
+    await Promise.all([
+      this.queueService.putPendingMessage(task, runId),
+      this.publisher.taskPending({
+        status:         task.status(),
+        runId:          runId + 1
+      }, task.routes)
+    ]);
+  }
+
+  // Reply to caller
+  return res.reply({
+    status:   task.status()
   });
 });
 
@@ -1429,22 +1479,20 @@ api.declare({
   name:       'pendingTasks',
   scopes:     ['queue:pending-tasks:<provisionerId>/<workerType>'],
   deferAuth:  true,
-  output:     undefined,  // TODO: define schema later
+  output:     SCHEMA_PREFIX_CONST + 'pending-tasks-response.json',
   title:      "Get Number of Pending Tasks",
   description: [
     "Documented later...",
     "This probably the end-point that will remain after rewriting to azure",
     "queue storage...",
     "",
-    "**Warning: This is an experimental end-point!**"
   ].join('\n')
-}, function(req, res) {
+}, async function(req, res) {
   // Validate parameters
   if (!checkParams(req, res)) {
     return;
   }
 
-  var ctx           = this;
   var provisionerId = req.params.provisionerId;
   var workerType    = req.params.workerType;
 
@@ -1456,10 +1504,16 @@ api.declare({
     return;
   }
 
-  // This implementation is stupid... but it works, just disregard
-  // implementation details...
-  return ctx.Task.pendingTasks(provisionerId).then(function(result) {
-    return res.reply(result[workerType] || 0);
+  // Get number of pending message
+  var count = await this.queueService.countPendingMessages(
+    provisionerId, workerType
+  );
+
+  // Reply to call with count `pendingTasks`
+  return res.reply({
+    provisionerId:  provisionerId,
+    workerType:     workerType,
+    pendingTasks:   count
   });
 });
 

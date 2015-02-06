@@ -14,7 +14,8 @@ var decodeUrlSafeBase64 = function(data) {
 
 /** Get seconds until `target` relative to now (by default) */
 var secondsTo = function(target, relativeTo = new Date()) {
-  return Math.floor((target.getTime() - relativeTo.getTime()) / 1000);
+  var delta = Math.floor((target.getTime() - relativeTo.getTime()) / 1000);
+  return Math.max(delta, 0); // never return negative time
 };
 
 /** Validate task description object */
@@ -47,7 +48,8 @@ class QueueService {
    *   },
    *   claimQueue:           // Queue name for the claim expiration queue
    *   deadlineQueue:        // Queue name for the deadline queue
-   *   //TODO: add deadlineDelay for consistency issues with rerunTask/scheduleTask
+   *   deadlineDelay:        // Delay before deadline expired messages arrive
+   *                         // in ms (defaults to 15 min)
    * }
    */
   constructor(options) {
@@ -57,7 +59,8 @@ class QueueService {
     assert(options.claimQueue,          "A claimQueue name must be given");
     assert(options.deadlineQueue,       "A deadlineQueue name must be given");
     options = _.defaults({}, options, {
-      pendingPollTimeout:   300 * 1000
+      pendingPollTimeout:    5 * 60 * 1000,
+      deadlineDelay:        10 * 60 * 1000
     });
 
     this.prefix             = options.prefix;
@@ -83,6 +86,7 @@ class QueueService {
 
     // Store deadlineQueue name, and remember if we've created it
     this.deadlineQueue      = options.deadlineQueue;
+    this.deadlineDelay      = options.deadlineDelay;
     this.deadlineQueueReady = null;
   }
 
@@ -145,13 +149,14 @@ class QueueService {
     assert(isFinite(deadline),          "deadline must be a valid date");
 
     await this.ensureDeadlineQueue();
+    var delay = Math.floor(this.deadlineDelay / 1000);
     return new Promise((accept, reject) => {
       this.service.createMessage(this.deadlineQueue, JSON.stringify({
         taskId:             taskId,
         deadline:           deadline.toJSON()
       }), {
         ttl:                7 * 24 * 60 * 60,
-        visibilityTimeout:  secondsTo(deadline)
+        visibilityTimeout:  secondsTo(deadline) + delay
       }, function(err) { err ? reject(err) : accept() });
     });
   }
@@ -329,6 +334,7 @@ class QueueService {
     });
   }
 
+  /** Get signed URLs for polling and deleting from the azure queue */
   async signedPendingPollUrl(provisionerId, workerType) {
     // Find name of azure queue
     var queueName = await this.ensurePendingQueue(provisionerId, workerType);
@@ -368,6 +374,20 @@ class QueueService {
     };
   }
 
+  /** Returns promise for number of messages pending in pending task queue */
+  async countPendingMessages(provisionerId, workerType) {
+    // Find name of azure queue
+    var queueName = await this.ensurePendingQueue(provisionerId, workerType);
+
+    // Get queue meta-data
+    var data = await new Promise((accept, reject) => {
+      this.service.getQueueMetadata(queueName, (err, data) => {
+        err ? reject(err) : accept(data)
+      });
+    });
+
+    return parseInt(data.approximatemessagecount);
+  }
 };
 
 // Export QueueService
