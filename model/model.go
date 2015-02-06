@@ -186,7 +186,7 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 
 	content := comment
 	content += fmt.Sprintf("func (a *%v) %v(%v) *%v {\n", apiName, entry.MethodName, inputParams, responseType)
-	content += fmt.Sprintf("\treturn a.apiCall(%v, %v, \"%v\", new(%v)).(*%v)\n", apiArgsPayload, strings.ToUpper(entry.Method), strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1), responseType, responseType)
+	content += fmt.Sprintf("\treturn a.apiCall(%v, \"%v\", \"%v\", new(%v)).(*%v)\n", apiArgsPayload, strings.ToUpper(entry.Method), strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1), responseType, responseType)
 	content += "}\n"
 	content += "\n"
 	return content

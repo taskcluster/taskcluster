@@ -10,17 +10,6 @@ import (
 
 type HttpMethod int
 
-const (
-	OPTIONS HttpMethod = iota
-	GET
-	HEAD
-	POST
-	PUT
-	DELETE
-	TRACE
-	CONNECT
-)
-
 //go:generate generatemodel -f ../model/apis.json -o generated-code.go -m model-data.txt
 
 type (
@@ -37,7 +26,7 @@ type (
 	}
 )
 
-func (auth *Auth) apiCall(payload interface{}, method HttpMethod, route string, result interface{}) interface{} {
+func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) interface{} {
 	credentials := &hawk.Credentials{
 		ID:   auth.ClientId,
 		Key:  auth.AccessToken,
