@@ -39,7 +39,6 @@ var Task = base.Entity.configure({
     extra:          base.Entity.types.JSON,
     /**
      * List of run objects with the following keys:
-     * - runId          (required)
      * - state          (required)
      * - reasonCreated  (required)
      * - reasonResolved (required)
@@ -90,7 +89,11 @@ Task.prototype.status = function() {
     expires:          this.expires.toJSON(),
     retriesLeft:      this.retriesLeft,
     state:            this.state(),
-    runs:             _.cloneDeep(this.runs)
+    runs:             this.runs.map((run, runId) => {
+      return _.defaults({
+        runId:        runId
+      }, run);
+    });
   };
 };
 

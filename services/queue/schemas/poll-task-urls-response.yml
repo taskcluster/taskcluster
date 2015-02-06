@@ -5,8 +5,9 @@ description: |
   Response to request for poll task urls.
 type:           object
 properties:
-  signedPollTaskUrls:
+  queues:
     type:       array
+    title:      "Queues To Poll From"
     description: |
       List of signed URLs for queues to poll tasks from, they must be called
       in the order they are given. As the first entry in this array **may**
