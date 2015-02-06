@@ -32,9 +32,8 @@ suite('queue/QueueService', function() {
   var queueService = new QueueService({
     prefix:             cfg.get('queue:queuePrefix'),
     credentials:        cfg.get('azure'),
-    signatureSecret:    "A very public secret",
+    claimQueue:         cfg.get('queue:claimQueue'),
     deadlineQueue:      cfg.get('queue:deadlineQueue'),
-    deadlineDelay:      0, // bad idea to use this in production!!!
     pendingPollTimeout: 30 * 1000
   });
 
@@ -67,7 +66,70 @@ suite('queue/QueueService', function() {
     });
   });
 
-  test("put, get, update, timeout, delete, validate signature", async () => {
+  test("put, get, delete", async () => {
+    var taskId  = slugid.v4();
+    var runId   = 0;
+    var task    = {
+      taskId:             taskId,
+      provisionerId:      provisionerId,
+      workerType:         workerType,
+      deadline:           new Date(new Date().getTime() + 5 * 60 * 1000)
+    };
+
+    // Put message into pending queue
+    debug("### Putting message in pending queue");
+    await queueService.putPendingMessage(task, runId);
+
+    // Get signedPollUrl and signedDeleteUrl
+    var {
+      signedPollUrl,
+      signedDeleteUrl
+    } = await queueService.signedPendingPollUrl(provisionerId, workerType);
+
+    // Get a message
+    debug("### Polling for queue for message");
+    var [message, payload] = await base.testing.poll(async () => {
+      // Poll azure queue
+      debug(" - polling");
+      var res = await request.get(signedPollUrl).buffer().end();
+      assert(res.ok, "Request failed");
+
+      // Parse XML
+      var json = await new Promise((accept, reject) => {
+        xml2js.parseString(res.text, (err, json) => {
+          err ? reject(err) : accept(json)
+        });
+      });
+
+      // Get message (will if fail if there is no message)
+      var message = json.QueueMessagesList.QueueMessage[0];
+
+      // Load the payload
+      var payload = new Buffer(message.MessageText[0], 'base64').toString();
+      payload = JSON.parse(payload);
+      debug("Received message with payload: %j", payload);
+
+      // Check that we got the right task, notice they have life time of 5 min,
+      // so waiting 5 min should fix this issue.. Another option is to create
+      // a unique queue for each test run. Probably not needed.
+      assert(payload.taskId === taskId, "Got wrong taskId, try agian in 5 min");
+
+      return [message, payload];
+    }).catch(function() {
+      throw new Error("Failed to poll queue");
+    });
+
+    debug("### Delete pending message");
+    return request.del(
+      signedDeleteUrl
+        .replace('{{messageId}}', message.messageId)
+        .replace('{{popReceipt}}', message.PopReceipt)
+    ).end();
+  });
+
+  return;
+
+  test("put, get, delete", async () => {
     var taskId  = slugid.v4();
     var runId   = 0;
     var task    = {

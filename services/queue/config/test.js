@@ -7,7 +7,9 @@ module.exports = {
     privateArtifactBucket:        'test-bucket-for-any-garbage',
     artifactContainer:            'artifacts',
     statsComponent:               'test-queue',
-    queuePrefix:                  'hacks'
+    queuePrefix:                  'hacks',
+    claimQueue:                   'test-claim-queue',
+    deadlineQueue:                'test-deadline-queue'
   },
 
   taskcluster: {
