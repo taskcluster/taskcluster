@@ -53,19 +53,8 @@ var Task = base.Entity.configure({
      * Remark that `runId` always match the index in the array.
      */
     runs:           base.Entity.types.JSON,
-    /**
-     * Internal data holding references to a message in azure queue
-     *
-     * Properties:
-     *  - `messageId`, present if there is claim on the task
-     *  - `receipt`, present with `messageId`
-     *  - `salt`, present if not resolved or unscheduled.
-     *
-     * The `salt` is included in signatures in the azure queue messages, hence,
-     * by updating the `salt` we can invalidate existing messages, as they will
-     * have an invalid signature.
-     */
-    claim:          base.Entity.types.JSON
+    /** Time at which claim to latest run expires, new Date(0) if none */
+    takenUntil:     base.Entity.types.Date
   }
 });
 
