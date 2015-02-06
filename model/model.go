@@ -88,8 +88,8 @@ func (api *API) getMethodDefinitions(apiName string) string {
 	content += "// For example:\n"
 	content += "//  " + exampleVarName + " := New" + apiName + "(\"123\", \"456\")                        // set clientId and accessToken\n"
 	content += "//  " + exampleVarName + ".Authenticate = false          " + strings.Repeat(" ", len(apiName)) + "              // disable authentication (true by default)\n"
-	content += "//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"   // alternative API endpoint\n"
-	content += "//  " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)\n" // just an example function - the first one of the given API
+	content += "//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"   // alternative API endpoint (production by default)\n"
+	content += "//  " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)" + strings.Repeat(" ", 36-len(api.Entries[0].MethodName)+len(apiName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
 	content += "func New" + apiName + "(clientId string, accessToken string) *" + apiName + " {\n"
 	content += "\tr := &" + apiName + "{}\n"
 	content += "\tr.ClientId = clientId\n"
