@@ -67,7 +67,7 @@ func (api *API) postPopulate() {
 }
 
 func (api *API) getMethodDefinitions(apiName string) string {
-	content := "type " + apiName + " Auth\n\n"
+	content := "type " + apiName + " struct {\n\tAuth\n}\n\n"
 	for _, entry := range api.Entries {
 		content += entry.getMethodDefinitions(apiName)
 	}
@@ -132,28 +132,31 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 	}
 	comment += "//\n"
 	comment += fmt.Sprintf("// See %v/#%v\n", entry.API.apiDef.DocRoot, entry.Name)
-	parameters := ""
+	inputParams := ""
+	apiCallInputArgs := strings.Join(entry.Args, ", ")
 	if len(entry.Args) > 0 {
-		parameters += strings.Join(entry.Args, " string, ") + " string"
+		inputParams += strings.Join(entry.Args, " string, ") + " string"
 	}
 
+	apiArgsPayload := "nil"
 	if entry.Input != "" {
+		apiArgsPayload = "payload"
 		p := "payload *" + schemas[entry.Input].StructName
-		if parameters == "" {
-			parameters = p
+		if inputParams == "" {
+			inputParams = p
 		} else {
-			parameters += ", " + p
+			inputParams += ", " + p
 		}
 	}
 
-	responseType := "*http.Response"
+	responseType := "http.Response"
 	if entry.Output != "" {
-		responseType = "*" + schemas[entry.Output].StructName
+		responseType = schemas[entry.Output].StructName
 	}
 
 	content := comment
-	content += fmt.Sprintf("func (a *%v) %v(%v) %v {\n", apiName, entry.MethodName, parameters, responseType)
-	content += fmt.Sprintf("\treturn apiCall().(%v)\n", responseType)
+	content += fmt.Sprintf("func (a *%v) %v(%v) *%v {\n", apiName, entry.MethodName, inputParams, responseType)
+	content += fmt.Sprintf("\treturn a.apiCall([]string{%v}, %v, %v, \"%v\", new(%v)).(*%v)\n", apiCallInputArgs, apiArgsPayload, strings.ToUpper(entry.Method), entry.Route, responseType, responseType)
 	content += "}\n"
 	content += "\n"
 	return content
@@ -385,7 +388,7 @@ func generateStructs() string {
 	for _, i := range schemaURLs {
 		content += utils.Indent(schemas[i].StructDefinition(true), "\t")
 	}
-	return content + ")\n"
+	return content + ")\n\n"
 }
 
 func generateMethods() string {
