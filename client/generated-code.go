@@ -97,7 +97,20 @@ type (
 	// Get a list of all clients, including basic information, but not credentials.
 	//
 	// See http://schemas.taskcluster.net/auth/v1/list-clients-response.json#
-	ListClientsResponse struct {
+	ListClientsResponse []struct {
+		// ClientId of the client scopes is requested about
+		ClientId string
+		// Description of what these credentials are used for in markdown.
+		// Should include who is the owner, point of contact.
+		// Why it is scoped as is, think of this as documentation.
+		Description string
+		// Date and time where the clients credentials are set to expire
+		Expires string
+		// Human readable name of this set of credentials, typical
+		// component/server-name or IRC nickname of the user.
+		Name string
+		// List of scopes the client is authorized to access
+		Scopes []string
 	}
 
 	// Representation of an indexed task.
@@ -105,8 +118,7 @@ type (
 	// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#
 	IndexedTaskResponse struct {
 		// Data that was reported with the task. This is an arbitrary JSON object.
-		Data struct {
-		}
+		Data interface{}
 		// Date at which this entry expires from the task index.
 		Expires string
 		// Namespace of the indexed task, used to find the indexed task in the index.
@@ -130,8 +142,7 @@ type (
 		// This is an arbitrary JSON object. Feel free to put whatever data you want
 		// here, but do limit it, you'll get errors if you store more than 32KB.
 		// So stay well, below that limit.
-		Data struct {
-		}
+		Data interface{}
 		// Date at which this entry expires from the task index.
 		Expires string
 		// If multiple tasks are indexed with the same `namespace` the task with the
@@ -205,8 +216,7 @@ type (
 		Tasks []struct {
 			// Data that was reported with the task. This is an arbitrary JSON
 			// object.
-			Data struct {
-			}
+			Data interface{}
 			// Date at which this entry expires from the task index.
 			Expires string
 			// Namespace of the indexed task, used to find the indexed task in the
@@ -272,8 +282,7 @@ type (
 		// for treeherder reporting and task indexing don't conflict, hence, we have
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
-		Extra struct {
-		}
+		Extra interface{}
 		// Required task metadata
 		Metadata struct {
 			// Human readable description of the task, please **explain** what the
@@ -293,8 +302,7 @@ type (
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
-		Payload struct {
-		}
+		Payload interface{}
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		ProvisionerId string
@@ -318,8 +326,7 @@ type (
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-		Tags struct {
-		}
+		Tags interface{}
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
@@ -369,14 +376,12 @@ type (
 	// Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#
-	PostArtifactRequest struct {
-	}
+	PostArtifactRequest interface{}
 
 	// Response to a request for posting an artifact. Note that the `storageType` property is referenced in the request as well.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#
-	PostArtifactResponse struct {
-	}
+	PostArtifactResponse interface{}
 
 	// Request to claim (or reclaim) a task
 	//
@@ -615,8 +620,7 @@ type (
 		// for treeherder reporting and task indexing don't conflict, hence, we have
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
-		Extra struct {
-		}
+		Extra interface{}
 		// Required task metadata
 		Metadata struct {
 			// Human readable description of the task, please **explain** what the
@@ -636,8 +640,7 @@ type (
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
-		Payload struct {
-		}
+		Payload interface{}
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		ProvisionerId string
@@ -661,8 +664,7 @@ type (
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-		Tags struct {
-		}
+		Tags interface{}
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
@@ -707,8 +709,7 @@ type (
 		}
 		Status interface{}
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags struct {
-		}
+		Tags interface{}
 		// Mapping from task-labels to task information and state.
 		Tasks []struct {
 			// List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.
@@ -806,8 +807,7 @@ type (
 		}
 		Status interface{}
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags struct {
-		}
+		Tags interface{}
 		// The HTTP response from the API endpoint (useful for troubleshooting)
 		APIResponse *http.Response
 	}
@@ -867,8 +867,7 @@ type (
 		// authorized to use.
 		Scopes []string
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags struct {
-		}
+		Tags interface{}
 		// List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.
 		Tasks []struct {
 			// List of required `taskId`s

@@ -76,55 +76,53 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool) string {
 			comment += "//\n// See " + url + "\n"
 		}
 		content += comment
-		content += fmt.Sprintf("%v ", jsonSubSchema.StructName)
+		content += jsonSubSchema.StructName + " "
 	}
-	content += fmt.Sprintf("struct {\n")
-	if s := jsonSubSchema.Properties; s != nil {
-		members := make(map[string]bool, len(s.SortedPropertyNames))
-		for _, j := range s.SortedPropertyNames {
-			memberName := utils.Normalise(j, members)
-			typ := "interface{}"
-			if p := s.Properties[j].Type; p != nil {
-				typ = *p
-			}
-			switch typ {
-			case "array":
-				if jsonType := s.Properties[j].Items.Type; jsonType != nil {
-					switch *jsonType {
-					case "object":
-						typ = "[]" + s.Properties[j].Items.TypeDefinition(false)
-					default:
-						typ = "[]" + *jsonType
-					}
-				}
-			case "object":
+	typ := "interface{}"
+	if p := jsonSubSchema.Type; p != nil {
+		typ = *p
+	}
+	switch typ {
+	case "array":
+		if jsonType := jsonSubSchema.Items.Type; jsonType != nil {
+			typ = "[]" + jsonSubSchema.Items.TypeDefinition(false)
+		}
+	case "object":
+		if s := jsonSubSchema.Properties; s != nil {
+			typ = fmt.Sprintf("struct {\n")
+			members := make(map[string]bool, len(s.SortedPropertyNames))
+			for _, j := range s.SortedPropertyNames {
+				memberName := utils.Normalise(j, members)
 				// recursive call to build structs inside structs
-				typ = s.Properties[j].TypeDefinition(false)
-			case "number":
-				typ = "int"
-			case "integer":
-				typ = "int"
-			case "boolean":
-				typ = "bool"
+				subType := s.Properties[j].TypeDefinition(false)
+				// comment the struct member with the description from the json
+				comment = ""
+				if d := s.Properties[j].Description; d != nil {
+					comment = utils.Indent(*d, "\t// ")
+				}
+				if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+					comment += "\n"
+				}
+				typ += comment
+				// struct member name and type, as part of struct definition
+				typ += fmt.Sprintf("\t%v %v\n", memberName, subType)
 			}
-			// comment the struct member with the description from the json
-			comment = ""
-			if d := s.Properties[j].Description; d != nil {
-				comment = utils.Indent(*d, "\t// ")
+			if withComments && jsonSubSchema.IsOutputSchema {
+				typ += "\t// The HTTP response from the API endpoint (useful for troubleshooting)\n"
+				typ += "\tAPIResponse *http.Response\n"
 			}
-			if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
-				comment += "\n"
-			}
-			content += comment
-			// struct member name and type, as part of struct definition
-			content += fmt.Sprintf("\t%v %v\n", memberName, typ)
+			typ += "}"
+		} else {
+			typ = "interface{}"
 		}
-		if withComments && jsonSubSchema.IsOutputSchema {
-			content += "\t// The HTTP response from the API endpoint (useful for troubleshooting)\n"
-			content += "\tAPIResponse *http.Response\n"
-		}
+	case "number":
+		typ = "int"
+	case "integer":
+		typ = "int"
+	case "boolean":
+		typ = "bool"
 	}
-	content += "}"
+	content += typ
 	if withComments {
 		content += "\n"
 	}
