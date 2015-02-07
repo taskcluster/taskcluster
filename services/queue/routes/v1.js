@@ -384,7 +384,7 @@ api.declare({
 
   // Try to create Task entity
   try {
-    let task = await this.Task.create({
+    var task = await this.Task.create({
       taskId:           taskId,
       provisionerId:    taskDef.provisionerId,
       workerType:       taskDef.workerType,
@@ -416,8 +416,8 @@ api.declare({
     }
 
     // load task, and task definition
-    let task = await this.Task.load({taskId: taskId});
-    let def  = await task.definition();
+    task      = await this.Task.load({taskId: taskId});
+    let def   = await task.definition();
 
     // Compare the two task definitions and ensure there is a at-least one run
     // otherwise the task would have been created with defineTask, and we don't
@@ -1435,8 +1435,8 @@ api.declare({
     // Clear takenUntil on task
     task.takenUntil     = new Date(0);
 
-    // Add retry, if not retries is allowed
-    if (task.retriesLeft > 0) {
+    // Add retry, if this is a worker-shutdown and we have retries left
+    if (reason === 'worker-shutdown' && task.retriesLeft > 0) {
       task.retriesLeft -= 1;
       task.runs.push({
         state:            'pending',

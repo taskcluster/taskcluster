@@ -369,7 +369,7 @@ class QueueService {
         protocol:       'https',
         host:           `${this.accountName}.queue.core.windows.net`,
         pathname:       `/${queueName}/messages/{{messageId}}`,
-        search:         '?popreceipt={{popReceipt}}'
+        search:         `?popreceipt={{popReceipt}}&${sas}`
       })
     };
   }
