@@ -105,7 +105,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool) string {
 				}
 				typ += comment
 				// struct member name and type, as part of struct definition
-				typ += fmt.Sprintf("\t%v %v\n", memberName, subType)
+				typ += fmt.Sprintf("\t%v %v `json:\"%v\"`\n", memberName, subType, j)
 			}
 			typ += "}"
 		} else {

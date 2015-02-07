@@ -15,11 +15,11 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
 	AzureSharedAccessSignatureResponse struct {
 		// Date and time of when the Shared-Access-Signature expires.
-		Expiry string
+		Expiry string `json:"expiry"`
 		// Shared-Access-Signature string. This is the querystring parameters to
 		// be appened after `?` or `&` depending on whether or not a querystring is
 		// already present in the URL.
-		Sas string
+		Sas string `json:"sas"`
 	}
 
 	// Credentials, scopes and expiration date for a client
@@ -27,13 +27,13 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#
 	GetClientCredentialsResponse struct {
 		// AccessToken used for authenticating requests
-		AccessToken string
+		AccessToken string `json:"accessToken"`
 		// ClientId of the client scopes is requested about
-		ClientId string
+		ClientId string `json:"clientId"`
 		// Date and time where the clients credentials are set to expire
-		Expires string
+		Expires string `json:"expires"`
 		// List of scopes the client is authorized to access
-		Scopes []string
+		Scopes []string `json:"scopes"`
 	}
 
 	// Scopes and expiration date for a client
@@ -41,11 +41,11 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#
 	GetClientScopesResponse struct {
 		// ClientId of the client scopes is requested about
-		ClientId string
+		ClientId string `json:"clientId"`
 		// Date and time where the clients credentials are set to expire
-		Expires string
+		Expires string `json:"expires"`
 		// List of scopes the client is authorized to access
-		Scopes []string
+		Scopes []string `json:"scopes"`
 	}
 
 	// Credentials, scopes and expiration date for a client
@@ -55,14 +55,14 @@ type (
 		// Description of what these credentials are used for in markdown.
 		// Please write a few details here, including who is the owner, point of
 		// contact. Why it is scoped as is, think of this as documentation.
-		Description string
+		Description string `json:"description"`
 		// Date and time where the clients credentials are set to expire
-		Expires string
+		Expires string `json:"expires"`
 		// Human readable name of this set of credentials, typical
 		// component/server-name or IRC nickname of the user.
-		Name string
+		Name string `json:"name"`
 		// List of scopes the client is authorized to access
-		Scopes []string
+		Scopes []string `json:"scopes"`
 	}
 
 	// Get all detaisl about a client, useful for tools modifying a client
@@ -70,20 +70,20 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#
 	GetClientResponse struct {
 		// AccessToken used for authenticating requests
-		AccessToken string
+		AccessToken string `json:"accessToken"`
 		// ClientId of the client scopes is requested about
-		ClientId string
+		ClientId string `json:"clientId"`
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
 		// Why it is scoped as is, think of this as documentation.
-		Description string
+		Description string `json:"description"`
 		// Date and time where the clients credentials are set to expire
-		Expires string
+		Expires string `json:"expires"`
 		// Human readable name of this set of credentials, typical
 		// component/server-name or IRC nickname of the user.
-		Name string
+		Name string `json:"name"`
 		// List of scopes the client is authorized to access
-		Scopes []string
+		Scopes []string `json:"scopes"`
 	}
 
 	// Get a list of all clients, including basic information, but not credentials.
@@ -91,18 +91,18 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/list-clients-response.json#
 	ListClientsResponse []struct {
 		// ClientId of the client scopes is requested about
-		ClientId string
+		ClientId string `json:"clientId"`
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
 		// Why it is scoped as is, think of this as documentation.
-		Description string
+		Description string `json:"description"`
 		// Date and time where the clients credentials are set to expire
-		Expires string
+		Expires string `json:"expires"`
 		// Human readable name of this set of credentials, typical
 		// component/server-name or IRC nickname of the user.
-		Name string
+		Name string `json:"name"`
 		// List of scopes the client is authorized to access
-		Scopes []string
+		Scopes []string `json:"scopes"`
 	}
 
 	// Representation of an indexed task.
@@ -110,19 +110,19 @@ type (
 	// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#
 	IndexedTaskResponse struct {
 		// Data that was reported with the task. This is an arbitrary JSON object.
-		Data interface{}
+		Data interface{} `json:"data"`
 		// Date at which this entry expires from the task index.
-		Expires string
+		Expires string `json:"expires"`
 		// Namespace of the indexed task, used to find the indexed task in the index.
-		Namespace string
+		Namespace string `json:"namespace"`
 		// If multiple tasks are indexed with the same `namespace` the task with the
 		// highest `rank` will be stored and returned in later requests. If two tasks
 		// has the same `rank` the latest task will be stored.
-		Rank int
+		Rank int `json:"rank"`
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
-		TaskId string
+		TaskId string `json:"taskId"`
 	}
 
 	// Representation of an a task to be indexed.
@@ -132,17 +132,17 @@ type (
 		// This is an arbitrary JSON object. Feel free to put whatever data you want
 		// here, but do limit it, you'll get errors if you store more than 32KB.
 		// So stay well, below that limit.
-		Data interface{}
+		Data interface{} `json:"data"`
 		// Date at which this entry expires from the task index.
-		Expires string
+		Expires string `json:"expires"`
 		// If multiple tasks are indexed with the same `namespace` the task with the
 		// highest `rank` will be stored and returned in later requests. If two tasks
 		// has the same `rank` the latest task will be stored.
-		Rank int
+		Rank int `json:"rank"`
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
-		TaskId string
+		TaskId string `json:"taskId"`
 	}
 
 	// Request to list namespaces within a given namespace.
@@ -152,10 +152,10 @@ type (
 		// A continuation token previously returned in a response to this list
 		// request. This property is optional and should not be provided for first
 		// requests.
-		ContinuationToken string
+		ContinuationToken string `json:"continuationToken"`
 		// Maximum number of results per page. If there are more results than this
 		// a continuation token will be return.
-		Limit int
+		Limit int `json:"limit"`
 	}
 
 	// Response from a request to list namespaces within a given namespace.
@@ -165,18 +165,18 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string
+		ContinuationToken string `json:"continuationToken"`
 		// List of namespaces.
 		Namespaces []struct {
 			// Date at which this entry, and by implication all entries below it,
 			// expires from the task index.
-			Expires string
+			Expires string `json:"expires"`
 			// Name of namespace within it's parent namespace.
-			Name interface{}
+			Name interface{} `json:"name"`
 			// Fully qualified name of the namespace, you can use this to list
 			// namespaces or tasks under this namespace.
-			Namespace string
-		}
+			Namespace string `json:"namespace"`
+		} `json:"namespaces"`
 	}
 
 	// Request to list tasks within a given namespace.
@@ -186,10 +186,10 @@ type (
 		// A continuation token previously returned in a response to this list
 		// request. This property is optional and should not be provided for first
 		// requests.
-		ContinuationToken string
+		ContinuationToken string `json:"continuationToken"`
 		// Maximum number of results per page. If there are more results than this
 		// a continuation token will be return.
-		Limit int
+		Limit int `json:"limit"`
 	}
 
 	// Representation of an indexed task.
@@ -199,27 +199,27 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string
+		ContinuationToken string `json:"continuationToken"`
 		// List of tasks.
 		Tasks []struct {
 			// Data that was reported with the task. This is an arbitrary JSON
 			// object.
-			Data interface{}
+			Data interface{} `json:"data"`
 			// Date at which this entry expires from the task index.
-			Expires string
+			Expires string `json:"expires"`
 			// Namespace of the indexed task, used to find the indexed task in the
 			// index.
-			Namespace string
+			Namespace string `json:"namespace"`
 			// If multiple tasks are indexed with the same `namespace` the task
 			// with the highest `rank` will be stored and returned in later
 			// requests. If two tasks has the same `rank` the latest task will be
 			// stored.
-			Rank int
+			Rank int `json:"rank"`
 			// Unique task identifier, this is UUID encoded as
 			// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 			// stripped of `=` padding.
-			TaskId string
-		}
+			TaskId string `json:"taskId"`
+		} `json:"tasks"`
 	}
 
 	// Message reporting a new artifact has been created for a given task.
@@ -227,18 +227,18 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#
 	ArtifactCreatedMessage struct {
 		// Information about the artifact that was created
-		Artifact interface{}
+		Artifact interface{} `json:"artifact"`
 		// Id of the run on which artifact was created.
-		RunId  int
-		Status interface{}
+		RunId  int         `json:"runId"`
+		Status interface{} `json:"status"`
 		// Message version
-		Version interface{}
+		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which the run with the created
 		// artifacted is running.
-		WorkerGroup string
+		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker within which the run with the created artifact
 		// is running.
-		WorkerId string
+		WorkerId string `json:"workerId"`
 	}
 
 	// Request to claim work
@@ -246,9 +246,9 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/claim-work-request.json#
 	WorkClaimRequest struct {
 		// Identifier for group that worker claiming the task is a part of.
-		WorkerGroup string
+		WorkerGroup string `json:"workerGroup"`
 		// Identifier for worker within the given workerGroup
-		WorkerId string
+		WorkerId string `json:"workerId"`
 	}
 
 	// Definition of a task that can be scheduled
@@ -256,9 +256,9 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
 	TaskDefinition struct {
 		// Creation time of task
-		Created string
+		Created string `json:"created"`
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
-		Deadline string
+		Deadline string `json:"deadline"`
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services
@@ -268,58 +268,58 @@ type (
 		// for treeherder reporting and task indexing don't conflict, hence, we have
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
-		Extra interface{}
+		Extra interface{} `json:"extra"`
 		// Required task metadata
 		Metadata struct {
 			// Human readable description of the task, please **explain** what the
 			// task does. A few lines of documentation is not going to hurt you.
-			Description string
+			Description string `json:"description"`
 			// Human readable name of task, used to very briefly given an idea about
 			// what the task does.
-			Name string
+			Name string `json:"name"`
 			// E-mail of person who caused this task, e.g. the person who did
 			// `hg push`. The person we should contact to ask why this task is here.
-			Owner string
+			Owner string `json:"owner"`
 			// Link to source of this task, should specify a file, revision and
 			// repository. This should be place someone can go an do a git/hg blame
 			// to who came up with recipe for this task.
-			Source string
-		}
+			Source string `json:"source"`
+		} `json:"metadata"`
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
-		Payload interface{}
+		Payload interface{} `json:"payload"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
-		ProvisionerId string
+		ProvisionerId string `json:"provisionerId"`
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
 		// these events are to be expected.
-		Retries int
+		Retries int `json:"retries"`
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
-		Routes []string
+		Routes []string `json:"routes"`
 		// Identifier for the scheduler that _defined_ this task, this can be an
 		// identifier for a user or a service like the `"task-graph-scheduler"`.
 		// Along with the `taskGroupId` this is used to form the permission scope
 		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
 		// this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
-		SchedulerId string
+		SchedulerId string `json:"schedulerId"`
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
-		Scopes []string
+		Scopes []string `json:"scopes"`
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
 		// to attach informal meta-data to a task. Use this for informal tags that
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-		Tags interface{}
+		Tags interface{} `json:"tags"`
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
 		// property isn't specified.
-		TaskGroupId string
+		TaskGroupId string `json:"taskGroupId"`
 		// Unique identifier for a worker-type within a specific provisioner
-		WorkerType string
+		WorkerType string `json:"workerType"`
 	}
 
 	// List of artifacts for a given `taskId` and `runId`.
@@ -329,17 +329,17 @@ type (
 		// List of artifacts for given `taskId` and `runId`.
 		Artifacts []struct {
 			// Mimetype for the artifact that was created.
-			ContentType string
+			ContentType string `json:"contentType"`
 			// Date and time after which the artifact created will be automatically
 			// deleted by the queue.
-			Expires string
+			Expires string `json:"expires"`
 			// Name of the artifact that was created, this is useful if you want to
 			// attempt to fetch the artifact.
-			Name string
+			Name string `json:"name"`
 			// This is the `storageType` for the request that was used to create
 			// the artifact.
-			StorageType interface{}
-		}
+			StorageType interface{} `json:"storageType"`
+		} `json:"artifacts"`
 	}
 
 	// Response to request for poll task urls.
@@ -348,11 +348,11 @@ type (
 	PollTaskUrlsResponse struct {
 		// Date and time after which the signed URLs provided in this response
 		// expires and not longer works for authentication.
-		Expires string
+		Expires string `json:"expires"`
 		// List of signed URLs to poll tasks from, they must be called in the order
 		// they are given. As the first entry in this array **may** have higher
 		// priority.
-		SignedPollTaskUrls []string
+		SignedPollTaskUrls []string `json:"signedPollTaskUrls"`
 	}
 
 	// Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.
@@ -370,15 +370,15 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-claim-request.json#
 	TaskClaimRequest struct {
 		// MessageId from Azure Queue message
-		MessageId string
+		MessageId string `json:"messageId"`
 		// PopReceipt from Azure Queue message
-		Receipt string
+		Receipt string `json:"receipt"`
 		// Opaque token from the JSON parsed and base64 decoded MessageText in the Azure Queue message
-		Token string
+		Token string `json:"token"`
 		// Identifier for group that worker claiming the task is a part of.
-		WorkerGroup string
+		WorkerGroup string `json:"workerGroup"`
 		// Identifier for worker within the given workerGroup
-		WorkerId string
+		WorkerId string `json:"workerId"`
 	}
 
 	// Response to a successful task claim
@@ -386,14 +386,14 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#
 	TaskClaimResponse struct {
 		// `run-id` assigned to this run of the task
-		RunId  int
-		Status interface{}
+		RunId  int         `json:"runId"`
+		Status interface{} `json:"status"`
 		// Time at which the run expires and is resolved as `failed`, if the run isn't reclaimed.
-		TakenUntil string
+		TakenUntil string `json:"takenUntil"`
 		// Identifier for the worker-group within which this run started.
-		WorkerGroup string
+		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker executing this run.
-		WorkerId string
+		WorkerId string `json:"workerId"`
 	}
 
 	// Message reporting that a task has complete successfully.
@@ -401,14 +401,14 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#
 	TaskCompletedMessage struct {
 		// Id of the run that completed the task
-		RunId  int
-		Status interface{}
+		RunId  int         `json:"runId"`
+		Status interface{} `json:"status"`
 		// Message version
-		Version interface{}
+		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which this run ran.
-		WorkerGroup string
+		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker that executed this run.
-		WorkerId string
+		WorkerId string `json:"workerId"`
 	}
 
 	// Request for a task to be declared completed
@@ -418,7 +418,7 @@ type (
 		// True, if task is completed, and false if task is failed. This property
 		// is optional and only present for backwards compatibility. It will be
 		// removed in the future.
-		Success bool
+		Success bool `json:"success"`
 	}
 
 	// Message reporting that a task has been defined. The task may or may not be
@@ -426,9 +426,9 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-defined-message.json#
 	TaskDefinedMessage struct {
-		Status interface{}
+		Status interface{} `json:"status"`
 		// Message version
-		Version interface{}
+		Version interface{} `json:"version"`
 	}
 
 	// Message reporting that TaskCluster have failed to run a task.
@@ -437,17 +437,17 @@ type (
 	TaskExceptionMessage struct {
 		// Id of the last run for the task, not provided if `deadline`
 		// was exceeded before a run was started.
-		RunId  int
-		Status interface{}
+		RunId  int         `json:"runId"`
+		Status interface{} `json:"status"`
 		// Message version
-		Version interface{}
+		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which the last attempt of the task
 		// ran. Not provided, if `deadline` was exceeded before a run was started.
-		WorkerGroup string
+		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the last worker that failed to report, causing the task
 		// to fail. Not provided, if `deadline` was exceeded before a run
 		// was started.
-		WorkerId string
+		WorkerId string `json:"workerId"`
 	}
 
 	// Request for a run of a task to be resolved with an exception
@@ -462,7 +462,7 @@ type (
 		// schema for the worker payload, or referenced dependencies doesn't exists.
 		// In either case, you should still log the error to a log file under the
 		// specific run.
-		Reason interface{}
+		Reason interface{} `json:"reason"`
 	}
 
 	// Message reporting that a task failed to complete successfully.
@@ -470,14 +470,14 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#
 	TaskFailedMessage struct {
 		// Id of the run that failed.
-		RunId  int
-		Status interface{}
+		RunId  int         `json:"runId"`
+		Status interface{} `json:"status"`
 		// Message version
-		Version interface{}
+		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which this run ran.
-		WorkerGroup string
+		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker that executed this run.
-		WorkerId string
+		WorkerId string `json:"workerId"`
 	}
 
 	// Message reporting that a task is now pending
@@ -485,10 +485,10 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#
 	TaskPendingMessage struct {
 		// Id of run that became pending, `run-id`s always starts from 0
-		RunId  int
-		Status interface{}
+		RunId  int         `json:"runId"`
+		Status interface{} `json:"status"`
 		// Message version
-		Version interface{}
+		Version interface{} `json:"version"`
 	}
 
 	// Message reporting that a given run of a task have started
@@ -496,24 +496,24 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#
 	TaskRunningMessage struct {
 		// Id of the run that just started, always starts from 0
-		RunId  int
-		Status interface{}
+		RunId  int         `json:"runId"`
+		Status interface{} `json:"status"`
 		// Time at which the run expires and is resolved as `failed`, if the run
 		// isn't reclaimed.
-		TakenUntil string
+		TakenUntil string `json:"takenUntil"`
 		// Message version
-		Version interface{}
+		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which this run started.
-		WorkerGroup string
+		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker executing this run.
-		WorkerId string
+		WorkerId string `json:"workerId"`
 	}
 
 	// Response to a task status request
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-status-response.json#
 	TaskStatusResponse struct {
-		Status interface{}
+		Status interface{} `json:"status"`
 	}
 
 	// A representation of **task status** as known by the queue
@@ -521,64 +521,64 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 	TaskStatusStructure struct {
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
-		Deadline string
+		Deadline string `json:"deadline"`
 		// Unique identifier for the provisioner that this task must be scheduled on
-		ProvisionerId string
+		ProvisionerId string `json:"provisionerId"`
 		// Number of retries left for the task in case of infrastructure issues
-		RetriesLeft int
+		RetriesLeft int `json:"retriesLeft"`
 		// List of runs, ordered so that index `i` has `runId == i`
 		Runs []struct {
 			// Reason for the creation of this run,
 			// **more reasons may be added in the future**."
-			ReasonCreated interface{}
+			ReasonCreated interface{} `json:"reasonCreated"`
 			// Reason that run was resolved, this is mainly
 			// useful for runs resolved as `exception`.
 			// Note, **more reasons may be added in the future**, also this
 			// property is only available after the run is resolved.
-			ReasonResolved interface{}
+			ReasonResolved interface{} `json:"reasonResolved"`
 			// Date-time at which this run was resolved, ie. when the run changed
 			// state from `running` to either `completed`, `failed` or `exception`.
 			// This property is only present after the run as been resolved.
-			Resolved string
+			Resolved string `json:"resolved"`
 			// Id of this task run, `run-id`s always starts from `0`
-			RunId int
+			RunId int `json:"runId"`
 			// Date-time at which this run was scheduled, ie. when the run was
 			// created in state `pending`.
-			Scheduled string
+			Scheduled string `json:"scheduled"`
 			// Date-time at which this run was claimed, ie. when the run changed
 			// state from `pending` to `running`. This property is only present
 			// after the run has been claimed.
-			Started string
+			Started string `json:"started"`
 			// State of this run
-			State interface{}
+			State interface{} `json:"state"`
 			// Time at which the run expires and is resolved as `failed`, if the
 			// run isn't reclaimed. Note, only present after the run has been
 			// claimed.
-			TakenUntil string
+			TakenUntil string `json:"takenUntil"`
 			// Identifier for group that worker who executes this run is a part of,
 			// this identifier is mainly used for efficient routing.
 			// Note, this property is only present after the run is claimed.
-			WorkerGroup string
+			WorkerGroup string `json:"workerGroup"`
 			// Identifier for worker evaluating this run within given
 			// `workerGroup`. Note, this property is only available after the run
 			// has been claimed.
-			WorkerId string
-		}
+			WorkerId string `json:"workerId"`
+		} `json:"runs"`
 		// Identifier for the scheduler that _defined_ this task.
-		SchedulerId string
+		SchedulerId string `json:"schedulerId"`
 		// State of this task. This is just an auxiliary property derived from state
 		// of latests run, or `unscheduled` if none.
-		State interface{}
+		State interface{} `json:"state"`
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.
-		TaskGroupId string
+		TaskGroupId string `json:"taskGroupId"`
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
-		TaskId string
+		TaskId string `json:"taskId"`
 		// Identifier for worker type within the specified provisioner
-		WorkerType string
+		WorkerType string `json:"workerType"`
 	}
 
 	// Definition of a task that can be scheduled
@@ -586,9 +586,9 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task.json#
 	TaskDefinition1 struct {
 		// Creation time of task
-		Created string
+		Created string `json:"created"`
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
-		Deadline string
+		Deadline string `json:"deadline"`
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services
@@ -598,58 +598,58 @@ type (
 		// for treeherder reporting and task indexing don't conflict, hence, we have
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
-		Extra interface{}
+		Extra interface{} `json:"extra"`
 		// Required task metadata
 		Metadata struct {
 			// Human readable description of the task, please **explain** what the
 			// task does. A few lines of documentation is not going to hurt you.
-			Description string
+			Description string `json:"description"`
 			// Human readable name of task, used to very briefly given an idea about
 			// what the task does.
-			Name string
+			Name string `json:"name"`
 			// E-mail of person who caused this task, e.g. the person who did
 			// `hg push`. The person we should contact to ask why this task is here.
-			Owner string
+			Owner string `json:"owner"`
 			// Link to source of this task, should specify a file, revision and
 			// repository. This should be place someone can go an do a git/hg blame
 			// to who came up with recipe for this task.
-			Source string
-		}
+			Source string `json:"source"`
+		} `json:"metadata"`
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
-		Payload interface{}
+		Payload interface{} `json:"payload"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
-		ProvisionerId string
+		ProvisionerId string `json:"provisionerId"`
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
 		// these events are to be expected.
-		Retries int
+		Retries int `json:"retries"`
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
-		Routes []string
+		Routes []string `json:"routes"`
 		// Identifier for the scheduler that _defined_ this task, this can be an
 		// identifier for a user or a service like the `"task-graph-scheduler"`.
 		// Along with the `taskGroupId` this is used to form the permission scope
 		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
 		// this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
-		SchedulerId string
+		SchedulerId string `json:"schedulerId"`
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
-		Scopes []string
+		Scopes []string `json:"scopes"`
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
 		// to attach informal meta-data to a task. Use this for informal tags that
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-		Tags interface{}
+		Tags interface{} `json:"tags"`
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
 		// property isn't specified.
-		TaskGroupId string
+		TaskGroupId string `json:"taskGroupId"`
 		// Unique identifier for a worker-type within a specific provisioner
-		WorkerType string
+		WorkerType string `json:"workerType"`
 	}
 
 	// Definition of a task-graph that can be scheduled
@@ -659,13 +659,13 @@ type (
 		// List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.
 		Tasks []struct {
 			// List of required `taskId`s
-			Requires []string
+			Requires []string `json:"requires"`
 			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
-			Reruns int
-			Task   interface{}
+			Reruns int         `json:"reruns"`
+			Task   interface{} `json:"task"`
 			// Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.
-			TaskId string
-		}
+			TaskId string `json:"taskId"`
+		} `json:"tasks"`
 	}
 
 	// Information about a **task-graph** as known by the scheduler, with all the state of all individual tasks.
@@ -675,38 +675,38 @@ type (
 		// Required task metadata
 		Metadata struct {
 			// Human readable description of task-graph, **explain** what it does!
-			Description string
+			Description string `json:"description"`
 			// Human readable name of task-graph
-			Name string
+			Name string `json:"name"`
 			// E-mail of person who caused this task-graph, e.g. the person who did `hg push`
-			Owner string
+			Owner string `json:"owner"`
 			// Link to source of this task-graph, should specify file, revision and repository
-			Source string
-		}
-		Status interface{}
+			Source string `json:"source"`
+		} `json:"metadata"`
+		Status interface{} `json:"status"`
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags interface{}
+		Tags interface{} `json:"tags"`
 		// Mapping from task-labels to task information and state.
 		Tasks []struct {
 			// List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.
-			Dependents []string
+			Dependents []string `json:"dependents"`
 			// Human readable name from the task definition
-			Name string
+			Name string `json:"name"`
 			// List of required `taskId`s
-			Requires []string
+			Requires []string `json:"requires"`
 			// List of `taskId`s that have yet to complete successfully, before this task can be scheduled.
-			RequiresLeft []string
+			RequiresLeft []string `json:"requiresLeft"`
 			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
-			Reruns int
+			Reruns int `json:"reruns"`
 			// Number of reruns that haven't been used yet.
-			RerunsLeft int
+			RerunsLeft int `json:"rerunsLeft"`
 			// true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.
-			Satisfied bool
+			Satisfied bool `json:"satisfied"`
 			// State of the task as considered by the scheduler
-			State interface{}
+			State interface{} `json:"state"`
 			// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
-			TaskId string
-		}
+			TaskId string `json:"taskId"`
+		} `json:"tasks"`
 	}
 
 	// Information about a **task** in a task-graph as known by the scheduler.
@@ -714,52 +714,52 @@ type (
 	// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json#
 	InspectTaskGraphTaskResponse struct {
 		// List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.
-		Dependents []string
+		Dependents []string `json:"dependents"`
 		// Human readable name from the task definition
-		Name string
+		Name string `json:"name"`
 		// List of required `taskId`s
-		Requires []string
+		Requires []string `json:"requires"`
 		// List of `taskId`s that have yet to complete successfully, before this task can be scheduled.
-		RequiresLeft []string
+		RequiresLeft []string `json:"requiresLeft"`
 		// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
-		Reruns int
+		Reruns int `json:"reruns"`
 		// Number of reruns that haven't been used yet.
-		RerunsLeft int
+		RerunsLeft int `json:"rerunsLeft"`
 		// true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.
-		Satisfied bool
+		Satisfied bool `json:"satisfied"`
 		// State of the task as considered by the scheduler
-		State interface{}
+		State interface{} `json:"state"`
 		// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
-		TaskId string
+		TaskId string `json:"taskId"`
 	}
 
 	// Message that all reruns of a task has failed it is now blocking the task-graph from finishing.
 	//
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#
 	BlockedTaskGraphMessage struct {
-		Status interface{}
+		Status interface{} `json:"status"`
 		// Unique `taskId` that is blocking this task-graph from completion.
-		TaskId string
+		TaskId string `json:"taskId"`
 		// Message version
-		Version interface{}
+		Version interface{} `json:"version"`
 	}
 
 	// Messages as posted to `scheduler/v1/task-graph-extended` informing the world that a task-graph have been extended.
 	//
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#
 	TaskGraphExtendedMessage struct {
-		Status interface{}
+		Status interface{} `json:"status"`
 		// Message version
-		Version interface{}
+		Version interface{} `json:"version"`
 	}
 
 	// Message that all tasks in a task-graph have now completed successfully and the graph is _finished_.
 	//
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#
 	TaskGraphFinishedMessage struct {
-		Status interface{}
+		Status interface{} `json:"status"`
 		// Message version
-		Version interface{}
+		Version interface{} `json:"version"`
 	}
 
 	// Response for a request for task-graph information
@@ -769,33 +769,33 @@ type (
 		// Required task metadata
 		Metadata struct {
 			// Human readable description of task-graph, **explain** what it does!
-			Description string
+			Description string `json:"description"`
 			// Human readable name of task-graph
-			Name string
+			Name string `json:"name"`
 			// E-mail of person who caused this task-graph, e.g. the person who did `hg push`
-			Owner string
+			Owner string `json:"owner"`
 			// Link to source of this task-graph, should specify file, revision and repository
-			Source string
-		}
-		Status interface{}
+			Source string `json:"source"`
+		} `json:"metadata"`
+		Status interface{} `json:"status"`
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags interface{}
+		Tags interface{} `json:"tags"`
 	}
 
 	// Messages as posted to `scheduler/v1/task-graph-running` informing the world that a new task-graph have been submitted.
 	//
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#
 	NewTaskGraphMessage struct {
-		Status interface{}
+		Status interface{} `json:"status"`
 		// Message version
-		Version interface{}
+		Version interface{} `json:"version"`
 	}
 
 	// Response containing the status structure for a task-graph
 	//
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#
 	TaskGraphStatusResponse struct {
-		Status interface{}
+		Status interface{} `json:"status"`
 	}
 
 	// A representation of **task-graph status** as known by the scheduler, without the state of all individual tasks.
@@ -803,11 +803,11 @@ type (
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#
 	TaskGraphStatusStructure struct {
 		// Unique identifier for task-graph scheduler managing the given task-graph
-		SchedulerId string
+		SchedulerId string `json:"schedulerId"`
 		// Task-graph state, this enum is **frozen** new values will **not** be added.
-		State interface{}
+		State interface{} `json:"state"`
 		// Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
-		TaskGraphId string
+		TaskGraphId string `json:"taskGraphId"`
 	}
 
 	// Definition of a task-graph that can be scheduled
@@ -817,35 +817,35 @@ type (
 		// Required task metadata"
 		Metadata struct {
 			// Human readable description of task-graph, **explain** what it does!
-			Description string
+			Description string `json:"description"`
 			// Human readable name of task-graph, give people finding this an idea
 			// what this graph is about.
-			Name string
+			Name string `json:"name"`
 			// E-mail of person who caused this task-graph, e.g. the person who did
 			// `hg push` or whatever triggered it.
-			Owner string
+			Owner string `json:"owner"`
 			// Link to source of this task-graph, should specify file, revision and
 			// repository
-			Source string
-		}
+			Source string `json:"source"`
+		} `json:"metadata"`
 		// List of task-graph specific routes, AMQP messages will be CC'ed to these
 		// routes prefixed by `'route.'`.
-		Routes []string
+		Routes []string `json:"routes"`
 		// List of scopes (or scope-patterns) that tasks of the task-graph is
 		// authorized to use.
-		Scopes []string
+		Scopes []string `json:"scopes"`
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags interface{}
+		Tags interface{} `json:"tags"`
 		// List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.
 		Tasks []struct {
 			// List of required `taskId`s
-			Requires []string
+			Requires []string `json:"requires"`
 			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
-			Reruns int
-			Task   interface{}
+			Reruns int         `json:"reruns"`
+			Task   interface{} `json:"task"`
 			// Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.
-			TaskId string
-		}
+			TaskId string `json:"taskId"`
+		} `json:"tasks"`
 	}
 )
 
