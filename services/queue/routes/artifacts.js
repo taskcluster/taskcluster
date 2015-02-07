@@ -82,19 +82,18 @@ api.declare({
     "updated. You should only use this to update the `url` property for",
     "reference artifacts your process has created."
   ].join('\n')
-}, function(req ,res) {
+}, async function(req ,res) {
   // Validate parameters
   if (!api.checkParams(req, res)) {
     return;
   }
 
-  var ctx = this;
-
-  var taskId = req.params.taskId;
-  var runId  = parseInt(req.params.runId);
-  var name   = req.params.name;
-
-  var input  = req.body;
+  var taskId      = req.params.taskId;
+  var runId       = parseInt(req.params.runId);
+  var name        = req.params.name;
+  var input       = req.body;
+  var storageType = input.storageType;
+  var contentType = input.contentType || 'application/json';
 
   // Find expiration date
   var expires = new Date(input.expires);
@@ -102,7 +101,7 @@ api.declare({
   // Validate expires it is in the future
   var past = new Date();
   past.setMinutes(past.getMinutes() - 15);
-  if (expires < past) {
+  if (expires.getTime() < past.getTime()) {
     return res.status(400).json({
       message:  "Expires must be in the future",
       error: {
@@ -112,158 +111,189 @@ api.declare({
     });
   }
 
-  return ctx.Task.load(taskId).then(function(task) {
-    // if no task is found, we return 404
-    if (!task || !task.runs[runId]) {
-      return res.status(404).json({
-        message:  "Task not found or already resolved"
-      });
-    }
+  // Load Task entity
+  var task = this.task.load({
+    taskId:       taskId
+  }, true);
 
-    var workerGroup = task.runs[runId].workerGroup;
-    var workerId    = task.runs[runId].workerId;
-
-    // Authenticate request by providing parameters
-    if(!req.satisfies({
-      workerGroup:  workerGroup,
-      workerId:     workerId,
-      name:         name
-    })) {
-      return;
-    }
-
-    // Create details for the artifact
-    var details = {};
-    // Create return value
-    var reply = null;
-
-    if (input.storageType === 's3') {
-      var prefix = [taskId, runId, name].join('/');
-      // Create details
-      details.bucket    = ctx.artifactBucket.bucket;
-      details.prefix    = prefix;
-      // Give 20 minutes to execute the signed URL
-      var urlExpiration = new Date();
-      urlExpiration.setMinutes(urlExpiration.getMinutes() + 20);
-      // Create reply
-      reply = ctx.artifactBucket.createPutUrl(prefix, {
-        contentType:    input.contentType,
-        expires:        20 * 60 + 10 // Add 10 sec for clock skrew
-      }).then(function(putUrl) {
-        // Return reply
-        return {
-          storageType:  's3',
-          contentType:  input.contentType,
-          expires:      urlExpiration.toJSON(),
-          putUrl:       putUrl
-        };
-      });
-
-    } else if (input.storageType === 'azure') {
-      var path = [taskId, runId, name].join('/');
-      // Create details
-      details.container = ctx.artifactStore.container;
-      details.path      = path;
-      // Give 30 minutes before the signature expires
-      var writeExpiration = new Date();
-      writeExpiration.setMinutes(writeExpiration.getMinutes() + 30);
-      // Generate SAS
-      var putUrl = ctx.artifactStore.generateWriteSAS(path, {
-        expiry:       writeExpiration
-      });
-      // Create reply
-      reply = Promise.resolve({
-        storageType:  'azure',
-        contentType:  input.contentType,
-        expires:      writeExpiration.toJSON(),
-        putUrl:       putUrl
-      });
-
-    } else if (input.storageType === 'reference') {
-      details.url       = input.url;
-      reply = Promise.resolve({
-        storageType:  'reference'
-      });
-
-    } else if (input.storageType === 'error') {
-      details.reason    = input.reason;
-      details.message   = input.message;
-      reply = Promise.resolve({
-        storageType:  'error'
-      });
-
-    } else {
-      debug("ERROR: Unknown storageType %s", input.storageType);
-      assert(false, "Unknown storageType should be handle by JSON " +
-                    "schema validation");
-    }
-
-    // Create artifact (and load if it exists)
-    return ctx.Artifact.create({
-      taskId:       taskId,
-      runId:        runId,
-      name:         name,
-      version:      1,
-      storageType:  input.storageType,
-      details:      details,
-      expires:      expires,
-      contentType:  input.contentType || ''
-    }).catch(function(err) {
-      if (!err || err.code !== 'EntityAlreadyExists') {
-        throw err;
-      }
-      debug("Handling failure to insert entity, error above is a non-issue!");
-      // Load and update artifact if it exists
-      return ctx.Artifact.load(taskId, runId, name).then(function(artifact) {
-        // Update the artifact with new expires (assuming this allowed)
-        return artifact.modify(function() {
-          // Only modify if version, storage and expires are match
-          // If they don't match a 409 will be returned later using the same
-          // checks
-          if (this.version === 1 &&
-              this.storageType === input.storageType &&
-              this.expires <= expires) {
-
-            // Only reference artifacts can be updated
-            if (this.storageType === 'reference') {
-              this.details = _.defaults({}, details, this.details);
-            }
-
-            // Only update if details match, we'll handle 409 errors later with
-            // what is the same test
-            if (_.isEqual(this.details, details)) {
-              this.expires = expires;
-            }
-          }
-        });
-      });
-    }).then(function(artifact) {
-      // Check that it is created as we expected it
-      // Just, in case it already existed and we're retrying the
-      // request, this allows the operation to be idempotent
-      if (artifact.version !== 1 ||
-          artifact.storageType !== input.storageType ||
-          artifact.expires > expires ||
-          !_.isEqual(artifact.details, details)) {
-        return res.status(409).json({
-          message:  "Artifact already exists with other properties"
-        });
-      }
-
-      // Publish message about artifact creation
-      return ctx.publisher.artifactCreated({
-        status:         task.status(),
-        artifact:       artifact.json(),
-        workerGroup:    workerGroup,
-        workerId:       workerId,
-        runId:          runId
-      }, task.routes).then(function() {
-        // Wait for the reply promise to resolve and return it
-        return reply.then(function(retval) {
-          return res.reply(retval);
-        });
-      });
+  // Handle cases where the task doesn't exist
+  if (!task) {
+    return res.status(404).json({
+      message: "Task not found"
     });
+  }
+
+  // Check presence of the run
+  var run = task.runs[runId];
+  if (!run) {
+    return res.status(404).json({
+      message: "Run not found"
+    });
+  }
+
+  // Get workerGroup and workerId
+  var workerGroup = run.workerGroup;
+  var workerId    = run.workerId;
+
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    workerGroup:  workerGroup,
+    workerId:     workerId,
+    name:         name
+  })) {
+    return;
+  }
+
+  // Validate expires <= task.expires
+  if (expires.getTime() > task.expires.getTime()) {
+    return res.status(400).json({
+      messages: "Artifact expires before the task (task.expires < expires)",
+      error: {
+        taskExpires:      task.expires.toJSON(),
+        expires:          expires.toJSON()
+      }
+    });
+  }
+
+  // Ensure that the run is running
+  if (run.state !== 'running') {
+    return res.status(409).json({
+      message:    "The given is not running",
+      error: {
+        status:   task.status(),
+        runId:    runId
+      }
+    });
+  }
+
+  // Construct details for different storage types
+  var isPublic = /^public\//.test(name);
+  var details  = {};
+  if (storageType === 's3') {
+    if (isPublic) {
+      details.bucket  = this.publicBucket.bucket;
+    } else {
+      details.bucket  = this.privateBucket.bucket;
+    }
+    details.prefix    = [taskId, runId, name].join('/');
+  }
+  if (storageType === 'azure') {
+    details.container = this.blobStore.container;
+    details.path      = [taskId, runId, name].join('/');
+  }
+  if (storageType === 'reference') {
+    details.url       = input.url;
+  }
+  if (storageType === 'error') {
+    details.message   = input.message;
+    details.reason    = input.reason;
+  }
+
+  try {
+    var artifact = await this.Artifact.create({
+      taskId:           taskId,
+      runId:            runId,
+      name:             name,
+      storageType:      storageType,
+      contentType:      contentType,
+      details:          details,
+      expires:          expires
+    });
+  }
+  catch (err) {
+    // Re-throw error if this isn't because the entity already exists
+    if (!err || err.code !== 'EntityAlreadyExists') {
+      throw err;
+    }
+
+    // Load existing Artifact entity
+    artifact = await this.Artifact.load({
+      taskId:           taskId,
+      runId:            runId,
+      name:             name
+    });
+
+    // Allow recreating of the same artifact, report conflict if it's not the
+    // same artifact (allow for later expiration).
+    // Note, we'll check `details` later
+    if (artifact.storageType !== storageType ||
+        artifact.contentType !== contentType ||
+        artifact.expires.getTime() > expires.getTime()) {
+      return res.status(409).json({
+        message:  "Artifact already exists, with different type or " +
+                  " later expiration"
+      });
+    }
+
+    // Check that details match, unless this has storageType 'reference', we'll
+    // workers to overwrite redirect artifacts
+    if (storageType !== 'reference' &&
+        !_.isEqual(artifact.details, details)) {
+      return res.status(409).json({
+        message:  "Artifact already exists with different contentType or " +
+                  "error message"
+      });
+    }
+
+    // Update expiration and detail, which may have been modified
+    await artifact.modify((artifact) => {
+      artifact.expires = expires;
+      artifact.details = details;
+    });
+  }
+
+  // Publish message about artifact creation
+  await this.publisher.artifactCreated({
+    status:         task.status(),
+    artifact:       artifact.json(),
+    workerGroup:    workerGroup,
+    workerId:       workerId,
+    runId:          runId
+  }, task.routes);
+
+  // Reply with signed S3 URL
+  if (artifact.storageType === 's3') {
+    var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
+    var bucket = null;
+    if (artifact.details.bucket === this.publicBucket.bucket) {
+      bucket = this.publicBucket;
+    }
+    if (artifact.details.bucket === this.privateBucket.bucket) {
+      bucket = this.privateBucket;
+    }
+    // Create put URL
+    var putUrl = await this.privateBucket.createPutUrl(
+      artifact.details.prefix, {
+      contentType:      artifact.contentType,
+      expires;          30 * 60 + 10 // Add 10 sec for clock drift
+    });
+    return res.reply({
+      storageType:  's3',
+      contentType:  artifact.contentType,
+      expires:      expiry.toJSON(),
+      putUrl:       putUrl
+    });
+  }
+
+  // Reply with SAS for azure
+  if (artifact.storageType === 'azure') {
+    var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
+    // Generate SAS
+    var putUrl = this.blobStore.generateWriteSAS(
+      artifact.details.path, {
+      expiry:         expiry
+    });
+    return res.reply({
+      storageType:  'azure',
+      contentType:  artifact.contentType,
+      expires:      expiry.toJSON(),
+      putUrl:       putUrl
+    });
+  }
+
+  // For 'reference' and 'error' the response is simple
+  return res.reply({
+    storageType:    storageType
   });
 });
 

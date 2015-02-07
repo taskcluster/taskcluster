@@ -148,11 +148,11 @@ suite('queue/QueueService', function() {
     });
 
     debug("### Delete pending message");
-    return request.del(
-      signedDeleteUrl
-        .replace('{{messageId}}', message.messageId)
-        .replace('{{popReceipt}}', message.PopReceipt)
-    ).end();
+    var deleteMessageUrl = signedDeleteUrl
+                            .replace('{{messageId}}', message.MessageId)
+                            .replace('{{popReceipt}}', message.PopReceipt);
+    var res = await request.del(deleteMessageUrl).buffer().end();
+    assert(res.ok, "Message failed to delete");
   });
 
 
