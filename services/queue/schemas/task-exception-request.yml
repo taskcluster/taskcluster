@@ -18,6 +18,10 @@ properties:
       schema for the worker payload, or referenced dependencies doesn't exists.
       In either case, you should still log the error to a log file under the
       specific run.
+      In case if `worker-shutdown` the queue will immediately **retry** the
+      task, by making a new run. This is much faster than ignoreing the issue
+      and letting the task _retry_ by claim expiration. For any other _reason_
+      reported the queue will not retry the task.
 additionalProperties:   false
 required:
   - reason
