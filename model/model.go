@@ -278,6 +278,10 @@ func (entry *ExchangeEntry) String() string {
 	return result
 }
 
+func (entry *ExchangeEntry) getMethodDefinitions(ExchangeEntry string) string {
+	return ""
+}
+
 type RouteElement struct {
 	Name          string `json:"name"`
 	Summary       string `json:"summary"`
