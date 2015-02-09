@@ -6,6 +6,7 @@ var path    = require('path');
 var debug   = require('debug')('taskcluster-auth:bin:server');
 var Promise = require('promise');
 var persona = require('../auth/persona');
+var AWS     = require('aws-sdk-promise');
 
 /** Launch server */
 var launch = function(profile) {
@@ -73,7 +74,8 @@ var launch = function(profile) {
       context: {
         validator:      validator,
         Client:         Client,
-        azureAccounts:  JSON.parse(cfg.get('auth:azureAccounts'))
+        azureAccounts:  JSON.parse(cfg.get('auth:azureAccounts')),
+        sts:            new AWS.STS(cfg.get('aws'))
       },
       validator:        validator,
       clientLoader:     Client.createClientLoader(),

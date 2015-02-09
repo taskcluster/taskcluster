@@ -28,7 +28,7 @@ exports.setup = function(options) {
   });
 
   // Create subject to be tested by test
-  var subject = {};
+  var subject = {cfg: cfg};
   subject.testaccount = _.keys(JSON.parse(cfg.get('auth:azureAccounts')))[0];
 
   // Skip tests if no AWS credentials is configured
