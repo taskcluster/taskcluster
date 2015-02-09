@@ -378,7 +378,10 @@ api.declare({
   var ctx     = this;
 
   // Check that the client is authorized to access given account and table
-  if (!req.satisfies({account: account, table: table})) {
+  if (!req.satisfies({
+    account:    account,
+    table:      table
+  })) {
     return;
   }
 
@@ -420,6 +423,94 @@ api.declare({
     return res.reply({
       sas:      sas,
       expiry:   expiry.toJSON()
+    });
+  });
+});
+
+api.declare({
+  method:     'get',
+  route:      '/aws/s3/:level/:bucket/:prefix(*)',
+  name:       'awsS3Credentials',
+  input:      undefined,
+  output:     SCHEMA_PREFIX_CONST + 'aws-s3-readwrite-response.json#',
+  deferAuth:  true,
+  scopes:     ['auth:aws-s3-read-write:<bucket>/<prefix>'],
+  title:      "Get Temporary Read/Write Credentials S3",
+  description: [
+    "..."
+  ].join('\n')
+}, function(req, res) {
+  var bucket = req.params.bucket;
+  var prefix = req.params.prefix;
+  debug("params: %j", req.params);
+  assert(req.params.level === 'read-write', "Expected read-write");
+
+  // Check that the client is authorized to access given bucket and prefix
+  if (!req.satisfies({
+    bucket:     bucket,
+    prefix:     prefix
+  })) {
+    return;
+  }
+
+  return this.sts.getFederationToken({
+    Name:               'TemporaryS3ReadWriteCredentials',
+    Policy:             JSON.stringify({
+      Version:          '2012-10-17',
+      Statement:[
+        {
+          Sid:            'ReadWriteObjectsUnderPrefix',
+          Effect:         'Allow',
+          Action: [
+            's3:GetObject',
+            's3:PutObject',
+            's3:DeleteObject'
+          ],
+          Resource: [
+            'arn:aws:s3:::{{bucket}}/{{prefix}}*'
+              .replace('{{bucket}}', bucket)
+              .replace('{{prefix}}', prefix)
+          ]
+        }, {
+          Sid:            'ListObjectsUnderPrefix',
+          Effect:         'Allow',
+          Action: [
+            's3:ListBucket'
+          ],
+          Resource: [
+            'arn:aws:s3:::{{bucket}}'
+              .replace('{{bucket}}', bucket)
+          ],
+          Condition: {
+            StringLike: {
+              's3:prefix': [
+                '{{prefix}}*'.replace('{{prefix}}', prefix)
+              ]
+            }
+          }
+        }, {
+          Sid:            'GetBucketLocation',
+          Effect:         'Allow',
+          Action: [
+            's3:GetBucketLocation'
+          ],
+          Resource: [
+            'arn:aws:s3:::{{bucket}}'
+              .replace('{{bucket}}', bucket)
+          ]
+        }
+      ]
+    }),
+    DurationSeconds:    60 * 60   // Expire credentials in an hour
+  }).promise().then(function(req) {
+    var data = req.data;
+    return res.reply({
+      credentials: {
+        accessKeyId:      data.Credentials.AccessKeyId,
+        secretAccessKey:  data.Credentials.SecretAccessKey,
+        sessionToken:     data.Credentials.SessionToken
+      },
+      expires:            new Date(data.Credentials.Expiration).toJSON()
     });
   });
 });

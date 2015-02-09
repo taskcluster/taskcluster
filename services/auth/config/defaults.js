@@ -56,7 +56,8 @@ module.exports = {
     connectionString:               undefined
   },
 
-  // AWS SDK configuration for publication of schemas and references
+  // AWS SDK configuration for delegation of S3 access and publication of
+  // schemas and references
   aws: {
     // Access key id (typically configured using environment variables)
     accessKeyId:                    undefined,
