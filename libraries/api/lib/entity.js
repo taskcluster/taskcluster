@@ -727,7 +727,7 @@ Entity.create = function(properties) {
   });
 
   return ClassProps.__aux.insertEntity(entity)
-  .catch(rethrowDebug("Failed to insert entity: %j err: %j", entity))
+  .catch(rethrowDebug("Failed to insert entity err: %j"))
   .then(function(etag) {
     entity.__etag = etag;     // Add etag
     return entity;
