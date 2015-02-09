@@ -58,6 +58,9 @@ var MAX_RUNS_ALLOWED    = 50;
  * {
  *   Task:           // data.Task instance
  *   Artifacts:      // data.Task instance
+ *   publicBucket:   // bucket instance for public artifacts
+ *   privateBucket:  // bucket instance for private artifacts
+ *   blobStore:      // BlobStore for azure artifacts
  *   publisher:      // publisher from base.Exchanges
  *   validator:      // base.validator
  *   claimTimeout:   // Number of seconds before a claim expires

@@ -63,6 +63,14 @@ Bucket.prototype.createPutUrl = function(prefix, options) {
 };
 
 /**
+ * Create an unsigned GET URL
+ */
+Bucket.prototype.createGetUrl = function(prefix) {
+  assert(prefix,                "prefix must be given");
+  return `${this.s3.endpoint.href}${this.bucket}/${prefix}`;
+};
+
+/**
  * Create a signed GET URL
  *
  * options:
@@ -70,7 +78,7 @@ Bucket.prototype.createPutUrl = function(prefix, options) {
  *   expires:        // Seconds to URL expiry
  * }
  */
-Bucket.prototype.createGetUrl = function(prefix, options) {
+Bucket.prototype.createSignedGetUrl = function(prefix, options) {
   assert(prefix,                "prefix must be given");
   assert(options,               "options must be given");
   assert(options.expires,       "expires must be given");
