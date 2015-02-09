@@ -69,4 +69,22 @@ suite('queue/bucket_test', function() {
     var key     = slugid.v4();
     return bucket.deleteObject(key);
   });
+
+  test("createGetUrl", async function() {
+    var key     = slugid.v4();
+    var url     = await bucket.createPutUrl(key, {
+      contentType:      'application/json',
+      expires:          60 * 10
+    })
+
+    var res = await request.put(url).send({message: "Hello"}).end();
+    assert(res.ok, "put request failed");
+
+    url = bucket.createGetUrl(key);
+    debug("createGetUrl -> %s", url);
+
+    var res = await request.get(url).end();
+    assert(res.ok, "get request failed");
+    assert(res.body.message === 'Hello', "wrong message");
+  });
 });

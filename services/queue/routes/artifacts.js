@@ -5,8 +5,10 @@ var assert  = require('assert');
 var Promise = require('promise');
 
 // Common schema prefix
-var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
+const SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
 
+// Maximum number of artifacts to list
+const MAX_ARTIFACTS_LISTING = 10 * 1000;
 
 /** Post artifact */
 api.declare({
@@ -298,64 +300,69 @@ api.declare({
 });
 
 /** Reply to an artifact request using taskId, runId, name and context */
-var replyWithArtifact = function(taskId, runId, name, res) {
-  var ctx = this;
-
+var replyWithArtifact = async function(taskId, runId, name, res) {
   // Load artifact meta-data from table storage
-  return ctx.Artifact.load(taskId, runId, name).then(function(artifact) {
-    // Handle S3 artifacts
-    if(artifact.storageType === 's3') {
-      // Find prefix
-      var prefix = [taskId, runId, name].join('/');
-      return ctx.artifactBucket.createGetUrl(prefix, {
-        expires:      20 * 60
-      }).then(function(url) {
-        return res.redirect(303, url);
-      });
-    }
+  var artifact = await this.Artifact.load({
+    taskId:     taskId,
+    runId:      runId,
+    name:       name
+  }, true);
 
-    // Handle azure artifacts
-    if(artifact.storageType === 'azure') {
-      // Find path
-      var path = [taskId, runId, name].join('/');
-      // Generate URL expiration time
-      var expiry = new Date();
-      expiry.setMinutes(expiry.getMinutes() + 20);
-      // Create and redirect to signed URL
-      return res.redirect(303, ctx.artifactStore.createSignedGetUrl(path, {
-        expiry:   expiry
-      }));
-    }
-
-    // Handle redirect artifacts
-    if (artifact.storageType === 'reference') {
-      return res.redirect(303, artifact.details.url);
-    }
-
-    // Handle error artifacts
-    if (artifact.storageType === 'error') {
-      return res.status(403).json({
-        reason:     artifact.details.reason,
-        message:    artifact.details.message
-      });
-    }
-
-    // We should never arrive here
-    assert(false, "Unknown artifact storageType from table storage: %s",
-                  artifact.storageType);
-  }, function(err) {
-    // In case we failed to load the artifact, we check it's because it was
-    // missing
-
-    // Catch error if it's a resource not found error
-    if (err.code !== 'ResourceNotFound') {
-      throw err;
-    }
-    // Give a 404
+  // Give a 404, if the artifact couldn't be loaded
+  if (!artifact) {
     return res.status(404).json({
-      message:  "Artifact not found or declared as error"
+      message:  "Artifact not found"
     });
-  });
+  }
+
+  // Handle S3 artifacts
+  if(artifact.storageType === 's3') {
+    // Find url
+    var url = null;
+    var prefix = artifact.details.prefix;
+    if (artifact.details.bucket === this.publicBucket.bucket) {
+      url = this.publicBucket.createGetUrl(prefix);
+    }
+    if (artifact.details.bucket === this.privateBucket.bucket) {
+      url = await this.privateBucket.createSignedGetUrl(prefix, {
+        expires:    30 * 60
+      });
+    }
+    assert(url, "Url should have been constructed!");
+    return res.redirect(303, url);
+  }
+
+  // Handle azure artifacts
+  if(artifact.storageType === 'azure') {
+    if (artifact.container !== this.blobStore.container) {
+      debug("[alert-operator], Unknown container: %s, for artifact: %j",
+            artifact.container, artifact.json());
+    }
+    // Generate URL expiration time
+    var expiry = new Date();
+    expiry.setMinutes(expiry.getMinutes() + 30);
+    // Create and redirect to signed URL
+    return res.redirect(303, this.blobStore.createSignedGetUrl(artifact.path, {
+      expiry:   expiry
+    }));
+  }
+
+  // Handle redirect artifacts
+  if (artifact.storageType === 'reference') {
+    return res.redirect(303, artifact.details.url);
+  }
+
+  // Handle error artifacts
+  if (artifact.storageType === 'error') {
+    return res.status(403).json({
+      reason:     artifact.details.reason,
+      message:    artifact.details.message
+    });
+  }
+
+  // We should never arrive here
+  debug("[alert-operator] Unknown artifact storageType from table storage: %s",
+        artifact.storageType);
 };
 
 /** Get artifact from run */
@@ -381,13 +388,11 @@ api.declare({
     "client users might want to generate a signed URL for this end-point and",
     "use that URL with a normal HTTP client."
   ].join('\n')
-}, function(req ,res) {
+}, async function(req ,res) {
   // Validate parameters
   if (!api.checkParams(req, res)) {
     return;
   }
-
-  var ctx = this;
 
   var taskId = req.params.taskId;
   var runId  = parseInt(req.params.runId);
@@ -401,7 +406,7 @@ api.declare({
     return;
   }
 
-  return replyWithArtifact.call(ctx, taskId, runId, name, res);
+  return replyWithArtifact.call(this, taskId, runId, name, res);
 });
 
 /** Get latest artifact from task */
@@ -431,13 +436,11 @@ api.declare({
     "`queue.getArtifact`, so consider that if you already know the `runId` of",
     "the latest run. Otherwise, just us the most convenient API end-point."
   ].join('\n')
-}, function(req ,res) {
+}, async function(req ,res) {
   // Validate parameters
   if (!api.checkParams(req, res)) {
     return;
   }
-
-  var ctx = this;
 
   var taskId = req.params.taskId;
   var name   = req.params.name;
@@ -450,57 +453,29 @@ api.declare({
     return;
   }
 
-  // Try to load task status structure from database
-  return ctx.Task.load(taskId).then(function(task) {
-    if (!task) {
-      // Try to load status from blob storage
-      return ctx.taskstore.get(
-        taskId + '/status.json',
-        true    // Return null if doesn't exists
-      ).then(function(taskData) {
-        if (taskData) {
-          return ctx.Task.deserialize(taskData);
-        }
-      });
-    }
-    return task;
-  }).then(function(task) {
-    // Give a 404 if not found
-    if (!task) {
-      return res.status(404).json({
-        message:  "Task not found"
-      });
-    }
+  // Load task status structure from table
+  var task = await this.Task.load({taskId: taskId}, true);
 
-    // Check that we have runs
-    if (task.runs.length === 0) {
-      return res.status(404).json({
-        message:  "Task doesn't have any runs"
-      });
-    }
-
-    // Find highest runId
-    var runId = _.last(task.runs).runId;
-
-    // Reply
-    return replyWithArtifact.call(ctx, taskId, runId, name, res);
-  });
-});
-
-
-/** Reply to a list artifact request */
-var replyWithArtifacts = function(taskId, runId, res) {
-  var ctx = this;
-  return ctx.Artifact.list(taskId, runId).then(function(artifacts) {
-    // Reply with artifacts as extracted above
-    res.reply({
-      artifacts: artifacts.map(function(artifact) {
-        // Extra artifact as JSON
-        return artifact.json();
-      })
+  // Give a 404 if not found
+  if (!task) {
+    return res.status(404).json({
+      message:  "Task not found"
     });
-  });
-};
+  }
+
+  // Check that we have runs
+  if (task.runs.length === 0) {
+    return res.status(404).json({
+      message:  "Task doesn't have any runs"
+    });
+  }
+
+  // Find highest runId
+  var runId = task.runs.length - 1;
+
+  // Reply
+  return replyWithArtifact.call(this, taskId, runId, name, res);
+});
 
 
 /** Get artifacts from run */
@@ -513,21 +488,42 @@ api.declare({
   description: [
     "Returns a list of artifacts and associated meta-data for a given run."
   ].join('\n')
-}, function(req ,res) {
+}, async function(req ,res) {
   // Validate parameters
   if (!api.checkParams(req, res)) {
     return;
   }
 
-  var ctx = this;
-
   var taskId = req.params.taskId;
   var runId  = parseInt(req.params.runId);
-  // TODO: Add support querying using storageType and prefix
-  //var storageType   = req.body.storageType;
-  //var prefix = req.body.prefix;
+  // TODO: Add support querying using prefix
 
-  return replyWithArtifacts.call(ctx, taskId, runId, res);
+  // Warning: this doesn't employ continuation token and may take a while if
+  // someone uploads more than MAX_ARTIFACTS_LISTING artifacts. We'll cut it
+  // short at MAX_ARTIFACTS_LISTING tasks and return an error
+  var artifacts = [];
+  await this.Artifact.query({
+    taskId: taskId,
+    runId:  runId
+  }, {
+    handler:    (artifact) => {
+      assert(artifacts.length <= MAX_ARTIFACTS_LISTING,
+             "Won't list more than MAX_ARTIFACTS_LISTING artifacts");
+      artifacts.push(artifact.json());
+    }
+  });
+
+  // Refuse to list artifacts if there is more than MAX_ARTIFACTS_LISTING
+  if (artifacts.length > MAX_ARTIFACTS_LISTING) {
+    return res.status(412).json({
+      message:    "Won't list artifacts for task with " +
+                  MAX_ARTIFACTS_LISTING + " artifacts!"
+    });
+  }
+
+  return res.reply({
+    artifacts:      artifacts
+  });
 });
 
 
@@ -542,44 +538,59 @@ api.declare({
     "Returns a list of artifacts and associated meta-data for the latest run",
     "from the given task."
   ].join('\n')
-}, function(req ,res) {
-  var ctx = this;
+}, async function(req ,res) {
+  // Validate parameters
+  if (!api.checkParams(req, res)) {
+    return;
+  }
 
   var taskId = req.params.taskId;
+  // TODO: Add support querying using prefix
 
-  // Try to load task status structure from database
-  return ctx.Task.load(taskId).then(function(task) {
-    if (!task) {
-      // Try to load status from blob storage
-      return ctx.taskstore.get(
-        taskId + '/status.json',
-        true    // Return null if doesn't exists
-      ).then(function(taskData) {
-        if (taskData) {
-          return ctx.Task.deserialize(taskData);
-        }
-      });
+  // Load task status structure from table
+  var task = await this.Task.load({taskId: taskId}, true);
+
+  // Give a 404 if not found
+  if (!task) {
+    return res.status(404).json({
+      message:  "Task not found"
+    });
+  }
+
+  // Check that we have runs
+  if (task.runs.length === 0) {
+    return res.status(404).json({
+      message:  "Task doesn't have any runs"
+    });
+  }
+
+  // Find highest runId
+  var runId = task.runs.length - 1;
+
+  // Warning: this doesn't employ continuation token and may take a while if
+  // someone uploads more than MAX_ARTIFACTS_LISTING artifacts. We'll cut it
+  // short at MAX_ARTIFACTS_LISTING tasks and return an error
+  var artifacts = [];
+  await this.Artifact.query({
+    taskId: taskId,
+    runId:  runId
+  }, {
+    handler:    (artifact) => {
+      assert(artifacts.length <= MAX_ARTIFACTS_LISTING,
+             "Won't list more than MAX_ARTIFACTS_LISTING artifacts");
+      artifacts.push(artifact.json());
     }
-    return task;
-  }).then(function(task) {
-    // Give a 404 if not found
-    if (!task) {
-      return res.status(404).json({
-        message:  "Task not found"
-      });
-    }
+  });
 
-    // Check that we have runs
-    if (task.runs.length === 0) {
-      return res.status(404).json({
-        message:  "Task doesn't have any runs"
-      });
-    }
+  // Refuse to list artifacts if there is more than MAX_ARTIFACTS_LISTING
+  if (artifacts.length > MAX_ARTIFACTS_LISTING) {
+    return res.status(412).json({
+      message:    "Won't list artifacts for task with " +
+                  MAX_ARTIFACTS_LISTING + " artifacts!"
+    });
+  }
 
-    // Find highest runId
-    var runId = _.last(task.runs).runId;
-
-    // Reply
-    return replyWithArtifacts.call(ctx, taskId, runId, res);
+  return res.reply({
+    artifacts:      artifacts
   });
 });
