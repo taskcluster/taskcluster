@@ -50,10 +50,13 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	}
 	reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
 	httpRequest.Header.Set("Authorization", reqAuth)
+	httpRequest.Header.Set("Content-Type", "application/json")
 	httpClient := &http.Client{}
-	response, err := httpClient.Do(httpRequest)
+	// fmt.Println("Request\n=======")
 	// fullRequest, err := httputil.DumpRequestOut(httpRequest, true)
 	// fmt.Println(string(fullRequest))
+	response, err := httpClient.Do(httpRequest)
+	// fmt.Println("Response\n========")
 	// fullResponse, err := httputil.DumpResponse(response, true)
 	// fmt.Println(string(fullResponse))
 	if err != nil {

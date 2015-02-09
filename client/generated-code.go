@@ -863,10 +863,10 @@ type AuthAPI struct {
 // struct member to false.
 //
 // For example:
-//  authAPI := NewAuthAPI("123", "456")                        // set clientId and accessToken
+//  authAPI := client.NewAuthAPI("123", "456")                 // set clientId and accessToken
 //  authAPI.Authenticate = false                               // disable authentication (true by default)
 //  authAPI.BaseURL = "http://localhost:1234/api/AuthAPI/v1"   // alternative API endpoint (production by default)
-//  authAPI.Scopes(.....)                                      // for example, call the Scopes(.....) API endpoint (described further down)...
+// data, httpResponse := authAPI.Scopes(.....)                // for example, call the Scopes(.....) API endpoint (described further down)...
 func NewAuthAPI(clientId string, accessToken string) *AuthAPI {
 	r := &AuthAPI{}
 	r.ClientId = clientId
@@ -1081,10 +1081,10 @@ type IndexAPI struct {
 // struct member to false.
 //
 // For example:
-//  indexAPI := NewIndexAPI("123", "456")                        // set clientId and accessToken
+//  indexAPI := client.NewIndexAPI("123", "456")                 // set clientId and accessToken
 //  indexAPI.Authenticate = false                                // disable authentication (true by default)
 //  indexAPI.BaseURL = "http://localhost:1234/api/IndexAPI/v1"   // alternative API endpoint (production by default)
-//  indexAPI.FindTask(.....)                                     // for example, call the FindTask(.....) API endpoint (described further down)...
+// data, httpResponse := indexAPI.FindTask(.....)               // for example, call the FindTask(.....) API endpoint (described further down)...
 func NewIndexAPI(clientId string, accessToken string) *IndexAPI {
 	r := &IndexAPI{}
 	r.ClientId = clientId
@@ -1174,10 +1174,10 @@ type QueueAPI struct {
 // struct member to false.
 //
 // For example:
-//  queueAPI := NewQueueAPI("123", "456")                        // set clientId and accessToken
+//  queueAPI := client.NewQueueAPI("123", "456")                 // set clientId and accessToken
 //  queueAPI.Authenticate = false                                // disable authentication (true by default)
 //  queueAPI.BaseURL = "http://localhost:1234/api/QueueAPI/v1"   // alternative API endpoint (production by default)
-//  queueAPI.CreateTask(.....)                                   // for example, call the CreateTask(.....) API endpoint (described further down)...
+// data, httpResponse := queueAPI.CreateTask(.....)             // for example, call the CreateTask(.....) API endpoint (described further down)...
 func NewQueueAPI(clientId string, accessToken string) *QueueAPI {
 	r := &QueueAPI{}
 	r.ClientId = clientId
@@ -1550,10 +1550,10 @@ type SchedulerAPI struct {
 // struct member to false.
 //
 // For example:
-//  schedulerAPI := NewSchedulerAPI("123", "456")                        // set clientId and accessToken
+//  schedulerAPI := client.NewSchedulerAPI("123", "456")                 // set clientId and accessToken
 //  schedulerAPI.Authenticate = false                                    // disable authentication (true by default)
 //  schedulerAPI.BaseURL = "http://localhost:1234/api/SchedulerAPI/v1"   // alternative API endpoint (production by default)
-//  schedulerAPI.CreateTaskGraph(.....)                                  // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
+// data, httpResponse := schedulerAPI.CreateTaskGraph(.....)            // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
 func NewSchedulerAPI(clientId string, accessToken string) *SchedulerAPI {
 	r := &SchedulerAPI{}
 	r.ClientId = clientId

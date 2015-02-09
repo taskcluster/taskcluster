@@ -86,10 +86,16 @@ func (api *API) getMethodDefinitions(apiName string) string {
 	content += "// struct member to false.\n"
 	content += "//\n"
 	content += "// For example:\n"
-	content += "//  " + exampleVarName + " := New" + apiName + "(\"123\", \"456\")                        // set clientId and accessToken\n"
+	content += "//  " + exampleVarName + " := client.New" + apiName + "(\"123\", \"456\")                 // set clientId and accessToken\n"
 	content += "//  " + exampleVarName + ".Authenticate = false          " + strings.Repeat(" ", len(apiName)) + "              // disable authentication (true by default)\n"
 	content += "//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"   // alternative API endpoint (production by default)\n"
-	content += "//  " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)" + strings.Repeat(" ", 36-len(api.Entries[0].MethodName)+len(apiName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
+	// here we choose an example API method to call, just the first one in the list of api.Entries
+	// We need to first see if it returns one or two variables...
+	if api.Entries[0].Output == "" {
+		content += "//  httpResponse := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)" + strings.Repeat(" ", 20-len(api.Entries[0].MethodName)+len(apiName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
+	} else {
+		content += "// data, httpResponse := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)" + strings.Repeat(" ", 14-len(api.Entries[0].MethodName)+len(apiName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
+	}
 	content += "func New" + apiName + "(clientId string, accessToken string) *" + apiName + " {\n"
 	content += "\tr := &" + apiName + "{}\n"
 	content += "\tr.ClientId = clientId\n"
@@ -402,11 +408,13 @@ package client
 
 import "net/http"
 `
-	content += generateStructs()
+	content += generateTypes()
 	content += generateMethods()
 	utils.WriteStringToFile(content, goOutput)
 
-	content = ""
+	content = "The following file is an auto-generated static dump of the API models at time of code generation.\n"
+	content += "It is provided here for reference purposes, but is not used by any code.\n"
+	content += "\n"
 	for _, api := range apis {
 		content += utils.Underline(api.URL)
 		content += api.Data.String() + "\n\n"
@@ -418,7 +426,7 @@ import "net/http"
 	utils.WriteStringToFile(content, modelData)
 }
 
-func generateStructs() string {
+func generateTypes() string {
 	content := "type (" // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	for _, i := range schemaURLs {

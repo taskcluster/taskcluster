@@ -1,3 +1,6 @@
+The following file is an auto-generated static dump of the API models at time of code generation.
+It is provided here for reference purposes, but is not used by any code.
+
 http://references.taskcluster.net/auth/v1/api.json
 ==================================================
 Version     = '0.2.0'
