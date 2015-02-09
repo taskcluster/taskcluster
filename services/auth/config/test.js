@@ -19,6 +19,11 @@ module.exports = {
     azureAccounts:    "{}"
   },
 
+  test: {
+    // Bucket that we can use for testing issued STS credentials
+    testBucket:                     undefined
+  },
+
   // Server configuration
   server: {
     // Public URL from which the server can be accessed (used for persona)
