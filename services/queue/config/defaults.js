@@ -37,7 +37,10 @@ module.exports = {
     claimQueue:                   'claim-queue',
 
     // Name of azure queue for tracking deadlines
-    deadlineQueue:                'deadline-queue'
+    deadlineQueue:                'deadline-queue',
+
+    // Number of ms before deadline expiration message arrives, past deadline
+    deadlineDelay:                15 * 60 * 1000
   },
 
   // TaskCluster configuration

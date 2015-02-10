@@ -445,12 +445,11 @@ api.declare({
     this.queueService.putPendingMessage(task, 0),
 
     // Publish pulse messages
-    async () => {
+    (async () => {
       // Publish task-defined message, we want this arriving before the
       // task-pending message, so we have to await publication here
       await this.publisher.taskDefined({
-        status:         task.status(),
-        runId:          0
+        status:         task.status()
       }, task.routes);
 
       // Put message in appropriate azure queue, and publish message to pulse
@@ -458,7 +457,7 @@ api.declare({
         status:         task.status(),
         runId:          0
       }, task.routes);
-    }
+    })()
   ]);
 
   // Reply
@@ -532,7 +531,7 @@ api.declare({
 
   // Try to create Task entity
   try {
-    let task = await this.Task.create({
+    var task = await this.Task.create({
       taskId:           taskId,
       provisionerId:    taskDef.provisionerId,
       workerType:       taskDef.workerType,
@@ -560,7 +559,7 @@ api.declare({
     }
 
     // load task, and task definition
-    let task = await this.Task.load({taskId: taskId});
+    task     = await this.Task.load({taskId: taskId});
     let def  = await task.definition();
 
     // Compare the two task definitions
@@ -583,8 +582,7 @@ api.declare({
 
   // Publish task-defined message
   await this.publisher.taskDefined({
-    status:         task.status(),
-    runId:          0
+    status:         task.status()
   }, task.routes);
 
   // Reply
