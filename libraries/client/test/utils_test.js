@@ -24,6 +24,17 @@ suite('taskcluster.utils', function() {
     assert.equal(taskcluster.utils.parseTime('  1 months   ').months, 1);
   });
 
+  test('parseTime 1 week', function() {
+    assert.equal(taskcluster.utils.parseTime('1w').weeks, 1);
+    assert.equal(taskcluster.utils.parseTime('1 wk').weeks, 1);
+    assert.equal(taskcluster.utils.parseTime('1 week').weeks, 1);
+    assert.equal(taskcluster.utils.parseTime('1 weeks').weeks, 1);
+    assert.equal(taskcluster.utils.parseTime('1week').weeks, 1);
+    assert.equal(taskcluster.utils.parseTime('1    wk').weeks, 1);
+    assert.equal(taskcluster.utils.parseTime('  1    week   ').weeks, 1);
+    assert.equal(taskcluster.utils.parseTime('  1 weeks   ').weeks, 1);
+  });
+
   test('parseTime 1 day', function() {
     assert.equal(taskcluster.utils.parseTime('1d').days, 1);
     assert.equal(taskcluster.utils.parseTime('1 d').days, 1);
@@ -81,13 +92,14 @@ suite('taskcluster.utils', function() {
     assert.equal(taskcluster.utils.parseTime('  45 seconds   ').seconds, 45);
   });
 
-  test('parseTime 1yr2mo3d4h5m6s', function() {
-    assert.equal(taskcluster.utils.parseTime('1yr2mo3d4h5m6s').years, 1);
-    assert.equal(taskcluster.utils.parseTime('1yr2mo3d4h5m6s').months, 2);
-    assert.equal(taskcluster.utils.parseTime('1yr2mo3d4h5m6s').days, 3);
-    assert.equal(taskcluster.utils.parseTime('1yr2mo3d4h5m6s').hours, 4);
-    assert.equal(taskcluster.utils.parseTime('1yr2mo3d4h5m6s').minutes, 5);
-    assert.equal(taskcluster.utils.parseTime('1yr2mo3d4h5m6s').seconds, 6);
+  test('parseTime 1yr2mo3w4d5h6m7s', function() {
+    assert.equal(taskcluster.utils.parseTime('1yr2mo3w4d5h6m7s').years, 1);
+    assert.equal(taskcluster.utils.parseTime('1yr2mo3w4d5h6m7s').months, 2);
+    assert.equal(taskcluster.utils.parseTime('1yr2mo3w4d5h6m7s').weeks, 3);
+    assert.equal(taskcluster.utils.parseTime('1yr2mo3w4d5h6m7s').days, 4);
+    assert.equal(taskcluster.utils.parseTime('1yr2mo3w4d5h6m7s').hours, 5);
+    assert.equal(taskcluster.utils.parseTime('1yr2mo3w4d5h6m7s').minutes, 6);
+    assert.equal(taskcluster.utils.parseTime('1yr2mo3w4d5h6m7s').seconds, 7);
     assert.equal(taskcluster.utils.parseTime('2d3h').minutes, 0);
     assert.equal(taskcluster.utils.parseTime('2d0h').hours, 0);
   });
@@ -119,6 +131,36 @@ suite('taskcluster.utils', function() {
     var d2 = new Date(ts);
 
     // Allow for 10 ms margin
+    assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+  });
+
+  test('fromNow(2 years 15)', function() {
+    var d1 = new Date();
+    d1.setMonth(d1.getMonth() + 12 * 2 + 15)
+    var ts = taskcluster.utils.fromNow('2 years 15mo');
+    var d2 = new Date(ts);
+
+    // Allow for 10msy margin
+    assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+  });
+
+  test('fromNow(2 years 55)', function() {
+    var d1 = new Date();
+    d1.setMonth(d1.getMonth() + 12 * 2 + 55)
+    var ts = taskcluster.utils.fromNow('2 years 55mo');
+    var d2 = new Date(ts);
+
+    // Allow for 10msy margin
+    assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+  });
+
+  test('fromNow(20 years)', function() {
+    var d1 = new Date();
+    d1.setFullYear(d1.getFullYear() + 20)
+    var ts = taskcluster.utils.fromNow('20 years');
+    var d2 = new Date(ts);
+
+    // Allow for 10msy margin
     assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
   });
 });

@@ -6,6 +6,7 @@ var timeExp = new RegExp([
   '^',
   '(\\s*(\\d+)\\s*y((ears?)|r)?)?',
   '(\\s*(\\d+)\\s*mo(nths?)?)?',
+  '(\\s*(\\d+)\\s*w((eeks?)|k)?)?',
   '(\\s*(\\d+)\\s*d(ays?)?)?',
   '(\\s*(\\d+)\\s*h((ours?)|r)?)?',
   '(\\s*(\\d+)\\s*m(in(utes?)?)?)?',
@@ -25,10 +26,11 @@ var parseTime = function(str) {
   return {
     years:    parseInt(match[2]   || 0),
     months:   parseInt(match[6]   || 0),
-    days:     parseInt(match[9]   || 0),
-    hours:    parseInt(match[12]  || 0),
-    minutes:  parseInt(match[16]  || 0),
-    seconds:  parseInt(match[20]  || 0)
+    weeks:    parseInt(match[9]   || 0),
+    days:     parseInt(match[13]  || 0),
+    hours:    parseInt(match[16]  || 0),
+    minutes:  parseInt(match[20]  || 0),
+    seconds:  parseInt(match[24]  || 0)
   };
 };
 
@@ -46,15 +48,23 @@ var relativeTime = function(offset, reference) {
   if (!offset || typeof(offset) === 'string') {
     offset = parseTime(offset);
   }
-  return new Date(
+  var retval = new Date(
     reference.getTime()
-    + offset.years   * 365 * 24 * 60 * 60 * 1000
-    + offset.months  *  31 * 24 * 60 * 60 * 1000
-    + offset.days          * 24 * 60 * 60 * 1000
-    + offset.hours              * 60 * 60 * 1000
-    + offset.minutes                 * 60 * 1000
-    + offset.seconds                      * 1000
+    + offset.weeks   * 7 * 24 * 60 * 60 * 1000
+    + offset.days        * 24 * 60 * 60 * 1000
+    + offset.hours            * 60 * 60 * 1000
+    + offset.minutes               * 60 * 1000
+    + offset.seconds                    * 1000
   );
+  if (offset.months > 0) {
+    var months = offset.months + retval.getMonth()
+    offset.years += Math.floor(months / 12);
+    retval.setMonth(months % 12);
+  }
+  if (offset.years > 0) {
+    retval.setFullYear(retval.getFullYear() + offset.years);
+  }
+  return retval;
 };
 
 // Export relativeTime
