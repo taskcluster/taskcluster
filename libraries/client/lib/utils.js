@@ -1,7 +1,18 @@
 "use strict";
 
-// Regular expression matching: X days Y hours Z minutes
-var timeExp = /^(\s*(\d+)\s*d(ays?)?)?(\s*(\d+)\s*h(ours?)?)?(\s*(\d+)\s*m(in(utes?)?)?)?\s*$/;
+// Regular expression matching:
+// A years B months C days D hours E minutes F seconds
+var timeExp = new RegExp([
+  '^',
+  '(\\s*(\\d+)\\s*y((ears?)|r)?)?',
+  '(\\s*(\\d+)\\s*mo(nths?)?)?',
+  '(\\s*(\\d+)\\s*d(ays?)?)?',
+  '(\\s*(\\d+)\\s*h((ours?)|r)?)?',
+  '(\\s*(\\d+)\\s*m(in(utes?)?)?)?',
+  '(\\s*(\\d+)\\s*s(ec(onds?)?)?)?',
+  '\\s*$'
+].join(''), 'i');
+
 
 /** Parse time string */
 var parseTime = function(str) {
@@ -12,9 +23,12 @@ var parseTime = function(str) {
   }
   // Return parsed values
   return {
-    days:     parseInt(match[2] || 0),
-    hours:    parseInt(match[5] || 0),
-    minutes:  parseInt(match[8] || 0)
+    years:    parseInt(match[2]   || 0),
+    months:   parseInt(match[6]   || 0),
+    days:     parseInt(match[9]   || 0),
+    hours:    parseInt(match[12]  || 0),
+    minutes:  parseInt(match[16]  || 0),
+    seconds:  parseInt(match[20]  || 0)
   };
 };
 
@@ -34,9 +48,12 @@ var relativeTime = function(offset, reference) {
   }
   return new Date(
     reference.getTime()
-    + offset.days * 24 * 60 * 60 * 1000
-    + offset.hours     * 60 * 60 * 1000
-    + offset.minutes        * 60 * 1000
+    + offset.years   * 365 * 24 * 60 * 60 * 1000
+    + offset.months  *  31 * 24 * 60 * 60 * 1000
+    + offset.days          * 24 * 60 * 60 * 1000
+    + offset.hours              * 60 * 60 * 1000
+    + offset.minutes                 * 60 * 1000
+    + offset.seconds                      * 1000
   );
 };
 
