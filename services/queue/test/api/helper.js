@@ -1,13 +1,16 @@
-var assert      = require('assert');
-var Promise     = require('promise');
-var path        = require('path');
-var _           = require('lodash');
-var base        = require('taskcluster-base');
-var v1          = require('../../routes/v1');
-var exchanges   = require('../../queue/exchanges');
-var taskcluster = require('taskcluster-client');
-var mocha       = require('mocha');
-var server      = require('../../bin/server');
+var assert          = require('assert');
+var Promise         = require('promise');
+var path            = require('path');
+var _               = require('lodash');
+var base            = require('taskcluster-base');
+var v1              = require('../../routes/v1');
+var exchanges       = require('../../queue/exchanges');
+var taskcluster     = require('taskcluster-client');
+var mocha           = require('mocha');
+var bin = {
+  server:             require('../../bin/server'),
+  expireArtifacts:    require('../../bin/expire-artifacts')
+};
 
 // Some default clients for the mockAuthServer
 var defaultClients = [
@@ -24,7 +27,7 @@ var defaultClients = [
   }
 ];
 
-var defaultProfile = 'test';
+var testProfile = 'test';
 
 module.exports = function(options) {
   options = options || {};
@@ -35,7 +38,7 @@ module.exports = function(options) {
   // Load configuration
   var cfg = helper.cfg = base.config({
     defaults:     require('../../config/defaults'),
-    profile:      require('../../config/' + defaultProfile),
+    profile:      require('../../config/' + testProfile),
     envs: [
       'aws_accessKeyId',
       'aws_secretAccessKey',
@@ -57,25 +60,28 @@ module.exports = function(options) {
 
   // Configure PulseTestReceiver
   helper.events = new base.testing.PulseTestReceiver(cfg.get('pulse'), mocha);
-  helper.listenFor = helper.events.listenFor.bind(helper.events);
-  helper.waitFor = helper.events.waitFor.bind(helper.events);
 
-  // Hold reference to mockAuthServer
-  var mockAuthServer = null;
-  var web = null;
+  // Allow tests to run expire-artifacts
+  helper.expireArtifacts = () => {
+    return bin.expireArtifacts(testProfile);
+  };
+
+  // Hold reference to authServer
+  var authServer = null;
+  var webServer = null;
 
   // Setup server
   setup(async function() {
     // Create mock authentication server
-    mockAuthServer = await base.testing.createMockAuthServer({
+    authServer = await base.testing.createMockAuthServer({
       port:     60407, // This is hardcoded into config/test.js
       clients:  defaultClients
     });
 
-    web = await server(defaultProfile);
+    webServer = await bin.server(testProfile);
 
     // Create client for working with API
-    helper.baseUrl = 'http://localhost:' + web.address().port + '/v1';
+    helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
     var reference = v1.reference({baseUrl: helper.baseUrl});
     helper.Queue = taskcluster.createClient(reference);
     // Utility to create an Queue instance with limited scopes
@@ -103,9 +109,9 @@ module.exports = function(options) {
 
   // Shutdown server
   teardown(async function() {
-    // Kill server
-    await web.terminate();
-    await mockAuthServer.terminate();
+    // Kill webServer
+    await webServer.terminate();
+    await authServer.terminate();
   });
 
   return helper;
