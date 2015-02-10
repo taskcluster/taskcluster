@@ -7,6 +7,7 @@ var _           = require('lodash');
 var BlobStore   = require('../queue/blobstore');
 var Bucket      = require('../queue/bucket');
 var data        = require('../queue/data');
+var taskcluster = require('taskcluster-client');
 var assert      = require('assert');
 
 /** Launch expire-artifacts */
@@ -89,21 +90,14 @@ var launch = async function(profile) {
   base.app.notifyLocalAppInParentProcess();
 
   // Find an artifact expiration delay
-  var delay = parseInt(cfg.get('queue:artifactExpirationDelay'));
-  assert(!_.isNaN(delay), "Can't have NaN as artifactExpirationDelay");
-  var now = new Date();
-  now.setHours(now.getHours() - delay);
+  var delay = cfg.get('queue:artifactExpirationDelay');
+  var now   = taskcluster.utils.relativeTime(delay);
+  assert(!_.isNaN(now), "Can't have NaN as now");
 
   // Expire artifacts using delay
   debug("Expiring artifacts at: %s, from before %s", new Date(), now);
-  var done = Artifact.expireEntities(now).then(function(count) {
-    debug("Expired %s artifacts", count);
-  });
-
-  // Return object that we can call terminate on and wait
-  return {
-    terminate: () => { return done; }
-  };
+  var count = await Artifact.expireArtifacts(now);
+  debug("Expired %s artifacts", count);
 };
 
 // If expire-artifacts.js is executed run launch

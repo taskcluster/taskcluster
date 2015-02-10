@@ -821,7 +821,7 @@ api.declare({
   description: [
     "This method will cancel a task that is either `unscheduled`, `pending` or",
     "`running`. It will resolve the current run as `exception` with",
-    "`resolvedReason` set to `canceled`. If the task isn't scheduled yet, ie.",
+    "`reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.",
     "it doesn't have any runs, an initial run will be added and resolved as",
     "described above. Hence, after canceling a task, it cannot be scheduled",
     "with `queue.scheduleTask`, but a new run can be created with",
@@ -873,7 +873,7 @@ api.declare({
     // If we have a pending task or running task, we cancel the ongoing run
     if (state === 'pending' || state === 'running') {
       run.state           = 'exception';
-      run.reasonResovled  = 'canceled';
+      run.reasonResolved  = 'canceled';
       run.resolved        = new Date().toJSON();
     }
 
@@ -886,7 +886,7 @@ api.declare({
       task.runs.push({
         state:            'exception',
         reasonCreated:    'scheduled',
-        reasonResovled:   'canceled',
+        reasonResolved:   'canceled',
         scheduled:        new Date().toJSON(),
         resolved:         new Date().toJSON()
       });
@@ -1247,20 +1247,19 @@ var resolveTask = async function(req, res, taskId, runId, target) {
 
     // Update run
     run.state           = target;               // completed or failed
-    run.reasonResovled  = target;               // completed or failed
+    run.reasonResolved  = target;               // completed or failed
     run.resolved        = new Date().toJSON();
 
     // Clear takenUntil on task
     task.takenUntil     = new Date(0);
   });
-
   // Find the run that we (may) have modified
   run = task.runs[runId];
 
   // If run isn't resolved to target, we had a conflict
   if (task.runs.length - 1  !== runId ||
       run.state             !== target ||
-      run.resolvedReason    !== target) {
+      run.reasonResolved    !== target) {
     return res.status(409).json({
       message: "Run is resolved, or not running"
     });
@@ -1319,7 +1318,7 @@ api.declare({
   // future
   var target = req.body.success === false ? 'failed' : 'completed';
 
-  return resolveTask(req, res, taskId, runId, target);
+  return resolveTask.call(this, req, res, taskId, runId, target);
 });
 
 
@@ -1356,7 +1355,7 @@ api.declare({
   var taskId        = req.params.taskId;
   var runId         = parseInt(req.params.runId);
 
-  return resolveTask(req, res, taskId, runId, 'failed');
+  return resolveTask.call(this, req, res, taskId, runId, 'failed');
 });
 
 /** Report task exception */
@@ -1430,7 +1429,7 @@ api.declare({
 
     // Update run
     run.state           = 'exception';
-    run.reasonResovled  = reason;
+    run.reasonResolved  = reason;
     run.resolved        = new Date().toJSON();
 
     // Clear takenUntil on task
@@ -1454,7 +1453,7 @@ api.declare({
   if (!run ||
       task.runs.length - 1  > runId + 1 ||
       run.state             !== 'exception' ||
-      run.resolvedReason    !== reason) {
+      run.reasonResolved    !== reason) {
     return res.status(409).json({
       message: "Run is resolved, or not running"
     });
@@ -1464,8 +1463,8 @@ api.declare({
   await this.publisher.taskException({
     status:       task.status(),
     runId:        runId,
-    workerGroup:  workerGroup,
-    workerId:     workerId
+    workerGroup:  run.workerGroup,
+    workerId:     run.workerId
   }, task.routes);
 
   // If a newRun was created and it is a retry with state pending then we better

@@ -196,7 +196,7 @@ Artifact.prototype.remove = function(ignoreError) {
   // Handle azure artifact
   if (this.storageType === 'azure') {
     debug("Deleting expired azure artifact from container: %s, path: %s",
-          container, path);
+          this.details.container, this.details.path);
     // Validate that this is the configured container
     if (this.details.container !== this.blobStore.container) {
       debug("[alert-operator] Expiring artifact with container: %s, which " +
@@ -204,7 +204,7 @@ Artifact.prototype.remove = function(ignoreError) {
             this.details.container, this.taskId, this.runId);
       return;
     }
-    deleted = this.blobStore.deleteBlob(this.path, true);
+    deleted = this.blobStore.deleteBlob(this.details.path, true);
   }
 
   // When underlying artifact is deleted (if any underlying artifact exists)

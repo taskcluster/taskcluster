@@ -23,9 +23,9 @@ module.exports = {
     // Azure table name for artifacts meta-data
     artifactTableName:            'Artifacts',
 
-    // Number of hours to wait extra before expiring artifacts
-    // This is instead of expiring artifacts that have expiry set to just now.
-    artifactExpirationDelay:      '1',
+    // Time delay before expiring artifacts, in readable format, see:
+    // taskcluster.utils.fromNow, notice this should be negative!
+    artifactExpirationDelay:      '- 30 minutes',
 
     // Component property in the responseTime and process statistics
     statsComponent:               'queue',

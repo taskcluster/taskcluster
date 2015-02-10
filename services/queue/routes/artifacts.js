@@ -114,7 +114,7 @@ api.declare({
   }
 
   // Load Task entity
-  var task = this.task.load({
+  var task = await this.Task.load({
     taskId:       taskId
   }, true);
 
@@ -334,15 +334,16 @@ var replyWithArtifact = async function(taskId, runId, name, res) {
 
   // Handle azure artifacts
   if(artifact.storageType === 'azure') {
-    if (artifact.container !== this.blobStore.container) {
+    if (artifact.details.container !== this.blobStore.container) {
       debug("[alert-operator], Unknown container: %s, for artifact: %j",
-            artifact.container, artifact.json());
+            artifact.details.container, artifact.json());
     }
     // Generate URL expiration time
     var expiry = new Date();
     expiry.setMinutes(expiry.getMinutes() + 30);
     // Create and redirect to signed URL
-    return res.redirect(303, this.blobStore.createSignedGetUrl(artifact.path, {
+    return res.redirect(303, this.blobStore.createSignedGetUrl(
+      artifact.details.path, {
       expiry:   expiry
     }));
   }
