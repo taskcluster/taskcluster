@@ -10,7 +10,10 @@ module.exports = {
     queuePrefix:                  'hacks',
     claimQueue:                   'test-claim-queue',
     deadlineQueue:                'test-deadline-queue',
-    deadlineDelay:                1000
+    deadlineDelay:                1000,
+    // Positive, means we expire artifacts 4 days ahead of time, useful for
+    // testing. In production this should be "- x hours" or so...
+    artifactExpirationDelay:      '4 days',
   },
 
   taskcluster: {

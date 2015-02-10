@@ -30,7 +30,7 @@
     "superagent-promise":   "0.2.0",
     "mocha":                "^2.1.0",
     "xmlbuilder":           "^2.4.6",
-    "taskcluster-client":   "^0.19.5",
+    "taskcluster-client":   "taskcluster/taskcluster-client#extended-from-now",
     "xml2js":               "0.4.4",
     "expect.js":            "^0.3.1"
   },
