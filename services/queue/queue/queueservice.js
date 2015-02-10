@@ -48,8 +48,7 @@ class QueueService {
    *   },
    *   claimQueue:           // Queue name for the claim expiration queue
    *   deadlineQueue:        // Queue name for the deadline queue
-   *   deadlineDelay:        // Delay before deadline expired messages arrive
-   *                         // in ms (defaults to 15 min)
+   *   deadlineDelay:        // ms before deadline expired messages arrive
    * }
    */
   constructor(options) {

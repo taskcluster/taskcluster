@@ -93,7 +93,7 @@ Task.prototype.status = function() {
       return _.defaults({
         runId:        runId
       }, run);
-    });
+    })
   };
 };
 
@@ -229,14 +229,16 @@ Artifact.prototype.remove = function(ignoreError) {
  *
  * Returns a promise that all expired artifacts have been deleted
  */
-Artifact.expireArtifacts = function(now) {
+Artifact.expireArtifacts = async function(now) {
   assert(now instanceof Date, "now must be given as option");
-  return base.Entity.scan.call(this, {
+  var count = 0;
+  await base.Entity.scan.call(this, {
     expires:          base.Entity.op.lessThan(now)
   }, {
     limit:            250, // max number of concurrent delete operations
-    handler:          function(item) { return item.remove(true); }
+    handler:          function(item) { count++; return item.remove(true); }
   });
+  return count;
 };
 
 // Export Artifact

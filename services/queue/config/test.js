@@ -9,7 +9,8 @@ module.exports = {
     statsComponent:               'test-queue',
     queuePrefix:                  'hacks',
     claimQueue:                   'test-claim-queue',
-    deadlineQueue:                'test-deadline-queue'
+    deadlineQueue:                'test-deadline-queue',
+    deadlineDelay:                1000
   },
 
   taskcluster: {

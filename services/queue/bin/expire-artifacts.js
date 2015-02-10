@@ -10,7 +10,7 @@ var data        = require('../queue/data');
 var assert      = require('assert');
 
 /** Launch expire-artifacts */
-var launch = function(profile) {
+var launch = async function(profile) {
   debug("Launching with profile: %s", profile);
 
   // Load configuration
@@ -18,11 +18,16 @@ var launch = function(profile) {
     defaults:     require('../config/defaults'),
     profile:      require('../config/' + profile),
     envs: [
+      'pulse_username',
+      'pulse_password',
+      'queue_publishMetaData',
+      'queue_signatureSecret',
+      'taskcluster_credentials_clientId',
+      'taskcluster_credentials_accessToken',
       'aws_accessKeyId',
       'aws_secretAccessKey',
       'azure_accountName',
       'azure_accountKey',
-      'queue_artifactExpirationDelay',
       'influx_connectionString'
     ],
     filename:     'taskcluster-queue'
@@ -42,47 +47,63 @@ var launch = function(profile) {
     process:    'expire-artifacts'
   });
 
+  // Create artifact bucket instances
+  var publicArtifactBucket = new Bucket({
+    bucket:             cfg.get('queue:publicArtifactBucket'),
+    credentials:        cfg.get('aws')
+  });
+  var privateArtifactBucket = new Bucket({
+    bucket:             cfg.get('queue:privateArtifactBucket'),
+    credentials:        cfg.get('aws')
+  });
+
   // Create artifactStore
   var artifactStore = new BlobStore({
     container:          cfg.get('queue:artifactContainer'),
     credentials:        cfg.get('azure')
   });
 
-  // Create artifact bucket
-  var artifactBucket = new Bucket({
-    bucket:             cfg.get('queue:artifactBucket'),
-    credentials:        cfg.get('aws')
-  });
-
   // Create artifacts table
-  var Artifact = data.Artifact.configure({
-    tableName:          cfg.get('queue:artifactTableName'),
-    credentials:        cfg.get('azure')
+  var Artifact = data.Artifact.setup({
+    table:              cfg.get('queue:artifactTableName'),
+    credentials:        cfg.get('azure'),
+    context: {
+      blobStore:        artifactStore,
+      publicBucket:     publicArtifactBucket,
+      privateBucket:    privateArtifactBucket
+    }
   });
 
   debug("Waiting for resources to be created");
-  return Promise.all(
-    artifactStore.createContainer(),
-    Artifact.createTable()
-  ).then(function() {
-    // Find an artifact expiration delay
-    var delay = parseInt(cfg.get('queue:artifactExpirationDelay'));
-    assert(!_.isNaN(delay), "Can't have NaN as artifactExpirationDelay");
-    var now = new Date();
-    now.setHours(now.getHours() - delay);
-    // Expire artifacts using delay
-    debug("Expiring artifacts at: %s, from before %s", new Date(), now);
-    return Artifact.expireEntities({
-      artifactBucket:   artifactBucket,
-      artifactStore:    artifactStore,
-      now:              now
-    });
-  }).then(function(count) {
-    debug("Expired %s artifacts", count);
+  await Promise.all([
+    (async () => {
+      await artifactStore.createContainer();
+      await artifactStore.setupCORS();
+    })(),
+    Artifact.ensureTable(),
+    publicArtifactBucket.setupCORS(),
+    privateArtifactBucket.setupCORS()
+  ]);
 
-    // Notify parent process, so that this worker can run using LocalApp
-    base.app.notifyLocalAppInParentProcess();
+  // Notify parent process, so that this worker can run using LocalApp
+  base.app.notifyLocalAppInParentProcess();
+
+  // Find an artifact expiration delay
+  var delay = parseInt(cfg.get('queue:artifactExpirationDelay'));
+  assert(!_.isNaN(delay), "Can't have NaN as artifactExpirationDelay");
+  var now = new Date();
+  now.setHours(now.getHours() - delay);
+
+  // Expire artifacts using delay
+  debug("Expiring artifacts at: %s, from before %s", new Date(), now);
+  var done = Artifact.expireEntities(now).then(function(count) {
+    debug("Expired %s artifacts", count);
   });
+
+  // Return object that we can call terminate on and wait
+  return {
+    terminate: () => { return done; }
+  };
 };
 
 // If expire-artifacts.js is executed run launch

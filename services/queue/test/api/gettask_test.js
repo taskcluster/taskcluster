@@ -4,22 +4,20 @@ suite('Get task', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
+  var taskcluster = require('taskcluster-client');
+  var expect      = require('expect.js');
   var helper      = require('./helper')();
 
-  // Create datetime for created and deadline as 3 days later
-  var created = new Date();
-  var deadline = new Date();
-  deadline.setDate(created.getDate() + 3);
-
   var taskDef = {
-    provisionerId:    'my-provisioner',
-    workerType:       'my-worker',
+    provisionerId:    'no-provisioner',
+    workerType:       'test-worker',
     schedulerId:      'my-scheduler',
     taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
     routes:           [],
     retries:          5,
-    created:          created.toJSON(),
-    deadline:         deadline.toJSON(),
+    created:          taskcluster.utils.fromNow(),
+    deadline:         taskcluster.utils.fromNow('3 days'),
+    expires:          taskcluster.utils.fromNow('3 days'),
     scopes:           [],
     payload:          {},
     metadata: {
@@ -34,13 +32,11 @@ suite('Get task', function() {
     extra: {}
   };
 
-  test("getTask", function() {
+  test("getTask", async () => {
     var taskId = slugid.v4();
 
-    return helper.queue.createTask(taskId, taskDef).then(function(result) {
-      return helper.queue.getTask(taskId);
-    }).then(function(taskDef2) {
-      assert(_.isEqual(taskDef, taskDef2), "Task should be what we uploaded");
-    });
+    await helper.queue.createTask(taskId, taskDef);
+    var taskDef2 = await helper.queue.task(taskId);
+    expect(taskDef2).to.be.eql(taskDef);
   });
 });
