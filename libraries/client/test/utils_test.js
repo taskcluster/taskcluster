@@ -13,6 +13,28 @@ suite('taskcluster.utils', function() {
     assert.equal(taskcluster.utils.parseTime('  1 years   ').years, 1);
   });
 
+  test('parseTime -1 year', function() {
+    assert.equal(taskcluster.utils.parseTime('- 1y').years, -1);
+    assert.equal(taskcluster.utils.parseTime('- 1 yr').years, -1);
+    assert.equal(taskcluster.utils.parseTime('- 1 year').years, -1);
+    assert.equal(taskcluster.utils.parseTime('- 1 years').years, -1);
+    assert.equal(taskcluster.utils.parseTime('- 1year').years, -1);
+    assert.equal(taskcluster.utils.parseTime('- 1    yr').years, -1);
+    assert.equal(taskcluster.utils.parseTime('  - 1    year   ').years, -1);
+    assert.equal(taskcluster.utils.parseTime('  -  1 years   ').years, -1);
+  });
+
+  test('parseTime +1 year', function() {
+    assert.equal(taskcluster.utils.parseTime('+ 1y').years, 1);
+    assert.equal(taskcluster.utils.parseTime('+ 1 yr').years, 1);
+    assert.equal(taskcluster.utils.parseTime('+ 1 year').years, 1);
+    assert.equal(taskcluster.utils.parseTime('+ 1 years').years, 1);
+    assert.equal(taskcluster.utils.parseTime('+ 1year').years, 1);
+    assert.equal(taskcluster.utils.parseTime('+ 1    yr').years, 1);
+    assert.equal(taskcluster.utils.parseTime('  + 1    year   ').years, 1);
+    assert.equal(taskcluster.utils.parseTime('  +  1 years   ').years, 1);
+  });
+
   test('parseTime 1 month', function() {
     assert.equal(taskcluster.utils.parseTime('1mo').months, 1);
     assert.equal(taskcluster.utils.parseTime('1 mo').months, 1);
@@ -22,6 +44,17 @@ suite('taskcluster.utils', function() {
     assert.equal(taskcluster.utils.parseTime('1    mo').months, 1);
     assert.equal(taskcluster.utils.parseTime('  1    month   ').months, 1);
     assert.equal(taskcluster.utils.parseTime('  1 months   ').months, 1);
+  });
+
+  test('parseTime -1 month', function() {
+    assert.equal(taskcluster.utils.parseTime('- 1mo').months, -1);
+    assert.equal(taskcluster.utils.parseTime('- 1 mo').months, -1);
+    assert.equal(taskcluster.utils.parseTime('- 1 month').months, -1);
+    assert.equal(taskcluster.utils.parseTime('- 1 months').months, -1);
+    assert.equal(taskcluster.utils.parseTime('- 1month').months, -1);
+    assert.equal(taskcluster.utils.parseTime('- 1    mo').months, -1);
+    assert.equal(taskcluster.utils.parseTime('  - 1    month   ').months, -1);
+    assert.equal(taskcluster.utils.parseTime('  - 1 months   ').months, -1);
   });
 
   test('parseTime 1 week', function() {
@@ -103,6 +136,17 @@ suite('taskcluster.utils', function() {
     assert.equal(taskcluster.utils.parseTime('2d3h').minutes, 0);
     assert.equal(taskcluster.utils.parseTime('2d0h').hours, 0);
   });
+  test('parseTime -1yr2mo3w4d5h6m7s', function() {
+    assert.equal(taskcluster.utils.parseTime('-1yr2mo3w4d5h6m7s').years, -1);
+    assert.equal(taskcluster.utils.parseTime('-1yr2mo3w4d5h6m7s').months, -2);
+    assert.equal(taskcluster.utils.parseTime('-1yr2mo3w4d5h6m7s').weeks, -3);
+    assert.equal(taskcluster.utils.parseTime('-1yr2mo3w4d5h6m7s').days, -4);
+    assert.equal(taskcluster.utils.parseTime('-1yr2mo3w4d5h6m7s').hours, -5);
+    assert.equal(taskcluster.utils.parseTime('-1yr2mo3w4d5h6m7s').minutes, -6);
+    assert.equal(taskcluster.utils.parseTime('-1yr2mo3w4d5h6m7s').seconds, -7);
+    assert.equal(taskcluster.utils.parseTime('-2d3h').minutes, 0);
+    assert.equal(taskcluster.utils.parseTime('-2d0h').hours, 0);
+  });
 
   test('relativeTime', function() {
     var d1 = new Date();
@@ -134,23 +178,43 @@ suite('taskcluster.utils', function() {
     assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
   });
 
-  test('fromNow(2 years 15)', function() {
+  test('fromNow(2 years 15 months)', function() {
     var d1 = new Date();
     d1.setMonth(d1.getMonth() + 12 * 2 + 15)
     var ts = taskcluster.utils.fromNow('2 years 15mo');
     var d2 = new Date(ts);
 
-    // Allow for 10msy margin
+    // Allow for 10ms margin
     assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
   });
 
-  test('fromNow(2 years 55)', function() {
+  test('fromNow(2 years 55 months)', function() {
     var d1 = new Date();
     d1.setMonth(d1.getMonth() + 12 * 2 + 55)
     var ts = taskcluster.utils.fromNow('2 years 55mo');
     var d2 = new Date(ts);
 
-    // Allow for 10msy margin
+    // Allow for 10ms margin
+    assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+  });
+
+  test('fromNow(240 months)', function() {
+    var d1 = new Date();
+    d1.setFullYear(d1.getFullYear() + 20)
+    var ts = taskcluster.utils.fromNow('240 months');
+    var d2 = new Date(ts);
+
+    // Allow for 10ms margin
+    assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+  });
+
+  test('fromNow(-240 months)', function() {
+    var d1 = new Date();
+    d1.setFullYear(d1.getFullYear() - 20)
+    var ts = taskcluster.utils.fromNow('-240 months');
+    var d2 = new Date(ts);
+
+    // Allow for 10ms margin
     assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
   });
 
@@ -160,7 +224,7 @@ suite('taskcluster.utils', function() {
     var ts = taskcluster.utils.fromNow('20 years');
     var d2 = new Date(ts);
 
-    // Allow for 10msy margin
+    // Allow for 10ms margin
     assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
   });
 });
