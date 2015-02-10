@@ -18,7 +18,7 @@
     "lodash":               "^3.0.0",
     "promise":              "6.1.0",
     "slugid":               "1.0.3",
-    "taskcluster-base":     "taskcluster/taskcluster-base#testing-utils",
+    "taskcluster-base":     "0.7.6",
     "thirty-two":           "0.0.2",
     "url-join":             "0.0.1",
     "uuid":                 "2.0.1",
@@ -28,10 +28,11 @@
   "devDependencies": {
     "superagent":           "0.21.0",
     "superagent-promise":   "0.2.0",
-    "mocha":                "2.1.0",
+    "mocha":                "^2.1.0",
     "xmlbuilder":           "^2.4.6",
     "taskcluster-client":   "^0.19.5",
-    "xml2js":               "0.4.4"
+    "xml2js":               "0.4.4",
+    "expect.js":            "^0.3.1"
   },
   "engines": {
     "node":                 "0.10.x"

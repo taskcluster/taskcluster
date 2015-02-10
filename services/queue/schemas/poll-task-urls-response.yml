@@ -64,5 +64,5 @@ properties:
     type:         string
     format:       date-time
 required:
-  - signedPollTaskUrls
+  - queues
   - expires

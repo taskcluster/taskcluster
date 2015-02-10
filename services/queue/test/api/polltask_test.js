@@ -1,23 +1,21 @@
 suite('Poll tasks', function() {
-  var debug       = require('debug')('test:api:create');
+  var debug       = require('debug')('test:api:poll');
   var assert      = require('assert');
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
-  var helper      = require('./helper')();
+  var taskcluster = require('taskcluster-client');
+  var base        = require('taskcluster-base');
+  var expect      = require('expect.js');
   var request     = require('superagent-promise');
   var xml2js      = require('xml2js');
+  var helper      = require('./helper')();
 
-  test("createTask, pollTaskUrl, getMessage, claimWork", function() {
-    // Create datetime for created and deadline as 3 days later
-    var created = new Date();
-    var deadline = new Date();
-    deadline.setMinutes(new Date().getMinutes() + 3);
-
+  test("pollTaskUrl, getMessage, claimTask, deleteMessage", async () => {
     // Use the same task definition for everything
     var taskDef = {
-      provisionerId:    'my-provisioner',
-      workerType:       'az-queue-test',
+      provisionerId:    'no-provisioner',
+      workerType:       'poll-test-worker',
       schedulerId:      'my-scheduler',
       taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
       // let's just test a large routing key too, 90 chars please :)
@@ -27,8 +25,8 @@ suite('Poll tasks', function() {
                          "--- long routing key ---.--- long routing key ---." +
                          "--- long routing key ---.--- long routing key ---"],
       retries:          5,
-      created:          created.toJSON(),
-      deadline:         deadline.toJSON(),
+      created:          taskcluster.utils.fromNow(),
+      deadline:         taskcluster.utils.fromNow('5 minutes'),
       scopes:           [],
       payload:          {},
       metadata: {
@@ -48,62 +46,71 @@ suite('Poll tasks', function() {
     };
     var taskId = slugid.v4();
 
+    debug("### Create task");
     helper.scopes(
-      'queue:create-task:my-provisioner/az-queue-test',
+      'queue:create-task:no-provisioner/poll-test-worker',
       'queue:route:*'
     );
-    debug("### Create task");
-    return helper.queue.createTask(taskId, taskDef).then(function(result) {
-      helper.scopes(
-        'queue:poll-task-urls',
-        'assume:worker-type:my-provisioner/az-queue-test'
-      );
-      debug("### Access Tasks from azure queue");
-      return helper.queue.pollTaskUrls('my-provisioner', 'az-queue-test');
-    }).then(function(result) {
-      assert(result.signedPollTaskUrls.length > 0, "Missing signedPollTaskUrl");
-      helper.scopes(
-        'queue:claim-task',
-        'assume:worker-type:my-provisioner/az-queue-test',
-        'assume:worker-id:dummy-workers/test-worker'
-      );
-      var i = 0;
-      return helper.poll(function() {
-        debug("### Polling azure queue: %s", i);
-        return request
-        .get(result.signedPollTaskUrls[i++ % result.signedPollTaskUrls.length])
-        .buffer()
-        .end()
-        .then(function(res) {
-          assert(res.ok, "Request failed!");
-          assert(res.text.indexOf('<MessageText>') !== -1,
-                 "Must have a message");
-          return res.text;
-        }).then(function(data) {
-          return new Promise(function(accept, reject) {
-            xml2js.parseString(data, function(err, json) {
-              if (err) {
-                return reject(err);
-              }
-              accept(json);
-            });
-          });
-        }).then(function(data) {
-          assert(data.QueueMessagesList.QueueMessage instanceof Array,
-                 "Expected result");
-          var msg = data.QueueMessagesList.QueueMessage[0];
-          var payload = new Buffer(msg.MessageText[0], 'base64').toString();
-          payload = JSON.parse(payload);
-          assert(taskId === payload.taskId, "Got the wrong taskId");
-          return helper.queue.claimTask(payload.taskId, payload.runId,{
-            workerGroup:      'dummy-workers',
-            workerId:         'test-worker',
-            messageId:        msg.MessageId[0],
-            receipt:          msg.PopReceipt[0],
-            signature:        payload.signature
-          });
+    await helper.queue.createTask(taskId, taskDef)
+
+
+    debug("### Access Tasks from azure queue");
+    helper.scopes(
+      'queue:poll-task-urls',
+      'assume:worker-type:no-provisioner/poll-test-worker'
+    );
+    var r1 = await helper.queue.pollTaskUrls(
+      'no-provisioner', 'poll-test-worker'
+    );
+    expect(r1.queues.length).to.be.greaterThan(0);
+
+
+    helper.scopes(
+      'queue:claim-task',
+      'assume:worker-type:no-provisioner/poll-test-worker',
+      'assume:worker-id:dummy-workers/test-worker'
+    );
+    var i = 0;
+    var queue, msg, payload;
+    // The poll loop retries if there is an error, this is an easy way to write
+    // tests. Don't EVER do this is production code! You could end up with a
+    // loop that just get messages and there by makes them invisible :)
+    await base.testing.poll(async () => {
+      debug("### Polling azure queue: %s", i);
+      queue = r1.queues[i++ % r1.queues.length];
+      var res = await request.get(queue.signedPollUrl).buffer().end();
+      expect(res.ok).to.be.ok();
+
+      // Parse XML
+      var xml = await new Promise((accept, reject) => {
+        xml2js.parseString(res.text, (err, json) => {
+          err ? reject(err) : accept(json)
         });
       });
+
+      // This will cause an error if there is no message, and the poll loop will
+      // repeat, this is appropriate for testing only!
+      expect(xml.QueueMessagesList.QueueMessage).to.be.an('array');
+
+      msg = xml.QueueMessagesList.QueueMessage[0];
+      payload = new Buffer(msg.MessageText[0], 'base64').toString();
+      payload = JSON.parse(payload);
+      debug("payload: %j", payload);
+
+      // again this will skip if we didn't get the taskId we expected
+      expect(payload.taskId).to.be(taskId);
     });
+
+    await helper.queue.claimTask(payload.taskId, payload.runId, {
+      workerGroup:      'dummy-workers',
+      workerId:         'test-worker'
+    });
+
+    debug("### Deleting message from azure");
+    var deleteUrl = queue.signedDeleteUrl
+                         .replace('{{messageId}}', msg.MessageId[0])
+                         .replace('{{popReceipt}}', msg.PopReceipt[0]);
+    var res = await request.del(deleteUrl).end();
+    expect(res.ok).to.be.ok();
   });
 });
