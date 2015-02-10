@@ -3,7 +3,7 @@
 // Regular expression matching:
 // A years B months C days D hours E minutes F seconds
 var timeExp = new RegExp([
-  '^',
+  '^(\\s*(-|\\+))?',
   '(\\s*(\\d+)\\s*y((ears?)|r)?)?',
   '(\\s*(\\d+)\\s*mo(nths?)?)?',
   '(\\s*(\\d+)\\s*w((eeks?)|k)?)?',
@@ -22,15 +22,17 @@ var parseTime = function(str) {
   if (!match) {
     throw new Error("String: '" + str + "' isn't a time expression");
   }
+  // Negate if needed
+  var neg = (match[2] === '-' ? - 1 : 1);
   // Return parsed values
   return {
-    years:    parseInt(match[2]   || 0),
-    months:   parseInt(match[6]   || 0),
-    weeks:    parseInt(match[9]   || 0),
-    days:     parseInt(match[13]  || 0),
-    hours:    parseInt(match[16]  || 0),
-    minutes:  parseInt(match[20]  || 0),
-    seconds:  parseInt(match[24]  || 0)
+    years:    parseInt(match[4]   || 0) * neg,
+    months:   parseInt(match[8]   || 0) * neg,
+    weeks:    parseInt(match[11]  || 0) * neg,
+    days:     parseInt(match[15]  || 0) * neg,
+    hours:    parseInt(match[18]  || 0) * neg,
+    minutes:  parseInt(match[22]  || 0) * neg,
+    seconds:  parseInt(match[26]  || 0) * neg
   };
 };
 
@@ -56,12 +58,10 @@ var relativeTime = function(offset, reference) {
     + offset.minutes               * 60 * 1000
     + offset.seconds                    * 1000
   );
-  if (offset.months > 0) {
-    var months = offset.months + retval.getMonth()
-    offset.years += Math.floor(months / 12);
-    retval.setMonth(months % 12);
+  if (offset.months !== 0) {
+    retval.setMonth(retval.getMonth() + offset.months);
   }
-  if (offset.years > 0) {
+  if (offset.years !== 0) {
     retval.setFullYear(retval.getFullYear() + offset.years);
   }
   return retval;
