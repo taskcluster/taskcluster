@@ -144,7 +144,7 @@ exports.createClient = function(reference) {
       // Validate number of arguments
       if (args.length != nb_args) {
         throw new Error("Function " + entry.name + " takes " + nb_args +
-                        "arguments, but was given " + args.length +
+                        " arguments, but was given " + args.length +
                         " arguments");
       }
       // Substitute parameters into route
