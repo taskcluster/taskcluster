@@ -4,19 +4,16 @@ suite('Create task (w. defaults)', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
+  var taskcluster = require('taskcluster-client');
+  var expect      = require('expect.js');
   var helper      = require('./helper')();
-
-  // Create datetime for created and deadline as 3 days later
-  var created = new Date();
-  var deadline = new Date();
-  deadline.setDate(created.getDate() + 3);
 
   // Use the same task definition for everything
   var taskDef = {
-    provisionerId:    'my-provisioner',
-    workerType:       'my-worker',
-    created:          created.toJSON(),
-    deadline:         deadline.toJSON(),
+    provisionerId:    'no-provisioner',
+    workerType:       'test-worker',
+    created:          taskcluster.utils.fromNow(),
+    deadline:         taskcluster.utils.fromNow('3 days'),
     payload:          {},
     metadata: {
       name:           "Unit testing task",
@@ -26,38 +23,31 @@ suite('Create task (w. defaults)', function() {
     }
   };
 
-  test("All possible defaults", function() {
+  test("All possible defaults", async () => {
     var taskId = slugid.v4();
 
     helper.scopes(
-      'queue:create-task:my-provisioner/my-worker'
+      'queue:create-task:no-provisioner/test-worker'
     );
-    return Promise.all([
-      helper.events.listenFor('is-defined',  helper.queueEvents.taskDefined({
-        taskId:   taskId
-      })),
-      helper.events.listenFor('is-pending',  helper.queueEvents.taskPending({
-        taskId:   taskId
-      }))
-    ]).then(function() {
-      return helper.queue.createTask(taskId, taskDef);
-    }).then(function(result) {
-      return helper.events.waitFor('is-defined').then(function(message) {
-        assert(_.isEqual(result.status, message.payload.status),
-               "Message and result should have the same status");
-      }).then(function() {
-        return helper.events.waitFor('is-pending').then(function(message) {
-          assert(_.isEqual(result.status, message.payload.status),
-                 "Message and result should have the same status");
-          return helper.queue.status(taskId);
-        }).then(function(result2) {
-          assert(_.isEqual(result.status, result2.status),
-                 "Task status shouldn't have changed");
-        });
-      });
-    }).then(null, function(err) {
-      debug("Got unexpected error: %s", err, err.stack);
-      throw err;
-    });
+    await helper.events.listenFor('is-defined', helper.queueEvents.taskDefined({
+      //taskId:   taskId
+    }));
+    await helper.events.listenFor('is-pending', helper.queueEvents.taskPending({
+      taskId:   taskId
+    }));
+
+    debug("### Creating task");
+    var r1 = await helper.queue.createTask(taskId, taskDef);
+
+    debug("### Listening for task-defined");
+    var m1 = await helper.events.waitFor('is-defined');
+    expect(r1.status).to.be.eql(m1.payload.status);
+
+    // Wait for task-pending message
+    var m2 = await helper.events.waitFor('is-pending');
+    expect(m2.payload.status).to.be.eql(m2.payload.status);
+
+    var r2 = await helper.queue.status(taskId);
+    expect(r1.status).to.be.eql(r2.status);
   });
 });

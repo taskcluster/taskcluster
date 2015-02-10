@@ -32,31 +32,6 @@ module.exports = function(options) {
   // Create helper
   var helper = {};
 
-  // Return a promise that sleeps for `delay` ms before resolving
-  helper.sleep = function(delay) {
-    return new Promise(function(accept) {
-      setTimeout(accept, delay);
-    });
-  };
-
-  /** Poll a function that returns a promise, until it resolves */
-  helper.poll = function(doPoll, attempts, interval) {
-    attempts = attempts || 90;
-    interval = interval || 1000;
-    var pollAgain = function() {
-      return doPoll().catch(function(err) {
-        if (attempts > 0) {
-          attempts -= 1;
-          return helper.sleep(interval).then(function() {
-            return pollAgain();
-          });
-        }
-        throw err;
-      });
-    };
-    return pollAgain();
-  };
-
   // Load configuration
   var cfg = helper.cfg = base.config({
     defaults:     require('../../config/defaults'),
@@ -82,7 +57,8 @@ module.exports = function(options) {
 
   // Configure PulseTestReceiver
   helper.events = new base.testing.PulseTestReceiver(cfg.get('pulse'), mocha);
-
+  helper.listenFor = helper.events.listenFor.bind(helper.events);
+  helper.waitFor = helper.events.waitFor.bind(helper.events);
 
   // Hold reference to mockAuthServer
   var mockAuthServer = null;
@@ -92,7 +68,7 @@ module.exports = function(options) {
   setup(async function() {
     // Create mock authentication server
     mockAuthServer = await base.testing.createMockAuthServer({
-      port:     60007, // This is hardcoded into config/test.js
+      port:     60407, // This is hardcoded into config/test.js
       clients:  defaultClients
     });
 

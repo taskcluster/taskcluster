@@ -6,10 +6,6 @@ suite("Ping test", function() {
   var Promise     = require('promise');
   var helper      = require('./helper')();
 
-  test("ping", () => {
-    return helper.queue.ping();
-  });
-
   test("ping (async)", async () => {
     await helper.queue.ping();
   });

@@ -267,7 +267,7 @@ api.declare({
     var putUrl = await this.privateBucket.createPutUrl(
       artifact.details.prefix, {
       contentType:      artifact.contentType,
-      expires;          30 * 60 + 10 // Add 10 sec for clock drift
+      expires:          30 * 60 + 10 // Add 10 sec for clock drift
     });
     return res.reply({
       storageType:  's3',

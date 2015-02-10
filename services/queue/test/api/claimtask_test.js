@@ -4,23 +4,21 @@ suite('Claim task', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
+  var taskcluster = require('taskcluster-client');
+  var base        = require('taskcluster-base');
+  var expect      = require('expect.js');
   var helper      = require('./helper')();
-
-  // Create datetime for created and deadline as 3 days later
-  var created = new Date();
-  var deadline = new Date();
-  deadline.setDate(created.getDate() + 3);
 
   // Use the same task definition for everything
   var taskDef = {
-    provisionerId:    'my-provisioner',
-    workerType:       'my-worker',
+    provisionerId:    'no-provisioner',
+    workerType:       'test-worker',
     schedulerId:      'my-scheduler',
     taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
     routes:           [],
     retries:          5,
-    created:          created.toJSON(),
-    deadline:         deadline.toJSON(),
+    created:          taskcluster.utils.fromNow(),
+    deadline:         taskcluster.utils.fromNow('3 days'),
     scopes:           [],
     payload:          {},
     metadata: {
@@ -34,149 +32,122 @@ suite('Claim task', function() {
     }
   };
 
-  test("can claimTask", function() {
+  test("can claimTask", async () => {
     var taskId = slugid.v4();
-
-    var firstTakenUntil = new Date();
 
     debug("### Start listening for task running message");
-    return helper.events.listenFor('running', helper.queueEvents.taskRunning({
+    await helper.events.listenFor('running', helper.queueEvents.taskRunning({
       taskId:   taskId
-    })).then(function() {
-      debug("### Creating task");
-      return helper.queue.createTask(taskId, taskDef);
-    }).then(function() {
-      // Reduce scopes available to test minimum set of scopes required
-      helper.scopes(
-        'queue:claim-task',
-        'assume:worker-type:my-provisioner/my-worker',
-        'assume:worker-id:my-worker-group/my-worker'
-      );
-      // First runId is always 0, so we should be able to claim it here
-      return helper.queue.claimTask(taskId, 0, {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker'
-      });
-    }).then(function(result) {
-      debug("### Waiting for task running message");
-      return helper.events.waitFor('running').then(function(message) {
-        assert(firstTakenUntil < new Date(result.takenUntil),
-               "takenUntil must in the future");
-        firstTakenUntil = new Date(result.takenUntil);
-        assert(_.isEqual(result.status, message.payload.status),
-               "Message and result should have the same status");
-        return helper.queue.status(taskId);
-      }).then(function(result2) {
-        assert(_.isEqual(result.status, result2.status),
-               "Task status shouldn't have changed");
-      });
-    }).then(function() {
-      return helper.sleep(1000);
-    }).then(function() {
-      // Again we talking about the first run, so runId must still be 0
-      return helper.queue.reclaimTask(taskId, 0);
-    }).then(function(result) {
-      assert(firstTakenUntil < new Date(result.takenUntil),
-             "takenUntil must have been updated");
+    }));
+
+    debug("### Creating task");
+    await helper.queue.createTask(taskId, taskDef);
+
+    debug("### Claim task");
+    // Reduce scopes available to test minimum set of scopes required
+    helper.scopes(
+      'queue:claim-task',
+      'assume:worker-type:no-provisioner/test-worker',
+      'assume:worker-id:my-worker-group/my-worker'
+    );
+    // First runId is always 0, so we should be able to claim it here
+    var r1 = await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+    var takenUntil = new Date(r1.takenUntil);
+    expect(new Date().getTime()).to.be.lessThan(takenUntil.getTime());
+
+    debug("### Waiting for task running message");
+    var m1 = await helper.events.waitFor('running');
+    expect(m1.payload.status).to.be.eql(r1.status);
+
+    debug("### Fetch task status");
+    var r2 = await helper.queue.status(taskId);
+    expect(r2.status).to.be.eql(r1.status);
+
+    await base.testing.sleep(100);
+
+    // Again we talking about the first run, so runId must still be 0
+    var r3 = await helper.queue.reclaimTask(taskId, 0);
+    var takenUntil2 = new Date(r3.takenUntil);
+    expect(takenUntil2.getTime()).to.be.greaterThan(takenUntil.getTime());
+  });
+
+
+  test("claimTask is idempotent", async () => {
+    var taskId = slugid.v4();
+    await helper.queue.createTask(taskId, taskDef);
+    // First runId is always 0, so we should be able to claim it here
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker2'
+    }).then(() => {
+      expect().fail("This request should have failed");
+    }, (err) => {
+      debug("Got error as expected: %j", err, err);
     });
   });
 
 
-  test("claimTask is idempotent", function() {
+  test("claimTask requires scopes", async () => {
     var taskId = slugid.v4();
-    return helper.queue.createTask(taskId, taskDef).then(function() {
-      // First runId is always 0, so we should be able to claim it here
-      return helper.queue.claimTask(taskId, 0, {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker'
-      });
-    }).then(function() {
-      return helper.queue.claimTask(taskId, 0, {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker'
-      });
-    }).then(function() {
-      return helper.queue.claimTask(taskId, 0, {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker2'
-      }).then(function() {
-        assert(false, "This request should have failed");
-      }, function(err) {
-        debug("Got error as expected: %j", err, err);
-      });
-    });
-  });
 
-  test("can claimWork", function() {
-    var taskId = slugid.v4();
-    // Create datetime for created and deadline as 3 days later
-    var created = new Date();
-    var deadline = new Date();
-    deadline.setDate(created.getDate() + 3);
-    return helper.queue.createTask(taskId, taskDef).then(function() {
-      // Reduce scopes available to test minimum set of scopes required
-      helper.scopes(
-        'queue:claim-task',
-        'assume:worker-type:my-provisioner/my-worker',
-        'assume:worker-id:my-worker-group/my-worker'
-      );
-      // First runId is always 0, so we should be able to claim it here
-      return helper.queue.claimWork('my-provisioner', 'my-worker', {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker'
-      });
-    }).then(function(result) {
-      assert(result.status.taskId === taskId, "Expected to get taskId");
-    });
-  });
+    await helper.queue.createTask(taskId, taskDef);
 
-  test("claimTask requires scopes", function() {
-    var taskId = slugid.v4();
-    return helper.queue.createTask(taskId, taskDef).then(function() {
-      // leave out a required scope
-      helper.scopes(
-        'assume:worker-type:my-provisioner/my-worker',
-        'assume:worker-id:my-worker-group/my-worker'
-      );
-      // First runId is always 0, so we should be able to claim it here
-      return helper.queue.claimTask(taskId, 0, {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker'
-      }).then(function() {
-        assert(false, "Expected an authentication error");
-      }, function(err) {
-        debug("Got expected authentiation error: %s", err);
-      });
-    }).then(function() {
-      // leave out a required scope
-      helper.scopes(
-        'queue:claim-task',
-        'assume:worker-id:my-worker-group/my-worker'
-      );
-      // First runId is always 0, so we should be able to claim it here
-      return helper.queue.claimTask(taskId, 0, {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker'
-      }).then(function() {
-        assert(false, "Expected an authentication error");
-      }, function(err) {
-        debug("Got expected authentiation error: %s", err);
-      });
-    }).then(function() {
-      // leave out a required scope
-      helper.scopes(
-        'queue:claim-task',
-        'assume:worker-type:my-provisioner/my-worker'
-      );
-      // First runId is always 0, so we should be able to claim it here
-      return helper.queue.claimTask(taskId, 0, {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker'
-      }).then(function() {
-        assert(false, "Expected an authentication error");
-      }, function(err) {
-        debug("Got expected authentiation error: %s", err);
-      });
+    // leave out a required scope
+    helper.scopes(
+      'assume:worker-type:no-provisioner/test-worker',
+      'assume:worker-id:my-worker-group/my-worker'
+    );
+    // First runId is always 0, so we should be able to claim it here
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    }).then(() => {
+      expect().fail("Expected an authentication error");
+    }, (err) => {
+      debug("Got expected authentiation error: %s", err);
+    });
+
+    // leave out a required scope
+    helper.scopes(
+      'queue:claim-task',
+      'assume:worker-id:my-worker-group/my-worker'
+    );
+    // First runId is always 0, so we should be able to claim it here
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    }).then(() => {
+      expect().fail("Expected an authentication error");
+    }, (err)  => {
+      debug("Got expected authentiation error: %s", err);
+    });
+
+    // leave out a required scope
+    helper.scopes(
+      'queue:claim-task',
+      'assume:worker-type:no-provisioner/test-worker'
+    );
+    // First runId is always 0, so we should be able to claim it here
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    }).then(() => {
+      expect().fail("Expected an authentication error");
+    }, (err) => {
+      debug("Got expected authentiation error: %s", err);
     });
   });
 });

@@ -87,7 +87,9 @@ var launch = async function(profile) {
     prefix:           cfg.get('queue:queuePrefix'),
     credentials:      cfg.get('azure'),
     signatureSecret:  cfg.get('queue:signatureSecret'),
-    deadlineQueue:    cfg.get('queue:deadlineQueue')
+    claimQueue:       cfg.get('queue:claimQueue'),
+    deadlineQueue:    cfg.get('queue:deadlineQueue'),
+    deadlineDelay:    cfg.get('queue:deadlineDelay')
   });
 
   // When: publisher, validator and containers are created, proceed
