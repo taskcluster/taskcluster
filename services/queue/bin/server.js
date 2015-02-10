@@ -137,7 +137,10 @@ var launch = async function(profile) {
       publisher:      publisher,
       validator:      validator,
       claimTimeout:   cfg.get('queue:claimTimeout'),
-      queueService:   queueService
+      queueService:   queueService,
+      blobStore:      artifactStore,
+      publicBucket:   publicArtifactBucket,
+      privateBucket:  privateArtifactBucket
     },
     validator:        validator,
     authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
