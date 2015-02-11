@@ -1,5 +1,11 @@
 # taskcluster-client.go
+<img hspace="20" align="left" src="https://tools.taskcluster.net/lib/assets/taskcluster-120.png" />
+[![Build Status](https://secure.travis-ci.org/petemoore/taskcluster-client-go.png)](http://travis-ci.org/petemoore/taskcluster-client-go)
+
 A go (golang) port of taskcluster-client
+
+
+
 
 To see the client in action, try something like this:
 
