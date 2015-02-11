@@ -1,5 +1,5 @@
 var Promise   = require('promise');
-var debug     = require('debug')('routes:api:v1');
+var debug     = require('debug')('routes:v1');
 var slugid    = require('slugid');
 var assert    = require('assert');
 var _         = require('lodash');
@@ -748,7 +748,7 @@ api.declare({
   // If creating a new one, then reset retriesLeft
   await task.modify((task) => {
     // Don't modify if there already is an active run
-    var state = task.state();
+    var state = (_.last(task.runs) || {state: 'unscheduled'}).state;
     if (state === 'pending' || state === 'running') {
       return;
     }
@@ -786,19 +786,20 @@ api.declare({
 
   // Put message in appropriate azure queue, and publish message to pulse,
   // if the initial run is pending
+  var status = task.status();
   if (state === 'pending') {
     var runId = task.runs.length - 1;
     await Promise.all([
       this.queueService.putPendingMessage(task, runId),
       this.publisher.taskPending({
-        status:         task.status(),
+        status:         status,
         runId:          runId
       }, task.routes)
     ]);
   }
 
   return res.reply({
-    status:     task.status()
+    status:     status
   });
 });
 
@@ -867,8 +868,8 @@ api.declare({
 
   // Modify the task
   await task.modify(async (task) => {
-    var state = task.state();
     var run   = _.last(task.runs);
+    var state = (run || {state: 'unscheduled'}).state;
 
     // If we have a pending task or running task, we cancel the ongoing run
     if (state === 'pending' || state === 'running') {
@@ -883,14 +884,18 @@ api.declare({
     // in that the run doesn't have a `started` time, nor a `workerGroup` or
     // `workerId`.
     if (state === 'unscheduled') {
+      var now = new Date().toJSON();
       task.runs.push({
         state:            'exception',
         reasonCreated:    'scheduled',
         reasonResolved:   'canceled',
-        scheduled:        new Date().toJSON(),
-        resolved:         new Date().toJSON()
+        scheduled:        now,
+        resolved:         now
       });
     }
+
+    // Clear takenUntil
+    task.takenUntil = new Date(0);
   });
 
   // Get the last run, there should always be one
