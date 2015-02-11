@@ -1,72 +1,50 @@
 suite('Query tasks', function() {
-  var debug       = require('debug')('test:api:create');
+  var debug       = require('debug')('test:api:query');
   var assert      = require('assert');
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
+  var base        = require('taskcluster-base');
+  var taskcluster = require('taskcluster-client');
+  var expect      = require('expect.js');
   var helper      = require('./helper')();
 
-  // Create datetime for created and deadline as 3 days later
-  var created = new Date();
-  var deadline = new Date();
-  deadline.setDate(created.getDate() + 3);
+  test("pendingTasks", async () => {
+    var taskDef = {
+      provisionerId:    'no-provisioner',
+      workerType:       'query-test-worker',
+      schedulerId:      'my-scheduler',
+      taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
+      routes:           [],
+      retries:          5,
+      created:          taskcluster.utils.fromNow(),
+      deadline:         taskcluster.utils.fromNow('2 minutes'),
+      scopes:           [],
+      payload:          {},
+      metadata: {
+        name:           "Unit testing task",
+        description:    "Task created during unit tests",
+        owner:          'jonsafj@mozilla.com',
+        source:         'https://github.com/taskcluster/taskcluster-queue'
+      },
+      tags: {
+        purpose:        'taskcluster-testing'
+      }
+    };
 
-  // Use the same task definition for everything
-  var taskDef = {
-    provisionerId:    'my-provisioner',
-    workerType:       'my-worker',
-    schedulerId:      'my-scheduler',
-    taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
-    routes:           [],
-    retries:          5,
-    created:          created.toJSON(),
-    deadline:         deadline.toJSON(),
-    scopes:           [],
-    payload:          {},
-    metadata: {
-      name:           "Unit testing task",
-      description:    "Task created during unit tests",
-      owner:          'jonsafj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue'
-    },
-    tags: {
-      purpose:        'taskcluster-testing'
-    }
-  };
-
-  test("getPendingTasks", function() {
     var taskId1 = slugid.v4();
     var taskId2 = slugid.v4();
-    return helper.queue.createTask(taskId1, taskDef).then(function() {
-      return helper.queue.createTask(taskId2, taskDef);
-    }).then(function() {
-      return helper.queue.getPendingTasks('my-provisioner');
-    }).then(function(result) {
-      assert(result.tasks.length == 2, "Expected two tasks");
-    });
-  });
 
-  test("pendingTaskCount", function() {
-    var taskId1 = slugid.v4();
-    var taskId2 = slugid.v4();
-    return helper.queue.createTask(taskId1, taskDef).then(function() {
-      return helper.queue.createTask(taskId2, taskDef);
-    }).then(function() {
-      return helper.queue.pendingTaskCount('my-provisioner');
-    }).then(function(result) {
-      assert(result['my-worker'] === 2, "Expected two tasks from my-worker");
-    });
-  });
+    debug("### Create tasks");
+    await Promise.all([
+      helper.queue.createTask(taskId1, taskDef),
+      helper.queue.createTask(taskId2, taskDef)
+    ])
 
-  test("pendingTasks", function() {
-    var taskId1 = slugid.v4();
-    var taskId2 = slugid.v4();
-    return helper.queue.createTask(taskId1, taskDef).then(function() {
-      return helper.queue.createTask(taskId2, taskDef);
-    }).then(function() {
-      return helper.queue.pendingTasks('my-provisioner', 'my-worker');
-    }).then(function(result) {
-      assert(result === 2, "Expected two tasks from my-worker");
-    });
+    var r1 = await helper.queue.pendingTasks(
+      'no-provisioner',
+      'query-test-worker'
+    );
+    expect(r1.pendingTasks).to.be.greaterThan(1);
   });
 });

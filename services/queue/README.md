@@ -72,6 +72,10 @@ Notice that messages printed containing the substring `[alert-operator]` should
 be monitored by the maintainer. It's recommended that an email alert it setup
 to alert the maintainer of these messages.
 
+Messages labeled `[not-a-bug]` should not be confused with errors or bugs. It's
+simply special conditions that can arise. Sometimes they can be useful to
+diagnose unrelated bugs.
+
 
 AWS Access Policies Required
 ----------------------------
