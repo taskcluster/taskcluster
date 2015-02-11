@@ -29,12 +29,6 @@ type (
 )
 
 func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {
-	// not sure if we need to regenerate this with each call, will leave in here for now...
-	credentials := &hawk.Credentials{
-		ID:   auth.ClientId,
-		Key:  auth.AccessToken,
-		Hash: sha256.New,
-	}
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
 		panic(err)
@@ -48,8 +42,17 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	if err != nil {
 		panic(err)
 	}
-	reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
-	httpRequest.Header.Set("Authorization", reqAuth)
+	// only authenticate if client library user wishes to
+	if auth.Authenticate {
+		// not sure if we need to regenerate this with each call, will leave in here for now...
+		credentials := &hawk.Credentials{
+			ID:   auth.ClientId,
+			Key:  auth.AccessToken,
+			Hash: sha256.New,
+		}
+		reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
+		httpRequest.Header.Set("Authorization", reqAuth)
+	}
 	httpRequest.Header.Set("Content-Type", "application/json")
 	httpClient := &http.Client{}
 	// fmt.Println("Request\n=======")
