@@ -57,6 +57,24 @@ suite("Entity (modify)", function() {
     });
   });
 
+  test("Item.create, Item.modify, throw error", function() {
+    var id = slugid.v4();
+    var err = new Error("Testing that errors in modify works");
+    return Item.create({
+      id:     id,
+      name:   'my-test-item',
+      count:  1
+    }).then(function(item) {
+      return item.modify(function() {
+        throw err;
+      });
+    }).then(function() {
+      assert(false, "Expected an error");
+    }, function(err2) {
+      assert(err === err2, "Expected the error I threw!");
+    });
+  });
+
   test("Item.create, Item.modify (first argument), Item.load", function() {
     var id = slugid.v4();
     return Item.create({
