@@ -124,8 +124,9 @@ class QueueService {
   }
 
   /** Enqueue message to become visible when claim has expired */
-  async putClaimMessage(taskId, takenUntil) {
+  async putClaimMessage(taskId, runId, takenUntil) {
     assert(taskId,                      "taskId must be given");
+    assert(typeof(runId) === 'number',  "runId must be a number");
     assert(takenUntil instanceof Date,  "takenUntil must be a date");
     assert(isFinite(takenUntil),        "takenUntil must be a valid date");
 
@@ -133,6 +134,7 @@ class QueueService {
     return new Promise((accept, reject) => {
       this.service.createMessage(this.claimQueue, JSON.stringify({
         taskId:             taskId,
+        runId:              runId,
         takenUntil:         takenUntil.toJSON()
       }), {
         ttl:                7 * 24 * 60 * 60,
@@ -168,6 +170,7 @@ class QueueService {
    * [
    *   {
    *     taskId:      '<taskId>',     // Task to check
+   *     runId:       <runId>,        // runId to expire claim on
    *     takenUntil:  [Date object],  // claim-expiration when submitted
    *     remove:      function() {},  // Delete message call when handled
    *   },
@@ -195,6 +198,7 @@ class QueueService {
       var payload = JSON.parse(message.messagetext);
       return {
         taskId:     payload.taskId,
+        runId:      payload.runId,
         takenUntil: new Date(payload.takenUntil),
         remove:     () => {
           return new Promise((accept, reject) => {
