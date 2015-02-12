@@ -1,4 +1,4 @@
-suite('Create task (w. defaults)', function() {
+suite('Retry tasks (claim-expired)', function() {
   var debug       = require('debug')('test:api:retry');
   var assert      = require('assert');
   var slugid      = require('slugid');
