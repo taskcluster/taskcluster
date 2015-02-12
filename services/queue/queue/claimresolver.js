@@ -77,7 +77,10 @@ class ClaimResolver {
       loops.push(this.poll());
     }
     // Create promise that we're done looping
-    this.done = Promise.all(loops).then(() => {
+    this.done = Promise.all(loops).catch((err) => {
+      debug("Error: %s, as JSON: %j", err, err, err.stack);
+      throw err;
+    }).then(() => {
       this.done = null;
     });
   }
@@ -92,9 +95,15 @@ class ClaimResolver {
   async poll() {
     while(!this.stopping) {
       var messages = await this.queueService.pollClaimQueue();
+      debug("Fetched %s messages", messages.length);
 
       await Promise.all(messages.map((message) => {
-        this.handleMessage(message);
+        // Don't let a single task error break the loop, it'll be retried later
+        // as we don't remove message unless they are handled
+        return this.handleMessage(message).catch((err) => {
+          debug("[alert-operator] Failed to handle message: %j" +
+                ", with err: %s, as JSON: %j", message, err, err, err.stack);
+        });
       }));
 
       if(messages.length === 0 && !this.stopping) {
