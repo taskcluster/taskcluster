@@ -79,7 +79,7 @@ module.exports = function(options) {
   };
   // Allow tests to start deadline-reaper
   helper.deadlineReaper = async () => {
-    var reaper = bin.deadlineReaper(testProfile);
+    var reaper = await bin.deadlineReaper(testProfile);
     toTerminate.push(reaper);
     return reaper;
   };

@@ -74,7 +74,10 @@ class DeadlineResolver {
       loops.push(this.poll());
     }
     // Create promise that we're done looping
-    this.done = Promise.all(loops).then(() => {
+    this.done = Promise.all(loops).catch((err) => {
+      debug("Error: %s, as JSON: %j", err, err, err.stack);
+      throw err;
+    }).then(() => {
       this.done = null;
     });
   }
@@ -89,9 +92,15 @@ class DeadlineResolver {
   async poll() {
     while(!this.stopping) {
       var messages = await this.queueService.pollDeadlineQueue();
+      debug("Fetched %s messages", messages.length);
 
       await Promise.all(messages.map((message) => {
-        this.handleMessage(message);
+        // Don't let a single task error break the loop, it'll be retried later
+        // as we don't remove message unless they are handled
+        return this.handleMessage(message).catch((err) => {
+          debug("[alert-operator] Failed to handle message: %j" +
+                ", with err: %s, as JSON: %j", message, err, err, err.stack);
+        });
       }));
 
       if(messages.length === 0 && !this.stopping) {
@@ -151,9 +160,17 @@ class DeadlineResolver {
 
       task.runs.forEach((run, runId) => {
         // don't modify resolved runs
-        if (_.includes(RESOLVED_STATES, task.state())) {
+        if (_.includes(RESOLVED_STATES, run.state)) {
           return;
         }
+
+        // If a run that isn't the last run is unresolved, it violates an
+        // invariant and we shall log and error...
+        if (task.runs.length - 1 !== runId) {
+          debug("[alert-operator] runId: %s, isn't the last of %s, but " +
+                "isn't resolved. run info: %j", runId, taskId, run);
+        }
+
         // Resolve run as deadline-exceeded
         run.state           = 'exception';
         run.reasonResolved  = 'deadline-exceeded';
@@ -164,20 +181,15 @@ class DeadlineResolver {
       task.takenUntil       = new Date(0);
     });
 
-    // Publish messages about runs that was resolved here
-    var n = task.runs.length;
-    for(var i = 0; i < n; i++) {
-      var run = task.runs[i];
-      // Skip runs that wasn't resolved 'deadline-exceeded'
-      if (run.reasonResolved  !== 'deadline-exceeded' ||
-          run.state           !== 'exception') {
-        continue;
-      }
+    // Publish messages about the last run if it was resolved here
+    var run = _.last(task.runs);
+    if (run.reasonResolved  === 'deadline-exceeded' ||
+        run.state           === 'exception') {
       debug("Resolved taskId: %s, by deadline", taskId);
       await this.publisher.taskException({
         status:   task.status(),
-        runId:    i
-      });
+        runId:    task.runs.length - 1
+      }, task.routes);
     }
 
     return remove();
