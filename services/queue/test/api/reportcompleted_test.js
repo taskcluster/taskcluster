@@ -16,7 +16,7 @@ suite('Report task completed', function() {
     schedulerId:      'my-scheduler',
     taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
     routes:           [],
-    retries:          5,
+    retries:          1,
     created:          taskcluster.utils.fromNow(),
     deadline:         taskcluster.utils.fromNow('3 days'),
     scopes:           [],
@@ -113,11 +113,11 @@ suite('Report task completed', function() {
     var allowedToFailNow = false;
     var gotMessage = null;
 
-    await helper.events.listenFor('failed', helper.queueEvents.taskFailed({
+    await helper.events.listenFor('except', helper.queueEvents.taskException({
       taskId:   taskId
     }));
 
-    var gotMessage = helper.events.waitFor('failed').then((message) => {
+    var gotMessage = helper.events.waitFor('except').then((message) => {
       assert(allowedToFailNow, "Failed at wrong time");
       return message;
     });
@@ -143,7 +143,7 @@ suite('Report task completed', function() {
     });
 
     var m1 = await gotMessage;
-    expect(m1.payload.status.runs[0].state).to.be('failed');
+    expect(m1.payload.status.runs[0].state).to.be('exception');
 
     debug("### Reporting task exception (again)");
     await helper.queue.reportException(taskId, 0, {
@@ -153,15 +153,15 @@ suite('Report task completed', function() {
 
   test("create, claim and reportEception, retry (is idempotent)", async () => {
     var taskId = slugid.v4();
-    var allowedToFailNow = false;
+    var allowedToBeException = false;
     var gotMessage = null;
 
-    await helper.events.listenFor('failed', helper.queueEvents.taskFailed({
+    await helper.events.listenFor('except', helper.queueEvents.taskException({
       taskId:   taskId
     }));
 
-    var gotMessage = helper.events.waitFor('failed').then((message) => {
-      assert(allowedToFailNow, "Failed at wrong time");
+    var gotMessage = helper.events.waitFor('except').then((message) => {
+      assert(allowedToBeException, "Exception at wrong time");
       return message;
     });
 
@@ -180,30 +180,40 @@ suite('Report task completed', function() {
     }));
 
     debug("### Reporting task exception (worker-shutdown)");
-    allowedToFailNow = true;
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group/my-worker'
     );
+    var r1 = await helper.queue.reportException(taskId, 0, {
+      reason:     'worker-shutdown'
+    });
+    expect(r1.status.runs.length).to.be(2);
+    expect(r1.status.runs[0].state).to.be('exception');
+    expect(r1.status.runs[1].state).to.be('pending');
     await helper.queue.reportException(taskId, 0, {
+      reason:     'worker-shutdown'
+    });
+
+    var m1 = await helper.events.waitFor('pending');
+    expect(m1.payload.status).to.be.eql(r1.status);
+    expect(m1.payload.runId).to.be(1);
+
+    helper.scopes();
+    await helper.queue.claimTask(taskId, 1, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    debug("### Reporting task exception (again)");
+    allowedToBeException = true;
+    await helper.queue.reportException(taskId, 1, {
       reason:     'worker-shutdown'
     });
 
     var m1 = await gotMessage;
-    expect(m1.payload.status.runs[0].state).to.be('failed');
-
-    debug("### Reporting task exception (again)");
-    await helper.queue.reportException(taskId, 0, {
-      reason:     'worker-shutdown'
-    });
-
-    var m2 = await helper.events.waitFor('failed');
-    expect(m2.payload.runId).to.be(2);
-    expect(m2.payload.status.runs.length).to.be(2);
-    expect(m2.payload.status.runs[0].state).to.be('exception');
-    expect(m2.payload.status.runs[1].state).to.be('pending');
+    expect(m1.payload.status.runs[1].state).to.be('exception');
+    expect(m1.payload.status.runs.length).to.be(2);
   });
-
 
   test("create, claim and complete (with bad scopes)", async () => {
     var taskId = slugid.v4();

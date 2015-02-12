@@ -9,7 +9,9 @@ var taskcluster     = require('taskcluster-client');
 var mocha           = require('mocha');
 var bin = {
   server:             require('../../bin/server'),
-  expireArtifacts:    require('../../bin/expire-artifacts')
+  expireArtifacts:    require('../../bin/expire-artifacts'),
+  claimReaper:        require('../../bin/claim-reaper'),
+  deadlineReaper:     require('../../bin/deadline-reaper')
 };
 
 // Some default clients for the mockAuthServer
@@ -66,6 +68,22 @@ module.exports = function(options) {
     return bin.expireArtifacts(testProfile);
   };
 
+  // Process to terminate
+  var toTerminate = [];
+
+  // Allow tests to start claim-reaper
+  helper.claimReaper = async () => {
+    var reaper = await bin.claimReaper(testProfile);
+    toTerminate.push(reaper);
+    return reaper;
+  };
+  // Allow tests to start deadline-reaper
+  helper.deadlineReaper = async () => {
+    var reaper = bin.deadlineReaper(testProfile);
+    toTerminate.push(reaper);
+    return reaper;
+  };
+
   // Hold reference to authServer
   var authServer = null;
   var webServer = null;
@@ -109,6 +127,10 @@ module.exports = function(options) {
 
   // Shutdown server
   teardown(async function() {
+    await Promise.all(toTerminate.map((proc) => {
+      return proc.terminate();
+    }));
+    toTerminate = [];
     // Kill webServer
     await webServer.terminate();
     await authServer.terminate();
