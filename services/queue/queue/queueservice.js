@@ -151,6 +151,8 @@ class QueueService {
 
     await this.ensureDeadlineQueue();
     var delay = Math.floor(this.deadlineDelay / 1000);
+    debug("Put deadline message to be visible in %s seconds",
+           secondsTo(deadline) + delay);
     return new Promise((accept, reject) => {
       this.service.createMessage(this.deadlineQueue, JSON.stringify({
         taskId:             taskId,
