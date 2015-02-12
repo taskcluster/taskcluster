@@ -145,9 +145,9 @@ class ClaimResolver {
     await task.modify((task) => {
       var run = task.runs[runId];
       if (!run) {
-        // The run really should exist, if not that's really weird; though not
-        // really much we can do about that... Log it and alert operator
-        debug("[alert-operator] runId: %s does exists on taskId: %s, but " +
+        // The run might not have been created, if the claimTask operation
+        // failed
+        debug("[not-a-bug] runId: %s does exists on taskId: %s, but " +
               "deadline message has arrived", runId, taskId);
         return;
       }
@@ -156,8 +156,7 @@ class ClaimResolver {
       // done. Notice that unlike condition above, we're racing in the
       // task.modify modifier so reloads can happen if there is concurrency!
       // Hence, takenUntil being update is both valid and plausible.
-      if (task.runs.length - 1 !== runId ||
-          run.state !== 'running' ||
+      if (run.state !== 'running' ||
           new Date(run.takenUntil).getTime() !== takenUntil.getTime()) {
         return;
       }
@@ -167,8 +166,15 @@ class ClaimResolver {
       run.reasonResolved  = 'claim-expired';
       run.resolved        = new Date().toJSON();
 
-      // Clear takenUntil on task
-      task.takenUntil     = new Date(0);
+      // Do **NOT** clear takenUntil on task, as this will prevent the message
+      // from running again. In case something below fails.
+
+      // If the run isn't the last run, then something is very wrong
+      if (task.runs.length - 1 !== runId) {
+        debug("[alert-operator] running runId: %s, resolved exception, " +
+              "but it wasn't the last run! taskId: ", runId, taskId);
+        return;
+      }
 
       // Add retry, if we have retries left
       if (task.retriesLeft > 0) {
@@ -185,22 +191,15 @@ class ClaimResolver {
     var run = task.runs[runId];
 
     // If run isn't resolved to exception with 'claim-expired', we had
-    // concurrency and we're done
+    // concurrency and we're done.
     if (!run ||
         task.runs.length - 1  > runId + 1 ||
         run.state             !== 'exception' ||
         run.reasonResolved    !== 'claim-expired') {
-      return;
+      return remove();
     }
 
-    // Publish message
     var status = task.status();
-    await this.publisher.taskException({
-      status:       status,
-      runId:        runId,
-      workerGroup:  run.workerGroup,
-      workerId:     run.workerId
-    }, task.routes);
 
     // If a newRun was created and it is a retry with state pending then we
     // better publish messages about it
@@ -216,12 +215,20 @@ class ClaimResolver {
           runId:          runId + 1
         }, task.routes)
       ]);
+    } else {
+      // Publish message about task exception
+      await this.publisher.taskException({
+        status:       status,
+        runId:        runId,
+        workerGroup:  run.workerGroup,
+        workerId:     run.workerId
+      }, task.routes);
     }
 
     return remove();
   }
 };
 
-// Export DeadlineResolver
-module.exports = DeadlineResolver;
+// Export ClaimResolver
+module.exports = ClaimResolver;
 

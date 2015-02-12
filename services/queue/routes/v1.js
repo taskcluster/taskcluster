@@ -32,9 +32,9 @@ var MAX_RUNS_ALLOWED    = 50;
  *        `{taskId, runId}` in a _workerType_ specific queue.
  *
  *  ii)   For any `running` task there is at least one message with payload
- *        `{taskId, takenUntil}` in the queue for claim expiration, such that
- *        the message becomes visible after the claim on the current run has
- *        expired.
+ *        `{taskId, runId, takenUntil}` in the queue for claim expiration,
+ *        such that the message becomes visible after the claim on the
+ *        current run has expired.
  *
  *  iii)  For any unresolved task there is at least one message with payload
  *        `{taskId, deadline}` in the queue for deadline resolution, such that
@@ -1028,7 +1028,7 @@ api.declare({
     return;
   }
 
-  // Set takenUntil to now + 20 min
+  // Set takenUntil to now + claimTimeout
   var takenUntil = new Date();
   takenUntil.setSeconds(takenUntil.getSeconds() + this.claimTimeout);
 
@@ -1044,7 +1044,7 @@ api.declare({
     // Put claim-expiration message in queue, if not already done, remember
     // that the modifier given to task.modify may be called more than once!
     if (!msgPut) {
-      await this.queueService.putClaimMessage(taskId, takenUntil);
+      await this.queueService.putClaimMessage(taskId, runId, takenUntil);
       msgPut = true;
     }
 
@@ -1154,7 +1154,7 @@ api.declare({
     return;
   }
 
-  // Set takenUntil to now + 20 min
+  // Set takenUntil to now + claimTimeout
   var takenUntil = new Date();
   takenUntil.setSeconds(takenUntil.getSeconds() + this.claimTimeout);
 
@@ -1176,7 +1176,7 @@ api.declare({
     // Put claim-expiration message in queue, if not already done, remember
     // that the modifier given to task.modify may be called more than once!
     if (!msgPut) {
-      await this.queueService.putClaimMessage(taskId, takenUntil);
+      await this.queueService.putClaimMessage(taskId, runId, takenUntil);
       msgPut = true;
     }
 
@@ -1464,13 +1464,7 @@ api.declare({
     });
   }
 
-  // Publish message
-  await this.publisher.taskException({
-    status:       task.status(),
-    runId:        runId,
-    workerGroup:  run.workerGroup,
-    workerId:     run.workerId
-  }, task.routes);
+  var status = task.status();
 
   // If a newRun was created and it is a retry with state pending then we better
   // publish messages about it
@@ -1482,15 +1476,23 @@ api.declare({
     await Promise.all([
       this.queueService.putPendingMessage(task, runId),
       this.publisher.taskPending({
-        status:         task.status(),
+        status:         status,
         runId:          runId + 1
       }, task.routes)
     ]);
+  } else {
+    // Publish message about taskException
+    await this.publisher.taskException({
+      status:       status,
+      runId:        runId,
+      workerGroup:  run.workerGroup,
+      workerId:     run.workerId
+    }, task.routes);
   }
 
   // Reply to caller
   return res.reply({
-    status:   task.status()
+    status:   status
   });
 });
 

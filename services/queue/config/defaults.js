@@ -40,7 +40,25 @@ module.exports = {
     deadlineQueue:                'deadline-queue',
 
     // Number of ms before deadline expiration message arrives, past deadline
-    deadlineDelay:                15 * 60 * 1000
+    deadlineDelay:                15 * 60 * 1000,
+
+    // Configuration for deadline-reaper
+    deadline: {
+      // Number of ms to sleep after polling from an empty queue
+      pollingDelay:               4 * 1000,
+      // Number of event loops to run in parallel, each taking up to 32 message
+      // in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
+      parallelism:                4
+    },
+
+    // Configuration for claim-reaper
+    claim: {
+      // Number of ms to sleep after polling from an empty queue
+      pollingDelay:               4 * 1000,
+      // Number of event loops to run in parallel, each taking up to 32 message
+      // in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
+      parallelism:                4
+    }
   },
 
   // TaskCluster configuration
