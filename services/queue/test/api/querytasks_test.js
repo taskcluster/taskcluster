@@ -7,7 +7,7 @@ suite('Query tasks', function() {
   var base        = require('taskcluster-base');
   var taskcluster = require('taskcluster-client');
   var expect      = require('expect.js');
-  var helper      = require('./helper')();
+  var helper      = require('./helper');
 
   test("pendingTasks", async () => {
     var taskDef = {

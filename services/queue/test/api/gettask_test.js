@@ -6,7 +6,7 @@ suite('Get task', function() {
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var expect      = require('expect.js');
-  var helper      = require('./helper')();
+  var helper      = require('./helper');
 
   var taskDef = {
     provisionerId:    'no-provisioner',
