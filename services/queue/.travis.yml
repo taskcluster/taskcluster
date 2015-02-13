@@ -1,9 +1,10 @@
-env:
+  env:
   global:
-  - DEBUG='* -superagent -express:* -base:validator -mocha:*'
+  - DEBUG='* -superagent -express:* -mocha:* -6to5'
 language: node_js
 node_js:
 - '0.10'
+- '0.12'
 script: npm test
 before_script:
 - sudo -u postgres psql -c "CREATE ROLE queue LOGIN PASSWORD 'secret'";
