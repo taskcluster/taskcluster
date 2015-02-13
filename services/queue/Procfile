@@ -1,2 +1,5 @@
-web:              ./node_modules/.bin/6to5-node bin/server.js            production
-expireArtifacts:  ./node_modules/.bin/6to5-node bin/expire-artifacts.js  production
+web:              npm run start
+claimReaper:      npm run claim-reaper
+deadlineReaper:   npm run deadline-reaper
+expireArtifacts:  npm run expire-artifacts
+expireTask:       npm run expire-tasks

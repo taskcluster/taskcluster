@@ -69,6 +69,10 @@ var launch = async function(profile) {
   debug("Expiring tasks at: %s, from before %s", new Date(), now);
   var count = await Task.expire(now);
   debug("Expired %s tasks", count);
+
+  // Stop recording statistics and send any stats that we have
+  base.stats.stopProcessUsageReporting();
+  return influx.close();
 };
 
 // If expire-tasks.js is executed run launch
@@ -81,7 +85,9 @@ if (!module.parent) {
   }
   // Launch with given profile
   launch(profile).then(function() {
-    debug("Launched expire-tasks successfully");
+    debug("Expired tasks successfully");
+    // Close the process we're done now
+    process.exit(0);
   }).catch(function(err) {
     debug("Failed to start expire-tasks, err: %s, as JSON: %j",
           err, err, err.stack);

@@ -98,6 +98,10 @@ var launch = async function(profile) {
   debug("Expiring artifacts at: %s, from before %s", new Date(), now);
   var count = await Artifact.expire(now);
   debug("Expired %s artifacts", count);
+
+  // Stop recording statistics and send any stats that we have
+  base.stats.stopProcessUsageReporting();
+  return influx.close();
 };
 
 // If expire-artifacts.js is executed run launch
@@ -110,7 +114,9 @@ if (!module.parent) {
   }
   // Launch with given profile
   launch(profile).then(function() {
-    debug("Launched expire-artifacts successfully");
+    debug("Expired artifacts successfully");
+    // Close the process we're done now
+    process.exit(0);
   }).catch(function(err) {
     debug("Failed to start expire-artifacts, err: %s, as JSON: %j",
           err, err, err.stack);
