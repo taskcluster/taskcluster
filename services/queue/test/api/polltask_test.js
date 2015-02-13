@@ -9,7 +9,7 @@ suite('Poll tasks', function() {
   var expect      = require('expect.js');
   var request     = require('superagent-promise');
   var xml2js      = require('xml2js');
-  var helper      = require('./helper')();
+  var helper      = require('./helper');
 
   test("pollTaskUrl, getMessage, claimTask, deleteMessage", async () => {
     // Use the same task definition for everything
@@ -110,7 +110,11 @@ suite('Poll tasks', function() {
     var deleteUrl = queue.signedDeleteUrl
                          .replace('{{messageId}}', msg.MessageId[0])
                          .replace('{{popReceipt}}', msg.PopReceipt[0]);
-    var res = await request.del(deleteUrl).end();
-    expect(res.ok).to.be.ok();
+    await base.testing.poll(async () => {
+      var res = await request.del(deleteUrl).buffer().end();
+      if (!res.ok) {
+        throw new Error("error deleting message: %s", res.text);
+      }
+    }, 20, 500);
   });
 });
