@@ -111,6 +111,23 @@ Task.prototype.hasClaim = function() {
   return this.claim && this.claim.messageId && this.claim.receipt;
 };
 
+/**
+ * Expire tasks that are past their expiration.
+ *
+ * Returns a promise that all expired tasks have been deleted
+ */
+Task.expire = async function(now) {
+  assert(now instanceof Date, "now must be given as option");
+  var count = 0;
+  await base.Entity.scan.call(this, {
+    expires:          base.Entity.op.lessThan(now)
+  }, {
+    limit:            250, // max number of concurrent delete operations
+    handler:          (task) => { count++; return task.remove(true); }
+  });
+  return count;
+};
+
 // Export Task
 exports.Task = Task;
 
@@ -229,14 +246,14 @@ Artifact.prototype.remove = function(ignoreError) {
  *
  * Returns a promise that all expired artifacts have been deleted
  */
-Artifact.expireArtifacts = async function(now) {
+Artifact.expire = async function(now) {
   assert(now instanceof Date, "now must be given as option");
   var count = 0;
   await base.Entity.scan.call(this, {
     expires:          base.Entity.op.lessThan(now)
   }, {
     limit:            250, // max number of concurrent delete operations
-    handler:          function(item) { count++; return item.remove(true); }
+    handler:          (item) => { count++; return item.remove(true); }
   });
   return count;
 };
