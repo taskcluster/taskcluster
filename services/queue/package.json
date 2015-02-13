@@ -23,7 +23,8 @@
     "url-join":             "0.0.1",
     "uuid":                 "2.0.1",
     "xml2js":               "^0.4.4",
-    "6to5":                 "^3.1.1"
+    "6to5":                 "^3.6.0",
+    "kexec":                "^1.2.0"
   },
   "devDependencies": {
     "superagent":           "0.21.0",
