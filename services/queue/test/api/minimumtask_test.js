@@ -6,7 +6,7 @@ suite('Create task (w. defaults)', function() {
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var expect      = require('expect.js');
-  var helper      = require('./helper')();
+  var helper      = require('./helper');
 
   // Use the same task definition for everything
   var taskDef = {

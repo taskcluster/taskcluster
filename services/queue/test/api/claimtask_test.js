@@ -7,7 +7,7 @@ suite('Claim task', function() {
   var taskcluster = require('taskcluster-client');
   var base        = require('taskcluster-base');
   var expect      = require('expect.js');
-  var helper      = require('./helper')();
+  var helper      = require('./helper');
 
   // Use the same task definition for everything
   var taskDef = {

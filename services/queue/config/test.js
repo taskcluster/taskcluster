@@ -14,7 +14,9 @@ module.exports = {
     // Positive, means we expire artifacts 4 days ahead of time, useful for
     // testing. In production this should be "- x hours" or so...
     artifactExpirationDelay:      '4 days',
-
+    // Positive, means that expire tasks 4 days ahead of time, useful for
+    // testing. In production this should be "- x hours" or so...
+    taskExpirationDelay:          '4 days',
     deadline: {
       pollingDelay:               250,
       parallelism:                1

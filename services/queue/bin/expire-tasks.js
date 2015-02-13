@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var debug       = require('debug')('queue:bin:expire-artifacts');
+var debug       = require('debug')('queue:bin:expire-tasks');
 var base        = require('taskcluster-base');
 var path        = require('path');
 var Promise     = require('promise');
@@ -10,7 +10,7 @@ var data        = require('../queue/data');
 var taskcluster = require('taskcluster-client');
 var assert      = require('assert');
 
-/** Launch expire-artifacts */
+/** Launch expire-tasks */
 var launch = async function(profile) {
   debug("Launching with profile: %s", profile);
 
@@ -45,76 +45,47 @@ var launch = async function(profile) {
   base.stats.startProcessUsageReporting({
     drain:      influx,
     component:  cfg.get('queue:statsComponent'),
-    process:    'expire-artifacts'
+    process:    'expire-tasks'
   });
 
-  // Create artifact bucket instances
-  var publicArtifactBucket = new Bucket({
-    bucket:             cfg.get('queue:publicArtifactBucket'),
-    credentials:        cfg.get('aws')
-  });
-  var privateArtifactBucket = new Bucket({
-    bucket:             cfg.get('queue:privateArtifactBucket'),
-    credentials:        cfg.get('aws')
-  });
-
-  // Create artifactStore
-  var artifactStore = new BlobStore({
-    container:          cfg.get('queue:artifactContainer'),
+  // Create tasks table
+  var Task = data.Task.setup({
+    table:              cfg.get('queue:taskTableName'),
     credentials:        cfg.get('azure')
   });
 
-  // Create artifacts table
-  var Artifact = data.Artifact.setup({
-    table:              cfg.get('queue:artifactTableName'),
-    credentials:        cfg.get('azure'),
-    context: {
-      blobStore:        artifactStore,
-      publicBucket:     publicArtifactBucket,
-      privateBucket:    privateArtifactBucket
-    }
-  });
-
   debug("Waiting for resources to be created");
-  await Promise.all([
-    (async () => {
-      await artifactStore.createContainer();
-      await artifactStore.setupCORS();
-    })(),
-    Artifact.ensureTable(),
-    publicArtifactBucket.setupCORS(),
-    privateArtifactBucket.setupCORS()
-  ]);
+  await Task.ensureTable();
 
   // Notify parent process, so that this worker can run using LocalApp
   base.app.notifyLocalAppInParentProcess();
 
-  // Find an artifact expiration delay
-  var delay = cfg.get('queue:artifactExpirationDelay');
+  // Find an task expiration delay
+  var delay = cfg.get('queue:taskExpirationDelay');
   var now   = taskcluster.utils.relativeTime(delay);
   assert(!_.isNaN(now), "Can't have NaN as now");
 
-  // Expire artifacts using delay
-  debug("Expiring artifacts at: %s, from before %s", new Date(), now);
-  var count = await Artifact.expire(now);
-  debug("Expired %s artifacts", count);
+  // Expire tasks using delay
+  debug("Expiring tasks at: %s, from before %s", new Date(), now);
+  var count = await Task.expire(now);
+  debug("Expired %s tasks", count);
 };
 
-// If expire-artifacts.js is executed run launch
+// If expire-tasks.js is executed run launch
 if (!module.parent) {
   // Find configuration profile
   var profile = process.argv[2];
   if (!profile) {
-    console.log("Usage: expire-artifacts.js [profile]")
+    console.log("Usage: expire-tasks.js [profile]")
     console.error("ERROR: No configuration profile is provided");
   }
   // Launch with given profile
   launch(profile).then(function() {
-    debug("Launched expire-artifacts successfully");
+    debug("Launched expire-tasks successfully");
   }).catch(function(err) {
-    debug("Failed to start expire-artifacts, err: %s, as JSON: %j",
+    debug("Failed to start expire-tasks, err: %s, as JSON: %j",
           err, err, err.stack);
-    // If we didn't launch the expire-artifacts we should crash
+    // If we didn't launch the expire-tasks we should crash
     process.exit(1);
   });
 }
