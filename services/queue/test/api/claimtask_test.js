@@ -51,12 +51,16 @@ suite('Claim task', function() {
       'assume:worker-id:my-worker-group/my-worker'
     );
     // First runId is always 0, so we should be able to claim it here
+    var before = new Date();
     var r1 = await helper.queue.claimTask(taskId, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker'
     });
     var takenUntil = new Date(r1.takenUntil);
-    expect(new Date().getTime()).to.be.lessThan(takenUntil.getTime());
+    // Compare to time before the request, because claimTimeout is very small
+    // so we can only count on takenUntil being larger than or equal to the
+    // time before the request was made
+    expect(takenUntil.getTime()).to.be.greaterThan(before.getTime() - 1);
 
     debug("### Waiting for task running message");
     var m1 = await helper.events.waitFor('running');
@@ -71,7 +75,7 @@ suite('Claim task', function() {
     // Again we talking about the first run, so runId must still be 0
     var r3 = await helper.queue.reclaimTask(taskId, 0);
     var takenUntil2 = new Date(r3.takenUntil);
-    expect(takenUntil2.getTime()).to.be.greaterThan(takenUntil.getTime());
+    expect(takenUntil2.getTime()).to.be.greaterThan(takenUntil.getTime() - 1);
   });
 
 
