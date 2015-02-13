@@ -2,9 +2,13 @@
   "name": "taskcluster-queue",
   "version": "1.0.0",
   "private": true,
-  "main": "node bin/server.js production",
   "scripts": {
-    "test": "./test/runtests.sh"
+    "start":                "6to5-node -r bin/server.js           $PROFILE",
+    "claim-reaper":         "6to5-node -r bin/claim-reaper.js     $PROFILE",
+    "deadline-reaper":      "6to5-node -r bin/deadline-reaper.js  $PROFILE",
+    "expire-tasks":         "6to5-node -r bin/expire-tasks.js     $PROFILE",
+    "expire-artifacts":     "6to5-node -r bin/expire-artifacts.js $PROFILE",
+    "test":                 "./test/runtests.sh"
   },
   "repository": {
     "type": "git",
