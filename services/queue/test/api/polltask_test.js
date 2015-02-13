@@ -108,12 +108,13 @@ suite('Poll tasks', function() {
 
     debug("### Deleting message from azure");
     var deleteUrl = queue.signedDeleteUrl
-                         .replace('{{messageId}}', msg.MessageId[0])
-                         .replace('{{popReceipt}}', msg.PopReceipt[0]);
+     .replace('{{messageId}}', encodeURIComponent(msg.MessageId[0]))
+     .replace('{{popReceipt}}', encodeURIComponent(msg.PopReceipt[0]));
     await base.testing.poll(async () => {
       var res = await request.del(deleteUrl).buffer().end();
       if (!res.ok) {
-        throw new Error("error deleting message: %s", res.text);
+        throw new Error("error deleting message: " + res.text + " deleteUrl: " +
+                        deleteUrl);
       }
     }, 20, 500);
   });

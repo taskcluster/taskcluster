@@ -1,4 +1,4 @@
-  env:
+env:
   global:
   - DEBUG='* -superagent -express:* -mocha:* -6to5'
 language: node_js
