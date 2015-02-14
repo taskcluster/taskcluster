@@ -9,6 +9,7 @@ module.exports = {
   // Image used to  create the taskcluster proxy container.
   taskclusterProxyImage: 'taskcluster/proxy',
   taskclusterLogImage: 'taskcluster/logserve',
+  testdroidProxyImage: 'quay.io/mozilla/testdroid-proxy:0.0.3',
 
   alivenessCheckInterval: 30000, // 30 seconds
 
@@ -79,6 +80,12 @@ module.exports = {
   statsd: {
     prefix: process.env.STATSD_PREFIX || '',
     url: process.env.STATSD_URL || 'tcp://localhost:8125'
+  },
+
+  testdroid: {
+    url:      process.env.TESTDROID_URL,
+    username: process.env.TESTDROID_USERNAME,
+    password: process.env.TESTDROID_PASSWORD
   },
 
   dockerWorkerPrivateKey: '/etc/docker-worker-priv.pem'

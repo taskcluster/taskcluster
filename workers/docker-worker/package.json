@@ -45,8 +45,8 @@
     "openpgp": "0.8.1",
     "promise": "^5.0.0",
     "proxy": "^0.2.3",
-    "rimraf": "^2.2.8",
     "readdirrsync": "0.0.3",
+    "rimraf": "^2.2.8",
     "statsd-client": "0.0.15",
     "superagent": "^0.18.0",
     "superagent-promise": "^0.1.1",
@@ -60,8 +60,8 @@
     "wordwrap": "0.0.2"
   },
   "devDependencies": {
-    "aws-sdk": "^2.0.7",
-    "aws-sdk-promise": "0.0.0",
+    "aws-sdk": "^2.1.5",
+    "aws-sdk-promise": "0.0.2",
     "cli-color": "^0.3.2",
     "co-fs": "^1.2.0",
     "co-prompt": "^1.0.0",

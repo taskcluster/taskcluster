@@ -36,6 +36,14 @@ module.exports = {
     description: 'Location of private RSA key for docker-worker'
   },
 
+  'vpnProfileLocation': {
+    description: 'Location of testdroid openvpn profile'
+  },
+
+  'vpnCredentialsLocation': {
+    description: 'Location of testdroid vpn credentials file'
+  },
+
   'taskcluster.clientId': {
     description: 'Taskcluster client id',
     value: process.env.TASKCLUSTER_CLIENT_ID
@@ -44,6 +52,21 @@ module.exports = {
   'taskcluster.accessToken': {
     description: 'Taskcluster access token',
     value: process.env.TASKCLUSTER_ACCESS_TOKEN
+  },
+
+  'testdroid.url': {
+    description: 'Testdroid Cloud url',
+    value: process.env.TESTDROID_URL
+  },
+
+  'testdroid.username': {
+    description: 'Testdroid Cloud username',
+    value: process.env.TESTDROID_USERNAME
+  },
+
+  'testdroid.password': {
+    description: 'Testdroid Cloud password',
+    value: process.env.TESTDROID_password
   },
 
   'statsd.prefix': {

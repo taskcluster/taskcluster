@@ -44,6 +44,12 @@ module.exports = {
     defaults: false,
     module: require('./features/taskcluster_proxy')
   },
+  testdroidProxy: {
+    title: 'Testdroid proxy service',
+    description: '',
+    defaults: false,
+    module: require('./features/testdroid_proxy')
+  },
 
   artifacts: {
     title: 'Artifact uploads',

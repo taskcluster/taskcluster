@@ -12,5 +12,11 @@
   "pulse": {
     "username": "{{pulse.username}}",
     "password": "{{pulse.password}}"
+  },
+
+  "testdroid": {
+    "url": "{{testdroid.url}}",
+    "username": "{{testdroid.username}}",
+    "password": "{{testdroid.password}}"
   }
 }
