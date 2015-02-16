@@ -18,10 +18,14 @@ JS_CLIENT_BRANCH=master
 APIS_JSON=$(PWD)/taskcluster/apis.json
 APIS_JS_HREF=https://raw.githubusercontent.com/taskcluster/taskcluster-client/$(JS_CLIENT_BRANCH)/lib/apis.js
 
-.PHONY: apis.json
-update-api:
+.PHONY: update-api
+update-api: $(VENV)/bin/python
 	API_REF_OUT="$(APIS_JSON)" $(VENV)/bin/python fetchApi.py
 	@python -mjson.tool $(APIS_JSON) > /dev/null || echo "apis.json cannot be parsed by python's JSON"
+
+.PHONY: update-readme
+update-readme: $(VENV)/bin/python
+	README_FILE=README.md APIS_JSON=$(APIS_JSON) $(VENV)/bin/python genDocs.py
 
 $(VENV)/bin/python:
 	[ -d $(VENV) ] || $(PYTHON) -m virtualenv $(VENV) || virtualenv $(VENV)
