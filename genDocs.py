@@ -65,6 +65,7 @@ if __name__ == '__main__':
   for i in range(0, len(lines)):
     if lines[i] == startDocs:
       outLines.extend(lines[0:i])
+      outLines.append('')
       outLines.extend(docs)
       foundExisting = True
     elif lines[i] == endDocs:
