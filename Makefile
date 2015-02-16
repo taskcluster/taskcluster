@@ -19,10 +19,9 @@ APIS_JSON=$(PWD)/taskcluster/apis.json
 APIS_JS_HREF=https://raw.githubusercontent.com/taskcluster/taskcluster-client/$(JS_CLIENT_BRANCH)/lib/apis.js
 
 .PHONY: apis.json
-update-api: $(NODE_BIN)
-	@echo Downloading $(APIS_JS_HREF)
-	curl -L -o $(NODE_SRC)/apis.js $(APIS_JS_HREF)
-	OUTPUT=$(APIS_JSON) $(NODE_BIN) $(NODE_SRC)/translateApis.js
+update-api:
+	API_REF_OUT="$(APIS_JSON)" $(VENV)/bin/python fetchApi.py
+	# Probably not needed because we're generating the JSON now, but doesn't hurt so left in
 	@python -mjson.tool $(APIS_JSON) > /dev/null || echo "apis.json cannot be parsed by python's JSON"
 
 $(VENV)/bin/python:
