@@ -81,15 +81,20 @@ in [PyHawk PR 27](https://github.com/mozilla/PyHawk/pull/27).
 import taskcluster
 index = taskcluster.Index(options)
 ```
- * `index.findTask(namespace) -> result`
- * `index.findTask(namespace='value') -> result`
- * `index.listNamespaces(namespace, payload) -> result`
- * `index.listNamespaces(payload, namespace='value') -> result`
- * `index.listTasks(namespace, payload) -> result`
- * `index.listTasks(payload, namespace='value') -> result`
- * `index.insertTask(namespace, payload) -> result`
- * `index.insertTask(payload, namespace='value') -> result`
- * `index.ping() -> None`
+ * Find Indexed Task
+  * `index.findTask(namespace) -> result`
+  * `index.findTask(namespace='value') -> result`
+ * List Namespaces
+  * `index.listNamespaces(namespace, payload) -> result`
+  * `index.listNamespaces(payload, namespace='value') -> result`
+ * List Tasks
+  * `index.listTasks(namespace, payload) -> result`
+  * `index.listTasks(payload, namespace='value') -> result`
+ * Insert Task into Index
+  * `index.insertTask(namespace, payload) -> result`
+  * `index.insertTask(payload, namespace='value') -> result`
+ * Ping Server
+  * `index.ping() -> None`
 
 
 
@@ -99,24 +104,34 @@ index = taskcluster.Index(options)
 import taskcluster
 auth = taskcluster.Auth(options)
 ```
- * `auth.scopes(clientId) -> result`
- * `auth.scopes(clientId='value') -> result`
- * `auth.getCredentials(clientId) -> result`
- * `auth.getCredentials(clientId='value') -> result`
- * `auth.client(clientId) -> result`
- * `auth.client(clientId='value') -> result`
- * `auth.createClient(clientId, payload) -> result`
- * `auth.createClient(payload, clientId='value') -> result`
- * `auth.modifyClient(clientId, payload) -> result`
- * `auth.modifyClient(payload, clientId='value') -> result`
- * `auth.removeClient(clientId) -> None`
- * `auth.removeClient(clientId='value') -> None`
- * `auth.resetCredentials(clientId) -> result`
- * `auth.resetCredentials(clientId='value') -> result`
- * `auth.listClients() -> result`
- * `auth.azureTableSAS(account, table) -> result`
- * `auth.azureTableSAS(account='value', table='value') -> result`
- * `auth.ping() -> None`
+ * Get Client Authorized Scopes
+  * `auth.scopes(clientId) -> result`
+  * `auth.scopes(clientId='value') -> result`
+ * Get Client Credentials
+  * `auth.getCredentials(clientId) -> result`
+  * `auth.getCredentials(clientId='value') -> result`
+ * Get Client Information
+  * `auth.client(clientId) -> result`
+  * `auth.client(clientId='value') -> result`
+ * Create Client
+  * `auth.createClient(clientId, payload) -> result`
+  * `auth.createClient(payload, clientId='value') -> result`
+ * Modify Client
+  * `auth.modifyClient(clientId, payload) -> result`
+  * `auth.modifyClient(payload, clientId='value') -> result`
+ * Remove Client
+  * `auth.removeClient(clientId) -> None`
+  * `auth.removeClient(clientId='value') -> None`
+ * Reset Client Credentials
+  * `auth.resetCredentials(clientId) -> result`
+  * `auth.resetCredentials(clientId='value') -> result`
+ * List Clients
+  * `auth.listClients() -> result`
+ * Get Shared-Access-Signature for Azure Table
+  * `auth.azureTableSAS(account, table) -> result`
+  * `auth.azureTableSAS(account='value', table='value') -> result`
+ * Ping Server
+  * `auth.ping() -> None`
 
 
 
@@ -126,49 +141,71 @@ auth = taskcluster.Auth(options)
 import taskcluster
 queue = taskcluster.Queue(options)
 ```
- * `queue.createTask(taskId, payload) -> result`
- * `queue.createTask(payload, taskId='value') -> result`
- * `queue.getTask(taskId) -> result`
- * `queue.getTask(taskId='value') -> result`
- * `queue.defineTask(taskId, payload) -> result`
- * `queue.defineTask(payload, taskId='value') -> result`
- * `queue.scheduleTask(taskId) -> result`
- * `queue.scheduleTask(taskId='value') -> result`
- * `queue.status(taskId) -> result`
- * `queue.status(taskId='value') -> result`
- * `queue.pollTaskUrls(provisionerId, workerType) -> result`
- * `queue.pollTaskUrls(provisionerId='value', workerType='value') -> result`
- * `queue.claimTask(taskId, runId, payload) -> result`
- * `queue.claimTask(payload, taskId='value', runId='value') -> result`
- * `queue.reclaimTask(taskId, runId) -> result`
- * `queue.reclaimTask(taskId='value', runId='value') -> result`
- * `queue.claimWork(provisionerId, workerType, payload) -> result`
- * `queue.claimWork(payload, provisionerId='value', workerType='value') -> result`
- * `queue.reportCompleted(taskId, runId, payload) -> result`
- * `queue.reportCompleted(payload, taskId='value', runId='value') -> result`
- * `queue.reportFailed(taskId, runId) -> result`
- * `queue.reportFailed(taskId='value', runId='value') -> result`
- * `queue.reportException(taskId, runId, payload) -> result`
- * `queue.reportException(payload, taskId='value', runId='value') -> result`
- * `queue.rerunTask(taskId) -> result`
- * `queue.rerunTask(taskId='value') -> result`
- * `queue.createArtifact(taskId, runId, name, payload) -> result`
- * `queue.createArtifact(payload, taskId='value', runId='value', name='value') -> result`
- * `queue.getArtifact(taskId, runId, name) -> None`
- * `queue.getArtifact(taskId='value', runId='value', name='value') -> None`
- * `queue.getLatestArtifact(taskId, name) -> None`
- * `queue.getLatestArtifact(taskId='value', name='value') -> None`
- * `queue.listArtifacts(taskId, runId) -> result`
- * `queue.listArtifacts(taskId='value', runId='value') -> result`
- * `queue.listLatestArtifacts(taskId) -> result`
- * `queue.listLatestArtifacts(taskId='value') -> result`
- * `queue.getPendingTasks(provisionerId) -> None`
- * `queue.getPendingTasks(provisionerId='value') -> None`
- * `queue.pendingTaskCount(provisionerId) -> None`
- * `queue.pendingTaskCount(provisionerId='value') -> None`
- * `queue.pendingTasks(provisionerId, workerType) -> None`
- * `queue.pendingTasks(provisionerId='value', workerType='value') -> None`
- * `queue.ping() -> None`
+ * Create New Task
+  * `queue.createTask(taskId, payload) -> result`
+  * `queue.createTask(payload, taskId='value') -> result`
+ * Fetch Task
+  * `queue.getTask(taskId) -> result`
+  * `queue.getTask(taskId='value') -> result`
+ * Define Task
+  * `queue.defineTask(taskId, payload) -> result`
+  * `queue.defineTask(payload, taskId='value') -> result`
+ * Schedule Defined Task
+  * `queue.scheduleTask(taskId) -> result`
+  * `queue.scheduleTask(taskId='value') -> result`
+ * Get task status
+  * `queue.status(taskId) -> result`
+  * `queue.status(taskId='value') -> result`
+ * Get Urls to Poll Pending Tasks
+  * `queue.pollTaskUrls(provisionerId, workerType) -> result`
+  * `queue.pollTaskUrls(provisionerId='value', workerType='value') -> result`
+ * Claim task
+  * `queue.claimTask(taskId, runId, payload) -> result`
+  * `queue.claimTask(payload, taskId='value', runId='value') -> result`
+ * Reclaim task
+  * `queue.reclaimTask(taskId, runId) -> result`
+  * `queue.reclaimTask(taskId='value', runId='value') -> result`
+ * Claim work for a worker
+  * `queue.claimWork(provisionerId, workerType, payload) -> result`
+  * `queue.claimWork(payload, provisionerId='value', workerType='value') -> result`
+ * Report Run Completed
+  * `queue.reportCompleted(taskId, runId, payload) -> result`
+  * `queue.reportCompleted(payload, taskId='value', runId='value') -> result`
+ * Report Run Failed
+  * `queue.reportFailed(taskId, runId) -> result`
+  * `queue.reportFailed(taskId='value', runId='value') -> result`
+ * Report Task Exception
+  * `queue.reportException(taskId, runId, payload) -> result`
+  * `queue.reportException(payload, taskId='value', runId='value') -> result`
+ * Rerun a Resolved Task
+  * `queue.rerunTask(taskId) -> result`
+  * `queue.rerunTask(taskId='value') -> result`
+ * Create Artifact
+  * `queue.createArtifact(taskId, runId, name, payload) -> result`
+  * `queue.createArtifact(payload, taskId='value', runId='value', name='value') -> result`
+ * Get Artifact from Run
+  * `queue.getArtifact(taskId, runId, name) -> None`
+  * `queue.getArtifact(taskId='value', runId='value', name='value') -> None`
+ * Get Artifact from Latest Run
+  * `queue.getLatestArtifact(taskId, name) -> None`
+  * `queue.getLatestArtifact(taskId='value', name='value') -> None`
+ * Get Artifacts from Run
+  * `queue.listArtifacts(taskId, runId) -> result`
+  * `queue.listArtifacts(taskId='value', runId='value') -> result`
+ * Get Artifacts from Latest Run
+  * `queue.listLatestArtifacts(taskId) -> result`
+  * `queue.listLatestArtifacts(taskId='value') -> result`
+ * Fetch pending tasks for provisioner
+  * `queue.getPendingTasks(provisionerId) -> None`
+  * `queue.getPendingTasks(provisionerId='value') -> None`
+ * Get Number of Pending Tasks
+  * `queue.pendingTaskCount(provisionerId) -> None`
+  * `queue.pendingTaskCount(provisionerId='value') -> None`
+ * Get Number of Pending Tasks
+  * `queue.pendingTasks(provisionerId, workerType) -> None`
+  * `queue.pendingTasks(provisionerId='value', workerType='value') -> None`
+ * Ping Server
+  * `queue.ping() -> None`
 
 
 
@@ -187,19 +224,26 @@ queueEvents = taskcluster.QueueEvents(options)
 import taskcluster
 scheduler = taskcluster.Scheduler(options)
 ```
- * `scheduler.createTaskGraph(taskGraphId, payload) -> result`
- * `scheduler.createTaskGraph(payload, taskGraphId='value') -> result`
- * `scheduler.extendTaskGraph(taskGraphId, payload) -> result`
- * `scheduler.extendTaskGraph(payload, taskGraphId='value') -> result`
- * `scheduler.status(taskGraphId) -> result`
- * `scheduler.status(taskGraphId='value') -> result`
- * `scheduler.info(taskGraphId) -> result`
- * `scheduler.info(taskGraphId='value') -> result`
- * `scheduler.inspect(taskGraphId) -> result`
- * `scheduler.inspect(taskGraphId='value') -> result`
- * `scheduler.inspectTask(taskGraphId, taskId) -> result`
- * `scheduler.inspectTask(taskGraphId='value', taskId='value') -> result`
- * `scheduler.ping() -> None`
+ * Create new task-graph
+  * `scheduler.createTaskGraph(taskGraphId, payload) -> result`
+  * `scheduler.createTaskGraph(payload, taskGraphId='value') -> result`
+ * Extend existing task-graph
+  * `scheduler.extendTaskGraph(taskGraphId, payload) -> result`
+  * `scheduler.extendTaskGraph(payload, taskGraphId='value') -> result`
+ * Task Graph Status
+  * `scheduler.status(taskGraphId) -> result`
+  * `scheduler.status(taskGraphId='value') -> result`
+ * Task Graph Information
+  * `scheduler.info(taskGraphId) -> result`
+  * `scheduler.info(taskGraphId='value') -> result`
+ * Inspect Task Graph
+  * `scheduler.inspect(taskGraphId) -> result`
+  * `scheduler.inspect(taskGraphId='value') -> result`
+ * Inspect Task from a Task-Graph
+  * `scheduler.inspectTask(taskGraphId, taskId) -> result`
+  * `scheduler.inspectTask(taskGraphId='value', taskId='value') -> result`
+ * Ping Server
+  * `scheduler.ping() -> None`
 
 
 

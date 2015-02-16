@@ -27,17 +27,18 @@ def docApi(name, ref):
     inArgs = ''
     inKwargs = ''
     inArgs = ', '.join(args)
-    inKwargs = ', '.join(["%s='value'" % x for x in args])
+    inKwargs = ', '.join([u"%s='value'" % x for x in args])
     if hasInput:
       inArgs = inArgs + ', payload' if len(args) > 0 else 'payload'
       inKwargs = ('payload, ' if len(args) > 0 else 'payload') + inKwargs
 
     outStr = 'result' if hasOutput else 'None'
 
-    lines.append(' * `%s.%s(%s) -> %s`' % (instName, methodName, inArgs, outStr))
+    lines.append(' * %s' % function['title'])
+    lines.append('  * `%s.%s(%s) -> %s`' % (instName, methodName, inArgs, outStr))
 
     if len(args) > 0:
-      lines.append(' * `%s.%s(%s) -> %s`' % (instName, methodName, inKwargs, outStr))
+      lines.append('  * `%s.%s(%s) -> %s`' % (instName, methodName, inKwargs, outStr))
 
 
   return lines
@@ -77,5 +78,5 @@ if __name__ == '__main__':
     outLines.extend(docs)
   
   with open(readmeFile, 'w') as f:
-    f.write('\n'.join(outLines))
+    f.write('\n'.join(outLines).encode('utf-8'))
   print 'Done!'
