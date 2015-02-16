@@ -1,23 +1,45 @@
-package main
+package exchange
 
 import (
-	"fmt"
-	"github.com/petemoore/taskcluster-client-go/utils"
-	"github.com/streadway/amqp"
+	"reflect"
+	"strings"
 )
 
-func main() {
-	// connection, err := amqp.Dial("amqps://pulse.mozilla.org/exchange/taskcluster-queue/v1/task-defined")
-	connection, err := amqp.Dial("amqp://localhost/")
-	utils.ExitOnFail(err)
-	defer connection.Close()
-	channel, err := connection.Channel()
-	utils.ExitOnFail(err)
-	_, err = channel.QueueDeclare("hello", false, false, false, false, nil)
-	msg := amqp.Publishing{
-		ContentType: "application/json",
-		Body:        []byte(`{"name":"pmoore"}`)}
-	channel.Publish("", "hello", false, false, msg)
-	utils.ExitOnFail(err)
-	fmt.Println("Published message")
+type TaskDefined struct {
+	RoutingKeyKind string `mwords:"*"`
+	TaskId         string `mwords:"*"`
+	RunId          string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerId       string `mwords:"*"`
+	ProvisionerId  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	SchedulerId    string `mwords:"*"`
+	TaskGroupId    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (x TaskDefined) RoutingKey() string {
+	return generateRoutingKey(&x)
+}
+
+func (x TaskDefined) ExchangeName() string {
+	return "exchange/taskcluster-queue/v1/task-defined"
+}
+
+func generateRoutingKey(x *TaskDefined) string {
+	val := reflect.ValueOf(x).Elem()
+	p := make([]string, 0, val.NumField())
+	for i := 0; i < val.NumField(); i++ {
+		valueField := val.Field(i)
+		typeField := val.Type().Field(i)
+		tag := typeField.Tag
+		if t := tag.Get("mwords"); t != "" {
+			if v := valueField.Interface(); v == "" {
+				p = append(p, t)
+			} else {
+				p = append(p, v.(string))
+			}
+		}
+	}
+	return strings.Join(p, ".")
 }
