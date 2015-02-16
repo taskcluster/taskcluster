@@ -7,17 +7,23 @@ endDocs = '<!-- END OF GENERATED DOCS -->'
 
 def docApi(name, ref):
   instName = ''.join((name[0].lower(), name[1:]))
-  lines = [
-    '',
-    '### Methods in `taskcluster.%s`' % name,
-    '```python',
-    '// Create %s client instance' % name,
-    'import taskcluster',
-    '%s = taskcluster.%s(options)' % (instName, name),
-    '```',
-  ]
   entries = ref['entries']
-  for function in [x for x in entries if x['type'] == 'function']:
+  functions = [x for x in entries if x['type'] == 'function'] 
+  exchanges = [x for x in entries if x['type'] == 'topic-exchange']
+  lines = []
+
+  if len(functions) > 0:  
+    lines.extend([
+      '',
+      '### Methods in `taskcluster.%s`' % name,
+      '```python',
+      '// Create %s client instance' % name,
+      'import taskcluster',
+      '%s = taskcluster.%s(options)' % (instName, name),
+      '```',
+    ])
+
+  for function in functions:
     methodName = function['name']
     args = function['args']
     hasOutput = not not function.get('output', False)
@@ -34,11 +40,37 @@ def docApi(name, ref):
 
     outStr = 'result' if hasOutput else 'None'
 
-    lines.append(' * %s' % function['title'])
-    lines.append('  * `%s.%s(%s) -> %s`' % (instName, methodName, inArgs, outStr))
+    lines.append('#### %s' % function['title'])
+    lines.append(' * `%s.%s(%s) -> %s`' % (instName, methodName, inArgs, outStr))
 
     if len(args) > 0:
-      lines.append('  * `%s.%s(%s) -> %s`' % (instName, methodName, inKwargs, outStr))
+      lines.append(' * `%s.%s(%s) -> %s`' % (instName, methodName, inKwargs, outStr))
+
+    lines.append('')
+
+  if len(exchanges) > 0:  
+    lines.extend([
+      '',
+      '### Exchanges in `taskcluster.%s`' % name,
+      '```python',
+      '// Create %s client instance' % name,
+      'import taskcluster',
+      '%s = taskcluster.%s(options)' % (instName, name),
+      '```',
+    ])
+
+  for exchange in exchanges:
+    lines.append('#### %s' % exchange['title'])
+    lines.append(' * `%s.%s(routingKeyPattern) -> routingKey`' % (instName, exchange['name']))
+    for key in exchange['routingKey']:
+      lines.append('   * %s%s%s Description: %s' % (
+        key['name'],
+        ' is constant of `%s` ' % key['constant'] if key.has_key('constant') else '',
+        ' is required ' if key.get('required') else '',
+        key['summary'],
+      ))
+
+    lines.append('')
 
 
   return lines
