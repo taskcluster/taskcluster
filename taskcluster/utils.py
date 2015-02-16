@@ -12,11 +12,11 @@ from . import exceptions
 MAX_RETRIES = 5
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
-# Only for debugging XXX: turn off the True or thing when shipping
 if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
+  log.setLevel(logging.DEBUG)
   log.addHandler(logging.StreamHandler())
-log.addHandler(logging.NullHandler())
+else:
+  log.addHandler(logging.NullHandler())
 
 # Regular expression matching: X days Y hours Z minutes
 r = re.compile('^(\s*(\d+)\s*d(ays?)?)?' +
@@ -125,8 +125,16 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
 
 
 def makeSingleHttpRequest(method, url, payload, headers):
+  method = method.upper()
   log.debug('Making a %s request to %s', method, url)
-  return requests.request(method.upper(), url, data=payload, headers=headers)
+  log.debug('HTTP Headers: %s' % str(headers))
+  log.debug('HTTP Payload: %s (limit 100 char)' % str(payload)[:100])
+  response = requests.request(method.upper(), url, data=payload, headers=headers)
+  log.debug('Received HTTP Status:  %s' % response.status_code)
+  log.debug('Received HTTP Headers: %s' % str(response.headers))
+  log.debug('Received HTTP Payload: %s (limit 1024 char)' % str(response.text)[:1024])
+
+  return response
 
 
 def putFile(filename, url, contentType):
