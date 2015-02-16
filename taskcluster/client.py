@@ -22,11 +22,11 @@ from . import exceptions
 from . import utils
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
-# Only for debugging XXX: turn off the True or thing when shipping
 if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
+  log.setLevel(logging.DEBUG)
   log.addHandler(logging.StreamHandler())
-log.addHandler(logging.NullHandler())
+else:
+  log.addHandler(logging.NullHandler())
 
 API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
 
