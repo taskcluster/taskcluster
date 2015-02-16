@@ -1,3 +1,19 @@
+# This project's things
+docs/client.rst
+env-*
+*.tar.gz
+*.tar.bz2
+*.tar
+*.tar.xz
+
+# Vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
 # Node downloads
 node-v*/
 node_modules/
