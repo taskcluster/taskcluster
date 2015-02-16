@@ -18,6 +18,9 @@ JS_CLIENT_BRANCH=master
 APIS_JSON=$(PWD)/taskcluster/apis.json
 APIS_JS_HREF=https://raw.githubusercontent.com/taskcluster/taskcluster-client/$(JS_CLIENT_BRANCH)/lib/apis.js
 
+.PHONY: update
+update: update-api update-readme docs
+
 .PHONY: update-api
 update-api: $(VENV)/bin/python
 	API_REF_OUT="$(APIS_JSON)" $(VENV)/bin/python fetchApi.py
@@ -48,7 +51,7 @@ docs:
 	rm -rf docs/_build
 	$(VENV)/bin/python -mpip install sphinx
 	$(VENV)/bin/python makeRst.py > docs/client.rst
-	make -C docs html SPHINXBUILD=$(abspath $(VENV)/bin/sphinx-build)
+	LC_CTYPE= make -C docs html SPHINXBUILD=$(abspath $(VENV)/bin/sphinx-build)
 
 $(NODE_BIN):
 	curl -LO $(NODE_URL)
