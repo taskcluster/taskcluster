@@ -21,7 +21,6 @@ APIS_JS_HREF=https://raw.githubusercontent.com/taskcluster/taskcluster-client/$(
 .PHONY: apis.json
 update-api:
 	API_REF_OUT="$(APIS_JSON)" $(VENV)/bin/python fetchApi.py
-	# Probably not needed because we're generating the JSON now, but doesn't hurt so left in
 	@python -mjson.tool $(APIS_JSON) > /dev/null || echo "apis.json cannot be parsed by python's JSON"
 
 $(VENV)/bin/python:

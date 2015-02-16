@@ -22,9 +22,14 @@ apiReference = {}
 for apiName, apiRefUrl in apiManifest.items():
   print 'Fetching %s' % apiName
   api = requests.get(apiRefUrl).json()
-  apiReference[apiName] = api
+  apiReference[apiName] = {
+    "reference": api,
+    "referenceUrl": apiRefUrl,
+  }
 
 print 'Writing API reference file "%s"' % outputFile
 
 with open(outputFile, 'w') as f:
-  json.dump(apiReference, f, indent=2);
+  json.dump(apiReference, f, indent=2, sort_keys=True)
+
+print 'Done!'
