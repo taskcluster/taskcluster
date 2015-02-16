@@ -46,6 +46,7 @@ The REST API methods are documented on
     import taskcluster
     api = taskcluster.api()
     api.method({'data': 'here'}, arg1='1', arg2='2', arg3='3')
+    ```
 
 * Options for the topic exchange methods can be in the form of either a single
   dictionary argument or keyword arguments.  Only one form is allowed
@@ -73,6 +74,7 @@ generation for URLs that do not have a query string.  This is being addressed
 in [PyHawk PR 27](https://github.com/mozilla/PyHawk/pull/27).
 
 <!-- START OF GENERATED DOCS -->
+
 ### Methods in `taskcluster.Index`
 ```python
 // Create Index client instance
@@ -88,6 +90,7 @@ index = taskcluster.Index(options)
  * `index.insertTask(namespace, payload) -> result`
  * `index.insertTask(payload, namespace='value') -> result`
  * `index.ping() -> None`
+
 
 
 ### Methods in `taskcluster.Auth`
@@ -114,6 +117,7 @@ auth = taskcluster.Auth(options)
  * `auth.azureTableSAS(account, table) -> result`
  * `auth.azureTableSAS(account='value', table='value') -> result`
  * `auth.ping() -> None`
+
 
 
 ### Methods in `taskcluster.Queue`
@@ -167,12 +171,14 @@ queue = taskcluster.Queue(options)
  * `queue.ping() -> None`
 
 
+
 ### Methods in `taskcluster.QueueEvents`
 ```python
 // Create QueueEvents client instance
 import taskcluster
 queueEvents = taskcluster.QueueEvents(options)
 ```
+
 
 
 ### Methods in `taskcluster.Scheduler`
@@ -194,6 +200,7 @@ scheduler = taskcluster.Scheduler(options)
  * `scheduler.inspectTask(taskGraphId, taskId) -> result`
  * `scheduler.inspectTask(taskGraphId='value', taskId='value') -> result`
  * `scheduler.ping() -> None`
+
 
 
 ### Methods in `taskcluster.SchedulerEvents`

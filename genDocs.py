@@ -8,6 +8,7 @@ endDocs = '<!-- END OF GENERATED DOCS -->'
 def docApi(name, ref):
   instName = ''.join((name[0].lower(), name[1:]))
   lines = [
+    '',
     '### Methods in `taskcluster.%s`' % name,
     '```python',
     '// Create %s client instance' % name,
@@ -65,7 +66,6 @@ if __name__ == '__main__':
   for i in range(0, len(lines)):
     if lines[i] == startDocs:
       outLines.extend(lines[0:i])
-      outLines.append('')
       outLines.extend(docs)
       foundExisting = True
     elif lines[i] == endDocs:
