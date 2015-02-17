@@ -296,7 +296,7 @@ module.exports = {
           ],
           "name": "claimTask",
           "title": "Claim task",
-          "description": "claim a task, more to be added later...\n\n**Warning,** in the future this API end-point will require the presents\nof `receipt`, `messageId` and `signature` in the body.",
+          "description": "claim a task, more to be added later...\n\n**Warning,** in the future this API end-point will require the presents\nof `receipt`, `messageId` and `token` in the body.",
           "scopes": [
             [
               "queue:claim-task",
