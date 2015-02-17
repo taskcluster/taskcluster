@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	docopt "github.com/docopt/docopt-go"
-	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	docopt "github.com/docopt/docopt-go"
+	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
 )
 
 var version = "Taskcluster proxy 1.0"
@@ -47,15 +48,17 @@ func main() {
 
 	// Client is is required but has a default.
 	clientId := arguments["--client-id"]
-	if clientId == nil {
+	if clientId == nil || clientId == "" {
 		clientId = os.Getenv("TASKCLUSTER_CLIENT_ID")
 	}
 
 	// Access token is also required but has a default.
 	accessToken := arguments["--access-token"]
-	if accessToken == nil {
+	if accessToken == nil || accessToken == "" {
 		accessToken = os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
 	}
+
+	log.Printf("%v - %v", clientId, accessToken)
 
 	// Ensure we have credentials our auth proxy is pretty much useless without
 	// it.
