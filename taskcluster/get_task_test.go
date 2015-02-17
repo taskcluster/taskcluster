@@ -1,20 +1,21 @@
 package taskcluster_test
 
 import (
-	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
 	"testing"
+
+	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
 )
 
 // XXX: This is a terrible test since it will eventually fail but the docker
 // worker tests will ensure this will work...
 func TestGetTask(t *testing.T) {
-	task, err := tc.GetTask("8sdvtNI9Rbq4HM06QSmd6w")
+	task, err := tc.GetTask("2szAy1JzSr6pyjVCdiTcoQ")
 
 	if err != nil {
-		t.Errorf("Error fetching task: %s", err)
+		t.Fatalf("Error fetching task: %s", err)
 	}
 
-	if task.ProvisonerId != "no-provisioning-nope" {
+	if task.ProvisonerId != "aws-provisioner" {
 		t.Errorf("Could not fetch task...")
 	}
 }
