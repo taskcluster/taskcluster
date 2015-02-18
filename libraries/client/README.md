@@ -39,8 +39,8 @@ documentation. The methods always returns a _promise_ for the response JSON
 object as documented in the REST API documentation.
 
 ## Listening for Events
-Many TaskCluster components publishes messages about current events over AMQP.
-The JSON reference object also contains meta-data about declared AMQP topic
+Many TaskCluster components publishes messages about current events to pulse.
+The JSON reference object also contains meta-data about declared pulse
 exchanges and their routing key construction. This is designed to make it easy
 to construct routing key patterns and parse routing keys from incoming messages.
 
@@ -55,8 +55,9 @@ multi-key entries.
 var taskcluster = require('taskcluster-client');
 
 // Create a listener (this creates a queue on AMQP)
-var listener = new taskcluster.Listener({
-  connectionString:   'amqp://...'
+var listener = new taskcluster.PulseListener({
+  username:     '...',
+  password:     '...'
 });
 
 // Instantiate the QueueEvents Client class
@@ -103,9 +104,10 @@ create and bind the queue and return an associated
 ```js
 var taskcluster = require('taskcluster-client');
 
-// Create a listener (this creates a queue on AMQP)
-var listener = new taskcluster.Listener({
-  connectionString:   'amqp://...'
+// Create a listener
+var listener = new taskcluster.PulseListener({
+  username:     '...',
+  password:     '...'
 });
 
 // See: http://www.squaremobius.net/amqp.node/doc/channel_api.html
@@ -126,7 +128,7 @@ separate reference files. For this reason they also have separate Client
 classes, even if they are from the same component.
 
 ## Documentation
-The set of API entries listed below is generated from the builtin references.
+The set of API entries listed below is generated from the built-in references.
 Detailed documentation with description, payload and result format details is
 available on [docs.taskcluster.net](http://docs.taskcluster.net).
 
@@ -433,15 +435,16 @@ listener.bind(queueEvents.taskCompleted({taskId: '<myTaskId>'}));
 ```
 
 ## Using the Listener
-TaskCluster relies on AMQP for exchanges of messages. You'll need an AMQP
-connection string for using the taskcluster AMQP listener.
+TaskCluster relies on pulse for exchange of messages. You'll need an pulse
+credentials for using `taskcluster.PulseListener`.
 An outline of how to create an instance and use is given below. Note, you
 must call `resume()` before message starts arriving.
 
 ```js
-var listener = new taskcluster.Listener({
+var listener = new taskcluster.PulseListener({
   prefetch:           5,            // Number of tasks to process in parallel
-  connectionString:   'amqp://...', // AMQP connection string
+  username:           '...',        // Pulse username from pulse guardian
+  password:           '...',        // Pulse password from pulse guardian
   // If no queue name is given, the queue is:
   //    exclusive, autodeleted and non-durable
   // If a queue name is given, the queue is:
@@ -454,28 +457,29 @@ listener.connect().then(...);       // Setup listener and bind queue
 listener.resume().then(...);        // Start getting new messages
 listener.pause().then(...);         // Pause retrieval of new messages
 listener.deleteQueue();             // Delete named queue and disconnect
-listener.close();                   // Disconnect from AMQP
+listener.close();                   // Disconnect from pulse
 ```
 
-**Using `Connection`**, instead of giving a `connectionString` it is also
-possible to give the `Listener` the key `connection` which must then be a
-`taskcluster.Connection` object. Using a `Connection` object it's possible
-to have multiple listeners using the same AMQP TCP connection, which is the
-recommended way of using AMQP. Notice, that the `Connection` will not be
-closed with the `Listener`s, so you must `close()` it manually.
+**Using `PulseConnection`**, instead of giving a `username` and `password` it
+is possible to give the `Listener` the key `connection` which must then be a
+`taskcluster.PulseConnection` object. Using a `PulseConnection` object it's
+possible to have multiple listeners using the same AMQP TCP connection, which
+is the recommended way of using AMQP. Notice, that the `PulseConnection` will
+not be closed with the `Listener`s, so you must `close()` it manually.
 
 ```js
-var connection = new taskcluster.Connection({
-  connectionString:   'amqp://...', // AMQP connection string
+var connection = new taskcluster.PulseConnection({
+  username:           '...',        // Pulse username from pulse guardian
+  password:           '...',        // Pulse password from pulse guardian
 });
 
 // Create listener
-var listener = new taskcluster.Listener({
+var listener = new taskcluster.PulseListener({
   connection:         connection,   // AMQP connection object
 });
 
 
-connection.close();                 // Disconnect from AMQP
+connection.close();                 // Disconnect from AMQP/pulse
 ```
 
 ## Using `taskcluster-client` in a Browser
