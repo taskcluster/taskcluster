@@ -158,6 +158,32 @@ var auth = new taskcluster.Auth(options);
  * `auth.azureTableSAS(account, table) : result`
  * `auth.ping() : void`
 
+### Methods in `taskcluster.Scheduler`
+```js
+// Create Scheduler client instance with default baseUrl:
+//  - https://scheduler.taskcluster.net/v1
+var scheduler = new taskcluster.Scheduler(options);
+```
+ * `scheduler.createTaskGraph(taskGraphId, payload) : result`
+ * `scheduler.extendTaskGraph(taskGraphId, payload) : result`
+ * `scheduler.status(taskGraphId) : result`
+ * `scheduler.info(taskGraphId) : result`
+ * `scheduler.inspect(taskGraphId) : result`
+ * `scheduler.inspectTask(taskGraphId, taskId) : result`
+ * `scheduler.ping() : void`
+
+### Methods in `taskcluster.Index`
+```js
+// Create Index client instance with default baseUrl:
+//  - https://index.taskcluster.net/v1
+var index = new taskcluster.Index(options);
+```
+ * `index.findTask(namespace) : result`
+ * `index.listNamespaces(namespace, payload) : result`
+ * `index.listTasks(namespace, payload) : result`
+ * `index.insertTask(namespace, payload) : result`
+ * `index.ping() : void`
+
 ### Methods in `taskcluster.Queue`
 ```js
 // Create Queue client instance with default baseUrl:
@@ -186,32 +212,6 @@ var queue = new taskcluster.Queue(options);
  * `queue.pendingTaskCount(provisionerId) : void`
  * `queue.pendingTasks(provisionerId, workerType) : void`
  * `queue.ping() : void`
-
-### Methods in `taskcluster.Scheduler`
-```js
-// Create Scheduler client instance with default baseUrl:
-//  - https://scheduler.taskcluster.net/v1
-var scheduler = new taskcluster.Scheduler(options);
-```
- * `scheduler.createTaskGraph(taskGraphId, payload) : result`
- * `scheduler.extendTaskGraph(taskGraphId, payload) : result`
- * `scheduler.status(taskGraphId) : result`
- * `scheduler.info(taskGraphId) : result`
- * `scheduler.inspect(taskGraphId) : result`
- * `scheduler.inspectTask(taskGraphId, taskId) : result`
- * `scheduler.ping() : void`
-
-### Methods in `taskcluster.Index`
-```js
-// Create Index client instance with default baseUrl:
-//  - https://index.taskcluster.net/v1
-var index = new taskcluster.Index(options);
-```
- * `index.findTask(namespace) : result`
- * `index.listNamespaces(namespace, payload) : result`
- * `index.listTasks(namespace, payload) : result`
- * `index.insertTask(namespace, payload) : result`
- * `index.ping() : void`
 
 ### Exchanges in `taskcluster.QueueEvents`
 ```js
