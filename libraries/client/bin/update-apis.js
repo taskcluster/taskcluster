@@ -159,10 +159,11 @@ program
     });
 
     p = p.then(function(manifest) {
+      apis = {};
       return Promise.all(Object.keys(manifest).map(function(name) {
         console.log('Fetching %s reference', name); 
         return request.get(manifest[name]).end().then(function(res) {
-          console.log('Fetched ' + name);
+          console.log('Updated ' + name);
           apis[name] = {
             referenceUrl: manifest[name],
             reference: res.body,
@@ -177,7 +178,10 @@ program
       browserifyModule();
     });
 
-    p.done();
+    p.catch(function(err) {
+      console.log("Failed to update apis.js" + err.stack);
+      process.exit(1);
+    });
   });
 
 
