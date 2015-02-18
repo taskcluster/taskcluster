@@ -56,8 +56,10 @@ var taskcluster = require('taskcluster-client');
 
 // Create a listener (this creates a queue on AMQP)
 var listener = new taskcluster.PulseListener({
-  username:     '...',
-  password:     '...'
+  credentials: {
+    username:           '...',      // Pulse username from pulse guardian
+    password:           '...'       // Pulse password from pulse guardian
+  }
 });
 
 // Instantiate the QueueEvents Client class
@@ -442,9 +444,12 @@ must call `resume()` before message starts arriving.
 
 ```js
 var listener = new taskcluster.PulseListener({
-  prefetch:           5,            // Number of tasks to process in parallel
-  username:           '...',        // Pulse username from pulse guardian
-  password:           '...',        // Pulse password from pulse guardian
+  prefetch:             5,          // Number of tasks to process in parallel
+  credentials: {                    // If not instance of PulseConnection
+    username:           '...',      // Pulse username from pulse guardian
+    password:           '...'       // Pulse password from pulse guardian
+  },
+  connection:           connection, // If credentials isn't provided
   // If no queue name is given, the queue is:
   //    exclusive, autodeleted and non-durable
   // If a queue name is given, the queue is:
@@ -469,8 +474,10 @@ not be closed with the `Listener`s, so you must `close()` it manually.
 
 ```js
 var connection = new taskcluster.PulseConnection({
-  username:           '...',        // Pulse username from pulse guardian
-  password:           '...',        // Pulse password from pulse guardian
+  credentials: {
+    username:           '...',      // Pulse username from pulse guardian
+    password:           '...'       // Pulse password from pulse guardian
+  }
 });
 
 // Create listener
