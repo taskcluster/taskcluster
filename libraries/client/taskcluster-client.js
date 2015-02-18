@@ -20,572 +20,6 @@ taskcluster.WebListener.SockJS = SockJS;
 module.exports = taskcluster;
 },{"./lib/client":3,"./lib/sockjs":4,"./lib/weblistener":5,"lodash":183}],2:[function(require,module,exports){
 module.exports = {
-  "Auth": {
-    "referenceUrl": "http://references.taskcluster.net/auth/v1/api.json",
-    "reference": {
-      "version": "0.2.0",
-      "title": "Authentication API",
-      "description": "Authentication related API end-points for taskcluster.",
-      "baseUrl": "https://auth.taskcluster.net/v1",
-      "entries": [
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/client/<clientId>/scopes",
-          "args": [
-            "clientId"
-          ],
-          "name": "scopes",
-          "title": "Get Client Authorized Scopes",
-          "description": "Returns the scopes the client is authorized to access and the date-time\nwhere the clients authorization is set to expire.\n\nThis API end-point allows you inspect clients without getting access to\ncredentials, as provide by the `getCredentials` request below.",
-          "scopes": [
-            [
-              "auth:inspect"
-            ],
-            [
-              "auth:credentials"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/client/<clientId>/credentials",
-          "args": [
-            "clientId"
-          ],
-          "name": "getCredentials",
-          "title": "Get Client Credentials",
-          "description": "Returns the clients `accessToken` as needed for verifying signatures.\nThis API end-point also returns the list of scopes the client is\nauthorized for and the date-time where the client authorization expires\n\nRemark, **if you don't need** the `accessToken` but only want to see what\nscopes a client is authorized for, you should use the `getScopes`\nfunction described above.",
-          "scopes": [
-            [
-              "auth:credentials"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/client/<clientId>",
-          "args": [
-            "clientId"
-          ],
-          "name": "client",
-          "title": "Get Client Information",
-          "description": "Returns all information about a given client. This end-point is mostly\nbuilding tools to administrate clients. Do not use if you only want to\nauthenticate a request, see `getCredentials` for this purpose.",
-          "scopes": [
-            [
-              "auth:credentials"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "put",
-          "route": "/client/<clientId>",
-          "args": [
-            "clientId"
-          ],
-          "name": "createClient",
-          "title": "Create Client",
-          "description": "Create client with given `clientId`, `name`, `expires`, `scopes` and\n`description`. The `accessToken` will always be generated server-side,\nand will be returned from this request.\n\n**Required scopes**, in addition the scopes listed\nabove, the caller must also posses the all the scopes that is given to\nthe client that is created.",
-          "scopes": [
-            [
-              "auth:create-client",
-              "auth:credentials"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
-          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/client/<clientId>/modify",
-          "args": [
-            "clientId"
-          ],
-          "name": "modifyClient",
-          "title": "Modify Client",
-          "description": "Modify client `name`, `expires`, `scopes` and\n`description`.\n\n**Required scopes**, in addition the scopes listed\nabove, the caller must also posses the all the scopes that is given to\nthe client that is updated.",
-          "scopes": [
-            [
-              "auth:modify-client",
-              "auth:credentials"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
-          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "delete",
-          "route": "/client/<clientId>",
-          "args": [
-            "clientId"
-          ],
-          "name": "removeClient",
-          "title": "Remove Client",
-          "description": "Delete a client with given `clientId`.",
-          "scopes": [
-            [
-              "auth:remove-client"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/client/<clientId>/reset-credentials",
-          "args": [
-            "clientId"
-          ],
-          "name": "resetCredentials",
-          "title": "Reset Client Credentials",
-          "description": "Reset credentials for a client. This will generate a new `accessToken`.\nas always the `accessToken` will be generated server-side and returned.",
-          "scopes": [
-            [
-              "auth:reset-credentials",
-              "auth:credentials"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/list-clients",
-          "args": [],
-          "name": "listClients",
-          "title": "List Clients",
-          "description": "Return list with all clients",
-          "scopes": [
-            [
-              "auth:client-clients"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/list-clients-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/azure/<account>/table/<table>/read-write",
-          "args": [
-            "account",
-            "table"
-          ],
-          "name": "azureTableSAS",
-          "title": "Get Shared-Access-Signature for Azure Table",
-          "description": "Get an SAS string for use with a specific Azure Table Storage table.\nNote, this will create the table, if it doesn't already exists.",
-          "scopes": [
-            [
-              "auth:azure-table-access:<account>/<table>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/ping",
-          "args": [],
-          "name": "ping",
-          "title": "Ping Server",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
-        }
-      ]
-    }
-  },
-  "Queue": {
-    "referenceUrl": "http://references.taskcluster.net/queue/v1/api.json",
-    "reference": {
-      "version": "0.2.0",
-      "title": "Queue API Documentation",
-      "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
-      "baseUrl": "https://queue.taskcluster.net/v1",
-      "entries": [
-        {
-          "type": "function",
-          "method": "put",
-          "route": "/task/<taskId>",
-          "args": [
-            "taskId"
-          ],
-          "name": "createTask",
-          "title": "Create New Task",
-          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 7 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then the poster will be required to posses the\nscope `queue:route:<route>`. And when the an AMQP message about the task\nis published the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.",
-          "scopes": [
-            [
-              "queue:create-task:<provisionerId>/<workerType>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>",
-          "args": [
-            "taskId"
-          ],
-          "name": "getTask",
-          "title": "Fetch Task",
-          "description": "Get task definition from queue.",
-          "output": "http://schemas.taskcluster.net/queue/v1/task.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/define",
-          "args": [
-            "taskId"
-          ],
-          "name": "defineTask",
-          "title": "Define Task",
-          "description": "Define a task without scheduling it. This API end-point allows you to\nupload a task definition without having scheduled. The task won't be\nreported as pending until it is scheduled, see the scheduleTask API \nend-point.\n\nThe purpose of this API end-point is allow schedulers to upload task\ndefinitions without the tasks becoming _pending_ immediately. This useful\nif you have a set of dependent tasks. Then you can upload all the tasks\nand when the dependencies of a tasks have been resolved, you can schedule\nthe task by calling `/task/:taskId/schedule`. This eliminates the need to\nstore tasks somewhere else while waiting for dependencies to resolve.\n\n**Note** this operation is **idempotent**, as long as you upload the same\ntask definition as previously defined this operation is safe to retry.",
-          "scopes": [
-            [
-              "queue:define-task:<provisionerId>/<workerType>"
-            ],
-            [
-              "queue:create-task:<provisionerId>/<workerType>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/schedule",
-          "args": [
-            "taskId"
-          ],
-          "name": "scheduleTask",
-          "title": "Schedule Defined Task",
-          "description": "If you have define a task using `defineTask` API end-point, then you\ncan schedule the task to be scheduled using this method.\nThis will announce the task as pending and workers will be allowed, to\nclaim it and resolved the task.\n\n**Note** this operation is **idempotent** and will not fail or complain\nif called with `taskId` that is already scheduled, or even resolved.\nTo reschedule a task previously resolved, use `rerunTask`.",
-          "scopes": [
-            [
-              "queue:schedule-task",
-              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>/status",
-          "args": [
-            "taskId"
-          ],
-          "name": "status",
-          "title": "Get task status",
-          "description": "Get task status structure from `taskId`",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/poll-task-url/<provisionerId>/<workerType>",
-          "args": [
-            "provisionerId",
-            "workerType"
-          ],
-          "name": "pollTaskUrls",
-          "title": "Get Urls to Poll Pending Tasks",
-          "description": "Get a signed url to get a message from azure queue.\nOnce messages are polled from here, you can claim the referenced task\nwith `claimTask`.",
-          "scopes": [
-            [
-              "queue:poll-task-urls",
-              "assume:worker-type:<provisionerId>/<workerType>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/runs/<runId>/claim",
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "name": "claimTask",
-          "title": "Claim task",
-          "description": "claim a task, more to be added later...\n\n**Warning,** in the future this API end-point will require the presents\nof `receipt`, `messageId` and `token` in the body.",
-          "scopes": [
-            [
-              "queue:claim-task",
-              "assume:worker-type:<provisionerId>/<workerType>",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/queue/v1/task-claim-request.json#",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/runs/<runId>/reclaim",
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "name": "reclaimTask",
-          "title": "Reclaim task",
-          "description": "reclaim a task more to be added later...",
-          "scopes": [
-            [
-              "queue:claim-task",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/claim-work/<provisionerId>/<workerType>",
-          "args": [
-            "provisionerId",
-            "workerType"
-          ],
-          "name": "claimWork",
-          "title": "Claim work for a worker",
-          "description": "Claim work for a worker, returns information about an appropriate task\nclaimed for the worker. Similar to `claimTask`, which can be\nused to claim a specific task, or reclaim a specific task extending the\n`takenUntil` timeout for the run.\n\n**Note**, that if no tasks are _pending_ this method will not assign a\ntask to you. Instead it will return `204` and you should wait a while\nbefore polling the queue again.\n\n**WARNING, this API end-point is deprecated and will be removed**.",
-          "scopes": [
-            [
-              "queue:claim-task",
-              "assume:worker-type:<provisionerId>/<workerType>",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/queue/v1/claim-work-request.json#",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/runs/<runId>/completed",
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "name": "reportCompleted",
-          "title": "Report Run Completed",
-          "description": "Report a task completed, resolving the run as `completed`.\n\nFor legacy, reasons the `success` parameter is accepted. This will be\nremoved in the future.",
-          "scopes": [
-            [
-              "queue:report-task-completed",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ],
-            [
-              "queue:resolve-task",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/queue/v1/task-completed-request.json#",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/runs/<runId>/failed",
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "name": "reportFailed",
-          "title": "Report Run Failed",
-          "description": "Report a run failed, resolving the run as `failed`. Use this to resolve\na run that failed because the task specific code behaved unexpectedly.\nFor example the task exited non-zero, or didn't produce expected output.\n\nDon't use this if the task couldn't be run because if malformed payload,\nor other unexpected condition. In these cases we have a task exception,\nwhich should be reported with `reportException`.",
-          "scopes": [
-            [
-              "queue:resolve-task",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/runs/<runId>/exception",
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "name": "reportException",
-          "title": "Report Task Exception",
-          "description": "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. But if the payload is malformed, or\ndependencies referenced does not exists you should also report exception.\nHowever, do not report exception if an external resources is unavailable\nbecause of network failure, etc. Only if you can validate that the\nresource does not exist.",
-          "scopes": [
-            [
-              "queue:resolve-task",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/queue/v1/task-exception-request.json#",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/rerun",
-          "args": [
-            "taskId"
-          ],
-          "name": "rerunTask",
-          "title": "Rerun a Resolved Task",
-          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nisn't either `failed` or `completed`, this operation will just return the\ncurrent task status.",
-          "scopes": [
-            [
-              "queue:rerun-task",
-              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "args": [
-            "taskId",
-            "runId",
-            "name"
-          ],
-          "name": "createArtifact",
-          "title": "Create Artifact",
-          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 4 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\n\n**S3 artifacts**, is useful for static files which will be stored on S3.\nWhen creating an S3 artifact is create the queue will return a pre-signed\nURL to which you can do a `PUT` request to upload your artifact. Note\nthat `PUT` request **must** specify the `content-length` header and\n**must** give the `content-type` header the same value as in the request\nto `createArtifact`.\n\n**Azure artifacts**, are stored in _Azure Blob Storage_ service, which\ngiven the consistency guarantees and API interface offered by Azure is\nmore suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
-          "scopes": [
-            [
-              "queue:create-artifact:<name>",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/queue/v1/post-artifact-request.json",
-          "output": "http://schemas.taskcluster.net/queue/v1/post-artifact-response.json"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "args": [
-            "taskId",
-            "runId",
-            "name"
-          ],
-          "name": "getArtifact",
-          "title": "Get Artifact from Run",
-          "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.",
-          "scopes": [
-            [
-              "queue:get-artifact:<name>"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>/artifacts/<name>",
-          "args": [
-            "taskId",
-            "name"
-          ],
-          "name": "getLatestArtifact",
-          "title": "Get Artifact from Latest Run",
-          "description": "Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
-          "scopes": [
-            [
-              "queue:get-artifact:<name>"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>/runs/<runId>/artifacts",
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "name": "listArtifacts",
-          "title": "Get Artifacts from Run",
-          "description": "Returns a list of artifacts and associated meta-data for a given run.",
-          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>/artifacts",
-          "args": [
-            "taskId"
-          ],
-          "name": "listLatestArtifacts",
-          "title": "Get Artifacts from Latest Run",
-          "description": "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.",
-          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/pending-tasks/<provisionerId>",
-          "args": [
-            "provisionerId"
-          ],
-          "name": "getPendingTasks",
-          "title": "Fetch pending tasks for provisioner",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.\n\n**This end-point is deprecated!**"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/pending/<provisionerId>",
-          "args": [
-            "provisionerId"
-          ],
-          "name": "pendingTaskCount",
-          "title": "Get Number of Pending Tasks",
-          "description": "Documented later...\n\n**Warning: This is an experimental end-point!**",
-          "scopes": [
-            [
-              "queue:pending-tasks:<provisionerId>"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/pending/<provisionerId>/<workerType>",
-          "args": [
-            "provisionerId",
-            "workerType"
-          ],
-          "name": "pendingTasks",
-          "title": "Get Number of Pending Tasks",
-          "description": "Documented later...\nThis probably the end-point that will remain after rewriting to azure\nqueue storage...\n\n**Warning: This is an experimental end-point!**",
-          "scopes": [
-            [
-              "queue:pending-tasks:<provisionerId>/<workerType>"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/ping",
-          "args": [],
-          "name": "ping",
-          "title": "Ping Server",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
-        }
-      ]
-    }
-  },
   "QueueEvents": {
     "referenceUrl": "http://references.taskcluster.net/queue/v1/exchanges.json",
     "reference": {
@@ -1094,6 +528,185 @@ module.exports = {
       ]
     }
   },
+  "Auth": {
+    "referenceUrl": "http://references.taskcluster.net/auth/v1/api.json",
+    "reference": {
+      "version": "0.2.0",
+      "title": "Authentication API",
+      "description": "Authentication related API end-points for taskcluster.",
+      "baseUrl": "https://auth.taskcluster.net/v1",
+      "entries": [
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/client/<clientId>/scopes",
+          "args": [
+            "clientId"
+          ],
+          "name": "scopes",
+          "title": "Get Client Authorized Scopes",
+          "description": "Returns the scopes the client is authorized to access and the date-time\nwhere the clients authorization is set to expire.\n\nThis API end-point allows you inspect clients without getting access to\ncredentials, as provide by the `getCredentials` request below.",
+          "scopes": [
+            [
+              "auth:inspect"
+            ],
+            [
+              "auth:credentials"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/client/<clientId>/credentials",
+          "args": [
+            "clientId"
+          ],
+          "name": "getCredentials",
+          "title": "Get Client Credentials",
+          "description": "Returns the clients `accessToken` as needed for verifying signatures.\nThis API end-point also returns the list of scopes the client is\nauthorized for and the date-time where the client authorization expires\n\nRemark, **if you don't need** the `accessToken` but only want to see what\nscopes a client is authorized for, you should use the `getScopes`\nfunction described above.",
+          "scopes": [
+            [
+              "auth:credentials"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/client/<clientId>",
+          "args": [
+            "clientId"
+          ],
+          "name": "client",
+          "title": "Get Client Information",
+          "description": "Returns all information about a given client. This end-point is mostly\nbuilding tools to administrate clients. Do not use if you only want to\nauthenticate a request, see `getCredentials` for this purpose.",
+          "scopes": [
+            [
+              "auth:credentials"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "put",
+          "route": "/client/<clientId>",
+          "args": [
+            "clientId"
+          ],
+          "name": "createClient",
+          "title": "Create Client",
+          "description": "Create client with given `clientId`, `name`, `expires`, `scopes` and\n`description`. The `accessToken` will always be generated server-side,\nand will be returned from this request.\n\n**Required scopes**, in addition the scopes listed\nabove, the caller must also posses the all the scopes that is given to\nthe client that is created.",
+          "scopes": [
+            [
+              "auth:create-client",
+              "auth:credentials"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/client/<clientId>/modify",
+          "args": [
+            "clientId"
+          ],
+          "name": "modifyClient",
+          "title": "Modify Client",
+          "description": "Modify client `name`, `expires`, `scopes` and\n`description`.\n\n**Required scopes**, in addition the scopes listed\nabove, the caller must also posses the all the scopes that is given to\nthe client that is updated.",
+          "scopes": [
+            [
+              "auth:modify-client",
+              "auth:credentials"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "delete",
+          "route": "/client/<clientId>",
+          "args": [
+            "clientId"
+          ],
+          "name": "removeClient",
+          "title": "Remove Client",
+          "description": "Delete a client with given `clientId`.",
+          "scopes": [
+            [
+              "auth:remove-client"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/client/<clientId>/reset-credentials",
+          "args": [
+            "clientId"
+          ],
+          "name": "resetCredentials",
+          "title": "Reset Client Credentials",
+          "description": "Reset credentials for a client. This will generate a new `accessToken`.\nas always the `accessToken` will be generated server-side and returned.",
+          "scopes": [
+            [
+              "auth:reset-credentials",
+              "auth:credentials"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/list-clients",
+          "args": [],
+          "name": "listClients",
+          "title": "List Clients",
+          "description": "Return list with all clients",
+          "scopes": [
+            [
+              "auth:client-clients"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/list-clients-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/azure/<account>/table/<table>/read-write",
+          "args": [
+            "account",
+            "table"
+          ],
+          "name": "azureTableSAS",
+          "title": "Get Shared-Access-Signature for Azure Table",
+          "description": "Get an SAS string for use with a specific Azure Table Storage table.\nNote, this will create the table, if it doesn't already exists.",
+          "scopes": [
+            [
+              "auth:azure-table-access:<account>/<table>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
+        }
+      ]
+    }
+  },
   "Scheduler": {
     "referenceUrl": "http://references.taskcluster.net/scheduler/v1/api.json",
     "reference": {
@@ -1557,6 +1170,393 @@ module.exports = {
           ],
           "input": "http://schemas.taskcluster.net/index/v1/insert-task-request.json#",
           "output": "http://schemas.taskcluster.net/index/v1/indexed-task-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
+        }
+      ]
+    }
+  },
+  "Queue": {
+    "referenceUrl": "http://references.taskcluster.net/queue/v1/api.json",
+    "reference": {
+      "version": "0.2.0",
+      "title": "Queue API Documentation",
+      "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
+      "baseUrl": "https://queue.taskcluster.net/v1",
+      "entries": [
+        {
+          "type": "function",
+          "method": "put",
+          "route": "/task/<taskId>",
+          "args": [
+            "taskId"
+          ],
+          "name": "createTask",
+          "title": "Create New Task",
+          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 7 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then the poster will be required to posses the\nscope `queue:route:<route>`. And when the an AMQP message about the task\nis published the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.",
+          "scopes": [
+            [
+              "queue:create-task:<provisionerId>/<workerType>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<taskId>",
+          "args": [
+            "taskId"
+          ],
+          "name": "getTask",
+          "title": "Fetch Task",
+          "description": "Get task definition from queue.",
+          "output": "http://schemas.taskcluster.net/queue/v1/task.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/define",
+          "args": [
+            "taskId"
+          ],
+          "name": "defineTask",
+          "title": "Define Task",
+          "description": "Define a task without scheduling it. This API end-point allows you to\nupload a task definition without having scheduled. The task won't be\nreported as pending until it is scheduled, see the scheduleTask API \nend-point.\n\nThe purpose of this API end-point is allow schedulers to upload task\ndefinitions without the tasks becoming _pending_ immediately. This useful\nif you have a set of dependent tasks. Then you can upload all the tasks\nand when the dependencies of a tasks have been resolved, you can schedule\nthe task by calling `/task/:taskId/schedule`. This eliminates the need to\nstore tasks somewhere else while waiting for dependencies to resolve.\n\n**Note** this operation is **idempotent**, as long as you upload the same\ntask definition as previously defined this operation is safe to retry.",
+          "scopes": [
+            [
+              "queue:define-task:<provisionerId>/<workerType>"
+            ],
+            [
+              "queue:create-task:<provisionerId>/<workerType>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/schedule",
+          "args": [
+            "taskId"
+          ],
+          "name": "scheduleTask",
+          "title": "Schedule Defined Task",
+          "description": "If you have define a task using `defineTask` API end-point, then you\ncan schedule the task to be scheduled using this method.\nThis will announce the task as pending and workers will be allowed, to\nclaim it and resolved the task.\n\n**Note** this operation is **idempotent** and will not fail or complain\nif called with `taskId` that is already scheduled, or even resolved.\nTo reschedule a task previously resolved, use `rerunTask`.",
+          "scopes": [
+            [
+              "queue:schedule-task",
+              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<taskId>/status",
+          "args": [
+            "taskId"
+          ],
+          "name": "status",
+          "title": "Get task status",
+          "description": "Get task status structure from `taskId`",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/poll-task-url/<provisionerId>/<workerType>",
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "name": "pollTaskUrls",
+          "title": "Get Urls to Poll Pending Tasks",
+          "description": "Get a signed url to get a message from azure queue.\nOnce messages are polled from here, you can claim the referenced task\nwith `claimTask`.",
+          "scopes": [
+            [
+              "queue:poll-task-urls",
+              "assume:worker-type:<provisionerId>/<workerType>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/claim",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "claimTask",
+          "title": "Claim task",
+          "description": "claim a task, more to be added later...\n\n**Warning,** in the future this API end-point will require the presents\nof `receipt`, `messageId` and `token` in the body.",
+          "scopes": [
+            [
+              "queue:claim-task",
+              "assume:worker-type:<provisionerId>/<workerType>",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/task-claim-request.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/reclaim",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "reclaimTask",
+          "title": "Reclaim task",
+          "description": "reclaim a task more to be added later...",
+          "scopes": [
+            [
+              "queue:claim-task",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/claim-work/<provisionerId>/<workerType>",
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "name": "claimWork",
+          "title": "Claim work for a worker",
+          "description": "Claim work for a worker, returns information about an appropriate task\nclaimed for the worker. Similar to `claimTask`, which can be\nused to claim a specific task, or reclaim a specific task extending the\n`takenUntil` timeout for the run.\n\n**Note**, that if no tasks are _pending_ this method will not assign a\ntask to you. Instead it will return `204` and you should wait a while\nbefore polling the queue again.\n\n**WARNING, this API end-point is deprecated and will be removed**.",
+          "scopes": [
+            [
+              "queue:claim-task",
+              "assume:worker-type:<provisionerId>/<workerType>",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/claim-work-request.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/completed",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "reportCompleted",
+          "title": "Report Run Completed",
+          "description": "Report a task completed, resolving the run as `completed`.\n\nFor legacy, reasons the `success` parameter is accepted. This will be\nremoved in the future.",
+          "scopes": [
+            [
+              "queue:report-task-completed",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ],
+            [
+              "queue:resolve-task",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/task-completed-request.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/failed",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "reportFailed",
+          "title": "Report Run Failed",
+          "description": "Report a run failed, resolving the run as `failed`. Use this to resolve\na run that failed because the task specific code behaved unexpectedly.\nFor example the task exited non-zero, or didn't produce expected output.\n\nDon't use this if the task couldn't be run because if malformed payload,\nor other unexpected condition. In these cases we have a task exception,\nwhich should be reported with `reportException`.",
+          "scopes": [
+            [
+              "queue:resolve-task",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/exception",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "reportException",
+          "title": "Report Task Exception",
+          "description": "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. But if the payload is malformed, or\ndependencies referenced does not exists you should also report exception.\nHowever, do not report exception if an external resources is unavailable\nbecause of network failure, etc. Only if you can validate that the\nresource does not exist.",
+          "scopes": [
+            [
+              "queue:resolve-task",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/task-exception-request.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/rerun",
+          "args": [
+            "taskId"
+          ],
+          "name": "rerunTask",
+          "title": "Rerun a Resolved Task",
+          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nisn't either `failed` or `completed`, this operation will just return the\ncurrent task status.",
+          "scopes": [
+            [
+              "queue:rerun-task",
+              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "name": "createArtifact",
+          "title": "Create Artifact",
+          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 4 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\n\n**S3 artifacts**, is useful for static files which will be stored on S3.\nWhen creating an S3 artifact is create the queue will return a pre-signed\nURL to which you can do a `PUT` request to upload your artifact. Note\nthat `PUT` request **must** specify the `content-length` header and\n**must** give the `content-type` header the same value as in the request\nto `createArtifact`.\n\n**Azure artifacts**, are stored in _Azure Blob Storage_ service, which\ngiven the consistency guarantees and API interface offered by Azure is\nmore suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
+          "scopes": [
+            [
+              "queue:create-artifact:<name>",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/post-artifact-request.json",
+          "output": "http://schemas.taskcluster.net/queue/v1/post-artifact-response.json"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "name": "getArtifact",
+          "title": "Get Artifact from Run",
+          "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.",
+          "scopes": [
+            [
+              "queue:get-artifact:<name>"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<taskId>/artifacts/<name>",
+          "args": [
+            "taskId",
+            "name"
+          ],
+          "name": "getLatestArtifact",
+          "title": "Get Artifact from Latest Run",
+          "description": "Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
+          "scopes": [
+            [
+              "queue:get-artifact:<name>"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<taskId>/runs/<runId>/artifacts",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "listArtifacts",
+          "title": "Get Artifacts from Run",
+          "description": "Returns a list of artifacts and associated meta-data for a given run.",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<taskId>/artifacts",
+          "args": [
+            "taskId"
+          ],
+          "name": "listLatestArtifacts",
+          "title": "Get Artifacts from Latest Run",
+          "description": "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/pending-tasks/<provisionerId>",
+          "args": [
+            "provisionerId"
+          ],
+          "name": "getPendingTasks",
+          "title": "Fetch pending tasks for provisioner",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.\n\n**This end-point is deprecated!**"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/pending/<provisionerId>",
+          "args": [
+            "provisionerId"
+          ],
+          "name": "pendingTaskCount",
+          "title": "Get Number of Pending Tasks",
+          "description": "Documented later...\n\n**Warning: This is an experimental end-point!**",
+          "scopes": [
+            [
+              "queue:pending-tasks:<provisionerId>"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/pending/<provisionerId>/<workerType>",
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "name": "pendingTasks",
+          "title": "Get Number of Pending Tasks",
+          "description": "Documented later...\nThis probably the end-point that will remain after rewriting to azure\nqueue storage...\n\n**Warning: This is an experimental end-point!**",
+          "scopes": [
+            [
+              "queue:pending-tasks:<provisionerId>/<workerType>"
+            ]
+          ]
         },
         {
           "type": "function",
