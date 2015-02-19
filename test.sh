@@ -26,15 +26,27 @@ $FLAKE8 --ignore=E111,E121 \
 	--max-line-length=120 \
 	taskcluster test
 lint=$?
+if [ $lint -ne 0 ] ; then
+  echo "Code is not formatted correctly"
+  exit 1
+fi
 echo Done linting
 
 echo setup.py tests
 $PYTHON setup.py test
 setuptests=$?
+if [ $setuptests -ne 0 ] ; then
+  echo "setup.py test does not run properly"
+  exit 1
+fi
 
 echo nosetests
 $NOSE
 nose=$?
+if [ $nose -ne 0 ] ; then
+  echo "Nose tests do not run"
+  exit 1
+fi
 
 kill $server
 if [ $? -ne 0 ] ; then

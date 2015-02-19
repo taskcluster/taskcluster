@@ -341,13 +341,13 @@ class BaseClient(object):
       if self._hasCredentials():
         hawkOpts = {
           'credentials': {
-            'id':   self.options['credentials']['clientId'],
-            'key':  self.options['credentials']['accessToken'],
+            'id': self.options['credentials']['clientId'],
+            'key': self.options['credentials']['accessToken'],
             'algorithm': 'sha256',
           },
           'ext': hawkExt or {},
         }
-        header  = hawk.client.header(url, method, hawkOpts)
+        header = hawk.client.header(url, method, hawkOpts)
         headers = {'Authorization': header['field'].strip()}
       else:
         log.info('Not using hawk!')
@@ -382,7 +382,7 @@ class BaseClient(object):
         try:
           data = response.json()
         except:
-          pass # Ignore JSON errors in error messages
+          pass  # Ignore JSON errors in error messages
         # Find error message
         message = "Unknown Server Error"
         if isinstance(data, dict):
@@ -394,13 +394,15 @@ class BaseClient(object):
             message = "Internal Server Error"
         # Raise TaskclusterAuthFailure if this is an auth issue
         if status == 401:
-          raise exceptions.TaskclusterAuthFailure(message,
+          raise exceptions.TaskclusterAuthFailure(
+            message,
             status_code=status,
             body=data,
             superExc=rerr
           )
         # Raise TaskclusterRestFailure for all other issues
-        raise exceptions.TaskclusterRestFailure(message,
+        raise exceptions.TaskclusterRestFailure(
+          message,
           status_code=status,
           body=data,
           superExc=rerr
@@ -409,11 +411,12 @@ class BaseClient(object):
       # Try to load JSON
       try:
         return response.json()
-      except ValueError as ve:
+      except ValueError:
         return {}
 
     # This code-path should be unreachable
     assert False, "Error from last retry should have been raised!"
+
 
 def createApiClient(name, api):
   attributes = dict(

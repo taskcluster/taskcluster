@@ -11,8 +11,9 @@ class TaskclusterRestFailure(TaskclusterFailure):
   def __init__(self, msg, superExc, status_code=500, body={}):
     TaskclusterFailure.__init__(self, msg)
     self.superExc = superExc
-    self.status_code=status_code
-    self.body=body
+    self.status_code = status_code
+    self.body = body
+
 
 class TaskclusterConnectionError(TaskclusterFailure):
   """ Error connecting to resource """
@@ -20,13 +21,15 @@ class TaskclusterConnectionError(TaskclusterFailure):
     TaskclusterFailure.__init__(self, msg, superExc)
     self.superExc = superExc
 
+
 class TaskclusterAuthFailure(TaskclusterFailure):
   """ Invalid Credentials """
   def __init__(self, msg, superExc=None, status_code=500, body={}):
     TaskclusterFailure.__init__(self, msg)
     self.superExc = superExc
-    self.status_code=status_code
-    self.body=body
+    self.status_code = status_code
+    self.body = body
+
 
 class TaskclusterTopicExchangeFailure(TaskclusterFailure):
   """ Error while creating a Topic Exchange routing key """

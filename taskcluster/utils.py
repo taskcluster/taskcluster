@@ -7,7 +7,6 @@ import logging
 import os
 import requests
 import time
-from . import exceptions
 
 MAX_RETRIES = 5
 
@@ -96,7 +95,6 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
   retry = -1
   response = None
   while retry < retries:
-    error = None
     retry += 1
     # if this isn't the first retry then we sleep
     if retry > 0:
@@ -133,6 +131,7 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
 
   # This code-path should be unreachable
   assert False, "Error from last retry should have been raised!"
+
 
 def makeSingleHttpRequest(method, url, payload, headers):
   method = method.upper()

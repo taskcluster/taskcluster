@@ -184,7 +184,7 @@ class TestMakeHttpRequest(ClientTest):
         ObjWithDotJson(500, msg),
         ObjWithDotJson(500, msg),
         ObjWithDotJson(500, msg),
-        ObjWithDotJson(500, msg), # exhaust retries
+        ObjWithDotJson(500, msg),  # exhaust retries
         ObjWithDotJson(500, msg),
         ObjWithDotJson(500, msg),
         ObjWithDotJson(500, msg),
