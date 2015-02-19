@@ -489,6 +489,58 @@ var listener = new taskcluster.PulseListener({
 connection.close();                 // Disconnect from AMQP/pulse
 ```
 
+## Relative Date-time Utilities
+A lot of taskcluster APIs requires ISO 8601 time stamps offset into the future
+as way of providing expiration, deadlines, etc. These can be easily created
+using `new Date().toJSON()`, however, it can be rather error prone and tedious
+to offset `Date` objects into the future. Therefore this library comes with two
+utility functions for this purposes.
+
+```js
+var dateObject = taskcluster.fromNow("2 days 3 hours 1 minute");
+var dateString = taskcluster.fromNowJSON("2 days 3 hours 1 minute");
+assert(dateObject.toJSON() === dateString);
+// dateObject = now() + 2 days 2 hours and 1 minute
+assert(new Date().getTime() < dateObject.getTime());
+```
+
+By default it will offset the date time into the future, if the offset strings
+are prefixed minus (`-`) the date object will be offset into the past. This is
+useful in some corner cases.
+
+```js
+var dateObject = taskcluster.fromNow("- 1 year 2 months 3 weeks 5 seconds");
+// dateObject = now() - 1 year, 2 months, 3 weeks and 5 seconds
+assert(new Date().getTime() > dateObject.getTime());
+```
+
+The offset string is ignorant of whitespace and case insensitive. It may also
+optionally be prefixed plus `+` (if not prefixed minus), any `+` prefix will be
+ignored. However, entries in the offset string must be given in order from
+high to low, ie. `2 years 1 day`. Additionally, various shorthands may be
+employed, as illustrated below.
+
+```
+  years,    year,   yr,   y
+  months,   month,  mo
+  weeks,    week,   wk,   w
+  days,     day,          d
+  hours,    hour,   hr,   h
+  minutes,  minute, min
+  seconds,  second, sec,  s
+```
+
+The `fromNow` method may also be given a date to be relative to as a second
+argument. This is useful if offset the task expiration relative to the the task
+deadline or doing something similar.
+
+```js
+var dateObject1 = taskcluster.fromNow("2 days 3 hours");
+// dateObject1  = now() + 2 days and 3 hours
+var dateObject2 = taskcluster.fromNow("1 year", dateObject1);
+// dateObject2  = now() + 1 year, 2 days and 3 hours
+```
+
 ## Using `taskcluster-client` in a Browser
 Running the script `utils/browserify.js` will generate `taskcluster-client.js`
 using browserify. This does not contain any listener, but all the API logic
