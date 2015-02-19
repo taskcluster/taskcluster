@@ -92,37 +92,47 @@ def slugId():
 
 
 def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
-  retry = 0
+  """ Make an HTTP request and retry it until success, return request """
+  retry = -1
   response = None
-  error = None
   while retry < retries:
+    error = None
     retry += 1
+    # if this isn't the first retry then we sleep
+    if retry > 0:
+      snooze = float(retry * retry) / 10.0
+      log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
+      time.sleep(snooze)
+
+    # Seek payload to start, if it is a file
+    if hasattr(payload, 'seek'):
+      payload.seek(0)
+
     log.debug('Making attempt %d', retry)
     try:
       response = makeSingleHttpRequest(method, url, payload, headers)
     except requests.exceptions.RequestException as rerr:
-      error = True
-      if retry >= retries:
-        raise exceptions.TaskclusterRestFailure('Last Attempt: %s' % rerr, superExc=rerr)
-      else:
+      if retry < retries:
         log.warn('Retrying because of: %s' % rerr)
+        continue
+      # raise a connection exception
+      raise rerr
 
-    # We only want to consider connection errors for retry.  Other errors,
-    # like a 404 saying that a resource wasn't found should be returned
-    # immediately
-    if response and response.status_code >= 500 and response.status_code < 600:
-      log.warn('Received HTTP Status %d, retrying', response.status_code)
-      error = True
+    # Handle non 2xx status code and retry if possible
+    try:
+      response.raise_for_status()
+    except requests.exceptions.RequestException as rerr:
+      status = response.status_code
+      if 500 <= status and status < 600 and retry < retries:
+        log.warn('Retrying because of: %s' % rerr)
+        continue
+      raise rerr
 
-    if error:
-      snooze = float(retry * retry) / 10.0
-      log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
-      time.sleep(snooze)
-    else:
-      break
+    # Otherwise return the result
+    return response
 
-  return response
-
+  # This code-path should be unreachable
+  assert False, "Error from last retry should have been raised!"
 
 def makeSingleHttpRequest(method, url, payload, headers):
   method = method.upper()
@@ -140,9 +150,7 @@ def makeSingleHttpRequest(method, url, payload, headers):
 def putFile(filename, url, contentType):
   with open(filename, 'rb') as f:
     contentLength = os.fstat(f.fileno()).st_size
-    result = makeHttpRequest('put', url, f,
-                             headers={
-                                 'Content-Length': contentLength,
-                                 'Content-Type': contentType,
-                             })
-    return result
+    return makeHttpRequest('put', url, f, headers={
+      'Content-Length': contentLength,
+      'Content-Type': contentType,
+    })

@@ -13,6 +13,7 @@ import hmac
 import datetime
 import calendar
 import requests
+import time
 
 # For finding apis.json
 from pkg_resources import resource_string
@@ -154,9 +155,7 @@ class BaseClient(object):
 
     requestUrl = self.buildUrl(methodName, *args, **kwargs)
 
-    opts = self.options
-    cred = opts.get('credentials')
-    if not cred or 'clientId' not in cred or 'accessToken' not in cred:
+    if not self._hasCredentials():
       raise exceptions.TaskclusterAuthFailure('Invalid Hawk Credentials')
 
     clientId = self.options['credentials']['clientId']
@@ -301,6 +300,17 @@ class BaseClient(object):
 
     return route.lstrip('/')
 
+  def _hasCredentials(self):
+    """ Return True, if credentials is given """
+    cred = self.options.get('credentials')
+    return (
+      cred and
+      'clientId' in cred and
+      'accessToken' in cred and
+      cred['clientId'] and
+      cred['accessToken']
+    )
+
   def _makeHttpRequest(self, method, route, payload):
     """ Make an HTTP Request for the API endpoint.  This method wraps
     the logic about doing failure retry and passes off the actual work
@@ -312,50 +322,98 @@ class BaseClient(object):
     # route instead
     if not baseUrl.endswith('/'):
       baseUrl += '/'
-    fullUrl = urlparse.urljoin(baseUrl, route.lstrip('/'))
-    log.debug('Full URL used is: %s', fullUrl)
+    url = urlparse.urljoin(baseUrl, route.lstrip('/'))
+    log.debug('Full URL used is: %s', url)
 
-    opts = self.options
-    cred = opts.get('credentials')
     hawkExt = self.makeHawkExt()
-    if cred and 'clientId' in cred and 'accessToken' in cred and cred['clientId'] and cred['accessToken']:
-      hawkOpts = {
-        'credentials': {
-          'id': cred['clientId'],
-          'key': cred['accessToken'],
-          'algorithm': 'sha256',
-        },
-        'ext': hawkExt if hawkExt else {},
-      }
-      header = hawk.client.header(fullUrl, method, hawkOpts)
-      headers = {'Authorization': header['field'].strip()}
-    else:
-      log.info('Not using hawk!')
-      headers = {}
-    if payload:
-      payload = utils.dumpJson(payload)
-      headers['Content-Type'] = 'application/json'
 
-    response = utils.makeHttpRequest(method, fullUrl, payload, headers,
-                                     retries=self.options['maxRetries'])
-
-    # We want to send JSON data back to the caller
-    try:
-      # We want to make sure that calling code handles errors
-      response.raise_for_status()
-      apiData = response.json()
-    except requests.exceptions.RequestException as rerr:
-      if response.status_code == 401:
-        raise exceptions.TaskclusterAuthFailure('Server rejected our credentials')
+    # Do a loop of retries
+    retry = -1  # we plus first in the loop, and attempt 1 is retry 0
+    retries = self.options['maxRetries']
+    while retry < retries:
+      retry += 1
+      # if this isn't the first retry then we sleep
+      if retry > 0:
+        snooze = float(retry * retry) / 10.0
+        log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
+        time.sleep(snooze)
+      # Construct header
+      if self._hasCredentials():
+        hawkOpts = {
+          'credentials': {
+            'id':   self.options['credentials']['clientId'],
+            'key':  self.options['credentials']['accessToken'],
+            'algorithm': 'sha256',
+          },
+          'ext': hawkExt or {},
+        }
+        header  = hawk.client.header(url, method, hawkOpts)
+        headers = {'Authorization': header['field'].strip()}
       else:
-        raise exceptions.TaskclusterRestFailure('Request failed', superExc=rerr)
-    except ValueError as ve:
-      errStr = 'Response contained malformed JSON data'
-      log.error(errStr)
-      raise exceptions.TaskclusterRestFailure(errStr, superExc=ve, res=response)
+        log.info('Not using hawk!')
+        headers = {}
+      if payload:
+        payload = utils.dumpJson(payload)
+        headers['Content-Type'] = 'application/json'
 
-    return apiData
+      log.debug('Making attempt %d', retry)
+      try:
+        response = utils.makeSingleHttpRequest(method, url, payload, headers)
+      except requests.exceptions.RequestException as rerr:
+        if retry < retries:
+          log.warn('Retrying because of: %s' % rerr)
+          continue
+        # raise a connection exception
+        raise exceptions.TaskclusterConnectionError(
+          "Failed to establish connection",
+          superExc=rerr
+        )
 
+      # Handle non 2xx status code and retry if possible
+      try:
+        response.raise_for_status()
+      except requests.exceptions.RequestException as rerr:
+        status = response.status_code
+        if 500 <= status and status < 600 and retry < retries:
+          log.warn('Retrying because of: %s' % rerr)
+          continue
+        # Parse messages from errors
+        data = {}
+        try:
+          data = response.json()
+        except:
+          pass # Ignore JSON errors in error messages
+        # Find error message
+        message = "Unknown Server Error"
+        if isinstance(data, dict):
+          message = data.get('message')
+        else:
+          if status == 401:
+            message = "Authentication Error"
+          elif status == 500:
+            message = "Internal Server Error"
+        # Raise TaskclusterAuthFailure if this is an auth issue
+        if status == 401:
+          raise exceptions.TaskclusterAuthFailure(message,
+            status_code=status,
+            body=data,
+            superExc=rerr
+          )
+        # Raise TaskclusterRestFailure for all other issues
+        raise exceptions.TaskclusterRestFailure(message,
+          status_code=status,
+          body=data,
+          superExc=rerr
+        )
+
+      # Try to load JSON
+      try:
+        return response.json()
+      except ValueError as ve:
+        return {}
+
+    # This code-path should be unreachable
+    assert False, "Error from last retry should have been raised!"
 
 def createApiClient(name, api):
   attributes = dict(

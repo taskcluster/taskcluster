@@ -32,7 +32,7 @@ update-readme: $(VENV)/bin/python
 
 $(VENV)/bin/python:
 	[ -d $(VENV) ] || $(PYTHON) -m virtualenv $(VENV) || virtualenv $(VENV)
-	$(VENV)/bin/pip install setuptools
+	$(VENV)/bin/pip install --upgrade setuptools
 	$(VENV)/bin/python devDep.py
 	$(VENV)/bin/python setup.py develop
 
