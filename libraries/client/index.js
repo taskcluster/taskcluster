@@ -9,11 +9,9 @@ _.defaults(exports,
   require('./lib/client'),
   require('./lib/amqplistener'),
   require('./lib/pulselistener'),
-  require('./lib/weblistener')
+  require('./lib/weblistener'),
+  require('./lib/utils')
 );
-
-// Export utils as taskcluster.utils...
-exports.utils = require('./lib/utils');
 
 // Provide a SockJS client implementation for the WebListener
 Object.defineProperty(exports.WebListener, 'SockJS', {
