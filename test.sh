@@ -15,6 +15,13 @@ fi
 $NODE_BIN test/mockAuthServer.js &> server.log &
 server=$!
 
+killServer () {
+  kill $server
+  if [ $? -ne 0 ] ; then
+	  echo "Failed to kill server"
+  fi
+}
+
 ps -p $server &> /dev/null
 if [ $? -ne 0 ] ; then
 	echo "Server did not start cleanly"
@@ -28,6 +35,7 @@ $FLAKE8 --ignore=E111,E121 \
 lint=$?
 if [ $lint -ne 0 ] ; then
   echo "Code is not formatted correctly"
+  killServer
   exit 1
 fi
 echo Done linting
@@ -37,21 +45,19 @@ $PYTHON setup.py test
 setuptests=$?
 if [ $setuptests -ne 0 ] ; then
   echo "setup.py test does not run properly"
+  killServer
   exit 1
 fi
 
 echo nosetests
-$NOSE
+$NOSE -v
 nose=$?
 if [ $nose -ne 0 ] ; then
   echo "Nose tests do not run"
+  killServer
   exit 1
 fi
 
-kill $server
-if [ $? -ne 0 ] ; then
-	echo "Failed to kill server"
-fi
 echo Done testing!
 
 exit $(( nose + lint + setuptests ))

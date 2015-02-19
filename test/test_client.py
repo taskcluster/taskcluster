@@ -1,9 +1,11 @@
 import types
 import socket
-import unittest
-import time
-realTimeTime = time.time
-import datetime
+# These dependencies are commented out because the temp credentials
+# tests which are the only ones which use them are now commented out
+# import unittest
+# import time
+# realTimeTime = time.time
+# import datetime
 import os
 
 import mock
@@ -498,22 +500,23 @@ class TestAuthenticationMockServer(base.TCTest):
     with self.assertRaises(exc.TaskclusterAuthFailure):
       self.client.getCredentials('admin')
 
-  @unittest.expectedFailure
-  def test_temporary_credentials(self):
-    self.assertEqual(False, True)
-    return
-    tempCred = subject.createTemporaryCredentials(
-      'admin',
-      'adminToken',
-      datetime.datetime.utcnow() - datetime.timedelta(hours=10),
-      datetime.datetime.utcnow() + datetime.timedelta(hours=10),
-      ['auth:credentials'],
-    )
-    self.client.options['credentials']['clientId'] = tempCred['clientId']
-    self.client.options['credentials']['accessToken'] = tempCred['accessToken']
-    self.client.options['credentials']['certificate'] = tempCred['certificate']
-    result = self.client.getCredentials('admin')
-    self.assertEqual(result['accessToken'], 'adminToken')
+  # Nose doesn't like this decorator, so I'm commenting out the test instead
+  #  @unittest.expectedFailure
+  #  def test_temporary_credentials(self):
+  #    self.assertEqual(False, True)
+  #    return
+  #    tempCred = subject.createTemporaryCredentials(
+  #      'admin',
+  #      'adminToken',
+  #      datetime.datetime.utcnow() - datetime.timedelta(hours=10),
+  #      datetime.datetime.utcnow() + datetime.timedelta(hours=10),
+  #      ['auth:credentials'],
+  #    )
+  #    self.client.options['credentials']['clientId'] = tempCred['clientId']
+  #    self.client.options['credentials']['accessToken'] = tempCred['accessToken']
+  #    self.client.options['credentials']['certificate'] = tempCred['certificate']
+  #    result = self.client.getCredentials('admin')
+  #    self.assertEqual(result['accessToken'], 'adminToken')
 
   def test_mock_auth_signed_url(self):
     self.client.options['credentials']['clientId'] = 'admin'
