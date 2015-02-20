@@ -62,7 +62,7 @@ func (api *API) postPopulate() {
 	for i := range api.Entries {
 		api.Entries[i].postPopulate()
 		api.Entries[i].MethodName = utils.Normalise(api.Entries[i].Name, methods)
-		api.Entries[i].API = api
+		api.Entries[i].Parent = api
 	}
 }
 
@@ -128,7 +128,7 @@ type APIEntry struct {
 	Description string     `json:"description"`
 
 	MethodName string
-	API        *API
+	Parent     *API
 }
 
 func (entry *APIEntry) postPopulate() {
@@ -168,7 +168,7 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 		comment += "\n"
 	}
 	comment += "//\n"
-	comment += fmt.Sprintf("// See %v/#%v\n", entry.API.apiDef.DocRoot, entry.Name)
+	comment += fmt.Sprintf("// See %v/#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
 	inputParams := ""
 	if len(entry.Args) > 0 {
 		inputParams += strings.Join(entry.Args, " string, ") + " string"
@@ -237,11 +237,8 @@ func (exchange *Exchange) String() string {
 func (exchange *Exchange) postPopulate() {
 	for i := range exchange.Entries {
 		exchange.Entries[i].postPopulate()
+		exchange.Entries[i].Parent = exchange
 	}
-}
-
-func (exchange *Exchange) generateAPICode(exchangeName string) string {
-	return ""
 }
 
 func (exchange *Exchange) setAPIDefinition(apiDef APIDefinition) {
@@ -256,6 +253,8 @@ type ExchangeEntry struct {
 	Description string         `json:"description"`
 	RoutingKey  []RouteElement `json:"routingKey"`
 	Schema      string         `json:"schema"`
+
+	Parent *Exchange
 }
 
 func (entry *ExchangeEntry) postPopulate() {
@@ -276,10 +275,6 @@ func (entry *ExchangeEntry) String() string {
 	}
 	result += fmt.Sprintf("    Entry Schema      = '%v'\n", entry.Schema)
 	return result
-}
-
-func (entry *ExchangeEntry) generateAPICode(ExchangeEntry string) string {
-	return ""
 }
 
 type RouteElement struct {
@@ -462,5 +457,44 @@ func generateAPICode() string {
 	for i := range apis {
 		content += apis[i].generateAPICode()
 	}
+	return content
+}
+
+func (exchange *Exchange) generateAPICode(exchangeName string) string {
+	content := ""
+	if exchange.Description != "" {
+		content = utils.Indent(exchange.Description, "// ")
+	}
+	if len(content) >= 1 && content[len(content)-1:] != "\n" {
+		content += "\n"
+	}
+	content += "type " + exchangeName + " struct {\n}\n\n"
+	entryTypeNames := make(map[string]bool, len(exchange.Entries))
+	for _, entry := range exchange.Entries {
+		content += entry.generateAPICode(utils.Normalise(entry.Name, entryTypeNames))
+	}
+	return content
+}
+
+func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
+	content := ""
+	if entry.Description != "" {
+		content = utils.Indent(entry.Description, "// ")
+	}
+	if len(content) >= 1 && content[len(content)-1:] != "\n" {
+		content += "\n"
+	}
+	content += "//\n"
+	content += fmt.Sprintf("// See %v/#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
+	content += "type " + exchangeEntry + " struct {\n"
+	keyNames := make(map[string]bool, len(entry.RoutingKey))
+	for _, rk := range entry.RoutingKey {
+		mwch := "*"
+		if rk.MultipleWords {
+			mwch = "#"
+		}
+		content += "\t" + utils.Normalise(rk.Name, keyNames) + " string `mwords:\"" + mwch + "\"`\n"
+	}
+	content += "}\n"
 	return content
 }
