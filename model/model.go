@@ -66,7 +66,7 @@ func (api *API) postPopulate() {
 	}
 }
 
-func (api *API) getMethodDefinitions(apiName string) string {
+func (api *API) generateAPICode(apiName string) string {
 	comment := ""
 	if api.Description != "" {
 		comment = utils.Indent(api.Description, "// ")
@@ -106,7 +106,7 @@ func (api *API) getMethodDefinitions(apiName string) string {
 	content += "}\n"
 	content += "\n"
 	for _, entry := range api.Entries {
-		content += entry.getMethodDefinitions(apiName)
+		content += entry.generateAPICode(apiName)
 	}
 	return content
 }
@@ -159,7 +159,7 @@ func (entry *APIEntry) String() string {
 		entry.Title, entry.Description)
 }
 
-func (entry *APIEntry) getMethodDefinitions(apiName string) string {
+func (entry *APIEntry) generateAPICode(apiName string) string {
 	comment := ""
 	if entry.Description != "" {
 		comment = utils.Indent(entry.Description, "// ")
@@ -240,7 +240,7 @@ func (exchange *Exchange) postPopulate() {
 	}
 }
 
-func (exchange *Exchange) getMethodDefinitions(exchangeName string) string {
+func (exchange *Exchange) generateAPICode(exchangeName string) string {
 	return ""
 }
 
@@ -278,7 +278,7 @@ func (entry *ExchangeEntry) String() string {
 	return result
 }
 
-func (entry *ExchangeEntry) getMethodDefinitions(ExchangeEntry string) string {
+func (entry *ExchangeEntry) generateAPICode(ExchangeEntry string) string {
 	return ""
 }
 
@@ -303,7 +303,7 @@ func (re *RouteElement) String() string {
 type APIModel interface {
 	String() string
 	postPopulate()
-	getMethodDefinitions(name string) string
+	generateAPICode(name string) string
 	setAPIDefinition(apiDef APIDefinition)
 }
 
@@ -317,8 +317,8 @@ type APIDefinition struct {
 	Data      APIModel
 }
 
-func (a APIDefinition) getMethodDefinitions() string {
-	return a.Data.getMethodDefinitions(a.Name)
+func (a APIDefinition) generateAPICode() string {
+	return a.Data.generateAPICode(a.Name)
 }
 
 func loadJson(reader io.Reader, schema *string) APIModel {
@@ -425,8 +425,8 @@ package client
 
 import "net/http"
 `
-	content += generateTypes()
-	content += generateMethods()
+	content += generatePayloadTypes()
+	content += generateAPICode()
 	utils.WriteStringToFile(content, goOutput)
 
 	content = "The following file is an auto-generated static dump of the API models at time of code generation.\n"
@@ -443,7 +443,10 @@ import "net/http"
 	utils.WriteStringToFile(content, modelData)
 }
 
-func generateTypes() string {
+// This is where we generate nested and compoound types in go to represent json payloads
+// which are used as inputs and outputs for the REST API endpoints, and also for Pulse
+// message bodies for the Exchange APIs
+func generatePayloadTypes() string {
 	content := "type (" // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	for _, i := range schemaURLs {
@@ -452,10 +455,12 @@ func generateTypes() string {
 	return content + ")\n\n"
 }
 
-func generateMethods() string {
+// This is where we generate the code based on the API objects we have read, which is based
+// on a semantic understanding of what the generated logic needs to do
+func generateAPICode() string {
 	content := ""
 	for i := range apis {
-		content += apis[i].getMethodDefinitions()
+		content += apis[i].generateAPICode()
 	}
 	return content
 }
