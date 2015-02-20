@@ -229,8 +229,8 @@ type (
 		// Information about the artifact that was created
 		Artifact interface{} `json:"artifact"`
 		// Id of the run on which artifact was created.
-		RunId  int         `json:"runId"`
-		Status interface{} `json:"status"`
+		RunId  int                 `json:"runId"`
+		Status TaskStatusStructure `json:"status"`
 		// Message version
 		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which the run with the created
@@ -386,8 +386,8 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#
 	TaskClaimResponse struct {
 		// `run-id` assigned to this run of the task
-		RunId  int         `json:"runId"`
-		Status interface{} `json:"status"`
+		RunId  int                 `json:"runId"`
+		Status TaskStatusStructure `json:"status"`
 		// Time at which the run expires and is resolved as `failed`, if the run isn't reclaimed.
 		TakenUntil string `json:"takenUntil"`
 		// Identifier for the worker-group within which this run started.
@@ -401,8 +401,8 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#
 	TaskCompletedMessage struct {
 		// Id of the run that completed the task
-		RunId  int         `json:"runId"`
-		Status interface{} `json:"status"`
+		RunId  int                 `json:"runId"`
+		Status TaskStatusStructure `json:"status"`
 		// Message version
 		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which this run ran.
@@ -426,7 +426,7 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-defined-message.json#
 	TaskDefinedMessage struct {
-		Status interface{} `json:"status"`
+		Status TaskStatusStructure `json:"status"`
 		// Message version
 		Version interface{} `json:"version"`
 	}
@@ -437,8 +437,8 @@ type (
 	TaskExceptionMessage struct {
 		// Id of the last run for the task, not provided if `deadline`
 		// was exceeded before a run was started.
-		RunId  int         `json:"runId"`
-		Status interface{} `json:"status"`
+		RunId  int                 `json:"runId"`
+		Status TaskStatusStructure `json:"status"`
 		// Message version
 		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which the last attempt of the task
@@ -470,8 +470,8 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#
 	TaskFailedMessage struct {
 		// Id of the run that failed.
-		RunId  int         `json:"runId"`
-		Status interface{} `json:"status"`
+		RunId  int                 `json:"runId"`
+		Status TaskStatusStructure `json:"status"`
 		// Message version
 		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which this run ran.
@@ -485,8 +485,8 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#
 	TaskPendingMessage struct {
 		// Id of run that became pending, `run-id`s always starts from 0
-		RunId  int         `json:"runId"`
-		Status interface{} `json:"status"`
+		RunId  int                 `json:"runId"`
+		Status TaskStatusStructure `json:"status"`
 		// Message version
 		Version interface{} `json:"version"`
 	}
@@ -496,8 +496,8 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#
 	TaskRunningMessage struct {
 		// Id of the run that just started, always starts from 0
-		RunId  int         `json:"runId"`
-		Status interface{} `json:"status"`
+		RunId  int                 `json:"runId"`
+		Status TaskStatusStructure `json:"status"`
 		// Time at which the run expires and is resolved as `failed`, if the run
 		// isn't reclaimed.
 		TakenUntil string `json:"takenUntil"`
@@ -513,7 +513,7 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-status-response.json#
 	TaskStatusResponse struct {
-		Status interface{} `json:"status"`
+		Status TaskStatusStructure `json:"status"`
 	}
 
 	// A representation of **task status** as known by the queue
@@ -661,8 +661,8 @@ type (
 			// List of required `taskId`s
 			Requires []string `json:"requires"`
 			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
-			Reruns int         `json:"reruns"`
-			Task   interface{} `json:"task"`
+			Reruns int            `json:"reruns"`
+			Task   TaskDefinition `json:"task"`
 			// Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.
 			TaskId string `json:"taskId"`
 		} `json:"tasks"`
@@ -683,7 +683,7 @@ type (
 			// Link to source of this task-graph, should specify file, revision and repository
 			Source string `json:"source"`
 		} `json:"metadata"`
-		Status interface{} `json:"status"`
+		Status TaskGraphStatusStructure `json:"status"`
 		// Arbitrary key-value tags (only strings limited to 4k)
 		Tags interface{} `json:"tags"`
 		// Mapping from task-labels to task information and state.
@@ -737,7 +737,7 @@ type (
 	//
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#
 	BlockedTaskGraphMessage struct {
-		Status interface{} `json:"status"`
+		Status TaskGraphStatusStructure `json:"status"`
 		// Unique `taskId` that is blocking this task-graph from completion.
 		TaskId string `json:"taskId"`
 		// Message version
@@ -748,7 +748,7 @@ type (
 	//
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#
 	TaskGraphExtendedMessage struct {
-		Status interface{} `json:"status"`
+		Status TaskGraphStatusStructure `json:"status"`
 		// Message version
 		Version interface{} `json:"version"`
 	}
@@ -757,7 +757,7 @@ type (
 	//
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#
 	TaskGraphFinishedMessage struct {
-		Status interface{} `json:"status"`
+		Status TaskGraphStatusStructure `json:"status"`
 		// Message version
 		Version interface{} `json:"version"`
 	}
@@ -777,7 +777,7 @@ type (
 			// Link to source of this task-graph, should specify file, revision and repository
 			Source string `json:"source"`
 		} `json:"metadata"`
-		Status interface{} `json:"status"`
+		Status TaskGraphStatusStructure `json:"status"`
 		// Arbitrary key-value tags (only strings limited to 4k)
 		Tags interface{} `json:"tags"`
 	}
@@ -786,7 +786,7 @@ type (
 	//
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#
 	NewTaskGraphMessage struct {
-		Status interface{} `json:"status"`
+		Status TaskGraphStatusStructure `json:"status"`
 		// Message version
 		Version interface{} `json:"version"`
 	}
@@ -795,7 +795,7 @@ type (
 	//
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#
 	TaskGraphStatusResponse struct {
-		Status interface{} `json:"status"`
+		Status TaskGraphStatusStructure `json:"status"`
 	}
 
 	// A representation of **task-graph status** as known by the scheduler, without the state of all individual tasks.
@@ -841,8 +841,8 @@ type (
 			// List of required `taskId`s
 			Requires []string `json:"requires"`
 			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
-			Reruns int         `json:"reruns"`
-			Task   interface{} `json:"task"`
+			Reruns int            `json:"reruns"`
+			Task   TaskDefinition `json:"task"`
 			// Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.
 			TaskId string `json:"taskId"`
 		} `json:"tasks"`

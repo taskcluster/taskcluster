@@ -1,6 +1,8 @@
 package exchange
 
 import (
+	"encoding/json"
+	//	"github.com/streadway/amqp"
 	"reflect"
 	"strings"
 )
@@ -17,6 +19,26 @@ type TaskDefined struct {
 	TaskGroupId    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
+
+type TaskClusterMessage struct {
+	Status  json.RawMessage `json:"status"`
+	Version uint            `json:"version"`
+}
+
+// func X(f func(interface{}), o interface{}) func(d amqp.Delivery) {
+// 	return func(d amqp.Delivery) {
+// 		message := new(exchange.TaskClusterMessage)
+// 		err := json.Unmarshal(d.Body, message)
+// 		if err != nil {
+// 			panic(err)
+// 		}
+// 		json.Unmarshal(message.Status, o)
+// 		if err != nil {
+// 			panic(err)
+// 		}
+// 		return f(o)
+// 	}
+// }
 
 func (x TaskDefined) RoutingKey() string {
 	return generateRoutingKey(&x)

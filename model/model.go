@@ -177,7 +177,7 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 	apiArgsPayload := "nil"
 	if entry.Input != "" {
 		apiArgsPayload = "payload"
-		p := "payload *" + schemas[entry.Input].StructName
+		p := "payload *" + schemas[entry.Input].TypeName
 		if inputParams == "" {
 			inputParams = p
 		} else {
@@ -187,14 +187,14 @@ func (entry *APIEntry) getMethodDefinitions(apiName string) string {
 
 	responseType := "*http.Response"
 	if entry.Output != "" {
-		responseType = "(*" + schemas[entry.Output].StructName + ", *http.Response)"
+		responseType = "(*" + schemas[entry.Output].TypeName + ", *http.Response)"
 	}
 
 	content := comment
 	content += "func (a *" + apiName + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
 	if entry.Output != "" {
-		content += "\tresponseObject, httpResponse := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", new(" + schemas[entry.Output].StructName + "))\n"
-		content += "\treturn responseObject.(*" + schemas[entry.Output].StructName + "), httpResponse\n"
+		content += "\tresponseObject, httpResponse := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", new(" + schemas[entry.Output].TypeName + "))\n"
+		content += "\treturn responseObject.(*" + schemas[entry.Output].TypeName + "), httpResponse\n"
 	} else {
 		content += "\t_, httpResponse := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", nil)\n"
 		content += "\treturn httpResponse\n"
@@ -349,10 +349,10 @@ func loadJsonSchema(url string) *JsonSubSchema {
 	return m
 }
 
-func cacheJsonSchema(url *string) {
+func cacheJsonSchema(url *string) *JsonSubSchema {
 	// if url is not provided, there is nothing to download
 	if url == nil || *url == "" {
-		return
+		return nil
 	}
 	// workaround for problem where some urls don't end with a #
 	if (*url)[len(*url)-1:] != "#" {
@@ -363,8 +363,19 @@ func cacheJsonSchema(url *string) {
 		schemas[*url] = loadJsonSchema(*url)
 		schemas[*url].SourceURL = *url
 	}
+	return schemas[*url]
 }
 
+// LoadAPIs takes care of reading all json files and performing elementary
+// processing of the data, such as assigning unique type names to entities
+// which will be translated to go types.
+//
+// Data is unmarshaled into objects (or instances of go types) and then
+// postPopulate is called on the objects. This in turn triggers further reading
+// of json files and unmarshalling where schemas refer to other schemas.
+//
+// When LoadAPIs returns, all json schemas and sub schemas should have been
+// read and unmarhsalled into go objects.
 func LoadAPIs(reader io.Reader) ([]APIDefinition, []string, map[string]*JsonSubSchema) {
 	decoder := json.NewDecoder(reader)
 	err = decoder.Decode(&apis)
@@ -386,11 +397,11 @@ func LoadAPIs(reader io.Reader) ([]APIDefinition, []string, map[string]*JsonSubS
 	sort.Strings(schemaURLs)
 	// finally, now we can generate normalised names
 	// for schemas
-	// keep a record of generated struct names, so that we don't reuse old names
+	// keep a record of generated type names, so that we don't reuse old names
 	// map[string]bool acts like a set of strings
-	structs := make(map[string]bool)
+	TypeName := make(map[string]bool)
 	for _, i := range schemaURLs {
-		schemas[i].StructName = utils.Normalise(*schemas[i].Title, structs)
+		schemas[i].TypeName = utils.Normalise(*schemas[i].Title, TypeName)
 	}
 	//////////////////////////////////////////////////////////////////////////////
 	// these next two lines are a temporary hack while waiting for https://github.com/taskcluster/taskcluster-queue/pull/31
@@ -400,6 +411,8 @@ func LoadAPIs(reader io.Reader) ([]APIDefinition, []string, map[string]*JsonSubS
 	return apis, schemaURLs, schemas
 }
 
+// GenerateCode takes the objects loaded into memory in LoadAPIs
+// and writes them out as go code.
 func GenerateCode(goOutput, modelData string) {
 	content := `
 // The following code is AUTO-GENERATED. Please DO NOT edit.

@@ -40,10 +40,11 @@ type (
 		Type                 *string               `json:"type"`
 
 		// non-json fields used for sorting/tracking
-		StructName     string
+		TypeName       string
 		IsInputSchema  bool
 		IsOutputSchema bool
 		SourceURL      string
+		RefSubSchema   *JsonSubSchema
 	}
 
 	Items []JsonSubSchema
@@ -58,6 +59,37 @@ type (
 		Properties *JsonSubSchema
 	}
 )
+
+func (subSchema JsonSubSchema) String() string {
+	result := ""
+	result += describe("Additional Items", subSchema.AdditionalItems)
+	result += describe("Additional Properties", subSchema.AdditionalProperties)
+	result += describe("All Of", subSchema.AllOf)
+	result += describe("Any Of", subSchema.AnyOf)
+	result += describe("Default", subSchema.Default)
+	result += describe("Description", subSchema.Description)
+	result += describe("Enum", subSchema.Enum)
+	result += describe("Format", subSchema.Format)
+	result += describe("ID", subSchema.ID)
+	result += describeList("Items", subSchema.Items)
+	result += describe("Maximum", subSchema.Maximum)
+	result += describe("MaxLength", subSchema.MaxLength)
+	result += describe("Minimum", subSchema.Minimum)
+	result += describe("MinLength", subSchema.MinLength)
+	result += describeList("OneOf", subSchema.OneOf)
+	result += describe("Pattern", subSchema.Pattern)
+	result += describeList("Properties", subSchema.Properties)
+	result += describe("Ref", subSchema.Ref)
+	result += describe("Required", subSchema.Required)
+	result += describe("Schema", subSchema.Schema)
+	result += describe("Title", subSchema.Title)
+	result += describe("Type", subSchema.Type)
+	result += describe("TypeName", &subSchema.TypeName)
+	result += describe("IsInputSchema", &subSchema.IsInputSchema)
+	result += describe("IsOutputSchema", &subSchema.IsOutputSchema)
+	result += describe("SourceURL", &subSchema.SourceURL)
+	return result
+}
 
 func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool) string {
 	content := ""
@@ -76,11 +108,14 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool) string {
 			comment += "//\n// See " + url + "\n"
 		}
 		content += comment
-		content += jsonSubSchema.StructName + " "
+		content += jsonSubSchema.TypeName + " "
 	}
 	typ := "interface{}"
 	if p := jsonSubSchema.Type; p != nil {
 		typ = *p
+	}
+	if p := jsonSubSchema.RefSubSchema; p != nil {
+		typ = p.TypeName
 	}
 	switch typ {
 	case "array":
@@ -203,31 +238,6 @@ func describe(name string, value interface{}) string {
 	return ""
 }
 
-func (subSchema JsonSubSchema) String() string {
-	result := ""
-	result += describe("Additional Properties", subSchema.AdditionalProperties)
-	result += describe("All Of", subSchema.AllOf)
-	result += describe("Any Of", subSchema.AnyOf)
-	result += describe("Description", subSchema.Description)
-	result += describe("Enum", subSchema.Enum)
-	result += describe("Format", subSchema.Format)
-	result += describe("ID", subSchema.ID)
-	result += describeList("Items", subSchema.Items)
-	result += describe("Maximum", subSchema.Maximum)
-	result += describe("MaxLength", subSchema.MaxLength)
-	result += describe("Minimum", subSchema.Minimum)
-	result += describe("MinLength", subSchema.MinLength)
-	result += describeList("OneOf", subSchema.OneOf)
-	result += describe("Pattern", subSchema.Pattern)
-	result += describeList("Properties", subSchema.Properties)
-	result += describe("Ref", subSchema.Ref)
-	result += describe("Required", subSchema.Required)
-	result += describe("Schema", subSchema.Schema)
-	result += describe("Title", subSchema.Title)
-	result += describe("Type", subSchema.Type)
-	return result
-}
-
 type CanPopulate interface {
 	postPopulate()
 }
@@ -246,5 +256,10 @@ func (subSchema *JsonSubSchema) postPopulate() {
 	postPopulateIfNotNil(subSchema.OneOf)
 	postPopulateIfNotNil(subSchema.Items)
 	postPopulateIfNotNil(subSchema.Properties)
-	cacheJsonSchema(subSchema.Ref)
+
+	// If we have a $ref pointing to another schema, keep a reference so we can
+	// discover TypeName later when we generate the type definition
+	if subSchema.Ref != nil {
+		subSchema.RefSubSchema = cacheJsonSchema(subSchema.Ref)
+	}
 }
