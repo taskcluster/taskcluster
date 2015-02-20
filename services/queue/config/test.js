@@ -8,6 +8,8 @@ module.exports = {
     artifactContainer:            'artifacts',
     statsComponent:               'test-queue',
     queuePrefix:                  'hacks',
+    taskTableName:                'TestTasks',
+    artifactTableName:            'TestArtifacts',
     claimQueue:                   'test-claim-queue',
     deadlineQueue:                'test-deadline-queue',
     deadlineDelay:                1000,
