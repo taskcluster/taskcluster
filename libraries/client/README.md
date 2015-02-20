@@ -474,10 +474,8 @@ not be closed with the `Listener`s, so you must `close()` it manually.
 
 ```js
 var connection = new taskcluster.PulseConnection({
-  credentials: {
     username:           '...',      // Pulse username from pulse guardian
     password:           '...'       // Pulse password from pulse guardian
-  }
 });
 
 // Create listener
