@@ -1508,7 +1508,7 @@ api.declare({
   name:       'pendingTasks',
   scopes:     ['queue:pending-tasks:<provisionerId>/<workerType>'],
   deferAuth:  true,
-  output:     SCHEMA_PREFIX_CONST + 'pending-tasks-response.json',
+  output:     SCHEMA_PREFIX_CONST + 'pending-tasks-response.json#',
   title:      "Get Number of Pending Tasks",
   description: [
     "Documented later...",
