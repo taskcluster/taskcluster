@@ -26,7 +26,6 @@
     "thirty-two":           "0.0.2",
     "url-join":             "0.0.1",
     "uuid":                 "2.0.1",
-    "xml2js":               "^0.4.4",
     "6to5":                 "^3.6.0",
     "kexec":                "^1.2.0"
   },
@@ -36,7 +35,7 @@
     "mocha":                "^2.1.0",
     "xmlbuilder":           "^2.4.6",
     "taskcluster-client":   "taskcluster/taskcluster-client#extended-from-now",
-    "xml2js":               "0.4.4",
+    "xml2js":               "^0.4.4",
     "expect.js":            "^0.3.1"
   },
   "engines": {
