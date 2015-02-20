@@ -256,10 +256,7 @@ func (subSchema *JsonSubSchema) postPopulate() {
 	postPopulateIfNotNil(subSchema.OneOf)
 	postPopulateIfNotNil(subSchema.Items)
 	postPopulateIfNotNil(subSchema.Properties)
-
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
-	if subSchema.Ref != nil {
-		subSchema.RefSubSchema = cacheJsonSchema(subSchema.Ref)
-	}
+	subSchema.RefSubSchema = cacheJsonSchema(subSchema.Ref)
 }
