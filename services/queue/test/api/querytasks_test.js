@@ -9,7 +9,7 @@ suite('Query tasks', function() {
   var expect      = require('expect.js');
   var helper      = require('./helper');
 
-  test("pendingTasks", async () => {
+  test("pendingTasks >= 1", async () => {
     var taskDef = {
       provisionerId:    'no-provisioner',
       workerType:       'query-test-worker',
@@ -46,5 +46,13 @@ suite('Query tasks', function() {
       'query-test-worker'
     );
     expect(r1.pendingTasks).to.be.greaterThan(1);
+  });
+
+  test("pendingTasks == 0", async () => {
+    var r1 = await helper.queue.pendingTasks(
+      'no-provisioner',
+      'empty-test-worker'
+    );
+    expect(r1.pendingTasks).to.be(0);
   });
 });
