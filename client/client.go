@@ -1,3 +1,4 @@
+// Package client provides an interface to Task Cluster APIs and AMQP Exchanges.
 package client
 
 import (
@@ -93,12 +94,4 @@ func generateRoutingKey(x interface{}) string {
 		}
 	}
 	return strings.Join(p, ".")
-}
-
-func unmarshalMessage(payload []byte, payloadObject interface{}) interface{} {
-	err := json.Unmarshal(payload, payloadObject)
-	if err != nil {
-		panic(err)
-	}
-	return payloadObject
 }

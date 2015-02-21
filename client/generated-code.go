@@ -1614,8 +1614,8 @@ func (binding TaskDefined) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-defined"
 }
 
-func (binding TaskDefined) UnmarshalMessage(payload []byte) *TaskDefinedMessage {
-	return unmarshalMessage(payload, new(TaskDefinedMessage)).(*TaskDefinedMessage)
+func (binding TaskDefined) PayloadObject() interface{} {
+	return new(TaskDefinedMessage)
 }
 
 // When a task becomes `pending` a message is posted to this exchange.
@@ -1648,8 +1648,8 @@ func (binding TaskPending) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-pending"
 }
 
-func (binding TaskPending) UnmarshalMessage(payload []byte) *TaskPendingMessage {
-	return unmarshalMessage(payload, new(TaskPendingMessage)).(*TaskPendingMessage)
+func (binding TaskPending) PayloadObject() interface{} {
+	return new(TaskPendingMessage)
 }
 
 // Whenever a task is claimed by a worker, a run is started on the worker,
@@ -1677,8 +1677,8 @@ func (binding TaskRunning) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-running"
 }
 
-func (binding TaskRunning) UnmarshalMessage(payload []byte) *TaskRunningMessage {
-	return unmarshalMessage(payload, new(TaskRunningMessage)).(*TaskRunningMessage)
+func (binding TaskRunning) PayloadObject() interface{} {
+	return new(TaskRunningMessage)
 }
 
 // Whenever the `createArtifact` end-point is called, the queue will create
@@ -1722,8 +1722,8 @@ func (binding ArtifactCreated) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/artifact-created"
 }
 
-func (binding ArtifactCreated) UnmarshalMessage(payload []byte) *ArtifactCreatedMessage {
-	return unmarshalMessage(payload, new(ArtifactCreatedMessage)).(*ArtifactCreatedMessage)
+func (binding ArtifactCreated) PayloadObject() interface{} {
+	return new(ArtifactCreatedMessage)
 }
 
 // When a task is successfully completed by a worker a message is posted
@@ -1754,8 +1754,8 @@ func (binding TaskCompleted) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-completed"
 }
 
-func (binding TaskCompleted) UnmarshalMessage(payload []byte) *TaskCompletedMessage {
-	return unmarshalMessage(payload, new(TaskCompletedMessage)).(*TaskCompletedMessage)
+func (binding TaskCompleted) PayloadObject() interface{} {
+	return new(TaskCompletedMessage)
 }
 
 // When a task ran, but failed to complete successfully a message is posted
@@ -1784,8 +1784,8 @@ func (binding TaskFailed) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-failed"
 }
 
-func (binding TaskFailed) UnmarshalMessage(payload []byte) *TaskFailedMessage {
-	return unmarshalMessage(payload, new(TaskFailedMessage)).(*TaskFailedMessage)
+func (binding TaskFailed) PayloadObject() interface{} {
+	return new(TaskFailedMessage)
 }
 
 // Whenever TaskCluster fails to run a message is posted to this exchange.
@@ -1818,8 +1818,8 @@ func (binding TaskException) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-exception"
 }
 
-func (binding TaskException) UnmarshalMessage(payload []byte) *TaskExceptionMessage {
-	return unmarshalMessage(payload, new(TaskExceptionMessage)).(*TaskExceptionMessage)
+func (binding TaskException) PayloadObject() interface{} {
+	return new(TaskExceptionMessage)
 }
 
 // The task-graph scheduler, typically available at
@@ -2074,8 +2074,8 @@ func (binding TaskGraphRunning) ExchangeName() string {
 	return "exchange/taskcluster-scheduler/v1/task-graph-running"
 }
 
-func (binding TaskGraphRunning) UnmarshalMessage(payload []byte) *NewTaskGraphMessage {
-	return unmarshalMessage(payload, new(NewTaskGraphMessage)).(*NewTaskGraphMessage)
+func (binding TaskGraphRunning) PayloadObject() interface{} {
+	return new(NewTaskGraphMessage)
 }
 
 // When a task-graph is extended, that is additional tasks is added to the
@@ -2105,8 +2105,8 @@ func (binding TaskGraphExtended) ExchangeName() string {
 	return "exchange/taskcluster-scheduler/v1/task-graph-extended"
 }
 
-func (binding TaskGraphExtended) UnmarshalMessage(payload []byte) *TaskGraphExtendedMessage {
-	return unmarshalMessage(payload, new(TaskGraphExtendedMessage)).(*TaskGraphExtendedMessage)
+func (binding TaskGraphExtended) PayloadObject() interface{} {
+	return new(TaskGraphExtendedMessage)
 }
 
 // When a task is completed unsuccessfully and all reruns have been
@@ -2140,8 +2140,8 @@ func (binding TaskGraphBlocked) ExchangeName() string {
 	return "exchange/taskcluster-scheduler/v1/task-graph-blocked"
 }
 
-func (binding TaskGraphBlocked) UnmarshalMessage(payload []byte) *BlockedTaskGraphMessage {
-	return unmarshalMessage(payload, new(BlockedTaskGraphMessage)).(*BlockedTaskGraphMessage)
+func (binding TaskGraphBlocked) PayloadObject() interface{} {
+	return new(BlockedTaskGraphMessage)
 }
 
 // When all tasks of a task-graph have completed successfully, the
@@ -2170,6 +2170,6 @@ func (binding TaskGraphFinished) ExchangeName() string {
 	return "exchange/taskcluster-scheduler/v1/task-graph-finished"
 }
 
-func (binding TaskGraphFinished) UnmarshalMessage(payload []byte) *TaskGraphFinishedMessage {
-	return unmarshalMessage(payload, new(TaskGraphFinishedMessage)).(*TaskGraphFinishedMessage)
+func (binding TaskGraphFinished) PayloadObject() interface{} {
+	return new(TaskGraphFinishedMessage)
 }
