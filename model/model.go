@@ -505,7 +505,7 @@ func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
 	content += "\treturn \"" + entry.Parent.ExchangePrefix + entry.Exchange + "\"\n"
 	content += "}\n"
 	content += "\n"
-	content += "func (binding " + exchangeEntry + ") PayloadObject() interface{} {\n"
+	content += "func (binding " + exchangeEntry + ") NewPayloadObject() interface{} {\n"
 	content += "\treturn new(" + entry.Payload.TypeName + ")\n"
 	content += "}\n"
 	content += "\n"

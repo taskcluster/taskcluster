@@ -1614,7 +1614,7 @@ func (binding TaskDefined) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-defined"
 }
 
-func (binding TaskDefined) PayloadObject() interface{} {
+func (binding TaskDefined) NewPayloadObject() interface{} {
 	return new(TaskDefinedMessage)
 }
 
@@ -1648,7 +1648,7 @@ func (binding TaskPending) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-pending"
 }
 
-func (binding TaskPending) PayloadObject() interface{} {
+func (binding TaskPending) NewPayloadObject() interface{} {
 	return new(TaskPendingMessage)
 }
 
@@ -1677,7 +1677,7 @@ func (binding TaskRunning) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-running"
 }
 
-func (binding TaskRunning) PayloadObject() interface{} {
+func (binding TaskRunning) NewPayloadObject() interface{} {
 	return new(TaskRunningMessage)
 }
 
@@ -1722,7 +1722,7 @@ func (binding ArtifactCreated) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/artifact-created"
 }
 
-func (binding ArtifactCreated) PayloadObject() interface{} {
+func (binding ArtifactCreated) NewPayloadObject() interface{} {
 	return new(ArtifactCreatedMessage)
 }
 
@@ -1754,7 +1754,7 @@ func (binding TaskCompleted) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-completed"
 }
 
-func (binding TaskCompleted) PayloadObject() interface{} {
+func (binding TaskCompleted) NewPayloadObject() interface{} {
 	return new(TaskCompletedMessage)
 }
 
@@ -1784,7 +1784,7 @@ func (binding TaskFailed) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-failed"
 }
 
-func (binding TaskFailed) PayloadObject() interface{} {
+func (binding TaskFailed) NewPayloadObject() interface{} {
 	return new(TaskFailedMessage)
 }
 
@@ -1818,7 +1818,7 @@ func (binding TaskException) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-exception"
 }
 
-func (binding TaskException) PayloadObject() interface{} {
+func (binding TaskException) NewPayloadObject() interface{} {
 	return new(TaskExceptionMessage)
 }
 
@@ -2074,7 +2074,7 @@ func (binding TaskGraphRunning) ExchangeName() string {
 	return "exchange/taskcluster-scheduler/v1/task-graph-running"
 }
 
-func (binding TaskGraphRunning) PayloadObject() interface{} {
+func (binding TaskGraphRunning) NewPayloadObject() interface{} {
 	return new(NewTaskGraphMessage)
 }
 
@@ -2105,7 +2105,7 @@ func (binding TaskGraphExtended) ExchangeName() string {
 	return "exchange/taskcluster-scheduler/v1/task-graph-extended"
 }
 
-func (binding TaskGraphExtended) PayloadObject() interface{} {
+func (binding TaskGraphExtended) NewPayloadObject() interface{} {
 	return new(TaskGraphExtendedMessage)
 }
 
@@ -2140,7 +2140,7 @@ func (binding TaskGraphBlocked) ExchangeName() string {
 	return "exchange/taskcluster-scheduler/v1/task-graph-blocked"
 }
 
-func (binding TaskGraphBlocked) PayloadObject() interface{} {
+func (binding TaskGraphBlocked) NewPayloadObject() interface{} {
 	return new(BlockedTaskGraphMessage)
 }
 
@@ -2170,6 +2170,6 @@ func (binding TaskGraphFinished) ExchangeName() string {
 	return "exchange/taskcluster-scheduler/v1/task-graph-finished"
 }
 
-func (binding TaskGraphFinished) PayloadObject() interface{} {
+func (binding TaskGraphFinished) NewPayloadObject() interface{} {
 	return new(TaskGraphFinishedMessage)
 }
