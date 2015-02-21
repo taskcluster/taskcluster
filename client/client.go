@@ -94,3 +94,7 @@ func generateRoutingKey(x interface{}) string {
 	}
 	return strings.Join(p, ".")
 }
+
+func UnmarshalMessage(binding interface{}, payload []byte, payloadObject interface{}) interface{} {
+	return payloadObject
+}

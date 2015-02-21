@@ -1606,12 +1606,16 @@ type TaskDefined struct {
 	Reserved       string `mwords:"#"`
 }
 
-func (x TaskDefined) RoutingKey() string {
-	return generateRoutingKey(&x)
+func (binding TaskDefined) RoutingKey() string {
+	return generateRoutingKey(&binding)
 }
 
-func (x TaskDefined) ExchangeName() string {
+func (binding TaskDefined) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-defined"
+}
+
+func (binding TaskDefined) UnmarshalMessage(payload []byte) *TaskDefinedMessage {
+	return UnmarshalMessage(binding, payload, new(TaskDefinedMessage)).(*TaskDefinedMessage)
 }
 
 // When a task becomes `pending` a message is posted to this exchange.
@@ -1636,12 +1640,16 @@ type TaskPending struct {
 	Reserved       string `mwords:"#"`
 }
 
-func (x TaskPending) RoutingKey() string {
-	return generateRoutingKey(&x)
+func (binding TaskPending) RoutingKey() string {
+	return generateRoutingKey(&binding)
 }
 
-func (x TaskPending) ExchangeName() string {
+func (binding TaskPending) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-pending"
+}
+
+func (binding TaskPending) UnmarshalMessage(payload []byte) *TaskPendingMessage {
+	return UnmarshalMessage(binding, payload, new(TaskPendingMessage)).(*TaskPendingMessage)
 }
 
 // Whenever a task is claimed by a worker, a run is started on the worker,
@@ -1661,12 +1669,16 @@ type TaskRunning struct {
 	Reserved       string `mwords:"#"`
 }
 
-func (x TaskRunning) RoutingKey() string {
-	return generateRoutingKey(&x)
+func (binding TaskRunning) RoutingKey() string {
+	return generateRoutingKey(&binding)
 }
 
-func (x TaskRunning) ExchangeName() string {
+func (binding TaskRunning) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-running"
+}
+
+func (binding TaskRunning) UnmarshalMessage(payload []byte) *TaskRunningMessage {
+	return UnmarshalMessage(binding, payload, new(TaskRunningMessage)).(*TaskRunningMessage)
 }
 
 // Whenever the `createArtifact` end-point is called, the queue will create
@@ -1702,12 +1714,16 @@ type ArtifactCreated struct {
 	Reserved       string `mwords:"#"`
 }
 
-func (x ArtifactCreated) RoutingKey() string {
-	return generateRoutingKey(&x)
+func (binding ArtifactCreated) RoutingKey() string {
+	return generateRoutingKey(&binding)
 }
 
-func (x ArtifactCreated) ExchangeName() string {
+func (binding ArtifactCreated) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/artifact-created"
+}
+
+func (binding ArtifactCreated) UnmarshalMessage(payload []byte) *ArtifactCreatedMessage {
+	return UnmarshalMessage(binding, payload, new(ArtifactCreatedMessage)).(*ArtifactCreatedMessage)
 }
 
 // When a task is successfully completed by a worker a message is posted
@@ -1730,12 +1746,16 @@ type TaskCompleted struct {
 	Reserved       string `mwords:"#"`
 }
 
-func (x TaskCompleted) RoutingKey() string {
-	return generateRoutingKey(&x)
+func (binding TaskCompleted) RoutingKey() string {
+	return generateRoutingKey(&binding)
 }
 
-func (x TaskCompleted) ExchangeName() string {
+func (binding TaskCompleted) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-completed"
+}
+
+func (binding TaskCompleted) UnmarshalMessage(payload []byte) *TaskCompletedMessage {
+	return UnmarshalMessage(binding, payload, new(TaskCompletedMessage)).(*TaskCompletedMessage)
 }
 
 // When a task ran, but failed to complete successfully a message is posted
@@ -1756,12 +1776,16 @@ type TaskFailed struct {
 	Reserved       string `mwords:"#"`
 }
 
-func (x TaskFailed) RoutingKey() string {
-	return generateRoutingKey(&x)
+func (binding TaskFailed) RoutingKey() string {
+	return generateRoutingKey(&binding)
 }
 
-func (x TaskFailed) ExchangeName() string {
+func (binding TaskFailed) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-failed"
+}
+
+func (binding TaskFailed) UnmarshalMessage(payload []byte) *TaskFailedMessage {
+	return UnmarshalMessage(binding, payload, new(TaskFailedMessage)).(*TaskFailedMessage)
 }
 
 // Whenever TaskCluster fails to run a message is posted to this exchange.
@@ -1786,12 +1810,16 @@ type TaskException struct {
 	Reserved       string `mwords:"#"`
 }
 
-func (x TaskException) RoutingKey() string {
-	return generateRoutingKey(&x)
+func (binding TaskException) RoutingKey() string {
+	return generateRoutingKey(&binding)
 }
 
-func (x TaskException) ExchangeName() string {
+func (binding TaskException) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-exception"
+}
+
+func (binding TaskException) UnmarshalMessage(payload []byte) *TaskExceptionMessage {
+	return UnmarshalMessage(binding, payload, new(TaskExceptionMessage)).(*TaskExceptionMessage)
 }
 
 // The task-graph scheduler, typically available at
@@ -2038,12 +2066,16 @@ type TaskGraphRunning struct {
 	Reserved       string `mwords:"#"`
 }
 
-func (x TaskGraphRunning) RoutingKey() string {
-	return generateRoutingKey(&x)
+func (binding TaskGraphRunning) RoutingKey() string {
+	return generateRoutingKey(&binding)
 }
 
-func (x TaskGraphRunning) ExchangeName() string {
+func (binding TaskGraphRunning) ExchangeName() string {
 	return "exchange/taskcluster-scheduler/v1/task-graph-running"
+}
+
+func (binding TaskGraphRunning) UnmarshalMessage(payload []byte) *NewTaskGraphMessage {
+	return UnmarshalMessage(binding, payload, new(NewTaskGraphMessage)).(*NewTaskGraphMessage)
 }
 
 // When a task-graph is extended, that is additional tasks is added to the
@@ -2065,12 +2097,16 @@ type TaskGraphExtended struct {
 	Reserved       string `mwords:"#"`
 }
 
-func (x TaskGraphExtended) RoutingKey() string {
-	return generateRoutingKey(&x)
+func (binding TaskGraphExtended) RoutingKey() string {
+	return generateRoutingKey(&binding)
 }
 
-func (x TaskGraphExtended) ExchangeName() string {
+func (binding TaskGraphExtended) ExchangeName() string {
 	return "exchange/taskcluster-scheduler/v1/task-graph-extended"
+}
+
+func (binding TaskGraphExtended) UnmarshalMessage(payload []byte) *TaskGraphExtendedMessage {
+	return UnmarshalMessage(binding, payload, new(TaskGraphExtendedMessage)).(*TaskGraphExtendedMessage)
 }
 
 // When a task is completed unsuccessfully and all reruns have been
@@ -2096,12 +2132,16 @@ type TaskGraphBlocked struct {
 	Reserved       string `mwords:"#"`
 }
 
-func (x TaskGraphBlocked) RoutingKey() string {
-	return generateRoutingKey(&x)
+func (binding TaskGraphBlocked) RoutingKey() string {
+	return generateRoutingKey(&binding)
 }
 
-func (x TaskGraphBlocked) ExchangeName() string {
+func (binding TaskGraphBlocked) ExchangeName() string {
 	return "exchange/taskcluster-scheduler/v1/task-graph-blocked"
+}
+
+func (binding TaskGraphBlocked) UnmarshalMessage(payload []byte) *BlockedTaskGraphMessage {
+	return UnmarshalMessage(binding, payload, new(BlockedTaskGraphMessage)).(*BlockedTaskGraphMessage)
 }
 
 // When all tasks of a task-graph have completed successfully, the
@@ -2122,10 +2162,14 @@ type TaskGraphFinished struct {
 	Reserved       string `mwords:"#"`
 }
 
-func (x TaskGraphFinished) RoutingKey() string {
-	return generateRoutingKey(&x)
+func (binding TaskGraphFinished) RoutingKey() string {
+	return generateRoutingKey(&binding)
 }
 
-func (x TaskGraphFinished) ExchangeName() string {
+func (binding TaskGraphFinished) ExchangeName() string {
 	return "exchange/taskcluster-scheduler/v1/task-graph-finished"
+}
+
+func (binding TaskGraphFinished) UnmarshalMessage(payload []byte) *TaskGraphFinishedMessage {
+	return UnmarshalMessage(binding, payload, new(TaskGraphFinishedMessage)).(*TaskGraphFinishedMessage)
 }

@@ -254,11 +254,12 @@ type ExchangeEntry struct {
 	RoutingKey  []RouteElement `json:"routingKey"`
 	Schema      string         `json:"schema"`
 
-	Parent *Exchange
+	Parent  *Exchange
+	Payload *JsonSubSchema
 }
 
 func (entry *ExchangeEntry) postPopulate() {
-	cacheJsonSchema(&entry.Schema)
+	entry.Payload = cacheJsonSchema(&entry.Schema)
 }
 
 func (entry *ExchangeEntry) String() string {
@@ -496,12 +497,16 @@ func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
 		content += "\t" + utils.Normalise(rk.Name, keyNames) + " string `mwords:\"" + mwch + "\"`\n"
 	}
 	content += "}\n"
-	content += "func (x " + exchangeEntry + ") RoutingKey() string {\n"
-	content += "\treturn generateRoutingKey(&x)\n"
+	content += "func (binding " + exchangeEntry + ") RoutingKey() string {\n"
+	content += "\treturn generateRoutingKey(&binding)\n"
 	content += "}\n"
 	content += "\n"
-	content += "func (x " + exchangeEntry + ") ExchangeName() string {\n"
+	content += "func (binding " + exchangeEntry + ") ExchangeName() string {\n"
 	content += "\treturn \"" + entry.Parent.ExchangePrefix + entry.Exchange + "\"\n"
+	content += "}\n"
+	content += "\n"
+	content += "func (binding " + exchangeEntry + ") UnmarshalMessage(payload []byte) *" + entry.Payload.TypeName + " {\n"
+	content += "\treturn UnmarshalMessage(binding, payload, new(" + entry.Payload.TypeName + ")).(*" + entry.Payload.TypeName + ")\n"
 	content += "}\n"
 	content += "\n"
 	return content
