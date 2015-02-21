@@ -506,7 +506,7 @@ func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
 	content += "}\n"
 	content += "\n"
 	content += "func (binding " + exchangeEntry + ") UnmarshalMessage(payload []byte) *" + entry.Payload.TypeName + " {\n"
-	content += "\treturn UnmarshalMessage(binding, payload, new(" + entry.Payload.TypeName + ")).(*" + entry.Payload.TypeName + ")\n"
+	content += "\treturn unmarshalMessage(payload, new(" + entry.Payload.TypeName + ")).(*" + entry.Payload.TypeName + ")\n"
 	content += "}\n"
 	content += "\n"
 	return content

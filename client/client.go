@@ -95,6 +95,10 @@ func generateRoutingKey(x interface{}) string {
 	return strings.Join(p, ".")
 }
 
-func UnmarshalMessage(binding interface{}, payload []byte, payloadObject interface{}) interface{} {
+func unmarshalMessage(payload []byte, payloadObject interface{}) interface{} {
+	err := json.Unmarshal(payload, payloadObject)
+	if err != nil {
+		panic(err)
+	}
 	return payloadObject
 }
