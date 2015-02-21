@@ -1611,7 +1611,7 @@ func (x TaskDefined) RoutingKey() string {
 }
 
 func (x TaskDefined) ExchangeName() string {
-	return "task-defined"
+	return "exchange/taskcluster-queue/v1/task-defined"
 }
 
 // When a task becomes `pending` a message is posted to this exchange.
@@ -1641,7 +1641,7 @@ func (x TaskPending) RoutingKey() string {
 }
 
 func (x TaskPending) ExchangeName() string {
-	return "task-pending"
+	return "exchange/taskcluster-queue/v1/task-pending"
 }
 
 // Whenever a task is claimed by a worker, a run is started on the worker,
@@ -1666,7 +1666,7 @@ func (x TaskRunning) RoutingKey() string {
 }
 
 func (x TaskRunning) ExchangeName() string {
-	return "task-running"
+	return "exchange/taskcluster-queue/v1/task-running"
 }
 
 // Whenever the `createArtifact` end-point is called, the queue will create
@@ -1707,7 +1707,7 @@ func (x ArtifactCreated) RoutingKey() string {
 }
 
 func (x ArtifactCreated) ExchangeName() string {
-	return "artifact-created"
+	return "exchange/taskcluster-queue/v1/artifact-created"
 }
 
 // When a task is successfully completed by a worker a message is posted
@@ -1735,7 +1735,7 @@ func (x TaskCompleted) RoutingKey() string {
 }
 
 func (x TaskCompleted) ExchangeName() string {
-	return "task-completed"
+	return "exchange/taskcluster-queue/v1/task-completed"
 }
 
 // When a task ran, but failed to complete successfully a message is posted
@@ -1761,7 +1761,7 @@ func (x TaskFailed) RoutingKey() string {
 }
 
 func (x TaskFailed) ExchangeName() string {
-	return "task-failed"
+	return "exchange/taskcluster-queue/v1/task-failed"
 }
 
 // Whenever TaskCluster fails to run a message is posted to this exchange.
@@ -1791,7 +1791,7 @@ func (x TaskException) RoutingKey() string {
 }
 
 func (x TaskException) ExchangeName() string {
-	return "task-exception"
+	return "exchange/taskcluster-queue/v1/task-exception"
 }
 
 // The task-graph scheduler, typically available at
@@ -2043,7 +2043,7 @@ func (x TaskGraphRunning) RoutingKey() string {
 }
 
 func (x TaskGraphRunning) ExchangeName() string {
-	return "task-graph-running"
+	return "exchange/taskcluster-scheduler/v1/task-graph-running"
 }
 
 // When a task-graph is extended, that is additional tasks is added to the
@@ -2070,7 +2070,7 @@ func (x TaskGraphExtended) RoutingKey() string {
 }
 
 func (x TaskGraphExtended) ExchangeName() string {
-	return "task-graph-extended"
+	return "exchange/taskcluster-scheduler/v1/task-graph-extended"
 }
 
 // When a task is completed unsuccessfully and all reruns have been
@@ -2101,7 +2101,7 @@ func (x TaskGraphBlocked) RoutingKey() string {
 }
 
 func (x TaskGraphBlocked) ExchangeName() string {
-	return "task-graph-blocked"
+	return "exchange/taskcluster-scheduler/v1/task-graph-blocked"
 }
 
 // When all tasks of a task-graph have completed successfully, the
@@ -2127,5 +2127,5 @@ func (x TaskGraphFinished) RoutingKey() string {
 }
 
 func (x TaskGraphFinished) ExchangeName() string {
-	return "task-graph-finished"
+	return "exchange/taskcluster-scheduler/v1/task-graph-finished"
 }

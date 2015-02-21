@@ -501,7 +501,7 @@ func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
 	content += "}\n"
 	content += "\n"
 	content += "func (x " + exchangeEntry + ") ExchangeName() string {\n"
-	content += "\treturn \"" + entry.Exchange + "\"\n"
+	content += "\treturn \"" + entry.Parent.ExchangePrefix + entry.Exchange + "\"\n"
 	content += "}\n"
 	content += "\n"
 	return content
