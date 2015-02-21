@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/json"
-	// "fmt"
 	hawk "github.com/tent/hawk-go"
 	"io"
 	"net/http"
-	// "net/http/httputil"
 	"reflect"
+	"strings"
 )
 
 //go:generate generatemodel -f ../model/apis.json -o generated-code.go -m model-data.txt
@@ -76,4 +75,22 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	}
 	// fmt.Printf("ClientId: %v\nAccessToken: %v\nPayload: %v\nURL: %v\nMethod: %v\nResult: %v\n", auth.ClientId, auth.AccessToken, string(jsonPayload), auth.BaseURL+route, method, result)
 	return result, response
+}
+
+func generateRoutingKey(x interface{}) string {
+	val := reflect.ValueOf(x).Elem()
+	p := make([]string, 0, val.NumField())
+	for i := 0; i < val.NumField(); i++ {
+		valueField := val.Field(i)
+		typeField := val.Type().Field(i)
+		tag := typeField.Tag
+		if t := tag.Get("mwords"); t != "" {
+			if v := valueField.Interface(); v == "" {
+				p = append(p, t)
+			} else {
+				p = append(p, v.(string))
+			}
+		}
+	}
+	return strings.Join(p, ".")
 }

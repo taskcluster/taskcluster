@@ -1606,6 +1606,14 @@ type TaskDefined struct {
 	Reserved       string `mwords:"#"`
 }
 
+func (x TaskDefined) RoutingKey() string {
+	return generateRoutingKey(&x)
+}
+
+func (x TaskDefined) ExchangeName() string {
+	return "task-defined"
+}
+
 // When a task becomes `pending` a message is posted to this exchange.
 //
 // This is useful for workers who doesn't want to constantly poll the queue
@@ -1628,6 +1636,14 @@ type TaskPending struct {
 	Reserved       string `mwords:"#"`
 }
 
+func (x TaskPending) RoutingKey() string {
+	return generateRoutingKey(&x)
+}
+
+func (x TaskPending) ExchangeName() string {
+	return "task-pending"
+}
+
 // Whenever a task is claimed by a worker, a run is started on the worker,
 // and a message is posted on this exchange.
 //
@@ -1643,6 +1659,14 @@ type TaskRunning struct {
 	SchedulerId    string `mwords:"*"`
 	TaskGroupId    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
+}
+
+func (x TaskRunning) RoutingKey() string {
+	return generateRoutingKey(&x)
+}
+
+func (x TaskRunning) ExchangeName() string {
+	return "task-running"
 }
 
 // Whenever the `createArtifact` end-point is called, the queue will create
@@ -1678,6 +1702,14 @@ type ArtifactCreated struct {
 	Reserved       string `mwords:"#"`
 }
 
+func (x ArtifactCreated) RoutingKey() string {
+	return generateRoutingKey(&x)
+}
+
+func (x ArtifactCreated) ExchangeName() string {
+	return "artifact-created"
+}
+
 // When a task is successfully completed by a worker a message is posted
 // this exchange.
 // This message is routed using the `runId`, `workerGroup` and `workerId`
@@ -1698,6 +1730,14 @@ type TaskCompleted struct {
 	Reserved       string `mwords:"#"`
 }
 
+func (x TaskCompleted) RoutingKey() string {
+	return generateRoutingKey(&x)
+}
+
+func (x TaskCompleted) ExchangeName() string {
+	return "task-completed"
+}
+
 // When a task ran, but failed to complete successfully a message is posted
 // to this exchange. This is same as worker ran task-specific code, but the
 // task specific code exited non-zero.
@@ -1714,6 +1754,14 @@ type TaskFailed struct {
 	SchedulerId    string `mwords:"*"`
 	TaskGroupId    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
+}
+
+func (x TaskFailed) RoutingKey() string {
+	return generateRoutingKey(&x)
+}
+
+func (x TaskFailed) ExchangeName() string {
+	return "task-failed"
 }
 
 // Whenever TaskCluster fails to run a message is posted to this exchange.
@@ -1736,6 +1784,14 @@ type TaskException struct {
 	SchedulerId    string `mwords:"*"`
 	TaskGroupId    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
+}
+
+func (x TaskException) RoutingKey() string {
+	return generateRoutingKey(&x)
+}
+
+func (x TaskException) ExchangeName() string {
+	return "task-exception"
 }
 
 // The task-graph scheduler, typically available at
@@ -1982,6 +2038,14 @@ type TaskGraphRunning struct {
 	Reserved       string `mwords:"#"`
 }
 
+func (x TaskGraphRunning) RoutingKey() string {
+	return generateRoutingKey(&x)
+}
+
+func (x TaskGraphRunning) ExchangeName() string {
+	return "task-graph-running"
+}
+
 // When a task-graph is extended, that is additional tasks is added to the
 // task-graph, a message is posted on this exchange. This is useful if you
 // are monitoring a task-graph and what to track states of the individual
@@ -1999,6 +2063,14 @@ type TaskGraphExtended struct {
 	SchedulerId    string `mwords:"*"`
 	TaskGraphId    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
+}
+
+func (x TaskGraphExtended) RoutingKey() string {
+	return generateRoutingKey(&x)
+}
+
+func (x TaskGraphExtended) ExchangeName() string {
+	return "task-graph-extended"
 }
 
 // When a task is completed unsuccessfully and all reruns have been
@@ -2024,6 +2096,14 @@ type TaskGraphBlocked struct {
 	Reserved       string `mwords:"#"`
 }
 
+func (x TaskGraphBlocked) RoutingKey() string {
+	return generateRoutingKey(&x)
+}
+
+func (x TaskGraphBlocked) ExchangeName() string {
+	return "task-graph-blocked"
+}
+
 // When all tasks of a task-graph have completed successfully, the
 // task-graph is declared to be finished, and a message is posted to this
 // exchange.
@@ -2040,4 +2120,12 @@ type TaskGraphFinished struct {
 	SchedulerId    string `mwords:"*"`
 	TaskGraphId    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
+}
+
+func (x TaskGraphFinished) RoutingKey() string {
+	return generateRoutingKey(&x)
+}
+
+func (x TaskGraphFinished) ExchangeName() string {
+	return "task-graph-finished"
 }

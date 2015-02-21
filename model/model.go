@@ -496,5 +496,13 @@ func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
 		content += "\t" + utils.Normalise(rk.Name, keyNames) + " string `mwords:\"" + mwch + "\"`\n"
 	}
 	content += "}\n"
+	content += "func (x " + exchangeEntry + ") RoutingKey() string {\n"
+	content += "\treturn generateRoutingKey(&x)\n"
+	content += "}\n"
+	content += "\n"
+	content += "func (x " + exchangeEntry + ") ExchangeName() string {\n"
+	content += "\treturn \"" + entry.Exchange + "\"\n"
+	content += "}\n"
+	content += "\n"
 	return content
 }
