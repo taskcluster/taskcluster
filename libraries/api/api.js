@@ -692,7 +692,7 @@ authenticate.nonceManager = nonceManager;
 var handle = function(handler, context) {
   assert(handler, "No handler is provided");
   return function(req, res) {
-    Promise.from().then(function() {
+    Promise.resolve(null).then(function() {
       return handler.call(context, req, res);
     }).catch(function(err) {
       var incidentId = uuid.v4();
@@ -1029,7 +1029,7 @@ API.prototype.publish = function(options) {
  */
 API.prototype.setup = function(options) {
   var that = this;
-  return Promise.from().then(function() {
+  return Promise.resolve(null).then(function() {
     if (options.publish) {
       return that.publish(options);
     }
