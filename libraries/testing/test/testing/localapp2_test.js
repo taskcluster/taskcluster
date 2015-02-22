@@ -23,19 +23,19 @@ suite('testing.LocalApp (additional)', function() {
 
   /** Test that we can launch two instances */
   test('launch two instances', function() {
-    return Promise.all(
+    return Promise.all([
       server.launch(),
       server2.launch()
-    ).then(function(baseUrls) {
+    ]).then(function(baseUrls) {
       var baseUrl = baseUrls[0];
       return request.get(baseUrl + 'test').end().then(function(res) {
         assert(res.text == 'Hello World', "Expected Hello World");
       });
     }).then(function() {
-      return Promise.all(
+      return Promise.all([
         server.terminate(),
         server2.terminate()
-      );
+      ]);
     });
   });
 
