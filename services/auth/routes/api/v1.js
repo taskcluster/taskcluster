@@ -432,21 +432,45 @@ api.declare({
   route:      '/aws/s3/:level/:bucket/:prefix(*)',
   name:       'awsS3Credentials',
   input:      undefined,
-  output:     SCHEMA_PREFIX_CONST + 'aws-s3-readwrite-response.json#',
+  output:     SCHEMA_PREFIX_CONST + 'aws-s3-credentials-response.json#',
   deferAuth:  true,
-  scopes:     ['auth:aws-s3-read-write:<bucket>/<prefix>'],
+  scopes:     ['auth:aws-s3:<level>:<bucket>/<prefix>'],
   title:      "Get Temporary Read/Write Credentials S3",
   description: [
-    "..."
+    "Get temporary AWS credentials for `read-write` or `read-only` access to",
+    "a given `bucket` and `prefix` within that bucket.",
+    "The `level` parameter can be `read-write` or `read-only` and determines",
+    "which type of credentials is returned. Please note that the `level`",
+    "parameter is required in the scope guarding access.",
+    "",
+    "The credentials are set of expire after an hour, but this behavior may be",
+    "subject to change. Hence, you should always read the `expires` property",
+    "from the response, if you intent to maintain active credentials in your",
+    "application.",
+    "",
+    "Please notice that your `prefix` shouldn't start with slash `/`, it is",
+    "allowed for completeness, but it will result in two slashes both in the",
+    "scope and in the bucket. Therefore this pattern is strongly discouraged.",
+    "Also note that if your `prefix` doesn't end in a slash `/` you will not",
+    "be required to insert one. This is mainly a concern when assigning scopes",
+    "to users and doing this right will prevent poor behavior."
   ].join('\n')
 }, function(req, res) {
-  var bucket = req.params.bucket;
-  var prefix = req.params.prefix;
-  debug("params: %j", req.params);
-  assert(req.params.level === 'read-write', "Expected read-write");
+  var level   = req.params.level;
+  var bucket  = req.params.bucket;
+  var prefix  = req.params.prefix;
+
+  // Validate that a proper value was given for level
+  if (level !== 'read-write' && level !== 'read-only') {
+    return res.status(400).json({
+      message:      "the 'level' URL parameter must be read-only or read-write",
+      levelGiven:   level
+    });
+  }
 
   // Check that the client is authorized to access given bucket and prefix
   if (!req.satisfies({
+    level:      level,
     bucket:     bucket,
     prefix:     prefix
   })) {
@@ -461,11 +485,13 @@ api.declare({
         {
           Sid:            'ReadWriteObjectsUnderPrefix',
           Effect:         'Allow',
-          Action: [
+          Action:         (level === 'read-write' ? [
             's3:GetObject',
             's3:PutObject',
             's3:DeleteObject'
-          ],
+          ] : [
+            's3:GetObject'
+          ]),
           Resource: [
             'arn:aws:s3:::{{bucket}}/{{prefix}}*'
               .replace('{{bucket}}', bucket)
