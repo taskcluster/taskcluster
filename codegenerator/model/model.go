@@ -1,11 +1,14 @@
 package model
 
+//go:generate generatemodel -u http://references.taskcluster.net/manifest.json -f apis.json -o .. -m model-data.txt
+
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/petemoore/taskcluster-client-go/utils"
+	"github.com/petemoore/taskcluster-client-go/codegenerator/utils"
 	"io"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 )
@@ -372,11 +375,47 @@ func cacheJsonSchema(url *string) *JsonSubSchema {
 //
 // When LoadAPIs returns, all json schemas and sub schemas should have been
 // read and unmarhsalled into go objects.
-func LoadAPIs(reader io.Reader) ([]APIDefinition, []string, map[string]*JsonSubSchema) {
-	decoder := json.NewDecoder(reader)
-	err = decoder.Decode(&apis)
+func LoadAPIs(apiManifestUrl, supplementaryDataFile string) ([]APIDefinition, []string, map[string]*JsonSubSchema) {
+	resp, err = http.Get(apiManifestUrl)
+	if err != nil {
+		fmt.Printf("Could not download api manifest from url: '%v'!\n", apiManifestUrl)
+	}
+	supDataReader, err := os.Open(supplementaryDataFile)
+	if err != nil {
+		fmt.Printf("Could not load supplementary data json file: '%v'!\n", supplementaryDataFile)
+	}
+	utils.ExitOnFail(err)
+	apiManifestDecoder := json.NewDecoder(resp.Body)
+	apiMan := make(map[string]string)
+	err = apiManifestDecoder.Decode(&apiMan)
+	utils.ExitOnFail(err)
+	supDataDecoder := json.NewDecoder(supDataReader)
+	err = supDataDecoder.Decode(&apis)
 	utils.ExitOnFail(err)
 	sort.Sort(SortedAPIDefs(apis))
+
+	// build up apis based on data in *both* data sources
+	for i := range apiMan {
+		// seach for apiMan[i] in apis
+		k := sort.Search(len(apis), func(j int) bool {
+			return apis[j] >= apiMan[i]
+		})
+		if k < len(apis) && apis[k] == apiMan[i] {
+			// url is present in supplementary data
+			apis[k].Name = i
+		} else {
+			FailOnError(err, fmt.Sprintf(
+				"Manifest from url '%v' contains key '%v' with url '%v', but this url does not exist in supplementary data file '%v', therefore exiting...",
+				apiManifestUrl, i, apiMan[i], supplementaryDataFile))
+		}
+	}
+	for i := range apis {
+		if apis[i].Name == "" {
+			FailOnError(err, fmt.Sprintf(
+				"Manifest from url '%v' does not contain url '%v' which does exist in supplementary data file '%v', therefore exiting...",
+				apiManifestUrl, apis[i].URL, supplementaryDataFile))
+		}
+	}
 	for i := range apis {
 		var resp *http.Response
 		resp, err = http.Get(apis[i].URL)

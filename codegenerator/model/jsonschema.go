@@ -3,7 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/petemoore/taskcluster-client-go/utils"
+	"github.com/petemoore/taskcluster-client-go/codegenerator/utils"
 	"reflect"
 	"sort"
 	"strconv"
