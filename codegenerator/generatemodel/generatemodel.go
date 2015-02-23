@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	docopt "github.com/docopt/docopt-go"
 	"github.com/petemoore/taskcluster-client-go/codegenerator/model"
 	"github.com/petemoore/taskcluster-client-go/codegenerator/utils"
-	"os"
 )
 
 var (
@@ -49,7 +47,7 @@ this is used by the build process for this taskcluster-client-go go project.
 func main() {
 	// Parse the docopt string and exit on any error or help message.
 	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
-
-	apis, schemaURLs, schemas = model.LoadAPIs(arguments["-u"].(string), arguments["-f"].(string))
+	utils.ExitOnFail(err)
+	model.LoadAPIs(arguments["-u"].(string), arguments["-f"].(string))
 	model.GenerateCode(arguments["-o"].(string), arguments["-m"].(string))
 }

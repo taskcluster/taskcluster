@@ -9,16 +9,14 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 )
 
 var (
-	apis    []APIDefinition
-	schemas map[string]*JsonSubSchema = make(map[string]*JsonSubSchema)
-	err     error
-	// for sorting schemas by schemaURL
-	schemaURLs []string
+	apis []APIDefinition
+	err  error
 )
 
 type SortedAPIDefs []APIDefinition
@@ -41,7 +39,7 @@ type API struct {
 	BaseURL     string     `json:"baseUrl"`
 	Entries     []APIEntry `json:"entries"`
 
-	apiDef APIDefinition
+	apiDef *APIDefinition
 }
 
 func (api *API) String() string {
@@ -57,13 +55,13 @@ func (api *API) String() string {
 	return result
 }
 
-func (api *API) postPopulate() {
+func (api *API) postPopulate(apiDef *APIDefinition) {
 
 	// make sure each entry defined for this API has a unique generated method name
 	methods := make(map[string]bool)
 
 	for i := range api.Entries {
-		api.Entries[i].postPopulate()
+		api.Entries[i].postPopulate(apiDef)
 		api.Entries[i].MethodName = utils.Normalise(api.Entries[i].Name, methods)
 		api.Entries[i].Parent = api
 	}
@@ -114,7 +112,7 @@ func (api *API) generateAPICode(apiName string) string {
 	return content
 }
 
-func (api *API) setAPIDefinition(apiDef APIDefinition) {
+func (api *API) setAPIDefinition(apiDef *APIDefinition) {
 	api.apiDef = apiDef
 }
 
@@ -134,14 +132,14 @@ type APIEntry struct {
 	Parent     *API
 }
 
-func (entry *APIEntry) postPopulate() {
+func (entry *APIEntry) postPopulate(apiDef *APIDefinition) {
 	if entry.Input != "" {
-		cacheJsonSchema(&entry.Input)
-		schemas[entry.Input].IsInputSchema = true
+		entry.Parent.apiDef.cacheJsonSchema(&entry.Input)
+		entry.Parent.apiDef.schemas[entry.Input].IsInputSchema = true
 	}
 	if entry.Output != "" {
-		cacheJsonSchema(&entry.Output)
-		schemas[entry.Output].IsOutputSchema = true
+		entry.Parent.apiDef.cacheJsonSchema(&entry.Output)
+		entry.Parent.apiDef.schemas[entry.Output].IsOutputSchema = true
 	}
 }
 
@@ -180,7 +178,7 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 	apiArgsPayload := "nil"
 	if entry.Input != "" {
 		apiArgsPayload = "payload"
-		p := "payload *" + schemas[entry.Input].TypeName
+		p := "payload *" + entry.Parent.apiDef.schemas[entry.Input].TypeName
 		if inputParams == "" {
 			inputParams = p
 		} else {
@@ -190,14 +188,14 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 
 	responseType := "*http.Response"
 	if entry.Output != "" {
-		responseType = "(*" + schemas[entry.Output].TypeName + ", *http.Response)"
+		responseType = "(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + ", *http.Response)"
 	}
 
 	content := comment
 	content += "func (a *" + apiName + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
 	if entry.Output != "" {
-		content += "\tresponseObject, httpResponse := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", new(" + schemas[entry.Output].TypeName + "))\n"
-		content += "\treturn responseObject.(*" + schemas[entry.Output].TypeName + "), httpResponse\n"
+		content += "\tresponseObject, httpResponse := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "))\n"
+		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), httpResponse\n"
 	} else {
 		content += "\t_, httpResponse := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", nil)\n"
 		content += "\treturn httpResponse\n"
@@ -220,7 +218,7 @@ type Exchange struct {
 	ExchangePrefix string          `json:"exchangePrefix"`
 	Entries        []ExchangeEntry `json:"entries"`
 
-	apiDef APIDefinition
+	apiDef *APIDefinition
 }
 
 func (exchange *Exchange) String() string {
@@ -237,14 +235,14 @@ func (exchange *Exchange) String() string {
 	return result
 }
 
-func (exchange *Exchange) postPopulate() {
+func (exchange *Exchange) postPopulate(apiDef *APIDefinition) {
 	for i := range exchange.Entries {
-		exchange.Entries[i].postPopulate()
+		exchange.Entries[i].postPopulate(apiDef)
 		exchange.Entries[i].Parent = exchange
 	}
 }
 
-func (exchange *Exchange) setAPIDefinition(apiDef APIDefinition) {
+func (exchange *Exchange) setAPIDefinition(apiDef *APIDefinition) {
 	exchange.apiDef = apiDef
 }
 
@@ -261,8 +259,8 @@ type ExchangeEntry struct {
 	Payload *JsonSubSchema
 }
 
-func (entry *ExchangeEntry) postPopulate() {
-	entry.Payload = cacheJsonSchema(&entry.Schema)
+func (entry *ExchangeEntry) postPopulate(apiDef *APIDefinition) {
+	entry.Payload = entry.Parent.apiDef.cacheJsonSchema(&entry.Schema)
 }
 
 func (entry *ExchangeEntry) String() string {
@@ -301,26 +299,28 @@ func (re *RouteElement) String() string {
 
 type APIModel interface {
 	String() string
-	postPopulate()
+	postPopulate(apiDef *APIDefinition)
 	generateAPICode(name string) string
-	setAPIDefinition(apiDef APIDefinition)
+	setAPIDefinition(apiDef *APIDefinition)
 }
 
 // APIDefinition represents the definition of a REST API, comprising of the URL to the defintion
 // of the API in json format, together with a URL to a json schema to validate the definition
 type APIDefinition struct {
-	URL       string `json:"url"`
-	SchemaURL string `json:"schema"`
-	Name      string `json:"name"`
-	DocRoot   string `json:"docroot"`
-	Data      APIModel
+	URL        string `json:"url"`
+	SchemaURL  string `json:"schema"`
+	Name       string `json:"name"`
+	DocRoot    string `json:"docroot"`
+	Data       APIModel
+	schemaURLs []string
+	schemas    map[string]*JsonSubSchema // = make(map[string]*JsonSubSchema)
 }
 
-func (a APIDefinition) generateAPICode() string {
+func (a *APIDefinition) generateAPICode() string {
 	return a.Data.generateAPICode(a.Name)
 }
 
-func loadJson(reader io.Reader, schema *string) APIModel {
+func loadJson(reader io.Reader, schema *string, apiDef *APIDefinition) APIModel {
 	var m APIModel
 	switch *schema {
 	case "http://schemas.taskcluster.net/base/v1/api-reference.json":
@@ -331,11 +331,11 @@ func loadJson(reader io.Reader, schema *string) APIModel {
 	decoder := json.NewDecoder(reader)
 	err = decoder.Decode(m)
 	utils.ExitOnFail(err)
-	m.postPopulate()
+	m.postPopulate(apiDef)
 	return m
 }
 
-func loadJsonSchema(url string) *JsonSubSchema {
+func (apiDef *APIDefinition) loadJsonSchema(url string) *JsonSubSchema {
 	var resp *http.Response
 	resp, err = http.Get(url)
 	utils.ExitOnFail(err)
@@ -344,11 +344,11 @@ func loadJsonSchema(url string) *JsonSubSchema {
 	m := new(JsonSubSchema)
 	err = decoder.Decode(m)
 	utils.ExitOnFail(err)
-	m.postPopulate()
+	m.postPopulate(apiDef)
 	return m
 }
 
-func cacheJsonSchema(url *string) *JsonSubSchema {
+func (apiDef *APIDefinition) cacheJsonSchema(url *string) *JsonSubSchema {
 	// if url is not provided, there is nothing to download
 	if url == nil || *url == "" {
 		return nil
@@ -358,11 +358,11 @@ func cacheJsonSchema(url *string) *JsonSubSchema {
 		*url += "#"
 	}
 	// only fetch if we haven't fetched already...
-	if _, ok := schemas[*url]; !ok {
-		schemas[*url] = loadJsonSchema(*url)
-		schemas[*url].SourceURL = *url
+	if _, ok := apiDef.schemas[*url]; !ok {
+		apiDef.schemas[*url] = apiDef.loadJsonSchema(*url)
+		apiDef.schemas[*url].SourceURL = *url
 	}
-	return schemas[*url]
+	return apiDef.schemas[*url]
 }
 
 // LoadAPIs takes care of reading all json files and performing elementary
@@ -375,8 +375,8 @@ func cacheJsonSchema(url *string) *JsonSubSchema {
 //
 // When LoadAPIs returns, all json schemas and sub schemas should have been
 // read and unmarhsalled into go objects.
-func LoadAPIs(apiManifestUrl, supplementaryDataFile string) ([]APIDefinition, []string, map[string]*JsonSubSchema) {
-	resp, err = http.Get(apiManifestUrl)
+func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
+	resp, err := http.Get(apiManifestUrl)
 	if err != nil {
 		fmt.Printf("Could not download api manifest from url: '%v'!\n", apiManifestUrl)
 	}
@@ -398,58 +398,65 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) ([]APIDefinition, []
 	for i := range apiMan {
 		// seach for apiMan[i] in apis
 		k := sort.Search(len(apis), func(j int) bool {
-			return apis[j] >= apiMan[i]
+			return apis[j].URL >= apiMan[i]
 		})
-		if k < len(apis) && apis[k] == apiMan[i] {
+		if k < len(apis) && apis[k].URL == apiMan[i] {
 			// url is present in supplementary data
 			apis[k].Name = i
 		} else {
-			FailOnError(err, fmt.Sprintf(
+			fmt.Printf(
 				"Manifest from url '%v' contains key '%v' with url '%v', but this url does not exist in supplementary data file '%v', therefore exiting...",
-				apiManifestUrl, i, apiMan[i], supplementaryDataFile))
+				apiManifestUrl, i, apiMan[i], supplementaryDataFile)
+			utils.ExitOnFail(err)
 		}
 	}
 	for i := range apis {
 		if apis[i].Name == "" {
-			FailOnError(err, fmt.Sprintf(
+			fmt.Printf(
 				"Manifest from url '%v' does not contain url '%v' which does exist in supplementary data file '%v', therefore exiting...",
-				apiManifestUrl, apis[i].URL, supplementaryDataFile))
+				apiManifestUrl, apis[i].URL, supplementaryDataFile)
+			utils.ExitOnFail(err)
 		}
 	}
 	for i := range apis {
+		// apis[i].schemas = make(map[string]*JsonSubSchema)
 		var resp *http.Response
 		resp, err = http.Get(apis[i].URL)
 		utils.ExitOnFail(err)
 		defer resp.Body.Close()
-		apis[i].Data = loadJson(resp.Body, &apis[i].SchemaURL)
-		apis[i].Data.setAPIDefinition(apis[i])
+		apis[i].Data = loadJson(resp.Body, &apis[i].SchemaURL, &apis[i])
+		apis[i].Data.setAPIDefinition(&apis[i])
+
+		// now all data should be loaded, let's sort the schemas
+		apis[i].schemaURLs = make([]string, 0, len(apis[i].schemas))
+		for url := range apis[i].schemas {
+			apis[i].schemaURLs = append(apis[i].schemaURLs, url)
+		}
+		sort.Strings(apis[i].schemaURLs)
+		// finally, now we can generate normalised names
+		// for schemas
+		// keep a record of generated type names, so that we don't reuse old names
+		// map[string]bool acts like a set of strings
+		TypeName := make(map[string]bool)
+		for _, j := range apis[i].schemaURLs {
+			apis[i].schemas[j].TypeName = utils.Normalise(*apis[i].schemas[j].Title, TypeName)
+		}
+		//////////////////////////////////////////////////////////////////////////////
+		// these next four lines are a temporary hack while waiting for https://github.com/taskcluster/taskcluster-queue/pull/31
+		if x, ok := apis[i].schemas["http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#"]; ok {
+			y := "object"
+			x.Properties.Properties["artifacts"].Items.Type = &y
+		}
+		//////////////////////////////////////////////////////////////////////////////
 	}
-	// now all data should be loaded, let's sort the schemas
-	schemaURLs = make([]string, 0, len(schemas))
-	for url := range schemas {
-		schemaURLs = append(schemaURLs, url)
-	}
-	sort.Strings(schemaURLs)
-	// finally, now we can generate normalised names
-	// for schemas
-	// keep a record of generated type names, so that we don't reuse old names
-	// map[string]bool acts like a set of strings
-	TypeName := make(map[string]bool)
-	for _, i := range schemaURLs {
-		schemas[i].TypeName = utils.Normalise(*schemas[i].Title, TypeName)
-	}
-	//////////////////////////////////////////////////////////////////////////////
-	// these next two lines are a temporary hack while waiting for https://github.com/taskcluster/taskcluster-queue/pull/31
-	x := "object"
-	schemas["http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#"].Properties.Properties["artifacts"].Items.Type = &x
-	//////////////////////////////////////////////////////////////////////////////
-	return apis, schemaURLs, schemas
+	return apis
 }
 
 // GenerateCode takes the objects loaded into memory in LoadAPIs
 // and writes them out as go code.
-func GenerateCode(goOutput, modelData string) {
-	content := `
+func GenerateCode(goOutputDir, modelData string) {
+	for _, api := range apis {
+		content := `
 // The following code is AUTO-GENERATED. Please DO NOT edit.
 // To update this generated code, run the following command:
 // in the client subdirectory:
@@ -460,20 +467,21 @@ package client
 
 import "net/http"
 `
-	content += generatePayloadTypes()
-	content += generateAPICode()
-	utils.WriteStringToFile(content, goOutput)
+		content += generatePayloadTypes(&api)
+		content += api.generateAPICode()
+		utils.WriteStringToFile(content, filepath.Join(goOutputDir, strings.ToLower(api.Name)+".go"))
+	}
 
-	content = "The following file is an auto-generated static dump of the API models at time of code generation.\n"
+	content := "The following file is an auto-generated static dump of the API models at time of code generation.\n"
 	content += "It is provided here for reference purposes, but is not used by any code.\n"
 	content += "\n"
 	for _, api := range apis {
 		content += utils.Underline(api.URL)
 		content += api.Data.String() + "\n\n"
-	}
-	for _, url := range schemaURLs {
-		content += (utils.Underline(url))
-		content += schemas[url].String() + "\n\n"
+		for _, url := range api.schemaURLs {
+			content += (utils.Underline(url))
+			content += api.schemas[url].String() + "\n\n"
+		}
 	}
 	utils.WriteStringToFile(content, modelData)
 }
@@ -481,23 +489,13 @@ import "net/http"
 // This is where we generate nested and compoound types in go to represent json payloads
 // which are used as inputs and outputs for the REST API endpoints, and also for Pulse
 // message bodies for the Exchange APIs
-func generatePayloadTypes() string {
+func generatePayloadTypes(apiDef *APIDefinition) string {
 	content := "type (" // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
-	for _, i := range schemaURLs {
-		content += utils.Indent(schemas[i].TypeDefinition(true), "\t")
+	for _, i := range apiDef.schemaURLs {
+		content += utils.Indent(apiDef.schemas[i].TypeDefinition(true), "\t")
 	}
 	return content + ")\n\n"
-}
-
-// This is where we generate the code based on the API objects we have read, which is based
-// on a semantic understanding of what the generated logic needs to do
-func generateAPICode() string {
-	content := ""
-	for i := range apis {
-		content += apis[i].generateAPICode()
-	}
-	return content
 }
 
 func (exchange *Exchange) generateAPICode(exchangeName string) string {

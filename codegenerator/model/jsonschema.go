@@ -45,6 +45,7 @@ type (
 		IsOutputSchema bool
 		SourceURL      string
 		RefSubSchema   *JsonSubSchema
+		APIDefinition  *APIDefinition
 	}
 
 	Items []JsonSubSchema
@@ -168,14 +169,14 @@ func (p Properties) String() string {
 	return result
 }
 
-func (p *Properties) postPopulate() {
+func (p *Properties) postPopulate(apiDef *APIDefinition) {
 	// now all data should be loaded, let's sort the p.Properties
 	if p.Properties != nil {
 		p.SortedPropertyNames = make([]string, 0, len(p.Properties))
 		for propertyName := range p.Properties {
 			p.SortedPropertyNames = append(p.SortedPropertyNames, propertyName)
 			// subschemas also need to be triggered to postPopulate...
-			p.Properties[propertyName].postPopulate()
+			p.Properties[propertyName].postPopulate(apiDef)
 		}
 		sort.Strings(p.SortedPropertyNames)
 	}
@@ -213,9 +214,9 @@ func (items Items) String() string {
 	return result
 }
 
-func (items Items) postPopulate() {
+func (items Items) postPopulate(apiDef *APIDefinition) {
 	for i := range items {
-		items[i].postPopulate()
+		items[i].postPopulate(apiDef)
 	}
 }
 
@@ -239,24 +240,24 @@ func describe(name string, value interface{}) string {
 }
 
 type CanPopulate interface {
-	postPopulate()
+	postPopulate(*APIDefinition)
 }
 
-func postPopulateIfNotNil(canPopulate CanPopulate) {
+func postPopulateIfNotNil(canPopulate CanPopulate, apiDef *APIDefinition) {
 	if reflect.ValueOf(canPopulate).IsValid() {
 		if !reflect.ValueOf(canPopulate).IsNil() {
-			canPopulate.postPopulate()
+			canPopulate.postPopulate(apiDef)
 		}
 	}
 }
 
-func (subSchema *JsonSubSchema) postPopulate() {
-	postPopulateIfNotNil(subSchema.AllOf)
-	postPopulateIfNotNil(subSchema.AnyOf)
-	postPopulateIfNotNil(subSchema.OneOf)
-	postPopulateIfNotNil(subSchema.Items)
-	postPopulateIfNotNil(subSchema.Properties)
+func (subSchema *JsonSubSchema) postPopulate(apiDef *APIDefinition) {
+	postPopulateIfNotNil(subSchema.AllOf, apiDef)
+	postPopulateIfNotNil(subSchema.AnyOf, apiDef)
+	postPopulateIfNotNil(subSchema.OneOf, apiDef)
+	postPopulateIfNotNil(subSchema.Items, apiDef)
+	postPopulateIfNotNil(subSchema.Properties, apiDef)
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
-	subSchema.RefSubSchema = cacheJsonSchema(subSchema.Ref)
+	subSchema.RefSubSchema = apiDef.cacheJsonSchema(subSchema.Ref)
 }
