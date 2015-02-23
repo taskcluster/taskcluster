@@ -1,6 +1,6 @@
 package model
 
-//go:generate generatemodel -u http://references.taskcluster.net/manifest.json -f apis.json -o .. -m model-data.txt
+//go:generate generatemodel -u http://references.taskcluster.net/manifest.json -f apis.json -o ../.. -m model-data.txt
 
 import (
 	"encoding/json"
@@ -61,9 +61,9 @@ func (api *API) postPopulate(apiDef *APIDefinition) {
 	methods := make(map[string]bool)
 
 	for i := range api.Entries {
-		api.Entries[i].postPopulate(apiDef)
-		api.Entries[i].MethodName = utils.Normalise(api.Entries[i].Name, methods)
 		api.Entries[i].Parent = api
+		api.Entries[i].MethodName = utils.Normalise(api.Entries[i].Name, methods)
+		api.Entries[i].postPopulate(apiDef)
 	}
 }
 
@@ -237,8 +237,8 @@ func (exchange *Exchange) String() string {
 
 func (exchange *Exchange) postPopulate(apiDef *APIDefinition) {
 	for i := range exchange.Entries {
-		exchange.Entries[i].postPopulate(apiDef)
 		exchange.Entries[i].Parent = exchange
+		exchange.Entries[i].postPopulate(apiDef)
 	}
 }
 
@@ -320,7 +320,7 @@ func (a *APIDefinition) generateAPICode() string {
 	return a.Data.generateAPICode(a.Name)
 }
 
-func loadJson(reader io.Reader, schema *string, apiDef *APIDefinition) APIModel {
+func (apiDef *APIDefinition) loadJson(reader io.Reader, schema *string) {
 	var m APIModel
 	switch *schema {
 	case "http://schemas.taskcluster.net/base/v1/api-reference.json":
@@ -331,8 +331,9 @@ func loadJson(reader io.Reader, schema *string, apiDef *APIDefinition) APIModel 
 	decoder := json.NewDecoder(reader)
 	err = decoder.Decode(m)
 	utils.ExitOnFail(err)
+	m.setAPIDefinition(apiDef)
 	m.postPopulate(apiDef)
-	return m
+	apiDef.Data = m
 }
 
 func (apiDef *APIDefinition) loadJsonSchema(url string) *JsonSubSchema {
@@ -419,13 +420,12 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 		}
 	}
 	for i := range apis {
-		// apis[i].schemas = make(map[string]*JsonSubSchema)
+		apis[i].schemas = make(map[string]*JsonSubSchema)
 		var resp *http.Response
 		resp, err = http.Get(apis[i].URL)
 		utils.ExitOnFail(err)
 		defer resp.Body.Close()
-		apis[i].Data = loadJson(resp.Body, &apis[i].SchemaURL, &apis[i])
-		apis[i].Data.setAPIDefinition(&apis[i])
+		apis[i].loadJson(resp.Body, &apis[i].SchemaURL)
 
 		// now all data should be loaded, let's sort the schemas
 		apis[i].schemaURLs = make([]string, 0, len(apis[i].schemas))
@@ -456,6 +456,10 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 // and writes them out as go code.
 func GenerateCode(goOutputDir, modelData string) {
 	for _, api := range apis {
+		packageName := strings.ToLower(api.Name)
+		packagePath := filepath.Join(goOutputDir, packageName)
+		err = os.MkdirAll(packagePath, 0755)
+		utils.ExitOnFail(err)
 		content := `
 // The following code is AUTO-GENERATED. Please DO NOT edit.
 // To update this generated code, run the following command:
@@ -463,13 +467,11 @@ func GenerateCode(goOutputDir, modelData string) {
 //
 // go generate && go fmt
 
-package client
+package ` + packageName + "\n"
 
-import "net/http"
-`
 		content += generatePayloadTypes(&api)
 		content += api.generateAPICode()
-		utils.WriteStringToFile(content, filepath.Join(goOutputDir, strings.ToLower(api.Name)+".go"))
+		utils.WriteStringToFile(content, filepath.Join(packagePath, packageName+".go"))
 	}
 
 	content := "The following file is an auto-generated static dump of the API models at time of code generation.\n"

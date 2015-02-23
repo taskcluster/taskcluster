@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/petemoore/pulse-go/pulse"
-	"github.com/petemoore/taskcluster-client-go/client"
+	"github.com/petemoore/taskcluster-client-go/queueevents"
 	"github.com/streadway/amqp"
 )
 
