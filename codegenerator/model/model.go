@@ -68,6 +68,67 @@ func (api *API) postPopulate(apiDef *APIDefinition) {
 }
 
 func (api *API) generateAPICode(apiName string) string {
+	content := `
+import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/json"
+	hawk "github.com/tent/hawk-go"
+	"io"
+	"net/http"
+	"reflect"
+)
+
+func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		panic(err)
+	}
+
+	var ioReader io.Reader = nil
+	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
+		ioReader = bytes.NewReader(jsonPayload)
+	}
+	httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
+	if err != nil {
+		panic(err)
+	}
+	// only authenticate if client library user wishes to
+	if auth.Authenticate {
+		// not sure if we need to regenerate this with each call, will leave in here for now...
+		credentials := &hawk.Credentials{
+			ID:   auth.ClientId,
+			Key:  auth.AccessToken,
+			Hash: sha256.New,
+		}
+		reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
+		httpRequest.Header.Set("Authorization", reqAuth)
+	}
+	httpRequest.Header.Set("Content-Type", "application/json")
+	httpClient := &http.Client{}
+	// fmt.Println("Request\n=======")
+	// fullRequest, err := httputil.DumpRequestOut(httpRequest, true)
+	// fmt.Println(string(fullRequest))
+	response, err := httpClient.Do(httpRequest)
+	// fmt.Println("Response\n========")
+	// fullResponse, err := httputil.DumpResponse(response, true)
+	// fmt.Println(string(fullResponse))
+	if err != nil {
+		panic(err)
+	}
+	defer response.Body.Close()
+	// if result is nil, it means there is no response body json
+	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
+		json := json.NewDecoder(response.Body)
+		err = json.Decode(&result)
+		if err != nil {
+			panic(err)
+		}
+	}
+	// fmt.Printf("ClientId: %v\nAccessToken: %v\nPayload: %v\nURL: %v\nMethod: %v\nResult: %v\n", auth.ClientId, auth.AccessToken, string(jsonPayload), auth.BaseURL+route, method, result)
+	return result, response
+}
+`
 	comment := ""
 	if api.Description != "" {
 		comment = utils.Indent(api.Description, "// ")
@@ -78,8 +139,19 @@ func (api *API) generateAPICode(apiName string) string {
 	exampleVarName := strings.ToLower(string(apiName[0])) + apiName[1:]
 	comment += "//\n"
 	comment += fmt.Sprintf("// See: %v\n", api.apiDef.URL)
-	content := comment
-	content += "type " + apiName + " struct {\n\tAuth\n}\n\n"
+	content += comment
+	content += `type Auth struct {
+	// Client ID required by Hawk
+	ClientId string
+	// Access Token required by Hawk
+	AccessToken string
+	// By default set to production base url for API service, but can be changed to hit a
+	// different service, e.g. a staging API endpoint, or a taskcluster-proxy endpoint
+	BaseURL string
+	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
+	Authenticate bool
+}
+`
 	content += "// Returns a pointer to " + apiName + ", configured to run against production.\n"
 	content += "// If you wish to point at a different API endpoint url, set the BaseURL struct\n"
 	content += "// member to your chosen location. You may also disable authentication (for\n"
@@ -97,8 +169,8 @@ func (api *API) generateAPICode(apiName string) string {
 	} else {
 		content += "// data, httpResponse := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)" + strings.Repeat(" ", 14-len(api.Entries[0].MethodName)+len(apiName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
 	}
-	content += "func New" + apiName + "(clientId string, accessToken string) *" + apiName + " {\n"
-	content += "\tr := &" + apiName + "{}\n"
+	content += "func New(clientId string, accessToken string) *Auth {\n"
+	content += "\tr := &Auth{}\n"
 	content += "\tr.ClientId = clientId\n"
 	content += "\tr.AccessToken = accessToken\n"
 	content += "\tr.BaseURL = \"" + api.BaseURL + "\"\n"
@@ -192,7 +264,7 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 	}
 
 	content := comment
-	content += "func (a *" + apiName + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
+	content += "func (a *Auth) " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
 	if entry.Output != "" {
 		content += "\tresponseObject, httpResponse := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "))\n"
 		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), httpResponse\n"
@@ -469,8 +541,8 @@ func GenerateCode(goOutputDir, modelData string) {
 
 package ` + packageName + "\n"
 
-		content += generatePayloadTypes(&api)
 		content += api.generateAPICode()
+		content += generatePayloadTypes(&api)
 		utils.WriteStringToFile(content, filepath.Join(packagePath, packageName+".go"))
 	}
 
@@ -501,18 +573,44 @@ func generatePayloadTypes(apiDef *APIDefinition) string {
 }
 
 func (exchange *Exchange) generateAPICode(exchangeName string) string {
-	content := ""
+	content := `
+import (
+	"reflect"
+	"strings"
+)`
+	comment := ""
 	if exchange.Description != "" {
-		content = utils.Indent(exchange.Description, "// ")
+		comment = utils.Indent(exchange.Description, "// ")
 	}
-	if len(content) >= 1 && content[len(content)-1:] != "\n" {
-		content += "\n"
+	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+		comment += "\n"
 	}
+	content += comment
 	content += "type " + exchangeName + " struct {\n}\n\n"
 	entryTypeNames := make(map[string]bool, len(exchange.Entries))
 	for _, entry := range exchange.Entries {
 		content += entry.generateAPICode(utils.Normalise(entry.Name, entryTypeNames))
 	}
+
+	content += `
+func generateRoutingKey(x interface{}) string {
+	val := reflect.ValueOf(x).Elem()
+	p := make([]string, 0, val.NumField())
+	for i := 0; i < val.NumField(); i++ {
+		valueField := val.Field(i)
+		typeField := val.Type().Field(i)
+		tag := typeField.Tag
+		if t := tag.Get("mwords"); t != "" {
+			if v := valueField.Interface(); v == "" {
+				p = append(p, t)
+			} else {
+				p = append(p, v.(string))
+			}
+		}
+	}
+	return strings.Join(p, ".")
+}
+`
 	return content
 }
 

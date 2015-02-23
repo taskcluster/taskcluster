@@ -20,10 +20,10 @@ func main() {
 		"taskprocessing", // queue name
 		func(message interface{}, delivery amqp.Delivery) { // callback function to pass messages to
 			switch t := message.(type) {
-			case *client.TaskDefinedMessage:
+			case *queueevents.TaskDefinedMessage:
 				fmt.Println("Task " + t.Status.TaskId + " defined")
 				fmt.Println(string(delivery.Body))
-			case *client.TaskRunningMessage:
+			case *queueevents.TaskRunningMessage:
 				fmt.Println("Task " + t.Status.TaskId + " running, (taken until " + t.TakenUntil + " by worker " + t.WorkerId + ")")
 			default:
 				panic(errors.New(fmt.Sprintf("Unrecognised message type %T!", t)))
@@ -33,10 +33,10 @@ func main() {
 		},
 		1,     // prefetch 1 message at a time
 		false, // don't auto-acknowledge messages
-		// client.TaskDefined{WorkerType: "gaia"},
-		// client.TaskRunning{ProvisionerId: "aws-provisioner"})
-		client.TaskDefined{},
-		client.TaskRunning{})
+		// queueevents.TaskDefined{WorkerType: "gaia"},
+		// queueevents.TaskRunning{ProvisionerId: "aws-provisioner"})
+		queueevents.TaskDefined{},
+		queueevents.TaskRunning{})
 	conn.Consume( // a second workflow to manage concurrently
 		"", // empty name implies anonymous queue
 		func(message interface{}, delivery amqp.Delivery) { // simpler callback than before
