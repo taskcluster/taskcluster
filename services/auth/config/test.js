@@ -27,10 +27,10 @@ module.exports = {
   // Server configuration
   server: {
     // Public URL from which the server can be accessed (used for persona)
-    publicUrl:                      'http://localhost:60550',
+    publicUrl:                      'http://localhost:60551',
 
     // Port to listen for requests on
-    port:                           60550,
+    port:                           60551,
 
     // Run in development mode (logging and error handling)
     development:                    true
