@@ -3,7 +3,21 @@
 // in the client subdirectory:
 //
 // go generate && go fmt
+//
+// This package was generated from the schema defined at
+// http://references.taskcluster.net/queue/v1/api.json
 
+// The queue, typically available at `queue.taskcluster.net`, is responsible
+// for accepting tasks and track their state as they are executed by
+// workers. In order ensure they are eventually resolved.
+//
+// This document describes the API end-points offered by the queue. These
+// end-points targets the following audience:
+//  * Schedulers, who create tasks to be executed,
+//  * Workers, who execute tasks, and
+//  * Tools, that wants to inspect the state of a task.
+//
+// See: http://docs.taskcluster.net/queue/api-docs
 package queue
 
 import (
@@ -66,17 +80,6 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	return result, response
 }
 
-// The queue, typically available at `queue.taskcluster.net`, is responsible
-// for accepting tasks and track their state as they are executed by
-// workers. In order ensure they are eventually resolved.
-//
-// This document describes the API end-points offered by the queue. These
-// end-points targets the following audience:
-//  * Schedulers, who create tasks to be executed,
-//  * Workers, who execute tasks, and
-//  * Tools, that wants to inspect the state of a task.
-//
-// See: http://references.taskcluster.net/queue/v1/api.json
 type Auth struct {
 	// Client ID required by Hawk
 	ClientId string
@@ -101,12 +104,11 @@ type Auth struct {
 //  queue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
 // data, httpResponse := queue.CreateTask(.....)          // for example, call the CreateTask(.....) API endpoint (described further down)...
 func New(clientId string, accessToken string) *Auth {
-	r := &Auth{}
-	r.ClientId = clientId
-	r.AccessToken = accessToken
-	r.BaseURL = "https://queue.taskcluster.net/v1"
-	r.Authenticate = true
-	return r
+	return &Auth{
+		ClientId:     clientId,
+		AccessToken:  accessToken,
+		BaseURL:      "https://queue.taskcluster.net/v1",
+		Authenticate: true}
 }
 
 // Create a new task, this is an **idempotent** operation, so repeat it if

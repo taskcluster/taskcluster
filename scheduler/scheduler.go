@@ -3,7 +3,22 @@
 // in the client subdirectory:
 //
 // go generate && go fmt
+//
+// This package was generated from the schema defined at
+// http://references.taskcluster.net/scheduler/v1/api.json
 
+// The task-graph scheduler, typically available at
+// `scheduler.taskcluster.net`, is responsible for accepting task-graphs and
+// scheduling tasks for evaluation by the queue as their dependencies are
+// satisfied.
+//
+// This document describes API end-points offered by the task-graph
+// scheduler. These end-points targets the following audience:
+//  * Post-commit hooks, that wants to submit task-graphs for testing,
+//  * End-users, who wants to execute a set of dependent tasks, and
+//  * Tools, that wants to inspect the state of a task-graph.
+//
+// See: http://docs.taskcluster.net/scheduler/api-docs
 package scheduler
 
 import (
@@ -66,18 +81,6 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	return result, response
 }
 
-// The task-graph scheduler, typically available at
-// `scheduler.taskcluster.net`, is responsible for accepting task-graphs and
-// scheduling tasks for evaluation by the queue as their dependencies are
-// satisfied.
-//
-// This document describes API end-points offered by the task-graph
-// scheduler. These end-points targets the following audience:
-//  * Post-commit hooks, that wants to submit task-graphs for testing,
-//  * End-users, who wants to execute a set of dependent tasks, and
-//  * Tools, that wants to inspect the state of a task-graph.
-//
-// See: http://references.taskcluster.net/scheduler/v1/api.json
 type Auth struct {
 	// Client ID required by Hawk
 	ClientId string
@@ -102,12 +105,11 @@ type Auth struct {
 //  scheduler.BaseURL = "http://localhost:1234/api/Scheduler/v1"   // alternative API endpoint (production by default)
 // data, httpResponse := scheduler.CreateTaskGraph(.....)         // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
 func New(clientId string, accessToken string) *Auth {
-	r := &Auth{}
-	r.ClientId = clientId
-	r.AccessToken = accessToken
-	r.BaseURL = "https://scheduler.taskcluster.net/v1"
-	r.Authenticate = true
-	return r
+	return &Auth{
+		ClientId:     clientId,
+		AccessToken:  accessToken,
+		BaseURL:      "https://scheduler.taskcluster.net/v1",
+		Authenticate: true}
 }
 
 // Create a new task-graph, the `status` of the resulting JSON is a

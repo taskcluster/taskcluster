@@ -3,68 +3,9 @@
 // in the client subdirectory:
 //
 // go generate && go fmt
-
-package index
-
-import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/json"
-	hawk "github.com/tent/hawk-go"
-	"io"
-	"net/http"
-	"reflect"
-)
-
-func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		panic(err)
-	}
-
-	var ioReader io.Reader = nil
-	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
-		ioReader = bytes.NewReader(jsonPayload)
-	}
-	httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
-	if err != nil {
-		panic(err)
-	}
-	// only authenticate if client library user wishes to
-	if auth.Authenticate {
-		// not sure if we need to regenerate this with each call, will leave in here for now...
-		credentials := &hawk.Credentials{
-			ID:   auth.ClientId,
-			Key:  auth.AccessToken,
-			Hash: sha256.New,
-		}
-		reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
-		httpRequest.Header.Set("Authorization", reqAuth)
-	}
-	httpRequest.Header.Set("Content-Type", "application/json")
-	httpClient := &http.Client{}
-	// fmt.Println("Request\n=======")
-	// fullRequest, err := httputil.DumpRequestOut(httpRequest, true)
-	// fmt.Println(string(fullRequest))
-	response, err := httpClient.Do(httpRequest)
-	// fmt.Println("Response\n========")
-	// fullResponse, err := httputil.DumpResponse(response, true)
-	// fmt.Println(string(fullResponse))
-	if err != nil {
-		panic(err)
-	}
-	defer response.Body.Close()
-	// if result is nil, it means there is no response body json
-	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
-		json := json.NewDecoder(response.Body)
-		err = json.Decode(&result)
-		if err != nil {
-			panic(err)
-		}
-	}
-	// fmt.Printf("ClientId: %v\nAccessToken: %v\nPayload: %v\nURL: %v\nMethod: %v\nResult: %v\n", auth.ClientId, auth.AccessToken, string(jsonPayload), auth.BaseURL+route, method, result)
-	return result, response
-}
+//
+// This package was generated from the schema defined at
+// http://references.taskcluster.net/index/v1/api.json
 
 // The task index, typically available at `index.taskcluster.net`, is
 // responsible for indexing tasks. In order to ensure that tasks can be
@@ -152,7 +93,69 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 // good idea to document task index hierarchies, as these make up extension
 // points in their own.
 //
-// See: http://references.taskcluster.net/index/v1/api.json
+// See: http://docs.taskcluster.net/services/index
+package index
+
+import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/json"
+	hawk "github.com/tent/hawk-go"
+	"io"
+	"net/http"
+	"reflect"
+)
+
+func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		panic(err)
+	}
+
+	var ioReader io.Reader = nil
+	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
+		ioReader = bytes.NewReader(jsonPayload)
+	}
+	httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
+	if err != nil {
+		panic(err)
+	}
+	// only authenticate if client library user wishes to
+	if auth.Authenticate {
+		// not sure if we need to regenerate this with each call, will leave in here for now...
+		credentials := &hawk.Credentials{
+			ID:   auth.ClientId,
+			Key:  auth.AccessToken,
+			Hash: sha256.New,
+		}
+		reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
+		httpRequest.Header.Set("Authorization", reqAuth)
+	}
+	httpRequest.Header.Set("Content-Type", "application/json")
+	httpClient := &http.Client{}
+	// fmt.Println("Request\n=======")
+	// fullRequest, err := httputil.DumpRequestOut(httpRequest, true)
+	// fmt.Println(string(fullRequest))
+	response, err := httpClient.Do(httpRequest)
+	// fmt.Println("Response\n========")
+	// fullResponse, err := httputil.DumpResponse(response, true)
+	// fmt.Println(string(fullResponse))
+	if err != nil {
+		panic(err)
+	}
+	defer response.Body.Close()
+	// if result is nil, it means there is no response body json
+	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
+		json := json.NewDecoder(response.Body)
+		err = json.Decode(&result)
+		if err != nil {
+			panic(err)
+		}
+	}
+	// fmt.Printf("ClientId: %v\nAccessToken: %v\nPayload: %v\nURL: %v\nMethod: %v\nResult: %v\n", auth.ClientId, auth.AccessToken, string(jsonPayload), auth.BaseURL+route, method, result)
+	return result, response
+}
+
 type Auth struct {
 	// Client ID required by Hawk
 	ClientId string
@@ -177,12 +180,11 @@ type Auth struct {
 //  index.BaseURL = "http://localhost:1234/api/Index/v1"   // alternative API endpoint (production by default)
 // data, httpResponse := index.FindTask(.....)            // for example, call the FindTask(.....) API endpoint (described further down)...
 func New(clientId string, accessToken string) *Auth {
-	r := &Auth{}
-	r.ClientId = clientId
-	r.AccessToken = accessToken
-	r.BaseURL = "https://index.taskcluster.net/v1"
-	r.Authenticate = true
-	return r
+	return &Auth{
+		ClientId:     clientId,
+		AccessToken:  accessToken,
+		BaseURL:      "https://index.taskcluster.net/v1",
+		Authenticate: true}
 }
 
 // Find task by namespace, if no task existing for the given namespace, this

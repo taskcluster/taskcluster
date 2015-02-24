@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	apis []APIDefinition
-	err  error
+	apiDefs []APIDefinition
+	err     error
 )
 
 type SortedAPIDefs []APIDefinition
@@ -68,7 +68,18 @@ func (api *API) postPopulate(apiDef *APIDefinition) {
 }
 
 func (api *API) generateAPICode(apiName string) string {
-	content := `
+	comment := ""
+	if api.Description != "" {
+		comment = utils.Indent(api.Description, "// ")
+	}
+	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+		comment += "\n"
+	}
+	comment += "//\n"
+	comment += fmt.Sprintf("// See: %v\n", api.apiDef.DocRoot)
+	content := comment
+	content += "package " + api.apiDef.PackageName + "\n"
+	content += `
 import (
 	"bytes"
 	"crypto/sha256"
@@ -129,18 +140,9 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	return result, response
 }
 `
-	comment := ""
-	if api.Description != "" {
-		comment = utils.Indent(api.Description, "// ")
-	}
-	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
-		comment += "\n"
-	}
 	exampleVarName := strings.ToLower(string(apiName[0])) + apiName[1:]
-	comment += "//\n"
-	comment += fmt.Sprintf("// See: %v\n", api.apiDef.URL)
-	content += comment
-	content += `type Auth struct {
+	content += `
+type Auth struct {
 	// Client ID required by Hawk
 	ClientId string
 	// Access Token required by Hawk
@@ -151,6 +153,7 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
 	Authenticate bool
 }
+
 `
 	content += "// Returns a pointer to " + apiName + ", configured to run against production.\n"
 	content += "// If you wish to point at a different API endpoint url, set the BaseURL struct\n"
@@ -170,12 +173,11 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 		content += "// data, httpResponse := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)" + strings.Repeat(" ", 14-len(api.Entries[0].MethodName)+len(apiName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
 	}
 	content += "func New(clientId string, accessToken string) *Auth {\n"
-	content += "\tr := &Auth{}\n"
-	content += "\tr.ClientId = clientId\n"
-	content += "\tr.AccessToken = accessToken\n"
-	content += "\tr.BaseURL = \"" + api.BaseURL + "\"\n"
-	content += "\tr.Authenticate = true\n"
-	content += "\treturn r\n"
+	content += "\treturn &Auth{\n"
+	content += "\t\tClientId: clientId,\n"
+	content += "\t\tAccessToken: accessToken,\n"
+	content += "\t\tBaseURL: \"" + api.BaseURL + "\",\n"
+	content += "\t\tAuthenticate: true}\n"
 	content += "}\n"
 	content += "\n"
 	for _, entry := range api.Entries {
@@ -379,13 +381,15 @@ type APIModel interface {
 // APIDefinition represents the definition of a REST API, comprising of the URL to the defintion
 // of the API in json format, together with a URL to a json schema to validate the definition
 type APIDefinition struct {
-	URL        string `json:"url"`
-	SchemaURL  string `json:"schema"`
-	Name       string `json:"name"`
-	DocRoot    string `json:"docroot"`
-	Data       APIModel
-	schemaURLs []string
-	schemas    map[string]*JsonSubSchema // = make(map[string]*JsonSubSchema)
+	URL         string `json:"url"`
+	SchemaURL   string `json:"schema"`
+	Name        string `json:"name"`
+	DocRoot     string `json:"docroot"`
+	Data        APIModel
+	schemaURLs  []string
+	schemas     map[string]*JsonSubSchema
+	PackageName string
+	PackagePath string
 }
 
 func (a *APIDefinition) generateAPICode() string {
@@ -463,19 +467,19 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 	err = apiManifestDecoder.Decode(&apiMan)
 	utils.ExitOnFail(err)
 	supDataDecoder := json.NewDecoder(supDataReader)
-	err = supDataDecoder.Decode(&apis)
+	err = supDataDecoder.Decode(&apiDefs)
 	utils.ExitOnFail(err)
-	sort.Sort(SortedAPIDefs(apis))
+	sort.Sort(SortedAPIDefs(apiDefs))
 
 	// build up apis based on data in *both* data sources
 	for i := range apiMan {
 		// seach for apiMan[i] in apis
-		k := sort.Search(len(apis), func(j int) bool {
-			return apis[j].URL >= apiMan[i]
+		k := sort.Search(len(apiDefs), func(j int) bool {
+			return apiDefs[j].URL >= apiMan[i]
 		})
-		if k < len(apis) && apis[k].URL == apiMan[i] {
+		if k < len(apiDefs) && apiDefs[k].URL == apiMan[i] {
 			// url is present in supplementary data
-			apis[k].Name = i
+			apiDefs[k].Name = i
 		} else {
 			fmt.Printf(
 				"Manifest from url '%v' contains key '%v' with url '%v', but this url does not exist in supplementary data file '%v', therefore exiting...",
@@ -483,54 +487,55 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 			utils.ExitOnFail(err)
 		}
 	}
-	for i := range apis {
-		if apis[i].Name == "" {
+	for i := range apiDefs {
+		if apiDefs[i].Name == "" {
 			fmt.Printf(
 				"Manifest from url '%v' does not contain url '%v' which does exist in supplementary data file '%v', therefore exiting...",
-				apiManifestUrl, apis[i].URL, supplementaryDataFile)
+				apiManifestUrl, apiDefs[i].URL, supplementaryDataFile)
 			utils.ExitOnFail(err)
 		}
 	}
-	for i := range apis {
-		apis[i].schemas = make(map[string]*JsonSubSchema)
+	for i := range apiDefs {
+		apiDefs[i].schemas = make(map[string]*JsonSubSchema)
 		var resp *http.Response
-		resp, err = http.Get(apis[i].URL)
+		resp, err = http.Get(apiDefs[i].URL)
 		utils.ExitOnFail(err)
 		defer resp.Body.Close()
-		apis[i].loadJson(resp.Body, &apis[i].SchemaURL)
+		apiDefs[i].loadJson(resp.Body, &apiDefs[i].SchemaURL)
 
 		// now all data should be loaded, let's sort the schemas
-		apis[i].schemaURLs = make([]string, 0, len(apis[i].schemas))
-		for url := range apis[i].schemas {
-			apis[i].schemaURLs = append(apis[i].schemaURLs, url)
+		apiDefs[i].schemaURLs = make([]string, 0, len(apiDefs[i].schemas))
+		for url := range apiDefs[i].schemas {
+			apiDefs[i].schemaURLs = append(apiDefs[i].schemaURLs, url)
 		}
-		sort.Strings(apis[i].schemaURLs)
+		sort.Strings(apiDefs[i].schemaURLs)
 		// finally, now we can generate normalised names
 		// for schemas
 		// keep a record of generated type names, so that we don't reuse old names
 		// map[string]bool acts like a set of strings
 		TypeName := make(map[string]bool)
-		for _, j := range apis[i].schemaURLs {
-			apis[i].schemas[j].TypeName = utils.Normalise(*apis[i].schemas[j].Title, TypeName)
+		for _, j := range apiDefs[i].schemaURLs {
+			apiDefs[i].schemas[j].TypeName = utils.Normalise(*apiDefs[i].schemas[j].Title, TypeName)
 		}
 		//////////////////////////////////////////////////////////////////////////////
 		// these next four lines are a temporary hack while waiting for https://github.com/taskcluster/taskcluster-queue/pull/31
-		if x, ok := apis[i].schemas["http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#"]; ok {
+		if x, ok := apiDefs[i].schemas["http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#"]; ok {
 			y := "object"
 			x.Properties.Properties["artifacts"].Items.Type = &y
 		}
 		//////////////////////////////////////////////////////////////////////////////
 	}
-	return apis
+	return apiDefs
 }
 
 // GenerateCode takes the objects loaded into memory in LoadAPIs
 // and writes them out as go code.
 func GenerateCode(goOutputDir, modelData string) {
-	for _, api := range apis {
-		packageName := strings.ToLower(api.Name)
-		packagePath := filepath.Join(goOutputDir, packageName)
-		err = os.MkdirAll(packagePath, 0755)
+	for i := range apiDefs {
+		fmt.Printf("Setting PackageName in '%v' to '%v'\n", apiDefs[i].Name, strings.ToLower(apiDefs[i].Name))
+		apiDefs[i].PackageName = strings.ToLower(apiDefs[i].Name)
+		apiDefs[i].PackagePath = filepath.Join(goOutputDir, apiDefs[i].PackageName)
+		err = os.MkdirAll(apiDefs[i].PackagePath, 0755)
 		utils.ExitOnFail(err)
 		content := `
 // The following code is AUTO-GENERATED. Please DO NOT edit.
@@ -538,23 +543,25 @@ func GenerateCode(goOutputDir, modelData string) {
 // in the client subdirectory:
 //
 // go generate && go fmt
+//
+// This package was generated from the schema defined at
+// ` + apiDefs[i].URL + `
 
-package ` + packageName + "\n"
-
-		content += api.generateAPICode()
-		content += generatePayloadTypes(&api)
-		utils.WriteStringToFile(content, filepath.Join(packagePath, packageName+".go"))
+`
+		content += apiDefs[i].generateAPICode()
+		content += generatePayloadTypes(&apiDefs[i])
+		utils.WriteStringToFile(content, filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go"))
 	}
 
 	content := "The following file is an auto-generated static dump of the API models at time of code generation.\n"
 	content += "It is provided here for reference purposes, but is not used by any code.\n"
 	content += "\n"
-	for _, api := range apis {
-		content += utils.Underline(api.URL)
-		content += api.Data.String() + "\n\n"
-		for _, url := range api.schemaURLs {
+	for i := range apiDefs {
+		content += utils.Underline(apiDefs[i].URL)
+		content += apiDefs[i].Data.String() + "\n\n"
+		for _, url := range apiDefs[i].schemaURLs {
 			content += (utils.Underline(url))
-			content += api.schemas[url].String() + "\n\n"
+			content += apiDefs[i].schemas[url].String() + "\n\n"
 		}
 	}
 	utils.WriteStringToFile(content, modelData)
@@ -573,12 +580,23 @@ func generatePayloadTypes(apiDef *APIDefinition) string {
 }
 
 func (exchange *Exchange) generateAPICode(exchangeName string) string {
-	content := `
+	comment := ""
+	if exchange.Description != "" {
+		comment = utils.Indent(exchange.Description, "// ")
+	}
+	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+		comment += "\n"
+	}
+	comment += "//\n"
+	comment += fmt.Sprintf("// See: %v\n", exchange.apiDef.DocRoot)
+	content := comment
+	content += "package " + exchange.apiDef.PackageName + "\n"
+	content += `
 import (
 	"reflect"
 	"strings"
 )`
-	comment := ""
+	comment = ""
 	if exchange.Description != "" {
 		comment = utils.Indent(exchange.Description, "// ")
 	}

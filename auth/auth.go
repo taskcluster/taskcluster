@@ -3,7 +3,13 @@
 // in the client subdirectory:
 //
 // go generate && go fmt
+//
+// This package was generated from the schema defined at
+// http://references.taskcluster.net/auth/v1/api.json
 
+// Authentication related API end-points for taskcluster.
+//
+// See: http://docs.taskcluster.net/auth/api-docs
 package auth
 
 import (
@@ -66,9 +72,6 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	return result, response
 }
 
-// Authentication related API end-points for taskcluster.
-//
-// See: http://references.taskcluster.net/auth/v1/api.json
 type Auth struct {
 	// Client ID required by Hawk
 	ClientId string
@@ -93,12 +96,11 @@ type Auth struct {
 //  auth.BaseURL = "http://localhost:1234/api/Auth/v1"   // alternative API endpoint (production by default)
 // data, httpResponse := auth.Scopes(.....)             // for example, call the Scopes(.....) API endpoint (described further down)...
 func New(clientId string, accessToken string) *Auth {
-	r := &Auth{}
-	r.ClientId = clientId
-	r.AccessToken = accessToken
-	r.BaseURL = "https://auth.taskcluster.net/v1"
-	r.Authenticate = true
-	return r
+	return &Auth{
+		ClientId:     clientId,
+		AccessToken:  accessToken,
+		BaseURL:      "https://auth.taskcluster.net/v1",
+		Authenticate: true}
 }
 
 // Returns the scopes the client is authorized to access and the date-time
