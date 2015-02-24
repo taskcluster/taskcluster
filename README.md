@@ -19,12 +19,16 @@ This library provides six packages to interface with TaskCluster.
 * http://godoc.org/github.com/petemoore/taskcluster-client-go/queueevents
 * http://godoc.org/github.com/petemoore/taskcluster-client-go/schedulerevents
 
+### Example programs
+
+In order to quickly understand the library, I have included some example programs that use it.
+
 Please also see the example programs provided:
-* [auth example](https://github.com/petemoore/taskcluster-client-go/blob/master/auth/examples/modifyclient/modifyclient.go)
-* [queueevents example](https://github.com/petemoore/taskcluster-client-go/blob/master/queueevents/examples/tctasksniffer/sniffer.go)
+* This [HTTP example program](https://github.com/petemoore/taskcluster-client-go/blob/master/auth/examples/modifyclient/modifyclient.go) demonstrates the use of the [auth](http://godoc.org/github.com/petemoore/taskcluster-client-go/auth) package to first query the scopes of a given clientId, and also to update an existing clientId with new data.
+* The [AMQP example program](https://github.com/petemoore/taskcluster-client-go/blob/master/queueevents/examples/tctasksniffer/sniffer.go) demonstrates the use of the [queueevents](http://godoc.org/github.com/petemoore/taskcluster-client-go/queueevents) package to listen in on Task Cluster tasks being defined and executed.
 
 # Contributing
 Contributions are welcome. Please fork, and issue a Pull Request back with an explanation of your changes.
 
 # Travis
-Travis build success/failure messages are posted to irc channel #tcclient-go on irc.mozilla.org:6697.
+Travis build [success/failure messages](http://travis-ci.org/petemoore/taskcluster-client-go) are posted to irc channel #tcclient-go on irc.mozilla.org:6697.
