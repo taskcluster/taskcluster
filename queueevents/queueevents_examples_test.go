@@ -1,6 +1,4 @@
-// Package tctasksniffer provides an example application that listens to Pulse
-// for task definition messages and task running messages, and reports on them.
-package main
+package queueevents
 
 import (
 	"errors"
@@ -10,7 +8,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func main() {
+func Example_taskClusterSniffer() {
 	// Passing all empty strings:
 	// empty user => use PULSE_USERNAME env var
 	// empty password => use PULSE_PASSWORD env var

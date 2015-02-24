@@ -76,13 +76,6 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "// and then call one or more of auth's methods, e.g.:\n"
 	comment += "//\n"
 	comment += exampleCall + "\n"
-	comment += "//\n"
-	comment += "// Example code\n"
-	comment += "//\n"
-	comment += "// This example is taken from the examples subdirectory of this package.\n"
-	comment += "//\n"
-	comment += "//  <example>\n"
-	comment += "//\n"
 
 	content := comment
 	content += "package " + api.apiDef.PackageName + "\n"

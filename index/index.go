@@ -104,13 +104,6 @@
 // and then call one or more of auth's methods, e.g.:
 //
 //  data, httpResponse := index.FindTask(.....)
-//
-// Example code
-//
-// This example is taken from the examples subdirectory of this package.
-//
-//  <example>
-//
 package index
 
 import (
