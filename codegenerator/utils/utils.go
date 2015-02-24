@@ -1,3 +1,5 @@
+// Package utils contains utility functions used by the other task-cluster-go
+// packages, such as string manipulation functions and other utility methods.
 package utils
 
 import (
