@@ -62,6 +62,28 @@
 // if this corner case is of concern to you.
 //
 // See: http://docs.taskcluster.net/queue/exchanges
+//
+// How to use this package
+//
+// This package is designed to sit on top of http://godoc.org/github.com/petemoore/pulse-go/pulse. Please read
+// the pulse package overview to get an understanding of how the pulse client is implemented in go.
+//
+// This package provides two things in addition to the basic pulse package: structured types for unmarshaling
+// pulse message bodies into, and custom Binding interfaces, for defining the fixed strings for task cluster
+// exchange names, and routing keys as structured types.
+//
+// For example, when specifying a binding, rather than using:
+//
+//  pulse.Bind(
+//  	"*.*.*.*.*.*.gaia.#",
+//  	"exchange/taskcluster-queue/v1/task-defined")
+//
+// You can rather use:
+//
+//  queueevents.TaskDefined{WorkerType: "gaia"}
+//
+// In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
+// rather than just interface{}.
 package queueevents
 
 import (
