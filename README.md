@@ -23,6 +23,18 @@ Please also see the example programs provided:
 * [auth example](https://github.com/petemoore/taskcluster-client-go/blob/master/auth/examples/modifyclient/modifyclient.go)
 * [queueevents example](https://github.com/petemoore/taskcluster-client-go/blob/master/queueevents/examples/tctasksniffer/sniffer.go)
 
+# Building
+The libraries provided by this client are auto-generated based on the schemas listed under
+http://references.taskcluster.net/manifest.json combined with the supplementary information stored in
+[apis.json](https://github.com/petemoore/taskcluster-client-go/blob/master/codegenerator/model/apis.json).
+
+In order to completely regenerate all of the HTTP and AMQP libraries, please run [build.sh](https://github.com/petemoore/taskcluster-client-go/blob/master/build.sh)
+found in the top level directory. This will completely regenerate the library. Please note you will need an active internet connection as the build process must
+download several json files and schemas in order to build the library.
+
+The code which generates the library can all be found under the top level [codegenerator](https://github.com/petemoore/taskcluster-client-go/tree/master/codegenerator)
+directory.
+
 # Contributing
 Contributions are welcome. Please fork, and issue a Pull Request back with an explanation of your changes.
 
