@@ -20,8 +20,8 @@ This library provides six packages to interface with TaskCluster.
 * http://godoc.org/github.com/petemoore/taskcluster-client-go/schedulerevents
 
 Please also see the example programs provided:
-* https://github.com/petemoore/taskcluster-client-go/blob/master/auth/examples/modifyclient/modifyclient.go
-* https://github.com/petemoore/taskcluster-client-go/blob/master/queueevents/examples/tctasksniffer/sniffer.go
+* [auth example](https://github.com/petemoore/taskcluster-client-go/blob/master/auth/examples/modifyclient/modifyclient.go)
+* [queueevents example](https://github.com/petemoore/taskcluster-client-go/blob/master/queueevents/examples/tctasksniffer/sniffer.go)
 
 # Contributing
 Contributions are welcome. Please fork, and issue a Pull Request back with an explanation of your changes.
