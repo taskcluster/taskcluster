@@ -19,14 +19,14 @@ This library provides the following six packages to interface with TaskCluster:
 * http://godoc.org/github.com/petemoore/taskcluster-client-go/queueevents
 * http://godoc.org/github.com/petemoore/taskcluster-client-go/schedulerevents
 
-### Example programs
+## Example programs
 
 To get you started quickly, I have also included some example programs that use both the http services and the amqp services:
 
 * This [HTTP example program](https://github.com/petemoore/taskcluster-client-go/blob/master/auth/examples/modifyclient/modifyclient.go) demonstrates the use of the [auth](http://godoc.org/github.com/petemoore/taskcluster-client-go/auth) package to first query the scopes of a given clientId, and also to update an existing clientId with new data.
 * The [AMQP example program](https://github.com/petemoore/taskcluster-client-go/blob/master/queueevents/examples/tctasksniffer/sniffer.go) demonstrates the use of the [queueevents](http://godoc.org/github.com/petemoore/taskcluster-client-go/queueevents) package to listen in on Task Cluster tasks being defined and executed.
 
-### Building
+## Building
 The libraries provided by this client are auto-generated based on the schemas listed under
 http://references.taskcluster.net/manifest.json combined with the supplementary information stored in
 [apis.json](https://github.com/petemoore/taskcluster-client-go/blob/master/codegenerator/model/apis.json).
@@ -38,8 +38,8 @@ download several json files and schemas in order to build the library.
 The code which generates the library can all be found under the top level [codegenerator](https://github.com/petemoore/taskcluster-client-go/tree/master/codegenerator)
 directory.
 
-### Contributing
+## Contributing
 Contributions are welcome. Please fork, and issue a Pull Request back with an explanation of your changes.
 
-### Travis
+## Travis
 Travis build [success/failure messages](http://travis-ci.org/petemoore/taskcluster-client-go) are posted to irc channel #tcclient-go on irc.mozilla.org:6697.
