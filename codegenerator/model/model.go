@@ -137,17 +137,17 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 			apiDefs[k].Name = i
 		} else {
 			fmt.Printf(
-				"Manifest from url '%v' contains key '%v' with url '%v', but this url does not exist in supplementary data file '%v', therefore exiting...",
+				"\nFATAL: Manifest from url '%v' contains key '%v' with url '%v', but this url does not exist in supplementary data file '%v', therefore exiting...\n\n",
 				apiManifestUrl, i, apiMan[i], supplementaryDataFile)
-			utils.ExitOnFail(err)
+			os.Exit(64)
 		}
 	}
 	for i := range apiDefs {
 		if apiDefs[i].Name == "" {
 			fmt.Printf(
-				"Manifest from url '%v' does not contain url '%v' which does exist in supplementary data file '%v', therefore exiting...",
+				"\nFATAL: Manifest from url '%v' does not contain url '%v' which does exist in supplementary data file '%v', therefore exiting...\n\n",
 				apiManifestUrl, apiDefs[i].URL, supplementaryDataFile)
-			utils.ExitOnFail(err)
+			os.Exit(65)
 		}
 	}
 	for i := range apiDefs {
