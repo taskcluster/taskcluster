@@ -23,7 +23,8 @@ This library provides the following six packages to interface with TaskCluster:
 
 To get you started quickly, I have also included some example programs that use both the http services and the amqp services:
 
-* This [HTTP example program](https://github.com/petemoore/taskcluster-client-go/blob/master/auth/examples/modifyclient/modifyclient.go) demonstrates the use of the [auth](http://godoc.org/github.com/petemoore/taskcluster-client-go/auth) package to first query the scopes of a given clientId, and also to update an existing clientId with new data.
+* This [HTTP example program](http://godoc.org/github.com/petemoore/taskcluster-client-go/auth#example-package--Scopes) demonstrates the use of the [auth](http://godoc.org/github.com/petemoore/taskcluster-client-go/auth) package to query the scopes of a given clientId.
+* This [HTTP example program](http://godoc.org/github.com/petemoore/taskcluster-client-go/auth#example-package--ModifyClient) demonstrates the use of the [auth](http://godoc.org/github.com/petemoore/taskcluster-client-go/auth) package to update an existing clientId with new data.
 * The [AMQP example program](https://github.com/petemoore/taskcluster-client-go/blob/master/queueevents/examples/tctasksniffer/sniffer.go) demonstrates the use of the [queueevents](http://godoc.org/github.com/petemoore/taskcluster-client-go/queueevents) package to listen in on Task Cluster tasks being defined and executed.
 
 ## Building
