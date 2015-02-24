@@ -4,7 +4,7 @@
 
 A go (golang) port of taskcluster-client
 
-Please see godoc documentation here: http://godoc.org/github.com/petemoore/taskcluster-client-go
+Complete godoc documentation here: http://godoc.org/github.com/petemoore/taskcluster-client-go
 
 This library provides six packages to interface with TaskCluster.
 
