@@ -113,16 +113,9 @@ func (exchange *Exchange) generateAPICode(exchangeName string) string {
 import (
 	"reflect"
 	"strings"
-)`
-	comment = ""
-	if exchange.Description != "" {
-		comment = utils.Indent(exchange.Description, "// ")
-	}
-	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
-		comment += "\n"
-	}
-	content += comment
-	content += "type " + exchangeName + " struct {\n}\n\n"
+)
+
+`
 	entryTypeNames := make(map[string]bool, len(exchange.Entries))
 	for _, entry := range exchange.Entries {
 		content += entry.generateAPICode(utils.Normalise(entry.Name, entryTypeNames))
