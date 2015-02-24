@@ -9,18 +9,18 @@ Please see godoc documentation here: http://godoc.org/github.com/petemoore/taskc
 This library provides six packages to interface with TaskCluster.
 
 ### HTTP APIs
-http://godoc.org/github.com/petemoore/taskcluster-client-go/auth
-http://godoc.org/github.com/petemoore/taskcluster-client-go/index
-http://godoc.org/github.com/petemoore/taskcluster-client-go/queue
-http://godoc.org/github.com/petemoore/taskcluster-client-go/scheduler
+* http://godoc.org/github.com/petemoore/taskcluster-client-go/auth
+* http://godoc.org/github.com/petemoore/taskcluster-client-go/index
+* http://godoc.org/github.com/petemoore/taskcluster-client-go/queue
+* http://godoc.org/github.com/petemoore/taskcluster-client-go/scheduler
 
 ### AMQP APIS
-http://godoc.org/github.com/petemoore/taskcluster-client-go/queueevents
-http://godoc.org/github.com/petemoore/taskcluster-client-go/schedulerevents
+* http://godoc.org/github.com/petemoore/taskcluster-client-go/queueevents
+* http://godoc.org/github.com/petemoore/taskcluster-client-go/schedulerevents
 
 Please also see the example programs provided:
-http://godoc.org/github.com/petemoore/taskcluster-client-go/auth/examples/modifyclient
-http://godoc.org/github.com/petemoore/taskcluster-client-go/queueevents/examples/tctasksniffer
+* http://godoc.org/github.com/petemoore/taskcluster-client-go/auth/examples/modifyclient
+* http://godoc.org/github.com/petemoore/taskcluster-client-go/queueevents/examples/tctasksniffer
 
 # Contributing
 Contributions are welcome. Please fork, and issue a Pull Request back with an explanation of your changes.
