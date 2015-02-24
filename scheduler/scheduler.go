@@ -19,6 +19,23 @@
 //  * Tools, that wants to inspect the state of a task-graph.
 //
 // See: http://docs.taskcluster.net/scheduler/api-docs
+//
+// How to use this package
+//
+// First create an authentication object:
+//
+//  auth := auth.New("myClientId", "myAccessToken")
+//
+// and then call one or more of auth's methods, e.g.:
+//
+//  data, httpResponse := scheduler.CreateTaskGraph(.....)
+//
+// Example code
+//
+// This example is taken from the examples subdirectory of this package.
+//
+//  <example>
+//
 package scheduler
 
 import (
@@ -81,29 +98,34 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	return result, response
 }
 
+// The entry point into all the functionality in this package is to create an Auth object.
+// It contains your authentication credentials, which are required for all HTTP operations.
 type Auth struct {
 	// Client ID required by Hawk
 	ClientId string
 	// Access Token required by Hawk
 	AccessToken string
-	// By default set to production base url for API service, but can be changed to hit a
-	// different service, e.g. a staging API endpoint, or a taskcluster-proxy endpoint
+	// The URL of the API endpoint to hit.
+	// Use "https://scheduler.taskcluster.net/v1" for production.
+	// Please note calling auth.New(clientId string, accessToken string) is an
+	// alternative way to create an Auth object with BaseURL set to production.
 	BaseURL string
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
+	// Please note calling auth.New(clientId string, accessToken string) is an
+	// alternative way to create an Auth object with Authenticate set to true.
 	Authenticate bool
 }
 
-// Returns a pointer to Scheduler, configured to run against production.
-// If you wish to point at a different API endpoint url, set the BaseURL struct
-// member to your chosen location. You may also disable authentication (for
-// example if you wish to use the taskcluster-proxy) by setting Authenticate
-// struct member to false.
+// Returns a pointer to Auth, configured to run against production.  If you
+// wish to point at a different API endpoint url, set BaseURL to the preferred
+// url. Authentication can be disabled (for example if you wish to use the
+// taskcluster-proxy) by setting Authenticate to false.
 //
 // For example:
-//  scheduler := client.NewScheduler("123", "456")                 // set clientId and accessToken
+//  scheduler := client.New("123", "456")                          // set clientId and accessToken
 //  scheduler.Authenticate = false                                 // disable authentication (true by default)
 //  scheduler.BaseURL = "http://localhost:1234/api/Scheduler/v1"   // alternative API endpoint (production by default)
-// data, httpResponse := scheduler.CreateTaskGraph(.....)         // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
+//  data, httpResponse := scheduler.CreateTaskGraph(.....)         // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
 func New(clientId string, accessToken string) *Auth {
 	return &Auth{
 		ClientId:     clientId,

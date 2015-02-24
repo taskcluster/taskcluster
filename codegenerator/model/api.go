@@ -48,6 +48,15 @@ func (api *API) postPopulate(apiDef *APIDefinition) {
 }
 
 func (api *API) generateAPICode(apiName string) string {
+	exampleVarName := strings.ToLower(string(apiName[0])) + apiName[1:]
+	exampleCall := ""
+	// here we choose an example API method to call, just the first one in the list of api.Entries
+	// We need to first see if it returns one or two variables...
+	if api.Entries[0].Output == "" {
+		exampleCall = "//  httpResponse := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
+	} else {
+		exampleCall = "//  data, httpResponse := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
+	}
 	comment := ""
 	if api.Description != "" {
 		comment = utils.Indent(api.Description, "// ")
@@ -57,6 +66,24 @@ func (api *API) generateAPICode(apiName string) string {
 	}
 	comment += "//\n"
 	comment += fmt.Sprintf("// See: %v\n", api.apiDef.DocRoot)
+	comment += "//\n"
+	comment += "// How to use this package\n"
+	comment += "//\n"
+	comment += "// First create an authentication object:\n"
+	comment += "//\n"
+	comment += "//  auth := auth.New(\"myClientId\", \"myAccessToken\")\n"
+	comment += "//\n"
+	comment += "// and then call one or more of auth's methods, e.g.:\n"
+	comment += "//\n"
+	comment += exampleCall + "\n"
+	comment += "//\n"
+	comment += "// Example code\n"
+	comment += "//\n"
+	comment += "// This example is taken from the examples subdirectory of this package.\n"
+	comment += "//\n"
+	comment += "//  <example>\n"
+	comment += "//\n"
+
 	content := comment
 	content += "package " + api.apiDef.PackageName + "\n"
 	content += `
@@ -120,38 +147,36 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	return result, response
 }
 `
-	exampleVarName := strings.ToLower(string(apiName[0])) + apiName[1:]
 	content += `
+// The entry point into all the functionality in this package is to create an Auth object.
+// It contains your authentication credentials, which are required for all HTTP operations.
 type Auth struct {
 	// Client ID required by Hawk
 	ClientId string
 	// Access Token required by Hawk
 	AccessToken string
-	// By default set to production base url for API service, but can be changed to hit a
-	// different service, e.g. a staging API endpoint, or a taskcluster-proxy endpoint
+	// The URL of the API endpoint to hit.
+	// Use ` + "\"" + api.BaseURL + "\"" + ` for production.
+	// Please note calling auth.New(clientId string, accessToken string) is an
+	// alternative way to create an Auth object with BaseURL set to production.
 	BaseURL string
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
+	// Please note calling auth.New(clientId string, accessToken string) is an
+	// alternative way to create an Auth object with Authenticate set to true.
 	Authenticate bool
 }
 
+// Returns a pointer to Auth, configured to run against production.  If you
+// wish to point at a different API endpoint url, set BaseURL to the preferred
+// url. Authentication can be disabled (for example if you wish to use the
+// taskcluster-proxy) by setting Authenticate to false.
+//
 `
-	content += "// Returns a pointer to " + apiName + ", configured to run against production.\n"
-	content += "// If you wish to point at a different API endpoint url, set the BaseURL struct\n"
-	content += "// member to your chosen location. You may also disable authentication (for\n"
-	content += "// example if you wish to use the taskcluster-proxy) by setting Authenticate\n"
-	content += "// struct member to false.\n"
-	content += "//\n"
 	content += "// For example:\n"
-	content += "//  " + exampleVarName + " := client.New" + apiName + "(\"123\", \"456\")                 // set clientId and accessToken\n"
-	content += "//  " + exampleVarName + ".Authenticate = false          " + strings.Repeat(" ", len(apiName)) + "              // disable authentication (true by default)\n"
+	content += "//  " + exampleVarName + " := client.New(\"123\", \"456\")  " + strings.Repeat(" ", len(apiName)) + "               // set clientId and accessToken\n"
+	content += "//  " + exampleVarName + ".Authenticate = false             " + strings.Repeat(" ", len(apiName)) + "           // disable authentication (true by default)\n"
 	content += "//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"   // alternative API endpoint (production by default)\n"
-	// here we choose an example API method to call, just the first one in the list of api.Entries
-	// We need to first see if it returns one or two variables...
-	if api.Entries[0].Output == "" {
-		content += "//  httpResponse := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)" + strings.Repeat(" ", 20-len(api.Entries[0].MethodName)+len(apiName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
-	} else {
-		content += "// data, httpResponse := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)" + strings.Repeat(" ", 14-len(api.Entries[0].MethodName)+len(apiName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
-	}
+	content += exampleCall + strings.Repeat(" ", 48-len(exampleCall)+len(apiName)+len(exampleVarName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
 	content += "func New(clientId string, accessToken string) *Auth {\n"
 	content += "\treturn &Auth{\n"
 	content += "\t\tClientId: clientId,\n"
