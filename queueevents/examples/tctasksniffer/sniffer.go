@@ -33,10 +33,8 @@ func main() {
 		},
 		1,     // prefetch 1 message at a time
 		false, // don't auto-acknowledge messages
-		// queueevents.TaskDefined{WorkerType: "gaia"},
-		// queueevents.TaskRunning{ProvisionerId: "aws-provisioner"})
-		queueevents.TaskDefined{},
-		queueevents.TaskRunning{})
+		queueevents.TaskDefined{WorkerType: "gaia", ProvisionerId: "aws-provisioner"},
+		queueevents.TaskRunning{WorkerType: "gaia", ProvisionerId: "aws-provisioner"})
 	conn.Consume( // a second workflow to manage concurrently
 		"", // empty name implies anonymous queue
 		func(message interface{}, delivery amqp.Delivery) { // simpler callback than before
