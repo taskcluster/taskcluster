@@ -2,7 +2,7 @@ package model
 
 import (
 	"fmt"
-	"github.com/petemoore/taskcluster-client-go/codegenerator/utils"
+	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
 	"strings"
 )
 

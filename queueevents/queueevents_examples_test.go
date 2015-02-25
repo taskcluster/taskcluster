@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/petemoore/pulse-go/pulse"
-	"github.com/petemoore/taskcluster-client-go/queueevents"
 	"github.com/streadway/amqp"
+	"github.com/taskcluster/taskcluster-client-go/queueevents"
 )
 
 func Example_taskClusterSniffer() {

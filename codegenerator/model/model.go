@@ -5,7 +5,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/petemoore/taskcluster-client-go/codegenerator/utils"
+	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
 	"io"
 	"net/http"
 	"os"

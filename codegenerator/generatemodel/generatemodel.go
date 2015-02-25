@@ -3,8 +3,8 @@ package main
 
 import (
 	docopt "github.com/docopt/docopt-go"
-	"github.com/petemoore/taskcluster-client-go/codegenerator/model"
-	"github.com/petemoore/taskcluster-client-go/codegenerator/utils"
+	"github.com/taskcluster/taskcluster-client-go/codegenerator/model"
+	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
 )
 
 var (

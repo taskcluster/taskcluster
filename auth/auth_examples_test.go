@@ -2,7 +2,7 @@ package auth
 
 import (
 	"fmt"
-	"github.com/petemoore/taskcluster-client-go/auth"
+	"github.com/taskcluster/taskcluster-client-go/auth"
 	"io/ioutil"
 )
 
