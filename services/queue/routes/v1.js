@@ -194,8 +194,9 @@ api.declare({
   output:     SCHEMA_PREFIX_CONST + 'task.json#',
   title:      "Get Task Definition",
   description: [
-    "This end-point will return the task-definition. Note, that the task",
-    "definition may have been modified by "
+    "This end-point will return the task-definition. Notice that the task",
+    "definition may have been modified by queue, if an optional property isn't",
+    "specified the queue may provide a default value."
   ].join('\n')
 }, async function(req, res) {
   // Validate parameters
@@ -1467,7 +1468,9 @@ api.declare({
   var status = task.status();
 
   // If a newRun was created and it is a retry with state pending then we better
-  // publish messages about it
+  // publish messages about it. And if we're not retrying the task, because then
+  // the task is resolved as it has no more runs, and we publish a message about
+  // task-exception.
   var newRun = task.runs[runId + 1];
   if (newRun &&
       task.runs.length - 1  === runId + 1 &&
