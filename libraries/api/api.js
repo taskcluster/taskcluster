@@ -898,7 +898,9 @@ API.prototype.reference = function(options) {
   assert(options,         "Options is required");
   assert(options.baseUrl, "A 'baseUrl' must be provided");
   var reference = {
-    version:            '0.2.0',
+    version:            0,
+    '$schema':          'http://schemas.taskcluster.net/base/v1/' +
+                        'api-reference.json#',
     title:              this._options.title,
     description:        this._options.description,
     baseUrl:            options.baseUrl,
