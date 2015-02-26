@@ -27,7 +27,7 @@
 //
 // and then call one or more of auth's methods, e.g.:
 //
-//  data, httpResponse := queue.CreateTask(.....)
+//  data, httpResponse := Queue.CreateTask(.....)
 package queue
 
 import (
@@ -114,10 +114,10 @@ type Auth struct {
 // taskcluster-proxy) by setting Authenticate to false.
 //
 // For example:
-//  queue := client.New("123", "456")                      // set clientId and accessToken
-//  queue.Authenticate = false                             // disable authentication (true by default)
-//  queue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
-//  data, httpResponse := queue.CreateTask(.....)          // for example, call the CreateTask(.....) API endpoint (described further down)...
+//  Queue := queue.New("123", "456")                       // set clientId and accessToken
+//  Queue.Authenticate = false                             // disable authentication (true by default)
+//  Queue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
+//  data, httpResponse := Queue.CreateTask(.....)          // for example, call the CreateTask(.....) API endpoint (described further down)...
 func New(clientId string, accessToken string) *Auth {
 	return &Auth{
 		ClientId:     clientId,

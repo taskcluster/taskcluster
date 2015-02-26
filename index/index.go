@@ -103,7 +103,7 @@
 //
 // and then call one or more of auth's methods, e.g.:
 //
-//  data, httpResponse := index.FindTask(.....)
+//  data, httpResponse := Index.FindTask(.....)
 package index
 
 import (
@@ -190,10 +190,10 @@ type Auth struct {
 // taskcluster-proxy) by setting Authenticate to false.
 //
 // For example:
-//  index := client.New("123", "456")                      // set clientId and accessToken
-//  index.Authenticate = false                             // disable authentication (true by default)
-//  index.BaseURL = "http://localhost:1234/api/Index/v1"   // alternative API endpoint (production by default)
-//  data, httpResponse := index.FindTask(.....)            // for example, call the FindTask(.....) API endpoint (described further down)...
+//  Index := index.New("123", "456")                       // set clientId and accessToken
+//  Index.Authenticate = false                             // disable authentication (true by default)
+//  Index.BaseURL = "http://localhost:1234/api/Index/v1"   // alternative API endpoint (production by default)
+//  data, httpResponse := Index.FindTask(.....)            // for example, call the FindTask(.....) API endpoint (described further down)...
 func New(clientId string, accessToken string) *Auth {
 	return &Auth{
 		ClientId:     clientId,

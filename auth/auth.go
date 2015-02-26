@@ -19,7 +19,7 @@
 //
 // and then call one or more of auth's methods, e.g.:
 //
-//  data, httpResponse := auth.Scopes(.....)
+//  data, httpResponse := Auth.Scopes(.....)
 package auth
 
 import (
@@ -106,10 +106,10 @@ type Auth struct {
 // taskcluster-proxy) by setting Authenticate to false.
 //
 // For example:
-//  auth := client.New("123", "456")                     // set clientId and accessToken
-//  auth.Authenticate = false                            // disable authentication (true by default)
-//  auth.BaseURL = "http://localhost:1234/api/Auth/v1"   // alternative API endpoint (production by default)
-//  data, httpResponse := auth.Scopes(.....)             // for example, call the Scopes(.....) API endpoint (described further down)...
+//  Auth := auth.New("123", "456")                       // set clientId and accessToken
+//  Auth.Authenticate = false                            // disable authentication (true by default)
+//  Auth.BaseURL = "http://localhost:1234/api/Auth/v1"   // alternative API endpoint (production by default)
+//  data, httpResponse := Auth.Scopes(.....)             // for example, call the Scopes(.....) API endpoint (described further down)...
 func New(clientId string, accessToken string) *Auth {
 	return &Auth{
 		ClientId:     clientId,

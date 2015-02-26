@@ -48,7 +48,20 @@ func (api *API) postPopulate(apiDef *APIDefinition) {
 }
 
 func (api *API) generateAPICode(apiName string) string {
-	exampleVarName := strings.ToLower(string(apiName[0])) + apiName[1:]
+	// package name and variable name cannot be the same
+	// so find a way to make them different...
+	// e.g. switch case of first character, and if first
+	// character is not can't switch case for whatever
+	// reason, prefix variable name with "my"
+	var exampleVarName string
+	switch {
+	case strings.ToUpper(string(apiName[0])) != string(apiName[1]):
+		exampleVarName = strings.ToUpper(string(apiName[0])) + apiName[1:]
+	case strings.ToLower(string(apiName[0])) != string(apiName[1]):
+		exampleVarName = strings.ToLower(string(apiName[0])) + apiName[1:]
+	default:
+		exampleVarName = "my" + apiName
+	}
 	exampleCall := ""
 	// here we choose an example API method to call, just the first one in the list of api.Entries
 	// We need to first see if it returns one or two variables...
@@ -166,7 +179,7 @@ type Auth struct {
 //
 `
 	content += "// For example:\n"
-	content += "//  " + exampleVarName + " := client.New(\"123\", \"456\")  " + strings.Repeat(" ", len(apiName)) + "               // set clientId and accessToken\n"
+	content += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(\"123\", \"456\") " + strings.Repeat(" ", 20+len(apiName)-len(api.apiDef.PackageName)) + "  // set clientId and accessToken\n"
 	content += "//  " + exampleVarName + ".Authenticate = false             " + strings.Repeat(" ", len(apiName)) + "           // disable authentication (true by default)\n"
 	content += "//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"   // alternative API endpoint (production by default)\n"
 	content += exampleCall + strings.Repeat(" ", 48-len(exampleCall)+len(apiName)+len(exampleVarName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"

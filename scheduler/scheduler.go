@@ -28,7 +28,7 @@
 //
 // and then call one or more of auth's methods, e.g.:
 //
-//  data, httpResponse := scheduler.CreateTaskGraph(.....)
+//  data, httpResponse := Scheduler.CreateTaskGraph(.....)
 package scheduler
 
 import (
@@ -115,10 +115,10 @@ type Auth struct {
 // taskcluster-proxy) by setting Authenticate to false.
 //
 // For example:
-//  scheduler := client.New("123", "456")                          // set clientId and accessToken
-//  scheduler.Authenticate = false                                 // disable authentication (true by default)
-//  scheduler.BaseURL = "http://localhost:1234/api/Scheduler/v1"   // alternative API endpoint (production by default)
-//  data, httpResponse := scheduler.CreateTaskGraph(.....)         // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
+//  Scheduler := scheduler.New("123", "456")                       // set clientId and accessToken
+//  Scheduler.Authenticate = false                                 // disable authentication (true by default)
+//  Scheduler.BaseURL = "http://localhost:1234/api/Scheduler/v1"   // alternative API endpoint (production by default)
+//  data, httpResponse := Scheduler.CreateTaskGraph(.....)         // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
 func New(clientId string, accessToken string) *Auth {
 	return &Auth{
 		ClientId:     clientId,
