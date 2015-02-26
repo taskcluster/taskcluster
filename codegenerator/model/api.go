@@ -54,13 +54,13 @@ func (api *API) generateAPICode(apiName string) string {
 	// character is not can't switch case for whatever
 	// reason, prefix variable name with "my"
 	var exampleVarName string
-	switch {
-	case strings.ToUpper(string(apiName[0])) != string(apiName[1]):
-		exampleVarName = strings.ToUpper(string(apiName[0])) + apiName[1:]
-	case strings.ToLower(string(apiName[0])) != string(apiName[1]):
-		exampleVarName = strings.ToLower(string(apiName[0])) + apiName[1:]
+	switch firstChar := string(api.apiDef.PackageName[0]); {
+	case strings.ToUpper(firstChar) != firstChar:
+		exampleVarName = strings.ToUpper(firstChar) + api.apiDef.PackageName[1:]
+	case strings.ToLower(firstChar) != firstChar:
+		exampleVarName = strings.ToLower(firstChar) + api.apiDef.PackageName[1:]
 	default:
-		exampleVarName = "my" + apiName
+		exampleVarName = "my" + api.apiDef.PackageName
 	}
 	exampleCall := ""
 	// here we choose an example API method to call, just the first one in the list of api.Entries
@@ -84,7 +84,7 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "//\n"
 	comment += "// First create an authentication object:\n"
 	comment += "//\n"
-	comment += "//  auth := auth.New(\"myClientId\", \"myAccessToken\")\n"
+	comment += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(\"myClientId\", \"myAccessToken\")\n"
 	comment += "//\n"
 	comment += "// and then call one or more of auth's methods, e.g.:\n"
 	comment += "//\n"

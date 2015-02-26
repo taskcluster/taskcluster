@@ -23,7 +23,7 @@
 //
 // First create an authentication object:
 //
-//  auth := auth.New("myClientId", "myAccessToken")
+//  Queue := queue.New("myClientId", "myAccessToken")
 //
 // and then call one or more of auth's methods, e.g.:
 //
