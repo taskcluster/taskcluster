@@ -3,10 +3,11 @@ package taskcluster_test
 import (
 	"encoding/json"
 	"fmt"
-	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
 	"net/http"
 	"os"
 	"testing"
+
+	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
 )
 
 var CLIENT_ID = os.Getenv("TASKCLUSTER_CLIENT_ID")
@@ -43,6 +44,37 @@ func readJson(http *http.Response) (*getScopesResponse, error) {
 		return nil, err
 	}
 	return &scopes, nil
+}
+
+func TestBewit(t *testing.T) {
+	url := fmt.Sprintf("https://auth.taskcluster.net/v1/client/%s/scopes", CLIENT_ID)
+
+	bewitUrl, err := tc.Bewit(CLIENT_ID, ACCESS_TOKEN, url)
+	if err != nil {
+		t.Errorf("Failed to create bewit %v", err)
+	}
+
+	httpClient := &http.Client{}
+	req, err := http.NewRequest("GET", bewitUrl, nil)
+	if err != nil {
+		t.Errorf("Failed to create request: %s", err)
+	}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		t.Errorf("Error issuing request", err)
+	}
+
+	// Ensure the body is closed after this test.
+	defer resp.Body.Close()
+	json, err := readJson(resp)
+
+	if err != nil {
+		t.Errorf("Failed to decode json of getScopes %s", err)
+	}
+
+	if json.ClientId != CLIENT_ID {
+		t.Errorf("Client is does not match")
+	}
 }
 
 func TestAuthorization(t *testing.T) {

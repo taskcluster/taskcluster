@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
-	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
+
+	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
 )
 
 type Routes struct {
@@ -22,8 +25,41 @@ type Routes struct {
 var tcServices = tc.NewServices()
 var httpClient = &http.Client{}
 
+func (self Routes) signUrl(res http.ResponseWriter, req *http.Request) {
+	// Using ReadAll could be sketchy here since we are reading unbounded data
+	// into memory...
+	body, err := ioutil.ReadAll(req.Body)
+
+	if err != nil {
+		res.WriteHeader(500)
+		fmt.Fprintf(res, "Error reading body")
+		return
+	}
+
+	urlString := strings.TrimSpace(string(body))
+	bewitUrl, err := tc.Bewit(self.ClientId, self.AccessToken, urlString)
+
+	if err != nil {
+		res.WriteHeader(500)
+		fmt.Fprintf(res, "Error creating bewit url")
+		return
+	}
+
+	headers := res.Header()
+	headers.Set("Location", bewitUrl)
+	res.WriteHeader(303)
+	fmt.Fprintf(res, bewitUrl)
+}
+
 // Routes implements the `http.Handler` interface
 func (self Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+
+	// A special case for the proxy is returning a bewit signed url.
+	if req.URL.Path[0:6] == "/bewit" {
+		self.signUrl(res, req)
+		return
+	}
+
 	targetPath, err := tcServices.ConvertPath(req.URL)
 
 	// Unkown service which we are trying to hit...

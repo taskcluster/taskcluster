@@ -8,6 +8,32 @@ themselves.
 Credentials are expected to be passed via the `TASKCLUSTER_CLIENT_ID`
 and `TASKCLUSTER_ACCESS_TOKEN` environment variables.
 
+
+## Examples
+
+For simplicity the below examples use localhost in general this is nicest when
+used with the docker and linking the `taskcluster/proxy` image into it.
+
+```sh
+# Start the server note that 2sz... is the task id
+taskcluster-proxy 2szAy1JzSr6pyjVCdiTcoQ -p 60024
+```
+
+#### Fetch a task
+
+```sh
+curl localhost:60024/v1/task/2szAy1JzSr6pyjVCdiTcoQ
+```
+
+#### Create a signed url for the given task (bewit)
+
+(Note task endpoint is public purely for demonstration)
+
+```sh
+# Returned url will last one hour
+curl localhost:60024/bewit --data 'https://queue.taskcluster.net/v1/task/2szAy1JzSr6pyjVCdiTcoQ'
+```
+
 ## Deployment
 
 The proxy server can be deployed directly by building `proxy/main.go`
