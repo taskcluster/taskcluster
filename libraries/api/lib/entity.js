@@ -614,6 +614,7 @@ Entity.setup = function(options) {
     'deleteTable',
     'deleteEntity',
     'insertEntity',
+    'insertOrReplaceEntity',
     'updateEntity',
     'mergeEntity',
     'getEntity'
@@ -709,7 +710,7 @@ Entity.removeTable = function(ignoreErrors) {
  * Create an entity on azure table with property and mapping.
  * Returns a promise for an instance of `this` (typically an Entity subclass)
  */
-Entity.create = function(properties) {
+Entity.create = function(properties, overwriteIfExists) {
   var Class       = this;
   var ClassProps  = Class.prototype;
   assert(properties,              "Properties is required");
@@ -726,7 +727,14 @@ Entity.create = function(properties) {
     type.serialize(entity, properties[property]);
   });
 
-  return ClassProps.__aux.insertEntity(entity)
+  // Use insertOrReplaceEntity if we should overwrite on existence
+  var createMethod = ClassProps.__aux.insertEntity;
+  if (overwriteIfExists) {
+    createMethod = ClassProps.__aux.insertOrReplaceEntity;
+  }
+
+  // Create entity
+  return createMethod(entity)
   .catch(rethrowDebug("Failed to insert entity err: %j"))
   .then(function(etag) {
     entity.__etag = etag;     // Add etag
