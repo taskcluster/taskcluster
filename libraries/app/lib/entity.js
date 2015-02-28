@@ -775,6 +775,9 @@ Entity.load = function(properties, ignoreIfNotExists) {
  * Remove entity without loading it. Using this method you cannot quantify about
  * the remote state you're deleting. Using `Entity.prototype.remove` removal
  * will fail, if the remove entity has been modified.
+ *
+ * Returns true, if an entity was deleted. Notice that it only makes sense
+ * to read the return value if calling with `ignoreIfNotExists` set.
  */
 Entity.remove = function(properties, ignoreIfNotExists) {
   properties = properties || {};
@@ -787,11 +790,14 @@ Entity.remove = function(properties, ignoreIfNotExists) {
     __etag:           undefined
   }, {
     force:            true
-  }).catch(function(err) {
+  }).then(function() {
+    return true;
+  }, function(err) {
     // Re-throw error if we're not supposed to ignore it
     if (!ignoreIfNotExists || !err || err.code !== 'ResourceNotFound') {
       throw err;
     }
+    return false;
   }).catch(rethrowDebug("Failed to delete entity, err: %j"));
 };
 
