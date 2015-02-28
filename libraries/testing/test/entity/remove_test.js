@@ -136,4 +136,26 @@ suite("Entity (remove)", function() {
       });
     });
   });
+
+  test("Item.create, Item.remove (ignoreIfNotExists)", function() {
+    var id = slugid.v4();
+    return Item.create({
+      id:     id,
+      name:   'my-test-item',
+      count:  1
+    }).then(function() {
+      return Item.remove({
+        id:     id,
+        name:   'my-test-item'
+      }, false).then(function(result) {
+        assert(result === true, "Expected true");
+        return Item.remove({
+          id:     id,
+          name:   'my-test-item'
+        }, true).then(function(result) {
+          assert(result === false, "Expected false");
+        });
+      });
+    });
+  });
 });
