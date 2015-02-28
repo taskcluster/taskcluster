@@ -64,6 +64,27 @@ suite("Entity (create/load)", function() {
     });
   });
 
+  test("Item.create (overwriteIfExists)", function() {
+    return Item.create({
+      id:     id,
+      name:   'my-test-item10',
+      count:  1
+    }).then(function() {
+      return Item.create({
+        id:     id,
+        name:   'my-test-item10',
+        count:  2
+      }, true);
+    }).then(function() {
+      return Item.load({
+        id:     id,
+        name:   'my-test-item10'
+      }).then(function(item) {
+        assert(item.count === 2);
+      });
+    });
+  });
+
   test("Item.load", function() {
     return Item.load({
       id:     id,
