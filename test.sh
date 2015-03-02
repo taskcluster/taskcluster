@@ -29,7 +29,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 echo Linting
-$FLAKE8 --ignore=E111,E121 \
+$FLAKE8 --ignore=E111,E121,E114 \
 	--max-line-length=120 \
 	taskcluster test
 lint=$?
