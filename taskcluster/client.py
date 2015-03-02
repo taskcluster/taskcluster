@@ -372,6 +372,9 @@ class BaseClient(object):
       # Handle non 2xx status code and retry if possible
       try:
         response.raise_for_status()
+        if response.status_code == 204:
+          return None
+
       except requests.exceptions.RequestException as rerr:
         status = response.status_code
         if 500 <= status and status < 600 and retry < retries:
