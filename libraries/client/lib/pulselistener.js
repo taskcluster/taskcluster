@@ -7,37 +7,60 @@ var _         = require('lodash');
 var assert    = require('assert');
 var slugid    = require('slugid');
 
-
-/** Pulse Connection
- *
- * options: {
+/**
+ * Build Pulse ConnectionString, from options on the form:
+ * {
  *   username:          // Pulse username (optional, if connectionString)
  *   password:          // Pulse password (optional, if connectionString)
  *   hostname:          // Hostname to use (defaults to pulse.mozilla.org)
  * }
  */
-var PulseConnection = function(options) {
-  assert(options,          "options is required");
+var buildPulseConnectionString = function(options) {
   assert(options.username, "options.username password is required");
   assert(options.password, "options.password is required");
-  options = _.defaults({}, options, {
-    hostname:           'pulse.mozilla.org'
-  });
-
+  
   // Construct connection string
-  this._connectionString = [
+  return [
     'amqps://',         // Ensure that we're using SSL
     options.username,
     ':',
     options.password,
     '@',
-    options.hostname,
+    options.hostname || 'pulse.mozilla.org',
     ':',
     5671                // Port for SSL
   ].join('');
+};
 
-  // Username property, used by consumers
-  this.username           = options.username || '';
+/**
+ * Create PulseConnection from `options` on the form:
+ * {
+ *   namespace:         // Namespace to prefix queues/exchanges (optional)
+ *                      // defaults to `username` if given otherwise ""
+ *   username:          // Username to connect with (and namespace if not given)
+ *   password:          // Password to connect with
+ *   hostname:          // Hostname to connect to using username/password
+ *                      // defaults to pulse.mozilla.org
+ *   connectionString:  // connectionString cannot be used with username,
+ *                      // password and/or hostname.
+ * }
+ */
+var PulseConnection = function(options) {
+  assert(typeof(options) === 'object', "options is required");
+  options = _.defaults({}, options, {
+    namespace:          options.username || ''
+  });
+
+  if (!options.connectionString) {
+    options.connectionString = buildPulseConnectionString(options);
+  } else {
+    assert(!options.username, "Can't take `username` along with `connectionString`");
+    assert(!options.password, "Can't take `password` along with `connectionString`");
+    assert(!options.hostname, "Can't take `hostname` along with `connectionString`");
+  }
+
+  this._connectionString = options.connectionString;
+  this.namespace = options.namespace;
 
   // Private properties
   this._conn              = null;
@@ -115,9 +138,14 @@ exports.PulseConnection = PulseConnection;
  *   queueName:           // Queue name, defaults to exclusive auto-delete queue
  *   connection:          // PulseConnection object (or credentials)
  *   credentials: {
+ *     namespace:         // Namespace to prefix queues/exchanges (optional)
+ *                        // defaults to `username` if given otherwise ""
  *     username:          // Pulse username
  *     password:          // Pulse password
- *     hostname:          // Hostname to use (defaults to pulse.mozilla.org)
+ *     hostname:          // Hostname to connect to using username/password
+ *                        // defaults to pulse.mozilla.org
+ *     connectionString:  // connectionString overwrites username/password and
+ *                        // hostname (if given)
  *   }
  *   maxLength:           // Maximum queue size, undefined for none
  * }
@@ -219,8 +247,8 @@ PulseListener.prototype.connect = function() {
   var exclusive = !this._options.queueName;
   // Construct queue name
   this._queueName = [
-    'queue',                    // Required by pulse security model
-    this._connection.username,  // Required by pulse security model
+    'queue',                      // Required by pulse security model
+    this._connection.namespace,   // Required by pulse security model
     this._options.queueName || 'exclusive/' + slugid.v4()
   ].join('/')
 
