@@ -261,6 +261,14 @@ class TestOptions(ClientTest):
     with mock.patch.dict(subject._defaultConfig, {'maxRetries': prevMaxRetries + 1}):
       self.assertEqual(self.client.options['maxRetries'], prevMaxRetries)
 
+  def test_credentials_which_cannot_be_encoded_in_unicode_work(self):
+    badCredentials = {
+      'accessToken': u"\U0001F4A9",
+      'clientId': u"\U0001F4A9",
+    }
+    with self.assertRaises(exc.TaskclusterAuthFailure):
+      subject.Index({'credentials': badCredentials})
+
 
 class TestMakeApiCall(ClientTest):
   """ This class covers both the _makeApiCall function logic as well as the
@@ -458,10 +466,6 @@ class TestAuthenticationMockServer(base.TCTest):
     ]
     self.apiRef = base.createApiRef(entries=entries)
     self.clientClass = subject.createApiClient('Auth', self.apiRef)
-    clientOpts = {
-      'baseUrl': self.baseUrl
-    }
-    self.client = self.clientClass(clientOpts)
 
   def test_mock_is_up(self):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -471,34 +475,80 @@ class TestAuthenticationMockServer(base.TCTest):
       s.close()
 
   def test_mock_auth_works(self):
-    self.client.options['credentials']['clientId'] = 'admin'
-    self.client.options['credentials']['accessToken'] = 'adminToken'
-    result = self.client.getCredentials('admin')
+    client = self.clientClass({
+      'baseUrl': self.baseUrl,
+      'credentials': {
+        'clientId': 'admin',
+        'accessToken': 'adminToken',
+      }
+    })
+    result = client.getCredentials('admin')
     self.assertEqual(result['accessToken'], 'adminToken')
 
   def test_mock_auth_works_with_small_scope(self):
-    self.client.options['credentials']['clientId'] = 'goodScope'
-    self.client.options['credentials']['accessToken'] = 'goodScopeToken'
-    result = self.client.getCredentials('admin')
+    client = self.clientClass({
+      'baseUrl': self.baseUrl,
+      'credentials': {
+        'clientId': 'goodScope',
+        'accessToken': 'goodScopeToken',
+      }
+    })
+    result = client.getCredentials('admin')
     self.assertEqual(result['accessToken'], 'adminToken')
 
   def test_mock_auth_invalid(self):
-    self.client.options['credentials']['clientId'] = 'unknown'
-    self.client.options['credentials']['accessToken'] = 'adminToken'
+    client = self.clientClass({
+      'baseUrl': self.baseUrl,
+      'credentials': {
+        'clientId': 'unknown',
+        'accessToken': 'adminToken',
+      }
+    })
     with self.assertRaises(exc.TaskclusterAuthFailure):
-      self.client.getCredentials('admin')
+      client.getCredentials('admin')
+
+  def test_mock_auth_ascii_encodable_unicode(self):
+    client = self.clientClass({
+      'baseUrl': self.baseUrl,
+      'credentials': {
+        'clientId': u'admin',
+        'accessToken': u'adminToken',
+      }
+    })
+    result = client.getCredentials('admin')
+    self.assertEqual(result['accessToken'], 'adminToken')
+
+  def test_mock_auth_ascii_encoding_fail(self):
+    with self.assertRaises(exc.TaskclusterAuthFailure):
+      self.clientClass({
+        'baseUrl': self.baseUrl,
+        'credentials': {
+          'clientId': u"\U0001F4A9",
+          'accessToken': u"\U0001F4A9",
+        }
+      })
 
   def test_mock_auth_expired(self):
-    self.client.options['credentials']['clientId'] = 'expired'
-    self.client.options['credentials']['accessToken'] = 'expiredToken'
+    client = self.clientClass({
+      'baseUrl': self.baseUrl,
+      'credentials': {
+        'clientId': 'expired',
+        'accessToken': 'expiredToken',
+      }
+    })
     with self.assertRaises(exc.TaskclusterAuthFailure):
-      self.client.getCredentials('admin')
+      client.getCredentials('admin')
 
   def test_mock_auth_bad_scope(self):
-    self.client.options['credentials']['clientId'] = 'badScope'
-    self.client.options['credentials']['accessToken'] = 'badScopeToken'
+    client = self.clientClass({
+      'baseUrl': self.baseUrl,
+      'credentials': {
+        'clientId': 'badScope',
+        'accessToken': 'badScopeToken',
+      }
+    })
     with self.assertRaises(exc.TaskclusterAuthFailure):
-      self.client.getCredentials('admin')
+      client.getCredentials('admin')
 
   # Nose doesn't like this decorator, so I'm commenting out the test instead
   #  @unittest.expectedFailure
@@ -519,18 +569,28 @@ class TestAuthenticationMockServer(base.TCTest):
   #    self.assertEqual(result['accessToken'], 'adminToken')
 
   def test_mock_auth_signed_url(self):
-    self.client.options['credentials']['clientId'] = 'admin'
-    self.client.options['credentials']['accessToken'] = 'adminToken'
-    signedUrl = self.client.buildSignedUrl('getCredentials', 'admin')
+    client = self.clientClass({
+      'baseUrl': self.baseUrl,
+      'credentials': {
+        'clientId': 'admin',
+        'accessToken': 'adminToken',
+      }
+    })
+    signedUrl = client.buildSignedUrl('getCredentials', 'admin')
     response = requests.get(signedUrl)
     response.raise_for_status()
     response = response.json()
     self.assertEqual(response['accessToken'], 'adminToken')
 
   def test_mock_auth_signed_url_bad_credentials(self):
-    self.client.options['credentials']['clientId'] = 'expired'
-    self.client.options['credentials']['accessToken'] = 'expiredToken'
-    signedUrl = self.client.buildSignedUrl('getCredentials', 'admin')
+    client = self.clientClass({
+      'baseUrl': self.baseUrl,
+      'credentials': {
+        'clientId': 'expired',
+        'accessToken': 'expiredToken',
+      }
+    })
+    signedUrl = client.buildSignedUrl('getCredentials', 'admin')
     r = requests.get(signedUrl)
     with self.assertRaises(requests.exceptions.RequestException):
       r.raise_for_status()
@@ -541,7 +601,15 @@ if not os.environ.get('NO_TESTS_OVER_WIRE'):
   class ProductionTest(base.TCTest):
 
     def setUp(self):
-      self.i = subject.Index()
+      opts = {
+        'credentials': {
+          'clientId': os.environ.get('TASKCLUSTER_CLIENT_ID', '').encode('utf-8'),
+          'accessToken': os.environ.get('TASKCLUSTER_ACCESS_TOKEN', '').encode('utf-8'),
+          'certificate': os.environ.get('TASKCLUSTER_CERTIFICATE', '').encode('utf-8'),
+        },
+        'maxRetries': 1,
+      }
+      self.i = subject.Index(opts)
 
     def test_ping(self):
       result = self.i.ping()

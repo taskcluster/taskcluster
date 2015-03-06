@@ -52,11 +52,22 @@ class BaseClient(object):
   """
 
   def __init__(self, options=None):
-    o = self.options = copy.deepcopy(self.options)
+    o = copy.deepcopy(self.classOptions)
     o.update(_defaultConfig)
     if options:
       o.update(options)
-    log.debug(o)
+
+    credentials = o.get('credentials')
+    if credentials:
+      for x in ('accessToken', 'clientId', 'certificate'):
+        value = credentials.get(x)
+        if value:
+          try:
+            credentials[x] = credentials[x].encode('ascii')
+          except:
+            s = '%s (%s) must be unicode encodable' % (x, credentials[x])
+            raise exceptions.TaskclusterAuthFailure(s)
+    self.options = o
 
   def makeHawkExt(self):
     """ Make an 'ext' for Hawk authentication """
@@ -426,13 +437,13 @@ def createApiClient(name, api):
     name=name,
     _api=api['reference'],
     __doc__=api.get('description'),
-    options={},
+    classOptions={},
   )
 
   copiedOptions = ('baseUrl', 'exchangePrefix')
   for opt in copiedOptions:
     if opt in api['reference']:
-      attributes['options'][opt] = api['reference'][opt]
+      attributes['classOptions'][opt] = api['reference'][opt]
 
   for entry in api['reference']['entries']:
     if entry['type'] == 'function':
