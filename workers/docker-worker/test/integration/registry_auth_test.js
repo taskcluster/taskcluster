@@ -31,7 +31,7 @@ suite('Docker custom private registry', function() {
   }));
 
   test('success', co(function* () {
-    var imageName = registryProxy.imageName('lightsofapollo/busybox');
+    var imageName = registryProxy.imageName('lightsofapollo/busybox:latest');
     var registries = {};
     registries[registryProxy.imageName('')] = credentials;
     settings.configure({ registries: registries });
@@ -47,12 +47,13 @@ suite('Docker custom private registry', function() {
       }
     });
 
-    assert.ok(result.run.success, 'auth download works');
+    assert.equal(result.run.state, 'completed', 'auth download works');
+    assert.equal(result.run.reasonResolved, 'completed', 'auth download works');
     assert.ok(result.log.indexOf(imageName) !== '-1', 'correct image name');
   }));
 
   test('success - with star', co(function* () {
-    var imageName = registryProxy.imageName('lightsofapollo/busybox');
+    var imageName = registryProxy.imageName('lightsofapollo/busybox:latest');
     var registries = {};
     registries[registryProxy.imageName('')] = credentials;
     settings.configure({ registries: registries });
@@ -68,12 +69,13 @@ suite('Docker custom private registry', function() {
       }
     });
 
-    assert.ok(result.run.success, 'auth download works');
+    assert.equal(result.run.state, 'completed', 'auth download works');
+    assert.equal(result.run.reasonResolved, 'completed', 'auth download works');
     assert.ok(result.log.indexOf(imageName) !== '-1', 'correct image name');
   }));
 
   test('failed scopes', co(function* () {
-    var imageName = registryProxy.imageName('lightsofapollo/busybox');
+    var imageName = registryProxy.imageName('lightsofapollo/busybox:latest');
 
     // Ensure this credential request fails...
     var registries = {};
@@ -90,12 +92,15 @@ suite('Docker custom private registry', function() {
         maxRunTime: 60 * 60
       }
     });
-    assert.ok(!result.run.success, 'auth download works');
+
+    assert.equal(result.run.state, 'failed', 'auth download works');
+    assert.equal(result.run.reasonResolved, 'failed', 'auth download works');
     assert.ok(result.log.indexOf(imageName) !== '-1', 'correct image name');
+    assert.ok(result.log.indexOf('Insufficient scopes to pull') !== '-1', 'correct error message');
   }));
 
   test('failed auth', co(function* () {
-    var imageName = registryProxy.imageName('lightsofapollo/busybox');
+    var imageName = registryProxy.imageName('lightsofapollo/busybox:latest');
 
     // Ensure this credential request fails...
     var registries = {};
@@ -115,8 +120,9 @@ suite('Docker custom private registry', function() {
       }
     });
 
-    assert.ok(!result.run.success, 'auth download works');
+    assert.equal(result.run.state, 'failed', 'auth download works');
+    assert.equal(result.run.reasonResolved, 'failed', 'auth download works');
     assert.ok(result.log.indexOf(imageName) !== '-1', 'correct image name');
+    assert.ok(result.log.indexOf('HTTP code: 403') !== '-1', 'authorization failed');
   }));
-
 });

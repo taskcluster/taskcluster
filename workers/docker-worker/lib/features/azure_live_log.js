@@ -47,10 +47,10 @@ function azureBlobStreamFromUrl(url) {
   return new BlobStream(blobService, container, key);
 }
 
-function LiveLog() {};
+export default class LiveLog {
+  constructor () {}
 
-LiveLog.prototype = {
-  created: function* (task) {
+  async created(task) {
     var queue = task.runtime.queue;
 
     // Create date when this artifact should expire (see config).
@@ -70,7 +70,7 @@ LiveLog.prototype = {
       options: options
     });
 
-    var artifact = yield queue.createArtifact(
+    var artifact = await queue.createArtifact(
       task.status.taskId,
       task.runId,
       ARTIFACT_NAME,
@@ -83,12 +83,10 @@ LiveLog.prototype = {
     });
     this.stream.pipe(azureBlobStreamFromUrl(artifact.putUrl));
     task.stream.pipe(this.stream);
-  },
-
-  killed: function* (task) {
-    // Ensure the live logger has completely been written.
-    yield streamClosed(this.stream);
   }
-};
 
-module.exports = LiveLog;
+  async killed(task) {
+    // Ensure the live logger has completely been written.
+    await streamClosed(this.stream);
+  }
+}

@@ -18,5 +18,7 @@ module.exports = {
 
   cache: {
     volumeCachePath: path.join(__dirname, '..', 'test', 'tmp')
-  }
+  },
+
+  dockerWorkerPrivateKey: '/worker/test/docker-worker-priv.pem'
 };

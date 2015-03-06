@@ -16,7 +16,8 @@ suite('pull image', function() {
         maxRunTime: 5 * 60
       }
     });
-    assert.ok(result.run.success, 'task success');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
   }));
 });
 

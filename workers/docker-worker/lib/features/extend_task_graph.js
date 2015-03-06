@@ -5,22 +5,21 @@ var co = require('co');
 var waitForEvent = require('../wait_for_event');
 var tarStream = require('tar-stream');
 
-function* drain (listener) {
+async function drain (listener) {
   var buffer = '';
 
   listener.on('data', function(data) {
     buffer += data;
   });
 
-  yield waitForEvent(listener, 'end');
+  await waitForEvent(listener, 'end');
   return buffer;
 }
 
-function ExtendTaskGraph() {}
+export default class ExtendTaskGraph {
+  constructor () {}
 
-ExtendTaskGraph.prototype = {
-
-  extendTaskGraph: function* (taskHandler, graphPath) {
+  async extendTaskGraph(taskHandler, graphPath) {
     var task = taskHandler.task;
     var graphId = task.taskGroupId;
 
@@ -28,8 +27,9 @@ ExtendTaskGraph.prototype = {
     var scheduler = taskHandler.runtime.scheduler;
 
     // Raw tar stream for the content.
+    var contentStream;
     try {
-      var contentStream = yield container.copy({ Resource: graphPath });
+      contentStream = await container.copy({ Resource: graphPath });
     } catch (e) {
       // Let the consumer know the graph file cannot be found.
       taskHandler.stream.write(taskHandler.fmtLog(
@@ -68,7 +68,7 @@ ExtendTaskGraph.prototype = {
     }));
 
     // Wait for the tar to be finished extracting.
-    yield waitForEvent(tarExtract, 'finish');
+    await waitForEvent(tarExtract, 'finish');
 
     // Parse the json to ensure it is valid on our end.
     var extension;
@@ -85,7 +85,7 @@ ExtendTaskGraph.prototype = {
     // Extend the graph!
     // TODO: Add logging to indicate task graph extension...
     try {
-      var result = yield scheduler.extendTaskGraph(graphId, extension);
+      var result = await scheduler.extendTaskGraph(graphId, extension);
       taskHandler.stream.write(taskHandler.fmtLog(
         'Successfully extended graph id: "%s" with "%s".',
         graphId, graphPath
@@ -97,9 +97,12 @@ ExtendTaskGraph.prototype = {
       ));
       return;
     }
-  },
+  }
 
-  stopped: function* (taskHandler) {
+  async stopped(taskHandler) {
+    // No need to update the graph if task is canceled
+    if (taskHandler.isCanceled()) return;
+
     var task = taskHandler.task;
     var payload = task.payload;
 
@@ -114,13 +117,10 @@ ExtendTaskGraph.prototype = {
     }
 
     // Iterate through the graphs extending where possible.
-    var extensions = payload.graphs.map(function(graph) {
-      return this.extendTaskGraph(taskHandler, graph);
-    }, this);
+    await Promise.all(payload.graphs.map(async (graph) => {
+      await this.extendTaskGraph(taskHandler, graph);
+    }));
 
-    yield extensions;
     taskHandler.stream.write(taskHandler.fmtLog("Done extending graph"));
-  },
+  }
 };
-
-module.exports = ExtendTaskGraph;

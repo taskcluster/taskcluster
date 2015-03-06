@@ -44,7 +44,21 @@ module.exports = {
     // We must reclaim somewhat frequently (but not too frequently) this is the
     // divisor used to figure out when to issue the reclaim based on taken until
     // for example `2` would mean half the time between now and taken until.
-    reclaimDivisor: 1.3
+    reclaimDivisor: 1.3,
+    // Tasks should be removed from the queue if they have been dequeued a lot.
+    // Possible signs that the task is bad
+    dequeueCount: 15
+  },
+
+  taskQueue: {
+    // Task queue will be polled on a frequent interval for new pending tasks
+    pollInterval: 5 * 1000,
+    // If signed url for queue expires within now()+expiration, refresh queues
+    expiration: 5 * 60 * 1000,
+    // Number of times to retry requests to the task queue
+    maxRetries: 5,
+    // Amount of time to wait between retries
+    requestRetryInterval: 2 * 1000
   },
 
   /**

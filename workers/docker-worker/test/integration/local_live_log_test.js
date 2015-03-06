@@ -36,7 +36,8 @@ suite('live logging', function() {
       log += 'Hello Number ' + i + '\r\n';
     }
 
-    assert.ok(result.run.success, 'task success');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
     assert.ok(result.log.indexOf(log) !== -1, 'contains each expected line');
   }));
 });

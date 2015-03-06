@@ -31,9 +31,10 @@ suite('live logging', function() {
     var azureLiveLog = yield getArtifact(
       { taskId: result.taskId, runId: result.runId },
       'public/logs/azure_live.log'
-    )
+    );
 
-    assert.ok(result.run.success, 'task success');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
     assert.ok(azureLiveLog.indexOf(log) !== -1, 'contains each expected line');
   }));
 });

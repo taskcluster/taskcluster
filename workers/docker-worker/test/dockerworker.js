@@ -38,22 +38,22 @@ function eventPromise(listener, event) {
   });
 }
 
-function DockerWorker(provisionerId, workerType, workerId) {
-  this.provisionerId = provisionerId;
-  this.workerType = workerType;
-  this.workerId = workerId;
-  this.docker = new Docker(dockerOpts());
-}
+export default class DockerWorker {
+  constructor(provisionerId, workerType, workerId) {
+    this.provisionerId = provisionerId;
+    this.workerType = workerType;
+    this.workerId = workerId;
+    this.docker = new Docker(dockerOpts());
+  }
 
-DockerWorker.prototype = {
-  launch: function* () {
+  async launch() {
     var createConfig = {
       name: this.workerId,
       Image: 'taskcluster/docker-worker-test',
       Cmd: [
         '/bin/bash', '-c',
          [
-          'node --harmony /worker/bin/worker.js',
+          'babel-node --experimental /worker/bin/worker.js',
           '--host test',
           '--worker-group', 'random-local-worker',
           '--worker-id', this.workerId,
@@ -104,19 +104,16 @@ DockerWorker.prototype = {
 
     proc.run();
     return proc;
-  },
+  }
 
-  terminate: function* () {
+  async terminate() {
     if (this.process) {
       var proc = this.process;
       // Ensure the container is killed and removed.
-      yield proc.container.kill();
-      yield proc.container.remove();
+      await proc.container.kill();
+      await proc.container.remove();
       this.process = null;
     }
   }
-};
-
-// Export DockerWorker
-module.exports = DockerWorker;
+}
 

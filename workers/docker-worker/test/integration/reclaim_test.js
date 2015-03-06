@@ -4,7 +4,7 @@ suite('Reclaiming task', function() {
   var settings = require('../settings');
   var cmd = require('./helper/cmd');
 
-  var LocalWorker = require('../localworker');
+  var DockerWorker = require('../dockerworker');
   var TestWorker = require('../testworker');
 
   // Ensure we don't leave behind our test configurations.
@@ -17,11 +17,13 @@ suite('Reclaiming task', function() {
         // just use crazy high reclaim divisor... This will result in way to
         // frequent reclaims but allow us to easily test that it reclaims at
         // least once...
-        reclaimDivisor: 1000
-      }
+        reclaimDivisor: 1000,
+        dequeueCount: 15
+      },
+      dockerWorkerPrivateKey: './test/docker-worker-priv.pem'
     });
 
-    worker = new TestWorker(LocalWorker);
+    worker = new TestWorker(DockerWorker);
     yield worker.launch();
   }));
 
@@ -41,7 +43,10 @@ suite('Reclaiming task', function() {
         command: cmd(
           'sleep 10'
         ),
-        maxRunTime: 60 * 60
+        maxRunTime: 60 * 60,
+        features: {
+          localLiveLog: false,
+        },
       }
     });
     assert.ok(reclaims.length > 1, 'issued more than one reclaim');
@@ -52,7 +57,8 @@ suite('Reclaiming task', function() {
       'Last reclaim occurs after the first reclaim'
     );
 
-    assert.ok(result.run.success, 'task is successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
   }));
 });
 

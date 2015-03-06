@@ -8,21 +8,21 @@ var ALIAS = 'testdroid';
 // Maximum time in MS to wait for socket to become available
 var INIT_TIMEOUT = 5000;
 
-function TestdroidProxy() {}
+export default class TestdroidProxy {
+  constructor() {
+    /**
+    Docker container used in the linking process.
+    */
+    this.container = null;
+  }
 
-TestdroidProxy.prototype = {
-  /**
-  Docker container used in the linking process.
-  */
-  container: null,
-
-  link: function* (task) {
+  async link(task) {
     var docker = task.runtime.docker;
 
     // Image name for the proxy container.
     var image = task.runtime.testdroidProxyImage;
 
-    yield pullImage(docker, image, process.stdout);
+    await pullImage(docker, image, process.stdout);
 
     var cmd = [
         '--cloud-url=' + task.runtime.testdroid.url,
@@ -36,7 +36,7 @@ TestdroidProxy.prototype = {
     }
 
     // create the container.
-    this.container = yield docker.createContainer({
+    this.container = await docker.createContainer({
       Image: image,
       Env: envs,
       Tty: true,
@@ -50,35 +50,33 @@ TestdroidProxy.prototype = {
     this.container = docker.getContainer(this.container.id);
 
     if (process.env.DEBUG) {
-      var stream = yield this.container.attach({stream: true, stdout: true, stderr: true});
+      var stream = await this.container.attach({stream: true, stdout: true, stderr: true});
       stream.pipe(process.stdout);
     }
 
-    yield this.container.start({});
+    await this.container.start({});
 
-    var inspect = yield this.container.inspect();
+    var inspect = await this.container.inspect();
     var host = inspect.NetworkSettings.IPAddress;
     var name = inspect.Name.slice(1)
 
     try {
       // wait for the initial server response...
       debug('waiting for port');
-      yield waitForPort(host, '80', INIT_TIMEOUT);
+      await waitForPort(host, '80', INIT_TIMEOUT);
     } catch (e) {
       throw new Error('Failed to initialize testdroid proxy service.')
     }
 
     this.host = host;
     return [{ name: name, alias: ALIAS }];
-  },
+  }
 
-  killed: function*(task) {
+  async killed(task) {
     debug('in testdroid proxy');
     // attempt to release the device in case task did not do so.  Calling release
     // is idempotent.
-    var res = yield request.post('http://'+this.host+'/device/release').end();
+    var res = await request.post('http://'+this.host+'/device/release').end();
     task.runtime.gc.removeContainer(this.container.id);
   }
-};
-
-module.exports = TestdroidProxy;
+}

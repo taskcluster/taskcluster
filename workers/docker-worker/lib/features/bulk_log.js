@@ -9,22 +9,20 @@ var temporary = require('temporary');
 var fs = require('fs');
 var request = require('superagent-promise');
 var debug = require('debug')('taskcluster-docker-worker:features:bulk_log');
-var fs = require('fs');
+var fs = require('mz/fs');
 var zlib = require('zlib');
-
-var Promise = require('promise');
 
 var ARTIFACT_NAME = 'public/logs/terminal_bulk.log.gz';
 
-function BulkLog(artifact) {
-  this.artifactName = artifact || ARTIFACT_NAME;
-  this.file = new temporary.File();
-  debug('Created BulkLog using tempfile: ' + this.file.path);
-}
+export default class BulkLog {
+  constructor(artifact) {
 
-BulkLog.prototype = {
+    this.artifactName = artifact || ARTIFACT_NAME;
+    this.file = new temporary.File();
+    debug('Created BulkLog using tempfile: ' + this.file.path);
+  }
 
-  created: function* (task) {
+  created(task) {
     // Eventually we want to save the content as gzip on s3 or azure so we
     // incrementally compress it via streams.
     var gzip = zlib.createGzip();
@@ -32,12 +30,13 @@ BulkLog.prototype = {
     // Pipe the task stream to a temp file on disk.
     this.stream = fs.createWriteStream(this.file.path);
     task.stream.pipe(gzip).pipe(this.stream);
-  },
+  }
 
-  killed: function* (task) {
+  async killed(task) {
+    if (task.isCanceled()) return;
     //this.stream.end();
     // Ensure the stream is completely written prior to uploading the temp file.
-    yield streamClosed(this.stream);
+    await streamClosed(this.stream);
 
     var queue = task.runtime.queue;
 
@@ -45,7 +44,7 @@ BulkLog.prototype = {
     var expiration =
       new Date(Date.now() + task.runtime.logging.bulkLogExpires);
 
-    var artifact = yield queue.createArtifact(
+    var artifact = await queue.createArtifact(
       task.status.taskId,
       task.runId,
       this.artifactName,
@@ -58,9 +57,9 @@ BulkLog.prototype = {
       }
     );
 
-     var stat = yield fs.stat.bind(fs, this.file.path);
+    let stat = await fs.stat(this.file.path);
 
-    // Open a new stream to read the entire log from disk (this in theory could
+      // Open a new stream to read the entire log from disk (this in theory could
     // be a huge file).
     var diskStream = fs.createReadStream(this.file.path);
 
@@ -77,10 +76,10 @@ BulkLog.prototype = {
     req.end();
 
     // Wait until the request has completed and the file has been uploaded...
-    var result = yield waitForEvent(req, 'end');
+    var result = await waitForEvent(req, 'end');
 
     // Unlink the temp file.
-    yield fs.unlink.bind(fs, this.file.path);
+    await fs.unlink(this.file.path);
 
     var url = queue.buildUrl(
       queue.getArtifact,
@@ -91,6 +90,4 @@ BulkLog.prototype = {
     return url;
   }
 
-};
-
-module.exports = BulkLog;
+}

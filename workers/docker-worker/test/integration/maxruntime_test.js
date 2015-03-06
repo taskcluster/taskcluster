@@ -14,7 +14,8 @@ suite('worker timeouts', function() {
       }
     });
     // Get task specific results
-    assert.ok(!result.run.success, 'task was not successful');
+    assert.equal(result.run.state, 'failed', 'task should have failed');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(result.log.indexOf('Hello') !== -1);
     assert.ok(result.log.indexOf('done') === -1);
     assert.ok(

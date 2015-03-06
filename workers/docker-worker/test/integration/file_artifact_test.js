@@ -37,7 +37,8 @@ suite('artifact extration tests', function() {
     });
 
     // Get task specific results
-    assert.ok(result.run.success, 'task was successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
 
     assert.deepEqual(
       Object.keys(result.artifacts).sort(), ['public/xfoo', 'public/bar'].sort()
@@ -76,7 +77,8 @@ suite('artifact extration tests', function() {
     });
 
     // Get task specific results
-    assert.ok(result.run.success, 'task was successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
     assert.ok('public/test.html' in result.artifacts,
               'Artifact does not appear in the list of uploaded artifacts');
 
@@ -112,7 +114,8 @@ suite('artifact extration tests', function() {
     });
 
     // Get task specific results
-    assert.ok(result.run.success, 'task was successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
     assert.ok('public/test' in result.artifacts,
               'Artifact does not appear in the list of uploaded artifacts');
     var contentType = 'application/octet-stream';
@@ -142,7 +145,8 @@ suite('artifact extration tests', function() {
     });
 
     // Get task specific results
-    assert.ok(result.run.success, 'task was successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
     assert.ok(result.artifacts['public/etc'], 'artifact is present');
     assert.equal(result.artifacts['public/etc'].storageType, 'error');
   }));
@@ -173,7 +177,8 @@ suite('artifact extration tests', function() {
       'Missing path is noted in the logs'
     );
 
-    assert.ok(result.run.success, 'task was successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
     assert.ok(result.artifacts['my-missing.txt']);
     assert.equal(result.artifacts['my-missing.txt'].storageType, 'error');
   }));
@@ -215,7 +220,8 @@ suite('artifact extration tests', function() {
       }
     });
     // Get task specific results.
-    assert.ok(result.run.success, 'task was successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
 
     // Ensure these have no errors...
     assert.equal(result.artifacts['username.txt'].storageType, 's3');

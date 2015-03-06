@@ -22,7 +22,8 @@ suite('logging to artifact', function() {
       }
     });
 
-    assert.ok(result.run.success, 'task success');
+    assert.equal(result.run.state, 'completed');
+    assert.equal(result.run.reasonResolved, 'completed');
 
     // Expected junk in the log.
     var log = '';

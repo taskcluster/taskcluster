@@ -81,7 +81,8 @@ suite('encrypted private env variables', function() {
 
     var result = yield testworker(taskPayload, taskId);
 
-    assert.ok(result.run.success, 'task should be successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
     assert.ok(result.log.indexOf(secretDataContent1) !== -1, 'env is dumped');
     assert.ok(result.log.indexOf(secretDataContent2) !== -1, 'env is dumped');
   }));
@@ -108,7 +109,8 @@ suite('encrypted private env variables', function() {
     var result = yield testworker(taskPayload, taskId);
     var log = result.log.replace(/\n/gm, ' ');
 
-    assert.ok(!result.run.success, 'task should not be successful');
+    assert.equal(result.run.state, 'failed', 'task should have failed');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1, 'env is dumped');
   }));
 
@@ -128,7 +130,8 @@ suite('encrypted private env variables', function() {
     var result = yield testworker(taskPayload, taskId);
     var log = result.log.replace(/\n/gm, ' ');
 
-    assert.ok(!result.run.success, 'task should not be successful');
+    assert.equal(result.run.state, 'failed', 'task should have failed');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1, 'env is dumped');
   }));
 
@@ -148,7 +151,8 @@ suite('encrypted private env variables', function() {
     var result = yield testworker(taskPayload, taskId);
     var log = result.log.replace(/\n/gm, ' ');
 
-    assert.ok(!result.run.success, 'task should not be successful');
+    assert.equal(result.run.state, 'failed', 'task should have failed');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1, 'env is dumped');
   }));
 
@@ -168,7 +172,8 @@ suite('encrypted private env variables', function() {
     var result = yield testworker(taskPayload, taskId);
     var log = result.log.replace(/\n/gm, ' ');
 
-    assert.ok(!result.run.success, 'task should not be successful');
+    assert.equal(result.run.state, 'failed', 'task should have failed');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1, 'env is dumped');
   }));
 
@@ -193,7 +198,8 @@ suite('encrypted private env variables', function() {
     var result = yield testworker(taskPayload);
     var log = result.log.replace(/\n/gm, ' ');
 
-    assert.ok(!result.run.success, 'task should not be successful');
+    assert.equal(result.run.state, 'failed', 'task should have failed');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1);
   }));
 
@@ -218,7 +224,8 @@ suite('encrypted private env variables', function() {
     var result = yield testworker(taskPayload, taskId);
     var log = result.log.replace(/\n/gm, ' ');
 
-    assert.ok(!result.run.success, 'task should not be successful');
+    assert.equal(result.run.state, 'failed', 'task should have failed');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1);
   }));
 
@@ -243,7 +250,8 @@ suite('encrypted private env variables', function() {
     var result = yield testworker(taskPayload, taskId);
     var log = result.log.replace(/\n/gm, ' ');
 
-    assert.ok(!result.run.success, 'task should not be successful');
+    assert.equal(result.run.state, 'failed', 'task should have failed');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1);
   }));
 
@@ -267,7 +275,8 @@ suite('encrypted private env variables', function() {
     var expected2 = secretDataContent2;
     var result = yield testworker(taskPayload, taskId);
 
-    assert.ok(result.run.success, 'task should be successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
     assert.ok(result.log.indexOf(expected1) !== -1);
     assert.ok(result.log.indexOf(expected2) !== -1);
   }));

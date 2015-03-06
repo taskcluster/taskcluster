@@ -1,4 +1,6 @@
 var assert = require('assert');
+var debug = require('debug')('taskcluster-docker-worker:states');
+var co = require('co');
 
 function hasMethod(method, input) {
   return typeof input[method] === 'function';
@@ -28,24 +30,22 @@ Each "state" in the lifetime is a well defined function:
 @constructor
 @param {Array[Object]} hooks for handling states in the task lifecycle.
 */
-function States(hooks) {
-  assert.ok(Array.isArray(hooks), 'hooks is an array');
-  this.hooks = hooks;
-}
-
-States.prototype = {
+export default class States {
+  constructor(hooks) {
+    assert.ok(Array.isArray(hooks), 'hooks is an array');
+    this.hooks = hooks;
+  }
 
   /**
   Invoke all hooks with a particular method.
   @param {Task} task handler.
   */
-  _invoke: function* (method, task) {
-    return yield this.hooks.
-      filter(hasMethod.bind(this, method)).
-      map(function(hook) {
-        return hook[method](task);
-      });
-  },
+  async _invoke(method, task) {
+    let hooks = this.hooks.filter(hasMethod.bind(this, method));
+    return  await Promise.all(hooks.map(async (hook) => {
+      return await hook[method](task);
+    }));
+  }
 
   /**
   The "link" state is responsible for creating any dependant containers and
@@ -65,15 +65,15 @@ States.prototype = {
   @param {Task} task handler.
   @return {Array[Object]} list of link aliases.
   */
-  link: function* (task) {
+  async link(task) {
     // Build the list of linked containers...
-    var links = yield this._invoke('link', task);
+    var links = await this._invoke('link', task);
 
     // Flat map.
     return links.reduce(function(result, current) {
       return result.concat(current);
     }, [])
-  },
+  }
 
   /**
   Invoke the `create hook no value is expected to be returned this is
@@ -83,9 +83,9 @@ States.prototype = {
   @param {Task} task handler.
   @return void.
   */
-  created: function* (task) {
-    yield this._invoke('created', task);
-  },
+  async created(task) {
+    await this._invoke('created', task);
+  }
 
   /**
   Invoke the `stop` hook intended to be used to upload any artifacts created
@@ -94,9 +94,9 @@ States.prototype = {
   @param {Task} task handler.
   @return void.
   */
-  stopped: function* (task) {
-    yield this._invoke('stopped', task);
-  },
+  async stopped(task) {
+    await this._invoke('stopped', task);
+  }
 
   /**
   The `kill hook is intended to be used to cleanup any remaining containers and
@@ -105,9 +105,7 @@ States.prototype = {
   @param {Task} task handler
   @return void.
   */
-  killed: function* (task) {
-    yield this._invoke('killed', task);
-  },
-};
-
-module.exports = States;
+  async killed(task) {
+    await this._invoke('killed', task);
+  }
+}

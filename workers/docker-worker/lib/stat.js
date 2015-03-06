@@ -1,20 +1,23 @@
-function Stat(statsd) {
-  this.statsd = statsd;
-}
+import Debug from 'debug';
+import co from 'co';
+let debug = Debug('taskcluster-docker-worker:stat');
 
-Stat.prototype = {
+export default class Stat {
+  constructor(statsd) {
+    this.statsd = statsd;
+  }
 
-  increment: function(name) {
+  increment(name) {
     this.statsd.increment(name);
-  },
+  }
 
-  time: function() {
+  time() {
     return this.statsd.timing.apply(this.statsd, arguments);
-  },
+  }
 
-  gauge: function() {
+  gauge() {
     return this.statsd.gauge.apply(this.statsd, arguments);
-  },
+  }
 
   /**
   Timer helper it takes a generator (or any yiedable from co) and times
@@ -23,13 +26,10 @@ Stat.prototype = {
   @param {String} name statistic name.
   @param {Generator|Function|Promise} generator or yieldable.
   */
-  timeGen: function* (name, generator) {
+  async timeGen(name, fn) {
     var start = new Date();
-    var result = yield generator;
+    var result = await fn;
     this.statsd.timing(name, start);
     return result;
   }
-
-};
-
-module.exports = Stat;
+}

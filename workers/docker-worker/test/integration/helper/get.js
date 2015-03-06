@@ -1,5 +1,5 @@
-var request = require('superagent-promise');
+import request from 'superagent-promise';
 
-module.exports = function* get(url) {
-  return (yield request.get(url).end()).text;
+export default async (url) => {
+  return (await request.get(url).end()).text;
 }

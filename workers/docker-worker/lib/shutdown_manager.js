@@ -1,3 +1,4 @@
+var EventEmitter = require('events').EventEmitter;
 var spawn = require('child_process').spawn;
 var co = require('co');
 var coEvent = require('co-event');
@@ -6,12 +7,21 @@ var debug = require('debug')('docker-worker:shutdown_manager');
 function ShutdownManager(host, config) {
   this.host = host;
   this.config = config;
-
+  this.nodeTerminationPoll = config.shutdown.nodeTerminationPoll || 5000;
   this.onIdle = this.onIdle.bind(this);
   this.onWorking = this.onWorking.bind(this);
+  EventEmitter.call(this);
+
+  // Recommended by AWS to query every 5 seconds.  Termination window is 2 minutes
+  // so at the very least should have 1m55s to cleanly shutdown.
+  this.terminationTimeout = setTimeout(
+    this.nodeTerminated.bind(this), this.nodeTerminationPoll
+  );
 }
 
 ShutdownManager.prototype = {
+  __proto__: EventEmitter.prototype,
+
   idleTimeout: null,
 
   shutdown: co(function* () {
@@ -91,7 +101,20 @@ ShutdownManager.prototype = {
     if (taskListener.pending === 0) {
       this.onIdle();
     }
-  }
+  },
+
+  nodeTerminated: co(function* () {
+    clearTimeout(this.terminationTimeout);
+    var terminated = yield this.host.getTerminationTime();
+
+    if (terminated) {
+      this.emit('nodeTermination', terminated);
+    }
+
+    this.terminationTimeout = setTimeout(
+      this.nodeTerminated.bind(this), this.nodeTerminationPoll
+    );
+  })
 };
 
 module.exports = ShutdownManager;

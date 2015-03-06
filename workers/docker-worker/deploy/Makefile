@@ -8,8 +8,10 @@ VPN_CREDENTIALS?=$(shell ./bin/resolve_path_in_config $(CONFIG_FILE) vpnCredenti
 $(DEPLOY_TAR): all
 	tar cvfz $@ target/
 	rm target/etc/$(shell basename $(PRIVATE_KEY))
+ifneq ($(VPN_PROFILE),)
 	rm target/etc/openvpn/$(shell basename $(VPN_PROFILE))
 	rm target/etc/openvpn/$(shell basename $(VPN_CREDENTIALS))
+endif
 
 all: $(TARGETS) private_key vpn
 
@@ -35,11 +37,14 @@ private_key: $(CONFIG_FILE)
 # Copy openvpn profile to be used with testdroid remote device lab
 .PHONY: vpn
 vpn: $(CONFIG_FILE)
+# Only copy vpn profiles if defined in the config.  Not all workers need vpn creds
+ifneq ($(VPN_PROFILE),)
 	test -f $(VPN_PROFILE)
 	test -f $(VPN_CREDENTIALS)
 	mkdir -p target/etc/openvpn
 	cp $(VPN_PROFILE) target/etc/openvpn/
 	cp $(VPN_CREDENTIALS) target/etc/openvpn/
+endif
 
 .PHONY: clean
 clean:

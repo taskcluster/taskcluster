@@ -11,21 +11,21 @@ var ALIAS = 'taskcluster';
 // Maximum time in MS to wait for the proxy socket to become available.
 var INIT_TIMEOUT = 2000;
 
-function TaskclusterProxy() {}
+export default class TaskclusterProxy {
+  constructor () {
+    /**
+    Docker container used in the linking process.
+    */
+    this.container = null;
+  }
 
-TaskclusterProxy.prototype = {
-  /**
-  Docker container used in the linking process.
-  */
-  container: null,
-
-  link: function* (task) {
+  async link(task) {
     var docker = task.runtime.docker;
 
     // Image name for the proxy container.
     var image = task.runtime.taskclusterProxyImage;
 
-    yield pullImage(docker, image, process.stdout);
+    await pullImage(docker, image, process.stdout);
 
     var assumedScope = 'assume:worker-id:' + task.runtime.workerGroup +
                        '/' + task.runtime.workerId;
@@ -38,7 +38,7 @@ TaskclusterProxy.prototype = {
     ];
 
     // create the container.
-    this.container = yield docker.createContainer({
+    this.container = await docker.createContainer({
       Image: image,
 
       Tty: true,
@@ -59,26 +59,24 @@ TaskclusterProxy.prototype = {
 
     // TODO: In theory the output of the proxy might be useful consider logging
     // this somehow.
-    yield this.container.start({});
+    await this.container.start({});
 
-    var inspect = yield this.container.inspect();
+    var inspect = await this.container.inspect();
     var name = inspect.Name.slice(1)
 
     try {
       // wait for the initial server response...
-      yield waitForPort(inspect.NetworkSettings.IPAddress, '80', INIT_TIMEOUT);
+      await waitForPort(inspect.NetworkSettings.IPAddress, '80', INIT_TIMEOUT);
     } catch (e) {
       throw new Error('Failed to initialize taskcluster proxy service.')
     }
 
     return [{ name: name, alias: ALIAS }];
-  },
+  }
 
-  killed: function*(task) {
+  async killed(task) {
     var stats = task.runtime.stats;
     console.log("in taskcluster proxy");
     task.runtime.gc.removeContainer(this.container.id);
   }
-};
-
-module.exports = TaskclusterProxy;
+}

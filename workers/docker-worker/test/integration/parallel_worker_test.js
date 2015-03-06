@@ -46,7 +46,8 @@ suite('Parallel workers', function() {
     };
 
     for (var key in tasks) {
-      assert.ok(tasks[key].run.success, 'each task ran successfully');
+      assert.ok(tasks[key].run.state, 'completed', 'each task ran successfully');
+      assert.ok(tasks[key].run.reasonResolved, 'completed', 'each task ran successfully');
     }
 
     assert.notEqual(

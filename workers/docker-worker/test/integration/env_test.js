@@ -17,7 +17,8 @@ suite('setting env variables', function() {
       }
     });
 
-    assert.ok(result.run.success, 'task should be successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
     assert.ok(result.log.indexOf(expected) !== -1, 'env is dumped');
   }));
 });

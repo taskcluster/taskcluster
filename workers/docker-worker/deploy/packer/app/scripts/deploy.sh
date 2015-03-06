@@ -28,3 +28,4 @@ tar xzf $docker_worker_source -C $target --strip-components=1
 sudo chown -R $USER:$USER /home/ubuntu/docker_worker
 npm install --production
 npm rebuild
+sudo npm install -g babel

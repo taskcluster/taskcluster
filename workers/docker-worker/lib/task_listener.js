@@ -13,166 +13,211 @@ var request = require('superagent-promise');
 
 var Task = require('./task');
 var EventEmitter = require('events').EventEmitter;
+var util = require('util');
+var TaskQueue = require('./queueservice');
 
 /**
 @param {Configuration} config for worker.
 */
-function TaskListener(runtime) {
-  this.runtime = runtime;
-  EventEmitter.call(this);
-}
+export default class TaskListener extends EventEmitter {
+  constructor(runtime) {
+    this.pending = 0;
+    this.runtime = runtime;
+    this.capacity = runtime.capacity;
+    this.runningTasks = [];
+    this.taskQueue = new TaskQueue(this.runtime);
+    this.taskPollInterval = this.runtime.taskQueue.pollInterval;
+    super();
+  }
 
-TaskListener.prototype = {
-  __proto__: EventEmitter.prototype,
-
-  /**
-  Number of running tasks...
-  */
-  pending: 0,
-
-  connect: function* () {
-    this.runtime.log('listener connect');
-
-    var self = this;
-    var queue = this.runtime.queue;
-
-    // Share the queue between all workerTypes of the same provisioner.
-    var queueName;
-    if (this.runtime.createQueue) {
-      queueName =
-        QUEUE_PREFIX +
-        this.runtime.provisionerId + '/' + this.runtime.workerType;
+  listenForShutdowns() {
+    // If node will be shutdown, stop consuming events.
+    if (this.runtime.shutdownManager) {
+      this.runtime.shutdownManager.once(
+        'nodeTermination', () => {
+          debug('nodeterm');
+          async () => {
+            await this.pause();
+            for(let task of this.runningTasks) {
+              task.abort('worker-shutdown');
+            }
+          }();
+        }.bind(this)
+      );
     }
+  }
+
+  async cancelTask(message) {
+    var runId = message.payload.runId;
+    var reason = message.payload.status.runs[runId].reasonResolved;
+    if (reason !== 'canceled') return;
+
+    var taskId = message.payload.status.taskId;
+    var task = this.runningTasks.find(
+      (task) => { return (task.status.taskId === taskId && task.runId === runId); }
+    );
+
+    if (!task) debug('task not found to cancel'); return;
+
+    this.runtime.log('cancelling task', {taskId: message.payload.status.taskId});
+    task.cancel(reason);
+  }
+
+  async listenForCancelEvents() {
+    var queue = this.runtime.queue;
 
     var queueEvents = new taskcluster.QueueEvents();
 
-    // Build the listener.
-    var listener = this.listener = new taskcluster.PulseListener({
-      prefetch:     this.runtime.capacity,
-      credentials:  this.runtime.pulse,
-      // Share the queue between all provisonerId + workerTypes.
-      queueName:    queueName
-      // TOOD: Consider adding maxLength.
+    var cancelListener = new taskcluster.PulseListener({
+      credentials: this.runtime.pulse
     });
 
-    yield listener.bind(queueEvents.taskPending({
+    await cancelListener.bind(queueEvents.taskException({
+      workerId: this.runtime.workerId,
       workerType: this.runtime.workerType,
+      workerGroup: this.runtime.workerGroup,
       provisionerId: this.runtime.provisionerId
     }));
 
-    debug('bind task pending', {
-      workerType: this.runtime.workerType,
-      provisionerId: this.runtime.provisionerId
+    cancelListener.on('message', this.cancelTask.bind(this));
+    cancelListener.on('error', (error) => {
+      // If an error occurs, log and remove the cancelListener.
+      // In the future errors could be handled on the PulseListener level.
+      this.runtime.log('[alert operator] listener error', { err: error });
+      delete this.cancelListener;
     });
 
-    debug('listen', {
-      queueName: listener._queueName, capacity: this.runtime.capacity
-    });
+    await cancelListener.resume();
+    return cancelListener;
+  }
 
-    var channel = yield listener.connect();
+  async getTasks() {
+    // Number of tasks we could claim
+    let availabileCapacity = this.capacity - this.pending;
+    if (availabileCapacity <= 0) { return;}
 
-    // Rather then use `.consume` on the listener directly we use the channel
-    // directly for greater control over the flow of messages.
-    yield channel.consume(listener._queueName, co(function* (msg) {
-      self.runtime.log('listener begin consume');
-      var content;
-      try {
-        self.incrementPending();
-        // All content from taskcluster should be a json payload.
-        content = JSON.parse(msg.content);
-        yield self.runTask(content);
-        channel.ack(msg);
-        // Only indicate a completed task (which may trigger an idle state)
-        // after an ack/nack.
-        self.decrementPending();
-      } catch (e) {
-        if (content) {
-          self.runtime.log('task error', {
-            taskId: content.status.taskId,
-            runId: content.runId,
-            message: e.toString(),
-            stack: e.stack,
-            err: e
-          });
-        } else {
-          self.runtime.log('task error', {
-            message: e.toString(),
-            err: e
+    let claims = await this.taskQueue.claimWork(availabileCapacity);
+    claims.forEach(this.runTask.bind(this));
+  }
+
+  scheduleTaskPoll(nextPoll=this.taskPollInterval) {
+    this.pollTimeoutId = setTimeout(() => {
+      async () => {
+        clearTimeout(this.pollTimeoutId);
+
+        try {
+          await this.getTasks();
+        }
+        catch (e) {
+          this.runtime.log('[alert-operator] task retrieval error', {
+              message: e.toString(),
+              err: e,
+              stack: e.stack
           });
         }
-        var nack = channel.nack(msg, false, false);
-        // Ensure we don't leak pending references.
-        self.decrementPending();
-      }
-    }));
-  },
+        this.scheduleTaskPoll();
+      }();
+    }.bind(this), nextPoll);
+  }
 
-  close: function* () {
-    return yield this.listener.close();
-  },
+  async connect() {
+    debug('begin consuming tasks');
+    //refactor to just have shutdown manager call terminate()
+    this.listenForShutdowns();
+    this.taskQueue = new TaskQueue(this.runtime);
+
+    this.cancelListener = await this.listenForCancelEvents();
+
+    // Scheduled the next poll very soon use the error handling it provides.
+    this.scheduleTaskPoll(1);
+  }
+
+  async close() {
+    clearTimeout(this.pollTimeoutId);
+    if(this.cancelListener) return await this.cancelListener.close();
+  }
 
   /**
   Halt the flow of incoming tasks (but handle existing ones).
   */
-  pause: function* () {
-    return yield this.listener.pause();
-  },
+  async pause() {
+    clearTimeout(this.pollTimeoutId);
+    if(this.cancelListener) return await this.cancelListener.pause();
+  }
 
   /**
   Resume the flow of incoming tasks.
   */
-  resume: function* () {
-    return yield this.listener.resume();
-  },
+  async resume() {
+    this.scheduleTaskPoll();
+    if(this.cancelListener) return await this.cancelListener.resume();
+  }
 
-  isIdle: function() {
+  isIdle() {
     return this.pending === 0;
-  },
+  }
 
-  incrementPending: function() {
+  incrementPending() {
     // After going from an idle to a working state issue a 'working' event.
     if (++this.pending === 1) {
       this.emit('working', this);
     }
-  },
+  }
 
-  decrementPending: function() {
+  decrementPending() {
     this.pending--;
     if (this.pending === 0) {
       this.emit('idle', this);
     }
-  },
+  }
 
   /**
-  Handle the incoming message that a task is now pending.
+  * Run task that has been claimed.
   */
-  runTask: function* (payload) {
-    // Current task status.
-    var runId = payload.runId;
-    var status = payload.status;
-    this.runtime.log('run task', { taskId: status.taskId, runId: runId });
+  async runTask(claim) {
+    try {
+      this.runtime.log('run task', { taskId: claim.status.taskId, runId: claim.runId });
+      this.incrementPending();
+      // Fetch full task definition.
+      var task = await this.runtime.queue.getTask(claim.status.taskId);
 
-    // Date when the task was created.
-    var created = new Date(status.created);
+      // Date when the task was created.
+      var created = new Date(task.created);
 
-    // Only record this value for first run!
-    if (!status.runs.length) {
-      // Record a stat which is the time between when the task was created and
-      // the first time a worker saw it.
-      this.runtime.stats.time('tasks.time.to_reach_worker', created);
+      // Only record this value for first run!
+      if (!claim.status.runs.length) {
+        // Record a stat which is the time between when the task was created and
+        // the first time a worker saw it.
+        this.runtime.stats.time('tasks.time.to_reach_worker', created);
+      }
+
+      // Create "task" to handle all the task specific details.
+      var taskHandler = new Task(this.runtime, task, claim);
+      var taskIndex = this.runningTasks.push(taskHandler);
+      taskIndex = taskIndex-1;
+
+      // Run the task and collect runtime metrics.
+      await taskHandler.start();
+      this.decrementPending();
+      this.runningTasks.splice(taskIndex, 1);
     }
-
-    // Fetch full task definition.
-    var task = yield this.runtime.queue.getTask(status.taskId);
-
-    // Create "task" to handle all the task specific details.
-    var taskHandler = new Task(this.runtime, runId, task, status);
-
-    // Run the task and collect runtime metrics.
-    return yield* this.runtime.stats.timeGen(
-      'tasks.time.total', taskHandler.claimAndRun()
-    );
+    catch (e) {
+      this.runningTasks.splice(taskIndex, 1);
+      if (task) {
+        this.runtime.log('task error', {
+          taskId: claim.status.taskId,
+          runId: task.runId,
+          message: e.toString(),
+          stack: e.stack,
+          err: e
+        });
+      } else {
+        this.runtime.log('task error', {
+          message: e.toString(),
+          err: e
+        });
+      }
+      this.decrementPending();
+    }
   }
-};
-
-module.exports = TaskListener;
+}

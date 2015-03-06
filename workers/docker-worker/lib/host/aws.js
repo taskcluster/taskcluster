@@ -20,11 +20,13 @@ AWS Metadata service endpoint.
 @const
 @see http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AESDG-chapter-instancedata.html
 */
-var BASE_URL = 'http://169.254.169.254/2012-01-12';
+var BASE_URL = 'http://169.254.169.254/latest';
 
 function* getText(url) {
   var res = yield request.get(url).end();
-  return res.text;
+  // Some meta-data endpoints 404 until they have a value to display (spot node termination)
+  var text = res.ok ? res.text : '';
+  return text;
 }
 
 /**
@@ -92,7 +94,13 @@ function* configure (baseUrl) {
   return config;
 };
 
+function* getTerminationTime() {
+  var url = BASE_URL + '/meta-data/spot/termination-time';
+  var text = yield getText(url);
+  return text;
+}
+
 module.exports.configure = configure;
 module.exports.billingCycleInterval = billingCycleInterval;
 module.exports.billingCycleUptime = billingCycleUptime;
-
+module.exports.getTerminationTime = getTerminationTime;

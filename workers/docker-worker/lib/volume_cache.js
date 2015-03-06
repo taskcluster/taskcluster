@@ -1,6 +1,6 @@
 var path = require('path');
 var Promise = require('promise');
-var fs = require('co-fs');
+var fs = require('fs');
 var mkdirp = require('mkdirp');
 var rmrf = require('rimraf');
 var uuid = require('uuid');
@@ -44,14 +44,14 @@ will be indexed based on timestamps and reused in the order of most recently use
 @constructor
 @param {Object} configuration settings for the volume cache manager
 */
-function VolumeCache(config) {
-  this.rootCachePath = config.rootCachePath;
-  this.log = config.log;
-  this.cache = {};
-  this.stats = config.stats;
-}
+export default class VolumeCache {
+  constructor(config) {
+    this.rootCachePath = config.rootCachePath;
+    this.log = config.log;
+    this.cache = {};
+    this.stats = config.stats;
+  }
 
-VolumeCache.prototype = {
   /**
   Add a cached volume along with an optional instancePath.  Cached volume will
   be marked as not mounted until otherwise specified.
@@ -60,7 +60,7 @@ VolumeCache.prototype = {
   @param {String} Option path for the cached volume.
   @return {Object} Cached volume instance that is not mounted.
   */
-  add: function* (cacheName, instancePath) {
+  async add(cacheName, instancePath) {
     var instanceId = uuid.v4()
 
     if (!instancePath) {
@@ -68,8 +68,8 @@ VolumeCache.prototype = {
       instancePath = path.join(cachePath, instanceId);
     }
 
-    if (!(yield fs.exists(instancePath))) {
-      yield makeDir(instancePath);
+    if (!(await fs.exists(instancePath))) {
+      await makeDir(instancePath);
     }
 
     var lastUsed = Date.now();
@@ -87,7 +87,7 @@ VolumeCache.prototype = {
       lastUsed: lastUsed
     };
     return instance;
-  },
+  }
 
   /**
   Remove any unmounted volumes when diskspace threshold is reached. This will
@@ -95,7 +95,7 @@ VolumeCache.prototype = {
 
   @param {Boolean} Disksapce threshold reached
   */
-  clear: function* (exceedsDiskspaceThreshold) {
+  async clear(exceedsDiskspaceThreshold) {
     if (!exceedsDiskspaceThreshold) {
       return;
     }
@@ -107,14 +107,14 @@ VolumeCache.prototype = {
           var cacheKey = cacheName + KEY_DELIMITER + instance;
           var instancePath = this.cache[cacheName][instance].path;
           var statName = 'cache.volume.' + cacheName + '.instance_removed';
-          yield this.stats.timeGen(statName, removeDir(instancePath));
+          await this.stats.timeGen(statName, removeDir(instancePath));
           delete this.cache[cacheName][instance];
           this.log('cache volume removed',
             {key: cacheKey, path: instancePath});
         }
       }
     }
-  },
+  }
 
   /**
   Begin tracking the particular volume cache and create the necessary
@@ -122,18 +122,18 @@ VolumeCache.prototype = {
 
   @param {String} Name of the cached volume.
   */
-  createCacheVolume: function* (cacheName) {
+  async createCacheVolume(cacheName) {
     var cachePath = path.join(this.rootCachePath, cacheName);
     this.cache[cacheName] = {};
 
-    if(!(yield fs.exists(cachePath))) {
-      yield makeDir(cachePath);
+    if(!(await fs.exists(cachePath))) {
+      await makeDir(cachePath);
       var cacheDetails = {cacheName: cacheName, cachPath: cachePath};
       var statName = 'cache.volume.' + cacheName + '.created';
       this.stats.increment(statName);
       this.log('cache volume created', cacheDetails);
     }
-  },
+  }
 
   /**
   Get the instance for the particular cached volume.  If no instance that is not
@@ -142,7 +142,7 @@ VolumeCache.prototype = {
   @param {String} Name of the cached volume.
   @return {Object} Cached volume instance.
   */
-  get: function* (cacheName) {
+  async get(cacheName) {
     if (cacheName.indexOf(KEY_DELIMITER) !== -1) {
       throw new Error('Invalid key name was provided.  Ensure that the cache ' +
         'name does not contain "' + KEY_DELIMITER + '".');
@@ -151,7 +151,7 @@ VolumeCache.prototype = {
     var instanceId;
 
     if (!this.cache[cacheName]) {
-      yield this.createCacheVolume(cacheName);
+      await this.createCacheVolume(cacheName);
     } else {
       var instanceIds = sortInstanceIds(this.cache[cacheName]);
       for (var i = 0; i < instanceIds.length; i++) {
@@ -170,7 +170,7 @@ VolumeCache.prototype = {
 
     if (!instanceId) {
       logMessage = 'cache volume miss';
-      instance = yield this.add(cacheName);
+      instance = await this.add(cacheName);
       this.set(instance.key, {mounted: true});
       var statName = 'cache.volume.' + cacheName + '.miss';
       this.stats.increment(statName);
@@ -185,7 +185,7 @@ VolumeCache.prototype = {
     }
     this.log(logMessage, instance);
     return instance;
-  },
+  }
 
   /**
   Release the claim on a cached volume.  Cached volume should only be released
@@ -194,10 +194,10 @@ VolumeCache.prototype = {
 
   @param {String} Cache key int he format of <cache name>::<instance id>
   */
-  release: function* (cacheKey) {
+  async release(cacheKey) {
     this.set(cacheKey, {mounted: false, lastUsed: Date.now()})
     this.log("cache volume release", {key: cacheKey});
-  },
+  }
 
   /**
   Set a property for a cached volume.
@@ -205,13 +205,11 @@ VolumeCache.prototype = {
   @param {String} Cache key int he format of <cache name>::<instance id>
   @param {Object} Key name and value for the property to be set.
   */
-  set: function (cacheKey, value) {
+  async set(cacheKey, value) {
     var cacheName = cacheKey.split(KEY_DELIMITER)[0];
     var instanceId = cacheKey.split(KEY_DELIMITER)[1];
     for (var key in value) {
       this.cache[cacheName][instanceId][key] = value[key];
     }
   }
-};
-
-module.exports = VolumeCache;
+}

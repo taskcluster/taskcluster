@@ -26,7 +26,8 @@ suite('Directory artifact', function() {
     });
 
     // Get task specific results
-    assert.ok(result.run.success, 'task was successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
     assert.ok(result.artifacts['public/xfoo'], 'artifact is present');
     assert.equal(result.artifacts['public/xfoo'].storageType, 'error');
   }));
@@ -55,7 +56,8 @@ suite('Directory artifact', function() {
       }
     });
 
-    assert.ok(result.run.success, 'task was successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
 
     assert.deepEqual(
       Object.keys(result.artifacts).sort(),

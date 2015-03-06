@@ -11,7 +11,6 @@ function* billingCycleUptime() {
     return 0;
   }
 }
-
 function* billingCycleInterval() {
   var path = settingsPath('billingCycleInterval');
 
@@ -20,6 +19,19 @@ function* billingCycleInterval() {
   } catch(e) {
     return 0;
   }
+}
+
+function* getTerminationTime() {
+  var path = settingsPath('nodeTermination');
+  var content;
+  try {
+    content = fs.readFileSync(path, 'utf8');
+  }
+  catch (e) {
+    content = '';
+  }
+
+  return content;
 }
 
 function* configure() {
@@ -37,3 +49,4 @@ function* configure() {
 module.exports.configure = configure;
 module.exports.billingCycleInterval = billingCycleInterval;
 module.exports.billingCycleUptime = billingCycleUptime;
+module.exports.getTerminationTime = getTerminationTime;

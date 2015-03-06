@@ -23,27 +23,26 @@ var debug = require('debug')(
 );
 
 // Alias used to link the proxy.
-function TaskclusterLogs() {
-  this.bulkLog = new BulkLog(BACKING_ARTIFACT_NAME);
-}
+export default class TaskclusterLogs {
+  constructor() {
+    /**
+    Docker container used in the linking process.
+    */
+    this.container = null;
+  }
 
-TaskclusterLogs.prototype = {
-  /**
-  Docker container used in the linking process.
-  */
-  container: null,
-
-  created: function* (task) {
+  async created(task) {
     debug('create live log container...')
     // ensure we have a bulk log backing stuff...
-    yield this.bulkLog.created(task);
+    this.bulkLog = new BulkLog(BACKING_ARTIFACT_NAME);
+    await this.bulkLog.created(task);
 
     var docker = task.runtime.docker;
 
     // Image name for the proxy container.
     var image = task.runtime.taskclusterLogImage;
 
-    yield pullImage(docker, image, process.stdout);
+    await pullImage(docker, image, process.stdout);
 
     var envs = [];
     if (process.env.DEBUG) {
@@ -51,7 +50,7 @@ TaskclusterLogs.prototype = {
     }
 
     // create the container.
-    this.container = yield docker.createContainer({
+    this.container = await docker.createContainer({
       Image: image,
       Tty: false,
       Env: ["DEBUG=*"],
@@ -69,17 +68,17 @@ TaskclusterLogs.prototype = {
 
     // TODO: In theory the output of the proxy might be useful consider logging
     // this somehow.
-    yield this.container.start({
+    await this.container.start({
       // bind the reading side to the host so we can expose it to the world...
       PortBindings: {
         "60023/tcp": [{ HostPort: "0" }]
       }
     });
-    var inspect = yield this.container.inspect();
+    var inspect = await this.container.inspect();
 
     try {
       // wait for the initial server response...
-      yield waitForPort(
+      await waitForPort(
         inspect.NetworkSettings.IPAddress, '60022', INIT_TIMEOUT
       );
     } catch (e) {
@@ -113,7 +112,7 @@ TaskclusterLogs.prototype = {
 
     var publicPort = inspect.NetworkSettings.Ports['60023/tcp'][0].HostPort;
     this.publicUrl = 'http://' + task.runtime.host + ':' + publicPort + '/log';
-    debug('live log running', this.putUrl)
+    debug('live log running', putUrl)
 
     var queue = task.runtime.queue;
 
@@ -122,7 +121,7 @@ TaskclusterLogs.prototype = {
       new Date(Date.now() + task.runtime.logging.bulkLogExpires);
 
     // Create the redirect artifact...
-    yield queue.createArtifact(
+    await queue.createArtifact(
       task.status.taskId,
       task.runId,
       ARTIFACT_NAME,
@@ -133,24 +132,30 @@ TaskclusterLogs.prototype = {
         url: this.publicUrl
       }
     );
-  },
+  }
 
-  killed: function*(task) {
+  async killed(task) {
     debug('switching live log redirect to backing log...')
+    // Can't create artifacts for a task that's been canceled
+    if (task.isCanceled()) {
+      // Cleanup all references to the live logging server...
+      task.runtime.gc.removeContainer(this.container.id);
+      return;
+    }
 
     // Note here we don't wait or care for the live logging to complete
     // correctly we simply let it pass/fail to finish since we are going to kill
     // the connection anyway...
 
     var stats = task.runtime.stats;
-    var backingUrl = yield this.bulkLog.killed(task)
+    var backingUrl = await this.bulkLog.killed(task);
 
     // Switch references to the new log file on s3 rather then the local worker
     // server...
     var expiration =
       new Date(Date.now() + task.runtime.logging.bulkLogExpires);
 
-    yield task.runtime.queue.createArtifact(
+    await task.runtime.queue.createArtifact(
       task.status.taskId,
       task.runId,
       ARTIFACT_NAME,
@@ -165,7 +170,4 @@ TaskclusterLogs.prototype = {
     // Cleanup all references to the live logging server...
     task.runtime.gc.removeContainer(this.container.id);
   }
-};
-
-module.exports = TaskclusterLogs;
-
+}

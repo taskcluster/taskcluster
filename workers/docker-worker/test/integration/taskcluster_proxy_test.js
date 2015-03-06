@@ -46,7 +46,8 @@ suite('taskcluster proxy', function() {
       }
     });
 
-    assert.ok(result.run.success, 'run was successful');
+    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
     assert.ok(result.artifacts['custom'], 'custom artifact is available');
     assert.equal(result.artifacts['custom'].storageType, 'reference');
   }));

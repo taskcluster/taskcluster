@@ -14,13 +14,10 @@ var debug = require('debug')('docker-worker:middleware:artifact_extractor');
 var format = require('util').format;
 var Promise = require('promise');
 
-function Artifacts() {}
-
-Artifacts.prototype = {
-
-  getPutUrl: function* (handler, path, expires, contentType) {
+export default class Artifacts {
+  async getPutUrl(handler, path, expires, contentType) {
     var queue = handler.runtime.queue;
-    var result = yield queue.createArtifact(
+    var result = await queue.createArtifact(
       handler.status.taskId,
       handler.runId,
       path,
@@ -33,9 +30,9 @@ Artifacts.prototype = {
     );
 
     return result.putUrl;
-  },
+  }
 
-  uploadArtifact: function* (taskHandler, name, artifact) {
+  async uploadArtifact(taskHandler, name, artifact) {
     var container = taskHandler.dockerProcess.container;
     var queue = taskHandler.runtime.queue;
     var path = artifact.path;
@@ -48,8 +45,14 @@ Artifacts.prototype = {
     var workerGroup = taskHandler.runtime.workerGroup;
 
     // Raw tar stream for the content.
+    var contentStream;
     try {
-      var contentStream = yield container.copy({ Resource: path });
+      contentStream = await (new Promise((accept, reject) => {
+        return container.copy({ Resource: path }, function(err, data) {
+          if (err) reject(err);
+          accept(data);
+        });
+      }));
     } catch (e) {
       // Log the error...
       taskHandler.stream.write(taskHandler.fmtLog(
@@ -59,7 +62,7 @@ Artifacts.prototype = {
 
       // Create the artifact but as the type of "error" to indicate it is
       // missing.
-      yield queue.createArtifact(taskId, runId, name, {
+      await queue.createArtifact(taskId, runId, name, {
         storageType: 'error',
         expires: expiry,
         reason: 'file-missing-on-worker',
@@ -68,7 +71,6 @@ Artifacts.prototype = {
 
       return;
     }
-
     var tarExtract = tarStream.extract();
 
     // Begin unpacking the tar.
@@ -161,10 +163,13 @@ Artifacts.prototype = {
     tarExtract.on('entry', entryHandler);
 
     // Wait for the tar to be finished extracting.
-    yield waitForEvent(tarExtract, 'finish');
-  },
+    await waitForEvent(tarExtract, 'finish');
+  }
 
-  stopped: function* (taskHandler) {
+  async stopped(taskHandler) {
+    // Can't create artifacts for a task that's been canceled
+    if (taskHandler.isCanceled()) return;
+
     var queue = taskHandler.runtime.queue;
     var artifacts = taskHandler.task.payload.artifacts;
 
@@ -172,11 +177,12 @@ Artifacts.prototype = {
     if (typeof artifacts !== 'object') return;
 
     // Upload all the artifacts in parallel.
-    yield Object.keys(artifacts).map(function(key) {
-      return this.uploadArtifact(taskHandler, key, artifacts[key]);
-    }, this);
+    await Promise.all(Object.keys(artifacts).map((key) => {
+      return new Promise(async (accept) => {
+        await this.uploadArtifact(taskHandler, key, artifacts[key]);
+        accept();
+      });
+    }));
   }
 
 };
-
-module.exports = Artifacts;

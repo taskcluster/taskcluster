@@ -23,7 +23,8 @@ suite('Header/Footer logs', function() {
 
     // ensure task id in in the start...
     assert.ok(start.indexOf(result.taskId) !== -1, 'start log has taskId');
-    assert.ok(!result.run.success, 'task was successful');
+    assert.equal(result.run.state, 'failed', 'task should have failed');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(
       end.indexOf('Unsuccessful') !== -1, 'end has human readable failure'
     );

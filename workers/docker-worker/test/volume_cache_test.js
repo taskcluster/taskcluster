@@ -138,7 +138,7 @@ suite('volume cache test', function () {
 
     var create = yield docker.createContainer(createConfig);
 
-    container = docker.getContainer(create.id);
+    var container = docker.getContainer(create.id);
     var stream = yield container.attach({stream: true, stdout: true, stderr: true});
     stream.pipe(process.stdout);
 
@@ -151,7 +151,7 @@ suite('volume cache test', function () {
     yield container.start(startConfig);
     gc.removeContainer(create.id);
     gc.sweep();
-    removedContainerId = yield waitForEvent(gc, 'gc:container:removed');
+    var removedContainerId = yield waitForEvent(gc, 'gc:container:removed');
 
     assert.ok(fs.existsSync(path.join(cacheInstance.path, 'blah.txt')));
   }));

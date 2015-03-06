@@ -1,4 +1,4 @@
-var get = require('./get');
+import get from './get';
 
 /**
 Fetch the contents of a single artifact.
@@ -7,12 +7,13 @@ Fetch the contents of a single artifact.
 @param {String} path path to fetch artifact from.
 @return {String} full contents of the artifact.
 */
-module.exports = function* getArtifact(result, path) {
-  var taskId = result.taskId;
-  var runId = result.runId;
+export default async (result, path) => {
+  let taskId = result.taskId;
+  let runId = result.runId;
 
-  var url = 'https://queue.taskcluster.net/v1/task/' +
+  let url = 'https://queue.taskcluster.net/v1/task/' +
             taskId + '/runs/' + runId + '/artifacts/' + path;
+  console.log("get artifact: "+url);
 
-  return yield get(url);
+  return await get(url);
 }

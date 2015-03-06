@@ -179,7 +179,7 @@ suite('garbage collection tests', function () {
 
     clearTimeout(gc.sweepTimeoutId);
 
-    var imageName = 'busybox:latest';
+    var imageName = 'busybox:buildroot-2014.02';
     yield pullImage(docker, imageName, process.stdout);
 
     var container = yield docker.createContainer({Image: imageName,
@@ -217,7 +217,7 @@ suite('garbage collection tests', function () {
 
     clearTimeout(gc.sweepTimeoutId);
 
-    var imageName = 'busybox:latest';
+    var imageName = 'busybox:buildroot-2014.02';
     yield pullImage(docker, imageName, process.stdout);
 
     var container = yield docker.createContainer({Image: imageName,
@@ -258,7 +258,7 @@ suite('garbage collection tests', function () {
 
       clearTimeout(gc.sweepTimeoutId);
 
-      var imageName = 'busybox:latest';
+      var imageName = 'busybox:buildroot-2014.02';
       yield pullImage(docker, imageName, process.stdout);
 
       gc.markImage(imageName);
@@ -296,7 +296,7 @@ suite('garbage collection tests', function () {
 
       clearTimeout(gc.sweepTimeoutId);
 
-      var imageName = 'busybox:latest';
+      var imageName = 'busybox:buildroot-2014.02';
       yield pullImage(docker, imageName, process.stdout);
 
       gc.markImage(imageName);
@@ -329,7 +329,7 @@ suite('garbage collection tests', function () {
 
     clearTimeout(gc.sweepTimeoutId);
 
-    var imageName = 'busybox:latest';
+    var imageName = 'busybox:buildroot-2014.02';
     yield pullImage(docker, imageName, process.stdout);
     gc.markImage(imageName);
 
@@ -367,7 +367,7 @@ suite('garbage collection tests', function () {
 
     var stats = {
       increment: function(stat) { return; },
-      timeGen: function* (stat, fn) { yield fn; }
+      timeGen: async (stat, fn) => { await fn; }
     };
 
     var cache = new VolumeCache({

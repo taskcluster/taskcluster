@@ -50,7 +50,8 @@ suite('volume cache tests', function () {
     var result = yield testworker(task);
 
     // Get task specific results
-    assert.ok(result.run.success, 'task was successful');
+    assert.equal(result.run.state, 'completed');
+    assert.equal(result.run.reasonResolved, 'completed');
     assert.ok(result.log.indexOf(cacheName) !== -1, 'lists cache');
     assert.ok(result.log.indexOf(cacheName) !== -1, '/tmp-obj-dir');
 
@@ -69,7 +70,7 @@ suite('volume cache tests', function () {
       capacity: 2,
     });
 
-    worker = new TestWorker(DockerWorker);
+    var worker = new TestWorker(DockerWorker);
     yield worker.launch();
 
     var tasks = [];
@@ -99,13 +100,13 @@ suite('volume cache tests', function () {
     }
 
     var results = yield tasks;
+    yield worker.terminate();
+
     assert.ok(results.length === 2);
     assert.ok(results[0].log.indexOf('file0.txt') !== -1);
     assert.ok(results[0].log.indexOf('file1.txt') === -1);
     assert.ok(results[1].log.indexOf('file1.txt') !== -1);
     assert.ok(results[1].log.indexOf('file0.txt') === -1);
-
-    yield worker.terminate();
   }));
 
   test('cached volumes can be reused between tasks', co(function* () {
@@ -126,7 +127,7 @@ suite('volume cache tests', function () {
       },
     });
 
-    worker = new TestWorker(DockerWorker);
+    var worker = new TestWorker(DockerWorker);
     yield worker.launch();
 
     var task = {
@@ -153,10 +154,11 @@ suite('volume cache tests', function () {
     task.payload.features.localLiveLog = true;
 
     var result2 = yield worker.postToQueue(task);
-    assert.ok(result2.run.success, 'task was successful');
-    assert.ok(result2.log.indexOf('This is a shared file') !== -1);
-
     yield worker.terminate();
+
+    assert.equal(result2.run.state, 'completed');
+    assert.equal(result2.run.reasonResolved, 'completed');
+    assert.ok(result2.log.indexOf('This is a shared file') !== -1);
   }));
 
   test('mount multiple cached volumes in docker worker', co(function* () {
@@ -199,7 +201,8 @@ suite('volume cache tests', function () {
     var result = yield testworker(task);
 
     // Get task specific results
-    assert.ok(result.run.success, 'task was successful');
+    assert.equal(result.run.state, 'completed');
+    assert.equal(result.run.reasonResolved, 'completed');
 
     var objDir = fs.readdirSync(fullCache1Dir);
     assert.ok(fs.existsSync(path.join(fullCache1Dir, objDir[0], 'foo.txt')));
@@ -235,7 +238,9 @@ suite('volume cache tests', function () {
       var result = yield testworker(task);
 
       // Get task specific results
-      assert.ok(!result.run.success,
+      assert.equal(result.run.state, 'failed',
+        'Task completed successfully when it should not have.');
+      assert.equal(result.run.reasonResolved, 'failed',
         'Task completed successfully when it should not have.');
 
       var expectedError = 'Insufficient scopes to attach "' + cacheName + '"';
@@ -277,7 +282,9 @@ suite('volume cache tests', function () {
       var result = yield testworker(task);
 
       // Get task specific results
-      assert.ok(!result.run.success,
+      assert.equal(result.run.state, 'failed',
+        'Task completed successfully when it should not have.');
+      assert.equal(result.run.reasonResolved, 'failed',
         'Task completed successfully when it should not have.');
 
       var expectedError = 'Error: Invalid key name was provided';

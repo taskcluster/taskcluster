@@ -1,33 +1,38 @@
 /**
 Handler of individual tasks beings at claim ends with posting task results.
 */
-var debug = require('debug')('runTask');
-var request = require('superagent-promise');
-var util = require('util');
-var waitForEvent = require('./wait_for_event');
-var features = require('./features');
-var co = require('co');
-var pullImage = require('./pull_image_to_stream');
-var wordwrap = require('wordwrap')(0, 80, { hard: true });
-var scopeMatch = require('taskcluster-base/utils').scopeMatch;
+import Debug from 'debug';
+import request from 'superagent-promise';
+import util from 'util';
+import waitForEvent from './wait_for_event';
+import features from './features';
+import pullImage from './pull_image_to_stream';
+import Wordwrap from 'wordwrap';
+import { scopeMatch } from 'taskcluster-base/utils';
 
-var Promise = require('promise');
-var DockerImage = require('./docker_image');
-var DockerProc = require('dockerode-process');
-var PassThrough = require('stream').PassThrough;
-var States = require('./states');
+import DockerImage from './docker_image';
+import DockerProc from 'dockerode-process';
+import { PassThrough } from 'stream';
+import States from './states';
 
-var PAYLOAD_SCHEMA =
+let debug = new Debug('runTask');
+let wordwrap = new Wordwrap(0, 80, { hard: true });
+
+const PAYLOAD_SCHEMA =
   'http://schemas.taskcluster.net/docker-worker/v1/payload.json#';
 
 // This string was super long but I wanted to say all these thing so I broke it
 // out into a constant even though most errors are closer to their code...
-var IMAGE_ERROR = 'Pulling docker image "%s" has failed this may indicate an ' +
-                  'Error with the registry used or an authentication error  ' +
+const IMAGE_ERROR = 'Pulling docker image "%s" has failed this may indicate an ' +
+                  'Error with the registry used or an authentication error ' +
                   'in the worker try pulling the image locally. \n Error %s';
 
+// TODO probably a terrible error message, look at making it better later
+const CANCEL_ERROR = 'Task was canceled by another entity. This can happen using ' +
+                   'a taskcluster client or by cancelling a task within Treeherder.';
+
 // Prefix used in scope matching for authenticated docker images.
-var IMAGE_SCOPE_PREFIX = 'docker-worker:image:';
+const IMAGE_SCOPE_PREFIX = 'docker-worker:image:';
 
 /*
 @example
@@ -56,11 +61,11 @@ Convert the feature flags into a state handler.
 @param {Object} task definition.
 */
 function buildStateHandlers(task) {
-  var handlers = [];
-  var featureFlags = task.payload.features || {};
+  let handlers = [];
+  let featureFlags = task.payload.features || {};
 
-  for (var flag in features) {
-    var enabled = (flag in featureFlags) ?
+  for (let flag in features) {
+    let enabled = (flag in featureFlags) ?
       featureFlags[flag] : features[flag].defaults;
 
     if (enabled) {
@@ -77,62 +82,66 @@ Create a list of cached volumes that will be mounted within the docker container
 @param {object} volume cache
 @param {object} volumes to mount in the container
  */
-function* buildVolumeBindings(taskVolumeBindings, volumeCache, taskScopes) {
-  var neededScopes = [];
+async function buildVolumeBindings(taskVolumeBindings, volumeCache, taskScopes) {
+  let neededScopes = [];
 
-  for (var volumeName in taskVolumeBindings) {
+  for (let volumeName in taskVolumeBindings) {
     neededScopes.push('docker-worker:cache:' + volumeName);
+
+    if (!scopeMatch(taskScopes, neededScopes)) {
+      throw new Error(
+        'Insufficient scopes to attach "' + volumeName + '" as a cached ' +
+        'volume.  Try adding ' + neededScopes + ' to the .scopes array.'
+      );
+    }
   }
 
-  if (!scopeMatch(taskScopes, neededScopes)) {
-    throw new Error(
-      'Insufficient scopes to attach "' + volumeName + '" as a cached ' +
-      'volume.  Try adding ' + neededScopes + ' to the .scopes array.'
-    );
-  }
+  let bindings = [];
+  let caches = [];
 
-  var bindings = [];
-  var caches = [];
-
-  for (var volumeName in taskVolumeBindings) {
-    var cacheInstance = yield volumeCache.get(volumeName);
-    var binding = cacheInstance.path + ':' + taskVolumeBindings[volumeName];
+  for (let volumeName in taskVolumeBindings) {
+    let cacheInstance = await volumeCache.get(volumeName);
+    let binding = cacheInstance.path + ':' + taskVolumeBindings[volumeName];
     bindings.push(binding);
     caches.push(cacheInstance.key);
   }
   return [caches, bindings];
 }
 
-function Task(runtime, runId, task, status) {
-  this.runId = runId;
-  this.task = task;
-  this.status = status;
-  this.runtime = runtime;
+export default class Task {
+  constructor(runtime, task, claim) {
+    this.runtime = runtime;
+    this.task = task;
+    this.claim = claim;
+    this.status = claim.status;
+    this.runId = claim.runId;
+    this.taskState = 'pending';
 
-  // Primarly log of all actions for the task.
-  this.stream = new PassThrough();
-  // states actions.
-  this.states = buildStateHandlers(task);
-}
+    // Primarly log of all actions for the task.
+    this.stream = new PassThrough();
 
-Task.prototype = {
+    // states actions.
+    this.states = buildStateHandlers(task);
+  }
+
   /**
   Build the docker container configuration for this task.
 
   @param {Array[dockerode.Container]} [links] list of dockerode containers.
   */
-  dockerConfig: function* (links) {
-    var config = this.task.payload;
-    var env = config.env || {};
+  async dockerConfig(links) {
+    let config = this.task.payload;
+    let env = config.env || {};
 
     // Universally useful environment variables describing the current task.
     env.TASK_ID = this.status.taskId;
     env.RUN_ID = this.runId;
 
-    yield this.runtime.privateKey.decryptEnvVariables(
-        this.task.payload, this.status.taskId);
+    await this.runtime.privateKey.decryptEnvVariables(
+        this.task.payload, this.status.taskId
+    );
 
-    var procConfig = {
+    let procConfig = {
       start: {},
       create: {
         Image: config.image,
@@ -156,32 +165,32 @@ Task.prototype = {
     }
 
     if (this.task.payload.cache) {
-      var bindings = yield buildVolumeBindings(this.task.payload.cache,
+      let bindings = await buildVolumeBindings(this.task.payload.cache,
         this.runtime.volumeCache, this.task.scopes);
       this.volumeCaches = bindings[0];
       procConfig.start.Binds = bindings[1];
     }
 
     return procConfig;
-  },
+  }
 
-  fmtLog: function() {
-    var args = Array.prototype.slice.call(arguments);
-    var str = '[taskcluster] ' + util.format.apply(this, args) + '\r\n';
+  fmtLog() {
+    let args = Array.prototype.slice.call(arguments);
+    let str = '[taskcluster] ' + util.format.apply(this, args) + '\r\n';
     // Ensure we generate somewhat nicely aligned 80 width lines.
     return wordwrap(str);
-  },
+  }
 
-  logHeader: function() {
-    var header = this.fmtLog(
+  logHeader() {
+    let header = this.fmtLog(
       'taskId: %s, workerId: %s',
       this.status.taskId, this.runtime.workerId
     );
 
     // List caches if used...
     if (this.task.payload.cache) {
-      for (var key in this.task.payload.cache) {
-        var path = this.task.payload.cache[key];
+      for (let key in this.task.payload.cache) {
+        let path = this.task.payload.cache[key];
         header += this.fmtLog(
           'using cache "%s" -> %s', key, path
         );
@@ -189,47 +198,101 @@ Task.prototype = {
     }
 
     return header + '\r\n';
-  },
+  }
 
-  logFooter: function(success, exitCode, start, finish) {
+  logFooter(success, exitCode, start, finish) {
     // Human readable success/failure thing...
-    var humanSuccess = success ?
+    let humanSuccess = success ?
       'Successful' :
       'Unsuccessful';
 
     // Yes, date subtraction yields a Number.
-    var duration = (finish - start) / 1000;
+    let duration = (finish - start) / 1000;
 
     return this.fmtLog(
       '%s task run with exit code: %d completed in %d seconds',
       humanSuccess, exitCode, duration
     );
-  },
+  }
 
-  logSchemaErrors: function(prefix, errors) {
+  logSchemaErrors(prefix, errors) {
     return this.fmtLog(
       "%s format is invalid json schema errors:\n %s",
       prefix, JSON.stringify(errors, null, 2)
     );
-  },
+  }
 
-  completeRun: function* (success) {
-    yield this.runtime.stats.timeGen(
-      'tasks.time.completed',
-      this.runtime.queue.reportCompleted(
-        this.status.taskId, this.runId, { success: success }
-      )
-    );
-  },
+  /**
+   * Aborts a run that is currently running or being prepared to run (pulling images,
+   * establishing states, etc).  This will optionally write an error to the stream
+   * and then write the footer and kill states.
+   *
+   * @param {String} stat - Name of the current state to be used when generating stats for killing states
+   * @param {String} error - Option error to write to the stream prior to aborting
+   */
+  async abortRun(stat, error) {
+    if (!this.isCanceled()) this.taskState = 'aborted';
+
+    if (error) this.stream.write(error);
+
+    // Ensure that the stream has completely finished.
+    await this.stream.end(this.logFooter(
+      false, // unsuccessful task
+      -1, // negative exit code indicates infrastructure errors usually.
+      this.taskStart, // duration details...
+      new Date()
+    ));
+
+    await this.runtime.stats.timeGen(`tasks.time.states.${stat}.killed`, this.states.killed(this));
+
+    if (this.isAborted()) {
+      let queue = this.runtime.queue;
+      let reporter = this.taskException ? queue.reportException : queue.reportFailed;
+      let reportDetails = [this.status.taskId, this.runId];
+      if (this.taskException) reportDetails.push({ reason: this.taskException });
+
+      await reporter.apply(queue, reportDetails);
+    }
+
+    this.runtime.log('task resolved', {
+      taskId: this.status.taskId,
+      runId: this.runId,
+      taskState: this.taskState
+    });
+
+    return false;
+  }
+
+  /**
+   * Resolves a run that has completed and reports to the proper exchange.
+   *
+   * If a task has been canceled or aborted, abortRun() should be used since the
+   * run did not complete.
+   *
+   * @param {Boolean} success
+   */
+  async completeRun(success) {
+    let queue = this.runtime.queue;
+    let reporter = success ? queue.reportCompleted : queue.reportFailed;
+    let reportDetails = [this.status.taskId, this.runId];
+    if (success) reportDetails.push({ success: true});
+    await reporter.apply(queue, reportDetails);
+
+    this.runtime.log('task resolved', {
+      taskId: this.status.taskId,
+      runId: this.runId,
+      taskState: success ? 'completed' : 'failed'
+    });
+  }
 
   /**
   Determine when the right time is to issue another reclaim then schedule it
   via set timeout.
   */
-  scheduleReclaim: function* (claim) {
+  scheduleReclaim(claim) {
     // Figure out when to issue the next claim...
-    var takenUntil = (new Date(claim.takenUntil) - new Date());
-    var nextClaim = takenUntil / this.runtime.task.reclaimDivisor;
+    let takenUntil = (new Date(claim.takenUntil) - new Date());
+    let nextClaim = takenUntil / this.runtime.task.reclaimDivisor;
 
     // This is tricky ensure we have logs...
     this.runtime.log('next claim', {
@@ -242,62 +305,76 @@ Task.prototype = {
     this.clearClaimTimeout();
 
     this.claimTimeoutId =
-      setTimeout(co(this.reclaimTask).bind(this), nextClaim);
-  },
-
+      setTimeout(function() {
+        async () => {
+          await this.reclaimTask();
+        }()
+      }.bind(this), nextClaim);
+  }
 
   /**
   Clear next reclaim if one is pending...
   */
-  clearClaimTimeout: function() {
+  clearClaimTimeout() {
     if (this.claimTimeoutId) {
       clearTimeout(this.claimTimeoutId);
       this.claimTimeoutId = null;
     }
-  },
+  }
+
+  setRuntimeTimeout(maxRuntime) {
+    let stats = this.runtime.stats;
+    let maxRuntimeMS = maxRuntime*1000;
+    let runtimeTimeoutId = setTimeout(function() {
+      this.taskState = 'aborted';
+      stats.increment('tasks.timed_out');
+      stats.gauge('tasks.timed_out.max_run_time', this.task.payload.maxRunTime);
+      this.runtime.log('task max runtime timeout', {
+        maxRunTime: this.task.payload.maxRunTime,
+        taskId: this.status.taskId,
+        runId: this.runId
+      });
+      // we don't wait for the promise to resolve just trigger kill here which
+      // will cause run to stop processing the task and give us an error
+      // exit code.
+      this.dockerProcess.kill();
+      this.stream.write(this.fmtLog(
+        'Task timeout after %d seconds. Force killing container.',
+        this.task.payload.maxRunTime
+      ));
+    }.bind(this), maxRuntimeMS);
+    return runtimeTimeoutId;
+  }
 
   /**
   Reclaim the current task and schedule the next reclaim...
   */
-  reclaimTask: function* () {
+  async reclaimTask() {
     this.runtime.log('issue reclaim');
     this.runtime.stats.increment('tasks.reclaims');
-    this.claim = yield this.runtime.stats.timeGen(
+    this.claim = await this.runtime.stats.timeGen(
       'tasks.time.reclaim',
       this.runtime.queue.reclaimTask(this.status.taskId, this.runId)
     );
+
     this.runtime.log('issued reclaim', { claim: this.claim });
-    yield this.scheduleReclaim(this.claim);
-  },
+    await this.scheduleReclaim(this.claim);
+  }
 
-  claimTask: function* () {
-    this.runtime.stats.increment('tasks.claims');
-    var claimConfig = {
-      workerId: this.runtime.workerId,
-      workerGroup: this.runtime.workerGroup
-    };
-
-    this.claim = yield this.runtime.stats.timeGen(
-      'tasks.time.claim',
-      this.runtime.queue.claimTask(this.status.taskId, this.runId, claimConfig)
-    );
-
-    yield this.scheduleReclaim(this.claim);
-  },
-
-  claimAndRun: function* () {
-    // Issue the first claim... This also kicks off the reclaim timers.
-    yield this.claimTask();
-
-    this.runtime.log('claim and run', {
+  async start() {
+    this.runtime.log('task start', {
       taskId: this.status.taskId,
       runId: this.runId,
       takenUntil: this.claim.takenUntil
     });
 
-    var success;
+    // Task has already been claimed, schedule reclaiming
+    await this.scheduleReclaim(this.claim);
+
+
+    let success;
     try {
-      success = yield this.run();
+      success = await this.run();
     } catch (e) {
       // TODO: Reconsider if we should mark the task as failed or something else
       //       at this point... I intentionally did not mark the task completed
@@ -309,13 +386,13 @@ Task.prototype = {
     // segment potentially causing a loop...
     this.clearClaimTimeout();
     // Mark the task appropriately now that all internal state is cleaned up.
-    yield this.completeRun(success);
-  },
+    if (!this.isCanceled() && !this.isAborted()) await this.completeRun(success);
+  }
 
-  pullDockerImage: function* () {
-    var payload = this.task.payload;
-    var dockerImage = new DockerImage(payload.image);
-    var dockerImageName = dockerImage.fullPath();
+  async pullDockerImage() {
+    let payload = this.task.payload;
+    let dockerImage = new DockerImage(payload.image);
+    let dockerImageName = dockerImage.fullPath();
 
     this.runtime.log('pull image', {
       taskId: this.status.taskId,
@@ -327,14 +404,14 @@ Task.prototype = {
     // the name is formatted (such as `registry`) so simply pull here and do
     // not check for credentials.
     if (!dockerImage.canAuthenticate()) {
-      return yield pullImage(
+      return await pullImage(
         this.runtime.docker, dockerImageName, this.stream
       );
     }
 
-    var pullOptions = {};
+    let pullOptions = {};
     // See if any credentials apply from our list of registries...
-    var credentials = dockerImage.credentials(this.runtime.registries);
+    let credentials = dockerImage.credentials(this.runtime.registries);
     if (credentials) {
       // Validate scopes on the image if we have credentials for it...
       if (!scopeMatch(this.task.scopes, IMAGE_SCOPE_PREFIX + dockerImageName)) {
@@ -351,10 +428,64 @@ Task.prototype = {
       pullOptions.authconfig = credentials;
     }
 
-    return yield pullImage(
+    return await pullImage(
       this.runtime.docker, dockerImageName, this.stream, pullOptions
     );
-  },
+  }
+
+  isAborted() {
+    return this.taskState === 'aborted';
+  }
+
+  isCanceled() {
+    return this.taskState === 'canceled';
+  }
+
+  /**
+   * Aborts the running of the task.  This is similar to cancelling a task, but
+   * will allow time to upload artifacts and report the run as an exception instead.
+   *
+   * @param {String} reason - Reason for aborting the test run (Example: worker-shutdown)
+   */
+  abort(reason) {
+    this.taskState = 'aborted';
+    this.taskException = reason;
+    this.runtime.stats.increment('tasks.aborted');
+    this.runtime.log('abort task', {
+      taskId: this.status.taskId,
+      runId: this.runId,
+      reason: reason
+    });
+
+    if (this.dockerProcess) this.dockerProcess.kill();
+
+    this.stream.write(
+      this.fmtLog(`Task has been aborted prematurely. Reason: ${reason}`)
+    );
+  }
+
+  /**
+   * Cancel the running of the task.  Task cancellation was performed by an external
+   * entity and has already been published to task-exception exchange.  This will
+   * kill the docker container that might be running, attempt to release resources
+   * that were linked, as well as prevent artifacts from uploading, which cannot
+   * be done after a run is resolved.
+   *
+   * @param {String} reason - Reason for cancellation
+   */
+  cancel(reason) {
+    this.taskState = 'canceled';
+    this.taskException = reason;
+
+    this.runtime.stats.increment('tasks.canceled');
+    this.runtime.log('cancel task', {
+      taskId: this.status.taskId, runId: this.runId
+    });
+
+    if (this.dockerProcess) this.dockerProcess.kill();
+
+    this.stream.write(this.fmtLog(CANCEL_ERROR));
+  }
 
   /**
   Primary handler for all docker related task activities this handles the
@@ -363,11 +494,12 @@ Task.prototype = {
 
   @return {Boolean} success true/false for complete run.
   */
-  run: function* () {
-    var taskStart = new Date();
-    var stats = this.runtime.stats;
-    var queue = this.runtime.queue;
-    var gc = this.runtime.gc;
+  async run() {
+    this.taskState = 'running';
+    this.taskStart = new Date();
+    let stats = this.runtime.stats;
+    let queue = this.runtime.queue;
+    let gc = this.runtime.gc;
 
     // Cork all writes to the stream until we are done setting up logs.
     this.stream.cork();
@@ -376,118 +508,87 @@ Task.prototype = {
     this.stream.write(this.logHeader());
 
     // Build the list of container links...
-    var links =
-      yield* stats.timeGen('tasks.time.states.linked', this.states.link(this));
+    let links =
+      await stats.timeGen('tasks.time.states.linked', this.states.link(this));
 
     // Hooks prior to running the task.
-    yield stats.timeGen('tasks.time.states.created', this.states.created(this));
+    await stats.timeGen('tasks.time.states.created', this.states.created(this));
 
     // Everything should have attached to the stream by now...
     this.stream.uncork();
 
+    if (this.isCanceled() || this.isAborted()) {
+      return await this.abortRun(this.taskState);
+    }
     // Validate the schema!
-    var payloadErrors =
+    let payloadErrors =
       this.runtime.schema.validate(this.task.payload, PAYLOAD_SCHEMA);
 
     if (payloadErrors.length) {
       // Inform the user that this task has failed due to some configuration
       // error on their part.
-      this.stream.write(this.logSchemaErrors('`task.payload`', payloadErrors));
-
-      this.stream.write(this.logFooter(
-        false, // unsuccessful task
-        -1, // negative exit code indicates infrastructure errors usually.
-        taskStart, // duration details...
-        new Date()
-      ));
-
-      // Ensure the stream is completely ended...
-      yield this.stream.end.bind(this.stream);
-
-      yield stats.timeGen(
-        'tasks.time.states.validation_failed.killed', this.states.killed(this)
+      this.taskException = 'malformed-payload';
+      return await this.abortRun(
+        'validation_failed',
+        this.logSchemaErrors('`task.payload`', payloadErrors)
       );
-      return false;
     }
 
     // Download the docker image needed for this task... This may fail in
     // unexpected ways and should be handled gracefully to indicate to the user
     // that their task has failed due to a image specific problem rather then
     // some general bug in taskcluster or the worker code.
-    try {
-      yield this.pullDockerImage();
-    } catch (e) {
-      this.stream.write(this.fmtLog(IMAGE_ERROR, this.task.payload.image, e));
-
-      // Ensure that the stream has completely finished.
-      yield this.stream.end.bind(this.stream, this.logFooter(
-        false, // unsuccessful task
-        -1, // negative exit code indicates infrastructure errors usually.
-        taskStart, // duration details...
-        new Date()
-      ));
-
-      yield stats.timeGen(
-        'tasks.time.states.pull_failed.killed', this.states.killed(this)
-      );
-      return false;
+    if (this.isCanceled() || this.isAborted()) {
+      return await this.abortRun(this.taskState);
     }
+    try {
+      await this.pullDockerImage();
+    } catch (e) {
+      return await this.abortRun(
+        'pull_failed',
+        this.fmtLog(IMAGE_ERROR, this.task.payload.image, e)
+      );
+    }
+
     gc.markImage(this.task.payload.image);
 
-    try {
-      var dockerConfig = yield this.dockerConfig(links);
-    } catch (e) {
-      this.stream.write(this.fmtLog('Docker configuration could not be ' +
-        'created.  This may indicate an authentication error when validating ' +
-        'scopes necessary for using caches. \n Error %s', e));
-
-      yield this.stream.end.bind(this.stream, this.logFooter(
-        false, // unsuccessful task
-        -1, // negative exit code indicates infrastructure errors usually.
-        taskStart, // duration details...
-        new Date()
-      ));
-
-      yield stats.timeGen(
-        'tasks.time.states.docker_configuration.killed', this.states.killed(this)
-      );
-      return false;
+    if (this.isCanceled() || this.isAborted()) {
+      return await this.abortRun(this.taskState);
     }
 
-    var dockerProc = this.dockerProcess = new DockerProc(
+    let dockerConfig;
+    try {
+      dockerConfig = await this.dockerConfig(links);
+    } catch (e) {
+      let error = this.fmtLog('Docker configuration could not be ' +
+        'created.  This may indicate an authentication error when validating ' +
+        'scopes necessary for using caches. \n Error %s', e);
+      return await this.abortRun('docker_configuration', error);
+    }
+
+    if (this.isCanceled() || this.isAborted()) {
+      return await this.abortRun(this.taskState);
+    }
+    let dockerProc = this.dockerProcess = new DockerProc(
       this.runtime.docker, dockerConfig);
     // Now that we know the stream is ready pipe data into it...
     dockerProc.stdout.pipe(this.stream, {
       end: false
     });
 
-    // start the timer to ensure we don't go overtime.
-    var maxRuntimeMS = this.task.payload.maxRunTime * 1000;
-    var runtimeTimeoutId = setTimeout(function() {
-      stats.increment('tasks.timed_out');
-      stats.gauge('tasks.timed_out.max_run_time', this.task.payload.maxRunTime);
-      this.runtime.log('task max runtime timeout', {
-        maxRunTime: this.task.payload.maxRunTime,
-        taskId: this.status.taskId,
-        runId: this.runId
-      });
-      // we don't wait for the promise to resolve just trigger kill here which
-      // will cause run below to stop processing the task and give us an error
-      // exit code.
-      dockerProc.kill();
-      this.stream.write(this.fmtLog(
-        'Task timeout after %d seconds. Force killing container.',
-        this.task.payload.maxRunTime
-      ));
-    }.bind(this), maxRuntimeMS);
+    let runtimeTimeoutId = this.setRuntimeTimeout(this.task.payload.maxRunTime);
 
-    var exitCode = yield* stats.timeGen('tasks.time.run', dockerProc.run({
+    if (this.isCanceled() || this.isAborted()) {
+      return await this.abortRun(this.taskState);
+    }
+    this.runtime.log('task run');
+    let exitCode = await stats.timeGen('tasks.time.run', dockerProc.run({
       // Do not pull the image as part of the docker run we handle it +
       // authentication above...
       pull: false
     }));
 
-    var success = exitCode === 0;
+    let success = exitCode === 0;
 
     clearTimeout(runtimeTimeoutId);
 
@@ -497,26 +598,32 @@ Task.prototype = {
     if (!dockerProc.stdout._readableState.endEmitted) {
       // We wait _before_ extractResult so those states hooks can add items
       // to the stream.
-      yield waitForEvent(dockerProc.stdout, 'end');
+      await waitForEvent(dockerProc.stdout, 'end');
+    }
+
+    if (this.isCanceled() || this.isAborted()) {
+      return await this.abortRun(this.taskState);
     }
 
     // Extract any results from the hooks.
-    yield stats.timeGen(
+    await stats.timeGen(
       'tasks.time.states.stopped', this.states.stopped(this)
     );
 
-    this.stream.write(this.logFooter(success, exitCode, taskStart, new Date()));
+    this.stream.write(this.logFooter(success, exitCode, this.taskStart, new Date()));
 
     // Wait for the stream to end entirely before killing remaining containers.
-    yield this.stream.end.bind(this.stream);
+    await this.stream.end();
 
     // Garbage collect containers
     gc.removeContainer(dockerProc.container.id, this.volumeCaches);
-    yield stats.timeGen('tasks.time.states.killed', this.states.killed(this));
+
+    await stats.timeGen('tasks.time.states.killed', this.states.killed(this));
 
     // If the results validation failed we consider this task failure.
+    if (this.isCanceled() || this.isAborted()) {
+      return await this.abortRun(this.taskState);
+    }
     return success;
   }
 };
-
-module.exports = Task;

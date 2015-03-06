@@ -7,7 +7,10 @@ suite('Aliveness check', function() {
   var TestWorker = require('../testworker');
 
   // Ensure we don't leave behind our test configurations.
-  teardown(settings.cleanup);
+  teardown(co(function* () {
+    yield worker.terminate();
+    settings.cleanup();
+  }));
 
   var worker;
   setup(co(function * () {
