@@ -60,4 +60,5 @@ fi
 
 echo Done testing!
 
+killServer
 exit $(( nose + lint + setuptests ))
