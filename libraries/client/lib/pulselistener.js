@@ -6,6 +6,7 @@ var debug     = require('debug')('taskcluster-client:PulseListener');
 var _         = require('lodash');
 var assert    = require('assert');
 var slugid    = require('slugid');
+var URL       = require('url');
 
 /**
  * Build Pulse ConnectionString, from options on the form:
@@ -59,8 +60,15 @@ var PulseConnection = function(options) {
     assert(!options.hostname, "Can't take `hostname` along with `connectionString`");
   }
 
+  // If namespace was not explicitly set infer it from connection string...
+  if (!options.namespace) {
+    var parsed = URL.parse(connectionString);
+    this.namespace = parsed.auth.split(':')[0];
+  } else {
+    this.namespace = options.namespace;
+  }
+
   this._connectionString = options.connectionString;
-  this.namespace = options.namespace;
 
   // Private properties
   this._conn              = null;
