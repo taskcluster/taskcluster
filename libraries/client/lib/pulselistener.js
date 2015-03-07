@@ -19,7 +19,7 @@ var URL       = require('url');
 var buildPulseConnectionString = function(options) {
   assert(options.username, "options.username password is required");
   assert(options.password, "options.password is required");
-  
+
   // Construct connection string
   return [
     'amqps://',         // Ensure that we're using SSL
@@ -62,12 +62,11 @@ var PulseConnection = function(options) {
 
   // If namespace was not explicitly set infer it from connection string...
   if (!options.namespace) {
-    var parsed = URL.parse(connectionString);
-    this.namespace = parsed.auth.split(':')[0];
-  } else {
-    this.namespace = options.namespace;
+    var parsed = URL.parse(options.connectionString);
+    options.namespace = parsed.auth.split(':')[0];
   }
 
+  this.namespace = options.namespace;
   this._connectionString = options.connectionString;
 
   // Private properties
