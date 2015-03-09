@@ -22,7 +22,7 @@ install_requires = [
 if __name__ == '__main__':
   setup(
     name='taskcluster',
-    version='0.0.9',
+    version='0.0.10',
     description='Python client for Taskcluster',
     author='John Ford',
     author_email='jhford@mozilla.com',
