@@ -27,6 +27,7 @@ set -x
 sed -i '' -e "s,^VERSION=.*$,VERSION=\'$VERSION\',g" setup.py
 
 
+make
 # Now, let's commit this change.  We only care to commit
 # setup.py because we've already verified that it's the
 # only file which is changing
