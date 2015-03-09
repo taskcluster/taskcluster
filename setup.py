@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+VERSION='0.0.12'
+
 from setuptools import setup
 
 tests_require = [
@@ -22,7 +24,7 @@ install_requires = [
 if __name__ == '__main__':
   setup(
     name='taskcluster',
-    version='0.0.10',
+    version=VERSION,
     description='Python client for Taskcluster',
     author='John Ford',
     author_email='jhford@mozilla.com',
