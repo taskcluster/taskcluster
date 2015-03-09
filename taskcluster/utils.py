@@ -11,11 +11,6 @@ import time
 MAX_RETRIES = 5
 
 log = logging.getLogger(__name__)
-if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
-  log.setLevel(logging.DEBUG)
-  log.addHandler(logging.StreamHandler())
-else:
-  log.addHandler(logging.NullHandler())
 
 # Regular expression matching: X days Y hours Z minutes
 r = re.compile('^(\s*(\d+)\s*d(ays?)?)?' +

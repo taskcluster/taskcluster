@@ -23,14 +23,8 @@ from . import exceptions
 from . import utils
 
 log = logging.getLogger(__name__)
-if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
-  log.setLevel(logging.DEBUG)
-  log.addHandler(logging.StreamHandler())
-else:
-  log.addHandler(logging.NullHandler())
 
 API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
-
 
 # Default configuration
 _defaultConfig = config = {

@@ -73,6 +73,12 @@ There is a bug in the PyHawk library (as of 0.1.3) which breaks bewit
 generation for URLs that do not have a query string.  This is being addressed
 in [PyHawk PR 27](https://github.com/mozilla/PyHawk/pull/27).
 
+Logging is set up in `taskcluster/__init__.py`.  If the special `DEBUG_TASKCLUSTER_CLIENT`
+environment variable is set, the `__init__.py` module will set the `logging` module's level
+for its logger to `logging.DEBUG` and if there are no existing handlers, add a
+`logging.StreamHandler()` instance.  This is meant to assist those who do not wish to bother
+figuring out how to configure the python logging module but do want debug messages
+
 <!-- START OF GENERATED DOCS -->
 
 ### Methods in `taskcluster.Index`
