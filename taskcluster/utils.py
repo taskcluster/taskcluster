@@ -115,7 +115,6 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
         continue
       # raise a connection exception
       raise rerr
-
     # Handle non 2xx status code and retry if possible
     try:
       response.raise_for_status()

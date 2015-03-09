@@ -68,6 +68,9 @@ class BaseClient(object):
             s = '%s (%s) must be unicode encodable' % (x, credentials[x])
             raise exceptions.TaskclusterAuthFailure(s)
     self.options = o
+    if o.has_key('credentials'):
+      log.debug('credentials key scrubbed from logging output')
+    log.debug(dict((k, v) for k, v in o.items() if k != 'credentials'));
 
   def makeHawkExt(self):
     """ Make an 'ext' for Hawk authentication """
