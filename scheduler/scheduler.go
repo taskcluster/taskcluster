@@ -39,6 +39,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"time"
 )
 
 func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {
@@ -295,9 +296,9 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
 	TaskDefinition struct {
 		// Creation time of task
-		Created string `json:"created"`
+		Created time.Time `json:"created"`
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
-		Deadline string `json:"deadline"`
+		Deadline time.Time `json:"deadline"`
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services

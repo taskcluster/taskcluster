@@ -203,7 +203,15 @@ func GenerateCode(goOutputDir, modelData string) {
 
 `
 		content += apiDefs[i].generateAPICode()
-		content += generatePayloadTypes(&apiDefs[i])
+		newContent, extraPackages := generatePayloadTypes(&apiDefs[i])
+		content += newContent
+		extraPackagesString := ""
+		for j, k := range extraPackages {
+			if k {
+				extraPackagesString += utils.Indent("\""+j+"\"", "\t")
+			}
+		}
+		content = strings.Replace(content, "%%{imports}", extraPackagesString, -1)
 		utils.WriteStringToFile(content, filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go"))
 	}
 
@@ -223,12 +231,18 @@ func GenerateCode(goOutputDir, modelData string) {
 
 // This is where we generate nested and compoound types in go to represent json payloads
 // which are used as inputs and outputs for the REST API endpoints, and also for Pulse
-// message bodies for the Exchange APIs
-func generatePayloadTypes(apiDef *APIDefinition) string {
+// message bodies for the Exchange APIs.
+// Returns the generated code content, and a map of keys of extra packages to import, e.g.
+// a generated type might use time.Time, so if not imported, this would have to be added.
+// using a map of strings -> bool to simulate a set - true => include
+func generatePayloadTypes(apiDef *APIDefinition) (string, map[string]bool) {
+	extraPackages := make(map[string]bool)
 	content := "type (" // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	for _, i := range apiDef.schemaURLs {
-		content += utils.Indent(apiDef.schemas[i].TypeDefinition(true), "\t")
+		var newContent string
+		newContent, extraPackages = apiDef.schemas[i].TypeDefinition(true, extraPackages)
+		content += utils.Indent(newContent, "\t")
 	}
-	return content + ")\n\n"
+	return content + ")\n\n", extraPackages
 }

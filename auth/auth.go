@@ -30,6 +30,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"time"
 )
 
 func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {
@@ -232,7 +233,7 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
 	AzureSharedAccessSignatureResponse struct {
 		// Date and time of when the Shared-Access-Signature expires.
-		Expiry string `json:"expiry"`
+		Expiry time.Time `json:"expiry"`
 		// Shared-Access-Signature string. This is the querystring parameters to
 		// be appened after `?` or `&` depending on whether or not a querystring is
 		// already present in the URL.
@@ -248,7 +249,7 @@ type (
 		// ClientId of the client scopes is requested about
 		ClientId string `json:"clientId"`
 		// Date and time where the clients credentials are set to expire
-		Expires string `json:"expires"`
+		Expires time.Time `json:"expires"`
 		// List of scopes the client is authorized to access
 		Scopes []string `json:"scopes"`
 	}
@@ -260,7 +261,7 @@ type (
 		// ClientId of the client scopes is requested about
 		ClientId string `json:"clientId"`
 		// Date and time where the clients credentials are set to expire
-		Expires string `json:"expires"`
+		Expires time.Time `json:"expires"`
 		// List of scopes the client is authorized to access
 		Scopes []string `json:"scopes"`
 	}
@@ -274,7 +275,7 @@ type (
 		// contact. Why it is scoped as is, think of this as documentation.
 		Description string `json:"description"`
 		// Date and time where the clients credentials are set to expire
-		Expires string `json:"expires"`
+		Expires time.Time `json:"expires"`
 		// Human readable name of this set of credentials, typical
 		// component/server-name or IRC nickname of the user.
 		Name string `json:"name"`
@@ -295,7 +296,7 @@ type (
 		// Why it is scoped as is, think of this as documentation.
 		Description string `json:"description"`
 		// Date and time where the clients credentials are set to expire
-		Expires string `json:"expires"`
+		Expires time.Time `json:"expires"`
 		// Human readable name of this set of credentials, typical
 		// component/server-name or IRC nickname of the user.
 		Name string `json:"name"`
@@ -314,7 +315,7 @@ type (
 		// Why it is scoped as is, think of this as documentation.
 		Description string `json:"description"`
 		// Date and time where the clients credentials are set to expire
-		Expires string `json:"expires"`
+		Expires time.Time `json:"expires"`
 		// Human readable name of this set of credentials, typical
 		// component/server-name or IRC nickname of the user.
 		Name string `json:"name"`

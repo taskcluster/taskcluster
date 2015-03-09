@@ -38,6 +38,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"time"
 )
 
 func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {
@@ -478,9 +479,9 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
 	TaskDefinition struct {
 		// Creation time of task
-		Created string `json:"created"`
+		Created time.Time `json:"created"`
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
-		Deadline string `json:"deadline"`
+		Deadline time.Time `json:"deadline"`
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services
@@ -554,7 +555,7 @@ type (
 			ContentType string `json:"contentType"`
 			// Date and time after which the artifact created will be automatically
 			// deleted by the queue.
-			Expires string `json:"expires"`
+			Expires time.Time `json:"expires"`
 			// Name of the artifact that was created, this is useful if you want to
 			// attempt to fetch the artifact.
 			Name string `json:"name"`
@@ -587,7 +588,7 @@ type (
 	PollTaskUrlsResponse struct {
 		// Date and time after which the signed URLs provided in this response
 		// expires and not longer works for authentication.
-		Expires string `json:"expires"`
+		Expires time.Time `json:"expires"`
 		// List of signed URLs for queues to poll tasks from, they must be called
 		// in the order they are given. As the first entry in this array **may**
 		// have higher priority.
@@ -652,7 +653,7 @@ type (
 		RunId  int                 `json:"runId"`
 		Status TaskStatusStructure `json:"status"`
 		// Time at which the run expires and is resolved as `failed`, if the run isn't reclaimed.
-		TakenUntil string `json:"takenUntil"`
+		TakenUntil time.Time `json:"takenUntil"`
 		// Identifier for the worker-group within which this run started.
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker executing this run.
@@ -696,7 +697,7 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 	TaskStatusStructure struct {
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
-		Deadline string `json:"deadline"`
+		Deadline time.Time `json:"deadline"`
 		// Unique identifier for the provisioner that this task must be scheduled on
 		ProvisionerId string `json:"provisionerId"`
 		// Number of retries left for the task in case of infrastructure issues
@@ -714,22 +715,22 @@ type (
 			// Date-time at which this run was resolved, ie. when the run changed
 			// state from `running` to either `completed`, `failed` or `exception`.
 			// This property is only present after the run as been resolved.
-			Resolved string `json:"resolved"`
+			Resolved time.Time `json:"resolved"`
 			// Id of this task run, `run-id`s always starts from `0`
 			RunId int `json:"runId"`
 			// Date-time at which this run was scheduled, ie. when the run was
 			// created in state `pending`.
-			Scheduled string `json:"scheduled"`
+			Scheduled time.Time `json:"scheduled"`
 			// Date-time at which this run was claimed, ie. when the run changed
 			// state from `pending` to `running`. This property is only present
 			// after the run has been claimed.
-			Started string `json:"started"`
+			Started time.Time `json:"started"`
 			// State of this run
 			State interface{} `json:"state"`
 			// Time at which the run expires and is resolved as `failed`, if the
 			// run isn't reclaimed. Note, only present after the run has been
 			// claimed.
-			TakenUntil string `json:"takenUntil"`
+			TakenUntil time.Time `json:"takenUntil"`
 			// Identifier for group that worker who executes this run is a part of,
 			// this identifier is mainly used for efficient routing.
 			// Note, this property is only present after the run is claimed.
@@ -761,9 +762,9 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task.json#
 	TaskDefinition1 struct {
 		// Creation time of task
-		Created string `json:"created"`
+		Created time.Time `json:"created"`
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
-		Deadline string `json:"deadline"`
+		Deadline time.Time `json:"deadline"`
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services

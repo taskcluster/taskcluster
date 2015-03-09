@@ -114,6 +114,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"time"
 )
 
 func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {
@@ -268,7 +269,7 @@ type (
 		// Data that was reported with the task. This is an arbitrary JSON object.
 		Data interface{} `json:"data"`
 		// Date at which this entry expires from the task index.
-		Expires string `json:"expires"`
+		Expires time.Time `json:"expires"`
 		// Namespace of the indexed task, used to find the indexed task in the index.
 		Namespace string `json:"namespace"`
 		// If multiple tasks are indexed with the same `namespace` the task with the
@@ -290,7 +291,7 @@ type (
 		// So stay well, below that limit.
 		Data interface{} `json:"data"`
 		// Date at which this entry expires from the task index.
-		Expires string `json:"expires"`
+		Expires time.Time `json:"expires"`
 		// If multiple tasks are indexed with the same `namespace` the task with the
 		// highest `rank` will be stored and returned in later requests. If two tasks
 		// has the same `rank` the latest task will be stored.
@@ -326,7 +327,7 @@ type (
 		Namespaces []struct {
 			// Date at which this entry, and by implication all entries below it,
 			// expires from the task index.
-			Expires string `json:"expires"`
+			Expires time.Time `json:"expires"`
 			// Name of namespace within it's parent namespace.
 			Name interface{} `json:"name"`
 			// Fully qualified name of the namespace, you can use this to list
@@ -362,7 +363,7 @@ type (
 			// object.
 			Data interface{} `json:"data"`
 			// Date at which this entry expires from the task index.
-			Expires string `json:"expires"`
+			Expires time.Time `json:"expires"`
 			// Namespace of the indexed task, used to find the indexed task in the
 			// index.
 			Namespace string `json:"namespace"`

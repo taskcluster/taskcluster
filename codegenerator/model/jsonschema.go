@@ -92,7 +92,7 @@ func (subSchema JsonSubSchema) String() string {
 	return result
 }
 
-func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool) string {
+func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPackages map[string]bool) (string, map[string]bool) {
 	content := ""
 	comment := ""
 	if withComments {
@@ -121,7 +121,9 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool) string {
 	switch typ {
 	case "array":
 		if jsonType := jsonSubSchema.Items.Type; jsonType != nil {
-			typ = "[]" + jsonSubSchema.Items.TypeDefinition(false)
+			var newType string
+			newType, extraPackages = jsonSubSchema.Items.TypeDefinition(false, extraPackages)
+			typ = "[]" + newType
 		}
 	case "object":
 		if s := jsonSubSchema.Properties; s != nil {
@@ -130,7 +132,8 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool) string {
 			for _, j := range s.SortedPropertyNames {
 				memberName := utils.Normalise(j, members)
 				// recursive call to build structs inside structs
-				subType := s.Properties[j].TypeDefinition(false)
+				var subType string
+				subType, extraPackages = s.Properties[j].TypeDefinition(false, extraPackages)
 				// comment the struct member with the description from the json
 				comment = ""
 				if d := s.Properties[j].Description; d != nil {
@@ -153,12 +156,21 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool) string {
 		typ = "int"
 	case "boolean":
 		typ = "bool"
+	// json type string maps to go type string, so only need to test case of when
+	// string is a json date-time, so we can convert to go type time.Time...
+	case "string":
+		if f := jsonSubSchema.Format; f != nil {
+			if *f == "date-time" {
+				typ = "time.Time"
+			}
+			extraPackages["time"] = true
+		}
 	}
 	content += typ
 	if withComments {
 		content += "\n"
 	}
-	return content
+	return content, extraPackages
 }
 
 func (p Properties) String() string {

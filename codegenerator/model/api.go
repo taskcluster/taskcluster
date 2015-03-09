@@ -101,6 +101,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+%%{imports}
 )
 
 func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {

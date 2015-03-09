@@ -89,6 +89,7 @@ package queueevents
 import (
 	"reflect"
 	"strings"
+	"time"
 )
 
 // When a task is created or just defined a message is posted to this
@@ -447,7 +448,7 @@ type (
 		Status TaskStatusStructure `json:"status"`
 		// Time at which the run expires and is resolved as `failed`, if the run
 		// isn't reclaimed.
-		TakenUntil string `json:"takenUntil"`
+		TakenUntil time.Time `json:"takenUntil"`
 		// Message version
 		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which this run started.
@@ -461,7 +462,7 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 	TaskStatusStructure struct {
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
-		Deadline string `json:"deadline"`
+		Deadline time.Time `json:"deadline"`
 		// Unique identifier for the provisioner that this task must be scheduled on
 		ProvisionerId string `json:"provisionerId"`
 		// Number of retries left for the task in case of infrastructure issues
@@ -479,22 +480,22 @@ type (
 			// Date-time at which this run was resolved, ie. when the run changed
 			// state from `running` to either `completed`, `failed` or `exception`.
 			// This property is only present after the run as been resolved.
-			Resolved string `json:"resolved"`
+			Resolved time.Time `json:"resolved"`
 			// Id of this task run, `run-id`s always starts from `0`
 			RunId int `json:"runId"`
 			// Date-time at which this run was scheduled, ie. when the run was
 			// created in state `pending`.
-			Scheduled string `json:"scheduled"`
+			Scheduled time.Time `json:"scheduled"`
 			// Date-time at which this run was claimed, ie. when the run changed
 			// state from `pending` to `running`. This property is only present
 			// after the run has been claimed.
-			Started string `json:"started"`
+			Started time.Time `json:"started"`
 			// State of this run
 			State interface{} `json:"state"`
 			// Time at which the run expires and is resolved as `failed`, if the
 			// run isn't reclaimed. Note, only present after the run has been
 			// claimed.
-			TakenUntil string `json:"takenUntil"`
+			TakenUntil time.Time `json:"takenUntil"`
 			// Identifier for group that worker who executes this run is a part of,
 			// this identifier is mainly used for efficient routing.
 			// Note, this property is only present after the run is claimed.
