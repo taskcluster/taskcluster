@@ -201,7 +201,8 @@ func (a *Auth) Status(taskId string) (*TaskStatusResponse, *http.Response) {
 
 // Get a signed url to get a message from azure queue.
 // Once messages are polled from here, you can claim the referenced task
-// with `claimTask`.
+// with `claimTask`, after wards which you **must** delete the message from
+// the azure queue.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pollTaskUrls
 func (a *Auth) PollTaskUrls(provisionerId string, workerType string) (*PollTaskUrlsResponse, *http.Response) {
@@ -210,9 +211,6 @@ func (a *Auth) PollTaskUrls(provisionerId string, workerType string) (*PollTaskU
 }
 
 // claim a task, more to be added later...
-//
-// **Warning,** in the future this API end-point will require the presents
-// of `receipt`, `messageId` and `token` in the body.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#claimTask
 func (a *Auth) ClaimTask(taskId string, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, *http.Response) {
@@ -247,8 +245,8 @@ func (a *Auth) ClaimWork(provisionerId string, workerType string, payload *WorkC
 
 // Report a task completed, resolving the run as `completed`.
 //
-// For legacy, reasons the `success` parameter is accepted. This will be
-// removed in the future.
+// For legacy, reasons the `success` parameter is accepted. **This will be
+// removed in the future.**
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportCompleted
 func (a *Auth) ReportCompleted(taskId string, runId string, payload *TaskCompletedRequest) (*TaskStatusResponse, *http.Response) {
@@ -436,7 +434,7 @@ func (a *Auth) GetPendingTasks(provisionerId string) *http.Response {
 
 // Documented later...
 //
-// **Warning: This is an experimental end-point!**
+// **This end-point is deprecated!**
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pendingTaskCount
 func (a *Auth) PendingTaskCount(provisionerId string) *http.Response {
@@ -445,15 +443,13 @@ func (a *Auth) PendingTaskCount(provisionerId string) *http.Response {
 }
 
 // Documented later...
-// This probably the end-point that will remain after rewriting to azure
+// This end-point will remain after rewriting to azure
 // queue storage...
 //
-// **Warning: This is an experimental end-point!**
-//
 // See http://docs.taskcluster.net/queue/api-docs/#pendingTasks
-func (a *Auth) PendingTasks(provisionerId string, workerType string) *http.Response {
-	_, httpResponse := a.apiCall(nil, "GET", "/pending/"+provisionerId+"/"+workerType+"", nil)
-	return httpResponse
+func (a *Auth) PendingTasks(provisionerId string, workerType string) (*CountPendingTasksResponse, *http.Response) {
+	responseObject, httpResponse := a.apiCall(nil, "GET", "/pending/"+provisionerId+"/"+workerType+"", new(CountPendingTasksResponse))
+	return responseObject.(*CountPendingTasksResponse), httpResponse
 }
 
 // Documented later...
@@ -568,6 +564,23 @@ type (
 		} `json:"artifacts"`
 	}
 
+	// Response to a request for the number of pending tasks for a given
+	// `provisionerId` and `workerType`.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#
+	CountPendingTasksResponse struct {
+		// An approximate number of pending tasks for the given `provisionerId` and
+		// `workerType`. This is based on Azure Queue Storage meta-data API, thus,
+		// number of reported here may be higher than actual number of pending tasks.
+		// But there cannot be more pending tasks reported here. Ie. this is an
+		// **upper-bound** on the number of pending tasks.
+		PendingTasks int `json:"pendingTasks"`
+		// Unique identifier for the provisioner
+		ProvisionerId string `json:"provisionerId"`
+		// Identifier for worker type within the specified provisioner
+		WorkerType string `json:"workerType"`
+	}
+
 	// Response to request for poll task urls.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#
@@ -575,10 +588,34 @@ type (
 		// Date and time after which the signed URLs provided in this response
 		// expires and not longer works for authentication.
 		Expires string `json:"expires"`
-		// List of signed URLs to poll tasks from, they must be called in the order
-		// they are given. As the first entry in this array **may** have higher
-		// priority.
-		SignedPollTaskUrls []string `json:"signedPollTaskUrls"`
+		// List of signed URLs for queues to poll tasks from, they must be called
+		// in the order they are given. As the first entry in this array **may**
+		// have higher priority.
+		Queues []struct {
+			// Signed URL to delete messages that have been received using the
+			// `signedPollUrl`. You **must** do this to avoid receiving the same
+			// message again.
+			// To use this URL you must substitute `{{messageId}}` and
+			// `{{popReceipt}}` with `MessageId` and `PopReceipt` from the XML
+			// response the `signedPollUrl` gave you. Note this URL only works
+			// with `DELETE` request.
+			SignedDeleteUrl string `json:"signedDeleteUrl"`
+			// Signed URL to get message from the Azure Queue Storage queue,
+			// that holds messages for the given `provisionerId` and `workerType`.
+			// Note that this URL returns XML, see documentation for the Azure
+			// Queue Storage
+			// [REST API](http://msdn.microsoft.com/en-us/library/azure/dd179474.aspx)
+			// for details.
+			// When you have a message you can use `claimTask` to claim the task.
+			// You will need to parse the XML reponse and base64 decode and
+			// JSON parse the `MessageText`.
+			// After you have called `claimTask` you **must** us the
+			// `signedDeleteUrl` to delete the message.
+			// **Remark**, you are allowed to append `&numofmessages=N`,
+			// where N < 32, to the URLs if you wish to obtain more than one
+			// message at the time.
+			SignedPollUrl string `json:"signedPollUrl"`
+		} `json:"queues"`
 	}
 
 	// Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.
