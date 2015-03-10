@@ -37,11 +37,16 @@ import (
 	"encoding/json"
 	hawk "github.com/tent/hawk-go"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 )
 
+// apiCall is the generic REST API calling method which performs all REST API
+// calls for this library.  Each auto-generated REST API method simply is a
+// wrapper around this method, calling it with specific specific arguments.
 func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
@@ -79,11 +84,17 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	if err != nil {
 		panic(err)
 	}
-	defer response.Body.Close()
+	responseBody := response.Body
+	defer responseBody.Close()
+	// now read response into memory, so that we can return the body
+	body, err := ioutil.ReadAll(responseBody)
+	if err != nil {
+		panic(err)
+	}
+	response.Body = ioutil.NopCloser(strings.NewReader(string(body)))
 	// if result is nil, it means there is no response body json
 	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
-		json := json.NewDecoder(response.Body)
-		err = json.Decode(&result)
+		err := json.Unmarshal(body, &result)
 		if err != nil {
 			panic(err)
 		}
