@@ -448,12 +448,13 @@ api.declare({
     "from the response, if you intent to maintain active credentials in your",
     "application.",
     "",
-    "Please notice that your `prefix` shouldn't start with slash `/`, it is",
-    "allowed for completeness, but it will result in two slashes both in the",
-    "scope and in the bucket. Therefore this pattern is strongly discouraged.",
-    "Also note that if your `prefix` doesn't end in a slash `/` you will not",
-    "be required to insert one. This is mainly a concern when assigning scopes",
-    "to users and doing this right will prevent poor behavior."
+    "Please notice that your `prefix` may not start with slash `/`, it is",
+    "allowed on S3, but we forbid it here to discourage bad behavior.",
+    "Also note that if your `prefix` doesn't end in a slash `/` the STS",
+    "credentials will not require one to be to inserted. This is mainly a",
+    "concern when assigning scopes to users and doing this right will prevent",
+    "poor behavior. After we often want the `prefix` to be a folder in a",
+    "`/` delimited folder structure."
   ].join('\n')
 }, function(req, res) {
   var level   = req.params.level;
@@ -477,6 +478,28 @@ api.declare({
     return;
   }
 
+  // Prevent prefix to start with a slash, this is bad behavior. Technically
+  // we could easily support it, S3 does, but people rarely wants double
+  // slashes in their URIs intentionally.
+  if (prefix[0] === '/') {
+    return res.status(400).json({
+      message:      "The `prefix` may not start with a slash `/`",
+      prefix:       prefix
+    });
+  }
+
+  // Decide actions to be allowed on S3 objects
+  var objectActions = [
+    's3:GetObject'
+  ];
+  if (level === 'read-write') {
+    objectActions.push(
+      's3:PutObject',
+      's3:DeleteObject'
+    );
+  }
+
+  // For details on the policy see: http://amzn.to/1ETStaL
   return this.sts.getFederationToken({
     Name:               'TemporaryS3ReadWriteCredentials',
     Policy:             JSON.stringify({
@@ -485,13 +508,7 @@ api.declare({
         {
           Sid:            'ReadWriteObjectsUnderPrefix',
           Effect:         'Allow',
-          Action:         (level === 'read-write' ? [
-            's3:GetObject',
-            's3:PutObject',
-            's3:DeleteObject'
-          ] : [
-            's3:GetObject'
-          ]),
+          Action:         objectActions,
           Resource: [
             'arn:aws:s3:::{{bucket}}/{{prefix}}*'
               .replace('{{bucket}}', bucket)
