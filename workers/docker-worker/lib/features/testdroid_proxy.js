@@ -25,9 +25,11 @@ export default class TestdroidProxy {
     await pullImage(docker, image, process.stdout);
 
     var cmd = [
-        '--cloud-url=' + task.runtime.testdroid.url,
-        '--username=' + task.runtime.testdroid.username,
-        '--password=' + task.runtime.testdroid.password
+        `--cloud-url=${task.runtime.testdroid.url}`,
+        `--username=${task.runtime.testdroid.username}`,
+        `--password=${task.runtime.testdroid.password}`,
+        `--taskcluster-client-id=${task.runtime.taskcluster.clientId}`,
+        `--taskcluster-access-token=${task.runtime.taskcluster.accessToken}`
     ];
 
     var envs = [];

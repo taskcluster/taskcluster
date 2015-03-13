@@ -9,7 +9,7 @@ module.exports = {
   // Image used to  create the taskcluster proxy container.
   taskclusterProxyImage: 'taskcluster/proxy',
   taskclusterLogImage: 'taskcluster/logserve',
-  testdroidProxyImage: 'quay.io/mozilla/testdroid-proxy:0.0.3',
+  testdroidProxyImage: 'quay.io/mozilla/testdroid-proxy:0.0.5',
 
   alivenessCheckInterval: 30000, // 30 seconds
 
