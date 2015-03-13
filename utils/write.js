@@ -5,7 +5,7 @@ var url = require('url');
 var unix = __dirname + '/../input.sock';
 var idx = 0;
 
-var opts = url.parse('http://localhost:60022/log');
+var opts = url.parse('http://docker:60022/log');
 opts.method = 'PUT'
 var client = http.request(opts);
 

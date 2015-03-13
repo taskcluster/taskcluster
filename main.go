@@ -69,8 +69,12 @@ func getLog(
 		debug("send connection close...")
 	}()
 
-	req.Header.Set("Content-Type", "text/plain; charset=utf-8")
-	req.Header.Set("Content-Encoding", "chunked")
+	// TODO: Allow the input stream to configure headers rather then assume
+	// intentions...
+	writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	writer.Header().Set("Access-Control-Allow-Origin", "*")
+
+	log.Printf("%v", req.Header)
 
 	// Send headers so its clear what we are trying to do...
 	writer.WriteHeader(200)
