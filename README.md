@@ -1,2 +1,2 @@
 # generic-worker
-A generic worker for task cluster, written in go
+A generic worker for task cluster, written in go.
