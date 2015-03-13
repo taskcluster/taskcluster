@@ -134,6 +134,34 @@ Note, this will create the table, if it doesn't already exists.'
 Entry 9     = 
     Entry Type        = 'function'
     Entry Method      = 'get'
+    Entry Route       = '/aws/s3/<level>/<bucket>/<prefix>'
+    Entry Args        = '[level bucket prefix]'
+    Entry Name        = 'awsS3Credentials'
+    Entry Scopes      = '[[auth:aws-s3:<level>:<bucket>/<prefix>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#'
+    Entry Title       = 'Get Temporary Read/Write Credentials S3'
+    Entry Description = 'Get temporary AWS credentials for `read-write` or `read-only` access to
+a given `bucket` and `prefix` within that bucket.
+The `level` parameter can be `read-write` or `read-only` and determines
+which type of credentials is returned. Please note that the `level`
+parameter is required in the scope guarding access.
+
+The credentials are set of expire after an hour, but this behavior may be
+subject to change. Hence, you should always read the `expires` property
+from the response, if you intent to maintain active credentials in your
+application.
+
+Please notice that your `prefix` may not start with slash `/`, it is
+allowed on S3, but we forbid it here to discourage bad behavior.
+Also note that if your `prefix` doesn't end in a slash `/` the STS
+credentials will not require one to be to inserted. This is mainly a
+concern when assigning scopes to users and doing this right will prevent
+poor behavior. After we often want the `prefix` to be a folder in a
+`/` delimited folder structure.'
+Entry 10    = 
+    Entry Type        = 'function'
+    Entry Method      = 'get'
     Entry Route       = '/ping'
     Entry Args        = '[]'
     Entry Name        = 'ping'
@@ -144,6 +172,72 @@ Entry 9     =
     Entry Description = 'Documented later...
 
 **Warning** this api end-point is **not stable**.'
+
+
+http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#
+========================================================================
+Additional Properties  = 'false'
+Description            = 'Response for a request to get access to an S3 bucket.
+'
+ID                     = 'http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#'
+Properties
+  Property 'credentials' =
+    Description            = 'Temporary STS credentials for use when operating on S3
+    '
+    Properties
+      Property 'accessKeyId' =
+        Description            = 'Access key identifier that identifies the temporary security
+        credentials.
+        '
+        Title                  = 'AccessKeyId'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'secretAccessKey' =
+        Description            = 'Secret access key used to sign requests
+        '
+        Title                  = 'SecretAccessKey'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'sessionToken' =
+        Description            = 'A token that must passed with request to use the temporary
+        security credentials.
+        '
+        Title                  = 'SessionToken'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+    Required               = '[accessKeyId secretAccessKey sessionToken]'
+    Title                  = 'Temporary Security Credentials'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'expires' =
+    Description            = 'Date and time of when the temporary credentials expires.
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[credentials expires]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'AWS S3 Credentials Response'
+Type                   = 'object'
+TypeName               = 'AWSS3CredentialsResponse'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#'
 
 
 http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#

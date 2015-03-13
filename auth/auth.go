@@ -227,6 +227,31 @@ func (a *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSi
 	return responseObject.(*AzureSharedAccessSignatureResponse), httpResponse
 }
 
+// Get temporary AWS credentials for `read-write` or `read-only` access to
+// a given `bucket` and `prefix` within that bucket.
+// The `level` parameter can be `read-write` or `read-only` and determines
+// which type of credentials is returned. Please note that the `level`
+// parameter is required in the scope guarding access.
+//
+// The credentials are set of expire after an hour, but this behavior may be
+// subject to change. Hence, you should always read the `expires` property
+// from the response, if you intent to maintain active credentials in your
+// application.
+//
+// Please notice that your `prefix` may not start with slash `/`, it is
+// allowed on S3, but we forbid it here to discourage bad behavior.
+// Also note that if your `prefix` doesn't end in a slash `/` the STS
+// credentials will not require one to be to inserted. This is mainly a
+// concern when assigning scopes to users and doing this right will prevent
+// poor behavior. After we often want the `prefix` to be a folder in a
+// `/` delimited folder structure.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#awsS3Credentials
+func (a *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *http.Response) {
+	responseObject, httpResponse := a.apiCall(nil, "GET", "/aws/s3/"+level+"/"+bucket+"/"+prefix+"", new(AWSS3CredentialsResponse))
+	return responseObject.(*AWSS3CredentialsResponse), httpResponse
+}
+
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
@@ -238,6 +263,25 @@ func (a *Auth) Ping() *http.Response {
 }
 
 type (
+	// Response for a request to get access to an S3 bucket.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#
+	AWSS3CredentialsResponse struct {
+		// Temporary STS credentials for use when operating on S3
+		Credentials struct {
+			// Access key identifier that identifies the temporary security
+			// credentials.
+			AccessKeyId string `json:"accessKeyId"`
+			// Secret access key used to sign requests
+			SecretAccessKey string `json:"secretAccessKey"`
+			// A token that must passed with request to use the temporary
+			// security credentials.
+			SessionToken string `json:"sessionToken"`
+		} `json:"credentials"`
+		// Date and time of when the temporary credentials expires.
+		Expires time.Time `json:"expires"`
+	}
+
 	// Response to a request for an Shared-Access-Signature to access and Azure
 	// Table Storage table.
 	//
