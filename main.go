@@ -25,7 +25,7 @@ var (
 	signedURLsRequestChan chan chan *queue.PollTaskUrlsResponse = make(chan chan *queue.PollTaskUrlsResponse)
 	// The *currently* one-and-only channel we request signedURLs to be written
 	// to. In future we might require more channels to perform requests in
-	// parallel, in which case they won't be global package vars.
+	// parallel, in which case we won't have a single global package var.
 	signedURLsResponseChan chan *queue.PollTaskUrlsResponse = make(chan *queue.PollTaskUrlsResponse)
 )
 
@@ -82,8 +82,8 @@ func FindAndRunTask() bool {
 	// reason the worker must poll the Azure queues in order they are
 	// given.
 	for _, urlPair := range signedURLs.Queues {
-		// queueMessagesList stores the messages we get back from the azure
-		// queue for this signed url
+		// try to grab a task using the url pair (url pair = poll url + delete
+		// url)
 		task, err := SignedURLPair(urlPair).Poll()
 		if err != nil {
 			// This can be any error at all occurs in queryAzureQueue that
@@ -91,13 +91,12 @@ func FindAndRunTask() bool {
 			log.Println(err)
 			continue
 		}
-		// Once we find a task, run it, and then exit the loop. This
-		// is because the loop is in order of priority, most important
-		// first, so we will run the most important jobs (tasks) and
-		// then return to polling the queue, ignorning remaining urls
-		// for lower priority tasks that might still be left to loop
-		// through, since by the time we complete the task, maybe
-		// higher priority jobs are waiting.
+		// Now we found a task, run it, and then exit the loop. This is because
+		// the loop is in order of priority, most important first, so we will
+		// run the most important task we find, and then return, ignorning
+		// remaining urls for lower priority tasks that might still be left to
+		// loop through, since by the time we complete the first task, maybe
+		// higher priority jobs are waiting, so we need to poll afresh.
 		log.Println("Task found")
 		// If there is one or more messages the worker must claim the tasks
 		// referenced in the messages, and delete the messages.
