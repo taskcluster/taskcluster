@@ -26,9 +26,10 @@ type QueueMessage struct {
 // Used for modelling the json encoding of QueueMessage.MessageId that we get
 // back from Azure
 type TaskRun struct {
-	TaskId string       `json:"taskId"`
-	RunId  uint         `json:"runId"`
-	QM     QueueMessage `json:"-"`
+	TaskId        string        `json:"taskId"`
+	RunId         uint          `json:"runId"`
+	QueueMessage  QueueMessage  `json:"-"`
+	SignedURLPair SignedURLPair `json:"-"`
 }
 
 // Custom time format to enable unmarshalling of azure xml directly into go

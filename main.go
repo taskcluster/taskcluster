@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -98,6 +99,7 @@ func FindAndRunTask() bool {
 		// loop through, since by the time we complete the first task, maybe
 		// higher priority jobs are waiting, so we need to poll afresh.
 		log.Println("Task found")
+		taskFound = true
 		// If there is one or more messages the worker must claim the tasks
 		// referenced in the messages, and delete the messages.
 		task.claim()
@@ -167,7 +169,33 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	if err != nil {
 		return nil, err
 	}
-	taskRun := TaskRun{QM: qm}
+
+	// Before using the signedDeleteUrl the worker must replace the placeholder
+	// {{messageId}} with the contents of the <MessageId> tag. It is also
+	// necessary to replace the placeholder {{popReceipt}} with the URI encoded
+	// contents of the <PopReceipt> tag.  Notice, that the worker must URI
+	// encode the contents of <PopReceipt> before substituting into the
+	// signedDeleteUrl. Otherwise, the worker will experience intermittent
+	// failures.
+
+	// Since urlPair is a value, not a pointer, we can update this copy which
+	// is associated only with this particular task
+	urlPair.SignedDeleteUrl = detokeniseUri(
+		detokeniseUri(
+			urlPair.SignedDeleteUrl,
+			"{{messageId}}",
+			qm.MessageId,
+		),
+		"{{popReceipt}}",
+		qm.PopReceipt,
+	)
+
+	// initialise fields of TaskRun not contained in json string m
+	taskRun := TaskRun{
+		QueueMessage:  qm,
+		SignedURLPair: urlPair,
+	}
+	// now populate remaining json fields of TaskRun from json string m
 	err = json.Unmarshal(m, &taskRun)
 	if err != nil {
 		return nil, err
@@ -176,19 +204,11 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 }
 
 func (task *TaskRun) claim() error {
-	fmt.Printf("  Message Id:            %v\n", task.QM.MessageId)
-	fmt.Printf("  Insertion Time:        %v\n", task.QM.InsertionTime)
-	fmt.Printf("  Expiration Time:       %v\n", task.QM.ExpirationTime)
-	fmt.Printf("  Dequeue Count:         %v\n", task.QM.DequeueCount)
-	fmt.Printf("  Pop Receipt:           %v\n", task.QM.PopReceipt)
-	fmt.Printf("  Time Next Visible:     %v\n", task.QM.TimeNextVisible)
-	fmt.Printf("  Message Text:          %v\n", task.QM.MessageText)
-	fmt.Printf("  Task Id:               %v\n", task.TaskId)
-	fmt.Printf("  Run Id:                %v\n", task.RunId)
 
+	// create payload for API call for claiming task
 	tcrq := queue.TaskClaimRequest{
-		MessageId:   task.QM.MessageId,
-		Receipt:     task.QM.PopReceipt,
+		MessageId:   task.QueueMessage.MessageId,
+		Receipt:     task.QueueMessage.PopReceipt,
 		Token:       task.TaskId, // also in url route
 		WorkerGroup: "Germany",
 		WorkerId:    "MysteryWorkerX",
@@ -200,11 +220,13 @@ func (task *TaskRun) claim() error {
 
 	// If the queue.claimTask() operation is successful or fails with a 4xx
 	// error, the worker must delete the messages from the Azure queue.
-	if (400 <= resp.StatusCode && resp.StatusCode < 500) || resp.StatusCode == 200 {
-		log.Println("Since status code is 200 or in range [400, 500), deleting from azure queue...")
-		task.deleteFromAzure()
-	} else {
+	if !(400 <= resp.StatusCode && resp.StatusCode < 500) && resp.StatusCode != 200 {
 		return fmt.Errorf("Received HTTP response code %v when claiming task with taskId %v", resp.StatusCode, task.TaskId)
+	}
+	log.Println("Since status code is 200 or in range [400, 500), deleting from azure queue...")
+	err := task.deleteFromAzure()
+	if err != nil {
+		return err
 	}
 
 	fmt.Println("-----------")
@@ -215,6 +237,16 @@ func (task *TaskRun) claim() error {
 		return err
 	}
 	fmt.Printf("  Response:              %v\n", string(responseBody))
+	fmt.Println("")
+	fmt.Printf("  Message Id:            %v\n", task.QueueMessage.MessageId)
+	fmt.Printf("  Insertion Time:        %v\n", task.QueueMessage.InsertionTime)
+	fmt.Printf("  Expiration Time:       %v\n", task.QueueMessage.ExpirationTime)
+	fmt.Printf("  Dequeue Count:         %v\n", task.QueueMessage.DequeueCount)
+	fmt.Printf("  Pop Receipt:           %v\n", task.QueueMessage.PopReceipt)
+	fmt.Printf("  Time Next Visible:     %v\n", task.QueueMessage.TimeNextVisible)
+	fmt.Printf("  Message Text:          %v\n", task.QueueMessage.MessageText)
+	fmt.Printf("  Task Id:               %v\n", task.TaskId)
+	fmt.Printf("  Run Id:                %v\n", task.RunId)
 	fmt.Printf("  Run Id:                %v\n", tcrsp.RunId)
 	fmt.Printf("  Status Deadline:       %v\n", tcrsp.Status.Deadline)
 	fmt.Printf("  Status Provisioner Id: %v\n", tcrsp.Status.ProvisionerId)
@@ -232,44 +264,58 @@ func (task *TaskRun) claim() error {
 	return nil
 }
 
-func (task *TaskRun) deleteFromAzure() {
+// Utility method for replacing a placeholder within a uri with
+// a string value which first must be uri encoded...
+func detokeniseUri(uri, placeholder, rawValue string) string {
+	return strings.Replace(uri, placeholder, strings.Replace(url.QueryEscape(rawValue), "+", "%20", -1), -1)
+}
 
-	// Messages are deleted from the Azure queue with a DELETE request
-	// to the signedDeleteUrl from the Azure queue object returned from
-	// queue.pollTaskUrls. Before using the signedDeleteUrl the worker
-	// must replace the placeholder {{messageId}} with the contents of
-	// the <MessageId> tag. It is also necessary to replace the
-	// placeholder {{popReceipt}} with the URI encoded contents of the
-	// <PopReceipt> tag.
-	// Notice, that the worker must URI encode the contents of <PopReceipt>
-	// before substituting into the signedDeleteUrl. Otherwise, the worker will
-	// experience intermittent failures. Also remark that the worker must
-	// delete messages if the queue.claimTask operations fails with a 4xx
-	// error. A 400 hundred range error implies that the task wasn't created,
-	// not scheduled or already claimed, in either case the worker should
-	// delete the message as we don't want another worker to receive message
-	// later.
-	// 'DELETE', task.deleteUri, this.maxRetries, this.requestRetryInterval
+// deleteFromAzure removes the task from the azure queue, using the signed
+// delete url provided by the Queue.ClaimTask API call.
+func (task *TaskRun) deleteFromAzure() error {
 
+	// Messages are deleted from the Azure queue with a DELETE request to the
+	// signedDeleteUrl from the Azure queue object returned from
+	// queue.pollTaskUrls.
+
+	// Also remark that the worker must delete messages if the queue.claimTask
+	// operations fails with a 4xx error. A 400 hundred range error implies
+	// that the task wasn't created, not scheduled or already claimed, in
+	// either case the worker should delete the message as we don't want
+	// another worker to receive message later.
+
+	req, err := http.NewRequest("DELETE", task.SignedURLPair.SignedDeleteUrl, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	// Notice, that failure to delete messages from Azure queue is serious, as
+	// it wouldn't manifest itself in an immediate bug. Instead if messages
+	// repeatedly fails to be deleted, it would result in a lot of unnecessary
+	// calls to the queue and the Azure queue. The worker will likely continue
+	// to work, as the messages eventually disappears when their deadline is
+	// reached.  However, the provisioner would over-provision aggressively as
+	// it would be unable to tell the number of pending tasks. And the worker
+	// would spend a lot of time attempting to claim faulty messages. For these
+	// reasons outlined above it's strongly advised that workers logs failures
+	// to delete messages from Azure queues.
+	if !(200 <= resp.StatusCode && resp.StatusCode < 300) {
+		return fmt.Errorf("Status code for http delete request not in 2xx range: %v", resp.StatusCode)
+	}
+	// no errors occurred, yay!
+	return nil
 }
 
 func (task *TaskRun) run() {
 }
 
-// Notice, that failure to delete messages from Azure queue is serious, as it
-// wouldn't manifest itself in an immediate bug. Instead if messages repeatedly
-// fails to be deleted, it would result in a lot of unnecessary calls to the
-// queue and the Azure queue. The worker will likely continue to work, as the
-// messages eventually disappears when their deadline is reached.
-// However, the provisioner would over-provision aggressively as it would
-// be unable to tell the number of pending tasks. And the worker would spend a lot
-// of time attempting to claim faulty messages.
-//
-// For these reasons outlined above it's strongly advised that workers logs
-// failures to delete messages from Azure queues. And that workers reads the
-// value of the `<DequeueCount>` and logs messages that alerts the operator if
-// a message has been dequeued a significant number of times. For example more
-// than 10.
+// And that workers reads the value of the `<DequeueCount>` and logs messages
+// that alerts the operator if a message has been dequeued a significant number
+// of times. For example more than 10.
 //
 // Reclaiming Tasks
 // ----------------
