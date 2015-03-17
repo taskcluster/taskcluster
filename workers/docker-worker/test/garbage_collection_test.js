@@ -174,12 +174,13 @@ suite('garbage collection tests', function () {
       interval: 2 * 1000,
       taskListener: {pending: 1},
       diskspaceThreshold: 500000 * 100000000,
-      imageExpiration: 5
+      imageExpiration: 5,
+      containerExpiration: 5
     });
 
     clearTimeout(gc.sweepTimeoutId);
 
-    var imageName = 'busybox:buildroot-2014.02';
+    var imageName = 'busybox:ubuntu-14.04';
     yield pullImage(docker, imageName, process.stdout);
 
     var container = yield docker.createContainer({Image: imageName,
@@ -213,11 +214,12 @@ suite('garbage collection tests', function () {
       interval: 2 * 1000,
       taskListener: {pending: 1},
       diskspaceThreshold: 1 * 100000000,
+      containerExpiration: 1
     });
 
     clearTimeout(gc.sweepTimeoutId);
 
-    var imageName = 'busybox:buildroot-2014.02';
+    var imageName = 'busybox:ubuntu-14.04';
     yield pullImage(docker, imageName, process.stdout);
 
     var container = yield docker.createContainer({Image: imageName,
@@ -253,12 +255,13 @@ suite('garbage collection tests', function () {
         interval: 2 * 1000,
         taskListener: {pending: 1},
         diskspaceThreshold: 1 * 100000000,
-        imageExpiration: 1
+        imageExpiration: 1,
+        containerExpiration: 1
       });
 
       clearTimeout(gc.sweepTimeoutId);
 
-      var imageName = 'busybox:buildroot-2014.02';
+      var imageName = 'busybox:ubuntu-14.04';
       yield pullImage(docker, imageName, process.stdout);
 
       gc.markImage(imageName);
@@ -296,7 +299,7 @@ suite('garbage collection tests', function () {
 
       clearTimeout(gc.sweepTimeoutId);
 
-      var imageName = 'busybox:buildroot-2014.02';
+      var imageName = 'busybox:ubuntu-14.04';
       yield pullImage(docker, imageName, process.stdout);
 
       gc.markImage(imageName);
@@ -329,7 +332,7 @@ suite('garbage collection tests', function () {
 
     clearTimeout(gc.sweepTimeoutId);
 
-    var imageName = 'busybox:buildroot-2014.02';
+    var imageName = 'busybox:ubuntu-14.04';
     yield pullImage(docker, imageName, process.stdout);
     gc.markImage(imageName);
 
@@ -394,4 +397,53 @@ suite('garbage collection tests', function () {
     assert.ok(fs.existsSync(instance1.path));
     assert.ok(!fs.existsSync(instance2.path));
   }));
+
+  test('Unmarked exited containers are marked for removal when expiration reached',
+    co(function* () {
+      var testMarkedContainers = [];
+      var containerExpiration = 10 * 1000;
+
+      var gc = new GarbageCollector({
+        capacity: 1,
+        log: log,
+        docker: docker,
+        interval: 2 * 1000,
+        taskListener: {pending: 1},
+        containerExpiration: containerExpiration
+      });
+
+      clearTimeout(gc.sweepTimeoutId);
+
+      var container = yield docker.createContainer({Image: IMAGE,
+        Cmd: ['/bin/bash', '-c', 'echo "hello"']
+      });
+      var containerId = container.id;
+      container = docker.getContainer(container.id);
+      container.start();
+
+      gc.sweep();
+      var start = Date.now();
+      var markedContainerId;
+      while (markedContainerId !== containerId) {
+        markedContainerId = yield waitForEvent(gc, 'gc:container:marked');
+      }
+      var stop = Date.now();
+      var removedContainer = yield waitForEvent(gc, 'gc:container:removed');
+      var duration = stop - start;
+      assert.ok(
+        duration > containerExpiration,
+        `Should have waited at least ${containerExpiration/1000} seconds ` +
+        `before marking for removal. Duration: ${duration/1000} seconds`
+      );
+      assert.equal(
+        containerId,
+        removedContainer.id,
+        'Container ID of removed container did not match. ' +
+        `Expected: ${containerId} Actual: ${removedContainer.id}`
+      );
+
+      yield waitForEvent(gc, 'gc:sweep:stop');
+      clearTimeout(gc.sweepTimeoutId);
+    })
+  );
 });

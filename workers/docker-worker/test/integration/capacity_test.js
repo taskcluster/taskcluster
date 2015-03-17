@@ -13,6 +13,9 @@ suite('Capacity', function() {
   setup(co(function * () {
     settings.configure({
       capacity: CAPACITY,
+      capacityManagement: {
+        diskspaceThreshold: 1
+      },
       taskQueue: {
         // Make the poll very high so that once tasks start, it will not
         // poll again to interupt the event loop

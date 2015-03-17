@@ -125,9 +125,11 @@ export default class TestWorker extends EventEmitter {
     // XXX: This is just a hack really so the validator does not complain.
     taskConfig.taskGroupId = taskId;
 
-    var task = this.TaskFactory.create(taskConfig);
+    let task = this.TaskFactory.create(taskConfig);
     debug('post to queue %j', task);
-    return await this.queue.createTask(taskId, task);
+    task = await this.queue.createTask(taskId, task);
+    this.emit('created task', taskId);
+    return task;
   }
 
   /**

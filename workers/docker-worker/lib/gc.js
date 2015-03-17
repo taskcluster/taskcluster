@@ -1,35 +1,9 @@
 var co = require('co');
 var EventEmitter = require('events').EventEmitter;
-var diskspace = require('diskspace');
 var parseImage = require('docker-image-parser');
 var Promise = require('promise');
-
-function exceedsDiskspaceThreshold(mnt, threshold, availableCapacity, log) {
-  return new Promise(function (accept, reject) {
-    diskspace.check(mnt, function (err, total, free, status) {
-        var used = total-free;
-        var capacity = (100*(used/total)).toPrecision(5);
-        log('diskspace check', {
-          volume: mnt,
-          total: total,
-          used: total - free,
-          available: free,
-          pctUsed: capacity,
-        });
-
-        var thresholdReached = free <= (threshold * availableCapacity);
-        if (thresholdReached) {
-          log('diskspace threshold reached', {
-            free: free,
-            perTaskThreshold: threshold,
-            availableWorkerCapacity: availableCapacity,
-            totalthreshold: threshold * availableCapacity
-          });
-        }
-        accept(thresholdReached);
-    });
-  });
-}
+var debug = require('debug')('taskcluster-docker-worker:garbageCollector');
+var exceedsDiskspaceThreshold = require('./util/capacity').exceedsDiskspaceThreshold;
 
 function* getImageId(docker, imageName) {
   var dockerImages = yield docker.listImages();
@@ -46,11 +20,19 @@ function isContainerRunning(container) {
   return (container['Status'].indexOf('Exited') === -1);
 }
 
-function isContainerStale(container) {
-  var s = container['Status'];
-  // Do not consider containers with a blank status as stale.  Race between
-  // creating and starting a container.
-  return (s.indexOf('Exited') === 0);
+function* isContainerStale(docker, container, expiration) {
+  // Containers can be running, exited, or no status (created but not started).
+  // For a container exited or never ran so has no status, inspect() returns
+  // "running: false" and contains a FinishedAt timestamp so need to peek at
+  // the status message of the container as well.  Only inpsect containers that
+  // have "Exited"
+  if (container['Status'].indexOf('Exited') === -1) return false;
+
+  container = docker.getContainer(container.Id);
+  container = yield container.inspect();
+  var finishedAt = Date.parse(container.State.FinishedAt);
+  var containerExpiration = finishedAt + expiration;
+  return (Date.now() > containerExpiration) ? true : false;
 }
 
 function GarbageCollector(config) {
@@ -65,6 +47,7 @@ function GarbageCollector(config) {
   this.diskspaceThreshold = config.diskspaceThreshold || 10 * 1000000000;
   // Time in milliseconds until image is considered expired
   this.imageExpiration = config.imageExpiration || 2 * 60 * 60 * 1000;
+  this.containerExpiration = config.containerExpiration || 30 * 60 * 1000;
   this.markedContainers = {};
   this.ignoredContainers = [];
   this.markedImages = {};
@@ -93,13 +76,24 @@ GarbageCollector.prototype = {
 
   markStaleContainers: function* () {
     var containers = yield this.docker.listContainers({all: true});
-    containers.forEach(function (container) {
+    for(let container of containers) {
       if (!(container.Id in this.markedContainers) &&
-          (this.ignoredContainers.indexOf(container.Id) === -1) &&
-          isContainerStale(container)) {
-        this.removeContainer(container.Id);
+          (this.ignoredContainers.indexOf(container.Id) === -1)) {
+          var stale = yield isContainerStale(
+            this.docker, container, this.containerExpiration
+          );
+          if (stale) {
+            this.log('[alert-operator] stale container', {
+              message: 'Container exited more than ' +
+                       `${this.containerExpiration/1000} seconds ago. Marking ` +
+                       'for removal',
+              container: container.Id
+            });
+
+            this.removeContainer(container.Id);
+          }
       }
-    }.bind(this));
+    }
   },
 
   removeContainer: function (containerId, volumeCaches) {
@@ -108,6 +102,7 @@ GarbageCollector.prototype = {
       caches: volumeCaches || []
     };
     this.emit('gc:container:marked', containerId);
+    debug(`marked ${containerId}`);
   },
 
   removeContainers: function* () {
@@ -115,7 +110,7 @@ GarbageCollector.prototype = {
       // If a container can't be removed after 5 tries, more tries won't help
       if (this.markedContainers[containerId].retries !== 0) {
         var c = this.docker.getContainer(containerId);
-        var caches = this.markedContainers[containerId].caches
+        var caches = this.markedContainers[containerId].caches;
 
         try {
           // Even running containers should be removed otherwise shouldn't have
@@ -162,11 +157,10 @@ GarbageCollector.prototype = {
   },
 
   removeUnusedImages: function* (exceedsThreshold) {
+    // All containers that are currently managed by the daemon will not allow
+    // an image to be removed.  Consider them all running
     var containers = yield this.docker.listContainers({all: true});
-    var runningImages = containers.filter(isContainerRunning)
-      .map(function(container) {
-        return container.Image;
-      });
+    var runningImages = containers.map((container) => { return container.Image; });
 
     for (var image in this.markedImages) {
       var imageId = yield getImageId(this.docker, image);

@@ -15,6 +15,7 @@ var Task = require('./task');
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 var TaskQueue = require('./queueservice');
+var exceedsDiskspaceThreshold = require('./util/capacity').exceedsDiskspaceThreshold;
 
 /**
 @param {Configuration} config for worker.
@@ -94,7 +95,16 @@ export default class TaskListener extends EventEmitter {
   async getTasks() {
     // Number of tasks we could claim
     let availabileCapacity = this.capacity - this.pending;
-    if (availabileCapacity <= 0) { return;}
+    if (availabileCapacity <= 0)  return;
+
+    var exceedsThreshold = await exceedsDiskspaceThreshold(
+      this.runtime.dockerVolume,
+      this.runtime.capacityManagement.diskspaceThreshold,
+      availabileCapacity,
+      this.runtime.log
+    );
+    // Do not claim tasks if not enough resources are available
+    if (exceedsThreshold) return;
 
     let claims = await this.taskQueue.claimWork(availabileCapacity);
     claims.forEach(this.runTask.bind(this));

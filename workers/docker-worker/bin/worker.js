@@ -160,8 +160,11 @@ co(function *() {
 
   var gcConfig = config.garbageCollection;
   gcConfig.capacity = config.capacity,
+  gcConfig.diskspaceThreshold = config.capacityManagement.diskspaceThreshold;
+  gcConfig.dockerVolume = config.dockerVolume;
   gcConfig.docker = config.docker;
   gcConfig.log = config.log;
+
 
   config.gc = new GarbageCollector(gcConfig);
 

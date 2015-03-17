@@ -8,6 +8,7 @@ suite('volume cache tests', function () {
   var testworker = require('../post_task');
   var DockerWorker = require('../dockerworker');
   var TestWorker = require('../testworker');
+  var waitForEvent = require('../../lib/wait_for_event');
 
   var localCacheDir = path.join(__dirname, '..', 'tmp');
 
@@ -119,10 +120,12 @@ suite('volume cache tests', function () {
         volumeCachePath: localCacheDir
       },
       capacity: 2,
+      capacityManagement: {
+        diskspaceThreshold: 1
+      },
       garbageCollection: {
         imageExpiration: 2 * 60 * 60 * 1000,
-        interval: 500,
-        diskspaceThreshold: 10 * 1000000000,
+        interval: 5000,
         dockerVolume: '/mnt'
       },
     });
@@ -148,7 +151,11 @@ suite('volume cache tests', function () {
 
     task.payload.cache[cacheName] = '/tmp-obj-dir';
 
-    var result1 = yield worker.postToQueue(task);
+    var result1 = yield [
+      worker.postToQueue(task),
+      waitForEvent(worker, 'cache volume release')
+    ];
+    result1 = result1[0];
 
     task.payload.command = cmd('cat /tmp-obj-dir/foo.txt');
     task.payload.features.localLiveLog = true;
@@ -298,4 +305,53 @@ suite('volume cache tests', function () {
       );
     })
   );
+
+  test('cached volumes of aborted tasks are released', co(function* () {
+    var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+    var neededScope = 'docker-worker:cache:' + cacheName;
+    var fullCacheDir = path.join(localCacheDir, cacheName);
+    settings.configure({
+      cache: {
+        volumeCachePath: localCacheDir
+      },
+      capacityManagement: {
+        diskspaceThreshold: 1
+      },
+      garbageCollection: {
+        imageExpiration: 2 * 60 * 60 * 1000,
+        interval: 5000,
+        dockerVolume: '/mnt'
+      },
+    });
+
+    var task = {
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd(
+          'echo "foo" > /tmp-obj-dir/foo.txt',
+          'sleep 60'
+        ),
+        features: {
+          localLiveLog: true
+        },
+        cache: {},
+        maxRunTime: 10
+      },
+      scopes: [neededScope]
+    };
+
+    task.payload.cache[cacheName] = '/tmp-obj-dir';
+
+    var worker = new TestWorker(DockerWorker);
+    yield worker.launch();
+
+    worker.postToQueue(task);
+    yield waitForEvent(worker, 'task max runtime timeout');
+    var releasedVolume = yield waitForEvent(worker, 'cache volume release');
+    assert.ok(
+      releasedVolume.key.indexOf(cacheName) !== -1,
+      'Cached volume was not released'
+    );
+    yield worker.terminate();
+  }));
 });

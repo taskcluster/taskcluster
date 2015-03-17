@@ -1,0 +1,29 @@
+var diskspace = require('diskspace');
+var debug = require('debug')('taskcluster-docker-worker:diskspaceCheck');
+
+export function exceedsDiskspaceThreshold(mnt, threshold, availableCapacity, log) {
+  return new Promise(function (accept, reject) {
+    diskspace.check(mnt, function (err, total, free, status) {
+      var used = total-free;
+      var capacity = (100*(used/total)).toPrecision(5);
+      debug("%j", {
+        volume: mnt,
+        total: total,
+        used: total - free,
+        available: free,
+        pctUsed: capacity,
+      });
+
+      var thresholdReached = free <= (threshold * availableCapacity);
+      if (thresholdReached) {
+        log('[alert-operator] diskspace threshold reached', {
+          free: free,
+          perTaskThreshold: threshold,
+          availableWorkerCapacity: availableCapacity,
+          totalthreshold: threshold * availableCapacity
+        });
+      }
+      accept(thresholdReached);
+    });
+  });
+}

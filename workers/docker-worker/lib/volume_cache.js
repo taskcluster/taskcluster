@@ -89,6 +89,28 @@ export default class VolumeCache {
     return instance;
   }
 
+  async removeCacheVolume(cacheName, instance) {
+    var cacheKey = cacheName + KEY_DELIMITER + instance;
+    var instancePath = this.cache[cacheName][instance].path;
+    var statName = 'cache.volume.' + cacheName + '.instance_removed';
+    // Remove instance from the list of managed caches so another worker
+    // does not try to claim it.
+    delete this.cache[cacheName][instance];
+    try {
+      await this.stats.timeGen(statName, removeDir(instancePath));
+      this.log('cache volume removed', {
+        key: cacheKey, path: instancePath
+      });
+    }
+    catch (e) {
+      this.log('[alert-operator] volume cache removal error', {
+        message: 'Could not remove volume cache directory',
+        err: e,
+        stack: e.stack
+      });
+    }
+  }
+
   /**
   Remove any unmounted volumes when diskspace threshold is reached. This will
   be called at each garbage collection interval.
@@ -96,21 +118,11 @@ export default class VolumeCache {
   @param {Boolean} Disksapce threshold reached
   */
   async clear(exceedsDiskspaceThreshold) {
-    if (!exceedsDiskspaceThreshold) {
-      return;
-    }
+    if (!exceedsDiskspaceThreshold) return;
     for (var cacheName in this.cache) {
       for (var instance in this.cache[cacheName]) {
-        if (this.cache[cacheName][instance].mounted) {
-          continue;
-        } else {
-          var cacheKey = cacheName + KEY_DELIMITER + instance;
-          var instancePath = this.cache[cacheName][instance].path;
-          var statName = 'cache.volume.' + cacheName + '.instance_removed';
-          await this.stats.timeGen(statName, removeDir(instancePath));
-          delete this.cache[cacheName][instance];
-          this.log('cache volume removed',
-            {key: cacheKey, path: instancePath});
+        if (!this.cache[cacheName][instance].mounted) {
+          await this.removeCacheVolume(cacheName, instance);
         }
       }
     }

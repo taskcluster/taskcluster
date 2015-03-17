@@ -380,11 +380,21 @@ export default class Task {
       //       at this point... I intentionally did not mark the task completed
       //       here as to allow for a retry by another worker, etc...
       this.clearClaimTimeout();
+      // If task ends prematurely, make sure the container and volume caches get
+      // flagged to be cleaned up.
+      if (this.dockerProcess && this.dockerProcess.container) {
+        this.runtime.gc.removeContainer(this.dockerProcess.container.id, this.volumeCaches);
+      }
       throw e;
     }
     // Called again outside so we don't run this twice in the same try/catch
     // segment potentially causing a loop...
     this.clearClaimTimeout();
+
+    if (this.dockerProcess && this.dockerProcess.container) {
+      this.runtime.gc.removeContainer(this.dockerProcess.container.id, this.volumeCaches);
+    }
+
     // Mark the task appropriately now that all internal state is cleaned up.
     if (!this.isCanceled() && !this.isAborted()) await this.completeRun(success);
   }
@@ -614,9 +624,6 @@ export default class Task {
 
     // Wait for the stream to end entirely before killing remaining containers.
     await this.stream.end();
-
-    // Garbage collect containers
-    gc.removeContainer(dockerProc.container.id, this.volumeCaches);
 
     await stats.timeGen('tasks.time.states.killed', this.states.killed(this));
 
