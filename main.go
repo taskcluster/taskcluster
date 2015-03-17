@@ -102,7 +102,12 @@ func FindAndRunTask() bool {
 		taskFound = true
 		// If there is one or more messages the worker must claim the tasks
 		// referenced in the messages, and delete the messages.
-		task.claim()
+		err = task.claim()
+		if err != nil {
+			log.Printf("WARN: Not able to claim task %v\n", task.TaskId)
+			log.Println(err)
+			continue
+		}
 		task.run()
 		break
 	}
@@ -170,6 +175,12 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 		return nil, err
 	}
 
+	// Utility method for replacing a placeholder within a uri with
+	// a string value which first must be uri encoded...
+	detokeniseUri := func(uri, placeholder, rawValue string) string {
+		return strings.Replace(uri, placeholder, strings.Replace(url.QueryEscape(rawValue), "+", "%20", -1), -1)
+	}
+
 	// Before using the signedDeleteUrl the worker must replace the placeholder
 	// {{messageId}} with the contents of the <MessageId> tag. It is also
 	// necessary to replace the placeholder {{popReceipt}} with the URI encoded
@@ -200,9 +211,18 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Workers should read the value of the `<DequeueCount>` and log messages
+	// that alert the operator if a message has been dequeued a significant
+	// number of times, for example more than 10.
+	if qm.DequeueCount > 10 {
+		log.Printf("WARN: Task with id %v has been dequeued %v times!", taskRun.TaskId, qm.DequeueCount)
+	}
+
 	return &taskRun, nil
 }
 
+// Claims the given task
 func (task *TaskRun) claim() error {
 
 	// create payload for API call for claiming task
@@ -218,6 +238,9 @@ func (task *TaskRun) claim() error {
 	// must call queue.claimTask().
 	tcrsp, resp := Queue.ClaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId), &tcrq)
 
+	task.TaskClaimResponse = *tcrsp
+	task.ClaimHTTPResponseCode = resp.StatusCode
+
 	// If the queue.claimTask() operation is successful or fails with a 4xx
 	// error, the worker must delete the messages from the Azure queue.
 	if !(400 <= resp.StatusCode && resp.StatusCode < 500) && resp.StatusCode != 200 {
@@ -229,45 +252,13 @@ func (task *TaskRun) claim() error {
 		return err
 	}
 
-	fmt.Println("-----------")
-	fmt.Printf("  Status Code:           %v\n", resp.StatusCode)
-
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("  Response:              %v\n", string(responseBody))
-	fmt.Println("")
-	fmt.Printf("  Message Id:            %v\n", task.QueueMessage.MessageId)
-	fmt.Printf("  Insertion Time:        %v\n", task.QueueMessage.InsertionTime)
-	fmt.Printf("  Expiration Time:       %v\n", task.QueueMessage.ExpirationTime)
-	fmt.Printf("  Dequeue Count:         %v\n", task.QueueMessage.DequeueCount)
-	fmt.Printf("  Pop Receipt:           %v\n", task.QueueMessage.PopReceipt)
-	fmt.Printf("  Time Next Visible:     %v\n", task.QueueMessage.TimeNextVisible)
-	fmt.Printf("  Message Text:          %v\n", task.QueueMessage.MessageText)
-	fmt.Printf("  Task Id:               %v\n", task.TaskId)
-	fmt.Printf("  Run Id:                %v\n", task.RunId)
-	fmt.Printf("  Run Id:                %v\n", tcrsp.RunId)
-	fmt.Printf("  Status Deadline:       %v\n", tcrsp.Status.Deadline)
-	fmt.Printf("  Status Provisioner Id: %v\n", tcrsp.Status.ProvisionerId)
-	fmt.Printf("  Status Retries Left:   %v\n", tcrsp.Status.RetriesLeft)
-	fmt.Printf("  Status Scheduler Id:   %v\n", tcrsp.Status.SchedulerId)
-	fmt.Printf("  Status State:          %v\n", tcrsp.Status.State)
-	fmt.Printf("  Status Task Group Id:  %v\n", tcrsp.Status.TaskGroupId)
-	fmt.Printf("  Status Task Id:        %v\n", tcrsp.Status.TaskId)
-	fmt.Printf("  Status Worker Type:    %v\n", tcrsp.Status.WorkerType)
-	fmt.Printf("  Status Runs:           %v\n", tcrsp.Status.Runs)
-	fmt.Printf("  Taken Until:           %v\n", tcrsp.TakenUntil)
-	fmt.Printf("  Worker Group:          %v\n", tcrsp.WorkerGroup)
-	fmt.Printf("  Worker Id:             %v\n", tcrsp.WorkerId)
-	fmt.Printf("==========================================\n")
-	return nil
-}
+	task.ClaimResponseBody = string(responseBody)
 
-// Utility method for replacing a placeholder within a uri with
-// a string value which first must be uri encoded...
-func detokeniseUri(uri, placeholder, rawValue string) string {
-	return strings.Replace(uri, placeholder, strings.Replace(url.QueryEscape(rawValue), "+", "%20", -1), -1)
+	return nil
 }
 
 // deleteFromAzure removes the task from the azure queue, using the signed
@@ -298,7 +289,7 @@ func (task *TaskRun) deleteFromAzure() error {
 	// repeatedly fails to be deleted, it would result in a lot of unnecessary
 	// calls to the queue and the Azure queue. The worker will likely continue
 	// to work, as the messages eventually disappears when their deadline is
-	// reached.  However, the provisioner would over-provision aggressively as
+	// reached. However, the provisioner would over-provision aggressively as
 	// it would be unable to tell the number of pending tasks. And the worker
 	// would spend a lot of time attempting to claim faulty messages. For these
 	// reasons outlined above it's strongly advised that workers logs failures
@@ -311,22 +302,30 @@ func (task *TaskRun) deleteFromAzure() error {
 }
 
 func (task *TaskRun) run() {
+
+	fmt.Println("Running task!")
+	fmt.Println(task.String())
+
+	// Reclaiming Tasks
+	// ----------------
+	// When the worker has claimed a task, it's said to have a claim to a given
+	// `taskId`/`runId`. This claim has an expiration, see the `takenUntil` property
+	// in the _task status structure_ returned from `queue.claimTask` and
+	// `queue.reclaimTask`. A worker must call `queue.reclaimTask` before the claim
+	// denoted in `takenUntil` expires. It's recommended that this attempted a few
+	// minutes prior to expiration, to allow for clock drift.
+
+	takenUntil := task.TaskClaimResponse.Status.Runs[task.RunId].TakenUntil
+	// Attempt to reclaim 3 mins earlier...
+	reclaimTime := takenUntil.Add(time.Minute * -3)
+	waitTimeUntilReclaim := reclaimTime.Sub(time.Now())
+	task.reclaimTimer = time.AfterFunc(waitTimeUntilReclaim, task.reclaimTask)
 }
 
-// And that workers reads the value of the `<DequeueCount>` and logs messages
-// that alerts the operator if a message has been dequeued a significant number
-// of times. For example more than 10.
-//
-// Reclaiming Tasks
-// ----------------
-// When the worker has claimed a task, it's said to have a claim to a given
-// `taskId`/`runId`. This claim has an expiration, see the `takenUntil` property
-// in the _task status structure_ returned from `queue.claimTask` and
-// `queue.reclaimTask`. A worker must call `queue.reclaimTask` before the claim
-// denoted in `takenUntil` expires. It's recommended that this attempted a few
-// minutes prior to expiration, to allow for clock drift.
-//
-//
+func (task *TaskRun) reclaimTask() {
+	fmt.Printf("Reclaiming task %v...\n", task.TaskId)
+}
+
 // Dealing with Invalid Task Payloads
 // ----------------------------------
 // If the task payload is malformed or invalid, keep in mind that the queue doesn't
