@@ -226,7 +226,7 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 func (task *TaskRun) claim() error {
 
 	// create payload for API call for claiming task
-	tcrq := queue.TaskClaimRequest{
+	task.TaskClaimRequest = queue.TaskClaimRequest{
 		MessageId:   task.QueueMessage.MessageId,
 		Receipt:     task.QueueMessage.PopReceipt,
 		Token:       task.TaskId, // also in url route
@@ -236,20 +236,20 @@ func (task *TaskRun) claim() error {
 
 	// Using the taskId and runId from the <MessageText> tag, the worker
 	// must call queue.claimTask().
-	tcrsp, resp := Queue.ClaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId), &tcrq)
+	tcrsp, resp := Queue.ClaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId), &task.TaskClaimRequest)
 
 	task.TaskClaimResponse = *tcrsp
 	task.ClaimHTTPResponseCode = resp.StatusCode
 
 	// If the queue.claimTask() operation is successful or fails with a 4xx
 	// error, the worker must delete the messages from the Azure queue.
-	if !(400 <= resp.StatusCode && resp.StatusCode < 500) && resp.StatusCode != 200 {
-		return fmt.Errorf("Received HTTP response code %v when claiming task with taskId %v", resp.StatusCode, task.TaskId)
-	}
-	log.Println("Since status code is 200 or in range [400, 500), deleting from azure queue...")
-	err := task.deleteFromAzure()
-	if err != nil {
-		return err
+	statusCodeHundredPart := resp.StatusCode / 100
+
+	if statusCodeHundredPart == 2 || statusCodeHundredPart == 4 {
+		err := task.deleteFromAzure()
+		if err != nil {
+			return err
+		}
 	}
 
 	responseBody, err := ioutil.ReadAll(resp.Body)
@@ -257,7 +257,9 @@ func (task *TaskRun) claim() error {
 		return err
 	}
 	task.ClaimResponseBody = string(responseBody)
-
+	if statusCodeHundredPart != 2 {
+		return fmt.Errorf("Received HTTP response code %v when claiming task with taskId %v", resp.StatusCode, task.TaskId)
+	}
 	return nil
 }
 
@@ -319,21 +321,38 @@ func (task *TaskRun) run() {
 	// Attempt to reclaim 3 mins earlier...
 	reclaimTime := takenUntil.Add(time.Minute * -3)
 	waitTimeUntilReclaim := reclaimTime.Sub(time.Now())
-	task.reclaimTimer = time.AfterFunc(waitTimeUntilReclaim, task.reclaimTask)
+	task.reclaimTimer = time.AfterFunc(waitTimeUntilReclaim, task.reclaim)
 }
 
-func (task *TaskRun) reclaimTask() {
+func (task *TaskRun) reclaim() {
 	fmt.Printf("Reclaiming task %v...\n", task.TaskId)
+	tcrsp, resp := Queue.ReclaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId))
+	task.TaskClaimResponse = *tcrsp
+	task.ClaimHTTPResponseCode = resp.StatusCode
+
+	// If the queue.claimTask() operation is successful or fails with a 4xx
+	// error, the worker must delete the messages from the Azure queue.
+	statusCodeHundredPart := resp.StatusCode / 100
+
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	task.ClaimResponseBody = string(responseBody)
+	if statusCodeHundredPart != 2 {
+		return fmt.Errorf("Received HTTP response code %v when reclaiming task with taskId %v", resp.StatusCode, task.TaskId)
+	}
+	return nil
 }
 
 // Dealing with Invalid Task Payloads
 // ----------------------------------
-// If the task payload is malformed or invalid, keep in mind that the queue doesn't
-// validate the contents of the `task.payload` property, the worker may resolve the
-// current run by reporting an exception. When reporting an exception, using
-// `queue.reportException` the worker should give a `reason`. If the worker is
-// unable execute the task specific payload/code/logic, it should report
-// exception with the reason `malformed-payload`.
+// If the task payload is malformed or invalid, keep in mind that the queue
+// doesn't validate the contents of the `task.payload` property, the worker may
+// resolve the current run by reporting an exception. When reporting an
+// exception, using `queue.reportException` the worker should give a `reason`.
+// If the worker is unable execute the task specific payload/code/logic, it
+// should report exception with the reason `malformed-payload`.
 //
 // This can also be used if an external resource that is referenced in a
 // declarative nature doesn't exist. Generally, it should be used if we can be
@@ -342,21 +361,22 @@ func (task *TaskRun) reclaimTask() {
 // specific code failed.
 //
 // Most tasks includes a lot of declarative steps, such as poll a docker image,
-// create cache folder, decrypt encrypted environment variables, set environment
-// variables and etc. Clearly, if decryption of environment variables fail, there
-// is no reason to retry the task. Nor can it be said that the task failed,
-// because the error wasn't cause by execution of Turing complete code.
+// create cache folder, decrypt encrypted environment variables, set
+// environment variables and etc. Clearly, if decryption of environment
+// variables fail, there is no reason to retry the task. Nor can it be said
+// that the task failed, because the error wasn't cause by execution of Turing
+// complete code.
 //
 // If however, we run some executable code referenced in `task.payload` and the
 // code crashes or exists non-zero, then the task is said to be failed. The
-// difference is whether or not the unexpected behavior happened before or after
-// the execution of task specific Turing complete code.
+// difference is whether or not the unexpected behavior happened before or
+// after the execution of task specific Turing complete code.
 //
 //
 // Terminating the Worker Early
 // ----------------------------
-// If the worker finds itself having to terminate early, for example a spot nodes
-// that detects pending termination. Or a physical machine ordered to be
+// If the worker finds itself having to terminate early, for example a spot
+// nodes that detects pending termination. Or a physical machine ordered to be
 // provisioned for another purpose, the worker should report exception with the
 // reason `worker-shutdown`. Upon such report the queue will resolve the run as
 // exception and create a new run, if the task has additional retries left.
@@ -365,8 +385,9 @@ func (task *TaskRun) reclaimTask() {
 // Reporting Task Result
 // ---------------------
 // When the worker has completed the task successfully it should call
-// `queue.reportCompleted`. If the task is unsuccessful, ie. exits non-zero, the
-// worker should resolve it using `queue.reportFailed` (this implies test or
-// build failure). If a task is malformed, the input is invalid, configuration
-// is wrong, or the worker is told to shutdown by AWS before the the task is
-// completed, it should be reported to the queue using `queue.reportException`.
+// `queue.reportCompleted`. If the task is unsuccessful, ie. exits non-zero,
+// the worker should resolve it using `queue.reportFailed` (this implies test
+// or build failure). If a task is malformed, the input is invalid,
+// configuration is wrong, or the worker is told to shutdown by AWS before the
+// the task is completed, it should be reported to the queue using
+// `queue.reportException`.
