@@ -30,7 +30,7 @@ var (
 	signedURLsResponseChan chan *queue.PollTaskUrlsResponse = make(chan *queue.PollTaskUrlsResponse)
 )
 
-// Entry point into the generic worker!
+// Entry point into the generic worker...
 func main() {
 	// Validate environment...
 	for _, j := range []string{
