@@ -8,6 +8,7 @@ var Promise         = require('promise');
 var debug           = require('debug')('base:entity');
 var azureTable      = require('azure-table-node');
 var taskcluster     = require('taskcluster-client');
+var https           = require('https');
 
 // ** Coding Style **
 // To ease reading of this component we recommend the following code guidelines:
@@ -64,6 +65,16 @@ var RESERVED_PROPERTY_NAMES = [
   'modify',
   'remove'
 ];
+
+/** Timeout for azure table requests */
+var AZURE_TABLE_TIMEOUT     = 30 * 1000;
+
+/** Azure table agent used for all instances of the table client */
+var globalAzureTableAgent = new https.Agent({
+  keepAlive:      true,
+  maxSockets:     1000,
+  maxFreeSockets:  500
+});
 
 /**
  * Max number of modify attempts to make when experiencing collisions with
@@ -567,7 +578,10 @@ Entity.setup = function(options) {
             "https://",
             options.account,
             ".table.core.windows.net/"
-          ].join('')
+          ].join(''),
+          timeout:      AZURE_TABLE_TIMEOUT,
+          agent:        globalAzureTableAgent,
+          metadata:     'minimal'
         });
         // We now have a client, so forget about the promise for one
         promisedClient = null;
@@ -583,7 +597,11 @@ Entity.setup = function(options) {
            options.credentials.sas,         "Missing accountKey or sas");
     // Add accountUrl, if not already present, there is really no reason to
     // not just compute... That's what the Microsoft libraries does anyways
-    var credentials = _.defaults({}, options.credentials, {
+    var credentials = _.defaults({
+      timeout:      AZURE_TABLE_TIMEOUT,
+      agent:        globalAzureTableAgent,
+      metadata:     'minimal'
+    }, options.credentials, {
       accountUrl: [
         "https://",
         options.credentials.accountName,
