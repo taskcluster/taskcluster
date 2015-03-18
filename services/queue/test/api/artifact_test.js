@@ -24,8 +24,8 @@ suite('Post artifacts', function() {
     taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
     routes:           [],
     retries:          5,
-    created:          taskcluster.utils.fromNow(),
-    deadline:         taskcluster.utils.fromNow('3 days'),
+    created:          taskcluster.fromNowJSON(),
+    deadline:         taskcluster.fromNowJSON('3 days'),
     scopes:           [],
     payload:          {},
     metadata: {
@@ -59,7 +59,7 @@ suite('Post artifacts', function() {
     );
     var r1 = await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
       storageType:  's3',
-      expires:      taskcluster.utils.fromNow('1 day'),
+      expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json'
     });
     expect(r1.putUrl).to.be.ok();
@@ -131,7 +131,7 @@ suite('Post artifacts', function() {
     );
     await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
       storageType:  's3',
-      expires:      taskcluster.utils.fromNow('1 day'),
+      expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json'
     }).then(() => {
       expect().fail("Expected authentication error");
@@ -161,7 +161,7 @@ suite('Post artifacts', function() {
     );
     var r1 = await helper.queue.createArtifact(taskId, 0, 'public/azure.json', {
       storageType:  'azure',
-      expires:      taskcluster.utils.fromNow('1 day'),
+      expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json'
     });
 
@@ -231,7 +231,7 @@ suite('Post artifacts', function() {
     );
     await helper.queue.createArtifact(taskId, 0, 'public/error.json', {
       storageType:  'error',
-      expires:      taskcluster.utils.fromNow('1 day'),
+      expires:      taskcluster.fromNowJSON('1 day'),
       reason:       'file-missing-on-worker',
       message:      "Some user-defined message",
     });
@@ -280,7 +280,7 @@ suite('Post artifacts', function() {
     );
     await helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
       storageType:  'reference',
-      expires:      taskcluster.utils.fromNow('1 day'),
+      expires:      taskcluster.fromNowJSON('1 day'),
       url:          'https://google.com',
       contentType:  'text/html'
     });
@@ -289,7 +289,7 @@ suite('Post artifacts', function() {
     var pingUrl = helper.queue.buildUrl(helper.queue.ping);
     await helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
       storageType:  'reference',
-      expires:      taskcluster.utils.fromNow('1 day'),
+      expires:      taskcluster.fromNowJSON('1 day'),
       url:          pingUrl,
       contentType:  'text/html'
     });

@@ -62,7 +62,7 @@ var launch = async function(profile) {
 
   // Find an task expiration delay
   var delay = cfg.get('queue:taskExpirationDelay');
-  var now   = taskcluster.utils.relativeTime(delay);
+  var now   = taskcluster.fromNow(delay);
   assert(!_.isNaN(now), "Can't have NaN as now");
 
   // Expire tasks using delay
