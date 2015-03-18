@@ -40,8 +40,8 @@ api.declare({
     "slightly different features and in some cases difference semantics.",
     "",
     "**S3 artifacts**, is useful for static files which will be stored on S3.",
-    "When creating an S3 artifact is create the queue will return a pre-signed",
-    "URL to which you can do a `PUT` request to upload your artifact. Note",
+    "When creating an S3 artifact the queue will return a pre-signed URL",
+    "to which you can do a `PUT` request to upload your artifact. Note",
     "that `PUT` request **must** specify the `content-length` header and",
     "**must** give the `content-type` header the same value as in the request",
     "to `createArtifact`.",
@@ -171,24 +171,32 @@ api.declare({
   // Construct details for different storage types
   var isPublic = /^public\//.test(name);
   var details  = {};
-  if (storageType === 's3') {
-    if (isPublic) {
-      details.bucket  = this.publicBucket.bucket;
-    } else {
-      details.bucket  = this.privateBucket.bucket;
-    }
-    details.prefix    = [taskId, runId, name].join('/');
-  }
-  if (storageType === 'azure') {
-    details.container = this.blobStore.container;
-    details.path      = [taskId, runId, name].join('/');
-  }
-  if (storageType === 'reference') {
-    details.url       = input.url;
-  }
-  if (storageType === 'error') {
-    details.message   = input.message;
-    details.reason    = input.reason;
+  switch(storageType) {
+    case 's3':
+      if (isPublic) {
+        details.bucket  = this.publicBucket.bucket;
+      } else {
+        details.bucket  = this.privateBucket.bucket;
+      }
+      details.prefix    = [taskId, runId, name].join('/');
+      break;
+
+    case 'azure':
+      details.container = this.blobStore.container;
+      details.path      = [taskId, runId, name].join('/');
+      break;
+
+    case 'reference':
+      details.url       = input.url;
+      break;
+
+    case 'error':
+      details.message   = input.message;
+      details.reason    = input.reason;
+      break;
+
+    default:
+      throw new Error("Unknown storageType: " + storageType);
   }
 
   try {
@@ -253,50 +261,55 @@ api.declare({
     runId:          runId
   }, task.routes);
 
-  // Reply with signed S3 URL
-  if (artifact.storageType === 's3') {
-    var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
-    var bucket = null;
-    if (artifact.details.bucket === this.publicBucket.bucket) {
-      bucket = this.publicBucket;
-    }
-    if (artifact.details.bucket === this.privateBucket.bucket) {
-      bucket = this.privateBucket;
-    }
-    // Create put URL
-    var putUrl = await this.privateBucket.createPutUrl(
-      artifact.details.prefix, {
-      contentType:      artifact.contentType,
-      expires:          30 * 60 + 10 // Add 10 sec for clock drift
-    });
-    return res.reply({
-      storageType:  's3',
-      contentType:  artifact.contentType,
-      expires:      expiry.toJSON(),
-      putUrl:       putUrl
-    });
-  }
+  switch (artifact.storageType) {
+    case 's3':
+      // Reply with signed S3 URL
+      var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
+      var bucket = null;
+      if (artifact.details.bucket === this.publicBucket.bucket) {
+        bucket = this.publicBucket;
+      }
+      if (artifact.details.bucket === this.privateBucket.bucket) {
+        bucket = this.privateBucket;
+      }
+      // Create put URL
+      var putUrl = await this.privateBucket.createPutUrl(
+        artifact.details.prefix, {
+        contentType:      artifact.contentType,
+        expires:          30 * 60 + 10 // Add 10 sec for clock drift
+      });
+      return res.reply({
+        storageType:  's3',
+        contentType:  artifact.contentType,
+        expires:      expiry.toJSON(),
+        putUrl:       putUrl
+      });
 
-  // Reply with SAS for azure
-  if (artifact.storageType === 'azure') {
-    var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
-    // Generate SAS
-    var putUrl = this.blobStore.generateWriteSAS(
-      artifact.details.path, {
-      expiry:         expiry
-    });
-    return res.reply({
-      storageType:  'azure',
-      contentType:  artifact.contentType,
-      expires:      expiry.toJSON(),
-      putUrl:       putUrl
-    });
-  }
+    case 'azure':
+      // Reply with SAS for azure
+      var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
+      // Generate SAS
+      var putUrl = this.blobStore.generateWriteSAS(
+        artifact.details.path, {
+        expiry:         expiry
+      });
+      return res.reply({
+        storageType:  'azure',
+        contentType:  artifact.contentType,
+        expires:      expiry.toJSON(),
+        putUrl:       putUrl
+      });
 
-  // For 'reference' and 'error' the response is simple
-  return res.reply({
-    storageType:    storageType
-  });
+    case 'reference':
+    case 'error':
+      // For 'reference' and 'error' the response is simple
+      return res.reply({
+        storageType:    storageType
+      });
+
+    default:
+      throw new Error("Unknown storageType: " + artifact.storageType);
+  }
 });
 
 /** Reply to an artifact request using taskId, runId, name and context */
