@@ -87,6 +87,7 @@ and exchange meta-data is published buckets `schemas.taskcluster.net` and
 In order to operate on these resources the following access policy is needed:
 
 ```js
+{
   "Statement": [
     {
       "Effect": "Allow",
@@ -114,7 +115,8 @@ In order to operate on these resources the following access policy is needed:
         "s3:DeleteObject"
       ],
       "Resource": [
-        "arn:aws:s3:::<task-bucket>/*"
+        "arn:aws:s3:::<public-artifact-bucket>/*"
+        "arn:aws:s3:::<private-artifact-bucket>/*"
       ]
     },
     {
@@ -125,8 +127,27 @@ In order to operate on these resources the following access policy is needed:
         "s3:PutBucketCORS"
       ],
       "Resource": [
-        "arn:aws:s3:::<task-bucket>"
+        "arn:aws:s3:::<public-artifact-bucket>"
+        "arn:aws:s3:::<private-artifact-bucket>"
       ]
+    }
+  ]
+}
+```
+
+Furthermore, you'll need to set the following _bucket policy_ on you public
+artifact bucket:
+```js
+{
+  "Statement": [
+    {
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::<public-artifact-bucket>/*"
     }
   ]
 }
