@@ -1,6 +1,6 @@
 env:
   global:
-  - DEBUG='* -superagent -express:* -mocha:* -6to5'
+  - DEBUG='* -superagent -express:* -mocha:* -babel'
 language: node_js
 node_js:
 - '0.10'
