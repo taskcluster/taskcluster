@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start":                "6to5-node -r bin/server.js           $PROFILE",
-    "claim-reaper":         "6to5-node -r bin/claim-reaper.js     $PROFILE",
-    "deadline-reaper":      "6to5-node -r bin/deadline-reaper.js  $PROFILE",
-    "expire-tasks":         "6to5-node -r bin/expire-tasks.js     $PROFILE",
-    "expire-artifacts":     "6to5-node -r bin/expire-artifacts.js $PROFILE",
+    "start":                "babel-node -r bin/server.js           $PROFILE",
+    "claim-reaper":         "babel-node -r bin/claim-reaper.js     $PROFILE",
+    "deadline-reaper":      "babel-node -r bin/deadline-reaper.js  $PROFILE",
+    "expire-tasks":         "babel-node -r bin/expire-tasks.js     $PROFILE",
+    "expire-artifacts":     "babel-node -r bin/expire-artifacts.js $PROFILE",
     "test":                 "./test/runtests.sh"
   },
   "repository": {
@@ -22,11 +22,11 @@
     "lodash":               "^3.0.0",
     "promise":              "6.1.0",
     "slugid":               "1.0.3",
-    "taskcluster-base":     "0.7.6",
-    "thirty-two":           "0.0.2",
+    "taskcluster-base":     "0.7.8",
+    "thirty-two":           "^0.0.2",
     "url-join":             "0.0.1",
     "uuid":                 "2.0.1",
-    "6to5":                 "^3.6.0",
+    "babel":                "^4.7.16",
     "kexec":                "^1.2.0"
   },
   "devDependencies": {
@@ -34,11 +34,11 @@
     "superagent-promise":   "0.2.0",
     "mocha":                "^2.1.0",
     "xmlbuilder":           "^2.4.6",
-    "taskcluster-client":   "taskcluster/taskcluster-client#extended-from-now",
+    "taskcluster-client":   "^0.21.1",
     "xml2js":               "^0.4.4",
     "expect.js":            "^0.3.1"
   },
   "engines": {
-    "node":                 "0.10.x"
+    "node":                 "0.12.x"
   }
 }
