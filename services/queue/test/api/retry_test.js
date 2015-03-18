@@ -13,8 +13,8 @@ suite('Retry tasks (claim-expired)', function() {
   var taskDef = {
     provisionerId:    'no-provisioner',
     workerType:       'test-worker',
-    created:          taskcluster.utils.fromNow(),
-    deadline:         taskcluster.utils.fromNow('3 days'),
+    created:          taskcluster.fromNowJSON(),
+    deadline:         taskcluster.fromNowJSON('3 days'),
     retries:          1,
     payload:          {},
     metadata: {

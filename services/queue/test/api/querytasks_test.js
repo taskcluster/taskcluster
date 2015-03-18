@@ -17,8 +17,8 @@ suite('Query tasks', function() {
       taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
       routes:           [],
       retries:          5,
-      created:          taskcluster.utils.fromNow(),
-      deadline:         taskcluster.utils.fromNow('2 minutes'),
+      created:          taskcluster.fromNowJSON(),
+      deadline:         taskcluster.fromNowJSON('2 minutes'),
       scopes:           [],
       payload:          {},
       metadata: {

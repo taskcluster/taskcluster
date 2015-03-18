@@ -22,8 +22,8 @@ suite('Create task', function() {
                        "--- long routing key ---.--- long routing key ---." +
                        "--- long routing key ---.--- long routing key ---"],
     retries:          5,
-    created:          taskcluster.utils.fromNow(),
-    deadline:         taskcluster.utils.fromNow('3 days'),
+    created:          taskcluster.fromNowJSON(),
+    deadline:         taskcluster.fromNowJSON('3 days'),
     scopes:           [],
     payload:          {},
     metadata: {

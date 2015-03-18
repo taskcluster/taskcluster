@@ -24,11 +24,11 @@ module.exports = {
     artifactTableName:            'Artifacts',
 
     // Time delay before expiring artifacts, in readable format, see:
-    // taskcluster.utils.fromNow, notice this should be negative!
+    // taskcluster.fromNow, notice this should be negative!
     artifactExpirationDelay:      '- 30 minutes',
 
     // Time delay before expiring tasks, in readable format, see:
-    // taskcluster.utils.fromNow, notice this should be negative!
+    // taskcluster.fromNow, notice this should be negative!
     taskExpirationDelay:          '- 30 minutes',
 
     // Component property in the responseTime and process statistics

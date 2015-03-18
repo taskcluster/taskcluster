@@ -12,8 +12,8 @@ suite('Create task (w. defaults)', function() {
   var taskDef = {
     provisionerId:    'no-provisioner',
     workerType:       'test-worker',
-    created:          taskcluster.utils.fromNow(),
-    deadline:         taskcluster.utils.fromNow('3 days'),
+    created:          taskcluster.fromNowJSON(),
+    deadline:         taskcluster.fromNowJSON('3 days'),
     payload:          {},
     metadata: {
       name:           "Unit testing task",
