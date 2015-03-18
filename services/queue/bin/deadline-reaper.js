@@ -11,7 +11,6 @@ var DeadlineResolver    = require('../queue/deadlineresolver');
 var QueueService        = require('../queue/queueservice');
 var exchanges           = require('../queue/exchanges');
 
-
 /** Launch deadline-reaper */
 var launch = async function(profile) {
   debug("Launching with profile: %s", profile);
