@@ -67,7 +67,7 @@ On heroku these are configured using the scheduler.
 Monitoring
 ----------
 This server will print log messages it is recommend run with `DEBUG` as
-`"* -superagent -6to5 -mocha:* -express:*"`.
+`"* -superagent -babel -mocha:* -express:*"`.
 Notice that messages printed containing the substring `[alert-operator]` should
 be monitored by the maintainer. It's recommended that an email alert it setup
 to alert the maintainer of these messages.
