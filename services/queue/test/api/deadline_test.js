@@ -15,8 +15,8 @@ suite('Deadline expiration (deadline-reaper)', function() {
       provisionerId:    'no-provisioner',
       workerType:       'test-worker',
                         // Legal because we allow a small bit of clock drift
-      created:          taskcluster.utils.fromNow('- 5 seconds'),
-      deadline:         taskcluster.utils.fromNow('5 second'),
+      created:          taskcluster.fromNowJSON('- 5 seconds'),
+      deadline:         taskcluster.fromNowJSON('5 second'),
       retries:          1,
       payload:          {},
       metadata: {
