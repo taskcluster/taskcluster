@@ -22,7 +22,6 @@ var launch = async function(profile) {
       'pulse_username',
       'pulse_password',
       'queue_publishMetaData',
-      'queue_signatureSecret',
       'taskcluster_credentials_clientId',
       'taskcluster_credentials_accessToken',
       'aws_accessKeyId',
