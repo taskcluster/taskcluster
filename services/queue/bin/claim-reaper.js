@@ -23,7 +23,6 @@ var launch = async function(profile) {
       'pulse_username',
       'pulse_password',
       'queue_publishMetaData',
-      'queue_signatureSecret',
       'taskcluster_credentials_clientId',
       'taskcluster_credentials_accessToken',
       'aws_accessKeyId',
@@ -59,7 +58,6 @@ var launch = async function(profile) {
   var queueService = new QueueService({
     prefix:           cfg.get('queue:queuePrefix'),
     credentials:      cfg.get('azure'),
-    signatureSecret:  cfg.get('queue:signatureSecret'),
     claimQueue:       cfg.get('queue:claimQueue'),
     deadlineQueue:    cfg.get('queue:deadlineQueue'),
     deadlineDelay:    cfg.get('queue:deadlineDelay')
