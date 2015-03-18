@@ -91,7 +91,7 @@ var launch = async function(profile) {
 
   // Find an artifact expiration delay
   var delay = cfg.get('queue:artifactExpirationDelay');
-  var now   = taskcluster.utils.relativeTime(delay);
+  var now   = taskcluster.fromNow(delay);
   assert(!_.isNaN(now), "Can't have NaN as now");
 
   // Expire artifacts using delay

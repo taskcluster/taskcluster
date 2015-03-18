@@ -14,11 +14,11 @@ suite('Task Expiration (expire-tasks)', function() {
     var task = {
       provisionerId:    'no-provisioner',
       workerType:       'test-worker',
-      created:          taskcluster.utils.fromNow(),
-      deadline:         taskcluster.utils.fromNow('1 day'),
+      created:          taskcluster.fromNowJSON(),
+      deadline:         taskcluster.fromNowJSON('1 day'),
                         // Notice that in config/test.js we've configured
                         // expire-tasks to expire 4 days before expires
-      expires:          taskcluster.utils.fromNow('2 day'),
+      expires:          taskcluster.fromNowJSON('2 day'),
       retries:          1,
       payload:          {},
       metadata: {

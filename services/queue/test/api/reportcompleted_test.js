@@ -17,8 +17,8 @@ suite('Report task completed', function() {
     taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
     routes:           [],
     retries:          1,
-    created:          taskcluster.utils.fromNow(),
-    deadline:         taskcluster.utils.fromNow('3 days'),
+    created:          taskcluster.fromNowJSON(),
+    deadline:         taskcluster.fromNowJSON('3 days'),
     scopes:           [],
     payload:          {},
     metadata: {
