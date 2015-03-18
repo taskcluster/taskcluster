@@ -63,7 +63,6 @@ class QueueService {
     });
 
     this.prefix             = options.prefix;
-    this.signatureSecret    = options.signatureSecret;
     this.pendingPollTimeout = options.pendingPollTimeout;
 
     // Documentation for the QueueService object can be found here:

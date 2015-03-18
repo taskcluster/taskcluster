@@ -13,7 +13,7 @@ _The following itemization of folders outlines how this project is structured._
    (or at least this is the intention, as we improve the implementation).
  * `schemas/`, JSON Schemas against which all input and output, i.e. messages,
     S3 files, requests and responses should be validated against.
- * `tests/`, automated tests using `nodeunit`, launched with `node tests` so
+ * `tests/`, automated tests using `mocha`, launched with `node tests` so
    that we can stick in other test frameworks should we ever need it.
 
 
@@ -43,7 +43,7 @@ For S3 we have a dummy bucket called `test-bucket-for-any-garbage` which stores 
 developer, or you can setup a custom a bucket and overwrite the bucket name
 as well as the credentials.
 
-Same thing applies for azure, though it's as nicely scoped, and doesnt clean up
+Same thing applies for azure, though it's as nicely scoped, and doesn't clean up
 on it's own.
 
 
@@ -54,13 +54,14 @@ Code is deployed from master to heroku whenever code hits master
 
 The following processes are designed to run constantly:
 
- * `./bin/server.js production`
- * `./bin/reaper.js production`
+ * `npm run start`
+ * `npm run claim-reaper`
+ * `npm run deadline-reaper`
 
 With the following processes running as cron jobs on daily basis:
 
- * `./bin/expire-artifacts.js production`
- * `./bin/retire-tasks.js production`
+ * `npm run expire-artifacts`
+ * `npm run retire-tasks`
 
 On heroku these are configured using the scheduler.
 
