@@ -4,7 +4,7 @@ module.exports = {
     // For testing purposes we let claims expire very fast
     claimTimeout:                 1,
     publicArtifactBucket:         'test-bucket-for-any-garbage',
-    privateArtifactBucket:        'test-bucket-for-any-garbage',
+    privateArtifactBucket:        'test-bucket-for-any-garbage2',
     artifactContainer:            'artifacts',
     statsComponent:               'test-queue',
     queuePrefix:                  'hacks',
