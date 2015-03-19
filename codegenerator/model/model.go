@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
+	"github.com/xeipuuv/gojsonschema"
 	"io"
 	"net/http"
 	"os"
@@ -151,6 +152,9 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 		}
 	}
 	for i := range apiDefs {
+		// first check that the json schema is valid!
+		validateJson(apiDefs[i].SchemaURL, apiDefs[i].URL)
+
 		apiDefs[i].schemas = make(map[string]*JsonSubSchema)
 		var resp *http.Response
 		resp, err = http.Get(apiDefs[i].URL)
@@ -181,6 +185,21 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 		//////////////////////////////////////////////////////////////////////////////
 	}
 	return apiDefs
+}
+
+func validateJson(schemaUrl, docUrl string) {
+	schemaLoader := gojsonschema.NewReferenceLoader(schemaUrl)
+	docLoader := gojsonschema.NewReferenceLoader(docUrl)
+	result, err := gojsonschema.Validate(schemaLoader, docLoader)
+	utils.ExitOnFail(err)
+	if result.Valid() {
+		fmt.Printf("The document is valid\n")
+	} else {
+		fmt.Printf("The document is not valid. see errors :\n")
+		for _, desc := range result.Errors() {
+			fmt.Printf("- %s\n", desc)
+		}
+	}
 }
 
 // GenerateCode takes the objects loaded into memory in LoadAPIs
