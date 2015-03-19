@@ -20,7 +20,7 @@ module.exports = {
     // testing. In production this should be "- x hours" or so...
     taskExpirationDelay:          '4 days',
     deadline: {
-      pollingDelay:               250,
+      pollingDelay:               5000, // should be 250 in test
       parallelism:                1
     },
 
