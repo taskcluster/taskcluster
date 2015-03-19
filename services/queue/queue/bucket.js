@@ -129,11 +129,18 @@ Bucket.prototype.setupCORS = async function() {
       ExposeHeaders:  []
     }
   ];
-  // Fetch CORS to see if they as expected already
-  var req = await this.s3.getBucketCors().promise();
-  if (_.isEqual(req.data.CORSRules, rules)) {
-    debug("CORS already set for bucket: %s", this.bucket);
-    return;
+  try {
+    // Fetch CORS to see if they as expected already
+    var req = await this.s3.getBucketCors().promise();
+    if (_.isEqual(req.data.CORSRules, rules)) {
+      debug("CORS already set for bucket: %s", this.bucket);
+      return;
+    }
+  }
+  catch (err) {
+    // Failed to fetch CORS, ignoring issue for now
+    debug("[alert-operator] Failed to fetch CORS, err: %s, JSON: %j",
+          err, err, err.stack);
   }
 
   // Set CURS
