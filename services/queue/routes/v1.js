@@ -566,6 +566,7 @@ api.declare({
     // Compare the two task definitions
     // (ignore runs as this method don't create them)
     if (!_.isEqual(taskDef, def)) {
+      debug("DEFINE-FAILED: input -> %j !== %j <- existing", taskDef, def);
       return res.status(409).json({
         message:      "taskId already used by another task"
       });
