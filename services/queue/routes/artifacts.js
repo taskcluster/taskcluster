@@ -55,6 +55,8 @@ api.declare({
     "featuring a [Shared-Access-Signature]" +
     "(http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),",
     "refer to MSDN for further information on how to use these.",
+    "**Warning: azure artifact is currently an experimental feature subject",
+    "to changes and data-drops.**",
     "",
     "**Reference artifacts**, only consists of meta-data which the queue will",
     "store for you. These artifacts really only have a `url` property and",
