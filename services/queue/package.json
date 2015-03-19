@@ -28,11 +28,11 @@
     "uuid":                 "2.0.1",
     "babel":                "^4.7.16",
     "taskcluster-client":   "^0.21.1",
-    "kexec":                "^1.2.0"
+    "kexec":                "^1.2.0",
+    "superagent":           "^0.21.0",
+    "superagent-promise":   "^0.2.0"
   },
   "devDependencies": {
-    "superagent":           "0.21.0",
-    "superagent-promise":   "0.2.0",
     "mocha":                "^2.1.0",
     "xmlbuilder":           "^2.4.6",
     "xml2js":               "^0.4.4",
