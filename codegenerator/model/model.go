@@ -193,12 +193,14 @@ func validateJson(schemaUrl, docUrl string) {
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
 	utils.ExitOnFail(err)
 	if result.Valid() {
-		fmt.Printf("The document is valid\n")
+		fmt.Printf("Document '%v' is valid against '%v'.\n", docUrl, schemaUrl)
 	} else {
-		fmt.Printf("The document is not valid. see errors :\n")
+		fmt.Printf("Document '%v' is INVALID against '%v'.\n", docUrl, schemaUrl)
 		for _, desc := range result.Errors() {
+			fmt.Println("")
 			fmt.Printf("- %s\n", desc)
 		}
+		os.Exit(70)
 	}
 }
 
