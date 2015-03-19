@@ -49,19 +49,19 @@ module.exports = {
     // Configuration for deadline-reaper
     deadline: {
       // Number of ms to sleep after polling from an empty queue
-      pollingDelay:               4 * 1000,
+      pollingDelay:               5 * 1000,
       // Number of event loops to run in parallel, each taking up to 32 message
       // in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
-      parallelism:                4
+      parallelism:                1
     },
 
     // Configuration for claim-reaper
     claim: {
       // Number of ms to sleep after polling from an empty queue
-      pollingDelay:               4 * 1000,
+      pollingDelay:               5 * 1000,
       // Number of event loops to run in parallel, each taking up to 32 message
       // in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
-      parallelism:                4
+      parallelism:                1
     }
   },
 
