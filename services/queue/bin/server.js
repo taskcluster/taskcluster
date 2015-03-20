@@ -72,13 +72,19 @@ var launch = async function(profile) {
       blobStore:        artifactStore,
       publicBucket:     publicArtifactBucket,
       privateBucket:    privateArtifactBucket
-    }
+    },
+    drain:              influx,
+    component:          cfg.get('queue:statsComponent')
+    process:            'server'
   });
 
   // Create task table
   var Task = data.Task.setup({
     table:              cfg.get('queue:taskTableName'),
-    credentials:        cfg.get('azure')
+    credentials:        cfg.get('azure'),
+    drain:              influx,
+    component:          cfg.get('queue:statsComponent')
+    process:            'server'
   });
 
   // Create QueueService to manage azure queues
