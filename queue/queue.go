@@ -623,12 +623,6 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-claim-request.json#
 	TaskClaimRequest struct {
-		// MessageId from Azure Queue message
-		MessageId string `json:"messageId"`
-		// PopReceipt from Azure Queue message
-		Receipt string `json:"receipt"`
-		// Signature from the MessageText in Azure Queue message
-		Signature string `json:"signature"`
 		// Identifier for group that worker claiming the task is a part of.
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for worker within the given workerGroup
