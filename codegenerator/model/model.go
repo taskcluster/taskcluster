@@ -230,7 +230,7 @@ func GenerateCode(goOutputDir, modelData string) {
 		extraPackagesString := ""
 		for j, k := range extraPackages {
 			if k {
-				extraPackagesString += utils.Indent("\""+j+"\"", "\t")
+				extraPackagesString += "\t\"" + j + "\"\n"
 			}
 		}
 		content = strings.Replace(content, "%%{imports}", extraPackagesString, -1)
