@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/xeipuuv/gojsonschema"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -34,10 +35,13 @@ var (
 func main() {
 	// Validate environment...
 	for _, j := range []string{
+		"PAYLOAD_SCHEMA",
 		"PROVISIONER_ID",
 		"REFRESH_URLS_PREMATURELY_SECS",
 		"TASKCLUSTER_ACCESS_TOKEN",
 		"TASKCLUSTER_CLIENT_ID",
+		"WORKER_GROUP",
+		"WORKER_ID",
 		"WORKER_TYPE",
 	} {
 		if os.Getenv(j) == "" {
@@ -108,7 +112,25 @@ func FindAndRunTask() bool {
 			log.Println(err)
 			continue
 		}
-		task.run()
+		task.setReclaimTimer()
+		err = task.fetchTaskDefinition()
+		if err != nil {
+			log.Printf("WARN: Not able to fetch task definition for task %v\n", task.TaskId)
+			log.Println(err)
+			continue
+		}
+		err = task.validatePayload()
+		if err != nil {
+			log.Printf("WARN: Not able to validate task payload for task %v\n", task.TaskId)
+			log.Println(err)
+			continue
+		}
+		err = task.run()
+		if err != nil {
+			log.Printf("WARN: Not able to run task %v\n", task.TaskId)
+			log.Println(err)
+			continue
+		}
 		break
 	}
 	return taskFound
@@ -227,11 +249,8 @@ func (task *TaskRun) claim() error {
 
 	// create payload for API call for claiming task
 	task.TaskClaimRequest = queue.TaskClaimRequest{
-		MessageId:   task.QueueMessage.MessageId,
-		Receipt:     task.QueueMessage.PopReceipt,
-		Signature:   task.QueueMessage.MessageText,
-		WorkerGroup: "Germany",
-		WorkerId:    "MysteryWorkerX",
+		WorkerGroup: os.Getenv("WORKER_GROUP"),
+		WorkerId:    os.Getenv("WORKER_ID"),
 	}
 
 	// Using the taskId and runId from the <MessageText> tag, the worker
@@ -299,30 +318,11 @@ func (task *TaskRun) deleteFromAzure() error {
 	// to delete messages from Azure queues.
 	if !(200 <= resp.StatusCode && resp.StatusCode < 300) {
 		return fmt.Errorf("Status code for http delete request not in 2xx range: %v", resp.StatusCode)
+	} else {
+		log.Printf("Successfully deleted task %v from azure queue with http response code %v.\n", task.TaskId, resp.StatusCode)
 	}
 	// no errors occurred, yay!
 	return nil
-}
-
-func (task *TaskRun) run() {
-
-	fmt.Println("Running task!")
-	fmt.Println(task.String())
-
-	// Reclaiming Tasks
-	// ----------------
-	// When the worker has claimed a task, it's said to have a claim to a given
-	// `taskId`/`runId`. This claim has an expiration, see the `takenUntil` property
-	// in the _task status structure_ returned from `queue.claimTask` and
-	// `queue.reclaimTask`. A worker must call `queue.reclaimTask` before the claim
-	// denoted in `takenUntil` expires. It's recommended that this attempted a few
-	// minutes prior to expiration, to allow for clock drift.
-
-	takenUntil := task.TaskClaimResponse.Status.Runs[task.RunId].TakenUntil
-	// Attempt to reclaim 3 mins earlier...
-	reclaimTime := takenUntil.Add(time.Minute * -3)
-	waitTimeUntilReclaim := reclaimTime.Sub(time.Now())
-	task.reclaimTimer = time.AfterFunc(waitTimeUntilReclaim, task.reclaim)
 }
 
 func (task *TaskRun) reclaim() {
@@ -342,15 +342,72 @@ func (task *TaskRun) reclaim() {
 		task.cancel()
 	}
 	task.ClaimResponseBody = string(responseBody)
-	if statusCodeHundredPart != 2 {
+	if statusCodeHundredPart == 2 {
+		log.Printf("Reclaimed task %v successfully (http response code %v).\n", task.TaskId, resp.StatusCode)
 		log.Printf("Received HTTP response code %v when reclaiming task with taskId %v\n", resp.StatusCode, task.TaskId)
 		log.Println("Therefore cancelling task...")
 		task.cancel()
 	}
 }
 
-func (task *TaskRun) cancel() {
+func (task *TaskRun) cancel() error {
 	// TODO: implement!
+	return nil
+}
+
+func (task *TaskRun) setReclaimTimer() {
+	// Reclaiming Tasks
+	// ----------------
+	// When the worker has claimed a task, it's said to have a claim to a given
+	// `taskId`/`runId`. This claim has an expiration, see the `takenUntil` property
+	// in the _task status structure_ returned from `queue.claimTask` and
+	// `queue.reclaimTask`. A worker must call `queue.reclaimTask` before the claim
+	// denoted in `takenUntil` expires. It's recommended that this attempted a few
+	// minutes prior to expiration, to allow for clock drift.
+
+	takenUntil := task.TaskClaimResponse.Status.Runs[task.RunId].TakenUntil
+	// Attempt to reclaim 3 mins earlier...
+	reclaimTime := takenUntil.Add(time.Minute * -3)
+	waitTimeUntilReclaim := reclaimTime.Sub(time.Now())
+	task.reclaimTimer = time.AfterFunc(waitTimeUntilReclaim, task.reclaim)
+}
+
+func (task *TaskRun) fetchTaskDefinition() error {
+	// Fetch task definition
+	definition, resp := Queue.Task(task.TaskId)
+	if resp.StatusCode/100 != 2 {
+		return fmt.Errorf("Unable to retrieve Task Definition for task %v - received http response code %v from task definition request\n", task.TaskId, resp.StatusCode)
+	}
+	task.Definition = *definition
+	log.Printf("Successfully retrieved Task Definition (http response code %v)\n", resp.StatusCode)
+	return nil
+}
+
+func (task *TaskRun) validatePayload() error {
+	schemaLoader := gojsonschema.NewReferenceLoader("file://" + os.Getenv("PAYLOAD_SCHEMA"))
+	docLoader := gojsonschema.NewStringLoader(string(task.Definition.Payload))
+	result, err := gojsonschema.Validate(schemaLoader, docLoader)
+	if err != nil {
+		return err
+	}
+	if result.Valid() {
+		log.Printf("The task payload is valid.\n")
+	} else {
+		log.Printf("The task payload is invalid. See errors:\n")
+		for _, desc := range result.Errors() {
+			log.Printf("- %s\n", desc)
+		}
+		return fmt.Errorf("Invalid payload for task %v\n", task.TaskId)
+	}
+	// now unmarshal the payload into the task.Payload
+	return json.Unmarshal([]byte(task.Definition.Payload), &task.Payload)
+}
+
+func (task *TaskRun) run() error {
+
+	fmt.Println("Running task!")
+	fmt.Println(task.String())
+	return nil
 }
 
 // Dealing with Invalid Task Payloads
