@@ -175,14 +175,28 @@ Here is a real-world example json schema taken from the taskcluster project:
 Jsonschema2go generates this code for you, directly from the schema definition:
 
 ```go
+// The following code is AUTO-GENERATED. Please DO NOT edit.
+
+package queue
+
+import (
+	"time"
+)
+
+type (
 	// Definition of a task that can be scheduled
 	//
 	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
 	TaskDefinition struct {
 		// Creation time of task
 		Created time.Time `json:"created"`
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
+		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
 		Deadline time.Time `json:"deadline"`
+		// Task expiration, time at which task definition and status is deleted.
+		// Notice that all artifacts for the must have an expiration that is no
+		// later than this. If this property isn't it will be set to `deadline`
+		// plus one year (this default may subject to change).
+		Expires time.Time `json:"expires"`
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services
@@ -245,6 +259,7 @@ Jsonschema2go generates this code for you, directly from the schema definition:
 		// Unique identifier for a worker-type within a specific provisioner
 		WorkerType string `json:"workerType"`
 	}
+)
 ```
 
 Now you can unmarshal your json data into &TaskDefinition{} and you are done!
