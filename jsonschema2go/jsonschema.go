@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 type (
@@ -325,6 +326,10 @@ func URLsToFile(filename string, urls ...string) (string, error) {
 		return "", err
 	}
 	parentDirName := filepath.Base(filepath.Dir(absPath))
+	packageName := parentDirName
+	if strings.ContainsRune(packageName, '-') {
+		packageName = "main"
+	}
 
 	// Generate normalised names for schemas. Keep a record of generated type
 	// names, so that we don't reuse old names. map[string]bool acts like a set
@@ -343,7 +348,7 @@ func URLsToFile(filename string, urls ...string) (string, error) {
 	types, extraPackages := generateGoTypes(allSchemas)
 	content := `// The following code is AUTO-GENERATED. Please DO NOT edit.
 
-package ` + parentDirName + `
+package ` + packageName + `
 
 `
 	extraPackagesContent := ""
