@@ -9,6 +9,7 @@ var debug           = require('debug')('base:entity');
 var azureTable      = require('azure-table-node');
 var taskcluster     = require('taskcluster-client');
 var https           = require('https');
+var stats           = require('../stats');
 
 // ** Coding Style **
 // To ease reading of this component we recommend the following code guidelines:
@@ -66,21 +67,34 @@ var RESERVED_PROPERTY_NAMES = [
   'remove'
 ];
 
-/** Timeout for azure table requests */
-var AZURE_TABLE_TIMEOUT     = 30 * 1000;
-
-/** Azure table agent used for all instances of the table client */
-var globalAzureTableAgent = new https.Agent({
-  keepAlive:      true,
-  maxSockets:     1000,
-  maxFreeSockets: 500
-});
-
 /**
  * Max number of modify attempts to make when experiencing collisions with
  * optimistic concurrency.
  */
 var MAX_MODIFY_ATTEMPTS     = 10;
+
+/** Timeout for azure table requests */
+var AZURE_TABLE_TIMEOUT     = 30 * 1000; // try setting it to 7
+
+/** Azure table agent used for all instances of the table client */
+var globalAzureTableAgent = new https.Agent({
+  keepAlive:        true,
+  maxSockets:       1000,
+  maxFreeSockets:   500
+});
+
+/** Statistics from Azure table operations */
+var AzureTableOperations = new stats.Series({
+  name:             'AzureTableOperations',
+  columns: {
+    component:      stats.types.String,
+    process:        stats.types.String,
+    duration:       stats.types.Number,
+    table:          stats.types.String,
+    method:         stats.types.String,
+    error:          stats.types.String
+  }
+});
 
 /**
  * Base class of all entity
@@ -435,6 +449,9 @@ Entity.configure = function(options) {
  *     accessToken:     "...",              // TaskCluster accessToken
  *   },
  *   authBaseUrl:       "...",              // baseUrl for auth (optional)
+ *   drain:             base.stats.Influx,  // Statistics drain (optional)
+ *   component:         '<name>',           // Component in stats (if drain)
+ *   process:           'server',           // Process in stats (if drain)
  *   context:           {...}               // Extend prototype (optional)
  * }
  *
@@ -473,6 +490,8 @@ Entity.setup = function(options) {
   assert(options.table,                       "options.table must be given");
   assert(typeof(options.table) === 'string',  "options.table isn't a string");
   assert(options.credentials,                 "credentials is required");
+  assert(!options.drain || options.component, "component is required if drain");
+  assert(!options.drain || options.process,   "process is required if drain");
   options = _.defaults({}, options, {
     context:      {}
   });
@@ -620,6 +639,12 @@ Entity.setup = function(options) {
     };
   }
 
+  // Reporter for statistics
+  var reporter = function() {};
+  if (options.drain) {
+    reporter = AzureTableOperations.reporter(options.drain);
+  }
+
   // Create property for auxiliary methods
   var aux = subClass.prototype.__aux = {};
 
@@ -641,8 +666,19 @@ Entity.setup = function(options) {
       var args = Array.prototype.slice.call(arguments);
       return subClass.prototype.__connect().then(function(client) {
         return new Promise(function(accept, reject) {
+          var start = process.hrtime();
           args.unshift(subClass.prototype.__table);
           args.push(function(err, res) {
+            // Report statistics
+            var d = process.hrtime(start);
+            reporter({
+              component:    options.component,
+              process:      options.process,
+              duration:     d[0] * 1000 + (d[1] / 1000000),
+              table:        subClass.prototype.__table,
+              method:       method,
+              error:        (err ? (err.code || 'ConnectionError') : 'false')
+            });
             if (err) {
               return reject(err);
             }
@@ -660,7 +696,18 @@ Entity.setup = function(options) {
     return subClass.prototype.__connect().then(function(client) {
       var table  = subClass.prototype.__table;
       return new Promise(function(accept, reject) {
+        var start = process.hrtime();
         client.queryEntities(table, options, function(err, data, token) {
+          // Report statistics
+          var d = process.hrtime(start);
+          reporter({
+            component:    options.component,
+            process:      options.process,
+            duration:     d[0] * 1000 + (d[1] / 1000000),
+            table:        subClass.prototype.__table,
+            method:       'queryEntities',
+            error:        (err ? (err.code || 'ConnectionError') : 'false')
+          });
           if (err) {
             return reject(err);
           }
