@@ -71,7 +71,10 @@ var launch = async function(profile) {
       blobStore:        artifactStore,
       publicBucket:     publicArtifactBucket,
       privateBucket:    privateArtifactBucket
-    }
+    },
+    drain:              influx,
+    component:          cfg.get('queue:statsComponent')
+    process:            'expire-artifacts'
   });
 
   debug("Waiting for resources to be created");

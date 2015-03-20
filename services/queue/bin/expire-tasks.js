@@ -50,7 +50,10 @@ var launch = async function(profile) {
   // Create tasks table
   var Task = data.Task.setup({
     table:              cfg.get('queue:taskTableName'),
-    credentials:        cfg.get('azure')
+    credentials:        cfg.get('azure'),
+    drain:              influx,
+    component:          cfg.get('queue:statsComponent')
+    process:            'expire-tasks'
   });
 
   debug("Waiting for resources to be created");

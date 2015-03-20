@@ -51,7 +51,10 @@ var launch = async function(profile) {
   // Create task table
   var Task = data.Task.setup({
     table:              cfg.get('queue:taskTableName'),
-    credentials:        cfg.get('azure')
+    credentials:        cfg.get('azure'),
+    drain:              influx,
+    component:          cfg.get('queue:statsComponent')
+    process:            'deadline-reaper'
   });
 
   // Create QueueService to manage azure queues
