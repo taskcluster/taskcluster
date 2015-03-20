@@ -244,7 +244,7 @@
               "dependencies": {
                 "ansi-regex": {
                   "version": "1.1.1",
-                  "from": "ansi-regex@^1.1.0",
+                  "from": "ansi-regex@^1.0.0",
                   "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-1.1.1.tgz"
                 },
                 "get-stdin": {
@@ -1255,9 +1255,9 @@
       "resolved": "https://registry.npmjs.org/superagent-promise/-/superagent-promise-0.2.0.tgz"
     },
     "taskcluster-base": {
-      "version": "0.7.10",
-      "from": "taskcluster-base@0.7.10",
-      "resolved": "https://registry.npmjs.org/taskcluster-base/-/taskcluster-base-0.7.10.tgz",
+      "version": "0.7.12",
+      "from": "taskcluster-base@0.7.12",
+      "resolved": "https://registry.npmjs.org/taskcluster-base/-/taskcluster-base-0.7.12.tgz",
       "dependencies": {
         "express": {
           "version": "4.9.0",
@@ -1768,7 +1768,7 @@
               "dependencies": {
                 "inherits": {
                   "version": "2.0.1",
-                  "from": "inherits@2",
+                  "from": "inherits@~2.0.1",
                   "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.1.tgz"
                 },
                 "minimatch": {
@@ -2026,7 +2026,7 @@
                 },
                 "mime": {
                   "version": "1.2.11",
-                  "from": "mime@~1.2.9",
+                  "from": "mime@1.2.11",
                   "resolved": "https://registry.npmjs.org/mime/-/mime-1.2.11.tgz"
                 },
                 "tough-cookie": {
@@ -2379,7 +2379,7 @@
               "dependencies": {
                 "mime-types": {
                   "version": "2.0.10",
-                  "from": "mime-types@~2.0.4",
+                  "from": "mime-types@~2.0.9",
                   "resolved": "https://registry.npmjs.org/mime-types/-/mime-types-2.0.10.tgz",
                   "dependencies": {
                     "mime-db": {
