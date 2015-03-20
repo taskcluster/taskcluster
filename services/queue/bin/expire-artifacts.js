@@ -73,7 +73,7 @@ var launch = async function(profile) {
       privateBucket:    privateArtifactBucket
     },
     drain:              influx,
-    component:          cfg.get('queue:statsComponent')
+    component:          cfg.get('queue:statsComponent'),
     process:            'expire-artifacts'
   });
 
