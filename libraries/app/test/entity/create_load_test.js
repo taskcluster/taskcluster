@@ -134,10 +134,23 @@ suite("Entity (create/load)", function() {
     });
   });
 
-  test("Item = ItemV2.setup", function() {
+  test("Item = ItemV2.setup with NullDrain for stats", function() {
+    var drain = new base.stats.NullDrain();
     Item = ItemV2.setup({
       credentials:  cfg.get('azure'),
-      table:        cfg.get('azureTestTableName')
+      table:        cfg.get('azureTestTableName'),
+      drain:        drain,
+      component:    'taskcluster-base-test',
+      process:      'mocha'
+    });
+    assert(drain.pendingPoints() === 0, "Shouldn't have stats yet!");
+    return Item.load({
+      id:     id,
+      name:   'my-test-item',
+    }).then(function(item) {
+      assert(drain.pendingPoints() >= 0, "Should have stats now!");
+      assert(item.count === 1);
+      assert(item.reason === "no-reason");
     });
   });
 
