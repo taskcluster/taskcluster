@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
 	"github.com/xeipuuv/gojsonschema"
+	"go/format"
 	"io"
 	"net/http"
 	"os"
@@ -233,7 +234,9 @@ func GenerateCode(goOutputDir, modelData string) {
 			}
 		}
 		content = strings.Replace(content, "%%{imports}", extraPackagesString, -1)
-		utils.WriteStringToFile(content, filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go"))
+		formattedContent, err := format.Source([]byte(content))
+		utils.ExitOnFail(err)
+		utils.WriteStringToFile(string(formattedContent), filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go"))
 	}
 
 	content := "The following file is an auto-generated static dump of the API models at time of code generation.\n"
