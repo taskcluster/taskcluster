@@ -1,4 +1,7 @@
-# jsonschema2go Overview
+# jsonschema2go
+[![Build Status](https://secure.travis-ci.org/petemoore/jsonschema2go.png)](http://travis-ci.org/petemoore/jsonschema2go)
+[![GoDoc](https://godoc.org/github.com/petemoore/jsonschema2go?status.png)](https://godoc.org/github.com/petemoore/jsonschema2go)
+# Overview
 Are you writing a service in go that needs to interpret json data, and you already have a json schema definition for the format of the json?
 
 Typically, you would need to unmarshal the json into a go type in order to use the data. The go type could be:
