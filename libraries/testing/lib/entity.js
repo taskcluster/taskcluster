@@ -72,8 +72,8 @@ var AZURE_TABLE_TIMEOUT     = 30 * 1000;
 /** Azure table agent used for all instances of the table client */
 var globalAzureTableAgent = new https.Agent({
   keepAlive:      true,
-  maxSockets:     1000,
-  maxFreeSockets:  500
+  maxSockets:     100,
+  maxFreeSockets: 10
 });
 
 /**
