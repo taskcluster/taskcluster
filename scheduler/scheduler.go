@@ -344,7 +344,7 @@ type (
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
-		Payload interface{} `json:"payload"`
+		Payload json.RawMessage `json:"payload"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		ProvisionerId string `json:"provisionerId"`
