@@ -3,6 +3,7 @@ package jsonschema2go
 import (
 	"encoding/json"
 	"fmt"
+	"go/format"
 	"net/http"
 	"path/filepath"
 	"reflect"
@@ -41,12 +42,9 @@ type (
 		Type                 *string               `json:"type"`
 
 		// non-json fields used for sorting/tracking
-		TypeName       string
-		IsInputSchema  bool
-		IsOutputSchema bool
-		SourceURL      string
-		RefSubSchema   *JsonSubSchema
-		JSONSchemaSet  map[string]*JsonSubSchema
+		TypeName     string
+		SourceURL    string
+		RefSubSchema *JsonSubSchema
 	}
 
 	Items []JsonSubSchema
@@ -87,8 +85,6 @@ func (subSchema JsonSubSchema) String() string {
 	result += describe("Title", subSchema.Title)
 	result += describe("Type", subSchema.Type)
 	result += describe("TypeName", &subSchema.TypeName)
-	result += describe("IsInputSchema", &subSchema.IsInputSchema)
-	result += describe("IsOutputSchema", &subSchema.IsOutputSchema)
 	result += describe("SourceURL", &subSchema.SourceURL)
 	return result
 }
@@ -163,8 +159,8 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 		if f := jsonSubSchema.Format; f != nil {
 			if *f == "date-time" {
 				typ = "time.Time"
+				extraPackages["time"] = true
 			}
-			extraPackages["time"] = true
 		}
 	}
 	content += typ
@@ -272,7 +268,9 @@ func (subSchema *JsonSubSchema) postPopulate(schemaSet map[string]*JsonSubSchema
 	postPopulateIfNotNil(subSchema.Properties, schemaSet)
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
-	subSchema.RefSubSchema = cacheJsonSchema(schemaSet, subSchema.Ref)
+	if subSchema.Ref != nil {
+		subSchema.RefSubSchema = cacheJsonSchema(schemaSet, *subSchema.Ref)
+	}
 }
 
 func loadJsonSchema(schemaSet map[string]*JsonSubSchema, url string) *JsonSubSchema {
@@ -288,21 +286,17 @@ func loadJsonSchema(schemaSet map[string]*JsonSubSchema, url string) *JsonSubSch
 	return m
 }
 
-func cacheJsonSchema(schemaSet map[string]*JsonSubSchema, url *string) *JsonSubSchema {
-	// if url is not provided, there is nothing to download
-	if url == nil || *url == "" {
-		return nil
-	}
+func cacheJsonSchema(schemaSet map[string]*JsonSubSchema, url string) *JsonSubSchema {
 	// workaround for problem where some urls don't end with a #
-	if (*url)[len(*url)-1:] != "#" {
-		*url += "#"
+	if (url)[len(url)-1:] != "#" {
+		url += "#"
 	}
 	// only fetch if we haven't fetched already...
-	if _, ok := schemaSet[*url]; !ok {
-		schemaSet[*url] = loadJsonSchema(schemaSet, *url)
-		schemaSet[*url].SourceURL = *url
+	if _, ok := schemaSet[url]; !ok {
+		schemaSet[url] = loadJsonSchema(schemaSet, url)
+		schemaSet[url].SourceURL = url
 	}
-	return schemaSet[*url]
+	return schemaSet[url]
 }
 
 // This is where we generate nested and compoound types in go to represent json payloads
@@ -332,9 +326,19 @@ func URLsToFile(filename string, urls ...string) (string, error) {
 	}
 	parentDirName := filepath.Base(filepath.Dir(absPath))
 
+	// Generate normalised names for schemas. Keep a record of generated type
+	// names, so that we don't reuse old names. map[string]bool acts like a set
+	// of strings.
+	TypeName := make(map[string]bool)
+
 	allSchemas := make(map[string]*JsonSubSchema)
 	for _, url := range urls {
-		cacheJsonSchema(allSchemas, &url)
+		schema := cacheJsonSchema(allSchemas, url)
+		if schema.Title != nil {
+			schema.TypeName = Normalise(*schema.Title, TypeName)
+		} else {
+			schema.TypeName = Normalise("var", TypeName)
+		}
 	}
 	types, extraPackages := generateGoTypes(allSchemas)
 	content := `// The following code is AUTO-GENERATED. Please DO NOT edit.
@@ -357,6 +361,11 @@ package ` + parentDirName + `
 `
 	}
 	content += types
-	WriteStringToFile(content, filename)
+	// format it
+	bytes, err := format.Source([]byte(content))
+	if err != nil {
+		return "", err
+	}
+	WriteStringToFile(bytes, filename)
 	return absPath, nil
 }

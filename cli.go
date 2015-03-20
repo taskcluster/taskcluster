@@ -10,20 +10,28 @@ import (
 	"os"
 )
 
-func stdInToStringArray() []string {
-	results := make([]string, 1)
+func readStringStrip(reader *bufio.Reader, delimeter byte) (string, error) {
+	token, err := reader.ReadString(delimeter)
+	if err != nil {
+		return "", err
+	}
+	// strip delimeter from end of string
+	if token != "" {
+		token = token[:len(token)-1]
+	}
+	return token, nil
+}
+
+func parseStandardIn() []string {
+	results := []string{}
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		line, err := reader.ReadString('\n')
+		url, err := readStringStrip(reader, '\n')
 		if err == io.EOF {
 			break
 		}
-		// strip \n from string
-		if line != "" {
-			line = line[:len(line)-1]
-		}
 		jsonschema2go.ExitOnFail(err)
-		results = append(results, line)
+		results = append(results, url)
 	}
 	return results
 }
@@ -56,7 +64,9 @@ func main() {
 	// Parse the docopt string and exit on any error or help message.
 	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
 	jsonschema2go.ExitOnFail(err)
-	file, err := jsonschema2go.URLsToFile(arguments["-o"].(string), stdInToStringArray()...)
+	file, err := jsonschema2go.URLsToFile(arguments["-o"].(string), parseStandardIn()...)
 	jsonschema2go.ExitOnFail(err)
-	fmt.Println("Generated code written to '" + file + "'.")
+	// simply output the generated file name, in the case of success, for
+	// super-easy parsing
+	fmt.Println(file)
 }
