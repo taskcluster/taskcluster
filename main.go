@@ -258,6 +258,7 @@ func (task *TaskRun) claim() error {
 	}
 	task.ClaimResponseBody = string(responseBody)
 	if statusCodeHundredPart != 2 {
+		log.Println(task.String())
 		return fmt.Errorf("Received HTTP response code %v when claiming task with taskId %v", resp.StatusCode, task.TaskId)
 	}
 	return nil
@@ -336,13 +337,20 @@ func (task *TaskRun) reclaim() {
 
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		log.Printf("%v\n", err)
+		log.Println("Cancelling task due to above error when reclaiming...")
+		task.cancel()
 	}
 	task.ClaimResponseBody = string(responseBody)
 	if statusCodeHundredPart != 2 {
-		return fmt.Errorf("Received HTTP response code %v when reclaiming task with taskId %v", resp.StatusCode, task.TaskId)
+		log.Printf("Received HTTP response code %v when reclaiming task with taskId %v\n", resp.StatusCode, task.TaskId)
+		log.Println("Therefore cancelling task...")
+		task.cancel()
 	}
-	return nil
+}
+
+func (task *TaskRun) cancel() {
+	// TODO: implement!
 }
 
 // Dealing with Invalid Task Payloads
