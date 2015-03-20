@@ -48,7 +48,11 @@ schemas, if there are cross references to external json schemas hosted on an
 available url (i.e. $ref property of json schema). You pass urls via standard
 in (one per line), e.g. by generating a list of schema urls and then piping to
 jsonschema2go -o <some-output-file>. The package name in the generated code
-will match the parent directory name of the go file you generate.
+will match the parent directory name of the go file you generate. The go type
+names will be taken from the "normalised" json subschema Title element.
+
+  Example:
+    cat urls.txt | jsonschema2go -o ../../generatedcode.go
 
   Usage:
     jsonschema2go -o GO-OUTPUT-FILE
