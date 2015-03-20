@@ -18,6 +18,10 @@ func stdInToStringArray() []string {
 		if err == io.EOF {
 			break
 		}
+		// strip \n from string
+		if line != "" {
+			line = line[:len(line)-1]
+		}
 		jsonschema2go.ExitOnFail(err)
 		results = append(results, line)
 	}
