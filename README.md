@@ -11,7 +11,11 @@ This library auto-generates your go types for you.
 
 # Real-World Example
 
-Here is a real-world example json schema taken from the taskcluster project:
+Here is a real-world example json schema taken from the taskcluster project. Try it out yourself if you like:
+
+```
+$ echo 'http://schemas.taskcluster.net/queue/v1/create-task-request.json' | jsonschema2go -o example.go
+```
 
 ```
 {
@@ -83,7 +87,13 @@ Here is a real-world example json schema taken from the taskcluster project:
         },
         "deadline": {
             "title": "Deadline",
-            "description": "Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline",
+            "description": "Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future",
+            "type": "string",
+            "format": "date-time"
+        },
+        "expires": {
+            "title": "Expiration",
+            "description": "Task expiration, time at which task definition and status is deleted.\nNotice that all artifacts for the must have an expiration that is no\nlater than this. If this property isn't it will be set to `deadline`\nplus one year (this default may subject to change).\n",
             "type": "string",
             "format": "date-time"
         },
