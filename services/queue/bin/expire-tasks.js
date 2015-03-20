@@ -52,7 +52,7 @@ var launch = async function(profile) {
     table:              cfg.get('queue:taskTableName'),
     credentials:        cfg.get('azure'),
     drain:              influx,
-    component:          cfg.get('queue:statsComponent')
+    component:          cfg.get('queue:statsComponent'),
     process:            'expire-tasks'
   });
 

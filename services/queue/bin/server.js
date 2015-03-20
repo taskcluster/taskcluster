@@ -74,7 +74,7 @@ var launch = async function(profile) {
       privateBucket:    privateArtifactBucket
     },
     drain:              influx,
-    component:          cfg.get('queue:statsComponent')
+    component:          cfg.get('queue:statsComponent'),
     process:            'server'
   });
 
@@ -83,7 +83,7 @@ var launch = async function(profile) {
     table:              cfg.get('queue:taskTableName'),
     credentials:        cfg.get('azure'),
     drain:              influx,
-    component:          cfg.get('queue:statsComponent')
+    component:          cfg.get('queue:statsComponent'),
     process:            'server'
   });
 
