@@ -229,7 +229,7 @@ func (task *TaskRun) claim() error {
 	task.TaskClaimRequest = queue.TaskClaimRequest{
 		MessageId:   task.QueueMessage.MessageId,
 		Receipt:     task.QueueMessage.PopReceipt,
-		Token:       task.TaskId, // also in url route
+		Signature:   task.QueueMessage.MessageText,
 		WorkerGroup: "Germany",
 		WorkerId:    "MysteryWorkerX",
 	}
