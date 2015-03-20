@@ -692,12 +692,12 @@ Entity.setup = function(options) {
 
   // Helper method for queryEntities, which is a special-case as it carries
   // a continuation token as third parameter in the callback.
-  aux.queryEntities = function(options) {
+  aux.queryEntities = function(queryOptions) {
     return subClass.prototype.__connect().then(function(client) {
       var table  = subClass.prototype.__table;
       return new Promise(function(accept, reject) {
         var start = process.hrtime();
-        client.queryEntities(table, options, function(err, data, token) {
+        client.queryEntities(table, queryOptions, function(err, data, token) {
           // Report statistics
           var d = process.hrtime(start);
           reporter({
