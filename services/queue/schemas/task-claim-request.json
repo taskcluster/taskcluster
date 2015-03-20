@@ -18,18 +18,6 @@
       "minLength":      {"$const": "identifier-min-length"},
       "maxLength":      {"$const": "identifier-max-length"},
       "pattern":        {"$const": "identifier-pattern"}
-    },
-    "messageId": {
-      "type":           "string",
-      "description":    "MessageId from Azure Queue message"
-    },
-    "receipt": {
-      "type":           "string",
-      "description":    "PopReceipt from Azure Queue message"
-    },
-    "signature": {
-      "type":           "string",
-      "description":    "Signature from the MessageText in Azure Queue message"
     }
   },
   "additionalProperties":   false,
