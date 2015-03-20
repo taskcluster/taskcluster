@@ -21,7 +21,10 @@ suite("Entity (query)", function() {
     }
   }).setup({
     credentials:  cfg.get('azure'),
-    table:        cfg.get('azureTestTableName')
+    table:        cfg.get('azureTestTableName'),
+    drain:        new base.stats.NullDrain(),
+    component:    'taskcluster-base-test',
+    process:      'mocha'
   });
 
   var id = slugid.v4();
