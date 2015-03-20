@@ -308,8 +308,13 @@ type (
 	TaskDefinition struct {
 		// Creation time of task
 		Created time.Time `json:"created"`
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
+		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
 		Deadline time.Time `json:"deadline"`
+		// Task expiration, time at which task definition and status is deleted.
+		// Notice that all artifacts for the must have an expiration that is no
+		// later than this. If this property isn't it will be set to `deadline`
+		// plus one year (this default may subject to change).
+		Expires time.Time `json:"expires"`
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services

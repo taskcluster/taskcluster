@@ -7,7 +7,7 @@ Version     = '0.2.0'
 Title       = 'Authentication API'
 Description = 'Authentication related API end-points for taskcluster.'
 Base URL    = 'https://auth.taskcluster.net/v1'
-Entry 0     = 
+Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/client/<clientId>/scopes'
@@ -22,7 +22,7 @@ where the clients authorization is set to expire.
 
 This API end-point allows you inspect clients without getting access to
 credentials, as provide by the `getCredentials` request below.'
-Entry 1     = 
+Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/client/<clientId>/credentials'
@@ -39,7 +39,7 @@ authorized for and the date-time where the client authorization expires
 Remark, **if you don't need** the `accessToken` but only want to see what
 scopes a client is authorized for, you should use the `getScopes`
 function described above.'
-Entry 2     = 
+Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/client/<clientId>'
@@ -52,7 +52,7 @@ Entry 2     =
     Entry Description = 'Returns all information about a given client. This end-point is mostly
 building tools to administrate clients. Do not use if you only want to
 authenticate a request, see `getCredentials` for this purpose.'
-Entry 3     = 
+Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/client/<clientId>'
@@ -69,7 +69,7 @@ and will be returned from this request.
 **Required scopes**, in addition the scopes listed
 above, the caller must also posses the all the scopes that is given to
 the client that is created.'
-Entry 4     = 
+Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/client/<clientId>/modify'
@@ -85,7 +85,7 @@ Entry 4     =
 **Required scopes**, in addition the scopes listed
 above, the caller must also posses the all the scopes that is given to
 the client that is updated.'
-Entry 5     = 
+Entry 5     =
     Entry Type        = 'function'
     Entry Method      = 'delete'
     Entry Route       = '/client/<clientId>'
@@ -96,7 +96,7 @@ Entry 5     =
     Entry Output      = ''
     Entry Title       = 'Remove Client'
     Entry Description = 'Delete a client with given `clientId`.'
-Entry 6     = 
+Entry 6     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/client/<clientId>/reset-credentials'
@@ -108,7 +108,7 @@ Entry 6     =
     Entry Title       = 'Reset Client Credentials'
     Entry Description = 'Reset credentials for a client. This will generate a new `accessToken`.
 as always the `accessToken` will be generated server-side and returned.'
-Entry 7     = 
+Entry 7     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/list-clients'
@@ -119,7 +119,7 @@ Entry 7     =
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/list-clients-response.json#'
     Entry Title       = 'List Clients'
     Entry Description = 'Return list with all clients'
-Entry 8     = 
+Entry 8     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/azure/<account>/table/<table>/read-write'
@@ -131,7 +131,7 @@ Entry 8     =
     Entry Title       = 'Get Shared-Access-Signature for Azure Table'
     Entry Description = 'Get an SAS string for use with a specific Azure Table Storage table.
 Note, this will create the table, if it doesn't already exists.'
-Entry 9     = 
+Entry 9     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/aws/s3/<level>/<bucket>/<prefix>'
@@ -159,7 +159,7 @@ credentials will not require one to be to inserted. This is mainly a
 concern when assigning scopes to users and doing this right will prevent
 poor behavior. After we often want the `prefix` to be a folder in a
 `/` delimited folder structure.'
-Entry 10    = 
+Entry 10    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -702,7 +702,7 @@ and pick up all messages about release builds. Hence, it is a
 good idea to document task index hierarchies, as these make up extension
 points in their own.'
 Base URL    = 'https://index.taskcluster.net/v1'
-Entry 0     = 
+Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<namespace>'
@@ -714,7 +714,7 @@ Entry 0     =
     Entry Title       = 'Find Indexed Task'
     Entry Description = 'Find task by namespace, if no task existing for the given namespace, this
 API end-point respond `404`.'
-Entry 1     = 
+Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/namespaces/<namespace>'
@@ -732,7 +732,7 @@ object.
 
 **Remark**, this end-point is designed for humans browsing for tasks, not
 services, as that makes little sense.'
-Entry 2     = 
+Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/tasks/<namespace>'
@@ -750,7 +750,7 @@ object.
 
 **Remark**, this end-point is designed for humans browsing for tasks, not
 services, as that makes little sense.'
-Entry 3     = 
+Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/task/<namespace>'
@@ -762,7 +762,7 @@ Entry 3     =
     Entry Title       = 'Insert Task into Index'
     Entry Description = 'Insert a task into the index. Please see the introduction above, for how
 to index successfully completed tasks automatically, using custom routes.'
-Entry 4     = 
+Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -1124,7 +1124,7 @@ SourceURL              = 'http://schemas.taskcluster.net/index/v1/list-tasks-res
 
 http://references.taskcluster.net/queue/v1/api.json
 ===================================================
-Version     = '0.2.0'
+Version     = '0'
 Title       = 'Queue API Documentation'
 Description = 'The queue, typically available at `queue.taskcluster.net`, is responsible
 for accepting tasks and track their state as they are executed by
@@ -1136,7 +1136,31 @@ end-points targets the following audience:
  * Workers, who execute tasks, and
  * Tools, that wants to inspect the state of a task.'
 Base URL    = 'https://queue.taskcluster.net/v1'
-Entry 0     = 
+Entry 0     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task/<taskId>'
+    Entry Args        = '[taskId]'
+    Entry Name        = 'task'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task.json#'
+    Entry Title       = 'Get Task Definition'
+    Entry Description = 'This end-point will return the task-definition. Notice that the task
+definition may have been modified by queue, if an optional property isn't
+specified the queue may provide a default value.'
+Entry 1     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task/<taskId>/status'
+    Entry Args        = '[taskId]'
+    Entry Name        = 'status'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Get task status'
+    Entry Description = 'Get task status structure from `taskId`'
+Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/task/<taskId>'
@@ -1149,9 +1173,13 @@ Entry 0     =
     Entry Description = 'Create a new task, this is an **idempotent** operation, so repeat it if
 you get an internal server error or network connection is dropped.
 
-**Task `deadline´**, the deadline property can be no more than 7 days
+**Task `deadline´**, the deadline property can be no more than 5 days
 into the future. This is to limit the amount of pending tasks not being
 taken care of. Ideally, you should use a much shorter deadline.
+
+**Task expiration**, the `expires` property must be greater than the
+task `deadline`. If not provided it will default to `deadline` + one
+year. Notice, that artifacts created by task must expire before the task.
 
 **Task specific routing-keys**, using the `task.routes` property you may
 define task specific routing-keys. If a task has a task specific 
@@ -1160,18 +1188,7 @@ scope `queue:route:<route>`. And when the an AMQP message about the task
 is published the message will be CC'ed with the routing-key: 
 `route.<route>`. This is useful if you want another component to listen
 for completed tasks you have posted.'
-Entry 1     = 
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/task/<taskId>'
-    Entry Args        = '[taskId]'
-    Entry Name        = 'getTask'
-    Entry Scopes      = '[]'
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task.json#'
-    Entry Title       = 'Fetch Task'
-    Entry Description = 'Get task definition from queue.'
-Entry 2     = 
+Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/define'
@@ -1195,7 +1212,7 @@ store tasks somewhere else while waiting for dependencies to resolve.
 
 **Note** this operation is **idempotent**, as long as you upload the same
 task definition as previously defined this operation is safe to retry.'
-Entry 3     = 
+Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/schedule'
@@ -1213,122 +1230,7 @@ claim it and resolved the task.
 **Note** this operation is **idempotent** and will not fail or complain
 if called with `taskId` that is already scheduled, or even resolved.
 To reschedule a task previously resolved, use `rerunTask`.'
-Entry 4     = 
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/task/<taskId>/status'
-    Entry Args        = '[taskId]'
-    Entry Name        = 'status'
-    Entry Scopes      = '[]'
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
-    Entry Title       = 'Get task status'
-    Entry Description = 'Get task status structure from `taskId`'
-Entry 5     = 
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/poll-task-url/<provisionerId>/<workerType>'
-    Entry Args        = '[provisionerId workerType]'
-    Entry Name        = 'pollTaskUrls'
-    Entry Scopes      = '[[queue:poll-task-urls assume:worker-type:<provisionerId>/<workerType>]]'
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#'
-    Entry Title       = 'Get Urls to Poll Pending Tasks'
-    Entry Description = 'Get a signed url to get a message from azure queue.
-Once messages are polled from here, you can claim the referenced task
-with `claimTask`, after wards which you **must** delete the message from
-the azure queue.'
-Entry 6     = 
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/task/<taskId>/runs/<runId>/claim'
-    Entry Args        = '[taskId runId]'
-    Entry Name        = 'claimTask'
-    Entry Scopes      = '[[queue:claim-task assume:worker-type:<provisionerId>/<workerType> assume:worker-id:<workerGroup>/<workerId>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#'
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
-    Entry Title       = 'Claim task'
-    Entry Description = 'claim a task, more to be added later...
-'
-Entry 7     = 
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/task/<taskId>/runs/<runId>/reclaim'
-    Entry Args        = '[taskId runId]'
-    Entry Name        = 'reclaimTask'
-    Entry Scopes      = '[[queue:claim-task assume:worker-id:<workerGroup>/<workerId>]]'
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
-    Entry Title       = 'Reclaim task'
-    Entry Description = 'reclaim a task more to be added later...'
-Entry 8     = 
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/claim-work/<provisionerId>/<workerType>'
-    Entry Args        = '[provisionerId workerType]'
-    Entry Name        = 'claimWork'
-    Entry Scopes      = '[[queue:claim-task assume:worker-type:<provisionerId>/<workerType> assume:worker-id:<workerGroup>/<workerId>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#'
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
-    Entry Title       = 'Claim work for a worker'
-    Entry Description = 'Claim work for a worker, returns information about an appropriate task
-claimed for the worker. Similar to `claimTask`, which can be
-used to claim a specific task, or reclaim a specific task extending the
-`takenUntil` timeout for the run.
-
-**Note**, that if no tasks are _pending_ this method will not assign a
-task to you. Instead it will return `204` and you should wait a while
-before polling the queue again.
-
-**WARNING, this API end-point is deprecated and will be removed**.'
-Entry 9     = 
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/task/<taskId>/runs/<runId>/completed'
-    Entry Args        = '[taskId runId]'
-    Entry Name        = 'reportCompleted'
-    Entry Scopes      = '[[queue:report-task-completed assume:worker-id:<workerGroup>/<workerId>] [queue:resolve-task assume:worker-id:<workerGroup>/<workerId>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-completed-request.json#'
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
-    Entry Title       = 'Report Run Completed'
-    Entry Description = 'Report a task completed, resolving the run as `completed`.
-
-For legacy, reasons the `success` parameter is accepted. **This will be
-removed in the future.**'
-Entry 10    = 
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/task/<taskId>/runs/<runId>/failed'
-    Entry Args        = '[taskId runId]'
-    Entry Name        = 'reportFailed'
-    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>]]'
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
-    Entry Title       = 'Report Run Failed'
-    Entry Description = 'Report a run failed, resolving the run as `failed`. Use this to resolve
-a run that failed because the task specific code behaved unexpectedly.
-For example the task exited non-zero, or didn't produce expected output.
-
-Don't use this if the task couldn't be run because if malformed payload,
-or other unexpected condition. In these cases we have a task exception,
-which should be reported with `reportException`.'
-Entry 11    = 
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/task/<taskId>/runs/<runId>/exception'
-    Entry Args        = '[taskId runId]'
-    Entry Name        = 'reportException'
-    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-exception-request.json#'
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
-    Entry Title       = 'Report Task Exception'
-    Entry Description = 'Resolve a run as _exception_. Generally, you will want to report tasks as
-failed instead of exception. But if the payload is malformed, or
-dependencies referenced does not exists you should also report exception.
-However, do not report exception if an external resources is unavailable
-because of network failure, etc. Only if you can validate that the
-resource does not exist.'
-Entry 12    = 
+Entry 5     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/rerun'
@@ -1350,7 +1252,108 @@ because a spot node died.
 **Remark** this operation is idempotent, if you try to rerun a task that
 isn't either `failed` or `completed`, this operation will just return the
 current task status.'
-Entry 13    = 
+Entry 6     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/cancel'
+    Entry Args        = '[taskId]'
+    Entry Name        = 'cancelTask'
+    Entry Scopes      = '[[queue:cancel-task assume:scheduler-id:<schedulerId>/<taskGroupId>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Cancel Task'
+    Entry Description = 'This method will cancel a task that is either `unscheduled`, `pending` or
+`running`. It will resolve the current run as `exception` with
+`reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.
+it doesn't have any runs, an initial run will be added and resolved as
+described above. Hence, after canceling a task, it cannot be scheduled
+with `queue.scheduleTask`, but a new run can be created with
+`queue.rerun`. These semantics is equivalent to calling
+`queue.scheduleTask` immediately followed by `queue.cancelTask`.
+
+**Remark** this operation is idempotent, if you try to cancel a task that
+isn't `unscheduled`, `pending` or `running`, this operation will just
+return the current task status.'
+Entry 7     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/poll-task-url/<provisionerId>/<workerType>'
+    Entry Args        = '[provisionerId workerType]'
+    Entry Name        = 'pollTaskUrls'
+    Entry Scopes      = '[[queue:poll-task-urls assume:worker-type:<provisionerId>/<workerType>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#'
+    Entry Title       = 'Get Urls to Poll Pending Tasks'
+    Entry Description = 'Get a signed URLs to get and delete messages from azure queue.
+Once messages are polled from here, you can claim the referenced task
+with `claimTask`, and afterwards you should always delete the message.'
+Entry 8     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/runs/<runId>/claim'
+    Entry Args        = '[taskId runId]'
+    Entry Name        = 'claimTask'
+    Entry Scopes      = '[[queue:claim-task assume:worker-type:<provisionerId>/<workerType> assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
+    Entry Title       = 'Claim task'
+    Entry Description = 'claim a task, more to be added later...'
+Entry 9     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/runs/<runId>/reclaim'
+    Entry Args        = '[taskId runId]'
+    Entry Name        = 'reclaimTask'
+    Entry Scopes      = '[[queue:claim-task assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
+    Entry Title       = 'Reclaim task'
+    Entry Description = 'reclaim a task more to be added later...'
+Entry 10    =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/runs/<runId>/completed'
+    Entry Args        = '[taskId runId]'
+    Entry Name        = 'reportCompleted'
+    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Report Run Completed'
+    Entry Description = 'Report a task completed, resolving the run as `completed`.'
+Entry 11    =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/runs/<runId>/failed'
+    Entry Args        = '[taskId runId]'
+    Entry Name        = 'reportFailed'
+    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Report Run Failed'
+    Entry Description = 'Report a run failed, resolving the run as `failed`. Use this to resolve
+a run that failed because the task specific code behaved unexpectedly.
+For example the task exited non-zero, or didn't produce expected output.
+
+Don't use this if the task couldn't be run because if malformed payload,
+or other unexpected condition. In these cases we have a task exception,
+which should be reported with `reportException`.'
+Entry 12    =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/task/<taskId>/runs/<runId>/exception'
+    Entry Args        = '[taskId runId]'
+    Entry Name        = 'reportException'
+    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-exception-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
+    Entry Title       = 'Report Task Exception'
+    Entry Description = 'Resolve a run as _exception_. Generally, you will want to report tasks as
+failed instead of exception. But if the payload is malformed, or
+dependencies referenced does not exists you should also report exception.
+However, do not report exception if an external resources is unavailable
+because of network failure, etc. Only if you can validate that the
+resource does not exist.'
+Entry 13    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts/<name>'
@@ -1374,8 +1377,8 @@ We currently support 4 different `storageType`s, each storage type have
 slightly different features and in some cases difference semantics.
 
 **S3 artifacts**, is useful for static files which will be stored on S3.
-When creating an S3 artifact is create the queue will return a pre-signed
-URL to which you can do a `PUT` request to upload your artifact. Note
+When creating an S3 artifact the queue will return a pre-signed URL
+to which you can do a `PUT` request to upload your artifact. Note
 that `PUT` request **must** specify the `content-length` header and
 **must** give the `content-type` header the same value as in the request
 to `createArtifact`.
@@ -1388,6 +1391,8 @@ task log to Azure Blob Storage every few seconds creating a somewhat
 live log. A request to create an Azure artifact will return a URL
 featuring a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),
 refer to MSDN for further information on how to use these.
+**Warning: azure artifact is currently an experimental feature subject
+to changes and data-drops.**
 
 **Reference artifacts**, only consists of meta-data which the queue will
 store for you. These artifacts really only have a `url` property and
@@ -1416,7 +1421,7 @@ Such as worker-host overwriting artifact created by worker-code.
 As a special case the `url` property on _reference artifacts_ can be
 updated. You should only use this to update the `url` property for
 reference artifacts your process has created.'
-Entry 14    = 
+Entry 14    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts/<name>'
@@ -1437,7 +1442,7 @@ authorization is not necessary to fetch the artifact.
 stored externally. Either way, the response may not be JSON. So API
 client users might want to generate a signed URL for this end-point and
 use that URL with a normal HTTP client.'
-Entry 15    = 
+Entry 15    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/artifacts/<name>'
@@ -1462,7 +1467,7 @@ use that URL with a normal HTTP client.
 **Remark**, this end-point is slightly slower than
 `queue.getArtifact`, so consider that if you already know the `runId` of
 the latest run. Otherwise, just us the most convenient API end-point.'
-Entry 16    = 
+Entry 16    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts'
@@ -1473,7 +1478,7 @@ Entry 16    =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#'
     Entry Title       = 'Get Artifacts from Run'
     Entry Description = 'Returns a list of artifacts and associated meta-data for a given run.'
-Entry 17    = 
+Entry 17    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/artifacts'
@@ -1485,35 +1490,7 @@ Entry 17    =
     Entry Title       = 'Get Artifacts from Latest Run'
     Entry Description = 'Returns a list of artifacts and associated meta-data for the latest run
 from the given task.'
-Entry 18    = 
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/pending-tasks/<provisionerId>'
-    Entry Args        = '[provisionerId]'
-    Entry Name        = 'getPendingTasks'
-    Entry Scopes      = '[]'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Fetch pending tasks for provisioner'
-    Entry Description = 'Documented later...
-
-**Warning** this api end-point is **not stable**.
-
-**This end-point is deprecated!**'
-Entry 19    = 
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/pending/<provisionerId>'
-    Entry Args        = '[provisionerId]'
-    Entry Name        = 'pendingTaskCount'
-    Entry Scopes      = '[[queue:pending-tasks:<provisionerId>]]'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Get Number of Pending Tasks'
-    Entry Description = 'Documented later...
-
-**This end-point is deprecated!**'
-Entry 20    = 
+Entry 18    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/pending/<provisionerId>/<workerType>'
@@ -1524,10 +1501,10 @@ Entry 20    =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#'
     Entry Title       = 'Get Number of Pending Tasks'
     Entry Description = 'Documented later...
-This end-point will remain after rewriting to azure
+This probably the end-point that will remain after rewriting to azure
 queue storage...
 '
-Entry 21    = 
+Entry 19    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -1540,42 +1517,6 @@ Entry 21    =
     Entry Description = 'Documented later...
 
 **Warning** this api end-point is **not stable**.'
-
-
-http://schemas.taskcluster.net/queue/v1/claim-work-request.json#
-================================================================
-Additional Properties  = 'false'
-Description            = 'Request to claim work'
-ID                     = 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#'
-Properties
-  Property 'workerGroup' =
-    Description            = 'Identifier for group that worker claiming the task is a part of.'
-    MaxLength              = '22'
-    MinLength              = '1'
-    Pattern                = '^([a-zA-Z0-9-_]*)$'
-    Type                   = 'string'
-    TypeName               = ''
-    IsInputSchema          = 'false'
-    IsOutputSchema         = 'false'
-    SourceURL              = ''
-  Property 'workerId' =
-    Description            = 'Identifier for worker within the given workerGroup'
-    MaxLength              = '22'
-    MinLength              = '1'
-    Pattern                = '^([a-zA-Z0-9-_]*)$'
-    Type                   = 'string'
-    TypeName               = ''
-    IsInputSchema          = 'false'
-    IsOutputSchema         = 'false'
-    SourceURL              = ''
-Required               = '[workerGroup workerId]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Work Claim Request'
-Type                   = 'object'
-TypeName               = 'WorkClaimRequest'
-IsInputSchema          = 'true'
-IsOutputSchema         = 'false'
-SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#'
 
 
 http://schemas.taskcluster.net/queue/v1/create-task-request.json#
@@ -2139,8 +2080,8 @@ Properties
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
     SourceURL              = ''
-  Property 'token' =
-    Description            = 'Opaque token from the JSON parsed and base64 decoded MessageText in the Azure Queue message'
+  Property 'signature' =
+    Description            = 'Signature from the MessageText in Azure Queue message'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -2235,22 +2176,6 @@ IsOutputSchema         = 'true'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
 
 
-http://schemas.taskcluster.net/queue/v1/task-completed-request.json#
-====================================================================
-Additional Properties  = 'false'
-Description            = 'Request for a task to be declared completed
-'
-ID                     = 'http://schemas.taskcluster.net/queue/v1/task-completed-request.json#'
-Properties
-  %!v(PANIC=reflect: call of reflect.Value.IsNil on bool Value)Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Task Completed Request'
-Type                   = 'object'
-TypeName               = 'TaskCompletedRequest'
-IsInputSchema          = 'true'
-IsOutputSchema         = 'false'
-SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-completed-request.json#'
-
-
 http://schemas.taskcluster.net/queue/v1/task-exception-request.json#
 ====================================================================
 Additional Properties  = 'false'
@@ -2267,6 +2192,10 @@ Properties
     schema for the worker payload, or referenced dependencies doesn't exists.
     In either case, you should still log the error to a log file under the
     specific run.
+    In case if `worker-shutdown` the queue will immediately **retry** the
+    task, by making a new run. This is much faster than ignoreing the issue
+    and letting the task _retry_ by claim expiration. For any other _reason_
+    reported the queue will not retry the task.
     '
     Enum                   = '[worker-shutdown malformed-payload]'
     TypeName               = ''
@@ -2313,9 +2242,18 @@ Description            = 'A representation of **task status** as known by the qu
 ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.json'
 Properties
   Property 'deadline' =
-    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline'
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
     Format                 = 'date-time'
     Title                  = 'Deadline'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'expires' =
+    Description            = 'Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.'
+    Format                 = 'date-time'
+    Title                  = 'Expiration'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -2540,7 +2478,7 @@ Properties
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
     SourceURL              = ''
-Required               = '[taskId provisionerId workerType schedulerId taskGroupId deadline retriesLeft state runs]'
+Required               = '[taskId provisionerId workerType schedulerId taskGroupId deadline expires retriesLeft state runs]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Status Structure'
 Type                   = 'object'
@@ -2567,9 +2505,22 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'deadline' =
-    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline'
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
     Format                 = 'date-time'
     Title                  = 'Deadline'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'expires' =
+    Description            = 'Task expiration, time at which task definition and status is deleted.
+    Notice that all artifacts for the must have an expiration that is no
+    later than this. If this property isn't it will be set to `deadline`
+    plus one year (this default may subject to change).
+    '
+    Format                 = 'date-time'
+    Title                  = 'Expiration'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -2808,7 +2759,7 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#'
 
 http://references.taskcluster.net/queue/v1/exchanges.json
 =========================================================
-Version         = '0.2.0'
+Version         = '0'
 Title           = 'Queue AMQP Exchanges'
 Description     = 'The queue, typically available at `queue.taskcluster.net`, is responsible
 for accepting tasks and track their state as they are executed by
@@ -3837,9 +3788,18 @@ Description            = 'A representation of **task status** as known by the qu
 ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.json'
 Properties
   Property 'deadline' =
-    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline'
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
     Format                 = 'date-time'
     Title                  = 'Deadline'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'expires' =
+    Description            = 'Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.'
+    Format                 = 'date-time'
+    Title                  = 'Expiration'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -4064,7 +4024,7 @@ Properties
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
     SourceURL              = ''
-Required               = '[taskId provisionerId workerType schedulerId taskGroupId deadline retriesLeft state runs]'
+Required               = '[taskId provisionerId workerType schedulerId taskGroupId deadline expires retriesLeft state runs]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Status Structure'
 Type                   = 'object'
@@ -4089,7 +4049,7 @@ scheduler. These end-points targets the following audience:
  * End-users, who wants to execute a set of dependent tasks, and
  * Tools, that wants to inspect the state of a task-graph.'
 Base URL    = 'https://scheduler.taskcluster.net/v1'
-Entry 0     = 
+Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/task-graph/<taskGraphId>'
@@ -4161,7 +4121,7 @@ be required to posses the scope `scheduler:route:<route>`. And when the
 an AMQP message about the task-graph is published the message will be
 CC'ed with the routing-key: `route.<route>`. This is useful if you want
 another component to listen for completed tasks you have posted.'
-Entry 1     = 
+Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task-graph/<taskGraphId>/extend'
@@ -4184,7 +4144,7 @@ task-graph being modified is still running. If the task-graph is
 _finished_ or _blocked_, this method will leave the task-graph in this
 state. Hence, it is only truly _safe_ to call this API end-point from
 within a task in the task-graph being modified.'
-Entry 2     = 
+Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task-graph/<taskGraphId>/status'
@@ -4199,7 +4159,7 @@ structure_. which can be used to check if a task-graph is `running`,
 `blocked` or `finished`.
 
 **Note**, that `finished` implies successfully completion.'
-Entry 3     = 
+Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task-graph/<taskGraphId>/info'
@@ -4215,7 +4175,7 @@ about all tasks.
 
 If you want more detailed information use the `inspectTaskGraph`
 end-point instead.'
-Entry 4     = 
+Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task-graph/<taskGraphId>/inspect'
@@ -4237,7 +4197,7 @@ it's safe to consider the values stable.
 Take these considerations into account when using the API end-point,
 as we do not promise it will remain fully backward compatible in
 the future.'
-Entry 5     = 
+Entry 5     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task-graph/<taskGraphId>/inspect/<taskId>'
@@ -4259,7 +4219,7 @@ it's safe to consider the values stable.
 Take these considerations into account when using the API end-point,
 as we do not promise it will remain fully backward compatible in
 the future.'
-Entry 6     = 
+Entry 6     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'

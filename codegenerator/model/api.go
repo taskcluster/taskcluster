@@ -13,11 +13,11 @@ import (
 //////////////////////////////////////////////////////////////////
 
 type API struct {
-	Version     string     `json:"version"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	BaseURL     string     `json:"baseUrl"`
-	Entries     []APIEntry `json:"entries"`
+	Version     interface{} `json:"version"`
+	Title       string      `json:"title"`
+	Description string      `json:"description"`
+	BaseURL     string      `json:"baseUrl"`
+	Entries     []APIEntry  `json:"entries"`
 
 	apiDef *APIDefinition
 }
@@ -30,7 +30,7 @@ func (api *API) String() string {
 			"Base URL    = '%v'\n",
 		api.Version, api.Title, api.Description, api.BaseURL)
 	for i, entry := range api.Entries {
-		result += fmt.Sprintf("Entry %-6v= \n%v", i, entry.String())
+		result += fmt.Sprintf("Entry %-6v=\n%v", i, entry.String())
 	}
 	return result
 }

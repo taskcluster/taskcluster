@@ -27,7 +27,7 @@
 //
 // and then call one or more of auth's methods, e.g.:
 //
-//  data, httpResponse := Queue.CreateTask(.....)
+//  data, httpResponse := Queue.Task(.....)
 package queue
 
 import (
@@ -129,7 +129,7 @@ type Auth struct {
 //  Queue := queue.New("123", "456")                       // set clientId and accessToken
 //  Queue.Authenticate = false                             // disable authentication (true by default)
 //  Queue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
-//  data, httpResponse := Queue.CreateTask(.....)          // for example, call the CreateTask(.....) API endpoint (described further down)...
+//  data, httpResponse := Queue.Task(.....)                // for example, call the Task(.....) API endpoint (described further down)...
 func New(clientId string, accessToken string) *Auth {
 	return &Auth{
 		ClientId:     clientId,
@@ -138,12 +138,34 @@ func New(clientId string, accessToken string) *Auth {
 		Authenticate: true}
 }
 
+// This end-point will return the task-definition. Notice that the task
+// definition may have been modified by queue, if an optional property isn't
+// specified the queue may provide a default value.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#task
+func (a *Auth) Task(taskId string) (*TaskDefinition1, *http.Response) {
+	responseObject, httpResponse := a.apiCall(nil, "GET", "/task/"+taskId+"", new(TaskDefinition1))
+	return responseObject.(*TaskDefinition1), httpResponse
+}
+
+// Get task status structure from `taskId`
+//
+// See http://docs.taskcluster.net/queue/api-docs/#status
+func (a *Auth) Status(taskId string) (*TaskStatusResponse, *http.Response) {
+	responseObject, httpResponse := a.apiCall(nil, "GET", "/task/"+taskId+"/status", new(TaskStatusResponse))
+	return responseObject.(*TaskStatusResponse), httpResponse
+}
+
 // Create a new task, this is an **idempotent** operation, so repeat it if
 // you get an internal server error or network connection is dropped.
 //
-// **Task `deadline´**, the deadline property can be no more than 7 days
+// **Task `deadline´**, the deadline property can be no more than 5 days
 // into the future. This is to limit the amount of pending tasks not being
 // taken care of. Ideally, you should use a much shorter deadline.
+//
+// **Task expiration**, the `expires` property must be greater than the
+// task `deadline`. If not provided it will default to `deadline` + one
+// year. Notice, that artifacts created by task must expire before the task.
 //
 // **Task specific routing-keys**, using the `task.routes` property you may
 // define task specific routing-keys. If a task has a task specific
@@ -157,14 +179,6 @@ func New(clientId string, accessToken string) *Auth {
 func (a *Auth) CreateTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *http.Response) {
 	responseObject, httpResponse := a.apiCall(payload, "PUT", "/task/"+taskId+"", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), httpResponse
-}
-
-// Get task definition from queue.
-//
-// See http://docs.taskcluster.net/queue/api-docs/#getTask
-func (a *Auth) GetTask(taskId string) (*TaskDefinition1, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "GET", "/task/"+taskId+"", new(TaskDefinition1))
-	return responseObject.(*TaskDefinition1), httpResponse
 }
 
 // Define a task without scheduling it. This API end-point allows you to
@@ -203,18 +217,47 @@ func (a *Auth) ScheduleTask(taskId string) (*TaskStatusResponse, *http.Response)
 	return responseObject.(*TaskStatusResponse), httpResponse
 }
 
-// Get task status structure from `taskId`
+// This method _reruns_ a previously resolved task, even if it was
+// _completed_. This is useful if your task completes unsuccessfully, and
+// you just want to run it from scratch again. This will also reset the
+// number of `retries` allowed.
 //
-// See http://docs.taskcluster.net/queue/api-docs/#status
-func (a *Auth) Status(taskId string) (*TaskStatusResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "GET", "/task/"+taskId+"/status", new(TaskStatusResponse))
+// Remember that `retries` in the task status counts the number of runs that
+// the queue have started because the worker stopped responding, for example
+// because a spot node died.
+//
+// **Remark** this operation is idempotent, if you try to rerun a task that
+// isn't either `failed` or `completed`, this operation will just return the
+// current task status.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#rerunTask
+func (a *Auth) RerunTask(taskId string) (*TaskStatusResponse, *http.Response) {
+	responseObject, httpResponse := a.apiCall(nil, "POST", "/task/"+taskId+"/rerun", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), httpResponse
 }
 
-// Get a signed url to get a message from azure queue.
+// This method will cancel a task that is either `unscheduled`, `pending` or
+// `running`. It will resolve the current run as `exception` with
+// `reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.
+// it doesn't have any runs, an initial run will be added and resolved as
+// described above. Hence, after canceling a task, it cannot be scheduled
+// with `queue.scheduleTask`, but a new run can be created with
+// `queue.rerun`. These semantics is equivalent to calling
+// `queue.scheduleTask` immediately followed by `queue.cancelTask`.
+//
+// **Remark** this operation is idempotent, if you try to cancel a task that
+// isn't `unscheduled`, `pending` or `running`, this operation will just
+// return the current task status.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#cancelTask
+func (a *Auth) CancelTask(taskId string) (*TaskStatusResponse, *http.Response) {
+	responseObject, httpResponse := a.apiCall(nil, "POST", "/task/"+taskId+"/cancel", new(TaskStatusResponse))
+	return responseObject.(*TaskStatusResponse), httpResponse
+}
+
+// Get a signed URLs to get and delete messages from azure queue.
 // Once messages are polled from here, you can claim the referenced task
-// with `claimTask`, after wards which you **must** delete the message from
-// the azure queue.
+// with `claimTask`, and afterwards you should always delete the message.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pollTaskUrls
 func (a *Auth) PollTaskUrls(provisionerId string, workerType string) (*PollTaskUrlsResponse, *http.Response) {
@@ -238,31 +281,11 @@ func (a *Auth) ReclaimTask(taskId string, runId string) (*TaskClaimResponse, *ht
 	return responseObject.(*TaskClaimResponse), httpResponse
 }
 
-// Claim work for a worker, returns information about an appropriate task
-// claimed for the worker. Similar to `claimTask`, which can be
-// used to claim a specific task, or reclaim a specific task extending the
-// `takenUntil` timeout for the run.
-//
-// **Note**, that if no tasks are _pending_ this method will not assign a
-// task to you. Instead it will return `204` and you should wait a while
-// before polling the queue again.
-//
-// **WARNING, this API end-point is deprecated and will be removed**.
-//
-// See http://docs.taskcluster.net/queue/api-docs/#claimWork
-func (a *Auth) ClaimWork(provisionerId string, workerType string, payload *WorkClaimRequest) (*TaskClaimResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(payload, "POST", "/claim-work/"+provisionerId+"/"+workerType+"", new(TaskClaimResponse))
-	return responseObject.(*TaskClaimResponse), httpResponse
-}
-
 // Report a task completed, resolving the run as `completed`.
 //
-// For legacy, reasons the `success` parameter is accepted. **This will be
-// removed in the future.**
-//
 // See http://docs.taskcluster.net/queue/api-docs/#reportCompleted
-func (a *Auth) ReportCompleted(taskId string, runId string, payload *TaskCompletedRequest) (*TaskStatusResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(payload, "POST", "/task/"+taskId+"/runs/"+runId+"/completed", new(TaskStatusResponse))
+func (a *Auth) ReportCompleted(taskId string, runId string) (*TaskStatusResponse, *http.Response) {
+	responseObject, httpResponse := a.apiCall(nil, "POST", "/task/"+taskId+"/runs/"+runId+"/completed", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), httpResponse
 }
 
@@ -293,25 +316,6 @@ func (a *Auth) ReportException(taskId string, runId string, payload *TaskExcepti
 	return responseObject.(*TaskStatusResponse), httpResponse
 }
 
-// This method _reruns_ a previously resolved task, even if it was
-// _completed_. This is useful if your task completes unsuccessfully, and
-// you just want to run it from scratch again. This will also reset the
-// number of `retries` allowed.
-//
-// Remember that `retries` in the task status counts the number of runs that
-// the queue have started because the worker stopped responding, for example
-// because a spot node died.
-//
-// **Remark** this operation is idempotent, if you try to rerun a task that
-// isn't either `failed` or `completed`, this operation will just return the
-// current task status.
-//
-// See http://docs.taskcluster.net/queue/api-docs/#rerunTask
-func (a *Auth) RerunTask(taskId string) (*TaskStatusResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "POST", "/task/"+taskId+"/rerun", new(TaskStatusResponse))
-	return responseObject.(*TaskStatusResponse), httpResponse
-}
-
 // This API end-point creates an artifact for a specific run of a task. This
 // should **only** be used by a worker currently operating on this task, or
 // from a process running within the task (ie. on the worker).
@@ -326,8 +330,8 @@ func (a *Auth) RerunTask(taskId string) (*TaskStatusResponse, *http.Response) {
 // slightly different features and in some cases difference semantics.
 //
 // **S3 artifacts**, is useful for static files which will be stored on S3.
-// When creating an S3 artifact is create the queue will return a pre-signed
-// URL to which you can do a `PUT` request to upload your artifact. Note
+// When creating an S3 artifact the queue will return a pre-signed URL
+// to which you can do a `PUT` request to upload your artifact. Note
 // that `PUT` request **must** specify the `content-length` header and
 // **must** give the `content-type` header the same value as in the request
 // to `createArtifact`.
@@ -340,6 +344,8 @@ func (a *Auth) RerunTask(taskId string) (*TaskStatusResponse, *http.Response) {
 // live log. A request to create an Azure artifact will return a URL
 // featuring a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),
 // refer to MSDN for further information on how to use these.
+// **Warning: azure artifact is currently an experimental feature subject
+// to changes and data-drops.**
 //
 // **Reference artifacts**, only consists of meta-data which the queue will
 // store for you. These artifacts really only have a `url` property and
@@ -433,29 +439,7 @@ func (a *Auth) ListLatestArtifacts(taskId string) (*ListArtifactsResponse, *http
 }
 
 // Documented later...
-//
-// **Warning** this api end-point is **not stable**.
-//
-// **This end-point is deprecated!**
-//
-// See http://docs.taskcluster.net/queue/api-docs/#getPendingTasks
-func (a *Auth) GetPendingTasks(provisionerId string) *http.Response {
-	_, httpResponse := a.apiCall(nil, "GET", "/pending-tasks/"+provisionerId+"", nil)
-	return httpResponse
-}
-
-// Documented later...
-//
-// **This end-point is deprecated!**
-//
-// See http://docs.taskcluster.net/queue/api-docs/#pendingTaskCount
-func (a *Auth) PendingTaskCount(provisionerId string) *http.Response {
-	_, httpResponse := a.apiCall(nil, "GET", "/pending/"+provisionerId+"", nil)
-	return httpResponse
-}
-
-// Documented later...
-// This end-point will remain after rewriting to azure
+// This probably the end-point that will remain after rewriting to azure
 // queue storage...
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pendingTasks
@@ -475,24 +459,19 @@ func (a *Auth) Ping() *http.Response {
 }
 
 type (
-	// Request to claim work
-	//
-	// See http://schemas.taskcluster.net/queue/v1/claim-work-request.json#
-	WorkClaimRequest struct {
-		// Identifier for group that worker claiming the task is a part of.
-		WorkerGroup string `json:"workerGroup"`
-		// Identifier for worker within the given workerGroup
-		WorkerId string `json:"workerId"`
-	}
-
 	// Definition of a task that can be scheduled
 	//
 	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
 	TaskDefinition struct {
 		// Creation time of task
 		Created time.Time `json:"created"`
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
+		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
 		Deadline time.Time `json:"deadline"`
+		// Task expiration, time at which task definition and status is deleted.
+		// Notice that all artifacts for the must have an expiration that is no
+		// later than this. If this property isn't it will be set to `deadline`
+		// plus one year (this default may subject to change).
+		Expires time.Time `json:"expires"`
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services
@@ -648,8 +627,8 @@ type (
 		MessageId string `json:"messageId"`
 		// PopReceipt from Azure Queue message
 		Receipt string `json:"receipt"`
-		// Opaque token from the JSON parsed and base64 decoded MessageText in the Azure Queue message
-		Token string `json:"token"`
+		// Signature from the MessageText in Azure Queue message
+		Signature string `json:"signature"`
 		// Identifier for group that worker claiming the task is a part of.
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for worker within the given workerGroup
@@ -671,16 +650,6 @@ type (
 		WorkerId string `json:"workerId"`
 	}
 
-	// Request for a task to be declared completed
-	//
-	// See http://schemas.taskcluster.net/queue/v1/task-completed-request.json#
-	TaskCompletedRequest struct {
-		// True, if task is completed, and false if task is failed. This property
-		// is optional and only present for backwards compatibility. It will be
-		// removed in the future.
-		Success bool `json:"success"`
-	}
-
 	// Request for a run of a task to be resolved with an exception
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-exception-request.json#
@@ -693,6 +662,10 @@ type (
 		// schema for the worker payload, or referenced dependencies doesn't exists.
 		// In either case, you should still log the error to a log file under the
 		// specific run.
+		// In case if `worker-shutdown` the queue will immediately **retry** the
+		// task, by making a new run. This is much faster than ignoreing the issue
+		// and letting the task _retry_ by claim expiration. For any other _reason_
+		// reported the queue will not retry the task.
 		Reason interface{} `json:"reason"`
 	}
 
@@ -707,8 +680,10 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 	TaskStatusStructure struct {
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
+		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
 		Deadline time.Time `json:"deadline"`
+		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
+		Expires time.Time `json:"expires"`
 		// Unique identifier for the provisioner that this task must be scheduled on
 		ProvisionerId string `json:"provisionerId"`
 		// Number of retries left for the task in case of infrastructure issues
@@ -774,8 +749,13 @@ type (
 	TaskDefinition1 struct {
 		// Creation time of task
 		Created time.Time `json:"created"`
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline
+		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
 		Deadline time.Time `json:"deadline"`
+		// Task expiration, time at which task definition and status is deleted.
+		// Notice that all artifacts for the must have an expiration that is no
+		// later than this. If this property isn't it will be set to `deadline`
+		// plus one year (this default may subject to change).
+		Expires time.Time `json:"expires"`
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services

@@ -12,7 +12,7 @@ import (
 ////////////////////////////////////////////////////////////////////////
 
 type Exchange struct {
-	Version        string          `json:"version"`
+	Version        interface{}     `json:"version"`
 	Title          string          `json:"title"`
 	Description    string          `json:"description"`
 	ExchangePrefix string          `json:"exchangePrefix"`

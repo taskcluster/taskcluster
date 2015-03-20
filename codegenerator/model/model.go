@@ -200,7 +200,7 @@ func validateJson(schemaUrl, docUrl string) {
 			fmt.Println("")
 			fmt.Printf("- %s\n", desc)
 		}
-		os.Exit(70)
+		// os.Exit(70)
 	}
 }
 
