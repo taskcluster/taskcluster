@@ -74,7 +74,7 @@ var RESERVED_PROPERTY_NAMES = [
 var MAX_MODIFY_ATTEMPTS     = 10;
 
 /** Timeout for azure table requests */
-var AZURE_TABLE_TIMEOUT     = 30 * 1000; // try setting it to 7
+var AZURE_TABLE_TIMEOUT     = 7 * 1000;
 
 /** Azure table agent used for all instances of the table client */
 var globalAzureTableAgent = new https.Agent({
