@@ -318,6 +318,12 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
     }};
   }
 
+  // Ensure that date formats are encoded as we store them for idempotent
+  // operations to work with date format that has more or fewer digits
+  taskDef.created   = new Date(taskDef.created).toJSON();
+  taskDef.deadline  = new Date(taskDef.deadline).toJSON();
+  taskDef.expires   = new Date(taskDef.expires).toJSON();
+
   return null;
 };
 
@@ -428,7 +434,7 @@ api.declare({
     // offer an idempotent operation in that case
     if (!_.isEqual(taskDef, def) || task.runs.length === 0) {
       return res.status(409).json({
-        message:      "taskId already used by another task"
+        message:      "taskId: " + taskId + " already used by another task"
       });
     }
   }
@@ -568,7 +574,7 @@ api.declare({
     if (!_.isEqual(taskDef, def)) {
       debug("DEFINE-FAILED: input -> %j !== %j <- existing", taskDef, def);
       return res.status(409).json({
-        message:      "taskId already used by another task"
+        message:      "taskId: " + taskId + " already used by another task"
       });
     }
   }
