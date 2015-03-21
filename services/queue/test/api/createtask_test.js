@@ -24,6 +24,7 @@ suite('Create task', function() {
     retries:          5,
     created:          taskcluster.fromNowJSON(),
     deadline:         taskcluster.fromNowJSON('3 days'),
+    expires:          taskcluster.fromNowJSON('10 days'),
     scopes:           [],
     payload:          {},
     metadata: {
@@ -162,6 +163,30 @@ suite('Create task', function() {
     var taskId = slugid.v4();
     await helper.queue.defineTask(taskId, taskDef);
     await helper.queue.defineTask(taskId, taskDef);
+
+    // Verify that we can't modify the task
+    await helper.queue.defineTask(taskId, _.defaults({
+      workerType:   "another-worker"
+    }, taskDef)).then(() => {
+      expect().fail("This operation should have failed!");
+    }, (err) => {
+      expect(err.statusCode).to.be(409);
+      debug("Expected error: %j", err, err);
+    });
+  });
+
+  test("defineTask is idempotent (with date format variance)", async () => {
+    var taskId = slugid.v4();
+    // You can add as many ms fractions as you like in the date format
+    // but we won't store them, so we have to handle this case right
+    var x = '234324Z';
+    var taskDef2 = _.defaults({
+      created:      taskDef.created.substr(0, taskDef.created.length - 1)   + x,
+      deadline:     taskDef.deadline.substr(0, taskDef.deadline.length - 1) + x,
+      expires:      taskDef.expires.substr(0, taskDef.expires.length - 1)   + x
+    }, taskDef)
+    await helper.queue.defineTask(taskId, taskDef2);
+    await helper.queue.defineTask(taskId, taskDef2);
 
     // Verify that we can't modify the task
     await helper.queue.defineTask(taskId, _.defaults({
