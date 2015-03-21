@@ -1242,7 +1242,7 @@
             },
             "inherits": {
               "version": "2.0.1",
-              "from": "inherits@~2.0.1",
+              "from": "inherits@2",
               "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.1.tgz"
             }
           }
@@ -1255,9 +1255,9 @@
       "resolved": "https://registry.npmjs.org/superagent-promise/-/superagent-promise-0.2.0.tgz"
     },
     "taskcluster-base": {
-      "version": "0.7.14",
-      "from": "taskcluster-base@0.7.14",
-      "resolved": "https://registry.npmjs.org/taskcluster-base/-/taskcluster-base-0.7.14.tgz",
+      "version": "0.7.15",
+      "from": "taskcluster-base@0.7.15",
+      "resolved": "https://registry.npmjs.org/taskcluster-base/-/taskcluster-base-0.7.15.tgz",
       "dependencies": {
         "express": {
           "version": "4.9.0",
@@ -1667,7 +1667,7 @@
               "dependencies": {
                 "uglify-js": {
                   "version": "2.4.17",
-                  "from": "uglify-js@~2.4.12",
+                  "from": "uglify-js@~2.4.0",
                   "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-2.4.17.tgz",
                   "dependencies": {
                     "async": {
@@ -1792,7 +1792,7 @@
             },
             "source-map": {
               "version": "0.1.43",
-              "from": "source-map@~0.1.40",
+              "from": "source-map@0.1.x",
               "resolved": "https://registry.npmjs.org/source-map/-/source-map-0.1.43.tgz",
               "dependencies": {
                 "amdefine": {
@@ -2026,7 +2026,7 @@
                 },
                 "mime": {
                   "version": "1.2.11",
-                  "from": "mime@~1.2.9",
+                  "from": "mime@1.2.11",
                   "resolved": "https://registry.npmjs.org/mime/-/mime-1.2.11.tgz"
                 },
                 "tough-cookie": {
