@@ -326,13 +326,25 @@ class QueueService {
       task.workerType
     );
 
+    // Find the time to deadline
+    var timeToDeadline = secondsTo(task.deadline);
+    // If deadline is reached, we don't care to publish a message about the task
+    // being pending.
+    if (timeToDeadline === 0) {
+      // This should not happen, but if timing is right it is possible.
+      debug("[not-a-bug] runId: %s of taskId: %s became pending after " +
+            "deadline, skipping pending message publication to azure queue",
+            runId, task.taskId);
+      return;
+    }
+
     // Put message queue
     return new Promise((accept, reject) => {
       this.service.createMessage(queueName, JSON.stringify({
         taskId:     task.taskId,
         runId:      runId
       }), {
-        messagettl:         secondsTo(task.deadline),
+        messagettl:         timeToDeadline,
         visibilityTimeout:  0
       }, (err) => { err ? reject(err) : accept() });
     });
