@@ -45,6 +45,26 @@ suite("Entity (create/load)", function() {
     });
   });
 
+  /*
+  // Dirty hack for testing perf when disabling nagle
+  test("Item.create 1k items", function() {
+    var count = 400;
+    var createNext = function() {
+      return Item.create({
+        id:     slugid.v4(),
+        name:   'my-test-item',
+        count:  1
+      }).then(function() {
+        count -= 1;
+        if (count > 0) {
+          console.log(count);
+          return createNext();
+        }
+      });
+    };
+    return Promise.all([createNext(), createNext()]);
+  }); return; //*/
+
   test("Item.create (won't overwrite)", function() {
     return Item.create({
       id:     id,
