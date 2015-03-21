@@ -170,6 +170,12 @@ class ClaimResolver {
         return;
       }
 
+      // If task deadline is exceeded we don't just have claim-expired we, have
+      // deadline, expired... And we choose to forget about claim-expired
+      if (task.deadline.getTime() <= Date.now()) {
+        return;
+      }
+
       // Update run
       run.state           = 'exception';
       run.reasonResolved  = 'claim-expired';
