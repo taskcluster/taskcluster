@@ -1242,7 +1242,7 @@
             },
             "inherits": {
               "version": "2.0.1",
-              "from": "inherits@2",
+              "from": "inherits@~2.0.1",
               "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.1.tgz"
             }
           }
@@ -1255,9 +1255,9 @@
       "resolved": "https://registry.npmjs.org/superagent-promise/-/superagent-promise-0.2.0.tgz"
     },
     "taskcluster-base": {
-      "version": "0.7.13",
-      "from": "taskcluster-base@0.7.13",
-      "resolved": "https://registry.npmjs.org/taskcluster-base/-/taskcluster-base-0.7.13.tgz",
+      "version": "0.7.14",
+      "from": "taskcluster-base@0.7.14",
+      "resolved": "https://registry.npmjs.org/taskcluster-base/-/taskcluster-base-0.7.14.tgz",
       "dependencies": {
         "express": {
           "version": "4.9.0",
@@ -1707,7 +1707,7 @@
               "dependencies": {
                 "uglify-js": {
                   "version": "2.4.17",
-                  "from": "uglify-js@~2.4.12",
+                  "from": "uglify-js@~2.4.0",
                   "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-2.4.17.tgz",
                   "dependencies": {
                     "async": {
@@ -1792,7 +1792,7 @@
             },
             "source-map": {
               "version": "0.1.43",
-              "from": "source-map@0.1.x",
+              "from": "source-map@~0.1.40",
               "resolved": "https://registry.npmjs.org/source-map/-/source-map-0.1.43.tgz",
               "dependencies": {
                 "amdefine": {
@@ -2636,7 +2636,7 @@
                 },
                 "readable-stream": {
                   "version": "1.1.13",
-                  "from": "readable-stream@1.1",
+                  "from": "readable-stream@1.x >=1.1.9",
                   "dependencies": {
                     "core-util-is": {
                       "version": "1.0.1",
@@ -2793,7 +2793,7 @@
                                 },
                                 "inherits": {
                                   "version": "2.0.1",
-                                  "from": "inherits@2",
+                                  "from": "inherits@~2.0.1",
                                   "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.1.tgz"
                                 }
                               }
