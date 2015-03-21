@@ -44,7 +44,7 @@ module.exports = {
     deadlineQueue:                'deadline-queue',
 
     // Number of ms before deadline expiration message arrives, past deadline
-    deadlineDelay:                15 * 60 * 1000,
+    deadlineDelay:                1 * 60 * 1000,
 
     // Configuration for deadline-reaper
     deadline: {

@@ -1149,11 +1149,18 @@ api.declare({
   }
 
   // Authenticate request by providing parameters
-  if(!req.satisfies({
+  if (!req.satisfies({
     workerGroup:    run.workerGroup,
     workerId:       run.workerId
   })) {
     return;
+  }
+
+  // Check if task is past deadline
+  if (task.deadline.getTime() <= Date.now()) {
+    return res.status(409).json({
+      message: "Task deadline exceeded"
+    });
   }
 
   // Set takenUntil to now + claimTimeout
