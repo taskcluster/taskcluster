@@ -17,6 +17,14 @@ var taskcluster = require('taskcluster-client');
 
 // Instantiate the Queue Client class
 var queue = new taskcluster.Queue({
+  timeout: 30 * 1000, // timeout for _each_ invidual http request
+
+  // By default we share a global agent if you specify your instance
+  // will have it's own agent with the given options...
+  agent: {
+    // https://nodejs.org/api/http.html#http_new_agent_options
+  },
+
   credentials: {
     clientId:     '...',
     accessToken:  '...',
