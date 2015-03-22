@@ -13,7 +13,26 @@ var hawk        = require('hawk');
 var url         = require('url');
 var crypto      = require('crypto');
 var slugid      = require('slugid');
+var http        = require('http');
+var https       = require('https');
 var Promise     = require('promise');
+
+// Default options for our http/https global agents...
+var AGENT_OPTIONS = {
+  maxSockets: 256,
+  maxFreeSockets: 10,
+  keepAlive: true
+};
+
+/**
+Generally shared agents is optimal we are creating our own rather then
+defaulting to the global node agents primarily so we can tweak this across all
+our components if needed...
+*/
+var DEFAULT_AGENTS = {
+  http: new http.Agent(AGENT_OPTIONS),
+  https: new https.Agent(AGENT_OPTIONS)
+};
 
 // Default options stored globally for convenience
 var _defaultOptions = {
@@ -23,6 +42,8 @@ var _defaultOptions = {
     certificate:  process.env.TASKCLUSTER_CERTIFICATE
   },
 
+  timeout: 30 * 1000, // 30 seconds
+
   maxRetries:     5
 };
 
@@ -31,6 +52,11 @@ var _defaultOptions = {
 var makeRequest = function(client, method, url, payload) {
   // Construct request object
   var req = request(method.toUpperCase(), url);
+  // Set the http agent for this request...
+  req.agent(client._httpAgent);
+
+  // Timeout for each individual request.
+  req.timeout(client._timeout);
 
   // Send payload if defined
   if (payload !== undefined) {
@@ -89,6 +115,24 @@ exports.createClient = function(reference) {
       baseUrl:          reference.baseUrl        || '',
       exchangePrefix:   reference.exchangePrefix || ''
     }, _defaultOptions);
+
+    // Shortcut for which default agent to use...
+    var isHttps = this._options.baseUrl.indexOf('https') === 0;
+
+    if (this._options.agent) {
+      // We have explicit options for new agent create one...
+      this._httpAgent = isHttps ?
+        new https.Agent(this._options.agent) :
+        new http.Agent(this._options.agent);
+    } else {
+      // Use default global agent(s)...
+      this._httpAgent = isHttps ?
+        DEFAULT_AGENTS.https :
+        DEFAULT_AGENTS.http;
+    }
+
+    // Timeout for each _individual_ http request.
+    this._timeout = this._options.timeout;
 
     // Build ext for hawk requests
     this._extData = undefined;
