@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 )
@@ -407,7 +408,17 @@ func (task *TaskRun) run() error {
 
 	fmt.Println("Running task!")
 	fmt.Println(task.String())
-	return nil
+	cmd := exec.Command(task.Payload.Command[0], task.Payload.Command[1:]...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+	log.Printf("Waiting for command to finish...")
+	err = cmd.Wait()
+	log.Printf("Command finished with error: %v", err)
+	return err
 }
 
 // Dealing with Invalid Task Payloads
