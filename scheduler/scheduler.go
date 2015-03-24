@@ -386,7 +386,7 @@ type (
 		// for treeherder reporting and task indexing don't conflict, hence, we have
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
-		Extra json.RawMessage `json:"extra"`
+		Extra map[string]json.RawMessage `json:"extra"`
 		// Required task metadata
 		Metadata struct {
 			// Human readable description of the task, please **explain** what the
@@ -406,7 +406,7 @@ type (
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
-		Payload json.RawMessage `json:"payload"`
+		Payload map[string]json.RawMessage `json:"payload"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		ProvisionerId string `json:"provisionerId"`
@@ -430,7 +430,7 @@ type (
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-		Tags json.RawMessage `json:"tags"`
+		Tags map[string]json.RawMessage `json:"tags"`
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
@@ -473,7 +473,7 @@ type (
 		} `json:"metadata"`
 		Status TaskGraphStatusStructure `json:"status"`
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags json.RawMessage `json:"tags"`
+		Tags map[string]json.RawMessage `json:"tags"`
 		// Mapping from task-labels to task information and state.
 		Tasks []struct {
 			// List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.
@@ -538,7 +538,7 @@ type (
 		} `json:"metadata"`
 		Status TaskGraphStatusStructure `json:"status"`
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags json.RawMessage `json:"tags"`
+		Tags map[string]json.RawMessage `json:"tags"`
 	}
 
 	// Response containing the status structure for a task-graph
@@ -585,7 +585,7 @@ type (
 		// authorized to use.
 		Scopes []string `json:"scopes"`
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags json.RawMessage `json:"tags"`
+		Tags map[string]json.RawMessage `json:"tags"`
 		// List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.
 		Tasks []struct {
 			// List of required `taskId`s

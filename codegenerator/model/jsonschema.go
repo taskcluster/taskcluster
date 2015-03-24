@@ -148,7 +148,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 			}
 			typ += "}"
 		} else {
-			typ = "json.RawMessage"
+			typ = "map[string]json.RawMessage"
 		}
 	case "number":
 		typ = "int"
@@ -169,6 +169,8 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 	case "time.Time":
 		extraPackages["time"] = true
 	case "json.RawMessage":
+		extraPackages["encoding/json"] = true
+	case "map[string]json.RawMessage":
 		extraPackages["encoding/json"] = true
 	}
 	content += typ
