@@ -7,7 +7,6 @@ var _ = require('lodash');
 // Export methods and classes from lib/
 _.defaults(exports,
   require('./lib/client'),
-  require('./lib/amqplistener'),
   require('./lib/pulselistener'),
   require('./lib/weblistener'),
   require('./lib/utils')
