@@ -54,7 +54,5 @@ type (
 		Graphs []string `json:"graphs"`
 		// Maximum time the task container can run in seconds
 		MaxRunTime int `json:"maxRunTime"`
-		// The Operating System name and version to use for the task.
-		OsVersion string `json:"osVersion"`
 	}
 )

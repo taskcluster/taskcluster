@@ -5,17 +5,10 @@
   "description": "This schema defines the structure of the `payload` property referred to in a Task Cluster Task definition.",
   "type": "object",
   "required": [
-    "osVersion",
     "command",
     "maxRunTime"
   ],
   "properties": {
-    "osVersion": {
-      "title": "Operating System version.",
-      "description": "The Operating System name and version to use for the task.",
-      "type": "string",
-	  "enum": ["Windows Server 2008", "Mac OS X 10.9"]
-    },
     "command": {
       "title": "Command to run.",
       "type": "array",
