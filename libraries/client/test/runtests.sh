@@ -6,7 +6,6 @@ mocha                         \
   test/utils_test.js          \
   test/retry_test.js          \
   test/pulselistener_test.js  \
-  test/amqplistener_test.js   \
   test/weblistener_test.js    \
   ;
 

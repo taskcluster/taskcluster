@@ -17,22 +17,27 @@ var http        = require('http');
 var https       = require('https');
 var Promise     = require('promise');
 
-// Default options for our http/https global agents...
+/** Default options for our http/https global agents */
 var AGENT_OPTIONS = {
-  maxSockets: 256,
-  maxFreeSockets: 10,
-  keepAlive: true
+  maxSockets:       256,
+  maxFreeSockets:   10,
+  keepAlive:        true
 };
 
 /**
-Generally shared agents is optimal we are creating our own rather then
-defaulting to the global node agents primarily so we can tweak this across all
-our components if needed...
-*/
+ * Generally shared agents is optimal we are creating our own rather then
+ * defaulting to the global node agents primarily so we can tweak this across
+ * all our components if needed...
+ */
 var DEFAULT_AGENTS = {
-  http: new http.Agent(AGENT_OPTIONS),
-  https: new https.Agent(AGENT_OPTIONS)
+  http:   new http.Agent(AGENT_OPTIONS),
+  https:  new https.Agent(AGENT_OPTIONS)
 };
+
+// Exports agents, consumers can provide their own default agents and tests
+// can call taskcluster.agents.http.destroy() when running locally, otherwise
+// tests won't terminate
+exports.agents = DEFAULT_AGENTS;
 
 // Default options stored globally for convenience
 var _defaultOptions = {
@@ -41,19 +46,21 @@ var _defaultOptions = {
     accessToken:  process.env.TASKCLUSTER_ACCESS_TOKEN,
     certificate:  process.env.TASKCLUSTER_CERTIFICATE
   },
-
-  timeout: 30 * 1000, // 30 seconds
-
+  // Request time out (defaults to 30 seconds)
+  timeout:        30 * 1000,
+  // Max number of request retries
   maxRetries:     5
 };
-
 
 /** Make a request for a Client instance */
 var makeRequest = function(client, method, url, payload) {
   // Construct request object
   var req = request(method.toUpperCase(), url);
-  // Set the http agent for this request...
-  req.agent(client._httpAgent);
+  // Set the http agent for this request, if supported in the current
+  // environment (browser environment doesn't support http.Agent)
+  if (req.agent) {
+    req.agent(client._httpAgent);
+  }
 
   // Timeout for each individual request.
   req.timeout(client._timeout);
@@ -227,8 +234,14 @@ exports.createClient = function(reference) {
               url,
               payload
             ).end().then(function(res) {
-              // If the response is not 200 OK (or 2xx)
-              if (!res.ok) {
+              // If request was successful, accept the result
+              debug("Success calling: %s, (%s retries)",
+                    entry.name, attempts - 1);
+              return accept(res.body);
+            }, function(err) {
+              // If we got a response we read the error code from the response
+              var res = err.response;
+              if (res) {
                 // Decide if we should retry
                 if (attempts < that._options.maxRetries &&
                     500 <= res.status &&  // Check if it's a 5xx error
@@ -252,11 +265,7 @@ exports.createClient = function(reference) {
                 err.statusCode = res.status;
                 return reject(err);
               }
-              // If request was successful, accept the result
-              debug("Success calling: %s, (%s retries)",
-                    entry.name, attempts - 1);
-              return accept(res.body);
-            }, function(err) {
+
               // Decide if we should retry
               if (attempts < that._options.maxRetries) {
                 debug("Request error calling %s (retrying), err: %s, JSON: %s",

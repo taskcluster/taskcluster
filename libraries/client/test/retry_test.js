@@ -148,6 +148,8 @@ suite('retry-test', function() {
   teardown(function() {
     assert(_mockAuthServer, "_mockAuthServer doesn't exist");
     assert(_apiServer,      "_apiServer doesn't exist");
+    taskcluster.agents.http.destroy();
+    taskcluster.agents.https.destroy();
     return _apiServer.terminate().then(function() {
       _apiServer = null;
       return _mockAuthServer.terminate().then(function() {
