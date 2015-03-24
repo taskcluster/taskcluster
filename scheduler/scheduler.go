@@ -386,7 +386,7 @@ type (
 		// for treeherder reporting and task indexing don't conflict, hence, we have
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
-		Extra interface{} `json:"extra"`
+		Extra json.RawMessage `json:"extra"`
 		// Required task metadata
 		Metadata struct {
 			// Human readable description of the task, please **explain** what the
@@ -430,7 +430,7 @@ type (
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-		Tags interface{} `json:"tags"`
+		Tags json.RawMessage `json:"tags"`
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
@@ -473,7 +473,7 @@ type (
 		} `json:"metadata"`
 		Status TaskGraphStatusStructure `json:"status"`
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags interface{} `json:"tags"`
+		Tags json.RawMessage `json:"tags"`
 		// Mapping from task-labels to task information and state.
 		Tasks []struct {
 			// List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.
@@ -491,7 +491,7 @@ type (
 			// true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.
 			Satisfied bool `json:"satisfied"`
 			// State of the task as considered by the scheduler
-			State interface{} `json:"state"`
+			State json.RawMessage `json:"state"`
 			// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 			TaskId string `json:"taskId"`
 		} `json:"tasks"`
@@ -516,7 +516,7 @@ type (
 		// true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.
 		Satisfied bool `json:"satisfied"`
 		// State of the task as considered by the scheduler
-		State interface{} `json:"state"`
+		State json.RawMessage `json:"state"`
 		// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		TaskId string `json:"taskId"`
 	}
@@ -538,7 +538,7 @@ type (
 		} `json:"metadata"`
 		Status TaskGraphStatusStructure `json:"status"`
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags interface{} `json:"tags"`
+		Tags json.RawMessage `json:"tags"`
 	}
 
 	// Response containing the status structure for a task-graph
@@ -555,7 +555,7 @@ type (
 		// Unique identifier for task-graph scheduler managing the given task-graph
 		SchedulerId string `json:"schedulerId"`
 		// Task-graph state, this enum is **frozen** new values will **not** be added.
-		State interface{} `json:"state"`
+		State json.RawMessage `json:"state"`
 		// Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		TaskGraphId string `json:"taskGraphId"`
 	}
@@ -585,7 +585,7 @@ type (
 		// authorized to use.
 		Scopes []string `json:"scopes"`
 		// Arbitrary key-value tags (only strings limited to 4k)
-		Tags interface{} `json:"tags"`
+		Tags json.RawMessage `json:"tags"`
 		// List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.
 		Tasks []struct {
 			// List of required `taskId`s

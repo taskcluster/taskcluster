@@ -543,7 +543,7 @@ type (
 		// for treeherder reporting and task indexing don't conflict, hence, we have
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
-		Extra interface{} `json:"extra"`
+		Extra json.RawMessage `json:"extra"`
 		// Required task metadata
 		Metadata struct {
 			// Human readable description of the task, please **explain** what the
@@ -587,7 +587,7 @@ type (
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-		Tags interface{} `json:"tags"`
+		Tags json.RawMessage `json:"tags"`
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
@@ -613,7 +613,7 @@ type (
 			Name string `json:"name"`
 			// This is the `storageType` for the request that was used to create
 			// the artifact.
-			StorageType interface{} `json:"storageType"`
+			StorageType json.RawMessage `json:"storageType"`
 		} `json:"artifacts"`
 	}
 
@@ -674,12 +674,12 @@ type (
 	// Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#
-	PostArtifactRequest interface{}
+	PostArtifactRequest json.RawMessage
 
 	// Response to a request for posting an artifact. Note that the `storageType` property is referenced in the request as well.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#
-	PostArtifactResponse interface{}
+	PostArtifactResponse json.RawMessage
 
 	// Request to claim (or reclaim) a task
 	//
@@ -722,7 +722,7 @@ type (
 		// task, by making a new run. This is much faster than ignoreing the issue
 		// and letting the task _retry_ by claim expiration. For any other _reason_
 		// reported the queue will not retry the task.
-		Reason interface{} `json:"reason"`
+		Reason json.RawMessage `json:"reason"`
 	}
 
 	// Response to a task status request
@@ -748,12 +748,12 @@ type (
 		Runs []struct {
 			// Reason for the creation of this run,
 			// **more reasons may be added in the future**."
-			ReasonCreated interface{} `json:"reasonCreated"`
+			ReasonCreated json.RawMessage `json:"reasonCreated"`
 			// Reason that run was resolved, this is mainly
 			// useful for runs resolved as `exception`.
 			// Note, **more reasons may be added in the future**, also this
 			// property is only available after the run is resolved.
-			ReasonResolved interface{} `json:"reasonResolved"`
+			ReasonResolved json.RawMessage `json:"reasonResolved"`
 			// Date-time at which this run was resolved, ie. when the run changed
 			// state from `running` to either `completed`, `failed` or `exception`.
 			// This property is only present after the run as been resolved.
@@ -768,7 +768,7 @@ type (
 			// after the run has been claimed.
 			Started time.Time `json:"started"`
 			// State of this run
-			State interface{} `json:"state"`
+			State json.RawMessage `json:"state"`
 			// Time at which the run expires and is resolved as `failed`, if the
 			// run isn't reclaimed. Note, only present after the run has been
 			// claimed.
@@ -786,7 +786,7 @@ type (
 		SchedulerId string `json:"schedulerId"`
 		// State of this task. This is just an auxiliary property derived from state
 		// of latests run, or `unscheduled` if none.
-		State interface{} `json:"state"`
+		State json.RawMessage `json:"state"`
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.
@@ -821,7 +821,7 @@ type (
 		// for treeherder reporting and task indexing don't conflict, hence, we have
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
-		Extra interface{} `json:"extra"`
+		Extra json.RawMessage `json:"extra"`
 		// Required task metadata
 		Metadata struct {
 			// Human readable description of the task, please **explain** what the
@@ -865,7 +865,7 @@ type (
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-		Tags interface{} `json:"tags"`
+		Tags json.RawMessage `json:"tags"`
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
