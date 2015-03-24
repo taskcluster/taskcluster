@@ -151,24 +151,24 @@ type Auth struct {
 // which occured. After making an API call, be sure to check the returned
 // CallSummary.Error - if it is nil, no error occurred.
 type CallSummary struct {
-	HttpRequest *http.Request `json:"-"`
+	HttpRequest *http.Request
 	// Keep a copy of request body in addition to the *http.Request, since
 	// accessing the Body via the *http.Request object, you get a io.ReadCloser
 	// - and after the request has been made, the body will have been read, and
 	// the data lost... This way, it is still available after the api call
 	// returns.
-	HttpRequestBody string `json:"-"`
+	HttpRequestBody string
 	// The Go Type which is marshaled into json and used as the http request
 	// body.
-	HttpRequestObject interface{}    `json:"-"`
-	HttpResponse      *http.Response `json:"-"`
+	HttpRequestObject interface{}
+	HttpResponse      *http.Response
 	// Keep a copy of response body in addition to the *http.Response, since
 	// accessing the Body via the *http.Response object, you get a
 	// io.ReadCloser - and after the response has been read once (to unmarshal
 	// json into native go types) the data is lost... This way, it is still
 	// available after the api call returns.
-	HttpResponseBody string `json:"-"`
-	Error            error  `json:"-"`
+	HttpResponseBody string
+	Error            error
 }
 
 type BadHttpResponseCode struct {
