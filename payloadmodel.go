@@ -2,6 +2,10 @@
 
 package main
 
+import (
+	"encoding/json"
+)
+
 type (
 	// This schema defines the structure of the `payload` property referred to
 	// in a Task Cluster Task definition.
@@ -9,7 +13,7 @@ type (
 	// See http://people.mozilla.org/~pmoore/schema.json#
 	GenericWorkerPayload struct {
 		// Artifact upload map example: ```{ "hosts": "/etc/hosts" }```
-		Artifacts interface{} `json:"artifacts"`
+		Artifacts map[string]json.RawMessage `json:"artifacts"`
 		// Example: `['/bin/bash', '-c', 'build.sh']`.
 		Command []string `json:"command"`
 		// List of base64 encoded asymmetric encrypted environment variables.
@@ -22,7 +26,7 @@ type (
 		//   "ENV_NAME": "VALUE"
 		// }
 		// ```
-		Env interface{} `json:"env"`
+		Env map[string]string `json:"env"`
 		// Used to enable additional functionality.
 		Features struct {
 			Artifacts bool `json:"artifacts"`

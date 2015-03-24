@@ -337,8 +337,7 @@ func (task *TaskRun) reclaim() {
 	// check if an error occurred...
 	if err := callSummary.Error; err != nil {
 		log.Printf("%v\n", err)
-		log.Println("Cancelling task due to above error when reclaiming...")
-		task.cancel()
+		task.cancel("Cancelling task due to above error when reclaiming...")
 		log.Println(task.String())
 		return
 	}
@@ -348,7 +347,8 @@ func (task *TaskRun) reclaim() {
 	log.Printf("Reclaimed task %v successfully (http response code %v).\n", task.TaskId, callSummary.HttpResponse.StatusCode)
 }
 
-func (task *TaskRun) cancel() error {
+func (task *TaskRun) cancel(reason string) error {
+	log.Printf("Cancelling task %v due to: %v...\n", task.TaskId, reason)
 	// TODO: implement!
 	return nil
 }
@@ -382,8 +382,26 @@ func (task *TaskRun) fetchTaskDefinition() error {
 }
 
 func (task *TaskRun) validatePayload() error {
+	// To get payload, first marshal task.Definition.Payload into json
+	// (currently it is a map[string]json.RawMessage).
+	unmarshaledPayload := make(map[string]interface{})
+	for i, j := range task.Definition.Payload {
+		var x interface{} = nil
+		err := json.Unmarshal(j, &x)
+		if err != nil {
+			return err
+		}
+		unmarshaledPayload[i] = x
+	}
+	jsonPayload, err := json.Marshal(unmarshaledPayload)
+	// It shouldn't be possible to get an error here, since we are marshaling a
+	// subset of something we previously unmarshaled - but never say never...
+	if err != nil {
+		return err
+	}
+	log.Printf("Json Payload: %v\n", string(jsonPayload))
 	schemaLoader := gojsonschema.NewReferenceLoader("file://" + os.Getenv("PAYLOAD_SCHEMA"))
-	docLoader := gojsonschema.NewStringLoader(string(task.Definition.Payload))
+	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
 	if err != nil {
 		return err
@@ -404,25 +422,54 @@ func (task *TaskRun) validatePayload() error {
 		// worker should give a `reason`. If the worker is unable execute the
 		// task specific payload/code/logic, it should report exception with
 		// the reason `malformed-payload`.
-		ter := queue.TaskExceptionRequest{Reason: json.RawMessage(`"malformed-payload"`)}
-		tsr, callSummary := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
-		if callSummary.Error != nil {
-			log.Printf("Not able to report exception for task %v:\n%v", task.TaskId, callSummary.Error)
-		} else {
-			task.TaskClaimResponse.Status = tsr.Status
-			log.Println(task.String())
+		if err := task.reportException(); err != nil {
+			log.Printf("Error occurred reporting exception for task %v:\n%v\n", task.TaskId, err)
 		}
-		return fmt.Errorf("Invalid payload for task %v\n", task.TaskId)
+		return fmt.Errorf("Validation of payload failed for task %v", task.TaskId)
 	}
-	// now unmarshal the payload into the task.Payload
-	return json.Unmarshal([]byte(task.Definition.Payload), &task.Payload)
+	return json.Unmarshal(jsonPayload, &task.Payload)
+}
+
+func (task *TaskRun) reportException() error {
+	ter := queue.TaskExceptionRequest{Reason: json.RawMessage(`"malformed-payload"`)}
+	tsr, callSummary := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
+	if callSummary.Error != nil {
+		log.Printf("Not able to report exception for task %v:\n%v", task.TaskId, callSummary.Error)
+		return callSummary.Error
+	}
+	task.TaskClaimResponse.Status = tsr.Status
+	log.Println(task.String())
+	return nil
+}
+
+func (task *TaskRun) reportFailed() error {
+	tsr, callSummary := Queue.ReportFailed(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
+	if callSummary.Error != nil {
+		log.Printf("Not able to report failed completion for task %v:\n%v", task.TaskId, callSummary.Error)
+		return callSummary.Error
+	}
+	task.TaskClaimResponse.Status = tsr.Status
+	log.Println(task.String())
+	return nil
+}
+
+func (task *TaskRun) reportCompleted() error {
+	log.Printf("Command finished successfully!")
+	tsr, callSummary := Queue.ReportCompleted(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
+	if callSummary.Error != nil {
+		log.Printf("Not able to report successful completion for task %v:\n%v", task.TaskId, callSummary.Error)
+		return callSummary.Error
+	}
+	task.TaskClaimResponse.Status = tsr.Status
+	log.Println(task.String())
+	return nil
 }
 
 func (task *TaskRun) run() error {
 
 	fmt.Println("Running task!")
 	fmt.Println(task.String())
-	task.prepEnvironment()
+	task.prepEnvVars()
 	cmd := exec.Command(task.Payload.Command[0], task.Payload.Command[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -431,14 +478,38 @@ func (task *TaskRun) run() error {
 		return err
 	}
 	log.Printf("Waiting for command to finish...")
+	// start a go routine to kill task after max run time...
+	go func() {
+		time.Sleep(time.Second * time.Duration(task.Payload.MaxRunTime))
+		task.cancel("max run time (" + strconv.Itoa(task.Payload.MaxRunTime) + "s) exceeded")
+	}()
 	err = cmd.Wait()
-	log.Printf("Command finished with error: %v", err)
-	return err
+	// Reporting Task Result
+	// ---------------------
+	// If a task is malformed, the input is invalid, configuration is wrong, or
+	// the worker is told to shutdown by AWS before the the task is completed,
+	// it should be reported to the queue using `queue.reportException`.
+	if err != nil {
+		// If the task is unsuccessful, ie. exits non-zero, the worker should
+		// resolve it using `queue.reportFailed` (this implies test or build
+		// failure).
+		switch err.(type) {
+		case *exec.ExitError:
+			return task.reportFailed()
+		}
+
+		log.Printf("Command finished with error: %v", err)
+		return task.reportException()
+	}
+	// When the worker has completed the task successfully it should call
+	// `queue.reportCompleted`.
+	return task.reportCompleted()
 }
 
-func (task *TaskRun) prepEnvironment() error {
-	for i := range task.Payload.Env {
-		os.Setenv("", "")
+func (task *TaskRun) prepEnvVars() {
+	for i, j := range task.Payload.Env {
+		fmt.Printf("Setting env var %v to '%v'\n", i, j)
+		os.Setenv(i, j)
 	}
 }
 
@@ -470,12 +541,3 @@ func (task *TaskRun) prepEnvironment() error {
 // exception and create a new run, if the task has additional retries left.
 //
 //
-// Reporting Task Result
-// ---------------------
-// When the worker has completed the task successfully it should call
-// `queue.reportCompleted`. If the task is unsuccessful, ie. exits non-zero,
-// the worker should resolve it using `queue.reportFailed` (this implies test
-// or build failure). If a task is malformed, the input is invalid,
-// configuration is wrong, or the worker is told to shutdown by AWS before the
-// the task is completed, it should be reported to the queue using
-// `queue.reportException`.
