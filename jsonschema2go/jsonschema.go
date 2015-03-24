@@ -109,7 +109,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 		content += comment
 		content += jsonSubSchema.TypeName + " "
 	}
-	typ := "interface{}"
+	typ := "json.RawMessage"
 	if p := jsonSubSchema.Type; p != nil {
 		typ = *p
 	}
@@ -146,7 +146,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 			}
 			typ += "}"
 		} else {
-			typ = "interface{}"
+			typ = "map[string]json.RawMessage"
 		}
 	case "number":
 		typ = "int"
@@ -160,9 +160,16 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 		if f := jsonSubSchema.Format; f != nil {
 			if *f == "date-time" {
 				typ = "time.Time"
-				extraPackages["time"] = true
 			}
 		}
+	}
+	switch typ {
+	case "time.Time":
+		extraPackages["time"] = true
+	case "json.RawMessage":
+		extraPackages["encoding/json"] = true
+	case "map[string]json.RawMessage":
+		extraPackages["encoding/json"] = true
 	}
 	content += typ
 	if withComments {
