@@ -66,9 +66,9 @@ func (api *API) generateAPICode(apiName string) string {
 	// here we choose an example API method to call, just the first one in the list of api.Entries
 	// We need to first see if it returns one or two variables...
 	if api.Entries[0].Output == "" {
-		exampleCall = "//  httpResponse := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
+		exampleCall = "//  callSummary := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
 	} else {
-		exampleCall = "//  data, httpResponse := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
+		exampleCall = "//  data, callSummary := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
 	}
 	comment := ""
 	if api.Description != "" {

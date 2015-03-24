@@ -19,7 +19,7 @@
 //
 // and then call one or more of auth's methods, e.g.:
 //
-//  data, httpResponse := Auth.Scopes(.....)
+//  data, callSummary := Auth.Scopes(.....)
 package auth
 
 import (
@@ -176,7 +176,7 @@ func (err BadHttpResponseCode) Error() string {
 //  Auth := auth.New("123", "456")                       // set clientId and accessToken
 //  Auth.Authenticate = false                            // disable authentication (true by default)
 //  Auth.BaseURL = "http://localhost:1234/api/Auth/v1"   // alternative API endpoint (production by default)
-//  data, httpResponse := Auth.Scopes(.....)             // for example, call the Scopes(.....) API endpoint (described further down)...
+//  data, callSummary := Auth.Scopes(.....)              // for example, call the Scopes(.....) API endpoint (described further down)...
 func New(clientId string, accessToken string) *Auth {
 	return &Auth{
 		ClientId:     clientId,
