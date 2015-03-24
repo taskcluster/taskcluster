@@ -89,6 +89,10 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "// and then call one or more of auth's methods, e.g.:\n"
 	comment += "//\n"
 	comment += exampleCall + "\n"
+	comment += "// handling any errors...\n"
+	comment += "//  if callSummary.Error != nil {\n"
+	comment += "//  	// handle error...\n"
+	comment += "//  }\n"
 
 	content := comment
 	content += "package " + api.apiDef.PackageName + "\n"
@@ -250,6 +254,9 @@ func (err BadHttpResponseCode) Error() string {
 	content += "//  " + exampleVarName + ".Authenticate = false             " + strings.Repeat(" ", len(apiName)) + "           // disable authentication (true by default)\n"
 	content += "//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"   // alternative API endpoint (production by default)\n"
 	content += exampleCall + strings.Repeat(" ", 48-len(exampleCall)+len(apiName)+len(exampleVarName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
+	content += "//  if callSummary.Error != nil {\n"
+	content += "//  	// handle errors...\n"
+	content += "//  }\n"
 	content += "func New(clientId string, accessToken string) *Auth {\n"
 	content += "\treturn &Auth{\n"
 	content += "\t\tClientId: clientId,\n"

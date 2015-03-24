@@ -28,6 +28,10 @@
 // and then call one or more of auth's methods, e.g.:
 //
 //  data, callSummary := Queue.Task(.....)
+// handling any errors...
+//  if callSummary.Error != nil {
+//  	// handle error...
+//  }
 package queue
 
 import (
@@ -185,6 +189,9 @@ func (err BadHttpResponseCode) Error() string {
 //  Queue.Authenticate = false                             // disable authentication (true by default)
 //  Queue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
 //  data, callSummary := Queue.Task(.....)                 // for example, call the Task(.....) API endpoint (described further down)...
+//  if callSummary.Error != nil {
+//  	// handle errors...
+//  }
 func New(clientId string, accessToken string) *Auth {
 	return &Auth{
 		ClientId:     clientId,

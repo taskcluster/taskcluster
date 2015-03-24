@@ -29,6 +29,10 @@
 // and then call one or more of auth's methods, e.g.:
 //
 //  data, callSummary := Scheduler.CreateTaskGraph(.....)
+// handling any errors...
+//  if callSummary.Error != nil {
+//  	// handle error...
+//  }
 package scheduler
 
 import (
@@ -186,6 +190,9 @@ func (err BadHttpResponseCode) Error() string {
 //  Scheduler.Authenticate = false                                 // disable authentication (true by default)
 //  Scheduler.BaseURL = "http://localhost:1234/api/Scheduler/v1"   // alternative API endpoint (production by default)
 //  data, callSummary := Scheduler.CreateTaskGraph(.....)          // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
+//  if callSummary.Error != nil {
+//  	// handle errors...
+//  }
 func New(clientId string, accessToken string) *Auth {
 	return &Auth{
 		ClientId:     clientId,

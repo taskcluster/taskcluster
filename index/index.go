@@ -104,6 +104,10 @@
 // and then call one or more of auth's methods, e.g.:
 //
 //  data, callSummary := Index.FindTask(.....)
+// handling any errors...
+//  if callSummary.Error != nil {
+//  	// handle error...
+//  }
 package index
 
 import (
@@ -261,6 +265,9 @@ func (err BadHttpResponseCode) Error() string {
 //  Index.Authenticate = false                             // disable authentication (true by default)
 //  Index.BaseURL = "http://localhost:1234/api/Index/v1"   // alternative API endpoint (production by default)
 //  data, callSummary := Index.FindTask(.....)             // for example, call the FindTask(.....) API endpoint (described further down)...
+//  if callSummary.Error != nil {
+//  	// handle errors...
+//  }
 func New(clientId string, accessToken string) *Auth {
 	return &Auth{
 		ClientId:     clientId,
