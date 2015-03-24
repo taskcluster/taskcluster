@@ -31,18 +31,22 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
-	"strings"
+	"strconv"
 	"time"
 )
 
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {
+func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
+	callSummary := new(CallSummary)
+	callSummary.HttpRequestObject = payload
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
-		panic(err)
+		callSummary.Error = err
+		return result, callSummary
 	}
+	callSummary.HttpRequestBody = string(jsonPayload)
 
 	var ioReader io.Reader = nil
 	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
@@ -50,7 +54,8 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	}
 	httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
 	if err != nil {
-		panic(err)
+		callSummary.Error = err
+		return result, callSummary
 	}
 	// only authenticate if client library user wishes to
 	if auth.Authenticate {
@@ -64,6 +69,7 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 		httpRequest.Header.Set("Authorization", reqAuth)
 	}
 	httpRequest.Header.Set("Content-Type", "application/json")
+	callSummary.HttpRequest = httpRequest
 	httpClient := &http.Client{}
 	// fmt.Println("Request\n=======")
 	// fullRequest, err := httputil.DumpRequestOut(httpRequest, true)
@@ -73,25 +79,40 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	// fullResponse, err := httputil.DumpResponse(response, true)
 	// fmt.Println(string(fullResponse))
 	if err != nil {
-		panic(err)
+		callSummary.Error = err
+		return result, callSummary
 	}
-	responseBody := response.Body
-	defer responseBody.Close()
+	defer response.Body.Close()
+	callSummary.HttpResponse = response
 	// now read response into memory, so that we can return the body
-	body, err := ioutil.ReadAll(responseBody)
+	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		panic(err)
+		callSummary.Error = err
+		return result, callSummary
 	}
-	response.Body = ioutil.NopCloser(strings.NewReader(string(body)))
+	// response.Body = ioutil.NopCloser(strings.NewReader(string(body)))
+	callSummary.HttpResponseBody = string(body)
+
+	// now check if http response code isn't in good range [200,300)...
+	if respCode := response.StatusCode; respCode/100 != 2 {
+		callSummary.Error = BadHttpResponseCode{
+			HttpResponseCode: respCode,
+			Message: "HTTP response code " + strconv.Itoa(respCode) + " to http " +
+				method + " request to " + auth.BaseURL + route + ":\n" +
+				string(body) + "\n",
+		}
+		return result, callSummary
+	}
 	// if result is nil, it means there is no response body json
 	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
 		err := json.Unmarshal(body, &result)
 		if err != nil {
-			panic(err)
+			callSummary.Error = err
+			return result, callSummary
 		}
 	}
 	// fmt.Printf("ClientId: %v\nAccessToken: %v\nPayload: %v\nURL: %v\nMethod: %v\nResult: %v\n", auth.ClientId, auth.AccessToken, string(jsonPayload), auth.BaseURL+route, method, result)
-	return result, response
+	return result, callSummary
 }
 
 // The entry point into all the functionality in this package is to create an Auth object.
@@ -110,6 +131,40 @@ type Auth struct {
 	// Please note calling auth.New(clientId string, accessToken string) is an
 	// alternative way to create an Auth object with Authenticate set to true.
 	Authenticate bool
+}
+
+// CallSummary provides information about the underlying http request and
+// response issued for a given API call, together with details of any Error
+// which occured. After making an API call, be sure to check the returned
+// CallSummary.Error - if it is nil, no error occurred.
+type CallSummary struct {
+	HttpRequest *http.Request `json:"-"`
+	// Keep a copy of request body in addition to the *http.Request, since
+	// accessing the Body via the *http.Request object, you get a io.ReadCloser
+	// - and after the request has been made, the body will have been read, and
+	// the data lost... This way, it is still available after the api call
+	// returns.
+	HttpRequestBody string `json:"-"`
+	// The Go Type which is marshaled into json and used as the http request
+	// body.
+	HttpRequestObject interface{}    `json:"-"`
+	HttpResponse      *http.Response `json:"-"`
+	// Keep a copy of response body in addition to the *http.Response, since
+	// accessing the Body via the *http.Response object, you get a
+	// io.ReadCloser - and after the response has been read once (to unmarshal
+	// json into native go types) the data is lost... This way, it is still
+	// available after the api call returns.
+	HttpResponseBody string `json:"-"`
+	Error            error  `json:"-"`
+}
+
+type BadHttpResponseCode struct {
+	HttpResponseCode int
+	Message          string
+}
+
+func (err BadHttpResponseCode) Error() string {
+	return err.Message
 }
 
 // Returns a pointer to Auth, configured to run against production.  If you
@@ -137,9 +192,9 @@ func New(clientId string, accessToken string) *Auth {
 // credentials, as provide by the `getCredentials` request below.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#scopes
-func (a *Auth) Scopes(clientId string) (*GetClientScopesResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "GET", "/client/"+clientId+"/scopes", new(GetClientScopesResponse))
-	return responseObject.(*GetClientScopesResponse), httpResponse
+func (a *Auth) Scopes(clientId string) (*GetClientScopesResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/client/"+clientId+"/scopes", new(GetClientScopesResponse))
+	return responseObject.(*GetClientScopesResponse), callSummary
 }
 
 // Returns the clients `accessToken` as needed for verifying signatures.
@@ -151,9 +206,9 @@ func (a *Auth) Scopes(clientId string) (*GetClientScopesResponse, *http.Response
 // function described above.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#getCredentials
-func (a *Auth) GetCredentials(clientId string) (*GetClientCredentialsResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "GET", "/client/"+clientId+"/credentials", new(GetClientCredentialsResponse))
-	return responseObject.(*GetClientCredentialsResponse), httpResponse
+func (a *Auth) GetCredentials(clientId string) (*GetClientCredentialsResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/client/"+clientId+"/credentials", new(GetClientCredentialsResponse))
+	return responseObject.(*GetClientCredentialsResponse), callSummary
 }
 
 // Returns all information about a given client. This end-point is mostly
@@ -161,9 +216,9 @@ func (a *Auth) GetCredentials(clientId string) (*GetClientCredentialsResponse, *
 // authenticate a request, see `getCredentials` for this purpose.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#client
-func (a *Auth) Client(clientId string) (*GetClientResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "GET", "/client/"+clientId+"", new(GetClientResponse))
-	return responseObject.(*GetClientResponse), httpResponse
+func (a *Auth) Client(clientId string) (*GetClientResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/client/"+clientId+"", new(GetClientResponse))
+	return responseObject.(*GetClientResponse), callSummary
 }
 
 // Create client with given `clientId`, `name`, `expires`, `scopes` and
@@ -175,9 +230,9 @@ func (a *Auth) Client(clientId string) (*GetClientResponse, *http.Response) {
 // the client that is created.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#createClient
-func (a *Auth) CreateClient(clientId string, payload *GetClientCredentialsResponse1) (*GetClientResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(payload, "PUT", "/client/"+clientId+"", new(GetClientResponse))
-	return responseObject.(*GetClientResponse), httpResponse
+func (a *Auth) CreateClient(clientId string, payload *GetClientCredentialsResponse1) (*GetClientResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "PUT", "/client/"+clientId+"", new(GetClientResponse))
+	return responseObject.(*GetClientResponse), callSummary
 }
 
 // Modify client `name`, `expires`, `scopes` and
@@ -188,43 +243,43 @@ func (a *Auth) CreateClient(clientId string, payload *GetClientCredentialsRespon
 // the client that is updated.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#modifyClient
-func (a *Auth) ModifyClient(clientId string, payload *GetClientCredentialsResponse1) (*GetClientResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(payload, "POST", "/client/"+clientId+"/modify", new(GetClientResponse))
-	return responseObject.(*GetClientResponse), httpResponse
+func (a *Auth) ModifyClient(clientId string, payload *GetClientCredentialsResponse1) (*GetClientResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "POST", "/client/"+clientId+"/modify", new(GetClientResponse))
+	return responseObject.(*GetClientResponse), callSummary
 }
 
 // Delete a client with given `clientId`.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#removeClient
-func (a *Auth) RemoveClient(clientId string) *http.Response {
-	_, httpResponse := a.apiCall(nil, "DELETE", "/client/"+clientId+"", nil)
-	return httpResponse
+func (a *Auth) RemoveClient(clientId string) *CallSummary {
+	_, callSummary := a.apiCall(nil, "DELETE", "/client/"+clientId+"", nil)
+	return callSummary
 }
 
 // Reset credentials for a client. This will generate a new `accessToken`.
 // as always the `accessToken` will be generated server-side and returned.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#resetCredentials
-func (a *Auth) ResetCredentials(clientId string) (*GetClientResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "POST", "/client/"+clientId+"/reset-credentials", new(GetClientResponse))
-	return responseObject.(*GetClientResponse), httpResponse
+func (a *Auth) ResetCredentials(clientId string) (*GetClientResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "POST", "/client/"+clientId+"/reset-credentials", new(GetClientResponse))
+	return responseObject.(*GetClientResponse), callSummary
 }
 
 // Return list with all clients
 //
 // See http://docs.taskcluster.net/auth/api-docs/#listClients
-func (a *Auth) ListClients() (*ListClientsResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "GET", "/list-clients", new(ListClientsResponse))
-	return responseObject.(*ListClientsResponse), httpResponse
+func (a *Auth) ListClients() (*ListClientsResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/list-clients", new(ListClientsResponse))
+	return responseObject.(*ListClientsResponse), callSummary
 }
 
 // Get an SAS string for use with a specific Azure Table Storage table.
 // Note, this will create the table, if it doesn't already exists.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#azureTableSAS
-func (a *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSignatureResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "GET", "/azure/"+account+"/table/"+table+"/read-write", new(AzureSharedAccessSignatureResponse))
-	return responseObject.(*AzureSharedAccessSignatureResponse), httpResponse
+func (a *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSignatureResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/azure/"+account+"/table/"+table+"/read-write", new(AzureSharedAccessSignatureResponse))
+	return responseObject.(*AzureSharedAccessSignatureResponse), callSummary
 }
 
 // Get temporary AWS credentials for `read-write` or `read-only` access to
@@ -247,9 +302,9 @@ func (a *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSi
 // `/` delimited folder structure.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#awsS3Credentials
-func (a *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "GET", "/aws/s3/"+level+"/"+bucket+"/"+prefix+"", new(AWSS3CredentialsResponse))
-	return responseObject.(*AWSS3CredentialsResponse), httpResponse
+func (a *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/aws/s3/"+level+"/"+bucket+"/"+prefix+"", new(AWSS3CredentialsResponse))
+	return responseObject.(*AWSS3CredentialsResponse), callSummary
 }
 
 // Documented later...
@@ -257,9 +312,9 @@ func (a *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AW
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#ping
-func (a *Auth) Ping() *http.Response {
-	_, httpResponse := a.apiCall(nil, "GET", "/ping", nil)
-	return httpResponse
+func (a *Auth) Ping() *CallSummary {
+	_, callSummary := a.apiCall(nil, "GET", "/ping", nil)
+	return callSummary
 }
 
 type (

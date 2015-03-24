@@ -40,18 +40,22 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
-	"strings"
+	"strconv"
 	"time"
 )
 
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *http.Response) {
+func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
+	callSummary := new(CallSummary)
+	callSummary.HttpRequestObject = payload
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
-		panic(err)
+		callSummary.Error = err
+		return result, callSummary
 	}
+	callSummary.HttpRequestBody = string(jsonPayload)
 
 	var ioReader io.Reader = nil
 	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
@@ -59,7 +63,8 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	}
 	httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
 	if err != nil {
-		panic(err)
+		callSummary.Error = err
+		return result, callSummary
 	}
 	// only authenticate if client library user wishes to
 	if auth.Authenticate {
@@ -73,6 +78,7 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 		httpRequest.Header.Set("Authorization", reqAuth)
 	}
 	httpRequest.Header.Set("Content-Type", "application/json")
+	callSummary.HttpRequest = httpRequest
 	httpClient := &http.Client{}
 	// fmt.Println("Request\n=======")
 	// fullRequest, err := httputil.DumpRequestOut(httpRequest, true)
@@ -82,25 +88,40 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	// fullResponse, err := httputil.DumpResponse(response, true)
 	// fmt.Println(string(fullResponse))
 	if err != nil {
-		panic(err)
+		callSummary.Error = err
+		return result, callSummary
 	}
-	responseBody := response.Body
-	defer responseBody.Close()
+	defer response.Body.Close()
+	callSummary.HttpResponse = response
 	// now read response into memory, so that we can return the body
-	body, err := ioutil.ReadAll(responseBody)
+	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		panic(err)
+		callSummary.Error = err
+		return result, callSummary
 	}
-	response.Body = ioutil.NopCloser(strings.NewReader(string(body)))
+	// response.Body = ioutil.NopCloser(strings.NewReader(string(body)))
+	callSummary.HttpResponseBody = string(body)
+
+	// now check if http response code isn't in good range [200,300)...
+	if respCode := response.StatusCode; respCode/100 != 2 {
+		callSummary.Error = BadHttpResponseCode{
+			HttpResponseCode: respCode,
+			Message: "HTTP response code " + strconv.Itoa(respCode) + " to http " +
+				method + " request to " + auth.BaseURL + route + ":\n" +
+				string(body) + "\n",
+		}
+		return result, callSummary
+	}
 	// if result is nil, it means there is no response body json
 	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
 		err := json.Unmarshal(body, &result)
 		if err != nil {
-			panic(err)
+			callSummary.Error = err
+			return result, callSummary
 		}
 	}
 	// fmt.Printf("ClientId: %v\nAccessToken: %v\nPayload: %v\nURL: %v\nMethod: %v\nResult: %v\n", auth.ClientId, auth.AccessToken, string(jsonPayload), auth.BaseURL+route, method, result)
-	return result, response
+	return result, callSummary
 }
 
 // The entry point into all the functionality in this package is to create an Auth object.
@@ -119,6 +140,40 @@ type Auth struct {
 	// Please note calling auth.New(clientId string, accessToken string) is an
 	// alternative way to create an Auth object with Authenticate set to true.
 	Authenticate bool
+}
+
+// CallSummary provides information about the underlying http request and
+// response issued for a given API call, together with details of any Error
+// which occured. After making an API call, be sure to check the returned
+// CallSummary.Error - if it is nil, no error occurred.
+type CallSummary struct {
+	HttpRequest *http.Request `json:"-"`
+	// Keep a copy of request body in addition to the *http.Request, since
+	// accessing the Body via the *http.Request object, you get a io.ReadCloser
+	// - and after the request has been made, the body will have been read, and
+	// the data lost... This way, it is still available after the api call
+	// returns.
+	HttpRequestBody string `json:"-"`
+	// The Go Type which is marshaled into json and used as the http request
+	// body.
+	HttpRequestObject interface{}    `json:"-"`
+	HttpResponse      *http.Response `json:"-"`
+	// Keep a copy of response body in addition to the *http.Response, since
+	// accessing the Body via the *http.Response object, you get a
+	// io.ReadCloser - and after the response has been read once (to unmarshal
+	// json into native go types) the data is lost... This way, it is still
+	// available after the api call returns.
+	HttpResponseBody string `json:"-"`
+	Error            error  `json:"-"`
+}
+
+type BadHttpResponseCode struct {
+	HttpResponseCode int
+	Message          string
+}
+
+func (err BadHttpResponseCode) Error() string {
+	return err.Message
 }
 
 // Returns a pointer to Auth, configured to run against production.  If you
@@ -203,9 +258,9 @@ func New(clientId string, accessToken string) *Auth {
 // another component to listen for completed tasks you have posted.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#createTaskGraph
-func (a *Auth) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1) (*TaskGraphStatusResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(payload, "PUT", "/task-graph/"+taskGraphId+"", new(TaskGraphStatusResponse))
-	return responseObject.(*TaskGraphStatusResponse), httpResponse
+func (a *Auth) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1) (*TaskGraphStatusResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "PUT", "/task-graph/"+taskGraphId+"", new(TaskGraphStatusResponse))
+	return responseObject.(*TaskGraphStatusResponse), callSummary
 }
 
 // Add a set of tasks to an existing task-graph. The request format is very
@@ -223,9 +278,9 @@ func (a *Auth) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1
 // within a task in the task-graph being modified.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#extendTaskGraph
-func (a *Auth) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition) (*TaskGraphStatusResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(payload, "POST", "/task-graph/"+taskGraphId+"/extend", new(TaskGraphStatusResponse))
-	return responseObject.(*TaskGraphStatusResponse), httpResponse
+func (a *Auth) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition) (*TaskGraphStatusResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "POST", "/task-graph/"+taskGraphId+"/extend", new(TaskGraphStatusResponse))
+	return responseObject.(*TaskGraphStatusResponse), callSummary
 }
 
 // Get task-graph status, this will return the _task-graph status
@@ -235,9 +290,9 @@ func (a *Auth) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition)
 // **Note**, that `finished` implies successfully completion.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#status
-func (a *Auth) Status(taskGraphId string) (*TaskGraphStatusResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "GET", "/task-graph/"+taskGraphId+"/status", new(TaskGraphStatusResponse))
-	return responseObject.(*TaskGraphStatusResponse), httpResponse
+func (a *Auth) Status(taskGraphId string) (*TaskGraphStatusResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+taskGraphId+"/status", new(TaskGraphStatusResponse))
+	return responseObject.(*TaskGraphStatusResponse), callSummary
 }
 
 // Get task-graph information, this includes the _task-graph status
@@ -248,9 +303,9 @@ func (a *Auth) Status(taskGraphId string) (*TaskGraphStatusResponse, *http.Respo
 // end-point instead.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#info
-func (a *Auth) Info(taskGraphId string) (*TaskGraphInfoResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "GET", "/task-graph/"+taskGraphId+"/info", new(TaskGraphInfoResponse))
-	return responseObject.(*TaskGraphInfoResponse), httpResponse
+func (a *Auth) Info(taskGraphId string) (*TaskGraphInfoResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+taskGraphId+"/info", new(TaskGraphInfoResponse))
+	return responseObject.(*TaskGraphInfoResponse), callSummary
 }
 
 // Inspect a task-graph, this returns all the information the task-graph
@@ -267,9 +322,9 @@ func (a *Auth) Info(taskGraphId string) (*TaskGraphInfoResponse, *http.Response)
 // the future.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspect
-func (a *Auth) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "GET", "/task-graph/"+taskGraphId+"/inspect", new(InspectTaskGraphResponse))
-	return responseObject.(*InspectTaskGraphResponse), httpResponse
+func (a *Auth) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+taskGraphId+"/inspect", new(InspectTaskGraphResponse))
+	return responseObject.(*InspectTaskGraphResponse), callSummary
 }
 
 // Inspect a task from a task-graph, this returns all the information the
@@ -286,9 +341,9 @@ func (a *Auth) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *http.Res
 // the future.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspectTask
-func (a *Auth) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraphTaskResponse, *http.Response) {
-	responseObject, httpResponse := a.apiCall(nil, "GET", "/task-graph/"+taskGraphId+"/inspect/"+taskId+"", new(InspectTaskGraphTaskResponse))
-	return responseObject.(*InspectTaskGraphTaskResponse), httpResponse
+func (a *Auth) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraphTaskResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+taskGraphId+"/inspect/"+taskId+"", new(InspectTaskGraphTaskResponse))
+	return responseObject.(*InspectTaskGraphTaskResponse), callSummary
 }
 
 // Documented later...
@@ -296,9 +351,9 @@ func (a *Auth) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraph
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#ping
-func (a *Auth) Ping() *http.Response {
-	_, httpResponse := a.apiCall(nil, "GET", "/ping", nil)
-	return httpResponse
+func (a *Auth) Ping() *CallSummary {
+	_, callSummary := a.apiCall(nil, "GET", "/ping", nil)
+	return callSummary
 }
 
 type (
