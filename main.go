@@ -256,31 +256,34 @@ func (task *TaskRun) claim() error {
 
 	// Using the taskId and runId from the <MessageText> tag, the worker
 	// must call queue.claimTask().
-	tcrsp, resp := Queue.ClaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId), &task.TaskClaimRequest)
+	tcrsp, callSummary := Queue.ClaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId), &task.TaskClaimRequest)
+	task.ClaimCallSummary = *callSummary
 
-	task.TaskClaimResponse = *tcrsp
-	task.ClaimHTTPResponseCode = resp.StatusCode
-
-	// If the queue.claimTask() operation is successful or fails with a 4xx
-	// error, the worker must delete the messages from the Azure queue.
-	statusCodeHundredPart := resp.StatusCode / 100
-
-	if statusCodeHundredPart == 2 || statusCodeHundredPart == 4 {
-		err := task.deleteFromAzure()
-		if err != nil {
-			return err
+	// check if an error occurred...
+	if callSummary.Error != nil {
+		// If the queue.claimTask() operation fails with a 4xx error, the
+		// worker must delete the messages from the Azure queue.
+		if callSummary.HttpResponse.StatusCode/100 == 4 {
+			// attempt to delete, but if it fails, log and continue
+			// nothing we can do, and better to return the first 4xx error
+			err := task.deleteFromAzure()
+			if err != nil {
+				log.Println("Not able to delete task " + task.TaskId + " from Azure after receiving a 4xx http response when claiming it.")
+				log.Println(err)
+			}
 		}
+		log.Println(task.String())
+		log.Println(callSummary.Error)
+		return callSummary.Error
 	}
 
-	responseBody, err := ioutil.ReadAll(resp.Body)
+	task.TaskClaimResponse = *tcrsp
+
+	err := task.deleteFromAzure()
 	if err != nil {
 		return err
 	}
-	task.ClaimResponseBody = string(responseBody)
-	if statusCodeHundredPart != 2 {
-		log.Println(task.String())
-		return fmt.Errorf("Received HTTP response code %v when claiming task with taskId %v", resp.StatusCode, task.TaskId)
-	}
+
 	return nil
 }
 
@@ -328,27 +331,20 @@ func (task *TaskRun) deleteFromAzure() error {
 
 func (task *TaskRun) reclaim() {
 	fmt.Printf("Reclaiming task %v...\n", task.TaskId)
-	tcrsp, resp := Queue.ReclaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId))
-	task.TaskClaimResponse = *tcrsp
-	task.ClaimHTTPResponseCode = resp.StatusCode
+	tcrsp, callSummary := Queue.ReclaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId))
 
-	// If the queue.claimTask() operation is successful or fails with a 4xx
-	// error, the worker must delete the messages from the Azure queue.
-	statusCodeHundredPart := resp.StatusCode / 100
-
-	responseBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
+	// check if an error occurred...
+	if err := callSummary.Error; err != nil {
 		log.Printf("%v\n", err)
 		log.Println("Cancelling task due to above error when reclaiming...")
 		task.cancel()
+		log.Println(task.String())
+		return
 	}
-	task.ClaimResponseBody = string(responseBody)
-	if statusCodeHundredPart == 2 {
-		log.Printf("Reclaimed task %v successfully (http response code %v).\n", task.TaskId, resp.StatusCode)
-		log.Printf("Received HTTP response code %v when reclaiming task with taskId %v\n", resp.StatusCode, task.TaskId)
-		log.Println("Therefore cancelling task...")
-		task.cancel()
-	}
+
+	task.TaskClaimResponse = *tcrsp
+	task.ClaimCallSummary = *callSummary
+	log.Printf("Reclaimed task %v successfully (http response code %v).\n", task.TaskId, callSummary.HttpResponse.StatusCode)
 }
 
 func (task *TaskRun) cancel() error {
@@ -375,12 +371,12 @@ func (task *TaskRun) setReclaimTimer() {
 
 func (task *TaskRun) fetchTaskDefinition() error {
 	// Fetch task definition
-	definition, resp := Queue.Task(task.TaskId)
-	if resp.StatusCode/100 != 2 {
-		return fmt.Errorf("Unable to retrieve Task Definition for task %v - received http response code %v from task definition request\n", task.TaskId, resp.StatusCode)
+	definition, callSummary := Queue.Task(task.TaskId)
+	if err := callSummary.Error; err != nil {
+		return err
 	}
 	task.Definition = *definition
-	log.Printf("Successfully retrieved Task Definition (http response code %v)\n", resp.StatusCode)
+	log.Printf("Successfully retrieved Task Definition (http response code %v)\n", callSummary.HttpResponse.StatusCode)
 	return nil
 }
 
