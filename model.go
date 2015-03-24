@@ -141,7 +141,6 @@ func (task *TaskRun) String() string {
 	response += fmt.Sprintf("Features:                %v\n", task.Payload.Features)
 	response += fmt.Sprintf("Graphs:                  %v\n", task.Payload.Graphs)
 	response += fmt.Sprintf("Max Run Time:            %v\n", task.Payload.MaxRunTime)
-	response += fmt.Sprintf("OS Version:              %v\n", task.Payload.OsVersion)
 	response += fmt.Sprintf("==========================================\n")
 	return response
 }

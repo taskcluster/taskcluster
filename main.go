@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -394,6 +395,23 @@ func (task *TaskRun) validatePayload() error {
 		for _, desc := range result.Errors() {
 			log.Printf("- %s\n", desc)
 		}
+		// Dealing with Invalid Task Payloads
+		// ----------------------------------
+		// If the task payload is malformed or invalid, keep in mind that the
+		// queue doesn't validate the contents of the `task.payload` property,
+		// the worker may resolve the current run by reporting an exception.
+		// When reporting an exception, using `queue.reportException` the
+		// worker should give a `reason`. If the worker is unable execute the
+		// task specific payload/code/logic, it should report exception with
+		// the reason `malformed-payload`.
+		ter := queue.TaskExceptionRequest{Reason: json.RawMessage(`"malformed-payload"`)}
+		tsr, callSummary := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
+		if callSummary.Error != nil {
+			log.Printf("Not able to report exception for task %v:\n%v", task.TaskId, callSummary.Error)
+		} else {
+			task.TaskClaimResponse.Status = tsr.Status
+			log.Println(task.String())
+		}
 		return fmt.Errorf("Invalid payload for task %v\n", task.TaskId)
 	}
 	// now unmarshal the payload into the task.Payload
@@ -404,6 +422,7 @@ func (task *TaskRun) run() error {
 
 	fmt.Println("Running task!")
 	fmt.Println(task.String())
+	task.prepEnvironment()
 	cmd := exec.Command(task.Payload.Command[0], task.Payload.Command[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -417,15 +436,12 @@ func (task *TaskRun) run() error {
 	return err
 }
 
-// Dealing with Invalid Task Payloads
-// ----------------------------------
-// If the task payload is malformed or invalid, keep in mind that the queue
-// doesn't validate the contents of the `task.payload` property, the worker may
-// resolve the current run by reporting an exception. When reporting an
-// exception, using `queue.reportException` the worker should give a `reason`.
-// If the worker is unable execute the task specific payload/code/logic, it
-// should report exception with the reason `malformed-payload`.
-//
+func (task *TaskRun) prepEnvironment() error {
+	for i := range task.Payload.Env {
+		os.Setenv("", "")
+	}
+}
+
 // This can also be used if an external resource that is referenced in a
 // declarative nature doesn't exist. Generally, it should be used if we can be
 // certain that another run of the task will have the same result. This differs
