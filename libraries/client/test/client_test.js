@@ -24,8 +24,10 @@ suite('mockAuthServer', function() {
   });
 
   teardown(function() {
-    taskcluster.agents.http.destroy();
-    taskcluster.agents.https.destroy();
+    if (taskcluster.agents.http.destroy) {
+      taskcluster.agents.http.destroy();
+      taskcluster.agents.https.destroy();
+    }
     return _server.terminate().then(function() {
       // destroy connections from http agents
       _server = null;
@@ -259,8 +261,10 @@ suite('mockAuthServer', function() {
 
     // Be a good citizen and cleanup after this test so we don't leak state.
     teardown(function() {
-      cleanClient.agents.http.destroy();
-      cleanClient.agents.https.destroy();
+      if (cleanClient.agents.http.destroy) {
+        cleanClient.agents.http.destroy();
+        cleanClient.agents.https.destroy();
+      }
       process.env.TASKCLUSTER_CLIENT_ID    = CLIENT_ID;
       process.env.TASKCLUSTER_ACCESS_TOKEN = ACCESS_TOKEN;
     });
