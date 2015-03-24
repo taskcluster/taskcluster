@@ -13,6 +13,10 @@ suite('PulseListener', function() {
   var cfg = base.config({
     defaults:     {},
     profile:      {},
+    envs: [
+      'pulse_username',
+      'pulse_password'
+    ],
     filename:     'taskcluster-client'
   });
 
