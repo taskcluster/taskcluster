@@ -6,16 +6,6 @@ suite('mockAuthServer', function() {
   var debug           = require('debug')('test:client_test');
   var request         = require('superagent-promise');
 
-  // Ensure the client is removed from the require cache so it can be reloaded
-  // from scratch.
-  function getNewClient() {
-    // This is an absolute path to the client.js file. If this file is moved
-    // then this obviously will break.
-    var clientPath = path.resolve(__dirname, '..', 'lib', 'client.js');
-    delete require.cache[clientPath];
-    return require(clientPath);
-  }
-
   var _server = null;
   setup(function() {
     return base.testing.createMockAuthServer({
@@ -34,7 +24,10 @@ suite('mockAuthServer', function() {
   });
 
   teardown(function() {
+    taskcluster.agents.http.destroy();
+    taskcluster.agents.https.destroy();
     return _server.terminate().then(function() {
+      // destroy connections from http agents
       _server = null;
     });
   });
@@ -247,24 +240,37 @@ suite('mockAuthServer', function() {
   });
 
   suite('getCredentials with environment variables', function() {
-    var ACCESS_TOKEN = process.env.TASKCLUSTER_ACCESS_TOKEN,
-        CLIENT_ID = process.env.TASKCLUSTER_CLIENT_ID;
+    var ACCESS_TOKEN  = process.env.TASKCLUSTER_ACCESS_TOKEN,
+        CLIENT_ID     = process.env.TASKCLUSTER_CLIENT_ID;
+
+    // Ensure the client is removed from the require cache so it can be
+    // reloaded from scratch.
+    var cleanClient = null;
+    setup(function() {
+      process.env.TASKCLUSTER_CLIENT_ID    = 'test-client';
+      process.env.TASKCLUSTER_ACCESS_TOKEN = 'test-token';
+
+      // This is an absolute path to the client.js file. If this file is moved
+      // then this obviously will break.
+      var clientPath = path.resolve(__dirname, '..', 'lib', 'client.js');
+      delete require.cache[clientPath];
+      cleanClient = require(clientPath);
+    });
 
     // Be a good citizen and cleanup after this test so we don't leak state.
     teardown(function() {
+      cleanClient.agents.http.destroy();
+      cleanClient.agents.https.destroy();
       process.env.TASKCLUSTER_CLIENT_ID    = CLIENT_ID;
       process.env.TASKCLUSTER_ACCESS_TOKEN = ACCESS_TOKEN;
     });
 
     test('implicit credentials', function() {
-      process.env.TASKCLUSTER_CLIENT_ID    = 'test-client';
-      process.env.TASKCLUSTER_ACCESS_TOKEN = 'test-token';
-
       var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
         baseUrl: 'http://localhost:62351/v1'
       });
 
-      var Auth = new getNewClient().createClient(reference);
+      var Auth = new cleanClient.createClient(reference);
       var auth = new Auth();
 
       return auth.getCredentials('test-client').then(function(client) {
