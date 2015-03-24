@@ -1,4 +1,4 @@
-# TaskCluster Client [![Circle CI](https://circleci.com/gh/taskcluster/taskcluster-client.svg?style=svg)](https://circleci.com/gh/taskcluster/taskcluster-client)
+# TaskCluster Client [![Circle CI](https://circleci.com/gh/taskcluster/taskcluster-client.svg?style=badge)](https://circleci.com/gh/taskcluster/taskcluster-client)
 _A taskcluster client library for node.js._
 
 This client library is generated from the auto-generated API reference.
