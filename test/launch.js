@@ -10,7 +10,10 @@ var waitForPort = require('./wait_for_port');
 module.exports = function launch(options) {
   return new Promise(function(accept, reject) {
     options = options || {};
-    var env = process.env;
+    var env = _.defaults({    // SlugId (well, we can use any string really)
+      ACCESS_TOKEN:           '7_3HoMEbQau1Qlzwx-JZgg'
+    }, process.env);
+    // Add SSL keys if needed for test
     if (options.ssl) {
       env = _.defaults({
         SERVER_CRT_FILE:       path.join(__dirname, 'server.crt'),

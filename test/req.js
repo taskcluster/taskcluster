@@ -1,5 +1,5 @@
 var INPUT_URL = 'http://localhost:60022/log';
-var OUTPUT_URL = 'http://localhost:60023/log';
+var OUTPUT_URL = 'http://localhost:60023/log/7_3HoMEbQau1Qlzwx-JZgg';
 
 module.exports.client = function client(method, url, opts) {
 	url = require('url').parse(url);

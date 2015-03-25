@@ -1,13 +1,13 @@
-suite('https test', function() {
+suite('access-token test', function() {
   var launch = require('./launch');
   var assert = require('assert');
-  var https = require('https');
+  var http = require('http');
   var createReq = require('./req');
   var readUntilEnd = require('./read_until_end');
 
   var handle;
   setup(function() {
-    return launch({ssl: true}).then(function(out) {
+    return launch().then(function(out) {
       handle = out;
     });
   });
@@ -19,19 +19,19 @@ suite('https test', function() {
 
     function read() {
       setTimeout(function() {
-        var req = https.request({
+        var req = http.request({
           host:               'localhost',
           port:               60023,
-          path:               '/log/7_3HoMEbQau1Qlzwx-JZgg',
-          method:             'GET',
-          rejectUnauthorized: false,
-          requestCert:        true,
-          agent:              false
+          path:               '/log/wrong-access-token',
+          method:             'GET'
         });
-        readUntilEnd(req).then(function(buffer) {
-          assert.equal(expected, buffer);
-          done()
-        }).catch(done);
+        req.once('response', function(stream) {
+          if (stream.statusCode === 401) {
+            done()
+          } else {
+            done(new Error("Expected authentication error!"));
+          }
+        });
         req.end();
       }, 1000);
     }

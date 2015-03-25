@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/pprof"
@@ -28,11 +29,23 @@ func abort(writer http.ResponseWriter) error {
 }
 
 func startLogServe(stream *stream.Stream) {
+	// Get access token from environment variable
+	accessToken := os.Getenv("ACCESS_TOKEN")
+
 	routes := http.NewServeMux()
-	routes.HandleFunc("/log", func(w http.ResponseWriter, r *http.Request) {
+	routes.HandleFunc("/log/", func(w http.ResponseWriter, r *http.Request) {
 		debug("output %s %s", r.Method, r.URL.String())
-		// TODO: Add method context switching here...
-		getLog(stream, w, r)
+
+		// Authenticate the request with accessToken, this is good enough because
+		// live logs are short-lived
+		if (r.URL.String()[5:] != accessToken) {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.WriteHeader(401)
+			fmt.Fprint(w, "Access denied")
+		} else {
+			getLog(stream, w, r)
+		}
 	})
 
 	server := http.Server{

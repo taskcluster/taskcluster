@@ -32,3 +32,10 @@ Usage:
 npm install
 npm test
 ```
+
+## Configuration
+The following environment variables can be used to configure the server.
+
+ * `ACCESS_TOKEN` secret access token required for access (**required**)
+ * `SERVER_CRT_FILE` path to SSL certificate file (optional)
+ * `SERVER_KEY_FILE` path to SSL private key file (optional)
