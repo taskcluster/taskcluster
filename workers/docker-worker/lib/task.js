@@ -4,6 +4,7 @@ Handler of individual tasks beings at claim ends with posting task results.
 import Debug from 'debug';
 import request from 'superagent-promise';
 import util from 'util';
+import uuid from 'uuid';
 import waitForEvent from './wait_for_event';
 import features from './features';
 import pullImage from './pull_image_to_stream';
@@ -616,9 +617,27 @@ export default class Task {
     }
 
     // Extract any results from the hooks.
-    await stats.timeGen(
-      'tasks.time.states.stopped', this.states.stopped(this)
-    );
+    try {
+      await stats.timeGen(
+        'tasks.time.states.stopped', this.states.stopped(this)
+      );
+    }
+    catch (e) {
+      let lookupId = uuid.v4();
+      this.runtime.log('task exception', {
+        taskId: this.status.taskId,
+        runId: this.runId,
+        uuid: lookupId,
+        err: e.toString(),
+        stack: e.stack
+      });
+      this.stream.write(this.fmtLog(
+        `Unknown taskcluster error encountered.  Ask administrator to lookup ` +
+        `incidentId in log-file. Incident ID: ${lookupId}`
+      ));
+      success = false;
+      exitCode = -1;
+    }
 
     this.stream.write(this.logFooter(success, exitCode, this.taskStart, new Date()));
 

@@ -109,4 +109,127 @@ suite('Extend Task Graph', function() {
       customTask.log.indexOf('wooot custom') !== 1, 'correctly executed commands'
     );
   }));
+
+  test('task failure when graph json is invalid', co(function* () {
+    var graphId = slugid.v4();
+    var primaryTaskId = slugid.v4();
+
+    var result = yield worker.postToScheduler(graphId, {
+      metadata: {
+        source: 'http://xfoobar.com'
+      },
+      scopes: [
+        'queue:define-task:' + worker.provisionerId + '/' + worker.workerType
+      ],
+      tasks: [{
+        taskId: primaryTaskId,
+        label: 'primary',
+        task: {
+          metadata: {
+            owner: 'tests@local.localhost'
+          },
+          payload: {
+            image: 'taskcluster/test-ubuntu',
+            command: cmd(
+              'touch /graph.json'
+            ),
+            features: {},
+            artifacts: {},
+            graphs: ['/graph.json'],
+            maxRunTime: 5 * 60
+          }
+        }
+      }]
+    });
+
+    assert.ok(
+      result[0].log.indexOf("Invalid json in taskgraph extension path") !== -1,
+      'Task graph should have been logged as invalid'
+    );
+    assert.ok(
+      result[0].log.indexOf("Incident ID") !== -1,
+      'Incident lookup message did not appear in the log'
+    );
+    assert.ok(
+      result[0].run.state === 'failed',
+      'Task should have been marked as failed'
+    );
+  }));
+
+  test('Update invalid taskgraph id', co(function* () {
+    var graphId = slugid.v4();
+    var badGraphId = slugid.v4();
+    var primaryTaskId = slugid.v4();
+
+    var graphTask = Task.create({
+      taskGroupId: badGraphId,
+      schedulerId: 'task-graph-scheduler',
+      workerType: worker.workerType,
+      provisionerId: worker.provisionerId,
+      metadata: {
+        description: 'testing',
+        source: 'http://mytest/',
+        owner: 'test@localhost.local'
+      },
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd('echo "wooot custom!"'),
+        features: {},
+        artifacts: {},
+        maxRunTime: 5 * 60
+      }
+    });
+
+    var graph = {
+      tasks: [{
+        taskId: slugid.v4(),
+        label: EXTENSION_LABEL,
+        requires: [],
+        reruns: 0,
+        task: graphTask
+      }]
+    };
+
+    var json = JSON.stringify(graph);
+    var result = yield worker.postToScheduler(graphId, {
+      metadata: {
+        source: 'http://xfoobar.com'
+      },
+      scopes: [
+        'queue:define-task:' + worker.provisionerId + '/' + worker.workerType
+      ],
+      tasks: [{
+        taskId: primaryTaskId,
+        label: 'primary',
+        task: {
+          metadata: {
+            owner: 'tests@local.localhost'
+          },
+          payload: {
+            image: 'taskcluster/test-ubuntu',
+            command: cmd(
+              'echo \'' + json + '\' > /graph.json'
+            ),
+            features: {},
+            artifacts: {},
+            graphs: ['/graph.json'],
+            maxRunTime: 5 * 60
+          }
+        }
+      }]
+    });
+
+    assert.ok(
+      result[0].log.indexOf("Graph server error while extending task graph") !== -1,
+      'Task graph error not logged'
+    );
+    assert.ok(
+      result[0].log.indexOf("Incident ID") !== -1,
+      'Incident lookup message did not appear in the log'
+    );
+    assert.ok(
+      result[0].run.state === 'failed',
+      'Task should have been marked as failed'
+    );
+  }));
 });

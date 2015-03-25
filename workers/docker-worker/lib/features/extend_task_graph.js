@@ -35,7 +35,7 @@ export default class ExtendTaskGraph {
       taskHandler.stream.write(taskHandler.fmtLog(
         'Graph extension not found at path "%s" skipping...',
         graphPath
-      ))
+      ));
       return;
     }
 
@@ -78,8 +78,8 @@ export default class ExtendTaskGraph {
       taskHandler.stream.write(taskHandler.fmtLog(
         'Invalid json in taskgraph extension path: "%s" dumping file...'
       ));
-      taskHandler.stream.write(entryJSON)
-      return;
+      taskHandler.stream.write(entryJSON);
+      throw e;
     }
 
     // Extend the graph!
@@ -95,7 +95,7 @@ export default class ExtendTaskGraph {
         'Graph server error while extending task graph id %s : %s, %j',
         graphId, error, error.body
       ));
-      return;
+      throw error;
     }
   }
 
