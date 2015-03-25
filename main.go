@@ -40,8 +40,17 @@ func startLogServe(stream *stream.Stream) {
 		Handler: routes,
 	}
 
-	debug("output server listening... %s", server.Addr)
-	server.ListenAndServe()
+	crtFile := os.Getenv("SERVER_CRT_FILE")
+	keyFile := os.Getenv("SERVER_KEY_FILE")
+	if crtFile != "" && keyFile != "" {
+		debug("Output server listening... %s (with TLS)", server.Addr)
+		debug("key %s ", keyFile)
+		debug("crt %s ", crtFile)
+		server.ListenAndServeTLS(crtFile, keyFile)
+	} else {
+		debug("Output server listening... %s (without TLS)", server.Addr)
+		server.ListenAndServe()
+	}
 }
 
 // HTTP logic for serving the contents of a stream...
@@ -50,7 +59,6 @@ func getLog(
 	writer http.ResponseWriter,
 	req *http.Request,
 ) {
-
 	rng, rngErr := ParseRange(req.Header)
 
 	if rngErr != nil {
