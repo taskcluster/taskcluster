@@ -335,6 +335,10 @@ class BaseClient(object):
 
     hawkExt = self.makeHawkExt()
 
+    # Serialize payload if given
+    if payload:
+      payload = utils.dumpJson(payload)
+
     # Do a loop of retries
     retry = -1  # we plus first in the loop, and attempt 1 is retry 0
     retries = self.options['maxRetries']
@@ -361,7 +365,8 @@ class BaseClient(object):
         log.info('Not using hawk!')
         headers = {}
       if payload:
-        payload = utils.dumpJson(payload)
+        # Set header for JSON if payload is given, note that we serialize
+        # outside this loop.
         headers['Content-Type'] = 'application/json'
 
       log.debug('Making attempt %d', retry)
