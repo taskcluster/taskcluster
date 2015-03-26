@@ -140,7 +140,7 @@ func (self *Stream) Consume() error {
 
 			pendingWrites := len(handle.events)
 			if pendingWrites >= (EVENT_BUFFER_SIZE - 1) {
-				log.Println("Removing handle with %d pending writes", pendingWrites)
+				log.Printf("Removing handle with %d pending writes\n", pendingWrites)
 				// Remove the handle from any future event writes...
 				self.Unobserve(handle)
 				close(handle.events)
