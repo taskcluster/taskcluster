@@ -23,7 +23,7 @@ cd "$(dirname "${0}")"
 echo "Building proxy server..."
 # Output folder
 mkdir -p target
-GOARCH=amd64 GOOS=linux go get ./...
+go get ./...
 GOARCH=amd64 GOOS=linux go build -o target/livelog .
 
 echo "Building docker image for proxy server"
