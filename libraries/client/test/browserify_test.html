@@ -9,6 +9,9 @@
     <script>
       mocha.ui('tdd');
       mocha.reporter('html');
+      function assert(assertion, message) {
+        if (!assertion) throw new Error(message);
+      };
     </script>
     <script src="../taskcluster-client.js"></script>
     <script>
@@ -57,6 +60,117 @@
         });
         var url = auth.buildSignedUrl(auth.getCredentials, 'test-client');
       });
+
+
+      test("Request with authentication", function() {
+        var auth = new taskcluster.Auth({
+          baseUrl:      'http://localhost:62351/v1',
+          credentials: {
+            clientId:       'test-client',
+            accessToken:    'test-token'
+          }
+        });
+        return auth.getCredentials('test-client');
+      });
+
+      test('getCredentials using authorizedScopes', function() {
+        var auth = new taskcluster.Auth({
+          baseUrl:      'http://localhost:62351/v1',
+          credentials: {
+            clientId:       'test-client',
+            accessToken:    'test-token'
+          },
+          authorizedScopes: ['auth:credentials']
+        });
+        // Inspect the credentials
+        return auth.getCredentials('test-client').then(function(client) {
+          assert(client.clientId === 'test-client', "Expected clientId");
+        });
+      });
+
+
+      test('getCredentials using authorizedScopes (unauthorized)', function() {
+        var auth = new taskcluster.Auth({
+          baseUrl:      'http://localhost:62351/v1',
+          credentials: {
+            clientId:       'test-client',
+            accessToken:    'test-token'
+          },
+          authorizedScopes: ['scope-not-authorized']
+        });
+        // Inspect the credentials
+        return auth.getCredentials('test-client').then(function(client) {
+          assert(false, "Expected and error");
+        }, function(err) {
+          assert(err, "Expected an error");
+          assert(err.statusCode === 401, "Wrong status code");
+        });
+      });
+
+      test('getCredentials using temporary credentials', function() {
+        var tempCreds = taskcluster.createTemporaryCredentials({
+          scopes: ['auth:credentials'],
+          expiry: new Date(new Date().getTime() + 60 * 1000),
+          credentials: {
+            clientId:       'test-client',
+            accessToken:    'test-token',
+          },
+        });
+        var auth = new taskcluster.Auth({
+          baseUrl: 'http://localhost:62351/v1',
+          credentials: tempCreds
+        });
+        // Inspect the credentials
+        return auth.getCredentials('test-client').then(function(client) {
+          assert(client.clientId === 'test-client', "Expected clientId");
+        });
+      });
+
+      test('getCredentials using temp. creds (unauthorized)', function() {
+        var tempCreds = taskcluster.createTemporaryCredentials({
+          scopes: ['scope-not-authorized'],
+          expiry: new Date(new Date().getTime() + 60 * 1000),
+          credentials: {
+            clientId:       'test-client',
+            accessToken:    'test-token',
+          },
+        });
+        var auth = new taskcluster.Auth({
+          baseUrl: 'http://localhost:62351/v1',
+          credentials: tempCreds
+        });
+        // Inspect the credentials
+        return auth.getCredentials('test-client').then(function(client) {
+          assert(false, "Expected and error");
+        }, function(err) {
+          assert(err, "Expected an error");
+          assert(err.statusCode === 401, "Wrong status code");
+        });
+      });
+
+      test('Build signed url', function(done) {
+        var auth = new taskcluster.Auth({
+          baseUrl: 'http://localhost:62351/v1',
+          credentials: {
+            clientId:       'test-client',
+            accessToken:    'test-token',
+          }
+        });
+        var url = auth.buildSignedUrl(auth.getCredentials, 'test-client');
+        req = new XMLHttpRequest();
+        req.onreadystatechange = function() {
+          if (req.readyState == 4) {
+            if (req.status === 200) {
+              done();
+            } else {
+              done("Response code: " + req.status);
+            }
+          }
+        };
+        req.open('GET', url, true);
+        req.send();
+      });
+
     });
     </script>
     <script>
