@@ -1,0 +1,35 @@
+language: node_js
+
+node_js:
+  - "0.12"
+
+# since project contains both node and go, and we can only declare it as one
+# type, i'm declaring as a node project, and then adding the go parts by hand.
+# this requires setting env up, and also creating the repo under the $GOPATH so
+# that go get and go build function correctly. $SRCDIR is the location of the
+# git checkout under the $GOPATH.
+env:
+  - GOPATH=~/go SRCDIR=~/go/src/github.com/${TRAVIS_REPO_SLUG}
+
+before_install:
+  - mkdir -p "${SRCDIR}/.."
+  - cp -pr . "${SRCDIR}"
+  - cd "${SRCDIR}"
+  - go get ./...
+
+# the default "install" target will already run npm install and npm test...
+
+# currently cannot customise per user fork, see:
+# https://github.com/travis-ci/travis-ci/issues/1094
+# please comment out this section in your personal fork!
+notifications:
+  irc:
+    channels:
+      - "irc.mozilla.org#taskcluster-bots"
+    on_success: always
+    on_failure: always
+    template:
+      - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
+      - "Change view : %{compare_url}"
+      - "Build details : %{build_url}"
+      - "Commit message : %{commit_message}"

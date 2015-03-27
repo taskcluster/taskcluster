@@ -17,9 +17,13 @@ then
   exit 0
 fi
 
+# cd into the directory of this script, in case called from outside...
+cd "$(dirname "${0}")"
+
 echo "Building proxy server..."
 # Output folder
 mkdir -p target
+GOARCH=amd64 GOOS=linux go get ./...
 GOARCH=amd64 GOOS=linux go build -o target/livelog .
 
 echo "Building docker image for proxy server"
