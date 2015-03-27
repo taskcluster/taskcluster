@@ -149,23 +149,6 @@ that either resolves without giving a value or rejects with an error.
 
 <!-- START OF GENERATED DOCS -->
 
-### Methods in `taskcluster.Auth`
-```js
-// Create Auth client instance with default baseUrl:
-//  - https://auth.taskcluster.net/v1
-var auth = new taskcluster.Auth(options);
-```
- * `auth.scopes(clientId) : result`
- * `auth.getCredentials(clientId) : result`
- * `auth.client(clientId) : result`
- * `auth.createClient(clientId, payload) : result`
- * `auth.modifyClient(clientId, payload) : result`
- * `auth.removeClient(clientId) : void`
- * `auth.resetCredentials(clientId) : result`
- * `auth.listClients() : result`
- * `auth.azureTableSAS(account, table) : result`
- * `auth.ping() : void`
-
 ### Methods in `taskcluster.Scheduler`
 ```js
 // Create Scheduler client instance with default baseUrl:
@@ -198,28 +181,44 @@ var index = new taskcluster.Index(options);
 //  - https://queue.taskcluster.net/v1
 var queue = new taskcluster.Queue(options);
 ```
+ * `queue.task(taskId) : result`
+ * `queue.status(taskId) : result`
  * `queue.createTask(taskId, payload) : result`
- * `queue.getTask(taskId) : result`
  * `queue.defineTask(taskId, payload) : result`
  * `queue.scheduleTask(taskId) : result`
- * `queue.status(taskId) : result`
+ * `queue.rerunTask(taskId) : result`
+ * `queue.cancelTask(taskId) : result`
  * `queue.pollTaskUrls(provisionerId, workerType) : result`
  * `queue.claimTask(taskId, runId, payload) : result`
  * `queue.reclaimTask(taskId, runId) : result`
- * `queue.claimWork(provisionerId, workerType, payload) : result`
- * `queue.reportCompleted(taskId, runId, payload) : result`
+ * `queue.reportCompleted(taskId, runId) : result`
  * `queue.reportFailed(taskId, runId) : result`
  * `queue.reportException(taskId, runId, payload) : result`
- * `queue.rerunTask(taskId) : result`
  * `queue.createArtifact(taskId, runId, name, payload) : result`
  * `queue.getArtifact(taskId, runId, name) : void`
  * `queue.getLatestArtifact(taskId, name) : void`
  * `queue.listArtifacts(taskId, runId) : result`
  * `queue.listLatestArtifacts(taskId) : result`
- * `queue.getPendingTasks(provisionerId) : void`
- * `queue.pendingTaskCount(provisionerId) : void`
- * `queue.pendingTasks(provisionerId, workerType) : void`
+ * `queue.pendingTasks(provisionerId, workerType) : result`
  * `queue.ping() : void`
+
+### Methods in `taskcluster.Auth`
+```js
+// Create Auth client instance with default baseUrl:
+//  - https://auth.taskcluster.net/v1
+var auth = new taskcluster.Auth(options);
+```
+ * `auth.scopes(clientId) : result`
+ * `auth.getCredentials(clientId) : result`
+ * `auth.client(clientId) : result`
+ * `auth.createClient(clientId, payload) : result`
+ * `auth.modifyClient(clientId, payload) : result`
+ * `auth.removeClient(clientId) : void`
+ * `auth.resetCredentials(clientId) : result`
+ * `auth.listClients() : result`
+ * `auth.azureTableSAS(account, table) : result`
+ * `auth.awsS3Credentials(level, bucket, prefix) : result`
+ * `auth.ping() : void`
 
 ### Exchanges in `taskcluster.QueueEvents`
 ```js
