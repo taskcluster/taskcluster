@@ -1,6 +1,7 @@
-FROM taskcluster/docker-worker
+FROM node:0.11.13
 
 # Top level bins to override system defaults
+RUN npm install -g babel
 RUN mkdir /hack_bins/
 ENV PATH /hack_bins/:$PATH
 

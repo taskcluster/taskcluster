@@ -11,5 +11,5 @@ build() {
 }
 
 # Build docker containers used by the docker-worker tests
-build $PWD taskcluster/docker-worker
+#build $PWD taskcluster/docker-worker
 build $PWD/test/images/test taskcluster/docker-worker-test
