@@ -7,11 +7,11 @@ import (
 	"os"
 	"sync"
 
-	stream "github.com/lightsofapollo/continuous-log-serve/writer"
+	stream "github.com/taskcluster/livelog/writer"
 	. "github.com/visionmedia/go-debug"
 )
 
-var debug = Debug("continuous-log-serve")
+var debug = Debug("livelog")
 
 func abort(writer http.ResponseWriter) error {
 	// We need to hijack and abort the request...

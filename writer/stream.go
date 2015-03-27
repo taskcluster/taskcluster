@@ -37,7 +37,7 @@ type Stream struct {
 }
 
 func NewStream(read io.Reader) (*Stream, error) {
-	dir, err := ioutil.TempDir("", "continuous-log-serve")
+	dir, err := ioutil.TempDir("", "livelog")
 	if err != nil {
 		return nil, err
 	}

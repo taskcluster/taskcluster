@@ -1,5 +1,5 @@
 {
-  "name": "continuous-log-serve",
+  "name": "livelog",
   "version": "0.0.0",
   "description": "Tests only for the go package...",
   "private": true,
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/lightsofapollo/continuous-log-serve.git"
+    "url": "git://github.com/taskcluster/livelog.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/lightsofapollo/continuous-log-serve/issues"
+    "url": "https://github.com/taskcluster/livelog/issues"
   },
-  "homepage": "https://github.com/lightsofapollo/continuous-log-serve",
+  "homepage": "https://github.com/taskcluster/livelog",
   "dependencies": {
     "mocha": "^1.21.4",
     "promise": "^5.0.0",

@@ -1,4 +1,4 @@
-# continuous-log-serve
+# livelog
 
 ## TODO
   - [x] byte range fetching
