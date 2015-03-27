@@ -2,10 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Load superagent-hawk
-var superagent  = require('superagent-hawk')(require('superagent'));
-
-var request     = require('superagent-promise').wrap(superagent);
+var request     = require('superagent-promise');
 var debug       = require('debug')('taskcluster-client');
 var _           = require('lodash');
 var assert      = require('assert');
@@ -20,8 +17,8 @@ var Promise     = require('promise');
 /** Default options for our http/https global agents */
 var AGENT_OPTIONS = {
   maxSockets:       256,
-  maxFreeSockets:   10,
-  keepAlive:        true
+  maxFreeSockets:   0,
+  keepAlive:        false
 };
 
 /**
@@ -36,7 +33,7 @@ var DEFAULT_AGENTS = {
 
 // Exports agents, consumers can provide their own default agents and tests
 // can call taskcluster.agents.http.destroy() when running locally, otherwise
-// tests won't terminate
+// tests won't terminate (if they are configured with keepAlive)
 exports.agents = DEFAULT_AGENTS;
 
 // Default options stored globally for convenience
@@ -74,14 +71,16 @@ var makeRequest = function(client, method, url, payload) {
   if (client._options.credentials &&
       client._options.credentials.clientId &&
       client._options.credentials.accessToken) {
-    // Write hawk authentication header
-    req.hawk({
-      id:         client._options.credentials.clientId,
-      key:        client._options.credentials.accessToken,
-      algorithm:  'sha256'
-    }, {
-      ext:        client._extData
+    // Create hawk authentication header
+    var header = hawk.client.header(url, method.toUpperCase(), {
+      credentials: {
+        id:         client._options.credentials.clientId,
+        key:        client._options.credentials.accessToken,
+        algorithm:  'sha256'
+      },
+      ext:          client._extData
     });
+    req.set('Authorization', header.field);
   }
 
   // Return request
