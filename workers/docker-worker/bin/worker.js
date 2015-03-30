@@ -5,6 +5,7 @@ var url = require('url');
 var loadConfig = require('taskcluster-base/config');
 var createLogger = require('../lib/log');
 var debug = require('debug')('docker-worker:bin:worker');
+var os = require('os');
 
 var SDC = require('statsd-client');
 var Runtime = require('../lib/runtime');
@@ -113,6 +114,13 @@ co(function *() {
     if (!(field in program)) return;
     config[field] = program[field];
   });
+
+  // If isolated containers is set override capacity...
+  if (config.isolatedContainers) {
+    // One capacity per core...
+    config.capacity = os.cpus().length;
+    debug('running in isolated containers mode...');
+  }
 
   debug('configuration loaded', config);
 

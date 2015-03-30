@@ -5,8 +5,6 @@ import taskcluster from 'taskcluster-client';
 import DockerWorker from '../dockerworker';
 import TestWorker from '../testworker';
 
-var jsonFromUrl = JSON.parse(fs.readFileSync('test/integration/cancelTaskReference.json'));
-
 suite('Cancel Task', () => {
   test("cancel", async () => {
     var queue = new taskcluster.Queue();
@@ -33,4 +31,3 @@ suite('Cancel Task', () => {
     await worker.terminate();
   });
 });
-

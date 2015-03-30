@@ -10,6 +10,7 @@ var taskcluster = require('taskcluster-client');
 var coPromise = require('co-promise');
 var co = require('co');
 var request = require('superagent-promise');
+var os = require('os');
 
 var Task = require('./task');
 var EventEmitter = require('events').EventEmitter;
@@ -28,6 +29,16 @@ export default class TaskListener extends EventEmitter {
     this.runningTasks = [];
     this.taskQueue = new TaskQueue(this.runtime);
     this.taskPollInterval = this.runtime.taskQueue.pollInterval;
+
+    // Keep track of which core is doing what...
+    this.availableCpus = [];
+    for (let i = 0; i < os.cpus().length; i++) {
+      this.availableCpus.push({
+        id: i,
+        active: false
+      });
+    }
+
     super();
   }
 
@@ -39,8 +50,9 @@ export default class TaskListener extends EventEmitter {
           debug('nodeterm');
           async () => {
             await this.pause();
-            for(let task of this.runningTasks) {
-              task.abort('worker-shutdown');
+            for(let state of this.runningTasks) {
+              state.handler.abort('worker-shutdown');
+              this.cleanupRunningState(state);
             }
           }();
         }.bind(this)
@@ -54,14 +66,16 @@ export default class TaskListener extends EventEmitter {
     if (reason !== 'canceled') return;
 
     var taskId = message.payload.status.taskId;
-    var task = this.runningTasks.find(
-      (task) => { return (task.status.taskId === taskId && task.runId === runId); }
-    );
+    var state = this.runningTasks.find((state) => {
+      let { handler } = state;
+      return (handler.status.taskId === taskId && handler.runId === runId);
+    });
 
-    if (!task) debug('task not found to cancel'); return;
+    if (!state) debug('task not found to cancel'); return;
 
     this.runtime.log('cancelling task', {taskId: message.payload.status.taskId});
-    task.cancel(reason);
+    state.handler.cancel(reason);
+    this.cleanupRunningState(state);
   }
 
   async listenForCancelEvents() {
@@ -182,6 +196,39 @@ export default class TaskListener extends EventEmitter {
   }
 
   /**
+  Mark a particular free cpu as being in use...
+  */
+  aquireFreeCpu() {
+    for (let cpu of this.availableCpus) {
+      if (cpu.active) continue;
+      cpu.active = true;
+      return cpu;
+    }
+
+    throw new Error(`
+      Fatal error... Could not aquire cpu:
+
+      ${JSON.stringify(this.availableCpus, null, 2)}
+    `);
+  }
+
+  /*
+  Release a cpu to be used by another container.
+  */
+  releaseCpu(cpu) {
+    cpu.active = false;
+  }
+
+  /**
+  Cleanup state of a running container (should apply to all states).
+  */
+  cleanupRunningState(state) {
+    if (state && state.cpu) {
+      this.releaseCpu(state.cpu);
+    }
+  }
+
+  /**
   * Run task that has been claimed.
   */
   async runTask(claim) {
@@ -194,6 +241,9 @@ export default class TaskListener extends EventEmitter {
       // Date when the task was created.
       var created = new Date(task.created);
 
+      // Reference to state of this request...
+      let runningState = {};
+
       // Only record this value for first run!
       if (!claim.status.runs.length) {
         // Record a stat which is the time between when the task was created and
@@ -201,14 +251,25 @@ export default class TaskListener extends EventEmitter {
         this.runtime.stats.time('tasks.time.to_reach_worker', created);
       }
 
+      let options = {};
+
+      // Configure cpuset options if needed...
+      if (this.runtime.isolatedContainers) {
+        runningState.cpu = this.aquireFreeCpu();
+        options.cpuset = runningState.cpu.id;
+      }
+
       // Create "task" to handle all the task specific details.
-      var taskHandler = new Task(this.runtime, task, claim);
-      var taskIndex = this.runningTasks.push(taskHandler);
+      var taskHandler = new Task(this.runtime, task, claim, options);
+      runningState.handler = taskHandler;
+
+      var taskIndex = this.runningTasks.push(runningState);
       taskIndex = taskIndex-1;
 
       // Run the task and collect runtime metrics.
       await taskHandler.start();
       this.decrementPending();
+      this.cleanupRunningState(runningState);
       this.runningTasks.splice(taskIndex, 1);
     }
     catch (e) {
@@ -227,6 +288,7 @@ export default class TaskListener extends EventEmitter {
           err: e
         });
       }
+      this.cleanupRunningState(runningState);
       this.decrementPending();
     }
   }

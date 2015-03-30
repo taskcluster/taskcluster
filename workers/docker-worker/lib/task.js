@@ -110,13 +110,21 @@ async function buildVolumeBindings(taskVolumeBindings, volumeCache, taskScopes) 
 }
 
 export default class Task {
-  constructor(runtime, task, claim) {
+  /**
+  @param {Object} runtime global runtime.
+  @param {Object} task id for this instance.
+  @param {Object} claim details for this instance.
+  @param {Object} options
+  @param {Number} [options.cpuset] cpu(s) to use for this container/task.
+  */
+  constructor(runtime, task, claim, options) {
     this.runtime = runtime;
     this.task = task;
     this.claim = claim;
     this.status = claim.status;
     this.runId = claim.runId;
     this.taskState = 'pending';
+    this.options = options;
 
     // Primarly log of all actions for the task.
     this.stream = new PassThrough();
@@ -158,6 +166,11 @@ export default class Task {
         Env: taskEnvToDockerEnv(env)
       }
     };
+
+    // Zero is a valid option so only check for existence.
+    if ('cpuset' in this.options) {
+      procConfig.create.Cpuset = this.options.cpuset;
+    }
 
     if (links) {
       procConfig.start.Links = links.map(function(link) {

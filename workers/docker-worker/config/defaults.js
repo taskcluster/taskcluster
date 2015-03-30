@@ -6,6 +6,10 @@ module.exports = {
   // Run test only teardown and logging events.
   testMode: false,
 
+  // Run each container in as isolated fashion as possible (one core per container)
+  // When this is true the capacity is always overriden to the number of cores.
+  isolatedContainers: false,
+
   // Image used to  create the taskcluster proxy container.
   taskclusterProxyImage: 'quay.io/mozilla/taskcluster-proxy',
   taskclusterLogImage: 'quay.io/mozilla/taskcluster-logserve',
