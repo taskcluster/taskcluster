@@ -4,6 +4,7 @@ import request from 'superagent-promise';
 import denodeify from 'denodeify';
 import assert from 'assert';
 
+const MAX_MESSAGES_PER_REQUEST = 32;
 const parseXmlString = denodeify(xml2js.parseString.bind(xml2js));
 
 let debug = Debug('taskcluster-docker-worker:queueService');
@@ -59,8 +60,8 @@ async function makeRequest(method, url, retries, retryInterval, payload) {
  *                      // removing from the queue.
  *   }
  *   taskQueue: {
- *     expiration: // Time in milliseconds used to determine if the
- *                      // queues should be refreshed
+ *     expiration:            // Time in milliseconds used to determine if the
+ *                            // queues should be refreshed
  *   }
  * }
  *
@@ -201,8 +202,9 @@ export default class TaskQueue {
    * @param {Number} numberOfTasks - The number of tasks that should be retrieved
    */
   async getTasksFromQueue(queue, numberOfTasks) {
+    let maxMessages = Math.min(numberOfTasks, MAX_MESSAGES_PER_REQUEST);
     let tasks = [];
-    let uri = `${queue.signedPollUrl}&numofmessages=${numberOfTasks}`;
+    let uri = `${queue.signedPollUrl}&numofmessages=${maxMessages}`;
 
     let response;
     try {
