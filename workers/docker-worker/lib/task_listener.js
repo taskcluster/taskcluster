@@ -71,7 +71,10 @@ export default class TaskListener extends EventEmitter {
       return (handler.status.taskId === taskId && handler.runId === runId);
     });
 
-    if (!state) debug('task not found to cancel'); return;
+    if (!state) {
+      debug('task not found to cancel');
+      return;
+    }
 
     this.runtime.log('cancelling task', {taskId: message.payload.status.taskId});
     state.handler.cancel(reason);
@@ -236,7 +239,7 @@ export default class TaskListener extends EventEmitter {
       this.runtime.log('run task', { taskId: claim.status.taskId, runId: claim.runId });
       this.incrementPending();
       // Fetch full task definition.
-      var task = await this.runtime.queue.getTask(claim.status.taskId);
+      var task = await this.runtime.queue.task(claim.status.taskId);
 
       // Date when the task was created.
       var created = new Date(task.created);

@@ -27,7 +27,8 @@ suite('Cancel Task', () => {
     worker.on('cancel task', () => { canceledTask = true });
     var launch = await worker.launch();
     var result = await worker.postToQueue(task, taskId);
-    assert.ok(canceledTask, 'task execution should have been canceled');
     await worker.terminate();
+    assert.ok(canceledTask, 'task execution should have been canceled');
+    assert.equal(result.run.reasonResolved, 'canceled', 'Task not marked as canceled');
   });
 });

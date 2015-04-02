@@ -289,7 +289,7 @@ export default class Task {
     let queue = this.runtime.queue;
     let reporter = success ? queue.reportCompleted : queue.reportFailed;
     let reportDetails = [this.status.taskId, this.runId];
-    if (success) reportDetails.push({ success: true});
+
     await reporter.apply(queue, reportDetails);
 
     this.runtime.log('task resolved', {
