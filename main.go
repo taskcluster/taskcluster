@@ -37,8 +37,10 @@ func startLogServe(stream *stream.Stream) {
 		debug("output %s %s", r.Method, r.URL.String())
 
 		// Authenticate the request with accessToken, this is good enough because
-		// live logs are short-lived
-		if (r.URL.String()[5:] != accessToken) {
+		// live logs are short-lived, we do this by slicing away '/log/' from the
+		// URL and comparing the reminder to the accessToken, ensuring a URL pattern
+		// /logs/<accessToken>
+		if r.URL.String()[5:] != accessToken {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.WriteHeader(401)
