@@ -1,15 +1,28 @@
 // Launch the process... We rely on go to be present here...
 
 var Promise = require('promise');
-var spawn = require('child_process').spawn;
-var net = require('net');
+var spawn   = require('child_process').spawn;
+var _       = require('lodash');
+var path    = require('path');
+var net     = require('net');
 var waitForPort = require('./wait_for_port');
 
-module.exports = function launch() {
+module.exports = function launch(options) {
   return new Promise(function(accept, reject) {
+    options = options || {};
+    var env = _.defaults({    // SlugId (well, we can use any string really)
+      ACCESS_TOKEN:           '7_3HoMEbQau1Qlzwx-JZgg'
+    }, process.env);
+    // Add SSL keys if needed for test
+    if (options.ssl) {
+      env = _.defaults({
+        SERVER_CRT_FILE:       path.join(__dirname, 'server.crt'),
+        SERVER_KEY_FILE:       path.join(__dirname, 'server.key')
+      }, env);
+    }
     var proc = spawn(__dirname + '/../livelog', [], {
-      env: process.env,
-      stdio: 'inherit'
+      env:    env,
+      stdio:  'inherit'
     });
 
     // Handle any startup errors...

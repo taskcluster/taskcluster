@@ -23,6 +23,7 @@
   "dependencies": {
     "mocha": "^1.21.4",
     "promise": "^5.0.0",
-    "split": "^0.3.0"
+    "split": "^0.3.0",
+    "lodash": "^3.5.0"
   }
 }

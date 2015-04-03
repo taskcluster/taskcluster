@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/pprof"
@@ -28,11 +29,25 @@ func abort(writer http.ResponseWriter) error {
 }
 
 func startLogServe(stream *stream.Stream) {
+	// Get access token from environment variable
+	accessToken := os.Getenv("ACCESS_TOKEN")
+
 	routes := http.NewServeMux()
-	routes.HandleFunc("/log", func(w http.ResponseWriter, r *http.Request) {
+	routes.HandleFunc("/log/", func(w http.ResponseWriter, r *http.Request) {
 		debug("output %s %s", r.Method, r.URL.String())
-		// TODO: Add method context switching here...
-		getLog(stream, w, r)
+
+		// Authenticate the request with accessToken, this is good enough because
+		// live logs are short-lived, we do this by slicing away '/log/' from the
+		// URL and comparing the reminder to the accessToken, ensuring a URL pattern
+		// /logs/<accessToken>
+		if r.URL.String()[5:] != accessToken {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.WriteHeader(401)
+			fmt.Fprint(w, "Access denied")
+		} else {
+			getLog(stream, w, r)
+		}
 	})
 
 	server := http.Server{
@@ -40,8 +55,17 @@ func startLogServe(stream *stream.Stream) {
 		Handler: routes,
 	}
 
-	debug("output server listening... %s", server.Addr)
-	server.ListenAndServe()
+	crtFile := os.Getenv("SERVER_CRT_FILE")
+	keyFile := os.Getenv("SERVER_KEY_FILE")
+	if crtFile != "" && keyFile != "" {
+		debug("Output server listening... %s (with TLS)", server.Addr)
+		debug("key %s ", keyFile)
+		debug("crt %s ", crtFile)
+		server.ListenAndServeTLS(crtFile, keyFile)
+	} else {
+		debug("Output server listening... %s (without TLS)", server.Addr)
+		server.ListenAndServe()
+	}
 }
 
 // HTTP logic for serving the contents of a stream...
@@ -50,7 +74,6 @@ func getLog(
 	writer http.ResponseWriter,
 	req *http.Request,
 ) {
-
 	rng, rngErr := ParseRange(req.Header)
 
 	if rngErr != nil {

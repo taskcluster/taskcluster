@@ -8,7 +8,6 @@ suite('byte range fetches', function() {
   var Promise = require('promise');
   var verifySeq = require('./sequence_verify')
 
-  var promise = require('Promise');
   function readAll(options) {
     return new Promise(function(accept, reject) {
       waitForPort(60023).then(function() {
