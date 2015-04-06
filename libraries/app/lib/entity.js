@@ -81,9 +81,11 @@ var DISABLE_NAGLE           = true;
 
 /** Azure table agent used for all instances of the table client */
 var globalAzureTableAgent = new https.Agent({
-  keepAlive:        true,
-  maxSockets:       1000,
-  maxFreeSockets:   500
+  // Don't use keep alive with azure as their load balancer hangs up idle
+  // connections after 60s causing uncaught ECONNRESET errors.
+  keepAlive:        false,
+  maxSockets:       5000,
+  maxFreeSockets:   0
 });
 
 /** Statistics from Azure table operations */
