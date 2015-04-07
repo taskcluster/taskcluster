@@ -8,7 +8,7 @@ go:
 notifications:
   irc:
     channels:
-      - "irc.mozilla.org#taskcluster-golang"
+      - "irc.mozilla.org#taskcluster-bots"
     on_success: always
     on_failure: always
     template:
