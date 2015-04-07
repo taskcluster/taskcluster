@@ -170,17 +170,17 @@ suite('retry-test', function() {
     baseUrl:        'http://localhost:60526/v1'
   });
 
-  test("tries 5 times, delayed", function() {
+  test("tries 6 times, delayed", function() {
     getInternalErrorCount = 0;
     setTimeout(function() {
       assert(getInternalErrorCount > 0, "Haven't done retries in 1s!");
-      assert(getInternalErrorCount < 5, "Shouldn't have completed 5 yet!");
+      assert(getInternalErrorCount < 6, "Shouldn't have completed 6 yet!");
     }, 1000);
     return server.getInternalError().then(function() {
       assert(false, "Expected an error");
     }, function(err) {
       assert(err.statusCode === 500);
-      assert(getInternalErrorCount === 5, "expected 5 retries");
+      assert(getInternalErrorCount === 6, "expected 6 retries");
     });
   });
 
@@ -205,13 +205,13 @@ suite('retry-test', function() {
     getConnectionErrorCount = 0;
     setTimeout(function() {
       assert(getConnectionErrorCount > 0, "Haven't done retries in 1s!");
-      assert(getConnectionErrorCount < 5, "Shouldn't have completed 5 yet!");
+      assert(getConnectionErrorCount < 6, "Shouldn't have completed 6 yet!");
     }, 1000);
     return server.getConnectionError().then(function() {
       assert(false, "Expected an error");
     }, function(err) {
       assert(err.code === 'ECONNRESET', "Expect ECONNRESET error");
-      assert(getConnectionErrorCount === 5, "expected 5 retries");
+      assert(getConnectionErrorCount === 6, "expected 6 retries");
     });
   });
 });
