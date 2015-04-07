@@ -16,7 +16,7 @@ var Promise     = require('promise');
 
 /** Default options for our http/https global agents */
 var AGENT_OPTIONS = {
-  maxSockets:       256,
+  maxSockets:       50,
   maxFreeSockets:   0,
   keepAlive:        false
 };
@@ -46,7 +46,13 @@ var _defaultOptions = {
   // Request time out (defaults to 30 seconds)
   timeout:        30 * 1000,
   // Max number of request retries
-  maxRetries:     5
+  retries:        5,
+  // Multiplier for computation of retry delay: 2 ^ retry * delayFactor,
+  // 100 ms is solid for servers, and 500ms - 1s is suitable for background
+  // processes
+  delayFactor:    100,
+  // Maximum retry delay (defaults to 30 seconds)
+  maxDelay:       30 * 1000,
 };
 
 /** Make a request for a Client instance */
@@ -109,7 +115,7 @@ var makeRequest = function(client, method, url, payload) {
  *   authorizedScopes:  ['scope1', 'scope2', ...]
  *   baseUrl:         'http://.../v1'   // baseUrl for API requests
  *   exchangePrefix:  'queue/v1/'       // exchangePrefix prefix
- *   maxRetries:      5,                // Maximum number of attempts
+ *   retries:         5,                // Maximum number of retries
  * }
  *
  * `baseUrl` and `exchangePrefix` defaults to values from reference.
@@ -219,80 +225,87 @@ exports.createClient = function(reference) {
       var attempts = 0;
       var that = this;
 
-      // Return promise that we've used all retries
-      return new Promise(function(accept, reject) {
-        // Retry the request, after a delay depending on number of retries
-        var retryRequest = function() {
-          // Send request
-          var sendRequest = function() {
-            debug("Calling: %s, retry: %s", entry.name, attempts - 1);
-            // Make request and handle response or error
-            makeRequest(
-              that,
-              entry.method,
-              url,
-              payload
-            ).end().then(function(res) {
-              // If request was successful, accept the result
-              debug("Success calling: %s, (%s retries)",
-                    entry.name, attempts - 1);
-              return accept(res.body);
-            }, function(err) {
-              // If we got a response we read the error code from the response
-              var res = err.response;
-              if (res) {
-                // Decide if we should retry
-                if (attempts < that._options.maxRetries &&
-                    500 <= res.status &&  // Check if it's a 5xx error
-                    res.status < 600) {
-                  debug("Error calling: %s now retrying, info: %j",
-                        entry.name, res.body);
-                  return retryRequest();
-                }
-                // If not retrying, construct error object and reject
-                debug("Error calling: %s NOT retrying!, info: %j",
-                      entry.name, res.body);
-                var message = "Unknown Server Error";
-                if (res.status === 401) {
-                  message = "Authentication Error";
-                }
-                if (res.status === 500) {
-                  message = "Internal Server Error";
-                }
-                err = new Error(res.body.message || message);
-                err.body = res.body;
-                err.statusCode = res.status;
-                return reject(err);
-              }
-
+      // Retry the request, after a delay depending on number of retries
+      var retryRequest = function() {
+        // Send request
+        var sendRequest = function() {
+          debug("Calling: %s, retry: %s", entry.name, attempts - 1);
+          // Make request and handle response or error
+          return makeRequest(
+            that,
+            entry.method,
+            url,
+            payload
+          ).end().then(function(res) {
+            // If request was successful, accept the result
+            debug("Success calling: %s, (%s retries)",
+                  entry.name, attempts - 1);
+            return res.body;
+          }, function(err) {
+            // If we got a response we read the error code from the response
+            var res = err.response;
+            if (res) {
               // Decide if we should retry
-              if (attempts < that._options.maxRetries) {
-                debug("Request error calling %s (retrying), err: %s, JSON: %s",
-                      entry.name, err, err);
+              if (attempts <= that._options.retries &&
+                  500 <= res.status &&  // Check if it's a 5xx error
+                  res.status < 600) {
+                debug("Error calling: %s now retrying, info: %j",
+                      entry.name, res.body);
                 return retryRequest();
               }
-              debug("Request error calling %s NOT retrying!, err: %s, JSON: %s",
+              // If not retrying, construct error object and reject
+              debug("Error calling: %s NOT retrying!, info: %j",
+                    entry.name, res.body);
+              var message = "Unknown Server Error";
+              if (res.status === 401) {
+                message = "Authentication Error";
+              }
+              if (res.status === 500) {
+                message = "Internal Server Error";
+              }
+              err = new Error(res.body.message || message);
+              err.body = res.body;
+              err.statusCode = res.status;
+              throw err;
+            }
+
+            // Decide if we should retry
+            if (attempts <= that._options.retries) {
+              debug("Request error calling %s (retrying), err: %s, JSON: %s",
                     entry.name, err, err);
-              return reject(err);
-            });
-          }
+              return retryRequest();
+            }
+            debug("Request error calling %s NOT retrying!, err: %s, JSON: %s",
+                  entry.name, err, err);
+            throw err;
+          });
+        }
 
-          // Increment attempt count, but track how many we had before
-          var retries = attempts;
-          attempts += 1;
+        // Increment attempt count, but track how many we had before.
+        attempts += 1;
 
-          // If this is the first retry, ie we haven't retried yet, we make the
-          // request immediately
-          if (retries === 0) {
-            sendRequest();
-          } else {
-            setTimeout(sendRequest, retries * retries * 100);
-          }
-        };
+        // If this is the first retry, ie we haven't retried yet, we make the
+        // request immediately
+        if (attempts === 1) {
+          return sendRequest();
+        } else {
+          var delay;
+          // First request is attempt = 1, so attempt = 2 is the first retry
+          // we subtract one to get exponents: 1, 2, 3, 4, 5, ...
+          delay = Math.pow(2, attempts - 1) * that._options.delayFactor;
+          // Always limit with a maximum delay
+          delay = Math.min(delay, that._options.maxDelay);
+          // Sleep then send the request
+          return new Promise(function(accept) {
+            setTimeout(accept, delay);
+          }).then(function() {
+            return sendRequest();
+          });
+        }
+      };
 
-        // Start the retry request loop
-        retryRequest();
-      });
+      // Start the retry request loop
+      return retryRequest();
     };
     // Add reference for buildUrl and signUrl
     Client.prototype[entry.name].entryReference = entry;
