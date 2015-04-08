@@ -150,6 +150,10 @@ auth = taskcluster.Auth(options)
  * `auth.azureTableSAS(account, table) -> result`
  * `auth.azureTableSAS(account='value', table='value') -> result`
 
+#### Get Temporary Read/Write Credentials S3
+ * `auth.awsS3Credentials(level, bucket, prefix) -> result`
+ * `auth.awsS3Credentials(level='value', bucket='value', prefix='value') -> result`
+
 #### Ping Server
  * `auth.ping() -> None`
 
@@ -162,13 +166,17 @@ auth = taskcluster.Auth(options)
 import taskcluster
 queue = taskcluster.Queue(options)
 ```
+#### Get Task Definition
+ * `queue.task(taskId) -> result`
+ * `queue.task(taskId='value') -> result`
+
+#### Get task status
+ * `queue.status(taskId) -> result`
+ * `queue.status(taskId='value') -> result`
+
 #### Create New Task
  * `queue.createTask(taskId, payload) -> result`
  * `queue.createTask(payload, taskId='value') -> result`
-
-#### Fetch Task
- * `queue.getTask(taskId) -> result`
- * `queue.getTask(taskId='value') -> result`
 
 #### Define Task
  * `queue.defineTask(taskId, payload) -> result`
@@ -178,9 +186,13 @@ queue = taskcluster.Queue(options)
  * `queue.scheduleTask(taskId) -> result`
  * `queue.scheduleTask(taskId='value') -> result`
 
-#### Get task status
- * `queue.status(taskId) -> result`
- * `queue.status(taskId='value') -> result`
+#### Rerun a Resolved Task
+ * `queue.rerunTask(taskId) -> result`
+ * `queue.rerunTask(taskId='value') -> result`
+
+#### Cancel Task
+ * `queue.cancelTask(taskId) -> result`
+ * `queue.cancelTask(taskId='value') -> result`
 
 #### Get Urls to Poll Pending Tasks
  * `queue.pollTaskUrls(provisionerId, workerType) -> result`
@@ -194,13 +206,9 @@ queue = taskcluster.Queue(options)
  * `queue.reclaimTask(taskId, runId) -> result`
  * `queue.reclaimTask(taskId='value', runId='value') -> result`
 
-#### Claim work for a worker
- * `queue.claimWork(provisionerId, workerType, payload) -> result`
- * `queue.claimWork(payload, provisionerId='value', workerType='value') -> result`
-
 #### Report Run Completed
- * `queue.reportCompleted(taskId, runId, payload) -> result`
- * `queue.reportCompleted(payload, taskId='value', runId='value') -> result`
+ * `queue.reportCompleted(taskId, runId) -> result`
+ * `queue.reportCompleted(taskId='value', runId='value') -> result`
 
 #### Report Run Failed
  * `queue.reportFailed(taskId, runId) -> result`
@@ -209,10 +217,6 @@ queue = taskcluster.Queue(options)
 #### Report Task Exception
  * `queue.reportException(taskId, runId, payload) -> result`
  * `queue.reportException(payload, taskId='value', runId='value') -> result`
-
-#### Rerun a Resolved Task
- * `queue.rerunTask(taskId) -> result`
- * `queue.rerunTask(taskId='value') -> result`
 
 #### Create Artifact
  * `queue.createArtifact(taskId, runId, name, payload) -> result`
@@ -234,17 +238,9 @@ queue = taskcluster.Queue(options)
  * `queue.listLatestArtifacts(taskId) -> result`
  * `queue.listLatestArtifacts(taskId='value') -> result`
 
-#### Fetch pending tasks for provisioner
- * `queue.getPendingTasks(provisionerId) -> None`
- * `queue.getPendingTasks(provisionerId='value') -> None`
-
 #### Get Number of Pending Tasks
- * `queue.pendingTaskCount(provisionerId) -> None`
- * `queue.pendingTaskCount(provisionerId='value') -> None`
-
-#### Get Number of Pending Tasks
- * `queue.pendingTasks(provisionerId, workerType) -> None`
- * `queue.pendingTasks(provisionerId='value', workerType='value') -> None`
+ * `queue.pendingTasks(provisionerId, workerType) -> result`
+ * `queue.pendingTasks(provisionerId='value', workerType='value') -> result`
 
 #### Ping Server
  * `queue.ping() -> None`

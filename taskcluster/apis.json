@@ -164,6 +164,25 @@
           "type": "function"
         }, 
         {
+          "args": [
+            "level", 
+            "bucket", 
+            "prefix"
+          ], 
+          "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials is returned. Please note that the `level`\nparameter is required in the scope guarding access.\n\nThe credentials are set of expire after an hour, but this behavior may be\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intent to maintain active credentials in your\napplication.\n\nPlease notice that your `prefix` may not start with slash `/`, it is\nallowed on S3, but we forbid it here to discourage bad behavior.\nAlso note that if your `prefix` doesn't end in a slash `/` the STS\ncredentials will not require one to be to inserted. This is mainly a\nconcern when assigning scopes to users and doing this right will prevent\npoor behavior. After we often want the `prefix` to be a folder in a\n`/` delimited folder structure.", 
+          "method": "get", 
+          "name": "awsS3Credentials", 
+          "output": "http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#", 
+          "route": "/aws/s3/<level>/<bucket>/<prefix>", 
+          "scopes": [
+            [
+              "auth:aws-s3:<level>:<bucket>/<prefix>"
+            ]
+          ], 
+          "title": "Get Temporary Read/Write Credentials S3", 
+          "type": "function"
+        }, 
+        {
           "args": [], 
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.", 
           "method": "get", 
@@ -256,6 +275,7 @@
   }, 
   "Queue": {
     "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#", 
       "baseUrl": "https://queue.taskcluster.net/v1", 
       "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.", 
       "entries": [
@@ -263,7 +283,31 @@
           "args": [
             "taskId"
           ], 
-          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline\u00b4**, the deadline property can be no more than 7 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then the poster will be required to posses the\nscope `queue:route:<route>`. And when the an AMQP message about the task\nis published the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.", 
+          "description": "This end-point will return the task-definition. Notice that the task\ndefinition may have been modified by queue, if an optional property isn't\nspecified the queue may provide a default value.", 
+          "method": "get", 
+          "name": "task", 
+          "output": "http://schemas.taskcluster.net/queue/v1/task.json#", 
+          "route": "/task/<taskId>", 
+          "title": "Get Task Definition", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "taskId"
+          ], 
+          "description": "Get task status structure from `taskId`", 
+          "method": "get", 
+          "name": "status", 
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
+          "route": "/task/<taskId>/status", 
+          "title": "Get task status", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "taskId"
+          ], 
+          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline\u00b4**, the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**, the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then the poster will be required to posses the\nscope `queue:route:<route>`. And when the an AMQP message about the task\nis published the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.", 
           "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#", 
           "method": "put", 
           "name": "createTask", 
@@ -275,18 +319,6 @@
             ]
           ], 
           "title": "Create New Task", 
-          "type": "function"
-        }, 
-        {
-          "args": [
-            "taskId"
-          ], 
-          "description": "Get task definition from queue.", 
-          "method": "get", 
-          "name": "getTask", 
-          "output": "http://schemas.taskcluster.net/queue/v1/task.json#", 
-          "route": "/task/<taskId>", 
-          "title": "Fetch Task", 
           "type": "function"
         }, 
         {
@@ -332,12 +364,36 @@
           "args": [
             "taskId"
           ], 
-          "description": "Get task status structure from `taskId`", 
-          "method": "get", 
-          "name": "status", 
+          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nisn't either `failed` or `completed`, this operation will just return the\ncurrent task status.", 
+          "method": "post", 
+          "name": "rerunTask", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
-          "route": "/task/<taskId>/status", 
-          "title": "Get task status", 
+          "route": "/task/<taskId>/rerun", 
+          "scopes": [
+            [
+              "queue:rerun-task", 
+              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
+            ]
+          ], 
+          "title": "Rerun a Resolved Task", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "taskId"
+          ], 
+          "description": "This method will cancel a task that is either `unscheduled`, `pending` or\n`running`. It will resolve the current run as `exception` with\n`reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.\nit doesn't have any runs, an initial run will be added and resolved as\ndescribed above. Hence, after canceling a task, it cannot be scheduled\nwith `queue.scheduleTask`, but a new run can be created with\n`queue.rerun`. These semantics is equivalent to calling\n`queue.scheduleTask` immediately followed by `queue.cancelTask`.\n\n**Remark** this operation is idempotent, if you try to cancel a task that\nisn't `unscheduled`, `pending` or `running`, this operation will just\nreturn the current task status.", 
+          "method": "post", 
+          "name": "cancelTask", 
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
+          "route": "/task/<taskId>/cancel", 
+          "scopes": [
+            [
+              "queue:cancel-task", 
+              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
+            ]
+          ], 
+          "title": "Cancel Task", 
           "type": "function"
         }, 
         {
@@ -345,7 +401,7 @@
             "provisionerId", 
             "workerType"
           ], 
-          "description": "Get a signed url to get a message from azure queue.\nOnce messages are polled from here, you can claim the referenced task\nwith `claimTask`, after wards which you **must** delete the message from\nthe azure queue.", 
+          "description": "Get a signed URLs to get and delete messages from azure queue.\nOnce messages are polled from here, you can claim the referenced task\nwith `claimTask`, and afterwards you should always delete the message.", 
           "method": "get", 
           "name": "pollTaskUrls", 
           "output": "http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#", 
@@ -364,7 +420,7 @@
             "taskId", 
             "runId"
           ], 
-          "description": "claim a task, more to be added later...\n", 
+          "description": "claim a task, more to be added later...", 
           "input": "http://schemas.taskcluster.net/queue/v1/task-claim-request.json#", 
           "method": "post", 
           "name": "claimTask", 
@@ -401,41 +457,15 @@
         }, 
         {
           "args": [
-            "provisionerId", 
-            "workerType"
-          ], 
-          "description": "Claim work for a worker, returns information about an appropriate task\nclaimed for the worker. Similar to `claimTask`, which can be\nused to claim a specific task, or reclaim a specific task extending the\n`takenUntil` timeout for the run.\n\n**Note**, that if no tasks are _pending_ this method will not assign a\ntask to you. Instead it will return `204` and you should wait a while\nbefore polling the queue again.\n\n**WARNING, this API end-point is deprecated and will be removed**.", 
-          "input": "http://schemas.taskcluster.net/queue/v1/claim-work-request.json#", 
-          "method": "post", 
-          "name": "claimWork", 
-          "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#", 
-          "route": "/claim-work/<provisionerId>/<workerType>", 
-          "scopes": [
-            [
-              "queue:claim-task", 
-              "assume:worker-type:<provisionerId>/<workerType>", 
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ], 
-          "title": "Claim work for a worker", 
-          "type": "function"
-        }, 
-        {
-          "args": [
             "taskId", 
             "runId"
           ], 
-          "description": "Report a task completed, resolving the run as `completed`.\n\nFor legacy, reasons the `success` parameter is accepted. **This will be\nremoved in the future.**", 
-          "input": "http://schemas.taskcluster.net/queue/v1/task-completed-request.json#", 
+          "description": "Report a task completed, resolving the run as `completed`.", 
           "method": "post", 
           "name": "reportCompleted", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
           "route": "/task/<taskId>/runs/<runId>/completed", 
           "scopes": [
-            [
-              "queue:report-task-completed", 
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ], 
             [
               "queue:resolve-task", 
               "assume:worker-id:<workerGroup>/<workerId>"
@@ -485,33 +515,15 @@
         }, 
         {
           "args": [
-            "taskId"
-          ], 
-          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nisn't either `failed` or `completed`, this operation will just return the\ncurrent task status.", 
-          "method": "post", 
-          "name": "rerunTask", 
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
-          "route": "/task/<taskId>/rerun", 
-          "scopes": [
-            [
-              "queue:rerun-task", 
-              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
-            ]
-          ], 
-          "title": "Rerun a Resolved Task", 
-          "type": "function"
-        }, 
-        {
-          "args": [
             "taskId", 
             "runId", 
             "name"
           ], 
-          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 4 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\n\n**S3 artifacts**, is useful for static files which will be stored on S3.\nWhen creating an S3 artifact is create the queue will return a pre-signed\nURL to which you can do a `PUT` request to upload your artifact. Note\nthat `PUT` request **must** specify the `content-length` header and\n**must** give the `content-type` header the same value as in the request\nto `createArtifact`.\n\n**Azure artifacts**, are stored in _Azure Blob Storage_ service, which\ngiven the consistency guarantees and API interface offered by Azure is\nmore suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.", 
-          "input": "http://schemas.taskcluster.net/queue/v1/post-artifact-request.json", 
+          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 4 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\n\n**S3 artifacts**, is useful for static files which will be stored on S3.\nWhen creating an S3 artifact the queue will return a pre-signed URL\nto which you can do a `PUT` request to upload your artifact. Note\nthat `PUT` request **must** specify the `content-length` header and\n**must** give the `content-type` header the same value as in the request\nto `createArtifact`.\n\n**Azure artifacts**, are stored in _Azure Blob Storage_ service, which\ngiven the consistency guarantees and API interface offered by Azure is\nmore suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.", 
+          "input": "http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#", 
           "method": "post", 
           "name": "createArtifact", 
-          "output": "http://schemas.taskcluster.net/queue/v1/post-artifact-response.json", 
+          "output": "http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#", 
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>", 
           "scopes": [
             [
@@ -565,7 +577,7 @@
           "description": "Returns a list of artifacts and associated meta-data for a given run.", 
           "method": "get", 
           "name": "listArtifacts", 
-          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json", 
+          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#", 
           "route": "/task/<taskId>/runs/<runId>/artifacts", 
           "title": "Get Artifacts from Run", 
           "type": "function"
@@ -577,36 +589,9 @@
           "description": "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.", 
           "method": "get", 
           "name": "listLatestArtifacts", 
-          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json", 
+          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#", 
           "route": "/task/<taskId>/artifacts", 
           "title": "Get Artifacts from Latest Run", 
-          "type": "function"
-        }, 
-        {
-          "args": [
-            "provisionerId"
-          ], 
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.\n\n**This end-point is deprecated!**", 
-          "method": "get", 
-          "name": "getPendingTasks", 
-          "route": "/pending-tasks/<provisionerId>", 
-          "title": "Fetch pending tasks for provisioner", 
-          "type": "function"
-        }, 
-        {
-          "args": [
-            "provisionerId"
-          ], 
-          "description": "Documented later...\n\n**This end-point is deprecated!**", 
-          "method": "get", 
-          "name": "pendingTaskCount", 
-          "route": "/pending/<provisionerId>", 
-          "scopes": [
-            [
-              "queue:pending-tasks:<provisionerId>"
-            ]
-          ], 
-          "title": "Get Number of Pending Tasks", 
           "type": "function"
         }, 
         {
@@ -614,10 +599,10 @@
             "provisionerId", 
             "workerType"
           ], 
-          "description": "Documented later...\nThis end-point will remain after rewriting to azure\nqueue storage...\n", 
+          "description": "Documented later...\nThis probably the end-point that will remain after rewriting to azure\nqueue storage...\n", 
           "method": "get", 
           "name": "pendingTasks", 
-          "output": "http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json", 
+          "output": "http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#", 
           "route": "/pending/<provisionerId>/<workerType>", 
           "scopes": [
             [
@@ -638,12 +623,13 @@
         }
       ], 
       "title": "Queue API Documentation", 
-      "version": "0.2.0"
+      "version": 0
     }, 
     "referenceUrl": "http://references.taskcluster.net/queue/v1/api.json"
   }, 
   "QueueEvents": {
     "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#", 
       "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes AMQP exchanges offered by the queue, which allows\nthird-party listeners to monitor tasks as they progress to resolution.\nThese exchanges targets the following audience:\n * Schedulers, who takes action after tasks are completed,\n * Workers, who wants to listen for new or canceled tasks (optional),\n * Tools, that wants to update their view as task progress.\n\nYou'll notice that all the exchanges in the document shares the same\nrouting key pattern. This makes it very easy to bind to all messages\nabout a certain kind tasks.\n\n**Task-graphs**, if the task-graph scheduler, documented elsewhere, is\nused to schedule a task-graph, the task submitted will have their\n`schedulerId` set to `'task-graph-scheduler'`, and their `taskGroupId` to\nthe `taskGraphId` as given to the task-graph scheduler. This is useful if\nyou wish to listen for all messages in a specific task-graph.\n\n**Task specific routes**, a task can define a task specific route using\nthe `task.routes` property. See task creation documentation for details\non permissions required to provide task specific routes. If a task has\nthe entry `'notify.by-email'` in as task specific route defined in\n`task.routes` all messages about this task will be CC'ed with the\nrouting-key `'route.notify.by-email'`.\n\nThese routes will always be prefixed `route.`, so that cannot interfere\nwith the _primary_ routing key as documented here. Notice that the\n_primary_ routing key is alwasys prefixed `primary.`. This is ensured\nin the routing key reference, so API clients will do this automatically.\n\nPlease, note that the way RabbitMQ works, the message will only arrive\nin your queue once, even though you may have bound to the exchange with\nmultiple routing key patterns that matches more of the CC'ed routing\nrouting keys.\n\n**Delivery guarantees**, most operations on the queue are idempotent,\nwhich means that if repeated with the same arguments then the requests\nwill ensure completion of the operation and return the same response.\nThis is useful if the server crashes or the TCP connection breaks, but\nwhen re-executing an idempotent operation, the queue will also resend\nany related AMQP messages. Hence, messages may be repeated.\n\nThis shouldn't be much of a problem, as the best you can achieve using\nconfirm messages with AMQP is at-least-once delivery semantics. Hence,\nthis only prevents you from obtaining at-most-once delivery semantics.\n\n**Remark**, some message generated by timeouts maybe dropped if the\nserver crashes at wrong time. Ideally, we'll address this in the\nfuture. For now we suggest you ignore this corner case, and notify us\nif this corner case is of concern to you.", 
       "entries": [
         {
@@ -1146,7 +1132,7 @@
       ], 
       "exchangePrefix": "exchange/taskcluster-queue/v1/", 
       "title": "Queue AMQP Exchanges", 
-      "version": "0.2.0"
+      "version": 0
     }, 
     "referenceUrl": "http://references.taskcluster.net/queue/v1/exchanges.json"
   }, 
