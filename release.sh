@@ -21,11 +21,10 @@ if [ "$branch" != 'master' ] ; then
   echo "You must create a release off master branch\!"
 fi
 
-set -x
+set -x;
 
 # Now, let's modify the version number
-sed -i '' -e "s,^VERSION=.*$,VERSION=\'$VERSION\',g" setup.py
-
+sed -i "s,^VERSION=.*$,VERSION=\'$VERSION\',g" setup.py
 
 make
 # Now, let's commit this change.  We only care to commit
