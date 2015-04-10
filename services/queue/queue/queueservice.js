@@ -1,4 +1,5 @@
 var azure       = require('azure-storage');
+var azureQueue  = require('azure-queue-node');
 var _           = require('lodash');
 var Promise     = require('promise');
 var debug       = require('debug')('queue:queue');
@@ -6,6 +7,18 @@ var assert      = require('assert');
 var base32      = require('thirty-two');
 var querystring = require('querystring');
 var url         = require('url');
+var base        = require('taskcluster-base');
+
+/** Timeout for azure queue requests */
+var AZURE_QUEUE_TIMEOUT     = 7 * 1000;
+
+/** Azure queue agent used for all instances of the queue client */
+var globalAzureQueueAgent = new base.AzureAgent({
+  keepAlive:        true,
+  maxSockets:       100,
+  maxFreeSockets:   100
+});
+
 
 /** Decode Url-safe base64, our identifiers satisfies these requirements */
 var decodeUrlSafeBase64 = function(data) {
@@ -72,6 +85,21 @@ class QueueService {
       options.credentials.accountKey
     ).withFilter(new azure.ExponentialRetryPolicyFilter());
 
+    // Create azure-queue-node client (more reliable than azure-storage)
+    this.client = azureQueue.createClient({
+      accountUrl:   [
+        'https://',
+        options.credentials.accountName,
+        '.queue.core.windows.net/'
+      ].join(''),
+      accountName:  options.credentials.accountName,
+      accountKey:   options.credentials.accountKey,
+      timeout:      AZURE_QUEUE_TIMEOUT,
+      agent:        globalAzureQueueAgent,
+      base64:       true,
+      json:         false
+    });
+
     // Store account name of use in SAS signed Urls
     this.accountName = options.credentials.accountName;
 
@@ -88,20 +116,138 @@ class QueueService {
     this.deadlineQueueReady = null;
   }
 
+  /////// START OF IMPLEMENTATION WITH AZURE QUEUE NODE
+
+  // Create queue using azure-queue-node client
+  _createQueue(queue) {
+    return new Promise((accept, reject) => {
+      this.client.createQueue(queue, {}, (err, data) => {
+        err ? reject(err) : accept(data)
+      });
+    });
+  }
+
+  // Count messages in queue using azure-queue-node client
+  _countMessages(queue) {
+    return new Promise((accept, reject) => {
+      this.client.countMessages(queue, {}, (err, data) => {
+        err ? reject(err) : accept(data)
+      });
+    });
+  }
+
+  // Put message in queue using azure-queue-node client
+  _putMessage(queue, message, {visibility, ttl}) {
+    return new Promise((accept, reject) => {
+      this.client.putMessage(queue, JSON.stringify(message), {
+        visibilityTimeout:    visibility,
+        messageTTL:           ttl
+      }, (err, data) => { err ? reject(err) : accept(data) });
+    });
+  }
+
+  // Get messages from queue using azure-queue-node client
+  _getMessages(queue, {visibility, count}) {
+    return new Promise((accept, reject) => {
+      this.client.getMessages(queue, {
+        visibilityTimeout:    visibility,
+        maxMessages:          count
+      }, (err, data) => { err ? reject(err) : accept(data) });
+    }).then(messages => {
+      return messages.map(m => {
+        return {
+          payload:  JSON.parse(m.messageText),
+          remove:   () => {
+            return new Promise((accept, reject) => {
+              this.client.deleteMessage(
+                queue, m.messageId, m.popReceipt,
+                {}, (err) => { err ? reject(err) : accept() }
+              );
+            });
+          }
+        };
+      });
+    });
+  }
+
+  /////// START OF IMPLEMENTATION WITH AZURE STORAGE */
+  // We keep the old implementation using azure-storage around, so that it's
+  // easy to test the two against each other for performance, stability and
+  // correctness.
+/*
+
+  // Create queue using azure-storage client
+  _createQueue(queue) {
+    return new Promise((accept, reject) => {
+      this.service.createQueueIfNotExists(queue, {}, (err) => {
+        err ? reject(err) : accept()
+      });
+    });
+  }
+
+  // Count messages in queue using azure-storage client
+  _countMessages(queue) {
+    return new Promise((accept, reject) => {
+      this.service.getQueueMetadata(queue, (err, data) => {
+        err ? reject(err) : accept(parseInt(data.approximatemessagecount))
+      });
+    });
+  }
+
+  // Put message in queue using azure-storage client
+  _putMessage(queue, message, {visibility, ttl}) {
+    return new Promise((accept, reject) => {
+      this.service.createMessage(queue, JSON.stringify(message), {
+        messagettl:         ttl,
+        visibilityTimeout:  visibility
+      }, function(err) { err ? reject(err) : accept() });
+    });
+  }
+
+  // Get messages from queue using azure-storage client
+  _getMessages(queue, {visibility, count}) {
+    return new Promise((accept, reject) => {
+      this.service.getMessages(queue, {
+        numOfMessages:        count,
+        peekOnly:             false,
+        visibilityTimeout:    visibility,
+      }, (err, messages) => { err ? reject(err) : accept(messages) });
+    }).then(messages => {
+      return messages.map(m => {
+        return {
+          payload:    JSON.parse(m.messagetext),
+          remove:     () => {
+            return new Promise((accept, reject) => {
+              this.service.deleteMessage(
+                queue,
+                m.messageid, m.popreceipt,
+                (err) => {
+                  // Ignore message not found errors (who cares)
+                  if (err && err.code !== 'MessageNotFound') {
+                    return reject(err);
+                  }
+                  return accept();
+                }
+              );
+            });
+          }
+        };
+      });
+    });
+  }
+  /////// END OF IMPLEMENTATION WITH AZURE STORAGE */
+
   /** Ensure existence of the claim queue */
   ensureClaimQueue() {
     if (this.claimQueueReady) {
       return this.claimQueueReady;
     }
-    return this.claimQueueReady = new Promise((accept, reject) => {
-      this.service.createQueueIfNotExists(this.claimQueue, {}, (err) => {
-        if (err) {
-          // Don't cache negative results
-          this.claimQueueReady = null;
-          return reject(err);
-        }
-        accept();
-      });
+    return this.claimQueueReady = this._createQueue(
+      this.claimQueue
+    ).catch(err => {
+      // Don't cache negative results
+      this.claimQueueReady = null;
+      throw err;
     });
   }
 
@@ -110,15 +256,12 @@ class QueueService {
     if (this.deadlineQueueReady) {
       return this.deadlineQueueReady;
     }
-    return this.deadlineQueueReady = new Promise((accept, reject) => {
-      this.service.createQueueIfNotExists(this.deadlineQueue, {}, (err) => {
-        if (err) {
-          // Don't cache negative results
-          this.deadlineQueueReady = null;
-          return reject(err);
-        }
-        accept();
-      });
+    return this.deadlineQueueReady = this._createQueue(
+      this.deadlineQueue
+    ).catch(err => {
+      // Don't cache negative results
+      this.deadlineQueueReady = null;
+      throw err;
     });
   }
 
@@ -130,15 +273,13 @@ class QueueService {
     assert(isFinite(takenUntil),        "takenUntil must be a valid date");
 
     await this.ensureClaimQueue();
-    return new Promise((accept, reject) => {
-      this.service.createMessage(this.claimQueue, JSON.stringify({
-        taskId:             taskId,
-        runId:              runId,
-        takenUntil:         takenUntil.toJSON()
-      }), {
-        ttl:                7 * 24 * 60 * 60,
-        visibilityTimeout:  secondsTo(takenUntil)
-      }, function(err) { err ? reject(err) : accept() });
+    return this._putMessage(this.claimQueue, {
+      taskId:             taskId,
+      runId:              runId,
+      takenUntil:         takenUntil.toJSON()
+    }, {
+      ttl:                7 * 24 * 60 * 60,
+      visibility:         secondsTo(takenUntil)
     });
   }
 
@@ -152,14 +293,12 @@ class QueueService {
     var delay = Math.floor(this.deadlineDelay / 1000);
     debug("Put deadline message to be visible in %s seconds",
            secondsTo(deadline) + delay);
-    return new Promise((accept, reject) => {
-      this.service.createMessage(this.deadlineQueue, JSON.stringify({
-        taskId:             taskId,
-        deadline:           deadline.toJSON()
-      }), {
-        ttl:                7 * 24 * 60 * 60,
-        visibilityTimeout:  secondsTo(deadline) + delay
-      }, function(err) { err ? reject(err) : accept() });
+    return this._putMessage(this.deadlineQueue, {
+      taskId:             taskId,
+      deadline:           deadline.toJSON()
+    }, {
+      ttl:                7 * 24 * 60 * 60,
+      visibility:         secondsTo(deadline) + delay
     });
   }
 
@@ -186,30 +325,18 @@ class QueueService {
     await this.ensureClaimQueue();
 
     // Get messages
-    var messages = await new Promise((accept, reject) => {
-      this.service.getMessages(this.claimQueue, {
-        numOfMessages:        32,
-        peekOnly:             false,
-        visibilityTimeout:    10 * 60,
-      }, (err, messages) => { err ? reject(err) : accept(messages) });
+    var messages = await this._getMessages(this.claimQueue, {
+      visibility:             10 * 60,
+      count:                  32
     });
 
     // Convert to neatly consumable format
-    return messages.map((message) => {
-      var payload = JSON.parse(message.messagetext);
+    return messages.map(m => {
       return {
-        taskId:     payload.taskId,
-        runId:      payload.runId,
-        takenUntil: new Date(payload.takenUntil),
-        remove:     () => {
-          return new Promise((accept, reject) => {
-            this.service.deleteMessage(
-              this.claimQueue,
-              message.messageid, message.popreceipt,
-              (err) => { err ? reject(err) : accept() }
-            );
-          });
-        }
+        taskId:       m.payload.taskId,
+        runId:        m.payload.runId,
+        takenUntil:   new Date(m.payload.takenUntil),
+        remove:       m.remove
       };
     });
   }
@@ -236,29 +363,17 @@ class QueueService {
     await this.ensureDeadlineQueue();
 
     // Get messages
-    var messages = await new Promise((accept, reject) => {
-      this.service.getMessages(this.deadlineQueue, {
-        numOfMessages:        32,
-        peekOnly:             false,
-        visibilityTimeout:    10 * 60,
-      }, (err, messages) => { err ? reject(err) : accept(messages) });
+    var messages = await this._getMessages(this.deadlineQueue, {
+      visibility:             10 * 60,
+      count:                  32
     });
 
     // Convert to neatly consumable format
-    return messages.map((message) => {
-      var payload = JSON.parse(message.messagetext);
+    return messages.map(m => {
       return {
-        taskId:     payload.taskId,
-        deadline:   new Date(payload.deadline),
-        remove:     () => {
-          return new Promise((accept, reject) => {
-            this.service.deleteMessage(
-              this.deadlineQueue,
-              message.messageid, message.popreceipt,
-              (err) => { err ? reject(err) : accept() }
-            );
-          });
-        }
+        taskId:       m.payload.taskId,
+        deadline:     new Date(m.payload.deadline),
+        remove:       m.remove
       };
     });
   }
@@ -292,15 +407,13 @@ class QueueService {
       '1'             // priority, currently just hardcoded to 1
     ].join('-');
 
-    return this.queues[id] = new Promise((accept, reject) => {
-      this.service.createQueueIfNotExists(name, {}, (err) => {
-        if (err) {
-          // Don't cache negative results
-          this.queues[id] = undefined;
-          return reject(err);
-        }
-        accept(name);
-      });
+    // Return and cache promise that we created this queue
+    return this.queues[id] = this._createQueue(name).catch(err => {
+      // Don't cache negative results
+      this.queues[id] = undefined;
+      throw err;
+    }).then(() => {
+      return name;
     });
   }
 
@@ -339,14 +452,12 @@ class QueueService {
     }
 
     // Put message queue
-    return new Promise((accept, reject) => {
-      this.service.createMessage(queueName, JSON.stringify({
-        taskId:     task.taskId,
-        runId:      runId
-      }), {
-        messagettl:         timeToDeadline,
-        visibilityTimeout:  0
-      }, (err) => { err ? reject(err) : accept() });
+    return this._putMessage(queueName, {
+      taskId:     task.taskId,
+      runId:      runId
+    }, {
+      ttl:          timeToDeadline,
+      visibility:   0
     });
   }
 
@@ -396,13 +507,7 @@ class QueueService {
     var queueName = await this.ensurePendingQueue(provisionerId, workerType);
 
     // Get queue meta-data
-    var data = await new Promise((accept, reject) => {
-      this.service.getQueueMetadata(queueName, (err, data) => {
-        err ? reject(err) : accept(data)
-      });
-    });
-
-    return parseInt(data.approximatemessagecount);
+    return this._countMessages(queueName);
   }
 };
 

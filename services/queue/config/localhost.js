@@ -3,7 +3,7 @@ module.exports = {
     publishMetaData:              'false',
     claimTimeout:                 20 * 60,
     publicArtifactBucket:         'test-bucket-for-any-garbage',
-    privateArtifactBucket:        'test-bucket-for-any-garbage',
+    privateArtifactBucket:        'test-bucket-for-any-garbage2',
     artifactContainer:            'artifacts',
     statsComponent:               'test-queue',
     queuePrefix:                  'hacks',
@@ -19,12 +19,12 @@ module.exports = {
     // testing. In production this should be "- x hours" or so...
     taskExpirationDelay:          '- 1 min',
     deadline: {
-      pollingDelay:               1000,
+      pollingDelay:               5000,
       parallelism:                1
     },
 
     claim: {
-      pollingDelay:               1000,
+      pollingDelay:               5000,
       parallelism:                1
     }
   },

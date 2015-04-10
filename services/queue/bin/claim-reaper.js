@@ -75,7 +75,6 @@ var launch = async function(profile) {
         constants:        require('../schemas/constants'),
         schemaPrefix:     'queue/v1/'
       });
-
       publisher = await exchanges.setup({
         credentials:        cfg.get('pulse'),
         exchangePrefix:     cfg.get('queue:exchangePrefix'),
