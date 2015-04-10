@@ -449,6 +449,7 @@ Entity.configure = function(options) {
  *     clientId:        "...",              // TaskCluster clientId
  *     accessToken:     "...",              // TaskCluster accessToken
  *   },
+ *   agent:             https.Agent,        // Agent to use (default AzureAgent)
  *   authBaseUrl:       "...",              // baseUrl for auth (optional)
  *   drain:             base.stats.Influx,  // Statistics drain (optional)
  *   component:         '<name>',           // Component in stats (if drain)
@@ -494,7 +495,8 @@ Entity.setup = function(options) {
   assert(!options.drain || options.component, "component is required if drain");
   assert(!options.drain || options.process,   "process is required if drain");
   options = _.defaults({}, options, {
-    context:      {}
+    context:      {},
+    agent:        globalAzureTableAgent
   });
 
   // Identify the parent class, that is always `this` so we can use it on
@@ -600,7 +602,7 @@ Entity.setup = function(options) {
             ".table.core.windows.net/"
           ].join(''),
           timeout:      AZURE_TABLE_TIMEOUT,
-          agent:        globalAzureTableAgent,
+          agent:        options.agent,
           metadata:     'minimal'
         });
         // We now have a client, so forget about the promise for one
@@ -619,7 +621,7 @@ Entity.setup = function(options) {
     // not just compute... That's what the Microsoft libraries does anyways
     var credentials = _.defaults({
       timeout:      AZURE_TABLE_TIMEOUT,
-      agent:        globalAzureTableAgent,
+      agent:        options.agent,
       metadata:     'minimal'
     }, options.credentials, {
       accountUrl: [
