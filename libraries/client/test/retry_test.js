@@ -191,6 +191,42 @@ suite('retry-test', function() {
     });
   });
 
+  test("Can set retries = 0", function() {
+    var server2 = new Server({
+      credentials: {
+        clientId:     'test-client',
+        accessToken:  'test-token'
+      },
+      baseUrl:        'http://localhost:60526/v1',
+      retries:        0
+    });
+    getInternalErrorCount = 0;
+    return server2.getInternalError().then(function() {
+      assert(false, "Expected an error");
+    }, function(err) {
+      assert(err.statusCode === 500);
+      assert(getInternalErrorCount === 1, "expected 1 attempt only!");
+    });
+  });
+
+  test("Can set retries = 1", function() {
+    var server2 = new Server({
+      credentials: {
+        clientId:     'test-client',
+        accessToken:  'test-token'
+      },
+      baseUrl:        'http://localhost:60526/v1',
+      retries:        1
+    });
+    getInternalErrorCount = 0;
+    return server2.getInternalError().then(function() {
+      assert(false, "Expected an error");
+    }, function(err) {
+      assert(err.statusCode === 500);
+      assert(getInternalErrorCount === 2, "expected 2 attempts");
+    });
+  });
+
   test("Doesn't retry 4xx errors", function() {
     getUserErrorCount = 0;
     return server.getUserError().then(function() {
