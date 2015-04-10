@@ -439,11 +439,14 @@ api.declare({
     }
   }
 
+  // Construct task status, as we'll return this many times
+  var status = task.status();
+
   // If first run isn't pending, all message must have been published before,
   // this can happen if we came from the catch-branch (it's unlikely to happen)
   if (task.runs[0].state !== 'pending') {
     return res.reply({
-      status:   task.status()
+      status:   status
     });
   }
 
@@ -456,12 +459,12 @@ api.declare({
       // Publish task-defined message, we want this arriving before the
       // task-pending message, so we have to await publication here
       await this.publisher.taskDefined({
-        status:         task.status()
+        status:         status
       }, task.routes);
 
       // Put message in appropriate azure queue, and publish message to pulse
       await this.publisher.taskPending({
-        status:         task.status(),
+        status:         status,
         runId:          0
       }, task.routes);
     })()
@@ -469,7 +472,7 @@ api.declare({
 
   // Reply
   return res.reply({
-    status:         task.status()
+    status:         status
   });
 });
 
@@ -579,23 +582,26 @@ api.declare({
     }
   }
 
+  // Construct task status
+  var status = task.status();
+
   // If runs are present, then we don't need to publish messages as this must
   // have happened already...
   // this can happen if we came from the catch-branch (it's unlikely to happen)
   if (task.runs.length > 0) {
     return res.reply({
-      status:   task.status()
+      status:       status
     });
   }
 
   // Publish task-defined message
   await this.publisher.taskDefined({
-    status:         task.status()
+    status:         status
   }, task.routes);
 
   // Reply
   return res.reply({
-    status:         task.status()
+    status:         status
   });
 });
 

@@ -30,7 +30,7 @@ suite('Create task (w. defaults)', function() {
       'queue:create-task:no-provisioner/test-worker'
     );
     await helper.events.listenFor('is-defined', helper.queueEvents.taskDefined({
-      //taskId:   taskId
+      taskId:   taskId
     }));
     await helper.events.listenFor('is-pending', helper.queueEvents.taskPending({
       taskId:   taskId
