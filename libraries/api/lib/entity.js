@@ -10,6 +10,7 @@ var azureTable      = require('azure-table-node');
 var taskcluster     = require('taskcluster-client');
 var https           = require('https');
 var stats           = require('../stats');
+var AzureAgent      = require('./azureagent');
 
 // ** Coding Style **
 // To ease reading of this component we recommend the following code guidelines:
@@ -76,16 +77,11 @@ var MAX_MODIFY_ATTEMPTS     = 10;
 /** Timeout for azure table requests */
 var AZURE_TABLE_TIMEOUT     = 7 * 1000;
 
-/** Disable TCP Nagle (improves speed for small requests) */
-var DISABLE_NAGLE           = true;
-
 /** Azure table agent used for all instances of the table client */
-var globalAzureTableAgent = new https.Agent({
-  // Don't use keep alive with azure as their load balancer hangs up idle
-  // connections after 60s causing uncaught ECONNRESET errors.
-  keepAlive:        false,
-  maxSockets:       5000,
-  maxFreeSockets:   0
+var globalAzureTableAgent = new AzureAgent({
+  keepAlive:        true,
+  maxSockets:       100,
+  maxFreeSockets:   100
 });
 
 /** Statistics from Azure table operations */
@@ -100,36 +96,6 @@ var AzureTableOperations = new stats.Series({
     error:          stats.types.String
   }
 });
-
-
-/** Monkey patch AzureClient to disable TCP Nagle */
-var patchAzureClient = function(client) {
-  // We're overwriting internal method, to do another hack on request
-  client._sendRequestWithRetry = function _sendRequestWithRetry(options, cb) {
-    if (this._retryLogic == null) {
-      this._request(
-        options,
-        this._normalizeCallback.bind(this, cb)
-      ).once('request', function(req) {
-        req.setNoDelay(DISABLE_NAGLE);
-      });
-    } else {
-      var self = this;
-      this._retryLogic(options, function(filterCb) {
-        self._request(
-          options,
-          self._normalizeCallback.bind(self, function(err, resp) {
-            filterCb(err, resp, function(err, resp) { cb(err, resp); });
-          })
-        ).once('request', function(req) {
-          req.setNoDelay(DISABLE_NAGLE);
-        });
-      });
-    }
-  };
-  return client;
-};
-
 
 /**
  * Base class of all entity
@@ -625,7 +591,7 @@ Entity.setup = function(options) {
       ).then(function(result) {
         // Set expiry and create client using result
         expiry  = new Date(result.expiry).getTime();
-        client  = patchAzureClient(azureTable.createClient({
+        client  = azureTable.createClient({
           accountName:  options.account,
           sas:          result.sas,
           accountUrl:   [
@@ -636,7 +602,7 @@ Entity.setup = function(options) {
           timeout:      AZURE_TABLE_TIMEOUT,
           agent:        globalAzureTableAgent,
           metadata:     'minimal'
-        }));
+        });
         // We now have a client, so forget about the promise for one
         promisedClient = null;
         return client;
@@ -665,7 +631,7 @@ Entity.setup = function(options) {
     assert(/^https:\/\//.test(credentials.accountUrl),
            "Use HTTPS for accountUrl");
     expiry  = Number.MAX_VALUE;
-    client  = patchAzureClient(azureTable.createClient(credentials));
+    client  = azureTable.createClient(credentials);
 
     // Create method that will connect (if needed) and return client
     subClass.prototype.__connect = function() {
