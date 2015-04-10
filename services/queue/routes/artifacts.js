@@ -151,7 +151,9 @@ api.declare({
   // Validate expires <= task.expires
   if (expires.getTime() > task.expires.getTime()) {
     return res.status(400).json({
-      messages: "Artifact expires before the task (task.expires < expires)",
+      messages: "Artifact expires after the task expiration " +
+                "(task.expires < expires) - this is now allowed, " +
+                "artifacts must expire before the task they belong to",
       error: {
         taskExpires:      task.expires.toJSON(),
         expires:          expires.toJSON()
@@ -162,7 +164,7 @@ api.declare({
   // Ensure that the run is running
   if (run.state !== 'running') {
     return res.status(409).json({
-      message:    "The given is not running",
+      message:    "The given run is not running",
       error: {
         status:   task.status(),
         runId:    runId

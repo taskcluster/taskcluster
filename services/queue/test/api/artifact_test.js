@@ -16,6 +16,36 @@ suite('Post artifacts', function() {
   var expect        = require('expect.js');
   var helper        = require('./helper');
 
+  // Make a get request with a 303 redirect, recent superagent versions does
+  // this wrong with jumping between host, so this function just does the
+  // redirect step, and makes sure it's done right.
+  var getWith303Redirect = async (url) => {
+    var res;
+    try {
+      res = await request.get(url).redirects(0).end();
+    }
+    catch(err) {
+      res = err.response;
+    }
+    expect(res.statusCode).to.be(303);
+    console.log(res.headers.location);
+    return request.get(res.headers.location).end();
+  };
+
+  // Get something we expect to return 404, this is just easier than having
+  // try/catch blocks all over the code
+  var get404 = async (url) => {
+    var res;
+    try {
+      res = await request.get(url).redirects(0).end();
+    }
+    catch(err) {
+      res = err.response;
+    }
+    expect(res.statusCode).to.be(404);
+    return res;
+  };
+
   // Use the same task definition for everything
   var taskDef = {
     provisionerId:    'no-provisioner',
@@ -74,7 +104,7 @@ suite('Post artifacts', function() {
       taskId, 0, 'public/s3.json'
     );
     debug("Fetching artifact from: %s", url);
-    res = await request.get(url).end();
+    res = await getWith303Redirect(url);
     expect(res.ok).to.be.ok();
     expect(res.body).to.be.eql({message: "Hello World"});
 
@@ -84,7 +114,7 @@ suite('Post artifacts', function() {
       taskId, 'public/s3.json'
     );
     debug("Fetching artifact from: %s", url);
-    res = await request.get(url).end();
+    res = await getWith303Redirect(url);
     expect(res.ok).to.be.ok();
     expect(res.body).to.be.eql({message: "Hello World"});
 
@@ -106,9 +136,7 @@ suite('Post artifacts', function() {
       taskId, 0, 'public/s3.json'
     );
     debug("Fetching artifact from: %s", url);
-    res = await request.get(url).end();
-    expect(res.ok).to.not.be.ok();
-    expect(res.status).to.be(404);
+    await get404(url);
   });
 
 
@@ -184,7 +212,7 @@ suite('Post artifacts', function() {
       taskId, 0, 'public/azure.json'
     );
     debug("Fetching artifact from: %s", url);
-    var res = await request.get(url).end();
+    var res = await getWith303Redirect(url);
     expect(res.ok).to.be.ok();
     expect(res.body).to.be.eql({
       block1_says: "Hello world",
@@ -196,9 +224,7 @@ suite('Post artifacts', function() {
     await helper.expireArtifacts();
 
     debug("### Attempt to download artifact");
-    res = await request.get(url).end();
-    expect(res.ok).to.not.be.ok();
-    expect(res.status).to.be(404);
+    await get404(url);
   });
 
 
@@ -245,7 +271,13 @@ suite('Post artifacts', function() {
       taskId, 0, 'public/error.json'
     );
     debug("Fetching artifact from: %s", url);
-    var res = await request.get(url).end();
+    var res;
+    try{
+      res = await request.get(url).end();
+    }
+    catch(err) {
+      res = err.response;
+    }
     expect(res.ok).to.not.be.ok();
     expect(res.status).to.be(403);
     expect(res.body.message).to.be("Some user-defined message");
@@ -255,9 +287,7 @@ suite('Post artifacts', function() {
     await helper.expireArtifacts();
 
     debug("### Attempt to download artifact");
-    res = await request.get(url).end();
-    expect(res.ok).to.not.be.ok();
-    expect(res.status).to.be(404);
+    await get404(url);
   });
 
   test("Post redirect artifact", async () => {
@@ -300,17 +330,14 @@ suite('Post artifacts', function() {
       taskId, 0, 'public/redirect.json'
     );
     debug("Fetching artifact from: %s", url);
-    var res = await request.get(url).end();
+    var res = await getWith303Redirect(url);
     expect(res.ok).to.be.ok();
-    expect(res.redirects).to.contain(pingUrl);
 
     debug("### Expire artifacts");
     // config/test.js hardcoded to expire artifact 4 days in the future
     await helper.expireArtifacts();
 
     debug("### Attempt to download artifact");
-    res = await request.get(url).end();
-    expect(res.ok).to.not.be.ok();
-    expect(res.status).to.be(404);
+    await get404(url);
   });
 });
