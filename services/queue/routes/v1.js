@@ -679,20 +679,23 @@ api.declare({
     });
   });
 
+  // Construct status object
+  var status = task.status();
+
   // Put message in appropriate azure queue, and publish message to pulse,
   // if the initial run is pending
   if (task.runs[0].state === 'pending') {
     await Promise.all([
       this.queueService.putPendingMessage(task, 0),
       this.publisher.taskPending({
-        status:         task.status(),
+        status:         status,
         runId:          0
       }, task.routes)
     ]);
   }
 
   return res.reply({
-    status:     task.status()
+    status:     status
   });
 });
 
@@ -919,17 +922,20 @@ api.declare({
           " taskId: %s, status: %j", task.taskId, task.status());
   }
 
+  // Construct status object
+  var status = task.status();
+
   // Publish message about last run, if it was canceled
   if (run.state === 'exception' && run.reasonResolved === 'canceled') {
     var runId = task.runs.length - 1;
     await this.publisher.taskException(_.defaults({
-      status:     task.status(),
+      status:     status,
       runId:      runId
     }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
   }
 
   return res.reply({
-    status:     task.status()
+    status:     status
   });
 });
 
@@ -1093,10 +1099,13 @@ api.declare({
     });
   }
 
+  // Construct status object
+  var status = task.status();
+
   // Publish task running message, it's important that we publish even if this
   // is a retry request and we didn't make any changes in task.modify
   await this.publisher.taskRunning({
-    status:       task.status(),
+    status:       status,
     runId:        runId,
     workerGroup:  workerGroup,
     workerId:     workerId,
@@ -1105,7 +1114,7 @@ api.declare({
 
   // Reply to caller
   return res.reply({
-    status:       task.status(),
+    status:       status,
     runId:        runId,
     workerGroup:  workerGroup,
     workerId:     workerId,
@@ -1291,17 +1300,20 @@ var resolveTask = async function(req, res, taskId, runId, target) {
     });
   }
 
+  // Construct status object
+  var status = task.status();
+
   // Post message about task resolution
   if (target === 'completed') {
     await this.publisher.taskCompleted({
-      status:       task.status(),
+      status:       status,
       runId:        runId,
       workerGroup:  run.workerGroup,
       workerId:     run.workerId
     }, task.routes);
   } else {
     await this.publisher.taskFailed({
-      status:       task.status(),
+      status:       status,
       runId:        runId,
       workerGroup:  run.workerGroup,
       workerId:     run.workerId
@@ -1309,7 +1321,7 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   }
 
   return res.reply({
-    status:   task.status()
+    status:   status
   });
 };
 
