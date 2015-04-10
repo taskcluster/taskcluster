@@ -55,7 +55,7 @@ if (!cfg.get('aws:secretAccessKey') ||
     !cfg.get('azure:accountKey') ||
     !cfg.get('pulse:password')) {
   console.log("Skip tests due to missing credentials!");
-  return;
+  process.exit(1);
 }
 
 // Configure PulseTestReceiver
@@ -108,6 +108,9 @@ mocha.before(async () => {
   // Utility to create an Queue instance with limited scopes
   helper.scopes = (...scopes) => {
     helper.queue = new helper.Queue({
+      // Ensure that we use global agent, to avoid problems with keepAlive
+      // preventing tests from exiting
+      agent:            require('http').globalAgent,
       baseUrl:          helper.baseUrl,
       credentials: {
         clientId:       'test-client',
