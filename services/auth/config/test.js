@@ -16,7 +16,9 @@ module.exports = {
       accessToken:    'EO-5D7oBTYWMTJ79HYGf-guFVXRtIbRKWoXOyb9EpkIQ'
     },
     // Must be configured locally
-    azureAccounts:    "{}"
+    azureAccounts:    "{}",
+
+    clientIdForTempCreds: 'ctVNevJPRbe6ICL5-nhZkw'
   },
 
   test: {

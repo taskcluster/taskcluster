@@ -17,7 +17,10 @@ module.exports = {
     },
 
     // Accounts that auth can delegate access to, as JSON
-    azureAccounts:                  "{}"
+    azureAccounts:                  "{}",
+
+    // ClientId to use when issuing temporary credentials
+    clientIdForTempCreds:  undefined
   },
 
   // Server configuration
