@@ -15,7 +15,7 @@ This library provides the following six packages to interface with TaskCluster:
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/queue
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/scheduler
 
-### AMQP APIS
+### AMQP APIs
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/schedulerevents
 
