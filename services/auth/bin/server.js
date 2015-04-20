@@ -24,7 +24,8 @@ var launch = function(profile) {
       'influx_connectionString',
       'auth_root_clientId',
       'auth_root_accessToken',
-      'auth_azureAccounts'
+      'auth_azureAccounts',
+      'auth_clientIdForTempCreds'
     ],
     filename:     'taskcluster-auth'
   });
@@ -110,8 +111,9 @@ var launch = function(profile) {
 
     // Provide a client
     app.globals = {
-      Client:         Client,
-      root:           cfg.get('auth:root')
+      Client:               Client,
+      root:                 cfg.get('auth:root'),
+      clientIdForTempCreds: cfg.get('auth:clientIdForTempCreds')
     };
 
     // Create server
