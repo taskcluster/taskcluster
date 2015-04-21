@@ -3,13 +3,13 @@ This module handles the creation of the "taskcluster" proxy container which
 allows tasks to talk directly to taskcluster services over a http proxy which
 grants a particular permission level based on the task scopes.
 */
-var waitForPort = require('../wait_for_port');
-var pullImage = require('../pull_image_to_stream');
+import waitForPort from '../wait_for_port';
+import pullImageStreamTo from '../pull_image_to_stream';
 
 // Alias used to link the proxy.
-var ALIAS = 'taskcluster';
+const ALIAS = 'taskcluster';
 // Maximum time in MS to wait for the proxy socket to become available.
-var INIT_TIMEOUT = 2000;
+const INIT_TIMEOUT = 2000;
 
 export default class TaskclusterProxy {
   constructor () {
@@ -25,7 +25,7 @@ export default class TaskclusterProxy {
     // Image name for the proxy container.
     var image = task.runtime.taskclusterProxyImage;
 
-    await pullImage(docker, image, process.stdout);
+    await pullImageStreamTo(docker, image, process.stdout);
 
     var assumedScope = 'assume:worker-id:' + task.runtime.workerGroup +
                        '/' + task.runtime.workerId;

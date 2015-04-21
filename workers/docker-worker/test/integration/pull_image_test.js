@@ -6,7 +6,8 @@ suite('pull image', function() {
   var dockerUtils = require('dockerode-process/utils');
   var cmd = require('./helper/cmd');
 
-  var IMAGE = 'taskcluster/test-ubuntu';
+  var IMAGE = 'ubuntu:12.10';
+
   test('ensure image can be pulled', co(function* () {
     yield dockerUtils.removeImageIfExists(docker, IMAGE);
     var result = yield testworker({
@@ -16,8 +17,21 @@ suite('pull image', function() {
         maxRunTime: 5 * 60
       }
     });
+
     assert.equal(result.run.state, 'completed', 'task should be successfull');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
+  }));
+
+  test('Task marked as failed if image cannot be pulled', co(function* () {
+    var result = yield testworker({
+      payload: {
+        image: 'ubuntu:99.99',
+        command: cmd('ls'),
+        maxRunTime: 5 * 60
+      }
+    });
+    assert.equal(result.run.state, 'failed', 'task should be successfull');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should be successfull');
   }));
 });
 

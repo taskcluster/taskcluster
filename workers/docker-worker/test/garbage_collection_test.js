@@ -4,7 +4,7 @@ suite('garbage collection tests', function () {
   var createLogger = require('../lib/log');
   var docker = require('../lib/docker')();
   var dockerUtils = require('dockerode-process/utils');
-  var pullImage = require('../lib/pull_image_to_stream');
+  var pullImage = require('../lib/pull_image_to_stream').pullImageStreamTo;
   var GarbageCollector = require('../lib/gc');
   var VolumeCache = require('../lib/volume_cache');
   var streams = require('stream');

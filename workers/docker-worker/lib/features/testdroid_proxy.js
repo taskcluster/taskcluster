@@ -1,12 +1,14 @@
-var waitForPort = require('../wait_for_port');
-var pullImage = require('../pull_image_to_stream');
-var request = require('superagent-promise');
-var debug = require('debug')('docker-worker:features:testdroid-proxy');
+import waitForPort from '../wait_for_port';
+import pullImageStreamTo from '../pull_image_to_stream';
+import request from 'superagent-promise';
+import Debug from 'debug';
+
+let debug = Debug('docker-worker:features:testdroid-proxy');
 
 // Alias used to link the proxy.
-var ALIAS = 'testdroid';
+const ALIAS = 'testdroid';
 // Maximum time in MS to wait for socket to become available
-var INIT_TIMEOUT = 5000;
+const INIT_TIMEOUT = 5000;
 
 export default class TestdroidProxy {
   constructor() {
@@ -22,7 +24,7 @@ export default class TestdroidProxy {
     // Image name for the proxy container.
     var image = task.runtime.testdroidProxyImage;
 
-    await pullImage(docker, image, process.stdout);
+    await pullImageStreamTo(docker, image, process.stdout);
 
     var cmd = [
         `--cloud-url=${task.runtime.testdroid.url}`,

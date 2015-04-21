@@ -7,11 +7,10 @@ import util from 'util';
 import uuid from 'uuid';
 import waitForEvent from './wait_for_event';
 import features from './features';
-import pullImage from './pull_image_to_stream';
+import { pullDockerImage, IMAGE_ERROR } from './pull_image_to_stream';
 import Wordwrap from 'wordwrap';
 import { scopeMatch } from 'taskcluster-base/utils';
 
-import DockerImage from './docker_image';
 import DockerProc from 'dockerode-process';
 import { PassThrough } from 'stream';
 import States from './states';
@@ -22,18 +21,9 @@ let wordwrap = new Wordwrap(0, 80, { hard: true });
 const PAYLOAD_SCHEMA =
   'http://schemas.taskcluster.net/docker-worker/v1/payload.json#';
 
-// This string was super long but I wanted to say all these thing so I broke it
-// out into a constant even though most errors are closer to their code...
-const IMAGE_ERROR = 'Pulling docker image "%s" has failed this may indicate an ' +
-                  'Error with the registry used or an authentication error ' +
-                  'in the worker try pulling the image locally. \n Error %s';
-
 // TODO probably a terrible error message, look at making it better later
 const CANCEL_ERROR = 'Task was canceled by another entity. This can happen using ' +
                    'a taskcluster client or by cancelling a task within Treeherder.';
-
-// Prefix used in scope matching for authenticated docker images.
-const IMAGE_SCOPE_PREFIX = 'docker-worker:image:';
 
 /*
 @example
@@ -244,8 +234,17 @@ export default class Task {
    * @param {String} stat - Name of the current state to be used when generating stats for killing states
    * @param {String} error - Option error to write to the stream prior to aborting
    */
-  async abortRun(stat, error) {
+  async abortRun(stat, error='') {
     if (!this.isCanceled()) this.taskState = 'aborted';
+
+    this.runtime.stats.increment('tasks.aborted');
+
+    this.runtime.log('task aborted', {
+      taskId: this.status.taskId,
+      runId: this.runId,
+      exception: this.taskException || '',
+      err: error
+    });
 
     if (error) this.stream.write(error);
 
@@ -257,7 +256,14 @@ export default class Task {
       new Date()
     ));
 
-    await this.runtime.stats.timeGen(`tasks.time.states.${stat}.killed`, this.states.killed(this));
+    try {
+      await this.runtime.stats.timeGen(`tasks.time.states.${stat}.killed`, this.states.killed(this));
+    }
+    catch (e) {
+      // Do not throw, killing the states is a best effort here when aborting
+      debug(`Caught error while killing state handlers. ${e}`);
+    }
+
 
     if (this.isAborted()) {
       let queue = this.runtime.queue;
@@ -413,50 +419,6 @@ export default class Task {
     if (!this.isCanceled() && !this.isAborted()) await this.completeRun(success);
   }
 
-  async pullDockerImage() {
-    let payload = this.task.payload;
-    let dockerImage = new DockerImage(payload.image);
-    let dockerImageName = dockerImage.fullPath();
-
-    this.runtime.log('pull image', {
-      taskId: this.status.taskId,
-      runId: this.runId,
-      image: dockerImageName
-    });
-
-    // There are cases where we cannot authenticate a docker image based on how
-    // the name is formatted (such as `registry`) so simply pull here and do
-    // not check for credentials.
-    if (!dockerImage.canAuthenticate()) {
-      return await pullImage(
-        this.runtime.docker, dockerImageName, this.stream
-      );
-    }
-
-    let pullOptions = {};
-    // See if any credentials apply from our list of registries...
-    let credentials = dockerImage.credentials(this.runtime.registries);
-    if (credentials) {
-      // Validate scopes on the image if we have credentials for it...
-      if (!scopeMatch(this.task.scopes, IMAGE_SCOPE_PREFIX + dockerImageName)) {
-        throw new Error(
-          'Insufficient scopes to pull : "' + dockerImageName + '" try adding ' +
-          IMAGE_SCOPE_PREFIX + dockerImageName + ' to the .scopes array.'
-        );
-      }
-
-      // TODO: Ideally we would verify the authentication before allowing any
-      // pulls (some pulls just check if the image is cached) the reason being
-      // we have no way to invalidate images once they are on a machine aside
-      // from blowing up the entire machine.
-      pullOptions.authconfig = credentials;
-    }
-
-    return await pullImage(
-      this.runtime.docker, dockerImageName, this.stream, pullOptions
-    );
-  }
-
   isAborted() {
     return this.taskState === 'aborted';
   }
@@ -474,13 +436,6 @@ export default class Task {
   abort(reason) {
     this.taskState = 'aborted';
     this.taskException = reason;
-    this.runtime.stats.increment('tasks.aborted');
-    this.runtime.log('abort task', {
-      taskId: this.status.taskId,
-      runId: this.runId,
-      reason: reason
-    });
-
     if (this.dockerProcess) this.dockerProcess.kill();
 
     this.stream.write(
@@ -530,13 +485,24 @@ export default class Task {
 
     // Task log header.
     this.stream.write(this.logHeader());
+    let links;
+    try {
+      // Build the list of container links...
+      links =
+        await stats.timeGen('tasks.time.states.linked', this.states.link(this));
+      // Hooks prior to running the task.
+      await stats.timeGen('tasks.time.states.created', this.states.created(this));
+    }
+    catch (e) {
+      return await this.abortRun(
+        'states_failed',
+        this.fmtLog(
+          'Task was aborted because states could not be created ' +
+          `successfully. Error: ${e}`
+        )
+      );
+    }
 
-    // Build the list of container links...
-    let links =
-      await stats.timeGen('tasks.time.states.linked', this.states.link(this));
-
-    // Hooks prior to running the task.
-    await stats.timeGen('tasks.time.states.created', this.states.created(this));
 
     // Everything should have attached to the stream by now...
     this.stream.uncork();
@@ -566,7 +532,14 @@ export default class Task {
       return await this.abortRun(this.taskState);
     }
     try {
-      await this.pullDockerImage();
+      await pullDockerImage(
+        this.runtime,
+        this.task.payload.image,
+        this.task.scopes,
+        this.taskId,
+        this.runId,
+        this.stream
+      );
     } catch (e) {
       return await this.abortRun(
         'pull_failed',

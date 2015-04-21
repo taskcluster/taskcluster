@@ -9,7 +9,7 @@ suite('volume cache test', function () {
   var mkdirp = require('mkdirp');
   var rmrf = require('rimraf');
   var co = require('co');
-  var pullImage = require('../lib/pull_image_to_stream');
+  var pullImage = require('../lib/pull_image_to_stream').pullImageStreamTo;
   var cmd = require('./integration/helper/cmd');
 
   // Location on the machine running the test where the cache will live

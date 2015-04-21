@@ -44,11 +44,21 @@ module.exports = {
     defaults: false,
     module: require('./features/taskcluster_proxy')
   },
+
   testdroidProxy: {
     title: 'Testdroid proxy service',
     description: '',
     defaults: false,
     module: require('./features/testdroid_proxy')
+  },
+
+  balrogVPNProxy: {
+    title: 'Balrog proxy service',
+    description: 'The Balrog proxy feature allows tasks to make requests to ' +
+                 'http://balrog which is a proxied connection through a vpn ' +
+                 'tunnel to production balrog update server.',
+    defaults: false,
+    module: require('./features/balrog_vpn_proxy')
   },
 
   artifacts: {

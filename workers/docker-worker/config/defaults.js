@@ -14,6 +14,7 @@ module.exports = {
   taskclusterProxyImage: 'quay.io/mozilla/taskcluster-proxy',
   taskclusterLogImage: 'quay.io/mozilla/taskcluster-logserve',
   testdroidProxyImage: 'quay.io/mozilla/testdroid-proxy:0.0.6',
+  balrogVPNProxyImage: 'quay.io/mozillab2g/taskcluster-vpn-proxy:0.0.1',
 
   alivenessCheckInterval: 30000, // 30 seconds
 
