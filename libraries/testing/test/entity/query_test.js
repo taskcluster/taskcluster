@@ -29,26 +29,28 @@ suite("Entity (query)", function() {
 
   var id = slugid.v4();
   before(function() {
-    return Promise.all([
-      Item.create({
-        id:     id,
-        name:   'item1',
-        count:  1,
-        tag:    'tag1'
-      }),
-      Item.create({
-        id:     id,
-        name:   'item2',
-        count:  2,
-        tag:    'tag2'
-      }),
-      Item.create({
-        id:     id,
-        name:   'item3',
-        count:  3,
-        tag:    'tag1'    // same tag as item1
-      })
-    ]);
+    return Item.ensureTable().then(function() {
+      return Promise.all([
+        Item.create({
+          id:     id,
+          name:   'item1',
+          count:  1,
+          tag:    'tag1'
+        }),
+        Item.create({
+          id:     id,
+          name:   'item2',
+          count:  2,
+          tag:    'tag2'
+        }),
+        Item.create({
+          id:     id,
+          name:   'item3',
+          count:  3,
+          tag:    'tag1'    // same tag as item1
+        })
+      ]);
+    });
   });
 
   test("Query a partition", function() {
