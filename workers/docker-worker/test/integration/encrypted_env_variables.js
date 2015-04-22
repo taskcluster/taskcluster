@@ -41,7 +41,7 @@ suite('encrypted private env variables', function() {
       var encryptMessage = openpgp.encryptMessage(pubKey.keys, message);
       return encryptMessage.then(function(encryptedMsg) {
         var unarmoredEncryptedData = openpgp.armor.decode(encryptedMsg).data;
-        var result = new Buffer(unarmoredEncryptedData).toString('base64');
+        var result = new Buffer(unarmoredEncryptedData, 'binary').toString('base64');
         return result;
       }).catch(function(error) {
         throw('Unable to encrypt data: ' + error);

@@ -99,7 +99,7 @@ PrivateKey.prototype = {
 
       var encryptedVarBuf = new Buffer(encryptedVar, 'base64');
       var armoredEncryptedVar =
-        openpgp.armor.encode(enums.armor.message, encryptedVarBuf.toString());
+        openpgp.armor.encode(enums.armor.message, encryptedVarBuf.toString('binary'));
 
       var encryptedVarMessage =
         openpgp.message.readArmored(armoredEncryptedVar);
