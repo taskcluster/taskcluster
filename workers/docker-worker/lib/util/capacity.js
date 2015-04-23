@@ -14,6 +14,10 @@ export function exceedsDiskspaceThreshold(mnt, threshold, availableCapacity, log
         pctUsed: capacity,
       });
 
+      // Always sure we have at last a minimum capacity when checking diskspace
+      // threshold.  Not only does this provide some buffer, but also allow
+      // diskspace to be cleaned up if currently running at max capacity.
+      availableCapacity = Math.max(1, availableCapacity);
       var thresholdReached = free <= (threshold * availableCapacity);
       if (thresholdReached) {
         log('[alert-operator] diskspace threshold reached', {
