@@ -1,5 +1,5 @@
 id:       http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#
-$schema:  http://json-schema.org/draft-04/schema#"
+$schema:  http://json-schema.org/draft-04/schema#
 title:          "List Artifacts Response"
 description: |
   List of artifacts for a given `taskId` and `runId`.
@@ -14,6 +14,7 @@ properties:
       title:      "Artifact"
       description: |
         Information about an artifact for the given `taskId` and `runId`.
+      type:       object
       properties:
         storageType:
           title:    "Artifact Storage-Type"
