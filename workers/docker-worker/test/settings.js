@@ -9,46 +9,39 @@ var fsPath = require('path');
 
 var SETTINGS_DIR = __dirname + '/settings/';
 
-function settingsPath(path) {
+export function settingsPath(path) {
   return fsPath.join(SETTINGS_DIR, path);
 }
 
-function write(path, data) {
+export function write(path, data) {
   fs.writeFileSync(settingsPath(path), data);
 }
 
-function unlink(path) {
+export function unlink(path) {
   var fullPath = settingsPath(path);
   if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
 }
 
-function billingCycleInterval(seconds) {
+export function billingCycleInterval(seconds) {
   write('billingCycleInterval', seconds);
 }
 
-function billingCycleUptime(seconds) {
+export function billingCycleUptime(seconds) {
   write('billingCycleUptime', seconds);
 }
 
-function nodeTermination() {
+export function nodeTermination() {
   write('nodeTermination', 'terminated');
 }
 
-function configure(config) {
+export function configure(config) {
   write('configure', JSON.stringify(config, null, 2));
 }
 
 // cleanup any settings files.
-function cleanup() {
+export function cleanup() {
   unlink('billingCycleInterval');
   unlink('billingCycleUptime');
   unlink('nodeTermination');
   unlink('configure');
 }
-
-module.exports.settingsPath = settingsPath;
-module.exports.cleanup = cleanup;
-module.exports.configure = configure;
-module.exports.billingCycleUptime = billingCycleUptime;
-module.exports.billingCycleInterval = billingCycleInterval;
-module.exports.nodeTermination = nodeTermination;

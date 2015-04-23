@@ -49,7 +49,7 @@ export default class DockerWorker {
   async launch() {
     var createConfig = {
       name: this.workerId,
-      Image: 'taskcluster/docker-worker-test',
+      Image: 'taskcluster/docker-worker-test:latest',
       Cmd: [
         '/bin/bash', '-c',
          [

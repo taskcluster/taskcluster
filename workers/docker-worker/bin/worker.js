@@ -201,6 +201,9 @@ co(function *() {
   if (host && config.shutdown) {
     runtime.log('handle shutdowns');
     var shutdownManager = new ShutdownManager(host, runtime);
+    // Recommended by AWS to query every 5 seconds.  Termination window is 2 minutes
+    // so at the very least should have 1m55s to cleanly shutdown.
+    yield shutdownManager.scheduleTerminationPoll();
     runtime.shutdownManager = shutdownManager;
   }
 
@@ -216,7 +219,7 @@ co(function *() {
   // Aliveness check logic... Mostly useful in combination with a log inactivity
   // check like papertrail/logentries/loggly have.
   function* alivenessCheck() {
-    var uptime = yield host.billingCycleUptime();
+    var uptime = host.billingCycleUptime();
     runtime.log('aliveness check', {
       alive: true,
       uptime: uptime,

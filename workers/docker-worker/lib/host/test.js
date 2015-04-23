@@ -1,9 +1,11 @@
-var fs = require('fs');
-var settingsPath = require('../../test/settings').settingsPath;
-var debug = require('debug')('docker-worker:host:test');
+import fs from 'fs';
+import { settingsPath } from '../../test/settings';
+import Debug from 'debug';
 
-function* billingCycleUptime() {
-  var path = settingsPath('billingCycleUptime');
+let debug = Debug('docker-worker:host:test');
+
+export function billingCycleUptime() {
+  let path = settingsPath('billingCycleUptime');
 
   try {
     return parseInt(fs.readFileSync(path), 10);
@@ -11,8 +13,8 @@ function* billingCycleUptime() {
     return 0;
   }
 }
-function* billingCycleInterval() {
-  var path = settingsPath('billingCycleInterval');
+export function billingCycleInterval() {
+  let path = settingsPath('billingCycleInterval');
 
   try {
     return parseInt(fs.readFileSync(path), 10);
@@ -21,9 +23,9 @@ function* billingCycleInterval() {
   }
 }
 
-function* getTerminationTime() {
-  var path = settingsPath('nodeTermination');
-  var content;
+export function getTerminationTime() {
+  let path = settingsPath('nodeTermination');
+  let content;
   try {
     content = fs.readFileSync(path, 'utf8');
   }
@@ -34,19 +36,14 @@ function* getTerminationTime() {
   return content;
 }
 
-function* configure() {
-  var path = settingsPath('configure');
+export function configure() {
+  let path = settingsPath('configure');
 
   try {
-    var content = fs.readFileSync(path, 'utf8');
+    let content = fs.readFileSync(path, 'utf8');
     debug('configure read:', content);
     return JSON.parse(content)
   } catch (e) {
     return {};
   }
 }
-
-module.exports.configure = configure;
-module.exports.billingCycleInterval = billingCycleInterval;
-module.exports.billingCycleUptime = billingCycleUptime;
-module.exports.getTerminationTime = getTerminationTime;

@@ -6,8 +6,10 @@ import Docker from '../../lib/docker';
 import dockerUtils from 'dockerode-process/utils';
 import DockerWorker from '../dockerworker';
 import TestWorker from '../testworker';
-import settings from '../settings';
+import * as settings from '../settings';
 import getArtifact from './helper/get_artifact';
+import sleep from '../../lib/util/sleep';
+import waitForEvent from '../../lib/wait_for_event';
 
 suite('Spot Node Termination', () => {
   let IMAGE = 'taskcluster/test-ubuntu:latest';
@@ -123,6 +125,51 @@ suite('Spot Node Termination', () => {
     assert.notEqual(log.indexOf('Task has been aborted prematurely. Reason: worker-shutdown'), -1,
       'Log should indicate that task was aborted with a reason of "worker-shutdown"'
     );
+  });
+
+  test('task is not claimed on startup if node terminated', async () => {
+    settings.configure({
+      taskQueue: {
+        pollInterval: 500,
+        expiration: 5 * 60 * 1000,
+        maxRetries: 5,
+        requestRetryInterval: 2 * 1000
+      },
+      shutdown: {
+        enabled: true,
+        nodeTerminationPoll: 2000,
+        minimumCycleSeconds: 2 // always wait 2 seconds before shutdown...
+      }
+    });
+
+    settings.nodeTermination();
+
+    worker = new TestWorker(DockerWorker);
+    await worker.launch();
+
+    let claimedTask = false;
+    worker.on('claim task', () => claimedTask = true);
+
+    let taskDefinition = {
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: [
+          '/bin/bash', '-c', 'echo "Hello"'
+        ],
+        maxRunTime: 60 * 60
+      }
+    };
+
+    worker.postToQueue(taskDefinition);
+    waitForEvent(worker, 'created task');
+
+    // Wait enough time after task has been submitted and many task polling
+    // intervals have occurred.
+    // XXX: This makes a (bad) assumption that there are no
+    // issues with the worker code to claim a task.
+    await sleep(10000);
+
+    assert.ok(!claimedTask, 'Task should not have been claimed');
   });
 });
 

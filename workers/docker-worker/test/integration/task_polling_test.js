@@ -1,5 +1,5 @@
 import waitForEvent from '../../lib/wait_for_event';
-import settings from '../settings';
+import * as settings from '../settings';
 import cmd from './helper/cmd';
 import slugid from 'slugid';
 import DockerWorker from '../dockerworker';

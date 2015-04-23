@@ -1,36 +1,27 @@
-var EventEmitter = require('events').EventEmitter;
-var spawn = require('child_process').spawn;
-var co = require('co');
-var coEvent = require('co-event');
-var debug = require('debug')('docker-worker:shutdown_manager');
+import { EventEmitter } from 'events';
+import { spawn }  from 'child_process';
+import Debug from 'debug'
 
-function ShutdownManager(host, config) {
-  this.host = host;
-  this.config = config;
-  this.nodeTerminationPoll = config.shutdown.nodeTerminationPoll || 5000;
-  this.onIdle = this.onIdle.bind(this);
-  this.onWorking = this.onWorking.bind(this);
-  EventEmitter.call(this);
+let debug = Debug('docker-worker:shutdown_manager');
 
-  // Recommended by AWS to query every 5 seconds.  Termination window is 2 minutes
-  // so at the very least should have 1m55s to cleanly shutdown.
-  this.terminationTimeout = setTimeout(
-    this.nodeTerminated.bind(this), this.nodeTerminationPoll
-  );
-}
+export default class ShutdownManager extends EventEmitter {
+  constructor(host, config) {
+    super();
+    this.idleTimeout = null;
+    this.host = host;
+    this.config = config;
+    this.nodeTerminationPoll = config.shutdown.nodeTerminationPoll || 5000;
+    this.onIdle = this.onIdle.bind(this);
+    this.onWorking = this.onWorking.bind(this);
+  }
 
-ShutdownManager.prototype = {
-  __proto__: EventEmitter.prototype,
-
-  idleTimeout: null,
-
-  shutdown: co(function* () {
+  async shutdown() {
     // Add some vague assurance that we are not still claiming tasks.
-    yield this.taskListener.close();
+    await this.taskListener.close();
 
     this.config.log('shutdown');
     spawn('shutdown', ['-h', 'now']);
-  }),
+  }
 
   /**
   Calculate when we should shutdown this worker.
@@ -40,12 +31,12 @@ ShutdownManager.prototype = {
 
   @return {Number} shutdown time in seconds.
   */
-  nextShutdownTime: function* () {
+  nextShutdownTime() {
     // Minimum wait time before a shutdown if the billing cycle is over _before_
     // the minimum then we wait until the next cycle.
     var minimumCycleSeconds = this.config.shutdown.minimumCycleSeconds;
 
-    var stats = yield {
+    let stats = {
       uptime: this.host.billingCycleUptime(),
       interval: this.host.billingCycleInterval()
     };
@@ -54,7 +45,7 @@ ShutdownManager.prototype = {
 
 
     // Remainder of the cycle in seconds.
-    var remainder = stats.interval - (stats.uptime % stats.interval);
+    let remainder = stats.interval - (stats.uptime % stats.interval);
 
     // Note: the most important part of this logic is it never returns 0 so we
     // always have some leeway to accept more work as part of a billing cycle.
@@ -67,27 +58,27 @@ ShutdownManager.prototype = {
 
     // We are somewhere in the billing cycle but not close to the end...
     return Math.max(remainder - minimumCycleSeconds, minimumCycleSeconds);
-  },
+  }
 
-  onIdle: co(function* () {
-    var shutdownTime = yield this.nextShutdownTime();
+  onIdle() {
+    var shutdownTime = this.nextShutdownTime();
     this.config.log('pending shutdown', {
       time: shutdownTime
     });
 
     this.idleTimeout =
       setTimeout(this.shutdown.bind(this), shutdownTime * 1000);
-  }),
+  }
 
-  onWorking: co(function* () {
+  onWorking() {
     if (this.idleTimeout !== null) {
       this.config.log('cancel pending shutdown');
       clearTimeout(this.idleTimeout);
       this.idleTimeout = null;
     }
-  }),
+  }
 
-  observe: function (taskListener) {
+  observe(taskListener) {
     if (!this.config.shutdown.enabled) {
       this.config.log('shutdowns disabled');
       return;
@@ -101,20 +92,23 @@ ShutdownManager.prototype = {
     if (taskListener.pending === 0) {
       this.onIdle();
     }
-  },
+  }
 
-  nodeTerminated: co(function* () {
-    clearTimeout(this.terminationTimeout);
-    var terminated = yield this.host.getTerminationTime();
+  scheduleTerminationPoll() {
+    return async () => {
+      if (this.terminationTimeout) clearTimeout(this.terminationTimeout);
 
-    if (terminated) {
-      this.emit('nodeTermination', terminated);
-    }
+      let terminated = await this.host.getTerminationTime();
 
-    this.terminationTimeout = setTimeout(
-      this.nodeTerminated.bind(this), this.nodeTerminationPoll
-    );
-  })
+      if (terminated) {
+        this.config.capacity = 0;
+        this.emit('nodeTermination', terminated);
+      }
+
+      this.terminationTimeout = setTimeout(
+        this.scheduleTerminationPoll.bind(this), this.nodeTerminationPoll
+      );
+    }();
+  }
 };
 
-module.exports = ShutdownManager;

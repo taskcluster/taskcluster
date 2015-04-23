@@ -1,7 +1,7 @@
-var app = require('../../test/aws_metadata');
+var app = require('./aws_metadata');
 var http = require('http');
 var co = require('co');
-var awsConfig = require('./aws');
+var awsConfig = require('../lib/host/aws');
 var assert = require('assert');
 
 suite('configuration/aws', function() {
@@ -25,9 +25,10 @@ suite('configuration/aws', function() {
     // values are mocked from the local aws metadata server.
     assert.deepEqual(config, {
       host: 'publichost',
-      shutdown: true,
-      shutdownSecondsStart: 12 * 60,
-      shutdownSecondsStop: 2 * 60,
+      shutdown: {
+        enabled: true,
+        minimumCycleSeconds: 2 * 60
+      },
       provisionerId: 'aws-provisioner',
       workerId: 'i-123456',
       workerType: 'ami-333333',

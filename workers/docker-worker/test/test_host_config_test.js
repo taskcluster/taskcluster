@@ -1,14 +1,14 @@
 suite('test host', function() {
   var co = require('co');
-  var subject = require('./test');
-  var settings = require('../../test/settings');
+  var subject = require('../lib/host/test');
+  var settings = require('./settings');
 
   setup(settings.cleanup);
   teardown(settings.cleanup);
 
-  test('billingCycleRemaining', co(function* () {
-    settings.billingCycleRemaining(2000);
-    assert.equal(2000, (yield subject.billingCycleRemaining()));
+  test('billingCycleInterval', co(function* () {
+    settings.billingCycleInterval(2000);
+    assert.equal(2000, subject.billingCycleInterval());
   }));
 
   test('configure', co(function* () {
