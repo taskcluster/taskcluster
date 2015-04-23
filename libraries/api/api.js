@@ -911,7 +911,7 @@ API.prototype.reference = function(options) {
       // when modifying this to support more complicated routes it can be
       // beneficial lookup the source of this module:
       // https://github.com/component/path-to-regexp/blob/0.1.x/index.js
-      var regexp  = /\/:(\w+)(\(.*?\))?/g;
+      var regexp  = /\/:(\w+)(\(.*?\))?\??/g;
       var route   = entry.route.replace(regexp, function(match, param) {
         params.push(param);
         return '/<' + param + '>';
