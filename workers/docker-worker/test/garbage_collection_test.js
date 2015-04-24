@@ -446,4 +446,22 @@ suite('garbage collection tests', function () {
       clearTimeout(gc.sweepTimeoutId);
     })
   );
+
+  test('Garbage collection cycle occurs when available capacity is 0', co(function* () {
+    var testMarkedContainers = [];
+
+    var gc = new GarbageCollector({
+      capacity: 1,
+      log: log,
+      docker: docker,
+      dockerVolume: '/',
+      interval: 2 * 1000,
+      taskListener: { pending: 1 },
+      diskspaceThreshold: 500000 * 100000000,
+      imageExpiration: 5
+    });
+
+    yield waitForEvent(gc, 'gc:diskspace:warning');
+    clearTimeout(gc.sweepTimeoutId);
+ }));
 });

@@ -216,27 +216,25 @@ GarbageCollector.prototype = {
       // each task its capable of claiming.  Images that are not running will be
       // removed if they are expired or if there is not enough diskspace remaining
       // for each available task the worker can claim.
-      if (this.capacity - this.taskListener.pending > 0) {
-        var exceedsThreshold = yield exceedsDiskspaceThreshold(this.dockerVolume,
-                                 this.diskspaceThreshold,
-                                 (this.capacity - this.taskListener.pending),
-                                 this.log);
-        if (exceedsThreshold) {
-          this.emit('gc:diskspace:warning',
-                    {message: 'Diskspace threshold reached. ' +
-                              'Removing all non-running images.'
-                    });
-        } else {
-          this.emit('gc:diskspace:info',
-                    {message: 'Diskspace threshold not reached. ' +
-                              'Removing only expired images.'
-                    });
-        }
-        yield this.removeUnusedImages(exceedsThreshold);
+      var exceedsThreshold = yield exceedsDiskspaceThreshold(this.dockerVolume,
+                               this.diskspaceThreshold,
+                               (this.capacity - this.taskListener.pending),
+                               this.log);
+      if (exceedsThreshold) {
+        this.emit('gc:diskspace:warning',
+                  {message: 'Diskspace threshold reached. ' +
+                            'Removing all non-running images.'
+                  });
+      } else {
+        this.emit('gc:diskspace:info',
+                  {message: 'Diskspace threshold not reached. ' +
+                            'Removing only expired images.'
+                  });
+      }
+      yield this.removeUnusedImages(exceedsThreshold);
 
-        for (var i = 0; i < this.managers.length; i++) {
-          yield this.managers[i].clear(exceedsThreshold);
-        }
+      for (var i = 0; i < this.managers.length; i++) {
+        yield this.managers[i].clear(exceedsThreshold);
       }
 
       this.log('garbage collection finished');
