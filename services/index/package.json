@@ -14,14 +14,14 @@
     "promise":                          "6.0.1",
     "lodash":                           "2.4.1",
     "debug":                            "2.1.1",
-    "taskcluster-client":               "0.18.1",
-    "taskcluster-base":                 "0.7.3"
+    "taskcluster-client":               "0.22.0",
+    "taskcluster-base":                 "0.7.22"
   },
   "devDependencies": {
     "mocha":                            "2.1.0",
     "slugid":                           "1.0.3"
   },
   "engines": {
-    "node":                             "0.10.x"
+    "node":                             "0.12.x"
   }
 }
