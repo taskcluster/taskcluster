@@ -30,7 +30,7 @@ suite('Indexing', function() {
         subject.routePrefix + "." + myns + ".my-indexed-thing-again",
         subject.routePrefix + "." + myns + ".one-ns.my-indexed-thing",
         subject.routePrefix + "." + myns + ".another-ns.my-indexed-thing-again",
-        subject.routePrefix + "." + myns + ".slash/test.my-indexed-thing"
+        subject.routePrefix + "." + myns + ".slash/things-are-ignored"
       ],
       "retries":          3,
       "created":          created.toJSON(),
@@ -70,9 +70,7 @@ suite('Indexing', function() {
       return helper.sleep(100);
     }).then(function() {
       debug("### Report task completed");
-      return subject.queue.reportCompleted(taskId, 0, {
-        success: true
-      });
+      return subject.queue.reportCompleted(taskId, 0);
     }).then(function() {
       debug("### Find task in index");
       return helper.poll(function() {
@@ -102,7 +100,7 @@ suite('Indexing', function() {
       debug("### List namespaces in namespace");
       return subject.index.listNamespaces(myns, {});
     }).then(function(result) {
-      assert(result.namespaces.length === 3, "Expected 3 namespaces");
+      assert(result.namespaces.length === 2, "Expected 2 namespaces");
       assert(result.namespaces.some(function(ns) {
         return ns.name === 'one-ns';
       }), "Expected to find one-ns");
@@ -111,9 +109,13 @@ suite('Indexing', function() {
       }), "Expected to find another-ns");
     }).then(function() {
       debug("### Find task in index");
-      return subject.index.findTask(myns + '.slash/test.my-indexed-thing');
-    }).then(function(result) {
-      assert(result.taskId === taskId, "Wrong taskId");
+      return subject.index.findTask(
+        myns + '.slash/things-are-ignored'
+      ).then(function() {
+        assert(false, "Expected ill formated namespaces to be ignored!");
+      }, function(err) {
+        assert(err.statusCode === 404, "Expected 404");
+      });
     });
   });
 
@@ -146,9 +148,7 @@ suite('Indexing', function() {
       return helper.sleep(100);
     }).then(function() {
       debug("### Report task completed");
-      return subject.queue.reportCompleted(taskId, 0, {
-        success: true
-      });
+      return subject.queue.reportCompleted(taskId, 0);
     }).then(function() {
       debug("### Find task in index");
       return helper.poll(function() {
@@ -160,7 +160,7 @@ suite('Indexing', function() {
       assert(result.data.hello === 'world', "Expected data");
     }).then(function() {
       debug("### Find task in index (again)");
-      return subject.index.findTask("");
+      return subject.index.findTask(myns + '.my-indexed-thing-again');
     }).then(function(result) {
       assert(result.taskId === taskId, "Wrong taskId");
     });

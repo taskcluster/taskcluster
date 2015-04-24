@@ -108,6 +108,8 @@ Handlers.prototype.completed = function(message) {
     return that.routeRegexp.test(route);
   }).map(function(route) {
     return that.routeRegexp.exec(route)[1];
+  }).filter(function(namespace) {
+    return helpers.isValidNamespace(namespace);
   });
 
   // If there is no namespace we better log this
@@ -117,7 +119,7 @@ Handlers.prototype.completed = function(message) {
   }
 
   // Get task definition
-  return this.queue.getTask(message.payload.status.taskId).then(function(task) {
+  return this.queue.task(message.payload.status.taskId).then(function(task) {
     // Create default expiration date
     var expires = new Date();
     expires.setDate(expires.getDate() + 365);
