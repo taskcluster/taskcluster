@@ -4,7 +4,7 @@ allows tasks to talk directly to taskcluster services over a http proxy which
 grants a particular permission level based on the task scopes.
 */
 import waitForPort from '../wait_for_port';
-import pullImageStreamTo from '../pull_image_to_stream';
+import { pullImageStreamTo } from '../pull_image_to_stream';
 
 // Alias used to link the proxy.
 const ALIAS = 'taskcluster';

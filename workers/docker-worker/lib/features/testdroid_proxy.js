@@ -1,5 +1,5 @@
 import waitForPort from '../wait_for_port';
-import pullImageStreamTo from '../pull_image_to_stream';
+import { pullImageStreamTo } from '../pull_image_to_stream';
 import request from 'superagent-promise';
 import Debug from 'debug';
 
