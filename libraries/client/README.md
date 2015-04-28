@@ -149,20 +149,6 @@ that either resolves without giving a value or rejects with an error.
 
 <!-- START OF GENERATED DOCS -->
 
-### Methods in `taskcluster.Scheduler`
-```js
-// Create Scheduler client instance with default baseUrl:
-//  - https://scheduler.taskcluster.net/v1
-var scheduler = new taskcluster.Scheduler(options);
-```
- * `scheduler.createTaskGraph(taskGraphId, payload) : result`
- * `scheduler.extendTaskGraph(taskGraphId, payload) : result`
- * `scheduler.status(taskGraphId) : result`
- * `scheduler.info(taskGraphId) : result`
- * `scheduler.inspect(taskGraphId) : result`
- * `scheduler.inspectTask(taskGraphId, taskId) : result`
- * `scheduler.ping() : void`
-
 ### Methods in `taskcluster.Index`
 ```js
 // Create Index client instance with default baseUrl:
@@ -174,6 +160,43 @@ var index = new taskcluster.Index(options);
  * `index.listTasks(namespace, payload) : result`
  * `index.insertTask(namespace, payload) : result`
  * `index.ping() : void`
+
+### Methods in `taskcluster.Auth`
+```js
+// Create Auth client instance with default baseUrl:
+//  - https://auth.taskcluster.net/v1
+var auth = new taskcluster.Auth(options);
+```
+ * `auth.scopes(clientId) : result`
+ * `auth.getCredentials(clientId) : result`
+ * `auth.client(clientId) : result`
+ * `auth.createClient(clientId, payload) : result`
+ * `auth.modifyClient(clientId, payload) : result`
+ * `auth.removeClient(clientId) : void`
+ * `auth.resetCredentials(clientId) : result`
+ * `auth.listClients() : result`
+ * `auth.azureTableSAS(account, table) : result`
+ * `auth.awsS3Credentials(level, bucket, prefix) : result`
+ * `auth.ping() : void`
+
+### Methods in `taskcluster.AwsProvisioner`
+```js
+// Create AwsProvisioner client instance with default baseUrl:
+//  - https://aws-provisioner2.herokuapp.com/v1
+var awsProvisioner = new taskcluster.AwsProvisioner(options);
+```
+ * `awsProvisioner.createWorkerType(workerType, payload) : result`
+ * `awsProvisioner.updateWorkerType(workerType, payload) : result`
+ * `awsProvisioner.workerType(workerType) : result`
+ * `awsProvisioner.removeWorkerType(workerType) : void`
+ * `awsProvisioner.listWorkerTypes() : result`
+ * `awsProvisioner.getLaunchSpecs(workerType) : result`
+ * `awsProvisioner.terminateAllInstancesOfWorkerType(workerType) : void`
+ * `awsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() : void`
+ * `awsProvisioner.awsState() : void`
+ * `awsProvisioner.updateAwsState() : void`
+ * `awsProvisioner.ping() : void`
+ * `awsProvisioner.apiReference() : void`
 
 ### Methods in `taskcluster.Queue`
 ```js
@@ -202,23 +225,19 @@ var queue = new taskcluster.Queue(options);
  * `queue.pendingTasks(provisionerId, workerType) : result`
  * `queue.ping() : void`
 
-### Methods in `taskcluster.Auth`
+### Methods in `taskcluster.Scheduler`
 ```js
-// Create Auth client instance with default baseUrl:
-//  - https://auth.taskcluster.net/v1
-var auth = new taskcluster.Auth(options);
+// Create Scheduler client instance with default baseUrl:
+//  - https://scheduler.taskcluster.net/v1
+var scheduler = new taskcluster.Scheduler(options);
 ```
- * `auth.scopes(clientId) : result`
- * `auth.getCredentials(clientId) : result`
- * `auth.client(clientId) : result`
- * `auth.createClient(clientId, payload) : result`
- * `auth.modifyClient(clientId, payload) : result`
- * `auth.removeClient(clientId) : void`
- * `auth.resetCredentials(clientId) : result`
- * `auth.listClients() : result`
- * `auth.azureTableSAS(account, table) : result`
- * `auth.awsS3Credentials(level, bucket, prefix) : result`
- * `auth.ping() : void`
+ * `scheduler.createTaskGraph(taskGraphId, payload) : result`
+ * `scheduler.extendTaskGraph(taskGraphId, payload) : result`
+ * `scheduler.status(taskGraphId) : result`
+ * `scheduler.info(taskGraphId) : result`
+ * `scheduler.inspect(taskGraphId) : result`
+ * `scheduler.inspectTask(taskGraphId, taskId) : result`
+ * `scheduler.ping() : void`
 
 ### Exchanges in `taskcluster.QueueEvents`
 ```js
@@ -233,6 +252,14 @@ var queueEvents = new taskcluster.QueueEvents(options);
  * `queueEvents.taskCompleted(routingKeyPattern) : binding-info`
  * `queueEvents.taskFailed(routingKeyPattern) : binding-info`
  * `queueEvents.taskException(routingKeyPattern) : binding-info`
+
+### Exchanges in `taskcluster.AwsProvisionerEvents`
+```js
+// Create AwsProvisionerEvents client instance with default exchangePrefix:
+//  - exchange/taskcluster-aws-provisioner/
+var awsProvisionerEvents = new taskcluster.AwsProvisionerEvents(options);
+```
+ * `awsProvisionerEvents.workerTypeCreated(routingKeyPattern) : binding-info`
 
 ### Exchanges in `taskcluster.SchedulerEvents`
 ```js
