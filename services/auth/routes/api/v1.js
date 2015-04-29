@@ -339,7 +339,7 @@ api.declare({
   name:       'listClients',
   input:      undefined,
   output:     SCHEMA_PREFIX_CONST + 'list-clients-response.json#',
-  scopes:     ['auth:client-clients'],
+  scopes:     ['auth:list-clients'],
   title:      "List Clients",
   description: [
     "Return list with all clients"  // consider $top = 10
