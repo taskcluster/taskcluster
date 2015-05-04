@@ -62,7 +62,14 @@ module.exports = {
       // Number of event loops to run in parallel, each taking up to 32 message
       // in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
       parallelism:                1
-    }
+    },
+
+    // Mapping from EC2 region to public artifact bucket proxy
+    // (Must not end with a slash!)
+    publicArtifactBucketProxies: {},
+
+    // Use publicArtifactBucketProxies
+    usePublicArtifactBucketProxy: 'true'
   },
 
   // TaskCluster configuration
