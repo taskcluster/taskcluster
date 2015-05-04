@@ -65,6 +65,8 @@ var MAX_RUNS_ALLOWED    = 50;
  *   validator:      // base.validator
  *   claimTimeout:   // Number of seconds before a claim expires
  *   queueService:   // Azure QueueService object from queueservice.js
+ *   regionResolver: // Instance of EC2RegionResolver,
+ *   publicProxies:  // Mapping from EC2 region to proxy host for publicBucket
  * }
  */
 var api = new base.API({
