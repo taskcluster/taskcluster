@@ -317,7 +317,7 @@ api.declare({
 });
 
 /** Reply to an artifact request using taskId, runId, name and context */
-var replyWithArtifact = async function(taskId, runId, name, res) {
+var replyWithArtifact = async function(taskId, runId, name, req, res) {
   // Load artifact meta-data from table storage
   var artifact = await this.Artifact.load({
     taskId:     taskId,
@@ -338,7 +338,12 @@ var replyWithArtifact = async function(taskId, runId, name, res) {
     var url = null;
     var prefix = artifact.details.prefix;
     if (artifact.details.bucket === this.publicBucket.bucket) {
-      url = this.publicBucket.createGetUrl(prefix);
+      var region = this.regionResolver.getRegion(req);
+      if (region) {
+        url = 'http://' + this.publicProxies[region] + '/' + prefix;
+      } else {
+        url = this.publicBucket.createGetUrl(prefix);
+      }
     }
     if (artifact.details.bucket === this.privateBucket.bucket) {
       url = await this.privateBucket.createSignedGetUrl(prefix, {
@@ -424,7 +429,7 @@ api.declare({
     return;
   }
 
-  return replyWithArtifact.call(this, taskId, runId, name, res);
+  return replyWithArtifact.call(this, taskId, runId, name, req, res);
 });
 
 /** Get latest artifact from task */
@@ -492,7 +497,7 @@ api.declare({
   var runId = task.runs.length - 1;
 
   // Reply
-  return replyWithArtifact.call(this, taskId, runId, name, res);
+  return replyWithArtifact.call(this, taskId, runId, name, req, res);
 });
 
 

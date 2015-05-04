@@ -1,15 +1,16 @@
 #!/usr/bin/env node
-var debug         = require('debug')('queue:bin:server');
-var base          = require('taskcluster-base');
-var v1            = require('../routes/v1');
-var path          = require('path');
-var Promise       = require('promise');
-var exchanges     = require('../queue/exchanges');
-var _             = require('lodash');
-var BlobStore     = require('../queue/blobstore');
-var data          = require('../queue/data');
-var Bucket        = require('../queue/bucket');
-var QueueService  = require('../queue/queueservice');
+var debug             = require('debug')('queue:bin:server');
+var base              = require('taskcluster-base');
+var v1                = require('../routes/v1');
+var path              = require('path');
+var Promise           = require('promise');
+var exchanges         = require('../queue/exchanges');
+var _                 = require('lodash');
+var BlobStore         = require('../queue/blobstore');
+var data              = require('../queue/data');
+var Bucket            = require('../queue/bucket');
+var QueueService      = require('../queue/queueservice');
+var EC2RegionResolver = require('../queue/ec2regionresolver');
 
 /** Launch server */
 var launch = async function(profile) {
@@ -29,7 +30,8 @@ var launch = async function(profile) {
       'aws_secretAccessKey',
       'azure_accountName',
       'azure_accountKey',
-      'influx_connectionString'
+      'influx_connectionString',
+      'queue_usePublicArtifactBucketProxy'
     ],
     filename:     'taskcluster-queue'
   });
@@ -96,6 +98,14 @@ var launch = async function(profile) {
     deadlineDelay:    cfg.get('queue:deadlineDelay')
   });
 
+  // Create EC2RegionResolver for regions we have artifact proxies in
+  var regionResolver = new EC2RegionResolver(
+    cfg.get('queue:usePublicArtifactBucketProxy') === 'true' ?
+      _.keys(cfg.get('queue:publicArtifactBucketProxies'))
+    :
+      []
+  );
+
   // When: publisher, validator and containers are created, proceed
   debug("Waiting for resources to be created");
   var validator, publisher;
@@ -128,7 +138,8 @@ var launch = async function(profile) {
     Task.ensureTable(),
     Artifact.ensureTable(),
     publicArtifactBucket.setupCORS(),
-    privateArtifactBucket.setupCORS()
+    privateArtifactBucket.setupCORS(),
+    regionResolver.loadIpRanges()
   ]);
 
   // Create API router and publish reference if needed
@@ -144,7 +155,9 @@ var launch = async function(profile) {
       queueService:   queueService,
       blobStore:      artifactStore,
       publicBucket:   publicArtifactBucket,
-      privateBucket:  privateArtifactBucket
+      privateBucket:  privateArtifactBucket,
+      regionResolver: regionResolver,
+      publicProxies:  cfg.get('queue:publicArtifactBucketProxies')
     },
     validator:        validator,
     authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
