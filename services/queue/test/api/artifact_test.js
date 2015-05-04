@@ -13,8 +13,12 @@ suite('Post artifacts', function() {
   var data          = require('../../queue/data');
   var base          = require('taskcluster-base');
   var taskcluster   = require('taskcluster-client');
+  var {Netmask}     = require('netmask');
   var expect        = require('expect.js');
   var helper        = require('./helper');
+
+  // Static URL from which ip-ranges from AWS services can be fetched
+  const AWS_IP_RANGES_URL = 'https://ip-ranges.amazonaws.com/ip-ranges.json';
 
   // Make a get request with a 303 redirect, recent superagent versions does
   // this wrong with jumping between host, so this function just does the
@@ -28,7 +32,6 @@ suite('Post artifacts', function() {
       res = err.response;
     }
     expect(res.statusCode).to.be(303);
-    console.log(res.headers.location);
     return request.get(res.headers.location).end();
   };
 
@@ -126,6 +129,32 @@ suite('Post artifacts', function() {
     var r3 = await helper.queue.listLatestArtifacts(taskId);
     expect(r3.artifacts.length).to.be(1);
 
+    debug("### Download Artifact (runId: 0) using proxy");
+    var url = helper.queue.buildUrl(
+      helper.queue.getArtifact,
+      taskId, 0, 'public/s3.json'
+    );
+    debug("Get ip-ranges from EC2");
+    var {body} = await request.get(AWS_IP_RANGES_URL).end();
+    var ipRange = body.prefixes.filter(prefix => {
+      return prefix.service === 'EC2' && prefix.region === 'us-east-1';
+    })[0].ip_prefix;
+    var fakeIp = new Netmask(ipRange).first;
+    debug("Fetching artifact from: %s", url);
+    try {
+      res = await request
+                    .get(url)
+                    .set('x-forwarded-for', fakeIp)
+                    .redirects(0)
+                    .end();
+    }
+    catch(err) {
+      res = err.response;
+    }
+    expect(res.statusCode).to.be(303);
+    assert(res.headers.location.indexOf('proxy-for-us-east-1'),
+           "Expected res.headers.location to contain proxy-for-us-east-1");
+
     debug("### Expire artifacts");
     // config/test.js hardcoded to expire artifact 4 days in the future
     await helper.expireArtifacts();
@@ -138,7 +167,6 @@ suite('Post artifacts', function() {
     debug("Fetching artifact from: %s", url);
     await get404(url);
   });
-
 
   test("Post S3 artifact (with bad scopes)", async () => {
     var taskId = slugid.v4();

@@ -27,6 +27,9 @@ module.exports = {
     claim: {
       pollingDelay:               250,
       parallelism:                1
+    },
+    publicArtifactBucketProxies: {
+      'us-east-1':  'proxy-for-us-east-1' // Used in testing
     }
   },
 
