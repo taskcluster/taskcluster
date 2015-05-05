@@ -20,7 +20,6 @@ suite('Reclaiming task', function() {
         reclaimDivisor: 1000,
         dequeueCount: 15
       },
-      dockerWorkerPrivateKey: './test/docker-worker-priv.pem'
     });
 
     worker = new TestWorker(DockerWorker);

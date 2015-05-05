@@ -1,4 +1,4 @@
-import settings from '../settings';
+import * as settings from '../settings';
 import DockerWorker from '../dockerworker';
 import TestWorker from '../testworker';
 

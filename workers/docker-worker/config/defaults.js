@@ -1,5 +1,13 @@
 module.exports = {
-
+  dockerConfig: {
+    // Privileged mode will allow tasks to run with elevated privileges similar
+    // to process running on the host.  The task containers will have access to
+    // all host devices and create docker daemons within containers.  Use this
+    // option with caution.
+    // TODO: Consider killing the node after completing one task or locking down
+    // in other ways.
+    allowPrivileged: false
+  },
   // Hostname of this docker worker
   host: 'localhost',
 

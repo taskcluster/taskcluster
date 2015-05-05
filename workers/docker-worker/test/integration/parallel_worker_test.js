@@ -14,7 +14,9 @@ suite('Parallel workers', function() {
   // Total of number of tasks to run...
   var PARALLEL_TOTAL = 2;
 
-  var workerA, workerB, workerType = slugid.v4();
+  var workerA, workerB;
+  var workerType = `test_worker_${slugid.v4()}`.substring(0,22);
+
   setup(co(function * () {
     // Each worker should use the same worker type but a unique worker id.
     workerA = new TestWorker(DockerWorker, workerType, slugid.v4());
@@ -39,20 +41,30 @@ suite('Parallel workers', function() {
         maxRunTime: 60 * 60
       }
     };
+    var taskIds = [slugid.v4(), slugid.v4()];
+    workerA.postToQueue(taskTpl, taskIds[0]);
+    workerB.postToQueue(taskTpl, taskIds[1]);
 
-    var tasks = yield {
-      a: workerA.postToQueue(taskTpl),
-      b: workerB.postToQueue(taskTpl)
-    };
+    yield [
+      waitForEvent(workerA, 'task resolved'),
+      waitForEvent(workerB, 'task resolved')
+    ];
 
-    for (var key in tasks) {
-      assert.ok(tasks[key].run.state, 'completed', 'each task ran successfully');
-      assert.ok(tasks[key].run.reasonResolved, 'completed', 'each task ran successfully');
+    var tasks = []
+    for (var taskId of taskIds) {
+      var task = yield workerA.queue.status(taskId);
+      tasks.push(task);
+    }
+    console.log(JSON.stringify(tasks));
+
+    for (var task of tasks) {
+      assert.ok(task.status.runs[0].state, 'completed', 'each task ran successfully');
+      assert.ok(task.status.runs[0].reasonResolved, 'completed', 'each task ran successfully');
     }
 
     assert.notEqual(
-      tasks.a.run.workerId,
-      tasks.b.run.workerId,
+      tasks[0].status.runs[0].workerId,
+      tasks[1].status.runs[0].workerId,
       'Tasks ran on different workers'
     );
   }));

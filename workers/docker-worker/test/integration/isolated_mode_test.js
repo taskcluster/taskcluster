@@ -31,13 +31,16 @@ suite('Shutdown on idle', function() {
           payload: {
             image: 'taskcluster/test-ubuntu',
             command: cmd(
-              'nproc'
+              'echo "Processors: $(nproc)"'
             ),
             maxRunTime: 60 * 60
           }
         });
         let lines = res.log.trim().split('\r\n');
-        assert.equal(lines[3], '1', 'container is only using one core');
+        // Do not rely on a static line number since image pulls and other things
+        // can log before this.
+        let procInfoLine = lines[lines.indexOf('Processors: 1')];
+        assert.equal(procInfoLine, 'Processors: 1', 'container is only using one core');
       }
     });
   });

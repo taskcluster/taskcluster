@@ -57,6 +57,19 @@ module.exports = {
       "description": "Caches are mounted within the docker container at the mount point specified. Example: ```{ \"CACHE NAME\": \"/mount/path/in/container\" }```",
       "type": "object",
     },
+    "capabilities": {
+      "title": "Capabilities that must be available/enabled for the task container.",
+      "description": "Set of capabilities that must be enabled or made available to the task container Example: ```{ \"capabilities\": { \"privileged\": true }```",
+      "type": "object",
+      "properties": {
+        "privileged": {
+          "title": "Privileged container",
+          "description": "Allows a task to run in a privileged container, similar to running docker with `--privileged`.  This only works for worker-types configured to enable it.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
     "command": {
       "title": "Docker command to run (see docker api).",
       "type": "array",

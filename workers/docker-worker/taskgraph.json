@@ -1,0 +1,143 @@
+{
+  "metadata": {
+    "name": "Worker CI taskgraph",
+    "description": "Worker CI taskgraph"
+  },
+  "tasks": [
+    {
+      "reruns": 2,
+      "task": {
+        "metadata": {
+          "name": "Docker-worker tests - 1",
+          "description": "Runs entire docker-worker test suite",
+          "source": "http://todo.com/soon",
+          "owner": "mozilla@mozilla.org"
+        },
+        "workerType": "worker-ci-test",
+        "provisionerId": "aws-provisioner-v1",
+        "scopes": ["docker-worker:capability:privileged"],
+        "payload": {
+          "command": [
+            "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 1 --total-chunks 5"
+          ],
+          "image": "quay.io/mozilla/worker-ci:0.0.2",
+          "maxRunTime": 3600,
+          "capabilities": {
+            "privileged": true
+          }
+        },
+        "extra": {
+        },
+        "schedulerId": "task-graph-scheduler"
+      }
+    },
+    {
+      "reruns": 2,
+      "task": {
+        "metadata": {
+          "name": "Docker-worker tests - 2",
+          "description": "Runs entire docker-worker test suite",
+          "source": "http://todo.com/soon",
+          "owner": "mozilla@mozilla.org"
+        },
+        "workerType": "worker-ci-test",
+        "provisionerId": "aws-provisioner-v1",
+        "scopes": ["docker-worker:capability:privileged"],
+        "payload": {
+          "command": [
+            "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 2 --total-chunks 5"
+          ],
+          "image": "quay.io/mozilla/worker-ci:0.0.2",
+          "maxRunTime": 3600,
+          "capabilities": {
+            "privileged": true
+          }
+        },
+        "extra": {
+        },
+        "schedulerId": "task-graph-scheduler"
+      }
+    },
+    {
+      "reruns": 2,
+      "task": {
+        "metadata": {
+          "name": "Docker-worker tests - 3",
+          "description": "Runs entire docker-worker test suite",
+          "source": "http://todo.com/soon",
+          "owner": "mozilla@mozilla.org"
+        },
+        "workerType": "worker-ci-test",
+        "provisionerId": "aws-provisioner-v1",
+        "scopes": ["docker-worker:capability:privileged"],
+        "payload": {
+          "command": [
+            "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 3 --total-chunks 5"
+          ],
+          "image": "quay.io/mozilla/worker-ci:0.0.2",
+          "maxRunTime": 3600,
+          "capabilities": {
+            "privileged": true
+          }
+        },
+        "extra": {
+        },
+        "schedulerId": "task-graph-scheduler"
+      }
+    },
+    {
+      "reruns": 2,
+      "task": {
+        "metadata": {
+          "name": "Docker-worker tests - 4",
+          "description": "Runs entire docker-worker test suite",
+          "source": "http://todo.com/soon",
+          "owner": "mozilla@mozilla.org"
+        },
+        "workerType": "worker-ci-test",
+        "provisionerId": "aws-provisioner-v1",
+        "scopes": ["docker-worker:capability:privileged"],
+        "payload": {
+          "command": [
+            "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 4 --total-chunks 5"
+          ],
+          "image": "quay.io/mozilla/worker-ci:0.0.2",
+          "maxRunTime": 3600,
+          "capabilities": {
+            "privileged": true
+          }
+        },
+        "extra": {
+        },
+        "schedulerId": "task-graph-scheduler"
+      }
+    },
+    {
+      "reruns": 2,
+      "task": {
+        "metadata": {
+          "name": "Docker-worker tests - 5",
+          "description": "Runs entire docker-worker test suite",
+          "source": "http://todo.com/soon",
+          "owner": "mozilla@mozilla.org"
+        },
+        "workerType": "worker-ci-test",
+        "provisionerId": "aws-provisioner-v1",
+        "scopes": ["docker-worker:capability:privileged"],
+        "payload": {
+          "command": [
+            "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 5 --total-chunks 5"
+          ],
+          "image": "quay.io/mozilla/worker-ci:0.0.2",
+          "maxRunTime": 3600,
+          "capabilities": {
+            "privileged": true
+          }
+        },
+        "extra": {
+        },
+        "schedulerId": "task-graph-scheduler"
+      }
+    }
+  ]
+}

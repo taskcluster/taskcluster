@@ -99,6 +99,28 @@ async function buildVolumeBindings(taskVolumeBindings, volumeCache, taskScopes) 
   return [caches, bindings];
 }
 
+function runAsPrivileged(task, allowPrivilegedTasks) {
+  let taskCapabilities = task.payload.capabilities || {};
+  let privilegedTask = taskCapabilities.privileged || false;
+  if (!privilegedTask) return false;
+
+  if (!scopeMatch(task.scopes, ['docker-worker:capability:privileged'])) {
+    throw new Error(
+      'Insufficient scopes to run task in privileged mode. Try ' +
+      'adding docker-worker:capability:privileged to the .scopes array'
+    );
+  }
+
+  if (!allowPrivilegedTasks) {
+    throw new Error(
+      'Cannot run task using docker privileged mode.  Worker ' +
+      'must be enabled to allow running of privileged tasks.'
+    );
+  }
+
+  return true;
+}
+
 export default class Task {
   /**
   @param {Object} runtime global runtime.
@@ -140,8 +162,12 @@ export default class Task {
         this.task.payload, this.status.taskId
     );
 
+    let privilegedTask = runAsPrivileged(this.task, this.runtime.dockerConfig.allowPrivileged);
+
     let procConfig = {
-      start: {},
+      start: {
+        Privileged: privilegedTask
+      },
       create: {
         Image: config.image,
         Cmd: config.command,
@@ -559,7 +585,7 @@ export default class Task {
     } catch (e) {
       let error = this.fmtLog('Docker configuration could not be ' +
         'created.  This may indicate an authentication error when validating ' +
-        'scopes necessary for using caches. \n Error %s', e);
+        'scopes necessary for running the task. \n Error %s', e);
       return await this.abortRun('docker_configuration', error);
     }
 

@@ -32,6 +32,7 @@
     "debug": "^1.0.2",
     "denodeify": "^1.2.1",
     "diskspace": "^0.1.7",
+    "diveSync": "^0.3.0",
     "docker-image-parser": "^1.0.0",
     "dockerode": "^2.1.1",
     "dockerode-options": "^0.1.0",
