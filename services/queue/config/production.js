@@ -9,7 +9,6 @@ module.exports = {
     taskTableName:                'QueueTasks',
     artifactTableName:            'QueueArtifacts',
     publicArtifactBucketProxies: {
-      'us-east-1':  's3-copy-proxy-us-east-1.taskcluster.svc.tutum.io',
       'us-west-1':  's3-copy-proxy-us-west-1.taskcluster.svc.tutum.io'
     }
   },
