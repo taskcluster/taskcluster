@@ -67,6 +67,23 @@ module.exports = {
           "description": "Allows a task to run in a privileged container, similar to running docker with `--privileged`.  This only works for worker-types configured to enable it.",
           "type": "boolean",
           "default": false
+        },
+        "devices": {
+          "title": "Devices to be attached to task containers",
+          "description": "Allows devices from the host system to be attached to a task container similar to using `--device` in docker. ",
+          "type": "object",
+          "properties": {
+            "loopbackVideo": {
+              "title": "Loopback Video device",
+              "description": "Video loopback device created using v4l2loopback.",
+              "type": "boolean"
+            },
+            "loopbackAudio": {
+              "title": "Loopback Audio device",
+              "description": "Audio loopback device created using snd-aloop",
+              "type": "boolean"
+            }
+          }
         }
       }
     },

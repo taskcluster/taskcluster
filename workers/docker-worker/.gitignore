@@ -8,3 +8,4 @@
 /test/settings/billingCycleRemaining
 /deploy.json
 docker-worker.conf.json
+*.box

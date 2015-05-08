@@ -14,7 +14,7 @@
     {
       "type": "amazon-ebs",
       "region": "us-west-2",
-      "source_ami": "ami-f33e4dc3",
+      "source_ami": "ami-5189a661",
       "ami_virtualization_type": "hvm",
       "instance_type": "m3.large",
       "ssh_username": "ubuntu",
@@ -34,4 +34,3 @@
     }
   ]
 }
-

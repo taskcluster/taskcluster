@@ -121,6 +121,33 @@ function runAsPrivileged(task, allowPrivilegedTasks) {
   return true;
 }
 
+function buildDeviceBindings(devices, taskScopes) {
+  let deviceBindings = [];
+  let neededScopes = [];
+  for (let deviceType in devices) {
+    neededScopes.push(`docker-worker:capability:device:${deviceType}`);
+    let device = devices[deviceType];
+    device.mountPoints.forEach((mountPoint) => {
+      deviceBindings.push(
+        {
+          PathInContainer: mountPoint,
+          PathOnHost: mountPoint,
+          CgroupPermissions: 'rwm'
+        }
+      );
+    });
+  }
+
+  if (!scopeMatch(taskScopes, neededScopes)) {
+    throw new Error(
+      'Insufficient scopes to attach devices to task container.' +
+      'Try adding ' + neededScopes + ' to the .scopes array.'
+    );
+  }
+
+  return deviceBindings;
+}
+
 export default class Task {
   /**
   @param {Object} runtime global runtime.
@@ -165,9 +192,7 @@ export default class Task {
     let privilegedTask = runAsPrivileged(this.task, this.runtime.dockerConfig.allowPrivileged);
 
     let procConfig = {
-      start: {
-        Privileged: privilegedTask
-      },
+      start: {},
       create: {
         Image: config.image,
         Cmd: config.command,
@@ -179,7 +204,10 @@ export default class Task {
         Tty: true,
         OpenStdin: false,
         StdinOnce: false,
-        Env: taskEnvToDockerEnv(env)
+        Env: taskEnvToDockerEnv(env),
+        HostConfig: {
+          Privileged: privilegedTask
+        }
       }
     };
 
@@ -188,8 +216,13 @@ export default class Task {
       procConfig.create.Cpuset = this.options.cpuset;
     }
 
+    if (this.options.devices) {
+      let bindings = buildDeviceBindings(this.options.devices, this.task.scopes);
+      procConfig.create.HostConfig['Devices'] = bindings;
+    }
+
     if (links) {
-      procConfig.start.Links = links.map(function(link) {
+      procConfig.create.HostConfig.Links = links.map(function(link) {
         return link.name + ':' + link.alias;
       });
     }
@@ -198,7 +231,7 @@ export default class Task {
       let bindings = await buildVolumeBindings(this.task.payload.cache,
         this.runtime.volumeCache, this.task.scopes);
       this.volumeCaches = bindings[0];
-      procConfig.start.Binds = bindings[1];
+      procConfig.create.HostConfig.Binds = bindings[1];
     }
 
     return procConfig;

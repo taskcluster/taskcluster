@@ -3,7 +3,7 @@ var Promise = require('promise');
 var spawn = require('child_process').spawn;
 
 /** Binary to launch inorder to get a worker instance running */
-var BINARY = __dirname + '/../bin/worker.js';
+const BINARY = __dirname + '/../bin/worker.js';
 
 function eventPromise(listener, event) {
   return new Promise(function(accept, reject) {
@@ -37,7 +37,6 @@ export default class LocalWorker {
 
       // Provide commandline arguments
       var args = [
-        '--experimental',
         BINARY,
         '--host', 'test',
         '--provisioner-id', this.provisionerId,
@@ -49,7 +48,7 @@ export default class LocalWorker {
 
       // Launch worker process.
       var proc = this.process = spawn('babel-node', args, {
-        execArgv: ['--experimental'],
+        execArgv: [],
         env: envs,
         stdio: 'pipe'
       });

@@ -26,15 +26,13 @@ var queueEvents = new (require('taskcluster-client').QueueEvents);
 var schedulerEvents = new (require('taskcluster-client').SchedulerEvents);
 
 /** Test provisioner id, don't change this... */
-var PROVISIONER_ID = 'no-provisioning-nope';
+const PROVISIONER_ID = 'no-provisioning-nope';
 
-// TODO remove this once new queue and client is deployed
-var fs = require('fs');
-var taskcluster = require('taskcluster-client');
-
+const DEFAULT_WORKER_PREFIX = 'dummy-worker';
 
 export default class TestWorker extends EventEmitter {
   constructor(Worker, workerType, workerId) {
+    super();
     // Load the test time configuration for all the components...
     var config = loadConfig({
       defaults: require('../config/defaults'),
@@ -45,10 +43,10 @@ export default class TestWorker extends EventEmitter {
     this.provisionerId = PROVISIONER_ID;
     // Use worker_test_ prefix so ci worker scopes can be more restrictive for
     // claiming/creating work
-    this.workerType = workerType || `test_worker_${slugid.v4()}`.substring(0, 22)
+    this.workerType = workerType || `dummy-type-${slugid.v4()}`.substring(0, 22);
     // remove leading underscores because workerId could be used as container name
     // and container names must start with an alphanumeric character.
-    this.workerId = workerId || this.workerType.replace(/^[_-]*/, '');
+    this.workerId = workerId || `dummy-worker-${slugid.v4()}`.substring(0, 22);
     this.worker = new Worker(PROVISIONER_ID, this.workerType, this.workerId);
 
     this.pulse = config.get('pulse');
@@ -77,7 +75,6 @@ export default class TestWorker extends EventEmitter {
         }
       }
     });
-    super();
   }
 
   /**

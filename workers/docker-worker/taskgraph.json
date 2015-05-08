@@ -15,7 +15,11 @@
         },
         "workerType": "worker-ci-test",
         "provisionerId": "aws-provisioner-v1",
-        "scopes": ["docker-worker:capability:privileged"],
+        "scopes": [
+          "docker-worker:capability:privileged",
+          "docker-worker:capability:device:loopbackAudio",
+          "docker-worker:capability:device:loopbackVideo"
+        ],
         "payload": {
           "command": [
             "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 1 --total-chunks 5"
@@ -23,7 +27,11 @@
           "image": "quay.io/mozilla/worker-ci:0.0.2",
           "maxRunTime": 3600,
           "capabilities": {
-            "privileged": true
+            "privileged": true,
+            "devices": {
+              "loopbackAudio": true,
+              "loopbackVideo": true
+            }
           }
         },
         "extra": {
@@ -42,7 +50,11 @@
         },
         "workerType": "worker-ci-test",
         "provisionerId": "aws-provisioner-v1",
-        "scopes": ["docker-worker:capability:privileged"],
+        "scopes": [
+          "docker-worker:capability:privileged",
+          "docker-worker:capability:device:loopbackAudio",
+          "docker-worker:capability:device:loopbackVideo"
+        ],
         "payload": {
           "command": [
             "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 2 --total-chunks 5"
@@ -50,7 +62,11 @@
           "image": "quay.io/mozilla/worker-ci:0.0.2",
           "maxRunTime": 3600,
           "capabilities": {
-            "privileged": true
+            "privileged": true,
+            "devices": {
+              "loopbackAudio": true,
+              "loopbackVideo": true
+            }
           }
         },
         "extra": {
@@ -69,7 +85,11 @@
         },
         "workerType": "worker-ci-test",
         "provisionerId": "aws-provisioner-v1",
-        "scopes": ["docker-worker:capability:privileged"],
+        "scopes": [
+          "docker-worker:capability:privileged",
+          "docker-worker:capability:device:loopbackAudio",
+          "docker-worker:capability:device:loopbackVideo"
+        ],
         "payload": {
           "command": [
             "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 3 --total-chunks 5"
@@ -77,7 +97,11 @@
           "image": "quay.io/mozilla/worker-ci:0.0.2",
           "maxRunTime": 3600,
           "capabilities": {
-            "privileged": true
+            "privileged": true,
+            "devices": {
+              "loopbackAudio": true,
+              "loopbackVideo": true
+            }
           }
         },
         "extra": {
@@ -96,7 +120,11 @@
         },
         "workerType": "worker-ci-test",
         "provisionerId": "aws-provisioner-v1",
-        "scopes": ["docker-worker:capability:privileged"],
+        "scopes": [
+          "docker-worker:capability:privileged",
+          "docker-worker:capability:device:loopbackAudio",
+          "docker-worker:capability:device:loopbackVideo"
+        ],
         "payload": {
           "command": [
             "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 4 --total-chunks 5"
@@ -104,7 +132,11 @@
           "image": "quay.io/mozilla/worker-ci:0.0.2",
           "maxRunTime": 3600,
           "capabilities": {
-            "privileged": true
+            "privileged": true,
+            "devices": {
+              "loopbackAudio": true,
+              "loopbackVideo": true
+            }
           }
         },
         "extra": {
@@ -123,7 +155,11 @@
         },
         "workerType": "worker-ci-test",
         "provisionerId": "aws-provisioner-v1",
-        "scopes": ["docker-worker:capability:privileged"],
+        "scopes": [
+          "docker-worker:capability:privileged",
+          "docker-worker:capability:device:loopbackAudio",
+          "docker-worker:capability:device:loopbackVideo"
+        ],
         "payload": {
           "command": [
             "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 5 --total-chunks 5"
@@ -131,7 +167,11 @@
           "image": "quay.io/mozilla/worker-ci:0.0.2",
           "maxRunTime": 3600,
           "capabilities": {
-            "privileged": true
+            "privileged": true,
+            "devices": {
+              "loopbackAudio": true,
+              "loopbackVideo": true
+            }
           }
         },
         "extra": {

@@ -47,13 +47,16 @@ export default class DockerWorker {
   }
 
   async launch() {
+    // Path to babel in the docker container...
+    var babel = '/worker/node_modules/.bin/babel-node';
+
     var createConfig = {
       name: this.workerId,
       Image: 'taskcluster/docker-worker-test:latest',
       Cmd: [
         '/bin/bash', '-c',
          [
-          'babel-node --experimental /worker/bin/worker.js',
+          `${babel} /worker/bin/worker.js`,
           '--host test',
           '--worker-group', 'random-local-worker',
           '--worker-id', this.workerId,
@@ -84,7 +87,7 @@ export default class DockerWorker {
 
       Binds: [
         util.format('%s:%s', path.resolve(__dirname, '..'), '/worker')
-      ]
+      ],
     };
 
     // If docker is supposed to connect over a socket set the socket as a bind
@@ -116,4 +119,3 @@ export default class DockerWorker {
     }
   }
 }
-

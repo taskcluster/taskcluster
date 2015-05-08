@@ -24,7 +24,7 @@
   "homepage": "https://github.com/lightsofapollo/docker-worker",
   "dependencies": {
     "azure-storage": "^0.3.0",
-    "babel": "^4.4.6",
+    "babel": "^4.7",
     "co": "^3.1.0",
     "co-event": "^0.1.0",
     "co-promise": "^1.0.0",

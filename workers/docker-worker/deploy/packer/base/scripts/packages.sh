@@ -18,4 +18,9 @@ sudo sh -c "echo deb https://get.docker.io/ubuntu docker main\
 sudo apt-get update -y
 
 ## Install all the packages
-sudo apt-get install -y lxc-docker-1.4.1 btrfs-tools lvm2 curl build-essential linux-image-extra-`uname -r` git-core pbuilder python-mock python-configobj python-support cdbs python-pip jq rsyslog-gnutls openvpn
+sudo apt-get install -y lxc-docker-1.4.1 btrfs-tools lvm2 curl build-essential \
+  linux-image-extra-`uname -r` git-core pbuilder python-mock python-configobj \
+  python-support cdbs python-pip jq rsyslog-gnutls openvpn v4l2loopback-utils lxc
+
+## Clear mounts created in base image so fstab is empty in other builds...
+sudo sh -c 'echo "" > /etc/fstab'

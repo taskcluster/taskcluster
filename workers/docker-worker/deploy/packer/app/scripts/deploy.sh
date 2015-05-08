@@ -29,3 +29,7 @@ sudo chown -R $USER:$USER /home/ubuntu/docker_worker
 npm install --production
 npm rebuild
 sudo npm install -g babel@4.7.16
+
+sudo sh -c 'echo "v4l2loopback" >> /etc/modules'
+sudo sh -c 'echo "snd-aloop" >> /etc/modules'
+sudo depmod

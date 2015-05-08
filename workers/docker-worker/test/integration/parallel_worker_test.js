@@ -15,12 +15,12 @@ suite('Parallel workers', function() {
   var PARALLEL_TOTAL = 2;
 
   var workerA, workerB;
-  var workerType = `test_worker_${slugid.v4()}`.substring(0,22);
 
   setup(co(function * () {
     // Each worker should use the same worker type but a unique worker id.
-    workerA = new TestWorker(DockerWorker, workerType, slugid.v4());
-    workerB = new TestWorker(DockerWorker, workerType, slugid.v4());
+    var workerType = `dummy-type-${slugid.v4()}`.substring(0,22);
+    workerA = new TestWorker(DockerWorker, workerType);
+    workerB = new TestWorker(DockerWorker, workerType);
     yield [workerA.launch(), workerB.launch()];
   }));
 

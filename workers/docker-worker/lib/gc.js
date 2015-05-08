@@ -96,10 +96,11 @@ GarbageCollector.prototype = {
     }
   },
 
-  removeContainer: function (containerId, volumeCaches) {
+  removeContainer: function (containerId, volumeCaches, devices) {
     this.markedContainers[containerId] = {
       retries: this.retries,
-      caches: volumeCaches || []
+      caches: volumeCaches || [],
+      devices: devices || []
     };
     this.emit('gc:container:marked', containerId);
     debug(`marked ${containerId}`);

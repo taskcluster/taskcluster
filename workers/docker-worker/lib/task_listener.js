@@ -17,29 +17,30 @@ var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 var TaskQueue = require('./queueservice');
 var exceedsDiskspaceThreshold = require('./util/capacity').exceedsDiskspaceThreshold;
+var VideoDeviceManager = require('./devices/video_device_manager');
+var AudioDeviceManager = require('./devices/audio_device_manager');
+var CpuDeviceManager = require('./devices/cpu_device_manager');
+
+const DEVICE_MANAGERS = {
+  'loopbackVideo': new VideoDeviceManager(),
+  'loopbackAudio': new AudioDeviceManager()
+};
+
+let cpuDeviceManager = new CpuDeviceManager();
 
 /**
 @param {Configuration} config for worker.
 */
 export default class TaskListener extends EventEmitter {
   constructor(runtime) {
+    super();
+
     this.pending = 0;
     this.runtime = runtime;
     this.capacity = runtime.capacity;
     this.runningTasks = [];
     this.taskQueue = new TaskQueue(this.runtime);
     this.taskPollInterval = this.runtime.taskQueue.pollInterval;
-
-    // Keep track of which core is doing what...
-    this.availableCpus = [];
-    for (let i = 0; i < os.cpus().length; i++) {
-      this.availableCpus.push({
-        id: i,
-        active: false
-      });
-    }
-
-    super();
   }
 
   listenForShutdowns() {
@@ -199,35 +200,15 @@ export default class TaskListener extends EventEmitter {
   }
 
   /**
-  Mark a particular free cpu as being in use...
-  */
-  aquireFreeCpu() {
-    for (let cpu of this.availableCpus) {
-      if (cpu.active) continue;
-      cpu.active = true;
-      return cpu;
-    }
-
-    throw new Error(`
-      Fatal error... Could not aquire cpu:
-
-      ${JSON.stringify(this.availableCpus, null, 2)}
-    `);
-  }
-
-  /*
-  Release a cpu to be used by another container.
-  */
-  releaseCpu(cpu) {
-    cpu.active = false;
-  }
-
-  /**
   Cleanup state of a running container (should apply to all states).
   */
   cleanupRunningState(state) {
-    if (state && state.cpu) {
-      this.releaseCpu(state.cpu);
+    if (!state) return;
+
+    if (state.devices) {
+      for (let device in state.devices) {
+        state.devices[device].release();
+      }
     }
   }
 
@@ -245,7 +226,9 @@ export default class TaskListener extends EventEmitter {
       var created = new Date(task.created);
 
       // Reference to state of this request...
-      let runningState = {};
+      let runningState = {
+        devices: {}
+      };
 
       // Only record this value for first run!
       if (!claim.status.runs.length) {
@@ -258,8 +241,20 @@ export default class TaskListener extends EventEmitter {
 
       // Configure cpuset options if needed...
       if (this.runtime.isolatedContainers) {
-        runningState.cpu = this.aquireFreeCpu();
-        options.cpuset = runningState.cpu.id;
+        runningState.devices['cpu'] = cpuDeviceManager.getAvailableDevice();
+        options.cpuset = runningState.devices['cpu'].id;
+      }
+
+      let taskCapabilities = task.payload.capabilities || {};
+      if (taskCapabilities.devices) {
+        options.devices = {};
+        debug('Aquiring task payload specific devices');
+        for (let device in taskCapabilities.devices) {
+          if (!DEVICE_MANAGERS[device]) throw new Error('Unrecognized device requested');
+
+          runningState.devices[device] = DEVICE_MANAGERS[device].getAvailableDevice();
+          options.devices[device] = runningState.devices[device];
+        }
       }
 
       // Create "task" to handle all the task specific details.
