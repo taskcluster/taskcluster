@@ -45,6 +45,10 @@
 // indexing tasks to make it easy to find artifacts, consider using the
 // expiration date that the artifacts is assigned.
 //
+// **Valid Characters**, all keys in a namespace `<key1>.<key2>` must be
+// in the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and
+// that if you strictly want to put another character you can URL encode it.
+//
 // **Indexing Routes**, tasks can be indexed using the API below, but the
 // most common way to index tasks is adding a custom route on the following
 // form `index.<namespace>`. In-order to add this route to a task you'll

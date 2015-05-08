@@ -114,7 +114,7 @@ Entry 7     =
     Entry Route       = '/list-clients'
     Entry Args        = '[]'
     Entry Name        = 'listClients'
-    Entry Scopes      = '[[auth:client-clients]]'
+    Entry Scopes      = '[[auth:list-clients]]'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/list-clients-response.json#'
     Entry Title       = 'List Clients'
@@ -612,9 +612,737 @@ IsOutputSchema         = 'true'
 SourceURL              = 'http://schemas.taskcluster.net/auth/v1/list-clients-response.json#'
 
 
+http://references.taskcluster.net/aws-provisioner/v1/api.json
+=============================================================
+Version     = '0'
+Title       = 'AWS Provisioner API Documentation'
+Description = 'The AWS Provisioner is responsible for provisioning instances on EC2 for use in
+TaskCluster.  The provisioner maintains a set of worker configurations which
+can be managed with an API that is typically available at
+aws-provisioner.taskcluster.net.  This API can also perform basic instance
+management tasks in addition to maintaining the internal state of worker type
+configuration information.
+
+The Provisioner runs at a configurable interval.  Each iteration of the
+provisioner fetches a current copy the state that the AWS EC2 api reports.  In
+each iteration, we ask the Queue how many tasks are pending for that worker
+type.  Based on the number of tasks pending and the scaling ratio, we may
+submit requests for new instances.  We use pricing information, capacity and
+utility factor information to decide which instance type in which region would
+be the optimal configuration.
+
+Each EC2 instance type will declare a capacity and utility factor.  Capacity is
+the number of tasks that a given machine is capable of running concurrently.
+Utility factor is a relative measure of performance between two instance types.
+We multiply the utility factor by the spot price to compare instance types and
+regions when making the bidding choices.
+'
+Base URL    = 'https://taskcluster-aws-provisioner2.herokuapp.com/v1'
+Entry 0     =
+    Entry Type        = 'function'
+    Entry Method      = 'put'
+    Entry Route       = '/worker-type/<workerType>'
+    Entry Args        = '[workerType]'
+    Entry Name        = 'createWorkerType'
+    Entry Scopes      = '[[aws-provisioner:manage-worker-type:<workerType>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
+    Entry Title       = 'Create new Worker Type'
+    Entry Description = 'Create a worker type and ensure that all EC2 regions have the required
+KeyPair'
+Entry 1     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/worker-type/<workerType>/update'
+    Entry Args        = '[workerType]'
+    Entry Name        = 'updateWorkerType'
+    Entry Scopes      = '[[aws-provisioner:manage-worker-type:<workerType>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
+    Entry Title       = 'Update Worker Type'
+    Entry Description = 'Update a workerType and ensure that all regions have the require
+KeyPair'
+Entry 2     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/worker-type/<workerType>'
+    Entry Args        = '[workerType]'
+    Entry Name        = 'workerType'
+    Entry Scopes      = '[[aws-provisioner:view-worker-type:<workerType>] [aws-provisioner:manage-worker-type:<workerType>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
+    Entry Title       = 'Get Worker Type'
+    Entry Description = 'Retreive a WorkerType definition'
+Entry 3     =
+    Entry Type        = 'function'
+    Entry Method      = 'delete'
+    Entry Route       = '/worker-type/<workerType>'
+    Entry Args        = '[workerType]'
+    Entry Name        = 'removeWorkerType'
+    Entry Scopes      = '[[aws-provisioner:manage-worker-type:<workerType>]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Delete Worker Type'
+    Entry Description = 'Delete a WorkerType definition, submits requests to kill all 
+instances and delete the KeyPair from all configured EC2 regions'
+Entry 4     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/list-worker-types'
+    Entry Args        = '[]'
+    Entry Name        = 'listWorkerTypes'
+    Entry Scopes      = '[[aws-provisioner:list-worker-types]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#'
+    Entry Title       = 'List Worker Types'
+    Entry Description = 'List all known WorkerType names'
+Entry 5     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/worker-type/<workerType>/launch-specifications'
+    Entry Args        = '[workerType]'
+    Entry Name        = 'getLaunchSpecs'
+    Entry Scopes      = '[[aws-provisioner:view-worker-type:<workerType>] [aws-provisioner:manage-worker-type:<workerType>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#'
+    Entry Title       = 'Get All Launch Specifications for WorkerType'
+    Entry Description = 'Return the EC2 LaunchSpecifications for all combinations of regions
+and instance types or a list of reasons why the launch specifications
+are not valid
+
+**This API end-point is experimental and may be subject to change without warning.**'
+Entry 6     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/worker-type/<workerType>/terminate-all-instances'
+    Entry Args        = '[workerType]'
+    Entry Name        = 'terminateAllInstancesOfWorkerType'
+    Entry Scopes      = '[[aws-provisioner:all-stop aws-provisioner:aws]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Shutdown Every Ec2 Instance of this Worker Type'
+    Entry Description = 'WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS 
+Shut down every single EC2 instance associated with this workerType. 
+This means every single last one.  You probably don't want to use 
+this method, which is why it has an obnoxious name.  Don't even try 
+to claim you didn't know what this method does!
+
+**This API end-point is experimental and may be subject to change without warning.**'
+Entry 7     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/shutdown/every/single/ec2/instance/managed/by/this/provisioner'
+    Entry Args        = '[]'
+    Entry Name        = 'shutdownEverySingleEc2InstanceManagedByThisProvisioner'
+    Entry Scopes      = '[[aws-provisioner:all-stop aws-provisioner:aws]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Shutdown Every Single Ec2 Instance Managed By This Provisioner'
+    Entry Description = 'WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS 
+Shut down every single EC2 instance managed by this provisioner. 
+This means every single last one.  You probably don't want to use 
+this method, which is why it has an obnoxious name.  Don't even try 
+to claim you didn't know what this method does!
+
+**This API end-point is experimental and may be subject to change without warning.**'
+Entry 8     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/aws-state/'
+    Entry Args        = '[]'
+    Entry Name        = 'awsState'
+    Entry Scopes      = '[[aws-provisioner:view-aws-state]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Get AWS State for all worker types'
+    Entry Description = 'Documented later...
+
+**Warning** this api end-point is **not stable**'
+Entry 9     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Name        = 'ping'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Documented later...
+
+**Warning** this api end-point is **not stable**.'
+Entry 10    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/api-reference'
+    Entry Args        = '[]'
+    Entry Name        = 'apiReference'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'api reference'
+    Entry Description = 'Get an API reference!
+
+**Warning** this api end-point is **not stable**.'
+
+
+http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#
+==================================================================================
+Additional Properties  = 'false'
+Description            = 'A worker launchSpecification and required metadata
+'
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
+Properties
+  Property 'canUseOndemand' =
+    Description            = 'True if this worker type is allowed on demand instances.  Currently
+    ignored
+    '
+    Type                   = 'boolean'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'canUseSpot' =
+    Description            = 'True if this worker type is allowed spot instances.  Currently ignored
+    as all instances are Spot
+    '
+    Type                   = 'boolean'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'instanceTypes' =
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Instance Type configuration'
+      Properties
+        Property 'capacity' =
+          Description            = 'This number represents the number of tasks that this instance type
+          is capable of running concurrently.  This is used by the provisioner
+          to know how many pending tasks to offset a pending instance of this
+          type by
+          '
+          Type                   = 'number'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'instanceType' =
+          Description            = 'InstanceType name for Amazon.
+          '
+          Type                   = 'string'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'overwrites' =
+          Description            = 'This object contains LaunchSpecification keys which will overwrite
+          the keys from the General launch spec
+          '
+          Type                   = 'object'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'utility' =
+          Description            = 'This number is a relative measure of performance between two instance
+          types.  It is multiplied by the spot price from Amazon to figure out
+          which instance type is the cheapest one
+          '
+          Type                   = 'number'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+      Required               = '[instanceType capacity utility overwrites]'
+      Type                   = 'object'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'launchSpecification' =
+    Description            = 'AWS LaunchSpecification values shared by all regions and all instance-types.
+    This launch spec should not contain either an InstanceType or ImageId.  The
+    former should always be a key in the types object and the latter should be
+    an overwrite in the regions object
+    '
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'maxCapacity' =
+    Description            = 'Maximum number of capacity units to be provisioned.
+    '
+    Type                   = 'number'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'maxPrice' =
+    Description            = 'Maximum price we'll pay.  Like minPrice, this takes into account the
+    utility factor when figuring out what the actual SpotPrice submitted
+    to Amazon will be
+    '
+    Type                   = 'number'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'minCapacity' =
+    Description            = 'Minimum number of capacity units to be provisioned.  A capacity unit
+    is an abstract unit of capacity, where one capacity unit is roughly
+    one task which should be taken off the queue
+    '
+    Type                   = 'number'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'minPrice' =
+    Description            = 'Minimum price to pay for an instance.  A Price is considered to be the
+    Amazon Spot Price multiplied by the utility factor of the InstantType
+    as specified in the instanceTypes list.  For example, if the minPrice
+    is set to $0.5 and the utility factor is 2, the actual minimum bid
+    used will be $0.25
+    '
+    Type                   = 'number'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'regions' =
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Region configuration'
+      Properties
+        Property 'overwrites' =
+          Description            = 'This object contains LaunchSpecification keys which will overwrite keys
+          from the general LaunchSpecificiation
+          '
+          Properties
+            Property 'ImageId' =
+              Description            = 'Per-region AMI ImageId'
+              Type                   = 'string'
+              TypeName               = ''
+              IsInputSchema          = 'false'
+              IsOutputSchema         = 'false'
+              SourceURL              = ''
+          Required               = '[ImageId]'
+          Type                   = 'object'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'region' =
+          Description            = 'The Amazon AWS Region being configured.  Example: us-west-1
+          '
+          Type                   = 'string'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+      Required               = '[overwrites]'
+      Type                   = 'object'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'scalingRatio' =
+    Description            = 'A scaling ratio of `0.2` means that the provisioner will attempt to keep
+    the number of pending tasks around 20% of the provisioned capacity.
+    This results in pending tasks waiting 20% of the average task execution
+    time before starting to run.
+    A higher scaling ratio often results in better utilization and longer
+    waiting times. For workerTypes running long tasks a short scaling ratio
+    may be prefered, but for workerTypes running quick tasks a higher scaling
+    ratio may increase utilization without major delays.
+    If using a scaling ratio of 0, the provisioner will attempt to keep the
+    capacity of pending spot requests equal to the number of pending tasks.
+    '
+    Type                   = 'number'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[launchSpecification maxCapacity scalingRatio minPrice maxPrice instanceTypes regions]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Create Worker Type Request'
+Type                   = 'object'
+TypeName               = 'CreateWorkerTypeRequest'
+IsInputSchema          = 'true'
+IsOutputSchema         = 'false'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
+
+
+http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#
+=================================================================================
+Description            = 'All of the launch specifications for a worker type
+'
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Get All Launch Specs Response'
+Type                   = 'object'
+TypeName               = 'GetAllLaunchSpecsResponse'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#'
+
+
+http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#
+================================================================================
+Additional Properties  = 'false'
+Description            = 'A worker launchSpecification and required metadata
+'
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
+Properties
+  Property 'canUseOndemand' =
+    Description            = 'True if this worker type is allowed on demand instances.  Currently
+    ignored
+    '
+    Type                   = 'boolean'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'canUseSpot' =
+    Description            = 'True if this worker type is allowed spot instances.  Currently ignored
+    as all instances are Spot
+    '
+    Type                   = 'boolean'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'instanceTypes' =
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Instance Type configuration'
+      Properties
+        Property 'capacity' =
+          Description            = 'This number represents the number of tasks that this instance type
+          is capable of running concurrently.  This is used by the provisioner
+          to know how many pending tasks to offset a pending instance of this
+          type by
+          '
+          Type                   = 'number'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'instanceType' =
+          Description            = 'InstanceType name for Amazon.
+          '
+          Type                   = 'string'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'overwrites' =
+          Description            = 'This object contains LaunchSpecification keys which will overwrite
+          the keys from the General launch spec
+          '
+          Type                   = 'object'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'utility' =
+          Description            = 'This number is a relative measure of performance between two instance
+          types.  It is multiplied by the spot price from Amazon to figure out
+          which instance type is the cheapest one
+          '
+          Type                   = 'number'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+      Required               = '[instanceType capacity utility overwrites]'
+      Type                   = 'object'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'launchSpecification' =
+    Description            = 'AWS LaunchSpecification values shared by all regions and all instance-types.
+    This launch spec should not contain either an InstanceType or ImageId.  The
+    former should always be a key in the types object and the latter should be
+    an overwrite in the regions object
+    '
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'maxCapacity' =
+    Description            = 'Maximum number of capacity units to be provisioned.
+    '
+    Type                   = 'number'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'maxPrice' =
+    Description            = 'Maximum price we'll pay.  Like minPrice, this takes into account the
+    utility factor when figuring out what the actual SpotPrice submitted
+    to Amazon will be
+    '
+    Type                   = 'number'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'minCapacity' =
+    Description            = 'Minimum number of capacity units to be provisioned.  A capacity unit
+    is an abstract unit of capacity, where one capacity unit is roughly
+    one task which should be taken off the queue
+    '
+    Type                   = 'number'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'minPrice' =
+    Description            = 'Minimum price to pay for an instance.  A Price is considered to be the
+    Amazon Spot Price multiplied by the utility factor of the InstantType
+    as specified in the instanceTypes list.  For example, if the minPrice
+    is set to $0.5 and the utility factor is 2, the actual minimum bid
+    used will be $0.25
+    '
+    Type                   = 'number'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'regions' =
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Region configuration'
+      Properties
+        Property 'overwrites' =
+          Description            = 'This object contains LaunchSpecification keys which will overwrite keys
+          from the general LaunchSpecificiation
+          '
+          Properties
+            Property 'ImageId' =
+              Description            = 'Per-region AMI ImageId'
+              Type                   = 'string'
+              TypeName               = ''
+              IsInputSchema          = 'false'
+              IsOutputSchema         = 'false'
+              SourceURL              = ''
+          Required               = '[ImageId]'
+          Type                   = 'object'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'region' =
+          Description            = 'The Amazon AWS Region being configured.  Example: us-west-1
+          '
+          Type                   = 'string'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+      Required               = '[overwrites]'
+      Type                   = 'object'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'scalingRatio' =
+    Description            = 'A scaling ratio of `0.2` means that the provisioner will attempt to keep
+    the number of pending tasks around 20% of the provisioned capacity.
+    This results in pending tasks waiting 20% of the average task execution
+    time before starting to run.
+    A higher scaling ratio often results in better utilization and longer
+    waiting times. For workerTypes running long tasks a short scaling ratio
+    may be prefered, but for workerTypes running quick tasks a higher scaling
+    ratio may increase utilization without major delays.
+    If using a scaling ratio of 0, the provisioner will attempt to keep the
+    capacity of pending spot requests equal to the number of pending tasks.
+    '
+    Type                   = 'number'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'workerType' =
+    Description            = 'The ID of the workerType
+    '
+    Pattern                = '^[A-Za-z0-9+/=_-]{1,22}$'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[workerType launchSpecification maxCapacity scalingRatio minPrice maxPrice instanceTypes regions]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Get Worker Type Request'
+Type                   = 'object'
+TypeName               = 'GetWorkerTypeRequest'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
+
+
+http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#
+==================================================================================
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#'
+Items
+  Type                   = 'string'
+  TypeName               = ''
+  IsInputSchema          = 'false'
+  IsOutputSchema         = 'false'
+  SourceURL              = ''
+Title                  = 'List Worker Types'
+Type                   = 'array'
+TypeName               = 'ListWorkerTypes'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#'
+
+
+http://references.taskcluster.net/aws-provisioner/v1/exchanges.json
+===================================================================
+Version         = '0'
+Title           = 'AWS Provisioner Pulse Exchanges'
+Description     = 'Exchanges from the provisioner... more docs later'
+Exchange Prefix = 'exchange/taskcluster-aws-provisioner/'
+Entry 0     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'worker-type-created'
+    Entry Name        = 'workerTypeCreated'
+    Entry Title       = 'WorkerType Created Message'
+    Entry Description = 'When a new `workerType` is created a message will be published to this
+exchange.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'workerType'
+        Element Summary   = 'WorkerType that this message concerns.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'
+Entry 1     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'worker-type-updated'
+    Entry Name        = 'workerTypeUpdated'
+    Entry Title       = 'WorkerType Updated Message'
+    Entry Description = 'When a `workerType` is updated a message will be published to this
+exchange.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'workerType'
+        Element Summary   = 'WorkerType that this message concerns.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'
+Entry 2     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'worker-type-removed'
+    Entry Name        = 'workerTypeRemoved'
+    Entry Title       = 'WorkerType Removed Message'
+    Entry Description = 'When a `workerType` is removed a message will be published to this
+exchange.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'workerType'
+        Element Summary   = 'WorkerType that this message concerns.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'
+
+
+http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#
+===========================================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that an action occured to a worker type'
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'
+Properties
+  Property 'version' =
+    Type                   = 'number'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'workerType' =
+    Description            = 'Name of the worker type which was created
+    '
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[workerType version]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Worker Type Message'
+Type                   = 'object'
+TypeName               = 'WorkerTypeMessage'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'false'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'
+
+
 http://references.taskcluster.net/index/v1/api.json
 ===================================================
-Version     = '0.2.0'
+Version     = '0'
 Title       = 'Task Index API Documentation'
 Description = 'The task index, typically available at `index.taskcluster.net`, is
 responsible for indexing tasks. In order to ensure that tasks can be
@@ -653,6 +1381,10 @@ get additional from the index.
 Typically this defaults to one year, if not specified. If you are
 indexing tasks to make it easy to find artifacts, consider using the
 expiration date that the artifacts is assigned.
+
+**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be
+in the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and
+that if you strictly want to put another character you can URL encode it.
 
 **Indexing Routes**, tasks can be indexed using the API below, but the
 most common way to index tasks is adding a custom route on the following
@@ -1607,7 +2339,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
 Required               = '[artifacts]'
-Schema                 = 'http://json-schema.org/draft-04/schema#"'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Artifacts Response'
 Type                   = 'object'
 TypeName               = 'ListArtifactsResponse'
@@ -4015,7 +4747,7 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.js
 
 http://references.taskcluster.net/scheduler/v1/api.json
 =======================================================
-Version     = '0.2.0'
+Version     = '0'
 Title       = 'Task-Graph Scheduler API Documentation'
 Description = 'The task-graph scheduler, typically available at
 `scheduler.taskcluster.net`, is responsible for accepting task-graphs and
@@ -4904,7 +5636,7 @@ SourceURL              = 'http://schemas.taskcluster.net/scheduler/v1/task-graph
 
 http://references.taskcluster.net/scheduler/v1/exchanges.json
 =============================================================
-Version         = '0.2.0'
+Version         = '0'
 Title           = 'Scheduler AMQP Exchanges'
 Description     = 'The scheduler, typically available at `scheduler.taskcluster.net` is
 responsible for accepting task-graphs and schedule tasks on the queue as

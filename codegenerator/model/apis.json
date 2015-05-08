@@ -23,5 +23,13 @@
         "url": "http://references.taskcluster.net/index/v1/api.json",
         "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
         "docroot": "http://docs.taskcluster.net/services/index"
+    }, {
+        "url": "http://references.taskcluster.net/aws-provisioner/v1/api.json",
+        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
+        "docroot": "http://docs.taskcluster.net/aws-provisioner/api-docs"
+    }, {
+        "url": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json",
+        "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json",
+        "docroot": "http://docs.taskcluster.net/aws-provisioner/events"
     }
 ]
