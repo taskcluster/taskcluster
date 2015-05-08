@@ -11,11 +11,13 @@ This library provides the following six packages to interface with TaskCluster:
 
 ### HTTP APIs
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/awsprovisioner
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/index
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/queue
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/scheduler
 
 ### AMQP APIs
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/awsprovisionerevents
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/schedulerevents
 
