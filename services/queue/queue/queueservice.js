@@ -161,7 +161,13 @@ class QueueService {
             return new Promise((accept, reject) => {
               this.client.deleteMessage(
                 queue, m.messageId, m.popReceipt,
-                {}, (err) => { err ? reject(err) : accept() }
+                {}, (err) => {
+                  // Ignore message not found errors (who cares)
+                  if (err && err.code !== 'MessageNotFound') {
+                    return reject(err);
+                  }
+                  return accept();
+                }
               );
             });
           }
