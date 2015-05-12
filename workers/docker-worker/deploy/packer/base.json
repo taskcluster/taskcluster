@@ -1,5 +1,8 @@
 {
   "description": "taskcluster worker system dependencies",
+  "variables": {
+    "workerRevision": ""
+  },
   "provisioners": [
     {
       "type": "shell",
@@ -21,7 +24,8 @@
       "ami_name": "taskcluster-docker-worker-base {{timestamp}}",
       "tags": {
         "OS_Version": "Ubuntu",
-        "Release": "Latest"
+        "Release":    "Latest",
+        "Revision":   "{{user `workerRevision`}}"
       }
     }
   ],

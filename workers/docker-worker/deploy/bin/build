@@ -30,6 +30,7 @@ packer_config() {
 cmd_app() {
   # Package up the node app.
   local npm_package=$(npm pack)
+  local git_rev=$(git rev-parse --verify HEAD)
 
   # Configure the deployment if needed...
   make -j100 -C deploy
@@ -40,11 +41,13 @@ cmd_app() {
     -var-file $(template_vars app) \
     -var "templateContents=deploy/deploy.tar.gz" \
     -var "npmPackage=$npm_package" \
+    -var "workerRevision=$git_rev" \
     $(packer_config app)
 }
 
 cmd_base() {
-  packer_run build $@ $(packer_config base)
+  local git_rev=$(git rev-parse --verify HEAD)
+  packer_run build $@ --var "workerRevision=$git_rev" $(packer_config base)
 }
 
 if [ ! -x $(which packer) ];

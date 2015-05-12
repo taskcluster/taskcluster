@@ -4,11 +4,12 @@
   "variables": {
     "npmPackage":          "",
     "templateContents":    "",
-    "sourceAMI":           "ami-bf26168f",
+    "sourceAMI":           "ami-e12013d1",
     "logglyAccount":       "",
     "logglyAuth":          "",
     "papertrail":          "",
-    "fsType":              ""
+    "fsType":              "",
+    "workerRevision":      ""
   },
   "provisioners": [
     {
@@ -60,8 +61,10 @@
       "ssh_username":   "ubuntu",
       "ami_name":       "taskcluster-docker-worker-{{user `fsType`}}-{{timestamp}}",
       "tags": {
-        "OS_Version":   "Ubuntu",
-        "Release":      "Latest"
+        "OS_Version":       "Ubuntu",
+        "Release":          "Latest",
+        "Revision":         "{{user `workerRevision`}}",
+        "Base_AMI":         "{{user `sourceAMI`}}"
       }
     }
   ],
