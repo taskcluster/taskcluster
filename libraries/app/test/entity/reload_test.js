@@ -22,6 +22,17 @@ suite("Entity (reload)", function() {
     table:        cfg.get('azureTestTableName')
   });
 
+  test("Item.create, item.reload", function() {
+    var id = slugid.v4();
+    return Item.create({
+      id:     id,
+      name:   'my-test-item',
+      count:  1
+    }).then(function(item) {
+      return item.reload();
+    });
+  });
+
   test("Item.create, item.modify, item.reload", function() {
     var id = slugid.v4();
     return Item.create({

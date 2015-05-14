@@ -17,7 +17,8 @@ suite("Entity (query)", function() {
       id:             base.Entity.types.String,
       name:           base.Entity.types.String,
       count:          base.Entity.types.Number,
-      tag:            base.Entity.types.String
+      tag:            base.Entity.types.String,
+      time:           base.Entity.types.Date
     }
   }).setup({
     credentials:  cfg.get('azure'),
@@ -35,19 +36,22 @@ suite("Entity (query)", function() {
           id:     id,
           name:   'item1',
           count:  1,
-          tag:    'tag1'
+          tag:    'tag1',
+          time:   new Date(0)
         }),
         Item.create({
           id:     id,
           name:   'item2',
           count:  2,
-          tag:    'tag2'
+          tag:    'tag2',
+          time:   new Date(1)
         }),
         Item.create({
           id:     id,
           name:   'item3',
           count:  3,
-          tag:    'tag1'    // same tag as item1
+          tag:    'tag1',   // same tag as item1
+          time:   new Date(1000000000000)
         })
       ]);
     });
@@ -183,6 +187,38 @@ suite("Entity (query)", function() {
       handler:      function(item) { sum += item.count; }
     }).then(function() {
       assert(sum === 4);
+    });
+  });
+
+  test("Filter by time < Date(1)", function() {
+    var sum = 0;
+    return Item.query({
+      id:       id,
+      time:     base.Entity.op.lessThan(new Date(1))
+    }).then(function(data) {
+      assert(data.entries.length === 1);
+      assert(data.entries[0].name == 'item1');
+    });
+  });
+
+  test("Filter by time < Date(100)", function() {
+    var sum = 0;
+    return Item.query({
+      id:       id,
+      time:     base.Entity.op.lessThan(new Date(100))
+    }).then(function(data) {
+      assert(data.entries.length === 2);
+    });
+  });
+
+  test("Filter by time > Date(100)", function() {
+    var sum = 0;
+    return Item.query({
+      id:       id,
+      time:     base.Entity.op.greaterThan(new Date(100))
+    }).then(function(data) {
+      assert(data.entries.length === 1);
+      assert(data.entries[0].name == 'item3');
     });
   });
 
