@@ -7,6 +7,7 @@ var _               = require('lodash');
 var Promise         = require('promise');
 var debug           = require('debug')('base:entity');
 var azureTable      = require('azure-table-node');
+var azure           = require('fast-azure-storage');
 var taskcluster     = require('taskcluster-client');
 var https           = require('https');
 var stats           = require('../stats');
@@ -16,7 +17,8 @@ var AzureAgent      = require('./azureagent');
 // To ease reading of this component we recommend the following code guidelines:
 //
 // Summary:
-//    - Use __ prefix for private variables in `Entity`
+//    - Use __ prefix for private members on `Entity.prototype` and
+//      Use _  prefix for private members on `Entity` instances.
 //    - Variables named `entity` are semi-raw `azure-table-node` types
 //    - Variables named `item` are instances of `Entity`
 //    - Variables named `properties` are deserialized `entity` objects
@@ -25,17 +27,17 @@ var AzureAgent      = require('./azureagent');
 //
 //
 //    * Variables named `entity` are "raw" entities, well raw in the sense that
-//      they interface the transport layer provided by `azure-table-node`.
+//      they interface the transport layer provided by Azure Table Storage.
 //
 //    * Variables named `item` refers instances of `Entity` or instances of
 //      subclasses of `Entity`. This is slightly confusing as people using the
 //      `Entity` class (of subclasses thereof) are more likely refer to generic
 //      instances of their subclasses as `entity` and not `item`.
-//      We draw the distinction here because `azure-table-node` is closer to
-//      Azure Table Storage which uses the terminology entities. Also subclasses
-//      of `Entity` usually has another name, like `Artifact`, so non-generic
-//      instances are easily referred to using a variant of that name,
-//      like `artifact` as an instance of `Artifact`.
+//      We draw the distinction here because Azure Table Storage uses the
+//      terminology entities. Also subclasses of `Entity` usually has another
+//      name, like `Artifact`, so non-generic instances are easily referred to
+//      using a variant of that name, like `artifact` as an instance of
+//      `Artifact`.
 //
 //    * Variables named `properties` is usually a mapping from property names
 //      to deserialized values.
@@ -77,13 +79,6 @@ var MAX_MODIFY_ATTEMPTS     = 10;
 /** Timeout for azure table requests */
 var AZURE_TABLE_TIMEOUT     = 7 * 1000;
 
-/** Azure table agent used for all instances of the table client */
-var globalAzureTableAgent = new AzureAgent({
-  keepAlive:        true,
-  maxSockets:       100,
-  maxFreeSockets:   100
-});
-
 /** Statistics from Azure table operations */
 var AzureTableOperations = new stats.Series({
   name:             'AzureTableOperations',
@@ -103,16 +98,16 @@ var AzureTableOperations = new stats.Series({
  * This constructor will wrap a raw azure-table-node entity.
  */
 var Entity = function(entity) {
-  assert(entity.PartitionKey, "entity is missing 'PartitionKey'");
-  assert(entity.RowKey,       "entity is missing 'RowKey'");
-  assert(entity.__etag,       "entity is missing '__etag'");
-  assert(entity.Version,      "entity is missing 'Version'");
+  assert(entity.PartitionKey,   "entity is missing 'PartitionKey'");
+  assert(entity.RowKey,         "entity is missing 'RowKey'");
+  assert(entity['odata.etag'],  "entity is missing 'odata.etag'");
+  assert(entity.Version,        "entity is missing 'Version'");
 
-  // Set __etag
-  this.__etag = entity.__etag || null;
-
-  // Deserialize a shadow object from the entity
-  this.__properties = this.__deserialize(entity);
+  this._partitionKey  = entity.PartitionKey;
+  this._rowKey        = entity.RowKey;
+  this._version       = entity.Version;
+  this._properties    = this.__deserialize(entity);
+  this._etag          = entity['odata.etag'];
 };
 
 // Built-in type handlers
@@ -132,26 +127,23 @@ Entity.prototype.__lockedPropertiesDefinition = undefined;
 // Define properties set in configure
 Entity.prototype.__context      = undefined;  // List of required context keys
 Entity.prototype.__deserialize  = undefined;  // Method to deserialize entities
+Entity.prototype.__serialize    = undefined;  // Method to serialize entities
 Entity.prototype.__mapping      = undefined;  // Schema mapping to types
 Entity.prototype.__version      = 0;          // Schema version
 Entity.prototype.__partitionKey = undefined;  // PartitionKey builder
 Entity.prototype.__rowKey       = undefined;  // RowKey builder
 
-// Define method that returns a promise for a context with properties:
-// - client
-// - expiry
-// - table
-Entity.prototype.__connect      = function() {
-  return new Promise(function() {
-    throw new Error("Entity not setup, see Entity.setup()");
-  });
-};
-Entity.prototype.__aux          = undefined;  // Auxiliary methods for client
+// Define properties set in
+Entity.prototype.__client       = undefined;  // Azure table client
+Entity.prototype.__aux          = undefined;  // Azure table client wrapper
 Entity.prototype.__table        = undefined;  // Azure table name
 
 // Define properties set in constructor
-Entity.prototype.__properties   = undefined;  // Deserialized shadow object
-Entity.prototype.__etag         = undefined;  // Etag of remote entity
+Entity.prototype._properties    = undefined;  // Deserialized shadow object
+Entity.prototype._partitionKey  = undefined;  // Entity partition key
+Entity.prototype._rowKey        = undefined;  // Entity row key
+Entity.prototype._version       = undefined;  // Schema version of remote entity
+Entity.prototype._etag          = undefined;  // Etag of remote entity
 
 /**
  * Create a promise handler that will pass arguments + err to debug()
@@ -171,7 +163,7 @@ var rethrowDebug = function() {
  * Create a promise handler that will wrap the resulting entity in `Class`.
  * This is useful as handler for .then()
  */
-var wrapEntityClass = function (Class) {
+var wrapEntityClass = function(Class) {
   return function(entity) {
     return new Class(entity);
   };
@@ -330,9 +322,9 @@ Entity.configure = function(options) {
   // In particular it will give issues access properties when new versions
   // are introduced. Mainly that empty properties will exist.
   assert(
-    subClass.prototype.__connect === Entity.prototype.__connect &&
-    subClass.prototype.__aux === undefined &&
-    subClass.prototype.__table === undefined,
+    subClass.prototype.__client === undefined &&
+    subClass.prototype.__aux    === undefined &&
+    subClass.prototype.__table  === undefined,
     "This `Entity` subclass is already setup!"
   );
 
@@ -432,6 +424,19 @@ Entity.configure = function(options) {
   // Set version
   subClass.prototype.__version = options.version;
 
+  // define __serialize
+  subClass.prototype.__serialize = function(properties) {
+    var entity = {
+      PartitionKey: subClass.prototype.__partitionKey.exact(properties),
+      RowKey:       subClass.prototype.__rowKey.exact(properties),
+      Version:      subClass.prototype.__version
+    };
+    _.forIn(mapping, function(type, property) {
+      type.serialize(entity, properties[property]);
+    });
+    return entity;
+  };
+
   // Return subClass
   return subClass;
 };
@@ -495,8 +500,9 @@ Entity.setup = function(options) {
   assert(!options.drain || options.component, "component is required if drain");
   assert(!options.drain || options.process,   "process is required if drain");
   options = _.defaults({}, options, {
-    context:      {},
-    agent:        globalAzureTableAgent
+    context:          {},
+    agent:            undefined,
+    minSASAuthExpiry: 15 * 60 * 1000
   });
 
   // Identify the parent class, that is always `this` so we can use it on
@@ -526,9 +532,9 @@ Entity.setup = function(options) {
   // Don't allow setup to run twice, there is no reasons for this. In particular
   // it could give issues with access properties
   assert(
-    subClass.prototype.__connect === Entity.prototype.__connect &&
-    subClass.prototype.__aux === undefined &&
-    subClass.prototype.__table === undefined,
+    subClass.prototype.__client === undefined &&
+    subClass.prototype.__aux    === undefined &&
+    subClass.prototype.__table  === undefined,
     "This `Entity` subclass is already setup!"
   );
 
@@ -539,7 +545,7 @@ Entity.setup = function(options) {
     // Define property for accessing underlying shadow object
     Object.defineProperty(subClass.prototype, property, {
       enumerable: true,
-      get:        function() {return this.__properties[property];}
+      get:        function() {return this._properties[property];}
     });
   });
 
@@ -559,88 +565,49 @@ Entity.setup = function(options) {
   // Set azure table name
   subClass.prototype.__table = options.table;
 
-  // Default client, notice that it's already expired
-  var client          = null;
-  var promisedClient  = null;
-  var expiry          = -1;
-
-  // Check if we're setting up to fetch credentials for auth.taskcluster.net
+  // Create an azure table client
+  var client = null;
   if (options.account) {
+    // If we're setting up to fetch credentials for auth.taskcluster.net
     assert(typeof(options.account) === 'string',
            "Expected options.account to be a string, or undefined");
-    // Create method that will connect (if needed) and return client
-    subClass.prototype.__connect = function() {
-      // Return client, if we have a current one
-      if (expiry > new Date().getTime() + 3 * 60 * 1000) {
-        return Promise.resolve(client);
-      }
-
-      // If we are in the process of fetching a client, we just return the
-      // promise for this
-      if (promisedClient) {
-        return promisedClient;
-      }
-
-      // Fetch SAS from auth.taskcluster.net
-      var auth = new taskcluster.Auth({
-        credentials:    options.credentials,
-        baseUrl:        options.authBaseUrl
-      });
-      // Create a promise for a client
-      promisedClient = auth.azureTableSAS(
-        options.account,
-        options.table
-      ).then(function(result) {
-        // Set expiry and create client using result
-        expiry  = new Date(result.expiry).getTime();
-        client  = azureTable.createClient({
-          accountName:  options.account,
-          sas:          result.sas,
-          accountUrl:   [
-            "https://",
-            options.account,
-            ".table.core.windows.net/"
-          ].join(''),
-          timeout:      AZURE_TABLE_TIMEOUT,
-          agent:        options.agent,
-          metadata:     'minimal'
+    // Create auth client to fetch SAS from auth.taskcluster.net
+    var auth = new taskcluster.Auth({
+      credentials:    options.credentials,
+      baseUrl:        options.authBaseUrl
+    });
+    // Create azure table client with logic for fetch SAS
+    client = new azure.Table({
+      timeout:          AZURE_TABLE_TIMEOUT,
+      agent:            options.agent,
+      accountId:        options.account,
+      minSASAuthExpiry: options.minSASAuthExpiry,
+      sas: function() {
+        return auth.azureTableSAS(
+          options.account,
+          options.table
+        ).then(function(result) {
+          return result.sas;
         });
-        // We now have a client, so forget about the promise for one
-        promisedClient = null;
-        return client;
-      });
-
-      return promisedClient;
-    };
+      }
+    });
   } else {
     // Create client using credentials already present
     assert(options.credentials.accountName, "Missing accountName");
     assert(options.credentials.accountKey ||
            options.credentials.sas,         "Missing accountKey or sas");
-    // Add accountUrl, if not already present, there is really no reason to
-    // not just compute... That's what the Microsoft libraries does anyways
-    var credentials = _.defaults({
+    // Create azure table client with accessKey
+    client = new azure.Table({
       timeout:      AZURE_TABLE_TIMEOUT,
       agent:        options.agent,
-      metadata:     'minimal'
-    }, options.credentials, {
-      accountUrl: [
-        "https://",
-        options.credentials.accountName,
-        ".table.core.windows.net/"
-      ].join('')
+      accountId:    options.credentials.accountName,
+      accessKey:    options.credentials.accountKey,
+      sas:          options.credentials.sas
     });
-    assert(/^https:\/\//.test(credentials.accountUrl),
-           "Use HTTPS for accountUrl");
-    expiry  = Number.MAX_VALUE;
-    client  = azureTable.createClient(credentials);
-
-    // Create method that will connect (if needed) and return client
-    subClass.prototype.__connect = function() {
-      // Set promise for the client
-      return Promise.resolve(client);
-    };
   }
+
+  // Store reference to azure table client
+  subClass.prototype.__client = client;
 
   // Reporter for statistics
   var reporter = function() {};
@@ -648,103 +615,55 @@ Entity.setup = function(options) {
     reporter = AzureTableOperations.reporter(options.drain);
   }
 
-  // Create property for auxiliary methods
-  var aux = subClass.prototype.__aux = {};
-
-  // Add methods to aux wrapping the raw client, we do this for 3 reasons:
-  //  1. Return promises (instead of taking callbacks),
-  //  2. Bind methods to table name, and
-  //  3. Refresh client when SAS expires
+  // Create table client wrapper, to record statistics and bind table name
+  subClass.prototype.__aux = {};
   [
     'createTable',
     'deleteTable',
-    'deleteEntity',
+    'getEntity',
+    'queryEntities',
     'insertEntity',
-    'insertOrReplaceEntity',
     'updateEntity',
-    'mergeEntity',
-    'getEntity'
-  ].forEach(function(method) {
-    aux[method] = function() {
-      var args = Array.prototype.slice.call(arguments);
-      return subClass.prototype.__connect().then(function(client) {
-        return new Promise(function(accept, reject) {
-          var start = process.hrtime();
-          args.unshift(subClass.prototype.__table);
-          args.push(function(err, res) {
-            // Report statistics
-            var d = process.hrtime(start);
-            reporter({
-              component:    options.component,
-              process:      options.process,
-              duration:     d[0] * 1000 + (d[1] / 1000000),
-              table:        subClass.prototype.__table,
-              method:       method,
-              error:        (err ? (err.code || 'ConnectionError') : 'false')
-            });
-            if (err) {
-              return reject(err);
-            }
-            accept(res);
-          });
-          client[method].apply(client, args);
+    'deleteEntity'
+  ].forEach(function(name) {
+    // Bind table name
+    var method = client[name].bind(client, options.table);
+
+    // Record statistics
+    subClass.prototype.__aux[name] = function() {
+      var start = process.hrtime();
+      return method.apply(client, arguments).then(function(result) {
+        var d = process.hrtime(start);
+        reporter({
+          component:    options.component,
+          process:      options.process,
+          duration:     d[0] * 1000 + (d[1] / 1000000),
+          table:        options.table,
+          method:       name,
+          error:        'false'
         });
+        return result;
+      }, function(err) {
+        var d = process.hrtime(start);
+        reporter({
+          component:    options.component,
+          process:      options.process,
+          duration:     d[0] * 1000 + (d[1] / 1000000),
+          table:        options.table,
+          method:       name,
+          error:        (err ? err.code : null) || 'UnknownError'
+        });
+        throw err;
       });
     };
   });
-
-  // Helper method for queryEntities, which is a special-case as it carries
-  // a continuation token as third parameter in the callback.
-  aux.queryEntities = function(queryOptions) {
-    return subClass.prototype.__connect().then(function(client) {
-      var table  = subClass.prototype.__table;
-      return new Promise(function(accept, reject) {
-        var start = process.hrtime();
-        client.queryEntities(table, queryOptions, function(err, data, token) {
-          // Report statistics
-          var d = process.hrtime(start);
-          reporter({
-            component:    options.component,
-            process:      options.process,
-            duration:     d[0] * 1000 + (d[1] / 1000000),
-            table:        subClass.prototype.__table,
-            method:       'queryEntities',
-            error:        (err ? (err.code || 'ConnectionError') : 'false')
-          });
-          if (err) {
-            return reject(err);
-          }
-          return accept({
-            entries:        data,
-            continuation:   token
-          });
-        });
-      });
-    });
-  };
 
   // Return subClass
   return subClass;
 };
 
 /**
- * Create the underlying Azure Storage Table, errors if it exists
- *
- * Remark, this doesn't work, if authenticated with SAS.
- */
-Entity.createTable = function() {
-  var Class       = this;
-  var ClassProps  = Class.prototype;
-
-  return ClassProps.__aux.createTable({
-    ignoreIfExists:     false
-  }).catch(rethrowDebug(
-    "createTable: Failed to create table '%s' with err: %j",
-    ClassProps.__table
-  ));
-};
-
-/** Ensure existence of the underlying Azure Storage Table
+ * Ensure existence of the underlying Azure Storage Table
  *
  * Remark, this doesn't work, if authenticated with SAS.
  */
@@ -752,19 +671,22 @@ Entity.ensureTable = function() {
   var Class       = this;
   var ClassProps  = Class.prototype;
 
-  return ClassProps.__aux.createTable({
-    ignoreIfExists:     true
+  return ClassProps.__aux.createTable().catch(function(err) {
+    if (!err || err.code !== 'TableAlreadyExists') {
+      throw err;
+    }
   }).catch(rethrowDebug(
     "ensureTable: Failed to create table '%s' with err: %j",
     ClassProps.__table
   ));
 };
 
-/** Delete the underlying Azure Storage Table
+/**
+ * Delete the underlying Azure Storage Table
  *
  * Remark, this doesn't work, if authenticated with SAS.
  */
-Entity.removeTable = function(ignoreErrors) {
+Entity.removeTable = function() {
   var Class       = this;
   var ClassProps  = Class.prototype;
 
@@ -781,34 +703,30 @@ Entity.removeTable = function(ignoreErrors) {
 Entity.create = function(properties, overwriteIfExists) {
   var Class       = this;
   var ClassProps  = Class.prototype;
-  assert(properties,              "Properties is required");
+  assert(properties, "Properties is required");
 
-  // Construct entity with built-in properties
-  var entity = {
-    PartitionKey:     ClassProps.__partitionKey.exact(properties),
-    RowKey:           ClassProps.__rowKey.exact(properties),
-    Version:          ClassProps.__version
-  };
+  // Serialize entity
+  var entity = ClassProps.__serialize(properties);
 
-  // Add custom properties to entity
-  _.forIn(ClassProps.__mapping, function(type, property) {
-    type.serialize(entity, properties[property]);
-  });
-
-  // Use insertOrReplaceEntity if we should overwrite on existence
-  var createMethod = ClassProps.__aux.insertEntity;
-  if (overwriteIfExists) {
-    createMethod = ClassProps.__aux.insertOrReplaceEntity;
+  // Insert with insertEntity or updateEntity with replace null
+  var inserted = null;
+  if (!overwriteIfExists) {
+    inserted = ClassProps.__aux.insertEntity(entity);
+  } else {
+    inserted = ClassProps.__aux.updateEntity(entity, {
+      mode: 'replace',
+      eTag: null
+    });
   }
 
   // Create entity
-  return createMethod(entity)
-  .catch(rethrowDebug("Failed to insert entity err: %j"))
-  .then(function(etag) {
-    entity.__etag = etag;     // Add etag
-    return entity;
-  })
-  .then(wrapEntityClass(Class));
+  return inserted
+    .catch(rethrowDebug("Failed to insert entity err: %j"))
+    .then(function(etag) {
+      entity['odata.etag'] = etag;
+      return entity;
+    })
+    .then(wrapEntityClass(Class));
 };
 
 /**
@@ -852,12 +770,12 @@ Entity.remove = function(properties, ignoreIfNotExists) {
   var Class       = this;
   var ClassProps  = Class.prototype;
 
-  return ClassProps.__aux.deleteEntity({
-    PartitionKey:     ClassProps.__partitionKey.exact(properties),
-    RowKey:           ClassProps.__rowKey.exact(properties),
-    __etag:           undefined
-  }, {
-    force:            true
+  // Serialize partitionKey and rowKey
+  var partitionKey  = ClassProps.__partitionKey.exact(properties);
+  var rowKey        = ClassProps.__rowKey.exact(properties);
+
+  return ClassProps.__aux.deleteEntity(partitionKey, rowKey, {
+    eTag: '*'
   }).then(function() {
     return true;
   }, function(err) {
@@ -872,12 +790,8 @@ Entity.remove = function(properties, ignoreIfNotExists) {
 
 /** Remove entity if not modified, unless `ignoreChanges` is set */
 Entity.prototype.remove = function(ignoreChanges, ignoreIfNotExists) {
-  return this.__aux.deleteEntity({
-    PartitionKey:     this.__partitionKey.exact(this.__properties),
-    RowKey:           this.__rowKey.exact(this.__properties),
-    __etag:           ignoreChanges ? undefined : this.__etag
-  }, {
-    force:            ignoreChanges ? true : false
+  return this.__aux.deleteEntity(this._partitionKey, this._rowKey, {
+    eTag:     (ignoreChanges ? '*' : this._etag)
   }).catch(function(err) {
     // Re-throw error if we're not supposed to ignore it
     if (!ignoreIfNotExists || !err || err.code !== 'ResourceNotFound') {
@@ -891,25 +805,24 @@ Entity.prototype.remove = function(ignoreChanges, ignoreIfNotExists) {
  * any changes.
  */
 Entity.prototype.reload = function() {
-  var that = this;
-  var etag = this.__etag;
-
-  // Serialize partitionKey and rowKey
-  var partitionKey  = this.__partitionKey.exact(this.__properties);
-  var rowKey        = this.__rowKey.exact(this.__properties);
+  var self = this;
+  var etag = this._etag;
 
   return this.__aux.getEntity(
-    partitionKey,
-    rowKey
+    this._partitionKey,
+    this._rowKey
   ).then(function(entity) {
     // Deserialize a shadow object from the entity
-    that.__properties = that.__deserialize(entity);
+    self._properties    = self.__deserialize(entity);
+    // Note, that Entity.prototype.modify relies on _properties becoming a new
+    // object. So ensure that is maintained or updated Entity.prototype.modify
 
-    // Set __etag
-    that.__etag = entity.__etag;
+    // Set eTag and version
+    self._version       = entity.Version;
+    self._etag          = entity['odata.etag'];
 
     // Check if any properties was modified
-    return that.__etag !== etag;
+    return self._etag !== etag;
   });
 };
 
@@ -944,68 +857,76 @@ Entity.prototype.reload = function() {
  * ```
  */
 Entity.prototype.modify = function(modifier) {
-  var that = this;
+  var self = this;
 
-  // Serialize partitionKey and rowKey
-  var partitionKey  = this.__partitionKey.exact(this.__properties);
-  var rowKey        = this.__rowKey.exact(this.__properties);
-
-  // Create a clone of this.__properties, that can be used to compare properties
-  // and restore state, if operations fail
+  // Create a clone of this._properties, so we can compare properties and
+  // decide what to upload, as well as we can restore state if operations fail
   var properties    = {};
-  var etag          = this.__etag;
   _.forIn(this.__mapping, function(type, property) {
-    properties[property] = type.clone(this.__properties[property]);
-  }, this);
+    properties[property] = type.clone(self._properties[property]);
+  });
+  var eTag          = this._etag;
+  var version       = this._version;
 
   // Attempt to modify this object
   var attemptsLeft = MAX_MODIFY_ATTEMPTS;
   var attemptModify = function() {
-    var modified = Promise.resolve(modifier.call(
-      that.__properties,
-      that.__properties
-    ));
-    return modified.then(function() {
-      var isChanged     = false;
-      var entityChanges = {};
+    // Invoke modifier
+    return Promise.resolve(modifier.call(
+      self._properties,
+      self._properties
+    )).then(function() {
+      var isChanged     = false;    // Track if we have changes
+      var entityChanges = {};       // Track changes we have to upload
+      var mode          = 'merge';  // Track update mode
 
-      // Check if `that.__properties` have been changed and serialize changes to
-      // `entityChanges` while flagging changes in `isChanged`
-      _.forIn(that.__mapping, function(type, property) {
-        var value = that.__properties[property];
-        if (!type.equal(properties[property], value)) {
-          type.serialize(entityChanges, value);
-          isChanged = true;
-        }
-      });
+      // If we don't have schema version changes
+      if (self._version === self.__version) {
+        // Check if `self._properties` have been changed and serialize changes
+        // to `entityChanges` while flagging changes in `isChanged`
+        _.forIn(self.__mapping, function(type, property) {
+          var value = self._properties[property];
+          if (!type.equal(properties[property], value)) {
+            type.serialize(entityChanges, value);
+            isChanged = true;
+          }
+        });
+      } else {
+        // If we have a schema version upgrade replace all properties
+        mode          = 'replace';
+        isChanged     = true;
+        entityChanges = self.__serialize(self._properties);
+      }
 
       // Check for changes
       if (!isChanged) {
-        debug("Return modify trivially, as changed was applied by modifier");
-        return that;
+        debug("Return modify trivially, as no change was applied by modifier");
+        return self;
       }
 
       // Check for key modifications
-      assert(partitionKey === that.__partitionKey.exact(that.__properties),
+      assert(self._partitionKey === self.__partitionKey.exact(self._properties),
              "You can't modify elements of the partitionKey");
-      assert(rowKey === that.__rowKey.exact(that.__properties),
+      assert(self._rowKey === self.__rowKey.exact(self._properties),
              "You can't modify elements of the rowKey");
 
       // Set rowKey and partition key
-      entityChanges.PartitionKey  = partitionKey;
-      entityChanges.RowKey        = rowKey;
+      entityChanges.PartitionKey  = self._partitionKey;
+      entityChanges.RowKey        = self._rowKey;
 
-      // Set etag
-      entityChanges.__etag = that.__etag;
-
-      return that.__aux.mergeEntity(entityChanges).then(function(etag) {
-        that.__etag = etag;
-        return that;
+      // Update entity with changes
+      return self.__aux.updateEntity(entityChanges, {
+        mode:   mode,
+        eTag:   self._etag
+      }).then(function(eTag) {
+        self._etag = eTag;
+        return self;
       });
     }).catch(function(err) {
       // Restore internal state
-      that.__etag = etag;
-      that.__properties = properties;
+      self._etag        = eTag;
+      self._properties  = properties;
+      self._version     = version;
 
       // rethrow error, if it's not caused by optimistic concurrency
       if (!err || err.code !== 'UpdateConditionNotSatisfied') {
@@ -1021,11 +942,7 @@ Entity.prototype.modify = function(modifier) {
       }
 
       // Reload and try again
-      return that.__aux.getEntity(partitionKey, rowKey).then(function(entity) {
-        // Deserialize properties and set etag
-        that.__properties = that.__deserialize(entity);
-        that.__etag = entity.__etag;
-
+      return Entity.prototype.reload.call(self).then(function() {
         // Attempt to modify again
         return attemptModify();
       });
@@ -1037,24 +954,24 @@ Entity.prototype.modify = function(modifier) {
 
 
 /** Encode continuation token as single string using tilde as separator */
-var encodeContinuationToken = function(token) {
-  if (token === undefined || token === null) {
-    return token;
+var encodeContinuationToken = function(result) {
+  if (!result.nextPartitionKey && !result.nextRowKey) {
+    return null;
   }
-  assert(token instanceof Array, "ContinuationToken should have been an array");
-  assert(token.length === 2,     "ContinuationToken should have length 2");
-  // Escape with encodeURIComponent + escape tilde (~) so we can use it as
-  // separator
-  return [
-    encodeURIComponent(token[0]).replace(/~/g, '%7e'),
-    encodeURIComponent(token[1]).replace(/~/g, '%7e')
-  ].join('~');
+  return (
+    encodeURIComponent(result.nextPartitionKey || '').replace(/~/g, '%7e') +
+    '~' +
+    encodeURIComponent(result.nextRowKey || '').replace(/~/g, '%7e')
+  );
 };
 
 /** Decode continuation token, inverse of encodeContinuationToken */
 var decodeContinuationToken = function(token) {
   if (token === undefined || token === null) {
-    return token;
+    return {
+      nextPartitionKey: undefined,
+      nextRowKey:       undefined
+    };
   }
   assert(typeof(token) === 'string', "Continuation token must be a string if " +
                                      "not undefined");
@@ -1062,10 +979,10 @@ var decodeContinuationToken = function(token) {
   token = token.split('~');
   assert(token.length === 2, "Expected an encoded continuation token with " +
                              "a single tilde as separator");
-  return [
-    decodeURIComponent(token[0]),
-    decodeURIComponent(token[1])
-  ];
+  return {
+    nextPartitionKey: decodeURIComponent(token[0]),
+    nextRowKey:       decodeURIComponent(token[1])
+  };
 };
 
 // Valid values for `options.matchPartition` in Entity.scan
@@ -1146,7 +1063,7 @@ Entity.scan = function(conditions, options) {
     matchRow:         'none',
     matchPartition:   'none',
     handler:          null,
-    limit:            1000,
+    limit:            undefined,
     continuation:     undefined
   });
   conditions = conditions || {};
@@ -1158,21 +1075,8 @@ Entity.scan = function(conditions, options) {
          "Valid values for 'matchRow' are: none, partial, exact");
   assert(!options.handler || options.handler instanceof Function,
          "If options.handler is given it must be a function");
-  assert(typeof(options.limit) === 'number', "options.limit must be a number");
-
-  // Find all equality operators and find PartitionKey
-  var properties = _.mapValues(conditions, function(op) {
-    // If no operator was used then it is an equality condition
-    if (!(op instanceof Entity.op)) {
-      return op;
-    }
-    // If it's an equality operator, then the value is the operand
-    if (op.operator === '==') {
-      return op.operand;
-    }
-    // Other wise, no exact value is specified
-    return undefined;
-  });
+  assert(options.limit === undefined ||
+         typeof(options.limit) === 'number', "options.limit must be a number");
 
   // Declare partitionKey, rowKey and covered as list of keys covered by either
   // partitionKey or rowKey
@@ -1182,12 +1086,12 @@ Entity.scan = function(conditions, options) {
 
   // Construct keys exact, if that is how they are required to be matched
   if (options.matchPartition === 'exact') {
-    partitionKey    = ClassProps.__partitionKey.exact(properties);
+    partitionKey    = ClassProps.__partitionKey.exactFromConditions(conditions);
     covered         = _.union(covered, ClassProps.__partitionKey.covers);
   }
   if (options.matchRow === 'exact') {
-    rowKey          = ClassProps.__rowKey.exact(properties);
-    covered         = _.union(covered, ClassProps.__partitionKey.covers);
+    rowKey          = ClassProps.__rowKey.exactFromConditions(conditions);
+    covered         = _.union(covered, ClassProps.__rowKey.covers);
   }
 
   // Construct partial rowKey
@@ -1200,23 +1104,23 @@ Entity.scan = function(conditions, options) {
     throw new Error("Partial matches on rowKey is not implemented yet!");
   }
 
-  // Create a query and a query builder function to abstract away joining
-  // with 'and'
-  var query = undefined;
-  var queryBuilder = function(property, operator, value) {
-    if (!query) {
-      query = azureTable.Query.create(property, operator, value);
-    } else {
-      query = query.and(property, operator, value);
+  // Create a $filter string builder to abstract away joining with 'and'
+  var filter = '';
+  var filterBuilder = function(condition) {
+    if (filter === '') {
+      filter = condition;
+    } else if (condition !== '') {
+      filter += ' and ' + condition;
     }
   };
 
   // If we have partitionKey and rowKey we should add them to the query
+  var azOps = azure.Table.Operators;
   if (partitionKey !== undefined) {
-    queryBuilder('PartitionKey', '==', partitionKey);
+    filterBuilder('PartitionKey eq ' + azOps.string(partitionKey));
   }
   if (rowKey !== undefined) {
-    queryBuilder('RowKey', '==', rowKey);
+    filterBuilder('RowKey eq ' + azOps.string(rowKey));
   }
 
   // Construct query from conditions using operators
@@ -1224,7 +1128,7 @@ Entity.scan = function(conditions, options) {
     // If the property is covered by the partitionKey or rowKey, we don't want
     // to apply a filter to it
     if (_.contains(covered, property)) {
-      return undefined;
+      return;
     }
 
     // Find and check that we have a type
@@ -1234,35 +1138,36 @@ Entity.scan = function(conditions, options) {
                       "' used in query is not defined!");
     }
 
-    // Ensure that we have an Op instance, we just assume anything specified
+    // Ensure that we have an operator, we just assume anything specified
     // without an operator is equality
     if (!(op instanceof Entity.op)) {
       op = Entity.op.equal(op);
     }
 
-    // Let the operator construct the filter
-    return op.filter(type, property, queryBuilder);
+    // Let the type construct the filter
+    type.filter(op, filterBuilder);
   });
 
   // Fetch results with operational continuation token
   var fetchResults = function(continuation) {
+    var continuation = decodeContinuationToken(continuation);
     return ClassProps.__aux.queryEntities({
-      query:        query,
-      limitTo:      options.limit,
-      forceEtags:   true,
-      continuation: continuation
+      filter:           filter,
+      top:              options.limit,
+      nextPartitionKey: continuation.nextPartitionKey,
+      nextRowKey:       continuation.nextRowKey
     }).then(function(data) {
       return {
-        entries:      data.entries.map(function(entity) {
+        entries:      data.entities.map(function(entity) {
                         return new Class(entity);
                       }),
-        continuation: encodeContinuationToken(data.continuation)
+        continuation: encodeContinuationToken(data)
       };
     });
   };
 
   // Fetch results
-  var results = fetchResults(decodeContinuationToken(options.continuation));
+  var results = fetchResults(options.continuation);
 
   // If we have a handler, then we have to handle the results
   if (options.handler) {
@@ -1272,8 +1177,7 @@ Entity.scan = function(conditions, options) {
           return options.handler(item);
         })).then(function() {
           if (data.continuation) {
-            var continuation = decodeContinuationToken(data.continuation);
-            return handleResults(fetchResults(continuation));
+            return handleResults(fetchResults(data.continuation));
           }
         });
       });
@@ -1312,7 +1216,7 @@ Entity.query = function(conditions, options) {
 
 /** Utility method for node making util.inspect print properties */
 Entity.prototype.inspect = function(depth) {
-  return util.inspect(this.__properties, {depth: depth});
+  return util.inspect(this._properties, {depth: depth});
 };
 
 // TODO: Method upgrade all entities to new version in a background-process
