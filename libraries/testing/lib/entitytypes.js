@@ -7,6 +7,8 @@ var debug           = require('debug')('base:entity:types');
 var slugid          = require('slugid');
 var stringify       = require('json-stable-stringify');
 var buffertools     = require('buffertools');
+var azure           = require('fast-azure-storage');
+var fmt             = azure.Table.Operators;
 
 // Check that value is of type for name and property
 // Print messages and throw an error if the check fails
@@ -62,6 +64,11 @@ BaseType.prototype.clone = function(value) {
   var virtualTarget = {};
   this.serialize(virtualTarget, value);
   return this.deserialize(virtualTarget);
+};
+
+/** Construct $filter string with operator */
+BaseType.prototype.filter = function(op, filterBuilder) {
+  throw new Error("Not implemented");
 };
 
 /** Get a string representation for key generation (optional) */
@@ -141,6 +148,13 @@ StringType.prototype.validate = function(value) {
   checkType('StringType', this.property, value, 'string');
 };
 
+StringType.prototype.filter = function(op, filterBuilder) {
+  this.validate(op.operand);
+  filterBuilder(
+    this.property + ' ' + op.operator + ' ' + fmt.string(op.operand)
+  );
+};
+
 // Export StringType as String
 exports.String = StringType;
 
@@ -164,6 +178,13 @@ NumberType.prototype.string = function(value) {
   return value.toString();
 };
 
+NumberType.prototype.filter = function(op, filterBuilder) {
+  this.validate(op.operand);
+  filterBuilder(
+    this.property + ' ' + op.operator + ' ' + fmt.number(op.operand)
+  );
+};
+
 // Export NumberType as Number
 exports.Number = NumberType;
 
@@ -181,13 +202,16 @@ DateType.prototype.isOrdered    = true;
 DateType.prototype.isComparable = true;
 
 DateType.prototype.validate = function(value) {
-  assert(value instanceof Date, "DateType '" + this.property +
-         "' expected a date got type: " + typeof(value));
+  if (!(value instanceof Date)) {
+    throw new Error("DateType '" + this.property +
+                    "' expected a date got type: " + typeof(value));
+  }
 };
 
 DateType.prototype.serialize = function(target, value) {
   this.validate(value);
-  target[this.property] = new Date(value);
+  target[this.property + '@odata.type'] = 'Edm.DateTime';
+  target[this.property] = value.toJSON();
 };
 
 DateType.prototype.equal = function(value1, value2) {
@@ -207,10 +231,18 @@ DateType.prototype.string = function(value) {
 };
 
 DateType.prototype.deserialize = function(source) {
-  var value = source[this.property];
+  var value = new Date(source[this.property]);
   this.validate(value);
   return value;
 };
+
+DateType.prototype.filter = function(op, filterBuilder) {
+  this.validate(op.operand);
+  filterBuilder(
+    this.property + ' ' + op.operator + ' ' + fmt.date(op.operand)
+  );
+};
+
 
 // Export DateType as Date
 exports.Date = DateType;
@@ -233,8 +265,10 @@ var _uuidExpr = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i;
 
 UUIDType.prototype.validate = function(value) {
   checkType('UUIDType', this.property, value, 'string');
-  assert(_uuidExpr.test(value),
-         "UUIDType '" + this.property + "' expected a uuid got: " + value);
+  if (!_uuidExpr.test(value)) {
+    throw new Error("UUIDType '" + this.property + "' expected a uuid got: "
+                    + value);
+  }
 };
 
 UUIDType.prototype.equal = function(value1, value2) {
@@ -243,6 +277,19 @@ UUIDType.prototype.equal = function(value1, value2) {
 
 UUIDType.prototype.string = function(value) {
   return value.toLowerCase();
+};
+
+UUIDType.prototype.serialize = function(target, value) {
+  this.validate(value);
+  target[this.property + '@odata.type'] = 'Edm.Guid';
+  target[this.property] = value;
+};
+
+UUIDType.prototype.filter = function(op, filterBuilder) {
+  this.validate(op.operand);
+  filterBuilder(
+    this.property + ' ' + op.operator + ' ' + fmt.guid(op.operand)
+  );
 };
 
 // Export UUIDType as UUID
@@ -266,19 +313,30 @@ var _slugIdExpr = /^[a-z0-9_-]{22}$/i;
 
 SlugIdType.prototype.validate = function(value) {
   checkType('SlugIdType', this.property, value, 'string');
-  assert(_slugIdExpr.test(value),
-         "SlugIdType '" + this.property + "' expected a slugid got: " + value);
+  if(!_slugIdExpr.test(value)) {
+    throw new Error("SlugIdType '" + this.property +
+                    "' expected a slugid got: " + value);
+  }
 };
 
 SlugIdType.prototype.serialize = function(target, value) {
   this.validate(value);
+  target[this.property + '@odata.type'] = 'Edm.Guid';
   target[this.property] = slugid.decode(value);
 };
 
 SlugIdType.prototype.deserialize = function(source) {
-  var value = slugid.encode(source[this.property]);
-  return value;
+  return slugid.encode(source[this.property]);
 };
+
+SlugIdType.prototype.filter = function(op, filterBuilder) {
+  this.validate(op.operand);
+  filterBuilder(
+    this.property + ' ' + op.operator + ' ' +
+    fmt.guid(slugid.encode(op.operand))
+  );
+};
+
 
 // Export SlugIdType as SlugId
 exports.SlugId = SlugIdType;
@@ -318,7 +376,8 @@ BaseBufferType.prototype.serialize = function(target, value) {
   for(var i = 0; i < chunks; i++) {
     var end   = Math.min((i + 1) * 64 * 1024, value.length);
     var chunk = value.slice(i * 64 * 1024, end);
-    target['__buf' + i + '_' + this.property] = chunk;
+    target['__buf' + i + '_' + this.property + '@odata.type'] = 'Edm.Binary';
+    target['__buf' + i + '_' + this.property] = chunk.toString('base64');
   }
   target['__bufchunks_' + this.property] = chunks;
 };
@@ -333,11 +392,13 @@ BaseBufferType.prototype.deserialize = function(source) {
 
   var chunks = [];
   for(var i = 0; i < n; i++) {
-    chunks[i] = source['__buf' + i + '_' + this.property];
-    assert(Buffer.isBuffer(chunks[i]), "Expected '__buf" + i + "_" +
-           this.property + "' to be a Buffer!");
+    chunks[i] = new Buffer(source['__buf' + i + '_' + this.property], 'base64');
   }
   return this.fromBuffer(Buffer.concat(chunks));
+};
+
+BaseBufferType.prototype.filter = function() {
+  throw new Error("Buffer based types are not comparable!");
 };
 
 // Export BaseBufferType as BaseBufferType
