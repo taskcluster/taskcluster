@@ -45,7 +45,11 @@ suite("Entity (SAS from auth.taskcluster.net)", function() {
       ].join('')
     });
     var client = azureTable.createClient(credentials);
-    var expiry = new Date(Date.now() + 15 * 60 * 1000);
+    var expiry = new Date(Date.now() + 25 * 60 * 1000);
+    // Return and old expiry, this causes a refresh on the next call
+    if (returnExpiredSAS) {
+      expiry = new Date(Date.now() + 15 * 60 * 1000 + 100);
+    }
     var sas = client.generateSAS(
       table,
       'raud',
@@ -54,10 +58,6 @@ suite("Entity (SAS from auth.taskcluster.net)", function() {
         start:  new Date(Date.now() - 15 * 60 * 1000)
       }
     );
-    // Return and old expiry, this causes a refresh on the next call
-    if (returnExpiredSAS) {
-      expiry = new Date(Date.now() - 15 * 60 * 1000);
-    }
     res.status(200).json({
       expiry:   expiry.toJSON(),
       sas:      sas
@@ -143,7 +143,8 @@ suite("Entity (SAS from auth.taskcluster.net)", function() {
         clientId:         'authed-client',
         accessToken:      'test-token'
       },
-      authBaseUrl:  'http://localhost:23244'
+      authBaseUrl:  'http://localhost:23244',
+      minSASAuthExpiry: 15 * 60 * 1000
     });
   });
 
@@ -185,6 +186,9 @@ suite("Entity (SAS from auth.taskcluster.net)", function() {
       name:   'my-test-item',
       count:  1
     }).then(function() {
+      assert(callCount === 1, "We should only have called once!");
+      return base.testing.sleep(200);
+    }).then(function() {
       return Item2.load({
         id:     id,
         name:   'my-test-item',
@@ -192,7 +196,7 @@ suite("Entity (SAS from auth.taskcluster.net)", function() {
         assert(item.count === 1);
       });
     }).then(function() {
-      assert(callCount === 2, "We should only have called once!");
+      assert(callCount === 2, "We should have called twice!");
     });
   });
 
