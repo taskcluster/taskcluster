@@ -5,6 +5,25 @@ var assert          = require('assert');
 var _               = require('lodash');
 var debug           = require('debug')('base:entity:keys');
 var crypto          = require('crypto');
+var Op              = require('./entityops');
+
+/**
+ * Get value from equality operator or value
+ * Used so that .exactFromConditions works in Entity.scan and Entity.query
+ */
+var valueFromOpOrValue = function(opOrValue) {
+  // If no operator was used then it is a value
+  if (!(opOrValue instanceof Op)) {
+    return opOrValue;
+  }
+
+  // If it's an equality operator, then the value is the operand
+  if (opOrValue.operator === 'eq') {
+    return opOrValue.operand;
+  }
+  // Otherwise, no exact value is specified
+  return undefined;
+};
 
 /**
  * Encode string-key, to escape characters for Azure Table Storage and replace
@@ -63,6 +82,16 @@ StringKey.prototype.exact = function(properties) {
   return encodeStringKey(this.type.string(value));
 };
 
+/** Construct exact key if possible */
+StringKey.prototype.exactFromConditions = function(properties) {
+  // Get value
+  var value = valueFromOpOrValue(properties[this.key]);
+  // Check that value was given
+  assert(value !== undefined, "Unable to create key from properties");
+  // Return exact key
+  return encodeStringKey(this.type.string(value));
+};
+
 /** Create StringKey builder */
 exports.StringKey = function(key) {
   return function(mapping) {
@@ -85,6 +114,10 @@ var ConstantKey = function(constant) {
 };
 
 ConstantKey.prototype.exact = function(properties) {
+  return this.encodedConstant;
+};
+
+ConstantKey.prototype.exactFromConditions = function(properties) {
   return this.encodedConstant;
 };
 
@@ -127,6 +160,21 @@ CompositeKey.prototype.exact = function(properties) {
   return this.keys.map(function(key, index) {
     // Get value from key
     var value = properties[key];
+    if (value === undefined) {
+      throw new Error("Unable to render CompositeKey from properties, " +
+                      "missing: '" + key + "'");
+    }
+
+    // Encode as string
+    return encodeStringKey(this.types[index].string(value));
+  }, this).join(COMPOSITE_SEPARATOR); // Join with separator
+};
+
+CompositeKey.prototype.exactFromConditions = function(properties) {
+  // Map each key to it's string encoded value
+  return this.keys.map(function(key, index) {
+    // Get value from key
+    var value = valueFromOpOrValue(properties[key]);
     if (value === undefined) {
       throw new Error("Unable to render CompositeKey from properties, " +
                       "missing: '" + key + "'");
@@ -183,6 +231,31 @@ HashKey.prototype.exact = function(properties) {
 
     // Get value from key
     var value = properties[key];
+    if (value === undefined) {
+      throw new Error("Unable to render HashKey from properties, " +
+                      "missing: '" + key + "'");
+    }
+
+    // Find hash value and update the hashsum
+    hash.update(this.types[i].hash(value), 'utf8');
+
+    // Insert separator, if this isn't the last key
+    if (i + 1 < n) {
+      hash.update(HASH_KEY_SEPARATOR, 'utf8');
+    }
+  }
+
+  return hash.digest('hex');
+};
+
+HashKey.prototype.exactFromConditions = function(properties) {
+  var hash =  crypto.createHash('sha512');
+  var n = this.keys.length;
+  for (var i = 0; i < n; i++) {
+    var key = this.keys[i];
+
+    // Get value from key
+    var value = valueFromOpOrValue(properties[key]);
     if (value === undefined) {
       throw new Error("Unable to render HashKey from properties, " +
                       "missing: '" + key + "'");
