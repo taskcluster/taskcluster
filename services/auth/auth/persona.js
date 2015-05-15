@@ -101,7 +101,7 @@ var setup = function(app, options) {
       audience:   options.publicUrl
     }, function(email, done) {
     debug("Signed in with:" + email);
-    if (/@(mozilla|qanalydocs)\.com$/.test(email)) {
+    if (/@(mozilla|qanalydocs|mgsei)\.com$/.test(email)) {
       done(null, {email: email});
     } else {
       done(null, null);
