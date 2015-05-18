@@ -244,6 +244,27 @@ Influx.prototype.pendingPoints = function() {
   return this._nbPendingPoints;
 };
 
+/** Run a query on the influx db */
+Influx.prototype.query = function(query) {
+  return request
+    .get(urljoin(this._options.connectionString, 'series'))
+    .query({
+      time_precision: 'ms',
+      q: query,
+    })
+    .end()
+    .then(function(res) {
+      // Handle errors
+      if (res.ok) {
+        return res.body;
+      } else {
+        throw new Error("Request failed with HTTP code: " + res.status);
+      }
+    }).then(null, function(err) {
+      debug("Failed to query influxdb, err: %s, %j", err, err, err.stack);
+    });
+};
+
 // Export Influx
 exports.Influx = Influx;
 
