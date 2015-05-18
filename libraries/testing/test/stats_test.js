@@ -65,6 +65,36 @@ suite('stats', function() {
     });
   });
 
+  test("Query influx", function() {
+    var influx = new base.stats.Influx({
+      connectionString:   cfg.get('influxdb:connectionString')
+    });
+    influx.addPoint('TestSeries', {
+      colA:   'A',
+      colB:   123
+    });
+
+    var p = influx.flush();
+
+    p = p.then(function() {
+      assert(influx.pendingPoints() === 0, "Points should be submitted");
+    });
+
+    p = p.then(function() {
+      return influx.query('select * from TestSeries');
+    });
+
+    p = p.then(function(result) {
+      assert(result[0].name === 'TestSeries');
+      assert(result[0].points);
+      assert(result[0].points.length >= 1);
+      return result;
+    });
+
+    return p;
+
+  });
+
   test("Create reporter", function() {
     // Create test series
     var TestSeries = new base.stats.Series({
