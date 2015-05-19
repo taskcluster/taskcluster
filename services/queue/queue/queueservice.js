@@ -1,5 +1,3 @@
-var azure       = require('azure-storage');
-var azureQueue  = require('azure-queue-node');
 var _           = require('lodash');
 var Promise     = require('promise');
 var debug       = require('debug')('queue:queue');
@@ -8,17 +6,17 @@ var base32      = require('thirty-two');
 var querystring = require('querystring');
 var url         = require('url');
 var base        = require('taskcluster-base');
+var azure       = require('fast-azure-storage');
 
 /** Timeout for azure queue requests */
 var AZURE_QUEUE_TIMEOUT     = 7 * 1000;
 
 /** Azure queue agent used for all instances of the queue client */
-var globalAzureQueueAgent = new base.AzureAgent({
+var globalAzureQueueAgent = new azure.Agent({
   keepAlive:        true,
   maxSockets:       100,
   maxFreeSockets:   100
 });
-
 
 /** Decode Url-safe base64, our identifiers satisfies these requirements */
 var decodeUrlSafeBase64 = function(data) {
@@ -78,26 +76,10 @@ class QueueService {
     this.prefix             = options.prefix;
     this.pendingPollTimeout = options.pendingPollTimeout;
 
-    // Documentation for the QueueService object can be found here:
-    // http://dl.windowsazure.com/nodestoragedocs/index.html
-    this.service = azure.createQueueService(
-      options.credentials.accountName,
-      options.credentials.accountKey
-    ).withFilter(new azure.ExponentialRetryPolicyFilter());
-
-    // Create azure-queue-node client (more reliable than azure-storage)
-    this.client = azureQueue.createClient({
-      accountUrl:   [
-        'https://',
-        options.credentials.accountName,
-        '.queue.core.windows.net/'
-      ].join(''),
-      accountName:  options.credentials.accountName,
-      accountKey:   options.credentials.accountKey,
-      timeout:      AZURE_QUEUE_TIMEOUT,
-      agent:        globalAzureQueueAgent,
-      base64:       true,
-      json:         false
+    this.client = new azure.Queue({
+      accountId:    options.credentials.accountName,
+      accessKey:    options.credentials.accountKey,
+      timeout:      AZURE_QUEUE_TIMEOUT
     });
 
     // Store account name of use in SAS signed Urls
@@ -116,132 +98,39 @@ class QueueService {
     this.deadlineQueueReady = null;
   }
 
-  /////// START OF IMPLEMENTATION WITH AZURE QUEUE NODE
-
-  // Create queue using azure-queue-node client
   _createQueue(queue) {
-    return new Promise((accept, reject) => {
-      this.client.createQueue(queue, {}, (err, data) => {
-        err ? reject(err) : accept(data)
-      });
-    });
+    return this.client.createQueue(queue);
   }
 
-  // Count messages in queue using azure-queue-node client
   _countMessages(queue) {
-    return new Promise((accept, reject) => {
-      this.client.countMessages(queue, {}, (err, data) => {
-        err ? reject(err) : accept(data)
-      });
-    });
+    return this.client.getMetadata(queue).then(_.property('messageCount'));
   }
 
-  // Put message in queue using azure-queue-node client
   _putMessage(queue, message, {visibility, ttl}) {
-    return new Promise((accept, reject) => {
-      this.client.putMessage(queue, JSON.stringify(message), {
-        visibilityTimeout:    visibility,
-        messageTTL:           ttl
-      }, (err, data) => { err ? reject(err) : accept(data) });
+    var text = new Buffer(JSON.stringify(message)).toString('base64');
+    return this.client.putMessage(queue, text, {
+      visibilityTimeout:    visibility,
+      messageTTL:           ttl
     });
   }
 
-  // Get messages from queue using azure-queue-node client
-  _getMessages(queue, {visibility, count}) {
-    return new Promise((accept, reject) => {
-      this.client.getMessages(queue, {
-        visibilityTimeout:    visibility,
-        maxMessages:          count
-      }, (err, data) => { err ? reject(err) : accept(data) });
-    }).then(messages => {
-      return messages.map(m => {
-        return {
-          payload:  JSON.parse(m.messageText),
-          remove:   () => {
-            return new Promise((accept, reject) => {
-              this.client.deleteMessage(
-                queue, m.messageId, m.popReceipt,
-                {}, (err) => {
-                  // Ignore message not found errors (who cares)
-                  if (err && err.code !== 'MessageNotFound') {
-                    return reject(err);
-                  }
-                  return accept();
-                }
-              );
-            });
-          }
-        };
-      });
+  async _getMessages(queue, {visibility, count}) {
+    var messages = await this.client.getMessages(queue, {
+      visibilityTimeout:    visibility,
+      numberOfMessages:     count
+    });
+    return messages.map(msg => {
+      return {
+        payload:  JSON.parse(new Buffer(msg.messageText, 'base64')),
+        remove:   this.client.deleteMessage.bind(
+          this.client,
+          queue,
+          msg.messageId,
+          msg.popReceipt
+        )
+      };
     });
   }
-
-  /////// START OF IMPLEMENTATION WITH AZURE STORAGE */
-  // We keep the old implementation using azure-storage around, so that it's
-  // easy to test the two against each other for performance, stability and
-  // correctness.
-/*
-
-  // Create queue using azure-storage client
-  _createQueue(queue) {
-    return new Promise((accept, reject) => {
-      this.service.createQueueIfNotExists(queue, {}, (err) => {
-        err ? reject(err) : accept()
-      });
-    });
-  }
-
-  // Count messages in queue using azure-storage client
-  _countMessages(queue) {
-    return new Promise((accept, reject) => {
-      this.service.getQueueMetadata(queue, (err, data) => {
-        err ? reject(err) : accept(parseInt(data.approximatemessagecount))
-      });
-    });
-  }
-
-  // Put message in queue using azure-storage client
-  _putMessage(queue, message, {visibility, ttl}) {
-    return new Promise((accept, reject) => {
-      this.service.createMessage(queue, JSON.stringify(message), {
-        messagettl:         ttl,
-        visibilityTimeout:  visibility
-      }, function(err) { err ? reject(err) : accept() });
-    });
-  }
-
-  // Get messages from queue using azure-storage client
-  _getMessages(queue, {visibility, count}) {
-    return new Promise((accept, reject) => {
-      this.service.getMessages(queue, {
-        numOfMessages:        count,
-        peekOnly:             false,
-        visibilityTimeout:    visibility,
-      }, (err, messages) => { err ? reject(err) : accept(messages) });
-    }).then(messages => {
-      return messages.map(m => {
-        return {
-          payload:    JSON.parse(m.messagetext),
-          remove:     () => {
-            return new Promise((accept, reject) => {
-              this.service.deleteMessage(
-                queue,
-                m.messageid, m.popreceipt,
-                (err) => {
-                  // Ignore message not found errors (who cares)
-                  if (err && err.code !== 'MessageNotFound') {
-                    return reject(err);
-                  }
-                  return accept();
-                }
-              );
-            });
-          }
-        };
-      });
-    });
-  }
-  /////// END OF IMPLEMENTATION WITH AZURE STORAGE */
 
   /** Ensure existence of the claim queue */
   ensureClaimQueue() {
@@ -481,11 +370,10 @@ class QueueService {
     expiry.setMinutes(expiry.getMinutes() + 30);
 
     // Create shared access signature
-    var sas = this.service.generateSharedAccessSignature(queueName, {
-      AccessPolicy: {
-        Permissions:  azure.QueueUtilities.SharedAccessPermissions.PROCESS,
-        Start:        start,
-        Expiry:       expiry
+    var sas = this.client.sas(queueName, {
+      start, expiry,
+      permissions: {
+        process:    true
       }
     });
 
