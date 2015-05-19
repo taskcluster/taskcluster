@@ -898,15 +898,14 @@ api.declare({
     }
 
     // If the task wasn't scheduled, we'll add a run and resolved it canceled.
-    // This is the equivalent of calling scheduleTask and cancelTask, ie.
-    // the resulting run state is the same as that of a canceled pending run
-    // in that the run doesn't have a `started` time, nor a `workerGroup` or
-    // `workerId`.
+    // This is almost equivalent to calling scheduleTask and cancelTask, but
+    // instead of setting `reasonCreated` to 'scheduled', we set it 'exception',
+    // because this run was made solely to communicate an exception.
     if (state === 'unscheduled') {
       var now = new Date().toJSON();
       task.runs.push({
         state:            'exception',
-        reasonCreated:    'scheduled',
+        reasonCreated:    'exception',
         reasonResolved:   'canceled',
         scheduled:        now,
         resolved:         now
