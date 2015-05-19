@@ -147,11 +147,14 @@ class DeadlineResolver {
 
     // Ensure that all runs are resolved
     await task.modify((task) => {
+      // If there is no run, we add a new one to signal that the task is
+      // resolved. As this run is purely to signal an exception, we set
+      // `reasonCreated: 'exception'`.
       if (task.runs.length === 0) {
         var now = new Date().toJSON();
         task.runs.push({
           state:            'exception',
-          reasonCreated:    'scheduled',
+          reasonCreated:    'exception',
           reasonResolved:   'deadline-exceeded',
           scheduled:        now,
           resolved:         now
