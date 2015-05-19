@@ -49,6 +49,7 @@ suite('Deadline expiration (deadline-reaper)', function() {
     var m1 = await helper.events.waitFor('except');
     expect(m1.payload.status.state).to.be('exception');
     expect(m1.payload.status.runs.length).to.be(1);
+    expect(m1.payload.status.runs[0].reasonCreated).to.be('exception');
     expect(m1.payload.status.runs[0].reasonResolved).to.be('deadline-exceeded');
 
     debug("### Stop deadlineReaper");
@@ -78,6 +79,7 @@ suite('Deadline expiration (deadline-reaper)', function() {
     var m1 = await helper.events.waitFor('except');
     expect(m1.payload.status.state).to.be('exception');
     expect(m1.payload.status.runs.length).to.be(1);
+    expect(m1.payload.status.runs[0].reasonCreated).to.be('scheduled');
     expect(m1.payload.status.runs[0].reasonResolved).to.be('deadline-exceeded');
 
     debug("### Stop deadlineReaper");
@@ -113,6 +115,7 @@ suite('Deadline expiration (deadline-reaper)', function() {
     var m1 = await helper.events.waitFor('except');
     expect(m1.payload.status.state).to.be('exception');
     expect(m1.payload.status.runs.length).to.be(1);
+    expect(m1.payload.status.runs[0].reasonCreated).to.be('scheduled');
     expect(m1.payload.status.runs[0].reasonResolved).to.be('deadline-exceeded');
 
     debug("### Stop deadlineReaper");
