@@ -49,6 +49,7 @@ suite('Rerun task', function() {
     expect(r2.status.state).to.be('exception');
     expect(r2.status.runs.length).to.be(1);
     expect(r2.status.runs[0].state).to.be('exception');
+    expect(r2.status.runs[0].reasonCreated).to.be('exception');
     expect(r2.status.runs[0].reasonResolved).to.be('canceled');
 
     var m1 = await helper.events.waitFor('except');
@@ -78,6 +79,7 @@ suite('Rerun task', function() {
     expect(r2.status.state).to.be('exception');
     expect(r2.status.runs.length).to.be(1);
     expect(r2.status.runs[0].state).to.be('exception');
+    expect(r2.status.runs[0].reasonCreated).to.be('scheduled');
     expect(r2.status.runs[0].reasonResolved).to.be('canceled');
 
     var m1 = await helper.events.waitFor('except');
@@ -114,6 +116,7 @@ suite('Rerun task', function() {
     expect(r3.status.state).to.be('exception');
     expect(r3.status.runs.length).to.be(1);
     expect(r3.status.runs[0].state).to.be('exception');
+    expect(r3.status.runs[0].reasonCreated).to.be('scheduled');
     expect(r3.status.runs[0].reasonResolved).to.be('canceled');
 
     var m1 = await helper.events.waitFor('except');

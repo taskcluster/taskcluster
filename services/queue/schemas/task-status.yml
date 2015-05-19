@@ -103,6 +103,7 @@ properties:
             - scheduled
             - retry
             - rerun
+            - exception
         reasonResolved:
           title:          "Reason Resolved"
           description: |
