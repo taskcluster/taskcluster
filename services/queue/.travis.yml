@@ -3,15 +3,10 @@ env:
   - DEBUG='* -superagent -express:* -mocha:* -babel'
 language: node_js
 node_js:
-- '0.10'
 - '0.12'
 script: npm test
-before_script:
-- sudo -u postgres psql -c "CREATE ROLE queue LOGIN PASSWORD 'secret'";
-- sudo -u postgres psql -c "CREATE DATABASE queue_v1 OWNER queue";
 services:
 - rabbitmq
-- postgresql
 deploy:
   provider: heroku
   strategy: git
