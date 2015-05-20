@@ -312,12 +312,7 @@ func (task *TaskRun) deleteFromAzure() error {
 	if task == nil {
 		return fmt.Errorf("Cannot delete task from Azure - task is nil")
 	}
-	if task.SignedURLPair == nil {
-		return fmt.Errorf("Cannot delete task " + task.TaskId + " from Azure - no associated signed URL pair found")
-	}
-	if task.SignedURLPair.SignedDeleteUrl == nil {
-		return fmt.Errorf("Cannot delete task " + task.TaskId + " from Azure - no associated signed delete URL found")
-	}
+	log.Println("Deleting task " + task.TaskId + " from Azure queue...")
 	return deleteFromAzure(task.SignedURLPair.SignedDeleteUrl)
 }
 
@@ -335,7 +330,7 @@ func deleteFromAzure(deleteUrl string) error {
 	// either case the worker should delete the message as we don't want
 	// another worker to receive message later.
 
-	req, err := http.NewRequest("DELETE", task.SignedURLPair.SignedDeleteUrl, nil)
+	req, err := http.NewRequest("DELETE", deleteUrl, nil)
 	if err != nil {
 		return err
 	}
@@ -357,7 +352,7 @@ func deleteFromAzure(deleteUrl string) error {
 	if !(200 <= resp.StatusCode && resp.StatusCode < 300) {
 		return fmt.Errorf("Status code for http delete request not in 2xx range: %v", resp.StatusCode)
 	} else {
-		log.Printf("Successfully deleted task %v from azure queue with http response code %v.\n", task.TaskId, resp.StatusCode)
+		log.Printf("Successfully deleted task from azure queue (delete url: %v) with http response code %v.\n", deleteUrl, resp.StatusCode)
 	}
 	// no errors occurred, yay!
 	return nil

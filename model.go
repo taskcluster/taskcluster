@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	"github.com/taskcluster/taskcluster-client-go/queue"
 	"time"
+
+	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
 // Used for modelling the xml we get back from Azure
