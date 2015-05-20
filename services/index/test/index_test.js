@@ -6,6 +6,7 @@ suite('Indexing', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var subject     = helper.setup({title: "indexing test"});
+  var base        = require('taskcluster-base');
 
   // Create datetime for created and deadline as 25 minutes later
   var created = new Date();
@@ -67,13 +68,13 @@ suite('Indexing', function() {
         workerId:     'dummy-test-worker-id'
       });
     }).then(function() {
-      return helper.sleep(100);
+      return base.testing.sleep(100);
     }).then(function() {
       debug("### Report task completed");
       return subject.queue.reportCompleted(taskId, 0);
     }).then(function() {
       debug("### Find task in index");
-      return helper.poll(function() {
+      return base.testing.poll(function() {
         return subject.index.findTask(myns + '.my-indexed-thing');
       });
     }).then(function(result) {
@@ -145,13 +146,13 @@ suite('Indexing', function() {
         workerId:     'dummy-test-worker-id'
       });
     }).then(function() {
-      return helper.sleep(100);
+      return base.testing.sleep(100);
     }).then(function() {
       debug("### Report task completed");
       return subject.queue.reportCompleted(taskId, 0);
     }).then(function() {
       debug("### Find task in index");
-      return helper.poll(function() {
+      return base.testing.poll(function() {
         return subject.index.findTask(myns + '.my-indexed-thing');
       });
     }).then(function(result) {
