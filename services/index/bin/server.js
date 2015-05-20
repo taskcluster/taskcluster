@@ -72,6 +72,10 @@ var launch = function(profile) {
     // Create API router and publish reference if needed
     return v1.setup({
       context: {
+        queue:          new taskcluster.Queue({
+          credentials:  cfg.get('taskcluster:credentials'),
+          baseUrl:      cfg.get('taskcluster:queueBaseUrl')
+        }),
         validator:      validator,
         IndexedTask:    IndexedTask,
         Namespace:      Namespace

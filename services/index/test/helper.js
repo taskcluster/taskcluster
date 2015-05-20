@@ -40,31 +40,6 @@ var defaultClients = [
   }
 ];
 
-/** Return a promise that sleeps for `delay` ms before resolving */
-exports.sleep = function(delay) {
-  return new Promise(function(accept) {
-    setTimeout(accept, delay);
-  });
-}
-
-/** Poll a function that returns a promise, until it resolves */
-exports.poll = function(doPoll, attempts, interval) {
-  attempts = attempts || 90;
-  interval = interval || 1000;
-  var pollAgain = function() {
-    return doPoll().catch(function(err) {
-      if (attempts > 0) {
-        attempts -= 1;
-        return exports.sleep(interval).then(function() {
-          return pollAgain();
-        });
-      }
-      throw err;
-    });
-  };
-  return pollAgain();
-};
-
 /** Setup testing */
 exports.setup = function(options) {
   // Provide default configuration
