@@ -6,7 +6,10 @@ module.exports = {
     // option with caution.
     // TODO: Consider killing the node after completing one task or locking down
     // in other ways.
-    allowPrivileged: false
+    allowPrivileged: false,
+    // Default registry to use when making authenticated image requests.  This
+    // is similar to what docker pull does when `docker pull ubuntu:14.10`.
+    defaultRegistry: 'registry.hub.docker.com'
   },
   // Hostname of this docker worker
   host: 'localhost',
@@ -19,10 +22,10 @@ module.exports = {
   isolatedContainers: false,
 
   // Image used to  create the taskcluster proxy container.
-  taskclusterProxyImage: 'quay.io/mozilla/taskcluster-proxy',
-  taskclusterLogImage: 'quay.io/mozilla/taskcluster-logserve',
-  testdroidProxyImage: 'quay.io/mozilla/testdroid-proxy:0.0.6',
-  balrogVPNProxyImage: 'quay.io/mozillab2g/taskcluster-vpn-proxy:0.0.1',
+  taskclusterProxyImage: 'taskcluster/taskcluster-proxy:latest',
+  taskclusterLogImage: 'taskcluster/livelog:v3',
+  testdroidProxyImage: 'taskcluster/testdroid-proxy:0.0.6',
+  balrogVPNProxyImage: 'taskclusterprivate/taskcluster-vpn-proxy:0.0.1',
 
   alivenessCheckInterval: 30000, // 30 seconds
 

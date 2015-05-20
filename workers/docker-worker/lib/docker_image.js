@@ -37,7 +37,8 @@ Image.prototype = {
       // strip empty parts...
       return !!part;
     });
-    return components.length === 3;
+
+    return components.length === 2 || components.length === 3;
   },
 
   /**
@@ -45,9 +46,13 @@ Image.prototype = {
 
   @return {Object|null} credentials or null...
   */
-  credentials: function(repositories) {
+  credentials: function(repositories, defaultRegistry='') {
     // We expect the image to be be checked via imageCanAuthenticate first.
+    // This could be user/image or host/user/image.  If only user/image, use
+    // default registry
     var parts = this.name.split('/');
+    if (parts.length === 2) parts.unshift(defaultRegistry);
+
     var registryHost = parts[0];
     var registryUser = parts[1];
     var result;

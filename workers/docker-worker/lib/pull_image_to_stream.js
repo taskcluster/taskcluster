@@ -48,7 +48,8 @@ export async function pullDockerImage(runtime, imageName, scopes, taskId, runId,
 
   let pullOptions = {};
   // See if any credentials apply from our list of registries...
-  let credentials = dockerImage.credentials(runtime.registries);
+  let defaultRegistry = runtime.dockerConfig.defaultRegistry;
+  let credentials = dockerImage.credentials(runtime.registries, defaultRegistry);
   if (credentials) {
     // Validate scopes on the image if we have credentials for it...
     if (!scopeMatch(scopes, IMAGE_SCOPE_PREFIX + dockerImageName)) {
