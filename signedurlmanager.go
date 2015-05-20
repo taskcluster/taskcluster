@@ -46,20 +46,24 @@ func SignedURLsManager() {
 		}
 	}
 	// Get signed urls for the first time...
-	updateUrls()
+	updateNeeded := true
 	// loop forever, serving requests for signed urls, or requests to refresh
 	// signed urls since they are about to expire...
 	for {
 		select {
 		// request comes in for the current signed urls, which should be valid
 		case replyChan := <-signedURLsRequestChan:
+			if updateNeeded {
+				updateUrls()
+				updateNeeded = false
+			}
 			// reply on the given channel with the signed urls
 			replyChan <- signedURLs
 		// this is where we are notified that our signed urls are shorlty
 		// before expiring, so we need to refresh them...
 		case <-updateMe:
 			// update the signed urls
-			updateUrls()
+			updateNeeded = true
 		}
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/xeipuuv/gojsonschema"
@@ -98,6 +97,11 @@ func FindAndRunTask() bool {
 			log.Println(err)
 			continue
 		}
+		if task == nil {
+			// no task to run, and logging done in function call, so just
+			// continue...
+			continue
+		}
 		// Now we found a task, run it, and then exit the loop. This is because
 		// the loop is in order of priority, most important first, so we will
 		// run the most important task we find, and then return, ignorning
@@ -179,10 +183,13 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	dec := xml.NewDecoder(reader)
 	err = dec.Decode(&queueMessagesList)
 	if err != nil {
+		log.Printf("ERROR: not able to xml decode the response from the azure Queue:")
+		log.Printf("%v\n", string(fullBody))
 		return nil, err
 	}
 	if len(queueMessagesList.QueueMessages) == 0 {
-		return nil, errors.New("Zero tasks returned in Azure XML QueueMessagesList")
+		log.Println("Zero tasks returned in Azure XML QueueMessagesList")
+		return nil, nil
 	}
 	if size := len(queueMessagesList.QueueMessages); size > 1 {
 		return nil, fmt.Errorf("%v tasks returned in Azure XML QueueMessagesList, even though &numofmessages=1 was specified in poll url", size)
@@ -190,14 +197,6 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 
 	// at this point we know there is precisely one QueueMessage (== task)
 	qm := queueMessagesList.QueueMessages[0]
-
-	// To find the task referenced in a message the worker must base64
-	// decode and JSON parse the contents of the <MessageText> tag. This
-	// would return an object on the form: {taskId, runId}.
-	m, err := base64.StdEncoding.DecodeString(qm.MessageText)
-	if err != nil {
-		return nil, err
-	}
 
 	// Utility method for replacing a placeholder within a uri with
 	// a string value which first must be uri encoded...
@@ -225,11 +224,30 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 		qm.PopReceipt,
 	)
 
+	// To find the task referenced in a message the worker must base64
+	// decode and JSON parse the contents of the <MessageText> tag. This
+	// would return an object on the form: {taskId, runId}.
+	m, err := base64.StdEncoding.DecodeString(qm.MessageText)
+	if err != nil {
+		// try to delete from Azure, if it fails, nothing we can do about it
+		// not very serious - another worker will try to delete it
+		log.Printf("ERROR: Not able to base64 decode the Message Text '" + qm.MessageText + "' in Azure QueueMessage response.")
+		log.Printf("Deleting from Azure queue as other workers will have the same problem.")
+		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
+		if deleteErr != nil {
+			log.Printf("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
+			log.Printf("Not so serious - this just means other workers will also try to delete it.")
+			log.Printf("%v\n", deleteErr)
+		}
+		return nil, err
+	}
+
 	// initialise fields of TaskRun not contained in json string m
 	taskRun := TaskRun{
 		QueueMessage:  qm,
 		SignedURLPair: urlPair,
 	}
+
 	// now populate remaining json fields of TaskRun from json string m
 	err = json.Unmarshal(m, &taskRun)
 	if err != nil {
@@ -288,9 +306,24 @@ func (task *TaskRun) claim() error {
 	return nil
 }
 
-// deleteFromAzure removes the task from the azure queue, using the signed
-// delete url provided by the Queue.ClaimTask API call.
+// deleteFromAzure will attempt to delete a task from the Azure queue and
+// return an error in case of failure
 func (task *TaskRun) deleteFromAzure() error {
+	if task == nil {
+		return fmt.Errorf("Cannot delete task from Azure - task is nil")
+	}
+	if task.SignedURLPair == nil {
+		return fmt.Errorf("Cannot delete task " + task.TaskId + " from Azure - no associated signed URL pair found")
+	}
+	if task.SignedURLPair.SignedDeleteUrl == nil {
+		return fmt.Errorf("Cannot delete task " + task.TaskId + " from Azure - no associated signed delete URL found")
+	}
+	return deleteFromAzure(task.SignedURLPair.SignedDeleteUrl)
+}
+
+// deleteFromAzure is a wrapper around calling an Azure delete URL with error
+// handling in case of failure
+func deleteFromAzure(deleteUrl string) error {
 
 	// Messages are deleted from the Azure queue with a DELETE request to the
 	// signedDeleteUrl from the Azure queue object returned from

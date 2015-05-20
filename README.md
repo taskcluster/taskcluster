@@ -24,7 +24,7 @@ Head over to https://tools.taskcluster.net/auth/ and create yourself an account 
 ```
 export PAYLOAD_SCHEMA="${GOPATH}/src/github.com/petemoore/generic-worker/schema.json"
 export PROVISIONER_ID='<choose_whatever_you_like>'
-export REFRESH_URLS_PREMATURELY_SECS=20
+export REFRESH_URLS_PREMATURELY_SECS=300
 export TASKCLUSTER_ACCESS_TOKEN='<your_access_token_from_above>'
 export TASKCLUSTER_CLIENT_ID='<your_client_id_from_above>'
 export WORKER_GROUP='<anything>'
