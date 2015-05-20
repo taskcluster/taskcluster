@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"github.com/taskcluster/taskcluster-client-go/queue"
-	"github.com/xeipuuv/gojsonschema"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,6 +14,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 var (
