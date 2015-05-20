@@ -1,8 +1,8 @@
 suite('logging to artifact', function() {
   var co = require('co');
   var request = require('superagent-promise');
-  var testworker = require('../post_task');
-  var getArtifact = require('./helper/get_artifact');
+  var testworker = require('../../post_task');
+  var getArtifact = require('../helper/get_artifact');
 
   test('artifact logger', co(function* () {
     var result = yield testworker({

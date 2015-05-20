@@ -4,6 +4,9 @@ DEPLOY_TAR?=deploy.tar.gz
 PRIVATE_KEY?=$(shell ./bin/resolve_path_in_config $(CONFIG_FILE) privateKeyLocation)
 VPN_PROFILE?=$(shell ./bin/resolve_path_in_config $(CONFIG_FILE) vpnProfileLocation)
 VPN_CREDENTIALS?=$(shell ./bin/resolve_path_in_config $(CONFIG_FILE) vpnCredentialsLocation)
+SSL_KEY?=$(shell ./bin/resolve_path_in_config $(CONFIG_FILE) sslKeyLocation)
+SSL_CERTIFICATE?=$(shell ./bin/resolve_path_in_config $(CONFIG_FILE) sslCertificateLocation)
+
 
 $(DEPLOY_TAR): all
 	tar cvfz $@ target/
@@ -12,8 +15,12 @@ ifneq ($(VPN_PROFILE),)
 	rm target/etc/openvpn/$(shell basename $(VPN_PROFILE))
 	rm target/etc/openvpn/$(shell basename $(VPN_CREDENTIALS))
 endif
+ifneq ($(SSL_CERTIFICATE),)
+	rm target/etc/$(shell basename $(SSL_CERTIFICATE))
+	rm target/etc/$(shell basename $(SSL_KEY))
+endif
 
-all: $(TARGETS) private_key vpn
+all: $(TARGETS) private_key vpn ssl
 
 # Pick up changes when we update variables.js or configure.js
 $(CONFIG_FILE): variables.js bin/configure.js
@@ -44,6 +51,16 @@ ifneq ($(VPN_PROFILE),)
 	mkdir -p target/etc/openvpn
 	cp $(VPN_PROFILE) target/etc/openvpn/
 	cp $(VPN_CREDENTIALS) target/etc/openvpn/
+endif
+
+# Copy SSL certificate to be used with secure communication (such as live logging)
+.PHONY: ssl
+ssl: $(CONFIG_FILE)
+ifneq ($(SSL_CERTIFICATE),)
+	test -f $(SSL_CERTIFICATE)
+	test -f $(SSL_KEY)
+	cp $(SSL_CERTIFICATE) target/etc/
+	cp $(SSL_KEY) target/etc/
 endif
 
 .PHONY: clean

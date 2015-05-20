@@ -59,6 +59,8 @@ export async function configure(baseUrl) {
   let metadata = await Promise.all([
     // host
     getText(baseUrl + '/meta-data/public-hostname'),
+    // Public IP
+    getText(baseUrl + '/meta-data/public-ipv4'),
     // workerId
     getText(baseUrl + '/meta-data/instance-id'),
     // workerType
@@ -72,10 +74,11 @@ export async function configure(baseUrl) {
   let config = {
     provisionerId: 'aws-provisioner',
     host: metadata[0],
-    workerId: metadata[1],
-    workerType: metadata[2],
-    workerGroup: metadata[3],
-    workerNodeType: metadata[4],
+    publicIp: metadata[1],
+    workerId: metadata[2],
+    workerType: metadata[3],
+    workerGroup: metadata[4],
+    workerNodeType: metadata[5],
     // AWS Specific shutdown parameters notice this can also be overridden.
     shutdown: {
       enabled: true,

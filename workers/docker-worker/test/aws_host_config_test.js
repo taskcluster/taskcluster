@@ -1,4 +1,4 @@
-var app = require('./aws_metadata');
+var app = require('./fixtures/aws_metadata');
 var http = require('http');
 var co = require('co');
 var awsConfig = require('../lib/host/aws');
@@ -22,7 +22,8 @@ suite('configuration/aws', function() {
 
   test('configuration', co(function* () {
     var config = yield awsConfig.configure(url);
-    // values are mocked from the local aws metadata server.
+    // values are mocked from the local aws metadata server
+    // located in test/fixtures/aws_metadata.js.
     assert.deepEqual(config, {
       host: 'publichost',
       shutdown: {
@@ -34,7 +35,8 @@ suite('configuration/aws', function() {
       workerType: 'ami-333333',
       workerNodeType: 'c3.xlarge',
       workerGroup: 'us-west-2',
-      capacity: 1
+      capacity: 1,
+      publicIp: '22.33.44.252'
     });
   }));
 

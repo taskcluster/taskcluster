@@ -2,18 +2,20 @@
 Handler of individual tasks beings at claim ends with posting task results.
 */
 import Debug from 'debug';
-import request from 'superagent-promise';
+import DockerProc from 'dockerode-process';
 import util from 'util';
 import uuid from 'uuid';
-import waitForEvent from './wait_for_event';
-import features from './features';
-import { pullDockerImage, IMAGE_ERROR } from './pull_image_to_stream';
-import Wordwrap from 'wordwrap';
-import { scopeMatch } from 'taskcluster-base/utils';
-
-import DockerProc from 'dockerode-process';
 import { PassThrough } from 'stream';
+import request from 'superagent-promise';
 import States from './states';
+import Wordwrap from 'wordwrap';
+
+import features from './features';
+import getHostname from './util/hostname';
+import { pullDockerImage, IMAGE_ERROR } from './pull_image_to_stream';
+import { scopeMatch } from 'taskcluster-base/utils';
+import waitForEvent from './wait_for_event';
+
 
 let debug = new Debug('runTask');
 let wordwrap = new Wordwrap(0, 80, { hard: true });
@@ -536,8 +538,10 @@ export default class Task {
     this.taskState = 'running';
     this.taskStart = new Date();
     let stats = this.runtime.stats;
-    let queue = this.runtime.queue;
-    let gc = this.runtime.gc;
+    this.hostname = getHostname(
+      this.runtime,
+      new Date(Date.now() + this.task.payload.maxRunTime * 1000)
+    );
 
     // Cork all writes to the stream until we are done setting up logs.
     this.stream.cork();
@@ -561,7 +565,6 @@ export default class Task {
         )
       );
     }
-
 
     // Everything should have attached to the stream by now...
     this.stream.uncork();
@@ -606,7 +609,7 @@ export default class Task {
       );
     }
 
-    gc.markImage(this.task.payload.image);
+    this.runtime.gc.markImage(this.task.payload.image);
 
     if (this.isCanceled() || this.isAborted()) {
       return await this.abortRun(this.taskState);

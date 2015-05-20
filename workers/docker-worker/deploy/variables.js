@@ -134,5 +134,17 @@ module.exports = {
   'pulse.password': {
     description: 'Pulse password (see https://pulse.mozilla.org/profile)',
     value: process.env.PULSE_PASSWORD
+  },
+
+  'statelessHostname.secret': {
+    description: 'Secret used for Stateless DNS Server',
+  },
+
+  'sslCertificateLocation': {
+    description: 'Location of SSL certificate for secure things like live logging'
+  },
+
+  'sslKeyLocation': {
+    description: 'Location of SSL key for secure things like live logging'
   }
 };

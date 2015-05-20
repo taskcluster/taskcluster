@@ -11,8 +11,20 @@ module.exports = {
     // is similar to what docker pull does when `docker pull ubuntu:14.10`.
     defaultRegistry: 'registry.hub.docker.com'
   },
+
+  ssl: {
+    certificate: '/etc/star_taskcluster-worker_net.crt',
+    key: '/etc/star_taskcluster-worker_net.key'
+  },
+
   // Hostname of this docker worker
   host: 'localhost',
+
+  statelessHostname: {
+    enabled: false,
+    secret: process.env.DNS_SERVER_SECRET,
+    domain: 'taskcluster-worker.net'
+  },
 
   // Run test only teardown and logging events.
   testMode: false,
@@ -55,6 +67,9 @@ module.exports = {
   },
 
   logging: {
+    // When enabled live logs will be served over SSL
+    secureLiveLogging: false,
+    // Used by Azure live logger to chunk writes and send on an interval
     liveLogChunkInterval: 5000, // 5 seconds
     // Added to the current date to make up the expiry time for logs. This is
     // hack to generate a year in ms... Note that two args (year, month) are

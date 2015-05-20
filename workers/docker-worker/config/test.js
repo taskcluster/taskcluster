@@ -10,6 +10,11 @@ module.exports = {
     url: 'tcp://localhost:8125'
   },
 
+  ssl: {
+    certificate: '/worker/test/fixtures/ssl_cert.crt',
+    key: '/worker/test/fixtures/ssl_cert.key'
+  },
+
   logging: {
     // Expires one hour from now so test logs don't live too long...
     liveLogExpires: 3600,

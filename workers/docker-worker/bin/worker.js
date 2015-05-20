@@ -1,3 +1,4 @@
+var fs = require('fs');
 var program = require('commander');
 var co = require('co');
 var taskcluster = require('taskcluster-client');
@@ -36,6 +37,25 @@ function sanitizeGraphPath() {
     result.push(v.replace('.', '-'));
     return result;
   }, []).join('.');
+}
+
+function verifySSLCertificates(config) {
+  try {
+    fs.statSync(config.ssl.certificate);
+    fs.statSync(config.ssl.key);
+  }
+  catch (error) {
+    config.log(
+      '[alert-operator] ssl certificate error',
+      {
+        error: `Could not locate SSL files. Error code: ${error.code}`
+      }
+    );
+    // If certificates can't be found for some reason, set capacity to 0 so
+    // we do not continue to respawn workers that could probably have the same
+    // issue
+    config.capacity = 0;
+  }
 }
 
 // Terrible wrapper around program.option.
@@ -205,6 +225,10 @@ co(function *() {
     // so at the very least should have 1m55s to cleanly shutdown.
     yield shutdownManager.scheduleTerminationPoll();
     runtime.shutdownManager = shutdownManager;
+  }
+
+  if (runtime.logging.secureLiveLogging) {
+    verifySSLCertificates(runtime);
   }
 
   // Build the listener and connect to the queue.

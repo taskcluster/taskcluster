@@ -14,6 +14,14 @@ suite('Container garbage collection tests', () => {
     return new Promise(accept => setTimeout(accept, duration));
   }
 
+  setup(() => {
+    settings.cleanup();
+  });
+
+  teardown(async () => {
+    settings.cleanup();
+  });
+
   test('containers removed after task completes', async () => {
     settings.configure({
       capacityManagement: {

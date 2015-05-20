@@ -1,24 +1,16 @@
 suite('live logging', function() {
   var co = require('co');
-  var cmd = require('./helper/cmd');
-
-  // Need to use the docker worker to ensure test works on OSX hots...
-  var DockerWorker = require('../dockerworker');
-  var TestWorker = require('../testworker');
-
-  var worker;
-  setup(co(function * () {
-    worker = new TestWorker(DockerWorker);
-    yield worker.launch();
-  }));
-
-  teardown(co(function* () {
-    yield worker.terminate();
-  }));
+  var request = require('superagent-promise');
+  var testworker = require('../../post_task');
+  var getArtifact = require('../helper/get_artifact');
 
   test('live logging of content', co(function* () {
-    var result = yield worker.postToQueue({
+    var result = yield testworker({
       payload: {
+        features: {
+          azureLiveLog: true,
+          localLiveLog: false
+        },
         image: 'taskcluster/test-ubuntu',
         command: [
           '/bin/bash',
@@ -36,8 +28,13 @@ suite('live logging', function() {
       log += 'Hello Number ' + i + '\r\n';
     }
 
+    var azureLiveLog = yield getArtifact(
+      { taskId: result.taskId, runId: result.runId },
+      'public/logs/azure_live.log'
+    );
+
     assert.equal(result.run.state, 'completed', 'task should be successfull');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
-    assert.ok(result.log.indexOf(log) !== -1, 'contains each expected line');
+    assert.ok(azureLiveLog.indexOf(log) !== -1, 'contains each expected line');
   }));
 });

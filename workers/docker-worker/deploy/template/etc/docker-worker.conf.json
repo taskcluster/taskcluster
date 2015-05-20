@@ -18,5 +18,9 @@
     "url": "{{testdroid.url}}",
     "username": "{{testdroid.username}}",
     "password": "{{testdroid.password}}"
+  },
+
+  "statelessHostname": {
+    "secret": "{{statelessHostname.secret}}"
   }
 }

@@ -13,6 +13,9 @@ suite('test host', function() {
 
   test('configure', co(function* () {
     settings.configure({ capacity: 2 });
-    assert.deepEqual({ capacity: 2 }, (yield subject.configure()));
+    assert.deepEqual(
+      { capacity: 2, "publicIp": "127.0.0.1" },
+      (yield subject.configure())
+    );
   }));
 });

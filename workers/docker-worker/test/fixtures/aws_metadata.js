@@ -13,6 +13,8 @@ function route(path) {
   switch (path) {
     case '/meta-data/public-hostname':
       return 'publichost';
+    case '/meta-data/public-ipv4':
+      return '22.33.44.252';
     case '/user-data':
       return new Buffer(JSON.stringify({ capacity: 1 }));
     case '/meta-data/ami-id':

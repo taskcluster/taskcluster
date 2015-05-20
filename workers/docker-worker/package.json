@@ -50,6 +50,7 @@
     "proxy": "^0.2.3",
     "readdirrsync": "0.0.3",
     "rimraf": "^2.2.8",
+    "stateless-dns-server": "^0.1.0",
     "statsd-client": "0.0.15",
     "superagent": "^0.18.0",
     "superagent-promise": "^0.1.1",
