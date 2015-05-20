@@ -13,6 +13,7 @@ var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/index/v1/';
  *
  * In this API implementation we shall assume the following context:
  * {
+ *   queue:             // taskcluster.Queue instance w. "queue:get-artifact:*"
  *   validator:         // base.validator instance
  *   IndexedTask:       // data.IndexedTask instance
  *   Namespace:         // data.Namespace instance
@@ -296,6 +297,86 @@ api.declare({
     ctx
   ).then(function(task) {
     res.reply(task.json());
+  });
+});
+
+/** Get artifact from indexed task */
+api.declare({
+  method:         'get',
+  route:          '/task/:namespace/artifacts/:name(*)',
+  name:           'findArtifactFromTask',
+  deferAuth:      true,
+  scopes:         ['queue:get-artifact:<name>'],
+  title:          "Get Artifact From Indexed Task",
+  description: [
+    "Find task by namespace and redirect to artifact with given `name`,",
+    "if no task existing for the given namespace, this API end-point respond",
+    "`404`."
+  ].join('\n')
+}, function(req, res) {
+  var ctx = this;
+  var namespace = req.params.namespace || '';
+  var artifactName = req.params.name;
+
+  // Validate that namespace is allowed
+  if (!helpers.isValidNamespace(namespace)) {
+    return res.status(400).json({
+      message:  "Invalidate characters in namespace",
+      error: {
+        namespace:  namespace
+      }
+    });
+  }
+
+  // Authenticate request by providing parameters
+  if(!/^public\//.test(artifactName) && !req.satisfies({
+    name:     artifactName
+  })) {
+    return;
+  }
+
+  // Get namespace and ensure that we have a least one dot
+  namespace = namespace.split('.');
+
+  // Find name and namespace
+  var name  = namespace.pop() || '';
+  namespace = namespace.join('.');
+
+  // Load indexed task
+  return ctx.IndexedTask.load({
+    namespace:    namespace,
+    name:         name
+  }).then(function(task) {
+    // Build signed url for artifact
+    var url = null;
+    if (/^public\//.test(artifactName)) {
+      url = ctx.queue.buildUrl(
+        ctx.queue.getLatestArtifact,
+        task.taskId,
+        artifactName
+      );
+    } else {
+      url = ctx.queue.buildSignedUrl(
+        ctx.queue.getLatestArtifact,
+        task.taskId,
+        artifactName, {
+        expiration:     15 * 60
+      });
+    }
+    // Redirect to artifact
+    return res.redirect(303, url);
+  }, function(err) {
+    // Re-throw the error, if it's not a 404
+    if (err.code !== 'ResourceNotFound') {
+      throw err;
+    }
+    // Return a 404 error
+    return res.status(404).json({
+      message:      'Indexed task not found',
+      error: {
+        namespace:  req.params.namespace
+      }
+    });
   });
 });
 
