@@ -1,4 +1,4 @@
-var app = require('./aws_metadata');
+var app = require('./fixtures/aws_metadata');
 var co = require('co');
 var http = require('http');
 var request = require('superagent-promise');

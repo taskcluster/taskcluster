@@ -219,7 +219,7 @@ GarbageCollector.prototype = {
       // for each available task the worker can claim.
       var exceedsThreshold = yield exceedsDiskspaceThreshold(this.dockerVolume,
                                this.diskspaceThreshold,
-                               (this.capacity - this.taskListener.pending),
+                               this.taskListener.availableCapacity,
                                this.log);
       if (exceedsThreshold) {
         this.emit('gc:diskspace:warning',

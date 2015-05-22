@@ -34,8 +34,6 @@ let cpuDeviceManager = new CpuDeviceManager();
 export default class TaskListener extends EventEmitter {
   constructor(runtime) {
     super();
-
-    this.pending = 0;
     this.runtime = runtime;
     this.capacity = runtime.capacity;
     this.runningTasks = [];
@@ -52,7 +50,12 @@ export default class TaskListener extends EventEmitter {
           async () => {
             await this.pause();
             for(let state of this.runningTasks) {
-              state.handler.abort('worker-shutdown');
+              try {
+                state.handler.abort('worker-shutdown');
+              }
+              catch (e) {
+                debug('Caught error, but node is being terminated so continue on.');
+              }
               this.cleanupRunningState(state);
             }
           }();
@@ -110,21 +113,26 @@ export default class TaskListener extends EventEmitter {
     return cancelListener;
   }
 
+  get availableCapacity() {
+    // Note: Sometimes capacity could be zero (dynamic capacity changes based on
+    // shutdown and other factors) so subtracting runningTasks could result in a
+    // negative number, hence the use of at least returning 0.
+    return Math.max(this.capacity - this.runningTasks.length, 0);
+  }
+
   async getTasks() {
-    // Number of tasks we could claim
-    let availabileCapacity = this.capacity - this.pending;
-    if (availabileCapacity <= 0)  return;
+    if (this.availableCapacity === 0)  return;
 
     var exceedsThreshold = await exceedsDiskspaceThreshold(
       this.runtime.dockerVolume,
       this.runtime.capacityManagement.diskspaceThreshold,
-      availabileCapacity,
+      this.availableCapacity,
       this.runtime.log
     );
     // Do not claim tasks if not enough resources are available
     if (exceedsThreshold) return;
 
-    let claims = await this.taskQueue.claimWork(availabileCapacity);
+    let claims = await this.taskQueue.claimWork(this.availableCapacity);
     claims.forEach(this.runTask.bind(this));
   }
 
@@ -182,21 +190,7 @@ export default class TaskListener extends EventEmitter {
   }
 
   isIdle() {
-    return this.pending === 0;
-  }
-
-  incrementPending() {
-    // After going from an idle to a working state issue a 'working' event.
-    if (++this.pending === 1) {
-      this.emit('working', this);
-    }
-  }
-
-  decrementPending() {
-    this.pending--;
-    if (this.pending === 0) {
-      this.emit('idle', this);
-    }
+    return this.runningTasks.length === 0;
   }
 
   /**
@@ -212,23 +206,62 @@ export default class TaskListener extends EventEmitter {
     }
   }
 
+  addRunningTask(runningState) {
+    this.runningTasks.push(runningState);
+
+    // After going from an idle to a working state issue a 'working' event.
+    if (this.runningTasks.length === 1) {
+      this.emit('working', this);
+    }
+  }
+
+  removeRunningTask(runningState) {
+    let taskIndex = this.runningTasks.findIndex((runningTask) => {
+      return (runningTask.taskId === runningState.taskId) &&
+        (runningTask.runId === runningState.runId)
+    });
+
+    if (taskIndex === -1) {
+      this.runtime.log('[warning] running task removal error', {
+        taskId: runningState.taskId,
+        runId: runningState.runId,
+        err: 'Could not find the task Id in the list of running tasks'
+      });
+      this.cleanupRunningState(runningState);
+      return;
+    }
+
+    this.cleanupRunningState(runningState);
+    this.runningTasks.splice(taskIndex, 1);
+
+    if (this.isIdle()) this.emit('idle', this);
+  }
+
   /**
   * Run task that has been claimed.
   */
   async runTask(claim) {
     try {
-      this.runtime.log('run task', { taskId: claim.status.taskId, runId: claim.runId });
-      this.incrementPending();
+      // Reference to state of this request...
+      let runningState = {
+        devices: {},
+        taskId: claim.status.taskId,
+        runId: claim.runId
+      };
+
+      this.runtime.log(
+        'run task',
+        {
+          taskId: runningState.taskId,
+          runId: runningState.runId
+        }
+      );
+
       // Fetch full task definition.
-      var task = await this.runtime.queue.task(claim.status.taskId);
+      var task = await this.runtime.queue.task(runningState.taskId);
 
       // Date when the task was created.
       var created = new Date(task.created);
-
-      // Reference to state of this request...
-      let runningState = {
-        devices: {}
-      };
 
       // Only record this value for first run!
       if (!claim.status.runs.length) {
@@ -261,17 +294,15 @@ export default class TaskListener extends EventEmitter {
       var taskHandler = new Task(this.runtime, task, claim, options);
       runningState.handler = taskHandler;
 
-      var taskIndex = this.runningTasks.push(runningState);
-      taskIndex = taskIndex-1;
+      this.addRunningTask(runningState)
 
       // Run the task and collect runtime metrics.
       await taskHandler.start();
-      this.decrementPending();
-      this.cleanupRunningState(runningState);
-      this.runningTasks.splice(taskIndex, 1);
+
+      this.removeRunningTask(runningState);
     }
     catch (e) {
-      this.runningTasks.splice(taskIndex, 1);
+      this.removeRunningTask(runningState);
       if (task) {
         this.runtime.log('task error', {
           taskId: claim.status.taskId,
@@ -286,8 +317,6 @@ export default class TaskListener extends EventEmitter {
           err: e
         });
       }
-      this.cleanupRunningState(runningState);
-      this.decrementPending();
     }
   }
 }

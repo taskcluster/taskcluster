@@ -9,6 +9,7 @@ suite('Shutdown on idle', function() {
 
   var worker;
   setup(co(function * () {
+    settings.cleanup();
     settings.billingCycleInterval(40);
     settings.configure({
       shutdown: {

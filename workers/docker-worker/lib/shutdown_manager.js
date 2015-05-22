@@ -89,9 +89,7 @@ export default class ShutdownManager extends EventEmitter {
     this.taskListener.on('working', this.onWorking);
 
     // Kick off the idle timer if we started in an idle state.
-    if (taskListener.pending === 0) {
-      this.onIdle();
-    }
+    if (taskListener.isIdle()) this.onIdle();
   }
 
   scheduleTerminationPoll() {
