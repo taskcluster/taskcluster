@@ -38,13 +38,31 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/json"
+	"fmt"
+	"github.com/cenkalti/backoff"
 	hawk "github.com/tent/hawk-go"
+	D "github.com/tj/go-debug"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strconv"
 	"time"
+)
+
+var (
+	// These defaults *approximate* to the node.js taskcluster client settings.
+	BackOffSettings *backoff.ExponentialBackOff = &backoff.ExponentialBackOff{
+		InitialInterval:     100 * time.Millisecond,
+		RandomizationFactor: 0.2,
+		Multiplier:          2,
+		MaxInterval:         30 * time.Second,
+		MaxElapsedTime:      60 * time.Second,
+		Clock:               backoff.SystemClock,
+	}
+	// Used for logging based on DEBUG environment variable
+	// See github.com/tj/go-debug
+	debug = D.Debug("queue")
 )
 
 // apiCall is the generic REST API calling method which performs all REST API
@@ -60,75 +78,100 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	}
 	callSummary.HttpRequestBody = string(jsonPayload)
 
-	var ioReader io.Reader = nil
-	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
-		ioReader = bytes.NewReader(jsonPayload)
-	}
-	httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
-	if err != nil {
-		callSummary.Error = err
-		return result, callSummary
-	}
-	// only authenticate if client library user wishes to
-	if auth.Authenticate {
-		// not sure if we need to regenerate this with each call, will leave in here for now...
-		credentials := &hawk.Credentials{
-			ID:   auth.ClientId,
-			Key:  auth.AccessToken,
-			Hash: sha256.New,
-		}
-		reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
-		httpRequest.Header.Set("Authorization", reqAuth)
-	}
-	httpRequest.Header.Set("Content-Type", "application/json")
-	callSummary.HttpRequest = httpRequest
 	httpClient := &http.Client{}
-	// fmt.Println("Request\n=======")
-	// fullRequest, err := httputil.DumpRequestOut(httpRequest, true)
-	// fmt.Println(string(fullRequest))
-	response, err := httpClient.Do(httpRequest)
-	// fmt.Println("Response\n========")
-	// fullResponse, err := httputil.DumpResponse(response, true)
-	// fmt.Println(string(fullResponse))
-	if err != nil {
-		callSummary.Error = err
-		return result, callSummary
-	}
-	defer response.Body.Close()
-	callSummary.HttpResponse = response
-	// now read response into memory, so that we can return the body
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		callSummary.Error = err
-		return result, callSummary
-	}
-	// response.Body = ioutil.NopCloser(strings.NewReader(string(body)))
-	callSummary.HttpResponseBody = string(body)
 
-	// now check if http response code isn't in good range [200,300)...
-	if respCode := response.StatusCode; respCode/100 != 2 {
+	// function to perform http request - we call this using backoff library to
+	// have exponential backoff in case of intermittent failures (e.g. network
+	// blips)
+	httpCall := func() error {
+		var ioReader io.Reader = nil
+		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
+			ioReader = bytes.NewReader(jsonPayload)
+		}
+		httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
+		if err != nil {
+			callSummary.Error = fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?", auth.BaseURL+route, auth.BaseURL)
+			return nil
+		}
+		httpRequest.Header.Set("Content-Type", "application/json")
+		callSummary.HttpRequest = httpRequest
+		debug("Making http reqest: %v", httpRequest)
+		// Refresh Authorization header with each call...
+		// Only authenticate if client library user wishes to.
+		if auth.Authenticate {
+			credentials := &hawk.Credentials{
+				ID:   auth.ClientId,
+				Key:  auth.AccessToken,
+				Hash: sha256.New,
+			}
+			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
+			httpRequest.Header.Set("Authorization", reqAuth)
+		}
+		response, err := httpClient.Do(httpRequest)
+		if err != nil {
+			return err
+		}
+		callSummary.HttpResponse = response
+		defer response.Body.Close()
+		// now read response into memory, so that we can return the body
+		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		callSummary.HttpResponseBody = string(body)
+
+		// now check if http response code is such that we should retry [500, 600)...
+		if respCode := response.StatusCode; respCode/100 == 5 {
+			return BadHttpResponseCode{
+				HttpResponseCode: respCode,
+				Message: "(Intermittent) HTTP response code " + strconv.Itoa(respCode) + " to http " +
+					method + " request to " + auth.BaseURL + route + ":\n" +
+					callSummary.HttpResponseBody + "\n",
+			}
+		}
+
+		return nil
+	}
+
+	// Make HTTP API calls using an exponential backoff algorithm...
+	callSummary.Error = backoff.RetryNotify(httpCall, BackOffSettings, func(err error, wait time.Duration) {
+		debug("Error: %s", err)
+		callSummary.Attempts += 1
+	})
+
+	if callSummary.Error != nil {
+		return result, callSummary
+	}
+
+	// now check http response code is ok [200, 300)...
+	if respCode := callSummary.HttpResponse.StatusCode; respCode/100 != 2 {
 		callSummary.Error = BadHttpResponseCode{
 			HttpResponseCode: respCode,
-			Message: "HTTP response code " + strconv.Itoa(respCode) + " to http " +
-				method + " request to " + auth.BaseURL + route + ":\n" +
-				string(body) + "\n",
+			Message: "(Permanent) HTTP response code " + strconv.Itoa(respCode) + " to http " +
+				method + " request to " + auth.BaseURL + route + " (NOT retrying):\n" +
+				callSummary.HttpResponseBody + "\n",
 		}
 		return result, callSummary
 	}
-	// if result is nil, it means there is no response body json
+
+	// if result is passed in as nil, it means the API defines no response body
+	// json
 	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
-		err := json.Unmarshal(body, &result)
+		err = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
 		if err != nil {
 			callSummary.Error = err
+			// technically not needed, but more comprehensible
 			return result, callSummary
 		}
 	}
-	// fmt.Printf("ClientId: %v\nAccessToken: %v\nPayload: %v\nURL: %v\nMethod: %v\nResult: %v\n", auth.ClientId, auth.AccessToken, string(jsonPayload), auth.BaseURL+route, method, result)
+
+	// Return result and callSummary
 	return result, callSummary
 }
 
-// The entry point into all the functionality in this package is to create an Auth object.
-// It contains your authentication credentials, which are required for all HTTP operations.
+// The entry point into all the functionality in this package is to create an
+// Auth object.  It contains your authentication credentials, which are
+// required for all HTTP operations.
 type Auth struct {
 	// Client ID required by Hawk
 	ClientId string
@@ -168,6 +211,8 @@ type CallSummary struct {
 	// available after the api call returns.
 	HttpResponseBody string
 	Error            error
+	// Keep a record of how many http requests were attempted
+	Attempts int
 }
 
 type BadHttpResponseCode struct {

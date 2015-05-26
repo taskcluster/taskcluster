@@ -1497,6 +1497,19 @@ to index successfully completed tasks automatically, using custom routes.'
 Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'get'
+    Entry Route       = '/task/<namespace>/artifacts/<name>'
+    Entry Args        = '[namespace name]'
+    Entry Name        = 'findArtifactFromTask'
+    Entry Scopes      = '[[queue:get-artifact:<name>]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Get Artifact From Indexed Task'
+    Entry Description = 'Find task by namespace and redirect to artifact with given `name`,
+if no task existing for the given namespace, this API end-point respond
+`404`.'
+Entry 5     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
     Entry Route       = '/ping'
     Entry Args        = '[]'
     Entry Name        = 'ping'

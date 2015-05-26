@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/petemoore/pulse-go/pulse"
 	"github.com/streadway/amqp"
-	"github.com/taskcluster/taskcluster-client-go/queueevents"
 )
 
 func Example_taskClusterSniffer() {
@@ -18,11 +17,11 @@ func Example_taskClusterSniffer() {
 		"taskprocessing", // queue name
 		func(message interface{}, delivery amqp.Delivery) { // callback function to pass messages to
 			switch t := message.(type) {
-			case *queueevents.TaskDefinedMessage:
+			case *TaskDefinedMessage:
 				fmt.Println("Task " + t.Status.TaskId + " defined")
 				fmt.Println(string(delivery.Body))
-			case *queueevents.TaskRunningMessage:
-				fmt.Println("Task " + t.Status.TaskId + " running, (taken until " + t.TakenUntil + " by worker " + t.WorkerId + ")")
+			case *TaskRunningMessage:
+				fmt.Println("Task " + t.Status.TaskId + " running, (taken until " + t.TakenUntil.String() + " by worker " + t.WorkerId + ")")
 			default:
 				panic(errors.New(fmt.Sprintf("Unrecognised message type %T!", t)))
 			}
@@ -31,8 +30,8 @@ func Example_taskClusterSniffer() {
 		},
 		1,     // prefetch 1 message at a time
 		false, // don't auto-acknowledge messages
-		queueevents.TaskDefined{WorkerType: "gaia", ProvisionerId: "aws-provisioner"},
-		queueevents.TaskRunning{WorkerType: "gaia", ProvisionerId: "aws-provisioner"})
+		TaskDefined{WorkerType: "gaia", ProvisionerId: "aws-provisioner"},
+		TaskRunning{WorkerType: "gaia", ProvisionerId: "aws-provisioner"})
 	conn.Consume( // a second workflow to manage concurrently
 		"", // empty name implies anonymous queue
 		func(message interface{}, delivery amqp.Delivery) { // simpler callback than before

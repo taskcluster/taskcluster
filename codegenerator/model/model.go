@@ -234,9 +234,16 @@ func GenerateCode(goOutputDir, modelData string) {
 			}
 		}
 		content = strings.Replace(content, "%%{imports}", extraPackagesString, -1)
+		sourceFile := filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go")
+		fmt.Println("Formatting source code " + sourceFile + "...")
 		formattedContent, err := format.Source([]byte(content))
+		// in case of formatting failure, let's keep the unformatted version so
+		// we can troubleshoot more easily...
+		if err != nil {
+			utils.WriteStringToFile(content, sourceFile)
+		}
 		utils.ExitOnFail(err)
-		utils.WriteStringToFile(string(formattedContent), filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go"))
+		utils.WriteStringToFile(string(formattedContent), sourceFile)
 	}
 
 	content := "The following file is an auto-generated static dump of the API models at time of code generation.\n"
