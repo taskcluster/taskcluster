@@ -368,4 +368,81 @@ suite('Post artifacts', function() {
     debug("### Attempt to download artifact");
     await get404(url);
   });
+
+
+  test("Post artifact past resolution for 'exception'", async () => {
+    var taskId = slugid.v4();
+    debug("### Creating task");
+    await helper.queue.createTask(taskId, taskDef);
+
+    debug("### Claiming task");
+    // First runId is always 0, so we should be able to claim it here
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    debug("### Report exception");
+    await helper.queue.reportException(taskId, 0, {
+      reason:   'malformed-payload'
+    });
+
+    debug("### Send post artifact request");
+    var r1 = await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
+      storageType:  's3',
+      expires:      taskcluster.fromNowJSON('1 day'),
+      contentType:  'application/json'
+    });
+    expect(r1.putUrl).to.be.ok();
+  });
+
+  test("Can't post artifact past resolution for 'completed'", async () => {
+    var taskId = slugid.v4();
+    debug("### Creating task");
+    await helper.queue.createTask(taskId, taskDef);
+
+    debug("### Claiming task");
+    // First runId is always 0, so we should be able to claim it here
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    debug("### Report exception");
+    await helper.queue.reportCompleted(taskId, 0);
+
+    debug("### Send post artifact request");
+    await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
+      storageType:  's3',
+      expires:      taskcluster.fromNowJSON('1 day'),
+      contentType:  'application/json'
+    }).catch(err => {
+      expect(err.statusCode).to.be(409);
+    });
+  });
+
+  test("Can't post artifact past resolution for 'failed'", async () => {
+    var taskId = slugid.v4();
+    debug("### Creating task");
+    await helper.queue.createTask(taskId, taskDef);
+
+    debug("### Claiming task");
+    // First runId is always 0, so we should be able to claim it here
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    debug("### Report exception");
+    await helper.queue.reportFailed(taskId, 0);
+
+    debug("### Send post artifact request");
+    await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
+      storageType:  's3',
+      expires:      taskcluster.fromNowJSON('1 day'),
+      contentType:  'application/json'
+    }).catch(err => {
+      expect(err.statusCode).to.be(409);
+    });
+  });
 });
