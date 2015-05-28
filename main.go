@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -153,7 +154,7 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	// may be appended to `signedPollUrl`. The parameter `N` is the
 	// maximum number of messages desired, `N` can be up to 32.
 	// Since we can only process one task at a time, grab only one.
-	resp, err := http.Get(urlPair.SignedPollUrl + "&numofmessages=1")
+	resp, _, err := httpbackoff.Get(urlPair.SignedPollUrl + "&numofmessages=1")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -331,14 +332,16 @@ func deleteFromAzure(deleteUrl string) error {
 	// either case the worker should delete the message as we don't want
 	// another worker to receive message later.
 
-	req, err := http.NewRequest("DELETE", deleteUrl, nil)
-	if err != nil {
-		return err
+	httpCall := func() (*http.Response, error, error) {
+		req, err := http.NewRequest("DELETE", deleteUrl, nil)
+		if err != nil {
+			return nil, nil, err
+		}
+		resp, err := http.DefaultClient.Do(req)
+		return resp, err, nil
 	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
+
+	resp, _, err := httpbackoff.Retry(httpCall)
 
 	// Notice, that failure to delete messages from Azure queue is serious, as
 	// it wouldn't manifest itself in an immediate bug. Instead if messages
@@ -350,8 +353,8 @@ func deleteFromAzure(deleteUrl string) error {
 	// would spend a lot of time attempting to claim faulty messages. For these
 	// reasons outlined above it's strongly advised that workers logs failures
 	// to delete messages from Azure queues.
-	if !(200 <= resp.StatusCode && resp.StatusCode < 300) {
-		return fmt.Errorf("Status code for http delete request not in 2xx range: %v", resp.StatusCode)
+	if err != nil {
+		return fmt.Errorf("Not able to delete task from azure queue (delete url: %v)\n%v\n", deleteUrl, err)
 	} else {
 		log.Printf("Successfully deleted task from azure queue (delete url: %v) with http response code %v.\n", deleteUrl, resp.StatusCode)
 	}
