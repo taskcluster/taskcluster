@@ -35,11 +35,12 @@ type TaskRun struct {
 	QueueMessage      QueueMessage            `json:"-"`
 	SignedURLPair     SignedURLPair           `json:"-"`
 	ClaimCallSummary  queue.CallSummary       `json:"-"`
-	reclaimTimer      *time.Timer             `json:"-"`
 	TaskClaimRequest  queue.TaskClaimRequest  `json:"-"`
 	TaskClaimResponse queue.TaskClaimResponse `json:"-"`
 	Definition        queue.TaskDefinition1   `json:"-"`
 	Payload           GenericWorkerPayload    `json:"-"`
+	// not exported
+	reclaimTimer *time.Timer
 }
 
 // Custom time format to enable unmarshalling of azure xml directly into go
