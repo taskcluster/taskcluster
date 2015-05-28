@@ -31,27 +31,17 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"github.com/cenkalti/backoff"
+	"github.com/taskcluster/httpbackoff"
 	hawk "github.com/tent/hawk-go"
 	D "github.com/tj/go-debug"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"reflect"
-	"strconv"
 	"time"
 )
 
 var (
-	// These defaults *approximate* to the node.js taskcluster client settings.
-	BackOffSettings *backoff.ExponentialBackOff = &backoff.ExponentialBackOff{
-		InitialInterval:     100 * time.Millisecond,
-		RandomizationFactor: 0.2,
-		Multiplier:          2,
-		MaxInterval:         30 * time.Second,
-		MaxElapsedTime:      60 * time.Second,
-		Clock:               backoff.SystemClock,
-	}
 	// Used for logging based on DEBUG environment variable
 	// See github.com/tj/go-debug
 	debug = D.Debug("auth")
@@ -63,9 +53,9 @@ var (
 func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		callSummary.Error = err
+	var jsonPayload []byte
+	jsonPayload, callSummary.Error = json.Marshal(payload)
+	if callSummary.Error != nil {
 		return result, callSummary
 	}
 	callSummary.HttpRequestBody = string(jsonPayload)
@@ -74,20 +64,18 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 
 	// function to perform http request - we call this using backoff library to
 	// have exponential backoff in case of intermittent failures (e.g. network
-	// blips)
-	httpCall := func() error {
+	// blips or HTTP 5xx errors)
+	httpCall := func() (*http.Response, error, error) {
 		var ioReader io.Reader = nil
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
 		httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
 		if err != nil {
-			callSummary.Error = fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?", auth.BaseURL+route, auth.BaseURL)
-			return nil
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", auth.BaseURL+route, auth.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
-		debug("Making http reqest: %v", httpRequest)
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
 		if auth.Authenticate {
@@ -99,60 +87,34 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
 			httpRequest.Header.Set("Authorization", reqAuth)
 		}
-		response, err := httpClient.Do(httpRequest)
-		if err != nil {
-			return err
-		}
-		callSummary.HttpResponse = response
-		defer response.Body.Close()
-		// now read response into memory, so that we can return the body
-		body, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return err
-		}
-		callSummary.HttpResponseBody = string(body)
-
-		// now check if http response code is such that we should retry [500, 600)...
-		if respCode := response.StatusCode; respCode/100 == 5 {
-			return BadHttpResponseCode{
-				HttpResponseCode: respCode,
-				Message: "(Intermittent) HTTP response code " + strconv.Itoa(respCode) + " to http " +
-					method + " request to " + auth.BaseURL + route + ":\n" +
-					callSummary.HttpResponseBody + "\n",
-			}
-		}
-
-		return nil
+		debug("Making http reqest: %v", httpRequest)
+		resp, err := httpClient.Do(httpRequest)
+		return resp, err, nil
 	}
 
 	// Make HTTP API calls using an exponential backoff algorithm...
-	callSummary.Error = backoff.RetryNotify(httpCall, BackOffSettings, func(err error, wait time.Duration) {
-		debug("Error: %s", err)
-		callSummary.Attempts += 1
-	})
+	callSummary.HttpResponse, callSummary.Attempts, callSummary.Error = httpbackoff.Retry(httpCall)
 
 	if callSummary.Error != nil {
 		return result, callSummary
 	}
 
-	// now check http response code is ok [200, 300)...
-	if respCode := callSummary.HttpResponse.StatusCode; respCode/100 != 2 {
-		callSummary.Error = BadHttpResponseCode{
-			HttpResponseCode: respCode,
-			Message: "(Permanent) HTTP response code " + strconv.Itoa(respCode) + " to http " +
-				method + " request to " + auth.BaseURL + route + " (NOT retrying):\n" +
-				callSummary.HttpResponseBody + "\n",
-		}
+	// now read response into memory, so that we can return the body
+	var body []byte
+	body, callSummary.Error = ioutil.ReadAll(callSummary.HttpResponse.Body)
+
+	if callSummary.Error != nil {
 		return result, callSummary
 	}
+
+	callSummary.HttpResponseBody = string(body)
 
 	// if result is passed in as nil, it means the API defines no response body
 	// json
 	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
-		err = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
-		if err != nil {
-			callSummary.Error = err
-			// technically not needed, but more comprehensible
+		callSummary.Error = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
+		if callSummary.Error != nil {
+			// technically not needed since returned outside if, but more comprehensible
 			return result, callSummary
 		}
 	}

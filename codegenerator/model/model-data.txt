@@ -3018,7 +3018,7 @@ Properties
           Description            = 'Reason for the creation of this run,
           **more reasons may be added in the future**."
           '
-          Enum                   = '[scheduled retry rerun]'
+          Enum                   = '[scheduled retry rerun exception]'
           Title                  = 'Reason Created'
           TypeName               = ''
           IsInputSchema          = 'false'
@@ -4564,7 +4564,7 @@ Properties
           Description            = 'Reason for the creation of this run,
           **more reasons may be added in the future**."
           '
-          Enum                   = '[scheduled retry rerun]'
+          Enum                   = '[scheduled retry rerun exception]'
           Title                  = 'Reason Created'
           TypeName               = ''
           IsInputSchema          = 'false'
