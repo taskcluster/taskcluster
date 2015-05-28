@@ -226,6 +226,18 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 		qm.PopReceipt,
 	)
 
+	// Workers should read the value of the `<DequeueCount>` and log messages
+	// that alert the operator if a message has been dequeued a significant
+	// number of times, for example 15 or more.
+	if qm.DequeueCount >= 15 {
+		log.Printf("WARN: Queue Message with message id %v has been dequeued %v times!", qm.MessageId, qm.DequeueCount)
+		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
+		if deleteErr != nil {
+			log.Printf("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
+			log.Printf("%v\n", deleteErr)
+		}
+	}
+
 	// To find the task referenced in a message the worker must base64
 	// decode and JSON parse the contents of the <MessageText> tag. This
 	// would return an object on the form: {taskId, runId}.
@@ -238,7 +250,6 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
 		if deleteErr != nil {
 			log.Printf("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
-			log.Printf("Not so serious - this just means other workers will also try to delete it.")
 			log.Printf("%v\n", deleteErr)
 		}
 		return nil, err
@@ -253,14 +264,13 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	// now populate remaining json fields of TaskRun from json string m
 	err = json.Unmarshal(m, &taskRun)
 	if err != nil {
+		log.Printf("Not able to unmarshal json from base64 decoded MessageText '%v'\n%v\n", m, err)
+		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
+		if deleteErr != nil {
+			log.Printf("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
+			log.Printf("%v\n", deleteErr)
+		}
 		return nil, err
-	}
-
-	// Workers should read the value of the `<DequeueCount>` and log messages
-	// that alert the operator if a message has been dequeued a significant
-	// number of times, for example more than 10.
-	if qm.DequeueCount > 10 {
-		log.Printf("WARN: Task with id %v has been dequeued %v times!", taskRun.TaskId, qm.DequeueCount)
 	}
 
 	return &taskRun, nil
@@ -283,13 +293,16 @@ func (task *TaskRun) claim() error {
 	// check if an error occurred...
 	if callSummary.Error != nil {
 		// If the queue.claimTask() operation fails with a 4xx error, the
-		// worker must delete the messages from the Azure queue.
-		if callSummary.HttpResponse.StatusCode/100 == 4 {
+		// worker must delete the messages from the Azure queue (except 401).
+		switch {
+		case callSummary.HttpResponse.StatusCode == 401:
+			log.Printf("Whoops - not authorized to claim task %v, *not* deleting it from Azure queue!\n", task.TaskId)
+		case callSummary.HttpResponse.StatusCode/100 == 4:
 			// attempt to delete, but if it fails, log and continue
 			// nothing we can do, and better to return the first 4xx error
 			err := task.deleteFromAzure()
 			if err != nil {
-				log.Println("Not able to delete task " + task.TaskId + " from Azure after receiving a 4xx http response when claiming it.")
+				log.Printf("Not able to delete task %v from Azure after receiving http status code %v when claiming it.\n", task.TaskId, callSummary.HttpResponse.StatusCode)
 				log.Println(err)
 			}
 		}
@@ -369,7 +382,7 @@ func (task *TaskRun) reclaim() {
 	// check if an error occurred...
 	if err := callSummary.Error; err != nil {
 		log.Printf("%v\n", err)
-		task.cancel("Cancelling task due to above error when reclaiming...")
+		task.abort("Cancelling task due to above error when reclaiming...")
 		log.Println(task.String())
 		return
 	}
@@ -379,8 +392,8 @@ func (task *TaskRun) reclaim() {
 	log.Printf("Reclaimed task %v successfully (http response code %v).\n", task.TaskId, callSummary.HttpResponse.StatusCode)
 }
 
-func (task *TaskRun) cancel(reason string) error {
-	log.Printf("Cancelling task %v due to: %v...\n", task.TaskId, reason)
+func (task *TaskRun) abort(reason string) error {
+	log.Printf("Aborting task %v due to: %v...\n", task.TaskId, reason)
 	// TODO: implement!
 	return nil
 }
@@ -501,10 +514,10 @@ func (task *TaskRun) run() error {
 
 	fmt.Println("Running task!")
 	fmt.Println(task.String())
-	task.prepEnvVars()
 	cmd := exec.Command(task.Payload.Command[0], task.Payload.Command[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	task.prepEnvVars(cmd)
 	err := cmd.Start()
 	if err != nil {
 		return err
@@ -513,7 +526,7 @@ func (task *TaskRun) run() error {
 	// start a go routine to kill task after max run time...
 	go func() {
 		time.Sleep(time.Second * time.Duration(task.Payload.MaxRunTime))
-		task.cancel("max run time (" + strconv.Itoa(task.Payload.MaxRunTime) + "s) exceeded")
+		task.abort("max run time (" + strconv.Itoa(task.Payload.MaxRunTime) + "s) exceeded")
 	}()
 	err = cmd.Wait()
 	// Reporting Task Result
@@ -538,11 +551,15 @@ func (task *TaskRun) run() error {
 	return task.reportCompleted()
 }
 
-func (task *TaskRun) prepEnvVars() {
+func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
+	env := make([]string, len(task.Payload.Env))
+	k := 0
 	for i, j := range task.Payload.Env {
 		fmt.Printf("Setting env var %v to '%v'\n", i, j)
-		os.Setenv(i, j)
+		env[k] = i + "=" + j
+		k++
 	}
+	cmd.Env = env
 }
 
 // This can also be used if an external resource that is referenced in a
