@@ -118,6 +118,7 @@ func FindAndRunTask() bool {
 		if err != nil {
 			log.Printf("WARN: Not able to claim task %v\n", task.TaskId)
 			log.Println(err)
+			task.reportException("claim-failure")
 			continue
 		}
 		task.setReclaimTimer()
@@ -125,15 +126,18 @@ func FindAndRunTask() bool {
 		if err != nil {
 			log.Printf("WARN: Not able to fetch task definition for task %v\n", task.TaskId)
 			log.Println(err)
+			task.reportException("fetch-definition-failure")
 			continue
 		}
 		err = task.validatePayload()
 		if err != nil {
 			log.Printf("WARN: Not able to validate task payload for task %v\n", task.TaskId)
 			log.Println(err)
+			task.reportException("malformed-payload")
 			continue
 		}
 		err = task.run()
+		// task.run reports result, so no need to do it below...
 		if err != nil {
 			log.Printf("WARN: Not able to run task %v\n", task.TaskId)
 			log.Println(err)
@@ -467,7 +471,7 @@ func (task *TaskRun) validatePayload() error {
 		// worker should give a `reason`. If the worker is unable execute the
 		// task specific payload/code/logic, it should report exception with
 		// the reason `malformed-payload`.
-		if err := task.reportException(); err != nil {
+		if err := task.reportException("malformed-payload"); err != nil {
 			log.Printf("Error occurred reporting exception for task %v:\n%v\n", task.TaskId, err)
 		}
 		return fmt.Errorf("Validation of payload failed for task %v", task.TaskId)
@@ -475,8 +479,8 @@ func (task *TaskRun) validatePayload() error {
 	return json.Unmarshal(jsonPayload, &task.Payload)
 }
 
-func (task *TaskRun) reportException() error {
-	ter := queue.TaskExceptionRequest{Reason: json.RawMessage(`"malformed-payload"`)}
+func (task *TaskRun) reportException(reason string) error {
+	ter := queue.TaskExceptionRequest{Reason: json.RawMessage(`"` + reason + `"`)}
 	tsr, callSummary := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
 	if callSummary.Error != nil {
 		log.Printf("Not able to report exception for task %v:\n%v", task.TaskId, callSummary.Error)
@@ -544,7 +548,7 @@ func (task *TaskRun) run() error {
 		}
 
 		log.Printf("Command finished with error: %v", err)
-		return task.reportException()
+		return task.reportException("task-crash")
 	}
 	// When the worker has completed the task successfully it should call
 	// `queue.reportCompleted`.
