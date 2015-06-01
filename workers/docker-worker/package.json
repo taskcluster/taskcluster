@@ -72,6 +72,7 @@
     "co-prompt": "^1.0.0",
     "commander": "^2.2.0",
     "debug": "^1.0.2",
+    "dev-null": "^0.1.1",
     "json-templater": "^1.0.1",
     "koa": "^0.19.1",
     "koa-router": "^4.3.2",

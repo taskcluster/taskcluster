@@ -76,7 +76,6 @@ export default class TaskclusterProxy {
 
   async killed(task) {
     var stats = task.runtime.stats;
-    console.log("in taskcluster proxy");
     task.runtime.gc.removeContainer(this.container.id);
   }
 }

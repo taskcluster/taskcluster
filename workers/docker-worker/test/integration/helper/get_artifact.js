@@ -1,4 +1,7 @@
+import Debug from 'debug';
 import get from './get';
+
+let debug = Debug('test:helper:getArtifact');
 
 /**
 Fetch the contents of a single artifact.
@@ -13,7 +16,7 @@ export default async (result, path) => {
 
   let url = 'https://queue.taskcluster.net/v1/task/' +
             taskId + '/runs/' + runId + '/artifacts/' + path;
-  console.log("get artifact: "+url);
+  debug("get artifact: "+url);
 
   return await get(url);
 }

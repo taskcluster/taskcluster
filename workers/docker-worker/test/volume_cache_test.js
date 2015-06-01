@@ -2,6 +2,7 @@ suite('volume cache test', function () {
   var VolumeCache = require('../lib/volume_cache');
   var GarbageCollector = require('../lib/gc');
   var createLogger = require('../lib/log');
+  var debug = require('debug')('volumeCacheTest');
   var docker = require('../lib/docker')();
   var waitForEvent = require('../lib/wait_for_event');
   var fs = require('fs');
@@ -42,7 +43,7 @@ suite('volume cache test', function () {
   test('cache directories created', co(function* () {
     var cache = new VolumeCache({
       rootCachePath: localCacheDir,
-      log: log,
+      log: debug,
       stats: stats
     });
 
@@ -74,7 +75,7 @@ suite('volume cache test', function () {
   test('most recently used unmounted cache instance is used', co(function* () {
     var cache = new VolumeCache({
       rootCachePath: localCacheDir,
-      log: log,
+      log: debug,
       stats: stats
     });
 
@@ -104,13 +105,13 @@ suite('volume cache test', function () {
 
     var cache = new VolumeCache({
       rootCachePath: localCacheDir,
-      log: log,
+      log: debug,
       stats: stats
     });
 
     var gc = new GarbageCollector({
       capacity: 1,
-      log: log,
+      log: debug,
       docker: docker,
       interval: 2 * 1000,
       taskListener: {pending: 1}
@@ -164,7 +165,7 @@ suite('volume cache test', function () {
 
     var cache = new VolumeCache({
       rootCachePath: localCacheDir,
-      log: log,
+      log: debug,
       stats: stats
     });
 

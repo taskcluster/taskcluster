@@ -3,6 +3,7 @@
  * this automatically generated workerType and listens for the task completion
  * event.
  */
+var devnull = require('dev-null');
 var slugid = require('slugid');
 var request = require('superagent-promise');
 var debug = require('debug')('docker-worker:test:testworker');
@@ -109,7 +110,8 @@ export default class TestWorker extends EventEmitter {
   }
 
   async terminate() {
-    return await this.worker.terminate();
+    await this.worker.terminate();
+    process.stderr.removeAllListeners();
   }
 
   /**

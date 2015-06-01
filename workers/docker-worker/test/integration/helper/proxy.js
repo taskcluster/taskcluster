@@ -1,3 +1,4 @@
+var devnull = require('dev-null');
 var docker = require('../../../lib/docker')();
 var dockerUtils = require('dockerode-process/utils');
 var waitForEvent = require('../../../lib/wait_for_event');
@@ -8,7 +9,7 @@ var DOCKER_IMAGE = 'lightsofapollo/docker-registry-proxy';
 module.exports = function* (credentials) {
   var stream = dockerUtils.pullImageIfMissing(docker, DOCKER_IMAGE);
   // Ensure the test proxy actually exists...
-  stream.pipe(process.stdout);
+  stream.pipe(devnull());
   yield waitForEvent(stream, 'end');
 
   var createContainer = {

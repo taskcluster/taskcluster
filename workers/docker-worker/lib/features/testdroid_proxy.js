@@ -77,7 +77,6 @@ export default class TestdroidProxy {
   }
 
   async killed(task) {
-    debug('in testdroid proxy');
     // attempt to release the device in case task did not do so.  Calling release
     // is idempotent.
     var res = await request.post('http://'+this.host+'/device/release').end();

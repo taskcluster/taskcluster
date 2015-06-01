@@ -134,7 +134,6 @@ export default class BalrogVPNProxy {
 
   async killed(task) {
     let stats = task.runtime.stats;
-    console.log("in balrog vpn proxy");
     // Attempt to gracefully stop the container prior to the GC forcefully
     // removing it.  Also, this will ensure the vpn connection is closed
     // as soon as possible.

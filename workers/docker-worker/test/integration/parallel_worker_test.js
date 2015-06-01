@@ -55,7 +55,6 @@ suite('Parallel workers', function() {
       var task = yield workerA.queue.status(taskId);
       tasks.push(task);
     }
-    console.log(JSON.stringify(tasks));
 
     for (var task of tasks) {
       assert.ok(task.status.runs[0].state, 'completed', 'each task ran successfully');

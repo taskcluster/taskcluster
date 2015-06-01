@@ -1,10 +1,15 @@
-var dockerOpts = require('dockerode-options');
+var devnull = require('dev-null');
 var path = require('path');
 var util = require('util');
+var docker = require('../lib/docker')();
+var dockerOpts = require('dockerode-options');
+var DockerProc = require('dockerode-process');
+var dockerUtils = require('dockerode-process/utils');
+var waitForEvent = require('../lib/wait_for_event');
 
 var Promise = require('promise');
-var Docker = require('dockerode-promise');
-var DockerProc = require('dockerode-process');
+
+const IMAGE = 'taskcluster/docker-worker-test:latest';
 
 function waitForMessage(listener, event, data) {
   return new Promise(function(accept) {
@@ -43,16 +48,19 @@ export default class DockerWorker {
     this.provisionerId = provisionerId;
     this.workerType = workerType;
     this.workerId = workerId;
-    this.docker = new Docker(dockerOpts());
   }
 
   async launch() {
+    var stream = dockerUtils.pullImageIfMissing(docker, IMAGE);
+    stream.pipe(devnull());
+    await waitForEvent(stream, 'end');
+
     // Path to babel in the docker container...
     var babel = '/worker/node_modules/.bin/babel-node';
 
     var createConfig = {
       name: this.workerId,
-      Image: 'taskcluster/docker-worker-test:latest',
+      Image: IMAGE,
       Cmd: [
         '/bin/bash', '-c',
          [
@@ -100,7 +108,7 @@ export default class DockerWorker {
       ));
     }
 
-    var proc = this.process = new DockerProc(this.docker, {
+    var proc = this.process = new DockerProc(docker, {
       create: createConfig,
       start: startConfig
     });
