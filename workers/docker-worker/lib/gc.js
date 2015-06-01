@@ -114,9 +114,17 @@ GarbageCollector.prototype = {
         var caches = this.markedContainers[containerId].caches;
 
         try {
-          // Even running containers should be removed otherwise shouldn't have
-          // been marked for removal.
-          yield c.remove({force: true});
+          yield c.remove({
+            // Even running containers should be removed otherwise shouldn't have
+            // been marked for removal.
+            force: true,
+            // Any data volumes created by container should be removed too.
+            // These can be created with VOLUME statement in dockerfile.
+            // Tasks should use cache folders for caching things, though
+            // VOLUME statements makes sense if you want a non-AUFS folder that
+            // isn't persistent (AUFS can be slow for file intensive work)
+            v: true
+          });
           delete this.markedContainers[containerId];
 
           this.emit('gc:container:removed', {
