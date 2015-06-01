@@ -556,14 +556,20 @@ func (task *TaskRun) run() error {
 }
 
 func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
-	env := make([]string, len(task.Payload.Env))
-	k := 0
-	for i, j := range task.Payload.Env {
-		fmt.Printf("Setting env var %v to '%v'\n", i, j)
-		env[k] = i + "=" + j
-		k++
+	workerEnv := os.Environ()
+	taskEnv := make([]string, 0)
+	for _, j := range workerEnv {
+		if !strings.HasPrefix(j, "TASKCLUSTER_ACCESS_TOKEN=") {
+			fmt.Printf("Setting env var: %v\n", j)
+			taskEnv = append(taskEnv, j)
+		}
 	}
-	cmd.Env = env
+	for i, j := range task.Payload.Env {
+		fmt.Printf("Setting env var: %v=%v\n", i, j)
+		taskEnv = append(taskEnv, i+"="+j)
+	}
+	cmd.Env = taskEnv
+	log.Printf("Environment: %v\n", taskEnv)
 }
 
 // This can also be used if an external resource that is referenced in a
