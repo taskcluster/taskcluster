@@ -15,7 +15,7 @@ import getHostname from './util/hostname';
 import { pullDockerImage, IMAGE_ERROR } from './pull_image_to_stream';
 import { scopeMatch } from 'taskcluster-base/utils';
 import waitForEvent from './wait_for_event';
-
+import _ from 'lodash';
 
 let debug = new Debug('runTask');
 let wordwrap = new Wordwrap(0, 80, { hard: true });
@@ -52,8 +52,9 @@ function taskEnvToDockerEnv(env) {
 Convert the feature flags into a state handler.
 
 @param {Object} task definition.
+@param {Stat} stats object, see stat.js
 */
-function buildStateHandlers(task) {
+function buildStateHandlers(task, stats) {
   let handlers = [];
   let featureFlags = task.payload.features || {};
 
@@ -66,7 +67,7 @@ function buildStateHandlers(task) {
     }
   }
 
-  return new States(handlers);
+  return new States(handlers, stats);
 }
 
 /**
@@ -171,25 +172,29 @@ export default class Task {
     this.stream = new PassThrough();
 
     // states actions.
-    this.states = buildStateHandlers(task);
+    this.states = buildStateHandlers(task, this.runtime.stats);
   }
 
   /**
   Build the docker container configuration for this task.
 
   @param {Array[dockerode.Container]} [links] list of dockerode containers.
+  @param {object} [baseEnv] Environment variables that can be overwritten.
   */
-  async dockerConfig(links) {
+  async dockerConfig(linkInfo) {
     let config = this.task.payload;
-    let env = config.env || {};
-
-    // Universally useful environment variables describing the current task.
-    env.TASK_ID = this.status.taskId;
-    env.RUN_ID = this.runId;
+    // Allow task specific environment vars to overwrite those provided by hooks
+    let env = _.defaults({}, config.env || {}, linkInfo.env || {});
 
     await this.runtime.privateKey.decryptEnvVariables(
-        this.task.payload, this.status.taskId
+      this.task.payload, this.status.taskId
     );
+
+    // Universally useful environment variables describing the current task.
+    // Note: these environment variables cannot be overwritten by anyone, we
+    //       rely on these for self-validating tasks.
+    env.TASK_ID = this.status.taskId;
+    env.RUN_ID = this.runId;
 
     let privilegedTask = runAsPrivileged(this.task, this.runtime.dockerConfig.allowPrivileged);
 
@@ -223,8 +228,8 @@ export default class Task {
       procConfig.create.HostConfig['Devices'] = bindings;
     }
 
-    if (links) {
-      procConfig.create.HostConfig.Links = links.map(function(link) {
+    if (linkInfo.links) {
+      procConfig.create.HostConfig.Links = linkInfo.links.map(link => {
         return link.name + ':' + link.alias;
       });
     }
@@ -318,7 +323,11 @@ export default class Task {
     ));
 
     try {
-      await this.runtime.stats.timeGen(`tasks.time.states.${stat}.killed`, this.states.killed(this));
+      // Run killed hook and record reason why we aborted
+      await this.runtime.stats.timeGen(
+        `tasks.time.states.killed-by-abort.${stat}`,
+        this.states.killed(this)
+      );
     }
     catch (e) {
       // Do not throw, killing the states is a best effort here when aborting
@@ -548,13 +557,12 @@ export default class Task {
 
     // Task log header.
     this.stream.write(this.logHeader());
-    let links;
+    let linkInfo = {};
     try {
-      // Build the list of container links...
-      links =
-        await stats.timeGen('tasks.time.states.linked', this.states.link(this));
+      // Build the list of container links... and base environment variables
+      linkInfo = await this.states.link(this);
       // Hooks prior to running the task.
-      await stats.timeGen('tasks.time.states.created', this.states.created(this));
+      await this.states.created(this);
     }
     catch (e) {
       return await this.abortRun(
@@ -617,7 +625,7 @@ export default class Task {
 
     let dockerConfig;
     try {
-      dockerConfig = await this.dockerConfig(links);
+      dockerConfig = await this.dockerConfig(linkInfo);
     } catch (e) {
       let error = this.fmtLog('Docker configuration could not be ' +
         'created.  This may indicate an authentication error when validating ' +
@@ -666,9 +674,7 @@ export default class Task {
 
     // Extract any results from the hooks.
     try {
-      await stats.timeGen(
-        'tasks.time.states.stopped', this.states.stopped(this)
-      );
+      await this.states.stopped(this);
     }
     catch (e) {
       let lookupId = uuid.v4();
@@ -692,7 +698,7 @@ export default class Task {
     // Wait for the stream to end entirely before killing remaining containers.
     await this.stream.end();
 
-    await stats.timeGen('tasks.time.states.killed', this.states.killed(this));
+    await this.states.killed(this);
 
     // If the results validation failed we consider this task failure.
     if (this.isCanceled() || this.isAborted()) {

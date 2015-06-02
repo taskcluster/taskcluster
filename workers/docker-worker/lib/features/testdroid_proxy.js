@@ -73,7 +73,10 @@ export default class TestdroidProxy {
     }
 
     this.host = host;
-    return [{ name: name, alias: ALIAS }];
+    return {
+      links: [{name, alias: ALIAS}],
+      env: {}
+    };
   }
 
   async killed(task) {

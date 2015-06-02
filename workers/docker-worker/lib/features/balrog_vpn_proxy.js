@@ -129,7 +129,10 @@ export default class BalrogVPNProxy {
       }
     }
 
-    return [{ name: name, alias: ALIAS }];
+    return {
+      links: [{name, alias: ALIAS}],
+      env: {}
+    };
   }
 
   async killed(task) {

@@ -71,7 +71,10 @@ export default class TaskclusterProxy {
       throw new Error('Failed to initialize taskcluster proxy service.')
     }
 
-    return [{ name: name, alias: ALIAS }];
+    return {
+      links: [{name, alias: ALIAS}],
+      env: {}
+    };
   }
 
   async killed(task) {

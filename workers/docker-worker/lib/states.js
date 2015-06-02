@@ -1,6 +1,6 @@
 var assert = require('assert');
 var debug = require('debug')('taskcluster-docker-worker:states');
-var co = require('co');
+var _ = require('lodash');
 
 function hasMethod(method, input) {
   return typeof input[method] === 'function';
@@ -29,50 +29,68 @@ Each "state" in the lifetime is a well defined function:
 
 @constructor
 @param {Array[Object]} hooks for handling states in the task lifecycle.
+@param {Stat} stats object, see stat.js
 */
 export default class States {
-  constructor(hooks) {
+  constructor(hooks, stats) {
     assert.ok(Array.isArray(hooks), 'hooks is an array');
     this.hooks = hooks;
+    this.stats = stats;
   }
 
   /**
   Invoke all hooks with a particular method.
   @param {Task} task handler.
   */
-  async _invoke(method, task) {
+  _invoke(method, task) {
     let hooks = this.hooks.filter(hasMethod.bind(this, method));
-    return  await Promise.all(hooks.map(async (hook) => {
-      return await hook[method](task);
-    }));
+    return this.stats.timeGen('tasks.time.states.' + method,
+      Promise.all(hooks.map(hook => hook[method](task)))
+    );
   }
 
   /**
-  The "link" state is responsible for creating any dependant containers and
-  returning the name of the container to be "linked" with the task container.
+  The "link" state is responsible for creating any dependent containers and
+  returning the name of the container to be "linked" with the task container,
+  additionally it may also return over-writeable environment variables to
+  give to the task.
 
-  Each "hook" which contains a link method _must_ return an array in the
-  following format:
+  Each "hook" which contains a link method or wants to declare an env variable
+  _must_ return an object in the following format:
 
   ```js
-      [
+    {
+      links: [
         { name: 'container name', alias: 'alias in task container' }
       ]
+      env: {
+        'name-of-env-var':  'value of variable'
+      }
+    }
   ```
 
   All links are run in parallel then merged.
+  Note, that environment variables can be overwritten by task-specific
+  environment variables, or environment variables from other hooks.
 
   @param {Task} task handler.
-  @return {Array[Object]} list of link aliases.
+  @return {Object} object on the same form as returned by hook, see above.
   */
   async link(task) {
     // Build the list of linked containers...
-    var links = await this._invoke('link', task);
+    let results = await this._invoke('link', task);
 
-    // Flat map.
-    return links.reduce(function(result, current) {
-      return result.concat(current);
-    }, [])
+    // List of lists of links
+    let listsOfLinks = results.map(_.property('links')).filter(_.isArray);
+
+    // List of env objects
+    let listsOfEnvs = results.map(_.property('env')).filter(_.isObject);
+
+    // Merge env objects and flatten lists of links
+    return {
+      links:  _.flatten(listsOfLinks),
+      env:    _.defaults.apply(_, listsOfEnvs)
+    };
   }
 
   /**
