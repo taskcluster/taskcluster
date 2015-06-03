@@ -1,4 +1,6 @@
 #! /bin/bash -vex
 
 make -C git
-docker build -t $(cat DOCKER_TAG):$(cat VERSION) $PWD
+docker build --no-cache -t $(cat DOCKER_TAG):$(cat VERSION) $PWD
+
+echo "If deploying now you can run 'docker push $DOCKER_TAG:$VERSION'"

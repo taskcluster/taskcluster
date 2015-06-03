@@ -24,9 +24,6 @@ RUN curl -SL "http://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x6
     npm install -g npm@"$NPM_VERSION" && \
     npm install -g babel@4.7.16
 
-RUN git config --global user.email "worker-ci@mozilla.com"
-RUN git config --global user.name "worker-ci"
-
 # Install Docker from Docker Inc. repositories.
 #RUN curl -sSL https://get.docker.com/ubuntu/ | sh
 
@@ -37,6 +34,7 @@ workdir /home/tester
 
 COPY bin /home/tester/bin/
 COPY ./wrapdocker /usr/local/bin/wrapdocker
+COPY ./gitconfig /home/tester/.gitconfig
 
 # install our custom git plugin
 COPY git/target/doc/git-ci-checkout-pr.1 /usr/local/man/man1/git-ci-checkout-pr.1
