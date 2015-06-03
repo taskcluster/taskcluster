@@ -36,6 +36,8 @@ var (
 
 // Entry point into the generic worker...
 func main() {
+	// Any custom startup per platform...
+	startup()
 	// Validate environment...
 	for _, j := range []string{
 		"PAYLOAD_SCHEMA",
@@ -518,10 +520,7 @@ func (task *TaskRun) run() error {
 
 	fmt.Println("Running task!")
 	fmt.Println(task.String())
-	cmd := exec.Command(task.Payload.Command[0], task.Payload.Command[1:]...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	task.prepEnvVars(cmd)
+	cmd := task.generateCommand() // platform specific
 	err := cmd.Start()
 	if err != nil {
 		return err
