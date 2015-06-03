@@ -1,9 +1,9 @@
-var debug   = require('debug')('taskcluster-auth:data:client');
+var debug   = require('debug')('auth:data:client');
 var base    = require('taskcluster-base');
 var assert  = require('assert');
 
 /** Configure a client Entity subclass */
-var Client = base.Entity.configure({
+var Client = base.LegacyEntity.configure({
   mapping: [
     {
       key:              'PartitionKey',
@@ -42,22 +42,22 @@ var ROW_KEY_CONST = 'credentials';
 /** Create a client */
 Client.create = function(properties) {
   properties.RowKey = ROW_KEY_CONST;
-  return base.Entity.create.call(this, properties);
+  return base.LegacyEntity.create.call(this, properties);
 };
 
 /** Load client from clientId */
 Client.load = function(clientId) {
-  return base.Entity.load.call(this, clientId, ROW_KEY_CONST);
+  return base.LegacyEntity.load.call(this, clientId, ROW_KEY_CONST);
 };
 
 /** Load all clients */
 Client.loadAll = function() {
-  return base.Entity.queryRowKey.call(this, ROW_KEY_CONST);
+  return base.LegacyEntity.queryRowKey.call(this, ROW_KEY_CONST);
 };
 
 /** Remove client with given clientId */
 Client.remove = function(clientId) {
-  return base.Entity.remove.call(this, clientId, ROW_KEY_CONST);
+  return base.LegacyEntity.remove.call(this, clientId, ROW_KEY_CONST);
 };
 
 /** Create a clientLoader that can be used with base.API instances */

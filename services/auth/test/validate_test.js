@@ -36,7 +36,7 @@ var testCases = [
   }
 ];
 
-suite("validate", function() {
+suite("validate", () => {
   var fs          = require('fs');
   var path        = require('path');
   var assert      = require('assert');
@@ -44,7 +44,7 @@ suite("validate", function() {
   var validator = null;
 
   // Setup validator
-  setup(function() {
+  setup(() => {
     return base.validator({
       folder:           path.join(__dirname, '..', 'schemas'),
       constants:        require('../schemas/constants'),
@@ -54,8 +54,8 @@ suite("validate", function() {
   });
 
   // Create a test for each test case
-  testCases.forEach(function(testCase) {
-    test(testCase.path, function() {
+  testCases.forEach(testCase => {
+    test(testCase.path, () => {
       // Load test data
       var filePath = path.join(__dirname, testCase.path);
       var data = fs.readFileSync(filePath, {encoding: 'utf-8'});
@@ -68,19 +68,19 @@ suite("validate", function() {
       if(testCase.success) {
         if (errors !== null) {
           console.log("Errors:");
-          errors.forEach(function(error) {
-            console.log(error);
-          });
+          errors.forEach(error => console.log(error));
         }
-        assert(errors === null, "Schema doesn't match test for " + testCase.path);
+        assert(errors === null,
+               "Schema doesn't match test for " + testCase.path);
       } else {
-        assert(errors !== null, "Schema matches unexpectedly test for " + testCase.path);
+        assert(errors !== null,
+               "Schema matches unexpectedly test for " + testCase.path);
       }
     });
-  }, this);
+  });
 
   // Release validator
-  teardown(function() {
+  teardown(() => {
     validator = null;
   })
 });
