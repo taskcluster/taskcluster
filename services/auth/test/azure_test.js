@@ -5,11 +5,10 @@ suite('azure table (sas)', function() {
   var helper      = require('./helper');
   var slugid      = require('slugid');
   var _           = require('lodash');
-  var subject     = helper.setup({title: "azure-tests"});
 
   test('azureTableSAS', function() {
-    return subject.auth.azureTableSAS(
-      subject.testaccount,
+    return helper.auth.azureTableSAS(
+      helper.testaccount,
       'TestTable'
     ).then(function(result) {
       assert(typeof(result.sas) === 'string', "Expected some form of string");
@@ -21,15 +20,15 @@ suite('azure table (sas)', function() {
 
   test('azureTableSAS (allowed table)', function() {
     // Restrict access a bit
-    var auth = new subject.Auth({
-      baseUrl:          subject.baseUrl,
-      credentials:      subject.root,
+    var auth = new helper.Auth({
+      baseUrl:          helper.baseUrl,
+      credentials:      helper.root,
       authorizedScopes: [
-        'auth:azure-table-access:' + subject.testaccount + '/allowedTable'
+        'auth:azure-table-access:' + helper.testaccount + '/allowedTable'
       ]
     });
     return auth.azureTableSAS(
-      subject.testaccount,
+      helper.testaccount,
       'allowedTable'
     ).then(function(result) {
       assert(typeof(result.sas) === 'string', "Expected some form of string");
@@ -40,15 +39,15 @@ suite('azure table (sas)', function() {
 
   test('azureTableSAS (unauthorized table)', function() {
     // Restrict access a bit
-    var auth = new subject.Auth({
-      baseUrl:          subject.baseUrl,
-      credentials:      subject.root,
+    var auth = new helper.Auth({
+      baseUrl:          helper.baseUrl,
+      credentials:      helper.root,
       authorizedScopes: [
-        'auth:azure-table-access:' + subject.testaccount + '/allowedTable'
+        'auth:azure-table-access:' + helper.testaccount + '/allowedTable'
       ]
     });
     return auth.azureTableSAS(
-      subject.testaccount,
+      helper.testaccount,
       'unauthorizedTable'
     ).then(function(result) {
       assert(false, "Expected an authentication error!");
