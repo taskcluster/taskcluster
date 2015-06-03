@@ -11,8 +11,8 @@ var PassportPersona = require('passport-persona');
 var express         = require('express')
 var bodyParser      = require('body-parser');
 var querystring     = require('querystring');
-var taskcluster = require('taskcluster-client');
-var url         = require('url');
+var taskcluster     = require('taskcluster-client');
+var url             = require('url');
 
 /** Index page (the only page we have) */
 var renderIndex = function(authFailed, req, res) {
