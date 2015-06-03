@@ -76,7 +76,8 @@ var launch = function(profile) {
         validator:      validator,
         Client:         Client,
         azureAccounts:  JSON.parse(cfg.get('auth:azureAccounts')),
-        sts:            new AWS.STS(cfg.get('aws'))
+        sts:            new AWS.STS(cfg.get('aws')),
+        rootClientId:   cfg.get('auth:root:clientId')
       },
       validator:        validator,
       clientLoader:     Client.createClientLoader(),

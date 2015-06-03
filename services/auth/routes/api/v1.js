@@ -2,7 +2,7 @@ var debug       = require('debug')('routes:api:v1');
 var assert      = require('assert');
 var base        = require('taskcluster-base');
 var slugid      = require('slugid');
-var azureTable  = require('azure-table-node');
+var azure       = require('fast-azure-storage');
 var Promise     = require('promise');
 var _           = require('lodash');
 
@@ -371,59 +371,58 @@ api.declare({
     "Get an SAS string for use with a specific Azure Table Storage table.",
     "Note, this will create the table, if it doesn't already exists."
   ].join('\n')
-}, function(req, res) {
+}, async function(req, res) {
   // Get parameters
-  var account = req.params.account;
-  var table   = req.params.table;
-  var ctx     = this;
+  var account   = req.params.account;
+  var tableName = req.params.table;
 
   // Check that the client is authorized to access given account and table
   if (!req.satisfies({
     account:    account,
-    table:      table
+    table:      tableName
   })) {
     return;
   }
 
   // Check that the account exists
-  if (!ctx.azureAccounts[account]) {
+  if (!this.azureAccounts[account]) {
     return res.status(404).json({
       message:    "Account '" + account + "' not found, can't delegate access"
     });
   }
 
   // Construct client
-  var client = azureTable.createClient({
-    accountName:    account,
-    accountKey:     ctx.azureAccounts[account],
-    accountUrl:     ["https://", account, ".table.core.windows.net/"].join('')
+  var table = new azure.Table({
+    accountId:  account,
+    accessKey:  this.azureAccounts[account]
   });
 
-  // Ensure that the table is created
-  var createdTable = new Promise(function(accept, reject) {
-    client.createTable(table, {
-      ignoreIfExists:     true
-    }, function(err, data) {
-      if (err) {
-        return reject(err);
-      }
-      accept(data);
-    });
+  // Create table ignore error, if it already exists
+  try {
+    await table.createTable(tableName);
+  } catch (err) {
+    if (err.code !== 'TableAlreadyExists') {
+      throw err;
+    }
+  }
+
+  // Construct SAS
+  var expiry = new Date(Date.now() + 25 * 60 * 1000);
+  var sas = table.sas(tableName, {
+    start:    new Date(Date.now() - 15 * 60 * 1000),
+    expiry:   expiry,
+    permissions: {
+      read:       true,
+      add:        true,
+      update:     true,
+      delete:     true
+    }
   });
 
-  // Once the table is created, construct and return SAS
-  return createdTable.then(function() {
-    // Construct SAS
-    var expiry  = new Date(Date.now() + 25 * 60 * 1000);
-    var sas     = client.generateSAS(table, 'raud', expiry, {
-      start:  new Date(Date.now() - 15 * 60 * 1000)
-    });
-
-    // Return the generated SAS
-    return res.reply({
-      sas:      sas,
-      expiry:   expiry.toJSON()
-    });
+  // Return the generated SAS
+  return res.reply({
+    sas:      sas,
+    expiry:   expiry.toJSON()
   });
 });
 
@@ -456,7 +455,7 @@ api.declare({
     "poor behavior. After we often want the `prefix` to be a folder in a",
     "`/` delimited folder structure."
   ].join('\n')
-}, function(req, res) {
+}, async function(req, res) {
   var level   = req.params.level;
   var bucket  = req.params.bucket;
   var prefix  = req.params.prefix;
@@ -500,7 +499,7 @@ api.declare({
   }
 
   // For details on the policy see: http://amzn.to/1ETStaL
-  return this.sts.getFederationToken({
+  var iamReq = await this.sts.getFederationToken({
     Name:               'TemporaryS3ReadWriteCredentials',
     Policy:             JSON.stringify({
       Version:          '2012-10-17',
@@ -545,19 +544,113 @@ api.declare({
       ]
     }),
     DurationSeconds:    60 * 60   // Expire credentials in an hour
-  }).promise().then(function(req) {
-    var data = req.data;
-    return res.reply({
-      credentials: {
-        accessKeyId:      data.Credentials.AccessKeyId,
-        secretAccessKey:  data.Credentials.SecretAccessKey,
-        sessionToken:     data.Credentials.SessionToken
-      },
-      expires:            new Date(data.Credentials.Expiration).toJSON()
-    });
+  }).promise();
+
+  return res.reply({
+    credentials: {
+      accessKeyId:      iamReq.data.Credentials.AccessKeyId,
+      secretAccessKey:  iamReq.data.Credentials.SecretAccessKey,
+      sessionToken:     iamReq.data.Credentials.SessionToken
+    },
+    expires:            new Date(iamReq.data.Credentials.Expiration).toJSON()
   });
 });
 
+/** Export all clients */
+api.declare({
+  method:     'get',
+  route:      '/export-clients',
+  name:       'exportClients',
+  input:      undefined,
+  output:     SCHEMA_PREFIX_CONST + 'exported-clients.json#',
+  scopes:     [['auth:export-clients', 'auth:credentials']],
+  title:      "List Clients",
+  description: [
+    "Export all clients except the root client, as a JSON list.",
+    "This list can be imported later using `importClients`."
+  ].join('\n')
+}, async function(req, res) {
+  var clients = await this.Client.loadAll();
+  return res.reply(
+    clients
+      .filter(client => client.clientId !== this.rootClientId)
+      .map(client => {
+        return {
+          clientId:     client.clientId,
+          accessToken:  client.accessToken,
+          scopes:       client.scopes,
+          expires:      client.expires.toJSON(),
+          name:         client.name,
+          description:  client.details.notes
+        };
+      })
+  );
+});
+
+/** Import clients from JSON */
+api.declare({
+  method:     'post',
+  route:      '/import-clients',
+  name:       'importClients',
+  input:      SCHEMA_PREFIX_CONST + 'exported-clients.json#',
+  output:     SCHEMA_PREFIX_CONST + 'exported-clients.json#',
+  scopes:     [
+    ['auth:import-clients', 'auth:create-client', 'auth:credentials']
+  ],
+  title:      "Import Clients",
+  description: [
+    "Import client from JSON list, overwriting any clients that already",
+    "exists. Returns a list of all clients imported."
+  ].join('\n')
+}, async function(req, res) {
+  var input = req.body;
+
+  var clients = await Promise.all(input.map(async (input) => {
+    try {
+      return await this.Client.create({
+        version:      '0.2.0',
+        clientId:     input.clientId,
+        accessToken:  input.accessToken,
+        scopes:       input.scopes,
+        expires:      new Date(input.expires),
+        name:         input.name,
+        details: {
+          notes:      input.description
+        }
+      });
+    } catch(err) {
+      // Handle existing entity errors only
+      if (err.code !== 'EntityAlreadyExists') {
+        throw err;
+      }
+
+      // Overwrite existing client
+      var client = await this.Client.load(input.clientId);
+      await client.modify(function() {
+        this.clientId     = input.clientId;
+        this.accessToken  = input.accessToken;
+        this.scopes       = input.scopes;
+        this.expires      = new Date(input.expires);
+        this.name         = input.name;
+        this.details = {
+          notes:            input.description
+        }
+      });
+      return client;
+    }
+  }));
+
+  return res.reply(clients.map(client => {
+    return {
+      clientId:     client.clientId,
+      accessToken:  client.accessToken,
+      scopes:       client.scopes,
+      expires:      client.expires.toJSON(),
+      name:         client.name,
+      description:  client.details.notes
+    };
+  }));
+});
 
 /** Check that the server is a alive */
 api.declare({
