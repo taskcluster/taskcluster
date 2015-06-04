@@ -36,14 +36,6 @@ module.exports = {
     description: 'Location of private RSA key for docker-worker'
   },
 
-  'vpnProfileLocation': {
-    description: 'Location of testdroid openvpn profile'
-  },
-
-  'vpnCredentialsLocation': {
-    description: 'Location of testdroid vpn credentials file'
-  },
-
   'taskcluster.clientId': {
     description: 'Taskcluster client id',
     value: process.env.TASKCLUSTER_CLIENT_ID

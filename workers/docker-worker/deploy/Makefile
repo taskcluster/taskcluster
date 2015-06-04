@@ -2,8 +2,6 @@ CONFIG_FILE?=./deploy.json
 TARGETS?=$(shell find template -type file | sed 's/template/target/')
 DEPLOY_TAR?=deploy.tar.gz
 PRIVATE_KEY?=$(shell ./bin/resolve_path_in_config $(CONFIG_FILE) privateKeyLocation)
-VPN_PROFILE?=$(shell ./bin/resolve_path_in_config $(CONFIG_FILE) vpnProfileLocation)
-VPN_CREDENTIALS?=$(shell ./bin/resolve_path_in_config $(CONFIG_FILE) vpnCredentialsLocation)
 SSL_KEY?=$(shell ./bin/resolve_path_in_config $(CONFIG_FILE) sslKeyLocation)
 SSL_CERTIFICATE?=$(shell ./bin/resolve_path_in_config $(CONFIG_FILE) sslCertificateLocation)
 
@@ -11,16 +9,12 @@ SSL_CERTIFICATE?=$(shell ./bin/resolve_path_in_config $(CONFIG_FILE) sslCertific
 $(DEPLOY_TAR): all
 	tar cvfz $@ target/
 	rm target/etc/$(shell basename $(PRIVATE_KEY))
-ifneq ($(VPN_PROFILE),)
-	rm target/etc/openvpn/$(shell basename $(VPN_PROFILE))
-	rm target/etc/openvpn/$(shell basename $(VPN_CREDENTIALS))
-endif
 ifneq ($(SSL_CERTIFICATE),)
 	rm target/etc/$(shell basename $(SSL_CERTIFICATE))
 	rm target/etc/$(shell basename $(SSL_KEY))
 endif
 
-all: $(TARGETS) private_key vpn ssl
+all: $(TARGETS) private_key ssl
 
 # Pick up changes when we update variables.js or configure.js
 $(CONFIG_FILE): variables.js bin/configure.js
@@ -40,18 +34,6 @@ private_key: $(CONFIG_FILE)
 	test -f $(PRIVATE_KEY)
 	mkdir -p target/etc/
 	cp $(PRIVATE_KEY) target/etc/
-
-# Copy openvpn profile to be used with testdroid remote device lab
-.PHONY: vpn
-vpn: $(CONFIG_FILE)
-# Only copy vpn profiles if defined in the config.  Not all workers need vpn creds
-ifneq ($(VPN_PROFILE),)
-	test -f $(VPN_PROFILE)
-	test -f $(VPN_CREDENTIALS)
-	mkdir -p target/etc/openvpn
-	cp $(VPN_PROFILE) target/etc/openvpn/
-	cp $(VPN_CREDENTIALS) target/etc/openvpn/
-endif
 
 # Copy SSL certificate to be used with secure communication (such as live logging)
 .PHONY: ssl

@@ -31,7 +31,8 @@ export default class TestdroidProxy {
         `--username=${task.runtime.testdroid.username}`,
         `--password=${task.runtime.testdroid.password}`,
         `--taskcluster-client-id=${task.runtime.taskcluster.clientId}`,
-        `--taskcluster-access-token=${task.runtime.taskcluster.accessToken}`
+        `--taskcluster-access-token=${task.runtime.taskcluster.accessToken}`,
+        `--device-timeout=${task.task.payload.maxRunTime}`
     ];
 
     var envs = [];
