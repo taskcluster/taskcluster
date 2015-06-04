@@ -31,7 +31,7 @@ func removeOSUser(user string) {
 		fmt.Printf("%v\n", err)
 	}
 	fmt.Println(string(out))
-	out, err = exec.Command("wmic", "path", "win32_userprofile", "where", "name=\""+user+"\"", "delete").Output()
+	out, err = exec.Command("C:\\Windows\\System32\\wbem\\WMIC.exe", "path", "win32_userprofile", "where", "name=\""+user+"\"", "delete").Output()
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
