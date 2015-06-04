@@ -134,9 +134,14 @@ func deleteWindowsUserAccount(line string) {
 }
 
 func (task *TaskRun) generateCommand() *exec.Cmd {
-	// TODO: below is the *nix implementation, Windows needs to generate a .bat file
-	// and run it using PsExec instead...
-	cmd := exec.Command(task.Payload.Command[0], task.Payload.Command[1:]...)
+	command := []string{
+		"C:\\Users\\Administrator\\PSTools\\PsExec.exe",
+		"-u", User.Name,
+		"-p", User.Password,
+		"-w", User.HomeDir,
+	}
+	command = append(command, task.Payload.Command...)
+	cmd := exec.Command(command[0], command[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	task.prepEnvVars(cmd)
