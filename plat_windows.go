@@ -10,7 +10,7 @@ import (
 func startup() error {
 	fmt.Println("Detected Windows platform...")
 	fmt.Println("Looking for existing task users...")
-	out, err := exec.Command("wmic UserAccount get Name").Output()
+	out, err := exec.Command("C:\\Windows\\System32\\wbem\\WMIC.exe UserAccount get Name").Output()
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		return err
