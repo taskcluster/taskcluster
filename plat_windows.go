@@ -10,7 +10,7 @@ import (
 func startup() error {
 	fmt.Println("Detected Windows platform...")
 	fmt.Println("Looking for existing task users...")
-	out, err := exec.Command("wmic", "useraccount", "get", "name").Output()
+	out, err := exec.Command("C:\\Windows\\System32\\wbem\\WMIC.exe", "useraccount", "get", "name").Output()
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		return err
@@ -24,6 +24,7 @@ func startup() error {
 }
 
 func removeOSUser(user string) {
+	fmt.Println("Attempting to remove OS user " + user + "...")
 	out, err := exec.Command("net", "user", user, "/delete").Output()
 	if err != nil {
 		fmt.Printf("%v\n", err)
