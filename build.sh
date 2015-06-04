@@ -4,6 +4,7 @@ cd "$(dirname "${0}")"
 
 function install {
   GOOS="${1}" GOARCH="${2}" go install ./...
+  GOOS="${1}" GOARCH="${2}" go vet ./...
 }
 
 install darwin 386
@@ -30,6 +31,5 @@ install windows amd64
 find "${GOPATH}/bin" -name 'generic-worker*'
 
 go test ./...
-go vet ./...
 
 echo "Build successful!"

@@ -51,6 +51,7 @@ func createNewWindowsUser() error {
 		Name:     userName,
 		Password: password,
 	}
+	fmt.Println("Creating Windows User " + User.Name + "...")
 	err := os.MkdirAll(User.HomeDir, 0755)
 	if err != nil {
 		return err
@@ -83,7 +84,7 @@ func deleteExistingWindowsUsers() {
 	err := processCommandOutput(deleteWindowsUserAccount, "wmic", "useraccount", "get", "name")
 	if err != nil {
 		fmt.Println("WARNING: could not list existing Windows user accounts")
-		fmt.Println("%v\n", err)
+		fmt.Printf("%v\n", err)
 	}
 	deleteHomeDirs()
 }
@@ -92,14 +93,14 @@ func deleteHomeDirs() {
 	homeDirsParent, err := os.Open("C:\\Users")
 	if err != nil {
 		fmt.Println("WARNING: Could not open C:\\Users directory to find old home directories to delete")
-		fmt.Println("%v\n", err)
+		fmt.Printf("%v\n", err)
 		return
 	}
 	defer homeDirsParent.Close()
 	fi, err := homeDirsParent.Readdir(-1)
 	if err != nil {
 		fmt.Println("WARNING: Could not read complete directory listing to find old home directories to delete")
-		fmt.Println("%v\n", err)
+		fmt.Printf("%v\n", err)
 		// don't return, since we may have partial listings
 	}
 	for _, file := range fi {
@@ -110,7 +111,7 @@ func deleteHomeDirs() {
 				err = os.RemoveAll(path)
 				if err != nil {
 					fmt.Println("WARNING: could not delete directory '" + path + "'")
-					fmt.Println("%v\n", err)
+					fmt.Printf("%v\n", err)
 				}
 			}
 		}
