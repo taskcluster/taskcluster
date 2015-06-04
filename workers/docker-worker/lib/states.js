@@ -1,5 +1,5 @@
 var assert = require('assert');
-var debug = require('debug')('taskcluster-docker-worker:states');
+var debug = require('debug')('docker-worker:states');
 var _ = require('lodash');
 
 function hasMethod(method, input) {
@@ -43,6 +43,7 @@ export default class States {
   @param {Task} task handler.
   */
   _invoke(method, task) {
+    debug("taskId: %s at state: %s", task.status.taskId, method);
     let hooks = this.hooks.filter(hasMethod.bind(this, method));
     return this.stats.timeGen('tasks.time.states.' + method,
       Promise.all(hooks.map(hook => hook[method](task)))
@@ -61,11 +62,14 @@ export default class States {
   ```js
     {
       links: [
-        { name: 'container name', alias: 'alias in task container' }
+        {name: 'container name', alias: 'alias in task container'}
       ]
       env: {
         'name-of-env-var':  'value of variable'
-      }
+      },
+      binds: [
+        {source: '/path/on/host', target: '/path/in/container', readOnly: true}
+      ]
     }
   ```
 
@@ -86,10 +90,14 @@ export default class States {
     // List of env objects
     let listsOfEnvs = results.map(_.property('env')).filter(_.isObject);
 
+    // List of lists of binds
+    let listsOfBinds = results.map(_.property('binds')).filter(_.isArray);
+
     // Merge env objects and flatten lists of links
     return {
       links:  _.flatten(listsOfLinks),
-      env:    _.defaults.apply(_, listsOfEnvs)
+      env:    _.defaults.apply(_, listsOfEnvs),
+      binds:  _.flatten(listsOfBinds)
     };
   }
 
@@ -101,8 +109,8 @@ export default class States {
   @param {Task} task handler.
   @return void.
   */
-  async created(task) {
-    await this._invoke('created', task);
+  created(task) {
+    return this._invoke('created', task);
   }
 
   /**
@@ -112,8 +120,8 @@ export default class States {
   @param {Task} task handler.
   @return void.
   */
-  async stopped(task) {
-    await this._invoke('stopped', task);
+  stopped(task) {
+    return this._invoke('stopped', task);
   }
 
   /**
@@ -123,7 +131,7 @@ export default class States {
   @param {Task} task handler
   @return void.
   */
-  async killed(task) {
-    await this._invoke('killed', task);
+  killed(task) {
+    return this._invoke('killed', task);
   }
 }

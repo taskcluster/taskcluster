@@ -196,7 +196,9 @@ export default class Task {
     env.TASK_ID = this.status.taskId;
     env.RUN_ID = this.runId;
 
-    let privilegedTask = runAsPrivileged(this.task, this.runtime.dockerConfig.allowPrivileged);
+    let privilegedTask = runAsPrivileged(
+      this.task, this.runtime.dockerConfig.allowPrivileged
+    );
 
     let procConfig = {
       start: {},
@@ -234,11 +236,25 @@ export default class Task {
       });
     }
 
+    // Bindings from linkInfo
+    let binds = linkInfo.binds.map(b => {
+      let binding = `${b.source}:${b.target}`;
+      if (b.readOnly) {
+        binding += ':ro';
+      }
+      return binding;
+    });
+
     if (this.task.payload.cache) {
       let bindings = await buildVolumeBindings(this.task.payload.cache,
         this.runtime.volumeCache, this.task.scopes);
       this.volumeCaches = bindings[0];
-      procConfig.create.HostConfig.Binds = bindings[1];
+      binds = _.union(binds, bindings[1]);
+    }
+
+    // If we have any binds, add them to HostConfig
+    if (binds.length > 0) {
+      procConfig.create.HostConfig.Binds = binds;
     }
 
     return procConfig;

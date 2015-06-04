@@ -94,7 +94,8 @@ export default class DockerWorker {
       NetworkMode: 'host',
 
       Binds: [
-        util.format('%s:%s', path.resolve(__dirname, '..'), '/worker')
+        util.format('%s:%s', path.resolve(__dirname, '..'), '/worker'),
+        '/tmp:/tmp'
       ],
     };
 

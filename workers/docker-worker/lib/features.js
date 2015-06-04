@@ -4,7 +4,10 @@ enabled/disabled at will... This module defines the list of features and which
 module is responsible for handling them.
 */
 
-module.exports = {
+import _ from 'lodash';
+import assert from 'assert';
+
+const features = {
   localLiveLog: {
     title: 'Enable live logging (worker local)',
     description: 'Logs are stored on the worker during the duration of tasks ' +
@@ -76,5 +79,25 @@ module.exports = {
                  'bisections, any dynamic tasks, etc...',
     defaults: true,
     module: require('./features/extend_task_graph')
+  },
+
+  dind: {
+    title: 'Docker in Docker',
+    description: 'Runs docker-in-docker and binds `/var/run/docker.sock` ' +
+                 'into the container. Doesn\'t allow privileged mode, ' +
+                 'capabilities or host volume mounts.',
+    defaults: false,
+    module: require('./features/dind')
   }
 };
+
+// Basic sanity check for features
+_.forIn(features, ({title, description, defaults, module}) => {
+  assert(typeof title === 'string', "Expected title");
+  assert(typeof description === 'string', "Expected description");
+  assert(typeof defaults === 'boolean', "Expected a boolean default");
+  assert(module instanceof Function, "Expected module to be class");
+});
+
+// Export features
+module.exports = features;
