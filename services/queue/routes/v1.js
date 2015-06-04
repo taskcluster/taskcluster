@@ -979,20 +979,14 @@ api.declare({
   // Construct signedUrl for accessing the azure queue for this
   // provisionerId and workerType
   var {
-    signedPollUrl,
-    signedDeleteUrl,
+    queues,
     expiry
-  } = await this.queueService.signedPendingPollUrl(provisionerId, workerType);
+  } = await this.queueService.signedPendingPollUrls(provisionerId, workerType);
 
   // Return signed URLs
   res.reply({
-    queues: [
-      {
-        signedPollUrl:        signedPollUrl,
-        signedDeleteUrl:      signedDeleteUrl
-      }
-    ],
-    expires:                  expiry.toJSON()
+    queues,
+    expires: expiry.toJSON()
   });
 });
 
