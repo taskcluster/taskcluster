@@ -7,6 +7,8 @@ var querystring = require('querystring');
 var url         = require('url');
 var base        = require('taskcluster-base');
 var azure       = require('fast-azure-storage');
+var crypto      = require('crypto');
+var taskcluster = require('taskcluster-client');
 
 /** Timeout for azure queue requests */
 var AZURE_QUEUE_TIMEOUT     = 7 * 1000;
@@ -98,14 +100,6 @@ class QueueService {
     this.deadlineQueueReady = null;
   }
 
-  _createQueue(queue) {
-    return this.client.createQueue(queue);
-  }
-
-  _countMessages(queue) {
-    return this.client.getMetadata(queue).then(_.property('messageCount'));
-  }
-
   _putMessage(queue, message, {visibility, ttl}) {
     var text = new Buffer(JSON.stringify(message)).toString('base64');
     return this.client.putMessage(queue, text, {
@@ -137,13 +131,12 @@ class QueueService {
     if (this.claimQueueReady) {
       return this.claimQueueReady;
     }
-    return this.claimQueueReady = this._createQueue(
-      this.claimQueue
-    ).catch(err => {
+    var ready = this.client.createQueue(this.claimQueue).catch(err => {
       // Don't cache negative results
       this.claimQueueReady = null;
       throw err;
-    });
+    })
+    return this.claimQueueReady = ready;
   }
 
   /** Ensure existence of the deadline queue */
@@ -151,13 +144,12 @@ class QueueService {
     if (this.deadlineQueueReady) {
       return this.deadlineQueueReady;
     }
-    return this.deadlineQueueReady = this._createQueue(
-      this.deadlineQueue
-    ).catch(err => {
+    var ready = this.client.createQueue(this.deadlineQueue).catch(err => {
       // Don't cache negative results
       this.deadlineQueueReady = null;
       throw err;
     });
+    return this.deadlineQueueReady = ready;
   }
 
   /** Enqueue message to become visible when claim has expired */
@@ -288,8 +280,24 @@ class QueueService {
            "Expected provisionerId to be an identifier");
     assert(/^[A-Za-z0-9_-]{1,22}$/.test(workerType),
            "Expected workerType to be an identifier");
+
+    // Hash identifier to 24 characters
+    let hashId = (id) => {
+      var h = crypto.createHash('sha256').update(id).digest();
+      return base32.encode(h.slice(0, 15)).toString('utf-8').toLowerCase();
+    };
+
     // Construct queue name
     var name = [
+      this.prefix,            // prefix all queues
+      hashId(provisionerId),  // hash of provisionerId
+      hashId(workerType),     // hash of workerType
+      '1'                     // priority, currently just hardcoded to 1
+    ].join('-');
+
+
+    // Construct queue w. legacy name
+    var legacyName = [
       this.prefix,    // prefix all queues
       base32.encode(decodeUrlSafeBase64(provisionerId))
         .toString('utf8')
@@ -303,14 +311,121 @@ class QueueService {
     ].join('-');
 
     // Return and cache promise that we created this queue
-    return this.queues[id] = this._createQueue(name).catch(err => {
+    return this.queues[id] = Promise.all([
+      this._ensureQueueAndMetadata(name),
+      this._ensureQueueAndMetadata(legacyName)
+    ]).catch(err => {
+      debug("[alert-operator] Failed to ensure azure queue: %s, as JSON: %j",
+            err, err, err.stack);
+
       // Don't cache negative results
       this.queues[id] = undefined;
       throw err;
-    }).then(() => {
-      return name;
+    }).then(() => name);
+  }
+
+  /**
+   * Ensure that queue with given name exists and has correct meta-data,
+   * in particular regarding meta-data for expiration.
+   *
+   * We maintain following meta-data keys:
+   *  * `provisioner_id`,
+   *  * `worker_type`, and
+   *  * `last_used` (tolerating 23 - 25 hours delay)
+   *
+   * We delete queues if they have `last_used` > 7 days ago, this happens in
+   * a periodic test tasks.
+   */
+  async _ensureQueueAndMetadata(queue, provisionerId, workerType) {
+    // Fetch meta-data from queue, checking if it exists
+    try {
+      let meta = await this.client.getMetadata(queue);
+    } catch (err) {
+      // We handle queue not found exceptions
+      if (err.code !== 'QueueNotFound') {
+        throw err;
+      }
+
+      // Create the queue with correct meta-data
+      try {
+        await this.client.createQueue(queue, {
+          provisioner_id: provisionerId,
+          worker_type:    workerType,
+          last_used:      taskcluster.fromNowJSON()
+        });
+      } catch (err) {
+        // If queue already exists, we must have been racing we assume meta-data
+        // is up to date...
+        if (err.code !== 'QueueAlreadyExists') {
+          debug("[alert-operator] Failed to create queue: %s for %s/%s " +
+                "got error: %s, as JSON: %j", queue, provisionerId, workerType,
+                err, err, err.stack);
+          throw err;
+        }
+      }
+
+      // Queue created (with meta-data) and we're done
+      return;
+    }
+
+    // Check if meta-data is up-to-date
+    var lastUsed = new Date(meta.last_used);
+    if (meta.provisioner_id === provisionerId
+        && meta.worker_type === workerType
+        && isFinite(lastUsed)
+        && lastUsed.getTime() > Date.now() - 24 * 60 * 60 * 1000
+    ) {
+      return; // We're done as meta-data is present
+    }
+
+    // Update meta-data
+    await this.client.setMetadata(queue, {
+      provisioner_id: provisionerId,
+      worker_type:    workerType,
+      last_used:      taskcluster.fromNowJSON()
     });
   }
+
+  /** Remove all worker queues not used since `now - 7 days` */
+  async deleteUnusedWorkerQueues(now = new Date()) {
+    assert(now instanceof Date, "Expected now as Date object");
+    let deleteIfNotUsedSince = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+
+    // Iterate through all pages
+    let marker = undefined;
+    do {
+      // List queues with prefix from marker
+      let {queues, nextMarker} = await this.client.listQueues({
+        marker,
+        prefix: this.prefix + '-'
+        metadata: true
+      });
+
+      // Set next marker
+      marker = nextMarker;
+
+      // Find queues to delete
+      queues = queues.filter(({metadata}) => {
+        // If meta-data is missing or 7 days old, we mark it for deletion
+        var lastUsed = new Date(metadata.last_used);
+        return (
+             !metadata.provisioner_id
+          || !metadata.worker_type
+          || !isFinite(lastUsed)
+          || lastUsed.getTime() < deleteIfNotUsedSince
+        );
+      });
+
+      // Delete queues
+      await Promise.all(queues.map({name, metadata} => {
+        debug("Deleting queue %s with metadata: %j", name, metadata);
+        return this.client.deleteQueue(name);
+      });
+
+      // Keep going until we get an `undefined` marker
+    } while (marker);
+  }
+
 
   /**
    * Enqueue message about a new pending task in appropriate queue
@@ -357,7 +472,7 @@ class QueueService {
   }
 
   /** Get signed URLs for polling and deleting from the azure queue */
-  async signedPendingPollUrl(provisionerId, workerType) {
+  async signedPendingPollUrls(provisionerId, workerType) {
     // Find name of azure queue
     var queueName = await this.ensurePendingQueue(provisionerId, workerType);
 
@@ -369,30 +484,55 @@ class QueueService {
     var expiry = new Date();
     expiry.setMinutes(expiry.getMinutes() + 30);
 
-    // Create shared access signature
-    var sas = this.client.sas(queueName, {
-      start, expiry,
-      permissions: {
-        process:    true
-      }
+    // Find visibility timeout we'll encoding in signed poll URLs
+    var pendingPollTimeout = Math.floor(this.pendingPollTimeout / 1000);
+
+    // Construct queue w. legacy name
+    // TODO: Remove this once legacy queues are empty...
+    var legacyName = [
+      this.prefix,    // prefix all queues
+      base32.encode(decodeUrlSafeBase64(provisionerId))
+        .toString('utf8')
+        .toLowerCase()
+        .replace(/=*$/, ''),
+      base32.encode(decodeUrlSafeBase64(workerType))
+        .toString('utf8')
+        .toLowerCase()
+        .replace(/=*$/, ''),
+      '1'             // priority, currently just hardcoded to 1
+    ].join('-');
+
+    // For each queue name, return signed URLs for the queue
+    var queues = [
+      queueName,
+      legacyName
+    ].map(queueName => {
+      // Create shared access signature
+      var sas = this.client.sas(queueName, {
+        start, expiry,
+        permissions: {
+          process:    true
+        }
+      });
+      // Construct signed url
+      return {
+        signedPollUrl: url.format({
+          protocol:       'https',
+          host:           `${this.accountName}.queue.core.windows.net`,
+          pathname:       `/${queueName}/messages`,
+          search:         `?visibilitytimeout=${pendingPollTimeout}&${sas}`
+        }),
+        signedDeleteUrl: url.format({
+          protocol:       'https',
+          host:           `${this.accountName}.queue.core.windows.net`,
+          pathname:       `/${queueName}/messages/{{messageId}}`,
+          search:         `?popreceipt={{popReceipt}}&${sas}`
+        })
+      };
     });
 
-    var pendingPollTimeout = Math.floor(this.pendingPollTimeout / 1000);
-    return {
-      expiry:           expiry,
-      signedPollUrl: url.format({
-        protocol:       'https',
-        host:           `${this.accountName}.queue.core.windows.net`,
-        pathname:       `/${queueName}/messages`,
-        search:         `?visibilitytimeout=${pendingPollTimeout}&${sas}`
-      }),
-      signedDeleteUrl: url.format({
-        protocol:       'https',
-        host:           `${this.accountName}.queue.core.windows.net`,
-        pathname:       `/${queueName}/messages/{{messageId}}`,
-        search:         `?popreceipt={{popReceipt}}&${sas}`
-      })
-    };
+    // Return queues and expiry
+    return {queues, expiry};
   }
 
   /** Returns promise for number of messages pending in pending task queue */
@@ -400,8 +540,34 @@ class QueueService {
     // Find name of azure queue
     var queueName = await this.ensurePendingQueue(provisionerId, workerType);
 
+    // Construct queue w. legacy name
+    // TODO: Remove this once legacy queues are empty...
+    var legacyName = [
+      this.prefix,    // prefix all queues
+      base32.encode(decodeUrlSafeBase64(provisionerId))
+        .toString('utf8')
+        .toLowerCase()
+        .replace(/=*$/, ''),
+      base32.encode(decodeUrlSafeBase64(workerType))
+        .toString('utf8')
+        .toLowerCase()
+        .replace(/=*$/, ''),
+      '1'             // priority, currently just hardcoded to 1
+    ].join('-');
+
     // Get queue meta-data
     return this._countMessages(queueName);
+
+    // Find messages count from primary and legacy queue
+    var [
+      count,
+      legacyCount
+    ] = (await Promise.all([
+      this.client.getMetadata(queueName),
+      this.client.getMetadata(legacyName)
+    ])).map(_.property('messageCount'));
+
+    return count + legacyCount;
   }
 };
 
