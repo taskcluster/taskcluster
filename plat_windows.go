@@ -10,16 +10,30 @@ import (
 func startup() error {
 	fmt.Println("Detected Windows platform...")
 	fmt.Println("Looking for existing task users...")
-	out, err := exec.Command("C:\\Windows\\System32\\wbem\\WMIC.exe", "UserAccount", "get", "Name").Output()
+	out, err := exec.Command("wmic", "useraccount", "get", "name").Output()
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		return err
 	}
-	fmt.Printf("%v\n", out)
 	for _, line := range strings.Split(string(out), "\r\n") {
-		fmt.Println("... " + line)
+		if strings.HasPrefix(line, "Task_") {
+			removeOSUser(line)
+		}
 	}
 	return nil
+}
+
+func removeOSUser(user string) {
+	out, err := exec.Command("net", "user", user, "/delete").Output()
+	if err != nil {
+		fmt.Printf("%v\n", err)
+	}
+	fmt.Println(string(out))
+	out, err = exec.Command("wmic", "path", "win32_userprofile", "where", "name=\""+user+"\"", "delete").Output()
+	if err != nil {
+		fmt.Printf("%v\n", err)
+	}
+	fmt.Println(string(out))
 }
 
 func (task *TaskRun) generateCommand() *exec.Cmd {
