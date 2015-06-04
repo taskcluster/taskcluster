@@ -48,7 +48,7 @@ suite('garbage collection tests', function () {
       log: debug,
       docker: docker,
       interval: 2 * 1000,
-      taskListener: { availableCapacity: 0 },
+      taskListener: { availableCapacity: async () => { return 0 } },
     });
 
     var container = yield docker.createContainer({Image: IMAGE});
@@ -73,7 +73,7 @@ suite('garbage collection tests', function () {
       log: debug,
       docker: docker,
       interval: 2 * 1000,
-      taskListener: { availableCapacity: 0 },
+      taskListener: { availableCapacity: async () => { return 0 } },
     });
 
     var container = yield docker.createContainer({Image: IMAGE,
@@ -103,7 +103,7 @@ suite('garbage collection tests', function () {
       log: debug,
       docker: docker,
       interval: 2 * 1000,
-      taskListener: { availableCapacity: 0 },
+      taskListener: { availableCapacity: async () => { return 0 } },
     });
 
       var container = yield docker.createContainer({Image: IMAGE});
@@ -134,7 +134,7 @@ suite('garbage collection tests', function () {
       log: debug,
       docker: docker,
       interval: 2 * 1000,
-      taskListener: { availableCapacity: 0 },
+      taskListener: { availableCapacity: async () => { return 0 } },
     });
       clearTimeout(gc.sweepTimeoutId);
 
@@ -166,7 +166,7 @@ suite('garbage collection tests', function () {
       docker: docker,
       dockerVolume: '/',
       interval: 2 * 1000,
-      taskListener: { availableCapacity: 1 },
+      taskListener: { availableCapacity: async () => { return 1 } },
       diskspaceThreshold: 500000 * 100000000,
       imageExpiration: 5,
       containerExpiration: 5
@@ -206,7 +206,7 @@ suite('garbage collection tests', function () {
       docker: docker,
       dockerVolume: '/',
       interval: 2 * 1000,
-      taskListener: { availableCapacity: 1 },
+      taskListener: { availableCapacity: async () => { return 1 } },
       diskspaceThreshold: 1 * 100000000,
       containerExpiration: 1
     });
@@ -247,7 +247,7 @@ suite('garbage collection tests', function () {
         docker: docker,
         dockerVolume: '/',
         interval: 2 * 1000,
-        taskListener: { availableCapacity: 1 },
+        taskListener: { availableCapacity: async () => { return 1 } },
         diskspaceThreshold: 1 * 100000000,
         imageExpiration: 1,
         containerExpiration: 1
@@ -286,7 +286,7 @@ suite('garbage collection tests', function () {
         docker: docker,
         dockerVolume: '/',
         interval: 2 * 1000,
-        taskListener: { availableCapacity: 1 },
+        taskListener: { availableCapacity: async () => { return 1 } },
         diskspaceThreshold: 5000000 * 100000000,
         imageExpiration: 1
       });
@@ -319,7 +319,7 @@ suite('garbage collection tests', function () {
       docker: docker,
       dockerVolume: '/',
       interval: 2 * 1000,
-      taskListener: { availableCapacity: 1 },
+      taskListener: { availableCapacity: async () => { return 1 } },
       diskspaceThreshold: 1 * 100000000,
       imageExpiration: 5
     });
@@ -354,7 +354,7 @@ suite('garbage collection tests', function () {
       docker: docker,
       dockerVolume: '/',
       interval: 2 * 1000,
-      taskListener: { availableCapacity: 1 },
+      taskListener: { availableCapacity: async () => { return 1 } },
       diskspaceThreshold: 500000 * 100000000,
       imageExpiration: 5
     });
@@ -402,7 +402,7 @@ suite('garbage collection tests', function () {
         log: debug,
         docker: docker,
         interval: 2 * 1000,
-        taskListener: { availableCapacity: 0 },
+        taskListener: { availableCapacity: async () => { return 0 } },
         containerExpiration: containerExpiration
       });
 
@@ -450,7 +450,7 @@ suite('garbage collection tests', function () {
       docker: docker,
       dockerVolume: '/',
       interval: 2 * 1000,
-      taskListener: { availableCapacity: 0 },
+      taskListener: { availableCapacity: async () => { return 0 } },
       diskspaceThreshold: 500000 * 100000000,
       imageExpiration: 5
     });

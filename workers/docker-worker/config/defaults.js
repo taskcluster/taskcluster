@@ -1,4 +1,25 @@
 module.exports = {
+  deviceManagement: {
+    cpu: {
+      enabled: false
+    },
+    loopbackAudio: {
+      enabled: true
+    },
+    loopbackVideo: {
+      enabled: true
+    },
+    // Phone device configuration will provide details for what kinds of phones
+    // this worker is responsible for providing to tasks. This will ensure that
+    // tasks are not claimed if the worker detects there will be no phones available.
+    // In the future a session can be started on these phones prior to claiming tasks
+    // and that session passed into the task.
+    phone: {
+      enabled: false,
+      sims: '1', // Number of sim cards.
+      type: undefined // device type (ex. 'flame')
+    }
+  },
   dockerConfig: {
     // Privileged mode will allow tasks to run with elevated privileges similar
     // to process running on the host.  The task containers will have access to
@@ -42,7 +63,7 @@ module.exports = {
   alivenessCheckInterval: 30000, // 30 seconds
 
   capacityManagement: {
-    diskspaceThreshold: 10 * 1000000000,
+    diskspaceThreshold: 10 * 1000000000
   },
 
   dockerVolume: '/mnt',
@@ -53,7 +74,7 @@ module.exports = {
     // Amount of time that should elapse before an exited container that was not
     // explicitly marked for removal is removed.
     containerExpiration: 30 * 60 * 1000,
-    interval: 60 * 1000,
+    interval: 60 * 1000
   },
 
   // Shutdown configuration...
@@ -75,7 +96,7 @@ module.exports = {
     // hack to generate a year in ms... Note that two args (year, month) are
     // required here instead of one due to some quirk of v8...
     liveLogExpires: Date.UTC(2020, 0) - Date.UTC(2019, 0),
-    bulkLogExpires: Date.UTC(2020, 0) - Date.UTC(2019, 0),
+    bulkLogExpires: Date.UTC(2020, 0) - Date.UTC(2019, 0)
   },
 
   task: {

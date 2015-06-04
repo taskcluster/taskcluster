@@ -139,6 +139,7 @@ co(function *() {
   if (config.isolatedContainers) {
     // One capacity per core...
     config.capacity = os.cpus().length;
+    config.deviceManagement.cpu.enabled = true;
     debug('running in isolated containers mode...');
   }
 

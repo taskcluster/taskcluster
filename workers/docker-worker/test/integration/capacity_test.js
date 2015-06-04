@@ -12,6 +12,7 @@ suite('Capacity', function() {
   var worker;
   setup(co(function * () {
     settings.configure({
+      deviceManagement: {},
       capacity: CAPACITY,
       capacityManagement: {
         diskspaceThreshold: 1

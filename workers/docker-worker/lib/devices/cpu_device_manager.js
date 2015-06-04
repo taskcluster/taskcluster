@@ -23,19 +23,29 @@ export default class CpuDeviceManager {
   }
 
   getAvailableDevice() {
-    debug('Aquiring available cpu device');
-    for (let device of this.devices) {
-      if (device.active) continue;
-      device.aquire();
-      debug(`Device: ${device.id} aquired`);
-      return device;
+    let devices = this.getAvailableDevices();
+    if (!devices.length) {
+      throw new Error(`
+        Fatal error... Could not aquire cpu device:
+
+        ${JSON.stringify(this.devices)}
+      `);
     }
 
-    throw new Error(`
-      Fatal error... Could not aquire cpu device:
+    debug('Aquiring available device');
 
-      ${JSON.stringify(this.devices, null, 2)}
-    `);
+    let device = devices[0];
+    device.aquire();
+
+    debug(`Device: ${device.path} aquired`);
+
+    return device;
+  }
+
+  getAvailableDevices() {
+    return this.devices.filter((device) => {
+      return device.active === false;
+    });
   }
 }
 

@@ -37,19 +37,27 @@ export default class VideoDeviceManager {
   }
 
   getAvailableDevice() {
-    debug('Aquiring available video device');
-    for (let device of this.devices) {
-      if (device.active) continue;
-      device.aquire();
-      debug(`Device: ${device.path} aquired`);
-      return device;
+    let devices = this.getAvailableDevices();
+    if (!devices.length) {
+      throw new Error(`
+        Fatal error... Could not acquire audio device: ${JSON.stringify(this.devices)}
+      `);
     }
 
-    throw new Error(`
-      Fatal error... Could not aquire video device:
+    debug('Acquiring available device');
 
-      ${JSON.stringify(this.devices)}
-    `);
+    let device = devices[0];
+    device.acquire();
+
+    debug(`Device: ${device.path} acquired`);
+
+    return device;
+  }
+
+  getAvailableDevices() {
+    return this.devices.filter((device) => {
+      return device.active === false;
+    });
   }
 }
 
@@ -60,8 +68,10 @@ class VideoDevice {
     this.mountPoints = [path];
   }
 
-  aquire() {
-    if (this.active) throw new Error('Device has already been aquired');
+  acquire() {
+    if (this.active) {
+      throw new Error('Device has already been acquired');
+    }
     this.active = true;
   }
 

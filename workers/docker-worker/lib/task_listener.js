@@ -17,16 +17,7 @@ var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 var TaskQueue = require('./queueservice');
 var exceedsDiskspaceThreshold = require('./util/capacity').exceedsDiskspaceThreshold;
-var VideoDeviceManager = require('./devices/video_device_manager');
-var AudioDeviceManager = require('./devices/audio_device_manager');
-var CpuDeviceManager = require('./devices/cpu_device_manager');
-
-const DEVICE_MANAGERS = {
-  'loopbackVideo': new VideoDeviceManager(),
-  'loopbackAudio': new AudioDeviceManager()
-};
-
-let cpuDeviceManager = new CpuDeviceManager();
+var DeviceManager = require('./devices/device_manager.js');
 
 /**
 @param {Configuration} config for worker.
@@ -39,6 +30,8 @@ export default class TaskListener extends EventEmitter {
     this.runningTasks = [];
     this.taskQueue = new TaskQueue(this.runtime);
     this.taskPollInterval = this.runtime.taskQueue.pollInterval;
+
+    this.deviceManager = new DeviceManager(runtime);
   }
 
   listenForShutdowns() {
@@ -113,26 +106,58 @@ export default class TaskListener extends EventEmitter {
     return cancelListener;
   }
 
-  get availableCapacity() {
+  async availableCapacity() {
     // Note: Sometimes capacity could be zero (dynamic capacity changes based on
     // shutdown and other factors) so subtracting runningTasks could result in a
     // negative number, hence the use of at least returning 0.
-    return Math.max(this.capacity - this.runningTasks.length, 0);
+    let deviceCapacity;
+    try {
+      deviceCapacity = await this.deviceManager.getAvailableCapacity();
+    }
+    catch (e) {
+      // If device capacity ccannot be determined for device managers configured
+      // for the worker, then default to 0
+      this.runtime.log('[alert-operator] error determining device capacity',
+        {
+          message: e.toString(),
+          err: e,
+          stack: e.stack
+        }
+      );
+
+      deviceCapacity = 0;
+    }
+
+    let runningCapacity = Math.max(this.capacity - this.runningTasks.length, 0);
+    let hostCapacity = Math.min(runningCapacity, deviceCapacity);
+
+    if (hostCapacity < runningCapacity) {
+      this.runtime.log('[info] host capacity adjusted',
+        {
+          message: `The available running capacity of the host has been changed.` +
+                   ` Available Capacities: Device: ${deviceCapacity} ` +
+                   `Running: ${runningCapacity} Adjusted Host Capacity: ${hostCapacity}`
+        }
+      );
+    }
+
+    return hostCapacity;
   }
 
   async getTasks() {
-    if (this.availableCapacity === 0)  return;
+    let availableCapacity = await this.availableCapacity();
+    if (availableCapacity === 0)  return;
 
     var exceedsThreshold = await exceedsDiskspaceThreshold(
       this.runtime.dockerVolume,
       this.runtime.capacityManagement.diskspaceThreshold,
-      this.availableCapacity,
+      availableCapacity,
       this.runtime.log
     );
     // Do not claim tasks if not enough resources are available
     if (exceedsThreshold) return;
 
-    let claims = await this.taskQueue.claimWork(this.availableCapacity);
+    let claims = await this.taskQueue.claimWork(availableCapacity);
     claims.forEach(this.runTask.bind(this));
   }
 
@@ -241,9 +266,10 @@ export default class TaskListener extends EventEmitter {
   * Run task that has been claimed.
   */
   async runTask(claim) {
+    let runningState;
     try {
       // Reference to state of this request...
-      let runningState = {
+      runningState = {
         devices: {},
         taskId: claim.status.taskId,
         runId: claim.runId
@@ -271,10 +297,8 @@ export default class TaskListener extends EventEmitter {
       }
 
       let options = {};
-
-      // Configure cpuset options if needed...
       if (this.runtime.isolatedContainers) {
-        runningState.devices['cpu'] = cpuDeviceManager.getAvailableDevice();
+        runningState.devices['cpu'] = this.deviceManager.getDevice('cpu');
         options.cpuset = runningState.devices['cpu'].id;
       }
 
@@ -282,10 +306,9 @@ export default class TaskListener extends EventEmitter {
       if (taskCapabilities.devices) {
         options.devices = {};
         debug('Aquiring task payload specific devices');
-        for (let device in taskCapabilities.devices) {
-          if (!DEVICE_MANAGERS[device]) throw new Error('Unrecognized device requested');
 
-          runningState.devices[device] = DEVICE_MANAGERS[device].getAvailableDevice();
+        for (let device in taskCapabilities.devices) {
+          runningState.devices[device] = await this.deviceManager.getDevice(device);
           options.devices[device] = runningState.devices[device];
         }
       }

@@ -114,7 +114,7 @@ suite('volume cache test', function () {
       log: debug,
       docker: docker,
       interval: 2 * 1000,
-      taskListener: {pending: 1}
+      taskListener: { availableCapacity: async () => { return 0; } }
     });
 
     clearTimeout(gc.sweepTimeoutId);

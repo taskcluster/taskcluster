@@ -225,9 +225,10 @@ GarbageCollector.prototype = {
       // each task its capable of claiming.  Images that are not running will be
       // removed if they are expired or if there is not enough diskspace remaining
       // for each available task the worker can claim.
+      let availableCapacity = yield this.taskListener.availableCapacity();
       var exceedsThreshold = yield exceedsDiskspaceThreshold(this.dockerVolume,
                                this.diskspaceThreshold,
-                               this.taskListener.availableCapacity,
+                               availableCapacity,
                                this.log);
       if (exceedsThreshold) {
         this.emit('gc:diskspace:warning',

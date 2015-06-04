@@ -42,19 +42,27 @@ export default class AudioDeviceManager {
   }
 
   getAvailableDevice() {
-    debug('Aquiring available device');
-    for (let device of this.devices) {
-      if (device.active) continue;
-      device.aquire();
-      debug(`Device: ${device.path} aquired`);
-      return device;
+    let devices = this.getAvailableDevices();
+    if (!devices.length) {
+      throw new Error(`
+        Fatal error... Could not acquire audio device: ${JSON.stringify(this.devices)}
+      `);
     }
 
-    throw new Error(`
-      Fatal error... Could not aquire audio device:
+    debug('Acquiring available device');
 
-      ${JSON.stringify(this.devices)}
-    `);
+    let device = devices[0];
+    device.acquire();
+
+    debug(`Device: ${device.path} acquired`);
+
+    return device;
+  }
+
+  getAvailableDevices() {
+    return this.devices.filter((device) => {
+      return device.active === false;
+    });
   }
 }
 
@@ -64,7 +72,9 @@ class AudioDevice {
     this.active = active;
     let deviceId = path.match(/^\/dev\/snd\/controlC([0-9]+)$/);
 
-    if (!deviceId) throw new Error('Path does not appear to be a valid audio device file');
+    if (!deviceId) {
+      throw new Error('Path does not appear to be a valid audio device file');
+    }
 
     deviceId = deviceId[1];
     this.mountPoints = [
@@ -72,12 +82,14 @@ class AudioDevice {
       `/dev/snd/pcmC${deviceId}D0c`,
       `/dev/snd/pcmC${deviceId}D0p`,
       `/dev/snd/pcmC${deviceId}D1c`,
-      `/dev/snd/pcmC${deviceId}D1p`,
+      `/dev/snd/pcmC${deviceId}D1p`
     ];
   }
 
-  aquire() {
-    if (this.active) throw new Error('Device has already been aquired');
+  acquire() {
+    if (this.active) {
+      throw new Error('Device has already been acquired');
+    }
     this.active = true;
   }
 
