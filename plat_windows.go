@@ -36,12 +36,12 @@ func startup() error {
 	// var lastError error = nil
 	fmt.Println("Detected Windows platform...")
 	fmt.Println("Looking for existing task users...")
+	// note if this fails, we carry on
 	deleteExistingWindowsUsers()
-	createNewWindowsUser()
-	return nil
+	return createNewWindowsUser()
 }
 
-func createNewWindowsUser() {
+func createNewWindowsUser() error {
 	// username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
 	userName := "Task_" + strconv.Itoa((int)(time.Now().Unix()))
@@ -51,8 +51,11 @@ func createNewWindowsUser() {
 		Name:     userName,
 		Password: password,
 	}
+	err := os.MkdirAll(User.HomeDir, 0755)
+	if err != nil {
+		return err
+	}
 	commandsToRun := [][]string{
-		{"mkdir", User.HomeDir},
 		{"icacls", User.HomeDir, "/remote:g", "Users"},
 		{"icacls", User.HomeDir, "/remote:g", "Everyone"},
 		{"icacls", User.HomeDir, "/inheritance:r"},
@@ -65,10 +68,11 @@ func createNewWindowsUser() {
 		out, err := exec.Command(command[0], command[1:]...).Output()
 		if err != nil {
 			fmt.Printf("%v\n", err)
-		} else {
-			fmt.Println(string(out))
+			return err
 		}
+		fmt.Println(string(out))
 	}
+	return nil
 }
 
 func generatePassword() string {
