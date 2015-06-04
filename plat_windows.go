@@ -48,7 +48,7 @@ func createNewWindowsUser() error {
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
 	userName := "Task_" + strconv.Itoa((int)(time.Now().Unix()))
 	password := generatePassword()
-	User := WindowsUser{
+	User = WindowsUser{
 		HomeDir:  "C:\\Users\\" + userName,
 		Name:     userName,
 		Password: password,
