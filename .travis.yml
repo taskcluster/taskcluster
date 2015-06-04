@@ -4,8 +4,7 @@ go:
   - 1.4
 
 script:
-  - go test -v ./...
-  - go vet ./...
+  - ./build.sh
 
 # currently cannot customise per user fork, see:
 # https://github.com/travis-ci/travis-ci/issues/1094
