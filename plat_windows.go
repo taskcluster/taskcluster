@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/dchest/uniuri"
 )
 
 type WindowsUser struct {
@@ -77,7 +79,7 @@ func createNewWindowsUser() error {
 }
 
 func generatePassword() string {
-	return "mon123!@#"
+	return uniuri.NewLenChars(12, []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()<>/?{}[]-=_+,."))
 }
 
 func deleteExistingWindowsUsers() {
