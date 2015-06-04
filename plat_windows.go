@@ -16,8 +16,9 @@ func startup() error {
 		return err
 	}
 	for _, line := range strings.Split(string(out), "\r\n") {
-		if strings.HasPrefix(line, "Task_") {
-			removeOSUser(line)
+		trimmedLine := strings.Trim(line, "\r\n")
+		if strings.HasPrefix(trimmedLine, "Task_") {
+			removeOSUser(trimmedLine)
 		}
 	}
 	return nil
