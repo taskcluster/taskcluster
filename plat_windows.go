@@ -56,8 +56,8 @@ func createNewWindowsUser() error {
 		return err
 	}
 	commandsToRun := [][]string{
-		{"icacls", User.HomeDir, "/remote:g", "Users"},
-		{"icacls", User.HomeDir, "/remote:g", "Everyone"},
+		{"icacls", User.HomeDir, "/remove:g", "Users"},
+		{"icacls", User.HomeDir, "/remove:g", "Everyone"},
 		{"icacls", User.HomeDir, "/inheritance:r"},
 		{"icacls", User.HomeDir, "/grant:r", User.Name, ":(CI)F", "SYSTEM:(CI)F", "Administrators:(CI)F"},
 		{"net", "user", User.Name, User.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:" + User.HomeDir},
