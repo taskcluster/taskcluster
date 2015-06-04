@@ -65,6 +65,13 @@ func createNewWindowsUser() error {
 		{"net", "user", User.Name, User.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:" + User.HomeDir},
 		{"icacls", User.HomeDir, "/grant:r", User.Name + ":(CI)F", "SYSTEM:(CI)F", "Administrators:(CI)F"},
 		{"net", "localgroup", "Remote Desktop Users", "/add", User.Name},
+		{"C:\\Users\\Administrator\\PSTools\\PsExec.exe",
+			"-u", User.Name,
+			"-p", User.Password,
+			"-w", User.HomeDir,
+			"-n", "10",
+			"whoami",
+		},
 	}
 	for _, command := range commandsToRun {
 		fmt.Println("Running command: '" + strings.Join(command, "' '") + "'")
@@ -139,9 +146,11 @@ func (task *TaskRun) generateCommand() *exec.Cmd {
 		"-u", User.Name,
 		"-p", User.Password,
 		"-w", User.HomeDir,
+		"-n", "10",
 	}
 	command = append(command, task.Payload.Command...)
 	cmd := exec.Command(command[0], command[1:]...)
+	fmt.Println("Running command: '" + strings.Join(command, "' '") + "'")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	task.prepEnvVars(cmd)
