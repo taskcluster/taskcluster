@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 )
 
 func startup() {
+	fmt.Println("Detected OS X platform")
 }
 
 func (task *TaskRun) generateCommand() *exec.Cmd {

@@ -1,10 +1,23 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"os/exec"
+	"strings"
 )
 
-func startup() {
+func startup() error {
+	fmt.Println("Detected Windows platform...")
+	fmt.Println("Looking for existing task users...")
+	out, err := exec.Command("wmic UserAccount get Name").Output()
+	if err != nil {
+		return err
+	}
+	for _, line := range strings.Split(string(out), "\r\n") {
+		fmt.Println("... " + line)
+	}
+	return nil
 }
 
 func (task *TaskRun) generateCommand() *exec.Cmd {
