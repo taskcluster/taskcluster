@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -ev
 
 cd "$(dirname "${0}")"
 
@@ -28,3 +28,8 @@ install windows 386
 install windows amd64
 
 find "${GOPATH}/bin" -name 'generic-worker*'
+
+go test ./...
+go vet ./...
+
+echo "Build successful!"

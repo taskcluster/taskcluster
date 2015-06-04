@@ -12,8 +12,10 @@ func startup() error {
 	fmt.Println("Looking for existing task users...")
 	out, err := exec.Command("wmic UserAccount get Name").Output()
 	if err != nil {
+		fmt.Printf("%v\n", err)
 		return err
 	}
+	fmt.Printf("%v\n", out)
 	for _, line := range strings.Split(string(out), "\r\n") {
 		fmt.Println("... " + line)
 	}
