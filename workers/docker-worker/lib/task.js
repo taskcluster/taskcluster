@@ -183,12 +183,13 @@ export default class Task {
   */
   async dockerConfig(linkInfo) {
     let config = this.task.payload;
-    // Allow task specific environment vars to overwrite those provided by hooks
-    let env = _.defaults({}, config.env || {}, linkInfo.env || {});
 
     await this.runtime.privateKey.decryptEnvVariables(
-      this.task.payload, this.status.taskId
+      config, this.status.taskId
     );
+
+    // Allow task specific environment vars to overwrite those provided by hooks
+    let env = _.defaults({}, config.env || {}, linkInfo.env || {});
 
     // Universally useful environment variables describing the current task.
     // Note: these environment variables cannot be overwritten by anyone, we
