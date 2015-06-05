@@ -5,7 +5,7 @@ suite('Create task (w. defaults)', function() {
   var _           = require('lodash');
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
-  var expect      = require('expect.js');
+  var assume      = require('assume');
   var helper      = require('./helper');
 
   // Use the same task definition for everything
@@ -41,13 +41,13 @@ suite('Create task (w. defaults)', function() {
 
     debug("### Listening for task-defined");
     var m1 = await helper.events.waitFor('is-defined');
-    expect(r1.status).to.be.eql(m1.payload.status);
+    assume(r1.status).deep.equals(m1.payload.status);
 
     // Wait for task-pending message
     var m2 = await helper.events.waitFor('is-pending');
-    expect(m2.payload.status).to.be.eql(m2.payload.status);
+    assume(m2.payload.status).deep.equals(m2.payload.status);
 
     var r2 = await helper.queue.status(taskId);
-    expect(r1.status).to.be.eql(r2.status);
+    assume(r1.status).deep.equals(r2.status);
   });
 });

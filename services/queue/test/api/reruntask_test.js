@@ -6,7 +6,6 @@ suite('Rerun task', function() {
   var Promise     = require('promise');
   var base        = require('taskcluster-base');
   var taskcluster = require('taskcluster-client');
-  var expect      = require('expect.js');
   var helper      = require('./helper');
 
   // Use the same task definition for everything
