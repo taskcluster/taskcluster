@@ -1,30 +1,34 @@
 language: go
-
 go:
-  - 1.4
-
+- 1.4
 env:
-  - GIMME_OS=linux GIMME_ARCH=amd64
-  - GIMME_OS=darwin GIMME_ARCH=amd64
-  - GIMME_OS=windows GIMME_ARCH=amd64
-
+- GIMME_OS=linux GIMME_ARCH=amd64
+- GIMME_OS=darwin GIMME_ARCH=amd64
+- GIMME_OS=windows GIMME_ARCH=amd64
 install:
-  - go get -d -v ./...
-
+- go get -d -v ./...
 script:
-  - go install -v ./...
-  - go test ./...
+- go install -v ./...
+- go test ./...
+deploy:
+  provider: releases
+  api_key:
+    secure: KuifEWzfB5C9GFHMjFpSpbHWLN9cs/1afRuJhP4aADU3i55zb0QDzIu6+aGLlL0jsV5T07AqgPvJm4bOQNnWVhlhyHStrkIdzUpCtiCVNnPH3cYUkJ4/0zJyJaopnZfuX/2m2F+ajNC2Z94mxuu4qUUgqFO9x708xy0LYCofTEU=
+  file:
+    - "${GOPATH}/bin/generic-worker"
+    - "${GOPATH}/bin/generic-worker/darwin_amd64/generic-worker"
+    - "${GOPATH}/bin/windows_amd64/generic-worker.exe"
+  on:
+    repo: taskcluster/generic-worker
 
-# currently cannot customise per user fork, see:
-# https://github.com/travis-ci/travis-ci/issues/1094
 notifications:
   irc:
     channels:
-      - "irc.mozilla.org#taskcluster-bots"
+    - irc.mozilla.org#taskcluster-bots
     on_success: always
     on_failure: always
     template:
-      - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
-      - "Change view : %{compare_url}"
-      - "Build details : %{build_url}"
-      - "Commit message : %{commit_message}"
+    - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
+    - 'Change view : %{compare_url}'
+    - 'Build details : %{build_url}'
+    - 'Commit message : %{commit_message}'
