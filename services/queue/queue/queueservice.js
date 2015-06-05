@@ -90,6 +90,10 @@ class QueueService {
     // Promises that queues are created, return the queue name
     this.queues = {};
 
+    // Resets queues cache every 25 hours, this ensures that meta-data is kept
+    // up-to-date with a last_used field no more than 48 hours behind
+    setInterval(() => {this.queues = {};}, 25 * 60 * 60 * 1000);
+
     // Store claimQueue  name, and remember if we've created it
     this.claimQueue         = options.claimQueue;
     this.claimQueueReady    = null;
@@ -331,15 +335,15 @@ class QueueService {
    * We maintain following meta-data keys:
    *  * `provisioner_id`,
    *  * `worker_type`, and
-   *  * `last_used` (tolerating 23 - 25 hours delay)
+   *  * `last_used` (tolerating 23 hours difference, updated every 25 hours)
    *
-   * We delete queues if they have `last_used` > 7 days ago, this happens in
+   * We delete queues if they have `last_used` > 10 days ago, this happens in
    * a periodic test tasks.
    */
   async _ensureQueueAndMetadata(queue, provisionerId, workerType) {
     // Fetch meta-data from queue, checking if it exists
     try {
-      let meta = await this.client.getMetadata(queue);
+      let {metadata} = await this.client.getMetadata(queue);
     } catch (err) {
       // We handle queue not found exceptions
       if (err.code !== 'QueueNotFound') {
@@ -357,6 +361,8 @@ class QueueService {
         // If queue already exists, we must have been racing we assume meta-data
         // is up to date...
         if (err.code !== 'QueueAlreadyExists') {
+          // We probably don't have to alert on all these. But we should
+          // definitely alert if we see a QueueBeingDeleted error
           debug("[alert-operator] Failed to create queue: %s for %s/%s " +
                 "got error: %s, as JSON: %j", queue, provisionerId, workerType,
                 err, err, err.stack);
@@ -369,11 +375,11 @@ class QueueService {
     }
 
     // Check if meta-data is up-to-date
-    var lastUsed = new Date(meta.last_used);
-    if (meta.provisioner_id === provisionerId
-        && meta.worker_type === workerType
+    var lastUsed = new Date(metadata.last_used);
+    if (metadata.provisioner_id === provisionerId
+        && metadata.worker_type === workerType
         && isFinite(lastUsed)
-        && lastUsed.getTime() > Date.now() - 24 * 60 * 60 * 1000
+        && lastUsed.getTime() > Date.now() - 23 * 60 * 60 * 1000
     ) {
       return; // We're done as meta-data is present
     }
@@ -386,10 +392,10 @@ class QueueService {
     });
   }
 
-  /** Remove all worker queues not used since `now - 7 days` */
+  /** Remove all worker queues not used since `now - 10 days` */
   async deleteUnusedWorkerQueues(now = new Date()) {
     assert(now instanceof Date, "Expected now as Date object");
-    let deleteIfNotUsedSince = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+    let deleteIfNotUsedSince = now.getTime() - 10 * 24 * 60 * 60 * 1000;
 
     // Iterate through all pages
     let marker = undefined;
@@ -397,7 +403,7 @@ class QueueService {
       // List queues with prefix from marker
       let {queues, nextMarker} = await this.client.listQueues({
         marker,
-        prefix: this.prefix + '-'
+        prefix: this.prefix + '-',
         metadata: true
       });
 
@@ -406,7 +412,7 @@ class QueueService {
 
       // Find queues to delete
       queues = queues.filter(({metadata}) => {
-        // If meta-data is missing or 7 days old, we mark it for deletion
+        // If meta-data is missing or 10 days old, we mark it for deletion
         var lastUsed = new Date(metadata.last_used);
         return (
              !metadata.provisioner_id
@@ -416,11 +422,17 @@ class QueueService {
         );
       });
 
-      // Delete queues
-      await Promise.all(queues.map({name, metadata} => {
+      // Delete queues, if they are empty
+      await Promise.all(queues.map(async ({name, metadata}) => {
+        // Fetch message count (approximate)
+        let {messageCount} = await this.client.getMetadata(name);
+        if (messageCount > 0) {
+          return; // Abort if there is messages
+        }
+
         debug("Deleting queue %s with metadata: %j", name, metadata);
         return this.client.deleteQueue(name);
-      });
+      }));
 
       // Keep going until we get an `undefined` marker
     } while (marker);
