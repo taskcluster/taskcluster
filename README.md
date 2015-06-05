@@ -12,7 +12,7 @@ Head over to http://golang.org/doc/install and follow the instructions for your 
 ## Install generic worker
 
 ```
-go get github.com/petemoore/generic-worker
+go get github.com/taskcluster/generic-worker
 ```
 
 ## Create TaskCluster account
@@ -22,7 +22,7 @@ Head over to https://tools.taskcluster.net/auth/ and create yourself an account 
 ## Set up your env
 
 ```
-export PAYLOAD_SCHEMA="${GOPATH}/src/github.com/petemoore/generic-worker/schema.json"
+export PAYLOAD_SCHEMA="${GOPATH}/src/github.com/taskcluster/generic-worker/schema.json"
 export PROVISIONER_ID='<choose_whatever_you_like>'
 export REFRESH_URLS_PREMATURELY_SECS=300
 export TASKCLUSTER_ACCESS_TOKEN='<your_access_token_from_above>'
