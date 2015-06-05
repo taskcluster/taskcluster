@@ -5,15 +5,20 @@ A generic worker for task cluster, written in go.
 
 Although the generic worker is not yet fully implemented, or feature complete, here is some information about how you might use it when it is ready. This might also serve as a useful guide if you interested in contributing to its development.
 
-## Install go compiler
+## Install binary directly
 
-Head over to http://golang.org/doc/install and follow the instructions for your platform. Be sure to set your GOPATH to something appropriate.
+* Download the latest release for your platform from https://github.com/taskcluster/generic-worker/releases.
+* Download the latest payload schema from https://raw.githubusercontent.com/taskcluster/generic-worker/master/schema.json (this step will be gone very soon - whoops).
 
-## Install generic worker
+## Build from source
 
-```
-go get github.com/taskcluster/generic-worker
-```
+If you prefer not to use a prepackaged binary, or want to have the latest unreleased version from the development head:
+
+* Head over to http://golang.org/doc/install and follow the instructions for your platform. Be sure to set your GOPATH to something appropriate.
+* Run `go get github.com/taskcluster/generic-worker`
+* Run `go install github.com/taskcluster/generic-worker`
+
+All being well, the binary will be built under `${GOPATH}/bin`.
 
 ## Create TaskCluster account
 
