@@ -6,7 +6,7 @@ suite('Create task', function() {
   var Promise     = require('promise');
   var base        = require('taskcluster-base');
   var taskcluster = require('taskcluster-client');
-  var expect      = require('expect.js');
+  var assume      = require('assume');
   var helper      = require('./helper');
 
   // Use the same task definition for everything
@@ -63,15 +63,15 @@ suite('Create task', function() {
 
     debug("### Wait for defined message");
     var m1 = await helper.events.waitFor('is-defined');
-    expect(r1.status).to.be.eql(m1.payload.status);
+    assume(r1.status).deep.equals(m1.payload.status);
 
     debug("### Wait for pending message");
     var m2 = await helper.events.waitFor('is-pending');
-    expect(r1.status).to.be.eql(m1.payload.status);
+    assume(r1.status).deep.equals(m1.payload.status);
 
     debug("### Get task status");
     var r2 = await helper.queue.status(taskId);
-    expect(r1.status).to.be.eql(r2.status);
+    assume(r1.status).deep.equals(r2.status);
   });
 
   test("createTask (without required scopes)", async () => {
@@ -81,7 +81,7 @@ suite('Create task', function() {
       'queue:route:wrong-route'
     );
     await helper.queue.createTask(taskId, taskDef).then(() => {
-      expect().fail("Expected an authentication error");
+      throw new Error("Expected an authentication error");
     }, (err) => {
       debug("Got expected authentication error: %s", err);
     });
@@ -92,15 +92,15 @@ suite('Create task', function() {
 
     var r1 = await helper.queue.createTask(taskId, taskDef);
     var r2 = await helper.queue.createTask(taskId, taskDef);
-    expect(r1).to.be.eql(r2);
+    assume(r1).deep.equals(r2);
 
     // Verify that we can't modify the task
     await helper.queue.createTask(taskId, _.defaults({
       workerType:   "another-worker"
     }, taskDef)).then(() => {
-      expect.fail("This operation should have failed!");
+      throw new Error("This operation should have failed!");
     }, (err) => {
-      expect(err.statusCode).to.be(409);
+      assume(err.statusCode).equals(409);
       debug("Expected error: %j", err, err);
     });
   });
@@ -128,7 +128,7 @@ suite('Create task', function() {
       helper.events.waitFor('is-pending').then(reject, reject);
       setTimeout(accept, 500);
     }).catch(() => {
-      expect.fail("Didn't expect task-pending message to arrive!");
+      throw new Error("Didn't expect task-pending message to arrive!");
     });
   });
 
@@ -145,7 +145,6 @@ suite('Create task', function() {
       return message;
     });
 
-
     await helper.queue.defineTask(taskId, taskDef);
     await base.testing.sleep(500);
 
@@ -156,7 +155,7 @@ suite('Create task', function() {
     );
     var r1 = await helper.queue.scheduleTask(taskId);
     var m1 = await gotMessage;
-    expect(r1.status).to.be.eql(m1.payload.status);
+    assume(r1.status).deep.equals(m1.payload.status);
   });
 
   test("defineTask is idempotent", async () => {
@@ -168,9 +167,9 @@ suite('Create task', function() {
     await helper.queue.defineTask(taskId, _.defaults({
       workerType:   "another-worker"
     }, taskDef)).then(() => {
-      expect().fail("This operation should have failed!");
+      throw new Error("This operation should have failed!");
     }, (err) => {
-      expect(err.statusCode).to.be(409);
+      assume(err.statusCode).equals(409);
       debug("Expected error: %j", err, err);
     });
   });
@@ -192,9 +191,9 @@ suite('Create task', function() {
     await helper.queue.defineTask(taskId, _.defaults({
       workerType:   "another-worker"
     }, taskDef)).then(() => {
-      expect().fail("This operation should have failed!");
+      throw new Error("This operation should have failed!");
     }, (err) => {
-      expect(err.statusCode).to.be(409);
+      assume(err.statusCode).equals(409);
       debug("Expected error: %j", err, err);
     });
   });

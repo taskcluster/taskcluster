@@ -5,7 +5,7 @@ suite('Get task', function() {
   var _           = require('lodash');
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
-  var expect      = require('expect.js');
+  var assume      = require('assume');
   var helper      = require('./helper');
 
   var taskDef = {
@@ -37,6 +37,6 @@ suite('Get task', function() {
 
     await helper.queue.createTask(taskId, taskDef);
     var taskDef2 = await helper.queue.task(taskId);
-    expect(taskDef2).to.be.eql(taskDef);
+    assume(taskDef2).deep.equals(taskDef);
   });
 });

@@ -6,7 +6,7 @@ suite('Retry tasks (claim-expired)', function() {
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var base        = require('taskcluster-base');
-  var expect      = require('expect.js');
+  var assume      = require('assume');
   var helper      = require('./helper');
 
   // Use the same task definition for everything
@@ -52,9 +52,9 @@ suite('Retry tasks (claim-expired)', function() {
 
     debug("### Wait for task-exception message");
     var m1 = await helper.events.waitFor('is-pending');
-    expect(m1.payload.status.runs.length).to.be(2);
-    expect(m1.payload.status.runs[0].state).to.be('exception');
-    expect(m1.payload.status.runs[0].reasonResolved).to.be('claim-expired');
+    assume(m1.payload.status.runs.length).equals(2);
+    assume(m1.payload.status.runs[0].state).equals('exception');
+    assume(m1.payload.status.runs[0].reasonResolved).equals('claim-expired');
 
     debug("### Ensure that we got no task-exception message");
     await new Promise(function(accept, reject) {
@@ -67,14 +67,14 @@ suite('Retry tasks (claim-expired)', function() {
 
     debug("### Task status");
     var r3 = await helper.queue.status(taskId);
-    expect(r3.status.state).to.be('pending');
+    assume(r3.status.state).equals('pending');
 
     debug("### Claim task (runId: 1)");
     var r4 = await helper.queue.claimTask(taskId, 1, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker'
     });
-    expect(r4.status.retriesLeft).to.be(0);
+    assume(r4.status.retriesLeft).equals(0);
 
     debug("### Start listening for task-exception");
     await helper.events.listenFor('except-1', helper.queueEvents.taskException({
@@ -87,17 +87,17 @@ suite('Retry tasks (claim-expired)', function() {
 
     debug("### Wait for task-exception message (again)");
     var m2 = await helper.events.waitFor('except-1');
-    expect(m2.payload.status.runs.length).to.be(2);
-    expect(m2.payload.status.runs[0].state).to.be('exception');
-    expect(m2.payload.status.runs[0].reasonResolved).to.be('claim-expired');
-    expect(m2.payload.status.runs[1].state).to.be('exception');
-    expect(m2.payload.status.runs[1].reasonResolved).to.be('claim-expired');
+    assume(m2.payload.status.runs.length).equals(2);
+    assume(m2.payload.status.runs[0].state).equals('exception');
+    assume(m2.payload.status.runs[0].reasonResolved).equals('claim-expired');
+    assume(m2.payload.status.runs[1].state).equals('exception');
+    assume(m2.payload.status.runs[1].reasonResolved).equals('claim-expired');
 
     debug("### Stop claimReaper (again)");
     await claimReaper.terminate();
 
     debug("### Task status (again)");
     var r5 = await helper.queue.status(taskId);
-    expect(r5.status.state).to.be('exception');
+    assume(r5.status.state).equals('exception');
   });
 });

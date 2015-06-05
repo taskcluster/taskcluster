@@ -6,7 +6,7 @@ suite('Rerun task', function() {
   var Promise     = require('promise');
   var base        = require('taskcluster-base');
   var taskcluster = require('taskcluster-client');
-  var expect      = require('expect.js');
+  var assume      = require('assume');
   var helper      = require('./helper');
 
   // Use the same task definition for everything
@@ -37,7 +37,7 @@ suite('Rerun task', function() {
 
     debug("### Define task");
     var r1 = await helper.queue.defineTask(taskId, taskDef);
-    expect(r1.status.state).to.be('unscheduled');
+    assume(r1.status.state).equals('unscheduled');
 
     debug("### Listen for task-exception");
     await helper.events.listenFor('except', helper.queueEvents.taskException({
@@ -46,18 +46,18 @@ suite('Rerun task', function() {
 
     debug("### Cancel Task");
     var r2 = await helper.queue.cancelTask(taskId);
-    expect(r2.status.state).to.be('exception');
-    expect(r2.status.runs.length).to.be(1);
-    expect(r2.status.runs[0].state).to.be('exception');
-    expect(r2.status.runs[0].reasonCreated).to.be('exception');
-    expect(r2.status.runs[0].reasonResolved).to.be('canceled');
+    assume(r2.status.state).equals('exception');
+    assume(r2.status.runs.length).equals(1);
+    assume(r2.status.runs[0].state).equals('exception');
+    assume(r2.status.runs[0].reasonCreated).equals('exception');
+    assume(r2.status.runs[0].reasonResolved).equals('canceled');
 
     var m1 = await helper.events.waitFor('except');
-    expect(m1.payload.status).to.be.eql(r2.status);
+    assume(m1.payload.status).deep.equals(r2.status);
 
     debug("### Cancel Task (again)");
     var r3 = await helper.queue.cancelTask(taskId);
-    expect(r3.status).to.be.eql(r2.status);
+    assume(r3.status).deep.equals(r2.status);
   });
 
   test("createTask, cancelTask (idempotent)", async () => {
@@ -65,9 +65,9 @@ suite('Rerun task', function() {
 
     debug("### Create task");
     var r1 = await helper.queue.createTask(taskId, taskDef);
-    expect(r1.status.state).to.be('pending');
-    expect(r1.status.runs.length).to.be(1);
-    expect(r1.status.runs[0].state).to.be('pending');
+    assume(r1.status.state).equals('pending');
+    assume(r1.status.runs.length).equals(1);
+    assume(r1.status.runs[0].state).equals('pending');
 
     debug("### Listen for task-exception");
     await helper.events.listenFor('except', helper.queueEvents.taskException({
@@ -76,18 +76,18 @@ suite('Rerun task', function() {
 
     debug("### Cancel Task");
     var r2 = await helper.queue.cancelTask(taskId);
-    expect(r2.status.state).to.be('exception');
-    expect(r2.status.runs.length).to.be(1);
-    expect(r2.status.runs[0].state).to.be('exception');
-    expect(r2.status.runs[0].reasonCreated).to.be('scheduled');
-    expect(r2.status.runs[0].reasonResolved).to.be('canceled');
+    assume(r2.status.state).equals('exception');
+    assume(r2.status.runs.length).equals(1);
+    assume(r2.status.runs[0].state).equals('exception');
+    assume(r2.status.runs[0].reasonCreated).equals('scheduled');
+    assume(r2.status.runs[0].reasonResolved).equals('canceled');
 
     var m1 = await helper.events.waitFor('except');
-    expect(m1.payload.status).to.be.eql(r2.status);
+    assume(m1.payload.status).deep.equals(r2.status);
 
     debug("### Cancel Task (again)");
     var r3 = await helper.queue.cancelTask(taskId);
-    expect(r3.status).to.be.eql(r2.status);
+    assume(r3.status).deep.equals(r2.status);
   });
 
   test("createTask, claimTask, cancelTask (idempotent)", async () => {
@@ -95,16 +95,16 @@ suite('Rerun task', function() {
 
     debug("### Create task");
     var r1 = await helper.queue.createTask(taskId, taskDef);
-    expect(r1.status.state).to.be('pending');
-    expect(r1.status.runs.length).to.be(1);
-    expect(r1.status.runs[0].state).to.be('pending');
+    assume(r1.status.state).equals('pending');
+    assume(r1.status.runs.length).equals(1);
+    assume(r1.status.runs[0].state).equals('pending');
 
     debug("### Claim task");
     var r1 = await helper.queue.claimTask(taskId, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker'
     });
-    expect(r1.status.state).to.be('running');
+    assume(r1.status.state).equals('running');
 
     debug("### Listen for task-exception");
     await helper.events.listenFor('except', helper.queueEvents.taskException({
@@ -113,17 +113,17 @@ suite('Rerun task', function() {
 
     debug("### Cancel Task");
     var r3 = await helper.queue.cancelTask(taskId);
-    expect(r3.status.state).to.be('exception');
-    expect(r3.status.runs.length).to.be(1);
-    expect(r3.status.runs[0].state).to.be('exception');
-    expect(r3.status.runs[0].reasonCreated).to.be('scheduled');
-    expect(r3.status.runs[0].reasonResolved).to.be('canceled');
+    assume(r3.status.state).equals('exception');
+    assume(r3.status.runs.length).equals(1);
+    assume(r3.status.runs[0].state).equals('exception');
+    assume(r3.status.runs[0].reasonCreated).equals('scheduled');
+    assume(r3.status.runs[0].reasonResolved).equals('canceled');
 
     var m1 = await helper.events.waitFor('except');
-    expect(m1.payload.status).to.be.eql(r3.status);
+    assume(m1.payload.status).deep.equals(r3.status);
 
     debug("### Cancel Task (again)");
     var r4 = await helper.queue.cancelTask(taskId);
-    expect(r4.status).to.be.eql(r3.status);
+    assume(r4.status).deep.equals(r3.status);
   });
 });

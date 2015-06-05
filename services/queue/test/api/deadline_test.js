@@ -6,7 +6,7 @@ suite('Deadline expiration (deadline-reaper)', function() {
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var base        = require('taskcluster-base');
-  var expect      = require('expect.js');
+  var assume      = require('assume');
   var helper      = require('./helper');
 
   // Use the same task definition for everything
@@ -34,8 +34,8 @@ suite('Deadline expiration (deadline-reaper)', function() {
 
     debug("### Define task");
     var r1 = await helper.queue.defineTask(taskId, task);
-    expect(r1.status.state).to.be('unscheduled');
-    expect(r1.status.runs.length).to.be(0);
+    assume(r1.status.state).equals('unscheduled');
+    assume(r1.status.runs.length).equals(0);
 
     debug("### Start listening");
     await helper.events.listenFor('except', helper.queueEvents.taskException({
@@ -47,17 +47,17 @@ suite('Deadline expiration (deadline-reaper)', function() {
 
     debug("### Wait for task-exception message");
     var m1 = await helper.events.waitFor('except');
-    expect(m1.payload.status.state).to.be('exception');
-    expect(m1.payload.status.runs.length).to.be(1);
-    expect(m1.payload.status.runs[0].reasonCreated).to.be('exception');
-    expect(m1.payload.status.runs[0].reasonResolved).to.be('deadline-exceeded');
+    assume(m1.payload.status.state).equals('exception');
+    assume(m1.payload.status.runs.length).equals(1);
+    assume(m1.payload.status.runs[0].reasonCreated).equals('exception');
+    assume(m1.payload.status.runs[0].reasonResolved).equals('deadline-exceeded');
 
     debug("### Stop deadlineReaper");
     await deadlineReaper.terminate();
 
     debug("### Validate task status");
     var r2 = await helper.queue.status(taskId);
-    expect(r2.status).to.be.eql(m1.payload.status);
+    assume(r2.status).deep.equals(m1.payload.status);
   });
 
   test("Resolve pending task deadline", async () => {
@@ -65,8 +65,8 @@ suite('Deadline expiration (deadline-reaper)', function() {
 
     debug("### Creating task");
     var r1 = await helper.queue.createTask(taskId, task);
-    expect(r1.status.state).to.be('pending');
-    expect(r1.status.runs.length).to.be(1);
+    assume(r1.status.state).equals('pending');
+    assume(r1.status.runs.length).equals(1);
 
     debug("### Start listening");
     await helper.events.listenFor('except', helper.queueEvents.taskException({
@@ -77,17 +77,17 @@ suite('Deadline expiration (deadline-reaper)', function() {
     var deadlineReaper = await helper.deadlineReaper();
 
     var m1 = await helper.events.waitFor('except');
-    expect(m1.payload.status.state).to.be('exception');
-    expect(m1.payload.status.runs.length).to.be(1);
-    expect(m1.payload.status.runs[0].reasonCreated).to.be('scheduled');
-    expect(m1.payload.status.runs[0].reasonResolved).to.be('deadline-exceeded');
+    assume(m1.payload.status.state).equals('exception');
+    assume(m1.payload.status.runs.length).equals(1);
+    assume(m1.payload.status.runs[0].reasonCreated).equals('scheduled');
+    assume(m1.payload.status.runs[0].reasonResolved).equals('deadline-exceeded');
 
     debug("### Stop deadlineReaper");
     await deadlineReaper.terminate();
 
     debug("### Validate task status");
     var r2 = await helper.queue.status(taskId);
-    expect(r2.status).to.be.eql(m1.payload.status);
+    assume(r2.status).deep.equals(m1.payload.status);
   });
 
   test("Resolve running task deadline", async () => {
@@ -95,8 +95,8 @@ suite('Deadline expiration (deadline-reaper)', function() {
 
     debug("### Creating task");
     var r1 = await helper.queue.createTask(taskId, task);
-    expect(r1.status.state).to.be('pending');
-    expect(r1.status.runs.length).to.be(1);
+    assume(r1.status.state).equals('pending');
+    assume(r1.status.runs.length).equals(1);
 
     debug("### Claim task");
     var r2 = await helper.queue.claimTask(taskId, 0, {
@@ -113,17 +113,17 @@ suite('Deadline expiration (deadline-reaper)', function() {
     var deadlineReaper = await helper.deadlineReaper();
 
     var m1 = await helper.events.waitFor('except');
-    expect(m1.payload.status.state).to.be('exception');
-    expect(m1.payload.status.runs.length).to.be(1);
-    expect(m1.payload.status.runs[0].reasonCreated).to.be('scheduled');
-    expect(m1.payload.status.runs[0].reasonResolved).to.be('deadline-exceeded');
+    assume(m1.payload.status.state).equals('exception');
+    assume(m1.payload.status.runs.length).equals(1);
+    assume(m1.payload.status.runs[0].reasonCreated).equals('scheduled');
+    assume(m1.payload.status.runs[0].reasonResolved).equals('deadline-exceeded');
 
     debug("### Stop deadlineReaper");
     await deadlineReaper.terminate();
 
     debug("### Validate task status");
     var r3 = await helper.queue.status(taskId);
-    expect(r3.status).to.be.eql(m1.payload.status);
+    assume(r3.status).deep.equals(m1.payload.status);
   });
 
   test("Resolve completed task by deadline (no change)", async () => {
@@ -131,8 +131,8 @@ suite('Deadline expiration (deadline-reaper)', function() {
 
     debug("### Creating task");
     var r1 = await helper.queue.createTask(taskId, task);
-    expect(r1.status.state).to.be('pending');
-    expect(r1.status.runs.length).to.be(1);
+    assume(r1.status.state).equals('pending');
+    assume(r1.status.runs.length).equals(1);
 
     debug("### Claim task");
     var r2 = await helper.queue.claimTask(taskId, 0, {
@@ -162,6 +162,6 @@ suite('Deadline expiration (deadline-reaper)', function() {
 
     debug("### Validate task status");
     var r4 = await helper.queue.status(taskId);
-    expect(r4.status).to.be.eql(r3.status);
+    assume(r4.status).deep.equals(r3.status);
   });
 });

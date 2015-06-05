@@ -6,7 +6,7 @@ suite('Report task completed', function() {
   var Promise     = require('promise');
   var base        = require('taskcluster-base');
   var taskcluster = require('taskcluster-client');
-  var expect      = require('expect.js');
+  var assume      = require('assume');
   var helper      = require('./helper');
 
   // Use the same task definition for everything
@@ -63,7 +63,7 @@ suite('Report task completed', function() {
     await helper.queue.reportCompleted(taskId, 0);
 
     var m1 = await gotMessage;
-    expect(m1.payload.status.runs[0].state).to.be('completed');
+    assume(m1.payload.status.runs[0].state).equals('completed');
 
     debug("### Reporting task completed (again)");
     await helper.queue.reportCompleted(taskId, 0);
@@ -102,7 +102,7 @@ suite('Report task completed', function() {
     await helper.queue.reportFailed(taskId, 0);
 
     var m1 = await gotMessage;
-    expect(m1.payload.status.runs[0].state).to.be('failed');
+    assume(m1.payload.status.runs[0].state).equals('failed');
 
     debug("### Reporting task failed (again)");
     await helper.queue.reportFailed(taskId, 0);
@@ -143,7 +143,7 @@ suite('Report task completed', function() {
     });
 
     var m1 = await gotMessage;
-    expect(m1.payload.status.runs[0].state).to.be('exception');
+    assume(m1.payload.status.runs[0].state).equals('exception');
 
     debug("### Reporting task exception (again)");
     await helper.queue.reportException(taskId, 0, {
@@ -187,16 +187,16 @@ suite('Report task completed', function() {
     var r1 = await helper.queue.reportException(taskId, 0, {
       reason:     'worker-shutdown'
     });
-    expect(r1.status.runs.length).to.be(2);
-    expect(r1.status.runs[0].state).to.be('exception');
-    expect(r1.status.runs[1].state).to.be('pending');
+    assume(r1.status.runs.length).equals(2);
+    assume(r1.status.runs[0].state).equals('exception');
+    assume(r1.status.runs[1].state).equals('pending');
     await helper.queue.reportException(taskId, 0, {
       reason:     'worker-shutdown'
     });
 
     var m1 = await helper.events.waitFor('pending');
-    expect(m1.payload.status).to.be.eql(r1.status);
-    expect(m1.payload.runId).to.be(1);
+    assume(m1.payload.status).deep.equals(r1.status);
+    assume(m1.payload.runId).equals(1);
 
     helper.scopes();
     await helper.queue.claimTask(taskId, 1, {
@@ -211,8 +211,8 @@ suite('Report task completed', function() {
     });
 
     var m1 = await gotMessage;
-    expect(m1.payload.status.runs[1].state).to.be('exception');
-    expect(m1.payload.status.runs.length).to.be(2);
+    assume(m1.payload.status.runs[1].state).equals('exception');
+    assume(m1.payload.status.runs.length).equals(2);
   });
 
   test("create, claim and complete (with bad scopes)", async () => {
@@ -233,7 +233,7 @@ suite('Report task completed', function() {
       'assume:worker-id:my-worker-group/my-worker'
     );
     await helper.queue.reportCompleted(taskId, 0).then(function() {
-      expect().fail("Expected authentication error");
+      throw new Error("Expected authentication error");
     }, function(err) {
       debug("Got expected authentication error: %s", err);
     });

@@ -6,7 +6,7 @@ suite('Query tasks', function() {
   var Promise     = require('promise');
   var base        = require('taskcluster-base');
   var taskcluster = require('taskcluster-client');
-  var expect      = require('expect.js');
+  var assume      = require('assume');
   var helper      = require('./helper');
 
   test("pendingTasks >= 1", async () => {
@@ -45,7 +45,7 @@ suite('Query tasks', function() {
       'no-provisioner',
       'query-test-worker'
     );
-    expect(r1.pendingTasks).to.be.greaterThan(1);
+    assume(r1.pendingTasks).is.greaterThan(1);
   });
 
   test("pendingTasks == 0", async () => {
@@ -53,6 +53,6 @@ suite('Query tasks', function() {
       'no-provisioner',
       'empty-test-worker'
     );
-    expect(r1.pendingTasks).to.be(0);
+    assume(r1.pendingTasks).equals(0);
   });
 });
