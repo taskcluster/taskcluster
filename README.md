@@ -5,10 +5,11 @@ A generic worker for task cluster, written in go.
 
 Although the generic worker is not yet fully implemented, or feature complete, here is some information about how you might use it when it is ready. This might also serve as a useful guide if you interested in contributing to its development.
 
-## Install binary directly
+## Install binary
 
-* Download the latest release for your platform from https://github.com/taskcluster/generic-worker/releases.
-* Download the latest payload schema from https://raw.githubusercontent.com/taskcluster/generic-worker/master/schema.json (this step will be gone very soon - whoops).
+* Download the latest release for your platform from https://github.com/taskcluster/generic-worker/releases
+* For darwin/linux, make the binary executable: `chmod a+x generic-worker*`
+* Download the latest payload schema from https://raw.githubusercontent.com/taskcluster/generic-worker/master/schema.json (this step will be gone very soon - whoops - see `PAYLOAD_SCHEMA` environment variable described further down)
 
 ## Build from source
 
