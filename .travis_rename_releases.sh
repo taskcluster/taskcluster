@@ -15,11 +15,11 @@ if [ -f "${GOPATH}/bin/generic-worker" ]; then
 fi
 
 # linux, darwin:
-BINARY_NAME="generic-worker"
-[ "${GIMME_OS}" == "windows" ] && BINARY_NAME="generic-worker.exe"
+FILE_EXT=""
+[ "${GIMME_OS}" == "windows" ] && FILE_EXT=".exe"
 
 # let's rename the release file because it has a 1:1 mapping with what it is called on
 # github releases, and therefore the name for each platform needs to be unique so that
 # they don't overwrite each other. Set a variable that can be used in .travis.yml
-export RELEASE_FILE="${TRAVIS_BUILD_DIR}/generic-worker-${GIMME_OS}-${GIMME_ARCH}${EXT}"
-mv "${GOPATH}/bin/${GIMME_OS}_${GIMME_ARCH}/${BINARY_NAME}" "${RELEASE_FILE}"
+export RELEASE_FILE="${TRAVIS_BUILD_DIR}/generic-worker-${GIMME_OS}-${GIMME_ARCH}${FILE_EXT}"
+mv "${GOPATH}/bin/${GIMME_OS}_${GIMME_ARCH}/generic-worker${FILE_EXT}" "${RELEASE_FILE}"
