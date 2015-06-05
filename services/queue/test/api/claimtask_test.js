@@ -6,7 +6,7 @@ suite('Claim task', function() {
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var base        = require('taskcluster-base');
-  var expect      = require('expect.js');
+  var assume      = require('assume');
   var helper      = require('./helper');
 
   // Use the same task definition for everything
@@ -60,22 +60,22 @@ suite('Claim task', function() {
     // Compare to time before the request, because claimTimeout is very small
     // so we can only count on takenUntil being larger than or equal to the
     // time before the request was made
-    expect(takenUntil.getTime()).to.be.greaterThan(before.getTime() - 1);
+    assume(takenUntil.getTime()).is.greaterThan(before.getTime() - 1);
 
     debug("### Waiting for task running message");
     var m1 = await helper.events.waitFor('running');
-    expect(m1.payload.status).to.be.eql(r1.status);
+    assume(m1.payload.status).deep.equals(r1.status);
 
     debug("### Fetch task status");
     var r2 = await helper.queue.status(taskId);
-    expect(r2.status).to.be.eql(r1.status);
+    assume(r2.status).deep.equals(r1.status);
 
     await base.testing.sleep(100);
 
     // Again we talking about the first run, so runId must still be 0
     var r3 = await helper.queue.reclaimTask(taskId, 0);
     var takenUntil2 = new Date(r3.takenUntil);
-    expect(takenUntil2.getTime()).to.be.greaterThan(takenUntil.getTime() - 1);
+    assume(takenUntil2.getTime()).is.greaterThan(takenUntil.getTime() - 1);
   });
 
 
@@ -97,7 +97,7 @@ suite('Claim task', function() {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker2'
     }).then(() => {
-      expect().fail("This request should have failed");
+      throw new Error("This request should have failed");
     }, (err) => {
       debug("Got error as expected: %j", err, err);
     });
@@ -119,7 +119,7 @@ suite('Claim task', function() {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker'
     }).then(() => {
-      expect().fail("Expected an authentication error");
+      throw new Error("Expected an authentication error");
     }, (err) => {
       debug("Got expected authentiation error: %s", err);
     });
@@ -134,7 +134,7 @@ suite('Claim task', function() {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker'
     }).then(() => {
-      expect().fail("Expected an authentication error");
+      throw new Error("Expected an authentication error");
     }, (err)  => {
       debug("Got expected authentiation error: %s", err);
     });
@@ -149,7 +149,7 @@ suite('Claim task', function() {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker'
     }).then(() => {
-      expect().fail("Expected an authentication error");
+      throw new Error("Expected an authentication error");
     }, (err) => {
       debug("Got expected authentiation error: %s", err);
     });

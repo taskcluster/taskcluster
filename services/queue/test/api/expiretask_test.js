@@ -6,7 +6,7 @@ suite('Task Expiration (expire-tasks)', function() {
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var base        = require('taskcluster-base');
-  var expect      = require('expect.js');
+  var assume      = require('assume');
   var helper      = require('./helper');
 
   // Use the same task definition for everything
@@ -36,8 +36,8 @@ suite('Task Expiration (expire-tasks)', function() {
 
     debug("### Creating task");
     var r1 = await helper.queue.createTask(taskId, task);
-    expect(r1.status.state).to.be('pending');
-    expect(r1.status.runs.length).to.be(1);
+    assume(r1.status.state).equals('pending');
+    assume(r1.status.runs.length).equals(1);
 
     debug("### Claim task");
     var r2 = await helper.queue.claimTask(taskId, 0, {
@@ -50,17 +50,17 @@ suite('Task Expiration (expire-tasks)', function() {
 
     debug("### Validate task status");
     var r4 = await helper.queue.status(taskId);
-    expect(r4.status).to.be.eql(r3.status);
+    assume(r4.status).deep.equals(r3.status);
 
     debug("### Expire tasks");
     await helper.expireTasks();
 
     debug("### Check that task is gone");
     await helper.queue.status(taskId).then(() => {
-      expect().fail("Expected the task to be missing");
+      throw new Error("Expected the task to be missing");
     }, (err) => {
       debug("Expected error: %s, tasks have been expired as expected!", err);
-      expect(err.statusCode).to.be(404);
+      assume(err.statusCode).equals(404);
     });
   });
 });
