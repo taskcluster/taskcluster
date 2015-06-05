@@ -31,7 +31,9 @@ deploy:
     - "${GOPATH}/bin/generic-worker-linux-amd64"
     - "${GOPATH}/bin/generic-worker-darwin-amd64"
     - "${GOPATH}/bin/generic-worker-windows-amd64.exe"
+  skip_cleanup: true
   on:
+    tags: true
     repo: taskcluster/generic-worker
 
 notifications:
