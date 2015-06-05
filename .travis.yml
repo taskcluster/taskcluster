@@ -14,23 +14,13 @@ script:
 - go install -v ./...
 - go test ./...
 before_deploy:
-- mv "${GOPATH}/bin/linux_386/generic-worker"         "${GOPATH}/bin/generic-worker-linux-386"
-- mv "${GOPATH}/bin/darwin_amd64/generic-worker"      "${GOPATH}/bin/generic-worker-darwin-386"
-- mv "${GOPATH}/bin/windows_amd64/generic-worker.exe" "${GOPATH}/bin/generic-worker-windows-386.exe"
-- mv "${GOPATH}/bin/generic-worker"                   "${GOPATH}/bin/generic-worker-linux-amd64"
-- mv "${GOPATH}/bin/darwin_amd64/generic-worker"      "${GOPATH}/bin/generic-worker-darwin-amd64"
-- mv "${GOPATH}/bin/windows_amd64/generic-worker.exe" "${GOPATH}/bin/generic-worker-windows-amd64.exe"
+- ./.travis_rename_releases.sh
 deploy:
   provider: releases
   api_key:
     secure: KuifEWzfB5C9GFHMjFpSpbHWLN9cs/1afRuJhP4aADU3i55zb0QDzIu6+aGLlL0jsV5T07AqgPvJm4bOQNnWVhlhyHStrkIdzUpCtiCVNnPH3cYUkJ4/0zJyJaopnZfuX/2m2F+ajNC2Z94mxuu4qUUgqFO9x708xy0LYCofTEU=
   file:
-    - "${GOPATH}/bin/generic-worker-linux-386"
-    - "${GOPATH}/bin/generic-worker-darwin-386"
-    - "${GOPATH}/bin/generic-worker-windows-386.exe"
-    - "${GOPATH}/bin/generic-worker-linux-amd64"
-    - "${GOPATH}/bin/generic-worker-darwin-amd64"
-    - "${GOPATH}/bin/generic-worker-windows-amd64.exe"
+    - "${RELEASE_FILE}"
   skip_cleanup: true
   on:
     tags: true
