@@ -14,7 +14,7 @@ suite('Post artifacts', function() {
   var base          = require('taskcluster-base');
   var taskcluster   = require('taskcluster-client');
   var {Netmask}     = require('netmask');
-  var expect        = require('expect.js');
+  var assume        = require('assume');
   var helper        = require('./helper');
 
   // Static URL from which ip-ranges from AWS services can be fetched
@@ -31,7 +31,7 @@ suite('Post artifacts', function() {
     catch(err) {
       res = err.response;
     }
-    expect(res.statusCode).to.be(303);
+    assume(res.statusCode).equals(303);
     return request.get(res.headers.location).end();
   };
 
@@ -45,7 +45,7 @@ suite('Post artifacts', function() {
     catch(err) {
       res = err.response;
     }
-    expect(res.statusCode).to.be(404);
+    assume(res.statusCode).equals(404);
     return res;
   };
 
@@ -95,11 +95,11 @@ suite('Post artifacts', function() {
       expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json'
     });
-    expect(r1.putUrl).to.be.ok();
+    assume(r1.putUrl).is.ok();
 
     debug("### Uploading to putUrl");
     var res = await request.put(r1.putUrl).send({message: "Hello World"}).end();
-    expect(res.ok).to.be.ok();
+    assume(res.ok).is.ok();
 
     debug("### Download Artifact (runId: 0)");
     var url = helper.queue.buildUrl(
@@ -108,8 +108,8 @@ suite('Post artifacts', function() {
     );
     debug("Fetching artifact from: %s", url);
     res = await getWith303Redirect(url);
-    expect(res.ok).to.be.ok();
-    expect(res.body).to.be.eql({message: "Hello World"});
+    assume(res.ok).is.ok();
+    assume(res.body).to.be.eql({message: "Hello World"});
 
     debug("### Download Artifact (latest)");
     var url = helper.queue.buildUrl(
@@ -118,16 +118,16 @@ suite('Post artifacts', function() {
     );
     debug("Fetching artifact from: %s", url);
     res = await getWith303Redirect(url);
-    expect(res.ok).to.be.ok();
-    expect(res.body).to.be.eql({message: "Hello World"});
+    assume(res.ok).is.ok();
+    assume(res.body).to.be.eql({message: "Hello World"});
 
     debug("### List artifacts");
     var r2 = await helper.queue.listArtifacts(taskId, 0);
-    expect(r2.artifacts.length).to.be(1);
+    assume(r2.artifacts.length).equals(1);
 
     debug("### List artifacts from latest run");
     var r3 = await helper.queue.listLatestArtifacts(taskId);
-    expect(r3.artifacts.length).to.be(1);
+    assume(r3.artifacts.length).equals(1);
 
     debug("### Download Artifact (runId: 0) using proxy");
     var url = helper.queue.buildUrl(
@@ -151,7 +151,7 @@ suite('Post artifacts', function() {
     catch(err) {
       res = err.response;
     }
-    expect(res.statusCode).to.be(303);
+    assume(res.statusCode).equals(303);
     assert(res.headers.location.indexOf('proxy-for-us-east-1'),
            "Expected res.headers.location to contain proxy-for-us-east-1");
 
@@ -190,7 +190,7 @@ suite('Post artifacts', function() {
       expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json'
     }).then(() => {
-      expect().fail("Expected authentication error");
+      assume().fail("Expected authentication error");
     }, (err) => {
       debug("Got expected authentication error: %s", err);
     });
@@ -241,8 +241,8 @@ suite('Post artifacts', function() {
     );
     debug("Fetching artifact from: %s", url);
     var res = await getWith303Redirect(url);
-    expect(res.ok).to.be.ok();
-    expect(res.body).to.be.eql({
+    assume(res.ok).is.ok();
+    assume(res.body).deep.equals({
       block1_says: "Hello world",
       block2_says: "Hello Again"
     });
@@ -306,9 +306,9 @@ suite('Post artifacts', function() {
     catch(err) {
       res = err.response;
     }
-    expect(res.ok).to.not.be.ok();
-    expect(res.status).to.be(403);
-    expect(res.body.message).to.be("Some user-defined message");
+    assume(res.ok).to.not.be.ok();
+    assume(res.status).equals(403);
+    assume(res.body.message).equals("Some user-defined message");
 
     debug("### Expire artifacts");
     // config/test.js hardcoded to expire artifact 4 days in the future
@@ -359,7 +359,7 @@ suite('Post artifacts', function() {
     );
     debug("Fetching artifact from: %s", url);
     var res = await getWith303Redirect(url);
-    expect(res.ok).to.be.ok();
+    assume(res.ok).is.ok();
 
     debug("### Expire artifacts");
     // config/test.js hardcoded to expire artifact 4 days in the future
@@ -393,7 +393,7 @@ suite('Post artifacts', function() {
       expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json'
     });
-    expect(r1.putUrl).to.be.ok();
+    assume(r1.putUrl).is.ok();
   });
 
   test("Can't post artifact past resolution for 'completed'", async () => {
@@ -417,7 +417,7 @@ suite('Post artifacts', function() {
       expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json'
     }).catch(err => {
-      expect(err.statusCode).to.be(409);
+      assume(err.statusCode).equals(409);
     });
   });
 
@@ -442,7 +442,7 @@ suite('Post artifacts', function() {
       expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json'
     }).catch(err => {
-      expect(err.statusCode).to.be(409);
+      assume(err.statusCode).equals(409);
     });
   });
 });

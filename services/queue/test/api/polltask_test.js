@@ -6,7 +6,7 @@ suite('Poll tasks', function() {
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var base        = require('taskcluster-base');
-  var expect      = require('expect.js');
+  var assume      = require('assume');
   var request     = require('superagent-promise');
   var xml2js      = require('xml2js');
   var helper      = require('./helper');
@@ -62,7 +62,7 @@ suite('Poll tasks', function() {
     var r1 = await helper.queue.pollTaskUrls(
       'no-provisioner', 'poll-test-worker'
     );
-    expect(r1.queues.length).to.be.greaterThan(0);
+    assume(r1.queues).is.not.empty();
 
 
     helper.scopes(
@@ -79,7 +79,7 @@ suite('Poll tasks', function() {
       debug("### Polling azure queue: %s", i);
       queue = r1.queues[i++ % r1.queues.length];
       var res = await request.get(queue.signedPollUrl).buffer().end();
-      expect(res.ok).to.be.ok();
+      assume(res.ok).is.ok();
 
       // Parse XML
       var xml = await new Promise((accept, reject) => {
@@ -90,7 +90,7 @@ suite('Poll tasks', function() {
 
       // This will cause an error if there is no message, and the poll loop will
       // repeat, this is appropriate for testing only!
-      expect(xml.QueueMessagesList.QueueMessage).to.be.an('array');
+      assume(xml.QueueMessagesList.QueueMessage).is.an('array');
 
       msg = xml.QueueMessagesList.QueueMessage[0];
       payload = new Buffer(msg.MessageText[0], 'base64').toString();
@@ -98,7 +98,7 @@ suite('Poll tasks', function() {
       debug("payload: %j", payload);
 
       // again this will skip if we didn't get the taskId we expected
-      expect(payload.taskId).to.be(taskId);
+      assume(payload.taskId).equals(taskId);
     });
 
     await helper.queue.claimTask(payload.taskId, payload.runId, {
