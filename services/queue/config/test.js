@@ -8,6 +8,7 @@ module.exports = {
     artifactContainer:            'artifacts',
     statsComponent:               'test-queue',
     queuePrefix:                  'hacks',
+    queuePrefix2:                 'hacks2', // For testing deletion of queues
     taskTableName:                'TestTasks',
     artifactTableName:            'TestArtifacts',
     claimQueue:                   'test-claim-queue',
