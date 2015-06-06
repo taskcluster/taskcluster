@@ -21,4 +21,5 @@ mocha                                 \
   test/api/retry_test.js              \
   test/api/deadline_test.js           \
   test/api/expiretask_test.js         \
+  test/api/expirequeues_test.js       \
   ;
