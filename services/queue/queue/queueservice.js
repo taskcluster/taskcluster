@@ -316,8 +316,8 @@ class QueueService {
 
     // Return and cache promise that we created this queue
     return this.queues[id] = Promise.all([
-      this._ensureQueueAndMetadata(name),
-      this._ensureQueueAndMetadata(legacyName)
+      this._ensureQueueAndMetadata(name, provisionerId, workerType),
+      this._ensureQueueAndMetadata(legacyName, provisionerId, workerType)
     ]).catch(err => {
       debug("[alert-operator] Failed to ensure azure queue: %s, as JSON: %j",
             err, err, err.stack);
@@ -344,9 +344,29 @@ class QueueService {
     // Fetch meta-data from queue, checking if it exists
     try {
       let {metadata} = await this.client.getMetadata(queue);
+
+      // Check if meta-data is up-to-date
+      var lastUsed = new Date(metadata.last_used);
+      if (metadata.provisioner_id === provisionerId
+          && metadata.worker_type === workerType
+          && isFinite(lastUsed)
+          && lastUsed.getTime() > Date.now() - 23 * 60 * 60 * 1000
+      ) {
+        return; // We're done as meta-data is present
+      }
+
+      // Update meta-data
+      return this.client.setMetadata(queue, {
+        provisioner_id: provisionerId,
+        worker_type:    workerType,
+        last_used:      taskcluster.fromNowJSON()
+      });
     } catch (err) {
-      // We handle queue not found exceptions
-      if (err.code !== 'QueueNotFound') {
+      // We handle queue not found exceptions, because getMetadata is a HEA
+      // request we don't get any error message payload, so we also accept 404
+      // as implying the same.
+      if (err.code !== 'QueueNotFound' &&
+          err.statusCode !== 404) {
         throw err;
       }
 
@@ -369,27 +389,7 @@ class QueueService {
           throw err;
         }
       }
-
-      // Queue created (with meta-data) and we're done
-      return;
     }
-
-    // Check if meta-data is up-to-date
-    var lastUsed = new Date(metadata.last_used);
-    if (metadata.provisioner_id === provisionerId
-        && metadata.worker_type === workerType
-        && isFinite(lastUsed)
-        && lastUsed.getTime() > Date.now() - 23 * 60 * 60 * 1000
-    ) {
-      return; // We're done as meta-data is present
-    }
-
-    // Update meta-data
-    await this.client.setMetadata(queue, {
-      provisioner_id: provisionerId,
-      worker_type:    workerType,
-      last_used:      taskcluster.fromNowJSON()
-    });
   }
 
   /** Remove all worker queues not used since `now - 10 days` */
@@ -516,8 +516,8 @@ class QueueService {
 
     // For each queue name, return signed URLs for the queue
     var queues = [
-      queueName,
-      legacyName
+      legacyName, // Return legacy queue first, so we it emptied
+      queueName
     ].map(queueName => {
       // Create shared access signature
       var sas = this.client.sas(queueName, {
@@ -566,9 +566,6 @@ class QueueService {
         .replace(/=*$/, ''),
       '1'             // priority, currently just hardcoded to 1
     ].join('-');
-
-    // Get queue meta-data
-    return this._countMessages(queueName);
 
     // Find messages count from primary and legacy queue
     var [

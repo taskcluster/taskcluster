@@ -9,6 +9,7 @@ suite('queue/QueueService', function() {
   var request       = require('superagent-promise');
   var debug         = require('debug')('queue:test:queueservice');
   var xml2js        = require('xml2js');
+  var assume        = require('assume');
 
   // Load configuration
   var cfg = base.config({
@@ -73,7 +74,7 @@ suite('queue/QueueService', function() {
     var takenUntil  = new Date(new Date().getTime() + 2 * 1000);
     debug("Putting message with taskId: %s", taskId);
     // Put message
-    await queueService.putClaimMessage(taskId, takenUntil);
+    await queueService.putClaimMessage(taskId, 0, takenUntil);
 
     // Poll for message
     return base.testing.poll(async () => {
@@ -110,9 +111,13 @@ suite('queue/QueueService', function() {
 
     // Get signedPollUrl and signedDeleteUrl
     var {
-      signedPollUrl,
-      signedDeleteUrl
-    } = await queueService.signedPendingPollUrl(provisionerId, workerType);
+      queues: [
+        {}, {
+          signedPollUrl,
+          signedDeleteUrl
+        }
+      ]
+    } = await queueService.signedPendingPollUrls(provisionerId, workerType);
 
     // Get a message
     debug("### Polling for queue for message");
