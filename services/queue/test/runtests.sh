@@ -6,6 +6,7 @@ mocha                                 \
   test/validate_test.js               \
   test/queue/bucket_test.js           \
   test/queue/blobstore_test.js        \
+  test/queue/queueservice_test.js     \
   test/api/ping_test.js               \
   test/api/createtask_test.js         \
   test/api/minimumtask_test.js        \
