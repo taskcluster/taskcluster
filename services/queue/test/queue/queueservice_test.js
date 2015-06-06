@@ -31,7 +31,9 @@ suite('queue/QueueService', function() {
   }
 
   var queueService = new QueueService({
-    prefix:             cfg.get('queue:queuePrefix'),
+    // Using a different prefix as we create/delete a lot of queues and we don't
+    // want queues in state being-deleted when running the other tests
+    prefix:             cfg.get('queue:queuePrefix2'),
     credentials:        cfg.get('azure'),
     claimQueue:         cfg.get('queue:claimQueue'),
     deadlineQueue:      cfg.get('queue:deadlineQueue'),
@@ -41,7 +43,7 @@ suite('queue/QueueService', function() {
 
   // Dummy identifiers for use in this test
   var workerType    = 'no-worker';
-  var provisionerId = 'no-provisioner';
+  var provisionerId = slugid.v4(); // make a unique provisionerId
 
   test("putDeadlineMessage, pollDeadlineQueue", async () => {
     var taskId      = slugid.v4();
@@ -145,7 +147,7 @@ suite('queue/QueueService', function() {
       // Check that we got the right task, notice they have life time of 5 min,
       // so waiting 5 min should fix this issue.. Another option is to create
       // a unique queue for each test run. Probably not needed.
-      assert(payload.taskId === taskId, "Got wrong taskId, try agian in 5 min");
+      assert(payload.taskId === taskId, "Got wrong taskId, try again in 5 min");
 
       return [message, payload];
     }).catch(function() {
@@ -168,5 +170,56 @@ suite('queue/QueueService', function() {
     );
     debug("pending message count: %j", count);
     assert(typeof(count) === 'number', "Expected count as number!");
+  });
+
+  test("deleteUnusedWorkerQueues", async () => {
+    // 11 days into the future, so we'll delete all queues (yay)
+    let now = new Date(Date.now() + 11 * 24 * 60 * 60 * 1000);
+    let deleted = await queueService.deleteUnusedWorkerQueues(now);
+    // There should always be at least one queue, because test cases above
+    // will have created one we can delete...
+    assume(deleted).is.atleast(1);
+  });
+
+
+  // TODO: Remove this test case when legacy queues are phased out
+  test("Update meta-data of legacy queue", async () => {
+    var taskId  = slugid.v4();
+    var runId   = 0;
+    var task    = {
+      taskId:             taskId,
+      provisionerId:      slugid.v4(),
+      workerType:         slugid.v4(),
+      deadline:           new Date(new Date().getTime() + 5 * 60 * 1000)
+    };
+
+    var base32  = require('thirty-two');
+    var decodeUrlSafeBase64 = function(data) {
+      return new Buffer(data.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
+    };
+
+    var legacyName = [
+      queueService.prefix,    // prefix all queues
+      base32.encode(decodeUrlSafeBase64(task.provisionerId))
+        .toString('utf8')
+        .toLowerCase()
+        .replace(/=*$/, ''),
+      base32.encode(decodeUrlSafeBase64(task.workerType))
+        .toString('utf8')
+        .toLowerCase()
+        .replace(/=*$/, ''),
+      '1'             // priority, currently just hardcoded to 1
+    ].join('-');
+
+    // Create legacy queue
+    await queueService.client.createQueue(legacyName);
+
+    // Put message into pending queue
+    await queueService.putPendingMessage(task, runId);
+
+    // Expect that meta-data for legacy queue is now set
+    let {metadata} = await queueService.client.getMetadata(legacyName);
+    assume(metadata).owns('provisioner_id', task.provisionerId);
+    assume(metadata).owns('worker_type', task.workerType);
   });
 });
