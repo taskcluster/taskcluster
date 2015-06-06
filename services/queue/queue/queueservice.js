@@ -392,10 +392,14 @@ class QueueService {
     }
   }
 
-  /** Remove all worker queues not used since `now - 10 days` */
+  /**
+   * Remove all worker queues not used since `now - 10 days`.
+   * Returns number of queues deleted.
+   */
   async deleteUnusedWorkerQueues(now = new Date()) {
     assert(now instanceof Date, "Expected now as Date object");
     let deleteIfNotUsedSince = now.getTime() - 10 * 24 * 60 * 60 * 1000;
+    let deleted = 0; // Number of queues deleted
 
     // Iterate through all pages
     let marker = undefined;
@@ -431,11 +435,17 @@ class QueueService {
         }
 
         debug("Deleting queue %s with metadata: %j", name, metadata);
-        return this.client.deleteQueue(name);
+        await this.client.deleteQueue(name);
+
+        // Count queues deleted (for test ability)
+        deleted += 1;
       }));
 
       // Keep going until we get an `undefined` marker
     } while (marker);
+
+    // Return number of queues deleted
+    return deleted;
   }
 
 
