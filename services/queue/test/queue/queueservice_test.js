@@ -172,7 +172,7 @@ suite('queue/QueueService', function() {
     assert(typeof(count) === 'number', "Expected count as number!");
   });
 
-  test("deleteUnusedWorkerQueues", async () => {
+  test("deleteUnusedWorkerQueues (can delete queues)", async () => {
     // 11 days into the future, so we'll delete all queues (yay)
     let now = new Date(Date.now() + 11 * 24 * 60 * 60 * 1000);
     let deleted = await queueService.deleteUnusedWorkerQueues(now);
@@ -181,6 +181,21 @@ suite('queue/QueueService', function() {
     assume(deleted).is.atleast(1);
   });
 
+
+  test("deleteUnusedWorkerQueues (respects meta-data)", async () => {
+    // Ensure a queue with updated meta-data exists
+    let provisionerId = slugid.v4();
+    let workerType = slugid.v4();
+    let queueName = await queueService.ensurePendingQueue(
+      provisionerId, workerType
+    );
+
+    // Let's delete from now and check that we didn't delete queue just created
+    await queueService.deleteUnusedWorkerQueues();
+
+    // Get meta-data, this will fail if the queue was deleted
+    await queueService.client.getMetadata(queueName);
+  });
 
   // TODO: Remove this test case when legacy queues are phased out
   test("Update meta-data of legacy queue", async () => {

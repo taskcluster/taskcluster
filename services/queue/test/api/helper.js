@@ -11,6 +11,7 @@ var bin = {
   server:             require('../../bin/server'),
   expireArtifacts:    require('../../bin/expire-artifacts'),
   expireTasks:        require('../../bin/expire-tasks'),
+  expireQueues:       require('../../bin/expire-queues'),
   claimReaper:        require('../../bin/claim-reaper'),
   deadlineReaper:     require('../../bin/deadline-reaper')
 };
@@ -69,6 +70,11 @@ helper.expireArtifacts = () => {
 // Allow tests to run expire-tasks
 helper.expireTasks = () => {
   return bin.expireTasks(testProfile);
+};
+
+// Allow tests to run expire-queues
+helper.expireQueues = () => {
+  return bin.expireQueues(testProfile);
 };
 
 // Process to terminate
