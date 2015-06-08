@@ -621,6 +621,7 @@ func (task *TaskRun) uploadArtifacts() error {
 		)
 		if callSummary.Error != nil {
 			log.Printf("Could not upload artifact: %v\n", artifact)
+			log.Printf("%v\n", callSummary)
 			log.Printf("%v\n", parsp)
 			err = callSummary.Error
 		}
