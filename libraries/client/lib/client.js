@@ -95,7 +95,8 @@ var makeRequest = function(client, method, url, payload) {
 
 
 /**
- * Create a client class from a JSON reference.
+ * Create a client class from a JSON reference, and an optional `name`, which is
+ * mostly intended for debugging, error messages and stats.
  *
  * Returns a Client class which can be initialized with following options:
  * options:
@@ -116,17 +117,44 @@ var makeRequest = function(client, method, url, payload) {
  *   baseUrl:         'http://.../v1'   // baseUrl for API requests
  *   exchangePrefix:  'queue/v1/'       // exchangePrefix prefix
  *   retries:         5,                // Maximum number of retries
+ *   stats:           function(obj) {}  // Callback for reporting statistics
  * }
  *
  * `baseUrl` and `exchangePrefix` defaults to values from reference.
+ *
+ * `options.stats` is an optional function that takes an object with the
+ * following properties:
+ * ```js
+ * {
+ *   duration:     0,              // API call time (ms) including all retries
+ *   retries:      0,              // Number of retries
+ *   method:       'createTask',   // Name of method called
+ *   success:      0 || 1,         // Success or error
+ *   resolution:   201,            // Status code
+ *   target:       'queue',        // Name of target, unknown if not known
+ *   baseUrl:      'https://...',  // Server baseUrl
+ * }
+ * ```
+ * The `options.stats` callback is currently only called for `API` calls.
+ * **Notice** the `taskcluster-base` module, under `base.stats` contains
+ * utilities to facilitate reporting to influxdb.
  */
-exports.createClient = function(reference) {
+exports.createClient = function(reference, name) {
+  if (!name || typeof(name) !== 'string') {
+    name = 'Unknown';
+  }
+
   // Client class constructor
   var Client = function(options) {
     this._options = _.defaults({}, options || {}, {
       baseUrl:          reference.baseUrl        || '',
       exchangePrefix:   reference.exchangePrefix || ''
     }, _defaultOptions);
+
+    // Validate options.stats
+    if (this._options.stats && !(this._options.stats instanceof Function)) {
+      throw new Error("options.stats must be a function if specified");
+    }
 
     // Shortcut for which default agent to use...
     var isHttps = this._options.baseUrl.indexOf('https') === 0;
@@ -225,6 +253,23 @@ exports.createClient = function(reference) {
       var attempts = 0;
       var that = this;
 
+      // Build method to record and report statistics
+      var reportStats = null;
+      if (this._options.stats) {
+        var start = Date.now();
+        reportStats = function(success, resolution) {
+          that._options.stats({
+            duration:   Date.now() - start,
+            retries:    attempts - 1,
+            method:     entry.name,
+            success:    success ? 1 : 0,
+            resolution: resolution,
+            target:     name,
+            baseUrl:    that._options.baseUrl
+          });
+        };
+      }
+
       // Retry the request, after a delay depending on number of retries
       var retryRequest = function() {
         // Send request
@@ -240,6 +285,9 @@ exports.createClient = function(reference) {
             // If request was successful, accept the result
             debug("Success calling: %s, (%s retries)",
                   entry.name, attempts - 1);
+            if (reportStats) {
+              reportStats(true, 'http-' + res.status);
+            }
             return res.body;
           }, function(err) {
             // If we got a response we read the error code from the response
@@ -266,6 +314,9 @@ exports.createClient = function(reference) {
               err = new Error(res.body.message || message);
               err.body = res.body;
               err.statusCode = res.status;
+              if (reportStats) {
+                reportStats(false, 'http-' + res.status);
+              }
               throw err;
             }
 
@@ -277,6 +328,9 @@ exports.createClient = function(reference) {
             }
             debug("Request error calling %s NOT retrying!, err: %s, JSON: %s",
                   entry.name, err, err);
+            if (reportStats) {
+              reportStats(false, (err.code || err.name || 'Error') + '');
+            }
             throw err;
           });
         }

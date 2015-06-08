@@ -158,6 +158,61 @@ suite('mockAuthServer', function() {
     });
   });
 
+  test('Report stats (success)', function() {
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
+    });
+    var Auth = new taskcluster.createClient(reference, 'MyAuth');
+    var record = null;
+    var auth = new Auth({
+      credentials: {
+        clientId:     'test-client',
+        accessToken:  'test-token'
+      },
+      stats: function(r) {
+        assert(record === null, "Got two stats records!");
+        record = r;
+      }
+    });
+    // Inspect the credentials
+    return auth.getCredentials('test-client').then(function(client) {
+      assert(client.clientId === 'test-client', "Expected clientId");
+      assert(record.duration > 0, "Error in record.duration");
+      assert(record.retries === 0, "Error in record.retries");
+      assert(record.method === 'getCredentials', "Error in record.method");
+      assert(record.success === 1, "Error in record.success");
+      assert(record.resolution === 'http-200', "Error in record.resolution");
+      assert(record.target === 'MyAuth', "Error in record.target");
+      assert(record.baseUrl, "Error in record.baseUrl");
+    });
+  });
+
+  test('Report stats (failure)', function() {
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
+    });
+    var Auth = new taskcluster.createClient(reference, 'MyAuth');
+    var record = null;
+    var auth = new Auth({
+      stats: function(r) {
+        assert(record === null, "Got two stats records!");
+        record = r;
+      }
+    });
+    // Inspect the credentials
+    return auth.getCredentials('test-client').then(function() {
+      assert(false, "Expected an error!");
+    }, function(err) {
+      assert(record.duration > 0, "Error in record.duration");
+      assert(record.retries === 0, "Error in record.retries");
+      assert(record.method === 'getCredentials', "Error in record.method");
+      assert(record.success === 0, "Error in record.success");
+      assert(record.resolution === 'http-401', "Error in record.resolution");
+      assert(record.target === 'MyAuth', "Error in record.target");
+      assert(record.baseUrl, "Error in record.baseUrl");
+    });
+  });
+
   test('Build url', function() {
     var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
       baseUrl: 'http://localhost:62351/v1'
