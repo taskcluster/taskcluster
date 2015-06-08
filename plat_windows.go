@@ -148,7 +148,7 @@ func (task *TaskRun) generateCommand() (*exec.Cmd, error) {
 		User.HomeDir+"\\TaskId_"+task.TaskId+"_wrapper.bat",
 		[]byte(
 			":: This script runs the command(s) defined in TaskId "+task.TaskId+"..."+"\r\n"+
-				"call TaskId_"+task.TaskId+".bat > TaskId_"+task.TaskId+".log"+"\r\n",
+				"call "+User.HomeDir+"\\"+"TaskId_"+task.TaskId+".bat > TaskId_"+task.TaskId+".log"+"\r\n",
 		),
 		0755,
 	)
@@ -180,7 +180,7 @@ func (task *TaskRun) generateCommand() (*exec.Cmd, error) {
 		"-p", User.Password,
 		"-w", User.HomeDir,
 		"-n", "10",
-		"TaskId_" + task.TaskId + "_wrapper.bat",
+		User.HomeDir + "\\" + "TaskId_" + task.TaskId + "_wrapper.bat",
 	}
 	cmd := exec.Command(command[0], command[1:]...)
 	fmt.Println("Running command: '" + strings.Join(command, "' '") + "'")
