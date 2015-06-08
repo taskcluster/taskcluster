@@ -623,6 +623,14 @@ func (task *TaskRun) uploadArtifacts() error {
 			log.Printf("Could not upload artifact: %v\n", artifact)
 			log.Printf("%v\n", callSummary)
 			log.Printf("%v\n", parsp)
+			log.Println("Request Headers")
+			callSummary.HttpRequest.Header.Write(os.Stdout)
+			log.Println("Request Body")
+			log.Println(callSummary.HttpRequestBody)
+			log.Println("Response Headers")
+			callSummary.HttpResponse.Header.Write(os.Stdout)
+			log.Println("Response Body")
+			log.Println(callSummary.HttpResponseBody)
 			err = callSummary.Error
 		}
 	}
