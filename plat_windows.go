@@ -12,16 +12,6 @@ import (
 	"github.com/dchest/uniuri"
 )
 
-type WindowsUser struct {
-	HomeDir  string
-	Name     string
-	Password string
-}
-
-var (
-	User WindowsUser
-)
-
 func processCommandOutput(callback func(line string), prog string, options ...string) error {
 	out, err := exec.Command(prog, options...).Output()
 	if err != nil {
@@ -40,16 +30,16 @@ func startup() error {
 	fmt.Println("Detected Windows platform...")
 	fmt.Println("Looking for existing task users...")
 	// note if this fails, we carry on
-	deleteExistingWindowsUsers()
-	return createNewWindowsUser()
+	deleteExistingOSUsers()
+	return createNewOSUser()
 }
 
-func createNewWindowsUser() error {
+func createNewOSUser() error {
 	// username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
 	userName := "Task_" + strconv.Itoa((int)(time.Now().Unix()))
 	password := generatePassword()
-	User = WindowsUser{
+	User = OSUser{
 		HomeDir:  "C:\\Users\\" + userName,
 		Name:     userName,
 		Password: password,
@@ -90,8 +80,8 @@ func generatePassword() string {
 	return uniuri.NewLenChars(12, []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()<>/?{}[]-=_+,."))
 }
 
-func deleteExistingWindowsUsers() {
-	err := processCommandOutput(deleteWindowsUserAccount, "wmic", "useraccount", "get", "name")
+func deleteExistingOSUsers() {
+	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
 	if err != nil {
 		fmt.Println("WARNING: could not list existing Windows user accounts")
 		fmt.Printf("%v\n", err)
@@ -128,7 +118,7 @@ func deleteHomeDirs() {
 	}
 }
 
-func deleteWindowsUserAccount(line string) {
+func deleteOSUserAccount(line string) {
 	if strings.HasPrefix(line, "Task_") {
 		user := line
 		fmt.Println("Attempting to remove Windows user " + user + "...")

@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -20,7 +21,14 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+type OSUser struct {
+	HomeDir  string
+	Name     string
+	Password string
+}
+
 var (
+	User OSUser
 	// Queue is the object we will use for accessing queue api. See
 	// http://docs.taskcluster.net/queue/api-docs/
 	Queue *queue.Auth
@@ -534,22 +542,27 @@ func (task *TaskRun) run() error {
 		time.Sleep(time.Second * time.Duration(task.Payload.MaxRunTime))
 		task.abort("max run time (" + strconv.Itoa(task.Payload.MaxRunTime) + "s) exceeded")
 	}()
-	err = cmd.Wait()
+	// use a different variable for error since we process it later
+	taskError := cmd.Wait()
+	err = task.uploadArtifacts()
+	if err != nil {
+		log.Printf("ERROR: Could not upload artifacts for task " + task.TaskId)
+	}
 	// Reporting Task Result
 	// ---------------------
 	// If a task is malformed, the input is invalid, configuration is wrong, or
 	// the worker is told to shutdown by AWS before the the task is completed,
 	// it should be reported to the queue using `queue.reportException`.
-	if err != nil {
+	if taskError != nil {
 		// If the task is unsuccessful, ie. exits non-zero, the worker should
 		// resolve it using `queue.reportFailed` (this implies test or build
 		// failure).
-		switch err.(type) {
+		switch taskError.(type) {
 		case *exec.ExitError:
 			return task.reportFailed()
 		}
 
-		log.Printf("Command finished with error: %v", err)
+		log.Printf("Command finished with error: %v", taskError)
 		return task.reportException("task-crash")
 	}
 	// When the worker has completed the task successfully it should call
@@ -580,6 +593,58 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 	}
 	cmd.Env = taskEnv
 	log.Printf("Environment: %v\n", taskEnv)
+}
+
+// Initial implementation is to assume all platform implementations have a
+// single log file at the following location...
+func (task *TaskRun) LogFiles() []string {
+	return []string{filepath.Join(User.HomeDir, "TaskId_"+task.TaskId+".log")}
+}
+
+func (task *TaskRun) uploadArtifacts() error {
+	// find which artifacts this task has
+	task.associateArtifacts()
+	var err error = nil
+	// get the time a year from now in expected (ISO 8601 compatible) format...
+	// the result will look like: 2016-06-08T16:10:19.871Z
+	expiry := time.Now().AddDate(1, 0, 0).UTC().Format("2006-01-02T15:04:05.000Z0700")
+	for _, artifact := range task.Artifacts {
+		// TODO: we should store this with the artifact data
+		s3ArtifactRequestPayload := []byte(`{storageType: "s3", expires: "` + expiry + `", contentType: "text/plain"}`)
+		rawMessage := json.RawMessage(s3ArtifactRequestPayload)
+		postArtifactRequest := queue.PostArtifactRequest(rawMessage)
+		parsp, callSummary := Queue.CreateArtifact(
+			task.TaskId,
+			strconv.Itoa(int(task.RunId)),
+			filepath.Base(artifact.LocalPath),
+			&postArtifactRequest,
+		)
+		if callSummary.Error != nil {
+			log.Printf("Could not upload artifact: %v\n", artifact)
+			log.Printf("%v\n", parsp)
+			err = callSummary.Error
+		}
+	}
+	return err
+}
+
+// associateArtifacts populates task.Artifacts with Artifacts defined in the
+// payload plus any log files defined by the platform
+func (task *TaskRun) associateArtifacts() {
+	// first update `task` with all the artifacts it has
+	// log files count as artifacts...
+	logFiles := task.LogFiles()
+
+	task.Artifacts = make([]Artifact, len(logFiles)+len(task.Payload.Artifacts))
+	i := 0
+	for _, logFile := range logFiles {
+		task.Artifacts[i] = Artifact{LocalPath: logFile}
+		i++
+	}
+	for _, artifact := range task.Payload.Artifacts {
+		task.Artifacts[i] = Artifact{LocalPath: filepath.Join(User.HomeDir, string(artifact))}
+		i++
+	}
 }
 
 // This can also be used if an external resource that is referenced in a
