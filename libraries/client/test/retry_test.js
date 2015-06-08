@@ -96,9 +96,12 @@ suite('retry-test', function() {
   var _mockAuthServer = null;
   // Reference for test api server
   var _apiServer = null;
+  // Reference last stats record
+  var lastRecord = null;
 
   // Create a mock authentication server
-  setup(function(){
+  setup(function() {
+    lastRecord = null;
     assert(_mockAuthServer === null,  "_mockAuthServer must be null");
     assert(_apiServer === null,       "_apiServer must be null");
     return base.testing.createMockAuthServer({
@@ -167,7 +170,8 @@ suite('retry-test', function() {
       clientId:     'test-client',
       accessToken:  'test-token'
     },
-    baseUrl:        'http://localhost:60526/v1'
+    baseUrl:        'http://localhost:60526/v1',
+    stats: function(r) {lastRecord = r;}
   });
 
   test("tries 6 times, delayed", function() {
@@ -188,6 +192,31 @@ suite('retry-test', function() {
     getOccasionalInternalErrorCount = 0;
     return server.getOccasionalInternalError().then(function() {
       assert(getOccasionalInternalErrorCount === 4, "expected 4 attempts");
+    });
+  });
+
+  test("Can succeed after 3 attempts (record stats)", function() {
+    getOccasionalInternalErrorCount = 0;
+    var record = null;
+    var server2 = new Server({
+      credentials: {
+        clientId:     'test-client',
+        accessToken:  'test-token'
+      },
+      baseUrl:        'http://localhost:60526/v1',
+      stats: function(r) {
+        assert(record === null, "Got two stats records!");
+        record = r;
+      }
+    });
+    return server2.getOccasionalInternalError().then(function() {
+      assert(getOccasionalInternalErrorCount === 4, "expected 4 attempts");
+      assert(record, "Expected an error record for stats");
+      assert(record.duration > 20, "Error in record.duration");
+      assert(record.retries === 3, "Error in record.retries");
+      assert(record.success === 1, "Error in record.success");
+      assert(record.resolution === 'http-200', "Error in record.resolution");
+      assert(record.baseUrl, "Error in record.baseUrl");
     });
   });
 
@@ -248,6 +277,10 @@ suite('retry-test', function() {
     }, function(err) {
       assert(err.code === 'ECONNRESET', "Expect ECONNRESET error");
       assert(getConnectionErrorCount === 6, "expected 6 retries");
+      assert(lastRecord, "Expected a stats record");
+      assert(lastRecord.resolution === 'ECONNRESET', "Expected ECONNRESET");
+      assert(lastRecord.duration > 0, "Expected a non-zero duration");
+      assert(lastRecord.retries > 0, "Expected a non-zero duration");
     });
   });
 });
