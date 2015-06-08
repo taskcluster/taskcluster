@@ -15,25 +15,10 @@ require('superagent-hawk')(require('superagent'));
 var request       = require('superagent-promise');
 var Validator     = require('./validator').Validator;
 var utils         = require('./utils');
-var stats         = require('./stats');
+var stats         = require('./lib/stats');
 var crypto        = require('crypto');
 var hoek          = require('hoek');
-
-/** Structure for response times series */
-var ResponseTimes = new stats.Series({
-  name:                 'ResponseTimes',
-  columns: {
-    duration:           stats.types.Number,
-    statusCode:         stats.types.Number,
-    requestMethod:      stats.types.String,
-    method:             stats.types.String,
-    component:          stats.types.String
-  },
-  // Additional columns are req.params prefixed with "param", these should all
-  // be strings
-  additionalColumns:    stats.types.String
-});
-
+var series        = require('./lib/series');
 
 /**
  * Declare {input, output} schemas as options to validate
@@ -820,7 +805,7 @@ API.prototype.router = function(options) {
   var reporter = null;
   if (options.drain) {
     assert(options.component, "The component must be named in statistics!");
-    reporter = ResponseTimes.reporter(options.drain);
+    reporter = series.ResponseTimes.reporter(options.drain);
   }
 
   // Create router
