@@ -1,3 +1,4 @@
+import assert from 'assert';
 import waitForPort from '../wait_for_port';
 import { pullImageStreamTo } from '../pull_image_to_stream';
 import request from 'superagent-promise';
@@ -10,6 +11,9 @@ const ALIAS = 'testdroid';
 // Maximum time in MS to wait for socket to become available
 const INIT_TIMEOUT = 5000;
 
+const MISSING_DEVICE_CONFIGURATION = 'Device configuration must be supplied in task payload';
+const MISSING_PHONE_CONFIGURATION = 'Phone device configuration must be supplied in task payload';
+
 export default class TestdroidProxy {
   constructor() {
     /**
@@ -19,14 +23,20 @@ export default class TestdroidProxy {
   }
 
   async link(task) {
-    var docker = task.runtime.docker;
+    let config = task.task.payload.capabilities || {};
+    assert(config.devices, MISSING_DEVICE_CONFIGURATION);
+    assert(config.devices.phone, MISSING_PHONE_CONFIGURATION);
+
+    let deviceCapabilities = config.devices.phone;
+
+    let docker = task.runtime.docker;
 
     // Image name for the proxy container.
-    var image = task.runtime.testdroidProxyImage;
+    let image = task.runtime.testdroidProxyImage;
 
     await pullImageStreamTo(docker, image, process.stdout);
 
-    var cmd = [
+    let cmd = [
         `--cloud-url=${task.runtime.testdroid.url}`,
         `--username=${task.runtime.testdroid.username}`,
         `--password=${task.runtime.testdroid.password}`,
@@ -35,9 +45,9 @@ export default class TestdroidProxy {
         `--device-timeout=${task.task.payload.maxRunTime}`
     ];
 
-    var envs = [];
+    let envs = [];
     if (process.env.DEBUG) {
-      envs.push('DEBUG=' + process.env.DEBUG);
+      envs.push(`DEBUG=${process.env.DEBUG}`);
     }
 
     // create the container.
@@ -55,15 +65,15 @@ export default class TestdroidProxy {
     this.container = docker.getContainer(this.container.id);
 
     if (process.env.DEBUG) {
-      var stream = await this.container.attach({stream: true, stdout: true, stderr: true});
+      let stream = await this.container.attach({stream: true, stdout: true, stderr: true});
       stream.pipe(process.stdout);
     }
 
     await this.container.start({});
 
-    var inspect = await this.container.inspect();
-    var host = inspect.NetworkSettings.IPAddress;
-    var name = inspect.Name.slice(1)
+    let inspect = await this.container.inspect();
+    let host = inspect.NetworkSettings.IPAddress;
+    let name = inspect.Name.slice(1)
 
     try {
       // wait for the initial server response...
@@ -74,16 +84,20 @@ export default class TestdroidProxy {
     }
 
     this.host = host;
+
     return {
       links: [{name, alias: ALIAS}],
-      env: {}
+      env: {
+        // TODO this will change once sessions can be created outside of the test task
+        DEVICE_CAPABILITIES: JSON.stringify(deviceCapabilities)
+      }
     };
   }
 
   async killed(task) {
     // attempt to release the device in case task did not do so.  Calling release
     // is idempotent.
-    var res = await request.post('http://'+this.host+'/device/release').end();
+    let res = await request.post('http://'+this.host+'/device/release').end();
     task.runtime.gc.removeContainer(this.container.id);
   }
 }

@@ -173,7 +173,9 @@ suite('device linking within containers', () => {
             loopbackVideo: true,
             phone: {
               type: 'flame-kk',
-              sims: 1
+              sims: '1',
+              build: 'http://path/to/device.zip',
+              memory: '5000000'
             }
           }
         },

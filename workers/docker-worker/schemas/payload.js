@@ -82,6 +82,34 @@ module.exports = {
               "title": "Loopback Audio device",
               "description": "Audio loopback device created using snd-aloop",
               "type": "boolean"
+            },
+            "phone": {
+              "title": "Phone device",
+              "description": "Phone device that will be created using Testdroid",
+              "type": "object",
+              "required": ["type", "sims", "build", "memory"],
+              "properties": {
+                "type": {
+                  "title": "Phone Type",
+                  "description": "Phone device type. Example: 'flame'",
+                  "type": "string"
+                },
+                "sims": {
+                  "title": "Sims",
+                  "description": "Number of sims to be available in the device",
+                  "type": "string"
+                },
+                "build": {
+                  "title": "Build URL",
+                  "description": "URL for the build the phone has been (or will be) flashed with",
+                  "type": "string"
+                },
+                "memory": {
+                  "title": "Device Memory",
+                  "description": "The memory configuration the device to be configured with",
+                  "type": "string"
+                }
+              }
             }
           }
         }
