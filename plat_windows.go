@@ -148,7 +148,7 @@ func (task *TaskRun) generateCommand() (*exec.Cmd, error) {
 		User.HomeDir+"\\TaskId_"+task.TaskId+"_wrapper.bat",
 		[]byte(
 			":: This script runs the command(s) defined in TaskId "+task.TaskId+"..."+"\r\n"+
-				"call "+User.HomeDir+"\\"+"TaskId_"+task.TaskId+".bat > TaskId_"+task.TaskId+".log"+"\r\n",
+				"call "+User.HomeDir+"\\"+"TaskId_"+task.TaskId+".bat > TaskId_"+task.TaskId+".log 2>&1"+"\r\n",
 		),
 		0755,
 	)
