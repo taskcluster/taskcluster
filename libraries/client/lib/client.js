@@ -534,7 +534,7 @@ var apis = require('./apis');
 
 // Instantiate clients
 _.forIn(apis, function(api, name) {
-  exports[name] = exports.createClient(api.reference);
+  exports[name] = exports.createClient(api.reference, name);
 });
 
 /**
