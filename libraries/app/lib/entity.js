@@ -10,7 +10,7 @@ var azureTable      = require('azure-table-node');
 var azure           = require('fast-azure-storage');
 var taskcluster     = require('taskcluster-client');
 var https           = require('https');
-var stats           = require('../stats');
+var series          = require('./series');
 var AzureAgent      = require('./azureagent');
 
 // ** Coding Style **
@@ -78,19 +78,6 @@ var MAX_MODIFY_ATTEMPTS     = 10;
 
 /** Timeout for azure table requests */
 var AZURE_TABLE_TIMEOUT     = 7 * 1000;
-
-/** Statistics from Azure table operations */
-var AzureTableOperations = new stats.Series({
-  name:             'AzureTableOperations',
-  columns: {
-    component:      stats.types.String,
-    process:        stats.types.String,
-    duration:       stats.types.Number,
-    table:          stats.types.String,
-    method:         stats.types.String,
-    error:          stats.types.String
-  }
-});
 
 /**
  * Base class of all entity
@@ -612,7 +599,7 @@ Entity.setup = function(options) {
   // Reporter for statistics
   var reporter = function() {};
   if (options.drain) {
-    reporter = AzureTableOperations.reporter(options.drain);
+    reporter = series.AzureTableOperations.reporter(options.drain);
   }
 
   // Create table client wrapper, to record statistics and bind table name
