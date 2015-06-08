@@ -498,7 +498,7 @@ type (
 			// true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.
 			Satisfied bool `json:"satisfied"`
 			// State of the task as considered by the scheduler
-			State json.RawMessage `json:"state"`
+			State interface{} `json:"state"`
 			// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 			TaskId string `json:"taskId"`
 		} `json:"tasks"`
@@ -523,7 +523,7 @@ type (
 		// true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.
 		Satisfied bool `json:"satisfied"`
 		// State of the task as considered by the scheduler
-		State json.RawMessage `json:"state"`
+		State interface{} `json:"state"`
 		// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		TaskId string `json:"taskId"`
 	}
@@ -562,7 +562,7 @@ type (
 		// Unique identifier for task-graph scheduler managing the given task-graph
 		SchedulerId string `json:"schedulerId"`
 		// Task-graph state, this enum is **frozen** new values will **not** be added.
-		State json.RawMessage `json:"state"`
+		State interface{} `json:"state"`
 		// Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		TaskGraphId string `json:"taskGraphId"`
 	}

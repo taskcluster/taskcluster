@@ -111,7 +111,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 		content += comment
 		content += jsonSubSchema.TypeName + " "
 	}
-	typ := "json.RawMessage"
+	typ := "interface{}"
 	if p := jsonSubSchema.Type; p != nil {
 		typ = *p
 	}
@@ -168,10 +168,6 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 	switch typ {
 	case "time.Time":
 		extraPackages["time"] = true
-	case "json.RawMessage":
-		extraPackages["encoding/json"] = true
-	case "map[string]json.RawMessage":
-		extraPackages["encoding/json"] = true
 	}
 	content += typ
 	if withComments {

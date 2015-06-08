@@ -87,7 +87,6 @@
 package queueevents
 
 import (
-	"encoding/json"
 	"reflect"
 	"strings"
 	"time"
@@ -356,12 +355,12 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#
 	ArtifactCreatedMessage struct {
 		// Information about the artifact that was created
-		Artifact json.RawMessage `json:"artifact"`
+		Artifact interface{} `json:"artifact"`
 		// Id of the run on which artifact was created.
 		RunId  int                 `json:"runId"`
 		Status TaskStatusStructure `json:"status"`
 		// Message version
-		Version json.RawMessage `json:"version"`
+		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which the run with the created
 		// artifacted is running.
 		WorkerGroup string `json:"workerGroup"`
@@ -378,7 +377,7 @@ type (
 		RunId  int                 `json:"runId"`
 		Status TaskStatusStructure `json:"status"`
 		// Message version
-		Version json.RawMessage `json:"version"`
+		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which this run ran.
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker that executed this run.
@@ -392,7 +391,7 @@ type (
 	TaskDefinedMessage struct {
 		Status TaskStatusStructure `json:"status"`
 		// Message version
-		Version json.RawMessage `json:"version"`
+		Version interface{} `json:"version"`
 	}
 
 	// Message reporting that TaskCluster have failed to run a task.
@@ -404,7 +403,7 @@ type (
 		RunId  int                 `json:"runId"`
 		Status TaskStatusStructure `json:"status"`
 		// Message version
-		Version json.RawMessage `json:"version"`
+		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which the last attempt of the task
 		// ran. Not provided, if `deadline` was exceeded before a run was started.
 		WorkerGroup string `json:"workerGroup"`
@@ -422,7 +421,7 @@ type (
 		RunId  int                 `json:"runId"`
 		Status TaskStatusStructure `json:"status"`
 		// Message version
-		Version json.RawMessage `json:"version"`
+		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which this run ran.
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker that executed this run.
@@ -437,7 +436,7 @@ type (
 		RunId  int                 `json:"runId"`
 		Status TaskStatusStructure `json:"status"`
 		// Message version
-		Version json.RawMessage `json:"version"`
+		Version interface{} `json:"version"`
 	}
 
 	// Message reporting that a given run of a task have started
@@ -451,7 +450,7 @@ type (
 		// isn't reclaimed.
 		TakenUntil time.Time `json:"takenUntil"`
 		// Message version
-		Version json.RawMessage `json:"version"`
+		Version interface{} `json:"version"`
 		// Identifier for the worker-group within which this run started.
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker executing this run.
@@ -474,12 +473,12 @@ type (
 		Runs []struct {
 			// Reason for the creation of this run,
 			// **more reasons may be added in the future**."
-			ReasonCreated json.RawMessage `json:"reasonCreated"`
+			ReasonCreated interface{} `json:"reasonCreated"`
 			// Reason that run was resolved, this is mainly
 			// useful for runs resolved as `exception`.
 			// Note, **more reasons may be added in the future**, also this
 			// property is only available after the run is resolved.
-			ReasonResolved json.RawMessage `json:"reasonResolved"`
+			ReasonResolved interface{} `json:"reasonResolved"`
 			// Date-time at which this run was resolved, ie. when the run changed
 			// state from `running` to either `completed`, `failed` or `exception`.
 			// This property is only present after the run as been resolved.
@@ -494,7 +493,7 @@ type (
 			// after the run has been claimed.
 			Started time.Time `json:"started"`
 			// State of this run
-			State json.RawMessage `json:"state"`
+			State interface{} `json:"state"`
 			// Time at which the run expires and is resolved as `failed`, if the
 			// run isn't reclaimed. Note, only present after the run has been
 			// claimed.
@@ -512,7 +511,7 @@ type (
 		SchedulerId string `json:"schedulerId"`
 		// State of this task. This is just an auxiliary property derived from state
 		// of latests run, or `unscheduled` if none.
-		State json.RawMessage `json:"state"`
+		State interface{} `json:"state"`
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.
