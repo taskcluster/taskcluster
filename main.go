@@ -520,8 +520,11 @@ func (task *TaskRun) run() error {
 
 	fmt.Println("Running task!")
 	fmt.Println(task.String())
-	cmd := task.generateCommand() // platform specific
-	err := cmd.Start()
+	cmd, err := task.generateCommand() // platform specific
+	if err != nil {
+		return err
+	}
+	err = cmd.Start()
 	if err != nil {
 		return err
 	}
@@ -552,6 +555,14 @@ func (task *TaskRun) run() error {
 	// When the worker has completed the task successfully it should call
 	// `queue.reportCompleted`.
 	return task.reportCompleted()
+}
+
+func (task *TaskRun) unixCommand() (*exec.Cmd, error) {
+	cmd := exec.Command(task.Payload.Command[0], task.Payload.Command[1:]...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	task.prepEnvVars(cmd)
+	return cmd, nil
 }
 
 func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {

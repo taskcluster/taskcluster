@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -140,19 +141,51 @@ func deleteWindowsUserAccount(line string) {
 	}
 }
 
-func (task *TaskRun) generateCommand() *exec.Cmd {
+func (task *TaskRun) generateCommand() (*exec.Cmd, error) {
+	// In order that capturing of log files works, create a custom .bat file
+	// for the task which redirects output to a log file...
+	err := ioutil.WriteFile(
+		User.HomeDir+"\\TaskId_"+task.TaskId+"_wrapper.bat",
+		[]byte(
+			":: This script runs the command(s) defined in TaskId "+task.TaskId+"..."+"\r\n"+
+				"call TaskId_"+task.TaskId+".bat > TaskId_"+task.TaskId+".log"+"\r\n",
+		),
+		0755,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Now make the actual task a .bat script where each line is an entry from
+	// task.Payload.Command...
+	fileContents := make([]byte, 0)
+	for _, j := range task.Payload.Command {
+		fileContents = append(fileContents, []byte(j+"\r\n")...)
+	}
+
+	err = ioutil.WriteFile(
+		User.HomeDir+"\\TaskId_"+task.TaskId+".bat",
+		fileContents,
+		0755,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
 	command := []string{
 		"C:\\Users\\Administrator\\PSTools\\PsExec.exe",
 		"-u", User.Name,
 		"-p", User.Password,
 		"-w", User.HomeDir,
 		"-n", "10",
+		"TaskId_" + task.TaskId + "_wrapper.bat",
 	}
-	command = append(command, task.Payload.Command...)
 	cmd := exec.Command(command[0], command[1:]...)
 	fmt.Println("Running command: '" + strings.Join(command, "' '") + "'")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	task.prepEnvVars(cmd)
-	return cmd
+	return cmd, nil
 }
