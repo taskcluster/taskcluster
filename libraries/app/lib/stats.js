@@ -8,11 +8,12 @@ var request       = require('superagent-promise');
 var url           = require('url');
 var urljoin       = require('url-join');
 var series        = require('./series');
+var events        = require('events');
+var util          = require('util');
 
-// Export types allowed for series
+// Export types and series as defined in series module
+// This is to make them available as `base.stats.Series`.
 exports.types = series.types;
-
-// Export series constructor
 exports.Series = series.Series;
 
 /**
@@ -208,6 +209,7 @@ exports.Influx = Influx;
 var NullDrain = function() {
   this._nbPendingPoints = 0;
 };
+util.inherits(NullDrain, events.EventEmitter);
 
 /** Drop point counter */
 NullDrain.prototype.flush = function() {
@@ -216,9 +218,10 @@ NullDrain.prototype.flush = function() {
 };
 
 /** Increment point counter */
-NullDrain.prototype.addPoint = function(point) {
-  debug("NullDrain.addPoint(%j)", point);
+NullDrain.prototype.addPoint = function(series, point) {
+  debug("NullDrain.addPoint(%s, %j)", series, point);
   this._nbPendingPoints += 1;
+  this.emit('point', series, point);
 };
 
 /** Drop point counter */
@@ -456,7 +459,7 @@ exports.stopProcessUsageReporting   = stopProcessUsageReporting;
  * }
  */
 var createAPIClientStatsHandler = function(options) {
-  options = _.defaults(options || {}, {
+  options = _.defaults({}, options || {}, {
     tags:   {},
     drain:  undefined
   });
@@ -467,12 +470,7 @@ var createAPIClientStatsHandler = function(options) {
   ).length === 0, "Can't used reserved tag names!");
 
   // Create a reporter
-  var reporter = series.APIClientCalls.reporter(options.drain);
-
-  // Return handler
-  return function(data) {
-    reporter(_.defaults(data, options.tags));
-  };
+  return series.APIClientCalls.reporter(options.drain, options.tags);
 };
 
 // Export createAPIClientStatsHandler

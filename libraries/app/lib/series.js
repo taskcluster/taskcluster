@@ -9,7 +9,6 @@ var types = {
   Any:    function(v) { return /string|number/.test(typeof(v)); }
 };
 
-// Export types
 exports.types = types;
 
 /**
@@ -44,7 +43,6 @@ var Series = function(options) {
   this._options = options;
 };
 
-// Export series
 exports.Series = Series;
 
 /** Returns list of columns */
@@ -54,14 +52,39 @@ Series.prototype.columns = function() {
 
 /**
  * Create a reporter function that will validate points and submit them to the
- * drain.
+ * drain, while always setting columns specified in tags. Note that values
+ * specified in `tags` maybe overwritten by individual points.
+ *
+ * Example tags:
+ * ```js
+ * MySeries.reporter(drain, {
+ *   component: 'queue',
+ *   process: 'web'
+ * })
+ * ```
  */
-Series.prototype.reporter = function(drain) {
+Series.prototype.reporter = function(drain, tags) {
   var options = this._options;
+
+  // Validate tags
+  _.forIn(tags, function(value, key) {
+    var validate = options.columns[key] || options.additionalColumns;
+    if (!validate) {
+      debug("additionalColumn %s not allowed in series: %s",
+            key, options.name);
+      throw new Error("additionalColumn " + key + " is not allowed!");
+    }
+    if (!validate(value)) {
+      debug("Failed validate %s for key %s in series: %s",
+            value, key, options.name);
+      throw new Error("Failed validate key " + key + " in series: " +
+                      options.name);
+    }
+  });
 
   // Return a reporter
   return function(point) {
-    // Validate that
+    // Validate point columns
     _.forIn(point, function(value, key) {
       var validate = options.columns[key] || options.additionalColumns;
       if (!validate) {
@@ -78,7 +101,7 @@ Series.prototype.reporter = function(drain) {
     });
 
     // If validated we'll add the point to the drain
-    drain.addPoint(options.name, point);
+    drain.addPoint(options.name, _.defaults({}, point, tags));
   };
 };
 
