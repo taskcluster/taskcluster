@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
@@ -648,16 +649,24 @@ func (task *TaskRun) uploadArtifacts() error {
 		}
 		httpClient := &http.Client{}
 		httpCall := func() (*http.Response, error, error) {
-			artifactReader, err := os.Open(artifact.LocalPath)
+			fileReader, err := os.Open(artifact.LocalPath)
 			if err != nil {
 				return nil, nil, err
 			}
-			// http.NewRequest automatically sets Content-Length correctly
-			httpRequest, err := http.NewRequest("PUT", resp.PutURL, artifactReader)
+			// instead of using fileReader, read it into memory and then use a
+			// bytes.Reader since then http.NewRequest will properly set
+			// Content-Length header for us, which is needed by the API we call
+			requestPayload, err := ioutil.ReadAll(fileReader)
 			if err != nil {
 				return nil, nil, err
 			}
-			httpRequest.Header.Add("Content-Type", "text/plain")
+			bytesReader := bytes.NewReader(requestPayload)
+			// http.NewRequest automatically sets Content-Length correctly for bytes.Reader
+			httpRequest, err := http.NewRequest("PUT", resp.PutURL, bytesReader)
+			if err != nil {
+				return nil, nil, err
+			}
+			httpRequest.Header.Set("Content-Type", "text/plain")
 			requestFull, dumpError := httputil.DumpRequestOut(httpRequest, true)
 			if dumpError != nil {
 				fmt.Println("Could not dump request, never mind...")
