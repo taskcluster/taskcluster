@@ -1,6 +1,6 @@
 var assert = require('assert');
 var _ = require('lodash');
-
+var debug = require('debug')('base:series');
 
 /** Types supported for reporting */
 var types = {
