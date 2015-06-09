@@ -633,7 +633,7 @@ func (task *TaskRun) uploadArtifacts() error {
 			return callSummary.Error
 		}
 		fmt.Println("Response body")
-		fmt.Println(callSummary.HttpRequestBody)
+		fmt.Println(callSummary.HttpResponseBody)
 		// unmarshal response into object
 		resp := new(S3ArtifactResponse)
 		err := json.Unmarshal(*parsp, resp)
