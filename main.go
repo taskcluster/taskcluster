@@ -632,11 +632,13 @@ func (task *TaskRun) uploadArtifacts() error {
 			log.Println(callSummary.HttpResponseBody)
 			return callSummary.Error
 		}
-		fmt.Println("Response body")
+		fmt.Println("Response body RAW")
 		fmt.Println(callSummary.HttpResponseBody)
+		fmt.Println("Response body INTERPRETED")
+		fmt.Println(string(*parsp))
 		// unmarshal response into object
 		resp := new(S3ArtifactResponse)
-		err := json.Unmarshal(*parsp, resp)
+		err := json.Unmarshal(json.RawMessage(*parsp), resp)
 		if err != nil {
 			return err
 		}
