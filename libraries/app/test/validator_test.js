@@ -7,6 +7,7 @@ suite("validator", function() {
   var http    = require('http');
   var fs      = require('fs');
   var Promise = require('promise');
+  var debug   = require('debug')('test:validator');
 
   // Test that we can load from a folder
   test("load from folder (json)", function() {
@@ -24,6 +25,20 @@ suite("validator", function() {
       }
       assert(errors === null, "Got errors");
     });
+  });
+
+  test("load from folder (invalid schema -> error)", function() {
+    try {
+      base.validator({
+        publish:      false,
+        folder:       path.join(__dirname, 'invalid-schemas'),
+        constants:    {"my-constant": 42}
+      });
+      assert(false, "Expected an error");
+    } catch (err) {
+      debug("Expected error: %j", err);
+      assert(err && err.error, "Expected an validation error");
+    }
   });
 
   test("test $ref", function() {
