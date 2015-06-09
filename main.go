@@ -658,6 +658,13 @@ func (task *TaskRun) uploadArtifacts() error {
 				return nil, nil, err
 			}
 			httpRequest.Header.Add("Content-Type", "text/plain")
+			requestFull, dumpError := httputil.DumpRequestOut(httpRequest, true)
+			if dumpError != nil {
+				fmt.Println("Could not dump request, never mind...")
+			} else {
+				fmt.Println("Request")
+				fmt.Println(string(requestFull))
+			}
 			putResp, err := httpClient.Do(httpRequest)
 			return putResp, err, nil
 		}
@@ -670,6 +677,7 @@ func (task *TaskRun) uploadArtifacts() error {
 		if dumpError != nil {
 			fmt.Println("Could not dump response output, never mind...")
 		} else {
+			fmt.Println("Response")
 			fmt.Println(string(respBody))
 		}
 	}
