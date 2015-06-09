@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/exec"
@@ -604,7 +605,6 @@ func (task *TaskRun) LogFiles() []string {
 func (task *TaskRun) uploadArtifacts() error {
 	// find which artifacts this task has
 	task.associateArtifacts()
-	var err error = nil
 	// get the time a year from now in expected (ISO 8601 compatible) format...
 	// the result will look like: 2016-06-08T16:10:19.871Z
 	expiry := time.Now().AddDate(1, 0, 0).UTC().Format("2006-01-02T15:04:05.000Z0700")
@@ -629,10 +629,45 @@ func (task *TaskRun) uploadArtifacts() error {
 			callSummary.HttpResponse.Header.Write(os.Stdout)
 			log.Println("Response Body")
 			log.Println(callSummary.HttpResponseBody)
-			err = callSummary.Error
+			return callSummary.Error
+		}
+		// unmarshal response into object
+		resp := new(S3ArtifactResponse)
+		err := json.Unmarshal(*parsp, resp)
+		if err != nil {
+			return err
+		}
+		artifactReader, err := os.Open(artifact.LocalPath)
+		if err != nil {
+			return err
+		}
+		httpClient := &http.Client{}
+		// http.NewRequest automatically sets Content-Length correctly
+		httpRequest, err := http.NewRequest("PUT", resp.PutURL, artifactReader)
+		httpRequest.Header.Add("Content-Type", "text/plain")
+		if err != nil {
+			return err
+		}
+		putResp, putAttempts, err := httpbackoff.ClientDo(httpClient, httpRequest)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%v put requests issued to %v\n", putAttempts, resp.PutURL)
+		respBody, dumpError := httputil.DumpResponse(putResp, true)
+		if dumpError != nil {
+			fmt.Println("Could not dump response output, never mind...")
+		} else {
+			fmt.Println(string(respBody))
 		}
 	}
-	return err
+	return nil
+}
+
+type S3ArtifactResponse struct {
+	StorageType string    `json:"storageType"`
+	PutURL      string    `json:"putUrl"`
+	Expires     time.Time `json:"expires"`
+	ContentType string    `json:"contentType"`
 }
 
 // associateArtifacts populates task.Artifacts with Artifacts defined in the
