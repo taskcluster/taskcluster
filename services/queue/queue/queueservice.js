@@ -431,7 +431,7 @@ class QueueService {
         // Fetch message count (approximate)
         let {messageCount} = await this.client.getMetadata(name);
         if (messageCount > 0) {
-          return; // Abort if there is messages
+          return; // Abort if there are messages
         }
 
         debug("Deleting queue %s with metadata: %j", name, metadata);
@@ -526,7 +526,7 @@ class QueueService {
 
     // For each queue name, return signed URLs for the queue
     var queues = [
-      legacyName, // Return legacy queue first, so we it emptied
+      legacyName, // Return legacy queue first, so empty it first
       queueName
     ].map(queueName => {
       // Create shared access signature
