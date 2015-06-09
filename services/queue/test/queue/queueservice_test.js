@@ -175,10 +175,25 @@ suite('queue/QueueService', function() {
   test("deleteUnusedWorkerQueues (can delete queues)", async () => {
     // 11 days into the future, so we'll delete all queues (yay)
     let now = new Date(Date.now() + 11 * 24 * 60 * 60 * 1000);
+
+    // Ensure a queue with updated meta-data exists
+    let provisionerId = slugid.v4();
+    let workerType = slugid.v4();
+    let queueName = await queueService.ensurePendingQueue(
+      provisionerId, workerType
+    );
+
+    // Delete previously created queues
     let deleted = await queueService.deleteUnusedWorkerQueues(now);
-    // There should always be at least one queue, because test cases above
-    // will have created one we can delete...
     assume(deleted).is.atleast(1);
+
+    try {
+      // Get meta-data, this will fail if the queue was deleted
+      await queueService.client.getMetadata(queueName);
+      assert(false);
+    } catch (err) {
+      assert(err.statusCode === 404, "Expected 400 error");
+    }
   });
 
 
