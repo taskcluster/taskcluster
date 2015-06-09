@@ -1844,6 +1844,9 @@ var _defaultOptions = {
   // 100 ms is solid for servers, and 500ms - 1s is suitable for background
   // processes
   delayFactor:    100,
+  // Randomization factor added as.
+  // delay = delay * random([1 - randomizationFactor; 1 + randomizationFactor])
+  randomizationFactor: 0.25,
   // Maximum retry delay (defaults to 30 seconds)
   maxDelay:       30 * 1000,
 };
@@ -1923,7 +1926,7 @@ var makeRequest = function(client, method, url, payload) {
  *   retries:      0,              // Number of retries
  *   method:       'createTask',   // Name of method called
  *   success:      0 || 1,         // Success or error
- *   resolution:   201,            // Status code
+ *   resolution:   'http-201',     // Status code
  *   target:       'queue',        // Name of target, unknown if not known
  *   baseUrl:      'https://...',  // Server baseUrl
  * }
@@ -1947,6 +1950,11 @@ exports.createClient = function(reference, name) {
     // Validate options.stats
     if (this._options.stats && !(this._options.stats instanceof Function)) {
       throw new Error("options.stats must be a function if specified");
+    }
+
+    if (this._options.randomizationFactor < 0 ||
+        this._options.randomizationFactor >= 1) {
+      throw new Error("options.randomizationFactor must be between 0 and 1!");
     }
 
     // Shortcut for which default agent to use...
@@ -2122,7 +2130,11 @@ exports.createClient = function(reference, name) {
             debug("Request error calling %s NOT retrying!, err: %s, JSON: %s",
                   entry.name, err, err);
             if (reportStats) {
-              reportStats(false, (err.code || err.name || 'Error') + '');
+              var errCode = err.code || err.name;
+              if (!errCode || typeof(errCode) !== 'string') {
+                errCode = 'Error';
+              }
+              reportStats(false, errCode);
             }
             throw err;
           });
@@ -2140,6 +2152,9 @@ exports.createClient = function(reference, name) {
           // First request is attempt = 1, so attempt = 2 is the first retry
           // we subtract one to get exponents: 1, 2, 3, 4, 5, ...
           delay = Math.pow(2, attempts - 1) * that._options.delayFactor;
+          // Apply randomization factor
+          var rf = that._options.randomizationFactor;
+          delay = delay * (Math.random() * 2 * rf + 1 - rf);
           // Always limit with a maximum delay
           delay = Math.min(delay, that._options.maxDelay);
           // Sleep then send the request
