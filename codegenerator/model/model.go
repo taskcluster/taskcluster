@@ -225,8 +225,9 @@ func GenerateCode(goOutputDir, modelData string) {
 
 `
 		content += apiDefs[i].generateAPICode()
-		newContent, extraPackages := generatePayloadTypes(&apiDefs[i])
+		newContent, extraPackages, rawMessageTypes := generatePayloadTypes(&apiDefs[i])
 		content += newContent
+		content += jsonRawMessageImplementors(&apiDefs[i], rawMessageTypes)
 		extraPackagesString := ""
 		for j, k := range extraPackages {
 			if k {
@@ -260,20 +261,43 @@ func GenerateCode(goOutputDir, modelData string) {
 	utils.WriteStringToFile(content, modelData)
 }
 
+func jsonRawMessageImplementors(apiDef *APIDefinition, rawMessageTypes map[string]bool) string {
+	content := ""
+	for goType := range rawMessageTypes {
+		content += `
+
+	// MarshalJSON calls json.RawMessage method of the same name. Required since
+	// ` + goType + ` is of type json.RawMessage...
+	func (this *` + goType + `) MarshalJSON() ([]byte, error) {
+		x := json.RawMessage(*this)
+		return (&x).MarshalJSON()
+	}
+
+	// UnmarshalJSON calls json.RawMessage method of the same name. Required since
+	// ` + goType + ` is of type json.RawMessage...
+	func (this *` + goType + `) UnmarshalJSON(data []byte) error {
+		x := json.RawMessage(*this)
+		return (&x).UnmarshalJSON(data)
+	}`
+	}
+	return content
+}
+
 // This is where we generate nested and compoound types in go to represent json payloads
 // which are used as inputs and outputs for the REST API endpoints, and also for Pulse
 // message bodies for the Exchange APIs.
 // Returns the generated code content, and a map of keys of extra packages to import, e.g.
 // a generated type might use time.Time, so if not imported, this would have to be added.
 // using a map of strings -> bool to simulate a set - true => include
-func generatePayloadTypes(apiDef *APIDefinition) (string, map[string]bool) {
+func generatePayloadTypes(apiDef *APIDefinition) (string, map[string]bool, map[string]bool) {
 	extraPackages := make(map[string]bool)
+	rawMessageTypes := make(map[string]bool)
 	content := "type (" // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	for _, i := range apiDef.schemaURLs {
 		var newContent string
-		newContent, extraPackages = apiDef.schemas[i].TypeDefinition(true, extraPackages)
+		newContent, extraPackages, rawMessageTypes = apiDef.schemas[i].TypeDefinition(true, extraPackages, rawMessageTypes)
 		content += utils.Indent(newContent, "\t")
 	}
-	return content + ")\n\n", extraPackages
+	return content + ")\n\n", extraPackages, rawMessageTypes
 }

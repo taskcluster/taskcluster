@@ -92,7 +92,7 @@ func (subSchema JsonSubSchema) String() string {
 	return result
 }
 
-func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPackages map[string]bool) (string, map[string]bool) {
+func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPackages map[string]bool, rawMessageTypes map[string]bool) (string, map[string]bool, map[string]bool) {
 	content := ""
 	comment := ""
 	if withComments {
@@ -122,7 +122,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 	case "array":
 		if jsonType := jsonSubSchema.Items.Type; jsonType != nil {
 			var newType string
-			newType, extraPackages = jsonSubSchema.Items.TypeDefinition(false, extraPackages)
+			newType, extraPackages, rawMessageTypes = jsonSubSchema.Items.TypeDefinition(false, extraPackages, rawMessageTypes)
 			typ = "[]" + newType
 		}
 	case "object":
@@ -133,7 +133,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 				memberName := utils.Normalise(j, members)
 				// recursive call to build structs inside structs
 				var subType string
-				subType, extraPackages = s.Properties[j].TypeDefinition(false, extraPackages)
+				subType, extraPackages, rawMessageTypes = s.Properties[j].TypeDefinition(false, extraPackages, rawMessageTypes)
 				// comment the struct member with the description from the json
 				comment = ""
 				if d := s.Properties[j].Description; d != nil {
@@ -170,6 +170,14 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 		extraPackages["time"] = true
 	case "json.RawMessage":
 		extraPackages["encoding/json"] = true
+		if withComments {
+			// Special case: we have here a top level RawMessage such as
+			// queue.PostArtifactRequest - therefore need to implement
+			// Marhsal and Unmarshal methods. See:
+			// http://play.golang.org/p/FKHSUmWVFD vs
+			// http://play.golang.org/p/erjM6ptIYI
+			rawMessageTypes[jsonSubSchema.TypeName] = true
+		}
 	case "map[string]json.RawMessage":
 		extraPackages["encoding/json"] = true
 	}
@@ -177,7 +185,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 	if withComments {
 		content += "\n"
 	}
-	return content, extraPackages
+	return content, extraPackages, rawMessageTypes
 }
 
 func (p Properties) String() string {

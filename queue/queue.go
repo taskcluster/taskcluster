@@ -882,3 +882,31 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// PostArtifactRequest is of type json.RawMessage...
+func (this *PostArtifactRequest) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON calls json.RawMessage method of the same name. Required since
+// PostArtifactRequest is of type json.RawMessage...
+func (this *PostArtifactRequest) UnmarshalJSON(data []byte) error {
+	x := json.RawMessage(*this)
+	return (&x).UnmarshalJSON(data)
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// PostArtifactResponse is of type json.RawMessage...
+func (this *PostArtifactResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON calls json.RawMessage method of the same name. Required since
+// PostArtifactResponse is of type json.RawMessage...
+func (this *PostArtifactResponse) UnmarshalJSON(data []byte) error {
+	x := json.RawMessage(*this)
+	return (&x).UnmarshalJSON(data)
+}
