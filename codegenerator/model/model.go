@@ -273,11 +273,13 @@ func jsonRawMessageImplementors(apiDef *APIDefinition, rawMessageTypes map[strin
 		return (&x).MarshalJSON()
 	}
 
-	// UnmarshalJSON calls json.RawMessage method of the same name. Required since
-	// ` + goType + ` is of type json.RawMessage...
+	// UnmarshalJSON is a copy of the json.RawMessage implementation.
 	func (this *` + goType + `) UnmarshalJSON(data []byte) error {
-		x := json.RawMessage(*this)
-		return (&x).UnmarshalJSON(data)
+		if this == nil {
+			return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
+		}
+		*this = append((*this)[0:0], data...)
+		return nil
 	}`
 	}
 	return content

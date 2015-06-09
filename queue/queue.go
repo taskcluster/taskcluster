@@ -890,11 +890,13 @@ func (this *PostArtifactRequest) MarshalJSON() ([]byte, error) {
 	return (&x).MarshalJSON()
 }
 
-// UnmarshalJSON calls json.RawMessage method of the same name. Required since
-// PostArtifactRequest is of type json.RawMessage...
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
 func (this *PostArtifactRequest) UnmarshalJSON(data []byte) error {
-	x := json.RawMessage(*this)
-	return (&x).UnmarshalJSON(data)
+	if this == nil {
+		return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
@@ -904,9 +906,11 @@ func (this *PostArtifactResponse) MarshalJSON() ([]byte, error) {
 	return (&x).MarshalJSON()
 }
 
-// UnmarshalJSON calls json.RawMessage method of the same name. Required since
-// PostArtifactResponse is of type json.RawMessage...
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
 func (this *PostArtifactResponse) UnmarshalJSON(data []byte) error {
-	x := json.RawMessage(*this)
-	return (&x).UnmarshalJSON(data)
+	if this == nil {
+		return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
 }
