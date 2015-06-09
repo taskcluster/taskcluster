@@ -5,8 +5,9 @@ import (
 	"os/exec"
 )
 
-func startup() {
+func startup() error {
 	fmt.Println("Detected OS X platform")
+	return nil
 }
 
 func (task *TaskRun) generateCommand() (*exec.Cmd, error) {

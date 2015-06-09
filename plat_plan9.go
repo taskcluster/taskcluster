@@ -5,8 +5,9 @@ import (
 	"os/exec"
 )
 
-func startup() {
+func startup() error {
 	fmt.Println("Detected Plan 9 platform")
+	return nil
 }
 
 func (task *TaskRun) generateCommand() (*exec.Cmd, error) {

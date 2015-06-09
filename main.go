@@ -46,7 +46,11 @@ var (
 // Entry point into the generic worker...
 func main() {
 	// Any custom startup per platform...
-	startup()
+	err := startup()
+	// any errors are fatal
+	if err != nil {
+		panic(err)
+	}
 	// Validate environment...
 	for _, j := range []string{
 		"PAYLOAD_SCHEMA",
