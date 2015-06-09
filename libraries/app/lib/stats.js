@@ -438,3 +438,42 @@ var stopProcessUsageReporting = function() {
 // Export startProcessUsageReporting and stopProcessUsageReporting
 exports.startProcessUsageReporting  = startProcessUsageReporting;
 exports.stopProcessUsageReporting   = stopProcessUsageReporting;
+
+
+/**
+ * Create a stats handler for taskcluster-client clients which takes an option
+ * `stats` as function that will be call after an API call.
+ *
+ * options:
+ * {
+ *   tags: {                         // Tags as key/value (both strings)
+ *     component: 'queue',           // Component identifier
+ *     process:   'web'              // Process identifier
+ *     // Common tags that are good to use includes:
+ *     //     component, process, provisionerId, workerType
+ *   },
+ *   drain:        new Influx(...),  // Place to send events
+ * }
+ */
+var createAPIClientStatsHandler = function(options) {
+  options = _.defaults(options || {}, {
+    tags:   {},
+    drain:  undefined
+  });
+  assert(options.drain,                     "options.drain is required");
+  assert(typeof options.tags === 'object',  "options.tags is required");
+  assert(_.intersection(
+    _.keys(options.tags), series.APIClientCalls.columns()
+  ).length === 0, "Can't used reserved tag names!");
+
+  // Create a reporter
+  var reporter = series.APIClientCalls.reporter(options.drain);
+
+  // Return handler
+  return function(data) {
+    reporter(_.defaults(data, options.tags));
+  };
+};
+
+// Export createAPIClientStatsHandler
+exports.createAPIClientStatsHandler = createAPIClientStatsHandler;
