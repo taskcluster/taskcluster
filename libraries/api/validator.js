@@ -141,6 +141,23 @@ var validator = function(options) {
 
   // Load schemas from folder
   if (options.folder) {
+
+    // Load JSON schema for JSON Schemas
+    var coreSchema = fs.readFileSync(
+      path.join(__dirname, 'schemas', 'draft-04-schema.json'), {
+      encoding: 'utf-8'
+    });
+    // Create validator for core schema, so we can report schemas that are
+    // invalid
+    var coreSchemaValidator = new jjv();
+    coreSchemaValidator.addSchema(JSON.parse(coreSchema));
+    var validateSchema = function(schemaToValidate) {
+      return coreSchemaValidator.validate(
+        'http://json-schema.org/draft-04/schema#',
+        schemaToValidate
+      );
+    };
+
     // Register JSON schemas from folder
     utils.listFolder(options.folder).forEach(function(filePath) {
       // We shall only import JSON files
@@ -163,6 +180,16 @@ var validator = function(options) {
 
         // Render JSON to JSON Schema, by substituting constants
         var schema = render(json, options.constants || {});
+
+        // Validate the schema is a valid JSON schema
+        var error = validateSchema(schema);
+        if (error) {
+          debug("Invalid JSON schema: %s, error: %j, schema: %j",
+                filePath, error, schema);
+          var err = new Error(filePath + " is not a valid JSON schema!");
+          err.error = error;
+          throw err;
+        }
 
         // Register with the validator
         validator.register(schema);
