@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"mime"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -613,10 +614,9 @@ func (task *TaskRun) uploadArtifacts() error {
 	task.associateArtifacts()
 	// get the time a year from now in expected (ISO 8601 compatible) format...
 	// the result will look like: 2016-06-08T16:10:19.871Z
-	expiry := time.Now().AddDate(1, 0, 0).UTC().Format("2006-01-02T15:04:05.000Z0700")
 	for _, artifact := range task.Artifacts {
 		// TODO: we should store expires and contentType with the artifact data
-		par := queue.PostArtifactRequest(json.RawMessage(`{"storageType": "s3", "expires": "` + expiry + `", "contentType": "text/plain"}`))
+		par := queue.PostArtifactRequest(json.RawMessage(`{"storageType": "s3", "expires": "` + artifact.Expires.UTC().Format("2006-01-02T15:04:05.000Z0700") + `", "contentType": "` + artifact.MimeType + `"}`))
 		parsp, callSummary := Queue.CreateArtifact(
 			task.TaskId,
 			strconv.Itoa(int(task.RunId)),
@@ -666,7 +666,7 @@ func (task *TaskRun) uploadArtifacts() error {
 			if err != nil {
 				return nil, nil, err
 			}
-			httpRequest.Header.Set("Content-Type", "text/plain")
+			httpRequest.Header.Set("Content-Type", artifact.MimeType)
 			requestFull, dumpError := httputil.DumpRequestOut(httpRequest, true)
 			if dumpError != nil {
 				fmt.Println("Could not dump request, never mind...")
@@ -708,13 +708,14 @@ func (task *TaskRun) associateArtifacts() {
 	logFiles := task.LogFiles()
 
 	task.Artifacts = make([]Artifact, len(logFiles)+len(task.Payload.Artifacts))
+	expiry := time.Now().AddDate(1, 0, 0)
 	i := 0
 	for _, logFile := range logFiles {
-		task.Artifacts[i] = Artifact{LocalPath: logFile}
+		task.Artifacts[i] = Artifact{LocalPath: logFile, Expires: expiry, MimeType: "text/plain"}
 		i++
 	}
 	for _, artifact := range task.Payload.Artifacts {
-		task.Artifacts[i] = Artifact{LocalPath: filepath.Join(User.HomeDir, string(artifact))}
+		task.Artifacts[i] = Artifact{LocalPath: filepath.Join(User.HomeDir, artifact.Path), Expires: artifact.Expires, MimeType: mime.TypeByExtension(filepath.Ext(artifact.Path))}
 		i++
 	}
 }

@@ -46,6 +46,8 @@ type TaskRun struct {
 
 type Artifact struct {
 	LocalPath string
+	MimeType  string
+	Expires   time.Time
 }
 
 // Custom time format to enable unmarshalling of azure xml directly into go
