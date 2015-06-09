@@ -642,18 +642,22 @@ func (task *TaskRun) uploadArtifacts() error {
 		if err != nil {
 			return err
 		}
-		artifactReader, err := os.Open(artifact.LocalPath)
-		if err != nil {
-			return err
-		}
 		httpClient := &http.Client{}
-		// http.NewRequest automatically sets Content-Length correctly
-		httpRequest, err := http.NewRequest("PUT", resp.PutURL, artifactReader)
-		httpRequest.Header.Add("Content-Type", "text/plain")
-		if err != nil {
-			return err
+		httpCall := func() (*http.Response, error, error) {
+			artifactReader, err := os.Open(artifact.LocalPath)
+			if err != nil {
+				return nil, nil, err
+			}
+			// http.NewRequest automatically sets Content-Length correctly
+			httpRequest, err := http.NewRequest("PUT", resp.PutURL, artifactReader)
+			if err != nil {
+				return nil, nil, err
+			}
+			httpRequest.Header.Add("Content-Type", "text/plain")
+			putResp, err := httpClient.Do(httpRequest)
+			return putResp, err, nil
 		}
-		putResp, putAttempts, err := httpbackoff.ClientDo(httpClient, httpRequest)
+		putResp, putAttempts, err := httpbackoff.Retry(httpCall)
 		if err != nil {
 			return err
 		}

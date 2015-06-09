@@ -86,7 +86,7 @@ func createNewOSUser() error {
 // (approx 143 bits of randomness). Randomisation is not seeded, so results
 // should not be reproducible.
 func generatePassword() string {
-	return "pWd0_" + uniuri.NewLenChars(24)
+	return "pWd0_" + uniuri.NewLen(24)
 }
 
 func deleteExistingOSUsers() {
