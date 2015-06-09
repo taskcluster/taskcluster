@@ -548,6 +548,7 @@ func (task *TaskRun) run() error {
 	err = task.uploadArtifacts()
 	if err != nil {
 		log.Printf("ERROR: Could not upload artifacts for task " + task.TaskId)
+		log.Printf("%v\n", err)
 	}
 	// Reporting Task Result
 	// ---------------------
