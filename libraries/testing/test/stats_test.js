@@ -489,6 +489,58 @@ suite('stats', function() {
       assert(influx.pendingPoints() === 1, "We should have one point");
     });
   });
+
+  test("createAPIClientStatsHandler", function() {
+    // Create statistics drain with NullDrain
+    var drain = new base.stats.NullDrain();
+
+    // Create handler to test
+    var handler = base.stats.createAPIClientStatsHandler({
+      drain: drain,
+      tags: {
+        component: 'base-tests',
+        process: 'mocha',
+        provisionerId: 'no-provisioner',
+        workerType: 'dummy-base-test',
+        workerGroup: 'not-a-worker',
+        workerId: 'not-a-worker'
+      }
+    });
+
+    assert(drain.pendingPoints() === 0, "We should have zero points");
+
+    handler({
+      duration: 6230,
+      retries: 5,
+      method: 'getConnectionError',
+      success: 0,
+      resolution: 'ECONNRESET',
+      target: 'Unknown',
+      baseUrl: 'http://localhost:60526/v1'
+    });
+
+    assert(drain.pendingPoints() === 1, "We should have one point");
+  });
+
+  test("createAPIClientStatsHandler (illegal columns)", function() {
+    // Create statistics drain with NullDrain
+    var drain = new base.stats.NullDrain();
+
+    try {
+      base.stats.createAPIClientStatsHandler({
+        drain: drain,
+        tags: {
+          component: 'base-tests',
+          process: 'mocha',
+          method: 'can-t-declare-this'
+        }
+      });
+    } catch (err) {
+      assert(err, "Expected an error");
+      return;
+    }
+    assert(false, "Expected an error!");
+  });
 });
 
 
