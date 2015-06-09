@@ -609,15 +609,13 @@ func (task *TaskRun) uploadArtifacts() error {
 	// the result will look like: 2016-06-08T16:10:19.871Z
 	expiry := time.Now().AddDate(1, 0, 0).UTC().Format("2006-01-02T15:04:05.000Z0700")
 	for _, artifact := range task.Artifacts {
-		// TODO: we should store this with the artifact data
-		s3ArtifactRequestPayload := []byte(`{storageType: "s3", expires: "` + expiry + `", contentType: "text/plain"}`)
-		rawMessage := json.RawMessage(s3ArtifactRequestPayload)
-		postArtifactRequest := queue.PostArtifactRequest(rawMessage)
+		// TODO: we should store expires and contentType with the artifact data
+		par := queue.PostArtifactRequest(json.RawMessage(`{"storageType": "s3", "expires": "` + expiry + `", "contentType": "text/plain"}`))
 		parsp, callSummary := Queue.CreateArtifact(
 			task.TaskId,
 			strconv.Itoa(int(task.RunId)),
 			filepath.Base(artifact.LocalPath),
-			&postArtifactRequest,
+			&par,
 		)
 		if callSummary.Error != nil {
 			log.Printf("Could not upload artifact: %v\n", artifact)
