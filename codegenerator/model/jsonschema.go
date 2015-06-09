@@ -176,6 +176,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 			// Marhsal and Unmarshal methods. See:
 			// http://play.golang.org/p/FKHSUmWVFD vs
 			// http://play.golang.org/p/erjM6ptIYI
+			extraPackages["errors"] = true
 			rawMessageTypes[jsonSubSchema.TypeName] = true
 		}
 	case "map[string]json.RawMessage":

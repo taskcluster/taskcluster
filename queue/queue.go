@@ -38,6 +38,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/taskcluster/httpbackoff"
 	hawk "github.com/tent/hawk-go"
