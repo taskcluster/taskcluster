@@ -130,7 +130,7 @@ var makeRequest = function(client, method, url, payload) {
  *   retries:      0,              // Number of retries
  *   method:       'createTask',   // Name of method called
  *   success:      0 || 1,         // Success or error
- *   resolution:   201,            // Status code
+ *   resolution:   'http-201',     // Status code
  *   target:       'queue',        // Name of target, unknown if not known
  *   baseUrl:      'https://...',  // Server baseUrl
  * }
@@ -329,7 +329,11 @@ exports.createClient = function(reference, name) {
             debug("Request error calling %s NOT retrying!, err: %s, JSON: %s",
                   entry.name, err, err);
             if (reportStats) {
-              reportStats(false, (err.code || err.name || 'Error') + '');
+              var errCode = err.code || err.name;
+              if (!errCode || typeof(errCode) !== 'string') {
+                errCode = 'Error';
+              }
+              reportStats(false, errCode);
             }
             throw err;
           });
