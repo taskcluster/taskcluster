@@ -47,6 +47,11 @@ var Series = function(options) {
 // Export series
 exports.Series = Series;
 
+/** Returns list of columns */
+Series.prototype.columns = function() {
+  return _.keys(this._options.columns);
+};
+
 /**
  * Create a reporter function that will validate points and submit them to the
  * drain.
@@ -82,41 +87,41 @@ Series.prototype.reporter = function(drain) {
 
 /** Usage reports format for stats.monitorProcessUsage */
 exports.UsageReports = new Series({
-  name:       'UsageReports',
+  name:               'UsageReports',
   columns: {
-    component:      types.String,
-    process:        types.String,
-    cpu:            types.Number,
-    memory:         types.Number
+    component:        types.String,
+    process:          types.String,
+    cpu:              types.Number,
+    memory:           types.Number
   }
 });
 
 /** Structure for API response times series */
 exports.ResponseTimes = new Series({
-  name:                 'ResponseTimes',
+  name:               'ResponseTimes',
   columns: {
-    duration:           types.Number,
-    statusCode:         types.Number,
-    requestMethod:      types.String,
-    method:             types.String,
-    component:          types.String
+    duration:         types.Number,
+    statusCode:       types.Number,
+    requestMethod:    types.String,
+    method:           types.String,
+    component:        types.String
   },
   // Additional columns are req.params prefixed with "param", these should all
   // be strings
-  additionalColumns:    types.String
+  additionalColumns:  types.String
 });
 
 /** Exchange reports for statistics */
 exports.ExchangeReports = new Series({
-  name:           'ExchangeReports',
+  name:               'ExchangeReports',
   columns: {
-    component:    types.String, // Component name (e.g. 'queue')
-    process:      types.String, // Process name (e.g. 'server')
-    duration:     types.Number, // Time it took to send the message
-    routingKeys:  types.Number, // 1 + number CCed routing keys
-    payloadSize:  types.Number, // Size of message bytes
-    exchange:     types.String, // true || false
-    error:        types.String  // true || false
+    component:        types.String, // Component name (e.g. 'queue')
+    process:          types.String, // Process name (e.g. 'server')
+    duration:         types.Number, // Time it took to send the message
+    routingKeys:      types.Number, // 1 + number CCed routing keys
+    payloadSize:      types.Number, // Size of message bytes
+    exchange:         types.String, // true || false
+    error:            types.String  // true || false
   }
 });
 
@@ -124,23 +129,38 @@ exports.ExchangeReports = new Series({
 exports.AzureTableOperations = new Series({
   name:             'AzureTableOperations',
   columns: {
-    component:      types.String,
-    process:        types.String,
-    duration:       types.Number,
-    table:          types.String,
-    method:         types.String,
-    error:          types.String
+    component:        types.String,
+    process:          types.String,
+    duration:         types.Number,
+    table:            types.String,
+    method:           types.String,
+    error:            types.String
   }
 });
 
-/** Handler reports format for createHandlerTimer */
-exports.HandlerReports = new Series({
-  name:       'HandlerReports',
+/** Statistics from TaskCluster Client stats callback */
+exports.APIClientCalls = new Series({
+  name:               'APIClientCalls ',
   columns: {
-    component:      types.String,
-    duration:       types.Number,
-    exchange:       types.String,
-    redelivered:    types.String,   // true || false
-    error:          types.String    // true || false
+    duration:         types.Number, // Duration of call in ms including retries
+    retries:          types.Number, // Number of retries
+    method:           types.String, // Name of method (signature)
+    success:          types.Number, // 1 or 0
+    resolution:       types.String, // http-<status> or err.code
+    target:           types.String, // Queue, Index (class name if available)
+    baseUrl:          types.String  // BaseUrl
+  },
+  additionalColumns:  types.String  // workerType, workerId, component, process
+});
+
+/** Handler reports format for stats.createHandlerTimer */
+exports.HandlerReports = new Series({
+  name:               'HandlerReports',
+  columns: {
+    component:        types.String,
+    duration:         types.Number,
+    exchange:         types.String,
+    redelivered:      types.String,   // true || false
+    error:            types.String    // true || false
   }
 });
