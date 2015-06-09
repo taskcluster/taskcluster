@@ -1929,6 +1929,8 @@ var makeRequest = function(client, method, url, payload) {
  * }
  * ```
  * The `options.stats` callback is currently only called for `API` calls.
+ * **Notice** the `taskcluster-base` module, under `base.stats` contains
+ * utilities to facilitate reporting to influxdb.
  */
 exports.createClient = function(reference, name) {
   if (!name || typeof(name) !== 'string') {
@@ -2054,9 +2056,9 @@ exports.createClient = function(reference, name) {
             retries:    attempts - 1,
             method:     entry.name,
             success:    success ? 1 : 0,
-            resolution: 'none',
+            resolution: resolution,
             target:     name,
-            baseUrl:    this._options.baseUrl
+            baseUrl:    that._options.baseUrl
           });
         };
       }
@@ -2120,7 +2122,7 @@ exports.createClient = function(reference, name) {
             debug("Request error calling %s NOT retrying!, err: %s, JSON: %s",
                   entry.name, err, err);
             if (reportStats) {
-              reportStats(false, err.name);
+              reportStats(false, (err.code || err.name || 'Error') + '');
             }
             throw err;
           });
@@ -2325,7 +2327,7 @@ var apis = require('./apis');
 
 // Instantiate clients
 _.forIn(apis, function(api, name) {
-  exports[name] = exports.createClient(api.reference);
+  exports[name] = exports.createClient(api.reference, name);
 });
 
 /**
