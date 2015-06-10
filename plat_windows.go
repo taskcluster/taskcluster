@@ -85,6 +85,7 @@ func generatePassword() string {
 }
 
 func deleteExistingOSUsers() {
+	debug("Looking for existing task users to delete...")
 	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
 	if err != nil {
 		debug("WARNING: could not list existing Windows user accounts")
@@ -185,9 +186,8 @@ func (task *TaskRun) generateCommand() (*exec.Cmd, error) {
 }
 
 func taskCleanup() error {
-	// var lastError error = nil
-	debug("Looking for existing task users...")
-	// note if this fails, we carry on
+	// note if this fails, we carry on without throwing an error
 	deleteExistingOSUsers()
+	// this needs to succeed, so return an error if it doesn't
 	return createNewOSUser()
 }
