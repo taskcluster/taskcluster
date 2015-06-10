@@ -41,7 +41,7 @@ type (
 		Definition        queue.TaskDefinition1   `json:"-"`
 		Payload           GenericWorkerPayload    `json:"-"`
 		Artifacts         []Artifact              `json:"-"`
-		TaskStatus        TaskStatus              `json:"-"`
+		Status            TaskStatus              `json:"-"`
 		// not exported
 		reclaimTimer *time.Timer
 	}
@@ -77,16 +77,6 @@ type (
 	}
 
 	TaskStatus string
-)
-
-// Enumerate task status to aid life-cycle decision making
-// Use strings for benefit of simple logging/reporting
-const (
-	Aborted   TaskStatus = "Aborted"
-	Running   TaskStatus = "Running"
-	Succeeded TaskStatus = "Succeeded"
-	Failed    TaskStatus = "Failed"
-	Errored   TaskStatus = "Errored"
 )
 
 // Custom Unmarshaller in order to interpret time formats in the azure expected

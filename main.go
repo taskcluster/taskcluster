@@ -42,6 +42,12 @@ var (
 	// to. In future we might require more channels to perform requests in
 	// parallel, in which case we won't have a single global package var.
 	signedURLsResponseChan chan *queue.PollTaskUrlsResponse = make(chan *queue.PollTaskUrlsResponse)
+	// Channel to request task status updates to the TaskStatusHandler (from
+	// any goroutine)
+	taskStatusUpdate chan<- TaskStatusUpdate
+	// Channel to read errors from after requesting a task status update on
+	// taskStatusUpdate channel
+	taskStatusUpdateErr <-chan error
 )
 
 // Entry point into the generic worker...
@@ -75,6 +81,8 @@ func main() {
 	// Start the SignedURLsManager off in a dedicated go routing, to take care
 	// of keeping signed urls up-to-date (i.e. refreshing as old urls expire).
 	go SignedURLsManager()
+
+	taskStatusUpdate, taskStatusUpdateErr = TaskStatusHandler()
 
 	// loop forever claiming and running tasks!
 	for {
@@ -137,22 +145,42 @@ func FindAndRunTask() bool {
 		if err != nil {
 			debug("WARN: Not able to claim task %v", task.TaskId)
 			debug("%v", err)
-			task.reportException("claim-failure")
+			taskStatusUpdate <- TaskStatusUpdate{
+				Task:   task,
+				Status: Errored,
+				Reason: "claim-failure",
+			}
+			reportPossibleError(<-taskStatusUpdateErr)
 			continue
 		}
+		taskStatusUpdate <- TaskStatusUpdate{
+			Task:   task,
+			Status: Claimed,
+		}
+		reportPossibleError(<-taskStatusUpdateErr)
 		task.setReclaimTimer()
 		err = task.fetchTaskDefinition()
 		if err != nil {
 			debug("WARN: Not able to fetch task definition for task %v", task.TaskId)
 			debug("%v", err)
-			task.reportException("fetch-definition-failure")
+			taskStatusUpdate <- TaskStatusUpdate{
+				Task:   task,
+				Status: Errored,
+				Reason: "fetch-definition-failure",
+			}
+			reportPossibleError(<-taskStatusUpdateErr)
 			continue
 		}
 		err = task.validatePayload()
 		if err != nil {
 			debug("WARN: Not able to validate task payload for task %v", task.TaskId)
 			debug("%v", err)
-			task.reportException("malformed-payload")
+			taskStatusUpdate <- TaskStatusUpdate{
+				Task:   task,
+				Status: Errored,
+				Reason: "wellformed-but-invalid-payload",
+			}
+			reportPossibleError(<-taskStatusUpdateErr)
 			continue
 		}
 		err = task.run()
@@ -165,6 +193,12 @@ func FindAndRunTask() bool {
 		break
 	}
 	return taskFound
+}
+
+func reportPossibleError(err error) {
+	if err != nil {
+		debug("%v", err)
+	}
 }
 
 // Queries the given Azure Queue signed url pair (poll url/delete url) and
@@ -300,51 +334,6 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	return &taskRun, nil
 }
 
-// Claims the given task
-func (task *TaskRun) claim() error {
-
-	// create payload for API call for claiming task
-	task.TaskClaimRequest = queue.TaskClaimRequest{
-		WorkerGroup: os.Getenv("WORKER_GROUP"),
-		WorkerId:    os.Getenv("WORKER_ID"),
-	}
-
-	// Using the taskId and runId from the <MessageText> tag, the worker
-	// must call queue.claimTask().
-	tcrsp, callSummary := Queue.ClaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId), &task.TaskClaimRequest)
-	task.ClaimCallSummary = *callSummary
-
-	// check if an error occurred...
-	if callSummary.Error != nil {
-		// If the queue.claimTask() operation fails with a 4xx error, the
-		// worker must delete the messages from the Azure queue (except 401).
-		switch {
-		case callSummary.HttpResponse.StatusCode == 401:
-			debug("Whoops - not authorized to claim task %v, *not* deleting it from Azure queue!", task.TaskId)
-		case callSummary.HttpResponse.StatusCode/100 == 4:
-			// attempt to delete, but if it fails, log and continue
-			// nothing we can do, and better to return the first 4xx error
-			err := task.deleteFromAzure()
-			if err != nil {
-				debug("Not able to delete task %v from Azure after receiving http status code %v when claiming it.", task.TaskId, callSummary.HttpResponse.StatusCode)
-				debug("%v", err)
-			}
-		}
-		debug(task.String())
-		debug("%v", callSummary.Error)
-		return callSummary.Error
-	}
-
-	task.TaskClaimResponse = *tcrsp
-
-	err := task.deleteFromAzure()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // deleteFromAzure will attempt to delete a task from the Azure queue and
 // return an error in case of failure
 func (task *TaskRun) deleteFromAzure() error {
@@ -400,30 +389,6 @@ func deleteFromAzure(deleteUrl string) error {
 	return nil
 }
 
-func (task *TaskRun) reclaim() {
-	debug("Reclaiming task %v...", task.TaskId)
-	tcrsp, callSummary := Queue.ReclaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId))
-
-	// check if an error occurred...
-	if err := callSummary.Error; err != nil {
-		debug("%v", err)
-		task.abort("Cancelling task due to above error when reclaiming...")
-		debug(task.String())
-		return
-	}
-
-	task.TaskClaimResponse = *tcrsp
-	task.ClaimCallSummary = *callSummary
-	debug("Reclaimed task %v successfully (http response code %v).", task.TaskId, callSummary.HttpResponse.StatusCode)
-}
-
-func (task *TaskRun) abort(reason string) error {
-	debug("Aborting task %v due to: %v...", task.TaskId, reason)
-	task.TaskStatus = Aborted
-	// TODO: implement!
-	return nil
-}
-
 func (task *TaskRun) setReclaimTimer() {
 	// Reclaiming Tasks
 	// ----------------
@@ -438,7 +403,27 @@ func (task *TaskRun) setReclaimTimer() {
 	// Attempt to reclaim 3 mins earlier...
 	reclaimTime := takenUntil.Add(time.Minute * -3)
 	waitTimeUntilReclaim := reclaimTime.Sub(time.Now())
-	task.reclaimTimer = time.AfterFunc(waitTimeUntilReclaim, task.reclaim)
+	task.reclaimTimer = time.AfterFunc(
+		waitTimeUntilReclaim, func() {
+			taskStatusUpdate <- TaskStatusUpdate{
+				Task:   task,
+				Status: Reclaimed,
+			}
+			err := <-taskStatusUpdateErr
+			if err != nil {
+				debug("%v", err)
+				taskStatusUpdate <- TaskStatusUpdate{
+					Task:   task,
+					Status: Errored,
+					Reason: "reclaim-failed",
+				}
+				reportPossibleError(<-taskStatusUpdateErr)
+				return
+			}
+			// only set another reclaim timer if the previous reclaim succeeded
+			task.setReclaimTimer()
+		},
+	)
 }
 
 func (task *TaskRun) fetchTaskDefinition() error {
@@ -493,55 +478,18 @@ func (task *TaskRun) validatePayload() error {
 		// worker should give a `reason`. If the worker is unable execute the
 		// task specific payload/code/logic, it should report exception with
 		// the reason `malformed-payload`.
-		if err := task.reportException("malformed-payload"); err != nil {
-			debug("Error occurred reporting exception for task %v:", task.TaskId)
-			debug("%v", err)
+		taskStatusUpdate <- TaskStatusUpdate{
+			Task:   task,
+			Status: Errored,
+			Reason: "malformed-payload",
 		}
+		reportPossibleError(<-taskStatusUpdateErr)
 		return fmt.Errorf("Validation of payload failed for task %v", task.TaskId)
 	}
 	return json.Unmarshal(jsonPayload, &task.Payload)
 }
 
-func (task *TaskRun) reportException(reason string) error {
-	ter := queue.TaskExceptionRequest{Reason: json.RawMessage(`"` + reason + `"`)}
-	tsr, callSummary := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
-	if callSummary.Error != nil {
-		debug("Not able to report exception for task %v:", task.TaskId)
-		debug("%v", callSummary.Error)
-		return callSummary.Error
-	}
-	task.TaskClaimResponse.Status = tsr.Status
-	debug(task.String())
-	return nil
-}
-
-func (task *TaskRun) reportFailed() error {
-	tsr, callSummary := Queue.ReportFailed(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
-	if callSummary.Error != nil {
-		debug("Not able to report failed completion for task %v:", task.TaskId)
-		debug("%v", callSummary.Error)
-		return callSummary.Error
-	}
-	task.TaskClaimResponse.Status = tsr.Status
-	debug(task.String())
-	return nil
-}
-
-func (task *TaskRun) reportCompleted() error {
-	debug("Command finished successfully!")
-	tsr, callSummary := Queue.ReportCompleted(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
-	if callSummary.Error != nil {
-		debug("Not able to report successful completion for task %v:", task.TaskId)
-		debug("%v", callSummary.Error)
-		return callSummary.Error
-	}
-	task.TaskClaimResponse.Status = tsr.Status
-	debug(task.String())
-	return nil
-}
-
 func (task *TaskRun) run() error {
-
 	debug("Running task!")
 	debug(task.String())
 	cmd, err := task.generateCommand() // platform specific
@@ -556,7 +504,14 @@ func (task *TaskRun) run() error {
 	// start a go routine to kill task after max run time...
 	go func() {
 		time.Sleep(time.Second * time.Duration(task.Payload.MaxRunTime))
-		task.abort("max run time (" + strconv.Itoa(task.Payload.MaxRunTime) + "s) exceeded")
+		taskStatusUpdate <- TaskStatusUpdate{
+			Task:   task,
+			Status: Aborted,
+			// only abort task if it is still running...
+			IfStatusIn: map[TaskStatus]bool{Claimed: true, Reclaimed: true},
+			Reason:     "max run time (" + strconv.Itoa(task.Payload.MaxRunTime) + "s) exceeded",
+		}
+		reportPossibleError(<-taskStatusUpdateErr)
 	}()
 	// use a different variable for error since we process it later
 	taskError := cmd.Wait()
@@ -576,15 +531,28 @@ func (task *TaskRun) run() error {
 		// failure).
 		switch taskError.(type) {
 		case *exec.ExitError:
-			return task.reportFailed()
+			taskStatusUpdate <- TaskStatusUpdate{
+				Task:   task,
+				Status: Failed,
+			}
+			return <-taskStatusUpdateErr
 		}
 
 		debug("Command finished with error: %v", taskError)
-		return task.reportException("task-crash")
+		taskStatusUpdate <- TaskStatusUpdate{
+			Task:   task,
+			Status: Errored,
+			Reason: "task-crash",
+		}
+		return <-taskStatusUpdateErr
 	}
 	// When the worker has completed the task successfully it should call
 	// `queue.reportCompleted`.
-	return task.reportCompleted()
+	taskStatusUpdate <- TaskStatusUpdate{
+		Task:   task,
+		Status: Succeeded,
+	}
+	return <-taskStatusUpdateErr
 }
 
 func (task *TaskRun) unixCommand() (*exec.Cmd, error) {
@@ -726,7 +694,7 @@ func (task *TaskRun) associateArtifacts() {
 // This can also be used if an external resource that is referenced in a
 // declarative nature doesn't exist. Generally, it should be used if we can be
 // certain that another run of the task will have the same result. This differs
-// from `queue.reportFailure` in the sense that we report a failure if the task
+// from `queue.reportFailed` in the sense that we report a failure if the task
 // specific code failed.
 //
 // Most tasks includes a lot of declarative steps, such as poll a docker image,
