@@ -7,7 +7,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"mime"
 	"net/http"
 	"net/http/httputil"
@@ -21,6 +20,7 @@ import (
 
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/queue"
+	D "github.com/tj/go-debug"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -31,7 +31,10 @@ type OSUser struct {
 }
 
 var (
-	User OSUser
+	// Used for logging based on DEBUG environment variable
+	// See github.com/tj/go-debug
+	debug = D.Debug("generic-worker")
+	User  OSUser
 	// Queue is the object we will use for accessing queue api. See
 	// http://docs.taskcluster.net/queue/api-docs/
 	Queue *queue.Auth
@@ -65,7 +68,8 @@ func main() {
 		"WORKER_TYPE",
 	} {
 		if os.Getenv(j) == "" {
-			log.Fatalf("Environment variable %v must be set.\n", j)
+			debug("Environment variable %v must be set.", j)
+			os.Exit(1)
 		}
 	}
 
@@ -82,7 +86,7 @@ func main() {
 		waitASec := time.NewTimer(time.Second * 1)
 		taskFound := FindAndRunTask()
 		if !taskFound {
-			log.Printf("No task claimed from any Azure queue...")
+			debug("No task claimed from any Azure queue...")
 		}
 		// To avoid hammering queue, make sure there is at least a second
 		// between consecutive requests. Note we do this even if a task ran,
@@ -113,7 +117,7 @@ func FindAndRunTask() bool {
 		if err != nil {
 			// This can be any error at all occurs in queryAzureQueue that
 			// prevents us from claiming this task.  Log, and continue.
-			log.Println(err)
+			debug("%v", err)
 			continue
 		}
 		if task == nil {
@@ -127,37 +131,37 @@ func FindAndRunTask() bool {
 		// remaining urls for lower priority tasks that might still be left to
 		// loop through, since by the time we complete the first task, maybe
 		// higher priority jobs are waiting, so we need to poll afresh.
-		log.Println("Task found")
+		debug("Task found")
 		taskFound = true
 		// If there is one or more messages the worker must claim the tasks
 		// referenced in the messages, and delete the messages.
 		err = task.claim()
 		if err != nil {
-			log.Printf("WARN: Not able to claim task %v\n", task.TaskId)
-			log.Println(err)
+			debug("WARN: Not able to claim task %v", task.TaskId)
+			debug("%v", err)
 			task.reportException("claim-failure")
 			continue
 		}
 		task.setReclaimTimer()
 		err = task.fetchTaskDefinition()
 		if err != nil {
-			log.Printf("WARN: Not able to fetch task definition for task %v\n", task.TaskId)
-			log.Println(err)
+			debug("WARN: Not able to fetch task definition for task %v", task.TaskId)
+			debug("%v", err)
 			task.reportException("fetch-definition-failure")
 			continue
 		}
 		err = task.validatePayload()
 		if err != nil {
-			log.Printf("WARN: Not able to validate task payload for task %v\n", task.TaskId)
-			log.Println(err)
+			debug("WARN: Not able to validate task payload for task %v", task.TaskId)
+			debug("%v", err)
 			task.reportException("malformed-payload")
 			continue
 		}
 		err = task.run()
 		// task.run reports result, so no need to do it below...
 		if err != nil {
-			log.Printf("WARN: Not able to run task %v\n", task.TaskId)
-			log.Println(err)
+			debug("WARN: Not able to run task %v", task.TaskId)
+			debug("%v", err)
 			continue
 		}
 		break
@@ -177,7 +181,7 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	// Since we can only process one task at a time, grab only one.
 	resp, _, err := httpbackoff.Get(urlPair.SignedPollUrl + "&numofmessages=1")
 	if err != nil {
-		log.Println(err)
+		debug("%v", err)
 		return nil, err
 	}
 	// When executing a `GET` request to `signedPollUrl` from an Azure queue object,
@@ -206,12 +210,12 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	dec := xml.NewDecoder(reader)
 	err = dec.Decode(&queueMessagesList)
 	if err != nil {
-		log.Printf("ERROR: not able to xml decode the response from the azure Queue:")
-		log.Printf("%v\n", string(fullBody))
+		debug("ERROR: not able to xml decode the response from the azure Queue:")
+		debug(string(fullBody))
 		return nil, err
 	}
 	if len(queueMessagesList.QueueMessages) == 0 {
-		log.Println("Zero tasks returned in Azure XML QueueMessagesList")
+		debug("Zero tasks returned in Azure XML QueueMessagesList")
 		return nil, nil
 	}
 	if size := len(queueMessagesList.QueueMessages); size > 1 {
@@ -251,11 +255,11 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	// that alert the operator if a message has been dequeued a significant
 	// number of times, for example 15 or more.
 	if qm.DequeueCount >= 15 {
-		log.Printf("WARN: Queue Message with message id %v has been dequeued %v times!", qm.MessageId, qm.DequeueCount)
+		debug("WARN: Queue Message with message id %v has been dequeued %v times!", qm.MessageId, qm.DequeueCount)
 		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
 		if deleteErr != nil {
-			log.Printf("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
-			log.Printf("%v\n", deleteErr)
+			debug("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
+			debug("%v", deleteErr)
 		}
 	}
 
@@ -266,12 +270,12 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	if err != nil {
 		// try to delete from Azure, if it fails, nothing we can do about it
 		// not very serious - another worker will try to delete it
-		log.Printf("ERROR: Not able to base64 decode the Message Text '" + qm.MessageText + "' in Azure QueueMessage response.")
-		log.Printf("Deleting from Azure queue as other workers will have the same problem.")
+		debug("ERROR: Not able to base64 decode the Message Text '" + qm.MessageText + "' in Azure QueueMessage response.")
+		debug("Deleting from Azure queue as other workers will have the same problem.")
 		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
 		if deleteErr != nil {
-			log.Printf("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
-			log.Printf("%v\n", deleteErr)
+			debug("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
+			debug("%v", deleteErr)
 		}
 		return nil, err
 	}
@@ -285,11 +289,12 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	// now populate remaining json fields of TaskRun from json string m
 	err = json.Unmarshal(m, &taskRun)
 	if err != nil {
-		log.Printf("Not able to unmarshal json from base64 decoded MessageText '%v'\n%v\n", m, err)
+		debug("Not able to unmarshal json from base64 decoded MessageText '%v'", m)
+		debug("%v", err)
 		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
 		if deleteErr != nil {
-			log.Printf("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
-			log.Printf("%v\n", deleteErr)
+			debug("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
+			debug("%v", deleteErr)
 		}
 		return nil, err
 	}
@@ -317,18 +322,18 @@ func (task *TaskRun) claim() error {
 		// worker must delete the messages from the Azure queue (except 401).
 		switch {
 		case callSummary.HttpResponse.StatusCode == 401:
-			log.Printf("Whoops - not authorized to claim task %v, *not* deleting it from Azure queue!\n", task.TaskId)
+			debug("Whoops - not authorized to claim task %v, *not* deleting it from Azure queue!", task.TaskId)
 		case callSummary.HttpResponse.StatusCode/100 == 4:
 			// attempt to delete, but if it fails, log and continue
 			// nothing we can do, and better to return the first 4xx error
 			err := task.deleteFromAzure()
 			if err != nil {
-				log.Printf("Not able to delete task %v from Azure after receiving http status code %v when claiming it.\n", task.TaskId, callSummary.HttpResponse.StatusCode)
-				log.Println(err)
+				debug("Not able to delete task %v from Azure after receiving http status code %v when claiming it.", task.TaskId, callSummary.HttpResponse.StatusCode)
+				debug("%v", err)
 			}
 		}
-		log.Println(task.String())
-		log.Println(callSummary.Error)
+		debug(task.String())
+		debug("%v", callSummary.Error)
 		return callSummary.Error
 	}
 
@@ -348,7 +353,7 @@ func (task *TaskRun) deleteFromAzure() error {
 	if task == nil {
 		return fmt.Errorf("Cannot delete task from Azure - task is nil")
 	}
-	log.Println("Deleting task " + task.TaskId + " from Azure queue...")
+	debug("Deleting task " + task.TaskId + " from Azure queue...")
 	return deleteFromAzure(task.SignedURLPair.SignedDeleteUrl)
 }
 
@@ -388,33 +393,34 @@ func deleteFromAzure(deleteUrl string) error {
 	// reasons outlined above it's strongly advised that workers logs failures
 	// to delete messages from Azure queues.
 	if err != nil {
-		return fmt.Errorf("Not able to delete task from azure queue (delete url: %v)\n%v\n", deleteUrl, err)
+		debug("Not able to delete task from azure queue (delete url: %v)", deleteUrl)
+		return err
 	} else {
-		log.Printf("Successfully deleted task from azure queue (delete url: %v) with http response code %v.\n", deleteUrl, resp.StatusCode)
+		debug("Successfully deleted task from azure queue (delete url: %v) with http response code %v.", deleteUrl, resp.StatusCode)
 	}
 	// no errors occurred, yay!
 	return nil
 }
 
 func (task *TaskRun) reclaim() {
-	fmt.Printf("Reclaiming task %v...\n", task.TaskId)
+	debug("Reclaiming task %v...", task.TaskId)
 	tcrsp, callSummary := Queue.ReclaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId))
 
 	// check if an error occurred...
 	if err := callSummary.Error; err != nil {
-		log.Printf("%v\n", err)
+		debug("%v", err)
 		task.abort("Cancelling task due to above error when reclaiming...")
-		log.Println(task.String())
+		debug(task.String())
 		return
 	}
 
 	task.TaskClaimResponse = *tcrsp
 	task.ClaimCallSummary = *callSummary
-	log.Printf("Reclaimed task %v successfully (http response code %v).\n", task.TaskId, callSummary.HttpResponse.StatusCode)
+	debug("Reclaimed task %v successfully (http response code %v).", task.TaskId, callSummary.HttpResponse.StatusCode)
 }
 
 func (task *TaskRun) abort(reason string) error {
-	log.Printf("Aborting task %v due to: %v...\n", task.TaskId, reason)
+	debug("Aborting task %v due to: %v...", task.TaskId, reason)
 	// TODO: implement!
 	return nil
 }
@@ -443,7 +449,7 @@ func (task *TaskRun) fetchTaskDefinition() error {
 		return err
 	}
 	task.Definition = *definition
-	log.Printf("Successfully retrieved Task Definition (http response code %v)\n", callSummary.HttpResponse.StatusCode)
+	debug("Successfully retrieved Task Definition (http response code %v)", callSummary.HttpResponse.StatusCode)
 	return nil
 }
 
@@ -465,7 +471,7 @@ func (task *TaskRun) validatePayload() error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Json Payload: %v\n", string(jsonPayload))
+	debug("Json Payload: %v", string(jsonPayload))
 	schemaLoader := gojsonschema.NewReferenceLoader("file://" + os.Getenv("PAYLOAD_SCHEMA"))
 	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
@@ -473,11 +479,11 @@ func (task *TaskRun) validatePayload() error {
 		return err
 	}
 	if result.Valid() {
-		log.Printf("The task payload is valid.\n")
+		debug("The task payload is valid.")
 	} else {
-		log.Printf("The task payload is invalid. See errors:\n")
+		debug("The task payload is invalid. See errors:")
 		for _, desc := range result.Errors() {
-			log.Printf("- %s\n", desc)
+			debug("- %s", desc)
 		}
 		// Dealing with Invalid Task Payloads
 		// ----------------------------------
@@ -489,7 +495,8 @@ func (task *TaskRun) validatePayload() error {
 		// task specific payload/code/logic, it should report exception with
 		// the reason `malformed-payload`.
 		if err := task.reportException("malformed-payload"); err != nil {
-			log.Printf("Error occurred reporting exception for task %v:\n%v\n", task.TaskId, err)
+			debug("Error occurred reporting exception for task %v:", task.TaskId)
+			debug("%v", err)
 		}
 		return fmt.Errorf("Validation of payload failed for task %v", task.TaskId)
 	}
@@ -500,41 +507,44 @@ func (task *TaskRun) reportException(reason string) error {
 	ter := queue.TaskExceptionRequest{Reason: json.RawMessage(`"` + reason + `"`)}
 	tsr, callSummary := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
 	if callSummary.Error != nil {
-		log.Printf("Not able to report exception for task %v:\n%v", task.TaskId, callSummary.Error)
+		debug("Not able to report exception for task %v:", task.TaskId)
+		debug("%v", callSummary.Error)
 		return callSummary.Error
 	}
 	task.TaskClaimResponse.Status = tsr.Status
-	log.Println(task.String())
+	debug(task.String())
 	return nil
 }
 
 func (task *TaskRun) reportFailed() error {
 	tsr, callSummary := Queue.ReportFailed(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
 	if callSummary.Error != nil {
-		log.Printf("Not able to report failed completion for task %v:\n%v", task.TaskId, callSummary.Error)
+		debug("Not able to report failed completion for task %v:", task.TaskId)
+		debug("%v", callSummary.Error)
 		return callSummary.Error
 	}
 	task.TaskClaimResponse.Status = tsr.Status
-	log.Println(task.String())
+	debug(task.String())
 	return nil
 }
 
 func (task *TaskRun) reportCompleted() error {
-	log.Printf("Command finished successfully!")
+	debug("Command finished successfully!")
 	tsr, callSummary := Queue.ReportCompleted(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
 	if callSummary.Error != nil {
-		log.Printf("Not able to report successful completion for task %v:\n%v", task.TaskId, callSummary.Error)
+		debug("Not able to report successful completion for task %v:", task.TaskId)
+		debug("%v", callSummary.Error)
 		return callSummary.Error
 	}
 	task.TaskClaimResponse.Status = tsr.Status
-	log.Println(task.String())
+	debug(task.String())
 	return nil
 }
 
 func (task *TaskRun) run() error {
 
-	fmt.Println("Running task!")
-	fmt.Println(task.String())
+	debug("Running task!")
+	debug(task.String())
 	cmd, err := task.generateCommand() // platform specific
 	if err != nil {
 		return err
@@ -543,7 +553,7 @@ func (task *TaskRun) run() error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Waiting for command to finish...")
+	debug("Waiting for command to finish...")
 	// start a go routine to kill task after max run time...
 	go func() {
 		time.Sleep(time.Second * time.Duration(task.Payload.MaxRunTime))
@@ -553,8 +563,8 @@ func (task *TaskRun) run() error {
 	taskError := cmd.Wait()
 	err = task.uploadArtifacts()
 	if err != nil {
-		log.Printf("ERROR: Could not upload artifacts for task " + task.TaskId)
-		log.Printf("%v\n", err)
+		debug("ERROR: Could not upload artifacts for task " + task.TaskId)
+		debug("%v", err)
 	}
 	// Reporting Task Result
 	// ---------------------
@@ -570,7 +580,7 @@ func (task *TaskRun) run() error {
 			return task.reportFailed()
 		}
 
-		log.Printf("Command finished with error: %v", taskError)
+		debug("Command finished with error: %v", taskError)
 		return task.reportException("task-crash")
 	}
 	// When the worker has completed the task successfully it should call
@@ -591,16 +601,16 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 	taskEnv := make([]string, 0)
 	for _, j := range workerEnv {
 		if !strings.HasPrefix(j, "TASKCLUSTER_ACCESS_TOKEN=") {
-			fmt.Printf("Setting env var: %v\n", j)
+			debug("Setting env var: %v", j)
 			taskEnv = append(taskEnv, j)
 		}
 	}
 	for i, j := range task.Payload.Env {
-		fmt.Printf("Setting env var: %v=%v\n", i, j)
+		debug("Setting env var: %v=%v", i, j)
 		taskEnv = append(taskEnv, i+"="+j)
 	}
 	cmd.Env = taskEnv
-	log.Printf("Environment: %v\n", taskEnv)
+	debug("Environment: %v", taskEnv)
 }
 
 // Initial implementation is to assume all platform implementations have a
@@ -624,23 +634,23 @@ func (task *TaskRun) uploadArtifacts() error {
 			&par,
 		)
 		if callSummary.Error != nil {
-			log.Printf("Could not upload artifact: %v\n", artifact)
-			log.Printf("%v\n", callSummary)
-			log.Printf("%v\n", parsp)
-			log.Println("Request Headers")
+			debug("Could not upload artifact: %v", artifact)
+			debug("%v", callSummary)
+			debug("%v", parsp)
+			debug("Request Headers")
 			callSummary.HttpRequest.Header.Write(os.Stdout)
-			log.Println("Request Body")
-			log.Println(callSummary.HttpRequestBody)
-			log.Println("Response Headers")
+			debug("Request Body")
+			debug(callSummary.HttpRequestBody)
+			debug("Response Headers")
 			callSummary.HttpResponse.Header.Write(os.Stdout)
-			log.Println("Response Body")
-			log.Println(callSummary.HttpResponseBody)
+			debug("Response Body")
+			debug(callSummary.HttpResponseBody)
 			return callSummary.Error
 		}
-		fmt.Println("Response body RAW")
-		fmt.Println(callSummary.HttpResponseBody)
-		fmt.Println("Response body INTERPRETED")
-		fmt.Println(string(*parsp))
+		debug("Response body RAW")
+		debug(callSummary.HttpResponseBody)
+		debug("Response body INTERPRETED")
+		debug(string(*parsp))
 		// unmarshal response into object
 		resp := new(S3ArtifactResponse)
 		err := json.Unmarshal(json.RawMessage(*parsp), resp)
@@ -667,12 +677,13 @@ func (task *TaskRun) uploadArtifacts() error {
 				return nil, nil, err
 			}
 			httpRequest.Header.Set("Content-Type", artifact.MimeType)
-			requestFull, dumpError := httputil.DumpRequestOut(httpRequest, true)
+			// request body could be a) binary and b) massive, so don't show it...
+			requestFull, dumpError := httputil.DumpRequestOut(httpRequest, false)
 			if dumpError != nil {
-				fmt.Println("Could not dump request, never mind...")
+				debug("Could not dump request, never mind...")
 			} else {
-				fmt.Println("Request")
-				fmt.Println(string(requestFull))
+				debug("Request")
+				debug(string(requestFull))
 			}
 			putResp, err := httpClient.Do(httpRequest)
 			return putResp, err, nil
@@ -681,13 +692,13 @@ func (task *TaskRun) uploadArtifacts() error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%v put requests issued to %v\n", putAttempts, resp.PutURL)
+		debug("%v put requests issued to %v", putAttempts, resp.PutURL)
 		respBody, dumpError := httputil.DumpResponse(putResp, true)
 		if dumpError != nil {
-			fmt.Println("Could not dump response output, never mind...")
+			debug("Could not dump response output, never mind...")
 		} else {
-			fmt.Println("Response")
-			fmt.Println(string(respBody))
+			debug("Response")
+			debug(string(respBody))
 		}
 	}
 	return nil
@@ -701,7 +712,7 @@ type S3ArtifactResponse struct {
 }
 
 // associateArtifacts populates task.Artifacts with Artifacts defined in the
-// payload plus any log files defined by the platform
+// payload plus any log files based on the platform implementation
 func (task *TaskRun) associateArtifacts() {
 	// first update `task` with all the artifacts it has
 	// log files count as artifacts...
