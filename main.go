@@ -24,17 +24,13 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
-type OSUser struct {
-	HomeDir  string
-	Name     string
-	Password string
-}
-
 var (
 	// Used for logging based on DEBUG environment variable
 	// See github.com/tj/go-debug
 	debug = D.Debug("generic-worker")
-	User  OSUser
+	// General platform independent user settings, such as home directory, username...
+	// Platform specific data should be managed in plat_<platform>.go files
+	User OSUser
 	// Queue is the object we will use for accessing queue api. See
 	// http://docs.taskcluster.net/queue/api-docs/
 	Queue *queue.Auth
@@ -423,6 +419,7 @@ func (task *TaskRun) reclaim() {
 
 func (task *TaskRun) abort(reason string) error {
 	debug("Aborting task %v due to: %v...", task.TaskId, reason)
+	task.TaskStatus = Aborted
 	// TODO: implement!
 	return nil
 }
@@ -704,13 +701,6 @@ func (task *TaskRun) uploadArtifacts() error {
 		}
 	}
 	return nil
-}
-
-type S3ArtifactResponse struct {
-	StorageType string    `json:"storageType"`
-	PutURL      string    `json:"putUrl"`
-	Expires     time.Time `json:"expires"`
-	ContentType string    `json:"contentType"`
 }
 
 // associateArtifacts populates task.Artifacts with Artifacts defined in the

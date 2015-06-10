@@ -9,52 +9,85 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
-// Used for modelling the xml we get back from Azure
-type QueueMessagesList struct {
-	XMLName       xml.Name       `xml:"QueueMessagesList"`
-	QueueMessages []QueueMessage `xml:"QueueMessage"`
-}
+type (
+	// Used for modelling the xml we get back from Azure
+	QueueMessagesList struct {
+		XMLName       xml.Name       `xml:"QueueMessagesList"`
+		QueueMessages []QueueMessage `xml:"QueueMessage"`
+	}
 
-// Used for modelling the xml we get back from Azure
-type QueueMessage struct {
-	XMLName         xml.Name        `xml:"QueueMessage"`
-	MessageId       string          `xml:"MessageId"`
-	InsertionTime   azureTimeFormat `xml:"InsertionTime"`
-	ExpirationTime  azureTimeFormat `xml:"ExpirationTime"`
-	DequeueCount    uint            `xml:"DequeueCount"`
-	PopReceipt      string          `xml:"PopReceipt"`
-	TimeNextVisible azureTimeFormat `xml:"TimeNextVisible"`
-	MessageText     string          `xml:"MessageText"`
-}
+	// Used for modelling the xml we get back from Azure
+	QueueMessage struct {
+		XMLName         xml.Name        `xml:"QueueMessage"`
+		MessageId       string          `xml:"MessageId"`
+		InsertionTime   azureTimeFormat `xml:"InsertionTime"`
+		ExpirationTime  azureTimeFormat `xml:"ExpirationTime"`
+		DequeueCount    uint            `xml:"DequeueCount"`
+		PopReceipt      string          `xml:"PopReceipt"`
+		TimeNextVisible azureTimeFormat `xml:"TimeNextVisible"`
+		MessageText     string          `xml:"MessageText"`
+	}
 
-// Used for modelling the json encoding of QueueMessage.MessageId that we get
-// back from Azure
-type TaskRun struct {
-	TaskId            string                  `json:"taskId"`
-	RunId             uint                    `json:"runId"`
-	QueueMessage      QueueMessage            `json:"-"`
-	SignedURLPair     SignedURLPair           `json:"-"`
-	ClaimCallSummary  queue.CallSummary       `json:"-"`
-	TaskClaimRequest  queue.TaskClaimRequest  `json:"-"`
-	TaskClaimResponse queue.TaskClaimResponse `json:"-"`
-	Definition        queue.TaskDefinition1   `json:"-"`
-	Payload           GenericWorkerPayload    `json:"-"`
-	Artifacts         []Artifact              `json:"-"`
-	// not exported
-	reclaimTimer *time.Timer
-}
+	// Used for modelling the json encoding of QueueMessage.MessageId that we get
+	// back from Azure
+	TaskRun struct {
+		TaskId            string                  `json:"taskId"`
+		RunId             uint                    `json:"runId"`
+		QueueMessage      QueueMessage            `json:"-"`
+		SignedURLPair     SignedURLPair           `json:"-"`
+		ClaimCallSummary  queue.CallSummary       `json:"-"`
+		TaskClaimRequest  queue.TaskClaimRequest  `json:"-"`
+		TaskClaimResponse queue.TaskClaimResponse `json:"-"`
+		Definition        queue.TaskDefinition1   `json:"-"`
+		Payload           GenericWorkerPayload    `json:"-"`
+		Artifacts         []Artifact              `json:"-"`
+		TaskStatus        TaskStatus              `json:"-"`
+		// not exported
+		reclaimTimer *time.Timer
+	}
 
-type Artifact struct {
-	LocalPath string
-	MimeType  string
-	Expires   time.Time
-}
+	Artifact struct {
+		LocalPath string
+		MimeType  string
+		Expires   time.Time
+	}
 
-// Custom time format to enable unmarshalling of azure xml directly into go
-// object with native go time.Time implementation under-the-hood
-type azureTimeFormat struct {
-	time.Time
-}
+	// Custom time format to enable unmarshalling of azure xml directly into go
+	// object with native go time.Time implementation under-the-hood
+	azureTimeFormat struct {
+		time.Time
+	}
+
+	SignedURLPair struct {
+		SignedDeleteUrl string `json:"signedDeleteUrl"`
+		SignedPollUrl   string `json:"signedPollUrl"`
+	}
+
+	S3ArtifactResponse struct {
+		StorageType string    `json:"storageType"`
+		PutURL      string    `json:"putUrl"`
+		Expires     time.Time `json:"expires"`
+		ContentType string    `json:"contentType"`
+	}
+
+	OSUser struct {
+		HomeDir  string
+		Name     string
+		Password string
+	}
+
+	TaskStatus string
+)
+
+// Enumerate task status to aid life-cycle decision making
+// Use strings for benefit of simple logging/reporting
+const (
+	Aborted   TaskStatus = "Aborted"
+	Running   TaskStatus = "Running"
+	Succeeded TaskStatus = "Succeeded"
+	Failed    TaskStatus = "Failed"
+	Errored   TaskStatus = "Errored"
+)
 
 // Custom Unmarshaller in order to interpret time formats in the azure expected
 // format
@@ -65,11 +98,6 @@ func (c *azureTimeFormat) UnmarshalXML(d *xml.Decoder, start xml.StartElement) e
 	parse, err := time.Parse(shortForm, v)
 	*c = azureTimeFormat{parse}
 	return err
-}
-
-type SignedURLPair struct {
-	SignedDeleteUrl string `json:"signedDeleteUrl"`
-	SignedPollUrl   string `json:"signedPollUrl"`
 }
 
 func (task *TaskRun) String() string {
