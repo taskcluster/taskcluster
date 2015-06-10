@@ -10,14 +10,19 @@ export default class ShutdownManager extends EventEmitter {
     this.idleTimeout = null;
     this.host = host;
     this.config = config;
+    this.stats = config.stats;
     this.nodeTerminationPoll = config.shutdown.nodeTerminationPoll || 5000;
     this.onIdle = this.onIdle.bind(this);
     this.onWorking = this.onWorking.bind(this);
   }
 
   async shutdown() {
-    // Add some vague assurance that we are not still claiming tasks.
-    await this.taskListener.close();
+    this.stats.record('workerShutdown', Date.now());
+    await Promise.all([
+      this.stats.close(),
+      // Add some vague assurance that we are not still claiming tasks.
+      this.taskListener.close()
+    ]);
 
     this.config.log('shutdown');
     spawn('shutdown', ['-h', 'now']);
@@ -101,6 +106,7 @@ export default class ShutdownManager extends EventEmitter {
       if (terminated) {
         this.config.capacity = 0;
         this.emit('nodeTermination', terminated);
+        this.stats.record('workerSpotTermination', Date.now());
       }
 
       this.terminationTimeout = setTimeout(

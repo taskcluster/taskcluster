@@ -1,3 +1,4 @@
+var debug = require('debug')('docker-worker:volumeCacheManager');
 var path = require('path');
 var Promise = require('promise');
 var fs = require('fs');
@@ -46,7 +47,8 @@ will be indexed based on timestamps and reused in the order of most recently use
 */
 export default class VolumeCache {
   constructor(config) {
-    this.rootCachePath = config.rootCachePath;
+    this.config = config;
+    this.rootCachePath = config.cache.volumeCachePath;
     this.log = config.log;
     this.cache = {};
     this.stats = config.stats;
@@ -97,7 +99,7 @@ export default class VolumeCache {
     // does not try to claim it.
     delete this.cache[cacheName][instance];
     try {
-      await this.stats.timeGen(statName, removeDir(instancePath));
+      await removeDir(instancePath);
       this.log('cache volume removed', {
         key: cacheKey, path: instancePath
       });
@@ -141,8 +143,6 @@ export default class VolumeCache {
     if(!(await fs.exists(cachePath))) {
       await makeDir(cachePath);
       var cacheDetails = {cacheName: cacheName, cachPath: cachePath};
-      var statName = 'cache.volume.' + cacheName + '.created';
-      this.stats.increment(statName);
       this.log('cache volume created', cacheDetails);
     }
   }
@@ -184,16 +184,14 @@ export default class VolumeCache {
       logMessage = 'cache volume miss';
       instance = await this.add(cacheName);
       this.set(instance.key, {mounted: true});
-      var statName = 'cache.volume.' + cacheName + '.miss';
-      this.stats.increment(statName);
+      this.stats.record('cacheMount', {name: cacheName, miss: 'true'});
     } else {
       logMessage = 'cache volume hit';
       instance = {key: cacheName + KEY_DELIMITER + instanceId,
         path: this.cache[cacheName][instanceId].path,
         lastUsed: this.cache[cacheName][instanceId].lastUsed
       };
-      var statName = 'cache.volume.' + cacheName + '.hit';
-      this.stats.increment(statName);
+      this.stats.record('cacheMount', {name: cacheName, miss: 'false'});
     }
     this.log(logMessage, instance);
     return instance;

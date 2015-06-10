@@ -28,6 +28,10 @@ export default class TestdroidProxy {
     assert(config.devices.phone, MISSING_PHONE_CONFIGURATION);
 
     let deviceCapabilities = config.devices.phone;
+    task.runtime.stats.record('devicePhone', {
+      type: deviceCapabilities.type,
+      sims: deviceCapabilities.sims,
+    });
 
     let docker = task.runtime.docker;
 

@@ -25,7 +25,7 @@ suite('volume cache test', function () {
   });
 
   var stats = {
-    increment: function(stat) { return; }
+    record: function(stat) { return; }
   };
 
   var IMAGE = 'taskcluster/test-ubuntu';
@@ -42,7 +42,9 @@ suite('volume cache test', function () {
 
   test('cache directories created', co(function* () {
     var cache = new VolumeCache({
-      rootCachePath: localCacheDir,
+      cache: {
+        volumeCachePath: localCacheDir
+      },
       log: debug,
       stats: stats
     });
@@ -74,7 +76,9 @@ suite('volume cache test', function () {
 
   test('most recently used unmounted cache instance is used', co(function* () {
     var cache = new VolumeCache({
-      rootCachePath: localCacheDir,
+      cache: {
+        volumeCachePath: localCacheDir
+      },
       log: debug,
       stats: stats
     });
@@ -104,7 +108,9 @@ suite('volume cache test', function () {
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
 
     var cache = new VolumeCache({
-      rootCachePath: localCacheDir,
+      cache: {
+        volumeCachePath: localCacheDir
+      },
       log: debug,
       stats: stats
     });
@@ -164,7 +170,9 @@ suite('volume cache test', function () {
 
 
     var cache = new VolumeCache({
-      rootCachePath: localCacheDir,
+      cache: {
+        volumeCachePath: localCacheDir
+      },
       log: debug,
       stats: stats
     });

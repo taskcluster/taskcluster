@@ -78,7 +78,6 @@ export default class TaskclusterProxy {
   }
 
   async killed(task) {
-    var stats = task.runtime.stats;
     task.runtime.gc.removeContainer(this.container.id);
   }
 }

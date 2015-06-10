@@ -39,12 +39,13 @@ export function getTerminationTime() {
 export function configure() {
   let path = settingsPath('configure');
   let config = {
-    publicIp: '127.0.0.1'
-  }
+    publicIp: '127.0.0.1',
+    workerNodeType: 'test-worker'
+  };
   try {
     let content = fs.readFileSync(path, 'utf8');
     debug('configure read:', content);
-    content = JSON.parse(content)
+    content = JSON.parse(content);
     Object.assign(config, content);
     return config;
   } catch (e) {

@@ -169,7 +169,6 @@ export default class TaskclusterLogs {
     // correctly we simply let it pass/fail to finish since we are going to kill
     // the connection anyway...
 
-    let stats = task.runtime.stats;
     let backingUrl = await this.bulkLog.killed(task);
 
     // Switch references to the new log file on s3 rather then the local worker

@@ -293,7 +293,7 @@ export default class TaskListener extends EventEmitter {
       if (!claim.status.runs.length) {
         // Record a stat which is the time between when the task was created and
         // the first time a worker saw it.
-        this.runtime.stats.time('tasks.time.to_reach_worker', created);
+        this.runtime.stats.time('timeToFirstClaim', created);
       }
 
       let options = {};
@@ -341,5 +341,7 @@ export default class TaskListener extends EventEmitter {
         });
       }
     }
+
+    this.runtime.stats.record('taskError');
   }
 }

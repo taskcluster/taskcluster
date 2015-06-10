@@ -45,8 +45,14 @@ export default class States {
   _invoke(method, task) {
     debug("taskId: %s at state: %s", task.status.taskId, method);
     let hooks = this.hooks.filter(hasMethod.bind(this, method));
-    return this.stats.timeGen('tasks.time.states.' + method,
-      Promise.all(hooks.map(hook => hook[method](task)))
+
+    // XXX This stat is cumulative duration of all states being invoked, which
+    // is influenced by what states are being used within the task.  Investigate
+    // if this is actually useful.
+    return this.stats.timeGen(
+      'stateChange',
+      Promise.all(hooks.map(hook => hook[method](task))),
+      {state: method}
     );
   }
 

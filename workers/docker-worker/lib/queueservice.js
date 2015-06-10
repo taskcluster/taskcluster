@@ -54,7 +54,7 @@ async function makeRequest(method, url, retries, retryInterval, payload) {
  *   provisionerID:     // ID of the provisioner used for this worker
  *   queue:             // Queue instance as provided by taskcluster-client
  *   log:               // Logger instance
- *   stats:             // Statsd instance
+ *   stats:             // Stats instance
  *   task: {
  *     dequeueCount:    // Times a task should be dequeued before permanently
  *                      // removing from the queue.
@@ -106,12 +106,7 @@ export default class TaskQueue {
   async claimTask(task) {
     let claim;
     try {
-      claim = await this.stats.timeGen(
-        'tasks.time.claim',
-        this.queue.claimTask(task.taskId, task.runId, this.claimConfig)
-      );
-
-      this.stats.increment('tasks.claims');
+      claim = await this.queue.claimTask(task.taskId, task.runId, this.claimConfig)
 
       this.log('claim task', {
         taskId: task.taskId,

@@ -64,6 +64,8 @@ function buildStateHandlers(task, stats) {
 
     if (enabled) {
       handlers.push(new (features[flag].module)());
+      debug(flag);
+      stats.record('taskFeature', flag);
     }
   }
 
@@ -183,6 +185,8 @@ export default class Task {
   */
   async dockerConfig(linkInfo) {
     let config = this.task.payload;
+
+    this.runtime.stats.record('taskImage', config.image);
 
     await this.runtime.privateKey.decryptEnvVariables(
       config, this.status.taskId
@@ -320,7 +324,7 @@ export default class Task {
   async abortRun(stat, error='') {
     if (!this.isCanceled()) this.taskState = 'aborted';
 
-    this.runtime.stats.increment('tasks.aborted');
+    this.runtime.stats.record('abortTask');
 
     this.runtime.log('task aborted', {
       taskId: this.status.taskId,
@@ -340,11 +344,8 @@ export default class Task {
     ));
 
     try {
-      // Run killed hook and record reason why we aborted
-      await this.runtime.stats.timeGen(
-        `tasks.time.states.killed-by-abort.${stat}`,
-        this.states.killed(this)
-      );
+      // Run killed hook
+      await this.states.killed(this);
     }
     catch (e) {
       // Do not throw, killing the states is a best effort here when aborting
@@ -431,16 +432,17 @@ export default class Task {
 
   setRuntimeTimeout(maxRuntime) {
     let stats = this.runtime.stats;
-    let maxRuntimeMS = maxRuntime*1000;
+    let maxRuntimeMS = maxRuntime * 1000;
     let runtimeTimeoutId = setTimeout(function() {
       this.taskState = 'aborted';
-      stats.increment('tasks.timed_out');
-      stats.gauge('tasks.timed_out.max_run_time', this.task.payload.maxRunTime);
+      stats.record('runTimeExceeded', maxRuntimeMS);
+
       this.runtime.log('task max runtime timeout', {
         maxRunTime: this.task.payload.maxRunTime,
         taskId: this.status.taskId,
         runId: this.runId
       });
+
       // we don't wait for the promise to resolve just trigger kill here which
       // will cause run to stop processing the task and give us an error
       // exit code.
@@ -458,11 +460,8 @@ export default class Task {
   */
   async reclaimTask() {
     this.runtime.log('issue reclaim');
-    this.runtime.stats.increment('tasks.reclaims');
-    this.claim = await this.runtime.stats.timeGen(
-      'tasks.time.reclaim',
-      this.runtime.queue.reclaimTask(this.status.taskId, this.runId)
-    );
+
+    this.claim = await this.runtime.queue.reclaimTask(this.status.taskId, this.runId);
 
     this.runtime.log('issued reclaim', { claim: this.claim });
     await this.scheduleReclaim(this.claim);
@@ -543,7 +542,6 @@ export default class Task {
     this.taskState = 'canceled';
     this.taskException = reason;
 
-    this.runtime.stats.increment('tasks.canceled');
     this.runtime.log('cancel task', {
       taskId: this.status.taskId, runId: this.runId
     });
@@ -582,6 +580,7 @@ export default class Task {
       await this.states.created(this);
     }
     catch (e) {
+      debug(e.stack);
       return await this.abortRun(
         'states_failed',
         this.fmtLog(
@@ -666,7 +665,7 @@ export default class Task {
       return await this.abortRun(this.taskState);
     }
     this.runtime.log('task run');
-    let exitCode = await stats.timeGen('tasks.time.run', dockerProc.run({
+    let exitCode = await stats.timeGen('taskRunTime', dockerProc.run({
       // Do not pull the image as part of the docker run we handle it +
       // authentication above...
       pull: false

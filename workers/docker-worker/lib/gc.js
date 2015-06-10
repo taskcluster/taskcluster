@@ -40,6 +40,7 @@ function GarbageCollector(config) {
   this.docker = config.docker;
   this.dockerVolume = config.dockerVolume;
   this.log = config.log;
+  this.stats = config.stats;
   this.taskListener = config.taskListener;
   // Garbage collection interval in milliseconds
   this.interval = config.interval || 60 * 1000;
@@ -229,7 +230,8 @@ GarbageCollector.prototype = {
       var exceedsThreshold = yield exceedsDiskspaceThreshold(this.dockerVolume,
                                this.diskspaceThreshold,
                                availableCapacity,
-                               this.log);
+                               this.log,
+                               this.stats);
       if (exceedsThreshold) {
         this.emit('gc:diskspace:warning',
                   {message: 'Diskspace threshold reached. ' +

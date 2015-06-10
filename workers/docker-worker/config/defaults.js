@@ -150,10 +150,17 @@ module.exports = {
     password:   process.env.PULSE_PASSWORD
   },
 
-  // Statsd configuration options (these are totally optional).
-  statsd: {
-    prefix: process.env.STATSD_PREFIX || '',
-    url: process.env.STATSD_URL || 'tcp://localhost:8125'
+  metricsCollection: {
+    // Only collect host level metrics every minute
+    hostMetricsInterval: 60 * 1000
+  },
+
+  influx: {
+    connectionString: undefined,
+    // Wait no more than 10 minutes before flushing stats
+    maxDelay: 10 * 60,
+    // Maximum number of points to queue before flush
+    maxPendingPoints: 100,
   },
 
   testdroid: {

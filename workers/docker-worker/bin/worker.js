@@ -1,9 +1,10 @@
 var fs = require('fs');
+var os = require('os');
 var program = require('commander');
 var co = require('co');
 var taskcluster = require('taskcluster-client');
 var url = require('url');
-var loadConfig = require('taskcluster-base/config');
+var base = require('taskcluster-base');
 var createLogger = require('../lib/log');
 var debug = require('debug')('docker-worker:bin:worker');
 var os = require('os');
@@ -12,10 +13,11 @@ var SDC = require('statsd-client');
 var Runtime = require('../lib/runtime');
 var TaskListener = require('../lib/task_listener');
 var ShutdownManager = require('../lib/shutdown_manager');
-var Stats = require('../lib/stat');
+var Stats = require('../lib/stats/stat');
 var GarbageCollector = require('../lib/gc');
 var VolumeCache = require('../lib/volume_cache');
 var PrivateKey = require('../lib/private_key');
+var reportHostMetrics = require('../lib/stats/host_metrics');
 
 // Available target configurations.
 var allowedHosts = ['aws', 'test'];
@@ -98,7 +100,7 @@ co(function *() {
     return process.exit(1);
   }
 
-  var workerConf = loadConfig({
+  var workerConf = base.config({
     defaults: require('../config/defaults'),
     profile: require('../config/' + profile),
     filename: 'docker-worker'
@@ -149,34 +151,46 @@ co(function *() {
   // level docker-worker components.
   config.docker = require('../lib/docker')();
 
-  config.queue = new taskcluster.Queue({ credentials: config.taskcluster });
-  config.scheduler =
-    new taskcluster.Scheduler({ credentials: config.taskcluster });
-  config.schema = require('../lib/schema')();
   // Default to always having at least a capacity of one.
   config.capacity = config.capacity || 1;
 
-  var statsdConf = url.parse(workerConf.get('statsd:url'));
-  // Raw statsd interface.
-  config.statsd = new SDC({
-    debug: !!process.env.DEBUG,
-    // TOOD: Add real configuration options for this.
-    host: statsdConf.hostname,
-    port: statsdConf.port,
-    // docker-worker.<worker-type>.<provisionerId>.
-    prefix: sanitizeGraphPath(
-      config.statsd.prefix,
-      'docker-worker',
-      config.provisionerId || 'unknown',
-      config.workerGroup || 'unknown',
-      config.workerType || 'unknown',
-      config.workerNodeType || 'unknown'
-    )
+  // Wrapped stats helper to support generators, etc...
+  config.stats = new Stats(config);
+  config.stats.record('workerStart', Date.now()-os.uptime() * 1000);
+
+  config.queue = new taskcluster.Queue({
+    credentials: config.taskcluster,
+    stats: base.stats.createAPIClientStatsHandler({
+      drain: config.stats.influx,
+      tags: {
+        component: 'docker-worker',
+        workerId: config.workerId,
+        workerGroup: config.workerGroup,
+        workerType: config.workerType,
+        instanceType: config.workerNodeType,
+        provisionerId: config.provisionerId
+      }
+    })
   });
 
-  // Wrapped stats helper to support generators, etc...
-  config.stats = new Stats(config.statsd);
-  config.stats.increment('started');
+  config.scheduler =
+    new taskcluster.Scheduler({ credentials: config.taskcluster });
+  config.schema = require('../lib/schema')();
+
+  // Only catch these metrics when running on aws host.  Running within
+  // test environment causes numerous issues.
+  if (host === 'aws') {
+    base.stats.startProcessUsageReporting({
+      drain: config.stats.influx,
+      component: 'docker-worker',
+      process: 'docker-worker'
+    });
+  }
+
+  setInterval(
+    reportHostMetrics.bind(this, config),
+    config.metricsCollection.hostMetricsInterval
+  );
 
   config.log = createLogger({
     source: 'top', // top level logger details...
@@ -197,11 +211,7 @@ co(function *() {
 
   config.gc = new GarbageCollector(gcConfig);
 
-  config.volumeCache = new VolumeCache({
-    rootCachePath: config.cache.volumeCachePath,
-    log: config.log,
-    stats: config.stats
-  });
+  config.volumeCache = new VolumeCache(config);
 
   config.gc.on('gc:container:removed', function (container) {
     container.caches.forEach(co(function* (cacheKey) {

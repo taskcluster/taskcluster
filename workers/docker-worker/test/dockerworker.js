@@ -32,7 +32,8 @@ var COPIED_ENV = [
   'TASKCLUSTER_CLIENT_ID',
   'TASKCLUSTER_ACCESS_TOKEN',
   'PULSE_USERNAME',
-  'PULSE_PASSWORD'
+  'PULSE_PASSWORD',
+  'INFLUX_CONNECTION_STRING'
 ];
 
 function eventPromise(listener, event) {

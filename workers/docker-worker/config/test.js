@@ -4,10 +4,11 @@ module.exports = {
   testMode: true,
   createQueue: false,
 
-  // Disable statsd by default...
-  statsd: {
-    prefix: '',
-    url: 'tcp://localhost:8125'
+  influx: {
+    connectionString: process.env.INFLUX_CONNECTION_STRING || 'http://localhost',
+    maxDelay: 1,
+    maxPendingPoints: 1,
+    allowHTTP: true
   },
 
   ssl: {
