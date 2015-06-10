@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -15,7 +14,7 @@ import (
 func processCommandOutput(callback func(line string), prog string, options ...string) error {
 	out, err := exec.Command(prog, options...).Output()
 	if err != nil {
-		fmt.Printf("%v\n", err)
+		debug("%v", err)
 		return err
 	}
 	for _, line := range strings.Split(string(out), "\r\n") {
@@ -26,12 +25,8 @@ func processCommandOutput(callback func(line string), prog string, options ...st
 }
 
 func startup() error {
-	// var lastError error = nil
-	fmt.Println("Detected Windows platform...")
-	fmt.Println("Looking for existing task users...")
-	// note if this fails, we carry on
-	deleteExistingOSUsers()
-	return createNewOSUser()
+	debug("Detected Windows platform...")
+	return taskCleanup()
 }
 
 func createNewOSUser() error {
@@ -44,7 +39,7 @@ func createNewOSUser() error {
 		Name:     userName,
 		Password: password,
 	}
-	fmt.Println("Creating Windows User " + User.Name + "...")
+	debug("Creating Windows User " + User.Name + "...")
 	err := os.MkdirAll(User.HomeDir, 0755)
 	if err != nil {
 		return err
@@ -65,13 +60,13 @@ func createNewOSUser() error {
 		},
 	}
 	for _, command := range commandsToRun {
-		fmt.Println("Running command: '" + strings.Join(command, "' '") + "'")
+		debug("Running command: '" + strings.Join(command, "' '") + "'")
 		out, err := exec.Command(command[0], command[1:]...).Output()
 		if err != nil {
-			fmt.Printf("%v\n", err)
+			debug("%v", err)
 			return err
 		}
-		fmt.Println(string(out))
+		debug(string(out))
 	}
 	return nil
 }
@@ -92,8 +87,8 @@ func generatePassword() string {
 func deleteExistingOSUsers() {
 	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
 	if err != nil {
-		fmt.Println("WARNING: could not list existing Windows user accounts")
-		fmt.Printf("%v\n", err)
+		debug("WARNING: could not list existing Windows user accounts")
+		debug("%v", err)
 	}
 	deleteHomeDirs()
 }
@@ -101,26 +96,26 @@ func deleteExistingOSUsers() {
 func deleteHomeDirs() {
 	homeDirsParent, err := os.Open("C:\\Users")
 	if err != nil {
-		fmt.Println("WARNING: Could not open C:\\Users directory to find old home directories to delete")
-		fmt.Printf("%v\n", err)
+		debug("WARNING: Could not open C:\\Users directory to find old home directories to delete")
+		debug("%v", err)
 		return
 	}
 	defer homeDirsParent.Close()
 	fi, err := homeDirsParent.Readdir(-1)
 	if err != nil {
-		fmt.Println("WARNING: Could not read complete directory listing to find old home directories to delete")
-		fmt.Printf("%v\n", err)
+		debug("WARNING: Could not read complete directory listing to find old home directories to delete")
+		debug("%v", err)
 		// don't return, since we may have partial listings
 	}
 	for _, file := range fi {
 		if file.IsDir() {
 			if fileName := file.Name(); strings.HasPrefix(fileName, "Task_") {
 				path := "C:\\Users\\" + fileName
-				fmt.Println("Removing home directory '" + path + "'...")
+				debug("Removing home directory '" + path + "'...")
 				err = os.RemoveAll(path)
 				if err != nil {
-					fmt.Println("WARNING: could not delete directory '" + path + "'")
-					fmt.Printf("%v\n", err)
+					debug("WARNING: could not delete directory '" + path + "'")
+					debug("%v", err)
 				}
 			}
 		}
@@ -130,13 +125,13 @@ func deleteHomeDirs() {
 func deleteOSUserAccount(line string) {
 	if strings.HasPrefix(line, "Task_") {
 		user := line
-		fmt.Println("Attempting to remove Windows user " + user + "...")
+		debug("Attempting to remove Windows user " + user + "...")
 		out, err := exec.Command("net", "user", user, "/delete").Output()
 		if err != nil {
-			fmt.Println("WARNING: Could not remove Windows user account " + user)
-			fmt.Printf("%v\n", err)
+			debug("WARNING: Could not remove Windows user account " + user)
+			debug("%v", err)
 		}
-		fmt.Println(string(out))
+		debug(string(out))
 	}
 }
 
@@ -182,9 +177,17 @@ func (task *TaskRun) generateCommand() (*exec.Cmd, error) {
 		User.HomeDir + "\\" + "TaskId_" + task.TaskId + "_wrapper.bat",
 	}
 	cmd := exec.Command(command[0], command[1:]...)
-	fmt.Println("Running command: '" + strings.Join(command, "' '") + "'")
+	debug("Running command: '" + strings.Join(command, "' '") + "'")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	task.prepEnvVars(cmd)
 	return cmd, nil
+}
+
+func taskCleanup() error {
+	// var lastError error = nil
+	debug("Looking for existing task users...")
+	// note if this fails, we carry on
+	deleteExistingOSUsers()
+	return createNewOSUser()
 }

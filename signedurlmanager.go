@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/taskcluster/taskcluster-client-go/queue"
-	"log"
 	"os"
 	"strconv"
 	"time"
@@ -18,8 +17,9 @@ func SignedURLsManager() {
 	// convert number of seconds to an integer
 	premInt, err := strconv.Atoi(prematurity)
 	if err != nil {
-		log.Printf("Environment variable REFRESH_URLS_PREMATURELY_SECS should be an integer number of seconds, but is '%v'.", prematurity)
-		log.Fatalf("This variable represents the number of seconds before signed URLs expire, that they should be refreshed.")
+		debug("Environment variable REFRESH_URLS_PREMATURELY_SECS should be an integer number of seconds, but is '%v'.", prematurity)
+		debug("This variable represents the number of seconds before signed URLs expire, that they should be refreshed.")
+		os.Exit(1)
 	}
 	// signedURLs is the variable where we store the current valid signed urls
 	var signedURLs *queue.PollTaskUrlsResponse
@@ -41,8 +41,8 @@ func SignedURLsManager() {
 		// channel.
 		updateMe = time.After(signedURLs.Expires.Sub(time.Now().Add(time.Second * time.Duration(premInt))))
 		for _, q := range signedURLs.Queues {
-			log.Println("  Delete URL: " + q.SignedDeleteUrl)
-			log.Println("  Poll URL:   " + q.SignedPollUrl)
+			debug("  Delete URL: " + q.SignedDeleteUrl)
+			debug("  Poll URL:   " + q.SignedPollUrl)
 		}
 	}
 	// Get signed urls for the first time...

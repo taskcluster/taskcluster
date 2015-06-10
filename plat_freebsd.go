@@ -1,15 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"os/exec"
 )
 
 func startup() error {
-	fmt.Println("Detected Free BSD platform")
+	debug("Detected Free BSD platform")
 	return nil
 }
 
 func (task *TaskRun) generateCommand() (*exec.Cmd, error) {
 	return task.unixCommand()
+}
+
+func taskCleanup() error {
+	return nil
 }

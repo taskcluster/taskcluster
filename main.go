@@ -87,6 +87,8 @@ func main() {
 		taskFound := FindAndRunTask()
 		if !taskFound {
 			debug("No task claimed from any Azure queue...")
+		} else {
+			taskCleanup()
 		}
 		// To avoid hammering queue, make sure there is at least a second
 		// between consecutive requests. Note we do this even if a task ran,
