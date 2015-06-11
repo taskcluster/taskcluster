@@ -25,6 +25,7 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 	}
 	// signedURLs is the variable where we store the current valid signed urls
 	var signedURLs *queue.PollTaskUrlsResponse
+	var callSummary *queue.CallSummary
 	// updateMe is a channel to send a message to when we need to update signed
 	// urls because either we don't have any yet (i.e. first time) or they are
 	// about to expire...
@@ -34,7 +35,6 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		// When a worker wants to poll for pending tasks it must call
 		// `queue.pollTaskUrls(provisionerId, workerType)` which then returns
 		// an array of objects on the form `{signedPollUrl, signedDeleteUrl}`.
-		var callSummary *queue.CallSummary
 		signedURLs, callSummary = Queue.PollTaskUrls(os.Getenv("PROVISIONER_ID"), os.Getenv("WORKER_TYPE"))
 		// TODO: not sure if this is the right thing to do. If Queue has an outage, maybe better to
 		// do expoenential backoff indefinitely?
@@ -50,9 +50,9 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		refreshWait := signedURLs.Expires.Sub(time.Now().Add(time.Second * time.Duration(premInt)))
 		debug("Refreshing signed urls in %v", refreshWait.String())
 		updateMe = time.After(refreshWait)
-		for _, q := range signedURLs.Queues {
-			debug("  Delete URL: " + q.SignedDeleteUrl)
-			debug("  Poll URL:   " + q.SignedPollUrl)
+		for i, q := range signedURLs.Queues {
+			debug("  Priority (%v) Delete URL: %v", i+1, q.SignedDeleteUrl)
+			debug("  Priority (%v) Poll URL:   %v", i+1, q.SignedPollUrl)
 		}
 	}
 	// Get signed urls for the first time...
