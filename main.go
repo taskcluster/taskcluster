@@ -35,13 +35,13 @@ var (
 	// http://docs.taskcluster.net/queue/api-docs/
 	Queue *queue.Auth
 	// See SignedURLsManager() for more information:
-	// signedURLsRequestChan is the channel you can pass a channel to, to get
+	// signedURsRequestChan is the channel you can pass a channel to, to get
 	// back signed urls from the Task Cluster Queue, for querying Azure queues.
-	signedURLsRequestChan chan chan *queue.PollTaskUrlsResponse = make(chan chan *queue.PollTaskUrlsResponse)
+	signedURLsRequestChan chan chan *queue.PollTaskUrlsResponse
 	// The *currently* one-and-only channel we request signedURLs to be written
 	// to. In future we might require more channels to perform requests in
 	// parallel, in which case we won't have a single global package var.
-	signedURLsResponseChan chan *queue.PollTaskUrlsResponse = make(chan *queue.PollTaskUrlsResponse)
+	signedURLsResponseChan chan *queue.PollTaskUrlsResponse
 	// Channel to request task status updates to the TaskStatusHandler (from
 	// any goroutine)
 	taskStatusUpdate chan<- TaskStatusUpdate
@@ -78,10 +78,12 @@ func main() {
 	// Queue is the object we will use for accessing queue api
 	Queue = queue.New(os.Getenv("TASKCLUSTER_CLIENT_ID"), os.Getenv("TASKCLUSTER_ACCESS_TOKEN"))
 
-	// Start the SignedURLsManager off in a dedicated go routing, to take care
-	// of keeping signed urls up-to-date (i.e. refreshing as old urls expire).
-	go SignedURLsManager()
+	// Start the SignedURLsManager in a dedicated go routine, to take care of
+	// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
+	signedURLsRequestChan, signedURLsResponseChan = SignedURLsManager()
 
+	// Start the TaskStatusHandler in a dedicated go routine, to take care of
+	// all communication with Queue regarding the status of a TaskRun.
 	taskStatusUpdate, taskStatusUpdateErr = TaskStatusHandler()
 
 	// loop forever claiming and running tasks!

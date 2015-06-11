@@ -9,7 +9,9 @@ import (
 
 // This function is called in a dedicated go routine to both serve signed urls
 // and to update them before they expire
-func SignedURLsManager() {
+func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.PollTaskUrlsResponse) {
+	requestChan := make(chan chan *queue.PollTaskUrlsResponse)
+	responseChan := make(chan *queue.PollTaskUrlsResponse)
 	// prematurity specifies the number of seconds prior to expiry that new
 	// signed urls should be fetched, in order that stale credentials are not
 	// used. Should be at least a few seconds.
@@ -32,14 +34,22 @@ func SignedURLsManager() {
 		// When a worker wants to poll for pending tasks it must call
 		// `queue.pollTaskUrls(provisionerId, workerType)` which then returns
 		// an array of objects on the form `{signedPollUrl, signedDeleteUrl}`.
-		signedURLs, _ = Queue.PollTaskUrls(os.Getenv("PROVISIONER_ID"), os.Getenv("WORKER_TYPE"))
+		var callSummary *queue.CallSummary
+		signedURLs, callSummary = Queue.PollTaskUrls(os.Getenv("PROVISIONER_ID"), os.Getenv("WORKER_TYPE"))
+		// TODO: not sure if this is the right thing to do. If Queue has an outage, maybe better to
+		// do expoenential backoff indefinitely?
+		if callSummary.Error != nil {
+			panic(err)
+		}
 		// Set reminder to update signed urls again when they are
 		// approximately REFRESH_URLS_PREMATURELY_SECS seconds before
 		// expiring...
 		// We do this by updating updateMe channel, so that on future
 		// iterations of this select statement, we read from this new
 		// channel.
-		updateMe = time.After(signedURLs.Expires.Sub(time.Now().Add(time.Second * time.Duration(premInt))))
+		refreshWait := signedURLs.Expires.Sub(time.Now().Add(time.Second * time.Duration(premInt)))
+		debug("Refreshing signed urls in %v", refreshWait.String())
+		updateMe = time.After(refreshWait)
 		for _, q := range signedURLs.Queues {
 			debug("  Delete URL: " + q.SignedDeleteUrl)
 			debug("  Poll URL:   " + q.SignedPollUrl)
@@ -49,21 +59,24 @@ func SignedURLsManager() {
 	updateNeeded := true
 	// loop forever, serving requests for signed urls, or requests to refresh
 	// signed urls since they are about to expire...
-	for {
-		select {
-		// request comes in for the current signed urls, which should be valid
-		case replyChan := <-signedURLsRequestChan:
-			if updateNeeded {
-				updateUrls()
-				updateNeeded = false
+	go func() {
+		for {
+			select {
+			// request comes in for the current signed urls, which should be valid
+			case replyChan := <-signedURLsRequestChan:
+				if updateNeeded {
+					updateUrls()
+					updateNeeded = false
+				}
+				// reply on the given channel with the signed urls
+				replyChan <- signedURLs
+			// this is where we are notified that our signed urls are shorlty
+			// before expiring, so we need to refresh them...
+			case <-updateMe:
+				// update the signed urls
+				updateNeeded = true
 			}
-			// reply on the given channel with the signed urls
-			replyChan <- signedURLs
-		// this is where we are notified that our signed urls are shorlty
-		// before expiring, so we need to refresh them...
-		case <-updateMe:
-			// update the signed urls
-			updateNeeded = true
 		}
-	}
+	}()
+	return requestChan, responseChan
 }
