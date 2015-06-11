@@ -33,7 +33,7 @@ const (
 // status of a task. When called, it will spawn a
 // go routine to manage task status updates (both
 // internally tracking TaskRun.Status and also
-// informing the Queue about the status. Errors
+// informing the Queue about the status). Errors
 // from talking to the Queue are returned on err
 // channel.
 func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error) {
@@ -176,5 +176,6 @@ func (task *TaskRun) abort(reason string) error {
 }
 
 func (task *TaskRun) cancel(reason string) error {
+	//TODO: implement!!
 	return nil
 }
