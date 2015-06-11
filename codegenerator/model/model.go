@@ -262,8 +262,18 @@ func GenerateCode(goOutputDir, modelData string) {
 }
 
 func jsonRawMessageImplementors(apiDef *APIDefinition, rawMessageTypes map[string]bool) string {
-	content := ""
+	// first sort the order of the rawMessageTypes since when we rebuild, we
+	// don't want to generate functions in a different order and introduce
+	// diffs against the previous version
+	sortedRawMessageTypes := make([]string, len(rawMessageTypes))
+	i := 0
 	for goType := range rawMessageTypes {
+		sortedRawMessageTypes[i] = goType
+		i++
+	}
+	sort.Strings(sortedRawMessageTypes)
+	content := ""
+	for _, goType := range sortedRawMessageTypes {
 		content += `
 
 	// MarshalJSON calls json.RawMessage method of the same name. Required since
