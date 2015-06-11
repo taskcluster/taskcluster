@@ -96,7 +96,7 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
 			httpRequest.Header.Set("Authorization", reqAuth)
 		}
-		debug("Making http reqest: %v", httpRequest)
+		debug("Making http request: %v", httpRequest)
 		resp, err := httpClient.Do(httpRequest)
 		return resp, err, nil
 	}

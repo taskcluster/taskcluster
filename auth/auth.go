@@ -87,7 +87,7 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
 			httpRequest.Header.Set("Authorization", reqAuth)
 		}
-		debug("Making http reqest: %v", httpRequest)
+		debug("Making http request: %v", httpRequest)
 		resp, err := httpClient.Do(httpRequest)
 		return resp, err, nil
 	}
@@ -321,6 +321,24 @@ func (a *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AW
 	return responseObject.(*AWSS3CredentialsResponse), callSummary
 }
 
+// Export all clients except the root client, as a JSON list.
+// This list can be imported later using `importClients`.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#exportClients
+func (a *Auth) ExportClients() (*ExportedClients, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/export-clients", new(ExportedClients))
+	return responseObject.(*ExportedClients), callSummary
+}
+
+// Import client from JSON list, overwriting any clients that already
+// exists. Returns a list of all clients imported.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#importClients
+func (a *Auth) ImportClients(payload *ExportedClients) (*ExportedClients, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "POST", "/import-clients", new(ExportedClients))
+	return responseObject.(*ExportedClients), callSummary
+}
+
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
@@ -397,6 +415,27 @@ type (
 		// Description of what these credentials are used for in markdown.
 		// Please write a few details here, including who is the owner, point of
 		// contact. Why it is scoped as is, think of this as documentation.
+		Description string `json:"description"`
+		// Date and time where the clients credentials are set to expire
+		Expires time.Time `json:"expires"`
+		// Human readable name of this set of credentials, typical
+		// component/server-name or IRC nickname of the user.
+		Name string `json:"name"`
+		// List of scopes the client is authorized to access
+		Scopes []string `json:"scopes"`
+	}
+
+	// List of clients and all their details as JSON for import/export.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#
+	ExportedClients []struct {
+		// AccessToken used for authenticating requests
+		AccessToken string `json:"accessToken"`
+		// ClientId of the client scopes is requested about
+		ClientId string `json:"clientId"`
+		// Description of what these credentials are used for in markdown.
+		// Should include who is the owner, point of contact.
+		// Why it is scoped as is, think of this as documentation.
 		Description string `json:"description"`
 		// Date and time where the clients credentials are set to expire
 		Expires time.Time `json:"expires"`

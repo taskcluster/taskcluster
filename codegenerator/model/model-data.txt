@@ -3,7 +3,7 @@ It is provided here for reference purposes, but is not used by any code.
 
 http://references.taskcluster.net/auth/v1/api.json
 ==================================================
-Version     = '0.2.0'
+Version     = '0'
 Title       = 'Authentication API'
 Description = 'Authentication related API end-points for taskcluster.'
 Base URL    = 'https://auth.taskcluster.net/v1'
@@ -160,6 +160,30 @@ concern when assigning scopes to users and doing this right will prevent
 poor behavior. After we often want the `prefix` to be a folder in a
 `/` delimited folder structure.'
 Entry 10    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/export-clients'
+    Entry Args        = '[]'
+    Entry Name        = 'exportClients'
+    Entry Scopes      = '[[auth:export-clients auth:credentials]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/exported-clients.json#'
+    Entry Title       = 'List Clients'
+    Entry Description = 'Export all clients except the root client, as a JSON list.
+This list can be imported later using `importClients`.'
+Entry 11    =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/import-clients'
+    Entry Args        = '[]'
+    Entry Name        = 'importClients'
+    Entry Scopes      = '[[auth:import-clients auth:create-client auth:credentials]]'
+    Entry Input       = 'http://schemas.taskcluster.net/auth/v1/exported-clients.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/exported-clients.json#'
+    Entry Title       = 'Import Clients'
+    Entry Description = 'Import client from JSON list, overwriting any clients that already
+exists. Returns a list of all clients imported.'
+Entry 12    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -449,6 +473,93 @@ TypeName               = 'GetClientCredentialsResponse1'
 IsInputSchema          = 'true'
 IsOutputSchema         = 'false'
 SourceURL              = 'http://schemas.taskcluster.net/auth/v1/create-client-request.json#'
+
+
+http://schemas.taskcluster.net/auth/v1/exported-clients.json#
+=============================================================
+Description            = 'List of clients and all their details as JSON for import/export.
+'
+ID                     = 'http://schemas.taskcluster.net/auth/v1/exported-clients.json#'
+Items
+  Additional Properties  = 'false'
+  Properties
+    Property 'accessToken' =
+      Description            = 'AccessToken used for authenticating requests
+      '
+      Pattern                = '^[a-zA-Z0-9-_]{22,66}$'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Property 'clientId' =
+      Description            = 'ClientId of the client scopes is requested about
+      '
+      Pattern                = '^[a-zA-Z0-9-_]{22}$'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Property 'description' =
+      Description            = 'Description of what these credentials are used for in markdown.
+      Should include who is the owner, point of contact.
+      Why it is scoped as is, think of this as documentation.
+      '
+      MaxLength              = '4096'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Property 'expires' =
+      Description            = 'Date and time where the clients credentials are set to expire
+      '
+      Format                 = 'date-time'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Property 'name' =
+      Description            = 'Human readable name of this set of credentials, typical
+      component/server-name or IRC nickname of the user.
+      '
+      MaxLength              = '255'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Property 'scopes' =
+      Description            = 'List of scopes the client is authorized to access
+      '
+      Items
+        Description            = 'Scope the client is authorized to access
+        '
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Type                   = 'array'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+  Required               = '[clientId accessToken scopes expires name description]'
+  Type                   = 'object'
+  TypeName               = ''
+  IsInputSchema          = 'false'
+  IsOutputSchema         = 'false'
+  SourceURL              = ''
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Exported Clients'
+Type                   = 'array'
+TypeName               = 'ExportedClients'
+IsInputSchema          = 'true'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/auth/v1/exported-clients.json#'
 
 
 http://schemas.taskcluster.net/auth/v1/get-client-response.json#
