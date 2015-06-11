@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"os/exec"
 	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/queue"
@@ -28,8 +29,8 @@ type (
 		MessageText     string          `xml:"MessageText"`
 	}
 
-	// Used for modelling the json encoding of QueueMessage.MessageId that we get
-	// back from Azure
+	// TaskId and RunId are taken from the json encoding of
+	// QueueMessage.MessageId that we get back from Azure
 	TaskRun struct {
 		TaskId            string                  `json:"taskId"`
 		RunId             uint                    `json:"runId"`
@@ -42,14 +43,25 @@ type (
 		Payload           GenericWorkerPayload    `json:"-"`
 		Artifacts         []Artifact              `json:"-"`
 		Status            TaskStatus              `json:"-"`
+		Commands          []Command               `json:"-"`
 		// not exported
 		reclaimTimer *time.Timer
 	}
 
+	// Regardless of platform, we will have to call out to system commands to run tasks,
+	// and each command execution should write to a file.
+	Command struct {
+		osCommand *exec.Cmd
+		// The canonical name of the log file as reported to the Queue, which
+		// is typically the relative location of the log file to the user home
+		// directory
+		logFile string
+	}
+
 	Artifact struct {
-		LocalPath string
-		MimeType  string
-		Expires   time.Time
+		CanonicalPath string
+		MimeType      string
+		Expires       time.Time
 	}
 
 	// Custom time format to enable unmarshalling of azure xml directly into go

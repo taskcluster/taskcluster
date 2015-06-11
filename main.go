@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"mime"
 	"net/http"
@@ -144,6 +145,9 @@ func FindAndRunTask() bool {
 		// If there is one or more messages the worker must claim the tasks
 		// referenced in the messages, and delete the messages.
 		err = task.claim()
+		// from this point on we should "break" rather than "continue", since
+		// there could be more tasks on the same queue - we only "continue"
+		// to next queue if we found nothing on this queue...
 		if err != nil {
 			debug("WARN: Not able to claim task %v", task.TaskId)
 			debug("%v", err)
@@ -153,7 +157,7 @@ func FindAndRunTask() bool {
 				Reason: "claim-failure",
 			}
 			reportPossibleError(<-taskStatusUpdateErr)
-			continue
+			break
 		}
 		taskStatusUpdate <- TaskStatusUpdate{
 			Task:   task,
@@ -171,7 +175,7 @@ func FindAndRunTask() bool {
 				Reason: "fetch-definition-failure",
 			}
 			reportPossibleError(<-taskStatusUpdateErr)
-			continue
+			break
 		}
 		err = task.validatePayload()
 		if err != nil {
@@ -183,14 +187,19 @@ func FindAndRunTask() bool {
 				Reason: "wellformed-but-invalid-payload",
 			}
 			reportPossibleError(<-taskStatusUpdateErr)
-			continue
+			break
 		}
-		err = task.run()
-		// task.run reports result, so no need to do it below...
+		err, reason := task.run()
 		if err != nil {
-			debug("WARN: Not able to run task %v", task.TaskId)
+			debug("WARN: an error occured for task %v", task.TaskId)
 			debug("%v", err)
-			continue
+			taskStatusUpdate <- TaskStatusUpdate{
+				Task:   task,
+				Status: Errored,
+				Reason: reason,
+			}
+			reportPossibleError(<-taskStatusUpdateErr)
+			break
 		}
 		break
 	}
@@ -491,18 +500,11 @@ func (task *TaskRun) validatePayload() error {
 	return json.Unmarshal(jsonPayload, &task.Payload)
 }
 
-func (task *TaskRun) run() error {
+func (task *TaskRun) run() (err error, reason string) {
+
 	debug("Running task!")
 	debug(task.String())
-	cmd, err := task.generateCommand() // platform specific
-	if err != nil {
-		return err
-	}
-	err = cmd.Start()
-	if err != nil {
-		return err
-	}
-	debug("Waiting for command to finish...")
+
 	// start a go routine to kill task after max run time...
 	go func() {
 		time.Sleep(time.Second * time.Duration(task.Payload.MaxRunTime))
@@ -515,38 +517,73 @@ func (task *TaskRun) run() error {
 		}
 		reportPossibleError(<-taskStatusUpdateErr)
 	}()
-	// use a different variable for error since we process it later
-	taskError := cmd.Wait()
-	err = task.uploadArtifacts()
-	if err != nil {
-		debug("ERROR: Could not upload artifacts for task " + task.TaskId)
-		debug("%v", err)
-	}
-	// Reporting Task Result
-	// ---------------------
-	// If a task is malformed, the input is invalid, configuration is wrong, or
-	// the worker is told to shutdown by AWS before the the task is completed,
-	// it should be reported to the queue using `queue.reportException`.
-	if taskError != nil {
-		// If the task is unsuccessful, ie. exits non-zero, the worker should
-		// resolve it using `queue.reportFailed` (this implies test or build
-		// failure).
-		switch taskError.(type) {
-		case *exec.ExitError:
-			taskStatusUpdate <- TaskStatusUpdate{
-				Task:   task,
-				Status: Failed,
-			}
-			return <-taskStatusUpdateErr
-		}
 
-		debug("Command finished with error: %v", taskError)
-		taskStatusUpdate <- TaskStatusUpdate{
-			Task:   task,
-			Status: Errored,
-			Reason: "task-crash",
+	task.Commands = make([]Command, len(task.Payload.Command))
+	// errors that occur, that don't cause abortion, but should be reported at end
+	var storedError error = nil
+	var storedReason string = ""
+	// Function try can be called multiple times with an error-returning
+	// function `f`.  The first time try is called and `f` returns an error, it
+	// will store `reason` and the error from `f` in `storedReason` and
+	// `storedError`. Once set, they will not be updated on subsequent calls to
+	// try. This can be used to capture the first error that occurred, when we
+	// wish to perform several steps that could fail, but not exit after an
+	// error, but continue on. We do this with artifact uploads, so that as
+	// many artifacts are uploaded as possible.
+	try := func(f func() error, reason string) error {
+		err := f()
+		if err != nil && storedError == nil {
+			storedError = err
+			storedReason = reason
 		}
-		return <-taskStatusUpdateErr
+		return err
+	}
+	for i, _ := range task.Payload.Command {
+		task.Commands[i], err = task.generateCommand(i) // platform specific
+		if err != nil {
+			return err, "generate-command-failure"
+		}
+		err = task.Commands[i].osCommand.Start()
+		if err != nil {
+			return err, "execute-command-failure"
+		}
+		debug("Waiting for command to finish...")
+		// use a different variable for error since we process it later
+		taskError := task.Commands[i].osCommand.Wait()
+
+		// Reporting Task Result
+		// ---------------------
+		// If a task is malformed, the input is invalid, configuration is wrong, or
+		// the worker is told to shutdown by AWS before the the task is completed,
+		// it should be reported to the queue using `queue.reportException`.
+		if taskError != nil {
+			// If the task is unsuccessful, ie. exits non-zero, the worker should
+			// resolve it using `queue.reportFailed` (this implies test or build
+			// failure).
+			switch taskError.(type) {
+			case *exec.ExitError:
+				taskStatusUpdate <- TaskStatusUpdate{
+					Task:   task,
+					Status: Failed,
+				}
+				return <-taskStatusUpdateErr, "failed-to-report-as-failure"
+			default:
+				return taskError, "task-crash"
+			}
+		}
+		try(func() error { return task.uploadLog(task.Commands[i].logFile) }, "upload-failure")
+	}
+
+	if err := try(func() error { return task.generateCompleteLog() }, "log-concatenation-failure"); err == nil {
+		// only upload if log concatenation succeeded!
+		try(func() error { return task.uploadLog("public/logs/task_complete.log") }, "upload-failure")
+	}
+	for _, artifact := range task.PayloadArtifacts() {
+		try(func() error { return task.uploadArtifact(artifact) }, "upload-failure")
+	}
+
+	if storedError != nil {
+		return storedError, storedReason
 	}
 	// When the worker has completed the task successfully it should call
 	// `queue.reportCompleted`.
@@ -554,15 +591,45 @@ func (task *TaskRun) run() error {
 		Task:   task,
 		Status: Succeeded,
 	}
-	return <-taskStatusUpdateErr
+	return <-taskStatusUpdateErr, "failed-to-report-as-successful"
 }
 
-func (task *TaskRun) unixCommand() (*exec.Cmd, error) {
+func (task *TaskRun) generateCompleteLog() error {
+	completeLogFile, err := os.Create(filepath.Join(User.HomeDir, "public", "logs", "task_complete.log"))
+	if err != nil {
+		return err
+	}
+	defer completeLogFile.Close()
+	for _, command := range task.Commands {
+		commandLog, err := os.Open(filepath.Join(User.HomeDir, command.logFile))
+		if err != nil {
+			return err
+		}
+		_, err = io.Copy(completeLogFile, commandLog)
+		if err != nil {
+			return err
+		}
+		err = commandLog.Close()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (task *TaskRun) uploadLog(logFile string) error {
+	// logs expire after one year...
+	logExpiry := time.Now().AddDate(1, 0, 0)
+	return task.uploadArtifact(Artifact{CanonicalPath: logFile, Expires: logExpiry, MimeType: "text/plain"})
+}
+
+func (task *TaskRun) unixCommand(command string) (Command, error) {
 	cmd := exec.Command(task.Payload.Command[0], task.Payload.Command[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	task.prepEnvVars(cmd)
-	return cmd, nil
+	// TODO
+	return Command{osCommand: cmd, logFile: ""}, nil
 }
 
 func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
@@ -582,115 +649,93 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 	debug("Environment: %v", taskEnv)
 }
 
-// Initial implementation is to assume all platform implementations have a
-// single log file at the following location...
-func (task *TaskRun) LogFiles() []string {
-	return []string{filepath.Join(User.HomeDir, "TaskId_"+task.TaskId+".log")}
-}
-
-func (task *TaskRun) uploadArtifacts() error {
-	// find which artifacts this task has
-	task.associateArtifacts()
-	// get the time a year from now in expected (ISO 8601 compatible) format...
-	// the result will look like: 2016-06-08T16:10:19.871Z
-	for _, artifact := range task.Artifacts {
-		// TODO: we should store expires and contentType with the artifact data
-		par := queue.PostArtifactRequest(json.RawMessage(`{"storageType": "s3", "expires": "` + artifact.Expires.UTC().Format("2006-01-02T15:04:05.000Z0700") + `", "contentType": "` + artifact.MimeType + `"}`))
-		parsp, callSummary := Queue.CreateArtifact(
-			task.TaskId,
-			strconv.Itoa(int(task.RunId)),
-			filepath.Base(artifact.LocalPath),
-			&par,
-		)
-		if callSummary.Error != nil {
-			debug("Could not upload artifact: %v", artifact)
-			debug("%v", callSummary)
-			debug("%v", parsp)
-			debug("Request Headers")
-			callSummary.HttpRequest.Header.Write(os.Stdout)
-			debug("Request Body")
-			debug(callSummary.HttpRequestBody)
-			debug("Response Headers")
-			callSummary.HttpResponse.Header.Write(os.Stdout)
-			debug("Response Body")
-			debug(callSummary.HttpResponseBody)
-			return callSummary.Error
-		}
-		debug("Response body RAW")
+func (task *TaskRun) uploadArtifact(artifact Artifact) error {
+	task.Artifacts = append(task.Artifacts, artifact)
+	par := queue.PostArtifactRequest(json.RawMessage(`{"storageType": "s3", "expires": "` + artifact.Expires.UTC().Format("2006-01-02T15:04:05.000Z0700") + `", "contentType": "` + artifact.MimeType + `"}`))
+	parsp, callSummary := Queue.CreateArtifact(
+		task.TaskId,
+		strconv.Itoa(int(task.RunId)),
+		artifact.CanonicalPath,
+		&par,
+	)
+	if callSummary.Error != nil {
+		debug("Could not upload artifact: %v", artifact)
+		debug("%v", callSummary)
+		debug("%v", parsp)
+		debug("Request Headers")
+		callSummary.HttpRequest.Header.Write(os.Stdout)
+		debug("Request Body")
+		debug(callSummary.HttpRequestBody)
+		debug("Response Headers")
+		callSummary.HttpResponse.Header.Write(os.Stdout)
+		debug("Response Body")
 		debug(callSummary.HttpResponseBody)
-		debug("Response body INTERPRETED")
-		debug(string(*parsp))
-		// unmarshal response into object
-		resp := new(S3ArtifactResponse)
-		err := json.Unmarshal(json.RawMessage(*parsp), resp)
+		return callSummary.Error
+	}
+	debug("Response body RAW")
+	debug(callSummary.HttpResponseBody)
+	debug("Response body INTERPRETED")
+	debug(string(*parsp))
+	// unmarshal response into object
+	resp := new(S3ArtifactResponse)
+	err := json.Unmarshal(json.RawMessage(*parsp), resp)
+	if err != nil {
+		return err
+	}
+	httpClient := &http.Client{}
+	httpCall := func() (*http.Response, error, error) {
+		fileReader, err := os.Open(filepath.Join(User.HomeDir, artifact.CanonicalPath))
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
-		httpClient := &http.Client{}
-		httpCall := func() (*http.Response, error, error) {
-			fileReader, err := os.Open(artifact.LocalPath)
-			if err != nil {
-				return nil, nil, err
-			}
-			// instead of using fileReader, read it into memory and then use a
-			// bytes.Reader since then http.NewRequest will properly set
-			// Content-Length header for us, which is needed by the API we call
-			requestPayload, err := ioutil.ReadAll(fileReader)
-			if err != nil {
-				return nil, nil, err
-			}
-			bytesReader := bytes.NewReader(requestPayload)
-			// http.NewRequest automatically sets Content-Length correctly for bytes.Reader
-			httpRequest, err := http.NewRequest("PUT", resp.PutURL, bytesReader)
-			if err != nil {
-				return nil, nil, err
-			}
-			httpRequest.Header.Set("Content-Type", artifact.MimeType)
-			// request body could be a) binary and b) massive, so don't show it...
-			requestFull, dumpError := httputil.DumpRequestOut(httpRequest, false)
-			if dumpError != nil {
-				debug("Could not dump request, never mind...")
-			} else {
-				debug("Request")
-				debug(string(requestFull))
-			}
-			putResp, err := httpClient.Do(httpRequest)
-			return putResp, err, nil
-		}
-		putResp, putAttempts, err := httpbackoff.Retry(httpCall)
+		// instead of using fileReader, read it into memory and then use a
+		// bytes.Reader since then http.NewRequest will properly set
+		// Content-Length header for us, which is needed by the API we call
+		requestPayload, err := ioutil.ReadAll(fileReader)
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
-		debug("%v put requests issued to %v", putAttempts, resp.PutURL)
-		respBody, dumpError := httputil.DumpResponse(putResp, true)
+		bytesReader := bytes.NewReader(requestPayload)
+		// http.NewRequest automatically sets Content-Length correctly for bytes.Reader
+		httpRequest, err := http.NewRequest("PUT", resp.PutURL, bytesReader)
+		if err != nil {
+			return nil, nil, err
+		}
+		httpRequest.Header.Set("Content-Type", artifact.MimeType)
+		// request body could be a) binary and b) massive, so don't show it...
+		requestFull, dumpError := httputil.DumpRequestOut(httpRequest, false)
 		if dumpError != nil {
-			debug("Could not dump response output, never mind...")
+			debug("Could not dump request, never mind...")
 		} else {
-			debug("Response")
-			debug(string(respBody))
+			debug("Request")
+			debug(string(requestFull))
 		}
+		putResp, err := httpClient.Do(httpRequest)
+		return putResp, err, nil
+	}
+	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
+	if err != nil {
+		return err
+	}
+	debug("%v put requests issued to %v", putAttempts, resp.PutURL)
+	respBody, dumpError := httputil.DumpResponse(putResp, true)
+	if dumpError != nil {
+		debug("Could not dump response output, never mind...")
+	} else {
+		debug("Response")
+		debug(string(respBody))
 	}
 	return nil
 }
 
-// associateArtifacts populates task.Artifacts with Artifacts defined in the
-// payload plus any log files based on the platform implementation
-func (task *TaskRun) associateArtifacts() {
-	// first update `task` with all the artifacts it has
-	// log files count as artifacts...
-	logFiles := task.LogFiles()
-
-	task.Artifacts = make([]Artifact, len(logFiles)+len(task.Payload.Artifacts))
-	expiry := time.Now().AddDate(1, 0, 0)
-	i := 0
-	for _, logFile := range logFiles {
-		task.Artifacts[i] = Artifact{LocalPath: logFile, Expires: expiry, MimeType: "text/plain"}
-		i++
+// Returns the artifacts as listed in the payload of the task (note this does
+// not include log files)
+func (task *TaskRun) PayloadArtifacts() []Artifact {
+	artifacts := make([]Artifact, len(task.Payload.Artifacts))
+	for i, artifact := range task.Payload.Artifacts {
+		artifacts[i] = Artifact{CanonicalPath: artifact.Path, Expires: artifact.Expires, MimeType: mime.TypeByExtension(filepath.Ext(artifact.Path))}
 	}
-	for _, artifact := range task.Payload.Artifacts {
-		task.Artifacts[i] = Artifact{LocalPath: filepath.Join(User.HomeDir, artifact.Path), Expires: artifact.Expires, MimeType: mime.TypeByExtension(filepath.Ext(artifact.Path))}
-		i++
-	}
+	return artifacts
 }
 
 // This can also be used if an external resource that is referenced in a

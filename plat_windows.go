@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -136,37 +137,34 @@ func deleteOSUserAccount(line string) {
 	}
 }
 
-func (task *TaskRun) generateCommand() (*exec.Cmd, error) {
+func (task *TaskRun) generateCommand(index int) (Command, error) {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
+	commandName := fmt.Sprintf("Command_%06d", index)
 	err := ioutil.WriteFile(
-		User.HomeDir+"\\TaskId_"+task.TaskId+"_wrapper.bat",
+		User.HomeDir+"\\"+commandName+"_wrapper.bat",
 		[]byte(
-			":: This script runs the command(s) defined in TaskId "+task.TaskId+"..."+"\r\n"+
-				"call "+User.HomeDir+"\\"+"TaskId_"+task.TaskId+".bat > TaskId_"+task.TaskId+".log 2>&1"+"\r\n",
+			":: This script runs command "+strconv.Itoa(index)+" defined in TaskId "+task.TaskId+"..."+"\r\n"+
+				"call "+User.HomeDir+"\\"+commandName+".bat > "+commandName+".log 2>&1"+"\r\n",
 		),
 		0755,
 	)
 
 	if err != nil {
-		return nil, err
+		return Command{}, err
 	}
 
-	// Now make the actual task a .bat script where each line is an entry from
-	// task.Payload.Command...
-	fileContents := make([]byte, 0)
-	for _, j := range task.Payload.Command {
-		fileContents = append(fileContents, []byte(j+"\r\n")...)
-	}
+	// Now make the actual task a .bat script
+	fileContents := []byte(task.Payload.Command[index] + "\r\n")
 
 	err = ioutil.WriteFile(
-		User.HomeDir+"\\TaskId_"+task.TaskId+".bat",
+		User.HomeDir+"\\"+commandName+".bat",
 		fileContents,
 		0755,
 	)
 
 	if err != nil {
-		return nil, err
+		return Command{}, err
 	}
 
 	command := []string{
@@ -175,14 +173,16 @@ func (task *TaskRun) generateCommand() (*exec.Cmd, error) {
 		"-p", User.Password,
 		"-w", User.HomeDir,
 		"-n", "10",
-		User.HomeDir + "\\" + "TaskId_" + task.TaskId + "_wrapper.bat",
+		User.HomeDir + "\\" + commandName + "_wrapper.bat",
 	}
 	cmd := exec.Command(command[0], command[1:]...)
 	debug("Running command: '" + strings.Join(command, "' '") + "'")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	// TODO: this should be done in the bat script (not the wrapper)
 	task.prepEnvVars(cmd)
-	return cmd, nil
+	task.Commands[index] = Command{logFile: "public/logs/" + commandName, osCommand: cmd}
+	return task.Commands[index], nil
 }
 
 func taskCleanup() error {

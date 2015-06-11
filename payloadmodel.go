@@ -15,7 +15,6 @@ type (
 			Path    string
 			Expires time.Time
 		}
-		// Example: `['/bin/bash', '-c', 'build.sh']`.
 		Command []string `json:"command"`
 		// List of base64 encoded asymmetric encrypted environment variables.
 		// See
