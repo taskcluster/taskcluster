@@ -184,18 +184,8 @@ func FindAndRunTask() bool {
 			reportPossibleError(<-taskStatusUpdateErr)
 			break
 		}
-		err, reason := task.run()
-		if err != nil {
-			debug("WARN: an error occured for task %v", task.TaskId)
-			debug("%v", err)
-			taskStatusUpdate <- TaskStatusUpdate{
-				Task:   task,
-				Status: Errored,
-				Reason: reason,
-			}
-			reportPossibleError(<-taskStatusUpdateErr)
-			break
-		}
+		err = task.run()
+		reportPossibleError(err)
 		break
 	}
 	return taskFound
@@ -496,7 +486,7 @@ func (task *TaskRun) validatePayload() error {
 	return json.Unmarshal(jsonPayload, &task.Payload)
 }
 
-func (task *TaskRun) run() (err error, reason string) {
+func (task *TaskRun) run() error {
 
 	debug("Running task!")
 	debug(task.String())
@@ -515,79 +505,118 @@ func (task *TaskRun) run() (err error, reason string) {
 	}()
 
 	task.Commands = make([]Command, len(task.Payload.Command))
-	// errors that occur, that don't cause abortion, but should be reported at end
-	var storedError error = nil
-	var storedReason string = ""
-	// Function try can be called multiple times with an error-returning
-	// function `f`.  The first time try is called and `f` returns an error, it
-	// will store `reason` and the error from `f` in `storedReason` and
-	// `storedError`. Once set, they will not be updated on subsequent calls to
-	// try. This can be used to capture the first error that occurred, when we
-	// wish to perform several steps that could fail, but not exit after an
-	// error, but continue on. We do this with artifact uploads, so that as
-	// many artifacts are uploaded as possible.
-	try := func(f func() error, reason string) error {
-		err := f()
-		if err != nil && storedError == nil {
-			storedError = err
-			storedReason = reason
-		}
-		return err
-	}
+
+	// We only report the status at the end of the method, e.g.
+	// if a command fails, we still try to upload log files
+	// and artifacts. Therefore use these variables to store
+	// failure or exception, and at the end of the method
+	// report status based on these...
+	var finalTaskStatus TaskStatus = Succeeded
+	var finalReason string
+	var finalError error = nil
+	abort := false
+	var err error
+
 	for i, _ := range task.Payload.Command {
 		task.Commands[i], err = task.generateCommand(i) // platform specific
-		if err != nil {
-			return err, "worker-shutdown" // "generate-command-failure"
+		if err != nil && finalError == nil {
+			finalTaskStatus = Errored
+			finalReason = "worker-shutdown" // not really, but this is all we have at the moment
+			finalError = err
+			break
 		}
 		err = task.Commands[i].osCommand.Start()
-		if err != nil {
-			return err, "worker-shutdown" // "execute-command-failure"
+		if err != nil && finalError == nil {
+			finalTaskStatus = Errored
+			finalReason = "worker-shutdown" // not really, but this is all we have at the moment
+			finalError = err
+			break
 		}
 		debug("Waiting for command to finish...")
 		// use a different variable for error since we process it later
-		taskError := task.Commands[i].osCommand.Wait()
+		err := task.Commands[i].osCommand.Wait()
 
 		// Reporting Task Result
 		// ---------------------
 		// If a task is malformed, the input is invalid, configuration is wrong, or
 		// the worker is told to shutdown by AWS before the the task is completed,
 		// it should be reported to the queue using `queue.reportException`.
-		if taskError != nil {
-			// If the task is unsuccessful, ie. exits non-zero, the worker should
-			// resolve it using `queue.reportFailed` (this implies test or build
-			// failure).
-			switch taskError.(type) {
-			case *exec.ExitError:
-				taskStatusUpdate <- TaskStatusUpdate{
-					Task:   task,
-					Status: Failed,
+		if err != nil {
+			// make sure we abort loop after uploading log file
+			abort = true
+			if finalError == nil {
+				// If the task is unsuccessful, ie. exits non-zero, the worker should
+				// resolve it using `queue.reportFailed` (this implies test or build
+				// failure).
+				switch err.(type) {
+				case *exec.ExitError:
+					finalTaskStatus = Failed
+					finalError = err
+				default:
+					finalTaskStatus = Errored
+					finalReason = "worker-shutdown" // should be task-crash
+					finalError = err
 				}
-				return <-taskStatusUpdateErr, "worker-shutdown" // "failed-to-report-as-failure"
-			default:
-				return taskError, "worker-shutdown" // "task-crash"
 			}
 		}
-		try(func() error { return task.uploadLog(task.Commands[i].logFile) }, "worker-shutdown") // "upload-failure"
+		err = task.uploadLog(task.Commands[i].logFile)
+		if err != nil && finalError == nil {
+			finalTaskStatus = Errored
+			finalReason = "worker-shutdown" // actually, a log upload failure
+			finalError = err
+			// don't break or abort - log upload failure alone shouldn't stop
+			// other steps from running
+		}
+		if abort {
+			break
+		}
 	}
 
-	if err := try(func() error { return task.generateCompleteLog() }, "worker-shutdown"); err == nil { // "log-concatenation-failure"
+	err = task.generateCompleteLog()
+	if err != nil {
+		if finalError == nil {
+			finalTaskStatus = Errored
+			finalReason = "worker-shutdown" // should be log-concatenation-failure
+			finalError = err
+		}
+	} else {
 		// only upload if log concatenation succeeded!
-		try(func() error { return task.uploadLog("public/logs/task_complete.log") }, "worker-shutdown") // "upload-failure"
+		err = task.uploadLog("public/logs/task_complete.log")
+		if err != nil && finalError == nil {
+			finalTaskStatus = Errored
+			finalReason = "worker-shutdown" // should be upload-failure
+			finalError = err
+		}
 	}
 	for _, artifact := range task.PayloadArtifacts() {
-		try(func() error { return task.uploadArtifact(artifact) }, "worker-shutdown") // "upload-failure"
+		err := task.uploadArtifact(artifact)
+		if err != nil && finalError == nil {
+			switch err.(type) {
+			case *os.PathError:
+				// artifact does not exist or is not readable...
+				finalTaskStatus = Failed
+				finalError = err
+			default:
+				// could not upload for another reason
+				finalTaskStatus = Errored
+				finalReason = "worker-shutdown" // should be upload-failure
+				finalError = err
+			}
+		}
 	}
 
-	if storedError != nil {
-		return storedError, storedReason
-	}
 	// When the worker has completed the task successfully it should call
 	// `queue.reportCompleted`.
 	taskStatusUpdate <- TaskStatusUpdate{
 		Task:   task,
-		Status: Succeeded,
+		Status: finalTaskStatus,
+		Reason: finalReason,
 	}
-	return <-taskStatusUpdateErr, "worker-shutdown" // "failed-to-report-as-successful"
+	err = <-taskStatusUpdateErr
+	if err != nil && finalError == nil {
+		finalError = err
+	}
+	return finalError
 }
 
 func (task *TaskRun) generateCompleteLog() error {
@@ -646,6 +675,11 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 }
 
 func (task *TaskRun) uploadArtifact(artifact Artifact) error {
+	// first check file exists!
+	fileReader, err := os.Open(filepath.Join(User.HomeDir, artifact.CanonicalPath))
+	if err != nil {
+		return err
+	}
 	task.Artifacts = append(task.Artifacts, artifact)
 	par := queue.PostArtifactRequest(json.RawMessage(`{"storageType": "s3", "expires": "` + artifact.Expires.UTC().Format("2006-01-02T15:04:05.000Z0700") + `", "contentType": "` + artifact.MimeType + `"}`))
 	parsp, callSummary := Queue.CreateArtifact(
@@ -674,16 +708,12 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 	debug(string(*parsp))
 	// unmarshal response into object
 	resp := new(S3ArtifactResponse)
-	err := json.Unmarshal(json.RawMessage(*parsp), resp)
+	err = json.Unmarshal(json.RawMessage(*parsp), resp)
 	if err != nil {
 		return err
 	}
 	httpClient := &http.Client{}
 	httpCall := func() (*http.Response, error, error) {
-		fileReader, err := os.Open(filepath.Join(User.HomeDir, artifact.CanonicalPath))
-		if err != nil {
-			return nil, nil, err
-		}
 		// instead of using fileReader, read it into memory and then use a
 		// bytes.Reader since then http.NewRequest will properly set
 		// Content-Length header for us, which is needed by the API we call
