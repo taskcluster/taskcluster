@@ -39,6 +39,115 @@ const (
 func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error) {
 	r := make(chan TaskStatusUpdate)
 	e := make(chan error)
+
+	// we'll make all these functions internal to TaskStatusHandler so that
+	// they can only be called inside here, so that reading/writing to the
+	// appropriate channels is the only way to trigger them, to ensure
+	// proper concurrency handling
+
+	reportException := func(task *TaskRun, reason string) error {
+		ter := queue.TaskExceptionRequest{Reason: json.RawMessage(`"` + reason + `"`)}
+		tsr, callSummary := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
+		if callSummary.Error != nil {
+			debug("Not able to report exception for task %v:", task.TaskId)
+			debug("%v", callSummary.Error)
+			return callSummary.Error
+		}
+		task.TaskClaimResponse.Status = tsr.Status
+		debug(task.String())
+		return nil
+	}
+
+	reportFailed := func(task *TaskRun) error {
+		tsr, callSummary := Queue.ReportFailed(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
+		if callSummary.Error != nil {
+			debug("Not able to report failed completion for task %v:", task.TaskId)
+			debug("%v", callSummary.Error)
+			return callSummary.Error
+		}
+		task.TaskClaimResponse.Status = tsr.Status
+		debug(task.String())
+		return nil
+	}
+
+	reportCompleted := func(task *TaskRun) error {
+		debug("Command finished successfully!")
+		tsr, callSummary := Queue.ReportCompleted(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
+		if callSummary.Error != nil {
+			debug("Not able to report successful completion for task %v:", task.TaskId)
+			debug("%v", callSummary.Error)
+			return callSummary.Error
+		}
+		task.TaskClaimResponse.Status = tsr.Status
+		debug(task.String())
+		return nil
+	}
+
+	claim := func(task *TaskRun) error {
+		debug("Claiming task %v...", task.TaskId)
+		task.TaskClaimRequest = queue.TaskClaimRequest{
+			WorkerGroup: os.Getenv("WORKER_GROUP"),
+			WorkerId:    os.Getenv("WORKER_ID"),
+		}
+		// Using the taskId and runId from the <MessageText> tag, the worker
+		// must call queue.claimTask().
+		tcrsp, callSummary := Queue.ClaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId), &task.TaskClaimRequest)
+		task.ClaimCallSummary = *callSummary
+		// check if an error occurred...
+		if callSummary.Error != nil {
+			// If the queue.claimTask() operation fails with a 4xx error, the
+			// worker must delete the messages from the Azure queue (except 401).
+			switch {
+			case callSummary.HttpResponse.StatusCode == 401:
+				debug("Whoops - not authorized to claim task %v, *not* deleting it from Azure queue!", task.TaskId)
+			case callSummary.HttpResponse.StatusCode/100 == 4:
+				// attempt to delete, but if it fails, log and continue
+				// nothing we can do, and better to return the first 4xx error
+				err := task.deleteFromAzure()
+				if err != nil {
+					debug("Not able to delete task %v from Azure after receiving http status code %v when claiming it.", task.TaskId, callSummary.HttpResponse.StatusCode)
+					debug("%v", err)
+				}
+			}
+			debug(task.String())
+			debug("%v", callSummary.Error)
+			return callSummary.Error
+		}
+		task.TaskClaimResponse = *tcrsp
+		// don't report failure if this fails, as it is already logged and failure =>
+		task.deleteFromAzure()
+		return nil
+	}
+
+	reclaim := func(task *TaskRun) error {
+		debug("Reclaiming task %v...", task.TaskId)
+		tcrsp, callSummary := Queue.ReclaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId))
+		task.ClaimCallSummary = *callSummary
+
+		// check if an error occurred...
+		if err := callSummary.Error; err != nil {
+			debug("%v", err)
+			return err
+		}
+
+		task.TaskClaimResponse = *tcrsp
+		debug("Reclaimed task %v successfully (http response code %v).", task.TaskId, callSummary.HttpResponse.StatusCode)
+		return nil
+	}
+
+	abort := func(task *TaskRun, reason string) error {
+		debug("Aborting task %v due to: %v...", task.TaskId, reason)
+		task.Status = Aborted
+		// TODO: need to kill running jobs! Need a go routine to track running
+		// jobs, and kill them on aborts
+		return reportException(task, "task-cancelled")
+	}
+
+	cancel := func(task *TaskRun, reason string) error {
+		//TODO: implement!!
+		return nil
+	}
+
 	go func() {
 		for {
 			update := <-r
@@ -51,20 +160,20 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error) {
 				switch update.Status {
 				// Aborting is when you stop running a job you already claimed
 				case Aborted:
-					e <- task.abort(update.Reason)
+					e <- abort(task, update.Reason)
 				// Cancelling is when you decide not to run a job which you haven't yet claimed
 				case Cancelled:
-					e <- task.cancel(update.Reason)
+					e <- cancel(task, update.Reason)
 				case Succeeded:
-					e <- task.reportCompleted()
+					e <- reportCompleted(task)
 				case Failed:
-					e <- task.reportFailed()
+					e <- reportFailed(task)
 				case Errored:
-					e <- task.reportException(update.Reason)
+					e <- reportException(task, update.Reason)
 				case Claimed:
-					e <- task.claim()
+					e <- claim(task)
 				case Reclaimed:
-					e <- task.reclaim()
+					e <- reclaim(task)
 				default:
 					debug("Internal error: unknown task status: %v", update.Status)
 					os.Exit(64)
@@ -77,105 +186,4 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error) {
 		}
 	}()
 	return r, e
-}
-
-func (task *TaskRun) reportException(reason string) error {
-	ter := queue.TaskExceptionRequest{Reason: json.RawMessage(`"` + reason + `"`)}
-	tsr, callSummary := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
-	if callSummary.Error != nil {
-		debug("Not able to report exception for task %v:", task.TaskId)
-		debug("%v", callSummary.Error)
-		return callSummary.Error
-	}
-	task.TaskClaimResponse.Status = tsr.Status
-	debug(task.String())
-	return nil
-}
-
-func (task *TaskRun) reportFailed() error {
-	tsr, callSummary := Queue.ReportFailed(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
-	if callSummary.Error != nil {
-		debug("Not able to report failed completion for task %v:", task.TaskId)
-		debug("%v", callSummary.Error)
-		return callSummary.Error
-	}
-	task.TaskClaimResponse.Status = tsr.Status
-	debug(task.String())
-	return nil
-}
-
-func (task *TaskRun) reportCompleted() error {
-	debug("Command finished successfully!")
-	tsr, callSummary := Queue.ReportCompleted(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
-	if callSummary.Error != nil {
-		debug("Not able to report successful completion for task %v:", task.TaskId)
-		debug("%v", callSummary.Error)
-		return callSummary.Error
-	}
-	task.TaskClaimResponse.Status = tsr.Status
-	debug(task.String())
-	return nil
-}
-
-func (task *TaskRun) claim() error {
-	debug("Claiming task %v...", task.TaskId)
-	task.TaskClaimRequest = queue.TaskClaimRequest{
-		WorkerGroup: os.Getenv("WORKER_GROUP"),
-		WorkerId:    os.Getenv("WORKER_ID"),
-	}
-	// Using the taskId and runId from the <MessageText> tag, the worker
-	// must call queue.claimTask().
-	tcrsp, callSummary := Queue.ClaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId), &task.TaskClaimRequest)
-	task.ClaimCallSummary = *callSummary
-	// check if an error occurred...
-	if callSummary.Error != nil {
-		// If the queue.claimTask() operation fails with a 4xx error, the
-		// worker must delete the messages from the Azure queue (except 401).
-		switch {
-		case callSummary.HttpResponse.StatusCode == 401:
-			debug("Whoops - not authorized to claim task %v, *not* deleting it from Azure queue!", task.TaskId)
-		case callSummary.HttpResponse.StatusCode/100 == 4:
-			// attempt to delete, but if it fails, log and continue
-			// nothing we can do, and better to return the first 4xx error
-			err := task.deleteFromAzure()
-			if err != nil {
-				debug("Not able to delete task %v from Azure after receiving http status code %v when claiming it.", task.TaskId, callSummary.HttpResponse.StatusCode)
-				debug("%v", err)
-			}
-		}
-		debug(task.String())
-		debug("%v", callSummary.Error)
-		return callSummary.Error
-	}
-	task.TaskClaimResponse = *tcrsp
-	return task.deleteFromAzure()
-}
-
-func (task *TaskRun) reclaim() error {
-	debug("Reclaiming task %v...", task.TaskId)
-	tcrsp, callSummary := Queue.ReclaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId))
-	task.ClaimCallSummary = *callSummary
-
-	// check if an error occurred...
-	if err := callSummary.Error; err != nil {
-		debug("%v", err)
-		return err
-	}
-
-	task.TaskClaimResponse = *tcrsp
-	debug("Reclaimed task %v successfully (http response code %v).", task.TaskId, callSummary.HttpResponse.StatusCode)
-	return nil
-}
-
-func (task *TaskRun) abort(reason string) error {
-	debug("Aborting task %v due to: %v...", task.TaskId, reason)
-	task.Status = Aborted
-	// TODO: need to kill running jobs! Need a go routine to track running
-	// jobs, and kill them on aborts
-	return task.reportException("task-cancelled")
-}
-
-func (task *TaskRun) cancel(reason string) error {
-	//TODO: implement!!
-	return nil
 }

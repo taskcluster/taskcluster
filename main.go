@@ -141,29 +141,24 @@ func FindAndRunTask() bool {
 		// loop through, since by the time we complete the first task, maybe
 		// higher priority jobs are waiting, so we need to poll afresh.
 		debug("Task found")
-		taskFound = true
-		// If there is one or more messages the worker must claim the tasks
-		// referenced in the messages, and delete the messages.
-		err = task.claim()
+
 		// from this point on we should "break" rather than "continue", since
 		// there could be more tasks on the same queue - we only "continue"
 		// to next queue if we found nothing on this queue...
-		if err != nil {
-			debug("WARN: Not able to claim task %v", task.TaskId)
-			debug("%v", err)
-			taskStatusUpdate <- TaskStatusUpdate{
-				Task:   task,
-				Status: Errored,
-				Reason: "claim-failure",
-			}
-			reportPossibleError(<-taskStatusUpdateErr)
-			break
-		}
+		taskFound = true
+
+		// If there is one or more messages the worker must claim the tasks
+		// referenced in the messages, and delete the messages.
 		taskStatusUpdate <- TaskStatusUpdate{
 			Task:   task,
 			Status: Claimed,
 		}
-		reportPossibleError(<-taskStatusUpdateErr)
+		err = <-taskStatusUpdateErr
+		if err != nil {
+			debug("WARN: Not able to claim task %v", task.TaskId)
+			debug("%v", err)
+			break
+		}
 		task.setReclaimTimer()
 		err = task.fetchTaskDefinition()
 		if err != nil {
@@ -172,7 +167,7 @@ func FindAndRunTask() bool {
 			taskStatusUpdate <- TaskStatusUpdate{
 				Task:   task,
 				Status: Errored,
-				Reason: "fetch-definition-failure",
+				Reason: "worker-shutdown", // "fetch-definition-failure"
 			}
 			reportPossibleError(<-taskStatusUpdateErr)
 			break
@@ -184,7 +179,7 @@ func FindAndRunTask() bool {
 			taskStatusUpdate <- TaskStatusUpdate{
 				Task:   task,
 				Status: Errored,
-				Reason: "wellformed-but-invalid-payload",
+				Reason: "malformed-payload", // "invalid-payload"
 			}
 			reportPossibleError(<-taskStatusUpdateErr)
 			break
@@ -392,6 +387,7 @@ func deleteFromAzure(deleteUrl string) error {
 	// to delete messages from Azure queues.
 	if err != nil {
 		debug("Not able to delete task from azure queue (delete url: %v)", deleteUrl)
+		debug("%v", err)
 		return err
 	} else {
 		debug("Successfully deleted task from azure queue (delete url: %v) with http response code %v.", deleteUrl, resp.StatusCode)
@@ -426,7 +422,7 @@ func (task *TaskRun) setReclaimTimer() {
 				taskStatusUpdate <- TaskStatusUpdate{
 					Task:   task,
 					Status: Errored,
-					Reason: "reclaim-failed",
+					Reason: "worker-shutdown", // "reclaim-failed"
 				}
 				reportPossibleError(<-taskStatusUpdateErr)
 				return
@@ -513,7 +509,7 @@ func (task *TaskRun) run() (err error, reason string) {
 			Status: Aborted,
 			// only abort task if it is still running...
 			IfStatusIn: map[TaskStatus]bool{Claimed: true, Reclaimed: true},
-			Reason:     "max run time (" + strconv.Itoa(task.Payload.MaxRunTime) + "s) exceeded",
+			Reason:     "malformed-payload", // "max run time (" + strconv.Itoa(task.Payload.MaxRunTime) + "s) exceeded"
 		}
 		reportPossibleError(<-taskStatusUpdateErr)
 	}()
@@ -541,11 +537,11 @@ func (task *TaskRun) run() (err error, reason string) {
 	for i, _ := range task.Payload.Command {
 		task.Commands[i], err = task.generateCommand(i) // platform specific
 		if err != nil {
-			return err, "generate-command-failure"
+			return err, "worker-shutdown" // "generate-command-failure"
 		}
 		err = task.Commands[i].osCommand.Start()
 		if err != nil {
-			return err, "execute-command-failure"
+			return err, "worker-shutdown" // "execute-command-failure"
 		}
 		debug("Waiting for command to finish...")
 		// use a different variable for error since we process it later
@@ -566,20 +562,20 @@ func (task *TaskRun) run() (err error, reason string) {
 					Task:   task,
 					Status: Failed,
 				}
-				return <-taskStatusUpdateErr, "failed-to-report-as-failure"
+				return <-taskStatusUpdateErr, "worker-shutdown" // "failed-to-report-as-failure"
 			default:
-				return taskError, "task-crash"
+				return taskError, "worker-shutdown" // "task-crash"
 			}
 		}
-		try(func() error { return task.uploadLog(task.Commands[i].logFile) }, "upload-failure")
+		try(func() error { return task.uploadLog(task.Commands[i].logFile) }, "worker-shutdown") // "upload-failure"
 	}
 
-	if err := try(func() error { return task.generateCompleteLog() }, "log-concatenation-failure"); err == nil {
+	if err := try(func() error { return task.generateCompleteLog() }, "worker-shutdown"); err == nil { // "log-concatenation-failure"
 		// only upload if log concatenation succeeded!
-		try(func() error { return task.uploadLog("public/logs/task_complete.log") }, "upload-failure")
+		try(func() error { return task.uploadLog("public/logs/task_complete.log") }, "worker-shutdown") // "upload-failure"
 	}
 	for _, artifact := range task.PayloadArtifacts() {
-		try(func() error { return task.uploadArtifact(artifact) }, "upload-failure")
+		try(func() error { return task.uploadArtifact(artifact) }, "worker-shutdown") // "upload-failure"
 	}
 
 	if storedError != nil {
@@ -591,7 +587,7 @@ func (task *TaskRun) run() (err error, reason string) {
 		Task:   task,
 		Status: Succeeded,
 	}
-	return <-taskStatusUpdateErr, "failed-to-report-as-successful"
+	return <-taskStatusUpdateErr, "worker-shutdown" // "failed-to-report-as-successful"
 }
 
 func (task *TaskRun) generateCompleteLog() error {
