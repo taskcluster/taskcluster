@@ -4,6 +4,14 @@ module.exports = {
   testMode: true,
   createQueue: false,
 
+  dockerConfig: {
+    allowPrivileged: false,
+    defaultRegistry: 'registry.hub.docker.com',
+    maxAttempts: 5,
+    delayFactor: 100,
+    randomizationFactor: 0.25
+  },
+
   influx: {
     connectionString: process.env.INFLUX_CONNECTION_STRING || 'http://localhost',
     maxDelay: 1,

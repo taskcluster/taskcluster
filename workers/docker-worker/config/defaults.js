@@ -20,6 +20,7 @@ module.exports = {
       type: undefined // device type (ex. 'flame')
     }
   },
+
   dockerConfig: {
     // Privileged mode will allow tasks to run with elevated privileges similar
     // to process running on the host.  The task containers will have access to
@@ -30,7 +31,14 @@ module.exports = {
     allowPrivileged: false,
     // Default registry to use when making authenticated image requests.  This
     // is similar to what docker pull does when `docker pull ubuntu:14.10`.
-    defaultRegistry: 'registry.hub.docker.com'
+    defaultRegistry: 'registry.hub.docker.com',
+    // Maximum number of attempts to make when pulling an image
+    maxAttempts: 5,
+    // Delay factor rand randomizationFactor used to computer randomized
+    // exponential backoff when attempting to retry docker pulls
+    delayFactor: 15 * 1000,
+    // Value between 0 and 1
+    randomizationFactor: 0.25
   },
 
   ssl: {

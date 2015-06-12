@@ -1,16 +1,23 @@
 suite('Capacity', function() {
+  var assert = require('assert');
   var co = require('co');
+  var devnull = require('dev-null');
   var waitForEvent = require('../../lib/wait_for_event');
   var settings = require('../settings');
   var cmd = require('./helper/cmd');
-
+  var docker = require('../../lib/docker')();
+  var pullImage = require('../../lib/pull_image_to_stream').pullImageStreamTo;
   var DockerWorker = require('../dockerworker');
   var TestWorker = require('../testworker');
 
-  var CAPACITY = 10;
+  const CAPACITY = 10;
+  const IMAGE = 'taskcluster/test-ubuntu:latest';
 
   var worker;
   setup(co(function * () {
+    // Ensure that the image is available before starting test to not skew
+    // task run times
+    yield pullImage(docker, IMAGE, devnull());
     settings.configure({
       deviceManagement: {},
       capacity: CAPACITY,
@@ -46,7 +53,7 @@ suite('Capacity', function() {
           features: {
             localLiveLog: false
           },
-          image: 'taskcluster/test-ubuntu',
+          image: IMAGE,
           command: cmd(
             'sleep ' + sleep
           ),
@@ -71,7 +78,7 @@ suite('Capacity', function() {
       assert.equal(taskRes.run.state, 'completed');
       assert.equal(taskRes.run.reasonResolved, 'completed');
     });
-    assert.ok(end < (sleep * CAPACITY),
+    assert.ok(end < sleep * CAPACITY,
       `tasks ran in parallel. Duration ${end} seconds > expected ${sleep * CAPACITY}`);
   }));
 });

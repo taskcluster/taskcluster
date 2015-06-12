@@ -3,6 +3,7 @@ suite('volume cache test', function () {
   var GarbageCollector = require('../lib/gc');
   var createLogger = require('../lib/log');
   var debug = require('debug')('volumeCacheTest');
+  var devnull = require('dev-null');
   var docker = require('../lib/docker')();
   var waitForEvent = require('../lib/wait_for_event');
   var fs = require('fs');
@@ -31,7 +32,7 @@ suite('volume cache test', function () {
   var IMAGE = 'taskcluster/test-ubuntu';
 
   setup(co(function* () {
-    yield pullImage(docker, IMAGE, process.stdout);
+    yield pullImage(docker, IMAGE, devnull());
   }));
 
   teardown(function () {

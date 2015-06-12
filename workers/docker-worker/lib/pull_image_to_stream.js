@@ -2,6 +2,8 @@ import DockerImage from './docker_image';
 import dockerUtils from 'dockerode-process/utils';
 import Debug from 'debug';
 import { scopeMatch } from 'taskcluster-base/utils';
+import waitForEvent from './wait_for_event';
+import sleep from './util/sleep';
 
 let debug = Debug('pull_image');
 
@@ -14,17 +16,51 @@ export const IMAGE_ERROR = 'Pulling docker image "%s" has failed this may indica
                   'Error with the registry used or an authentication error ' +
                   'in the worker try pulling the image locally. \n Error %s';
 
+// Settings for exponential backoff for retrying image pulls.
+// Last attempt will be in a range between 6 and 10 minutes which is acceptable
+// for an image pull.
+const RETRY_CONFIG = {
+  maxAttempts: 5,
+  delayFactor: 15 * 1000,
+  randomizationFactor: 0.25
+}
 
-export function pullImageStreamTo(docker, image, stream, options) {
-  return new Promise(function(accept, reject) {
-    debug('pull image', image);
-    var downloadProgress =
+export async function pullImageStreamTo(docker, image, stream, options={}) {
+  let config = options.retryConfig || RETRY_CONFIG;
+  let attempts = 0;
+
+  while (attempts++ < config.maxAttempts) {
+    debug('pull image. Image: %s Attempts: %s', image, attempts);
+    let downloadProgress =
       dockerUtils.pullImageIfMissing(docker, image, options);
 
-    downloadProgress.pipe(stream, { end: false });
-    downloadProgress.once('error', reject);
-    downloadProgress.once('end', accept);
-  });
+    downloadProgress.pipe(stream, {end: false});
+
+    try {
+      await new Promise((accept, reject) => {
+        downloadProgress.once('error', reject);
+        downloadProgress.once('end', accept);
+      });
+      return;
+    } catch (err) {
+      if (attempts >= config.maxAttempts) {
+        throw new Error(err);
+      }
+
+      let delay = Math.pow(2, attempts - 1) * config.delayFactor;
+      let randomizationFactor = config.randomizationFactor;
+      delay = delay * (Math.random() * 2 * randomizationFactor + 1 - randomizationFactor);
+      debug(
+        'pull image failed Next Attempt in: %s ms. Image: %s. %s, as JSON: %j',
+        delay,
+        image,
+        err,
+        err.stack
+      );
+
+      await sleep(delay);
+    }
+  }
 }
 
 export async function pullDockerImage(runtime, imageName, scopes, taskId, runId, stream) {
@@ -37,33 +73,29 @@ export async function pullDockerImage(runtime, imageName, scopes, taskId, runId,
     image: dockerImageName
   });
 
-  // There are cases where we cannot authenticate a docker image based on how
-  // the name is formatted (such as `registry`) so simply pull here and do
-  // not check for credentials.
-  if (!dockerImage.canAuthenticate()) {
-    return await pullImageStreamTo(
-      runtime.docker, dockerImageName, stream
-    );
-  }
+  let pullOptions = {
+    retryConfig: runtime.dockerConfig
+  };
 
-  let pullOptions = {};
-  // See if any credentials apply from our list of registries...
-  let defaultRegistry = runtime.dockerConfig.defaultRegistry;
-  let credentials = dockerImage.credentials(runtime.registries, defaultRegistry);
-  if (credentials) {
-    // Validate scopes on the image if we have credentials for it...
-    if (!scopeMatch(scopes, IMAGE_SCOPE_PREFIX + dockerImageName)) {
-      throw new Error(
-        'Insufficient scopes to pull : "' + dockerImageName + '" try adding ' +
-        IMAGE_SCOPE_PREFIX + dockerImageName + ' to the .scopes array.'
-      );
+  if (dockerImage.canAuthenticate()) {
+    // See if any credentials apply from our list of registries...
+    let defaultRegistry = runtime.dockerConfig.defaultRegistry;
+    let credentials = dockerImage.credentials(runtime.registries, defaultRegistry);
+    if (credentials) {
+      // Validate scopes on the image if we have credentials for it...
+      if (!scopeMatch(scopes, IMAGE_SCOPE_PREFIX + dockerImageName)) {
+        throw new Error(
+          'Insufficient scopes to pull : "' + dockerImageName + '" try adding ' +
+          IMAGE_SCOPE_PREFIX + dockerImageName + ' to the .scopes array.'
+        );
+      }
+
+      // TODO: Ideally we would verify the authentication before allowing any
+      // pulls (some pulls just check if the image is cached) the reason being
+      // we have no way to invalidate images once they are on a machine aside
+      // from blowing up the entire machine.
+      pullOptions.authconfig = credentials;
     }
-
-    // TODO: Ideally we would verify the authentication before allowing any
-    // pulls (some pulls just check if the image is cached) the reason being
-    // we have no way to invalidate images once they are on a machine aside
-    // from blowing up the entire machine.
-    pullOptions.authconfig = credentials;
   }
 
   return await pullImageStreamTo(
