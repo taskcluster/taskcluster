@@ -49,11 +49,21 @@ export default class States {
     // XXX This stat is cumulative duration of all states being invoked, which
     // is influenced by what states are being used within the task.  Investigate
     // if this is actually useful.
+    let errors = [];
     return this.stats.timeGen(
       'stateChange',
-      Promise.all(hooks.map(hook => hook[method](task))),
+      Promise.all(
+        hooks.map(hook => hook[method](task))
+             .map(r => Promise.resolve(r))
+             .map(p => p.catch(err => errors.push(err)))
+      ),
       {state: method}
-    );
+    ).then(results => {
+      if (errors.length > 0) {
+        throw new Error(errors.map(e => e.toString()).join(' | '))
+      }
+      return results;
+    });
   }
 
   /**
