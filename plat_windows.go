@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -69,7 +70,7 @@ func createNewOSUser() error {
 		}
 		debug(string(out))
 	}
-	return nil
+	return os.MkdirAll(filepath.Join(User.HomeDir, "public", "logs"), 0666)
 }
 
 // Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems
@@ -141,11 +142,14 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
 	commandName := fmt.Sprintf("Command_%06d", index)
+	wrapper := filepath.Join(User.HomeDir, commandName+"_wrapper.bat")
+	script := filepath.Join(User.HomeDir, commandName+".bat")
+	log := filepath.Join(User.HomeDir, "public", "logs", commandName+".log")
 	err := ioutil.WriteFile(
-		User.HomeDir+"\\"+commandName+"_wrapper.bat",
+		wrapper,
 		[]byte(
 			":: This script runs command "+strconv.Itoa(index)+" defined in TaskId "+task.TaskId+"..."+"\r\n"+
-				"call "+User.HomeDir+"\\"+commandName+".bat > "+commandName+".log 2>&1"+"\r\n",
+				"call "+script+" > "+log+" 2>&1"+"\r\n",
 		),
 		0755,
 	)
@@ -158,7 +162,7 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 	fileContents := []byte(task.Payload.Command[index] + "\r\n")
 
 	err = ioutil.WriteFile(
-		User.HomeDir+"\\"+commandName+".bat",
+		script,
 		fileContents,
 		0755,
 	)
@@ -173,7 +177,7 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 		"-p", User.Password,
 		"-w", User.HomeDir,
 		"-n", "10",
-		User.HomeDir + "\\" + commandName + "_wrapper.bat",
+		wrapper,
 	}
 	cmd := exec.Command(command[0], command[1:]...)
 	debug("Running command: '" + strings.Join(command, "' '") + "'")
@@ -181,7 +185,7 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 	cmd.Stderr = os.Stderr
 	// TODO: this should be done in the bat script (not the wrapper)
 	task.prepEnvVars(cmd)
-	task.Commands[index] = Command{logFile: "public/logs/" + commandName, osCommand: cmd}
+	task.Commands[index] = Command{logFile: "public/logs/" + commandName + ".log", osCommand: cmd}
 	return task.Commands[index], nil
 }
 
