@@ -169,36 +169,42 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 
 		// Otherwise get the env from the previous command
 	} else {
-		file, err := os.Open(env)
-		if err != nil {
-			return Command{}, err
-		}
-		defer file.Close()
+		for _, x := range [2][2]string{{env, "set "}, {dir, "cd "}} {
+			file, err := os.Open(x[0])
+			if err != nil {
+				return Command{}, err
+			}
+			defer file.Close()
 
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			contents += "set " + scanner.Text() + "\r\n"
-		}
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				contents += x[1] + scanner.Text() + "\r\n"
+			}
 
-		if err := scanner.Err(); err != nil {
-			return Command{}, err
+			if err := scanner.Err(); err != nil {
+				return Command{}, err
+			}
 		}
-		// finally, cd into directory from previous command
-		d, err := ioutil.ReadFile(dir)
-		if err != nil {
-			return Command{}, err
-		}
-		contents += "cd \"" + string(d) + "\"" + "\r\n"
 	}
+
+	// see http://blogs.msdn.com/b/oldnewthing/archive/2008/09/26/8965755.aspx
+	// need to explicitly unset as we rely on it later
+	contents += "set errorlevel=\r\n"
 
 	// now call the actual script that runs the command
 	contents += "call " + script + " > " + log + " 2>&1" + "\r\n"
+
+	// store exit code
+	contents += "set tcexitcode=%errorlevel%\r\n"
 
 	// now store env for next command, unless this is the last command
 	if index != len(task.Payload.Command)-1 {
 		contents += "set > " + env + "\r\n"
 		contents += "cd > " + dir + "\r\n"
 	}
+
+	// exit with stored exit code
+	contents += "exit /b %tcexitcode%\r\n"
 
 	debug("Generating script:")
 	debug(contents)
