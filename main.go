@@ -597,7 +597,7 @@ func (task *TaskRun) run() error {
 				finalTaskStatus = Failed
 				finalError = err
 			case queue.BadHttpResponseCode:
-				debug("Response code was " + t.HttpResponseCode)
+				debug("Response code wa %v", t.HttpResponseCode)
 				// if not a 5xx error, then not worth retrying...
 				if t.HttpResponseCode/100 != 5 {
 					finalTaskStatus = Failed
