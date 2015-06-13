@@ -651,7 +651,7 @@ func (task *TaskRun) generateCompleteLog() error {
 	for _, command := range task.Commands {
 		commandLog, err := os.Open(filepath.Join(User.HomeDir, command.logFile))
 		if err != nil {
-			return err
+			continue // file does not exist - maybe command did not run
 		}
 		_, err = io.Copy(completeLogFile, commandLog)
 		if err != nil {
