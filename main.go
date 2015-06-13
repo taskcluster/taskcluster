@@ -596,8 +596,8 @@ func (task *TaskRun) run() error {
 				// artifact does not exist or is not readable...
 				finalTaskStatus = Failed
 				finalError = err
-			case queue.BadHttpResponseCode:
-				debug("Response code wa %v", t.HttpResponseCode)
+			case httpbackoff.BadHttpResponseCode:
+				debug("Response coe was %v", t.HttpResponseCode)
 				// if not a 5xx error, then not worth retrying...
 				if t.HttpResponseCode/100 != 5 {
 					finalTaskStatus = Failed
@@ -606,8 +606,8 @@ func (task *TaskRun) run() error {
 				}
 				finalError = err
 			default:
-				debug("Error was of type %t", t)
-				debug("%v", t)
+				debug("Error was of type %T", t)
+				debug("%#v", t)
 				// could not upload for another reason
 				finalTaskStatus = Errored
 				finalReason = "worker-shutdown" // should be upload-failure
