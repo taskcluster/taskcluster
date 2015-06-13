@@ -770,9 +770,18 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 func (task *TaskRun) PayloadArtifacts() []Artifact {
 	artifacts := make([]Artifact, len(task.Payload.Artifacts))
 	for i, artifact := range task.Payload.Artifacts {
-		artifacts[i] = Artifact{CanonicalPath: artifact.Path, Expires: artifact.Expires, MimeType: mime.TypeByExtension(filepath.Ext(artifact.Path))}
+		artifacts[i] = Artifact{CanonicalPath: canonicalPath(artifact.Path), Expires: artifact.Expires, MimeType: mime.TypeByExtension(filepath.Ext(artifact.Path))}
 	}
 	return artifacts
+}
+
+// The Queue expects paths to use a forward slash, so let's make sure we have a
+// way to generate a path in this format
+func canonicalPath(path string) {
+	if os.PathSeparator == '/' {
+		return path
+	}
+	return strings.Replace(path, "os.PathSeparator", "/", -1)
 }
 
 // This can also be used if an external resource that is referenced in a
