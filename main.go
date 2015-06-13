@@ -597,6 +597,7 @@ func (task *TaskRun) run() error {
 				finalTaskStatus = Failed
 				finalError = err
 			case queue.BadHttpResponseCode:
+				debug("Response code was " + t.HttpResponseCode)
 				// if not a 5xx error, then not worth retrying...
 				if t.HttpResponseCode/100 != 5 {
 					finalTaskStatus = Failed
@@ -605,6 +606,8 @@ func (task *TaskRun) run() error {
 				}
 				finalError = err
 			default:
+				debug("Error was of type %t", t)
+				debug("%v", t)
 				// could not upload for another reason
 				finalTaskStatus = Errored
 				finalReason = "worker-shutdown" // should be upload-failure
