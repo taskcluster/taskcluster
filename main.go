@@ -581,7 +581,7 @@ func (task *TaskRun) run() error {
 		}
 	} else {
 		// only upload if log concatenation succeeded!
-		err = task.uploadLog("public/logs/task_complete.log")
+		err = task.uploadLog("public/logs/all_commands.log")
 		if err != nil && finalError == nil {
 			finalTaskStatus = Errored
 			finalReason = "worker-shutdown" // should be upload-failure

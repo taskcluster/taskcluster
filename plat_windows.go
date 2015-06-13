@@ -137,7 +137,7 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 	// for the task which redirects output to a log file...
 	env := filepath.Join(User.HomeDir, "env.txt")
 	dir := filepath.Join(User.HomeDir, "dir.txt")
-	commandName := fmt.Sprintf("Command_%06d", index)
+	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(User.HomeDir, commandName+"_wrapper.bat")
 	script := filepath.Join(User.HomeDir, commandName+".bat")
 	log := filepath.Join(User.HomeDir, "public", "logs", commandName+".log")
