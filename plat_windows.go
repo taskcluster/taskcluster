@@ -54,13 +54,6 @@ func createNewOSUser() error {
 		{"net", "user", User.Name, User.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:" + User.HomeDir, "/y"},
 		{"icacls", User.HomeDir, "/grant:r", User.Name + ":(CI)F", "SYSTEM:(CI)F", "Administrators:(CI)F"},
 		{"net", "localgroup", "Remote Desktop Users", "/add", User.Name},
-		{"C:\\Users\\Administrator\\PSTools\\PsExec.exe",
-			"-u", User.Name,
-			"-p", User.Password,
-			"-w", User.HomeDir,
-			"-n", "10",
-			"whoami",
-		},
 	}
 	for _, command := range commandsToRun {
 		debug("Running command: '" + strings.Join(command, "' '") + "'")
@@ -88,13 +81,13 @@ func generatePassword() string {
 }
 
 func deleteExistingOSUsers() {
+	deleteHomeDirs()
 	debug("Looking for existing task users to delete...")
 	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
 	if err != nil {
 		debug("WARNING: could not list existing Windows user accounts")
 		debug("%v", err)
 	}
-	deleteHomeDirs()
 }
 
 func deleteHomeDirs() {
