@@ -597,7 +597,7 @@ func (task *TaskRun) run() error {
 				finalTaskStatus = Failed
 				finalError = err
 			case httpbackoff.BadHttpResponseCode:
-				debug("Response coe was %v", t.HttpResponseCode)
+				debug("Response code was %v", t.HttpResponseCode)
 				// if not a 5xx error, then not worth retrying...
 				if t.HttpResponseCode/100 != 5 {
 					finalTaskStatus = Failed
