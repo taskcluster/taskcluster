@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -141,16 +142,71 @@ func deleteOSUserAccount(line string) {
 func (task *TaskRun) generateCommand(index int) (Command, error) {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
+	env := filepath.Join(User.HomeDir, "env.txt")
+	dir := filepath.Join(User.HomeDir, "dir.txt")
 	commandName := fmt.Sprintf("Command_%06d", index)
 	wrapper := filepath.Join(User.HomeDir, commandName+"_wrapper.bat")
 	script := filepath.Join(User.HomeDir, commandName+".bat")
 	log := filepath.Join(User.HomeDir, "public", "logs", commandName+".log")
+	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskId + "..." + "\r\n"
+
+	// At the end of each command we export all the env vars, and import them
+	// at the start of the next command. Otherwise env variable changes would
+	// be lost. Similarly, we store the current directory at the end of each
+	// command, and cd into it at the beginning of the subsequent command. The
+	// very first command takes the env settings from the payload, and the
+	// current directory is set to the home directory of the newly created
+	// user.
+
+	// If this is first command, take env from task payload, and cd into home
+	// directory
+	if index == 0 {
+		for envVar, envValue := range task.Payload.Env {
+			debug("Setting env var: %v=%v", envVar, envValue)
+			contents += "set " + envVar + "=" + envValue + "\r\n"
+		}
+		contents += "cd \"" + User.HomeDir + "\"" + "\r\n"
+
+		// Otherwise get the env from the previous command
+	} else {
+		file, err := os.Open(env)
+		if err != nil {
+			return Command{}, err
+		}
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			contents += "set " + scanner.Text() + "\r\n"
+		}
+
+		if err := scanner.Err(); err != nil {
+			return Command{}, err
+		}
+		// finally, cd into directory from previous command
+		d, err := ioutil.ReadFile(dir)
+		if err != nil {
+			return Command{}, err
+		}
+		contents += "cd \"" + string(d) + "\"" + "\r\n"
+	}
+
+	// now call the actual script that runs the command
+	contents += "call " + script + " > " + log + " 2>&1" + "\r\n"
+
+	// now store env for next command, unless this is the last command
+	if index != len(task.Payload.Command)-1 {
+		contents += "set > " + env + "\r\n"
+		contents += "cd > " + dir + "\r\n"
+	}
+
+	debug("Generating script:")
+	debug(contents)
+
+	// now generate the .bat script that runs all of this
 	err := ioutil.WriteFile(
 		wrapper,
-		[]byte(
-			":: This script runs command "+strconv.Itoa(index)+" defined in TaskId "+task.TaskId+"..."+"\r\n"+
-				"call "+script+" > "+log+" 2>&1"+"\r\n",
-		),
+		[]byte(contents),
 		0755,
 	)
 
@@ -183,8 +239,6 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 	debug("Running command: '" + strings.Join(command, "' '") + "'")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	// TODO: this should be done in the bat script (not the wrapper)
-	task.prepEnvVars(cmd)
 	task.Commands[index] = Command{logFile: "public/logs/" + commandName + ".log", osCommand: cmd}
 	return task.Commands[index], nil
 }
