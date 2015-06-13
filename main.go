@@ -591,10 +591,18 @@ func (task *TaskRun) run() error {
 	for _, artifact := range task.PayloadArtifacts() {
 		err := task.uploadArtifact(artifact)
 		if err != nil && finalError == nil {
-			switch err.(type) {
+			switch t := err.(type) {
 			case *os.PathError:
 				// artifact does not exist or is not readable...
 				finalTaskStatus = Failed
+				finalError = err
+			case queue.BadHttpResponseCode:
+				// if not a 5xx error, then not worth retrying...
+				if t.HttpResponseCode/100 != 5 {
+					finalTaskStatus = Failed
+				} else {
+					finalTaskStatus = Errored
+				}
 				finalError = err
 			default:
 				// could not upload for another reason
