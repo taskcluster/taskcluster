@@ -789,11 +789,11 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 
 // The Queue expects paths to use a forward slash, so let's make sure we have a
 // way to generate a path in this format
-func canonicalPath(path string) {
+func canonicalPath(path string) string {
 	if os.PathSeparator == '/' {
 		return path
 	}
-	return strings.Replace(path, os.PathSeparator, "/", -1)
+	return strings.Replace(path, string(os.PathSeparator), "/", -1)
 }
 
 // This can also be used if an external resource that is referenced in a
