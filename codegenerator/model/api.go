@@ -242,15 +242,6 @@ type CallSummary struct {
 	Attempts int
 }
 
-type BadHttpResponseCode struct {
-	HttpResponseCode int
-	Message          string
-}
-
-func (err BadHttpResponseCode) Error() string {
-	return err.Message
-}
-
 // Returns a pointer to Auth, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
