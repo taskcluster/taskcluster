@@ -91,11 +91,6 @@ func createNewOSUser() error {
 	if err != nil {
 		return err
 	}
-	// store password
-	err = ioutil.WriteFile(User.HomeDir+"\\_Passw0rd", []byte(password), 0666)
-	if err != nil {
-		return err
-	}
 	commandsToRun := [][]string{
 		{"icacls", User.HomeDir, "/remove:g", "Users"},
 		{"icacls", User.HomeDir, "/remove:g", "Everyone"},
@@ -112,6 +107,11 @@ func createNewOSUser() error {
 			return err
 		}
 		debug(string(out))
+	}
+	// store password
+	err = ioutil.WriteFile(User.HomeDir+"\\_Passw0rd", []byte(password), 0666)
+	if err != nil {
+		return err
 	}
 	return os.MkdirAll(filepath.Join(User.HomeDir, "public", "logs"), 0666)
 }
