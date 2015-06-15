@@ -1,8 +1,16 @@
+package main
+
+// taskPayload returns json schema for the payload part of the task definition
+// please note we use a go string and do not load an external file, since we
+// want this to be part of the compiled executable, and not rely on an external
+// file
+func taskPayload() string {
+	return `
 {
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Generic worker payload",
-  "description": "This schema defines the structure of the `payload` property referred to in a Task Cluster Task definition.",
+  "description": "This schema defines the structure of the ` + "`payload`" + ` property referred to in a Task Cluster Task definition.",
   "type": "object",
   "required": [
     "command",
@@ -16,7 +24,7 @@
       "items": {
         "type": "string"
       },
-      "description": "Example: `['/bin/bash', '-c', 'build.sh']`."
+      "description": "Example: ` + "`['/bin/bash', '-c', 'build.sh']`" + `."
     },
     "encryptedEnv": {
       "title": "List of encrypted environment variable mappings.",
@@ -29,7 +37,7 @@
     },
     "env": {
       "title": "Environment variable mappings.",
-      "description": "Example: ```\n{\n  \"PATH\": '/borked/path' \n  \"ENV_NAME\": \"VALUE\" \n}\n```",
+      "description": "Example: ` + "```" + `\n{\n  \"PATH\": '/borked/path' \n  \"ENV_NAME\": \"VALUE\" \n}\n` + "```" + `",
       "type": "object"
     },
     "maxRunTime": {
@@ -41,4 +49,6 @@
       "maximum": 86400
     }
   }
+}
+`
 }

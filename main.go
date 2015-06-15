@@ -61,7 +61,6 @@ func main() {
 	}
 	// Validate environment...
 	for _, j := range []string{
-		"PAYLOAD_SCHEMA",
 		"PROVISIONER_ID",
 		"REFRESH_URLS_PREMATURELY_SECS",
 		"TASKCLUSTER_ACCESS_TOKEN",
@@ -454,7 +453,7 @@ func (task *TaskRun) validatePayload() error {
 		return err
 	}
 	debug("Json Payload: %v", string(jsonPayload))
-	schemaLoader := gojsonschema.NewReferenceLoader("file://" + os.Getenv("PAYLOAD_SCHEMA"))
+	schemaLoader := gojsonschema.NewStringLoader(taskPayload())
 	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
 	if err != nil {
