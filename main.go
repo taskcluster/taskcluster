@@ -19,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	D "github.com/tj/go-debug"
@@ -49,12 +50,106 @@ var (
 	// Channel to read errors from after requesting a task status update on
 	// taskStatusUpdate channel
 	taskStatusUpdateErr <-chan error
+
+	version = "generic-worker 1.0.0"
+	usage   = `
+generic-worker
+generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
+See http://taskcluster.github.io/generic-worker/ for more details.
+
+  Usage:
+    generic-worker [-c|--config CONFIG-FILE...] run
+    generic-worker show-payload-schema
+    generic-worker [-c|--config CONFIG-FILE...] show-config
+    generic-worker -h|--help
+    generic-worker -v|--version
+
+  Targets:
+    run                               Runs the generic-worker in an infinite loop.
+    show-payload-schema               Each taskcluster task defines a payload to be
+                                      interpreted by the worker that executes it. This
+                                      payload is validated against a json schema baked
+                                      into the release. This option outputs the json
+                                      schema.
+    show-config                       This displays the config settings used by the
+                                      generic worker. See "Configuration" setting
+                                      below for more information.
+
+  Options:
+    -c|--config CONFIG-FILE           Json configuration file to use (see section
+                                      "Configuration" below).
+    -h --help                         Display this help text.
+    -v --version                      The release version of the generic-worker.
+
+
+  Configuration:
+    The following properties are required by the generic worker:
+
+    provisioner_id                    The taskcluster provisioner which is taking care
+                                      of provisioning environments with generic-worker
+                                      running on them. [default: aws-provisioner]
+    refresh_urls_prematurely_secs     The number of seconds before azure urls expire,
+                                      that the generic worker should refresh them.
+                                      [default: 310]
+    taskcluster_access_token          Taskcluster access token used by generic worker
+                                      to talk to taskcluster queue.
+    taskcluster_client_id             Taskcluster client id used by generic worker to
+                                      talk to taskcluster queue.
+    worker_group                      Typically this would be an aws region - an
+                                      identifier to uniquely identify which pool of
+                                      workers this worker logically belongs to.
+    worker_id                         A name to uniquely identify your worker.
+    worker_type                       This should match a worker_type managed by the
+                                      provisioner you have specified.
+    debug                             Logging filter; see
+                                      https://github.com/tj/go-debug [default: *]
+
+    The config settings can be provided in one or more json config files, as environment
+    variables, or where defaults exist, values do not need to be specified.
+
+
+    ENVIRONMENT VARIABLES
+
+    When specifying environment variables, the name of the environment variable should
+    be the uppercase name of the configuration property, e.g. WORKER_GROUP.
+
+
+    JSON CONFIG
+
+    Configuration specified in json should be a single dictionary of values, e.g.
+
+    {
+      "provisioner_id": "win-provisioner"
+      "worker_id": "IP_10-134-54-89"
+      "worker_type": "win2008-worker"
+    }
+
+
+    Each config setting will be determined as follows:
+
+      1) if the environment variable is set, its value will be taken, else;
+      2) if the config setting exists in one or more config files, the value from the
+         rightmost-specified config file will be used, else;
+      3) if a default exists for this config setting, the default will be used.
+
+    If no value can be determined for a particular config setting, the generic-worker
+    will exit with a failure message.
+
+`
 )
 
 // Entry point into the generic worker...
 func main() {
+	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
+	if err != nil {
+		debug("Invalid command line options specied")
+		debug("%v", err)
+	}
+
+	debug("Arguments: %v", arguments)
+
 	// Any custom startup per platform...
-	err := startup()
+	err = startup()
 	// any errors are fatal
 	if err != nil {
 		panic(err)
