@@ -663,23 +663,25 @@ func (task *TaskRun) generateCompleteLog() error {
 	}
 	defer completeLogFile.Close()
 	for _, command := range task.Commands {
-		debug("Looking for %v", command.logFile)
-		commandLog, err := os.Open(filepath.Join(User.HomeDir, command.logFile))
-		if err != nil {
-			debug("Not found")
-			continue // file does not exist - maybe command did not run
-		}
-		debug("Found")
-		_, err = io.Copy(completeLogFile, commandLog)
-		if err != nil {
-			debug("Copy failed")
-			return err
-		}
-		debug("Copy succeeded")
-
-		err = commandLog.Close()
-		if err != nil {
-			return err
+		// unrun commands won't have logFile set...
+		if command.logFile != "" {
+			debug("Looking for %v", command.logFile)
+			commandLog, err := os.Open(filepath.Join(User.HomeDir, command.logFile))
+			if err != nil {
+				debug("Not found")
+				continue // file does not exist - maybe command did not run
+			}
+			debug("Found")
+			_, err = io.Copy(completeLogFile, commandLog)
+			if err != nil {
+				debug("Copy failed")
+				return err
+			}
+			debug("Copy succeeded")
+			err = commandLog.Close()
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
