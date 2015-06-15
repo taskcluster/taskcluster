@@ -1,4 +1,4 @@
-TaskCluster Purge Worker Cache Service
+TaskCluster Purge Worker Cache Service [![Circle CI](https://circleci.com/gh/taskcluster/taskcluster-purge-cache.svg?style=badge)](https://circleci.com/gh/taskcluster/taskcluster-purge-cache)
 ======================================
 
 Many taskcluster workers implements some generic form cache folders.
