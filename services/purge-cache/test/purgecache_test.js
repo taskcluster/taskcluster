@@ -2,6 +2,10 @@ suite("Purge-Cache", () => {
   var helper = require('./helper');
   var assume = require('assume');
 
+  test("ping", () => {
+    return helper.purgeCache.ping();
+  });
+
   test("Publish Purge-Cache Message", async () => {
     // Start listening for message
     await helper.events.listenFor('cache-purged',
@@ -20,4 +24,5 @@ suite("Purge-Cache", () => {
     var m = await helper.events.waitFor('cache-purged');
     assume(m.payload.cacheName).is.equal('my-test-cache');
   });
+
 });
