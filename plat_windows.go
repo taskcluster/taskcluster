@@ -46,10 +46,11 @@ func deleteHomeDir(path string, user string) error {
 	}
 
 	// first try using task user
-	password, err := ioutil.ReadFile(path + "\\_Passw0rd")
+	passwordFile := filepath.Dir(path) + "\\" + user + "\\_Passw0rd"
+	password, err := ioutil.ReadFile(passwordFile)
 	if err != nil || string(password) == "" {
 		debug("%#v", err)
-		debug("Failed to read password file for %v, trying to remove with generic worker account...", path)
+		debug("Failed to read password file %v, (to delete dir %v) trying to remove with generic worker account...", passwordFile, path)
 		return adminDeleteHomeDir(path)
 	}
 	command := []string{
@@ -157,11 +158,17 @@ func deleteHomeDirs() {
 		if file.IsDir() {
 			if fileName := file.Name(); strings.HasPrefix(fileName, "Task_") {
 				path := "C:\\Users\\" + fileName
+				// fileName could be <user> or <user>.<hostname>...
+				user := fileName
+				if i := strings.IndexRune(user, '.'); i >= 0 {
+					user = user[:i]
+				}
 				// ignore any error occuring here, not a lot we can do about it...
-				deleteHomeDir(path, fileName) // fileName == user name
+				deleteHomeDir(path, user)
 			}
 		}
 	}
+
 }
 
 func deleteOSUserAccount(line string) {
