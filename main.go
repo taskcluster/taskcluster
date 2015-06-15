@@ -520,20 +520,26 @@ func (task *TaskRun) run() error {
 
 	for i, _ := range task.Payload.Command {
 		task.Commands[i], err = task.generateCommand(i) // platform specific
-		if err != nil && finalError == nil {
-			debug("TASK EXCEPTION due to not being able to generate command %v", i)
-			finalTaskStatus = Errored
-			finalReason = "worker-shutdown" // not really, but this is all we have at the moment
-			finalError = err
-			break
+		if err != nil {
+			debug("%#v", err)
+			if finalError == nil {
+				debug("TASK EXCEPTION due to not being able to generate command %v", i)
+				finalTaskStatus = Errored
+				finalReason = "worker-shutdown" // not really, but this is all we have at the moment
+				finalError = err
+				break
+			}
 		}
 		err = task.Commands[i].osCommand.Start()
-		if err != nil && finalError == nil {
-			debug("TASK EXCEPTION due to not being able to start command %v", i)
-			finalTaskStatus = Errored
-			finalReason = "worker-shutdown" // not really, but this is all we have at the moment
-			finalError = err
-			break
+		if err != nil {
+			debug("%#v", err)
+			if finalError == nil {
+				debug("TASK EXCEPTION due to not being able to start command %v", i)
+				finalTaskStatus = Errored
+				finalReason = "worker-shutdown" // not really, but this is all we have at the moment
+				finalError = err
+				break
+			}
 		}
 		debug("Waiting for command to finish...")
 		// use a different variable for error since we process it later
@@ -546,6 +552,7 @@ func (task *TaskRun) run() error {
 		// it should be reported to the queue using `queue.reportException`.
 		if err != nil {
 			// make sure we abort loop after uploading log file
+			debug("%#v", err)
 			abort = true
 			if finalError == nil {
 				// If the task is unsuccessful, ie. exits non-zero, the worker should
@@ -557,7 +564,6 @@ func (task *TaskRun) run() error {
 					finalError = err
 				default:
 					debug("TASK EXCEPTION due to error of type %T when executing command %v", err, i)
-					debug("%#v", err)
 					finalTaskStatus = Errored
 					finalReason = "worker-shutdown" // should be task-crash
 					finalError = err
@@ -565,14 +571,16 @@ func (task *TaskRun) run() error {
 			}
 		}
 		err = task.uploadLog(task.Commands[i].logFile)
-		if err != nil && finalError == nil {
-			debug("TASK EXCEPTION due to problem uploading log %v", task.Commands[i].logFile)
+		if err != nil {
 			debug("%#v", err)
-			finalTaskStatus = Errored
-			finalReason = "worker-shutdown" // actually, a log upload failure
-			finalError = err
-			// don't break or abort - log upload failure alone shouldn't stop
-			// other steps from running
+			if finalError == nil {
+				debug("TASK EXCEPTION due to problem uploading log %v", task.Commands[i].logFile)
+				finalTaskStatus = Errored
+				finalReason = "worker-shutdown" // actually, a log upload failure
+				finalError = err
+				// don't break or abort - log upload failure alone shouldn't stop
+				// other steps from running
+			}
 		}
 		if abort {
 			break
@@ -581,9 +589,9 @@ func (task *TaskRun) run() error {
 
 	err = task.generateCompleteLog()
 	if err != nil {
+		debug("%#v", err)
 		if finalError == nil {
 			debug("TASK EXCEPTION when generating complete log")
-			debug("%#v", err)
 			finalTaskStatus = Errored
 			finalReason = "worker-shutdown" // should be log-concatenation-failure
 			finalError = err
@@ -591,39 +599,44 @@ func (task *TaskRun) run() error {
 	} else {
 		// only upload if log concatenation succeeded!
 		err = task.uploadLog("public/logs/all_commands.log")
-		if err != nil && finalError == nil {
-			debug("TASK EXCEPTION due to not being able to upload public/logs/all_commands.log")
-			finalTaskStatus = Errored
-			finalReason = "worker-shutdown" // should be upload-failure
-			finalError = err
+		if err != nil {
+			debug("%#v", err)
+			if finalError == nil {
+				debug("TASK EXCEPTION due to not being able to upload public/logs/all_commands.log")
+				finalTaskStatus = Errored
+				finalReason = "worker-shutdown" // should be upload-failure
+				finalError = err
+			}
 		}
 	}
 	for _, artifact := range task.PayloadArtifacts() {
 		err := task.uploadArtifact(artifact)
-		if err != nil && finalError == nil {
-			switch t := err.(type) {
-			case *os.PathError:
-				// artifact does not exist or is not readable...
-				finalTaskStatus = Failed
-				finalError = err
-			case httpbackoff.BadHttpResponseCode:
-				// if not a 5xx error, then not worth retrying...
-				if t.HttpResponseCode/100 != 5 {
-					debug("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact.CanonicalPath)
+		if err != nil {
+			debug("%#v", err)
+			if finalError == nil {
+				switch t := err.(type) {
+				case *os.PathError:
+					// artifact does not exist or is not readable...
 					finalTaskStatus = Failed
-				} else {
-					debug("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact.CanonicalPath)
+					finalError = err
+				case httpbackoff.BadHttpResponseCode:
+					// if not a 5xx error, then not worth retrying...
+					if t.HttpResponseCode/100 != 5 {
+						debug("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact.CanonicalPath)
+						finalTaskStatus = Failed
+					} else {
+						debug("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact.CanonicalPath)
+						finalTaskStatus = Errored
+						finalReason = "worker-shutdown" // should be upload-failure
+					}
+					finalError = err
+				default:
+					debug("TASK EXCEPTION due to error of type %T", t)
+					// could not upload for another reason
 					finalTaskStatus = Errored
 					finalReason = "worker-shutdown" // should be upload-failure
+					finalError = err
 				}
-				finalError = err
-			default:
-				debug("TASK EXCEPTION due to error of type %T", t)
-				debug("%#v", t)
-				// could not upload for another reason
-				finalTaskStatus = Errored
-				finalReason = "worker-shutdown" // should be upload-failure
-				finalError = err
 			}
 		}
 	}
@@ -637,6 +650,7 @@ func (task *TaskRun) run() error {
 	}
 	err = <-taskStatusUpdateErr
 	if err != nil && finalError == nil {
+		debug("%#v", err)
 		finalError = err
 	}
 	return finalError
