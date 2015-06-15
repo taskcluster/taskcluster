@@ -7,6 +7,11 @@ function install {
   GOOS="${1}" GOARCH="${2}" go vet ./...
 }
 
+# build windows first
+install windows 386
+install windows amd64
+
+# now the rest
 install darwin 386
 install darwin amd64
 install dragonfly 386
@@ -25,8 +30,6 @@ install openbsd amd64
 install plan9 386
 install plan9 amd64
 install solaris amd64
-install windows 386
-install windows amd64
 
 find "${GOPATH}/bin" -name 'generic-worker*'
 

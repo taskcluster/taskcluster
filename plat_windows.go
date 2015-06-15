@@ -32,6 +32,50 @@ func startup() error {
 	return taskCleanup()
 }
 
+func deleteHomeDir(path string, user string) error {
+	debug("Removing home directory '" + path + "'...")
+
+	adminDeleteHomeDir := func(path string) error {
+		err := os.RemoveAll(path)
+		if err != nil {
+			debug("WARNING: could not delete directory '" + path + "'")
+			debug("%v", err)
+			return err
+		}
+		return nil
+	}
+
+	// first try using task user
+	password, err := ioutil.ReadFile(path + "\\_Passw0rd")
+	if err != nil || string(password) == "" {
+		debug("%#v", err)
+		debug("Failed to read password file for %v, trying to remove with generic worker account...", path)
+		return adminDeleteHomeDir(path)
+	}
+	command := []string{
+		"C:\\Users\\Administrator\\PSTools\\PsExec.exe",
+		"-u", user,
+		"-p", string(password),
+		"-w", "C:\\",
+		"-n", "10",
+		"rmdir",
+		"/s",
+		"/q",
+		path,
+	}
+	cmd := exec.Command(command[0], command[1:]...)
+	debug("Running command: '" + strings.Join(command, "' '") + "'")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		debug("%#v", err)
+		debug("Failed to remove %v with user %v, trying to remove with generic worker account instead...")
+		return adminDeleteHomeDir(path)
+	}
+	return nil
+}
+
 func createNewOSUser() error {
 	// username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
@@ -44,6 +88,11 @@ func createNewOSUser() error {
 	}
 	debug("Creating Windows User " + User.Name + "...")
 	err := os.MkdirAll(User.HomeDir, 0755)
+	if err != nil {
+		return err
+	}
+	// store password
+	err = ioutil.WriteFile(User.HomeDir+"\\_Passw0rd", []byte(password), 0666)
 	if err != nil {
 		return err
 	}
@@ -108,12 +157,8 @@ func deleteHomeDirs() {
 		if file.IsDir() {
 			if fileName := file.Name(); strings.HasPrefix(fileName, "Task_") {
 				path := "C:\\Users\\" + fileName
-				debug("Removing home directory '" + path + "'...")
-				err = os.RemoveAll(path)
-				if err != nil {
-					debug("WARNING: could not delete directory '" + path + "'")
-					debug("%v", err)
-				}
+				// ignore any error occuring here, not a lot we can do about it...
+				deleteHomeDir(path, fileName) // fileName == user name
 			}
 		}
 	}
