@@ -1,0 +1,16 @@
+id: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#
+$schema:  http://json-schema.org/draft-04/schema#
+title:        "Purge Cache Request"
+description: |
+  Request that a message be published to purge a specific cache.
+type:         object
+properties:
+  cacheName:
+    type:         string
+    description: |
+      Name of cache to purge. Notice that if a `workerType` have multiple kinds
+      of caches (with independent names), it should purge all caches identified
+      by `cacheName` regardless of cache type.
+additionalProperties: false
+required:
+  - cacheName
