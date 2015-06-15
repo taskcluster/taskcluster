@@ -32,7 +32,7 @@ export default class TaskclusterLogs {
     this.token = slugid.v4();
   }
 
-  async created(task) {
+  async link(task) {
     debug('create live log container...')
     // ensure we have a bulk log backing stuff...
     this.bulkLog = new BulkLog(BACKING_ARTIFACT_NAME);
@@ -154,6 +154,11 @@ export default class TaskclusterLogs {
         url: this.publicUrl
       }
     );
+
+    return {
+      links: [],
+      env: {}
+    };
   }
 
   async killed(task) {

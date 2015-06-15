@@ -12,9 +12,9 @@ const IMAGE_SCOPE_PREFIX = 'docker-worker:image:';
 
 // This string was super long but I wanted to say all these thing so I broke it
 // out into a constant even though most errors are closer to their code...
-export const IMAGE_ERROR = 'Pulling docker image "%s" has failed this may indicate an ' +
+export const IMAGE_ERROR = 'Error: Pulling docker image "%s" has failed this may indicate an ' +
                   'Error with the registry used or an authentication error ' +
-                  'in the worker try pulling the image locally. \n Error %s';
+                  'in the worker try pulling the image locally. %s';
 
 // Settings for exponential backoff for retrying image pulls.
 // Last attempt will be in a range between 6 and 10 minutes which is acceptable

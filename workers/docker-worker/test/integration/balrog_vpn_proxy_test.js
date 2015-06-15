@@ -1,3 +1,4 @@
+import assert from 'assert';
 import * as settings from '../settings';
 import DockerWorker from '../dockerworker';
 import TestWorker from '../testworker';
@@ -21,13 +22,8 @@ suite('balrog vpn proxy', () => {
   });
 
   test('feature can be used within task', async () => {
-    let error;
-    worker.on('task aborted', (message) => {
-      error = message.err
-    });
-
     let result = await worker.postToQueue({
-      scopes: ["docker-worker:feature:balrogVPNProxy"],
+      scopes: ['docker-worker:feature:balrogVPNProxy'],
       payload: {
         features: {
           balrogVPNProxy: true
@@ -48,15 +44,10 @@ suite('balrog vpn proxy', () => {
       'completed',
       'Task not resolved as complete'
     );
-    assert.ok(result.log.indexOf("1 received", "Proxy could not be reached"));
+    assert.ok(result.log.indexOf('1 received', 'Proxy could not be reached'));
   });
 
   test('missing feature scope', async () => {
-    let error;
-    worker.on('task aborted', (message) => {
-      error = message.err
-    });
-
     let result = await worker.postToQueue({
       payload: {
         features: {
@@ -72,12 +63,13 @@ suite('balrog vpn proxy', () => {
       }
     });
 
-    // Need to rely on looking at the logging from the worker because the logserve
-    // container might not have created a logging artifact in time because of where
-    // this check takes place.
     assert.ok(
-      error.indexOf('Insufficient scopes to use') !== -1,
-      'Error does not contain correct message'
+      result.log.includes('[taskcluster] Error: Task was aborted because states'),
+      'Error does not container message about states being aborted'
+    );
+    assert.ok(
+      result.log.includes('Insufficient scopes to use \'balrogVPNProxy\''),
+      'Error does not contain message about insufficient scopes'
     );
 
     assert.equal(result.status.state, 'failed', 'Task not marked as failed');

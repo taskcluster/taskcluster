@@ -24,7 +24,7 @@ const PAYLOAD_SCHEMA =
   'http://schemas.taskcluster.net/docker-worker/v1/payload.json#';
 
 // TODO probably a terrible error message, look at making it better later
-const CANCEL_ERROR = 'Task was canceled by another entity. This can happen using ' +
+const CANCEL_ERROR = 'Error: Task was canceled by another entity. This can happen using ' +
                    'a taskcluster client or by cancelling a task within Treeherder.';
 
 /*
@@ -308,7 +308,7 @@ export default class Task {
 
   logSchemaErrors(prefix, errors) {
     return this.fmtLog(
-      "%s format is invalid json schema errors:\n %s",
+      'Error: %s format is invalid json schema errors:\n %s',
       prefix, JSON.stringify(errors, null, 2)
     );
   }
@@ -448,7 +448,7 @@ export default class Task {
       // exit code.
       this.dockerProcess.kill();
       this.stream.write(this.fmtLog(
-        'Task timeout after %d seconds. Force killing container.',
+        'Error: Task timeout after %d seconds. Force killing container.',
         this.task.payload.maxRunTime
       ));
     }.bind(this), maxRuntimeMS);
@@ -525,7 +525,7 @@ export default class Task {
     if (this.dockerProcess) this.dockerProcess.kill();
 
     this.stream.write(
-      this.fmtLog(`Task has been aborted prematurely. Reason: ${reason}`)
+      this.fmtLog(`Error: Task has been aborted prematurely. Reason: ${reason}`)
     );
   }
 
@@ -584,8 +584,8 @@ export default class Task {
       return await this.abortRun(
         'states_failed',
         this.fmtLog(
-          'Task was aborted because states could not be created ' +
-          `successfully. Error: ${e}`
+          'Error: Task was aborted because states could not be created ' +
+          `successfully. ${e}`
         )
       );
     }
@@ -643,9 +643,9 @@ export default class Task {
     try {
       dockerConfig = await this.dockerConfig(linkInfo);
     } catch (e) {
-      let error = this.fmtLog('Docker configuration could not be ' +
+      let error = this.fmtLog('Error: Docker configuration could not be ' +
         'created.  This may indicate an authentication error when validating ' +
-        'scopes necessary for running the task. \n Error %s', e);
+        'scopes necessary for running the task. \n %s', e);
       return await this.abortRun('docker_configuration', error);
     }
 
@@ -702,7 +702,7 @@ export default class Task {
         stack: e.stack
       });
       this.stream.write(this.fmtLog(
-        `Unknown taskcluster error encountered.  Ask administrator to lookup ` +
+        `Error: Unknown taskcluster error encountered.  Ask administrator to lookup ` +
         `incidentId in log-file. Incident ID: ${lookupId}`
       ));
       success = false;
