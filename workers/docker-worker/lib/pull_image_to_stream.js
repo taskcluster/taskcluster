@@ -41,6 +41,18 @@ export async function pullImageStreamTo(docker, image, stream, options={}) {
         downloadProgress.once('error', reject);
         downloadProgress.once('end', accept);
       });
+
+      // Ensure image downloaded after pulling. This is mostly for multiple tasks
+      // pulling at the same time, only one will pull the image while the others wait.
+      // Even if the pull failed by the client that was pulling, the stream ends without
+      // error for the other clients because they are done waiting.
+      let pulledImage = await docker.getImage(image);
+      pulledImage = await pulledImage.inspect();
+
+      if (!pulledImage) {
+        throw new Error('image missing after pulling');
+      }
+
       return;
     } catch (err) {
       if (attempts >= config.maxAttempts) {
