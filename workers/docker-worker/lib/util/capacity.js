@@ -6,13 +6,6 @@ export function exceedsDiskspaceThreshold(mnt, threshold, availableCapacity, log
     diskspace.check(mnt, function (err, total, free, status) {
       var used = total-free;
       var capacity = (100*(used/total)).toPrecision(5);
-      debug("%j", {
-        volume: mnt,
-        total: total,
-        used: total - free,
-        available: free,
-        pctUsed: capacity,
-      });
 
       // Always sure we have at last a minimum capacity when checking diskspace
       // threshold.  Not only does this provide some buffer, but also allow
@@ -21,7 +14,11 @@ export function exceedsDiskspaceThreshold(mnt, threshold, availableCapacity, log
       var thresholdReached = free <= (threshold * availableCapacity);
       if (thresholdReached) {
         log('[alert-operator] diskspace threshold reached', {
+          volume: mnt,
           free: free,
+          total: total,
+          used: total-free,
+          pctUsed: capacity,
           perTaskThreshold: threshold,
           availableWorkerCapacity: availableCapacity,
           totalthreshold: threshold * availableCapacity
