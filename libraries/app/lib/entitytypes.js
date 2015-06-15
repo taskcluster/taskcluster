@@ -10,13 +10,16 @@ var buffertools     = require('buffertools');
 var azure           = require('fast-azure-storage');
 var fmt             = azure.Table.Operators;
 
-// Check that value is of type for name and property
+// Check that value is of types for name and property
 // Print messages and throw an error if the check fails
-var checkType = function(name, property, value, type) {
-  if (typeof(value) !== type) {
-    debug("%s '%s' expected '%s' got: %j", name, property, type, value);
-    throw new Error(name + " '" + property + "' expected type: '" + type +
-                    "' got type: '" + typeof(value) + "'");
+var checkType = function(name, property, value, types) {
+  if (!(types instanceof Array)) {
+    types = [types];
+  }
+  if (types.indexOf(typeof(value)) === -1) {
+    debug("%s '%s' expected %j got: %j", name, property, types, value);
+    throw new Error(name + " '" + property + "' expected one of type(s): '" +
+                    types.join(',') + "' got type: '" + typeof(value) + "'");
   }
 };
 
@@ -497,7 +500,17 @@ var JSONType = function(property) {
 // Inherit from BaseBufferType
 util.inherits(JSONType, BaseBufferType);
 
+JSONType.prototype.validate = function(value) {
+  checkType('JSONType', this.property, value, [
+    'string',
+    'number',
+    'object',
+    'boolean'
+  ]);
+};
+
 JSONType.prototype.toBuffer = function(value) {
+  this.validate(value);
   return new Buffer(JSON.stringify(value), 'utf8');
 };
 
