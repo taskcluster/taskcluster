@@ -140,7 +140,7 @@ func main() {
 	case arguments["show-payload-schema"]:
 		fmt.Println(taskPayloadSchema())
 	case arguments["run"]:
-		configFile := arguments["-c"].(string)
+		configFile := arguments["CONFIG-FILE"].(string)
 		config, err = loadConfig(configFile)
 		if err != nil {
 			fmt.Printf("Error loading configuration from file '%v':\n", configFile)
@@ -167,7 +167,7 @@ func loadConfig(filename string) (Config, error) {
 		return c, err
 	}
 	defer configFile.Close()
-	err = json.NewDecoder(configFile).Decode(c)
+	err = json.NewDecoder(configFile).Decode(&c)
 	if err != nil {
 		return c, err
 	}
@@ -191,7 +191,7 @@ func loadConfig(filename string) (Config, error) {
 
 	for i, j := range disallowed {
 		if i == j.value {
-			return c, fmt.Errorf("Config setting `%v` must not be set in file '%v'.\n", j.name, filename)
+			return c, fmt.Errorf("Config setting `%v` must be defined in file '%v'.", j.name, filename)
 		}
 	}
 	// all config set!
