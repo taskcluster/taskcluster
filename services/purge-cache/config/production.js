@@ -15,7 +15,7 @@ module.exports = {
   },
 
   server: {
-    publicUrl:                    'https://taskcluster-purge-cache.herokuapp.com',
+    publicUrl:                    'https://purge-cache.taskcluster.net',
     port:                         80,
     env:                          'production',
     forceSSL:                     true,
