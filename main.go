@@ -157,9 +157,9 @@ func loadConfig(filename string) (Config, error) {
 
 	// first assign defaults
 	c := Config{
-		ProvisionerId:              "aws-provisioner-v1",
+		ProvisionerId: "aws-provisioner-v1",
+		Debug:         "*",
 		RefreshUrlsPrematurelySecs: 310,
-		Debug: "*",
 	}
 	// now overlay with values from config file
 	configFile, err := os.Open(filename)
@@ -196,7 +196,7 @@ func loadConfig(filename string) (Config, error) {
 	}
 	// all config set!
 	// now set DEBUG environment variable
-	os.Setenv("DEBUG", c.Debug)
+	D.Enable(c.Debug)
 	return c, nil
 }
 
