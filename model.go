@@ -11,6 +11,18 @@ import (
 )
 
 type (
+	// Generic Worker config
+	Config struct {
+		TaskclusterAccessToken     string `json:"taskcluster_access_token"`
+		TaskclusterClientId        string `json:"taskcluster_client_id"`
+		WorkerGroup                string `json:"worker_group"`
+		WorkerId                   string `json:"worker_id"`
+		WorkerType                 string `json:"worker_type"`
+		ProvisionerId              string `json:"provisioner_id"`
+		RefreshUrlsPrematurelySecs int    `json:"refresh_urls_prematurely_secs"`
+		Debug                      string `json:"debug"`
+	}
+
 	// Used for modelling the xml we get back from Azure
 	QueueMessagesList struct {
 		XMLName       xml.Name       `xml:"QueueMessagesList"`

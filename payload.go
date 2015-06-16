@@ -4,9 +4,8 @@ package main
 // please note we use a go string and do not load an external file, since we
 // want this to be part of the compiled executable, and not rely on an external
 // file
-func taskPayload() string {
-	return `
-{
+func taskPayloadSchema() string {
+	return `{
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Generic worker payload",
@@ -49,6 +48,5 @@ func taskPayload() string {
       "maximum": 86400
     }
   }
-}
-`
+}`
 }

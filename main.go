@@ -50,6 +50,7 @@ var (
 	// Channel to read errors from after requesting a task status update on
 	// taskStatusUpdate channel
 	taskStatusUpdateErr <-chan error
+	config              Config
 
 	version = "generic-worker 1.0.0"
 	usage   = `
@@ -60,10 +61,10 @@ the taskcluster component that executes tasks. It requests tasks from the taskcl
 and reports back results to the queue.
 
   Usage:
-    generic-worker -c|--config CONFIG-FILE run
+    generic-worker (-c|--config) CONFIG-FILE run
     generic-worker show-payload-schema
-    generic-worker -h|--help
-    generic-worker -v|--version
+    generic-worker (-h|--help)
+    generic-worker --version
 
   Targets:
     run                                     Runs the generic-worker in an infinite loop.
@@ -106,12 +107,12 @@ and reports back results to the queue.
         The configuration file should be a dictionary of name/value pairs, for example:
 
         {
-          "taskcluster_access_token":  "123bn234bjhgdsjhg234",
-          "taskcluster_client_id":     "hskdjhfasjhdkhdbfoisjd",
-          "worker_group":              "dev-test",
-          "worker_id":                 "IP_10-134-54-89",
-          "worker_type":               "win2008-worker",
-          "provisioner_id":            "my-provisioner"
+          "taskcluster_access_token":    "123bn234bjhgdsjhg234",
+          "taskcluster_client_id":       "hskdjhfasjhdkhdbfoisjd",
+          "worker_group":                "dev-test",
+          "worker_id":                   "IP_10-134-54-89",
+          "worker_type":                 "win2008-worker",
+          "provisioner_id":              "my-provisioner"
         }
 
 
@@ -121,8 +122,8 @@ and reports back results to the queue.
         If no value can be determined for a required config setting, the generic-worker
         will exit with a failure message.
 
-    -h --help                         Display this help text.
-    -v --version                      The release version of the generic-worker.
+    -h|--help                               Display this help text.
+    --version                               The release version of the generic-worker.
 
 `
 )
@@ -131,36 +132,85 @@ and reports back results to the queue.
 func main() {
 	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
 	if err != nil {
-		debug("Invalid command line options specied")
-		debug("%v", err)
+		fmt.Println("Error parsing command line arguments!")
+		panic(err)
 	}
 
-	debug("Arguments: %v", arguments)
+	switch {
+	case arguments["show-payload-schema"]:
+		fmt.Println(taskPayloadSchema())
+	case arguments["run"]:
+		configFile := arguments["-c"].(string)
+		config, err = loadConfig(configFile)
+		if err != nil {
+			fmt.Printf("Error loading configuration from file '%v':\n", configFile)
+			fmt.Printf("%v\n", err)
+			os.Exit(64)
+		}
+		runWorker()
+	}
+}
 
+func loadConfig(filename string) (Config, error) {
+	// TODO: would be better to have a json schema, and also define defaults in
+	// only one place if possible (defaults also declared in `usage`)
+
+	// first assign defaults
+	c := Config{
+		ProvisionerId:              "aws-provisioner-v1",
+		RefreshUrlsPrematurelySecs: 310,
+		Debug: "*",
+	}
+	// now overlay with values from config file
+	configFile, err := os.Open(filename)
+	if err != nil {
+		return c, err
+	}
+	defer configFile.Close()
+	err = json.NewDecoder(configFile).Decode(c)
+	if err != nil {
+		return c, err
+	}
+	// now check all values are set
+	// TODO: could probably do this with reflection to avoid explicitly listing
+	// all members
+
+	disallowed := map[interface{}]struct {
+		name  string
+		value interface{}
+	}{
+		c.Debug:                      {name: "debug", value: ""},
+		c.ProvisionerId:              {name: "provisioner_id", value: ""},
+		c.RefreshUrlsPrematurelySecs: {name: "refresh_urls_prematurely_secs", value: 0},
+		c.TaskclusterAccessToken:     {name: "taskcluster_access_token", value: ""},
+		c.TaskclusterClientId:        {name: "taskcluster_client_id", value: ""},
+		c.WorkerGroup:                {name: "worker_group", value: ""},
+		c.WorkerId:                   {name: "worker_id", value: ""},
+		c.WorkerType:                 {name: "worker_type", value: ""},
+	}
+
+	for i, j := range disallowed {
+		if i == j.value {
+			return c, fmt.Errorf("Config setting `%v` must not be set in file '%v'.\n", j.name, filename)
+		}
+	}
+	// all config set!
+	// now set DEBUG environment variable
+	os.Setenv("DEBUG", c.Debug)
+	return c, nil
+}
+
+func runWorker() {
 	// Any custom startup per platform...
-	err = startup()
+
+	err := startup()
 	// any errors are fatal
 	if err != nil {
 		panic(err)
 	}
-	// Validate environment...
-	for _, j := range []string{
-		"PROVISIONER_ID",
-		"REFRESH_URLS_PREMATURELY_SECS",
-		"TASKCLUSTER_ACCESS_TOKEN",
-		"TASKCLUSTER_CLIENT_ID",
-		"WORKER_GROUP",
-		"WORKER_ID",
-		"WORKER_TYPE",
-	} {
-		if os.Getenv(j) == "" {
-			debug("Environment variable %v must be set.", j)
-			os.Exit(1)
-		}
-	}
 
 	// Queue is the object we will use for accessing queue api
-	Queue = queue.New(os.Getenv("TASKCLUSTER_CLIENT_ID"), os.Getenv("TASKCLUSTER_ACCESS_TOKEN"))
+	Queue = queue.New(config.TaskclusterClientId, config.TaskclusterAccessToken)
 
 	// Start the SignedURLsManager in a dedicated go routine, to take care of
 	// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
@@ -537,7 +587,7 @@ func (task *TaskRun) validatePayload() error {
 		return err
 	}
 	debug("Json Payload: %v", string(jsonPayload))
-	schemaLoader := gojsonschema.NewStringLoader(taskPayload())
+	schemaLoader := gojsonschema.NewStringLoader(taskPayloadSchema())
 	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
 	if err != nil {

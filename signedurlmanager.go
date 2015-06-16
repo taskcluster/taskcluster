@@ -2,8 +2,6 @@ package main
 
 import (
 	"github.com/taskcluster/taskcluster-client-go/queue"
-	"os"
-	"strconv"
 	"time"
 )
 
@@ -15,14 +13,7 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 	// prematurity specifies the number of seconds prior to expiry that new
 	// signed urls should be fetched, in order that stale credentials are not
 	// used. Should be at least a few seconds.
-	prematurity := os.Getenv("REFRESH_URLS_PREMATURELY_SECS")
-	// convert number of seconds to an integer
-	premInt, err := strconv.Atoi(prematurity)
-	if err != nil {
-		debug("Environment variable REFRESH_URLS_PREMATURELY_SECS should be an integer number of seconds, but is '%v'.", prematurity)
-		debug("This variable represents the number of seconds before signed URLs expire, that they should be refreshed.")
-		os.Exit(1)
-	}
+	prematurity := config.RefreshUrlsPrematurelySecs
 	// signedURLs is the variable where we store the current valid signed urls
 	var signedURLs *queue.PollTaskUrlsResponse
 	var callSummary *queue.CallSummary
@@ -35,11 +26,11 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		// When a worker wants to poll for pending tasks it must call
 		// `queue.pollTaskUrls(provisionerId, workerType)` which then returns
 		// an array of objects on the form `{signedPollUrl, signedDeleteUrl}`.
-		signedURLs, callSummary = Queue.PollTaskUrls(os.Getenv("PROVISIONER_ID"), os.Getenv("WORKER_TYPE"))
+		signedURLs, callSummary = Queue.PollTaskUrls(config.ProvisionerId, config.WorkerType)
 		// TODO: not sure if this is the right thing to do. If Queue has an outage, maybe better to
 		// do expoenential backoff indefinitely?
 		if callSummary.Error != nil {
-			panic(err)
+			panic(callSummary.Error)
 		}
 		// Set reminder to update signed urls again when they are
 		// approximately REFRESH_URLS_PREMATURELY_SECS seconds before
@@ -47,7 +38,7 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		// We do this by updating updateMe channel, so that on future
 		// iterations of this select statement, we read from this new
 		// channel.
-		refreshWait := signedURLs.Expires.Sub(time.Now().Add(time.Second * time.Duration(premInt)))
+		refreshWait := signedURLs.Expires.Sub(time.Now().Add(time.Second * time.Duration(prematurity)))
 		debug("Refreshing signed urls in %v", refreshWait.String())
 		updateMe = time.After(refreshWait)
 		for i, q := range signedURLs.Queues {
