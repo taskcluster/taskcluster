@@ -72,7 +72,7 @@ See http://taskcluster.github.io/generic-worker/ for more details.
                                       into the release. This option outputs the json
                                       schema.
     show-config                       This displays the config settings used by the
-                                      generic worker. See "Configuration" setting
+                                      generic worker. See "Configuration" section
                                       below for more information.
 
   Options:
