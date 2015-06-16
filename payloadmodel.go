@@ -12,8 +12,9 @@ type (
 	GenericWorkerPayload struct {
 		// Artifact upload map example: ```{ "hosts": "/etc/hosts" }```
 		Artifacts []struct {
-			Path    string
-			Expires time.Time
+			Type    string    `json:"type"`
+			Path    string    `json:"path"`
+			Expires time.Time `json:"expires"`
 		}
 		Command []string `json:"command"`
 		// List of base64 encoded asymmetric encrypted environment variables.

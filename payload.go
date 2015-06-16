@@ -8,6 +8,28 @@ func taskPayloadSchema() string {
 	return `{
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "artifact": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Artifact upload type.",
+          "type": "string",
+          "enum": ["file"]
+        },
+        "path": {
+          "title": "Location of artifact in container.",
+          "type": "string"
+        },
+        "expires": {
+          "title": "Date when artifact should expire must be in the future.",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["type", "path", "expires"]
+    }
+  },
   "title": "Generic worker payload",
   "description": "This schema defines the structure of the ` + "`payload`" + ` property referred to in a Task Cluster Task definition.",
   "type": "object",
@@ -46,6 +68,14 @@ func taskPayloadSchema() string {
       "multipleOf": 1.0,
       "minimum": 1,
       "maximum": 86400
+    },
+    "artifacts": {
+      "type": "object",
+      "title": "Artifact map (name -> source)",
+      "description": "Artifact upload map example: ` + "```" + `{ \"hosts\": \"/etc/hosts\" }` + "```" + `",
+      "additionalProperties": {
+        "$ref": "#/definitions/artifact"
+      }
     }
   }
 }`
