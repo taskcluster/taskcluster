@@ -55,85 +55,74 @@ var (
 	usage   = `
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
-See http://taskcluster.github.io/generic-worker/ for more details.
+See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
+the taskcluster component that executes tasks. It requests tasks from the taskcluster queue,
+and reports back results to the queue.
 
   Usage:
-    generic-worker [-c|--config CONFIG-FILE...] run
+    generic-worker -c|--config CONFIG-FILE run
     generic-worker show-payload-schema
-    generic-worker [-c|--config CONFIG-FILE...] show-config
     generic-worker -h|--help
     generic-worker -v|--version
 
   Targets:
-    run                               Runs the generic-worker in an infinite loop.
-    show-payload-schema               Each taskcluster task defines a payload to be
-                                      interpreted by the worker that executes it. This
-                                      payload is validated against a json schema baked
-                                      into the release. This option outputs the json
-                                      schema.
-    show-config                       This displays the config settings used by the
-                                      generic worker. See "Configuration" section
-                                      below for more information.
+    run                                     Runs the generic-worker in an infinite loop.
+    show-payload-schema                     Each taskcluster task defines a payload to be
+                                            interpreted by the worker that executes it. This
+                                            payload is validated against a json schema baked
+                                            into the release. This option outputs the json
+                                            schema.
 
   Options:
-    -c|--config CONFIG-FILE           Json configuration file to use (see section
-                                      "Configuration" below).
+
+    -c|--config CONFIG-FILE                 Json configuration file to use.
+
+        ** REQUIRED ** properties
+		=========================
+
+          taskcluster_access_token          Taskcluster access token used by generic worker
+                                            to talk to taskcluster queue.
+          taskcluster_client_id             Taskcluster client id used by generic worker to
+                                            talk to taskcluster queue.
+          worker_group                      Typically this would be an aws region - an
+                                            identifier to uniquely identify which pool of
+                                            workers this worker logically belongs to.
+          worker_id                         A name to uniquely identify your worker.
+          worker_type                       This should match a worker_type managed by the
+                                            provisioner you have specified.
+
+        ** OPTIONAL ** properties
+		=========================
+
+          provisioner_id                    The taskcluster provisioner which is taking care
+                                            of provisioning environments with generic-worker
+                                            running on them. [default: aws-provisioner-v1]
+          refresh_urls_prematurely_secs     The number of seconds before azure urls expire,
+                                            that the generic worker should refresh them.
+                                            [default: 310]
+          debug                             Logging filter; see
+                                            https://github.com/tj/go-debug [default: *]
+
+        The configuration file should be a dictionary of name/value pairs, for example:
+
+        {
+          "taskcluster_access_token":  "123bn234bjhgdsjhg234",
+          "taskcluster_client_id":     "hskdjhfasjhdkhdbfoisjd",
+          "worker_group":              "dev-test",
+          "worker_id":                 "IP_10-134-54-89",
+          "worker_type":               "win2008-worker",
+          "provisioner_id":            "my-provisioner"
+        }
+
+
+        If an optional config setting is not provided in the json configuration file, the
+		default will be taken (defaults documented above).
+
+        If no value can be determined for a required config setting, the generic-worker
+        will exit with a failure message.
+
     -h --help                         Display this help text.
     -v --version                      The release version of the generic-worker.
-
-
-  Configuration:
-    The following properties are required by the generic worker:
-
-    provisioner_id                    The taskcluster provisioner which is taking care
-                                      of provisioning environments with generic-worker
-                                      running on them. [default: aws-provisioner]
-    refresh_urls_prematurely_secs     The number of seconds before azure urls expire,
-                                      that the generic worker should refresh them.
-                                      [default: 310]
-    taskcluster_access_token          Taskcluster access token used by generic worker
-                                      to talk to taskcluster queue.
-    taskcluster_client_id             Taskcluster client id used by generic worker to
-                                      talk to taskcluster queue.
-    worker_group                      Typically this would be an aws region - an
-                                      identifier to uniquely identify which pool of
-                                      workers this worker logically belongs to.
-    worker_id                         A name to uniquely identify your worker.
-    worker_type                       This should match a worker_type managed by the
-                                      provisioner you have specified.
-    debug                             Logging filter; see
-                                      https://github.com/tj/go-debug [default: *]
-
-    The config settings can be provided in one or more json config files, as environment
-    variables, or where defaults exist, values do not need to be specified.
-
-
-    ENVIRONMENT VARIABLES
-
-    When specifying environment variables, the name of the environment variable should
-    be the uppercase name of the configuration property, e.g. WORKER_GROUP.
-
-
-    JSON CONFIG
-
-    Configuration specified in json should be a single dictionary of values, e.g.
-
-    {
-      "provisioner_id": "win-provisioner"
-      "worker_id": "IP_10-134-54-89"
-      "worker_type": "win2008-worker"
-    }
-
-
-    Each config setting will be determined as follows:
-
-      1) if the environment variable is set, its value will be taken, else;
-      2) if the config setting exists in one or more config files, the value from the
-         rightmost-specified config file will be used, else;
-      3) if a default exists for this config setting, the default will be used.
-
-    If no value can be determined for a particular config setting, the generic-worker
-    will exit with a failure message.
 
 `
 )
