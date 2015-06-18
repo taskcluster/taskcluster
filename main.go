@@ -884,6 +884,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 		return err
 	}
 	task.Artifacts = append(task.Artifacts, artifact)
+	debug("MimeType in queue request: %v", artifact.MimeType)
 	par := queue.PostArtifactRequest(json.RawMessage(`{"storageType": "s3", "expires": "` + artifact.Expires.UTC().Format("2006-01-02T15:04:05.000Z0700") + `", "contentType": "` + artifact.MimeType + `"}`))
 	parsp, callSummary := Queue.CreateArtifact(
 		task.TaskId,
@@ -930,6 +931,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 		if err != nil {
 			return nil, nil, err
 		}
+		debug("MimeType in put request: %v", artifact.MimeType)
 		httpRequest.Header.Set("Content-Type", artifact.MimeType)
 		// request body could be a) binary and b) massive, so don't show it...
 		requestFull, dumpError := httputil.DumpRequestOut(httpRequest, false)
@@ -962,6 +964,7 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 	for i, artifact := range task.Payload.Artifacts {
 		artifacts[i] = Artifact{CanonicalPath: canonicalPath(artifact.Path), Expires: artifact.Expires, MimeType: mime.TypeByExtension(filepath.Ext(artifact.Path))}
 		debug("Path: %v, Type: %v, Expires: %v", artifact.Path, artifact.Type, artifact.Expires)
+		debug("Canonical path: %v, Expires: %v, Mime type: %v", artifacts[i].CanonicalPath, artifacts[i].Expires, artifacts[i].MimeType)
 	}
 	return artifacts
 }
