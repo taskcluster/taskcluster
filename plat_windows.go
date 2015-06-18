@@ -29,6 +29,11 @@ func processCommandOutput(callback func(line string), prog string, options ...st
 
 func startup() error {
 	debug("Detected Windows platform...")
+	// debug("Creating powershell script...")
+	// err := createRunAsUserScript("C:\\generic-worker\\runasuser.ps1")
+	// if err != nil {
+	// 	return err
+	// }
 	return taskCleanup()
 }
 
@@ -46,30 +51,28 @@ func deleteHomeDir(path string, user string) error {
 	}
 
 	// first try using task user
-	passwordFile := filepath.Dir(path) + "\\" + user + "\\_Passw0rd"
-	password, err := ioutil.ReadFile(passwordFile)
-	if err != nil || string(password) == "" {
-		debug("%#v", err)
-		debug("Failed to read password file %v, (to delete dir %v) trying to remove with generic worker account...", passwordFile, path)
-		return adminDeleteHomeDir(path)
-	}
+	// passwordFile := filepath.Dir(path) + "\\" + user + "\\_Passw0rd"
+	// password, err := ioutil.ReadFile(passwordFile)
+	// if err != nil || string(password) == "" {
+	// 	debug("%#v", err)
+	// 	debug("Failed to read password file %v, (to delete dir %v) trying to remove with generic worker account...", passwordFile, path)
+	// 	return adminDeleteHomeDir(path)
+	// }
 	command := []string{
-		"C:\\Users\\Administrator\\PSTools\\PsExec.exe",
-		"-u", user,
-		"-p", string(password),
-		"-w", "C:\\",
-		"-n", "10",
-		"-s",
-		"rmdir",
-		"/s",
-		"/q",
+		// "C:\\Users\\Administrator\\PSTools\\PsExec.exe",
+		// "-u", user,
+		// "-p", string(password),
+		// "-w", "C:\\",
+		// "-n", "10",
+		// "-accepteula",
+		"del /s /q /f",
 		path,
 	}
 	cmd := exec.Command(command[0], command[1:]...)
 	debug("Running command: '" + strings.Join(command, "' '") + "'")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
 		debug("%#v", err)
 		debug("Failed to remove %v with user %v, trying to remove with generic worker account instead...")
@@ -195,6 +198,7 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 	script := filepath.Join(User.HomeDir, commandName+".bat")
 	log := filepath.Join(User.HomeDir, "public", "logs", commandName+".log")
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskId + "..." + "\r\n"
+	// contents += "timeout /T 5\r\n"
 
 	// At the end of each command we export all the env vars, and import them
 	// at the start of the next command. Otherwise env variable changes would
@@ -248,6 +252,7 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 		contents += "set > " + env + "\r\n"
 		contents += "cd > " + dir + "\r\n"
 	}
+	// contents += "timeout /T 5\r\n"
 
 	// exit with stored exit code
 	contents += "exit /b %tcexitcode%\r\n"
@@ -285,13 +290,26 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 		"-p", User.Password,
 		"-w", User.HomeDir,
 		"-n", "10",
+		"-accepteula",
 		"-s",
 		wrapper,
 	}
+
+	// command := []string{
+	// 	"PowerShell",
+	// 	"-File",
+	// 	"C:\\generic-worker\\runasuser.ps1",
+	// 	User.Name,
+	// 	User.Password,
+	// 	wrapper,
+	// 	User.HomeDir,
+	// }
+
 	cmd := exec.Command(command[0], command[1:]...)
 	debug("Running command: '" + strings.Join(command, "' '") + "'")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	// cmd.Stdin = strings.NewReader("blah blah")
 	task.Commands[index] = Command{logFile: "public/logs/" + commandName + ".log", osCommand: cmd}
 	return task.Commands[index], nil
 }

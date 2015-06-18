@@ -202,7 +202,6 @@ func loadConfig(filename string) (Config, error) {
 
 func runWorker() {
 	// Any custom startup per platform...
-
 	err := startup()
 	// any errors are fatal
 	if err != nil {
@@ -300,7 +299,7 @@ func FindAndRunTask() bool {
 			taskStatusUpdate <- TaskStatusUpdate{
 				Task:   task,
 				Status: Errored,
-				Reason: "worker-shutdown", // "fetch-definition-failure"
+				Reason: "worker-shutdown", // internal error ("fetch-definition-failure")
 			}
 			reportPossibleError(<-taskStatusUpdateErr)
 			break
@@ -546,7 +545,7 @@ func (task *TaskRun) setReclaimTimer() {
 				taskStatusUpdate <- TaskStatusUpdate{
 					Task:   task,
 					Status: Errored,
-					Reason: "worker-shutdown", // "reclaim-failed"
+					Reason: "worker-shutdown", // internal error ("reclaim-failed")
 				}
 				reportPossibleError(<-taskStatusUpdateErr)
 				return
@@ -609,6 +608,25 @@ func (task *TaskRun) validatePayload() error {
 		// worker should give a `reason`. If the worker is unable execute the
 		// task specific payload/code/logic, it should report exception with
 		// the reason `malformed-payload`.
+		//
+		// This can also be used if an external resource that is referenced in
+		// a declarative nature doesn't exist. Generally, it should be used if
+		// we can be certain that another run of the task will have the same
+		// result. This differs from `queue.reportFailed` in the sense that we
+		// report a failure if the task specific code failed.
+		//
+		// Most tasks includes a lot of declarative steps, such as poll a
+		// docker image, create cache folder, decrypt encrypted environment
+		// variables, set environment variables and etc. Clearly, if decryption
+		// of environment variables fail, there is no reason to retry the task.
+		// Nor can it be said that the task failed, because the error wasn't
+		// cause by execution of Turing complete code.
+		//
+		// If however, we run some executable code referenced in `task.payload`
+		// and the code crashes or exists non-zero, then the task is said to be
+		// failed. The difference is whether or not the unexpected behavior
+		// happened before or after the execution of task specific Turing
+		// complete code.
 		taskStatusUpdate <- TaskStatusUpdate{
 			Task:   task,
 			Status: Errored,
@@ -625,7 +643,14 @@ func (task *TaskRun) run() error {
 	debug("Running task!")
 	debug(task.String())
 
-	// start a go routine to kill task after max run time...
+	// Terminating the Worker Early
+	// ----------------------------
+	// If the worker finds itself having to terminate early, for example a spot
+	// nodes that detects pending termination. Or a physical machine ordered to
+	// be provisioned for another purpose, the worker should report exception
+	// with the reason `worker-shutdown`. Upon such report the queue will
+	// resolve the run as exception and create a new run, if the task has
+	// additional retries left.
 	go func() {
 		time.Sleep(time.Second * time.Duration(task.Payload.MaxRunTime))
 		taskStatusUpdate <- TaskStatusUpdate{
@@ -658,10 +683,10 @@ func (task *TaskRun) run() error {
 			if finalError == nil {
 				debug("TASK EXCEPTION due to not being able to generate command %v", i)
 				finalTaskStatus = Errored
-				finalReason = "worker-shutdown" // not really, but this is all we have at the moment
+				finalReason = "worker-shutdown" // internal error (create-process-error)
 				finalError = err
-				break
 			}
+			break
 		}
 		err = task.Commands[i].osCommand.Start()
 		if err != nil {
@@ -669,10 +694,10 @@ func (task *TaskRun) run() error {
 			if finalError == nil {
 				debug("TASK EXCEPTION due to not being able to start command %v", i)
 				finalTaskStatus = Errored
-				finalReason = "worker-shutdown" // not really, but this is all we have at the moment
+				finalReason = "worker-shutdown" // internal error (start-process-error)
 				finalError = err
-				break
 			}
+			break
 		}
 		debug("Waiting for command to finish...")
 		// use a different variable for error since we process it later
@@ -698,7 +723,7 @@ func (task *TaskRun) run() error {
 				default:
 					debug("TASK EXCEPTION due to error of type %T when executing command %v", err, i)
 					finalTaskStatus = Errored
-					finalReason = "worker-shutdown" // should be task-crash
+					finalReason = "worker-shutdown" // internal error (task-crash)
 					finalError = err
 				}
 			}
@@ -709,7 +734,7 @@ func (task *TaskRun) run() error {
 			if finalError == nil {
 				debug("TASK EXCEPTION due to problem uploading log %v", task.Commands[i].logFile)
 				finalTaskStatus = Errored
-				finalReason = "worker-shutdown" // actually, a log upload failure
+				finalReason = "worker-shutdown" // internal error (log-upload-failure)
 				finalError = err
 				// don't break or abort - log upload failure alone shouldn't stop
 				// other steps from running
@@ -726,7 +751,7 @@ func (task *TaskRun) run() error {
 		if finalError == nil {
 			debug("TASK EXCEPTION when generating complete log")
 			finalTaskStatus = Errored
-			finalReason = "worker-shutdown" // should be log-concatenation-failure
+			finalReason = "worker-shutdown" // internal error (log-concatenation-failure)
 			finalError = err
 		}
 	} else {
@@ -737,7 +762,7 @@ func (task *TaskRun) run() error {
 			if finalError == nil {
 				debug("TASK EXCEPTION due to not being able to upload public/logs/all_commands.log")
 				finalTaskStatus = Errored
-				finalReason = "worker-shutdown" // should be upload-failure
+				finalReason = "worker-shutdown" // internal error (upload-failure)
 				finalError = err
 			}
 		}
@@ -760,14 +785,14 @@ func (task *TaskRun) run() error {
 					} else {
 						debug("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact.CanonicalPath)
 						finalTaskStatus = Errored
-						finalReason = "worker-shutdown" // should be upload-failure
+						finalReason = "worker-shutdown" // internal error (upload-failure)
 					}
 					finalError = err
 				default:
 					debug("TASK EXCEPTION due to error of type %T", t)
 					// could not upload for another reason
 					finalTaskStatus = Errored
-					finalReason = "worker-shutdown" // should be upload-failure
+					finalReason = "worker-shutdown" // internal error (upload-failure)
 					finalError = err
 				}
 			}
@@ -950,32 +975,3 @@ func canonicalPath(path string) string {
 	}
 	return strings.Replace(path, string(os.PathSeparator), "/", -1)
 }
-
-// This can also be used if an external resource that is referenced in a
-// declarative nature doesn't exist. Generally, it should be used if we can be
-// certain that another run of the task will have the same result. This differs
-// from `queue.reportFailed` in the sense that we report a failure if the task
-// specific code failed.
-//
-// Most tasks includes a lot of declarative steps, such as poll a docker image,
-// create cache folder, decrypt encrypted environment variables, set
-// environment variables and etc. Clearly, if decryption of environment
-// variables fail, there is no reason to retry the task. Nor can it be said
-// that the task failed, because the error wasn't cause by execution of Turing
-// complete code.
-//
-// If however, we run some executable code referenced in `task.payload` and the
-// code crashes or exists non-zero, then the task is said to be failed. The
-// difference is whether or not the unexpected behavior happened before or
-// after the execution of task specific Turing complete code.
-//
-//
-// Terminating the Worker Early
-// ----------------------------
-// If the worker finds itself having to terminate early, for example a spot
-// nodes that detects pending termination. Or a physical machine ordered to be
-// provisioned for another purpose, the worker should report exception with the
-// reason `worker-shutdown`. Upon such report the queue will resolve the run as
-// exception and create a new run, if the task has additional retries left.
-//
-//
