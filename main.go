@@ -943,9 +943,6 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 		return putResp, err, nil
 	}
 	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
-	if err != nil {
-		return err
-	}
 	debug("%v put requests issued to %v", putAttempts, resp.PutURL)
 	respBody, dumpError := httputil.DumpResponse(putResp, true)
 	if dumpError != nil {
@@ -954,15 +951,17 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 		debug("Response")
 		debug(string(respBody))
 	}
-	return nil
+	return err
 }
 
 // Returns the artifacts as listed in the payload of the task (note this does
 // not include log files)
 func (task *TaskRun) PayloadArtifacts() []Artifact {
 	artifacts := make([]Artifact, len(task.Payload.Artifacts))
+	debug("Artifacts:")
 	for i, artifact := range task.Payload.Artifacts {
 		artifacts[i] = Artifact{CanonicalPath: canonicalPath(artifact.Path), Expires: artifact.Expires, MimeType: mime.TypeByExtension(filepath.Ext(artifact.Path))}
+		debug("Path: %v, Type: %v, Expires: %v", artifact.Path, artifact.Type, artifact.Expires)
 	}
 	return artifacts
 }

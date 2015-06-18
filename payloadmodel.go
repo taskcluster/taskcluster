@@ -1,5 +1,3 @@
-// The following code is AUTO-GENERATED. Please DO NOT edit.
-
 package main
 
 import (
