@@ -1,16 +1,47 @@
-### optional
+# Windows installation notes.
 
+I've been working on Windows 2008 R2 (amd64). Here are my installation notes, that need to be converted to startup scripts integrated with UserData etc.
+
+
+## Base AMI
+
+Taken from b-2008-ec2-gold_post_puppet_pmoore.try.releng.use1.mozilla.com (ami-e302e388) kindly created by Mark Cornmesser.
+
+
+## Optional steps (so that we can run go builds in taskcluster - otherwise not needed)
+
+```
 c:\generic-worker>wget --no-check-certificate https://storage.googleapis.com/golang/go1.4.2.windows-386.zip
 c:\generic-worker>c:\mozilla-build\7zip\7z.exe x go1.4.2.windows-386.zip
 c:\generic-worker>setx /M GOROOT C:\generic-worker\go
 c:\generic-worker>setx /M PATH "%PATH%;C:\generic-worker\go\bin;C:\mozilla-build\Git\bin"
 c:\generic-worker>setx GOPATH C:\generic-worker\gopath
 c:\generic-worker>mkdir gopath
+```
 
 
+## Configuration
 
-### required
+This file needs to be correctly populated:
 
+```
+C:\generic-worker>cat c:\generic-worker\generic-worker.config
+{
+    "provisioner_id":                  "aws-provisioner-v1",
+    "refresh_urls_prematurely_secs":   310,
+    "taskcluster_access_token":        "********************************************",
+    "taskcluster_client_id":           "********************************************",
+    "worker_group":                    "********************************************",
+    "worker_id":                       "********************************************",
+    "worker_type":                     "********************************************",
+    "debug":                           "*"
+}
+```
+
+
+## Installation of Generic Worker
+
+```
 c:\mozilla-build>mkdir C:\generic-worker
 c:\mozilla-build>wget --no-check-certificate https://github.com/taskcluster/generic-worker/releases/download/v1.0.2/generic-worker-windows-amd64.exe -O C:\generic-worker\generic-worker.exe
 c:\mozilla-build>wget --no-check-certificate https://download.sysinternals.com/files/PSTools.zip
@@ -44,21 +75,11 @@ c:\mozilla-build>nssm-2.24\win64\nssm.exe set "Generic Worker" AppRotateFiles 1
 c:\mozilla-build>nssm-2.24\win64\nssm.exe set "Generic Worker" AppRotateOnline 1
 c:\mozilla-build>nssm-2.24\win64\nssm.exe set "Generic Worker" AppRotateSeconds 3600
 c:\mozilla-build>nssm-2.24\win64\nssm.exe set "Generic Worker" AppRotateBytes 0
+```
 
+
+## Starting Generic Worker Windows service
+
+```
 c:\mozilla-build>nssm-2.24\win64\nssm.exe start "Generic Worker"
-
-
-
-C:\generic-worker>cat c:\generic-worker\generic-worker.config
-{
-    "provisioner_id":                  "aws-provisioner-v1",
-    "refresh_urls_prematurely_secs":   310,
-    "taskcluster_access_token":        "********************************************",
-    "taskcluster_client_id":           "********************************************",
-    "worker_group":                    "********************************************",
-    "worker_id":                       "********************************************",
-    "worker_type":                     "********************************************",
-    "debug":                           "*"
-}
-
-
+```
