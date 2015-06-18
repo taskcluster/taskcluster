@@ -30,7 +30,7 @@ func processCommandOutput(callback func(line string), prog string, options ...st
 func startup() error {
 	debug("Detected Windows platform...")
 	// debug("Creating powershell script...")
-	// err := createRunAsUserScript("C:\\generic-worker\\runasuser.ps1")
+	// err := createRunAsUserScript("C:\\generic-worker\\runasuser.ps1") // hardcoded, but will go with bug 1176072
 	// if err != nil {
 	// 	return err
 	// }
@@ -59,7 +59,7 @@ func deleteHomeDir(path string, user string) error {
 	// 	return adminDeleteHomeDir(path)
 	// }
 	command := []string{
-		// "C:\\Users\\Administrator\\PSTools\\PsExec.exe",
+		// "C:\\generic-worker\\PsExec.exe", // hardcoded, but will go with bug 1176072
 		// "-u", user,
 		// "-p", string(password),
 		// "-w", "C:\\",
@@ -285,7 +285,7 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 	}
 
 	command := []string{
-		"C:\\Users\\Administrator\\PSTools\\PsExec.exe",
+		"C:\\generic-worker\\PsExec.exe", // hardcoded, but will go with bug 1176072
 		"-u", User.Name,
 		"-p", User.Password,
 		"-w", User.HomeDir,
@@ -298,7 +298,7 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 	// command := []string{
 	// 	"PowerShell",
 	// 	"-File",
-	// 	"C:\\generic-worker\\runasuser.ps1",
+	// 	"C:\\generic-worker\\runasuser.ps1", // hardcoded, but will go with bug 1176072
 	// 	User.Name,
 	// 	User.Password,
 	// 	wrapper,
