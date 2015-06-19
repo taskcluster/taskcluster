@@ -123,7 +123,7 @@ $p.HasExited
 
 # set env vars
 [Environment]::SetEnvironmentVariable("GOROOT", "C:\go", "Machine")
-[System.Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\go\bin;C:\git\bin;C:\Program Files (x86)\Git\cmd", "Machine")
+[System.Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\go\bin;C:\Program Files (x86)\Git\cmd", "Machine")
 [Environment]::SetEnvironmentVariable("GOPATH", "C:\gopath", "User")
 
 # download generic-worker
