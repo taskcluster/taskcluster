@@ -83,3 +83,17 @@ c:\mozilla-build>nssm-2.24\win64\nssm.exe set "Generic Worker" AppRotateBytes 0
 ```
 c:\mozilla-build>nssm-2.24\win64\nssm.exe start "Generic Worker"
 ```
+
+
+## User Data
+
+In this extract, I download the generic worker, run it with the `install` argument, and keep logs. All files get placed in C:\generic-worker ...
+
+```
+<powershell>
+md C:\generic-worker
+(New-Object System.Net.WebClient).DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v1.0.2/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$p = Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install" -wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+$p.HasExited
+</powershell>
+```
