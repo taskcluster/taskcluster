@@ -12,3 +12,7 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 func taskCleanup() error {
 	return nil
 }
+
+func install(arguments map[string]interface{}) (err error) {
+	return nil
+}

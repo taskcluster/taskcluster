@@ -320,3 +320,46 @@ func taskCleanup() error {
 	// this needs to succeed, so return an error if it doesn't
 	return createNewOSUser()
 }
+
+func install(arguments map[string]interface{}) (err error) {
+	// query amazon
+	configureForAws := arguments["--configure-for-aws"].(bool)
+	config := arguments["--config"].(string)
+	nssm := arguments["--nssm"].(string)
+	password := arguments["--password"].(string)
+	provisioner := arguments["--provisioner"].(string)
+	serviceName := arguments["--service-name"].(string)
+	username := arguments["--username"].(string)
+
+	if configureForAws {
+		err = updateConfigWithAmazonSettings(config, provisioner)
+		if err != nil {
+			return err
+		}
+		persistConfig(config)
+		if err != nil {
+			return err
+		}
+	}
+	username, password, err = ensureUserAccount(username, password)
+	if err != nil {
+		return err
+	}
+	return deployService(username, password, config, nssm, serviceName)
+}
+
+func updateConfigWithAmazonSettings(config string, provisioner string) error {
+	return nil
+}
+
+func persistConfig(config string) error {
+	return nil
+}
+
+func ensureUserAccount(username string, password string) (string, string, error) {
+	return username, password, nil
+}
+
+func deployService(username string, password string, config string, nssm string, serviceName string) error {
+	return nil
+}

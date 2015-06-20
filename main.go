@@ -63,7 +63,7 @@ and reports back results to the queue.
   Usage:
     generic-worker run                     [--config         CONFIG-FILE]
     generic-worker show-payload-schema
-    generic-worker install-on-windows      [--configure-for-aws [--provisioner PROVISIONER]]
+    generic-worker install                 [--configure-for-aws [--provisioner PROVISIONER]]
                                            [--config         CONFIG-FILE]
                                            [--nssm           NSSM-EXE]
                                            [--password       PASSWORD]
@@ -80,7 +80,7 @@ and reports back results to the queue.
                                             into the release. This option outputs the json
                                             schema used in this version of the generic
                                             worker.
-    install-on-windows                      This will install the generic worker as a
+    install                                 This will install the generic worker as a
                                             Windows service. If the Windows user USERNAME
                                             does not already exist on the system, the user
                                             will be created. This user will be used to run
@@ -93,7 +93,7 @@ and reports back results to the queue.
     --config CONFIG-FILE                    Json configuration file to use. See
                                             configuration section below to see what this
                                             file should contain.
-                                            [default: C:\generic-worker\generic-worker.config]
+                                            [default: generic-worker.config]
     --help                                  Display this help text.
     --nssm NSSM-EXE                         The full path to nssm.exe to use for
                                             installing the service.
@@ -109,7 +109,7 @@ and reports back results to the queue.
     --username USERNAME                     The Windows user to run the generic worker
                                             Windows service as. If the user does not
                                             already exist on the system, it will be
-                                            created. [default: "GenericWorker"]
+                                            created. [default: GenericWorker]
     --version                               The release version of the generic-worker.
 
 
@@ -172,13 +172,12 @@ func main() {
 		fmt.Println("Error parsing command line arguments!")
 		panic(err)
 	}
-	os.Exit(0)
 
 	switch {
 	case arguments["show-payload-schema"]:
 		fmt.Println(taskPayloadSchema())
 	case arguments["run"]:
-		configFile := arguments["CONFIG-FILE"].(string)
+		configFile := arguments["--config"].(string)
 		config, err = loadConfig(configFile)
 		if err != nil {
 			fmt.Printf("Error loading configuration from file '%v':\n", configFile)
@@ -186,6 +185,14 @@ func main() {
 			os.Exit(64)
 		}
 		runWorker()
+	case arguments["install"]:
+		// platform specific...
+		err := install(arguments)
+		if err != nil {
+			fmt.Println("Error installing generic worker:")
+			fmt.Printf("%#v\n", err)
+			os.Exit(65)
+		}
 	}
 }
 
