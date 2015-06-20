@@ -324,7 +324,7 @@ func taskCleanup() error {
 func install(arguments map[string]interface{}) (err error) {
 	// query amazon
 	configureForAws := arguments["--configure-for-aws"].(bool)
-	config := arguments["--config"].(string)
+	configFile := arguments["--config"].(string)
 	nssm := arguments["--nssm"].(string)
 	password := arguments["--password"].(string)
 	provisioner := arguments["--provisioner"].(string)
@@ -332,11 +332,11 @@ func install(arguments map[string]interface{}) (err error) {
 	username := arguments["--username"].(string)
 
 	if configureForAws {
-		err = updateConfigWithAmazonSettings(config, provisioner)
+		err = updateConfigWithAmazonSettings(configFile, provisioner)
 		if err != nil {
 			return err
 		}
-		persistConfig(config)
+		persistConfig(configFile)
 		if err != nil {
 			return err
 		}
@@ -345,14 +345,10 @@ func install(arguments map[string]interface{}) (err error) {
 	if err != nil {
 		return err
 	}
-	return deployService(username, password, config, nssm, serviceName)
+	return deployService(username, password, configFile, nssm, serviceName)
 }
 
-func updateConfigWithAmazonSettings(config string, provisioner string) error {
-	return nil
-}
-
-func persistConfig(config string) error {
+func persistConfig(configFile string) error {
 	return nil
 }
 
@@ -360,6 +356,6 @@ func ensureUserAccount(username string, password string) (string, string, error)
 	return username, password, nil
 }
 
-func deployService(username string, password string, config string, nssm string, serviceName string) error {
+func deployService(username string, password string, configFile string, nssm string, serviceName string) error {
 	return nil
 }
