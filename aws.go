@@ -7,10 +7,12 @@ import (
 // for when running in aws
 func queryUserData() (UserData, error) {
 	// call http://169.254.169.254/latest/user-data with httpbackoff
+	// TODO
 	return UserData{}, nil
 }
 
 func queryInstanceName() (string, error) {
+	// TODO
 	return "", nil
 }
 

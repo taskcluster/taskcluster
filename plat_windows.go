@@ -348,10 +348,22 @@ func install(arguments map[string]interface{}) (err error) {
 	return deployService(username, password, configFile, nssm, serviceName)
 }
 
+// if the user account exists, it checks that the password is correct,
+// returning an error if not. if the user account doesn't exist, it creates it,
+// together with the password. if the password is an empty string, it generates
+// a password. it returns the resulting username and password
 func ensureUserAccount(username string, password string) (string, string, error) {
+	//TODO
 	return username, password, nil
 }
 
+// deploys the generic worker as a windows service, running under the windows
+// user specified with username/password, such that the generic worker runs
+// with the given configuration file configFile. the http://nssm.cc/ executable
+// is required to install the service, specified as a file system path. The
+// serviceName is the service name given to the newly created service. if the
+// service already exists, it is simply updated.
 func deployService(username string, password string, configFile string, nssm string, serviceName string) error {
+	//TODO
 	return nil
 }
