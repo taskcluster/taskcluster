@@ -61,14 +61,14 @@ the taskcluster component that executes tasks. It requests tasks from the taskcl
 and reports back results to the queue.
 
   Usage:
-    generic-worker run                     [(-c|--config)         CONFIG-FILE]
+    generic-worker run                     [--config         CONFIG-FILE]
     generic-worker show-payload-schema
-    generic-worker install-on-windows      [(-a|--configure-for-aws) [(-r|--provisioner) PROVISIONER]]
-                                           [(-c|--config)         CONFIG-FILE]
-                                           [(-n|--nssm)           NSSM-EXE]
-                                           [(-p|--password)       PASSWORD]
-                                           [(-s|--service-name)   SERVICE-NAME]
-                                           [(-u|--username)       USERNAME]
+    generic-worker install-on-windows      [--configure-for-aws [--provisioner PROVISIONER]]
+                                           [--config         CONFIG-FILE]
+                                           [--nssm           NSSM-EXE]
+                                           [--password       PASSWORD]
+                                           [--service-name   SERVICE-NAME]
+                                           [--username       USERNAME]
     generic-worker (-h|--help)
     generic-worker --version
 
@@ -87,26 +87,26 @@ and reports back results to the queue.
                                             the service.
 
   Options:
-    -a|--configure-for-aws                  This will create the CONFIG-FILE for an AWS
+    --configure-for-aws                     This will create the CONFIG-FILE for an AWS
                                             installation by querying the AWS environment
                                             and setting appropriate values.
-    -c|--config CONFIG-FILE                 Json configuration file to use. See
+    --config CONFIG-FILE                    Json configuration file to use. See
                                             configuration section below to see what this
                                             file should contain.
                                             [default: C:\generic-worker\generic-worker.config]
-    -h|--help                               Display this help text.
-    -n|--nssm NSSM-EXE                      The full path to nssm.exe to use for
+    --help                                  Display this help text.
+    --nssm NSSM-EXE                         The full path to nssm.exe to use for
                                             installing the service.
                                             [default: C:\nssm-2.24\win64\nssm.exe]
-    -p|--password PASSWORD                  The password for the username specified
+    --password PASSWORD                     The password for the username specified
                                             with -u|--username option. If not specified
                                             a random password will be generated.
-    -r|--provisioner PROVISIONER            The name of the provisioner that manages
+    --provisioner PROVISIONER               The name of the provisioner that manages
                                             this generic worker.
                                             [default: aws-provisioner-v1]
-    -s|--service-name SERVICE-NAME          The name that the Windows service should be
-                                            installed under. [default: "Generic Worker"]
-    -u|--username USERNAME                  The Windows user to run the generic worker
+    --service-name SERVICE-NAME             The name that the Windows service should be
+                                            installed under. [default: Generic Worker]
+    --username USERNAME                     The Windows user to run the generic worker
                                             Windows service as.
                                             [default: "GenericWorker"]
     --version                               The release version of the generic-worker.
