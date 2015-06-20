@@ -61,8 +61,14 @@ the taskcluster component that executes tasks. It requests tasks from the taskcl
 and reports back results to the queue.
 
   Usage:
-    generic-worker (-c|--config) CONFIG-FILE run
+    generic-worker run                     [(-c|--config)         CONFIG-FILE]
     generic-worker show-payload-schema
+    generic-worker install-on-windows      [(-a|--configure-for-aws) [(-r|--provisioner) PROVISIONER]]
+                                           [(-c|--config)         CONFIG-FILE]
+                                           [(-n|--nssm)           NSSM-EXE]
+                                           [(-p|--password)       PASSWORD]
+                                           [(-s|--service-name)   SERVICE-NAME]
+                                           [(-u|--username)       USERNAME]
     generic-worker (-h|--help)
     generic-worker --version
 
@@ -72,14 +78,47 @@ and reports back results to the queue.
                                             interpreted by the worker that executes it. This
                                             payload is validated against a json schema baked
                                             into the release. This option outputs the json
-                                            schema.
+                                            schema used in this version of the generic
+                                            worker.
+    install-on-windows                      This will install the generic worker as a
+                                            Windows service. If the Windows user USERNAME
+                                            does not already exist on the system, the user
+                                            will be created. This user will be used to run
+                                            the service.
 
   Options:
+    -a|--configure-for-aws                  This will create the CONFIG-FILE for an AWS
+                                            installation by querying the AWS environment
+                                            and setting appropriate values.
+    -c|--config CONFIG-FILE                 Json configuration file to use. See
+                                            configuration section below to see what this
+                                            file should contain.
+                                            [default: C:\generic-worker\generic-worker.config]
+    -h|--help                               Display this help text.
+    -n|--nssm NSSM-EXE                      The full path to nssm.exe to use for
+                                            installing the service.
+                                            [default: C:\nssm-2.24\win64\nssm.exe]
+    -p|--password PASSWORD                  The password for the username specified
+                                            with -u|--username option. If not specified
+                                            a random password will be generated.
+    -r|--provisioner PROVISIONER            The name of the provisioner that manages
+                                            this generic worker.
+                                            [default: aws-provisioner-v1]
+    -s|--service-name SERVICE-NAME          The name that the Windows service should be
+                                            installed under. [default: "Generic Worker"]
+    -u|--username USERNAME                  The Windows user to run the generic worker
+                                            Windows service as.
+                                            [default: "GenericWorker"]
+    --version                               The release version of the generic-worker.
 
-    -c|--config CONFIG-FILE                 Json configuration file to use.
+
+  Configuring the generic worker:
+
+    The configuration file for the generic worker is specified with -c|--config CONFIG-FILE
+    as described above. Its format is a json dictionary of name/value pairs.
 
         ** REQUIRED ** properties
-		=========================
+        =========================
 
           taskcluster_access_token          Taskcluster access token used by generic worker
                                             to talk to taskcluster queue.
@@ -93,7 +132,7 @@ and reports back results to the queue.
                                             provisioner you have specified.
 
         ** OPTIONAL ** properties
-		=========================
+        =========================
 
           provisioner_id                    The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
@@ -104,26 +143,23 @@ and reports back results to the queue.
           debug                             Logging filter; see
                                             https://github.com/tj/go-debug [default: *]
 
-        The configuration file should be a dictionary of name/value pairs, for example:
+    Here is an syntactically valid example configuration file:
 
-        {
-          "taskcluster_access_token":    "123bn234bjhgdsjhg234",
-          "taskcluster_client_id":       "hskdjhfasjhdkhdbfoisjd",
-          "worker_group":                "dev-test",
-          "worker_id":                   "IP_10-134-54-89",
-          "worker_type":                 "win2008-worker",
-          "provisioner_id":              "my-provisioner"
-        }
+            {
+              "taskcluster_access_token":   "123bn234bjhgdsjhg234",
+              "taskcluster_client_id":      "hskdjhfasjhdkhdbfoisjd",
+              "worker_group":               "dev-test",
+              "worker_id":                  "IP_10-134-54-89",
+              "worker_type":                "win2008-worker",
+              "provisioner_id":             "my-provisioner"
+            }
 
 
-        If an optional config setting is not provided in the json configuration file, the
-		default will be taken (defaults documented above).
+    If an optional config setting is not provided in the json configuration file, the
+    default will be taken (defaults documented above).
 
-        If no value can be determined for a required config setting, the generic-worker
-        will exit with a failure message.
-
-    -h|--help                               Display this help text.
-    --version                               The release version of the generic-worker.
+    If no value can be determined for a required config setting, the generic-worker will
+    exit with a failure message.
 
 `
 )
@@ -135,6 +171,7 @@ func main() {
 		fmt.Println("Error parsing command line arguments!")
 		panic(err)
 	}
+	os.Exit(0)
 
 	switch {
 	case arguments["show-payload-schema"]:
