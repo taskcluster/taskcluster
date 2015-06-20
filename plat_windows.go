@@ -348,10 +348,6 @@ func install(arguments map[string]interface{}) (err error) {
 	return deployService(username, password, configFile, nssm, serviceName)
 }
 
-func persistConfig(configFile string) error {
-	return nil
-}
-
 func ensureUserAccount(username string, password string) (string, string, error) {
 	return username, password, nil
 }

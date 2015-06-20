@@ -1022,3 +1022,9 @@ func canonicalPath(path string) string {
 	}
 	return strings.Replace(path, string(os.PathSeparator), "/", -1)
 }
+
+// writes to the file configFile with the current generic worker configuration
+// (stored in the package variable `config`)
+func persistConfig(configFile string) error {
+	return nil
+}
