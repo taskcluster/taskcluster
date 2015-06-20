@@ -69,7 +69,7 @@ and reports back results to the queue.
                                            [--password       PASSWORD]
                                            [--service-name   SERVICE-NAME]
                                            [--username       USERNAME]
-    generic-worker (-h|--help)
+    generic-worker --help
     generic-worker --version
 
   Targets:
@@ -107,8 +107,9 @@ and reports back results to the queue.
     --service-name SERVICE-NAME             The name that the Windows service should be
                                             installed under. [default: Generic Worker]
     --username USERNAME                     The Windows user to run the generic worker
-                                            Windows service as.
-                                            [default: "GenericWorker"]
+                                            Windows service as. If the user does not
+                                            already exist on the system, it will be
+                                            created. [default: "GenericWorker"]
     --version                               The release version of the generic-worker.
 
 
