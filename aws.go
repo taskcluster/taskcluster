@@ -6,13 +6,16 @@ import (
 
 // for when running in aws
 func queryUserData() (UserData, error) {
-	// call http://169.254.169.254/latest/user-data with httpbackoff
 	// TODO
+	// http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-user-data-retrieval
+	// call http://169.254.169.254/latest/user-data with httpbackoff
 	return UserData{}, nil
 }
 
 func queryInstanceName() (string, error) {
 	// TODO
+	// http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-data-retrieval
+	// call http://169.254.169.254/latest/meta-data/instance-id with httpbackoff
 	return "", nil
 }
 
