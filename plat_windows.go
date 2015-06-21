@@ -436,6 +436,72 @@ func (user *OSUser) CheckPassword() (bool, error) {
 // serviceName is the service name given to the newly created service. if the
 // service already exists, it is simply updated.
 func deployService(user *OSUser, configFile string, nssm string, serviceName string) error {
-	//TODO
+	exePath, err := exePath()
+	if err != nil {
+		return err
+	}
+	return runCommands(
+		[]string{nssm, "install", serviceName, exePath},
+		[]string{nssm, "set", serviceName, "AppDirectory", filepath.Dir(exePath)},
+		[]string{nssm, "set", serviceName, "AppParameters", "--config", configFile, "run"},
+		[]string{nssm, "set", serviceName, "DisplayName", serviceName},
+		[]string{nssm, "set", serviceName, "Description", "A taskcluster worker that runs on all mainstream platforms"},
+		[]string{nssm, "set", serviceName, "Start", "SERVICE_AUTO_START"},
+		[]string{nssm, "set", serviceName, "ObjectName", ".\\" + user.Name, user.Password},
+		[]string{nssm, "set", serviceName, "Type", "SERVICE_WIN32_OWN_PROCESS"},
+		[]string{nssm, "set", serviceName, "AppPriority", "NORMAL_PRIORITY_CLASS"},
+		[]string{nssm, "set", serviceName, "AppNoConsole", "1"},
+		[]string{nssm, "set", serviceName, "AppAffinity", "All"},
+		[]string{nssm, "set", serviceName, "AppStopMethodSkip", "0"},
+		[]string{nssm, "set", serviceName, "AppStopMethodConsole", "1500"},
+		[]string{nssm, "set", serviceName, "AppStopMethodWindow", "1500"},
+		[]string{nssm, "set", serviceName, "AppStopMethodThreads", "1500"},
+		[]string{nssm, "set", serviceName, "AppThrottle", "1500"},
+		[]string{nssm, "set", serviceName, "AppExit", "Default", "Restart"},
+		[]string{nssm, "set", serviceName, "AppRestartDelay", "0"},
+		[]string{nssm, "set", serviceName, "AppStdout", filepath.Join(filepath.Dir(exePath), "generic-worker.log")},
+		[]string{nssm, "set", serviceName, "AppStderr", filepath.Join(filepath.Dir(exePath), "generic-worker.log")},
+		[]string{nssm, "set", serviceName, "AppStdoutCreationDisposition", "4"},
+		[]string{nssm, "set", serviceName, "AppStderrCreationDisposition", "4"},
+		[]string{nssm, "set", serviceName, "AppRotateFiles", "1"},
+		[]string{nssm, "set", serviceName, "AppRotateOnline", "1"},
+		[]string{nssm, "set", serviceName, "AppRotateSeconds", "3600"},
+		[]string{nssm, "set", serviceName, "AppRotateBytes", "0"},
+	)
+}
+
+func runCommands(commands ...[]string) error {
+	for _, command := range commands {
+		err := exec.Command(command[0], command[1:]...).Run()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+func exePath() (string, error) {
+	prog := os.Args[0]
+	p, err := filepath.Abs(prog)
+	if err != nil {
+		return "", err
+	}
+	fi, err := os.Stat(p)
+	if err == nil {
+		if !fi.Mode().IsDir() {
+			return p, nil
+		}
+		err = fmt.Errorf("%s is directory", p)
+	}
+	if filepath.Ext(p) == "" {
+		p += ".exe"
+		fi, err := os.Stat(p)
+		if err == nil {
+			if !fi.Mode().IsDir() {
+				return p, nil
+			}
+			err = fmt.Errorf("%s is directory", p)
+		}
+	}
+	return "", err
 }
