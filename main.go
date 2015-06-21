@@ -1027,6 +1027,7 @@ func canonicalPath(path string) string {
 // (stored in the package variable `config`)
 func persistConfig(configFile string) error {
 	fmt.Println("Creating file " + configFile + "...")
+	fmt.Println("Worker ID: " + config.WorkerId)
 	jsonBytes, err := json.Marshal(config)
 	if err != nil {
 		return err
