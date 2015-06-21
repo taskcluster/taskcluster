@@ -108,12 +108,24 @@ func createNewOSUser(user *OSUser) error {
 }
 
 func createOSUserAccountForce(user *OSUser, force bool) error {
-	err := os.MkdirAll(TaskUser.HomeDir, 0755)
+	// MkdirAll doesn't fail if dir already exists, therefore
+	// call MkdirAll on parent dir, and then Mkdir
+	err := os.MkdirAll(filepath.Dir(TaskUser.HomeDir), 0755)
+	// this error is unrecoverable, regardless of `force` so return...
+	if err != nil {
+		return err
+	}
+	// note: Mkdir, not MkdirAll, so we get a failure if it exists...
+	// note: we can't get a failure for parent directory not existing
+	// as we just created it successfully
+	err = os.Mkdir(TaskUser.HomeDir, 0755)
 	homeDirExisted := false
 	if err != nil {
 		switch err.(type) {
-		// regardless of force we probably never want to return an error for creating a directory that exists
-		case error: // TODO: this should be the error when dir already exists
+		case *os.PathError:
+			// regardless of `force` we probably never want to return an error
+			// for creating a directory that exists, but it is important to
+			// know that it existed for next steps...
 			homeDirExisted = true
 		default:
 			return err
@@ -137,12 +149,8 @@ func createOSUserAccountForce(user *OSUser, force bool) error {
 		if !force {
 			return err
 		}
-		switch t := err.(type) {
-		case *exec.ExitError:
-			fmt.Printf("Error is of type %T", t.Sys())
-			// TODO: if user existed (check t) then set userExisted = true, otherwise return error
-			return err
-		}
+		// TODO: checking exit code not enough, need to check Stderr for text "The account already exists"
+		// since exit code is 2 for any failure // note this won't work in non-english version of windows!
 	}
 	// if user existed, these commands can fail
 	// if it didn't, they can't
