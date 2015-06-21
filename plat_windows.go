@@ -91,31 +91,9 @@ func createNewTaskUser() error {
 		Name:     userName,
 		Password: password,
 	}
-	return createNewOSUser(&TaskUser)
-}
-
-func createNewOSUser(user *OSUser) error {
-	debug("Creating Windows User " + TaskUser.Name + "...")
-	err := os.MkdirAll(TaskUser.HomeDir, 0755)
+	err := createNewOSUser(&TaskUser)
 	if err != nil {
 		return err
-	}
-	commandsToRun := [][]string{
-		{"icacls", TaskUser.HomeDir, "/remove:g", "Users"},
-		{"icacls", TaskUser.HomeDir, "/remove:g", "Everyone"},
-		{"icacls", TaskUser.HomeDir, "/inheritance:r"},
-		{"net", "user", TaskUser.Name, TaskUser.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:" + TaskUser.HomeDir, "/y"},
-		{"icacls", TaskUser.HomeDir, "/grant:r", TaskUser.Name + ":(CI)F", "SYSTEM:(CI)F", "Administrators:(CI)F"},
-		{"net", "localgroup", "Remote Desktop Users", "/add", TaskUser.Name},
-	}
-	for _, command := range commandsToRun {
-		debug("Running command: '" + strings.Join(command, "' '") + "'")
-		out, err := exec.Command(command[0], command[1:]...).Output()
-		if err != nil {
-			debug("%v", err)
-			return err
-		}
-		debug(string(out))
 	}
 	// store password
 	err = ioutil.WriteFile(TaskUser.HomeDir+"\\_Passw0rd", []byte(TaskUser.Password), 0666)
@@ -123,6 +101,59 @@ func createNewOSUser(user *OSUser) error {
 		return err
 	}
 	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0666)
+}
+
+func createNewOSUser(user *OSUser) error {
+	return createOSUserAccountForce(user, false)
+}
+
+func createOSUserAccountForce(user *OSUser, force bool) error {
+	err := os.MkdirAll(TaskUser.HomeDir, 0755)
+	homeDirExisted := false
+	if err != nil {
+		switch err.(type) {
+		// regardless of force we probably never want to return an error for creating a directory that exists
+		case error: // TODO: this should be the error when dir already exists
+			homeDirExisted = true
+		default:
+			return err
+		}
+	}
+	debug("Creating Windows User " + TaskUser.Name + "...")
+	// if home dir existed, these are allowed to fail
+	// if it didn't, they aren't!
+	err = runCommands(homeDirExisted,
+		[]string{"icacls", TaskUser.HomeDir, "/remove:g", "Users"},
+		[]string{"icacls", TaskUser.HomeDir, "/remove:g", "Everyone"},
+		[]string{"icacls", TaskUser.HomeDir, "/inheritance:r"},
+	)
+	if !homeDirExisted && err != nil {
+		return err
+	}
+	cmd := exec.Command("net", "user", TaskUser.Name, TaskUser.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+TaskUser.HomeDir, "/y")
+	userExisted := false
+	err = cmd.Run()
+	if err != nil {
+		if !force {
+			return err
+		}
+		switch t := err.(type) {
+		case *exec.ExitError:
+			fmt.Printf("Error is of type %T", t.Sys())
+			// TODO: if user existed (check t) then set userExisted = true, otherwise return error
+			return err
+		}
+	}
+	// if user existed, these commands can fail
+	// if it didn't, they can't
+	err = runCommands(userExisted,
+		[]string{"icacls", TaskUser.HomeDir, "/grant:r", TaskUser.Name + ":(CI)F", "SYSTEM:(CI)F", "Administrators:(CI)F"},
+		[]string{"net", "localgroup", "Remote Desktop Users", "/add", TaskUser.Name},
+	)
+	if !userExisted {
+		return err
+	}
+	return nil
 }
 
 // Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems
@@ -333,16 +364,24 @@ func convertNilToEmptyString(val interface{}) string {
 }
 
 func install(arguments map[string]interface{}) (err error) {
+	exePath, err := ExePath()
+	if err != nil {
+		return err
+	}
 	configureForAws := arguments["--configure-for-aws"].(bool)
 	configFile := convertNilToEmptyString(arguments["--config"])
 	nssm := convertNilToEmptyString(arguments["--nssm"])
 	provisioner := convertNilToEmptyString(arguments["--provisioner"])
 	serviceName := convertNilToEmptyString(arguments["--service-name"])
 	username := convertNilToEmptyString(arguments["--username"])
+	password := convertNilToEmptyString(arguments["--password"])
+	if password == "" {
+		password = generatePassword()
+	}
 	user := OSUser{
 		Name:     username,
-		Password: convertNilToEmptyString(arguments["--password"]),
-		HomeDir:  "C:\\Users\\" + username,
+		Password: password,
+		HomeDir:  filepath.Dir(exePath),
 	}
 
 	if configureForAws {
@@ -359,74 +398,11 @@ func install(arguments map[string]interface{}) (err error) {
 	if err != nil {
 		return err
 	}
-	return deployService(&user, configFile, nssm, serviceName)
+	return deployService(&user, configFile, nssm, serviceName, exePath)
 }
 
-// If the user account exists, ensureUserAccount checks whether the password is
-// correct (also if empty), returning nil for a valid username/password
-// combination, or an error for an invalid combination. Otherwise, if the user
-// account doesn't exist, it will be created. In the case of an empty
-// user.password, a new password will be generated, and user.password will be
-// updated. If the user account creation fails, an error will be returned.
 func ensureUserAccount(user *OSUser) error {
-	exists, err := user.Exists()
-	if err != nil {
-		return err
-	}
-	if exists {
-		passwordOk, err := user.CheckPassword()
-		if err != nil {
-			return err
-		}
-		if passwordOk {
-			return nil
-		} else {
-			return fmt.Errorf("Incorrect password supplied for Windows user %v", user.Name)
-		}
-	}
-	if user.Password == "" {
-		user.Password = generatePassword()
-	}
-	return createNewOSUser(user)
-}
-
-func (user *OSUser) Exists() (bool, error) {
-	// TODO: made this command up, need to replace with correct one
-	cmd := exec.Command("net", "user", "/list")
-	err := cmd.Run()
-	if err != nil {
-		return false, err
-	}
-	result, err := cmd.Output()
-	if err != nil {
-		return false, err
-	}
-	for _, line := range strings.Split(string(result), "\r\n") {
-		if line == user.Name {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
-func (user *OSUser) CheckPassword() (bool, error) {
-	err := exec.Command(
-		"C:\\generic-worker\\PsExec.exe", // hardcoded, but will go with bug 1176072
-		"-u", user.Name,
-		"-p", user.Password,
-		"-n", "10",
-		"-accepteula",
-		"true", // TODO: need to find a lightweight dummy command to run here
-	).Run()
-	if err != nil {
-		switch err.(type) {
-		case error: // TODO: real error for bad password
-			return false, nil
-		default:
-			return false, err
-		}
-	}
-	return true, nil
+	return createOSUserAccountForce(user, true)
 }
 
 // deploys the generic worker as a windows service, running under the windows
@@ -435,14 +411,10 @@ func (user *OSUser) CheckPassword() (bool, error) {
 // is required to install the service, specified as a file system path. The
 // serviceName is the service name given to the newly created service. if the
 // service already exists, it is simply updated.
-func deployService(user *OSUser, configFile string, nssm string, serviceName string) error {
-	exePath, err := exePath()
-	if err != nil {
-		return err
-	}
-	return runCommands(
+func deployService(user *OSUser, configFile string, nssm string, serviceName string, exePath string) error {
+	return runCommands(false,
 		[]string{nssm, "install", serviceName, exePath},
-		[]string{nssm, "set", serviceName, "AppDirectory", filepath.Dir(exePath)},
+		[]string{nssm, "set", serviceName, "AppDirectory", user.HomeDir},
 		[]string{nssm, "set", serviceName, "AppParameters", "--config", configFile, "run"},
 		[]string{nssm, "set", serviceName, "DisplayName", serviceName},
 		[]string{nssm, "set", serviceName, "Description", "A taskcluster worker that runs on all mainstream platforms"},
@@ -459,8 +431,8 @@ func deployService(user *OSUser, configFile string, nssm string, serviceName str
 		[]string{nssm, "set", serviceName, "AppThrottle", "1500"},
 		[]string{nssm, "set", serviceName, "AppExit", "Default", "Restart"},
 		[]string{nssm, "set", serviceName, "AppRestartDelay", "0"},
-		[]string{nssm, "set", serviceName, "AppStdout", filepath.Join(filepath.Dir(exePath), "generic-worker.log")},
-		[]string{nssm, "set", serviceName, "AppStderr", filepath.Join(filepath.Dir(exePath), "generic-worker.log")},
+		[]string{nssm, "set", serviceName, "AppStdout", filepath.Join(user.HomeDir, "generic-worker.log")},
+		[]string{nssm, "set", serviceName, "AppStderr", filepath.Join(user.HomeDir, "generic-worker.log")},
 		[]string{nssm, "set", serviceName, "AppStdoutCreationDisposition", "4"},
 		[]string{nssm, "set", serviceName, "AppStderrCreationDisposition", "4"},
 		[]string{nssm, "set", serviceName, "AppRotateFiles", "1"},
@@ -470,17 +442,24 @@ func deployService(user *OSUser, configFile string, nssm string, serviceName str
 	)
 }
 
-func runCommands(commands ...[]string) error {
+func runCommands(allowFail bool, commands ...[]string) error {
+	var err error
+	var out []byte
 	for _, command := range commands {
-		err := exec.Command(command[0], command[1:]...).Run()
+		debug("Running command: '" + strings.Join(command, "' '") + "'")
+		out, err = exec.Command(command[0], command[1:]...).Output()
 		if err != nil {
-			return err
+			debug("%v", err)
+			if !allowFail {
+				return err
+			}
 		}
+		debug(string(out))
 	}
-	return nil
+	return err
 }
 
-func exePath() (string, error) {
+func ExePath() (string, error) {
 	prog := os.Args[0]
 	p, err := filepath.Abs(prog)
 	if err != nil {

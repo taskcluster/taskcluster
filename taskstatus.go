@@ -144,7 +144,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error) {
 	}
 
 	cancel := func(task *TaskRun, reason string) error {
-		//TODO: implement!!
+		//TODO: implement cancelling of tasks
 		return nil
 	}
 

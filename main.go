@@ -901,7 +901,7 @@ func (task *TaskRun) unixCommand(command string) (Command, error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	task.prepEnvVars(cmd)
-	// TODO
+	// TODO: need to implement for unix
 	return Command{osCommand: cmd, logFile: ""}, nil
 }
 
