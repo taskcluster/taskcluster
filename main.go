@@ -1026,8 +1026,8 @@ func canonicalPath(path string) string {
 // writes to the file configFile with the current generic worker configuration
 // (stored in the package variable `config`)
 func persistConfig(configFile string) error {
-	fmt.Println("Creating file " + configFile + "...")
 	fmt.Println("Worker ID: " + config.WorkerId)
+	fmt.Println("Creating file " + configFile + "...")
 	jsonBytes, err := json.Marshal(config)
 	if err != nil {
 		return err

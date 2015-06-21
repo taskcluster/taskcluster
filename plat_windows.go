@@ -81,7 +81,7 @@ func deleteHomeDir(path string, user string) error {
 	return nil
 }
 
-func createNewOSUser() error {
+func createNewTaskUser() error {
 	// username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
 	userName := "Task_" + strconv.Itoa((int)(time.Now().Unix()))
@@ -91,6 +91,10 @@ func createNewOSUser() error {
 		Name:     userName,
 		Password: password,
 	}
+	return createNewOSUser(User)
+}
+
+func createNewOSUser(user OSUser) error {
 	debug("Creating Windows User " + User.Name + "...")
 	err := os.MkdirAll(User.HomeDir, 0755)
 	if err != nil {
@@ -114,7 +118,7 @@ func createNewOSUser() error {
 		debug(string(out))
 	}
 	// store password
-	err = ioutil.WriteFile(User.HomeDir+"\\_Passw0rd", []byte(password), 0666)
+	err = ioutil.WriteFile(User.HomeDir+"\\_Passw0rd", []byte(User.Password), 0666)
 	if err != nil {
 		return err
 	}
@@ -318,7 +322,7 @@ func taskCleanup() error {
 	// note if this fails, we carry on without throwing an error
 	deleteExistingOSUsers()
 	// this needs to succeed, so return an error if it doesn't
-	return createNewOSUser()
+	return createNewTaskUser()
 }
 
 func convertNilToEmptyString(val interface{}) string {
@@ -329,7 +333,6 @@ func convertNilToEmptyString(val interface{}) string {
 }
 
 func install(arguments map[string]interface{}) (err error) {
-	// query amazon
 	configureForAws := arguments["--configure-for-aws"].(bool)
 	configFile := convertNilToEmptyString(arguments["--config"])
 	nssm := convertNilToEmptyString(arguments["--nssm"])

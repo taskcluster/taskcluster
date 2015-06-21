@@ -52,7 +52,7 @@ type UserData struct {
 func updateConfigWithAmazonSettings(configFile string, provisioner string) error {
 	// error indicates whether file existed or not, so can be ignored.
 	// loadConfig already returns default config if file doesn't exist
-	config, _ := loadConfig(configFile)
+	config, _ = loadConfig(configFile)
 
 	userData, err := queryUserData()
 	if err != nil {
@@ -66,9 +66,7 @@ func updateConfigWithAmazonSettings(configFile string, provisioner string) error
 	config.TaskclusterAccessToken = userData.TaskclusterAccessToken
 	config.TaskclusterClientId = userData.TaskclusterClientId
 	config.WorkerGroup = userData.Region
-	fmt.Println("xxx instance name: " + instanceName)
 	config.WorkerId = instanceName
-	fmt.Println("xxx workerId" + config.WorkerId)
 	config.WorkerType = userData.WorkerType
 	return nil
 }
