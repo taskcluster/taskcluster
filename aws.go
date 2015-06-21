@@ -2,6 +2,7 @@ package main
 
 import (
 	// "encoding/json"
+	"fmt"
 	"github.com/taskcluster/httpbackoff"
 	"io/ioutil"
 	"time"
@@ -32,6 +33,7 @@ func queryInstanceName() (string, error) {
 	}
 	defer resp.Body.Close()
 	content, err := ioutil.ReadAll(resp.Body)
+	fmt.Println("Instance name: " + string(content))
 	return string(content), err
 }
 
