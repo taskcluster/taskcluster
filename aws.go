@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	// "encoding/json"
 	"github.com/taskcluster/httpbackoff"
 	"io/ioutil"
 	"time"
