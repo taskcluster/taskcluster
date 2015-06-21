@@ -1,22 +1,38 @@
 package main
 
 import (
+	"encoding/json"
+	"github.com/taskcluster/httpbackoff"
+	"io/ioutil"
 	"time"
 )
 
 // for when running in aws
-func queryUserData() (UserData, error) {
-	// TODO
+func queryUserData() (*UserData, error) {
+	// TODO: currently assuming UserData is json, need to work out with jhford how this will work with provisioner
 	// http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-user-data-retrieval
 	// call http://169.254.169.254/latest/user-data with httpbackoff
-	return UserData{}, nil
+	resp, _, err := httpbackoff.Get("http://169.254.169.254/latest/user-data")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	userData := new(UserData)
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(userData)
+	return userData, err
 }
 
 func queryInstanceName() (string, error) {
-	// TODO
 	// http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-data-retrieval
 	// call http://169.254.169.254/latest/meta-data/instance-id with httpbackoff
-	return "", nil
+	resp, _, err := httpbackoff.Get("http://169.254.169.254/latest/meta-data/instance-id")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	content, err := ioutil.ReadAll(resp.Body)
+	return string(content), err
 }
 
 type UserData struct {
