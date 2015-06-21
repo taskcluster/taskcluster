@@ -86,27 +86,27 @@ func createNewTaskUser() error {
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
 	userName := "Task_" + strconv.Itoa((int)(time.Now().Unix()))
 	password := generatePassword()
-	User = OSUser{
+	TaskUser = OSUser{
 		HomeDir:  "C:\\Users\\" + userName,
 		Name:     userName,
 		Password: password,
 	}
-	return createNewOSUser(User)
+	return createNewOSUser(&TaskUser)
 }
 
-func createNewOSUser(user OSUser) error {
-	debug("Creating Windows User " + User.Name + "...")
-	err := os.MkdirAll(User.HomeDir, 0755)
+func createNewOSUser(user *OSUser) error {
+	debug("Creating Windows User " + TaskUser.Name + "...")
+	err := os.MkdirAll(TaskUser.HomeDir, 0755)
 	if err != nil {
 		return err
 	}
 	commandsToRun := [][]string{
-		{"icacls", User.HomeDir, "/remove:g", "Users"},
-		{"icacls", User.HomeDir, "/remove:g", "Everyone"},
-		{"icacls", User.HomeDir, "/inheritance:r"},
-		{"net", "user", User.Name, User.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:" + User.HomeDir, "/y"},
-		{"icacls", User.HomeDir, "/grant:r", User.Name + ":(CI)F", "SYSTEM:(CI)F", "Administrators:(CI)F"},
-		{"net", "localgroup", "Remote Desktop Users", "/add", User.Name},
+		{"icacls", TaskUser.HomeDir, "/remove:g", "Users"},
+		{"icacls", TaskUser.HomeDir, "/remove:g", "Everyone"},
+		{"icacls", TaskUser.HomeDir, "/inheritance:r"},
+		{"net", "user", TaskUser.Name, TaskUser.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:" + TaskUser.HomeDir, "/y"},
+		{"icacls", TaskUser.HomeDir, "/grant:r", TaskUser.Name + ":(CI)F", "SYSTEM:(CI)F", "Administrators:(CI)F"},
+		{"net", "localgroup", "Remote Desktop Users", "/add", TaskUser.Name},
 	}
 	for _, command := range commandsToRun {
 		debug("Running command: '" + strings.Join(command, "' '") + "'")
@@ -118,11 +118,11 @@ func createNewOSUser(user OSUser) error {
 		debug(string(out))
 	}
 	// store password
-	err = ioutil.WriteFile(User.HomeDir+"\\_Passw0rd", []byte(User.Password), 0666)
+	err = ioutil.WriteFile(TaskUser.HomeDir+"\\_Passw0rd", []byte(TaskUser.Password), 0666)
 	if err != nil {
 		return err
 	}
-	return os.MkdirAll(filepath.Join(User.HomeDir, "public", "logs"), 0666)
+	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0666)
 }
 
 // Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems
@@ -195,12 +195,12 @@ func deleteOSUserAccount(line string) {
 func (task *TaskRun) generateCommand(index int) (Command, error) {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
-	env := filepath.Join(User.HomeDir, "env.txt")
-	dir := filepath.Join(User.HomeDir, "dir.txt")
+	env := filepath.Join(TaskUser.HomeDir, "env.txt")
+	dir := filepath.Join(TaskUser.HomeDir, "dir.txt")
 	commandName := fmt.Sprintf("command_%06d", index)
-	wrapper := filepath.Join(User.HomeDir, commandName+"_wrapper.bat")
-	script := filepath.Join(User.HomeDir, commandName+".bat")
-	log := filepath.Join(User.HomeDir, "public", "logs", commandName+".log")
+	wrapper := filepath.Join(TaskUser.HomeDir, commandName+"_wrapper.bat")
+	script := filepath.Join(TaskUser.HomeDir, commandName+".bat")
+	log := filepath.Join(TaskUser.HomeDir, "public", "logs", commandName+".log")
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskId + "..." + "\r\n"
 	// contents += "timeout /T 5\r\n"
 
@@ -219,7 +219,7 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 			debug("Setting env var: %v=%v", envVar, envValue)
 			contents += "set " + envVar + "=" + envValue + "\r\n"
 		}
-		contents += "cd \"" + User.HomeDir + "\"" + "\r\n"
+		contents += "cd \"" + TaskUser.HomeDir + "\"" + "\r\n"
 
 		// Otherwise get the env from the previous command
 	} else {
@@ -290,9 +290,9 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 
 	command := []string{
 		"C:\\generic-worker\\PsExec.exe", // hardcoded, but will go with bug 1176072
-		"-u", User.Name,
-		"-p", User.Password,
-		"-w", User.HomeDir,
+		"-u", TaskUser.Name,
+		"-p", TaskUser.Password,
+		"-w", TaskUser.HomeDir,
 		"-n", "10",
 		"-accepteula",
 		"-s",
@@ -336,10 +336,14 @@ func install(arguments map[string]interface{}) (err error) {
 	configureForAws := arguments["--configure-for-aws"].(bool)
 	configFile := convertNilToEmptyString(arguments["--config"])
 	nssm := convertNilToEmptyString(arguments["--nssm"])
-	password := convertNilToEmptyString(arguments["--password"])
 	provisioner := convertNilToEmptyString(arguments["--provisioner"])
 	serviceName := convertNilToEmptyString(arguments["--service-name"])
 	username := convertNilToEmptyString(arguments["--username"])
+	user := OSUser{
+		Name:     username,
+		Password: convertNilToEmptyString(arguments["--password"]),
+		HomeDir:  "C:\\Users\\" + username,
+	}
 
 	if configureForAws {
 		err = updateConfigWithAmazonSettings(configFile, provisioner)
@@ -351,20 +355,49 @@ func install(arguments map[string]interface{}) (err error) {
 			return err
 		}
 	}
-	username, password, err = ensureUserAccount(username, password)
+	err = ensureUserAccount(&user)
 	if err != nil {
 		return err
 	}
-	return deployService(username, password, configFile, nssm, serviceName)
+	return deployService(&user, configFile, nssm, serviceName)
 }
 
-// if the user account exists, it checks that the password is correct,
-// returning an error if not. if the user account doesn't exist, it creates it,
-// together with the password. if the password is an empty string, it generates
-// a password. it returns the resulting username and password
-func ensureUserAccount(username string, password string) (string, string, error) {
-	//TODO
-	return username, password, nil
+// If the user account exists, ensureUserAccount checks whether the password is
+// correct (also if empty), returning nil for a valid username/password
+// combination, or an error for an invalid combination. Otherwise, if the user
+// account doesn't exist, it will be created. In the case of an empty
+// user.password, a new password will be generated, and user.password will be
+// updated. If the user account creation fails, an error will be returned.
+func ensureUserAccount(user *OSUser) error {
+	exists, err := user.Exists()
+	if err != nil {
+		return err
+	}
+	if exists {
+		passwordOk, err := user.CheckPassword()
+		if err != nil {
+			return err
+		}
+		if passwordOk {
+			return nil
+		} else {
+			return fmt.Errorf("Incorrect password supplied for Windows user %v", user.Name)
+		}
+	}
+	if user.Password == "" {
+		user.Password = generatePassword()
+	}
+	return createNewOSUser(user)
+}
+
+func (user *OSUser) Exists() (bool, error) {
+	// TODO
+	return false, nil
+}
+
+func (user *OSUser) CheckPassword() (bool, error) {
+	// TODO
+	return true, nil
 }
 
 // deploys the generic worker as a windows service, running under the windows
@@ -373,7 +406,7 @@ func ensureUserAccount(username string, password string) (string, string, error)
 // is required to install the service, specified as a file system path. The
 // serviceName is the service name given to the newly created service. if the
 // service already exists, it is simply updated.
-func deployService(username string, password string, configFile string, nssm string, serviceName string) error {
+func deployService(user *OSUser, configFile string, nssm string, serviceName string) error {
 	//TODO
 	return nil
 }

@@ -32,7 +32,7 @@ var (
 	debug = D.Debug("generic-worker")
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
-	User OSUser
+	TaskUser OSUser
 	// Queue is the object we will use for accessing queue api. See
 	// http://docs.taskcluster.net/queue/api-docs/
 	Queue *queue.Auth
@@ -860,7 +860,7 @@ func (task *TaskRun) run() error {
 }
 
 func (task *TaskRun) generateCompleteLog() error {
-	completeLogFile, err := os.Create(filepath.Join(User.HomeDir, "public", "logs", "all_commands.log"))
+	completeLogFile, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", "all_commands.log"))
 	if err != nil {
 		return err
 	}
@@ -869,7 +869,7 @@ func (task *TaskRun) generateCompleteLog() error {
 		// unrun commands won't have logFile set...
 		if command.logFile != "" {
 			debug("Looking for %v", command.logFile)
-			commandLog, err := os.Open(filepath.Join(User.HomeDir, command.logFile))
+			commandLog, err := os.Open(filepath.Join(TaskUser.HomeDir, command.logFile))
 			if err != nil {
 				debug("Not found")
 				continue // file does not exist - maybe command did not run
@@ -924,7 +924,7 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 
 func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 	// first check file exists!
-	fileReader, err := os.Open(filepath.Join(User.HomeDir, artifact.CanonicalPath))
+	fileReader, err := os.Open(filepath.Join(TaskUser.HomeDir, artifact.CanonicalPath))
 	if err != nil {
 		return err
 	}
