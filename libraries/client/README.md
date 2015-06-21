@@ -36,7 +36,7 @@ var queue = new taskcluster.Queue({
 
 // Create task using the queue client
 var taskId = '...';
-queue.createTask(taskId, task).then(function(result) {
+queue.createTask(taskId, payload).then(function(result) {
   // status is a task status structure
   console.log(result.status);
 });
