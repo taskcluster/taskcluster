@@ -18,8 +18,8 @@ func queryUserData() (*UserData, error) {
 	}
 	defer resp.Body.Close()
 	userData := new(UserData)
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(userData)
+	// decoder := json.NewDecoder(resp.Body)
+	// err = decoder.Decode(userData)
 	return userData, err
 }
 
