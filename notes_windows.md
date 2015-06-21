@@ -131,7 +131,7 @@ md C:\generic-worker
 $client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v1.0.2/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # install generic-worker
-$p = Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install" -wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+$p = Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install --configure-for-aws" -wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 $p.HasExited
 </powershell>
 ```
