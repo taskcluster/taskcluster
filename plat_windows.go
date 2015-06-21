@@ -321,15 +321,22 @@ func taskCleanup() error {
 	return createNewOSUser()
 }
 
+func convertNilToEmptyString(val interface{}) string {
+	if val == nil {
+		return ""
+	}
+	return val.(string)
+}
+
 func install(arguments map[string]interface{}) (err error) {
 	// query amazon
 	configureForAws := arguments["--configure-for-aws"].(bool)
-	configFile := arguments["--config"].(string)
-	nssm := arguments["--nssm"].(string)
-	password := arguments["--password"].(string)
-	provisioner := arguments["--provisioner"].(string)
-	serviceName := arguments["--service-name"].(string)
-	username := arguments["--username"].(string)
+	configFile := convertNilToEmptyString(arguments["--config"])
+	nssm := convertNilToEmptyString(arguments["--nssm"])
+	password := convertNilToEmptyString(arguments["--password"])
+	provisioner := convertNilToEmptyString(arguments["--provisioner"])
+	serviceName := convertNilToEmptyString(arguments["--service-name"])
+	username := convertNilToEmptyString(arguments["--username"])
 
 	if configureForAws {
 		err = updateConfigWithAmazonSettings(configFile, provisioner)
