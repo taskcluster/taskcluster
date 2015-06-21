@@ -69,9 +69,9 @@ func deleteHomeDir(path string, user string) error {
 		path,
 	}
 	cmd := exec.Command(command[0], command[1:]...)
-	debug("Running command: '" + strings.Join(command, "' '") + "'")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	debug("Running command: '" + strings.Join(command, "' '") + "'")
 	err := cmd.Run()
 	if err != nil {
 		debug("%#v", err)
@@ -391,12 +391,41 @@ func ensureUserAccount(user *OSUser) error {
 }
 
 func (user *OSUser) Exists() (bool, error) {
-	// TODO
+	// TODO: made this command up, need to replace with correct one
+	cmd := exec.Command("net", "user", "/list")
+	err := cmd.Run()
+	if err != nil {
+		return false, err
+	}
+	result, err := cmd.Output()
+	if err != nil {
+		return false, err
+	}
+	for _, line := range strings.Split(string(result), "\r\n") {
+		if line == user.Name {
+			return true, nil
+		}
+	}
 	return false, nil
 }
 
 func (user *OSUser) CheckPassword() (bool, error) {
-	// TODO
+	err := exec.Command(
+		"C:\\generic-worker\\PsExec.exe", // hardcoded, but will go with bug 1176072
+		"-u", user.Name,
+		"-p", user.Password,
+		"-n", "10",
+		"-accepteula",
+		"true", // TODO: need to find a lightweight dummy command to run here
+	).Run()
+	if err != nil {
+		switch err.(type) {
+		case error: // TODO: real error for bad password
+			return false, nil
+		default:
+			return false, err
+		}
+	}
 	return true, nil
 }
 
