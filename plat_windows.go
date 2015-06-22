@@ -60,7 +60,7 @@ func deleteHomeDir(path string, user string) error {
 	// 	debug("Failed to read password file %v, (to delete dir %v) trying to remove with generic worker account...", passwordFile, path)
 	// 	return adminDeleteHomeDir(path)
 	// }
-	command := []string{
+	err := runCommands(false, []string{
 		// "C:\\generic-worker\\PsExec.exe", // hardcoded, but will go with bug 1176072
 		// "-u", user,
 		// "-p", string(password),
@@ -69,12 +69,7 @@ func deleteHomeDir(path string, user string) error {
 		// "-accepteula",
 		"del /s /q /f",
 		path,
-	}
-	cmd := exec.Command(command[0], command[1:]...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	debug("Running command: '" + strings.Join(command, "' '") + "'")
-	err := cmd.Run()
+	})
 	if err != nil {
 		debug("%#v", err)
 		debug("Failed to remove %v with user %v, trying to remove with generic worker account instead...")
@@ -93,7 +88,7 @@ func createNewTaskUser() error {
 		Name:     userName,
 		Password: password,
 	}
-	err := createNewOSUser(&TaskUser)
+	err := (&TaskUser).createNewOSUser()
 	if err != nil {
 		return err
 	}
@@ -105,15 +100,15 @@ func createNewTaskUser() error {
 	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0666)
 }
 
-func createNewOSUser(user *OSUser) error {
-	return createOSUserAccountForce(user, false)
+func (user *OSUser) createNewOSUser() error {
+	return user.createOSUserAccountForce(false)
 }
 
-func createOSUserAccountForce(user *OSUser, okIfExists bool) error {
-	debug("Forcefully creating directory " + filepath.Dir(TaskUser.HomeDir) + "...")
+func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
+	debug("Forcefully creating directory " + filepath.Dir(user.HomeDir) + "...")
 	// MkdirAll doesn't fail if dir already exists, therefore
 	// call MkdirAll on parent dir, and then Mkdir
-	err := os.MkdirAll(filepath.Dir(TaskUser.HomeDir), 0755)
+	err := os.MkdirAll(filepath.Dir(user.HomeDir), 0755)
 	// this error is unrecoverable, regardless of `okIfExists` so return...
 	if err != nil {
 		return err
@@ -121,7 +116,7 @@ func createOSUserAccountForce(user *OSUser, okIfExists bool) error {
 	// note: Mkdir, not MkdirAll, so we get a failure if it exists...
 	// note: we can't get a failure for parent directory not existing
 	// as we just created it successfully
-	err = os.Mkdir(TaskUser.HomeDir, 0755)
+	err = os.Mkdir(user.HomeDir, 0755)
 	homeDirExisted := false
 	if err != nil {
 		switch err.(type) {
@@ -137,16 +132,16 @@ func createOSUserAccountForce(user *OSUser, okIfExists bool) error {
 	// if home dir existed, these are allowed to fail
 	// if it didn't, they aren't!
 	err = runCommands(homeDirExisted,
-		[]string{"icacls", TaskUser.HomeDir, "/remove:g", "Users"},
-		[]string{"icacls", TaskUser.HomeDir, "/remove:g", "Everyone"},
-		[]string{"icacls", TaskUser.HomeDir, "/inheritance:r"},
+		[]string{"icacls", user.HomeDir, "/remove:g", "Users"},
+		[]string{"icacls", user.HomeDir, "/remove:g", "Everyone"},
+		[]string{"icacls", user.HomeDir, "/inheritance:r"},
 	)
 	if !homeDirExisted && err != nil {
 		return err
 	}
-	debug("Creating Windows User " + TaskUser.Name + "...")
-	fmt.Println("net", "user", TaskUser.Name, TaskUser.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+TaskUser.HomeDir, "/y")
-	cmd := exec.Command("net", "user", TaskUser.Name, TaskUser.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+TaskUser.HomeDir, "/y")
+	debug("Creating Windows User " + user.Name + "...")
+	fmt.Println("net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+user.HomeDir, "/y")
+	cmd := exec.Command("net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+user.HomeDir, "/y")
 	userExisted := false
 	stderrBytes, err := Error(cmd)
 	if err != nil {
@@ -166,8 +161,8 @@ func createOSUserAccountForce(user *OSUser, okIfExists bool) error {
 	// if user existed, these commands can fail
 	// if it didn't, they can't
 	err = runCommands(userExisted,
-		[]string{"icacls", TaskUser.HomeDir, "/grant:r", TaskUser.Name + ":(CI)F", "SYSTEM:(CI)F", "Administrators:(CI)F"},
-		[]string{"net", "localgroup", "Remote Desktop Users", "/add", TaskUser.Name},
+		[]string{"icacls", user.HomeDir, "/grant:r", user.Name + ":(CI)F", "SYSTEM:(CI)F", "Administrators:(CI)F"},
+		[]string{"net", "localgroup", "Remote Desktop Users", "/add", user.Name},
 	)
 	if !userExisted {
 		return err
@@ -233,12 +228,11 @@ func deleteOSUserAccount(line string) {
 	if strings.HasPrefix(line, "Task_") {
 		user := line
 		debug("Attempting to remove Windows user " + user + "...")
-		out, err := exec.Command("net", "user", user, "/delete").Output()
+		err := runCommands(false, []string{"net", "user", user, "/delete"})
 		if err != nil {
 			debug("WARNING: Could not remove Windows user account " + user)
 			debug("%v", err)
 		}
-		debug(string(out))
 	}
 }
 
@@ -338,6 +332,7 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 		return Command{}, err
 	}
 
+	// can't use runCommands(...) here because we don't want to execute, only create
 	command := []string{
 		"C:\\generic-worker\\PsExec.exe", // hardcoded, but will go with bug 1176072
 		"-u", TaskUser.Name,
@@ -402,6 +397,7 @@ func install(arguments map[string]interface{}) (err error) {
 		Password: password,
 		HomeDir:  filepath.Dir(exePath),
 	}
+	fmt.Println("User: " + user.Name + ", Password: " + user.Password + ", HomeDir: " + user.HomeDir)
 
 	if configureForAws {
 		err = updateConfigWithAmazonSettings(configFile, provisioner)
@@ -413,15 +409,23 @@ func install(arguments map[string]interface{}) (err error) {
 			return err
 		}
 	}
-	err = ensureUserAccount(&user)
+	err = user.ensureUserAccount()
+	if err != nil {
+		return err
+	}
+	err = user.makeAdmin()
 	if err != nil {
 		return err
 	}
 	return deployService(&user, configFile, nssm, serviceName, exePath)
 }
 
-func ensureUserAccount(user *OSUser) error {
-	return createOSUserAccountForce(user, true)
+func (user *OSUser) makeAdmin() error {
+	return runCommands(false, []string{"net", "localgroup", "administrators", user.Name, "/add"})
+}
+
+func (user *OSUser) ensureUserAccount() error {
+	return user.createOSUserAccountForce(true)
 }
 
 // deploys the generic worker as a windows service, running under the windows
@@ -463,17 +467,19 @@ func deployService(user *OSUser, configFile string, nssm string, serviceName str
 
 func runCommands(allowFail bool, commands ...[]string) error {
 	var err error
-	var out []byte
 	for _, command := range commands {
 		debug("Running command: '" + strings.Join(command, "' '") + "'")
-		out, err = exec.Command(command[0], command[1:]...).Output()
+		cmd := exec.Command(command[0], command[1:]...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+
 		if err != nil {
 			debug("%v", err)
 			if !allowFail {
 				return err
 			}
 		}
-		debug(string(out))
 	}
 	return err
 }
