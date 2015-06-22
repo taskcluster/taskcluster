@@ -140,23 +140,15 @@ func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
 		return err
 	}
 	debug("Creating Windows User " + user.Name + "...")
-	fmt.Println("net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+user.HomeDir, "/y")
-	cmd := exec.Command("net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+user.HomeDir, "/y")
-	userExisted := false
-	stderrBytes, err := Error(cmd)
+	userExisted, err := allowError(
+		"The account already exists",
+		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+user.HomeDir, "/y",
+	)
 	if err != nil {
-		if !okIfExists {
-			return err
-		}
-		fmt.Println("Stderr: " + string(stderrBytes))
-		// Checking exit code not enough, need to check Stderr for text "The
-		// account already exists" since exit code is 2 for any failure. Note
-		// this won't work in non-english version of Windows!
-		userExisted = strings.Contains(string(stderrBytes), "The account already exists")
-		// any other type of error is unrecoverable
-		if !userExisted {
-			return err
-		}
+		return err
+	}
+	if !okIfExists && userExisted {
+		return fmt.Errorf("User " + user.Name + " already existed - cannot create")
 	}
 	// if user existed, these commands can fail
 	// if it didn't, they can't
@@ -420,8 +412,23 @@ func install(arguments map[string]interface{}) (err error) {
 	return deployService(&user, configFile, nssm, serviceName, exePath)
 }
 
+// Runs command `command` with arguments `args`. If standard error from command
+// includes `errString` then true, is returned with no error. Otherwise false
+// is returned, with or without an error.
+func allowError(errString string, command string, args ...string) (bool, error) {
+	cmd := exec.Command(command, args...)
+	stderrBytes, err := Error(cmd)
+	if err != nil {
+		if strings.Contains(string(stderrBytes), errString) {
+			return true, nil
+		}
+	}
+	return false, err
+}
+
 func (user *OSUser) makeAdmin() error {
-	return runCommands(false, []string{"net", "localgroup", "administrators", user.Name, "/add"})
+	_, err := allowError("The specified account name is already a member of the group", "net", "localgroup", "administrators", user.Name, "/add")
+	return err
 }
 
 func (user *OSUser) ensureUserAccount() error {
