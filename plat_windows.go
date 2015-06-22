@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -107,11 +109,12 @@ func createNewOSUser(user *OSUser) error {
 	return createOSUserAccountForce(user, false)
 }
 
-func createOSUserAccountForce(user *OSUser, force bool) error {
+func createOSUserAccountForce(user *OSUser, okIfExists bool) error {
+	debug("Forcefully creating directory " + filepath.Dir(TaskUser.HomeDir) + "...")
 	// MkdirAll doesn't fail if dir already exists, therefore
 	// call MkdirAll on parent dir, and then Mkdir
 	err := os.MkdirAll(filepath.Dir(TaskUser.HomeDir), 0755)
-	// this error is unrecoverable, regardless of `force` so return...
+	// this error is unrecoverable, regardless of `okIfExists` so return...
 	if err != nil {
 		return err
 	}
@@ -123,7 +126,7 @@ func createOSUserAccountForce(user *OSUser, force bool) error {
 	if err != nil {
 		switch err.(type) {
 		case *os.PathError:
-			// regardless of `force` we probably never want to return an error
+			// regardless of `okIfExists` we probably never want to return an error
 			// for creating a directory that exists, but it is important to
 			// know that it existed for next steps...
 			homeDirExisted = true
@@ -131,7 +134,6 @@ func createOSUserAccountForce(user *OSUser, force bool) error {
 			return err
 		}
 	}
-	debug("Creating Windows User " + TaskUser.Name + "...")
 	// if home dir existed, these are allowed to fail
 	// if it didn't, they aren't!
 	err = runCommands(homeDirExisted,
@@ -142,15 +144,24 @@ func createOSUserAccountForce(user *OSUser, force bool) error {
 	if !homeDirExisted && err != nil {
 		return err
 	}
+	debug("Creating Windows User " + TaskUser.Name + "...")
+	fmt.Println("net", "user", TaskUser.Name, TaskUser.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+TaskUser.HomeDir, "/y")
 	cmd := exec.Command("net", "user", TaskUser.Name, TaskUser.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+TaskUser.HomeDir, "/y")
 	userExisted := false
-	err = cmd.Run()
+	stderrBytes, err := Error(cmd)
 	if err != nil {
-		if !force {
+		if !okIfExists {
 			return err
 		}
-		// TODO: checking exit code not enough, need to check Stderr for text "The account already exists"
-		// since exit code is 2 for any failure // note this won't work in non-english version of windows!
+		fmt.Println("Stderr: " + string(stderrBytes))
+		// Checking exit code not enough, need to check Stderr for text "The
+		// account already exists" since exit code is 2 for any failure. Note
+		// this won't work in non-english version of Windows!
+		userExisted = strings.Contains(string(stderrBytes), "The account already exists")
+		// any other type of error is unrecoverable
+		if !userExisted {
+			return err
+		}
 	}
 	// if user existed, these commands can fail
 	// if it didn't, they can't
@@ -491,4 +502,15 @@ func ExePath() (string, error) {
 		}
 	}
 	return "", err
+}
+
+// Error runs the command and returns its standard error.
+func Error(c *exec.Cmd) ([]byte, error) {
+	if c.Stderr != nil {
+		return nil, errors.New("exec: Stderr already set")
+	}
+	var b bytes.Buffer
+	c.Stderr = &b
+	err := c.Run()
+	return b.Bytes(), err
 }
