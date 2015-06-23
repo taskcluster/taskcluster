@@ -212,26 +212,26 @@ func New(clientId string, accessToken string) *Auth {
 // KeyPair
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createWorkerType
-func (a *Auth) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/worker-type/"+workerType+"", new(GetWorkerTypeRequest))
-	return responseObject.(*GetWorkerTypeRequest), callSummary
+func (a *Auth) CreateWorkerType(workerType string, payload *GetWorkerTypeRequest) (*GetWorkerTypeRequest1, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "PUT", "/worker-type/"+workerType+"", new(GetWorkerTypeRequest1))
+	return responseObject.(*GetWorkerTypeRequest1), callSummary
 }
 
 // Update a workerType and ensure that all regions have the require
 // KeyPair
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#updateWorkerType
-func (a *Auth) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/worker-type/"+workerType+"/update", new(GetWorkerTypeRequest))
-	return responseObject.(*GetWorkerTypeRequest), callSummary
+func (a *Auth) UpdateWorkerType(workerType string, payload *GetWorkerTypeRequest) (*GetWorkerTypeRequest1, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "POST", "/worker-type/"+workerType+"/update", new(GetWorkerTypeRequest1))
+	return responseObject.(*GetWorkerTypeRequest1), callSummary
 }
 
 // Retreive a WorkerType definition
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#workerType
-func (a *Auth) WorkerType(workerType string) (*GetWorkerTypeRequest, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/worker-type/"+workerType+"", new(GetWorkerTypeRequest))
-	return responseObject.(*GetWorkerTypeRequest), callSummary
+func (a *Auth) WorkerType(workerType string) (*GetWorkerTypeRequest1, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/worker-type/"+workerType+"", new(GetWorkerTypeRequest1))
+	return responseObject.(*GetWorkerTypeRequest1), callSummary
 }
 
 // Delete a WorkerType definition, submits requests to kill all
@@ -249,6 +249,49 @@ func (a *Auth) RemoveWorkerType(workerType string) *CallSummary {
 func (a *Auth) ListWorkerTypes() (*ListWorkerTypes, *CallSummary) {
 	responseObject, callSummary := a.apiCall(nil, "GET", "/list-worker-types", new(ListWorkerTypes))
 	return responseObject.(*ListWorkerTypes), callSummary
+}
+
+// Insert a secret into the secret storage.  This should not
+// normally be done through this API, but is provided for testing
+// and completeness
+//
+// See http://docs.taskcluster.net/aws-provisioner/api-docs/#createSecret
+func (a *Auth) CreateSecret(token string, payload *GetSecretRequest) *CallSummary {
+	_, callSummary := a.apiCall(payload, "PUT", "/secret/"+token+"", nil)
+	return callSummary
+}
+
+// Retreive a secret from storage.  It is important that this secret is
+// deleted by the consumer, or else the secrets will be visible to any
+// process which can read HTTP on the worker localhost interface.
+//
+// See http://docs.taskcluster.net/aws-provisioner/api-docs/#getSecret
+func (a *Auth) GetSecret(token string) (*GetSecretResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/secret/"+token+"", new(GetSecretResponse))
+	return responseObject.(*GetSecretResponse), callSummary
+}
+
+// An instance will report in by giving its instance id as well
+// as its security token.  The token is given and checked to ensure
+// that it matches a real token that exists to ensure that random
+// machines do not check in.  We could generate a different token
+// but that seems like overkill
+//
+// See http://docs.taskcluster.net/aws-provisioner/api-docs/#instanceStarted
+func (a *Auth) InstanceStarted(instanceId string, token string) *CallSummary {
+	_, callSummary := a.apiCall(nil, "GET", "/instance-started/"+instanceId+"/"+token+"", nil)
+	return callSummary
+}
+
+// Remove a secret.  It is very important that the consumer of a
+// secret delete the secret from storage before handing over control
+// to another process or else it could read the HTTP UserData endpoint
+// and use the getSecrete() api here to get the secrets
+//
+// See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeSecret
+func (a *Auth) RemoveSecret(token string) *CallSummary {
+	_, callSummary := a.apiCall(nil, "DELETE", "/secret/"+token+"", nil)
+	return callSummary
 }
 
 // Return the EC2 LaunchSpecifications for all combinations of regions
@@ -322,84 +365,27 @@ func (a *Auth) ApiReference() *CallSummary {
 }
 
 type (
-	// A worker launchSpecification and required metadata
+	// A Secret
 	//
-	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#
-	CreateWorkerTypeRequest struct {
-		// True if this worker type is allowed on demand instances.  Currently
-		// ignored
-		CanUseOndemand bool `json:"canUseOndemand"`
-		// True if this worker type is allowed spot instances.  Currently ignored
-		// as all instances are Spot
-		CanUseSpot    bool `json:"canUseSpot"`
-		InstanceTypes []struct {
-			// This number represents the number of tasks that this instance type
-			// is capable of running concurrently.  This is used by the provisioner
-			// to know how many pending tasks to offset a pending instance of this
-			// type by
-			Capacity int `json:"capacity"`
-			// InstanceType name for Amazon.
-			InstanceType string `json:"instanceType"`
-			// This object contains LaunchSpecification keys which will overwrite
-			// the keys from the General launch spec
-			Overwrites map[string]json.RawMessage `json:"overwrites"`
-			// This number is a relative measure of performance between two instance
-			// types.  It is multiplied by the spot price from Amazon to figure out
-			// which instance type is the cheapest one
-			Utility int `json:"utility"`
-		} `json:"instanceTypes"`
-		// AWS LaunchSpecification values shared by all regions and all instance-types.
-		// This launch spec should not contain either an InstanceType or ImageId.  The
-		// former should always be a key in the types object and the latter should be
-		// an overwrite in the regions object
-		LaunchSpecification map[string]json.RawMessage `json:"launchSpecification"`
-		// Maximum number of capacity units to be provisioned.
-		MaxCapacity int `json:"maxCapacity"`
-		// Maximum price we'll pay.  Like minPrice, this takes into account the
-		// utility factor when figuring out what the actual SpotPrice submitted
-		// to Amazon will be
-		MaxPrice int `json:"maxPrice"`
-		// Minimum number of capacity units to be provisioned.  A capacity unit
-		// is an abstract unit of capacity, where one capacity unit is roughly
-		// one task which should be taken off the queue
-		MinCapacity int `json:"minCapacity"`
-		// Minimum price to pay for an instance.  A Price is considered to be the
-		// Amazon Spot Price multiplied by the utility factor of the InstantType
-		// as specified in the instanceTypes list.  For example, if the minPrice
-		// is set to $0.5 and the utility factor is 2, the actual minimum bid
-		// used will be $0.25
-		MinPrice int `json:"minPrice"`
-		Regions  []struct {
-			// This object contains LaunchSpecification keys which will overwrite keys
-			// from the general LaunchSpecificiation
-			Overwrites struct {
-				// Per-region AMI ImageId
-				ImageId string `json:"ImageId"`
-			} `json:"overwrites"`
-			// The Amazon AWS Region being configured.  Example: us-west-1
-			Region string `json:"region"`
-		} `json:"regions"`
-		// A scaling ratio of `0.2` means that the provisioner will attempt to keep
-		// the number of pending tasks around 20% of the provisioned capacity.
-		// This results in pending tasks waiting 20% of the average task execution
-		// time before starting to run.
-		// A higher scaling ratio often results in better utilization and longer
-		// waiting times. For workerTypes running long tasks a short scaling ratio
-		// may be prefered, but for workerTypes running quick tasks a higher scaling
-		// ratio may increase utilization without major delays.
-		// If using a scaling ratio of 0, the provisioner will attempt to keep the
-		// capacity of pending spot requests equal to the number of pending tasks.
-		ScalingRatio int `json:"scalingRatio"`
+	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#
+	GetSecretRequest struct {
+		// The date at which the secret is no longer guarunteed to exist
+		Expiration string `json:"expiration"`
+		// List of strings which are scopes for temporary credentials to give
+		// to the worker through the secret system
+		Scopes []string `json:"scopes"`
+		// Free form object which contains the secrets stored
+		Secrets map[string]json.RawMessage `json:"secrets"`
+		// A Slug ID which is the uniquely addressable token to access this
+		// set of secrets
+		Token string `json:"token"`
+		// A string describing what the secret will be used for
+		WorkerType string `json:"workerType"`
 	}
 
-	// All of the launch specifications for a worker type
-	//
-	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#
-	GetAllLaunchSpecsResponse map[string]json.RawMessage
-
 	// A worker launchSpecification and required metadata
 	//
-	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#
+	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#
 	GetWorkerTypeRequest struct {
 		// True if this worker type is allowed on demand instances.  Currently
 		// ignored
@@ -415,19 +401,21 @@ type (
 			Capacity int `json:"capacity"`
 			// InstanceType name for Amazon.
 			InstanceType string `json:"instanceType"`
-			// This object contains LaunchSpecification keys which will overwrite
-			// the keys from the General launch spec
-			Overwrites map[string]json.RawMessage `json:"overwrites"`
+			// LaunchSpecification entries unique to this InstanceType
+			LaunchSpec map[string]json.RawMessage `json:"launchSpec"`
+			// Scopes which should be included for this InstanceType
+			Scopes []string `json:"scopes"`
+			// Static Secrets unique to this InstanceType
+			Secrets map[string]json.RawMessage `json:"secrets"`
+			// UserData entries unique to this InstanceType
+			UserData map[string]json.RawMessage `json:"userData"`
 			// This number is a relative measure of performance between two instance
 			// types.  It is multiplied by the spot price from Amazon to figure out
 			// which instance type is the cheapest one
 			Utility int `json:"utility"`
 		} `json:"instanceTypes"`
-		// AWS LaunchSpecification values shared by all regions and all instance-types.
-		// This launch spec should not contain either an InstanceType or ImageId.  The
-		// former should always be a key in the types object and the latter should be
-		// an overwrite in the regions object
-		LaunchSpecification map[string]json.RawMessage `json:"launchSpecification"`
+		// Launch Specification entries which are used in all regions and all instance types
+		LaunchSpec map[string]json.RawMessage `json:"launchSpec"`
 		// Maximum number of capacity units to be provisioned.
 		MaxCapacity int `json:"maxCapacity"`
 		// Maximum price we'll pay.  Like minPrice, this takes into account the
@@ -445,14 +433,19 @@ type (
 		// used will be $0.25
 		MinPrice int `json:"minPrice"`
 		Regions  []struct {
-			// This object contains LaunchSpecification keys which will overwrite keys
-			// from the general LaunchSpecificiation
-			Overwrites struct {
+			// LaunchSpecification entries unique to this Region
+			LaunchSpec struct {
 				// Per-region AMI ImageId
 				ImageId string `json:"ImageId"`
-			} `json:"overwrites"`
+			} `json:"launchSpec"`
 			// The Amazon AWS Region being configured.  Example: us-west-1
 			Region string `json:"region"`
+			// Scopes which should be included for this Region
+			Scopes []string `json:"scopes"`
+			// Static Secrets unique to this Region
+			Secrets map[string]json.RawMessage `json:"secrets"`
+			// UserData entries unique to this Region
+			UserData map[string]json.RawMessage `json:"userData"`
 		} `json:"regions"`
 		// A scaling ratio of `0.2` means that the provisioner will attempt to keep
 		// the number of pending tasks around 20% of the provisioned capacity.
@@ -465,6 +458,108 @@ type (
 		// If using a scaling ratio of 0, the provisioner will attempt to keep the
 		// capacity of pending spot requests equal to the number of pending tasks.
 		ScalingRatio int `json:"scalingRatio"`
+		// Scopes to issue credentials to for all regions
+		Scopes []string `json:"scopes"`
+		// Static secrets entries which are used in all regions and all instance types
+		Secrets map[string]json.RawMessage `json:"secrets"`
+		// UserData entries which are used in all regions and all instance types
+		UserData map[string]json.RawMessage `json:"userData"`
+	}
+
+	// All of the launch specifications for a worker type
+	//
+	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#
+	GetAllLaunchSpecsResponse map[string]json.RawMessage
+
+	// Secrets from the provisioner
+	//
+	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#
+	GetSecretResponse map[string]json.RawMessage
+
+	// A worker launchSpecification and required metadata
+	//
+	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#
+	GetWorkerTypeRequest1 struct {
+		// True if this worker type is allowed on demand instances.  Currently
+		// ignored
+		CanUseOndemand bool `json:"canUseOndemand"`
+		// True if this worker type is allowed spot instances.  Currently ignored
+		// as all instances are Spot
+		CanUseSpot    bool `json:"canUseSpot"`
+		InstanceTypes []struct {
+			// This number represents the number of tasks that this instance type
+			// is capable of running concurrently.  This is used by the provisioner
+			// to know how many pending tasks to offset a pending instance of this
+			// type by
+			Capacity int `json:"capacity"`
+			// InstanceType name for Amazon.
+			InstanceType string `json:"instanceType"`
+			// LaunchSpecification entries unique to this InstanceType
+			LaunchSpec map[string]json.RawMessage `json:"launchSpec"`
+			// Scopes which should be included for this InstanceType
+			Scopes []string `json:"scopes"`
+			// Static Secrets unique to this InstanceType
+			Secrets map[string]json.RawMessage `json:"secrets"`
+			// UserData entries unique to this InstanceType
+			UserData map[string]json.RawMessage `json:"userData"`
+			// This number is a relative measure of performance between two instance
+			// types.  It is multiplied by the spot price from Amazon to figure out
+			// which instance type is the cheapest one
+			Utility int `json:"utility"`
+		} `json:"instanceTypes"`
+		// ISO Date string (e.g. new Date().toISOString()) which represents the time
+		// when this worker type definition was last altered (inclusive of creation)
+		LastModified date `json:"lastModified"`
+		// Launch Specification entries which are used in all regions and all instance types
+		LaunchSpec map[string]json.RawMessage `json:"launchSpec"`
+		// Maximum number of capacity units to be provisioned.
+		MaxCapacity int `json:"maxCapacity"`
+		// Maximum price we'll pay.  Like minPrice, this takes into account the
+		// utility factor when figuring out what the actual SpotPrice submitted
+		// to Amazon will be
+		MaxPrice int `json:"maxPrice"`
+		// Minimum number of capacity units to be provisioned.  A capacity unit
+		// is an abstract unit of capacity, where one capacity unit is roughly
+		// one task which should be taken off the queue
+		MinCapacity int `json:"minCapacity"`
+		// Minimum price to pay for an instance.  A Price is considered to be the
+		// Amazon Spot Price multiplied by the utility factor of the InstantType
+		// as specified in the instanceTypes list.  For example, if the minPrice
+		// is set to $0.5 and the utility factor is 2, the actual minimum bid
+		// used will be $0.25
+		MinPrice int `json:"minPrice"`
+		Regions  []struct {
+			// LaunchSpecification entries unique to this Region
+			LaunchSpec struct {
+				// Per-region AMI ImageId
+				ImageId string `json:"ImageId"`
+			} `json:"launchSpec"`
+			// The Amazon AWS Region being configured.  Example: us-west-1
+			Region string `json:"region"`
+			// Scopes which should be included for this Region
+			Scopes []string `json:"scopes"`
+			// Static Secrets unique to this Region
+			Secrets map[string]json.RawMessage `json:"secrets"`
+			// UserData entries unique to this Region
+			UserData map[string]json.RawMessage `json:"userData"`
+		} `json:"regions"`
+		// A scaling ratio of `0.2` means that the provisioner will attempt to keep
+		// the number of pending tasks around 20% of the provisioned capacity.
+		// This results in pending tasks waiting 20% of the average task execution
+		// time before starting to run.
+		// A higher scaling ratio often results in better utilization and longer
+		// waiting times. For workerTypes running long tasks a short scaling ratio
+		// may be prefered, but for workerTypes running quick tasks a higher scaling
+		// ratio may increase utilization without major delays.
+		// If using a scaling ratio of 0, the provisioner will attempt to keep the
+		// capacity of pending spot requests equal to the number of pending tasks.
+		ScalingRatio int `json:"scalingRatio"`
+		// Scopes to issue credentials to for all regions
+		Scopes []string `json:"scopes"`
+		// Static secrets entries which are used in all regions and all instance types
+		Secrets map[string]json.RawMessage `json:"secrets"`
+		// UserData entries which are used in all regions and all instance types
+		UserData map[string]json.RawMessage `json:"userData"`
 		// The ID of the workerType
 		WorkerType string `json:"workerType"`
 	}

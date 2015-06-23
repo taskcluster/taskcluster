@@ -756,8 +756,8 @@ Entry 0     =
     Entry Args        = '[workerType]'
     Entry Name        = 'createWorkerType'
     Entry Scopes      = '[[aws-provisioner:manage-worker-type:<workerType>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
-    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
+    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#'
     Entry Title       = 'Create new Worker Type'
     Entry Description = 'Create a worker type and ensure that all EC2 regions have the required
 KeyPair'
@@ -768,8 +768,8 @@ Entry 1     =
     Entry Args        = '[workerType]'
     Entry Name        = 'updateWorkerType'
     Entry Scopes      = '[[aws-provisioner:manage-worker-type:<workerType>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
-    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
+    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#'
     Entry Title       = 'Update Worker Type'
     Entry Description = 'Update a workerType and ensure that all regions have the require
 KeyPair'
@@ -781,7 +781,7 @@ Entry 2     =
     Entry Name        = 'workerType'
     Entry Scopes      = '[[aws-provisioner:view-worker-type:<workerType>] [aws-provisioner:manage-worker-type:<workerType>]]'
     Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#'
     Entry Title       = 'Get Worker Type'
     Entry Description = 'Retreive a WorkerType definition'
 Entry 3     =
@@ -809,6 +809,61 @@ Entry 4     =
     Entry Description = 'List all known WorkerType names'
 Entry 5     =
     Entry Type        = 'function'
+    Entry Method      = 'put'
+    Entry Route       = '/secret/<token>'
+    Entry Args        = '[token]'
+    Entry Name        = 'createSecret'
+    Entry Scopes      = '[[aws-provisioner:create-secret]]'
+    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#'
+    Entry Output      = ''
+    Entry Title       = 'Create new Secret'
+    Entry Description = 'Insert a secret into the secret storage.  This should not
+normally be done through this API, but is provided for testing
+and completeness'
+Entry 6     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/secret/<token>'
+    Entry Args        = '[token]'
+    Entry Name        = 'getSecret'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#'
+    Entry Title       = 'Get a Secret'
+    Entry Description = 'Retreive a secret from storage.  It is important that this secret is
+deleted by the consumer, or else the secrets will be visible to any
+process which can read HTTP on the worker localhost interface.'
+Entry 7     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/instance-started/<instanceId>/<token>'
+    Entry Args        = '[instanceId token]'
+    Entry Name        = 'instanceStarted'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Report an instance starting'
+    Entry Description = 'An instance will report in by giving its instance id as well
+as its security token.  The token is given and checked to ensure
+that it matches a real token that exists to ensure that random
+machines do not check in.  We could generate a different token
+but that seems like overkill'
+Entry 8     =
+    Entry Type        = 'function'
+    Entry Method      = 'delete'
+    Entry Route       = '/secret/<token>'
+    Entry Args        = '[token]'
+    Entry Name        = 'removeSecret'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Remove a Secret'
+    Entry Description = 'Remove a secret.  It is very important that the consumer of a 
+secret delete the secret from storage before handing over control
+to another process or else it could read the HTTP UserData endpoint
+and use the getSecrete() api here to get the secrets'
+Entry 9     =
+    Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/worker-type/<workerType>/launch-specifications'
     Entry Args        = '[workerType]'
@@ -822,7 +877,7 @@ and instance types or a list of reasons why the launch specifications
 are not valid
 
 **This API end-point is experimental and may be subject to change without warning.**'
-Entry 6     =
+Entry 10    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/worker-type/<workerType>/terminate-all-instances'
@@ -839,7 +894,7 @@ this method, which is why it has an obnoxious name.  Don't even try
 to claim you didn't know what this method does!
 
 **This API end-point is experimental and may be subject to change without warning.**'
-Entry 7     =
+Entry 11    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/shutdown/every/single/ec2/instance/managed/by/this/provisioner'
@@ -856,7 +911,7 @@ this method, which is why it has an obnoxious name.  Don't even try
 to claim you didn't know what this method does!
 
 **This API end-point is experimental and may be subject to change without warning.**'
-Entry 8     =
+Entry 12    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/aws-state/'
@@ -869,7 +924,7 @@ Entry 8     =
     Entry Description = 'Documented later...
 
 **Warning** this api end-point is **not stable**'
-Entry 9     =
+Entry 13    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -882,7 +937,7 @@ Entry 9     =
     Entry Description = 'Documented later...
 
 **Warning** this api end-point is **not stable**.'
-Entry 10    =
+Entry 14    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/api-reference'
@@ -897,12 +952,77 @@ Entry 10    =
 **Warning** this api end-point is **not stable**.'
 
 
-http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#
-==================================================================================
+http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#
+=============================================================================
+Additional Properties  = 'false'
+Description            = 'A Secret
+'
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#'
+Properties
+  Property 'expiration' =
+    Description            = 'The date at which the secret is no longer guarunteed to exist
+    '
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'scopes' =
+    Description            = 'List of strings which are scopes for temporary credentials to give
+    to the worker through the secret system
+    '
+    Items
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'secrets' =
+    Description            = 'Free form object which contains the secrets stored
+    '
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'token' =
+    Description            = 'A Slug ID which is the uniquely addressable token to access this
+    set of secrets
+    '
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'workerType' =
+    Description            = 'A string describing what the secret will be used for
+    '
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[workerType secrets scopes token expiration]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Get Secret Request'
+Type                   = 'object'
+TypeName               = 'GetSecretRequest'
+IsInputSchema          = 'true'
+IsOutputSchema         = 'false'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#'
+
+
+http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#
+===================================================================================
 Additional Properties  = 'false'
 Description            = 'A worker launchSpecification and required metadata
 '
-ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#'
 Properties
   Property 'canUseOndemand' =
     Description            = 'True if this worker type is allowed on demand instances.  Currently
@@ -946,9 +1066,38 @@ Properties
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
           SourceURL              = ''
-        Property 'overwrites' =
-          Description            = 'This object contains LaunchSpecification keys which will overwrite
-          the keys from the General launch spec
+        Property 'launchSpec' =
+          Description            = 'LaunchSpecification entries unique to this InstanceType
+          '
+          Type                   = 'object'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'scopes' =
+          Description            = 'Scopes which should be included for this InstanceType
+          '
+          Items
+            Type                   = 'string'
+            TypeName               = ''
+            IsInputSchema          = 'false'
+            IsOutputSchema         = 'false'
+            SourceURL              = ''
+          Type                   = 'array'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'secrets' =
+          Description            = 'Static Secrets unique to this InstanceType
+          '
+          Type                   = 'object'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'userData' =
+          Description            = 'UserData entries unique to this InstanceType
           '
           Type                   = 'object'
           TypeName               = ''
@@ -965,7 +1114,7 @@ Properties
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
           SourceURL              = ''
-      Required               = '[instanceType capacity utility overwrites]'
+      Required               = '[instanceType capacity utility launchSpec secrets userData scopes]'
       Type                   = 'object'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -976,11 +1125,8 @@ Properties
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
     SourceURL              = ''
-  Property 'launchSpecification' =
-    Description            = 'AWS LaunchSpecification values shared by all regions and all instance-types.
-    This launch spec should not contain either an InstanceType or ImageId.  The
-    former should always be a key in the types object and the latter should be
-    an overwrite in the regions object
+  Property 'launchSpec' =
+    Description            = 'Launch Specification entries which are used in all regions and all instance types
     '
     Type                   = 'object'
     TypeName               = ''
@@ -1032,9 +1178,8 @@ Properties
       Additional Properties  = 'false'
       Description            = 'Region configuration'
       Properties
-        Property 'overwrites' =
-          Description            = 'This object contains LaunchSpecification keys which will overwrite keys
-          from the general LaunchSpecificiation
+        Property 'launchSpec' =
+          Description            = 'LaunchSpecification entries unique to this Region
           '
           Properties
             Property 'ImageId' =
@@ -1058,7 +1203,37 @@ Properties
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
           SourceURL              = ''
-      Required               = '[overwrites]'
+        Property 'scopes' =
+          Description            = 'Scopes which should be included for this Region
+          '
+          Items
+            Type                   = 'string'
+            TypeName               = ''
+            IsInputSchema          = 'false'
+            IsOutputSchema         = 'false'
+            SourceURL              = ''
+          Type                   = 'array'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'secrets' =
+          Description            = 'Static Secrets unique to this Region
+          '
+          Type                   = 'object'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'userData' =
+          Description            = 'UserData entries unique to this Region
+          '
+          Type                   = 'object'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+      Required               = '[launchSpec secrets userData scopes]'
       Type                   = 'object'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -1086,14 +1261,44 @@ Properties
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
     SourceURL              = ''
-Required               = '[launchSpecification maxCapacity scalingRatio minPrice maxPrice instanceTypes regions]'
+  Property 'scopes' =
+    Description            = 'Scopes to issue credentials to for all regions
+    '
+    Items
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'secrets' =
+    Description            = 'Static secrets entries which are used in all regions and all instance types
+    '
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'userData' =
+    Description            = 'UserData entries which are used in all regions and all instance types
+    '
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[launchSpec userData secrets scopes maxCapacity scalingRatio minPrice maxPrice instanceTypes regions]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Create Worker Type Request'
+Title                  = 'Get Worker Type Request'
 Type                   = 'object'
-TypeName               = 'CreateWorkerTypeRequest'
+TypeName               = 'GetWorkerTypeRequest'
 IsInputSchema          = 'true'
 IsOutputSchema         = 'false'
-SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#'
 
 
 http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#
@@ -1110,12 +1315,26 @@ IsOutputSchema         = 'true'
 SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#'
 
 
-http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#
-================================================================================
+http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#
+===========================================================================
+Description            = 'Secrets from the provisioner
+'
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Get Secret Response'
+Type                   = 'object'
+TypeName               = 'GetSecretResponse'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#'
+
+
+http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#
+=================================================================================
 Additional Properties  = 'false'
 Description            = 'A worker launchSpecification and required metadata
 '
-ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#'
 Properties
   Property 'canUseOndemand' =
     Description            = 'True if this worker type is allowed on demand instances.  Currently
@@ -1159,9 +1378,38 @@ Properties
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
           SourceURL              = ''
-        Property 'overwrites' =
-          Description            = 'This object contains LaunchSpecification keys which will overwrite
-          the keys from the General launch spec
+        Property 'launchSpec' =
+          Description            = 'LaunchSpecification entries unique to this InstanceType
+          '
+          Type                   = 'object'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'scopes' =
+          Description            = 'Scopes which should be included for this InstanceType
+          '
+          Items
+            Type                   = 'string'
+            TypeName               = ''
+            IsInputSchema          = 'false'
+            IsOutputSchema         = 'false'
+            SourceURL              = ''
+          Type                   = 'array'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'secrets' =
+          Description            = 'Static Secrets unique to this InstanceType
+          '
+          Type                   = 'object'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'userData' =
+          Description            = 'UserData entries unique to this InstanceType
           '
           Type                   = 'object'
           TypeName               = ''
@@ -1178,7 +1426,7 @@ Properties
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
           SourceURL              = ''
-      Required               = '[instanceType capacity utility overwrites]'
+      Required               = '[instanceType capacity utility launchSpec secrets userData scopes]'
       Type                   = 'object'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -1189,11 +1437,17 @@ Properties
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
     SourceURL              = ''
-  Property 'launchSpecification' =
-    Description            = 'AWS LaunchSpecification values shared by all regions and all instance-types.
-    This launch spec should not contain either an InstanceType or ImageId.  The
-    former should always be a key in the types object and the latter should be
-    an overwrite in the regions object
+  Property 'lastModified' =
+    Description            = 'ISO Date string (e.g. new Date().toISOString()) which represents the time
+    when this worker type definition was last altered (inclusive of creation)
+    '
+    Type                   = 'date'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'launchSpec' =
+    Description            = 'Launch Specification entries which are used in all regions and all instance types
     '
     Type                   = 'object'
     TypeName               = ''
@@ -1245,9 +1499,8 @@ Properties
       Additional Properties  = 'false'
       Description            = 'Region configuration'
       Properties
-        Property 'overwrites' =
-          Description            = 'This object contains LaunchSpecification keys which will overwrite keys
-          from the general LaunchSpecificiation
+        Property 'launchSpec' =
+          Description            = 'LaunchSpecification entries unique to this Region
           '
           Properties
             Property 'ImageId' =
@@ -1271,7 +1524,37 @@ Properties
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
           SourceURL              = ''
-      Required               = '[overwrites]'
+        Property 'scopes' =
+          Description            = 'Scopes which should be included for this Region
+          '
+          Items
+            Type                   = 'string'
+            TypeName               = ''
+            IsInputSchema          = 'false'
+            IsOutputSchema         = 'false'
+            SourceURL              = ''
+          Type                   = 'array'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'secrets' =
+          Description            = 'Static Secrets unique to this Region
+          '
+          Type                   = 'object'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'userData' =
+          Description            = 'UserData entries unique to this Region
+          '
+          Type                   = 'object'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+      Required               = '[region launchSpec secrets userData scopes]'
       Type                   = 'object'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -1299,6 +1582,36 @@ Properties
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
     SourceURL              = ''
+  Property 'scopes' =
+    Description            = 'Scopes to issue credentials to for all regions
+    '
+    Items
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'secrets' =
+    Description            = 'Static secrets entries which are used in all regions and all instance types
+    '
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'userData' =
+    Description            = 'UserData entries which are used in all regions and all instance types
+    '
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
   Property 'workerType' =
     Description            = 'The ID of the workerType
     '
@@ -1308,14 +1621,14 @@ Properties
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
     SourceURL              = ''
-Required               = '[workerType launchSpecification maxCapacity scalingRatio minPrice maxPrice instanceTypes regions]'
+Required               = '[workerType launchSpec userData secrets scopes minCapacity maxCapacity scalingRatio minPrice maxPrice lastModified instanceTypes regions]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Get Worker Type Request'
 Type                   = 'object'
-TypeName               = 'GetWorkerTypeRequest'
+TypeName               = 'GetWorkerTypeRequest1'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'true'
-SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#'
 
 
 http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#
@@ -1976,6 +2289,168 @@ TypeName               = 'ListTasksResponse'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'true'
 SourceURL              = 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#'
+
+
+http://references.taskcluster.net/purge-cache/v1/api.json
+=========================================================
+Version     = '0'
+Title       = 'Purge Cache API Documentation'
+Description = 'The purge-cache service, typically available at
+`purge-cache.taskcluster.net`, is responsible for publishing a pulse
+message for workers, so they can purge cache upon request.
+
+This document describes the API end-point for publishing the pulse
+message. This is mainly intended to be used by tools.'
+Base URL    = 'https://purge-cache.taskcluster.net/v1'
+Entry 0     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/purge-cache/<provisionerId>/<workerType>'
+    Entry Args        = '[provisionerId workerType]'
+    Entry Name        = 'purgeCache'
+    Entry Scopes      = '[[purge-cache:<provisionerId>/<workerType>:<cacheName>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#'
+    Entry Output      = ''
+    Entry Title       = 'Purge Worker Cache'
+    Entry Description = 'Publish a purge-cache message to purge caches named `cacheName` with
+`provisionerId` and `workerType` in the routing-key. Workers should
+be listening for this message and purge caches when they see it.'
+Entry 1     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Name        = 'ping'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Documented later...
+
+**Warning** this api end-point is **not stable**.'
+
+
+http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#
+=======================================================================
+Additional Properties  = 'false'
+Description            = 'Request that a message be published to purge a specific cache.
+'
+ID                     = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#'
+Properties
+  Property 'cacheName' =
+    Description            = 'Name of cache to purge. Notice that if a `workerType` have multiple kinds
+    of caches (with independent names), it should purge all caches identified
+    by `cacheName` regardless of cache type.
+    '
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[cacheName]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Purge Cache Request'
+Type                   = 'object'
+TypeName               = 'PurgeCacheRequest'
+IsInputSchema          = 'true'
+IsOutputSchema         = 'false'
+SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#'
+
+
+http://references.taskcluster.net/purge-cache/v1/exchanges.json
+===============================================================
+Version         = '0'
+Title           = 'Purge-Cache Exchanges'
+Description     = 'The purge-cache service, typically available at
+`purge-cache.taskcluster.net`, is responsible for publishing a pulse
+message for workers, so they can purge cache upon request.
+
+This document describes the exchange offered for workers by the
+cache-purge service.'
+Exchange Prefix = 'exchange/taskcluster-purge-cache/v1/'
+Entry 0     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'purge-cache'
+    Entry Name        = 'purgeCache'
+    Entry Title       = 'Purge Cache Messages'
+    Entry Description = 'When a cache purge is requested  a message will be posted on this
+exchange with designated `provisionerId` and `workerType` in the
+routing-key and the name of the `cacheFolder` as payload'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'provisionerId'
+        Element Summary   = '`provisionerId` under which to purge cache.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'workerType'
+        Element Summary   = '`workerType` for which to purge cache.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Entry Schema      = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#'
+
+
+http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#
+=======================================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that a specific cache should be purged
+'
+ID                     = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#'
+Properties
+  Property 'cacheName' =
+    Description            = 'Name of cache to purge. Notice that if a `workerType` have multiple kinds
+    of caches (with independent names), it should purge all caches identified
+    by `cacheName` regardless of cache type.
+    '
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'provisionerId' =
+    Description            = '`provisionerId` under which the `workerType` we want to purge for exists.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'workerType' =
+    Description            = '`workerType` we wish to purge cache for.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[version provisionerId workerType cacheName]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Purge Cache Message'
+Type                   = 'object'
+TypeName               = 'PurgeCacheMessage'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'false'
+SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#'
 
 
 http://references.taskcluster.net/queue/v1/api.json
