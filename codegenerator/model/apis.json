@@ -38,6 +38,6 @@
     }, {
         "url": "http://references.taskcluster.net/purge-cache/v1/exchanges.json",
         "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json",
-        "docroot": "http://docs.taskcluster.net/i-do-not-yet-exist"
+        "docroot": "http://docs.taskcluster.net/services/purge-cache"
     }
 ]

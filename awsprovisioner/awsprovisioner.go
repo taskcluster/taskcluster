@@ -57,6 +57,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
+	"time"
 )
 
 var (
@@ -509,7 +510,7 @@ type (
 		} `json:"instanceTypes"`
 		// ISO Date string (e.g. new Date().toISOString()) which represents the time
 		// when this worker type definition was last altered (inclusive of creation)
-		LastModified date `json:"lastModified"`
+		LastModified time.Time `json:"lastModified"`
 		// Launch Specification entries which are used in all regions and all instance types
 		LaunchSpec map[string]json.RawMessage `json:"launchSpec"`
 		// Maximum number of capacity units to be provisioned.
