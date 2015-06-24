@@ -88,8 +88,11 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 				Key:  auth.AccessToken,
 				Hash: sha256.New,
 			}
-			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0).RequestHeader()
-			httpRequest.Header.Set("Authorization", reqAuth)
+			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
+			if auth.Certificate != "" {
+				reqAuth.Ext = "{\"certificate\":" + auth.Certificate + "}"
+			}
+			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
 		debug("Making http request: %v", httpRequest)
 		resp, err := httpClient.Do(httpRequest)
@@ -144,6 +147,8 @@ type Auth struct {
 	// Please note calling auth.New(clientId string, accessToken string) is an
 	// alternative way to create an Auth object with Authenticate set to true.
 	Authenticate bool
+	// Certificate for temporary credentials
+	Certificate string
 }
 
 // CallSummary provides information about the underlying http request and
@@ -191,7 +196,8 @@ func New(clientId string, accessToken string) *Auth {
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://purge-cache.taskcluster.net/v1",
-		Authenticate: true}
+		Authenticate: true,
+	}
 }
 
 // Publish a purge-cache message to purge caches named `cacheName` with
