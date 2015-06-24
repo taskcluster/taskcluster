@@ -396,7 +396,7 @@ func install(arguments map[string]interface{}) (err error) {
 // includes `errString` then true, is returned with no error. Otherwise false
 // is returned, with or without an error.
 func allowError(errString string, command string, args ...string) (bool, error) {
-	debug("Running command: '" + strings.Join(command, "' '") + "'")
+	debug("Running command: '" + strings.Join(append(command, args), "' '") + "'")
 	cmd := exec.Command(command, args...)
 	stderrBytes, err := Error(cmd)
 	if err != nil {
