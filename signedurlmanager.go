@@ -30,6 +30,8 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		// TODO: not sure if this is the right thing to do. If Queue has an outage, maybe better to
 		// do expoenential backoff indefinitely?
 		if callSummary.Error != nil {
+			debug("Http response was:")
+			debug(callSummary.HttpResponseBody)
 			panic(callSummary.Error)
 		}
 		// Set reminder to update signed urls again when they are
