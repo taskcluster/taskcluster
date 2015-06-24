@@ -396,7 +396,7 @@ func install(arguments map[string]interface{}) (err error) {
 // includes `errString` then true, is returned with no error. Otherwise false
 // is returned, with or without an error.
 func allowError(errString string, command string, args ...string) (bool, error) {
-	debug("Running command: '" + strings.Join(append(command, args), "' '") + "'")
+	debug("Running command: '" + strings.Join(append([]string{command}, args...), "' '") + "'")
 	cmd := exec.Command(command, args...)
 	stderrBytes, err := Error(cmd)
 	if err != nil {
@@ -426,7 +426,7 @@ func deployService(user *OSUser, configFile string, nssm string, serviceName str
 	return runCommands(false,
 		[]string{nssm, "install", serviceName, exePath},
 		[]string{nssm, "set", serviceName, "AppDirectory", user.HomeDir},
-		[]string{nssm, "set", serviceName, "AppParameters", "--config", configFile, "run"},
+		[]string{nssm, "set", serviceName, "AppParameters", "--config", configFile, "--configure-for-aws", "run"},
 		[]string{nssm, "set", serviceName, "DisplayName", serviceName},
 		[]string{nssm, "set", serviceName, "Description", "A taskcluster worker that runs on all mainstream platforms"},
 		[]string{nssm, "set", serviceName, "Start", "SERVICE_AUTO_START"},

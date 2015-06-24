@@ -37,16 +37,16 @@ func queryInstanceName() (string, error) {
 }
 
 type UserData struct {
-	Data                interface{} "json:`data`"
-	Capacity            int         "json:`capacity`"
-	WorkerType          string      "json:`workerType`"
-	ProvisionerId       string      "json:`provisionerId`"
-	Region              string      "json:`region`"
-	InstanceType        string      "json:`instanceType`"
-	LaunchSpecGenerated time.Time   "json:`launchSpecGenerated`"
-	WorkerModified      time.Time   "json:`workerModified`"
-	ProvisionerBaseUrl  string      "json:`provisionerBaseUrl`"
-	SecurityToken       string      "json:`securityToken`"
+	Data                interface{} `json:"data"`
+	Capacity            int         `json:"capacity"`
+	WorkerType          string      `json:"workerType"`
+	ProvisionerId       string      `json:"provisionerId"`
+	Region              string      `json:"region"`
+	InstanceType        string      `json:"instanceType"`
+	LaunchSpecGenerated time.Time   `json:"launchSpecGenerated"`
+	WorkerModified      time.Time   `json:"workerModified"`
+	ProvisionerBaseUrl  string      `json:"provisionerBaseUrl"`
+	SecurityToken       string      `json:"securityToken"`
 }
 
 func updateConfigWithAmazonSettings() error {
