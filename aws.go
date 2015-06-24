@@ -69,7 +69,7 @@ func updateConfigWithAmazonSettings() error {
 	}
 	config.AccessToken = secToken.Credentials.AccessToken
 	config.ClientId = secToken.Credentials.ClientId
-	// config.Certificate = secToken.Credentials.Certificate
+	config.Certificate = secToken.Credentials.Certificate
 	config.WorkerGroup = userData.Region
 	config.WorkerId = instanceName
 	config.WorkerType = userData.WorkerType

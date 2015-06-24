@@ -381,6 +381,13 @@ func install(arguments map[string]interface{}) (err error) {
 		HomeDir:  filepath.Dir(exePath),
 	}
 	fmt.Println("User: " + user.Name + ", Password: " + user.Password + ", HomeDir: " + user.HomeDir)
+
+	config.Debug = "*"
+	config.RefreshUrlsPrematurelySecs = 310
+	persistConfig(configFile)
+	if err != nil {
+		return err
+	}
 	err = user.ensureUserAccount()
 	if err != nil {
 		return err
