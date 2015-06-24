@@ -73,5 +73,10 @@ func updateConfigWithAmazonSettings() error {
 	config.WorkerGroup = userData.Region
 	config.WorkerId = instanceName
 	config.WorkerType = userData.WorkerType
+	// now delete secret
+	callSummary = awsprov.RemoveSecret(userData.SecurityToken)
+	if callSummary.Error != nil {
+		return callSummary.Error
+	}
 	return nil
 }
