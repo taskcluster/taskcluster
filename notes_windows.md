@@ -128,7 +128,7 @@ $p.HasExited
 
 # download generic-worker
 md C:\generic-worker
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v1.0.5/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v1.0.6/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # enable DEBUG logs for generic-worker install
 $env:DEBUG = "*"
