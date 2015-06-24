@@ -261,6 +261,7 @@ func runWorker() {
 
 	// Queue is the object we will use for accessing queue api
 	Queue = queue.New(config.ClientId, config.AccessToken)
+	Queue.Certificate = config.Certificate
 
 	// Start the SignedURLsManager in a dedicated go routine, to take care of
 	// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
