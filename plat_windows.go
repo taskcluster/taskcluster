@@ -388,7 +388,9 @@ func install(arguments map[string]interface{}) (err error) {
 	if err != nil {
 		return err
 	}
+	user.HomeDir = "C:\\genworkerhome" // temporary hack!!
 	err = user.ensureUserAccount()
+	user.HomeDir = "C:\\generic-worker" // temporary hack!!
 	if err != nil {
 		return err
 	}
