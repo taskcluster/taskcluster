@@ -62,13 +62,13 @@ and reports back results to the queue.
 
   Usage:
     generic-worker run                     [--config         CONFIG-FILE]
-    generic-worker show-payload-schema
-    generic-worker install                 [--configure-for-aws [--provisioner PROVISIONER]]
-                                           [--config         CONFIG-FILE]
+                                           [--configure-for-aws]
+    generic-worker install                 [--config         CONFIG-FILE]
                                            [--nssm           NSSM-EXE]
                                            [--password       PASSWORD]
                                            [--service-name   SERVICE-NAME]
                                            [--username       USERNAME]
+    generic-worker show-payload-schema
     generic-worker --help
     generic-worker --version
 
@@ -101,9 +101,6 @@ and reports back results to the queue.
     --password PASSWORD                     The password for the username specified
                                             with -u|--username option. If not specified
                                             a random password will be generated.
-    --provisioner PROVISIONER               The name of the provisioner that manages
-                                            this generic worker.
-                                            [default: aws-provisioner-v1]
     --service-name SERVICE-NAME             The name that the Windows service should be
                                             installed under. [default: Generic Worker]
     --username USERNAME                     The Windows user to run the generic worker
@@ -177,6 +174,13 @@ func main() {
 	case arguments["show-payload-schema"]:
 		fmt.Println(taskPayloadSchema())
 	case arguments["run"]:
+		configureForAws := arguments["--configure-for-aws"].(bool)
+		if configureForAws {
+			err = updateConfigWithAmazonSettings()
+			if err != nil {
+				panic(err)
+			}
+		}
 		configFile := arguments["--config"].(string)
 		config, err = loadConfig(configFile)
 		if err != nil {
@@ -1033,4 +1037,11 @@ func persistConfig(configFile string) error {
 		return err
 	}
 	return ioutil.WriteFile(configFile, jsonBytes, 0644)
+}
+
+func convertNilToEmptyString(val interface{}) string {
+	if val == nil {
+		return ""
+	}
+	return val.(string)
 }

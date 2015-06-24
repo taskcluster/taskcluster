@@ -362,22 +362,13 @@ func taskCleanup() error {
 	return createNewTaskUser()
 }
 
-func convertNilToEmptyString(val interface{}) string {
-	if val == nil {
-		return ""
-	}
-	return val.(string)
-}
-
 func install(arguments map[string]interface{}) (err error) {
 	exePath, err := ExePath()
 	if err != nil {
 		return err
 	}
-	configureForAws := arguments["--configure-for-aws"].(bool)
 	configFile := convertNilToEmptyString(arguments["--config"])
 	nssm := convertNilToEmptyString(arguments["--nssm"])
-	provisioner := convertNilToEmptyString(arguments["--provisioner"])
 	serviceName := convertNilToEmptyString(arguments["--service-name"])
 	username := convertNilToEmptyString(arguments["--username"])
 	password := convertNilToEmptyString(arguments["--password"])
@@ -390,17 +381,6 @@ func install(arguments map[string]interface{}) (err error) {
 		HomeDir:  filepath.Dir(exePath),
 	}
 	fmt.Println("User: " + user.Name + ", Password: " + user.Password + ", HomeDir: " + user.HomeDir)
-
-	if configureForAws {
-		err = updateConfigWithAmazonSettings(configFile, provisioner)
-		if err != nil {
-			return err
-		}
-		persistConfig(configFile)
-		if err != nil {
-			return err
-		}
-	}
 	err = user.ensureUserAccount()
 	if err != nil {
 		return err

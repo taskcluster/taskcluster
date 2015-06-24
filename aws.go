@@ -4,15 +4,14 @@ import (
 	// "encoding/json"
 	"fmt"
 	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 	"io/ioutil"
 	"time"
 )
 
 // for when running in aws
 func queryUserData() (*UserData, error) {
-	// TODO: currently assuming UserData is json, need to work out with jhford how this will work with provisioner
 	// http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-user-data-retrieval
-	// call http://169.254.169.254/latest/user-data with httpbackoff
 	resp, _, err := httpbackoff.Get("http://169.254.169.254/latest/user-data")
 	if err != nil {
 		return nil, err
@@ -38,22 +37,19 @@ func queryInstanceName() (string, error) {
 }
 
 type UserData struct {
-	Raw                    string
-	Capacity               int
-	WorkerType             string
-	ProvisionerId          string
-	Region                 string
-	InstanceType           string
-	TaskclusterAccessToken string
-	TaskclusterClientId    string
-	LaunchSpecGenerated    time.Time
+	Data                interface{} "json:`data`"
+	Capacity            int         "json:`capacity`"
+	WorkerType          string      "json:`workerType`"
+	ProvisionerId       string      "json:`provisionerId`"
+	Region              string      "json:`region`"
+	InstanceType        string      "json:`instanceType`"
+	LaunchSpecGenerated time.Time   "json:`launchSpecGenerated`"
+	WorkerModified      time.Time   "json:`workerModified`"
+	ProvisionerBaseUrl  string      "json:`provisionerBaseUrl`"
+	SecurityToken       string      "json:`securityToken`"
 }
 
-func updateConfigWithAmazonSettings(configFile string, provisioner string) error {
-	// error indicates whether file existed or not, so can be ignored.
-	// loadConfig already returns default config if file doesn't exist
-	config, _ = loadConfig(configFile)
-
+func updateConfigWithAmazonSettings() error {
 	userData, err := queryUserData()
 	if err != nil {
 		return err
@@ -62,9 +58,17 @@ func updateConfigWithAmazonSettings(configFile string, provisioner string) error
 	if err != nil {
 		return err
 	}
-	config.ProvisionerId = provisioner
-	config.TaskclusterAccessToken = userData.TaskclusterAccessToken
-	config.TaskclusterClientId = userData.TaskclusterClientId
+	config.ProvisionerId = userData.ProvisionerId
+	awsprov := awsprovisioner.Auth{
+		Authenticate: false,
+		BaseURL:      userData.ProvisionerBaseUrl,
+	}
+	secToken, callSummary := awsprov.GetSecret(userData.SecurityToken)
+	if callSummary.Error != nil {
+		return callSummary.Error
+	}
+	config.TaskclusterAccessToken = secToken.Credentials.AccessToken
+	config.TaskclusterClientId = secToken.Credentials.ClientId
 	config.WorkerGroup = userData.Region
 	config.WorkerId = instanceName
 	config.WorkerType = userData.WorkerType
