@@ -377,7 +377,7 @@ type (
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#
 	GetSecretRequest struct {
 		// The date at which the secret is no longer guarunteed to exist
-		Expiration string `json:"expiration"`
+		Expiration time.Time `json:"expiration"`
 		// List of strings which are scopes for temporary credentials to give
 		// to the worker through the secret system
 		Scopes []string `json:"scopes"`

@@ -962,6 +962,7 @@ Properties
   Property 'expiration' =
     Description            = 'The date at which the secret is no longer guarunteed to exist
     '
+    Format                 = 'date-time'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -1320,6 +1321,43 @@ http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#
 Description            = 'Secrets from the provisioner
 '
 ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#'
+Properties
+  Property 'credentials' =
+    Description            = 'Generated Temporary credentials from the Provisioner
+    '
+    Properties
+      Property 'accessToken' =
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'certificate' =
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'clientId' =
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+    Required               = '[clientId accessToken certificate]'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'data' =
+    Description            = 'Free-form object which contains secrets from the worker type definition
+    '
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Get Secret Response'
 Type                   = 'object'
@@ -1441,7 +1479,8 @@ Properties
     Description            = 'ISO Date string (e.g. new Date().toISOString()) which represents the time
     when this worker type definition was last altered (inclusive of creation)
     '
-    Type                   = 'date'
+    Format                 = 'date-time'
+    Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
