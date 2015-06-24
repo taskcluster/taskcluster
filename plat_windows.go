@@ -457,7 +457,6 @@ func deployService(user *OSUser, configFile string, nssm string, serviceName str
 		[]string{nssm, "set", serviceName, "AppRotateOnline", "1"},
 		[]string{nssm, "set", serviceName, "AppRotateSeconds", "3600"},
 		[]string{nssm, "set", serviceName, "AppRotateBytes", "0"},
-		[]string{nssm, "start", serviceName},
 	)
 }
 
