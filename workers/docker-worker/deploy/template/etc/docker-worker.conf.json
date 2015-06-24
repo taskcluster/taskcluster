@@ -26,5 +26,11 @@
 
   "statelessHostname": {
     "secret": "{{statelessHostname.secret}}"
+  },
+
+  "features": {
+    "relengAPIProxy": {
+      "token": "{{relengAPIToken}}"
+    }
   }
 }

@@ -88,6 +88,14 @@ const features = {
                  'capabilities or host volume mounts.',
     defaults: false,
     module: require('./features/dind')
+  },
+
+  relengAPIProxy: {
+    title: 'Releng API proxy service',
+    description: 'The Releng API proxy service allows tasks to talk to releng ' +
+                 'api using an authorization token based on the task\'s scopes',
+    defaults: false,
+    module: require('./features/releng_api_proxy')
   }
 };
 

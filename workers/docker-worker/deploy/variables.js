@@ -138,5 +138,9 @@ module.exports = {
 
   'sslKeyLocation': {
     description: 'Location of SSL key for secure things like live logging'
+  },
+
+  'relengAPIToken': {
+    description: 'Token to be used with the Relengapi Proxy'
   }
 };

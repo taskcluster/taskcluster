@@ -41,6 +41,13 @@ module.exports = {
     randomizationFactor: 0.25
   },
 
+  features: {
+    relengAPIProxy: {
+      image: 'quay.io/djmitche/relengapi-proxy:0.0.2',
+      token: process.env.RELENG_API_TOKEN
+    }
+  },
+
   ssl: {
     certificate: '/etc/star_taskcluster-worker_net.crt',
     key: '/etc/star_taskcluster-worker_net.key'
