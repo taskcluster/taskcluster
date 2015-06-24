@@ -130,8 +130,11 @@ $p.HasExited
 md C:\generic-worker
 $client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v1.0.3/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
+# enable DEBUG logs for generic-worker install
+$env:DEBUG = "*"
+
 # install generic-worker
-$p = Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install --configure-for-aws --config C:\\generic-worker\\generic-worker.config" -wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+$p = Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install --config C:\\generic-worker\\generic-worker.config" -wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 $p.HasExited
 </powershell>
 ```
