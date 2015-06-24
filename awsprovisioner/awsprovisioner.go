@@ -475,7 +475,16 @@ type (
 	// Secrets from the provisioner
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#
-	GetSecretResponse map[string]json.RawMessage
+	GetSecretResponse struct {
+		// Generated Temporary credentials from the Provisioner
+		Credentials struct {
+			AccessToken string `json:"accessToken"`
+			Certificate string `json:"certificate"`
+			ClientId    string `json:"clientId"`
+		} `json:"credentials"`
+		// Free-form object which contains secrets from the worker type definition
+		Data map[string]json.RawMessage `json:"data"`
+	}
 
 	// A worker launchSpecification and required metadata
 	//
