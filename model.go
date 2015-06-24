@@ -13,8 +13,9 @@ import (
 type (
 	// Generic Worker config
 	Config struct {
-		TaskclusterAccessToken     string `json:"taskcluster_access_token"`
-		TaskclusterClientId        string `json:"taskcluster_client_id"`
+		AccessToken                string `json:"access_token"`
+		ClientId                   string `json:"client_id"`
+		Certificate                string `json:"certificate"`
 		WorkerGroup                string `json:"worker_group"`
 		WorkerId                   string `json:"worker_id"`
 		WorkerType                 string `json:"worker_type"`

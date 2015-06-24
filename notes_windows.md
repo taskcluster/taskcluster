@@ -29,8 +29,8 @@ C:\generic-worker>cat c:\generic-worker\generic-worker.config
 {
     "provisioner_id":                  "aws-provisioner-v1",
     "refresh_urls_prematurely_secs":   310,
-    "taskcluster_access_token":        "********************************************",
-    "taskcluster_client_id":           "********************************************",
+    "access_token":                    "********************************************",
+    "client_id":                       "********************************************",
     "worker_group":                    "********************************************",
     "worker_id":                       "********************************************",
     "worker_type":                     "********************************************",

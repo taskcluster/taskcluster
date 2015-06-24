@@ -118,9 +118,9 @@ and reports back results to the queue.
         ** REQUIRED ** properties
         =========================
 
-          taskcluster_access_token          Taskcluster access token used by generic worker
+          access_token                      Taskcluster access token used by generic worker
                                             to talk to taskcluster queue.
-          taskcluster_client_id             Taskcluster client id used by generic worker to
+          client_id                         Taskcluster client id used by generic worker to
                                             talk to taskcluster queue.
           worker_group                      Typically this would be an aws region - an
                                             identifier to uniquely identify which pool of
@@ -132,6 +132,8 @@ and reports back results to the queue.
         ** OPTIONAL ** properties
         =========================
 
+          certificate                       Taskcluster certificate, when using temporary
+                                            credentials only.
           provisioner_id                    The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: aws-provisioner-v1]
@@ -144,8 +146,8 @@ and reports back results to the queue.
     Here is an syntactically valid example configuration file:
 
             {
-              "taskcluster_access_token":   "123bn234bjhgdsjhg234",
-              "taskcluster_client_id":      "hskdjhfasjhdkhdbfoisjd",
+              "access_token":               "123bn234bjhgdsjhg234",
+              "client_id":                  "hskdjhfasjhdkhdbfoisjd",
               "worker_group":               "dev-test",
               "worker_id":                  "IP_10-134-54-89",
               "worker_type":                "win2008-worker",
@@ -231,8 +233,8 @@ func loadConfig(filename string) (Config, error) {
 		c.Debug:                      {name: "debug", value: ""},
 		c.ProvisionerId:              {name: "provisioner_id", value: ""},
 		c.RefreshUrlsPrematurelySecs: {name: "refresh_urls_prematurely_secs", value: 0},
-		c.TaskclusterAccessToken:     {name: "taskcluster_access_token", value: ""},
-		c.TaskclusterClientId:        {name: "taskcluster_client_id", value: ""},
+		c.AccessToken:                {name: "access_token", value: ""},
+		c.ClientId:                   {name: "client_id", value: ""},
 		c.WorkerGroup:                {name: "worker_group", value: ""},
 		c.WorkerId:                   {name: "worker_id", value: ""},
 		c.WorkerType:                 {name: "worker_type", value: ""},
@@ -258,7 +260,7 @@ func runWorker() {
 	}
 
 	// Queue is the object we will use for accessing queue api
-	Queue = queue.New(config.TaskclusterClientId, config.TaskclusterAccessToken)
+	Queue = queue.New(config.ClientId, config.AccessToken)
 
 	// Start the SignedURLsManager in a dedicated go routine, to take care of
 	// keeping signed urls up-to-date (i.e. refreshing as old urls expire).

@@ -67,8 +67,9 @@ func updateConfigWithAmazonSettings() error {
 	if callSummary.Error != nil {
 		return callSummary.Error
 	}
-	config.TaskclusterAccessToken = secToken.Credentials.AccessToken
-	config.TaskclusterClientId = secToken.Credentials.ClientId
+	config.AccessToken = secToken.Credentials.AccessToken
+	config.ClientId = secToken.Credentials.ClientId
+	// config.Certificate = secToken.Credentials.Certificate
 	config.WorkerGroup = userData.Region
 	config.WorkerId = instanceName
 	config.WorkerType = userData.WorkerType
