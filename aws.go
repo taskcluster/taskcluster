@@ -78,5 +78,6 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	if callSummary.Error != nil {
 		return callSummary.Error
 	}
+	fmt.Printf("\n\nConfig\n\n%#v\n\n", c)
 	return nil
 }
