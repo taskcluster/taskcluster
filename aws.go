@@ -49,7 +49,7 @@ type UserData struct {
 	SecurityToken       string      `json:"securityToken"`
 }
 
-func updateConfigWithAmazonSettings() error {
+func (c *Config) updateConfigWithAmazonSettings() error {
 	userData, err := queryUserData()
 	if err != nil {
 		return err
@@ -58,7 +58,7 @@ func updateConfigWithAmazonSettings() error {
 	if err != nil {
 		return err
 	}
-	config.ProvisionerId = userData.ProvisionerId
+	c.ProvisionerId = userData.ProvisionerId
 	awsprov := awsprovisioner.Auth{
 		Authenticate: false,
 		BaseURL:      userData.ProvisionerBaseUrl,
@@ -67,12 +67,12 @@ func updateConfigWithAmazonSettings() error {
 	if callSummary.Error != nil {
 		return callSummary.Error
 	}
-	config.AccessToken = secToken.Credentials.AccessToken
-	config.ClientId = secToken.Credentials.ClientId
-	config.Certificate = secToken.Credentials.Certificate
-	config.WorkerGroup = userData.Region
-	config.WorkerId = instanceName
-	config.WorkerType = userData.WorkerType
+	c.AccessToken = secToken.Credentials.AccessToken
+	c.ClientId = secToken.Credentials.ClientId
+	c.Certificate = secToken.Credentials.Certificate
+	c.WorkerGroup = userData.Region
+	c.WorkerId = instanceName
+	c.WorkerType = userData.WorkerType
 	// now delete secret
 	callSummary = awsprov.RemoveSecret(userData.SecurityToken)
 	if callSummary.Error != nil {

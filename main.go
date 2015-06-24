@@ -177,14 +177,8 @@ func main() {
 		fmt.Println(taskPayloadSchema())
 	case arguments["run"]:
 		configureForAws := arguments["--configure-for-aws"].(bool)
-		if configureForAws {
-			err = updateConfigWithAmazonSettings()
-			if err != nil {
-				panic(err)
-			}
-		}
 		configFile := arguments["--config"].(string)
-		config, err = loadConfig(configFile)
+		config, err = loadConfig(configFile, configureForAws)
 		if err != nil {
 			fmt.Printf("Error loading configuration from file '%v':\n", configFile)
 			fmt.Printf("%v\n", err)
@@ -202,7 +196,7 @@ func main() {
 	}
 }
 
-func loadConfig(filename string) (Config, error) {
+func loadConfig(filename string, queryUserData bool) (Config, error) {
 	// TODO: would be better to have a json schema, and also define defaults in
 	// only one place if possible (defaults also declared in `usage`)
 
@@ -222,6 +216,12 @@ func loadConfig(filename string) (Config, error) {
 	if err != nil {
 		return c, err
 	}
+
+	// now overlay with data from amazon, if applicable
+	if queryUserData {
+		c.updateConfigWithAmazonSettings()
+	}
+
 	// now check all values are set
 	// TODO: could probably do this with reflection to avoid explicitly listing
 	// all members
