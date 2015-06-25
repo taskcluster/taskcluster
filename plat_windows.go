@@ -61,7 +61,7 @@ func deleteHomeDir(path string, user string) error {
 	// 	return adminDeleteHomeDir(path)
 	// }
 	err := runCommands(false, []string{
-		// "C:\\generic-worker\\PsExec.exe", // hardcoded, but will go with bug 1176072
+		// "C:\\PSTools\\PsExec.exe", // hardcoded, but will go with bug 1176072
 		// "-u", user,
 		// "-p", string(password),
 		// "-w", "C:\\",
@@ -326,7 +326,7 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 
 	// can't use runCommands(...) here because we don't want to execute, only create
 	command := []string{
-		"C:\\generic-worker\\PsExec.exe", // hardcoded, but will go with bug 1176072
+		"C:\\PSTools\\PsExec.exe", // hardcoded, but will go with bug 1176072
 		"-u", TaskUser.Name,
 		"-p", TaskUser.Password,
 		"-w", TaskUser.HomeDir,
