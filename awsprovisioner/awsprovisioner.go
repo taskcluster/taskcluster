@@ -48,6 +48,7 @@ package awsprovisioner
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/taskcluster/httpbackoff"
@@ -105,7 +106,7 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 			}
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
 			if auth.Certificate != "" {
-				reqAuth.Ext = "{\"certificate\":" + auth.Certificate + "}"
+				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + auth.Certificate + "}"))
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
