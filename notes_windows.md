@@ -43,7 +43,7 @@ C:\generic-worker>cat c:\generic-worker\generic-worker.config
 
 ```
 c:\mozilla-build>mkdir C:\generic-worker
-c:\mozilla-build>wget --no-check-certificate https://github.com/taskcluster/generic-worker/releases/download/v1.0.9/generic-worker-windows-amd64.exe -O C:\generic-worker\generic-worker.exe
+c:\mozilla-build>wget --no-check-certificate https://github.com/taskcluster/generic-worker/releases/download/v1.0.10/generic-worker-windows-amd64.exe -O C:\generic-worker\generic-worker.exe
 c:\mozilla-build>wget --no-check-certificate https://download.sysinternals.com/files/PSTools.zip
 c:\mozilla-build>wget http://www.nssm.cc/release/nssm-2.24.zip
 c:\mozilla-build>7zip\7z.exe x nssm-2.24.zip
@@ -128,7 +128,7 @@ $p.HasExited
 
 # download generic-worker
 md C:\generic-worker
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v1.0.9/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v1.0.10/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # enable DEBUG logs for generic-worker install
 $env:DEBUG = "*"
