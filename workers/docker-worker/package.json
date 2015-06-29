@@ -63,7 +63,6 @@
     "testdroid-client": "0.0.7",
     "time-chunked-stream": "^1.0.0",
     "uuid": "^1.4.1",
-    "wordwrap": "0.0.2",
     "xml2js": "^0.4.5"
   },
   "devDependencies": {

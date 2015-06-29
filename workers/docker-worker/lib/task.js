@@ -8,7 +8,6 @@ import uuid from 'uuid';
 import { PassThrough } from 'stream';
 import request from 'superagent-promise';
 import States from './states';
-import Wordwrap from 'wordwrap';
 
 import features from './features';
 import getHostname from './util/hostname';
@@ -18,7 +17,6 @@ import waitForEvent from './wait_for_event';
 import _ from 'lodash';
 
 let debug = new Debug('runTask');
-let wordwrap = new Wordwrap(0, 80, { hard: true });
 
 const PAYLOAD_SCHEMA =
   'http://schemas.taskcluster.net/docker-worker/v1/payload.json#';
@@ -267,9 +265,7 @@ export default class Task {
 
   fmtLog() {
     let args = Array.prototype.slice.call(arguments);
-    let str = '[taskcluster] ' + util.format.apply(this, args) + '\r\n';
-    // Ensure we generate somewhat nicely aligned 80 width lines.
-    return wordwrap(str);
+    return '[taskcluster] ' + util.format.apply(this, args) + '\r\n';
   }
 
   logHeader() {
