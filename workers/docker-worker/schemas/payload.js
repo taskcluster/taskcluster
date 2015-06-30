@@ -158,7 +158,7 @@ module.exports = {
     "artifacts": {
       "type": "object",
       "title": "Artifact map (name -> source)",
-      "description": "Artifact upload map example: ```{ \"hosts\": \"/etc/hosts\" }```",
+      "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```",
       "additionalProperties": {
         "$ref": "#/definitions/artifact"
       }
