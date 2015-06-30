@@ -10,12 +10,13 @@
       mocha.ui('tdd');
       mocha.reporter('html');
       function assert(assertion, message) {
-        if (!assertion) throw new Error(message);
+        if (!assertion) throw new Error(message || "Assertion failed");
       };
     </script>
     <script src="../taskcluster-client.js"></script>
     <script>
-    suite("browserify", function() {
+    suite("client (browserify)", function() {
+
       test("loaded", function() {
         if (!window.taskcluster.Queue) {
           throw new Error("Queue is missing!");
@@ -28,26 +29,6 @@
           if(!result.alive) {
             throw new Error("Hmm, something might be wrong with ping()");
           }
-        });
-      });
-
-      test('connect and close WebListener', function() {
-        var listener = new taskcluster.WebListener();
-        return listener.connect().then(function() {
-          return listener.close();
-        });
-      });
-
-      test("connect, bind and close WebListener", function() {
-        var listener = new taskcluster.WebListener();
-        return listener.connect().then(function() {
-          // Test that we can bind
-          var queueEvents = new taskcluster.QueueEvents();
-          return listener.bind(queueEvents.taskDefined({
-            taskId: 'uTOskJejRr-DFMqUB_bpLw'  // don't care this doesn't exist
-          }));
-        }).then(function() {
-          return listener.close();
         });
       });
 
@@ -87,7 +68,6 @@
           assert(client.clientId === 'test-client', "Expected clientId");
         });
       });
-
 
       test('getCredentials using authorizedScopes (unauthorized)', function() {
         var auth = new taskcluster.Auth({
@@ -170,7 +150,92 @@
         req.open('GET', url, true);
         req.send();
       });
+    });
 
+    suite("WebListener (browserify)", function() {
+      test('connect and close WebListener', function() {
+        var listener = new taskcluster.WebListener();
+        return listener.connect().then(function() {
+          return listener.close();
+        });
+      });
+
+      test("connect, bind and close WebListener", function() {
+        var listener = new taskcluster.WebListener();
+        return listener.connect().then(function() {
+          // Test that we can bind
+          var queueEvents = new taskcluster.QueueEvents();
+          return listener.bind(queueEvents.taskDefined({
+            taskId: 'uTOskJejRr-DFMqUB_bpLw'  // don't care this doesn't exist
+          }));
+        }).then(function() {
+          return listener.close();
+        });
+      });
+    });
+
+    suite("utilities (browserify)", function() {
+      test('fromNow()', function() {
+        var d1 = new Date();
+        var d2 = taskcluster.fromNow();
+
+        // Allow for 10 ms margin
+        assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+      });
+
+      test('fromNow(2 hours)', function() {
+        var d1 = new Date();
+        d1.setHours(d1.getHours() + 2)
+        var d2 = taskcluster.fromNow('2 hours');
+
+        // Allow for 10 ms margin
+        assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+      });
+
+      test('fromNow(2 years 15 months)', function() {
+        var d1 = new Date();
+        d1.setMonth(d1.getMonth() + 12 * 2 + 15)
+        var d2 = taskcluster.fromNow('2 years 15mo');
+
+        // Allow for 10ms margin
+        assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+      });
+
+      test('fromNow(2 years 55 months)', function() {
+        var d1 = new Date();
+        d1.setMonth(d1.getMonth() + 12 * 2 + 55)
+        var d2 = taskcluster.fromNow('2 years 55mo');
+
+        // Allow for 10ms margin
+        assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+      });
+
+      test('fromNow(240 months)', function() {
+        var d1 = new Date();
+        d1.setFullYear(d1.getFullYear() + 20)
+        var d2 = taskcluster.fromNow('240 months');
+
+        // Allow for 10ms margin
+        assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+      });
+
+      test('fromNow(-240 months)', function() {
+        var d1 = new Date();
+        d1.setFullYear(d1.getFullYear() - 20)
+        var d2 = taskcluster.fromNow('-240 months');
+
+        // Allow for 10ms margin
+        assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+      });
+
+      test('fromNow(20 years)', function() {
+        var d1 = new Date();
+        d1.setFullYear(d1.getFullYear() + 20)
+        var d2 = taskcluster.fromNow('20 years');
+
+        // Allow for 10ms margin
+        assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+      });
     });
     </script>
     <script>
