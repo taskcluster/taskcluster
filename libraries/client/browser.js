@@ -9,7 +9,8 @@ var SockJS  = require('./lib/sockjs');
 // cannot be supported by browserify
 var taskcluster = _.defaults({},
   require('./lib/client'),
-  require('./lib/weblistener')
+  require('./lib/weblistener'),
+  require('./lib/utils')
 );
 
 // Provide a SockJS client implementation for the WebListener
