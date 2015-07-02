@@ -20,8 +20,1209 @@ taskcluster.WebListener.SockJS = SockJS;
 // Export taskcluster
 module.exports = taskcluster;
 
-},{"./lib/client":3,"./lib/sockjs":5,"./lib/utils":6,"./lib/weblistener":7,"lodash":186}],2:[function(require,module,exports){
+},{"./lib/client":3,"./lib/sockjs":5,"./lib/utils":6,"./lib/weblistener":7,"lodash":190}],2:[function(require,module,exports){
 module.exports = {
+  "Auth": {
+    "referenceUrl": "http://references.taskcluster.net/auth/v1/api.json",
+    "reference": {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "title": "Authentication API",
+      "description": "Authentication related API end-points for taskcluster.",
+      "baseUrl": "https://auth.taskcluster.net/v1",
+      "entries": [
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/client/<clientId>/scopes",
+          "args": [
+            "clientId"
+          ],
+          "name": "scopes",
+          "title": "Get Client Authorized Scopes",
+          "description": "Returns the scopes the client is authorized to access and the date-time\nwhere the clients authorization is set to expire.\n\nThis API end-point allows you inspect clients without getting access to\ncredentials, as provide by the `getCredentials` request below.",
+          "scopes": [
+            [
+              "auth:inspect"
+            ],
+            [
+              "auth:credentials"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/client/<clientId>/credentials",
+          "args": [
+            "clientId"
+          ],
+          "name": "getCredentials",
+          "title": "Get Client Credentials",
+          "description": "Returns the clients `accessToken` as needed for verifying signatures.\nThis API end-point also returns the list of scopes the client is\nauthorized for and the date-time where the client authorization expires\n\nRemark, **if you don't need** the `accessToken` but only want to see what\nscopes a client is authorized for, you should use the `getScopes`\nfunction described above.",
+          "scopes": [
+            [
+              "auth:credentials"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/client/<clientId>",
+          "args": [
+            "clientId"
+          ],
+          "name": "client",
+          "title": "Get Client Information",
+          "description": "Returns all information about a given client. This end-point is mostly\nbuilding tools to administrate clients. Do not use if you only want to\nauthenticate a request, see `getCredentials` for this purpose.",
+          "scopes": [
+            [
+              "auth:credentials"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "put",
+          "route": "/client/<clientId>",
+          "args": [
+            "clientId"
+          ],
+          "name": "createClient",
+          "title": "Create Client",
+          "description": "Create client with given `clientId`, `name`, `expires`, `scopes` and\n`description`. The `accessToken` will always be generated server-side,\nand will be returned from this request.\n\n**Required scopes**, in addition the scopes listed\nabove, the caller must also posses the all the scopes that is given to\nthe client that is created.",
+          "scopes": [
+            [
+              "auth:create-client",
+              "auth:credentials"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/client/<clientId>/modify",
+          "args": [
+            "clientId"
+          ],
+          "name": "modifyClient",
+          "title": "Modify Client",
+          "description": "Modify client `name`, `expires`, `scopes` and\n`description`.\n\n**Required scopes**, in addition the scopes listed\nabove, the caller must also posses the all the scopes that is given to\nthe client that is updated.",
+          "scopes": [
+            [
+              "auth:modify-client",
+              "auth:credentials"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "delete",
+          "route": "/client/<clientId>",
+          "args": [
+            "clientId"
+          ],
+          "name": "removeClient",
+          "title": "Remove Client",
+          "description": "Delete a client with given `clientId`.",
+          "scopes": [
+            [
+              "auth:remove-client"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/client/<clientId>/reset-credentials",
+          "args": [
+            "clientId"
+          ],
+          "name": "resetCredentials",
+          "title": "Reset Client Credentials",
+          "description": "Reset credentials for a client. This will generate a new `accessToken`.\nas always the `accessToken` will be generated server-side and returned.",
+          "scopes": [
+            [
+              "auth:reset-credentials",
+              "auth:credentials"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/list-clients",
+          "args": [],
+          "name": "listClients",
+          "title": "List Clients",
+          "description": "Return list with all clients",
+          "scopes": [
+            [
+              "auth:list-clients"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/list-clients-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/azure/<account>/table/<table>/read-write",
+          "args": [
+            "account",
+            "table"
+          ],
+          "name": "azureTableSAS",
+          "title": "Get Shared-Access-Signature for Azure Table",
+          "description": "Get an SAS string for use with a specific Azure Table Storage table.\nNote, this will create the table, if it doesn't already exists.",
+          "scopes": [
+            [
+              "auth:azure-table-access:<account>/<table>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/aws/s3/<level>/<bucket>/<prefix>",
+          "args": [
+            "level",
+            "bucket",
+            "prefix"
+          ],
+          "name": "awsS3Credentials",
+          "title": "Get Temporary Read/Write Credentials S3",
+          "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials is returned. Please note that the `level`\nparameter is required in the scope guarding access.\n\nThe credentials are set of expire after an hour, but this behavior may be\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intent to maintain active credentials in your\napplication.\n\nPlease notice that your `prefix` may not start with slash `/`, it is\nallowed on S3, but we forbid it here to discourage bad behavior.\nAlso note that if your `prefix` doesn't end in a slash `/` the STS\ncredentials will not require one to be to inserted. This is mainly a\nconcern when assigning scopes to users and doing this right will prevent\npoor behavior. After we often want the `prefix` to be a folder in a\n`/` delimited folder structure.",
+          "scopes": [
+            [
+              "auth:aws-s3:<level>:<bucket>/<prefix>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/export-clients",
+          "args": [],
+          "name": "exportClients",
+          "title": "List Clients",
+          "description": "Export all clients except the root client, as a JSON list.\nThis list can be imported later using `importClients`.",
+          "scopes": [
+            [
+              "auth:export-clients",
+              "auth:credentials"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/auth/v1/exported-clients.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/import-clients",
+          "args": [],
+          "name": "importClients",
+          "title": "Import Clients",
+          "description": "Import client from JSON list, overwriting any clients that already\nexists. Returns a list of all clients imported.",
+          "scopes": [
+            [
+              "auth:import-clients",
+              "auth:create-client",
+              "auth:credentials"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/auth/v1/exported-clients.json#",
+          "output": "http://schemas.taskcluster.net/auth/v1/exported-clients.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
+        }
+      ]
+    }
+  },
+  "Scheduler": {
+    "referenceUrl": "http://references.taskcluster.net/scheduler/v1/api.json",
+    "reference": {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "title": "Task-Graph Scheduler API Documentation",
+      "description": "The task-graph scheduler, typically available at\n`scheduler.taskcluster.net`, is responsible for accepting task-graphs and\nscheduling tasks for evaluation by the queue as their dependencies are\nsatisfied.\n\nThis document describes API end-points offered by the task-graph\nscheduler. These end-points targets the following audience:\n * Post-commit hooks, that wants to submit task-graphs for testing,\n * End-users, who wants to execute a set of dependent tasks, and\n * Tools, that wants to inspect the state of a task-graph.",
+      "baseUrl": "https://scheduler.taskcluster.net/v1",
+      "entries": [
+        {
+          "type": "function",
+          "method": "put",
+          "route": "/task-graph/<taskGraphId>",
+          "args": [
+            "taskGraphId"
+          ],
+          "name": "createTaskGraph",
+          "title": "Create new task-graph",
+          "description": "Create a new task-graph, the `status` of the resulting JSON is a\ntask-graph status structure, you can find the `taskGraphId` in this\nstructure.\n\n**Referencing required tasks**, it is possible to reference other tasks\nin the task-graph that must be completed successfully before a task is\nscheduled. You just specify the `taskId` in the list of `required` tasks.\nSee the example below, where the second task requires the first task.\n```js\n{\n  ...\n  tasks: [\n    {\n      taskId:     \"XgvL0qtSR92cIWpcwdGKCA\",\n      requires:   [],\n      ...\n    },\n    {\n      taskId:     \"73GsfK62QNKAk2Hg1EEZTQ\",\n      requires:   [\"XgvL0qtSR92cIWpcwdGKCA\"],\n      task: {\n        payload: {\n          env: {\n            DEPENDS_ON:  \"XgvL0qtSR92cIWpcwdGKCA\"\n          }\n          ...\n        }\n        ...\n      },\n      ...\n    }\n  ]\n}\n```\n\n**The `schedulerId` property**, defaults to the `schedulerId` of this\nscheduler in production that is `\"task-graph-scheduler\"`. This\nproperty must be either undefined or set to `\"task-graph-scheduler\"`,\notherwise the task-graph will be rejected.\n\n**The `taskGroupId` property**, defaults to the `taskGraphId` of the\ntask-graph submitted, and if provided much be the `taskGraphId` of\nthe task-graph. Otherwise the task-graph will be rejected.\n\n**Task-graph scopes**, a task-graph is assigned a set of scopes, just\nlike tasks. Tasks within a task-graph cannot have scopes beyond those\nthe task-graph has. The task-graph scheduler will execute all requests\non behalf of a task-graph using the set of scopes assigned to the\ntask-graph. Thus, if you are submitting tasks to `my-worker-type` under\n`my-provisioner` it's important that your task-graph has the scope\nrequired to define tasks for this `provisionerId` and `workerType`.\nSee the queue for details on permissions required. Note, the task-graph\ndoes not require permissions to schedule the tasks. This is done with\nscopes provided by the task-graph scheduler.\n\n**Task-graph specific routing-keys**, using the `taskGraph.routes`\nproperty you may define task-graph specific routing-keys. If a task-graph\nhas a task-graph specific routing-key: `<route>`, then the poster will\nbe required to posses the scope `scheduler:route:<route>`. And when the\nan AMQP message about the task-graph is published the message will be\nCC'ed with the routing-key: `route.<route>`. This is useful if you want\nanother component to listen for completed tasks you have posted.",
+          "scopes": [
+            [
+              "scheduler:create-task-graph"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/scheduler/v1/task-graph.json#",
+          "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task-graph/<taskGraphId>/extend",
+          "args": [
+            "taskGraphId"
+          ],
+          "name": "extendTaskGraph",
+          "title": "Extend existing task-graph",
+          "description": "Add a set of tasks to an existing task-graph. The request format is very\nsimilar to the request format for creating task-graphs. But `routes`\nkey, `scopes`, `metadata` and `tags` cannot be modified.\n\n**Referencing required tasks**, just as when task-graphs are created,\neach task has a list of required tasks. It is possible to reference\nall `taskId`s within the task-graph.\n\n**Safety,** it is only _safe_ to call this API end-point while the\ntask-graph being modified is still running. If the task-graph is\n_finished_ or _blocked_, this method will leave the task-graph in this\nstate. Hence, it is only truly _safe_ to call this API end-point from\nwithin a task in the task-graph being modified.",
+          "scopes": [
+            [
+              "scheduler:extend-task-graph:<taskGraphId>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#",
+          "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task-graph/<taskGraphId>/status",
+          "args": [
+            "taskGraphId"
+          ],
+          "name": "status",
+          "title": "Task Graph Status",
+          "description": "Get task-graph status, this will return the _task-graph status\nstructure_. which can be used to check if a task-graph is `running`,\n`blocked` or `finished`.\n\n**Note**, that `finished` implies successfully completion.",
+          "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task-graph/<taskGraphId>/info",
+          "args": [
+            "taskGraphId"
+          ],
+          "name": "info",
+          "title": "Task Graph Information",
+          "description": "Get task-graph information, this includes the _task-graph status\nstructure_, along with `metadata` and `tags`, but not information\nabout all tasks.\n\nIf you want more detailed information use the `inspectTaskGraph`\nend-point instead.",
+          "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task-graph/<taskGraphId>/inspect",
+          "args": [
+            "taskGraphId"
+          ],
+          "name": "inspect",
+          "title": "Inspect Task Graph",
+          "description": "Inspect a task-graph, this returns all the information the task-graph\nscheduler knows about the task-graph and the state of its tasks.\n\n**Warning**, some of these fields are borderline internal to the\ntask-graph scheduler and we may choose to change or make them internal\nlater. Also note that note all of the information is formalized yet.\nThe JSON schema will be updated to reflect formalized values, we think\nit's safe to consider the values stable.\n\nTake these considerations into account when using the API end-point,\nas we do not promise it will remain fully backward compatible in\nthe future.",
+          "output": "http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task-graph/<taskGraphId>/inspect/<taskId>",
+          "args": [
+            "taskGraphId",
+            "taskId"
+          ],
+          "name": "inspectTask",
+          "title": "Inspect Task from a Task-Graph",
+          "description": "Inspect a task from a task-graph, this returns all the information the\ntask-graph scheduler knows about the specific task.\n\n**Warning**, some of these fields are borderline internal to the\ntask-graph scheduler and we may choose to change or make them internal\nlater. Also note that note all of the information is formalized yet.\nThe JSON schema will be updated to reflect formalized values, we think\nit's safe to consider the values stable.\n\nTake these considerations into account when using the API end-point,\nas we do not promise it will remain fully backward compatible in\nthe future.",
+          "output": "http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
+        }
+      ]
+    }
+  },
+  "Index": {
+    "referenceUrl": "http://references.taskcluster.net/index/v1/api.json",
+    "reference": {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "title": "Task Index API Documentation",
+      "description": "The task index, typically available at `index.taskcluster.net`, is\nresponsible for indexing tasks. In order to ensure that tasks can be\nlocated by recency and/or arbitrary strings. Common use-cases includes\n\n * Locate tasks by git or mercurial `<revision>`, or\n * Locate latest task from given `<branch>`, such as a release.\n\n**Index hierarchy**, tasks are indexed in a dot `.` separated hierarchy\ncalled a namespace. For example a task could be indexed in\n`<revision>.linux-64.release-build`. In this case the following\nnamespaces is created.\n\n 1. `<revision>`, and,\n 2. `<revision>.linux-64`\n\nThe inside the namespace `<revision>` you can find the namespace\n`<revision>.linux-64` inside which you can find the indexed task\n`<revision>.linux-64.release-build`. In this example you'll be able to\nfind build for a given revision.\n\n**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults\nto `0`). If another task is already indexed in the same namespace with\nthe same lower or equal `rank`, the task will be overwritten. For example\nconsider a task indexed as `mozilla-central.linux-64.release-build`, in\nthis case on might choose to use a unix timestamp or mercurial revision\nnumber as `rank`. This way the latest completed linux 64 bit release\nbuild is always available at `mozilla-central.linux-64.release-build`.\n\n**Indexed Data**, when a task is located in the index you will get the\n`taskId` and an additional user-defined JSON blob that was indexed with\ntask. You can use this to store additional information you would like to\nget additional from the index.\n\n**Entry Expiration**, all indexed entries must have an expiration date.\nTypically this defaults to one year, if not specified. If you are\nindexing tasks to make it easy to find artifacts, consider using the\nexpiration date that the artifacts is assigned.\n\n**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be\nin the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and\nthat if you strictly want to put another character you can URL encode it.\n\n**Indexing Routes**, tasks can be indexed using the API below, but the\nmost common way to index tasks is adding a custom route on the following\nform `index.<namespace>`. In-order to add this route to a task you'll\nneed the following scope `queue:route:index.<namespace>`. When a task has\nthis route, it'll be indexed when the task is **completed successfully**.\nThe task will be indexed with `rank`, `data` and `expires` as specified\nin `task.extra.index`, see example below:\n\n```js\n{\n  payload:  { /* ... */ },\n  routes: [\n    // index.<namespace> prefixed routes, tasks CC'ed such a route will\n    // be indexed under the given <namespace>\n    \"index.mozilla-central.linux-64.release-build\",\n    \"index.<revision>.linux-64.release-build\"\n  ],\n  extra: {\n    // Optional details for indexing service\n    index: {\n      // Ordering, this taskId will overwrite any thing that has\n      // rank <= 4000 (defaults to zero)\n      rank:       4000,\n\n      // Specify when the entries expires (Defaults to 1 year)\n      expires:          new Date().toJSON(),\n\n      // A little informal data to store along with taskId\n      // (less 16 kb when encoded as JSON)\n      data: {\n        hgRevision:   \"...\",\n        commitMessae: \"...\",\n        whatever...\n      }\n    },\n    // Extra properties for other services...\n  }\n  // Other task properties...\n}\n```\n\n**Remark**, when indexing tasks using custom routes, it's also possible\nto listen for messages about these tasks. Which is quite convenient, for\nexample one could bind to `route.index.mozilla-central.*.release-build`,\nand pick up all messages about release builds. Hence, it is a\ngood idea to document task index hierarchies, as these make up extension\npoints in their own.",
+      "baseUrl": "https://index.taskcluster.net/v1",
+      "entries": [
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<namespace>",
+          "args": [
+            "namespace"
+          ],
+          "name": "findTask",
+          "title": "Find Indexed Task",
+          "description": "Find task by namespace, if no task existing for the given namespace, this\nAPI end-point respond `404`.",
+          "output": "http://schemas.taskcluster.net/index/v1/indexed-task-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/namespaces/<namespace>",
+          "args": [
+            "namespace"
+          ],
+          "name": "listNamespaces",
+          "title": "List Namespaces",
+          "description": "List the namespaces immediately under a given namespace. This end-point\nlist up to 1000 namespaces. If more namespaces are present a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense.",
+          "input": "http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#",
+          "output": "http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/tasks/<namespace>",
+          "args": [
+            "namespace"
+          ],
+          "name": "listTasks",
+          "title": "List Tasks",
+          "description": "List the tasks immediately under a given namespace. This end-point\nlist up to 1000 tasks. If more tasks are present a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense.",
+          "input": "http://schemas.taskcluster.net/index/v1/list-tasks-request.json#",
+          "output": "http://schemas.taskcluster.net/index/v1/list-tasks-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "put",
+          "route": "/task/<namespace>",
+          "args": [
+            "namespace"
+          ],
+          "name": "insertTask",
+          "title": "Insert Task into Index",
+          "description": "Insert a task into the index. Please see the introduction above, for how\nto index successfully completed tasks automatically, using custom routes.",
+          "scopes": [
+            [
+              "index:insert-task:<namespace>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/index/v1/insert-task-request.json#",
+          "output": "http://schemas.taskcluster.net/index/v1/indexed-task-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<namespace>/artifacts/<name>",
+          "args": [
+            "namespace",
+            "name"
+          ],
+          "name": "findArtifactFromTask",
+          "title": "Get Artifact From Indexed Task",
+          "description": "Find task by namespace and redirect to artifact with given `name`,\nif no task existing for the given namespace, this API end-point respond\n`404`.",
+          "scopes": [
+            [
+              "queue:get-artifact:<name>"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
+        }
+      ]
+    }
+  },
+  "AwsProvisioner": {
+    "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/api.json",
+    "reference": {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "title": "AWS Provisioner API Documentation",
+      "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskCluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n",
+      "baseUrl": "https://taskcluster-aws-provisioner2.herokuapp.com/v1",
+      "entries": [
+        {
+          "type": "function",
+          "method": "put",
+          "route": "/worker-type/<workerType>",
+          "args": [
+            "workerType"
+          ],
+          "name": "createWorkerType",
+          "title": "Create new Worker Type",
+          "description": "Create a worker type and ensure that all EC2 regions have the required\nKeyPair",
+          "scopes": [
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#",
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/worker-type/<workerType>/update",
+          "args": [
+            "workerType"
+          ],
+          "name": "updateWorkerType",
+          "title": "Update Worker Type",
+          "description": "Update a workerType and ensure that all regions have the require\nKeyPair",
+          "scopes": [
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#",
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/worker-type/<workerType>",
+          "args": [
+            "workerType"
+          ],
+          "name": "workerType",
+          "title": "Get Worker Type",
+          "description": "Retreive a WorkerType definition",
+          "scopes": [
+            [
+              "aws-provisioner:view-worker-type:<workerType>"
+            ],
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "delete",
+          "route": "/worker-type/<workerType>",
+          "args": [
+            "workerType"
+          ],
+          "name": "removeWorkerType",
+          "title": "Delete Worker Type",
+          "description": "Delete a WorkerType definition, submits requests to kill all \ninstances and delete the KeyPair from all configured EC2 regions",
+          "scopes": [
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/list-worker-types",
+          "args": [],
+          "name": "listWorkerTypes",
+          "title": "List Worker Types",
+          "description": "List all known WorkerType names",
+          "scopes": [
+            [
+              "aws-provisioner:list-worker-types"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "put",
+          "route": "/secret/<token>",
+          "args": [
+            "token"
+          ],
+          "name": "createSecret",
+          "title": "Create new Secret",
+          "description": "Insert a secret into the secret storage.  This should not\nnormally be done through this API, but is provided for testing\nand completeness",
+          "scopes": [
+            [
+              "aws-provisioner:create-secret"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/secret/<token>",
+          "args": [
+            "token"
+          ],
+          "name": "getSecret",
+          "title": "Get a Secret",
+          "description": "Retreive a secret from storage.  It is important that this secret is\ndeleted by the consumer, or else the secrets will be visible to any\nprocess which can read HTTP on the worker localhost interface.",
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/instance-started/<instanceId>/<token>",
+          "args": [
+            "instanceId",
+            "token"
+          ],
+          "name": "instanceStarted",
+          "title": "Report an instance starting",
+          "description": "An instance will report in by giving its instance id as well\nas its security token.  The token is given and checked to ensure\nthat it matches a real token that exists to ensure that random\nmachines do not check in.  We could generate a different token\nbut that seems like overkill"
+        },
+        {
+          "type": "function",
+          "method": "delete",
+          "route": "/secret/<token>",
+          "args": [
+            "token"
+          ],
+          "name": "removeSecret",
+          "title": "Remove a Secret",
+          "description": "Remove a secret.  It is very important that the consumer of a \nsecret delete the secret from storage before handing over control\nto another process or else it could read the HTTP UserData endpoint\nand use the getSecrete() api here to get the secrets"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/worker-type/<workerType>/launch-specifications",
+          "args": [
+            "workerType"
+          ],
+          "name": "getLaunchSpecs",
+          "title": "Get All Launch Specifications for WorkerType",
+          "description": "Return the EC2 LaunchSpecifications for all combinations of regions\nand instance types or a list of reasons why the launch specifications\nare not valid\n\n**This API end-point is experimental and may be subject to change without warning.**",
+          "scopes": [
+            [
+              "aws-provisioner:view-worker-type:<workerType>"
+            ],
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/worker-type/<workerType>/terminate-all-instances",
+          "args": [
+            "workerType"
+          ],
+          "name": "terminateAllInstancesOfWorkerType",
+          "title": "Shutdown Every Ec2 Instance of this Worker Type",
+          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance associated with this workerType. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**",
+          "scopes": [
+            [
+              "aws-provisioner:all-stop",
+              "aws-provisioner:aws"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/shutdown/every/single/ec2/instance/managed/by/this/provisioner",
+          "args": [],
+          "name": "shutdownEverySingleEc2InstanceManagedByThisProvisioner",
+          "title": "Shutdown Every Single Ec2 Instance Managed By This Provisioner",
+          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance managed by this provisioner. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**",
+          "scopes": [
+            [
+              "aws-provisioner:all-stop",
+              "aws-provisioner:aws"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/aws-state/",
+          "args": [],
+          "name": "awsState",
+          "title": "Get AWS State for all worker types",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**",
+          "scopes": [
+            [
+              "aws-provisioner:view-aws-state"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/api-reference",
+          "args": [],
+          "name": "apiReference",
+          "title": "api reference",
+          "description": "Get an API reference!\n\n**Warning** this api end-point is **not stable**."
+        }
+      ]
+    }
+  },
+  "AwsProvisionerEvents": {
+    "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json",
+    "reference": {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
+      "title": "AWS Provisioner Pulse Exchanges",
+      "description": "Exchanges from the provisioner... more docs later",
+      "exchangePrefix": "exchange/taskcluster-aws-provisioner/",
+      "entries": [
+        {
+          "type": "topic-exchange",
+          "exchange": "worker-type-created",
+          "name": "workerTypeCreated",
+          "title": "WorkerType Created Message",
+          "description": "When a new `workerType` is created a message will be published to this\nexchange.",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "workerType",
+              "summary": "WorkerType that this message concerns.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+              "multipleWords": true,
+              "required": false
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#"
+        },
+        {
+          "type": "topic-exchange",
+          "exchange": "worker-type-updated",
+          "name": "workerTypeUpdated",
+          "title": "WorkerType Updated Message",
+          "description": "When a `workerType` is updated a message will be published to this\nexchange.",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "workerType",
+              "summary": "WorkerType that this message concerns.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+              "multipleWords": true,
+              "required": false
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#"
+        },
+        {
+          "type": "topic-exchange",
+          "exchange": "worker-type-removed",
+          "name": "workerTypeRemoved",
+          "title": "WorkerType Removed Message",
+          "description": "When a `workerType` is removed a message will be published to this\nexchange.",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "workerType",
+              "summary": "WorkerType that this message concerns.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+              "multipleWords": true,
+              "required": false
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#"
+        }
+      ]
+    }
+  },
+  "PurgeCache": {
+    "referenceUrl": "http://references.taskcluster.net/purge-cache/v1/api.json",
+    "reference": {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "title": "Purge Cache API Documentation",
+      "description": "The purge-cache service, typically available at\n`purge-cache.taskcluster.net`, is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the API end-point for publishing the pulse\nmessage. This is mainly intended to be used by tools.",
+      "baseUrl": "https://purge-cache.taskcluster.net/v1",
+      "entries": [
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/purge-cache/<provisionerId>/<workerType>",
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "name": "purgeCache",
+          "title": "Purge Worker Cache",
+          "description": "Publish a purge-cache message to purge caches named `cacheName` with\n`provisionerId` and `workerType` in the routing-key. Workers should\nbe listening for this message and purge caches when they see it.",
+          "scopes": [
+            [
+              "purge-cache:<provisionerId>/<workerType>:<cacheName>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
+        }
+      ]
+    }
+  },
+  "PurgeCacheEvents": {
+    "referenceUrl": "http://references.taskcluster.net/purge-cache/v1/exchanges.json",
+    "reference": {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
+      "title": "Purge-Cache Exchanges",
+      "description": "The purge-cache service, typically available at\n`purge-cache.taskcluster.net`, is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the exchange offered for workers by the\ncache-purge service.",
+      "exchangePrefix": "exchange/taskcluster-purge-cache/v1/",
+      "entries": [
+        {
+          "type": "topic-exchange",
+          "exchange": "purge-cache",
+          "name": "purgeCache",
+          "title": "Purge Cache Messages",
+          "description": "When a cache purge is requested  a message will be posted on this\nexchange with designated `provisionerId` and `workerType` in the\nrouting-key and the name of the `cacheFolder` as payload",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "provisionerId",
+              "summary": "`provisionerId` under which to purge cache.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "workerType",
+              "summary": "`workerType` for which to purge cache.",
+              "multipleWords": false,
+              "required": true
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#"
+        }
+      ]
+    }
+  },
+  "Queue": {
+    "referenceUrl": "http://references.taskcluster.net/queue/v1/api.json",
+    "reference": {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "title": "Queue API Documentation",
+      "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
+      "baseUrl": "https://queue.taskcluster.net/v1",
+      "entries": [
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<taskId>",
+          "args": [
+            "taskId"
+          ],
+          "name": "task",
+          "title": "Get Task Definition",
+          "description": "This end-point will return the task-definition. Notice that the task\ndefinition may have been modified by queue, if an optional property isn't\nspecified the queue may provide a default value.",
+          "output": "http://schemas.taskcluster.net/queue/v1/task.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<taskId>/status",
+          "args": [
+            "taskId"
+          ],
+          "name": "status",
+          "title": "Get task status",
+          "description": "Get task status structure from `taskId`",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "put",
+          "route": "/task/<taskId>",
+          "args": [
+            "taskId"
+          ],
+          "name": "createTask",
+          "title": "Create New Task",
+          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**, the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then the poster will be required to posses the\nscope `queue:route:<route>`. And when the an AMQP message about the task\nis published the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.",
+          "scopes": [
+            [
+              "queue:create-task:<provisionerId>/<workerType>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/define",
+          "args": [
+            "taskId"
+          ],
+          "name": "defineTask",
+          "title": "Define Task",
+          "description": "Define a task without scheduling it. This API end-point allows you to\nupload a task definition without having scheduled. The task won't be\nreported as pending until it is scheduled, see the scheduleTask API \nend-point.\n\nThe purpose of this API end-point is allow schedulers to upload task\ndefinitions without the tasks becoming _pending_ immediately. This useful\nif you have a set of dependent tasks. Then you can upload all the tasks\nand when the dependencies of a tasks have been resolved, you can schedule\nthe task by calling `/task/:taskId/schedule`. This eliminates the need to\nstore tasks somewhere else while waiting for dependencies to resolve.\n\n**Note** this operation is **idempotent**, as long as you upload the same\ntask definition as previously defined this operation is safe to retry.",
+          "scopes": [
+            [
+              "queue:define-task:<provisionerId>/<workerType>"
+            ],
+            [
+              "queue:create-task:<provisionerId>/<workerType>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/schedule",
+          "args": [
+            "taskId"
+          ],
+          "name": "scheduleTask",
+          "title": "Schedule Defined Task",
+          "description": "If you have define a task using `defineTask` API end-point, then you\ncan schedule the task to be scheduled using this method.\nThis will announce the task as pending and workers will be allowed, to\nclaim it and resolved the task.\n\n**Note** this operation is **idempotent** and will not fail or complain\nif called with `taskId` that is already scheduled, or even resolved.\nTo reschedule a task previously resolved, use `rerunTask`.",
+          "scopes": [
+            [
+              "queue:schedule-task",
+              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/rerun",
+          "args": [
+            "taskId"
+          ],
+          "name": "rerunTask",
+          "title": "Rerun a Resolved Task",
+          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nisn't either `failed` or `completed`, this operation will just return the\ncurrent task status.",
+          "scopes": [
+            [
+              "queue:rerun-task",
+              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/cancel",
+          "args": [
+            "taskId"
+          ],
+          "name": "cancelTask",
+          "title": "Cancel Task",
+          "description": "This method will cancel a task that is either `unscheduled`, `pending` or\n`running`. It will resolve the current run as `exception` with\n`reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.\nit doesn't have any runs, an initial run will be added and resolved as\ndescribed above. Hence, after canceling a task, it cannot be scheduled\nwith `queue.scheduleTask`, but a new run can be created with\n`queue.rerun`. These semantics is equivalent to calling\n`queue.scheduleTask` immediately followed by `queue.cancelTask`.\n\n**Remark** this operation is idempotent, if you try to cancel a task that\nisn't `unscheduled`, `pending` or `running`, this operation will just\nreturn the current task status.",
+          "scopes": [
+            [
+              "queue:cancel-task",
+              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/poll-task-url/<provisionerId>/<workerType>",
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "name": "pollTaskUrls",
+          "title": "Get Urls to Poll Pending Tasks",
+          "description": "Get a signed URLs to get and delete messages from azure queue.\nOnce messages are polled from here, you can claim the referenced task\nwith `claimTask`, and afterwards you should always delete the message.",
+          "scopes": [
+            [
+              "queue:poll-task-urls",
+              "assume:worker-type:<provisionerId>/<workerType>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/claim",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "claimTask",
+          "title": "Claim task",
+          "description": "claim a task, more to be added later...",
+          "scopes": [
+            [
+              "queue:claim-task",
+              "assume:worker-type:<provisionerId>/<workerType>",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/task-claim-request.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/reclaim",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "reclaimTask",
+          "title": "Reclaim task",
+          "description": "reclaim a task more to be added later...",
+          "scopes": [
+            [
+              "queue:claim-task",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/completed",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "reportCompleted",
+          "title": "Report Run Completed",
+          "description": "Report a task completed, resolving the run as `completed`.",
+          "scopes": [
+            [
+              "queue:resolve-task",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/failed",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "reportFailed",
+          "title": "Report Run Failed",
+          "description": "Report a run failed, resolving the run as `failed`. Use this to resolve\na run that failed because the task specific code behaved unexpectedly.\nFor example the task exited non-zero, or didn't produce expected output.\n\nDon't use this if the task couldn't be run because if malformed payload,\nor other unexpected condition. In these cases we have a task exception,\nwhich should be reported with `reportException`.",
+          "scopes": [
+            [
+              "queue:resolve-task",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/exception",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "reportException",
+          "title": "Report Task Exception",
+          "description": "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. But if the payload is malformed, or\ndependencies referenced does not exists you should also report exception.\nHowever, do not report exception if an external resources is unavailable\nbecause of network failure, etc. Only if you can validate that the\nresource does not exist.",
+          "scopes": [
+            [
+              "queue:resolve-task",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/task-exception-request.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "name": "createArtifact",
+          "title": "Create Artifact",
+          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 4 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\n\n**S3 artifacts**, is useful for static files which will be stored on S3.\nWhen creating an S3 artifact the queue will return a pre-signed URL\nto which you can do a `PUT` request to upload your artifact. Note\nthat `PUT` request **must** specify the `content-length` header and\n**must** give the `content-type` header the same value as in the request\nto `createArtifact`.\n\n**Azure artifacts**, are stored in _Azure Blob Storage_ service, which\ngiven the consistency guarantees and API interface offered by Azure is\nmore suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
+          "scopes": [
+            [
+              "queue:create-artifact:<name>",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "name": "getArtifact",
+          "title": "Get Artifact from Run",
+          "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.",
+          "scopes": [
+            [
+              "queue:get-artifact:<name>"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<taskId>/artifacts/<name>",
+          "args": [
+            "taskId",
+            "name"
+          ],
+          "name": "getLatestArtifact",
+          "title": "Get Artifact from Latest Run",
+          "description": "Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
+          "scopes": [
+            [
+              "queue:get-artifact:<name>"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<taskId>/runs/<runId>/artifacts",
+          "args": [
+            "taskId",
+            "runId"
+          ],
+          "name": "listArtifacts",
+          "title": "Get Artifacts from Run",
+          "description": "Returns a list of artifacts and associated meta-data for a given run.",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/task/<taskId>/artifacts",
+          "args": [
+            "taskId"
+          ],
+          "name": "listLatestArtifacts",
+          "title": "Get Artifacts from Latest Run",
+          "description": "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/pending/<provisionerId>/<workerType>",
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "name": "pendingTasks",
+          "title": "Get Number of Pending Tasks",
+          "description": "Documented later...\nThis probably the end-point that will remain after rewriting to azure\nqueue storage...\n",
+          "scopes": [
+            [
+              "queue:pending-tasks:<provisionerId>/<workerType>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
+        }
+      ]
+    }
+  },
   "QueueEvents": {
     "referenceUrl": "http://references.taskcluster.net/queue/v1/exchanges.json",
     "reference": {
@@ -531,863 +1732,6 @@ module.exports = {
       ]
     }
   },
-  "Index": {
-    "referenceUrl": "http://references.taskcluster.net/index/v1/api.json",
-    "reference": {
-      "version": 0,
-      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "title": "Task Index API Documentation",
-      "description": "The task index, typically available at `index.taskcluster.net`, is\nresponsible for indexing tasks. In order to ensure that tasks can be\nlocated by recency and/or arbitrary strings. Common use-cases includes\n\n * Locate tasks by git or mercurial `<revision>`, or\n * Locate latest task from given `<branch>`, such as a release.\n\n**Index hierarchy**, tasks are indexed in a dot `.` separated hierarchy\ncalled a namespace. For example a task could be indexed in\n`<revision>.linux-64.release-build`. In this case the following\nnamespaces is created.\n\n 1. `<revision>`, and,\n 2. `<revision>.linux-64`\n\nThe inside the namespace `<revision>` you can find the namespace\n`<revision>.linux-64` inside which you can find the indexed task\n`<revision>.linux-64.release-build`. In this example you'll be able to\nfind build for a given revision.\n\n**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults\nto `0`). If another task is already indexed in the same namespace with\nthe same lower or equal `rank`, the task will be overwritten. For example\nconsider a task indexed as `mozilla-central.linux-64.release-build`, in\nthis case on might choose to use a unix timestamp or mercurial revision\nnumber as `rank`. This way the latest completed linux 64 bit release\nbuild is always available at `mozilla-central.linux-64.release-build`.\n\n**Indexed Data**, when a task is located in the index you will get the\n`taskId` and an additional user-defined JSON blob that was indexed with\ntask. You can use this to store additional information you would like to\nget additional from the index.\n\n**Entry Expiration**, all indexed entries must have an expiration date.\nTypically this defaults to one year, if not specified. If you are\nindexing tasks to make it easy to find artifacts, consider using the\nexpiration date that the artifacts is assigned.\n\n**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be\nin the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and\nthat if you strictly want to put another character you can URL encode it.\n\n**Indexing Routes**, tasks can be indexed using the API below, but the\nmost common way to index tasks is adding a custom route on the following\nform `index.<namespace>`. In-order to add this route to a task you'll\nneed the following scope `queue:route:index.<namespace>`. When a task has\nthis route, it'll be indexed when the task is **completed successfully**.\nThe task will be indexed with `rank`, `data` and `expires` as specified\nin `task.extra.index`, see example below:\n\n```js\n{\n  payload:  { /* ... */ },\n  routes: [\n    // index.<namespace> prefixed routes, tasks CC'ed such a route will\n    // be indexed under the given <namespace>\n    \"index.mozilla-central.linux-64.release-build\",\n    \"index.<revision>.linux-64.release-build\"\n  ],\n  extra: {\n    // Optional details for indexing service\n    index: {\n      // Ordering, this taskId will overwrite any thing that has\n      // rank <= 4000 (defaults to zero)\n      rank:       4000,\n\n      // Specify when the entries expires (Defaults to 1 year)\n      expires:          new Date().toJSON(),\n\n      // A little informal data to store along with taskId\n      // (less 16 kb when encoded as JSON)\n      data: {\n        hgRevision:   \"...\",\n        commitMessae: \"...\",\n        whatever...\n      }\n    },\n    // Extra properties for other services...\n  }\n  // Other task properties...\n}\n```\n\n**Remark**, when indexing tasks using custom routes, it's also possible\nto listen for messages about these tasks. Which is quite convenient, for\nexample one could bind to `route.index.mozilla-central.*.release-build`,\nand pick up all messages about release builds. Hence, it is a\ngood idea to document task index hierarchies, as these make up extension\npoints in their own.",
-      "baseUrl": "https://index.taskcluster.net/v1",
-      "entries": [
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<namespace>",
-          "args": [
-            "namespace"
-          ],
-          "name": "findTask",
-          "title": "Find Indexed Task",
-          "description": "Find task by namespace, if no task existing for the given namespace, this\nAPI end-point respond `404`.",
-          "output": "http://schemas.taskcluster.net/index/v1/indexed-task-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/namespaces/<namespace>",
-          "args": [
-            "namespace"
-          ],
-          "name": "listNamespaces",
-          "title": "List Namespaces",
-          "description": "List the namespaces immediately under a given namespace. This end-point\nlist up to 1000 namespaces. If more namespaces are present a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense.",
-          "input": "http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#",
-          "output": "http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/tasks/<namespace>",
-          "args": [
-            "namespace"
-          ],
-          "name": "listTasks",
-          "title": "List Tasks",
-          "description": "List the tasks immediately under a given namespace. This end-point\nlist up to 1000 tasks. If more tasks are present a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense.",
-          "input": "http://schemas.taskcluster.net/index/v1/list-tasks-request.json#",
-          "output": "http://schemas.taskcluster.net/index/v1/list-tasks-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "put",
-          "route": "/task/<namespace>",
-          "args": [
-            "namespace"
-          ],
-          "name": "insertTask",
-          "title": "Insert Task into Index",
-          "description": "Insert a task into the index. Please see the introduction above, for how\nto index successfully completed tasks automatically, using custom routes.",
-          "scopes": [
-            [
-              "index:insert-task:<namespace>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/index/v1/insert-task-request.json#",
-          "output": "http://schemas.taskcluster.net/index/v1/indexed-task-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/ping",
-          "args": [],
-          "name": "ping",
-          "title": "Ping Server",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
-        }
-      ]
-    }
-  },
-  "Auth": {
-    "referenceUrl": "http://references.taskcluster.net/auth/v1/api.json",
-    "reference": {
-      "version": "0.2.0",
-      "title": "Authentication API",
-      "description": "Authentication related API end-points for taskcluster.",
-      "baseUrl": "https://auth.taskcluster.net/v1",
-      "entries": [
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/client/<clientId>/scopes",
-          "args": [
-            "clientId"
-          ],
-          "name": "scopes",
-          "title": "Get Client Authorized Scopes",
-          "description": "Returns the scopes the client is authorized to access and the date-time\nwhere the clients authorization is set to expire.\n\nThis API end-point allows you inspect clients without getting access to\ncredentials, as provide by the `getCredentials` request below.",
-          "scopes": [
-            [
-              "auth:inspect"
-            ],
-            [
-              "auth:credentials"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/client/<clientId>/credentials",
-          "args": [
-            "clientId"
-          ],
-          "name": "getCredentials",
-          "title": "Get Client Credentials",
-          "description": "Returns the clients `accessToken` as needed for verifying signatures.\nThis API end-point also returns the list of scopes the client is\nauthorized for and the date-time where the client authorization expires\n\nRemark, **if you don't need** the `accessToken` but only want to see what\nscopes a client is authorized for, you should use the `getScopes`\nfunction described above.",
-          "scopes": [
-            [
-              "auth:credentials"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/client/<clientId>",
-          "args": [
-            "clientId"
-          ],
-          "name": "client",
-          "title": "Get Client Information",
-          "description": "Returns all information about a given client. This end-point is mostly\nbuilding tools to administrate clients. Do not use if you only want to\nauthenticate a request, see `getCredentials` for this purpose.",
-          "scopes": [
-            [
-              "auth:credentials"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "put",
-          "route": "/client/<clientId>",
-          "args": [
-            "clientId"
-          ],
-          "name": "createClient",
-          "title": "Create Client",
-          "description": "Create client with given `clientId`, `name`, `expires`, `scopes` and\n`description`. The `accessToken` will always be generated server-side,\nand will be returned from this request.\n\n**Required scopes**, in addition the scopes listed\nabove, the caller must also posses the all the scopes that is given to\nthe client that is created.",
-          "scopes": [
-            [
-              "auth:create-client",
-              "auth:credentials"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
-          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/client/<clientId>/modify",
-          "args": [
-            "clientId"
-          ],
-          "name": "modifyClient",
-          "title": "Modify Client",
-          "description": "Modify client `name`, `expires`, `scopes` and\n`description`.\n\n**Required scopes**, in addition the scopes listed\nabove, the caller must also posses the all the scopes that is given to\nthe client that is updated.",
-          "scopes": [
-            [
-              "auth:modify-client",
-              "auth:credentials"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
-          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "delete",
-          "route": "/client/<clientId>",
-          "args": [
-            "clientId"
-          ],
-          "name": "removeClient",
-          "title": "Remove Client",
-          "description": "Delete a client with given `clientId`.",
-          "scopes": [
-            [
-              "auth:remove-client"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/client/<clientId>/reset-credentials",
-          "args": [
-            "clientId"
-          ],
-          "name": "resetCredentials",
-          "title": "Reset Client Credentials",
-          "description": "Reset credentials for a client. This will generate a new `accessToken`.\nas always the `accessToken` will be generated server-side and returned.",
-          "scopes": [
-            [
-              "auth:reset-credentials",
-              "auth:credentials"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/list-clients",
-          "args": [],
-          "name": "listClients",
-          "title": "List Clients",
-          "description": "Return list with all clients",
-          "scopes": [
-            [
-              "auth:client-clients"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/list-clients-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/azure/<account>/table/<table>/read-write",
-          "args": [
-            "account",
-            "table"
-          ],
-          "name": "azureTableSAS",
-          "title": "Get Shared-Access-Signature for Azure Table",
-          "description": "Get an SAS string for use with a specific Azure Table Storage table.\nNote, this will create the table, if it doesn't already exists.",
-          "scopes": [
-            [
-              "auth:azure-table-access:<account>/<table>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/aws/s3/<level>/<bucket>/<prefix>",
-          "args": [
-            "level",
-            "bucket",
-            "prefix"
-          ],
-          "name": "awsS3Credentials",
-          "title": "Get Temporary Read/Write Credentials S3",
-          "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials is returned. Please note that the `level`\nparameter is required in the scope guarding access.\n\nThe credentials are set of expire after an hour, but this behavior may be\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intent to maintain active credentials in your\napplication.\n\nPlease notice that your `prefix` may not start with slash `/`, it is\nallowed on S3, but we forbid it here to discourage bad behavior.\nAlso note that if your `prefix` doesn't end in a slash `/` the STS\ncredentials will not require one to be to inserted. This is mainly a\nconcern when assigning scopes to users and doing this right will prevent\npoor behavior. After we often want the `prefix` to be a folder in a\n`/` delimited folder structure.",
-          "scopes": [
-            [
-              "auth:aws-s3:<level>:<bucket>/<prefix>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/ping",
-          "args": [],
-          "name": "ping",
-          "title": "Ping Server",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
-        }
-      ]
-    }
-  },
-  "AwsProvisioner": {
-    "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/api.json",
-    "reference": {
-      "version": 0,
-      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "title": "AWS Provisioner API Documentation",
-      "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskCluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n",
-      "baseUrl": "https://aws-provisioner2.herokuapp.com/v1",
-      "entries": [
-        {
-          "type": "function",
-          "method": "put",
-          "route": "/worker-type/<workerType>",
-          "args": [
-            "workerType"
-          ],
-          "name": "createWorkerType",
-          "title": "Create new Worker Type",
-          "description": "Create a worker type and ensure that all EC2 regions have the required\nKeyPair",
-          "scopes": [
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/worker-type/<workerType>/update",
-          "args": [
-            "workerType"
-          ],
-          "name": "updateWorkerType",
-          "title": "Update Worker Type",
-          "description": "Update a workerType and ensure that all regions have the require\nKeyPair",
-          "scopes": [
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/worker-type/<workerType>",
-          "args": [
-            "workerType"
-          ],
-          "name": "workerType",
-          "title": "Get Worker Type",
-          "description": "Retreive a WorkerType definition",
-          "scopes": [
-            [
-              "aws-provisioner:view-worker-type:<workerType>"
-            ],
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "delete",
-          "route": "/worker-type/<workerType>",
-          "args": [
-            "workerType"
-          ],
-          "name": "removeWorkerType",
-          "title": "Delete Worker Type",
-          "description": "Delete a WorkerType definition, submits requests to kill all \ninstances and delete the KeyPair from all configured EC2 regions",
-          "scopes": [
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/list-worker-types",
-          "args": [],
-          "name": "listWorkerTypes",
-          "title": "List Worker Types",
-          "description": "List all known WorkerType names",
-          "scopes": [
-            [
-              "aws-provisioner:list-worker-types"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/worker-type/<workerType>/launch-specifications",
-          "args": [
-            "workerType"
-          ],
-          "name": "getLaunchSpecs",
-          "title": "Get All Launch Specifications for WorkerType",
-          "description": "Return the EC2 LaunchSpecifications for all combinations of regions\nand instance types or a list of reasons why the launch specifications\nare not valid\n\n**This API end-point is experimental and may be subject to change without warning.**",
-          "scopes": [
-            [
-              "aws-provisioner:view-worker-type:<workerType>"
-            ],
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/worker-type/<workerType>/terminate-all-instances",
-          "args": [
-            "workerType"
-          ],
-          "name": "terminateAllInstancesOfWorkerType",
-          "title": "Shutdown Every Ec2 Instance of this Worker Type",
-          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance associated with this workerType. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**",
-          "scopes": [
-            [
-              "aws-provisioner:all-stop",
-              "aws-provisioner:aws"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/shutdown/every/single/ec2/instance/managed/by/this/provisioner",
-          "args": [],
-          "name": "shutdownEverySingleEc2InstanceManagedByThisProvisioner",
-          "title": "Shutdown Every Single Ec2 Instance Managed By This Provisioner",
-          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance managed by this provisioner. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**",
-          "scopes": [
-            [
-              "aws-provisioner:all-stop",
-              "aws-provisioner:aws"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/aws-state/",
-          "args": [],
-          "name": "awsState",
-          "title": "Get AWS State for all worker types",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/update-aws-state/",
-          "args": [],
-          "name": "updateAwsState",
-          "title": "Get AWS State after fetching updates for all worker types",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/ping",
-          "args": [],
-          "name": "ping",
-          "title": "Ping Server",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/api-reference",
-          "args": [],
-          "name": "apiReference",
-          "title": "api reference",
-          "description": "Get an API reference!\n\n**Warning** this api end-point is **not stable**."
-        }
-      ]
-    }
-  },
-  "AwsProvisionerEvents": {
-    "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json",
-    "reference": {
-      "version": 0,
-      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
-      "title": "AWS Provisioner Pulse Exchanges",
-      "description": "Exchanges from the provisioner... more docs later",
-      "exchangePrefix": "exchange/taskcluster-aws-provisioner/",
-      "entries": [
-        {
-          "type": "topic-exchange",
-          "exchange": "worker-type-created",
-          "name": "workerTypeCreated",
-          "title": "WorkerType Created Message",
-          "description": "When a new `workerType` is created a message will be published to this\nexchange.",
-          "routingKey": [
-            {
-              "name": "routingKeyKind",
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
-              "constant": "primary",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "workerType",
-              "summary": "WorkerType that this message concerns.",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "reserved",
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
-              "multipleWords": true,
-              "required": false
-            }
-          ],
-          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-created-message.json#"
-        }
-      ]
-    }
-  },
-  "Queue": {
-    "referenceUrl": "http://references.taskcluster.net/queue/v1/api.json",
-    "reference": {
-      "version": 0,
-      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "title": "Queue API Documentation",
-      "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
-      "baseUrl": "https://queue.taskcluster.net/v1",
-      "entries": [
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>",
-          "args": [
-            "taskId"
-          ],
-          "name": "task",
-          "title": "Get Task Definition",
-          "description": "This end-point will return the task-definition. Notice that the task\ndefinition may have been modified by queue, if an optional property isn't\nspecified the queue may provide a default value.",
-          "output": "http://schemas.taskcluster.net/queue/v1/task.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>/status",
-          "args": [
-            "taskId"
-          ],
-          "name": "status",
-          "title": "Get task status",
-          "description": "Get task status structure from `taskId`",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "put",
-          "route": "/task/<taskId>",
-          "args": [
-            "taskId"
-          ],
-          "name": "createTask",
-          "title": "Create New Task",
-          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**, the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then the poster will be required to posses the\nscope `queue:route:<route>`. And when the an AMQP message about the task\nis published the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.",
-          "scopes": [
-            [
-              "queue:create-task:<provisionerId>/<workerType>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/define",
-          "args": [
-            "taskId"
-          ],
-          "name": "defineTask",
-          "title": "Define Task",
-          "description": "Define a task without scheduling it. This API end-point allows you to\nupload a task definition without having scheduled. The task won't be\nreported as pending until it is scheduled, see the scheduleTask API \nend-point.\n\nThe purpose of this API end-point is allow schedulers to upload task\ndefinitions without the tasks becoming _pending_ immediately. This useful\nif you have a set of dependent tasks. Then you can upload all the tasks\nand when the dependencies of a tasks have been resolved, you can schedule\nthe task by calling `/task/:taskId/schedule`. This eliminates the need to\nstore tasks somewhere else while waiting for dependencies to resolve.\n\n**Note** this operation is **idempotent**, as long as you upload the same\ntask definition as previously defined this operation is safe to retry.",
-          "scopes": [
-            [
-              "queue:define-task:<provisionerId>/<workerType>"
-            ],
-            [
-              "queue:create-task:<provisionerId>/<workerType>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/schedule",
-          "args": [
-            "taskId"
-          ],
-          "name": "scheduleTask",
-          "title": "Schedule Defined Task",
-          "description": "If you have define a task using `defineTask` API end-point, then you\ncan schedule the task to be scheduled using this method.\nThis will announce the task as pending and workers will be allowed, to\nclaim it and resolved the task.\n\n**Note** this operation is **idempotent** and will not fail or complain\nif called with `taskId` that is already scheduled, or even resolved.\nTo reschedule a task previously resolved, use `rerunTask`.",
-          "scopes": [
-            [
-              "queue:schedule-task",
-              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/rerun",
-          "args": [
-            "taskId"
-          ],
-          "name": "rerunTask",
-          "title": "Rerun a Resolved Task",
-          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nisn't either `failed` or `completed`, this operation will just return the\ncurrent task status.",
-          "scopes": [
-            [
-              "queue:rerun-task",
-              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/cancel",
-          "args": [
-            "taskId"
-          ],
-          "name": "cancelTask",
-          "title": "Cancel Task",
-          "description": "This method will cancel a task that is either `unscheduled`, `pending` or\n`running`. It will resolve the current run as `exception` with\n`reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.\nit doesn't have any runs, an initial run will be added and resolved as\ndescribed above. Hence, after canceling a task, it cannot be scheduled\nwith `queue.scheduleTask`, but a new run can be created with\n`queue.rerun`. These semantics is equivalent to calling\n`queue.scheduleTask` immediately followed by `queue.cancelTask`.\n\n**Remark** this operation is idempotent, if you try to cancel a task that\nisn't `unscheduled`, `pending` or `running`, this operation will just\nreturn the current task status.",
-          "scopes": [
-            [
-              "queue:cancel-task",
-              "assume:scheduler-id:<schedulerId>/<taskGroupId>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/poll-task-url/<provisionerId>/<workerType>",
-          "args": [
-            "provisionerId",
-            "workerType"
-          ],
-          "name": "pollTaskUrls",
-          "title": "Get Urls to Poll Pending Tasks",
-          "description": "Get a signed URLs to get and delete messages from azure queue.\nOnce messages are polled from here, you can claim the referenced task\nwith `claimTask`, and afterwards you should always delete the message.",
-          "scopes": [
-            [
-              "queue:poll-task-urls",
-              "assume:worker-type:<provisionerId>/<workerType>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/runs/<runId>/claim",
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "name": "claimTask",
-          "title": "Claim task",
-          "description": "claim a task, more to be added later...",
-          "scopes": [
-            [
-              "queue:claim-task",
-              "assume:worker-type:<provisionerId>/<workerType>",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/queue/v1/task-claim-request.json#",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/runs/<runId>/reclaim",
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "name": "reclaimTask",
-          "title": "Reclaim task",
-          "description": "reclaim a task more to be added later...",
-          "scopes": [
-            [
-              "queue:claim-task",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/runs/<runId>/completed",
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "name": "reportCompleted",
-          "title": "Report Run Completed",
-          "description": "Report a task completed, resolving the run as `completed`.",
-          "scopes": [
-            [
-              "queue:resolve-task",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/runs/<runId>/failed",
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "name": "reportFailed",
-          "title": "Report Run Failed",
-          "description": "Report a run failed, resolving the run as `failed`. Use this to resolve\na run that failed because the task specific code behaved unexpectedly.\nFor example the task exited non-zero, or didn't produce expected output.\n\nDon't use this if the task couldn't be run because if malformed payload,\nor other unexpected condition. In these cases we have a task exception,\nwhich should be reported with `reportException`.",
-          "scopes": [
-            [
-              "queue:resolve-task",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/runs/<runId>/exception",
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "name": "reportException",
-          "title": "Report Task Exception",
-          "description": "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. But if the payload is malformed, or\ndependencies referenced does not exists you should also report exception.\nHowever, do not report exception if an external resources is unavailable\nbecause of network failure, etc. Only if you can validate that the\nresource does not exist.",
-          "scopes": [
-            [
-              "queue:resolve-task",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/queue/v1/task-exception-request.json#",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "args": [
-            "taskId",
-            "runId",
-            "name"
-          ],
-          "name": "createArtifact",
-          "title": "Create Artifact",
-          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 4 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\n\n**S3 artifacts**, is useful for static files which will be stored on S3.\nWhen creating an S3 artifact the queue will return a pre-signed URL\nto which you can do a `PUT` request to upload your artifact. Note\nthat `PUT` request **must** specify the `content-length` header and\n**must** give the `content-type` header the same value as in the request\nto `createArtifact`.\n\n**Azure artifacts**, are stored in _Azure Blob Storage_ service, which\ngiven the consistency guarantees and API interface offered by Azure is\nmore suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
-          "scopes": [
-            [
-              "queue:create-artifact:<name>",
-              "assume:worker-id:<workerGroup>/<workerId>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#",
-          "output": "http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "args": [
-            "taskId",
-            "runId",
-            "name"
-          ],
-          "name": "getArtifact",
-          "title": "Get Artifact from Run",
-          "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.",
-          "scopes": [
-            [
-              "queue:get-artifact:<name>"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>/artifacts/<name>",
-          "args": [
-            "taskId",
-            "name"
-          ],
-          "name": "getLatestArtifact",
-          "title": "Get Artifact from Latest Run",
-          "description": "Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
-          "scopes": [
-            [
-              "queue:get-artifact:<name>"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>/runs/<runId>/artifacts",
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "name": "listArtifacts",
-          "title": "Get Artifacts from Run",
-          "description": "Returns a list of artifacts and associated meta-data for a given run.",
-          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task/<taskId>/artifacts",
-          "args": [
-            "taskId"
-          ],
-          "name": "listLatestArtifacts",
-          "title": "Get Artifacts from Latest Run",
-          "description": "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.",
-          "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/pending/<provisionerId>/<workerType>",
-          "args": [
-            "provisionerId",
-            "workerType"
-          ],
-          "name": "pendingTasks",
-          "title": "Get Number of Pending Tasks",
-          "description": "Documented later...\nThis probably the end-point that will remain after rewriting to azure\nqueue storage...\n",
-          "scopes": [
-            [
-              "queue:pending-tasks:<provisionerId>/<workerType>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/ping",
-          "args": [],
-          "name": "ping",
-          "title": "Ping Server",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
-        }
-      ]
-    }
-  },
   "SchedulerEvents": {
     "referenceUrl": "http://references.taskcluster.net/scheduler/v1/exchanges.json",
     "reference": {
@@ -1680,112 +2024,6 @@ module.exports = {
             }
           ],
           "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#"
-        }
-      ]
-    }
-  },
-  "Scheduler": {
-    "referenceUrl": "http://references.taskcluster.net/scheduler/v1/api.json",
-    "reference": {
-      "version": 0,
-      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "title": "Task-Graph Scheduler API Documentation",
-      "description": "The task-graph scheduler, typically available at\n`scheduler.taskcluster.net`, is responsible for accepting task-graphs and\nscheduling tasks for evaluation by the queue as their dependencies are\nsatisfied.\n\nThis document describes API end-points offered by the task-graph\nscheduler. These end-points targets the following audience:\n * Post-commit hooks, that wants to submit task-graphs for testing,\n * End-users, who wants to execute a set of dependent tasks, and\n * Tools, that wants to inspect the state of a task-graph.",
-      "baseUrl": "https://scheduler.taskcluster.net/v1",
-      "entries": [
-        {
-          "type": "function",
-          "method": "put",
-          "route": "/task-graph/<taskGraphId>",
-          "args": [
-            "taskGraphId"
-          ],
-          "name": "createTaskGraph",
-          "title": "Create new task-graph",
-          "description": "Create a new task-graph, the `status` of the resulting JSON is a\ntask-graph status structure, you can find the `taskGraphId` in this\nstructure.\n\n**Referencing required tasks**, it is possible to reference other tasks\nin the task-graph that must be completed successfully before a task is\nscheduled. You just specify the `taskId` in the list of `required` tasks.\nSee the example below, where the second task requires the first task.\n```js\n{\n  ...\n  tasks: [\n    {\n      taskId:     \"XgvL0qtSR92cIWpcwdGKCA\",\n      requires:   [],\n      ...\n    },\n    {\n      taskId:     \"73GsfK62QNKAk2Hg1EEZTQ\",\n      requires:   [\"XgvL0qtSR92cIWpcwdGKCA\"],\n      task: {\n        payload: {\n          env: {\n            DEPENDS_ON:  \"XgvL0qtSR92cIWpcwdGKCA\"\n          }\n          ...\n        }\n        ...\n      },\n      ...\n    }\n  ]\n}\n```\n\n**The `schedulerId` property**, defaults to the `schedulerId` of this\nscheduler in production that is `\"task-graph-scheduler\"`. This\nproperty must be either undefined or set to `\"task-graph-scheduler\"`,\notherwise the task-graph will be rejected.\n\n**The `taskGroupId` property**, defaults to the `taskGraphId` of the\ntask-graph submitted, and if provided much be the `taskGraphId` of\nthe task-graph. Otherwise the task-graph will be rejected.\n\n**Task-graph scopes**, a task-graph is assigned a set of scopes, just\nlike tasks. Tasks within a task-graph cannot have scopes beyond those\nthe task-graph has. The task-graph scheduler will execute all requests\non behalf of a task-graph using the set of scopes assigned to the\ntask-graph. Thus, if you are submitting tasks to `my-worker-type` under\n`my-provisioner` it's important that your task-graph has the scope\nrequired to define tasks for this `provisionerId` and `workerType`.\nSee the queue for details on permissions required. Note, the task-graph\ndoes not require permissions to schedule the tasks. This is done with\nscopes provided by the task-graph scheduler.\n\n**Task-graph specific routing-keys**, using the `taskGraph.routes`\nproperty you may define task-graph specific routing-keys. If a task-graph\nhas a task-graph specific routing-key: `<route>`, then the poster will\nbe required to posses the scope `scheduler:route:<route>`. And when the\nan AMQP message about the task-graph is published the message will be\nCC'ed with the routing-key: `route.<route>`. This is useful if you want\nanother component to listen for completed tasks you have posted.",
-          "scopes": [
-            [
-              "scheduler:create-task-graph"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/scheduler/v1/task-graph.json#",
-          "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/task-graph/<taskGraphId>/extend",
-          "args": [
-            "taskGraphId"
-          ],
-          "name": "extendTaskGraph",
-          "title": "Extend existing task-graph",
-          "description": "Add a set of tasks to an existing task-graph. The request format is very\nsimilar to the request format for creating task-graphs. But `routes`\nkey, `scopes`, `metadata` and `tags` cannot be modified.\n\n**Referencing required tasks**, just as when task-graphs are created,\neach task has a list of required tasks. It is possible to reference\nall `taskId`s within the task-graph.\n\n**Safety,** it is only _safe_ to call this API end-point while the\ntask-graph being modified is still running. If the task-graph is\n_finished_ or _blocked_, this method will leave the task-graph in this\nstate. Hence, it is only truly _safe_ to call this API end-point from\nwithin a task in the task-graph being modified.",
-          "scopes": [
-            [
-              "scheduler:extend-task-graph:<taskGraphId>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#",
-          "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task-graph/<taskGraphId>/status",
-          "args": [
-            "taskGraphId"
-          ],
-          "name": "status",
-          "title": "Task Graph Status",
-          "description": "Get task-graph status, this will return the _task-graph status\nstructure_. which can be used to check if a task-graph is `running`,\n`blocked` or `finished`.\n\n**Note**, that `finished` implies successfully completion.",
-          "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task-graph/<taskGraphId>/info",
-          "args": [
-            "taskGraphId"
-          ],
-          "name": "info",
-          "title": "Task Graph Information",
-          "description": "Get task-graph information, this includes the _task-graph status\nstructure_, along with `metadata` and `tags`, but not information\nabout all tasks.\n\nIf you want more detailed information use the `inspectTaskGraph`\nend-point instead.",
-          "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task-graph/<taskGraphId>/inspect",
-          "args": [
-            "taskGraphId"
-          ],
-          "name": "inspect",
-          "title": "Inspect Task Graph",
-          "description": "Inspect a task-graph, this returns all the information the task-graph\nscheduler knows about the task-graph and the state of its tasks.\n\n**Warning**, some of these fields are borderline internal to the\ntask-graph scheduler and we may choose to change or make them internal\nlater. Also note that note all of the information is formalized yet.\nThe JSON schema will be updated to reflect formalized values, we think\nit's safe to consider the values stable.\n\nTake these considerations into account when using the API end-point,\nas we do not promise it will remain fully backward compatible in\nthe future.",
-          "output": "http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/task-graph/<taskGraphId>/inspect/<taskId>",
-          "args": [
-            "taskGraphId",
-            "taskId"
-          ],
-          "name": "inspectTask",
-          "title": "Inspect Task from a Task-Graph",
-          "description": "Inspect a task from a task-graph, this returns all the information the\ntask-graph scheduler knows about the specific task.\n\n**Warning**, some of these fields are borderline internal to the\ntask-graph scheduler and we may choose to change or make them internal\nlater. Also note that note all of the information is formalized yet.\nThe JSON schema will be updated to reflect formalized values, we think\nit's safe to consider the values stable.\n\nTake these considerations into account when using the API end-point,\nas we do not promise it will remain fully backward compatible in\nthe future.",
-          "output": "http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/ping",
-          "args": [],
-          "name": "ping",
-          "title": "Ping Server",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
         }
       ]
     }
@@ -2447,7 +2685,7 @@ exports.createTemporaryCredentials = function(options) {
 };
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"./apis":2,"_process":159,"assert":8,"buffer":10,"crypto":14,"debug":182,"hawk":185,"http":152,"https":156,"lodash":186,"promise":187,"slugid":193,"superagent-promise":197,"url":177}],4:[function(require,module,exports){
+},{"./apis":2,"_process":163,"assert":8,"buffer":10,"crypto":14,"debug":186,"hawk":189,"http":156,"https":160,"lodash":190,"promise":191,"slugid":197,"superagent-promise":201,"url":181}],4:[function(require,module,exports){
 "use strict";
 
 // Regular expression matching:
@@ -2837,7 +3075,7 @@ WebListener.prototype.pause = function() {
  */
 WebListener.SockJS = null;
 
-},{"assert":8,"debug":182,"events":151,"lodash":186,"promise":187,"slugid":193,"url-join":201,"util":179}],8:[function(require,module,exports){
+},{"assert":8,"debug":186,"events":155,"lodash":190,"promise":191,"slugid":197,"url-join":205,"util":183}],8:[function(require,module,exports){
 // http://wiki.commonjs.org/wiki/Unit_Testing/1.0
 //
 // THIS IS NOT TESTED NOR LIKELY TO WORK OUTSIDE V8!
@@ -3198,7 +3436,7 @@ var objectKeys = Object.keys || function (obj) {
   return keys;
 };
 
-},{"util/":179}],9:[function(require,module,exports){
+},{"util/":183}],9:[function(require,module,exports){
 
 },{}],10:[function(require,module,exports){
 /*!
@@ -3217,7 +3455,6 @@ exports.SlowBuffer = SlowBuffer
 exports.INSPECT_MAX_BYTES = 50
 Buffer.poolSize = 8192 // not used by this implementation
 
-var kMaxLength = 0x3fffffff
 var rootParent = {}
 
 /**
@@ -3254,6 +3491,12 @@ Buffer.TYPED_ARRAY_SUPPORT = (function () {
     return false
   }
 })()
+
+function kMaxLength () {
+  return Buffer.TYPED_ARRAY_SUPPORT
+    ? 0x7fffffff
+    : 0x3fffffff
+}
 
 /**
  * Class: Buffer
@@ -3405,9 +3648,9 @@ function allocate (that, length) {
 function checked (length) {
   // Note: cannot use `length < kMaxLength` here because that fails when
   // length is NaN (which is otherwise coerced to zero.)
-  if (length >= kMaxLength) {
+  if (length >= kMaxLength()) {
     throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
-                         'size: 0x' + kMaxLength.toString(16) + ' bytes')
+                         'size: 0x' + kMaxLength().toString(16) + ' bytes')
   }
   return length | 0
 }
@@ -3499,29 +3742,38 @@ Buffer.concat = function concat (list, length) {
 }
 
 function byteLength (string, encoding) {
-  if (typeof string !== 'string') string = String(string)
+  if (typeof string !== 'string') string = '' + string
 
-  if (string.length === 0) return 0
+  var len = string.length
+  if (len === 0) return 0
 
-  switch (encoding || 'utf8') {
-    case 'ascii':
-    case 'binary':
-    case 'raw':
-      return string.length
-    case 'ucs2':
-    case 'ucs-2':
-    case 'utf16le':
-    case 'utf-16le':
-      return string.length * 2
-    case 'hex':
-      return string.length >>> 1
-    case 'utf8':
-    case 'utf-8':
-      return utf8ToBytes(string).length
-    case 'base64':
-      return base64ToBytes(string).length
-    default:
-      return string.length
+  // Use a for loop to avoid recursion
+  var loweredCase = false
+  for (;;) {
+    switch (encoding) {
+      case 'ascii':
+      case 'binary':
+      // Deprecated
+      case 'raw':
+      case 'raws':
+        return len
+      case 'utf8':
+      case 'utf-8':
+        return utf8ToBytes(string).length
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return len * 2
+      case 'hex':
+        return len >>> 1
+      case 'base64':
+        return base64ToBytes(string).length
+      default:
+        if (loweredCase) return utf8ToBytes(string).length // assume utf8
+        encoding = ('' + encoding).toLowerCase()
+        loweredCase = true
+    }
   }
 }
 Buffer.byteLength = byteLength
@@ -3530,8 +3782,7 @@ Buffer.byteLength = byteLength
 Buffer.prototype.length = undefined
 Buffer.prototype.parent = undefined
 
-// toString(encoding, start=0, end=buffer.length)
-Buffer.prototype.toString = function toString (encoding, start, end) {
+function slowToString (encoding, start, end) {
   var loweredCase = false
 
   start = start | 0
@@ -3572,6 +3823,13 @@ Buffer.prototype.toString = function toString (encoding, start, end) {
         loweredCase = true
     }
   }
+}
+
+Buffer.prototype.toString = function toString () {
+  var length = this.length | 0
+  if (length === 0) return ''
+  if (arguments.length === 0) return utf8Slice(this, 0, length)
+  return slowToString.apply(this, arguments)
 }
 
 Buffer.prototype.equals = function equals (b) {
@@ -4944,7 +5202,7 @@ var publicEncrypt = require('public-encrypt');
   }
 })
 
-},{"browserify-aes":18,"browserify-sign":34,"browserify-sign/algos":33,"create-ecdh":80,"create-hash":103,"create-hmac":115,"diffie-hellman":116,"pbkdf2":123,"public-encrypt":124,"randombytes":150}],15:[function(require,module,exports){
+},{"browserify-aes":18,"browserify-sign":34,"browserify-sign/algos":33,"create-ecdh":82,"create-hash":105,"create-hmac":117,"diffie-hellman":118,"pbkdf2":125,"public-encrypt":126,"randombytes":154}],15:[function(require,module,exports){
 (function (Buffer){
 var md5 = require('create-hash/md5')
 module.exports = EVP_BytesToKey
@@ -5010,7 +5268,7 @@ function EVP_BytesToKey (password, keyLen, ivLen) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":10,"create-hash/md5":105}],16:[function(require,module,exports){
+},{"buffer":10,"create-hash/md5":107}],16:[function(require,module,exports){
 (function (Buffer){
 // based on the aes implimentation in triple sec
 // https://github.com/keybase/triplesec
@@ -5292,7 +5550,7 @@ function xorTest (a, b) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./aes":16,"./cipherBase":19,"./ghash":22,"./xor":32,"buffer":10,"inherits":157}],18:[function(require,module,exports){
+},{"./aes":16,"./cipherBase":19,"./ghash":22,"./xor":32,"buffer":10,"inherits":161}],18:[function(require,module,exports){
 var ciphers = require('./encrypter')
 exports.createCipher = exports.Cipher = ciphers.createCipher
 exports.createCipheriv = exports.Cipheriv = ciphers.createCipheriv
@@ -5346,7 +5604,7 @@ CipherBase.prototype.final = function (outputEnc) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":10,"inherits":157,"stream":175}],20:[function(require,module,exports){
+},{"buffer":10,"inherits":161,"stream":179}],20:[function(require,module,exports){
 (function (Buffer){
 var aes = require('./aes')
 var Transform = require('./cipherBase')
@@ -5486,7 +5744,7 @@ exports.createDecipher = createDecipher
 exports.createDecipheriv = createDecipheriv
 
 }).call(this,require("buffer").Buffer)
-},{"./EVP_BytesToKey":15,"./aes":16,"./authCipher":17,"./cipherBase":19,"./modes":23,"./modes/cbc":24,"./modes/cfb":25,"./modes/cfb1":26,"./modes/cfb8":27,"./modes/ctr":28,"./modes/ecb":29,"./modes/ofb":30,"./streamCipher":31,"buffer":10,"inherits":157}],21:[function(require,module,exports){
+},{"./EVP_BytesToKey":15,"./aes":16,"./authCipher":17,"./cipherBase":19,"./modes":23,"./modes/cbc":24,"./modes/cfb":25,"./modes/cfb1":26,"./modes/cfb8":27,"./modes/ctr":28,"./modes/ecb":29,"./modes/ofb":30,"./streamCipher":31,"buffer":10,"inherits":161}],21:[function(require,module,exports){
 (function (Buffer){
 var aes = require('./aes')
 var Transform = require('./cipherBase')
@@ -5611,7 +5869,7 @@ exports.createCipheriv = createCipheriv
 exports.createCipher = createCipher
 
 }).call(this,require("buffer").Buffer)
-},{"./EVP_BytesToKey":15,"./aes":16,"./authCipher":17,"./cipherBase":19,"./modes":23,"./modes/cbc":24,"./modes/cfb":25,"./modes/cfb1":26,"./modes/cfb8":27,"./modes/ctr":28,"./modes/ecb":29,"./modes/ofb":30,"./streamCipher":31,"buffer":10,"inherits":157}],22:[function(require,module,exports){
+},{"./EVP_BytesToKey":15,"./aes":16,"./authCipher":17,"./cipherBase":19,"./modes":23,"./modes/cbc":24,"./modes/cfb":25,"./modes/cfb1":26,"./modes/cfb8":27,"./modes/ctr":28,"./modes/ecb":29,"./modes/ofb":30,"./streamCipher":31,"buffer":10,"inherits":161}],22:[function(require,module,exports){
 (function (Buffer){
 var zeros = new Buffer(16)
 zeros.fill(0)
@@ -6074,7 +6332,7 @@ StreamCipher.prototype._final = function () {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./aes":16,"./cipherBase":19,"buffer":10,"inherits":157}],32:[function(require,module,exports){
+},{"./aes":16,"./cipherBase":19,"buffer":10,"inherits":161}],32:[function(require,module,exports){
 (function (Buffer){
 module.exports = xor
 function xor (a, b) {
@@ -6260,7 +6518,7 @@ Verify.prototype.verify = function verifyMethod (key, sig, enc) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./algos":33,"./sign":77,"./verify":78,"buffer":10,"create-hash":103,"inherits":157,"stream":175}],35:[function(require,module,exports){
+},{"./algos":33,"./sign":79,"./verify":80,"buffer":10,"create-hash":105,"inherits":161,"stream":179}],35:[function(require,module,exports){
 'use strict'
 exports['1.3.132.0.10'] = 'secp256k1'
 
@@ -6327,29 +6585,7 @@ BN.wordSize = 26;
 
 BN.prototype._init = function init(number, base, endian) {
   if (typeof number === 'number') {
-    if (number < 0) {
-      this.sign = true;
-      number = -number;
-    }
-    if (number < 0x4000000) {
-      this.words = [ number & 0x3ffffff ];
-      this.length = 1;
-    } else if (number < 0x10000000000000) {
-      this.words = [
-        number & 0x3ffffff,
-        (number / 0x4000000) & 0x3ffffff
-      ];
-      this.length = 2;
-    } else {
-      assert(number < 0x20000000000000); // 2 ^ 53 (unsafe)
-      this.words = [
-        number & 0x3ffffff,
-        (number / 0x4000000) & 0x3ffffff,
-        1
-      ];
-      this.length = 3;
-    }
-    return;
+    return this._initNumber(number, base, endian);
   } else if (typeof number === 'object') {
     return this._initArray(number, base, endian);
   }
@@ -6371,6 +6607,42 @@ BN.prototype._init = function init(number, base, endian) {
     this.sign = true;
 
   this.strip();
+
+  if (endian !== 'le')
+    return;
+
+  this._initArray(this.toArray(), base, endian);
+};
+
+BN.prototype._initNumber = function _initNumber(number, base, endian) {
+  if (number < 0) {
+    this.sign = true;
+    number = -number;
+  }
+  if (number < 0x4000000) {
+    this.words = [ number & 0x3ffffff ];
+    this.length = 1;
+  } else if (number < 0x10000000000000) {
+    this.words = [
+      number & 0x3ffffff,
+      (number / 0x4000000) & 0x3ffffff
+    ];
+    this.length = 2;
+  } else {
+    assert(number < 0x20000000000000); // 2 ^ 53 (unsafe)
+    this.words = [
+      number & 0x3ffffff,
+      (number / 0x4000000) & 0x3ffffff,
+      1
+    ];
+    this.length = 3;
+  }
+
+  if (endian !== 'le')
+    return;
+
+  // Reverse the bytes
+  this._initArray(this.toArray(), base, endian);
 };
 
 BN.prototype._initArray = function _initArray(number, base, endian) {
@@ -6696,18 +6968,28 @@ BN.prototype.toJSON = function toJSON() {
   return this.toString(16);
 };
 
-BN.prototype.toArray = function toArray() {
+BN.prototype.toArray = function toArray(endian) {
   this.strip();
   var res = new Array(this.byteLength());
   res[0] = 0;
 
   var q = this.clone();
-  for (var i = 0; q.cmpn(0) !== 0; i++) {
-    var b = q.andln(0xff);
-    q.ishrn(8);
-
+  if (endian !== 'le') {
     // Assume big-endian
-    res[res.length - i - 1] = b;
+    for (var i = 0; q.cmpn(0) !== 0; i++) {
+      var b = q.andln(0xff);
+      q.ishrn(8);
+
+      res[res.length - i - 1] = b;
+    }
+  } else {
+    // Assume little-endian
+    for (var i = 0; q.cmpn(0) !== 0; i++) {
+      var b = q.andln(0xff);
+      q.ishrn(8);
+
+      res[i] = b;
+    }
   }
 
   return res;
@@ -8611,7 +8893,7 @@ function getr(priv) {
   return r;
 }
 }).call(this,require("buffer").Buffer)
-},{"bn.js":36,"buffer":10,"randombytes":150}],38:[function(require,module,exports){
+},{"bn.js":36,"buffer":10,"randombytes":154}],38:[function(require,module,exports){
 'use strict';
 
 var elliptic = exports;
@@ -9316,7 +9598,7 @@ Point.prototype.getY = function getY() {
 Point.prototype.toP = Point.prototype.normalize;
 Point.prototype.mixedAdd = Point.prototype.add;
 
-},{"../../elliptic":38,"../curve":41,"bn.js":36,"inherits":157}],41:[function(require,module,exports){
+},{"../../elliptic":38,"../curve":41,"bn.js":36,"inherits":161}],41:[function(require,module,exports){
 'use strict';
 
 var curve = exports;
@@ -9489,7 +9771,7 @@ Point.prototype.getX = function getX() {
   return this.x.fromRed();
 };
 
-},{"../curve":41,"bn.js":36,"inherits":157}],43:[function(require,module,exports){
+},{"../curve":41,"bn.js":36,"inherits":161}],43:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -10398,7 +10680,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../../elliptic":38,"../curve":41,"bn.js":36,"inherits":157}],44:[function(require,module,exports){
+},{"../../elliptic":38,"../curve":41,"bn.js":36,"inherits":161}],44:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -13232,7 +13514,7 @@ function shr64_lo(ah, al, num) {
 };
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":157}],58:[function(require,module,exports){
+},{"inherits":161}],58:[function(require,module,exports){
 module.exports={
   "name": "elliptic",
   "version": "3.1.0",
@@ -13294,7 +13576,8 @@ module.exports={
     "tarball": "http://registry.npmjs.org/elliptic/-/elliptic-3.1.0.tgz"
   },
   "directories": {},
-  "_resolved": "https://registry.npmjs.org/elliptic/-/elliptic-3.1.0.tgz"
+  "_resolved": "https://registry.npmjs.org/elliptic/-/elliptic-3.1.0.tgz",
+  "readme": "ERROR: No README data found!"
 }
 
 },{}],59:[function(require,module,exports){
@@ -13339,7 +13622,7 @@ module.exports = function evp(password, salt, keyLen) {
   return key;
 };
 }).call(this,require("buffer").Buffer)
-},{"buffer":10,"create-hash":103}],60:[function(require,module,exports){
+},{"buffer":10,"create-hash":105}],60:[function(require,module,exports){
 module.exports={"2.16.840.1.101.3.4.1.1": "aes-128-ecb",
 "2.16.840.1.101.3.4.1.2": "aes-128-cbc",
 "2.16.840.1.101.3.4.1.3": "aes-128-ofb",
@@ -13621,7 +13904,7 @@ function decrypt(data, password) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./aesid.json":60,"./asn1":61,"./fixProc":62,"browserify-aes":18,"buffer":10,"pbkdf2":123}],64:[function(require,module,exports){
+},{"./aesid.json":60,"./asn1":61,"./fixProc":62,"browserify-aes":18,"buffer":10,"pbkdf2":125}],64:[function(require,module,exports){
 var asn1 = exports;
 
 asn1.bignum = require('bn.js');
@@ -13632,7 +13915,7 @@ asn1.constants = require('./asn1/constants');
 asn1.decoders = require('./asn1/decoders');
 asn1.encoders = require('./asn1/encoders');
 
-},{"./asn1/api":65,"./asn1/base":67,"./asn1/constants":71,"./asn1/decoders":73,"./asn1/encoders":75,"bn.js":36}],65:[function(require,module,exports){
+},{"./asn1/api":65,"./asn1/base":67,"./asn1/constants":71,"./asn1/decoders":73,"./asn1/encoders":76,"bn.js":36}],65:[function(require,module,exports){
 var asn1 = require('../asn1');
 var inherits = require('inherits');
 
@@ -13693,7 +13976,7 @@ Entity.prototype.encode = function encode(data, enc, /* internal */ reporter) {
   return this._getEncoder(enc).encode(data, reporter);
 };
 
-},{"../asn1":64,"inherits":157,"vm":180}],66:[function(require,module,exports){
+},{"../asn1":64,"inherits":161,"vm":184}],66:[function(require,module,exports){
 var inherits = require('inherits');
 var Reporter = require('../base').Reporter;
 var Buffer = require('buffer').Buffer;
@@ -13811,7 +14094,7 @@ EncoderBuffer.prototype.join = function join(out, offset) {
   return out;
 };
 
-},{"../base":67,"buffer":10,"inherits":157}],67:[function(require,module,exports){
+},{"../base":67,"buffer":10,"inherits":161}],67:[function(require,module,exports){
 var base = exports;
 
 base.Reporter = require('./reporter').Reporter;
@@ -14397,7 +14680,7 @@ Node.prototype._encodePrimitive = function encodePrimitive(tag, data) {
     throw new Error('Unsupported tag: ' + tag);
 };
 
-},{"../base":67,"minimalistic-assert":76}],69:[function(require,module,exports){
+},{"../base":67,"minimalistic-assert":78}],69:[function(require,module,exports){
 var inherits = require('inherits');
 
 function Reporter(options) {
@@ -14501,7 +14784,7 @@ ReporterError.prototype.rethrow = function rethrow(msg) {
   return this;
 };
 
-},{"inherits":157}],70:[function(require,module,exports){
+},{"inherits":161}],70:[function(require,module,exports){
 var constants = require('../constants');
 
 exports.tagClass = {
@@ -14857,12 +15140,65 @@ function derDecodeLen(buf, primitive, fail) {
   return len;
 }
 
-},{"../../asn1":64,"inherits":157}],73:[function(require,module,exports){
+},{"../../asn1":64,"inherits":161}],73:[function(require,module,exports){
 var decoders = exports;
 
 decoders.der = require('./der');
+decoders.pem = require('./pem');
 
-},{"./der":72}],74:[function(require,module,exports){
+},{"./der":72,"./pem":74}],74:[function(require,module,exports){
+var inherits = require('inherits');
+var Buffer = require('buffer').Buffer;
+
+var asn1 = require('../../asn1');
+var DERDecoder = require('./der');
+
+function PEMDecoder(entity) {
+  DERDecoder.call(this, entity);
+  this.enc = 'pem';
+};
+inherits(PEMDecoder, DERDecoder);
+module.exports = PEMDecoder;
+
+PEMDecoder.prototype.decode = function decode(data, options) {
+  var lines = data.toString().split(/[\r\n]+/g);
+
+  var label = options.label.toUpperCase();
+
+  var re = /^-----(BEGIN|END) ([^-]+)-----$/;
+  var start = -1;
+  var end = -1;
+  for (var i = 0; i < lines.length; i++) {
+    var match = lines[i].match(re);
+    if (match === null)
+      continue;
+
+    if (match[2] !== label)
+      continue;
+
+    if (start === -1) {
+      if (match[1] !== 'BEGIN')
+        break;
+      start = i;
+    } else {
+      if (match[1] !== 'END')
+        break;
+      end = i;
+      break;
+    }
+  }
+  if (start === -1 || end === -1)
+    throw new Error('PEM section not found for: ' + label);
+
+  var base64 = lines.slice(start + 1, end).join('');
+  // Remove excessive symbols
+  base64.replace(/[^a-z0-9\+\/=]+/gi, '');
+
+  var input = new Buffer(base64, 'base64');
+  return DERDecoder.prototype.decode.call(this, input, options);
+};
+
+},{"../../asn1":64,"./der":72,"buffer":10,"inherits":161}],75:[function(require,module,exports){
 var inherits = require('inherits');
 var Buffer = require('buffer').Buffer;
 
@@ -15134,12 +15470,38 @@ function encodeTag(tag, primitive, cls, reporter) {
   return res;
 }
 
-},{"../../asn1":64,"buffer":10,"inherits":157}],75:[function(require,module,exports){
+},{"../../asn1":64,"buffer":10,"inherits":161}],76:[function(require,module,exports){
 var encoders = exports;
 
 encoders.der = require('./der');
+encoders.pem = require('./pem');
 
-},{"./der":74}],76:[function(require,module,exports){
+},{"./der":75,"./pem":77}],77:[function(require,module,exports){
+var inherits = require('inherits');
+var Buffer = require('buffer').Buffer;
+
+var asn1 = require('../../asn1');
+var DEREncoder = require('./der');
+
+function PEMEncoder(entity) {
+  DEREncoder.call(this, entity);
+  this.enc = 'pem';
+};
+inherits(PEMEncoder, DEREncoder);
+module.exports = PEMEncoder;
+
+PEMEncoder.prototype.encode = function encode(data, options) {
+  var buf = DEREncoder.prototype.encode.call(this, data);
+
+  var p = buf.toString('base64');
+  var out = [ '-----BEGIN ' + options.label + '-----' ];
+  for (var i = 0; i < p.length; i += 64)
+    out.push(p.slice(i, i + 64));
+  out.push('-----END ' + options.label + '-----');
+  return out.join('\n');
+};
+
+},{"../../asn1":64,"./der":75,"buffer":10,"inherits":161}],78:[function(require,module,exports){
 module.exports = assert;
 
 function assert(val, msg) {
@@ -15152,7 +15514,7 @@ assert.equal = function assertEqual(l, r, msg) {
     throw new Error(msg || ('Assertion failed: ' + l + ' != ' + r));
 };
 
-},{}],77:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 (function (Buffer){
 // much of this based on https://github.com/indutny/self-signed/blob/gh-pages/lib/rsa.js
 var parseKeys = require('parse-asn1')
@@ -15330,7 +15692,7 @@ function makeR (g, k, p, q) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./curves":35,"bn.js":36,"browserify-rsa":37,"buffer":10,"create-hmac":115,"elliptic":38,"parse-asn1":63}],78:[function(require,module,exports){
+},{"./curves":35,"bn.js":36,"browserify-rsa":37,"buffer":10,"create-hmac":117,"elliptic":38,"parse-asn1":63}],80:[function(require,module,exports){
 (function (Buffer){
 'use strict'
 // much of this based on https://github.com/indutny/self-signed/blob/gh-pages/lib/rsa.js
@@ -15434,7 +15796,7 @@ function checkValue (b, q) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./curves":35,"bn.js":36,"buffer":10,"elliptic":38,"parse-asn1":63}],79:[function(require,module,exports){
+},{"./curves":35,"bn.js":36,"buffer":10,"elliptic":38,"parse-asn1":63}],81:[function(require,module,exports){
 (function (Buffer){
 var elliptic = require('elliptic');
 var BN = require('bn.js');
@@ -15550,55 +15912,118 @@ function formatReturnValue(bn, enc, len) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"bn.js":81,"buffer":10,"elliptic":82}],80:[function(require,module,exports){
+},{"bn.js":83,"buffer":10,"elliptic":84}],82:[function(require,module,exports){
 var createECDH = require('crypto').createECDH;
 
 module.exports = createECDH || require('./browser');
-},{"./browser":79,"crypto":14}],81:[function(require,module,exports){
+},{"./browser":81,"crypto":14}],83:[function(require,module,exports){
 arguments[4][36][0].apply(exports,arguments)
-},{"dup":36}],82:[function(require,module,exports){
+},{"dup":36}],84:[function(require,module,exports){
 arguments[4][38][0].apply(exports,arguments)
-},{"../package.json":102,"./elliptic/curve":85,"./elliptic/curves":88,"./elliptic/ec":89,"./elliptic/hmac-drbg":92,"./elliptic/utils":94,"brorand":95,"dup":38}],83:[function(require,module,exports){
+},{"../package.json":104,"./elliptic/curve":87,"./elliptic/curves":90,"./elliptic/ec":91,"./elliptic/hmac-drbg":94,"./elliptic/utils":96,"brorand":97,"dup":38}],85:[function(require,module,exports){
 arguments[4][39][0].apply(exports,arguments)
-},{"../../elliptic":82,"bn.js":81,"dup":39}],84:[function(require,module,exports){
+},{"../../elliptic":84,"bn.js":83,"dup":39}],86:[function(require,module,exports){
 arguments[4][40][0].apply(exports,arguments)
-},{"../../elliptic":82,"../curve":85,"bn.js":81,"dup":40,"inherits":157}],85:[function(require,module,exports){
+},{"../../elliptic":84,"../curve":87,"bn.js":83,"dup":40,"inherits":161}],87:[function(require,module,exports){
 arguments[4][41][0].apply(exports,arguments)
-},{"./base":83,"./edwards":84,"./mont":86,"./short":87,"dup":41}],86:[function(require,module,exports){
+},{"./base":85,"./edwards":86,"./mont":88,"./short":89,"dup":41}],88:[function(require,module,exports){
 arguments[4][42][0].apply(exports,arguments)
-},{"../curve":85,"bn.js":81,"dup":42,"inherits":157}],87:[function(require,module,exports){
+},{"../curve":87,"bn.js":83,"dup":42,"inherits":161}],89:[function(require,module,exports){
 arguments[4][43][0].apply(exports,arguments)
-},{"../../elliptic":82,"../curve":85,"bn.js":81,"dup":43,"inherits":157}],88:[function(require,module,exports){
+},{"../../elliptic":84,"../curve":87,"bn.js":83,"dup":43,"inherits":161}],90:[function(require,module,exports){
 arguments[4][44][0].apply(exports,arguments)
-},{"../elliptic":82,"./precomputed/secp256k1":93,"dup":44,"hash.js":96}],89:[function(require,module,exports){
+},{"../elliptic":84,"./precomputed/secp256k1":95,"dup":44,"hash.js":98}],91:[function(require,module,exports){
 arguments[4][45][0].apply(exports,arguments)
-},{"../../elliptic":82,"./key":90,"./signature":91,"bn.js":81,"dup":45}],90:[function(require,module,exports){
+},{"../../elliptic":84,"./key":92,"./signature":93,"bn.js":83,"dup":45}],92:[function(require,module,exports){
 arguments[4][46][0].apply(exports,arguments)
-},{"../../elliptic":82,"bn.js":81,"dup":46}],91:[function(require,module,exports){
+},{"../../elliptic":84,"bn.js":83,"dup":46}],93:[function(require,module,exports){
 arguments[4][47][0].apply(exports,arguments)
-},{"../../elliptic":82,"bn.js":81,"dup":47}],92:[function(require,module,exports){
+},{"../../elliptic":84,"bn.js":83,"dup":47}],94:[function(require,module,exports){
 arguments[4][48][0].apply(exports,arguments)
-},{"../elliptic":82,"dup":48,"hash.js":96}],93:[function(require,module,exports){
+},{"../elliptic":84,"dup":48,"hash.js":98}],95:[function(require,module,exports){
 arguments[4][49][0].apply(exports,arguments)
-},{"dup":49}],94:[function(require,module,exports){
+},{"dup":49}],96:[function(require,module,exports){
 arguments[4][50][0].apply(exports,arguments)
-},{"dup":50}],95:[function(require,module,exports){
+},{"dup":50}],97:[function(require,module,exports){
 arguments[4][51][0].apply(exports,arguments)
-},{"dup":51}],96:[function(require,module,exports){
+},{"dup":51}],98:[function(require,module,exports){
 arguments[4][52][0].apply(exports,arguments)
-},{"./hash/common":97,"./hash/hmac":98,"./hash/ripemd":99,"./hash/sha":100,"./hash/utils":101,"dup":52}],97:[function(require,module,exports){
+},{"./hash/common":99,"./hash/hmac":100,"./hash/ripemd":101,"./hash/sha":102,"./hash/utils":103,"dup":52}],99:[function(require,module,exports){
 arguments[4][53][0].apply(exports,arguments)
-},{"../hash":96,"dup":53}],98:[function(require,module,exports){
+},{"../hash":98,"dup":53}],100:[function(require,module,exports){
 arguments[4][54][0].apply(exports,arguments)
-},{"../hash":96,"dup":54}],99:[function(require,module,exports){
+},{"../hash":98,"dup":54}],101:[function(require,module,exports){
 arguments[4][55][0].apply(exports,arguments)
-},{"../hash":96,"dup":55}],100:[function(require,module,exports){
+},{"../hash":98,"dup":55}],102:[function(require,module,exports){
 arguments[4][56][0].apply(exports,arguments)
-},{"../hash":96,"dup":56}],101:[function(require,module,exports){
+},{"../hash":98,"dup":56}],103:[function(require,module,exports){
 arguments[4][57][0].apply(exports,arguments)
-},{"dup":57,"inherits":157}],102:[function(require,module,exports){
-arguments[4][58][0].apply(exports,arguments)
-},{"dup":58}],103:[function(require,module,exports){
+},{"dup":57,"inherits":161}],104:[function(require,module,exports){
+module.exports={
+  "name": "elliptic",
+  "version": "3.1.0",
+  "description": "EC cryptography",
+  "main": "lib/elliptic.js",
+  "scripts": {
+    "test": "make lint && mocha --reporter=spec test/*-test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/indutny/elliptic.git"
+  },
+  "keywords": [
+    "EC",
+    "Elliptic",
+    "curve",
+    "Cryptography"
+  ],
+  "author": {
+    "name": "Fedor Indutny",
+    "email": "fedor@indutny.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/indutny/elliptic/issues"
+  },
+  "homepage": "https://github.com/indutny/elliptic",
+  "devDependencies": {
+    "browserify": "^3.44.2",
+    "jscs": "^1.11.3",
+    "jshint": "^2.6.0",
+    "mocha": "^2.1.0",
+    "uglify-js": "^2.4.13"
+  },
+  "dependencies": {
+    "bn.js": "^2.0.3",
+    "brorand": "^1.0.1",
+    "hash.js": "^1.0.0",
+    "inherits": "^2.0.1"
+  },
+  "gitHead": "d86cd2a8178f7e7cecbd6dd92eea084e2ab44c13",
+  "_id": "elliptic@3.1.0",
+  "_shasum": "c21682ef762769b56a74201609105da11d5f60cc",
+  "_from": "elliptic@>=3.0.0 <4.0.0",
+  "_npmVersion": "2.11.0",
+  "_nodeVersion": "2.2.1",
+  "_npmUser": {
+    "name": "indutny",
+    "email": "fedor@indutny.com"
+  },
+  "maintainers": [
+    {
+      "name": "indutny",
+      "email": "fedor@indutny.com"
+    }
+  ],
+  "dist": {
+    "shasum": "c21682ef762769b56a74201609105da11d5f60cc",
+    "tarball": "http://registry.npmjs.org/elliptic/-/elliptic-3.1.0.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/elliptic/-/elliptic-3.1.0.tgz"
+}
+
+},{}],105:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 var inherits = require('inherits')
@@ -15691,7 +16116,7 @@ module.exports = function createHash (alg) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./md5":105,"buffer":10,"inherits":157,"ripemd160":106,"sha.js":108,"stream":175}],104:[function(require,module,exports){
+},{"./md5":107,"buffer":10,"inherits":161,"ripemd160":108,"sha.js":110,"stream":179}],106:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 var intSize = 4;
@@ -15728,7 +16153,7 @@ function hash(buf, fn, hashSize, bigEndian) {
 }
 exports.hash = hash;
 }).call(this,require("buffer").Buffer)
-},{"buffer":10}],105:[function(require,module,exports){
+},{"buffer":10}],107:[function(require,module,exports){
 'use strict';
 /*
  * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
@@ -15885,7 +16310,7 @@ function bit_rol(num, cnt)
 module.exports = function md5(buf) {
   return helpers.hash(buf, core_md5, 16);
 };
-},{"./helpers":104}],106:[function(require,module,exports){
+},{"./helpers":106}],108:[function(require,module,exports){
 (function (Buffer){
 /*
 CryptoJS v3.1.2
@@ -16099,7 +16524,7 @@ function ripemd160 (message) {
 module.exports = ripemd160
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":10}],107:[function(require,module,exports){
+},{"buffer":10}],109:[function(require,module,exports){
 (function (Buffer){
 // prototype class for hash functions
 function Hash (blockSize, finalSize) {
@@ -16172,7 +16597,7 @@ Hash.prototype._update = function () {
 module.exports = Hash
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":10}],108:[function(require,module,exports){
+},{"buffer":10}],110:[function(require,module,exports){
 var exports = module.exports = function SHA (algorithm) {
   algorithm = algorithm.toLowerCase()
 
@@ -16189,7 +16614,7 @@ exports.sha256 = require('./sha256')
 exports.sha384 = require('./sha384')
 exports.sha512 = require('./sha512')
 
-},{"./sha":109,"./sha1":110,"./sha224":111,"./sha256":112,"./sha384":113,"./sha512":114}],109:[function(require,module,exports){
+},{"./sha":111,"./sha1":112,"./sha224":113,"./sha256":114,"./sha384":115,"./sha512":116}],111:[function(require,module,exports){
 (function (Buffer){
 /*
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-0, as defined
@@ -16292,7 +16717,7 @@ module.exports = Sha
 
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":107,"buffer":10,"inherits":157}],110:[function(require,module,exports){
+},{"./hash":109,"buffer":10,"inherits":161}],112:[function(require,module,exports){
 (function (Buffer){
 /*
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined
@@ -16391,7 +16816,7 @@ Sha1.prototype._hash = function () {
 module.exports = Sha1
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":107,"buffer":10,"inherits":157}],111:[function(require,module,exports){
+},{"./hash":109,"buffer":10,"inherits":161}],113:[function(require,module,exports){
 (function (Buffer){
 /**
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-256, as defined
@@ -16447,7 +16872,7 @@ Sha224.prototype._hash = function () {
 module.exports = Sha224
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":107,"./sha256":112,"buffer":10,"inherits":157}],112:[function(require,module,exports){
+},{"./hash":109,"./sha256":114,"buffer":10,"inherits":161}],114:[function(require,module,exports){
 (function (Buffer){
 /**
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-256, as defined
@@ -16600,7 +17025,7 @@ Sha256.prototype._hash = function () {
 module.exports = Sha256
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":107,"buffer":10,"inherits":157}],113:[function(require,module,exports){
+},{"./hash":109,"buffer":10,"inherits":161}],115:[function(require,module,exports){
 (function (Buffer){
 var inherits = require('inherits')
 var SHA512 = require('./sha512')
@@ -16660,7 +17085,7 @@ Sha384.prototype._hash = function () {
 module.exports = Sha384
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":107,"./sha512":114,"buffer":10,"inherits":157}],114:[function(require,module,exports){
+},{"./hash":109,"./sha512":116,"buffer":10,"inherits":161}],116:[function(require,module,exports){
 (function (Buffer){
 var inherits = require('inherits')
 var Hash = require('./hash')
@@ -16909,7 +17334,7 @@ Sha512.prototype._hash = function () {
 module.exports = Sha512
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":107,"buffer":10,"inherits":157}],115:[function(require,module,exports){
+},{"./hash":109,"buffer":10,"inherits":161}],117:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 var createHash = require('create-hash/browser');
@@ -16981,7 +17406,7 @@ module.exports = function createHmac(alg, key) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":10,"create-hash/browser":103,"inherits":157,"stream":175}],116:[function(require,module,exports){
+},{"buffer":10,"create-hash/browser":105,"inherits":161,"stream":179}],118:[function(require,module,exports){
 (function (Buffer){
 var generatePrime = require('./lib/generatePrime');
 var primes = require('./lib/primes');
@@ -17025,7 +17450,7 @@ exports.DiffieHellmanGroup = exports.createDiffieHellmanGroup = exports.getDiffi
 exports.createDiffieHellman = exports.DiffieHellman = createDiffieHellman;
 
 }).call(this,require("buffer").Buffer)
-},{"./lib/dh":117,"./lib/generatePrime":118,"./lib/primes":119,"buffer":10}],117:[function(require,module,exports){
+},{"./lib/dh":119,"./lib/generatePrime":120,"./lib/primes":121,"buffer":10}],119:[function(require,module,exports){
 (function (Buffer){
 var BN = require('bn.js');
 var MillerRabin = require('miller-rabin');
@@ -17195,7 +17620,7 @@ function formatReturnValue(bn, enc) {
   }
 }
 }).call(this,require("buffer").Buffer)
-},{"./generatePrime":118,"bn.js":120,"buffer":10,"miller-rabin":121,"randombytes":150}],118:[function(require,module,exports){
+},{"./generatePrime":120,"bn.js":122,"buffer":10,"miller-rabin":123,"randombytes":154}],120:[function(require,module,exports){
 var randomBytes = require('randombytes');
 module.exports = findPrime;
 findPrime.simpleSieve = simpleSieve;
@@ -17328,7 +17753,7 @@ function findPrime(bits, gen) {
   }
 
 }
-},{"bn.js":120,"miller-rabin":121,"randombytes":150}],119:[function(require,module,exports){
+},{"bn.js":122,"miller-rabin":123,"randombytes":154}],121:[function(require,module,exports){
 module.exports={
     "modp1": {
         "gen": "02",
@@ -17363,9 +17788,9 @@ module.exports={
         "prime": "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a92108011a723c12a787e6d788719a10bdba5b2699c327186af4e23c1a946834b6150bda2583e9ca2ad44ce8dbbbc2db04de8ef92e8efc141fbecaa6287c59474e6bc05d99b2964fa090c3a2233ba186515be7ed1f612970cee2d7afb81bdd762170481cd0069127d5b05aa993b4ea988d8fddc186ffb7dc90a6c08f4df435c93402849236c3fab4d27c7026c1d4dcb2602646dec9751e763dba37bdf8ff9406ad9e530ee5db382f413001aeb06a53ed9027d831179727b0865a8918da3edbebcf9b14ed44ce6cbaced4bb1bdb7f1447e6cc254b332051512bd7af426fb8f401378cd2bf5983ca01c64b92ecf032ea15d1721d03f482d7ce6e74fef6d55e702f46980c82b5a84031900b1c9e59e7c97fbec7e8f323a97a7e36cc88be0f1d45b7ff585ac54bd407b22b4154aacc8f6d7ebf48e1d814cc5ed20f8037e0a79715eef29be32806a1d58bb7c5da76f550aa3d8a1fbff0eb19ccb1a313d55cda56c9ec2ef29632387fe8d76e3c0468043e8f663f4860ee12bf2d5b0b7474d6e694f91e6dbe115974a3926f12fee5e438777cb6a932df8cd8bec4d073b931ba3bc832b68d9dd300741fa7bf8afc47ed2576f6936ba424663aab639c5ae4f5683423b4742bf1c978238f16cbe39d652de3fdb8befc848ad922222e04a4037c0713eb57a81a23f0c73473fc646cea306b4bcbc8862f8385ddfa9d4b7fa2c087e879683303ed5bdd3a062b3cf5b3a278a66d2a13f83f44f82ddf310ee074ab6a364597e899a0255dc164f31cc50846851df9ab48195ded7ea1b1d510bd7ee74d73faf36bc31ecfa268359046f4eb879f924009438b481c6cd7889a002ed5ee382bc9190da6fc026e479558e4475677e9aa9e3050e2765694dfc81f56e880b96e7160c980dd98edd3dfffffffffffffffff"
     }
 }
-},{}],120:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
 arguments[4][36][0].apply(exports,arguments)
-},{"dup":36}],121:[function(require,module,exports){
+},{"dup":36}],123:[function(require,module,exports){
 var bn = require('bn.js');
 var brorand = require('brorand');
 
@@ -17480,9 +17905,9 @@ MillerRabin.prototype.getDivisor = function getDivisor(n, k) {
   return false;
 };
 
-},{"bn.js":120,"brorand":122}],122:[function(require,module,exports){
+},{"bn.js":122,"brorand":124}],124:[function(require,module,exports){
 arguments[4][51][0].apply(exports,arguments)
-},{"dup":51}],123:[function(require,module,exports){
+},{"dup":51}],125:[function(require,module,exports){
 (function (Buffer){
 var createHmac = require('create-hmac')
 var MAX_ALLOC = Math.pow(2, 30) - 1 // default in iojs
@@ -17566,7 +17991,7 @@ function pbkdf2Sync (password, salt, iterations, keylen, digest) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":10,"create-hmac":115}],124:[function(require,module,exports){
+},{"buffer":10,"create-hmac":117}],126:[function(require,module,exports){
 exports.publicEncrypt = require('./publicEncrypt');
 exports.privateDecrypt = require('./privateDecrypt');
 
@@ -17577,7 +18002,7 @@ exports.privateEncrypt = function privateEncrypt(key, buf) {
 exports.publicDecrypt = function publicDecrypt(key, buf) {
   return exports.privateDecrypt(key, buf, true);
 };
-},{"./privateDecrypt":146,"./publicEncrypt":147}],125:[function(require,module,exports){
+},{"./privateDecrypt":150,"./publicEncrypt":151}],127:[function(require,module,exports){
 (function (Buffer){
 var createHash = require('create-hash');
 module.exports = function (seed, len) {
@@ -17596,47 +18021,51 @@ function i2ops(c) {
   return out;
 }
 }).call(this,require("buffer").Buffer)
-},{"buffer":10,"create-hash":103}],126:[function(require,module,exports){
+},{"buffer":10,"create-hash":105}],128:[function(require,module,exports){
 arguments[4][36][0].apply(exports,arguments)
-},{"dup":36}],127:[function(require,module,exports){
+},{"dup":36}],129:[function(require,module,exports){
 arguments[4][37][0].apply(exports,arguments)
-},{"bn.js":126,"buffer":10,"dup":37,"randombytes":150}],128:[function(require,module,exports){
+},{"bn.js":128,"buffer":10,"dup":37,"randombytes":154}],130:[function(require,module,exports){
 arguments[4][59][0].apply(exports,arguments)
-},{"buffer":10,"create-hash":103,"dup":59}],129:[function(require,module,exports){
+},{"buffer":10,"create-hash":105,"dup":59}],131:[function(require,module,exports){
 arguments[4][60][0].apply(exports,arguments)
-},{"dup":60}],130:[function(require,module,exports){
+},{"dup":60}],132:[function(require,module,exports){
 arguments[4][61][0].apply(exports,arguments)
-},{"asn1.js":133,"dup":61}],131:[function(require,module,exports){
+},{"asn1.js":135,"dup":61}],133:[function(require,module,exports){
 arguments[4][62][0].apply(exports,arguments)
-},{"./EVP_BytesToKey":128,"browserify-aes":18,"buffer":10,"dup":62}],132:[function(require,module,exports){
+},{"./EVP_BytesToKey":130,"browserify-aes":18,"buffer":10,"dup":62}],134:[function(require,module,exports){
 arguments[4][63][0].apply(exports,arguments)
-},{"./aesid.json":129,"./asn1":130,"./fixProc":131,"browserify-aes":18,"buffer":10,"dup":63,"pbkdf2":123}],133:[function(require,module,exports){
+},{"./aesid.json":131,"./asn1":132,"./fixProc":133,"browserify-aes":18,"buffer":10,"dup":63,"pbkdf2":125}],135:[function(require,module,exports){
 arguments[4][64][0].apply(exports,arguments)
-},{"./asn1/api":134,"./asn1/base":136,"./asn1/constants":140,"./asn1/decoders":142,"./asn1/encoders":144,"bn.js":126,"dup":64}],134:[function(require,module,exports){
+},{"./asn1/api":136,"./asn1/base":138,"./asn1/constants":142,"./asn1/decoders":144,"./asn1/encoders":147,"bn.js":128,"dup":64}],136:[function(require,module,exports){
 arguments[4][65][0].apply(exports,arguments)
-},{"../asn1":133,"dup":65,"inherits":157,"vm":180}],135:[function(require,module,exports){
+},{"../asn1":135,"dup":65,"inherits":161,"vm":184}],137:[function(require,module,exports){
 arguments[4][66][0].apply(exports,arguments)
-},{"../base":136,"buffer":10,"dup":66,"inherits":157}],136:[function(require,module,exports){
+},{"../base":138,"buffer":10,"dup":66,"inherits":161}],138:[function(require,module,exports){
 arguments[4][67][0].apply(exports,arguments)
-},{"./buffer":135,"./node":137,"./reporter":138,"dup":67}],137:[function(require,module,exports){
+},{"./buffer":137,"./node":139,"./reporter":140,"dup":67}],139:[function(require,module,exports){
 arguments[4][68][0].apply(exports,arguments)
-},{"../base":136,"dup":68,"minimalistic-assert":145}],138:[function(require,module,exports){
+},{"../base":138,"dup":68,"minimalistic-assert":149}],140:[function(require,module,exports){
 arguments[4][69][0].apply(exports,arguments)
-},{"dup":69,"inherits":157}],139:[function(require,module,exports){
+},{"dup":69,"inherits":161}],141:[function(require,module,exports){
 arguments[4][70][0].apply(exports,arguments)
-},{"../constants":140,"dup":70}],140:[function(require,module,exports){
+},{"../constants":142,"dup":70}],142:[function(require,module,exports){
 arguments[4][71][0].apply(exports,arguments)
-},{"./der":139,"dup":71}],141:[function(require,module,exports){
+},{"./der":141,"dup":71}],143:[function(require,module,exports){
 arguments[4][72][0].apply(exports,arguments)
-},{"../../asn1":133,"dup":72,"inherits":157}],142:[function(require,module,exports){
+},{"../../asn1":135,"dup":72,"inherits":161}],144:[function(require,module,exports){
 arguments[4][73][0].apply(exports,arguments)
-},{"./der":141,"dup":73}],143:[function(require,module,exports){
+},{"./der":143,"./pem":145,"dup":73}],145:[function(require,module,exports){
 arguments[4][74][0].apply(exports,arguments)
-},{"../../asn1":133,"buffer":10,"dup":74,"inherits":157}],144:[function(require,module,exports){
+},{"../../asn1":135,"./der":143,"buffer":10,"dup":74,"inherits":161}],146:[function(require,module,exports){
 arguments[4][75][0].apply(exports,arguments)
-},{"./der":143,"dup":75}],145:[function(require,module,exports){
+},{"../../asn1":135,"buffer":10,"dup":75,"inherits":161}],147:[function(require,module,exports){
 arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],146:[function(require,module,exports){
+},{"./der":146,"./pem":148,"dup":76}],148:[function(require,module,exports){
+arguments[4][77][0].apply(exports,arguments)
+},{"../../asn1":135,"./der":146,"buffer":10,"dup":77,"inherits":161}],149:[function(require,module,exports){
+arguments[4][78][0].apply(exports,arguments)
+},{"dup":78}],150:[function(require,module,exports){
 (function (Buffer){
 var parseKeys = require('parse-asn1');
 var mgf = require('./mgf');
@@ -17747,7 +18176,7 @@ function compare(a, b){
   return dif;
 }
 }).call(this,require("buffer").Buffer)
-},{"./mgf":125,"./withPublic":148,"./xor":149,"bn.js":126,"browserify-rsa":127,"buffer":10,"create-hash":103,"parse-asn1":132}],147:[function(require,module,exports){
+},{"./mgf":127,"./withPublic":152,"./xor":153,"bn.js":128,"browserify-rsa":129,"buffer":10,"create-hash":105,"parse-asn1":134}],151:[function(require,module,exports){
 (function (Buffer){
 var parseKeys = require('parse-asn1');
 var randomBytes = require('randombytes');
@@ -17845,7 +18274,7 @@ function nonZero(len, crypto) {
   return out;
 }
 }).call(this,require("buffer").Buffer)
-},{"./mgf":125,"./withPublic":148,"./xor":149,"bn.js":126,"browserify-rsa":127,"buffer":10,"create-hash":103,"parse-asn1":132,"randombytes":150}],148:[function(require,module,exports){
+},{"./mgf":127,"./withPublic":152,"./xor":153,"bn.js":128,"browserify-rsa":129,"buffer":10,"create-hash":105,"parse-asn1":134,"randombytes":154}],152:[function(require,module,exports){
 (function (Buffer){
 var bn = require('bn.js');
 function withPublic(paddedMsg, key) {
@@ -17858,7 +18287,7 @@ function withPublic(paddedMsg, key) {
 
 module.exports = withPublic;
 }).call(this,require("buffer").Buffer)
-},{"bn.js":126,"buffer":10}],149:[function(require,module,exports){
+},{"bn.js":128,"buffer":10}],153:[function(require,module,exports){
 module.exports = function xor(a, b) {
   var len = a.length;
   var i = -1;
@@ -17867,7 +18296,7 @@ module.exports = function xor(a, b) {
   }
   return a
 };
-},{}],150:[function(require,module,exports){
+},{}],154:[function(require,module,exports){
 (function (process,global,Buffer){
 'use strict';
 
@@ -17899,7 +18328,7 @@ function oldBrowser() {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"_process":159,"buffer":10}],151:[function(require,module,exports){
+},{"_process":163,"buffer":10}],155:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -18202,7 +18631,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],152:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 var http = module.exports;
 var EventEmitter = require('events').EventEmitter;
 var Request = require('./lib/request');
@@ -18348,7 +18777,7 @@ http.STATUS_CODES = {
     510 : 'Not Extended',               // RFC 2774
     511 : 'Network Authentication Required' // RFC 6585
 };
-},{"./lib/request":153,"events":151,"url":177}],153:[function(require,module,exports){
+},{"./lib/request":157,"events":155,"url":181}],157:[function(require,module,exports){
 var Stream = require('stream');
 var Response = require('./response');
 var Base64 = require('Base64');
@@ -18559,7 +18988,7 @@ var isXHR2Compatible = function (obj) {
     if (typeof FormData !== 'undefined' && obj instanceof FormData) return true;
 };
 
-},{"./response":154,"Base64":155,"inherits":157,"stream":175}],154:[function(require,module,exports){
+},{"./response":158,"Base64":159,"inherits":161,"stream":179}],158:[function(require,module,exports){
 var Stream = require('stream');
 var util = require('util');
 
@@ -18681,7 +19110,7 @@ var isArray = Array.isArray || function (xs) {
     return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{"stream":175,"util":179}],155:[function(require,module,exports){
+},{"stream":179,"util":183}],159:[function(require,module,exports){
 ;(function () {
 
   var object = typeof exports != 'undefined' ? exports : this; // #8: web workers
@@ -18743,7 +19172,7 @@ var isArray = Array.isArray || function (xs) {
 
 }());
 
-},{}],156:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 var http = require('http');
 
 var https = module.exports;
@@ -18758,7 +19187,7 @@ https.request = function (params, cb) {
     return http.request.call(this, params, cb);
 }
 
-},{"http":152}],157:[function(require,module,exports){
+},{"http":156}],161:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -18783,12 +19212,12 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],158:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],159:[function(require,module,exports){
+},{}],163:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -18848,7 +19277,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],160:[function(require,module,exports){
+},{}],164:[function(require,module,exports){
 (function (global){
 /*! http://mths.be/punycode v1.2.4 by @mathias */
 ;(function(root) {
@@ -19359,7 +19788,7 @@ process.umask = function() { return 0; };
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],161:[function(require,module,exports){
+},{}],165:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -19445,7 +19874,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],162:[function(require,module,exports){
+},{}],166:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -19532,16 +19961,16 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],163:[function(require,module,exports){
+},{}],167:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":161,"./encode":162}],164:[function(require,module,exports){
+},{"./decode":165,"./encode":166}],168:[function(require,module,exports){
 module.exports = require("./lib/_stream_duplex.js")
 
-},{"./lib/_stream_duplex.js":165}],165:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":169}],169:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -19634,7 +20063,7 @@ function forEach (xs, f) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_readable":167,"./_stream_writable":169,"_process":159,"core-util-is":170,"inherits":157}],166:[function(require,module,exports){
+},{"./_stream_readable":171,"./_stream_writable":173,"_process":163,"core-util-is":174,"inherits":161}],170:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -19682,7 +20111,7 @@ PassThrough.prototype._transform = function(chunk, encoding, cb) {
   cb(null, chunk);
 };
 
-},{"./_stream_transform":168,"core-util-is":170,"inherits":157}],167:[function(require,module,exports){
+},{"./_stream_transform":172,"core-util-is":174,"inherits":161}],171:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -20637,7 +21066,7 @@ function indexOf (xs, x) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_duplex":165,"_process":159,"buffer":10,"core-util-is":170,"events":151,"inherits":157,"isarray":158,"stream":175,"string_decoder/":176,"util":9}],168:[function(require,module,exports){
+},{"./_stream_duplex":169,"_process":163,"buffer":10,"core-util-is":174,"events":155,"inherits":161,"isarray":162,"stream":179,"string_decoder/":180,"util":9}],172:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -20848,7 +21277,7 @@ function done(stream, er) {
   return stream.push(null);
 }
 
-},{"./_stream_duplex":165,"core-util-is":170,"inherits":157}],169:[function(require,module,exports){
+},{"./_stream_duplex":169,"core-util-is":174,"inherits":161}],173:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -21329,7 +21758,7 @@ function endWritable(stream, state, cb) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_duplex":165,"_process":159,"buffer":10,"core-util-is":170,"inherits":157,"stream":175}],170:[function(require,module,exports){
+},{"./_stream_duplex":169,"_process":163,"buffer":10,"core-util-is":174,"inherits":161,"stream":179}],174:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -21439,10 +21868,10 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 }).call(this,require("buffer").Buffer)
-},{"buffer":10}],171:[function(require,module,exports){
+},{"buffer":10}],175:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
-},{"./lib/_stream_passthrough.js":166}],172:[function(require,module,exports){
+},{"./lib/_stream_passthrough.js":170}],176:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = require('stream');
 exports.Readable = exports;
@@ -21451,13 +21880,13 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":165,"./lib/_stream_passthrough.js":166,"./lib/_stream_readable.js":167,"./lib/_stream_transform.js":168,"./lib/_stream_writable.js":169,"stream":175}],173:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":169,"./lib/_stream_passthrough.js":170,"./lib/_stream_readable.js":171,"./lib/_stream_transform.js":172,"./lib/_stream_writable.js":173,"stream":179}],177:[function(require,module,exports){
 module.exports = require("./lib/_stream_transform.js")
 
-},{"./lib/_stream_transform.js":168}],174:[function(require,module,exports){
+},{"./lib/_stream_transform.js":172}],178:[function(require,module,exports){
 module.exports = require("./lib/_stream_writable.js")
 
-},{"./lib/_stream_writable.js":169}],175:[function(require,module,exports){
+},{"./lib/_stream_writable.js":173}],179:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21586,7 +22015,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":151,"inherits":157,"readable-stream/duplex.js":164,"readable-stream/passthrough.js":171,"readable-stream/readable.js":172,"readable-stream/transform.js":173,"readable-stream/writable.js":174}],176:[function(require,module,exports){
+},{"events":155,"inherits":161,"readable-stream/duplex.js":168,"readable-stream/passthrough.js":175,"readable-stream/readable.js":176,"readable-stream/transform.js":177,"readable-stream/writable.js":178}],180:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21809,7 +22238,7 @@ function base64DetectIncompleteChar(buffer) {
   this.charLength = this.charReceived ? 3 : 0;
 }
 
-},{"buffer":10}],177:[function(require,module,exports){
+},{"buffer":10}],181:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -22518,14 +22947,14 @@ function isNullOrUndefined(arg) {
   return  arg == null;
 }
 
-},{"punycode":160,"querystring":163}],178:[function(require,module,exports){
+},{"punycode":164,"querystring":167}],182:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],179:[function(require,module,exports){
+},{}],183:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -23115,7 +23544,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":178,"_process":159,"inherits":157}],180:[function(require,module,exports){
+},{"./support/isBuffer":182,"_process":163,"inherits":161}],184:[function(require,module,exports){
 var indexOf = require('indexof');
 
 var Object_keys = function (obj) {
@@ -23255,7 +23684,7 @@ exports.createContext = Script.createContext = function (context) {
     return copy;
 };
 
-},{"indexof":181}],181:[function(require,module,exports){
+},{"indexof":185}],185:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -23266,7 +23695,7 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
-},{}],182:[function(require,module,exports){
+},{}],186:[function(require,module,exports){
 
 /**
  * This is the web browser implementation of `debug()`.
@@ -23436,7 +23865,7 @@ function localstorage(){
   } catch (e) {}
 }
 
-},{"./debug":183}],183:[function(require,module,exports){
+},{"./debug":187}],187:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -23635,7 +24064,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":184}],184:[function(require,module,exports){
+},{"ms":188}],188:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -23762,7 +24191,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],185:[function(require,module,exports){
+},{}],189:[function(require,module,exports){
 /*
     HTTP Hawk Authentication Scheme
     Copyright (c) 2012-2014, Eran Hammer <eran@hammer.io>
@@ -24405,11 +24834,11 @@ if (typeof module !== 'undefined' && module.exports) {
 
 // $lab:coverage:on$
 
-},{}],186:[function(require,module,exports){
+},{}],190:[function(require,module,exports){
 (function (global){
 /**
  * @license
- * lodash 3.9.3 (Custom Build) <https://lodash.com/>
+ * lodash 3.10.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern -d -o ./index.js`
  * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
  * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
@@ -24422,7 +24851,7 @@ if (typeof module !== 'undefined' && module.exports) {
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '3.9.3';
+  var VERSION = '3.10.0';
 
   /** Used to compose bitmasks for wrapper metadata. */
   var BIND_FLAG = 1,
@@ -24443,9 +24872,11 @@ if (typeof module !== 'undefined' && module.exports) {
   var HOT_COUNT = 150,
       HOT_SPAN = 16;
 
+  /** Used as the size to enable large array optimizations. */
+  var LARGE_ARRAY_SIZE = 200;
+
   /** Used to indicate the type of lazy iteratees. */
-  var LAZY_DROP_WHILE_FLAG = 0,
-      LAZY_FILTER_FLAG = 1,
+  var LAZY_FILTER_FLAG = 1,
       LAZY_MAP_FLAG = 2;
 
   /** Used as the `TypeError` message for "Functions" methods. */
@@ -24502,11 +24933,10 @@ if (typeof module !== 'undefined' && module.exports) {
       rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\n\\]|\\.)*?)\2)\]/g;
 
   /**
-   * Used to match `RegExp` [special characters](http://www.regular-expressions.info/characters.html#special).
-   * In addition to special characters the forward slash is escaped to allow for
-   * easier `eval` use and `Function` compilation.
+   * Used to match `RegExp` [syntax characters](http://ecma-international.org/ecma-262/6.0/#sec-patterns)
+   * and those outlined by [`EscapeRegExpPattern`](http://ecma-international.org/ecma-262/6.0/#sec-escaperegexppattern).
    */
-  var reRegExpChars = /[.*+?^${}()|[\]\/\\]/g,
+  var reRegExpChars = /^[:!,]|[\\^$.*+?()[\]{}|\/]|(^[0-9a-fA-Fnrtuvx])|([\n\r\u2028\u2029])/g,
       reHasRegExpChars = RegExp(reRegExpChars.source);
 
   /** Used to match [combining diacritical marks](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks). */
@@ -24515,7 +24945,7 @@ if (typeof module !== 'undefined' && module.exports) {
   /** Used to match backslashes in property paths. */
   var reEscapeChar = /\\(\\)?/g;
 
-  /** Used to match [ES template delimiters](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-template-literal-lexical-components). */
+  /** Used to match [ES template delimiters](http://ecma-international.org/ecma-262/6.0/#sec-template-literal-lexical-components). */
   var reEsTemplate = /\$\{([^\\}]*(?:\\.[^\\}]*)*)\}/g;
 
   /** Used to match `RegExp` flags from their coerced string values. */
@@ -24547,25 +24977,13 @@ if (typeof module !== 'undefined' && module.exports) {
     return RegExp(upper + '+(?=' + upper + lower + ')|' + upper + '?' + lower + '|' + upper + '+|[0-9]+', 'g');
   }());
 
-  /** Used to detect and test for whitespace. */
-  var whitespace = (
-    // Basic whitespace characters.
-    ' \t\x0b\f\xa0\ufeff' +
-
-    // Line terminators.
-    '\n\r\u2028\u2029' +
-
-    // Unicode category "Zs" space separators.
-    '\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000'
-  );
-
   /** Used to assign default `context` object properties. */
   var contextProps = [
     'Array', 'ArrayBuffer', 'Date', 'Error', 'Float32Array', 'Float64Array',
     'Function', 'Int8Array', 'Int16Array', 'Int32Array', 'Math', 'Number',
-    'Object', 'RegExp', 'Set', 'String', '_', 'clearTimeout', 'document',
-    'isFinite', 'parseFloat', 'parseInt', 'setTimeout', 'TypeError', 'Uint8Array',
-    'Uint8ClampedArray', 'Uint16Array', 'Uint32Array', 'WeakMap', 'window'
+    'Object', 'RegExp', 'Set', 'String', '_', 'clearTimeout', 'isFinite',
+    'parseFloat', 'parseInt', 'setTimeout', 'TypeError', 'Uint8Array',
+    'Uint8ClampedArray', 'Uint16Array', 'Uint32Array', 'WeakMap'
   ];
 
   /** Used to make template sourceURLs easier to identify. */
@@ -24600,13 +25018,6 @@ if (typeof module !== 'undefined' && module.exports) {
   cloneableTags[errorTag] = cloneableTags[funcTag] =
   cloneableTags[mapTag] = cloneableTags[setTag] =
   cloneableTags[weakMapTag] = false;
-
-  /** Used as an internal `_.debounce` options object by `_.throttle`. */
-  var debounceOptions = {
-    'leading': false,
-    'maxWait': 0,
-    'trailing': false
-  };
 
   /** Used to map latin-1 supplementary letters to basic latin letters. */
   var deburredLetters = {
@@ -24653,6 +25064,15 @@ if (typeof module !== 'undefined' && module.exports) {
   var objectTypes = {
     'function': true,
     'object': true
+  };
+
+  /** Used to escape characters for inclusion in compiled regexes. */
+  var regexpEscapes = {
+    '0': 'x30', '1': 'x31', '2': 'x32', '3': 'x33', '4': 'x34',
+    '5': 'x35', '6': 'x36', '7': 'x37', '8': 'x38', '9': 'x39',
+    'A': 'x41', 'B': 'x42', 'C': 'x43', 'D': 'x44', 'E': 'x45', 'F': 'x46',
+    'a': 'x61', 'b': 'x62', 'c': 'x63', 'd': 'x64', 'e': 'x65', 'f': 'x66',
+    'n': 'x6e', 'r': 'x72', 't': 'x74', 'u': 'x75', 'v': 'x76', 'x': 'x78'
   };
 
   /** Used to escape characters for inclusion in compiled string literals. */
@@ -24795,9 +25215,6 @@ if (typeof module !== 'undefined' && module.exports) {
    * @returns {string} Returns the string.
    */
   function baseToString(value) {
-    if (typeof value == 'string') {
-      return value;
-    }
     return value == null ? '' : (value + '');
   }
 
@@ -24839,8 +25256,8 @@ if (typeof module !== 'undefined' && module.exports) {
    * sort them in ascending order.
    *
    * @private
-   * @param {Object} object The object to compare to `other`.
-   * @param {Object} other The object to compare to `object`.
+   * @param {Object} object The object to compare.
+   * @param {Object} other The other object to compare.
    * @returns {number} Returns the sort order indicator for `object`.
    */
   function compareAscending(object, other) {
@@ -24848,16 +25265,16 @@ if (typeof module !== 'undefined' && module.exports) {
   }
 
   /**
-   * Used by `_.sortByOrder` to compare multiple properties of each element
-   * in a collection and stable sort them in the following order:
+   * Used by `_.sortByOrder` to compare multiple properties of a value to another
+   * and stable sort them.
    *
-   * If `orders` is unspecified, sort in ascending order for all properties.
-   * Otherwise, for each property, sort in ascending order if its corresponding value in
-   * orders is true, and descending order if false.
+   * If `orders` is unspecified, all valuess are sorted in ascending order. Otherwise,
+   * a value is sorted in ascending order if its corresponding order is "asc", and
+   * descending if "desc".
    *
    * @private
-   * @param {Object} object The object to compare to `other`.
-   * @param {Object} other The object to compare to `object`.
+   * @param {Object} object The object to compare.
+   * @param {Object} other The other object to compare.
    * @param {boolean[]} orders The order to sort by for each property.
    * @returns {number} Returns the sort order indicator for `object`.
    */
@@ -24874,7 +25291,8 @@ if (typeof module !== 'undefined' && module.exports) {
         if (index >= ordersLength) {
           return result;
         }
-        return result * (orders[index] ? 1 : -1);
+        var order = orders[index];
+        return result * ((order === 'asc' || order === true) ? 1 : -1);
       }
     }
     // Fixes an `Array#sort` bug in the JS engine embedded in Adobe applications
@@ -24910,8 +25328,25 @@ if (typeof module !== 'undefined' && module.exports) {
   }
 
   /**
-   * Used by `_.template` to escape characters for inclusion in compiled
-   * string literals.
+   * Used by `_.escapeRegExp` to escape characters for inclusion in compiled regexes.
+   *
+   * @private
+   * @param {string} chr The matched character to escape.
+   * @param {string} leadingChar The capture group for a leading character.
+   * @param {string} whitespaceChar The capture group for a whitespace character.
+   * @returns {string} Returns the escaped character.
+   */
+  function escapeRegExpChar(chr, leadingChar, whitespaceChar) {
+    if (leadingChar) {
+      chr = regexpEscapes[chr];
+    } else if (whitespaceChar) {
+      chr = stringEscapes[chr];
+    }
+    return '\\' + chr;
+  }
+
+  /**
+   * Used by `_.template` to escape characters for inclusion in compiled string literals.
    *
    * @private
    * @param {string} chr The matched character to escape.
@@ -25122,9 +25557,6 @@ if (typeof module !== 'undefined' && module.exports) {
         objectProto = Object.prototype,
         stringProto = String.prototype;
 
-    /** Used to detect DOM support. */
-    var document = (document = context.window) ? document.document : null;
-
     /** Used to resolve the decompiled source of functions. */
     var fnToString = Function.prototype.toString;
 
@@ -25135,56 +25567,42 @@ if (typeof module !== 'undefined' && module.exports) {
     var idCounter = 0;
 
     /**
-     * Used to resolve the [`toStringTag`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+     * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
      * of values.
      */
     var objToString = objectProto.toString;
 
     /** Used to restore the original `_` reference in `_.noConflict`. */
-    var oldDash = context._;
+    var oldDash = root._;
 
     /** Used to detect if a method is native. */
     var reIsNative = RegExp('^' +
-      escapeRegExp(fnToString.call(hasOwnProperty))
+      fnToString.call(hasOwnProperty).replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
       .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
     );
 
     /** Native method references. */
-    var ArrayBuffer = getNative(context, 'ArrayBuffer'),
-        bufferSlice = getNative(ArrayBuffer && new ArrayBuffer(0), 'slice'),
-        ceil = Math.ceil,
+    var ArrayBuffer = context.ArrayBuffer,
         clearTimeout = context.clearTimeout,
-        floor = Math.floor,
-        getPrototypeOf = getNative(Object, 'getPrototypeOf'),
         parseFloat = context.parseFloat,
-        push = arrayProto.push,
+        pow = Math.pow,
+        propertyIsEnumerable = objectProto.propertyIsEnumerable,
         Set = getNative(context, 'Set'),
         setTimeout = context.setTimeout,
         splice = arrayProto.splice,
-        Uint8Array = getNative(context, 'Uint8Array'),
+        Uint8Array = context.Uint8Array,
         WeakMap = getNative(context, 'WeakMap');
 
-    /** Used to clone array buffers. */
-    var Float64Array = (function() {
-      // Safari 5 errors when using an array buffer to initialize a typed array
-      // where the array buffer's `byteLength` is not a multiple of the typed
-      // array's `BYTES_PER_ELEMENT`.
-      try {
-        var func = getNative(context, 'Float64Array'),
-            result = new func(new ArrayBuffer(10), 0, 1) && func;
-      } catch(e) {}
-      return result || null;
-    }());
-
     /* Native method references for those with the same name as other `lodash` methods. */
-    var nativeCreate = getNative(Object, 'create'),
+    var nativeCeil = Math.ceil,
+        nativeCreate = getNative(Object, 'create'),
+        nativeFloor = Math.floor,
         nativeIsArray = getNative(Array, 'isArray'),
         nativeIsFinite = context.isFinite,
         nativeKeys = getNative(Object, 'keys'),
         nativeMax = Math.max,
         nativeMin = Math.min,
         nativeNow = getNative(Date, 'now'),
-        nativeNumIsFinite = getNative(Number, 'isFinite'),
         nativeParseInt = context.parseInt,
         nativeRandom = Math.random;
 
@@ -25197,11 +25615,8 @@ if (typeof module !== 'undefined' && module.exports) {
         MAX_ARRAY_INDEX = MAX_ARRAY_LENGTH - 1,
         HALF_MAX_ARRAY_LENGTH = MAX_ARRAY_LENGTH >>> 1;
 
-    /** Used as the size, in bytes, of each `Float64Array` element. */
-    var FLOAT64_BYTES_PER_ELEMENT = Float64Array ? Float64Array.BYTES_PER_ELEMENT : 0;
-
     /**
-     * Used as the [maximum length](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.max_safe_integer)
+     * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
      * of an array-like value.
      */
     var MAX_SAFE_INTEGER = 9007199254740991;
@@ -25217,15 +25632,16 @@ if (typeof module !== 'undefined' && module.exports) {
     /**
      * Creates a `lodash` object which wraps `value` to enable implicit chaining.
      * Methods that operate on and return arrays, collections, and functions can
-     * be chained together. Methods that return a boolean or single value will
-     * automatically end the chain returning the unwrapped value. Explicit chaining
-     * may be enabled using `_.chain`. The execution of chained methods is lazy,
-     * that is, execution is deferred until `_#value` is implicitly or explicitly
-     * called.
+     * be chained together. Methods that retrieve a single value or may return a
+     * primitive value will automatically end the chain returning the unwrapped
+     * value. Explicit chaining may be enabled using `_.chain`. The execution of
+     * chained methods is lazy, that is, execution is deferred until `_#value`
+     * is implicitly or explicitly called.
      *
      * Lazy evaluation allows several methods to support shortcut fusion. Shortcut
-     * fusion is an optimization that merges iteratees to avoid creating intermediate
-     * arrays and reduce the number of iteratee executions.
+     * fusion is an optimization strategy which merge iteratee calls; this can help
+     * to avoid the creation of intermediate data structures and greatly reduce the
+     * number of iteratee executions.
      *
      * Chaining is supported in custom builds as long as the `_#value` method is
      * directly or indirectly included in the build.
@@ -25248,36 +25664,37 @@ if (typeof module !== 'undefined' && module.exports) {
      * The chainable wrapper methods are:
      * `after`, `ary`, `assign`, `at`, `before`, `bind`, `bindAll`, `bindKey`,
      * `callback`, `chain`, `chunk`, `commit`, `compact`, `concat`, `constant`,
-     * `countBy`, `create`, `curry`, `debounce`, `defaults`, `defer`, `delay`,
-     * `difference`, `drop`, `dropRight`, `dropRightWhile`, `dropWhile`, `fill`,
-     * `filter`, `flatten`, `flattenDeep`, `flow`, `flowRight`, `forEach`,
-     * `forEachRight`, `forIn`, `forInRight`, `forOwn`, `forOwnRight`, `functions`,
-     * `groupBy`, `indexBy`, `initial`, `intersection`, `invert`, `invoke`, `keys`,
-     * `keysIn`, `map`, `mapKeys`, `mapValues`, `matches`, `matchesProperty`,
-     * `memoize`, `merge`, `method`, `methodOf`, `mixin`, `negate`, `omit`, `once`,
-     * `pairs`, `partial`, `partialRight`, `partition`, `pick`, `plant`, `pluck`,
-     * `property`, `propertyOf`, `pull`, `pullAt`, `push`, `range`, `rearg`,
-     * `reject`, `remove`, `rest`, `restParam`, `reverse`, `set`, `shuffle`,
-     * `slice`, `sort`, `sortBy`, `sortByAll`, `sortByOrder`, `splice`, `spread`,
-     * `take`, `takeRight`, `takeRightWhile`, `takeWhile`, `tap`, `throttle`,
-     * `thru`, `times`, `toArray`, `toPlainObject`, `transform`, `union`, `uniq`,
-     * `unshift`, `unzip`, `unzipWith`, `values`, `valuesIn`, `where`, `without`,
-     * `wrap`, `xor`, `zip`, `zipObject`, `zipWith`
+     * `countBy`, `create`, `curry`, `debounce`, `defaults`, `defaultsDeep`,
+     * `defer`, `delay`, `difference`, `drop`, `dropRight`, `dropRightWhile`,
+     * `dropWhile`, `fill`, `filter`, `flatten`, `flattenDeep`, `flow`, `flowRight`,
+     * `forEach`, `forEachRight`, `forIn`, `forInRight`, `forOwn`, `forOwnRight`,
+     * `functions`, `groupBy`, `indexBy`, `initial`, `intersection`, `invert`,
+     * `invoke`, `keys`, `keysIn`, `map`, `mapKeys`, `mapValues`, `matches`,
+     * `matchesProperty`, `memoize`, `merge`, `method`, `methodOf`, `mixin`,
+     * `modArgs`, `negate`, `omit`, `once`, `pairs`, `partial`, `partialRight`,
+     * `partition`, `pick`, `plant`, `pluck`, `property`, `propertyOf`, `pull`,
+     * `pullAt`, `push`, `range`, `rearg`, `reject`, `remove`, `rest`, `restParam`,
+     * `reverse`, `set`, `shuffle`, `slice`, `sort`, `sortBy`, `sortByAll`,
+     * `sortByOrder`, `splice`, `spread`, `take`, `takeRight`, `takeRightWhile`,
+     * `takeWhile`, `tap`, `throttle`, `thru`, `times`, `toArray`, `toPlainObject`,
+     * `transform`, `union`, `uniq`, `unshift`, `unzip`, `unzipWith`, `values`,
+     * `valuesIn`, `where`, `without`, `wrap`, `xor`, `zip`, `zipObject`, `zipWith`
      *
      * The wrapper methods that are **not** chainable by default are:
-     * `add`, `attempt`, `camelCase`, `capitalize`, `clone`, `cloneDeep`, `deburr`,
-     * `endsWith`, `escape`, `escapeRegExp`, `every`, `find`, `findIndex`, `findKey`,
-     * `findLast`, `findLastIndex`, `findLastKey`, `findWhere`, `first`, `get`,
-     * `gt`, `gte`, `has`, `identity`, `includes`, `indexOf`, `inRange`, `isArguments`,
-     * `isArray`, `isBoolean`, `isDate`, `isElement`, `isEmpty`, `isEqual`, `isError`,
-     * `isFinite` `isFunction`, `isMatch`, `isNative`, `isNaN`, `isNull`, `isNumber`,
-     * `isObject`, `isPlainObject`, `isRegExp`, `isString`, `isUndefined`,
-     * `isTypedArray`, `join`, `kebabCase`, `last`, `lastIndexOf`, `lt`, `lte`,
-     * `max`, `min`, `noConflict`, `noop`, `now`, `pad`, `padLeft`, `padRight`,
-     * `parseInt`, `pop`, `random`, `reduce`, `reduceRight`, `repeat`, `result`,
-     * `runInContext`, `shift`, `size`, `snakeCase`, `some`, `sortedIndex`,
-     * `sortedLastIndex`, `startCase`, `startsWith`, `sum`, `template`, `trim`,
-     * `trimLeft`, `trimRight`, `trunc`, `unescape`, `uniqueId`, `value`, and `words`
+     * `add`, `attempt`, `camelCase`, `capitalize`, `ceil`, `clone`, `cloneDeep`,
+     * `deburr`, `endsWith`, `escape`, `escapeRegExp`, `every`, `find`, `findIndex`,
+     * `findKey`, `findLast`, `findLastIndex`, `findLastKey`, `findWhere`, `first`,
+     * `floor`, `get`, `gt`, `gte`, `has`, `identity`, `includes`, `indexOf`,
+     * `inRange`, `isArguments`, `isArray`, `isBoolean`, `isDate`, `isElement`,
+     * `isEmpty`, `isEqual`, `isError`, `isFinite` `isFunction`, `isMatch`,
+     * `isNative`, `isNaN`, `isNull`, `isNumber`, `isObject`, `isPlainObject`,
+     * `isRegExp`, `isString`, `isUndefined`, `isTypedArray`, `join`, `kebabCase`,
+     * `last`, `lastIndexOf`, `lt`, `lte`, `max`, `min`, `noConflict`, `noop`,
+     * `now`, `pad`, `padLeft`, `padRight`, `parseInt`, `pop`, `random`, `reduce`,
+     * `reduceRight`, `repeat`, `result`, `round`, `runInContext`, `shift`, `size`,
+     * `snakeCase`, `some`, `sortedIndex`, `sortedLastIndex`, `startCase`,
+     * `startsWith`, `sum`, `template`, `trim`, `trimLeft`, `trimRight`, `trunc`,
+     * `unescape`, `uniqueId`, `value`, and `words`
      *
      * The wrapper method `sample` will return a wrapped value when `n` is provided,
      * otherwise an unwrapped value is returned.
@@ -25352,27 +25769,6 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     var support = lodash.support = {};
 
-    (function(x) {
-      var Ctor = function() { this.x = x; },
-          object = { '0': x, 'length': x },
-          props = [];
-
-      Ctor.prototype = { 'valueOf': x, 'y': x };
-      for (var key in new Ctor) { props.push(key); }
-
-      /**
-       * Detect if the DOM is supported.
-       *
-       * @memberOf _.support
-       * @type boolean
-       */
-      try {
-        support.dom = document.createDocumentFragment().nodeType === 11;
-      } catch(e) {
-        support.dom = false;
-      }
-    }(1, 0));
-
     /**
      * By default, the template delimiters used by lodash are like those in
      * embedded Ruby (ERB). Change the following template settings to use
@@ -25444,13 +25840,12 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     function LazyWrapper(value) {
       this.__wrapped__ = value;
-      this.__actions__ = null;
+      this.__actions__ = [];
       this.__dir__ = 1;
-      this.__dropCount__ = 0;
       this.__filtered__ = false;
-      this.__iteratees__ = null;
+      this.__iteratees__ = [];
       this.__takeCount__ = POSITIVE_INFINITY;
-      this.__views__ = null;
+      this.__views__ = [];
     }
 
     /**
@@ -25462,17 +25857,13 @@ if (typeof module !== 'undefined' && module.exports) {
      * @returns {Object} Returns the cloned `LazyWrapper` object.
      */
     function lazyClone() {
-      var actions = this.__actions__,
-          iteratees = this.__iteratees__,
-          views = this.__views__,
-          result = new LazyWrapper(this.__wrapped__);
-
-      result.__actions__ = actions ? arrayCopy(actions) : null;
+      var result = new LazyWrapper(this.__wrapped__);
+      result.__actions__ = arrayCopy(this.__actions__);
       result.__dir__ = this.__dir__;
       result.__filtered__ = this.__filtered__;
-      result.__iteratees__ = iteratees ? arrayCopy(iteratees) : null;
+      result.__iteratees__ = arrayCopy(this.__iteratees__);
       result.__takeCount__ = this.__takeCount__;
-      result.__views__ = views ? arrayCopy(views) : null;
+      result.__views__ = arrayCopy(this.__views__);
       return result;
     }
 
@@ -25505,22 +25896,25 @@ if (typeof module !== 'undefined' && module.exports) {
      * @returns {*} Returns the unwrapped value.
      */
     function lazyValue() {
-      var array = this.__wrapped__.value();
-      if (!isArray(array)) {
-        return baseWrapperValue(array, this.__actions__);
-      }
-      var dir = this.__dir__,
+      var array = this.__wrapped__.value(),
+          dir = this.__dir__,
+          isArr = isArray(array),
           isRight = dir < 0,
-          view = getView(0, array.length, this.__views__),
+          arrLength = isArr ? array.length : 0,
+          view = getView(0, arrLength, this.__views__),
           start = view.start,
           end = view.end,
           length = end - start,
           index = isRight ? end : (start - 1),
-          takeCount = nativeMin(length, this.__takeCount__),
           iteratees = this.__iteratees__,
-          iterLength = iteratees ? iteratees.length : 0,
+          iterLength = iteratees.length,
           resIndex = 0,
-          result = [];
+          takeCount = nativeMin(length, this.__takeCount__);
+
+      if (!isArr || arrLength < LARGE_ARRAY_SIZE || (arrLength == length && takeCount == length)) {
+        return baseWrapperValue((isRight && isArr) ? array.reverse() : array, this.__actions__);
+      }
+      var result = [];
 
       outer:
       while (length-- && resIndex < takeCount) {
@@ -25532,30 +25926,16 @@ if (typeof module !== 'undefined' && module.exports) {
         while (++iterIndex < iterLength) {
           var data = iteratees[iterIndex],
               iteratee = data.iteratee,
-              type = data.type;
+              type = data.type,
+              computed = iteratee(value);
 
-          if (type == LAZY_DROP_WHILE_FLAG) {
-            if (data.done && (isRight ? (index > data.index) : (index < data.index))) {
-              data.count = 0;
-              data.done = false;
-            }
-            data.index = index;
-            if (!data.done) {
-              var limit = data.limit;
-              if (!(data.done = limit > -1 ? (data.count++ >= limit) : !iteratee(value))) {
-                continue outer;
-              }
-            }
-          } else {
-            var computed = iteratee(value);
-            if (type == LAZY_MAP_FLAG) {
-              value = computed;
-            } else if (!computed) {
-              if (type == LAZY_FILTER_FLAG) {
-                continue outer;
-              } else {
-                break outer;
-              }
+          if (type == LAZY_MAP_FLAG) {
+            value = computed;
+          } else if (!computed) {
+            if (type == LAZY_FILTER_FLAG) {
+              continue outer;
+            } else {
+              break outer;
             }
           }
         }
@@ -25686,6 +26066,30 @@ if (typeof module !== 'undefined' && module.exports) {
     }
 
     /*------------------------------------------------------------------------*/
+
+    /**
+     * Creates a new array joining `array` with `other`.
+     *
+     * @private
+     * @param {Array} array The array to join.
+     * @param {Array} other The other array to join.
+     * @returns {Array} Returns the new concatenated array.
+     */
+    function arrayConcat(array, other) {
+      var index = -1,
+          length = array.length,
+          othIndex = -1,
+          othLength = other.length,
+          result = Array(length + othLength);
+
+      while (++index < length) {
+        result[index] = array[index];
+      }
+      while (++othIndex < othLength) {
+        result[index++] = other[othIndex];
+      }
+      return result;
+    }
 
     /**
      * Copies the values of `source` to `array`.
@@ -25843,6 +26247,25 @@ if (typeof module !== 'undefined' && module.exports) {
     }
 
     /**
+     * Appends the elements of `values` to `array`.
+     *
+     * @private
+     * @param {Array} array The array to modify.
+     * @param {Array} values The values to append.
+     * @returns {Array} Returns `array`.
+     */
+    function arrayPush(array, values) {
+      var index = -1,
+          length = values.length,
+          offset = array.length;
+
+      while (++index < length) {
+        array[offset + index] = values[index];
+      }
+      return array;
+    }
+
+    /**
      * A specialized version of `_.reduce` for arrays without support for callback
      * shorthands and `this` binding.
      *
@@ -25913,18 +26336,20 @@ if (typeof module !== 'undefined' && module.exports) {
     }
 
     /**
-     * A specialized version of `_.sum` for arrays without support for iteratees.
+     * A specialized version of `_.sum` for arrays without support for callback
+     * shorthands and `this` binding..
      *
      * @private
      * @param {Array} array The array to iterate over.
+     * @param {Function} iteratee The function invoked per iteration.
      * @returns {number} Returns the sum.
      */
-    function arraySum(array) {
+    function arraySum(array, iteratee) {
       var length = array.length,
           result = 0;
 
       while (length--) {
-        result += +array[length] || 0;
+        result += +iteratee(array[length]) || 0;
       }
       return result;
     }
@@ -26128,7 +26553,7 @@ if (typeof module !== 'undefined' && module.exports) {
             : (object ? value : {});
         }
       }
-      // Check for circular references and return corresponding clone.
+      // Check for circular references and return its corresponding clone.
       stackA || (stackA = []);
       stackB || (stackB = []);
 
@@ -26163,7 +26588,7 @@ if (typeof module !== 'undefined' && module.exports) {
         if (isObject(prototype)) {
           object.prototype = prototype;
           var result = new object;
-          object.prototype = null;
+          object.prototype = undefined;
         }
         return result || {};
       };
@@ -26205,7 +26630,7 @@ if (typeof module !== 'undefined' && module.exports) {
       var index = -1,
           indexOf = getIndexOf(),
           isCommon = indexOf == baseIndexOf,
-          cache = (isCommon && values.length >= 200) ? createCache(values) : null,
+          cache = (isCommon && values.length >= LARGE_ARRAY_SIZE) ? createCache(values) : null,
           valuesLength = values.length;
 
       if (cache) {
@@ -26381,13 +26806,14 @@ if (typeof module !== 'undefined' && module.exports) {
      * @param {Array} array The array to flatten.
      * @param {boolean} [isDeep] Specify a deep flatten.
      * @param {boolean} [isStrict] Restrict flattening to arrays-like objects.
+     * @param {Array} [result=[]] The initial result value.
      * @returns {Array} Returns the new flattened array.
      */
-    function baseFlatten(array, isDeep, isStrict) {
+    function baseFlatten(array, isDeep, isStrict, result) {
+      result || (result = []);
+
       var index = -1,
-          length = array.length,
-          resIndex = -1,
-          result = [];
+          length = array.length;
 
       while (++index < length) {
         var value = array[index];
@@ -26395,16 +26821,12 @@ if (typeof module !== 'undefined' && module.exports) {
             (isStrict || isArray(value) || isArguments(value))) {
           if (isDeep) {
             // Recursively flatten arrays (susceptible to call stack limits).
-            value = baseFlatten(value, isDeep, isStrict);
-          }
-          var valIndex = -1,
-              valLength = value.length;
-
-          while (++valIndex < valLength) {
-            result[++resIndex] = value[valIndex];
+            baseFlatten(value, isDeep, isStrict, result);
+          } else {
+            arrayPush(result, value);
           }
         } else if (!isStrict) {
-          result[++resIndex] = value;
+          result[result.length] = value;
         }
       }
       return result;
@@ -26759,7 +27181,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * @private
      * @param {Object} object The destination object.
      * @param {Object} source The source object.
-     * @param {Function} [customizer] The function to customize merging properties.
+     * @param {Function} [customizer] The function to customize merged values.
      * @param {Array} [stackA=[]] Tracks traversed source objects.
      * @param {Array} [stackB=[]] Associates values with source counterparts.
      * @returns {Object} Returns `object`.
@@ -26769,7 +27191,7 @@ if (typeof module !== 'undefined' && module.exports) {
         return object;
       }
       var isSrcArr = isArrayLike(source) && (isArray(source) || isTypedArray(source)),
-          props = isSrcArr ? null : keys(source);
+          props = isSrcArr ? undefined : keys(source);
 
       arrayEach(props || source, function(srcValue, key) {
         if (props) {
@@ -26808,7 +27230,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * @param {Object} source The source object.
      * @param {string} key The key of the value to merge.
      * @param {Function} mergeFunc The function to merge values.
-     * @param {Function} [customizer] The function to customize merging properties.
+     * @param {Function} [customizer] The function to customize merged values.
      * @param {Array} [stackA=[]] Tracks traversed source objects.
      * @param {Array} [stackB=[]] Associates values with source counterparts.
      * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
@@ -26915,7 +27337,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * @returns {number} Returns the random number.
      */
     function baseRandom(min, max) {
-      return min + floor(nativeRandom() * (max - min + 1));
+      return min + nativeFloor(nativeRandom() * (max - min + 1));
     }
 
     /**
@@ -27081,7 +27503,7 @@ if (typeof module !== 'undefined' && module.exports) {
           indexOf = getIndexOf(),
           length = array.length,
           isCommon = indexOf == baseIndexOf,
-          isLarge = isCommon && length >= 200,
+          isLarge = isCommon && length >= LARGE_ARRAY_SIZE,
           seen = isLarge ? createCache() : null,
           result = [];
 
@@ -27180,11 +27602,8 @@ if (typeof module !== 'undefined' && module.exports) {
           length = actions.length;
 
       while (++index < length) {
-        var args = [result],
-            action = actions[index];
-
-        push.apply(args, action.args);
-        result = action.func.apply(action.thisArg, args);
+        var action = actions[index];
+        result = action.func.apply(action.thisArg, arrayPush([result], action.args));
       }
       return result;
     }
@@ -27243,7 +27662,7 @@ if (typeof module !== 'undefined' && module.exports) {
           valIsUndef = value === undefined;
 
       while (low < high) {
-        var mid = floor((low + high) / 2),
+        var mid = nativeFloor((low + high) / 2),
             computed = iteratee(array[mid]),
             isDef = computed !== undefined,
             isReflexive = computed === computed;
@@ -27312,26 +27731,11 @@ if (typeof module !== 'undefined' && module.exports) {
      * @returns {ArrayBuffer} Returns the cloned array buffer.
      */
     function bufferClone(buffer) {
-      return bufferSlice.call(buffer, 0);
-    }
-    if (!bufferSlice) {
-      // PhantomJS has `ArrayBuffer` and `Uint8Array` but not `Float64Array`.
-      bufferClone = !(ArrayBuffer && Uint8Array) ? constant(null) : function(buffer) {
-        var byteLength = buffer.byteLength,
-            floatLength = Float64Array ? floor(byteLength / FLOAT64_BYTES_PER_ELEMENT) : 0,
-            offset = floatLength * FLOAT64_BYTES_PER_ELEMENT,
-            result = new ArrayBuffer(byteLength);
+      var result = new ArrayBuffer(buffer.byteLength),
+          view = new Uint8Array(result);
 
-        if (floatLength) {
-          var view = new Float64Array(result, 0, floatLength);
-          view.set(new Float64Array(buffer, 0, floatLength));
-        }
-        if (byteLength != offset) {
-          view = new Uint8Array(result, offset);
-          view.set(new Uint8Array(buffer, offset));
-        }
-        return result;
-      };
+      view.set(new Uint8Array(buffer));
+      return result;
     }
 
     /**
@@ -27350,7 +27754,7 @@ if (typeof module !== 'undefined' && module.exports) {
           argsLength = nativeMax(args.length - holdersLength, 0),
           leftIndex = -1,
           leftLength = partials.length,
-          result = Array(argsLength + leftLength);
+          result = Array(leftLength + argsLength);
 
       while (++leftIndex < leftLength) {
         result[leftIndex] = partials[leftIndex];
@@ -27397,12 +27801,7 @@ if (typeof module !== 'undefined' && module.exports) {
     }
 
     /**
-     * Creates a function that aggregates a collection, creating an accumulator
-     * object composed from the results of running each element in the collection
-     * through an iteratee.
-     *
-     * **Note:** This function is used to create `_.countBy`, `_.groupBy`, `_.indexBy`,
-     * and `_.partition`.
+     * Creates a `_.countBy`, `_.groupBy`, `_.indexBy`, or `_.partition` function.
      *
      * @private
      * @param {Function} setter The function to set keys and values of the accumulator object.
@@ -27432,10 +27831,7 @@ if (typeof module !== 'undefined' && module.exports) {
     }
 
     /**
-     * Creates a function that assigns properties of source object(s) to a given
-     * destination object.
-     *
-     * **Note:** This function is used to create `_.assign`, `_.defaults`, and `_.merge`.
+     * Creates a `_.assign`, `_.defaults`, or `_.merge` function.
      *
      * @private
      * @param {Function} assigner The function to assign values.
@@ -27546,9 +27942,9 @@ if (typeof module !== 'undefined' && module.exports) {
      * @param {Array} [values] The values to cache.
      * @returns {null|Object} Returns the new cache object if `Set` is supported, else `null`.
      */
-    var createCache = !(nativeCreate && Set) ? constant(null) : function(values) {
-      return new SetCache(values);
-    };
+    function createCache(values) {
+      return (nativeCreate && Set) ? new SetCache(values) : null;
+    }
 
     /**
      * Creates a function that produces compound words out of the words in a
@@ -27583,7 +27979,7 @@ if (typeof module !== 'undefined' && module.exports) {
     function createCtorWrapper(Ctor) {
       return function() {
         // Use a `switch` statement to work with class constructors.
-        // See https://people.mozilla.org/~jorendorff/es6-draft.html#sec-ecmascript-function-objects-call-thisargument-argumentslist
+        // See http://ecma-international.org/ecma-262/6.0/#sec-ecmascript-function-objects-call-thisargument-argumentslist
         // for more details.
         var args = arguments;
         switch (args.length) {
@@ -27593,6 +27989,8 @@ if (typeof module !== 'undefined' && module.exports) {
           case 3: return new Ctor(args[0], args[1], args[2]);
           case 4: return new Ctor(args[0], args[1], args[2], args[3]);
           case 5: return new Ctor(args[0], args[1], args[2], args[3], args[4]);
+          case 6: return new Ctor(args[0], args[1], args[2], args[3], args[4], args[5]);
+          case 7: return new Ctor(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
         }
         var thisBinding = baseCreate(Ctor.prototype),
             result = Ctor.apply(thisBinding, args);
@@ -27613,13 +28011,32 @@ if (typeof module !== 'undefined' && module.exports) {
     function createCurry(flag) {
       function curryFunc(func, arity, guard) {
         if (guard && isIterateeCall(func, arity, guard)) {
-          arity = null;
+          arity = undefined;
         }
-        var result = createWrapper(func, flag, null, null, null, null, null, arity);
+        var result = createWrapper(func, flag, undefined, undefined, undefined, undefined, undefined, arity);
         result.placeholder = curryFunc.placeholder;
         return result;
       }
       return curryFunc;
+    }
+
+    /**
+     * Creates a `_.defaults` or `_.defaultsDeep` function.
+     *
+     * @private
+     * @param {Function} assigner The function to assign values.
+     * @param {Function} customizer The function to customize assigned values.
+     * @returns {Function} Returns the new defaults function.
+     */
+    function createDefaults(assigner, customizer) {
+      return restParam(function(args) {
+        var object = args[0];
+        if (object == null) {
+          return object;
+        }
+        args.push(customizer);
+        return assigner.apply(undefined, args);
+      });
     }
 
     /**
@@ -27633,11 +28050,11 @@ if (typeof module !== 'undefined' && module.exports) {
     function createExtremum(comparator, exValue) {
       return function(collection, iteratee, thisArg) {
         if (thisArg && isIterateeCall(collection, iteratee, thisArg)) {
-          iteratee = null;
+          iteratee = undefined;
         }
         iteratee = getCallback(iteratee, thisArg, 3);
         if (iteratee.length == 1) {
-          collection = toIterable(collection);
+          collection = isArray(collection) ? collection : toIterable(collection);
           var result = arrayExtremum(collection, iteratee, comparator, exValue);
           if (!(collection.length && result === exValue)) {
             return result;
@@ -27718,7 +28135,7 @@ if (typeof module !== 'undefined' && module.exports) {
             throw new TypeError(FUNC_ERROR_TEXT);
           }
           if (!wrapper && LodashWrapper.prototype.thru && getFuncName(func) == 'wrapper') {
-            wrapper = new LodashWrapper([]);
+            wrapper = new LodashWrapper([], true);
           }
         }
         index = wrapper ? -1 : length;
@@ -27726,7 +28143,7 @@ if (typeof module !== 'undefined' && module.exports) {
           func = funcs[index];
 
           var funcName = getFuncName(func),
-              data = funcName == 'wrapper' ? getData(func) : null;
+              data = funcName == 'wrapper' ? getData(func) : undefined;
 
           if (data && isLaziable(data[0]) && data[1] == (ARY_FLAG | CURRY_FLAG | PARTIAL_FLAG | REARG_FLAG) && !data[4].length && data[9] == 1) {
             wrapper = wrapper[getFuncName(data[0])].apply(wrapper, data[3]);
@@ -27735,12 +28152,14 @@ if (typeof module !== 'undefined' && module.exports) {
           }
         }
         return function() {
-          var args = arguments;
-          if (wrapper && args.length == 1 && isArray(args[0])) {
-            return wrapper.plant(args[0]).value();
+          var args = arguments,
+              value = args[0];
+
+          if (wrapper && args.length == 1 && isArray(value) && value.length >= LARGE_ARRAY_SIZE) {
+            return wrapper.plant(value).value();
           }
           var index = 0,
-              result = length ? funcs[index].apply(this, args) : args[0];
+              result = length ? funcs[index].apply(this, args) : value;
 
           while (++index < length) {
             result = funcs[index].call(this, result);
@@ -27844,7 +28263,7 @@ if (typeof module !== 'undefined' && module.exports) {
     function createPartial(flag) {
       var partialFunc = restParam(function(func, partials) {
         var holders = replaceHolders(partials, partialFunc.placeholder);
-        return createWrapper(func, flag, null, partials, holders);
+        return createWrapper(func, flag, undefined, partials, holders);
       });
       return partialFunc;
     }
@@ -27890,7 +28309,7 @@ if (typeof module !== 'undefined' && module.exports) {
           isCurry = bitmask & CURRY_FLAG,
           isCurryBound = bitmask & CURRY_BOUND_FLAG,
           isCurryRight = bitmask & CURRY_RIGHT_FLAG,
-          Ctor = isBindKey ? null : createCtorWrapper(func);
+          Ctor = isBindKey ? undefined : createCtorWrapper(func);
 
       function wrapper() {
         // Avoid `arguments` object use disqualifying optimizations by
@@ -27914,12 +28333,12 @@ if (typeof module !== 'undefined' && module.exports) {
 
           length -= argsHolders.length;
           if (length < arity) {
-            var newArgPos = argPos ? arrayCopy(argPos) : null,
+            var newArgPos = argPos ? arrayCopy(argPos) : undefined,
                 newArity = nativeMax(arity - length, 0),
-                newsHolders = isCurry ? argsHolders : null,
-                newHoldersRight = isCurry ? null : argsHolders,
-                newPartials = isCurry ? args : null,
-                newPartialsRight = isCurry ? null : args;
+                newsHolders = isCurry ? argsHolders : undefined,
+                newHoldersRight = isCurry ? undefined : argsHolders,
+                newPartials = isCurry ? args : undefined,
+                newPartialsRight = isCurry ? undefined : args;
 
             bitmask |= (isCurry ? PARTIAL_FLAG : PARTIAL_RIGHT_FLAG);
             bitmask &= ~(isCurry ? PARTIAL_RIGHT_FLAG : PARTIAL_FLAG);
@@ -27973,7 +28392,7 @@ if (typeof module !== 'undefined' && module.exports) {
       }
       var padLength = length - strLength;
       chars = chars == null ? ' ' : (chars + '');
-      return repeat(chars, ceil(padLength / chars.length)).slice(0, padLength);
+      return repeat(chars, nativeCeil(padLength / chars.length)).slice(0, padLength);
     }
 
     /**
@@ -27999,7 +28418,7 @@ if (typeof module !== 'undefined' && module.exports) {
             argsLength = arguments.length,
             leftIndex = -1,
             leftLength = partials.length,
-            args = Array(argsLength + leftLength);
+            args = Array(leftLength + argsLength);
 
         while (++leftIndex < leftLength) {
           args[leftIndex] = partials[leftIndex];
@@ -28011,6 +28430,25 @@ if (typeof module !== 'undefined' && module.exports) {
         return fn.apply(isBind ? thisArg : this, args);
       }
       return wrapper;
+    }
+
+    /**
+     * Creates a `_.ceil`, `_.floor`, or `_.round` function.
+     *
+     * @private
+     * @param {string} methodName The name of the `Math` method to use when rounding.
+     * @returns {Function} Returns the new round function.
+     */
+    function createRound(methodName) {
+      var func = Math[methodName];
+      return function(number, precision) {
+        precision = precision === undefined ? 0 : (+precision || 0);
+        if (precision) {
+          precision = pow(10, precision);
+          return func(number * precision) / precision;
+        }
+        return func(number);
+      };
     }
 
     /**
@@ -28062,16 +28500,16 @@ if (typeof module !== 'undefined' && module.exports) {
       var length = partials ? partials.length : 0;
       if (!length) {
         bitmask &= ~(PARTIAL_FLAG | PARTIAL_RIGHT_FLAG);
-        partials = holders = null;
+        partials = holders = undefined;
       }
       length -= (holders ? holders.length : 0);
       if (bitmask & PARTIAL_RIGHT_FLAG) {
         var partialsRight = partials,
             holdersRight = holders;
 
-        partials = holders = null;
+        partials = holders = undefined;
       }
-      var data = isBindKey ? null : getData(func),
+      var data = isBindKey ? undefined : getData(func),
           newData = [func, bitmask, thisArg, partials, holders, partialsRight, holdersRight, argPos, ary, arity];
 
       if (data) {
@@ -28150,7 +28588,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * `Boolean`, `Date`, `Error`, `Number`, `RegExp`, or `String`.
      *
      * @private
-     * @param {Object} value The object to compare.
+     * @param {Object} object The object to compare.
      * @param {Object} other The other object to compare.
      * @param {string} tag The `toStringTag` of the objects to compare.
      * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
@@ -28350,13 +28788,13 @@ if (typeof module !== 'undefined' && module.exports) {
      * @private
      * @param {number} start The start of the view.
      * @param {number} end The end of the view.
-     * @param {Array} [transforms] The transformations to apply to the view.
+     * @param {Array} transforms The transformations to apply to the view.
      * @returns {Object} Returns an object containing the `start` and `end`
      *  positions of the view.
      */
     function getView(start, end, transforms) {
       var index = -1,
-          length = transforms ? transforms.length : 0;
+          length = transforms.length;
 
       while (++index < length) {
         var data = transforms[index],
@@ -28555,7 +28993,7 @@ if (typeof module !== 'undefined' && module.exports) {
     /**
      * Checks if `value` is a valid array-like length.
      *
-     * **Note:** This function is based on [`ToLength`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength).
+     * **Note:** This function is based on [`ToLength`](http://ecma-international.org/ecma-262/6.0/#sec-tolength).
      *
      * @private
      * @param {*} value The value to check.
@@ -28645,6 +29083,18 @@ if (typeof module !== 'undefined' && module.exports) {
       data[1] = newBitmask;
 
       return data;
+    }
+
+    /**
+     * Used by `_.defaultsDeep` to customize its `_.merge` use.
+     *
+     * @private
+     * @param {*} objectValue The destination object property value.
+     * @param {*} sourceValue The source object property value.
+     * @returns {*} Returns the value to assign to the destination object.
+     */
+    function mergeDefaults(objectValue, sourceValue) {
+      return objectValue === undefined ? sourceValue : merge(objectValue, sourceValue, mergeDefaults);
     }
 
     /**
@@ -28745,38 +29195,6 @@ if (typeof module !== 'undefined' && module.exports) {
         return baseSetData(key, value);
       };
     }());
-
-    /**
-     * A fallback implementation of `_.isPlainObject` which checks if `value`
-     * is an object created by the `Object` constructor or has a `[[Prototype]]`
-     * of `null`.
-     *
-     * @private
-     * @param {*} value The value to check.
-     * @returns {boolean} Returns `true` if `value` is a plain object, else `false`.
-     */
-    function shimIsPlainObject(value) {
-      var Ctor,
-          support = lodash.support;
-
-      // Exit early for non `Object` objects.
-      if (!(isObjectLike(value) && objToString.call(value) == objectTag) ||
-          (!hasOwnProperty.call(value, 'constructor') &&
-            (Ctor = value.constructor, typeof Ctor == 'function' && !(Ctor instanceof Ctor)))) {
-        return false;
-      }
-      // IE < 9 iterates inherited properties before own properties. If the first
-      // iterated property is an object's own property then there are no inherited
-      // enumerable properties.
-      var result;
-      // In most environments an object's own properties are iterated before
-      // its inherited properties. If the last iterated property is an object's
-      // own property then there are no inherited enumerable properties.
-      baseForIn(value, function(subValue, key) {
-        result = key;
-      });
-      return result === undefined || hasOwnProperty.call(value, result);
-    }
 
     /**
      * A fallback implementation of `Object.keys` which creates an array of the
@@ -28891,12 +29309,12 @@ if (typeof module !== 'undefined' && module.exports) {
       if (guard ? isIterateeCall(array, size, guard) : size == null) {
         size = 1;
       } else {
-        size = nativeMax(+size || 1, 1);
+        size = nativeMax(nativeFloor(size) || 1, 1);
       }
       var index = 0,
           length = array ? array.length : 0,
           resIndex = -1,
-          result = Array(ceil(length / size));
+          result = Array(nativeCeil(length / size));
 
       while (index < length) {
         result[++resIndex] = baseSlice(array, index, (index += size));
@@ -28935,7 +29353,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
     /**
      * Creates an array of unique `array` values not included in the other
-     * provided arrays using [`SameValueZero`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-samevaluezero)
+     * provided arrays using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons.
      *
      * @static
@@ -28950,7 +29368,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * // => [1, 3]
      */
     var difference = restParam(function(array, values) {
-      return isArrayLike(array)
+      return (isObjectLike(array) && isArrayLike(array))
         ? baseDifference(array, baseFlatten(values, false, true))
         : [];
     });
@@ -29345,7 +29763,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
     /**
      * Gets the index at which the first occurrence of `value` is found in `array`
-     * using [`SameValueZero`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-samevaluezero)
+     * using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons. If `fromIndex` is negative, it is used as the offset
      * from the end of `array`. If `array` is sorted providing `true` for `fromIndex`
      * performs a faster binary search.
@@ -29379,10 +29797,9 @@ if (typeof module !== 'undefined' && module.exports) {
       if (typeof fromIndex == 'number') {
         fromIndex = fromIndex < 0 ? nativeMax(length + fromIndex, 0) : fromIndex;
       } else if (fromIndex) {
-        var index = binaryIndex(array, value),
-            other = array[index];
-
-        if (value === value ? (value === other) : (other !== other)) {
+        var index = binaryIndex(array, value);
+        if (index < length &&
+            (value === value ? (value === array[index]) : (array[index] !== array[index]))) {
           return index;
         }
         return -1;
@@ -29409,7 +29826,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
     /**
      * Creates an array of unique values that are included in all of the provided
-     * arrays using [`SameValueZero`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-samevaluezero)
+     * arrays using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons.
      *
      * @static
@@ -29530,7 +29947,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
     /**
      * Removes all provided values from `array` using
-     * [`SameValueZero`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-samevaluezero)
+     * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons.
      *
      * **Note:** Unlike `_.without`, this method mutates `array`.
@@ -29963,7 +30380,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
     /**
      * Creates an array of unique values, in order, from all of the provided arrays
-     * using [`SameValueZero`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-samevaluezero)
+     * using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons.
      *
      * @static
@@ -29982,7 +30399,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
     /**
      * Creates a duplicate-free version of an array, using
-     * [`SameValueZero`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-samevaluezero)
+     * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons, in which only the first occurence of each element
      * is kept. Providing `true` for `isSorted` performs a faster search algorithm
      * for sorted arrays. If an iteratee function is provided it is invoked for
@@ -30036,7 +30453,7 @@ if (typeof module !== 'undefined' && module.exports) {
       }
       if (isSorted != null && typeof isSorted != 'boolean') {
         thisArg = iteratee;
-        iteratee = isIterateeCall(array, isSorted, thisArg) ? null : isSorted;
+        iteratee = isIterateeCall(array, isSorted, thisArg) ? undefined : isSorted;
         isSorted = false;
       }
       var callback = getCallback();
@@ -30123,7 +30540,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
     /**
      * Creates an array excluding all provided values using
-     * [`SameValueZero`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-samevaluezero)
+     * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons.
      *
      * @static
@@ -30165,7 +30582,7 @@ if (typeof module !== 'undefined' && module.exports) {
         var array = arguments[index];
         if (isArrayLike(array)) {
           var result = result
-            ? baseDifference(result, array).concat(baseDifference(array, result))
+            ? arrayPush(baseDifference(result, array), baseDifference(array, result))
             : array;
         }
       }
@@ -30387,16 +30804,16 @@ if (typeof module !== 'undefined' && module.exports) {
      * @example
      *
      * var array = [1, 2];
-     * var wrapper = _(array).push(3);
+     * var wrapped = _(array).push(3);
      *
      * console.log(array);
      * // => [1, 2]
      *
-     * wrapper = wrapper.commit();
+     * wrapped = wrapped.commit();
      * console.log(array);
      * // => [1, 2, 3]
      *
-     * wrapper.last();
+     * wrapped.last();
      * // => 3
      *
      * console.log(array);
@@ -30405,6 +30822,33 @@ if (typeof module !== 'undefined' && module.exports) {
     function wrapperCommit() {
       return new LodashWrapper(this.value(), this.__chain__);
     }
+
+    /**
+     * Creates a new array joining a wrapped array with any additional arrays
+     * and/or values.
+     *
+     * @name concat
+     * @memberOf _
+     * @category Chain
+     * @param {...*} [values] The values to concatenate.
+     * @returns {Array} Returns the new concatenated array.
+     * @example
+     *
+     * var array = [1];
+     * var wrapped = _(array).concat(2, [3], [[4]]);
+     *
+     * console.log(wrapped.value());
+     * // => [1, 2, 3, [4]]
+     *
+     * console.log(array);
+     * // => [1]
+     */
+    var wrapperConcat = restParam(function(values) {
+      values = baseFlatten(values);
+      return this.thru(function(array) {
+        return arrayConcat(isArray(array) ? array : [toObject(array)], values);
+      });
+    });
 
     /**
      * Creates a clone of the chained sequence planting `value` as the wrapped value.
@@ -30416,17 +30860,17 @@ if (typeof module !== 'undefined' && module.exports) {
      * @example
      *
      * var array = [1, 2];
-     * var wrapper = _(array).map(function(value) {
+     * var wrapped = _(array).map(function(value) {
      *   return Math.pow(value, 2);
      * });
      *
      * var other = [3, 4];
-     * var otherWrapper = wrapper.plant(other);
+     * var otherWrapped = wrapped.plant(other);
      *
-     * otherWrapper.value();
+     * otherWrapped.value();
      * // => [9, 16]
      *
-     * wrapper.value();
+     * wrapped.value();
      * // => [1, 4]
      */
     function wrapperPlant(value) {
@@ -30469,15 +30913,20 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     function wrapperReverse() {
       var value = this.__wrapped__;
+
+      var interceptor = function(value) {
+        return (wrapped && wrapped.__dir__ < 0) ? value : value.reverse();
+      };
       if (value instanceof LazyWrapper) {
+        var wrapped = value;
         if (this.__actions__.length) {
-          value = new LazyWrapper(this);
+          wrapped = new LazyWrapper(this);
         }
-        return new LodashWrapper(value.reverse(), this.__chain__);
+        wrapped = wrapped.reverse();
+        wrapped.__actions__.push({ 'func': thru, 'args': [interceptor], 'thisArg': undefined });
+        return new LodashWrapper(wrapped, this.__chain__);
       }
-      return this.thru(function(value) {
-        return value.reverse();
-      });
+      return this.thru(interceptor);
     }
 
     /**
@@ -30635,7 +31084,7 @@ if (typeof module !== 'undefined' && module.exports) {
     function every(collection, predicate, thisArg) {
       var func = isArray(collection) ? arrayEvery : baseEvery;
       if (thisArg && isIterateeCall(collection, predicate, thisArg)) {
-        predicate = null;
+        predicate = undefined;
       }
       if (typeof predicate != 'function' || thisArg !== undefined) {
         predicate = getCallback(predicate, thisArg, 3);
@@ -30909,7 +31358,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
     /**
      * Checks if `value` is in `collection` using
-     * [`SameValueZero`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-samevaluezero)
+     * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons. If `fromIndex` is negative, it is used as the offset
      * from the end of `collection`.
      *
@@ -30942,17 +31391,14 @@ if (typeof module !== 'undefined' && module.exports) {
         collection = values(collection);
         length = collection.length;
       }
-      if (!length) {
-        return false;
-      }
       if (typeof fromIndex != 'number' || (guard && isIterateeCall(target, fromIndex, guard))) {
         fromIndex = 0;
       } else {
         fromIndex = fromIndex < 0 ? nativeMax(length + fromIndex, 0) : (fromIndex || 0);
       }
       return (typeof collection == 'string' || !isArray(collection) && isString(collection))
-        ? (fromIndex < length && collection.indexOf(target, fromIndex) > -1)
-        : (getIndexOf(collection, target, fromIndex) > -1);
+        ? (fromIndex <= length && collection.indexOf(target, fromIndex) > -1)
+        : (!!length && getIndexOf(collection, target, fromIndex) > -1);
     }
 
     /**
@@ -31034,7 +31480,7 @@ if (typeof module !== 'undefined' && module.exports) {
           result = isArrayLike(collection) ? Array(collection.length) : [];
 
       baseEach(collection, function(value) {
-        var func = isFunc ? path : ((isProp && value != null) ? value[path] : null);
+        var func = isFunc ? path : ((isProp && value != null) ? value[path] : undefined);
         result[++index] = func ? func.apply(value, args) : invokePath(value, path, args);
       });
       return result;
@@ -31204,7 +31650,8 @@ if (typeof module !== 'undefined' && module.exports) {
      * `_.reduce`, `_.reduceRight`, and `_.transform`.
      *
      * The guarded methods are:
-     * `assign`, `defaults`, `includes`, `merge`, `sortByAll`, and `sortByOrder`
+     * `assign`, `defaults`, `defaultsDeep`, `includes`, `merge`, `sortByAll`,
+     * and `sortByOrder`
      *
      * @static
      * @memberOf _
@@ -31434,7 +31881,7 @@ if (typeof module !== 'undefined' && module.exports) {
     function some(collection, predicate, thisArg) {
       var func = isArray(collection) ? arraySome : baseSome;
       if (thisArg && isIterateeCall(collection, predicate, thisArg)) {
-        predicate = null;
+        predicate = undefined;
       }
       if (typeof predicate != 'function' || thisArg !== undefined) {
         predicate = getCallback(predicate, thisArg, 3);
@@ -31495,7 +31942,7 @@ if (typeof module !== 'undefined' && module.exports) {
         return [];
       }
       if (thisArg && isIterateeCall(collection, iteratee, thisArg)) {
-        iteratee = null;
+        iteratee = undefined;
       }
       var index = -1;
       iteratee = getCallback(iteratee, thisArg, 3);
@@ -31554,9 +32001,9 @@ if (typeof module !== 'undefined' && module.exports) {
 
     /**
      * This method is like `_.sortByAll` except that it allows specifying the
-     * sort orders of the iteratees to sort by. A truthy value in `orders` will
-     * sort the corresponding property name in ascending order while a falsey
-     * value will sort it in descending order.
+     * sort orders of the iteratees to sort by. If `orders` is unspecified, all
+     * values are sorted in ascending order. Otherwise, a value is sorted in
+     * ascending order if its corresponding order is "asc", and descending if "desc".
      *
      * If a property name is provided for an iteratee the created `_.property`
      * style callback returns the property value of the given element.
@@ -31570,7 +32017,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * @category Collection
      * @param {Array|Object|string} collection The collection to iterate over.
      * @param {Function[]|Object[]|string[]} iteratees The iteratees to sort by.
-     * @param {boolean[]} orders The sort orders of `iteratees`.
+     * @param {boolean[]} [orders] The sort orders of `iteratees`.
      * @param- {Object} [guard] Enables use as a callback for functions like `_.reduce`.
      * @returns {Array} Returns the new sorted array.
      * @example
@@ -31583,7 +32030,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * ];
      *
      * // sort by `user` in ascending order and by `age` in descending order
-     * _.map(_.sortByOrder(users, ['user', 'age'], [true, false]), _.values);
+     * _.map(_.sortByOrder(users, ['user', 'age'], ['asc', 'desc']), _.values);
      * // => [['barney', 36], ['barney', 34], ['fred', 48], ['fred', 42]]
      */
     function sortByOrder(collection, iteratees, orders, guard) {
@@ -31591,7 +32038,7 @@ if (typeof module !== 'undefined' && module.exports) {
         return [];
       }
       if (guard && isIterateeCall(iteratees, orders, guard)) {
-        orders = null;
+        orders = undefined;
       }
       if (!isArray(iteratees)) {
         iteratees = iteratees == null ? [] : [iteratees];
@@ -31716,10 +32163,10 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     function ary(func, n, guard) {
       if (guard && isIterateeCall(func, n, guard)) {
-        n = null;
+        n = undefined;
       }
       n = (func && n == null) ? func.length : nativeMax(+n || 0, 0);
-      return createWrapper(func, ARY_FLAG, null, null, null, null, n);
+      return createWrapper(func, ARY_FLAG, undefined, undefined, undefined, undefined, n);
     }
 
     /**
@@ -31754,7 +32201,7 @@ if (typeof module !== 'undefined' && module.exports) {
           result = func.apply(this, arguments);
         }
         if (n <= 1) {
-          func = null;
+          func = undefined;
         }
         return result;
       };
@@ -32062,9 +32509,9 @@ if (typeof module !== 'undefined' && module.exports) {
         var leading = true;
         trailing = false;
       } else if (isObject(options)) {
-        leading = options.leading;
+        leading = !!options.leading;
         maxWait = 'maxWait' in options && nativeMax(+options.maxWait || 0, wait);
-        trailing = 'trailing' in options ? options.trailing : trailing;
+        trailing = 'trailing' in options ? !!options.trailing : trailing;
       }
 
       function cancel() {
@@ -32074,41 +32521,35 @@ if (typeof module !== 'undefined' && module.exports) {
         if (maxTimeoutId) {
           clearTimeout(maxTimeoutId);
         }
+        lastCalled = 0;
         maxTimeoutId = timeoutId = trailingCall = undefined;
+      }
+
+      function complete(isCalled, id) {
+        if (id) {
+          clearTimeout(id);
+        }
+        maxTimeoutId = timeoutId = trailingCall = undefined;
+        if (isCalled) {
+          lastCalled = now();
+          result = func.apply(thisArg, args);
+          if (!timeoutId && !maxTimeoutId) {
+            args = thisArg = undefined;
+          }
+        }
       }
 
       function delayed() {
         var remaining = wait - (now() - stamp);
         if (remaining <= 0 || remaining > wait) {
-          if (maxTimeoutId) {
-            clearTimeout(maxTimeoutId);
-          }
-          var isCalled = trailingCall;
-          maxTimeoutId = timeoutId = trailingCall = undefined;
-          if (isCalled) {
-            lastCalled = now();
-            result = func.apply(thisArg, args);
-            if (!timeoutId && !maxTimeoutId) {
-              args = thisArg = null;
-            }
-          }
+          complete(trailingCall, maxTimeoutId);
         } else {
           timeoutId = setTimeout(delayed, remaining);
         }
       }
 
       function maxDelayed() {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        maxTimeoutId = timeoutId = trailingCall = undefined;
-        if (trailing || (maxWait !== wait)) {
-          lastCalled = now();
-          result = func.apply(thisArg, args);
-          if (!timeoutId && !maxTimeoutId) {
-            args = thisArg = null;
-          }
-        }
+        complete(trailing, timeoutId);
       }
 
       function debounced() {
@@ -32148,7 +32589,7 @@ if (typeof module !== 'undefined' && module.exports) {
           result = func.apply(thisArg, args);
         }
         if (isCalled && !timeoutId && !maxTimeoutId) {
-          args = thisArg = null;
+          args = thisArg = undefined;
         }
         return result;
       }
@@ -32253,7 +32694,7 @@ if (typeof module !== 'undefined' && module.exports) {
      *
      * **Note:** The cache is exposed as the `cache` property on the memoized
      * function. Its creation may be customized by replacing the `_.memoize.Cache`
-     * constructor with one whose instances implement the [`Map`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-properties-of-the-map-prototype-object)
+     * constructor with one whose instances implement the [`Map`](http://ecma-international.org/ecma-262/6.0/#sec-properties-of-the-map-prototype-object)
      * method interface of `get`, `has`, and `set`.
      *
      * @static
@@ -32313,6 +32754,52 @@ if (typeof module !== 'undefined' && module.exports) {
       memoized.cache = new memoize.Cache;
       return memoized;
     }
+
+    /**
+     * Creates a function that runs each argument through a corresponding
+     * transform function.
+     *
+     * @static
+     * @memberOf _
+     * @category Function
+     * @param {Function} func The function to wrap.
+     * @param {...(Function|Function[])} [transforms] The functions to transform
+     * arguments, specified as individual functions or arrays of functions.
+     * @returns {Function} Returns the new function.
+     * @example
+     *
+     * function doubled(n) {
+     *   return n * 2;
+     * }
+     *
+     * function square(n) {
+     *   return n * n;
+     * }
+     *
+     * var modded = _.modArgs(function(x, y) {
+     *   return [x, y];
+     * }, square, doubled);
+     *
+     * modded(1, 2);
+     * // => [1, 4]
+     *
+     * modded(5, 10);
+     * // => [25, 20]
+     */
+    var modArgs = restParam(function(func, transforms) {
+      transforms = baseFlatten(transforms);
+      if (typeof func != 'function' || !arrayEvery(transforms, baseIsFunction)) {
+        throw new TypeError(FUNC_ERROR_TEXT);
+      }
+      var length = transforms.length;
+      return restParam(function(args) {
+        var index = nativeMin(args.length, length);
+        while (index--) {
+          args[index] = transforms[index](args[index]);
+        }
+        return func.apply(this, args);
+      });
+    });
 
     /**
      * Creates a function that negates the result of the predicate `func`. The
@@ -32459,7 +32946,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * // => [3, 6, 9]
      */
     var rearg = restParam(function(func, indexes) {
-      return createWrapper(func, REARG_FLAG, null, null, null, baseFlatten(indexes));
+      return createWrapper(func, REARG_FLAG, undefined, undefined, undefined, baseFlatten(indexes));
     });
 
     /**
@@ -32605,10 +33092,7 @@ if (typeof module !== 'undefined' && module.exports) {
         leading = 'leading' in options ? !!options.leading : leading;
         trailing = 'trailing' in options ? !!options.trailing : trailing;
       }
-      debounceOptions.leading = leading;
-      debounceOptions.maxWait = +wait;
-      debounceOptions.trailing = trailing;
-      return debounce(func, wait, debounceOptions);
+      return debounce(func, wait, { 'leading': leading, 'maxWait': +wait, 'trailing': trailing });
     }
 
     /**
@@ -32634,7 +33118,7 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     function wrap(value, wrapper) {
       wrapper = wrapper == null ? identity : wrapper;
-      return createWrapper(wrapper, PARTIAL_FLAG, null, [value], []);
+      return createWrapper(wrapper, PARTIAL_FLAG, undefined, [value], []);
     }
 
     /*------------------------------------------------------------------------*/
@@ -32820,7 +33304,8 @@ if (typeof module !== 'undefined' && module.exports) {
      * // => false
      */
     function isArguments(value) {
-      return isObjectLike(value) && isArrayLike(value) && objToString.call(value) == argsTag;
+      return isObjectLike(value) && isArrayLike(value) &&
+        hasOwnProperty.call(value, 'callee') && !propertyIsEnumerable.call(value, 'callee');
     }
 
     /**
@@ -32900,14 +33385,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * // => false
      */
     function isElement(value) {
-      return !!value && value.nodeType === 1 && isObjectLike(value) &&
-        (objToString.call(value).indexOf('Element') > -1);
-    }
-    // Fallback for environments without DOM support.
-    if (!support.dom) {
-      isElement = function(value) {
-        return !!value && value.nodeType === 1 && isObjectLike(value) && !isPlainObject(value);
-      };
+      return !!value && value.nodeType === 1 && isObjectLike(value) && !isPlainObject(value);
     }
 
     /**
@@ -33022,7 +33500,7 @@ if (typeof module !== 'undefined' && module.exports) {
     /**
      * Checks if `value` is a finite primitive number.
      *
-     * **Note:** This method is based on [`Number.isFinite`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.isfinite).
+     * **Note:** This method is based on [`Number.isFinite`](http://ecma-international.org/ecma-262/6.0/#sec-number.isfinite).
      *
      * @static
      * @memberOf _
@@ -33046,9 +33524,9 @@ if (typeof module !== 'undefined' && module.exports) {
      * _.isFinite(Infinity);
      * // => false
      */
-    var isFinite = nativeNumIsFinite || function(value) {
+    function isFinite(value) {
       return typeof value == 'number' && nativeIsFinite(value);
-    };
+    }
 
     /**
      * Checks if `value` is classified as a `Function` object.
@@ -33066,12 +33544,12 @@ if (typeof module !== 'undefined' && module.exports) {
      * _.isFunction(/abc/);
      * // => false
      */
-    var isFunction = !(baseIsFunction(/x/) || (Uint8Array && !baseIsFunction(Uint8Array))) ? baseIsFunction : function(value) {
+    function isFunction(value) {
       // The use of `Object#toString` avoids issues with the `typeof` operator
       // in older versions of Chrome and Safari which return 'function' for regexes
       // and Safari 8 equivalents which return 'object' for typed array constructors.
-      return objToString.call(value) == funcTag;
-    };
+      return isObject(value) && objToString.call(value) == funcTag;
+    }
 
     /**
      * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
@@ -33195,7 +33673,7 @@ if (typeof module !== 'undefined' && module.exports) {
       if (value == null) {
         return false;
       }
-      if (objToString.call(value) == funcTag) {
+      if (isFunction(value)) {
         return reIsNative.test(fnToString.call(value));
       }
       return isObjectLike(value) && reIsHostCtor.test(value);
@@ -33277,17 +33755,26 @@ if (typeof module !== 'undefined' && module.exports) {
      * _.isPlainObject(Object.create(null));
      * // => true
      */
-    var isPlainObject = !getPrototypeOf ? shimIsPlainObject : function(value) {
-      if (!(value && objToString.call(value) == objectTag)) {
+    function isPlainObject(value) {
+      var Ctor;
+
+      // Exit early for non `Object` objects.
+      if (!(isObjectLike(value) && objToString.call(value) == objectTag && !isArguments(value)) ||
+          (!hasOwnProperty.call(value, 'constructor') && (Ctor = value.constructor, typeof Ctor == 'function' && !(Ctor instanceof Ctor)))) {
         return false;
       }
-      var valueOf = getNative(value, 'valueOf'),
-          objProto = valueOf && (objProto = getPrototypeOf(valueOf)) && getPrototypeOf(objProto);
-
-      return objProto
-        ? (value == objProto || getPrototypeOf(value) == objProto)
-        : shimIsPlainObject(value);
-    };
+      // IE < 9 iterates inherited properties before own properties. If the first
+      // iterated property is an object's own property then there are no inherited
+      // enumerable properties.
+      var result;
+      // In most environments an object's own properties are iterated before
+      // its inherited properties. If the last iterated property is an object's
+      // own property then there are no inherited enumerable properties.
+      baseForIn(value, function(subValue, key) {
+        result = key;
+      });
+      return result === undefined || hasOwnProperty.call(value, result);
+    }
 
     /**
      * Checks if `value` is classified as a `RegExp` object.
@@ -33306,7 +33793,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * // => false
      */
     function isRegExp(value) {
-      return isObjectLike(value) && objToString.call(value) == regexpTag;
+      return isObject(value) && objToString.call(value) == regexpTag;
     }
 
     /**
@@ -33473,6 +33960,56 @@ if (typeof module !== 'undefined' && module.exports) {
     /*------------------------------------------------------------------------*/
 
     /**
+     * Recursively merges own enumerable properties of the source object(s), that
+     * don't resolve to `undefined` into the destination object. Subsequent sources
+     * overwrite property assignments of previous sources. If `customizer` is
+     * provided it is invoked to produce the merged values of the destination and
+     * source properties. If `customizer` returns `undefined` merging is handled
+     * by the method instead. The `customizer` is bound to `thisArg` and invoked
+     * with five arguments: (objectValue, sourceValue, key, object, source).
+     *
+     * @static
+     * @memberOf _
+     * @category Object
+     * @param {Object} object The destination object.
+     * @param {...Object} [sources] The source objects.
+     * @param {Function} [customizer] The function to customize assigned values.
+     * @param {*} [thisArg] The `this` binding of `customizer`.
+     * @returns {Object} Returns `object`.
+     * @example
+     *
+     * var users = {
+     *   'data': [{ 'user': 'barney' }, { 'user': 'fred' }]
+     * };
+     *
+     * var ages = {
+     *   'data': [{ 'age': 36 }, { 'age': 40 }]
+     * };
+     *
+     * _.merge(users, ages);
+     * // => { 'data': [{ 'user': 'barney', 'age': 36 }, { 'user': 'fred', 'age': 40 }] }
+     *
+     * // using a customizer callback
+     * var object = {
+     *   'fruits': ['apple'],
+     *   'vegetables': ['beet']
+     * };
+     *
+     * var other = {
+     *   'fruits': ['banana'],
+     *   'vegetables': ['carrot']
+     * };
+     *
+     * _.merge(object, other, function(a, b) {
+     *   if (_.isArray(a)) {
+     *     return a.concat(b);
+     *   }
+     * });
+     * // => { 'fruits': ['apple', 'banana'], 'vegetables': ['beet', 'carrot'] }
+     */
+    var merge = createAssigner(baseMerge);
+
+    /**
      * Assigns own enumerable properties of source object(s) to the destination
      * object. Subsequent sources overwrite property assignments of previous sources.
      * If `customizer` is provided it is invoked to produce the assigned values.
@@ -33480,7 +34017,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * (objectValue, sourceValue, key, object, source).
      *
      * **Note:** This method mutates `object` and is based on
-     * [`Object.assign`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign).
+     * [`Object.assign`](http://ecma-international.org/ecma-262/6.0/#sec-object.assign).
      *
      * @static
      * @memberOf _
@@ -33547,7 +34084,7 @@ if (typeof module !== 'undefined' && module.exports) {
     function create(prototype, properties, guard) {
       var result = baseCreate(prototype);
       if (guard && isIterateeCall(prototype, properties, guard)) {
-        properties = null;
+        properties = undefined;
       }
       return properties ? baseAssign(result, properties) : result;
     }
@@ -33570,14 +34107,27 @@ if (typeof module !== 'undefined' && module.exports) {
      * _.defaults({ 'user': 'barney' }, { 'age': 36 }, { 'user': 'fred' });
      * // => { 'user': 'barney', 'age': 36 }
      */
-    var defaults = restParam(function(args) {
-      var object = args[0];
-      if (object == null) {
-        return object;
-      }
-      args.push(assignDefaults);
-      return assign.apply(undefined, args);
-    });
+    var defaults = createDefaults(assign, assignDefaults);
+
+    /**
+     * This method is like `_.defaults` except that it recursively assigns
+     * default properties.
+     *
+     * **Note:** This method mutates `object`.
+     *
+     * @static
+     * @memberOf _
+     * @category Object
+     * @param {Object} object The destination object.
+     * @param {...Object} [sources] The source objects.
+     * @returns {Object} Returns `object`.
+     * @example
+     *
+     * _.defaultsDeep({ 'user': { 'name': 'barney' } }, { 'user': { 'name': 'fred', 'age': 36 } });
+     * // => { 'user': { 'name': 'barney', 'age': 36 } }
+     *
+     */
+    var defaultsDeep = createDefaults(merge, mergeDefaults);
 
     /**
      * This method is like `_.find` except that it returns the key of the first
@@ -33904,7 +34454,7 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     function invert(object, multiValue, guard) {
       if (guard && isIterateeCall(object, multiValue, guard)) {
-        multiValue = null;
+        multiValue = undefined;
       }
       var index = -1,
           props = keys(object),
@@ -33933,7 +34483,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * Creates an array of the own enumerable property names of `object`.
      *
      * **Note:** Non-object values are coerced to objects. See the
-     * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.keys)
+     * [ES spec](http://ecma-international.org/ecma-262/6.0/#sec-object.keys)
      * for more details.
      *
      * @static
@@ -33957,7 +34507,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * // => ['0', '1']
      */
     var keys = !nativeKeys ? shimKeys : function(object) {
-      var Ctor = object == null ? null : object.constructor;
+      var Ctor = object == null ? undefined : object.constructor;
       if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
           (typeof object != 'function' && isArrayLike(object))) {
         return shimKeys(object);
@@ -34080,56 +34630,6 @@ if (typeof module !== 'undefined' && module.exports) {
      * // => { 'fred': 40, 'pebbles': 1 } (iteration order is not guaranteed)
      */
     var mapValues = createObjectMapper();
-
-    /**
-     * Recursively merges own enumerable properties of the source object(s), that
-     * don't resolve to `undefined` into the destination object. Subsequent sources
-     * overwrite property assignments of previous sources. If `customizer` is
-     * provided it is invoked to produce the merged values of the destination and
-     * source properties. If `customizer` returns `undefined` merging is handled
-     * by the method instead. The `customizer` is bound to `thisArg` and invoked
-     * with five arguments: (objectValue, sourceValue, key, object, source).
-     *
-     * @static
-     * @memberOf _
-     * @category Object
-     * @param {Object} object The destination object.
-     * @param {...Object} [sources] The source objects.
-     * @param {Function} [customizer] The function to customize assigned values.
-     * @param {*} [thisArg] The `this` binding of `customizer`.
-     * @returns {Object} Returns `object`.
-     * @example
-     *
-     * var users = {
-     *   'data': [{ 'user': 'barney' }, { 'user': 'fred' }]
-     * };
-     *
-     * var ages = {
-     *   'data': [{ 'age': 36 }, { 'age': 40 }]
-     * };
-     *
-     * _.merge(users, ages);
-     * // => { 'data': [{ 'user': 'barney', 'age': 36 }, { 'user': 'fred', 'age': 40 }] }
-     *
-     * // using a customizer callback
-     * var object = {
-     *   'fruits': ['apple'],
-     *   'vegetables': ['beet']
-     * };
-     *
-     * var other = {
-     *   'fruits': ['banana'],
-     *   'vegetables': ['carrot']
-     * };
-     *
-     * _.merge(object, other, function(a, b) {
-     *   if (_.isArray(a)) {
-     *     return a.concat(b);
-     *   }
-     * });
-     * // => { 'fruits': ['apple', 'banana'], 'vegetables': ['beet', 'carrot'] }
-     */
-    var merge = createAssigner(baseMerge);
 
     /**
      * The opposite of `_.pick`; this method creates an object composed of the
@@ -34361,7 +34861,7 @@ if (typeof module !== 'undefined' && module.exports) {
           if (isArr) {
             accumulator = isArray(object) ? new Ctor : [];
           } else {
-            accumulator = baseCreate(isFunction(Ctor) ? Ctor.prototype : null);
+            accumulator = baseCreate(isFunction(Ctor) ? Ctor.prototype : undefined);
           }
         } else {
           accumulator = {};
@@ -34464,7 +34964,7 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     function inRange(value, start, end) {
       start = +start || 0;
-      if (typeof end === 'undefined') {
+      if (end === undefined) {
         end = start;
         start = 0;
       } else {
@@ -34502,7 +35002,7 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     function random(min, max, floating) {
       if (floating && isIterateeCall(min, max, floating)) {
-        max = floating = null;
+        max = floating = undefined;
       }
       var noMin = min == null,
           noMax = max == null;
@@ -34689,8 +35189,8 @@ if (typeof module !== 'undefined' && module.exports) {
     function escapeRegExp(string) {
       string = baseToString(string);
       return (string && reHasRegExpChars.test(string))
-        ? string.replace(reRegExpChars, '\\$&')
-        : string;
+        ? string.replace(reRegExpChars, escapeRegExpChar)
+        : (string || '(?:)');
     }
 
     /**
@@ -34747,8 +35247,8 @@ if (typeof module !== 'undefined' && module.exports) {
         return string;
       }
       var mid = (length - strLength) / 2,
-          leftLength = floor(mid),
-          rightLength = ceil(mid);
+          leftLength = nativeFloor(mid),
+          rightLength = nativeCeil(mid);
 
       chars = createPadding('', rightLength, chars);
       return chars.slice(0, leftLength) + string + chars;
@@ -34826,25 +35326,16 @@ if (typeof module !== 'undefined' && module.exports) {
      * // => [6, 8, 10]
      */
     function parseInt(string, radix, guard) {
-      if (guard && isIterateeCall(string, radix, guard)) {
+      // Firefox < 21 and Opera < 15 follow ES3 for `parseInt`.
+      // Chrome fails to trim leading <BOM> whitespace characters.
+      // See https://code.google.com/p/v8/issues/detail?id=3109 for more details.
+      if (guard ? isIterateeCall(string, radix, guard) : radix == null) {
         radix = 0;
+      } else if (radix) {
+        radix = +radix;
       }
-      return nativeParseInt(string, radix);
-    }
-    // Fallback for environments with pre-ES5 implementations.
-    if (nativeParseInt(whitespace + '08') != 8) {
-      parseInt = function(string, radix, guard) {
-        // Firefox < 21 and Opera < 15 follow ES3 for `parseInt`.
-        // Chrome fails to trim leading <BOM> whitespace characters.
-        // See https://code.google.com/p/v8/issues/detail?id=3109 for more details.
-        if (guard ? isIterateeCall(string, radix, guard) : radix == null) {
-          radix = 0;
-        } else if (radix) {
-          radix = +radix;
-        }
-        string = trim(string);
-        return nativeParseInt(string, radix || (reHasHexPrefix.test(string) ? 16 : 10));
-      };
+      string = trim(string);
+      return nativeParseInt(string, radix || (reHasHexPrefix.test(string) ? 16 : 10));
     }
 
     /**
@@ -34880,7 +35371,7 @@ if (typeof module !== 'undefined' && module.exports) {
         if (n % 2) {
           result += string;
         }
-        n = floor(n / 2);
+        n = nativeFloor(n / 2);
         string += string;
       } while (n);
 
@@ -35065,7 +35556,7 @@ if (typeof module !== 'undefined' && module.exports) {
       var settings = lodash.templateSettings;
 
       if (otherOptions && isIterateeCall(string, options, otherOptions)) {
-        options = otherOptions = null;
+        options = otherOptions = undefined;
       }
       string = baseToString(string);
       options = assignWith(baseAssign({}, otherOptions || options), settings, assignOwnDefaults);
@@ -35301,7 +35792,7 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     function trunc(string, options, guard) {
       if (guard && isIterateeCall(string, options, guard)) {
-        options = null;
+        options = undefined;
       }
       var length = DEFAULT_TRUNC_LENGTH,
           omission = DEFAULT_TRUNC_OMISSION;
@@ -35396,7 +35887,7 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     function words(string, pattern, guard) {
       if (guard && isIterateeCall(string, pattern, guard)) {
-        pattern = null;
+        pattern = undefined;
       }
       string = baseToString(string);
       return string.match(pattern || reWords) || [];
@@ -35472,7 +35963,7 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     function callback(func, thisArg, guard) {
       if (guard && isIterateeCall(func, thisArg, guard)) {
-        thisArg = null;
+        thisArg = undefined;
       }
       return isObjectLike(func)
         ? matches(func)
@@ -35673,8 +36164,8 @@ if (typeof module !== 'undefined' && module.exports) {
     function mixin(object, source, options) {
       if (options == null) {
         var isObj = isObject(source),
-            props = isObj ? keys(source) : null,
-            methodNames = (props && props.length) ? baseFunctions(source, props) : null;
+            props = isObj ? keys(source) : undefined,
+            methodNames = (props && props.length) ? baseFunctions(source, props) : undefined;
 
         if (!(methodNames ? methodNames.length : isObj)) {
           methodNames = false;
@@ -35713,9 +36204,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 result.__chain__ = chainAll;
                 return result;
               }
-              var args = [this.value()];
-              push.apply(args, arguments);
-              return func.apply(object, args);
+              return func.apply(object, arrayPush([this.value()], arguments));
             };
           }(func));
         }
@@ -35736,7 +36225,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * var lodash = _.noConflict();
      */
     function noConflict() {
-      context._ = oldDash;
+      root._ = oldDash;
       return this;
     }
 
@@ -35845,7 +36334,7 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     function range(start, end, step) {
       if (step && isIterateeCall(start, end, step)) {
-        end = step = null;
+        end = step = undefined;
       }
       start = +start || 0;
       step = step == null ? 1 : (+step || 0);
@@ -35859,7 +36348,7 @@ if (typeof module !== 'undefined' && module.exports) {
       // Use `Array(length)` so engines like Chakra and V8 avoid slower modes.
       // See https://youtu.be/XAqIpGU8ZZk#t=17m25s for more details.
       var index = -1,
-          length = nativeMax(ceil((end - start) / (step || 1)), 0),
+          length = nativeMax(nativeCeil((end - start) / (step || 1)), 0),
           result = Array(length);
 
       while (++index < length) {
@@ -35897,7 +36386,7 @@ if (typeof module !== 'undefined' && module.exports) {
      * // => also invokes `mage.castSpell(n)` three times
      */
     function times(n, iteratee, thisArg) {
-      n = floor(n);
+      n = nativeFloor(n);
 
       // Exit early to avoid a JSC JIT bug in Safari 8
       // where `Array(0)` is treated as `Array(1)`.
@@ -35958,6 +36447,50 @@ if (typeof module !== 'undefined' && module.exports) {
     function add(augend, addend) {
       return (+augend || 0) + (+addend || 0);
     }
+
+    /**
+     * Calculates `n` rounded up to `precision`.
+     *
+     * @static
+     * @memberOf _
+     * @category Math
+     * @param {number} n The number to round up.
+     * @param {number} [precision=0] The precision to round up to.
+     * @returns {number} Returns the rounded up number.
+     * @example
+     *
+     * _.ceil(4.006);
+     * // => 5
+     *
+     * _.ceil(6.004, 2);
+     * // => 6.01
+     *
+     * _.ceil(6040, -2);
+     * // => 6100
+     */
+    var ceil = createRound('ceil');
+
+    /**
+     * Calculates `n` rounded down to `precision`.
+     *
+     * @static
+     * @memberOf _
+     * @category Math
+     * @param {number} n The number to round down.
+     * @param {number} [precision=0] The precision to round down to.
+     * @returns {number} Returns the rounded down number.
+     * @example
+     *
+     * _.floor(4.006);
+     * // => 4
+     *
+     * _.floor(0.046, 2);
+     * // => 0.04
+     *
+     * _.floor(4060, -2);
+     * // => 4000
+     */
+    var floor = createRound('floor');
 
     /**
      * Gets the maximum value of `collection`. If `collection` is empty or falsey
@@ -36058,6 +36591,28 @@ if (typeof module !== 'undefined' && module.exports) {
     var min = createExtremum(lt, POSITIVE_INFINITY);
 
     /**
+     * Calculates `n` rounded to `precision`.
+     *
+     * @static
+     * @memberOf _
+     * @category Math
+     * @param {number} n The number to round.
+     * @param {number} [precision=0] The precision to round to.
+     * @returns {number} Returns the rounded number.
+     * @example
+     *
+     * _.round(4.006);
+     * // => 4
+     *
+     * _.round(4.006, 2);
+     * // => 4.01
+     *
+     * _.round(4060, -2);
+     * // => 4100
+     */
+    var round = createRound('round');
+
+    /**
      * Gets the sum of the values in `collection`.
      *
      * @static
@@ -36091,17 +36646,11 @@ if (typeof module !== 'undefined' && module.exports) {
      */
     function sum(collection, iteratee, thisArg) {
       if (thisArg && isIterateeCall(collection, iteratee, thisArg)) {
-        iteratee = null;
+        iteratee = undefined;
       }
-      var callback = getCallback(),
-          noIteratee = iteratee == null;
-
-      if (!(noIteratee && callback === baseCallback)) {
-        noIteratee = false;
-        iteratee = callback(iteratee, thisArg, 3);
-      }
-      return noIteratee
-        ? arraySum(isArray(collection) ? collection : toIterable(collection))
+      iteratee = getCallback(iteratee, thisArg, 3);
+      return iteratee.length == 1
+        ? arraySum(isArray(collection) ? collection : toIterable(collection), iteratee)
         : baseSum(collection, iteratee);
     }
 
@@ -36148,6 +36697,7 @@ if (typeof module !== 'undefined' && module.exports) {
     lodash.curryRight = curryRight;
     lodash.debounce = debounce;
     lodash.defaults = defaults;
+    lodash.defaultsDeep = defaultsDeep;
     lodash.defer = defer;
     lodash.delay = delay;
     lodash.difference = difference;
@@ -36186,6 +36736,7 @@ if (typeof module !== 'undefined' && module.exports) {
     lodash.method = method;
     lodash.methodOf = methodOf;
     lodash.mixin = mixin;
+    lodash.modArgs = modArgs;
     lodash.negate = negate;
     lodash.omit = omit;
     lodash.once = once;
@@ -36261,6 +36812,7 @@ if (typeof module !== 'undefined' && module.exports) {
     lodash.attempt = attempt;
     lodash.camelCase = camelCase;
     lodash.capitalize = capitalize;
+    lodash.ceil = ceil;
     lodash.clone = clone;
     lodash.cloneDeep = cloneDeep;
     lodash.deburr = deburr;
@@ -36276,6 +36828,7 @@ if (typeof module !== 'undefined' && module.exports) {
     lodash.findLastKey = findLastKey;
     lodash.findWhere = findWhere;
     lodash.first = first;
+    lodash.floor = floor;
     lodash.get = get;
     lodash.gt = gt;
     lodash.gte = gte;
@@ -36324,6 +36877,7 @@ if (typeof module !== 'undefined' && module.exports) {
     lodash.reduceRight = reduceRight;
     lodash.repeat = repeat;
     lodash.result = result;
+    lodash.round = round;
     lodash.runInContext = runInContext;
     lodash.size = size;
     lodash.snakeCase = snakeCase;
@@ -36394,48 +36948,20 @@ if (typeof module !== 'undefined' && module.exports) {
       lodash[methodName].placeholder = lodash;
     });
 
-    // Add `LazyWrapper` methods that accept an `iteratee` value.
-    arrayEach(['dropWhile', 'filter', 'map', 'takeWhile'], function(methodName, type) {
-      var isFilter = type != LAZY_MAP_FLAG,
-          isDropWhile = type == LAZY_DROP_WHILE_FLAG;
-
-      LazyWrapper.prototype[methodName] = function(iteratee, thisArg) {
-        var filtered = this.__filtered__,
-            result = (filtered && isDropWhile) ? new LazyWrapper(this) : this.clone(),
-            iteratees = result.__iteratees__ || (result.__iteratees__ = []);
-
-        iteratees.push({
-          'done': false,
-          'count': 0,
-          'index': 0,
-          'iteratee': getCallback(iteratee, thisArg, 1),
-          'limit': -1,
-          'type': type
-        });
-
-        result.__filtered__ = filtered || isFilter;
-        return result;
-      };
-    });
-
     // Add `LazyWrapper` methods for `_.drop` and `_.take` variants.
     arrayEach(['drop', 'take'], function(methodName, index) {
-      var whileName = methodName + 'While';
-
       LazyWrapper.prototype[methodName] = function(n) {
-        var filtered = this.__filtered__,
-            result = (filtered && !index) ? this.dropWhile() : this.clone();
+        var filtered = this.__filtered__;
+        if (filtered && !index) {
+          return new LazyWrapper(this);
+        }
+        n = n == null ? 1 : nativeMax(nativeFloor(n) || 0, 0);
 
-        n = n == null ? 1 : nativeMax(floor(n) || 0, 0);
+        var result = this.clone();
         if (filtered) {
-          if (index) {
-            result.__takeCount__ = nativeMin(result.__takeCount__, n);
-          } else {
-            last(result.__iteratees__).limit = n;
-          }
+          result.__takeCount__ = nativeMin(result.__takeCount__, n);
         } else {
-          var views = result.__views__ || (result.__views__ = []);
-          views.push({ 'size': n, 'type': methodName + (result.__dir__ < 0 ? 'Right' : '') });
+          result.__views__.push({ 'size': n, 'type': methodName + (result.__dir__ < 0 ? 'Right' : '') });
         }
         return result;
       };
@@ -36443,9 +36969,18 @@ if (typeof module !== 'undefined' && module.exports) {
       LazyWrapper.prototype[methodName + 'Right'] = function(n) {
         return this.reverse()[methodName](n).reverse();
       };
+    });
 
-      LazyWrapper.prototype[methodName + 'RightWhile'] = function(predicate, thisArg) {
-        return this.reverse()[whileName](predicate, thisArg).reverse();
+    // Add `LazyWrapper` methods that accept an `iteratee` value.
+    arrayEach(['filter', 'map', 'takeWhile'], function(methodName, index) {
+      var type = index + 1,
+          isFilter = type != LAZY_MAP_FLAG;
+
+      LazyWrapper.prototype[methodName] = function(iteratee, thisArg) {
+        var result = this.clone();
+        result.__iteratees__.push({ 'iteratee': getCallback(iteratee, thisArg, 1), 'type': type });
+        result.__filtered__ = result.__filtered__ || isFilter;
+        return result;
       };
     });
 
@@ -36463,7 +36998,7 @@ if (typeof module !== 'undefined' && module.exports) {
       var dropName = 'drop' + (index ? '' : 'Right');
 
       LazyWrapper.prototype[methodName] = function() {
-        return this[dropName](1);
+        return this.__filtered__ ? new LazyWrapper(this) : this[dropName](1);
       };
     });
 
@@ -36492,10 +37027,13 @@ if (typeof module !== 'undefined' && module.exports) {
       start = start == null ? 0 : (+start || 0);
 
       var result = this;
+      if (result.__filtered__ && (start > 0 || end < 0)) {
+        return new LazyWrapper(result);
+      }
       if (start < 0) {
-        result = this.takeRight(-start);
+        result = result.takeRight(-start);
       } else if (start) {
-        result = this.drop(start);
+        result = result.drop(start);
       }
       if (end !== undefined) {
         end = (+end || 0);
@@ -36504,21 +37042,25 @@ if (typeof module !== 'undefined' && module.exports) {
       return result;
     };
 
+    LazyWrapper.prototype.takeRightWhile = function(predicate, thisArg) {
+      return this.reverse().takeWhile(predicate, thisArg).reverse();
+    };
+
     LazyWrapper.prototype.toArray = function() {
-      return this.drop(0);
+      return this.take(POSITIVE_INFINITY);
     };
 
     // Add `LazyWrapper` methods to `lodash.prototype`.
     baseForOwn(LazyWrapper.prototype, function(func, methodName) {
-      var lodashFunc = lodash[methodName];
+      var checkIteratee = /^(?:filter|map|reject)|While$/.test(methodName),
+          retUnwrapped = /^(?:first|last)$/.test(methodName),
+          lodashFunc = lodash[retUnwrapped ? ('take' + (methodName == 'last' ? 'Right' : '')) : methodName];
+
       if (!lodashFunc) {
         return;
       }
-      var checkIteratee = /^(?:filter|map|reject)|While$/.test(methodName),
-          retUnwrapped = /^(?:first|last)$/.test(methodName);
-
       lodash.prototype[methodName] = function() {
-        var args = arguments,
+        var args = retUnwrapped ? [1] : arguments,
             chainAll = this.__chain__,
             value = this.__wrapped__,
             isHybrid = !!this.__actions__.length,
@@ -36527,28 +37069,30 @@ if (typeof module !== 'undefined' && module.exports) {
             useLazy = isLazy || isArray(value);
 
         if (useLazy && checkIteratee && typeof iteratee == 'function' && iteratee.length != 1) {
-          // avoid lazy use if the iteratee has a "length" value other than `1`
+          // Avoid lazy use if the iteratee has a "length" value other than `1`.
           isLazy = useLazy = false;
         }
-        var onlyLazy = isLazy && !isHybrid;
-        if (retUnwrapped && !chainAll) {
-          return onlyLazy
-            ? func.call(value)
-            : lodashFunc.call(lodash, this.value());
-        }
         var interceptor = function(value) {
-          var otherArgs = [value];
-          push.apply(otherArgs, args);
-          return lodashFunc.apply(lodash, otherArgs);
+          return (retUnwrapped && chainAll)
+            ? lodashFunc(value, 1)[0]
+            : lodashFunc.apply(undefined, arrayPush([value], args));
         };
-        if (useLazy) {
-          var wrapper = onlyLazy ? value : new LazyWrapper(this),
-              result = func.apply(wrapper, args);
 
-          if (!retUnwrapped && (isHybrid || result.__actions__)) {
-            var actions = result.__actions__ || (result.__actions__ = []);
-            actions.push({ 'func': thru, 'args': [interceptor], 'thisArg': lodash });
+        var action = { 'func': thru, 'args': [interceptor], 'thisArg': undefined },
+            onlyLazy = isLazy && !isHybrid;
+
+        if (retUnwrapped && !chainAll) {
+          if (onlyLazy) {
+            value = value.clone();
+            value.__actions__.push(action);
+            return func.call(value);
           }
+          return lodashFunc.call(undefined, this.value())[0];
+        }
+        if (!retUnwrapped && useLazy) {
+          value = onlyLazy ? value : new LazyWrapper(this);
+          var result = func.apply(value, args);
+          result.__actions__.push(action);
           return new LodashWrapper(result, chainAll);
         }
         return this.thru(interceptor);
@@ -36556,7 +37100,7 @@ if (typeof module !== 'undefined' && module.exports) {
     });
 
     // Add `Array` and `String` methods to `lodash.prototype`.
-    arrayEach(['concat', 'join', 'pop', 'push', 'replace', 'shift', 'sort', 'splice', 'split', 'unshift'], function(methodName) {
+    arrayEach(['join', 'pop', 'push', 'replace', 'shift', 'sort', 'splice', 'split', 'unshift'], function(methodName) {
       var func = (/^(?:replace|split)$/.test(methodName) ? stringProto : arrayProto)[methodName],
           chainName = /^(?:push|sort|unshift)$/.test(methodName) ? 'tap' : 'thru',
           retUnwrapped = /^(?:join|pop|replace|shift)$/.test(methodName);
@@ -36583,7 +37127,7 @@ if (typeof module !== 'undefined' && module.exports) {
       }
     });
 
-    realNames[createHybridWrapper(null, BIND_KEY_FLAG).name] = [{ 'name': 'wrapper', 'func': null }];
+    realNames[createHybridWrapper(undefined, BIND_KEY_FLAG).name] = [{ 'name': 'wrapper', 'func': undefined }];
 
     // Add functions to the lazy wrapper.
     LazyWrapper.prototype.clone = lazyClone;
@@ -36593,6 +37137,7 @@ if (typeof module !== 'undefined' && module.exports) {
     // Add chaining functions to the `lodash` wrapper.
     lodash.prototype.chain = wrapperChain;
     lodash.prototype.commit = wrapperCommit;
+    lodash.prototype.concat = wrapperConcat;
     lodash.prototype.plant = wrapperPlant;
     lodash.prototype.reverse = wrapperReverse;
     lodash.prototype.toString = wrapperToString;
@@ -36644,14 +37189,14 @@ if (typeof module !== 'undefined' && module.exports) {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],187:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 'use strict';
 
 module.exports = require('./lib/core.js')
 require('./lib/done.js')
 require('./lib/es6-extensions.js')
 require('./lib/node-extensions.js')
-},{"./lib/core.js":188,"./lib/done.js":189,"./lib/es6-extensions.js":190,"./lib/node-extensions.js":191}],188:[function(require,module,exports){
+},{"./lib/core.js":192,"./lib/done.js":193,"./lib/es6-extensions.js":194,"./lib/node-extensions.js":195}],192:[function(require,module,exports){
 'use strict';
 
 var asap = require('asap')
@@ -36758,7 +37303,7 @@ function doResolve(fn, onFulfilled, onRejected) {
   }
 }
 
-},{"asap":192}],189:[function(require,module,exports){
+},{"asap":196}],193:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js')
@@ -36773,7 +37318,7 @@ Promise.prototype.done = function (onFulfilled, onRejected) {
     })
   })
 }
-},{"./core.js":188,"asap":192}],190:[function(require,module,exports){
+},{"./core.js":192,"asap":196}],194:[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -36883,7 +37428,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 }
 
-},{"./core.js":188,"asap":192}],191:[function(require,module,exports){
+},{"./core.js":192,"asap":196}],195:[function(require,module,exports){
 'use strict';
 
 //This file contains then/promise specific extensions that are only useful for node.js interop
@@ -36948,7 +37493,7 @@ Promise.prototype.nodeify = function (callback, ctx) {
   })
 }
 
-},{"./core.js":188,"asap":192}],192:[function(require,module,exports){
+},{"./core.js":192,"asap":196}],196:[function(require,module,exports){
 (function (process){
 
 // Use the fastest possible means to execute a task in a future turn
@@ -37065,7 +37610,7 @@ module.exports = asap;
 
 
 }).call(this,require('_process'))
-},{"_process":159}],193:[function(require,module,exports){
+},{"_process":163}],197:[function(require,module,exports){
 // The MIT License (MIT)
 //
 // Copyright (c) 2014 Jonas Finnemann Jensen
@@ -37090,7 +37635,7 @@ module.exports = asap;
 
 module.exports = require('./slugid');
 
-},{"./slugid":196}],194:[function(require,module,exports){
+},{"./slugid":200}],198:[function(require,module,exports){
 (function (global){
 
 var rng;
@@ -37125,7 +37670,7 @@ module.exports = rng;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],195:[function(require,module,exports){
+},{}],199:[function(require,module,exports){
 (function (Buffer){
 //     uuid.js
 //
@@ -37316,7 +37861,7 @@ uuid.BufferClass = BufferClass;
 module.exports = uuid;
 
 }).call(this,require("buffer").Buffer)
-},{"./rng":194,"buffer":10}],196:[function(require,module,exports){
+},{"./rng":198,"buffer":10}],200:[function(require,module,exports){
 (function (Buffer){
 // The MIT License (MIT)
 //
@@ -37374,7 +37919,7 @@ exports.v4 = function() {
 };
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":10,"uuid":195}],197:[function(require,module,exports){
+},{"buffer":10,"uuid":199}],201:[function(require,module,exports){
 /**
  * Promise wrapper for superagent
  */
@@ -37479,7 +38024,7 @@ function wrap(superagent) {
 
 module.exports = wrap(require('superagent'));
 
-},{"promise":187,"superagent":198}],198:[function(require,module,exports){
+},{"promise":191,"superagent":202}],202:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -38604,7 +39149,7 @@ request.put = function(url, data, fn){
 
 module.exports = request;
 
-},{"emitter":199,"reduce":200}],199:[function(require,module,exports){
+},{"emitter":203,"reduce":204}],203:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -38770,7 +39315,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],200:[function(require,module,exports){
+},{}],204:[function(require,module,exports){
 
 /**
  * Reduce `arr` with `fn`.
@@ -38795,7 +39340,7 @@ module.exports = function(arr, fn, initial){
   
   return curr;
 };
-},{}],201:[function(require,module,exports){
+},{}],205:[function(require,module,exports){
 function normalize (str) {
   return str
           .replace(/[\/]+/g, '/')
