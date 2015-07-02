@@ -64,8 +64,8 @@ var schema = function(validator, options) {
           res.status(500).json({
             'message':  "Internal Server Error",
           });
-          debug("Reply for %s didn't match schema: %s got errors:\n%s",
-                req.url, options.output, JSON.stringify(errors, null, 4));
+          debug("Reply for %s didn't match schema: %s got errors: %j from output: %j",
+                req.url, options.output, errors, json);
           return;
         }
       }
