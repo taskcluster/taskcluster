@@ -1,6 +1,7 @@
 {
   "Auth": {
     "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#", 
       "baseUrl": "https://auth.taskcluster.net/v1", 
       "description": "Authentication related API end-points for taskcluster.", 
       "entries": [
@@ -139,7 +140,7 @@
           "route": "/list-clients", 
           "scopes": [
             [
-              "auth:client-clients"
+              "auth:list-clients"
             ]
           ], 
           "title": "List Clients", 
@@ -184,6 +185,40 @@
         }, 
         {
           "args": [], 
+          "description": "Export all clients except the root client, as a JSON list.\nThis list can be imported later using `importClients`.", 
+          "method": "get", 
+          "name": "exportClients", 
+          "output": "http://schemas.taskcluster.net/auth/v1/exported-clients.json#", 
+          "route": "/export-clients", 
+          "scopes": [
+            [
+              "auth:export-clients", 
+              "auth:credentials"
+            ]
+          ], 
+          "title": "List Clients", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
+          "description": "Import client from JSON list, overwriting any clients that already\nexists. Returns a list of all clients imported.", 
+          "input": "http://schemas.taskcluster.net/auth/v1/exported-clients.json#", 
+          "method": "post", 
+          "name": "importClients", 
+          "output": "http://schemas.taskcluster.net/auth/v1/exported-clients.json#", 
+          "route": "/import-clients", 
+          "scopes": [
+            [
+              "auth:import-clients", 
+              "auth:create-client", 
+              "auth:credentials"
+            ]
+          ], 
+          "title": "Import Clients", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.", 
           "method": "get", 
           "name": "ping", 
@@ -193,14 +228,349 @@
         }
       ], 
       "title": "Authentication API", 
-      "version": "0.2.0"
+      "version": 0
     }, 
     "referenceUrl": "http://references.taskcluster.net/auth/v1/api.json"
   }, 
+  "AwsProvisioner": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#", 
+      "baseUrl": "https://taskcluster-aws-provisioner2.herokuapp.com/v1", 
+      "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskCluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n", 
+      "entries": [
+        {
+          "args": [
+            "workerType"
+          ], 
+          "description": "Create a worker type and ensure that all EC2 regions have the required\nKeyPair", 
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#", 
+          "method": "put", 
+          "name": "createWorkerType", 
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#", 
+          "route": "/worker-type/<workerType>", 
+          "scopes": [
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ], 
+          "title": "Create new Worker Type", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "workerType"
+          ], 
+          "description": "Update a workerType and ensure that all regions have the require\nKeyPair", 
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#", 
+          "method": "post", 
+          "name": "updateWorkerType", 
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#", 
+          "route": "/worker-type/<workerType>/update", 
+          "scopes": [
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ], 
+          "title": "Update Worker Type", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "workerType"
+          ], 
+          "description": "Retreive a WorkerType definition", 
+          "method": "get", 
+          "name": "workerType", 
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#", 
+          "route": "/worker-type/<workerType>", 
+          "scopes": [
+            [
+              "aws-provisioner:view-worker-type:<workerType>"
+            ], 
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ], 
+          "title": "Get Worker Type", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "workerType"
+          ], 
+          "description": "Delete a WorkerType definition, submits requests to kill all \ninstances and delete the KeyPair from all configured EC2 regions", 
+          "method": "delete", 
+          "name": "removeWorkerType", 
+          "route": "/worker-type/<workerType>", 
+          "scopes": [
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ], 
+          "title": "Delete Worker Type", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
+          "description": "List all known WorkerType names", 
+          "method": "get", 
+          "name": "listWorkerTypes", 
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#", 
+          "route": "/list-worker-types", 
+          "scopes": [
+            [
+              "aws-provisioner:list-worker-types"
+            ]
+          ], 
+          "title": "List Worker Types", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "token"
+          ], 
+          "description": "Insert a secret into the secret storage.  This should not\nnormally be done through this API, but is provided for testing\nand completeness", 
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#", 
+          "method": "put", 
+          "name": "createSecret", 
+          "route": "/secret/<token>", 
+          "scopes": [
+            [
+              "aws-provisioner:create-secret"
+            ]
+          ], 
+          "title": "Create new Secret", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "token"
+          ], 
+          "description": "Retreive a secret from storage.  It is important that this secret is\ndeleted by the consumer, or else the secrets will be visible to any\nprocess which can read HTTP on the worker localhost interface.", 
+          "method": "get", 
+          "name": "getSecret", 
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#", 
+          "route": "/secret/<token>", 
+          "title": "Get a Secret", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "instanceId", 
+            "token"
+          ], 
+          "description": "An instance will report in by giving its instance id as well\nas its security token.  The token is given and checked to ensure\nthat it matches a real token that exists to ensure that random\nmachines do not check in.  We could generate a different token\nbut that seems like overkill", 
+          "method": "get", 
+          "name": "instanceStarted", 
+          "route": "/instance-started/<instanceId>/<token>", 
+          "title": "Report an instance starting", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "token"
+          ], 
+          "description": "Remove a secret.  It is very important that the consumer of a \nsecret delete the secret from storage before handing over control\nto another process or else it could read the HTTP UserData endpoint\nand use the getSecrete() api here to get the secrets", 
+          "method": "delete", 
+          "name": "removeSecret", 
+          "route": "/secret/<token>", 
+          "title": "Remove a Secret", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "workerType"
+          ], 
+          "description": "Return the EC2 LaunchSpecifications for all combinations of regions\nand instance types or a list of reasons why the launch specifications\nare not valid\n\n**This API end-point is experimental and may be subject to change without warning.**", 
+          "method": "get", 
+          "name": "getLaunchSpecs", 
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#", 
+          "route": "/worker-type/<workerType>/launch-specifications", 
+          "scopes": [
+            [
+              "aws-provisioner:view-worker-type:<workerType>"
+            ], 
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ], 
+          "title": "Get All Launch Specifications for WorkerType", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "workerType"
+          ], 
+          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance associated with this workerType. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**", 
+          "method": "post", 
+          "name": "terminateAllInstancesOfWorkerType", 
+          "route": "/worker-type/<workerType>/terminate-all-instances", 
+          "scopes": [
+            [
+              "aws-provisioner:all-stop", 
+              "aws-provisioner:aws"
+            ]
+          ], 
+          "title": "Shutdown Every Ec2 Instance of this Worker Type", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
+          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance managed by this provisioner. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**", 
+          "method": "post", 
+          "name": "shutdownEverySingleEc2InstanceManagedByThisProvisioner", 
+          "route": "/shutdown/every/single/ec2/instance/managed/by/this/provisioner", 
+          "scopes": [
+            [
+              "aws-provisioner:all-stop", 
+              "aws-provisioner:aws"
+            ]
+          ], 
+          "title": "Shutdown Every Single Ec2 Instance Managed By This Provisioner", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**", 
+          "method": "get", 
+          "name": "awsState", 
+          "route": "/aws-state/", 
+          "scopes": [
+            [
+              "aws-provisioner:view-aws-state"
+            ]
+          ], 
+          "title": "Get AWS State for all worker types", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.", 
+          "method": "get", 
+          "name": "ping", 
+          "route": "/ping", 
+          "title": "Ping Server", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
+          "description": "Get an API reference!\n\n**Warning** this api end-point is **not stable**.", 
+          "method": "get", 
+          "name": "apiReference", 
+          "route": "/api-reference", 
+          "title": "api reference", 
+          "type": "function"
+        }
+      ], 
+      "title": "AWS Provisioner API Documentation", 
+      "version": 0
+    }, 
+    "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/api.json"
+  }, 
+  "AwsProvisionerEvents": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#", 
+      "description": "Exchanges from the provisioner... more docs later", 
+      "entries": [
+        {
+          "description": "When a new `workerType` is created a message will be published to this\nexchange.", 
+          "exchange": "worker-type-created", 
+          "name": "workerTypeCreated", 
+          "routingKey": [
+            {
+              "constant": "primary", 
+              "multipleWords": false, 
+              "name": "routingKeyKind", 
+              "required": true, 
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            }, 
+            {
+              "multipleWords": false, 
+              "name": "workerType", 
+              "required": true, 
+              "summary": "WorkerType that this message concerns."
+            }, 
+            {
+              "multipleWords": true, 
+              "name": "reserved", 
+              "required": false, 
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ], 
+          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#", 
+          "title": "WorkerType Created Message", 
+          "type": "topic-exchange"
+        }, 
+        {
+          "description": "When a `workerType` is updated a message will be published to this\nexchange.", 
+          "exchange": "worker-type-updated", 
+          "name": "workerTypeUpdated", 
+          "routingKey": [
+            {
+              "constant": "primary", 
+              "multipleWords": false, 
+              "name": "routingKeyKind", 
+              "required": true, 
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            }, 
+            {
+              "multipleWords": false, 
+              "name": "workerType", 
+              "required": true, 
+              "summary": "WorkerType that this message concerns."
+            }, 
+            {
+              "multipleWords": true, 
+              "name": "reserved", 
+              "required": false, 
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ], 
+          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#", 
+          "title": "WorkerType Updated Message", 
+          "type": "topic-exchange"
+        }, 
+        {
+          "description": "When a `workerType` is removed a message will be published to this\nexchange.", 
+          "exchange": "worker-type-removed", 
+          "name": "workerTypeRemoved", 
+          "routingKey": [
+            {
+              "constant": "primary", 
+              "multipleWords": false, 
+              "name": "routingKeyKind", 
+              "required": true, 
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            }, 
+            {
+              "multipleWords": false, 
+              "name": "workerType", 
+              "required": true, 
+              "summary": "WorkerType that this message concerns."
+            }, 
+            {
+              "multipleWords": true, 
+              "name": "reserved", 
+              "required": false, 
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ], 
+          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#", 
+          "title": "WorkerType Removed Message", 
+          "type": "topic-exchange"
+        }
+      ], 
+      "exchangePrefix": "exchange/taskcluster-aws-provisioner/", 
+      "title": "AWS Provisioner Pulse Exchanges", 
+      "version": 0
+    }, 
+    "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json"
+  }, 
   "Index": {
     "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#", 
       "baseUrl": "https://index.taskcluster.net/v1", 
-      "description": "The task index, typically available at `index.taskcluster.net`, is\nresponsible for indexing tasks. In order to ensure that tasks can be\nlocated by recency and/or arbitrary strings. Common use-cases includes\n\n * Locate tasks by git or mercurial `<revision>`, or\n * Locate latest task from given `<branch>`, such as a release.\n\n**Index hierarchy**, tasks are indexed in a dot `.` separated hierarchy\ncalled a namespace. For example a task could be indexed in\n`<revision>.linux-64.release-build`. In this case the following\nnamespaces is created.\n\n 1. `<revision>`, and,\n 2. `<revision>.linux-64`\n\nThe inside the namespace `<revision>` you can find the namespace\n`<revision>.linux-64` inside which you can find the indexed task\n`<revision>.linux-64.release-build`. In this example you'll be able to\nfind build for a given revision.\n\n**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults\nto `0`). If another task is already indexed in the same namespace with\nthe same lower or equal `rank`, the task will be overwritten. For example\nconsider a task indexed as `mozilla-central.linux-64.release-build`, in\nthis case on might choose to use a unix timestamp or mercurial revision\nnumber as `rank`. This way the latest completed linux 64 bit release\nbuild is always available at `mozilla-central.linux-64.release-build`.\n\n**Indexed Data**, when a task is located in the index you will get the\n`taskId` and an additional user-defined JSON blob that was indexed with\ntask. You can use this to store additional information you would like to\nget additional from the index.\n\n**Entry Expiration**, all indexed entries must have an expiration date.\nTypically this defaults to one year, if not specified. If you are\nindexing tasks to make it easy to find artifacts, consider using the\nexpiration date that the artifacts is assigned.\n\n**Indexing Routes**, tasks can be indexed using the API below, but the\nmost common way to index tasks is adding a custom route on the following\nform `index.<namespace>`. In-order to add this route to a task you'll\nneed the following scope `queue:route:index.<namespace>`. When a task has\nthis route, it'll be indexed when the task is **completed successfully**.\nThe task will be indexed with `rank`, `data` and `expires` as specified\nin `task.extra.index`, see example below:\n\n```js\n{\n  payload:  { /* ... */ },\n  routes: [\n    // index.<namespace> prefixed routes, tasks CC'ed such a route will\n    // be indexed under the given <namespace>\n    \"index.mozilla-central.linux-64.release-build\",\n    \"index.<revision>.linux-64.release-build\"\n  ],\n  extra: {\n    // Optional details for indexing service\n    index: {\n      // Ordering, this taskId will overwrite any thing that has\n      // rank <= 4000 (defaults to zero)\n      rank:       4000,\n\n      // Specify when the entries expires (Defaults to 1 year)\n      expires:          new Date().toJSON(),\n\n      // A little informal data to store along with taskId\n      // (less 16 kb when encoded as JSON)\n      data: {\n        hgRevision:   \"...\",\n        commitMessae: \"...\",\n        whatever...\n      }\n    },\n    // Extra properties for other services...\n  }\n  // Other task properties...\n}\n```\n\n**Remark**, when indexing tasks using custom routes, it's also possible\nto listen for messages about these tasks. Which is quite convenient, for\nexample one could bind to `route.index.mozilla-central.*.release-build`,\nand pick up all messages about release builds. Hence, it is a\ngood idea to document task index hierarchies, as these make up extension\npoints in their own.", 
+      "description": "The task index, typically available at `index.taskcluster.net`, is\nresponsible for indexing tasks. In order to ensure that tasks can be\nlocated by recency and/or arbitrary strings. Common use-cases includes\n\n * Locate tasks by git or mercurial `<revision>`, or\n * Locate latest task from given `<branch>`, such as a release.\n\n**Index hierarchy**, tasks are indexed in a dot `.` separated hierarchy\ncalled a namespace. For example a task could be indexed in\n`<revision>.linux-64.release-build`. In this case the following\nnamespaces is created.\n\n 1. `<revision>`, and,\n 2. `<revision>.linux-64`\n\nThe inside the namespace `<revision>` you can find the namespace\n`<revision>.linux-64` inside which you can find the indexed task\n`<revision>.linux-64.release-build`. In this example you'll be able to\nfind build for a given revision.\n\n**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults\nto `0`). If another task is already indexed in the same namespace with\nthe same lower or equal `rank`, the task will be overwritten. For example\nconsider a task indexed as `mozilla-central.linux-64.release-build`, in\nthis case on might choose to use a unix timestamp or mercurial revision\nnumber as `rank`. This way the latest completed linux 64 bit release\nbuild is always available at `mozilla-central.linux-64.release-build`.\n\n**Indexed Data**, when a task is located in the index you will get the\n`taskId` and an additional user-defined JSON blob that was indexed with\ntask. You can use this to store additional information you would like to\nget additional from the index.\n\n**Entry Expiration**, all indexed entries must have an expiration date.\nTypically this defaults to one year, if not specified. If you are\nindexing tasks to make it easy to find artifacts, consider using the\nexpiration date that the artifacts is assigned.\n\n**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be\nin the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and\nthat if you strictly want to put another character you can URL encode it.\n\n**Indexing Routes**, tasks can be indexed using the API below, but the\nmost common way to index tasks is adding a custom route on the following\nform `index.<namespace>`. In-order to add this route to a task you'll\nneed the following scope `queue:route:index.<namespace>`. When a task has\nthis route, it'll be indexed when the task is **completed successfully**.\nThe task will be indexed with `rank`, `data` and `expires` as specified\nin `task.extra.index`, see example below:\n\n```js\n{\n  payload:  { /* ... */ },\n  routes: [\n    // index.<namespace> prefixed routes, tasks CC'ed such a route will\n    // be indexed under the given <namespace>\n    \"index.mozilla-central.linux-64.release-build\",\n    \"index.<revision>.linux-64.release-build\"\n  ],\n  extra: {\n    // Optional details for indexing service\n    index: {\n      // Ordering, this taskId will overwrite any thing that has\n      // rank <= 4000 (defaults to zero)\n      rank:       4000,\n\n      // Specify when the entries expires (Defaults to 1 year)\n      expires:          new Date().toJSON(),\n\n      // A little informal data to store along with taskId\n      // (less 16 kb when encoded as JSON)\n      data: {\n        hgRevision:   \"...\",\n        commitMessae: \"...\",\n        whatever...\n      }\n    },\n    // Extra properties for other services...\n  }\n  // Other task properties...\n}\n```\n\n**Remark**, when indexing tasks using custom routes, it's also possible\nto listen for messages about these tasks. Which is quite convenient, for\nexample one could bind to `route.index.mozilla-central.*.release-build`,\nand pick up all messages about release builds. Hence, it is a\ngood idea to document task index hierarchies, as these make up extension\npoints in their own.", 
       "entries": [
         {
           "args": [
@@ -259,6 +629,23 @@
           "type": "function"
         }, 
         {
+          "args": [
+            "namespace", 
+            "name"
+          ], 
+          "description": "Find task by namespace and redirect to artifact with given `name`,\nif no task existing for the given namespace, this API end-point respond\n`404`.", 
+          "method": "get", 
+          "name": "findArtifactFromTask", 
+          "route": "/task/<namespace>/artifacts/<name>", 
+          "scopes": [
+            [
+              "queue:get-artifact:<name>"
+            ]
+          ], 
+          "title": "Get Artifact From Indexed Task", 
+          "type": "function"
+        }, 
+        {
           "args": [], 
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.", 
           "method": "get", 
@@ -269,9 +656,89 @@
         }
       ], 
       "title": "Task Index API Documentation", 
-      "version": "0.2.0"
+      "version": 0
     }, 
     "referenceUrl": "http://references.taskcluster.net/index/v1/api.json"
+  }, 
+  "PurgeCache": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#", 
+      "baseUrl": "https://purge-cache.taskcluster.net/v1", 
+      "description": "The purge-cache service, typically available at\n`purge-cache.taskcluster.net`, is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the API end-point for publishing the pulse\nmessage. This is mainly intended to be used by tools.", 
+      "entries": [
+        {
+          "args": [
+            "provisionerId", 
+            "workerType"
+          ], 
+          "description": "Publish a purge-cache message to purge caches named `cacheName` with\n`provisionerId` and `workerType` in the routing-key. Workers should\nbe listening for this message and purge caches when they see it.", 
+          "input": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#", 
+          "method": "post", 
+          "name": "purgeCache", 
+          "route": "/purge-cache/<provisionerId>/<workerType>", 
+          "scopes": [
+            [
+              "purge-cache:<provisionerId>/<workerType>:<cacheName>"
+            ]
+          ], 
+          "title": "Purge Worker Cache", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.", 
+          "method": "get", 
+          "name": "ping", 
+          "route": "/ping", 
+          "title": "Ping Server", 
+          "type": "function"
+        }
+      ], 
+      "title": "Purge Cache API Documentation", 
+      "version": 0
+    }, 
+    "referenceUrl": "http://references.taskcluster.net/purge-cache/v1/api.json"
+  }, 
+  "PurgeCacheEvents": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#", 
+      "description": "The purge-cache service, typically available at\n`purge-cache.taskcluster.net`, is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the exchange offered for workers by the\ncache-purge service.", 
+      "entries": [
+        {
+          "description": "When a cache purge is requested  a message will be posted on this\nexchange with designated `provisionerId` and `workerType` in the\nrouting-key and the name of the `cacheFolder` as payload", 
+          "exchange": "purge-cache", 
+          "name": "purgeCache", 
+          "routingKey": [
+            {
+              "constant": "primary", 
+              "multipleWords": false, 
+              "name": "routingKeyKind", 
+              "required": true, 
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            }, 
+            {
+              "multipleWords": false, 
+              "name": "provisionerId", 
+              "required": true, 
+              "summary": "`provisionerId` under which to purge cache."
+            }, 
+            {
+              "multipleWords": false, 
+              "name": "workerType", 
+              "required": true, 
+              "summary": "`workerType` for which to purge cache."
+            }
+          ], 
+          "schema": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#", 
+          "title": "Purge Cache Messages", 
+          "type": "topic-exchange"
+        }
+      ], 
+      "exchangePrefix": "exchange/taskcluster-purge-cache/v1/", 
+      "title": "Purge-Cache Exchanges", 
+      "version": 0
+    }, 
+    "referenceUrl": "http://references.taskcluster.net/purge-cache/v1/exchanges.json"
   }, 
   "Queue": {
     "reference": {
@@ -1138,6 +1605,7 @@
   }, 
   "Scheduler": {
     "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#", 
       "baseUrl": "https://scheduler.taskcluster.net/v1", 
       "description": "The task-graph scheduler, typically available at\n`scheduler.taskcluster.net`, is responsible for accepting task-graphs and\nscheduling tasks for evaluation by the queue as their dependencies are\nsatisfied.\n\nThis document describes API end-points offered by the task-graph\nscheduler. These end-points targets the following audience:\n * Post-commit hooks, that wants to submit task-graphs for testing,\n * End-users, who wants to execute a set of dependent tasks, and\n * Tools, that wants to inspect the state of a task-graph.", 
       "entries": [
@@ -1237,12 +1705,13 @@
         }
       ], 
       "title": "Task-Graph Scheduler API Documentation", 
-      "version": "0.2.0"
+      "version": 0
     }, 
     "referenceUrl": "http://references.taskcluster.net/scheduler/v1/api.json"
   }, 
   "SchedulerEvents": {
     "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#", 
       "description": "The scheduler, typically available at `scheduler.taskcluster.net` is\nresponsible for accepting task-graphs and schedule tasks on the queue as\ntheir dependencies are completed successfully.\n\nThis document describes the AMQP exchanges offered by the scheduler,\nwhich allows third-party listeners to monitor task-graph submission and\nresolution. These exchanges targets the following audience:\n * Reporters, who displays the state of task-graphs or emails people on\n   failures, and\n * End-users, who wants notification of completed task-graphs\n\n**Remark**, the task-graph scheduler will require that the `schedulerId`\nfor tasks is set to the `schedulerId` for the task-graph scheduler. In\nproduction the `schedulerId` is typically `\"task-graph-scheduler\"`.\nFurthermore, the task-graph scheduler will also require that\n`taskGroupId` is equal to the `taskGraphId`.\n\nCombined these requirements ensures that `schedulerId` and `taskGroupId`\nhave the same position in the routing keys for the queue exchanges.\nSee queue documentation for details on queue exchanges. Hence, making\nit easy to listen for all tasks in a given task-graph.\n\nNote that routing key entries 2 through 7 used for exchanges on the\ntask-graph scheduler is hardcoded to `_`. This is done to preserve\npositional equivalence with exchanges offered by the queue.", 
       "entries": [
         {
@@ -1532,7 +2001,7 @@
       ], 
       "exchangePrefix": "exchange/taskcluster-scheduler/v1/", 
       "title": "Scheduler AMQP Exchanges", 
-      "version": "0.2.0"
+      "version": 0
     }, 
     "referenceUrl": "http://references.taskcluster.net/scheduler/v1/exchanges.json"
   }
