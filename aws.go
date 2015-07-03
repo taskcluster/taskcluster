@@ -73,12 +73,10 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	c.WorkerGroup = userData.Region
 	c.WorkerId = instanceName
 	c.WorkerType = userData.WorkerType
-	// TODO: uncomment this when all is working
-	// now delete secret
-	// callSummary = awsprov.RemoveSecret(userData.SecurityToken)
-	// if callSummary.Error != nil {
-	// 	return callSummary.Error
-	// }
+	callSummary = awsprov.RemoveSecret(userData.SecurityToken)
+	if callSummary.Error != nil {
+		return callSummary.Error
+	}
 	fmt.Printf("\n\nConfig\n\n%#v\n\n", c)
 	return nil
 }
