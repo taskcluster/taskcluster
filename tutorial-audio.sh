@@ -1,6 +1,5 @@
 #!/bin/bash
 
-sleep 5
 say -v Samantha "Hello guys, this is Peter Moore from the task cluster team. Today I will be talking to you about the Task Cluster generic worker."
 sleep 2
 say -v Samantha "The generic worker currently supports running tasks under Windows. This is in contrast to the docker worker, which is used for running tasks under linux."
