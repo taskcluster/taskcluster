@@ -94,6 +94,6 @@ say -v Daniel -r 50 "go get git hub dot com slash task cluster slash generic wor
 say -v Karen "Did you say git hub?"
 say -v Daniel "yes"
 say -v Veena "He means git hub"
-say -v Hysterical "haaa"
+say -v Hysterical "ha"
 sleep 2
-say -v Daniel -r 50 "go install github doc com slash task cluster slash generic worker"
+say -v Veena -r 50 "go install github doc com slash task cluster slash generic worker"
