@@ -5,14 +5,15 @@ container.
 */
 
 var waitForEvent = require('../wait_for_event');
-var coPromise = require('co-promise');
+var _ = require('lodash');
 var co = require('co');
 var mime = require('mime');
-var request = require('superagent-promise');
+var https = require('https');
 var tarStream = require('tar-stream');
 var debug = require('debug')('docker-worker:middleware:artifact_extractor');
 var format = require('util').format;
 var Promise = require('promise');
+var url = require('url');
 
 export default class Artifacts {
   async getPutUrl(handler, path, expires, contentType) {
@@ -78,7 +79,7 @@ export default class Artifacts {
 
     var ctx = this;
     var checkedArtifactType = false;
-    var entryHandler = co(function* (header, stream) {
+    var entryHandler = async function (header, stream, cb) {
       // The first item in the tar should always match the intended artifact
       // type.
       if (!checkedArtifactType) {
@@ -91,7 +92,7 @@ export default class Artifacts {
           tarExtract.removeListener('entry', entryHandler);
 
           // Make it clear that you must expected either files or directories.
-          yield queue.createArtifact(taskId, runId, name, {
+          await queue.createArtifact(taskId, runId, name, {
             storageType: 'error',
             expires: expiry,
             reason: 'invalid-resource-on-worker',
@@ -100,6 +101,7 @@ export default class Artifacts {
               artifact.type, header.type
             )
           });
+
 
           // Destroy the stream.
           tarExtract.destroy();
@@ -112,6 +114,7 @@ export default class Artifacts {
       // Skip any entry type that is not an artifact for uploads...
       if (header.type !== 'file') {
         stream.resume();
+        cb();
         return;
       }
 
@@ -126,44 +129,62 @@ export default class Artifacts {
       var contentType = mime.lookup(header.name);
       var contentLength = header.size;
       var putUrl =
-        yield ctx.getPutUrl(taskHandler, entryName, expiry, contentType);
+        await ctx.getPutUrl(taskHandler, entryName, expiry, contentType);
 
-      // Put the artifact on the server.
-      var putReq = request.put(putUrl).set({
-        'Content-Length': contentLength,
-        'Content-Type': contentType
-      });
+      let parsedUrl = url.parse(putUrl);
+      let options = {
+        hostname: parsedUrl.hostname,
+        path: parsedUrl.path,
+        method: 'PUT',
+        headers: {
+          'Content-Type': contentType,
+          'Content-Length': contentLength,
+        }
+      };
+
+      var putReq = https.request(options);
 
       // Stream tar entry to request before ending the request
       stream.pipe(putReq);
-      putReq.end();
 
-      // Wait until the response is sent.
-      var res = yield waitForEvent(putReq, 'response');
+      var response;
+      try {
+        response = await new Promise((accept, reject) => {
+          putReq.on('response', (res) => { accept(res); });
+          putReq.on('error', (err) => { reject(err); });
+        });
+        // Flush the data from the reponse so it's not held in memory
+        response.resume();
 
-      // If there was an error uploading the artifact note that in the result.
-      if (res.error) {
+        // If there was an error uploading the artifact note that in the result.
+        if (response.statusCode !== 200) {
+          taskHandler.stream.write(taskHandler.fmtLog(
+            'Artifact "%s" failed to upload "%s" error code: %s',
+            name,
+            header.name,
+            response.statusCode
+          ));
+        }
+      } catch(err) {
         taskHandler.stream.write(taskHandler.fmtLog(
-          'Artifact "%s" failed to upload "%s" error code: %s',
+          'Artifact "%s" failed to upload "%s" error: %s',
           name,
           header.name,
-          res.status
-        ));
-
-        // Resume the stream if there is an uplaod failure otherwise
-        // stream will never emit 'finish'
-        stream.resume();
+          err
+        )); 
       }
-
-      // Wait until the requset is fuly completed.
-      yield waitForEvent(putReq, 'end');
-    });
+      // Resume the stream if there is an upload failure otherwise
+      // stream will never emit 'finish'
+      stream.resume();
+      cb();
+    };
 
     // Individual tar entry.
     tarExtract.on('entry', entryHandler);
 
     // Wait for the tar to be finished extracting.
     await waitForEvent(tarExtract, 'finish');
+    return;
   }
 
   async stopped(taskHandler) {
@@ -172,17 +193,24 @@ export default class Artifacts {
 
     var queue = taskHandler.runtime.queue;
     var artifacts = taskHandler.task.payload.artifacts;
+    var errors = {};
 
     // Artifacts are optional...
     if (typeof artifacts !== 'object') return;
 
     // Upload all the artifacts in parallel.
-    await Promise.all(Object.keys(artifacts).map((key) => {
-      return new Promise(async (accept) => {
-        await this.uploadArtifact(taskHandler, key, artifacts[key]);
-        accept();
+    await Promise.all(_.map(artifacts, (value, key) => {
+      return this.uploadArtifact(taskHandler, key, value).catch((err) => {
+        errors[key] = err;
       });
     }));
+
+    if (errors.length > 0) {
+      _.map(errors, (value, key) => {
+        debug('Artifact upload %s failed, error: %s, as JSON: %j', key, value, value, value.stack);
+      });
+      throw new Error('Artifact uploads %s failed', Object.keys(errors));
+    }
   }
 
 };

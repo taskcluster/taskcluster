@@ -1,6 +1,6 @@
 #! /bin/bash -vex
 
-node_version=0.11.13
+node_version=0.12.4
 url=http://nodejs.org/dist/v$node_version/node-v$node_version-linux-x64.tar.gz
 
 # Download and install node to the /usr/ directory

@@ -53,9 +53,9 @@
     "slugid": "^1.0.1",
     "stateless-dns-server": "^0.1.0",
     "statsd-client": "0.0.15",
-    "superagent": "^0.18.0",
-    "superagent-promise": "^0.1.1",
-    "tar-stream": "^0.4.4",
+    "superagent": "^1.1.0",
+    "superagent-promise": "^0.2.0",
+    "tar-stream": "^1.2.1",
     "taskcluster-azure-blobstream": "^0.3.0",
     "taskcluster-base": "^0.7.0",
     "taskcluster-client": "^0.22.0",
@@ -78,7 +78,6 @@
     "koa-json": "^1.1.1",
     "koa-router": "^4.3.2",
     "mocha": "^2.1.0",
-    "slugid": "^1.0.1",
     "split2": "^0.1.2",
     "taskcluster-task-factory": "^0.6.1"
   }

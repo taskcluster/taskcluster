@@ -38,7 +38,7 @@ suite('balrog vpn proxy', () => {
       }
     });
 
-    assert.equal(result.status.state, 'completed', 'Task not marked as failed');
+    assert.equal(result.status.state, 'completed', 'Task not marked as completed');
     assert.equal(
       result.run.reasonResolved,
       'completed',

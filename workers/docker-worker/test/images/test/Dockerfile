@@ -1,4 +1,4 @@
-FROM node:0.11.13
+FROM node:0.12.4
 
 # Top level bins to override system defaults
 RUN npm install -g babel@4.7.16

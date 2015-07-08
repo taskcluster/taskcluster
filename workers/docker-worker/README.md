@@ -35,7 +35,7 @@ are for hacking on the worker itself.
 
 ## Requirements
 
-  - Node 0.11x or greater
+  - Node 0.12x or greater
   - Docker
   - Packer (to build ami)
 
@@ -100,7 +100,7 @@ list](/deploy/checklist.md)
 
   - [packer](www.packer.io)
   - make
-  - node 0.11 or greater
+  - node 0.12 or greater
   - credentials for required services
 
 

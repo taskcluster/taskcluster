@@ -1,4 +1,4 @@
-import request from 'superagent-promise';
+import https from 'https';
 import slugid from 'slugid';
 import url from 'url';
 
@@ -22,6 +22,15 @@ suite('secure local live logging', () => {
 
     settings.cleanup();
   });
+
+  async function getWithoutRedirect (url) {
+    let res = await new Promise((resolve, reject) => {
+      https.request(url, (r) => {
+        resolve(r);
+      }).end();
+    });
+    return res;
+  };
 
   test('ssl enabled', async () => {
     settings.configure({
@@ -55,7 +64,7 @@ suite('secure local live logging', () => {
     let artifactUrl = `https:\/\/queue.taskcluster.net/v1/task/${taskId}/runs/0/artifacts/public/logs/live.log`
 
     // Don't follow redirect, we just care about where it's going
-    let res = await request.get(artifactUrl).redirects(0).end();
+    let res = await getWithoutRedirect(artifactUrl);
     let logUrl = res.headers.location;
 
     assert.equal(
@@ -96,7 +105,7 @@ suite('secure local live logging', () => {
     let artifactUrl = `https:\/\/queue.taskcluster.net/v1/task/${taskId}/runs/0/artifacts/public/logs/live.log`
 
     // Don't follow redirect, we just care about where it's going
-    let res = await request.get(artifactUrl).redirects(0).end();
+    let res = await getWithoutRedirect(artifactUrl);
     let logUrl = res.headers.location;
 
     assert.equal(

@@ -67,8 +67,10 @@ suite('live logging', () => {
     let artifactUrl = `https:\/\/queue.taskcluster.net/v1/task/${taskId}/runs/0/artifacts/public/logs/live.log`
 
     // Don't follow redirect, we just care about where it's going
-    let res = await request.get(artifactUrl).redirects(0).end();
-    let logUrl = res.headers.location;
+    let req = request.get(artifactUrl);
+    let logUrl;
+    req.on('redirect', res => logUrl = res.headers.location)
+    let res = await req.end();
     let token = /^http:\/\/localhost:[0-9]+\/log\/([a-zA-Z0-9_-]+)$/.exec(logUrl);
     token = token ? token[1] : '';
 

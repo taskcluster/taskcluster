@@ -7,10 +7,11 @@ var streamClosed = require('../stream_closed');
 var waitForEvent = require('../wait_for_event');
 var temporary = require('temporary');
 var fs = require('fs');
-var request = require('superagent-promise');
+var https = require('https');
 var debug = require('debug')('taskcluster-docker-worker:features:bulk_log');
 var fs = require('mz/fs');
 var zlib = require('zlib');
+var url = require('url');
 
 var ARTIFACT_NAME = 'public/logs/terminal_bulk.log.gz';
 
@@ -63,31 +64,48 @@ export default class BulkLog {
     // be a huge file).
     var diskStream = fs.createReadStream(this.file.path);
 
-    // Stream the entire file to S3 it's important to set the content length and
-    // content type (in particular the content-type must be identical to what is
-    // sent over in the artifact creation.)
-    var req = request.put(artifact.putUrl).set({
-      'Content-Type': 'text/plain',
-      'Content-Length': stat.size,
-      'Content-Encoding': 'gzip'
-    });
+    let parsedUrl = url.parse(artifact.putUrl);
+    let options = {
+      hostname: parsedUrl.hostname,
+      path: parsedUrl.path,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'text/plain',
+        'Content-Length': stat.size,
+        'Content-Encoding': 'gzip'
+      }
+    };
+
+    let req = https.request(options);
 
     diskStream.pipe(req);
-    req.end();
 
-    // Wait until the request has completed and the file has been uploaded...
-    var result = await waitForEvent(req, 'end');
+    let response;
+    response = await new Promise((accept, reject) => {
+      req.on('response', (res) => { accept(res); });
+      req.on('error', (err) => { reject(new Error(`Could not upload artifact. ${err}`)); });
+    });
+
+    // Flush the data from the reponse so it's not held in memory
+    response.resume();
+
+    if (response.statusCode !== 200) {
+      throw new Error(
+        `Could not upload artifact. ${response.error} Status Code: ${response.statusCode}`
+      );
+    }
 
     // Unlink the temp file.
     await fs.unlink(this.file.path);
 
-    var url = queue.buildUrl(
+    
+
+    return queue.buildUrl(
       queue.getArtifact,
       task.status.taskId,
       task.runId,
       this.artifactName
     );
-    return url;
   }
 
 }
