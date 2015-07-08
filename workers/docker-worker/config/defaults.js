@@ -153,8 +153,7 @@ module.exports = {
   // Taskcluster client `credentials`.
   taskcluster: {
     clientId:    process.env.TASKCLUSTER_CLIENT_ID,
-    accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN,
-    certificate: process.env.TASKCLUSTER_CERTIFATE
+    accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN
   },
 
   // When true will create durable queue on pulse.
