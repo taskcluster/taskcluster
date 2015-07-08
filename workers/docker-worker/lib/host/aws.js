@@ -3,9 +3,8 @@ Return the appropriate configuration defaults when on aws.
 */
 
 import request from 'superagent-promise';
-import Debug from 'debug'
+import taskcluster from 'taskcluster-client';
 
-let debug = Debug('docker-worker:configuration:aws');
 let log = require('../log')({
   source: 'host/aws'
 });
@@ -31,6 +30,19 @@ export async function getText(url) {
   return text;
 }
 
+async function getJsonData(url) {
+  // query the user data for any instance specific overrides set by the
+  // provisioner.
+  let jsonData = await request.get(url).buffer().end();
+
+  if (!jsonData.ok || !jsonData.text) {
+    log(`${url} not available`);
+    return {};
+  }
+
+  return JSON.parse(jsonData.text);
+}
+
 /**
 @return Number Billing cycle interval in seconds.
 */
@@ -51,8 +63,7 @@ Read AWS metadata and user-data to build a configuration for the worker.
 @param {String} [baseUrl] optional base url override (for tests).
 @return {Object} configuration values.
 */
-export async function configure(baseUrl) {
-  baseUrl = baseUrl || BASE_URL;
+export async function configure(baseUrl=BASE_URL) {
   log('configure', { url: BASE_URL });
 
   // defaults per the metadata
@@ -89,26 +100,34 @@ export async function configure(baseUrl) {
 
   log('metadata', config);
 
-  // query the user data for any instance specific overrides set by the
-  // provisioner.
-  let userdata = await request.get(baseUrl + '/user-data').
-    // Buffer entire response into the .text field of the response.
-    buffer(true).
-    // Issue the request...
-    end();
+  let userdata = await getJsonData(`${baseUrl}/user-data`);
+  let securityToken = userdata.securityToken;
+  let provisionerBaseUrl = userdata.provisionerBaseUrl;
 
-  if (!userdata.ok || !userdata.text) {
-    log('userdata not available')
-    return config;
-  }
-  // parse out overrides from user data
-  log('read userdata', { text: userdata.text });
-  let overrides = JSON.parse(userdata.text);
-  for (var key in overrides) config[key] = overrides[key];
+  log('read userdata', { text: userdata });
 
-  log('final config', config);
-  return config;
-};
+  let provisioner = new taskcluster.AwsProvisioner({
+    baseUrl: provisionerBaseUrl
+  });
+
+  // Retrieve secrets
+  let secrets = await provisioner.getSecret(securityToken);
+
+  log('read secrets');
+
+  await provisioner.removeSecret(securityToken);
+
+  // Log config for record of configuration but without secrets
+  log('config', config);
+
+  return Object.assign(
+    config,
+    {capacity: userdata.capacity},
+    userdata.data,
+    {taskcluster: secrets.credentials},
+    secrets.data
+  );
+}
 
 export async function getTerminationTime() {
   let url = BASE_URL + '/meta-data/spot/termination-time';
