@@ -58,7 +58,7 @@
     "tar-stream": "^0.4.4",
     "taskcluster-azure-blobstream": "^0.3.0",
     "taskcluster-base": "^0.7.0",
-    "taskcluster-client": "^0.22.0",
+    "taskcluster-client": "^0.22.4",
     "temporary": "0.0.8",
     "testdroid-client": "0.0.7",
     "time-chunked-stream": "^1.0.0",
