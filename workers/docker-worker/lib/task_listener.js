@@ -7,8 +7,6 @@ var QUEUE_PREFIX = 'worker/v1/';
 
 var debug = require('debug')('docker-worker:task-listener');
 var taskcluster = require('taskcluster-client');
-var coPromise = require('co-promise');
-var co = require('co');
 var request = require('superagent-promise');
 var os = require('os');
 
