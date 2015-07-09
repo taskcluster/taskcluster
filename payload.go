@@ -17,17 +17,17 @@ func taskPayloadSchema() string {
   ],
   "properties": {
     "command": {
-      "title": "Commands to run, one entry per command (consider each entry to be interpreted as a full line of a Windows™ .bat file).",
+      "title": "Commands to run",
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "string"
       },
-	  "description": "Example: ` + "`['set', 'echo hello world > hello_world.txt', 'set GOPATH=C:\\Go']`" + `."
+	  "description": "One entry per command (consider each entry to be interpreted as a full line of a Windows™ .bat file). For example: ` + "`" + `[\"set\", \"echo hello world > hello_world.txt\", \"set GOPATH=C:\\\\Go\"]` + "`" + `."
     },
     "env": {
       "title": "Environment variable mappings.",
-	  "description": "Example: ` + "```" + `\n{\n  \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\" \n  \"GOOS\": \"darwin\" \n}\n` + "```" + `",
+	  "description": "Example: ` + "```" + `{ \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\", \"GOOS\": \"darwin\" }` + "```" + `",
       "type": "object"
     },
     "maxRunTime": {
@@ -41,23 +41,26 @@ func taskPayloadSchema() string {
     "artifacts": {
       "type": "array",
       "title": "Artifacts to be published",
-      "description": "Artifacts to be published",
+	  "description": "Artifacts to be published. For example: ` + "`" + `{ \"type\": \"file\", \"path\": \"builds\\\\firefox.exe\", \"expires\": \"2015-08-19T17:30:00.000Z\" }` + "`" + `",
       "items": {
         "type": "object",
           "properties": {
           "type": {
             "title": "Artifact upload type.",
             "type": "string",
-            "enum": ["file"]
+            "enum": ["file"],
+			"description": "Currently only ` + "`file`" + ` is supported"
           },
           "path": {
-            "title": "Location of artifact in container.",
-            "type": "string"
+            "title": "Artifact location",
+            "type": "string",
+            "description": "Location of artifact in container"
           },
           "expires": {
-            "title": "Date when artifact should expire must be in the future.",
+            "title": "Expiry date and time",
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Date when artifact should expire must be in the future"
           }
         },
         "required": ["type", "path", "expires"]
