@@ -52,7 +52,7 @@ var (
 	taskStatusUpdateErr <-chan error
 	config              Config
 
-	version = "generic-worker 1.0.0"
+	version = "generic-worker 1.0.11"
 	usage   = `
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
