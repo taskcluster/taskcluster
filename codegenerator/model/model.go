@@ -216,9 +216,10 @@ func GenerateCode(goOutputDir, modelData string) {
 		content := `
 // The following code is AUTO-GENERATED. Please DO NOT edit.
 // To update this generated code, run the following command:
-// in the client subdirectory:
+// in the /codegenerator/model subdirectory of this project,
+// making sure that ` + "`${GOPATH}/bin` is in your `PATH`" + `:
 //
-// go generate && go fmt
+// go install && go generate
 //
 // This package was generated from the schema defined at
 // ` + apiDefs[i].URL + `
