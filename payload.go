@@ -17,26 +17,17 @@ func taskPayloadSchema() string {
   ],
   "properties": {
     "command": {
-      "title": "Command to run.",
+      "title": "Commands to run, one entry per command (consider each entry to be interpreted as a full line of a Windows™ .bat file).",
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "string"
       },
-      "description": "Example: ` + "`['/bin/bash', '-c', 'build.sh']`" + `."
-    },
-    "encryptedEnv": {
-      "title": "List of encrypted environment variable mappings.",
-      "description": "List of base64 encoded asymmetric encrypted environment variables. See http://docs.taskcluster.net/docker-worker/#encrypted-environment-variables",
-      "type": "array",
-      "items": {
-        "title": "Base64 encoded encrypted environment variable object.",
-        "type": "string"
-      }
+	  "description": "Example: ` + "`['set', 'echo hello world > hello_world.txt', 'set GOPATH=C:\\Go']`" + `."
     },
     "env": {
       "title": "Environment variable mappings.",
-      "description": "Example: ` + "```" + `\n{\n  \"PATH\": '/borked/path' \n  \"ENV_NAME\": \"VALUE\" \n}\n` + "```" + `",
+	  "description": "Example: ` + "```" + `\n{\n  \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\" \n  \"GOOS\": \"darwin\" \n}\n` + "```" + `",
       "type": "object"
     },
     "maxRunTime": {
