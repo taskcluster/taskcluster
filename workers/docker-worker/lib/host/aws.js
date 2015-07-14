@@ -24,10 +24,15 @@ AWS Metadata service endpoint.
 const BASE_URL = 'http://169.254.169.254/latest';
 
 export async function getText(url) {
-  let res = await request.get(url).end();
-  // Some meta-data endpoints 404 until they have a value to display (spot node termination)
-  let text = res.ok ? res.text : '';
-  return text;
+  try {
+    let res = await request.get(url).end();
+    let text = res.ok ? res.text : '';
+    return text;
+  }
+  catch (e) {
+    // Some meta-data endpoints 404 until they have a value to display (spot node termination)
+    if (e.response.statusCode !== 404) throw e;
+  }
 }
 
 async function getJsonData(url) {
@@ -74,8 +79,6 @@ export async function configure(baseUrl=BASE_URL) {
     getText(baseUrl + '/meta-data/public-ipv4'),
     // workerId
     getText(baseUrl + '/meta-data/instance-id'),
-    // workerType
-    getText(baseUrl + '/meta-data/ami-id'),
     // workerGroup
     getText(baseUrl + '/meta-data/placement/availability-zone'),
     // workerNodeType
@@ -83,13 +86,11 @@ export async function configure(baseUrl=BASE_URL) {
   ]);
 
   let config = {
-    provisionerId: 'aws-provisioner',
     host: metadata[0],
     publicIp: metadata[1],
     workerId: metadata[2],
-    workerType: metadata[3],
-    workerGroup: metadata[4],
-    workerNodeType: metadata[5],
+    workerGroup: metadata[3],
+    workerNodeType: metadata[4],
     // AWS Specific shutdown parameters notice this can also be overridden.
     shutdown: {
       enabled: true,
@@ -111,7 +112,26 @@ export async function configure(baseUrl=BASE_URL) {
   });
 
   // Retrieve secrets
-  let secrets = await provisioner.getSecret(securityToken);
+  let secrets;
+  try {
+    secrets = await provisioner.getSecret(securityToken);
+  }
+  catch (e) {
+    // It's bad if secrets cannot be retrieved.  Either this could happen when
+    // worker first starts up because of an issue communicating with the provisioner
+    // or if the worker respawned (because of an uncaught exception).  Either way,
+    // alert and set capacity to 0.
+    log('[alert-operator] error retrieving secrets');
+    return Object.assign(
+      config,
+      {
+        capacity: 0,
+        workerType: userdata.workerType,
+        provisionerId: userdata.provisionerId
+      },
+      userdata.data
+    );
+  }
 
   log('read secrets');
 
@@ -122,7 +142,11 @@ export async function configure(baseUrl=BASE_URL) {
 
   return Object.assign(
     config,
-    {capacity: userdata.capacity},
+    {
+      capacity: userdata.capacity,
+      workerType: userdata.workerType,
+      provisionerId: userdata.provisionerId
+    },
     userdata.data,
     {taskcluster: secrets.credentials},
     secrets.data

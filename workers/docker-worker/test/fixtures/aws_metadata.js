@@ -35,6 +35,8 @@ function route(context) {
         capacity: 1,
         provisionerBaseUrl: context.app.provisionerBaseUrl,
         securityToken: context.app.secretToken,
+        workerType: 'ami-333333',
+        provisionerId: 'aws-provisioner',
         data: {
           dockerConfig: {
             allowPrivileged: true

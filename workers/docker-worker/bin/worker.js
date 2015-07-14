@@ -152,6 +152,7 @@ co(function *() {
   config.docker = require('../lib/docker')();
 
   // Default to always having at least a capacity of one.
+  // Default to zero capacity if none is provided by provisioner.  Something must be
   config.capacity = config.capacity || 1;
 
   // Wrapped stats helper to support generators, etc...
