@@ -428,7 +428,7 @@ class BaseClient(object):
       try:
         return response.json()
       except ValueError:
-        return {}
+        return {"response": response}
 
     # This code-path should be unreachable
     assert False, "Error from last retry should have been raised!"
