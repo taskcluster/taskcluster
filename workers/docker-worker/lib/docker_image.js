@@ -1,7 +1,6 @@
 /**
-Scope and validation abstraction over a single docker image name.
+Abstraction over a single docker image name.
 */
-var scopeMatch = require('taskcluster-base/utils').scopeMatch;
 var parseImage = require('docker-image-parser');
 
 function Image(image) {
