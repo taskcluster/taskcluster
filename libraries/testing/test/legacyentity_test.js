@@ -21,10 +21,8 @@ suite("LegacyEntity", function() {
   if (!cfg.get('azureTestTableName') ||
       !cfg.get('azure') ||
       !cfg.get('influxdb:connectionString')) {
-    console.log("\nWARNING:");
-    console.log("Skipping 'entity' tests, missing config file: " +
-                "taskcluster-base-test.conf.json");
-    return;
+    throw new Error("Skipping 'entity' tests, missing config file: " +
+                    "taskcluster-base-test.conf.json");
   }
 
   // Configure an abstract Item to play with...
