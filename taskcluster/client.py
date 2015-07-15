@@ -426,7 +426,11 @@ class BaseClient(object):
 
       # Try to load JSON
       try:
-        return response.json()
+        content_type = response.headers.get('content-type')
+        if content_type is not None and 'json' in content_type.lower():
+            return response.json()
+        else:
+            return {"response": response}
       except ValueError:
         return {"response": response}
 
