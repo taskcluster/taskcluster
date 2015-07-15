@@ -14,8 +14,8 @@ suite('stats', function() {
   });
 
   if (!cfg.get('influxdb:connectionString')) {
-    console.log("Skipping 'stats', missing config file: " +
-                "taskcluster-base-test.conf.json");
+    throw new Error("Skipping 'stats', missing config file: " +
+                    "taskcluster-base-test.conf.json");
     return;
   }
 
