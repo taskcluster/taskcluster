@@ -1,0 +1,34 @@
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	creds := generateTempCreds("AccessToken", "ClientId")
+	fmt.Println(creds)
+}
+
+type TemporaryCertificate struct {
+	Certificate Certificate `json:"certificate"`
+}
+
+type Certificate struct {
+	Version   int      `json:"version"`
+	Scopes    []string `json:"scopes"`
+	Start     int64    `json:"start"`
+	Expiry    int64    `json:"expiry"`
+	Seed      string   `json:"seed"`
+	Signature string   `json:"signature"`
+}
+
+func generateTempCreds(clientId string, accessToken string, start time.Time, expiry time.Time, scopes []string) string {
+	text := fmt.Sprintf(`version:1
+seed:%v\
+start:%v\
+expiry:%v\
+scopes:`, seed, start, expiry)
+	for _, j := range scopes {
+		text += "\n" + j
+	}
+}
