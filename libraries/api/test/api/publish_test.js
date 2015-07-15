@@ -29,8 +29,8 @@ suite("api/publish", function() {
     });
 
     if (!cfg.get('aws') || !cfg.get('referenceTestBucket')) {
-      console.log("Skipping 'publish', missing config file: " +
-                  "taskcluster-base-test.conf.json");
+      throw new Error("Skipping 'publish', missing config file: " +
+                      "taskcluster-base-test.conf.json");
       return;
     }
 
@@ -70,8 +70,8 @@ suite("api/publish", function() {
     });
 
     if (!cfg.get('aws') || !cfg.get('referenceTestBucket')) {
-      console.log("Skipping 'publish', missing config file: " +
-                  "taskcluster-base-test.conf.json");
+      throw new Error("Skipping 'publish', missing config file: " +
+                      "taskcluster-base-test.conf.json");
       return;
     }
 
