@@ -15,8 +15,8 @@ suite('testing.PulseTestReceiver', function() {
 
   // Validate that we have needed config
   if (!cfg.get('influxdb:connectionString')) {
-    console.log("Skipping 'testing.Events' test, missing config file: " +
-                "taskcluster-base-test.conf.json");
+    throw new Error("Skipping 'testing.Events' test, missing config file: " +
+                    "taskcluster-base-test.conf.json");
     return;
   }
 
