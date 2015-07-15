@@ -132,11 +132,9 @@ def makeSingleHttpRequest(method, url, payload, headers):
   log.debug('Making a %s request to %s', method, url)
   log.debug('HTTP Headers: %s' % str(headers))
   log.debug('HTTP Payload: %s (limit 100 char)' % str(payload)[:100])
-  response = requests.request(method.upper(), url, data=payload, headers=headers)
+  response = requests.request(method.upper(), url, data=payload, headers=headers, stream=True)
   log.debug('Received HTTP Status:  %s' % response.status_code)
   log.debug('Received HTTP Headers: %s' % str(response.headers))
-  log.debug('Received HTTP Payload: %s (limit 1024 char)' % str(response.text)[:1024])
-
   return response
 
 
