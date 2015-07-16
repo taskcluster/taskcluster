@@ -142,9 +142,9 @@ module.exports = {
       "type": "number",
       "title": "Maximum run time in seconds",
       "description": "Maximum time the task container can run in seconds",
-      "multipleOf": "1.0",
-      "minimum": "1",
-      "maximum": "86400"
+      "multipleOf": 1.0,
+      "minimum": 1,
+      "maximum": 86400
     },
     "graphs": {
       "type": "array",
