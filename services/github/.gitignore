@@ -1,0 +1,4 @@
+node_modules/
+config/development.js
+*.swp
+*.swo
