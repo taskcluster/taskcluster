@@ -3,7 +3,7 @@
 # The VERSION variable is automagically changed
 # by release.sh.  Make sure you understand how
 # that script works if you want to change this
-VERSION='0.0.21'
+VERSION='0.0.22'
 
 from setuptools import setup
 
