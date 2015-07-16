@@ -136,7 +136,6 @@ class TestProcessArgs(ClientTest):
 class ObjWithDotJson(object):
   def __init__(self, status_code, x):
     self.status_code = status_code
-    self.headers = {'content-type': 'application/json'}
     self.x = x
 
   def json(self):
