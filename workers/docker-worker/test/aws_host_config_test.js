@@ -33,6 +33,9 @@ suite('configuration/aws', () => {
         secrets: {
           restrictedProxy: {
             accessToken: 'xyz'
+          },
+          dockerConfig: {
+            token: 'docker-token'
           }
         },
         scopes: ['no-scope:for-anything:*'],
@@ -61,7 +64,8 @@ suite('configuration/aws', () => {
         accessToken: 'xyz'
       },
       dockerConfig: {
-        allowPrivileged: true
+        allowPrivileged: true,
+        token: 'docker-token'
       },
       taskcluster: {
         clientId: config.taskcluster.clientId,

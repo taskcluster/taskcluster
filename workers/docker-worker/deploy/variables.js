@@ -36,54 +36,6 @@ module.exports = {
     description: 'Location of private RSA key for docker-worker'
   },
 
-  'taskcluster.clientId': {
-    description: 'Taskcluster client id',
-    value: process.env.TASKCLUSTER_CLIENT_ID
-  },
-
-  'taskcluster.accessToken': {
-    description: 'Taskcluster access token',
-    value: process.env.TASKCLUSTER_ACCESS_TOKEN
-  },
-
-  'testdroid.url': {
-    description: 'Testdroid Cloud url',
-    value: process.env.TESTDROID_URL
-  },
-
-  'testdroid.username': {
-    description: 'Testdroid Cloud username',
-    value: process.env.TESTDROID_USERNAME
-  },
-
-  'testdroid.password': {
-    description: 'Testdroid Cloud password',
-    value: process.env.TESTDROID_password
-  },
-
-  'statsd.prefix': {
-    description: 'statsd prefix token',
-    value: process.env.STATSD_PREFIX
-  },
-
-  'statsd.host': {
-    description: 'statsd hostname endpoint',
-    value: parseUri('STATSD_URL').hostname
-  },
-
-  'statsd.port': {
-    description: 'statsd port endpoint',
-    value: parseUri('STATSD_URL').port
-  },
-
-  'loggly.account': {
-    description: 'Loggly account name',
-  },
-
-  'loggly.token': {
-    description: 'Loggly authentication token',
-  },
-
   'filesystem': {
     description: 'Docker filesystem type (aufs, btrfs)',
     value: 'aufs'
@@ -93,45 +45,6 @@ module.exports = {
     description: 'Papertrail host + port'
   },
 
-  'influxdb.host': {
-    description: 'Influxdb hostname',
-    value: parseUri('INFLUXDB_URL').hostname
-  },
-
-  'influxdb.port': {
-    description: 'Influxdb port',
-    value: parseUri('INFLUXDB_URL').port
-  },
-
-  'influxdb.username': {
-    description: 'Influxdb username',
-    value: parseUri('INFLUXDB_URL').username,
-  },
-
-  'influxdb.password': {
-    description: 'Influxdb passsword',
-    value: parseUri('INFLUXDB_URL').password,
-  },
-
-  'influxdb.database': {
-    description: 'Influxdb database',
-    value: parseUri('INFLUXDB_URL').database,
-  },
-
-  'pulse.username': {
-    description: 'Pulse username (see https://pulse.mozilla.org/profile)',
-    value: process.env.PULSE_USERNAME
-  },
-
-  'pulse.password': {
-    description: 'Pulse password (see https://pulse.mozilla.org/profile)',
-    value: process.env.PULSE_PASSWORD
-  },
-
-  'statelessHostname.secret': {
-    description: 'Secret used for Stateless DNS Server',
-  },
-
   'sslCertificateLocation': {
     description: 'Location of SSL certificate for secure things like live logging'
   },
@@ -139,8 +52,4 @@ module.exports = {
   'sslKeyLocation': {
     description: 'Location of SSL key for secure things like live logging'
   },
-
-  'relengAPIToken': {
-    description: 'Token to be used with the Relengapi Proxy'
-  }
 };

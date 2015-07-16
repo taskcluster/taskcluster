@@ -19,7 +19,17 @@ suite('Capacity', function() {
     // task run times
     yield pullImage(docker, IMAGE, devnull());
     settings.configure({
-      deviceManagement: {},
+      deviceManagement: {
+        cpu: {
+          enabled: false
+        },
+        loopbackAudio: {
+          enabled: false
+        },
+        loopbackVideo: {
+          enabled: false
+        }
+      },
       capacity: CAPACITY,
       capacityManagement: {
         diskspaceThreshold: 1

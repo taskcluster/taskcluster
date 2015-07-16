@@ -8,6 +8,7 @@ var base = require('taskcluster-base');
 var createLogger = require('../lib/log');
 var debug = require('debug')('docker-worker:bin:worker');
 var os = require('os');
+var _ = require('lodash');
 
 var SDC = require('statsd-client');
 var Runtime = require('../lib/runtime');
@@ -126,9 +127,7 @@ co(function *() {
 
     // execute the configuration helper and merge the results
     var targetConfig = yield host.configure();
-    for (var key in targetConfig) {
-      config[key] = targetConfig[key];
-    }
+    config = _.defaultsDeep(targetConfig, config);
   }
 
   // process CLI specific overrides
@@ -145,7 +144,7 @@ co(function *() {
     debug('running in isolated containers mode...');
   }
 
-  debug('configuration loaded', config);
+  debug('configuration loaded', JSON.stringify(config, null, 4));
 
   // Initialize the classes and objects with core functionality used by higher
   // level docker-worker components.

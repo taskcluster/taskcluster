@@ -4,6 +4,7 @@ Return the appropriate configuration defaults when on aws.
 
 import request from 'superagent-promise';
 import taskcluster from 'taskcluster-client';
+import _ from 'lodash';
 
 let log = require('../log')({
   source: 'host/aws'
@@ -122,14 +123,14 @@ export async function configure(baseUrl=BASE_URL) {
     // or if the worker respawned (because of an uncaught exception).  Either way,
     // alert and set capacity to 0.
     log('[alert-operator] error retrieving secrets');
-    return Object.assign(
-      config,
+    return _.defaultsDeep(
+      userdata.data,
       {
         capacity: 0,
         workerType: userdata.workerType,
         provisionerId: userdata.provisionerId
       },
-      userdata.data
+      config
     );
   }
 
@@ -140,16 +141,18 @@ export async function configure(baseUrl=BASE_URL) {
   // Log config for record of configuration but without secrets
   log('config', config);
 
-  return Object.assign(
-    config,
+  // Order of these matter.  We want secret data to override all else, including
+  // taskcluster credentials (if perma creds are provided by secrets.data)
+  return _.defaultsDeep(
+    secrets.data,
+    {taskcluster: secrets.credentials},
+    userdata.data,
     {
       capacity: userdata.capacity,
       workerType: userdata.workerType,
       provisionerId: userdata.provisionerId
     },
-    userdata.data,
-    {taskcluster: secrets.credentials},
-    secrets.data
+    config
   );
 }
 
