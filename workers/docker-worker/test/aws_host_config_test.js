@@ -80,8 +80,6 @@ suite('configuration/aws', () => {
     }
     catch (e) {
       if (e.name === 'AssertionError') throw e;
-
-      assert.equal(e.body.error.reason, 'ResourceNotFound')
       assert.equal(e.statusCode, 404);
     }
   });

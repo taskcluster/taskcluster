@@ -18,7 +18,7 @@ sudo sh -c "echo deb https://get.docker.io/ubuntu docker main\
 sudo apt-get update -y
 
 ## Install all the packages
-sudo apt-get install -y lxc-docker btrfs-tools lvm2 curl build-essential \
+sudo apt-get install -y lxc-docker-1.6.1 btrfs-tools lvm2 curl build-essential \
   linux-image-extra-`uname -r` git-core pbuilder python-mock python-configobj \
   python-support cdbs python-pip jq rsyslog-gnutls openvpn v4l2loopback-utils lxc
 

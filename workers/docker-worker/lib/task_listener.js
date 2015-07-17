@@ -77,6 +77,14 @@ export default class TaskListener extends EventEmitter {
   }
 
   async listenForCancelEvents() {
+    // Do not listen for events if pulse configuration is not supplied.  Since
+    // this is a state that should not happen in production, log an alert so that
+    // we can respond quickly to the event.
+    if (!this.runtime.pulse || !this.runtime.pulse.username || !this.runtime.pulse.password) {
+      this.runtime.log('[alert-operator] pulse credentials missing');
+      return;
+    }
+
     var queue = this.runtime.queue;
 
     var queueEvents = new taskcluster.QueueEvents();

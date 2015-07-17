@@ -1,6 +1,7 @@
 var path = require('path');
 
 module.exports = {
+  capacity: 1,
   testMode: true,
   createQueue: false,
 

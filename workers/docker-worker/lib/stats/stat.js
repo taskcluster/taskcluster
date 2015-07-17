@@ -1,5 +1,8 @@
 import assert from 'assert';
 import base from 'taskcluster-base';
+import Debug from 'debug';
+
+let debug = Debug('taskcluster-docker-worker:stats');
 
 import * as series from './series';
 
@@ -12,7 +15,14 @@ export default class Stat {
     assert(config.workerNodeType, 'Worker instance type is required');
     assert(config.provisionerId, 'Provisioner ID is required');
 
-    this.influx = new base.stats.Influx(config.influx);
+    if (config.influx.connectionString) {
+      this.influx = new base.stats.Influx(config.influx);
+    }
+    else {
+      this.influx = {
+        addPoint: (...args) => { debug('stats: %j', args); }
+      };
+    }
     this.reporters = {};
 
     Object.keys(series).forEach((seriesName) => {
