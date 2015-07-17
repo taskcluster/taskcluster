@@ -139,3 +139,14 @@ export const stateChange = new base.stats.Series({
     duration: base.stats.types.Number
   })
 });
+
+export const capacityOverTime = new base.stats.Series({
+  name: 'capacity_over_time',
+  columns: Object.assign({}, BASE_WORKER_SCHEMA, {
+    duration: base.stats.types.Number,
+    idleCapacity: base.stats.types.Number,
+    runningTasks: base.stats.types.Number,
+    totalCapacity: base.stats.types.Number
+  })
+});
+

@@ -7,12 +7,9 @@ var QUEUE_PREFIX = 'worker/v1/';
 
 var debug = require('debug')('docker-worker:task-listener');
 var taskcluster = require('taskcluster-client');
-var request = require('superagent-promise');
-var os = require('os');
 
 var Task = require('./task');
 var EventEmitter = require('events').EventEmitter;
-var util = require('util');
 var TaskQueue = require('./queueservice');
 var exceedsDiskspaceThreshold = require('./util/capacity').exceedsDiskspaceThreshold;
 var DeviceManager = require('./devices/device_manager.js');
@@ -28,6 +25,7 @@ export default class TaskListener extends EventEmitter {
     this.runningTasks = [];
     this.taskQueue = new TaskQueue(this.runtime);
     this.taskPollInterval = this.runtime.taskQueue.pollInterval;
+    this.lastTaskEvent = Date.now();
 
     this.deviceManager = new DeviceManager(runtime);
   }
@@ -136,6 +134,7 @@ export default class TaskListener extends EventEmitter {
 
     let runningCapacity = Math.max(this.capacity - this.runningTasks.length, 0);
     let hostCapacity = Math.min(runningCapacity, deviceCapacity);
+    this.lastKnownCapacity = hostCapacity;
 
     if (hostCapacity < runningCapacity) {
       this.runtime.log('[info] host capacity adjusted',
@@ -237,7 +236,23 @@ export default class TaskListener extends EventEmitter {
     }
   }
 
+  recordCapacity () {
+    if(this.lastKnownCapacity === undefined) {
+      this.lastKnownCapacity = 0;
+    }
+    this.runtime.stats.record('capacityOverTime', {
+      duration: Date.now() - this.lastTaskEvent,
+      idleCapacity: this.lastKnownCapacity,
+      runningTasks: this.runningTasks.length,
+      totalCapacity: this.lastKnownCapacity + this.runningTasks.length
+    });
+    this.lastTaskEvent = Date.now();
+  }
+
   addRunningTask(runningState) {
+    //must be called before the task is added
+    this.recordCapacity();
+
     this.runningTasks.push(runningState);
 
     // After going from an idle to a working state issue a 'working' event.
@@ -261,9 +276,12 @@ export default class TaskListener extends EventEmitter {
       this.cleanupRunningState(runningState);
       return;
     }
+    //must be called before the task is spliced away
+    this.recordCapacity();
 
     this.cleanupRunningState(runningState);
     this.runningTasks.splice(taskIndex, 1);
+    this.lastKnownCapacity += 1;
 
     if (this.isIdle()) this.emit('idle', this);
   }
