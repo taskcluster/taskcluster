@@ -12,7 +12,6 @@ import URL from 'url';
 
 import BulkLog from './bulk_log';
 import { pullImageStreamTo } from '../pull_image_to_stream';
-import waitForEvent from '../wait_for_event';
 import waitForPort from '../wait_for_port';
 
 const ARTIFACT_NAME = 'public/logs/live.log';

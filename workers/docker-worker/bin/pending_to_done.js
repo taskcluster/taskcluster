@@ -1,7 +1,6 @@
 #! /usr/bin/env node --harmony
 
 var taskcluster = require('taskcluster-client');
-var co = require('co');
 var queue = new taskcluster.Queue();
 var request = require('superagent-promise');
 
@@ -9,8 +8,8 @@ var PENDING = 'https://queue.taskcluster.net/v1/pending-tasks/aws-provisioner';
 var workerType = process.argv[2];
 
 
-co(function* () {
-  var pending = (yield request.get(PENDING).end()).body.tasks;
+async function main () {
+  var pending = (await request.get(PENDING).end()).body.tasks;
 
   for (var i = 0; i < pending.length; i++) {
     var taskId = pending[i].taskId;
@@ -21,17 +20,20 @@ co(function* () {
 
     console.log('begin claiming', taskId, runId);
     try {
-      var claim = yield queue.claimTask(taskId, runId, {
+      var claim = await queue.claimTask(taskId, runId, {
         workerGroup: 'skip',
         workerId: 'skip'
       });
 
-      yield queue.reportCompleted(taskId, runId, { success: false });
+      await queue.reportCompleted(taskId, runId, { success: false });
     } catch (e) {
       console.error("Could not complete %s %d", taskId, runId, e, JSON.stringify(e.body, null, 2));
     }
   }
+}
 
-})(function(err) {
-  if (err) throw err;
+main().catch((err) => {
+  // Top level uncaught fatal errors!
+  console.error(err);
+  throw err; // nothing to do so show a message and crash
 });

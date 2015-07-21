@@ -4,8 +4,6 @@ is streamed from the task container and other writers...
 */
 
 var azure = require('azure-storage');
-var querystring = require('querystring');
-var waitForEvent = require('../wait_for_event');
 var streamClosed = require('../stream_closed');
 
 var URL = require('url')

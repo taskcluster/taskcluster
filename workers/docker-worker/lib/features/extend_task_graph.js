@@ -1,7 +1,6 @@
 /**
 This module handles extending the task graph as a by-product of a task's run.
 */
-var co = require('co');
 var waitForEvent = require('../wait_for_event');
 var tarStream = require('tar-stream');
 
@@ -49,7 +48,7 @@ export default class ExtendTaskGraph {
     // JSON used to extend the task graph (not parsed).
     var entryJSON;
 
-    tarExtract.on('entry', co(function* (header, stream) {
+    tarExtract.on('entry', async (header, stream, cb) => {
       if (checkTarType) {
         checkTarType = false;
         if (header.type !== 'file') {
@@ -64,8 +63,9 @@ export default class ExtendTaskGraph {
         }
       }
       // Consume the stream and store the raw json here.
-      entryJSON = yield drain(stream);
-    }));
+      entryJSON = await drain(stream);
+      cb();
+    });
 
     // Wait for the tar to be finished extracting.
     await waitForEvent(tarExtract, 'finish');

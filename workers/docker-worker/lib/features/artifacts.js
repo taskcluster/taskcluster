@@ -6,7 +6,6 @@ container.
 
 var waitForEvent = require('../wait_for_event');
 var _ = require('lodash');
-var co = require('co');
 var mime = require('mime');
 var https = require('https');
 var tarStream = require('tar-stream');

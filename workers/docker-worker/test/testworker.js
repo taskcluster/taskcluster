@@ -7,7 +7,6 @@ var devnull = require('dev-null');
 var slugid = require('slugid');
 var request = require('superagent-promise');
 var debug = require('debug')('docker-worker:test:testworker');
-var util = require('util');
 var waitForEvent = require('../lib/wait_for_event');
 var split = require('split2');
 var loadConfig = require('taskcluster-base/config');

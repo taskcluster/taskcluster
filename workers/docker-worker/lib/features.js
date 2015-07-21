@@ -96,6 +96,13 @@ const features = {
                  'api using an authorization token based on the task\'s scopes',
     defaults: false,
     module: require('./features/releng_api_proxy')
+  },
+
+  dockerSave: {
+    title: 'Docker save',
+    description: 'Uploads docker images as artifacts',
+    defaults: false,
+    module: require('./features/docker_save')
   }
 };
 

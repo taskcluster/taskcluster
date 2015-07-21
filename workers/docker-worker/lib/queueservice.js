@@ -1,11 +1,11 @@
 import xml2js from 'xml2js';
 import Debug from 'debug';
 import request from 'superagent-promise';
-import denodeify from 'denodeify';
+import Promise from 'promise';
 import assert from 'assert';
 
 const MAX_MESSAGES_PER_REQUEST = 32;
-const parseXmlString = denodeify(xml2js.parseString.bind(xml2js));
+const parseXmlString = Promise.denodeify(xml2js.parseString.bind(xml2js));
 
 let debug = Debug('taskcluster-docker-worker:queueService');
 

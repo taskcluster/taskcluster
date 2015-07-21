@@ -1,12 +1,11 @@
-var co = require('co');
 var EventEmitter = require('events').EventEmitter;
 var parseImage = require('docker-image-parser');
 var Promise = require('promise');
 var debug = require('debug')('taskcluster-docker-worker:garbageCollector');
 var exceedsDiskspaceThreshold = require('./util/capacity').exceedsDiskspaceThreshold;
 
-function* getImageId(docker, imageName) {
-  var dockerImages = yield docker.listImages();
+async function getImageId(docker, imageName) {
+  var dockerImages = await docker.listImages();
   var imageId;
   dockerImages.forEach(function (dockerImage) {
     if (dockerImage.RepoTags.indexOf(imageName) !== -1) {
@@ -20,7 +19,7 @@ function isContainerRunning(container) {
   return (container['Status'].indexOf('Exited') === -1);
 }
 
-function* isContainerStale(docker, container, expiration) {
+async function isContainerStale(docker, container, expiration) {
   // Containers can be running, exited, or no status (created but not started).
   // For a container exited or never ran so has no status, inspect() returns
   // "running: false" and contains a FinishedAt timestamp so need to peek at
@@ -29,7 +28,7 @@ function* isContainerStale(docker, container, expiration) {
   if (container['Status'].indexOf('Exited') === -1) return false;
 
   container = docker.getContainer(container.Id);
-  container = yield container.inspect();
+  container = await container.inspect();
   var finishedAt = Date.parse(container.State.FinishedAt);
   var containerExpiration = finishedAt + expiration;
   return (Date.now() > containerExpiration) ? true : false;
@@ -75,12 +74,12 @@ GarbageCollector.prototype = {
     this.markedImages[imageName] = expiration;
   },
 
-  markStaleContainers: function* () {
-    var containers = yield this.docker.listContainers({all: true});
+  markStaleContainers: async function () {
+    var containers = await this.docker.listContainers({all: true});
     for(let container of containers) {
       if (!(container.Id in this.markedContainers) &&
           (this.ignoredContainers.indexOf(container.Id) === -1)) {
-          var stale = yield isContainerStale(
+          var stale = await isContainerStale(
             this.docker, container, this.containerExpiration
           );
           if (stale) {
@@ -107,7 +106,7 @@ GarbageCollector.prototype = {
     debug(`marked ${containerId}`);
   },
 
-  removeContainers: function* () {
+  removeContainers: async function () {
     for (var containerId in this.markedContainers) {
       // If a container can't be removed after 5 tries, more tries won't help
       if (this.markedContainers[containerId].retries !== 0) {
@@ -115,7 +114,7 @@ GarbageCollector.prototype = {
         var caches = this.markedContainers[containerId].caches;
 
         try {
-          yield c.remove({
+          await c.remove({
             // Even running containers should be removed otherwise shouldn't have
             // been marked for removal.
             force: true,
@@ -166,14 +165,14 @@ GarbageCollector.prototype = {
     }
   },
 
-  removeUnusedImages: function* (exceedsThreshold) {
+  removeUnusedImages: async function (exceedsThreshold) {
     // All containers that are currently managed by the daemon will not allow
     // an image to be removed.  Consider them all running
-    var containers = yield this.docker.listContainers({all: true});
+    var containers = await this.docker.listContainers({all: true});
     var runningImages = containers.map((container) => { return container.Image; });
 
     for (var image in this.markedImages) {
-      var imageId = yield getImageId(this.docker, image);
+      var imageId = await getImageId(this.docker, image);
       var imageDetails = {name: image, id: imageId};
       if (!exceedsThreshold && this.markedImages[image] > new Date()) {
           this.emit('gc:image:info', {info:'Image expiration has not been reached.',
@@ -185,7 +184,7 @@ GarbageCollector.prototype = {
         var dockerImage = this.docker.getImage(imageId);
 
         try {
-          yield dockerImage.remove();
+          await dockerImage.remove();
           delete this.markedImages[image];
           this.emit('gc:image:removed', {image: imageDetails});
           this.log('image removed', {image: imageDetails});
@@ -214,44 +213,42 @@ GarbageCollector.prototype = {
     this.sweepTimeoutId = setTimeout(this.sweep.bind(this), interval);
   },
 
-  sweep: function () {
+  sweep: async function () {
     clearTimeout(this.sweepTimeoutId);
     this.emit('gc:sweep:start');
     this.log('garbage collection started');
-    co(function* () {
-      yield this.markStaleContainers();
-      yield this.removeContainers();
+    await this.markStaleContainers();
+    await this.removeContainers();
 
-      // Worker should be capable of providing a minimum amount of diskspace for
-      // each task its capable of claiming.  Images that are not running will be
-      // removed if they are expired or if there is not enough diskspace remaining
-      // for each available task the worker can claim.
-      let availableCapacity = yield this.taskListener.availableCapacity();
-      var exceedsThreshold = yield exceedsDiskspaceThreshold(this.dockerVolume,
-                               this.diskspaceThreshold,
-                               availableCapacity,
-                               this.log,
-                               this.stats);
-      if (exceedsThreshold) {
-        this.emit('gc:diskspace:warning',
-                  {message: 'Diskspace threshold reached. ' +
-                            'Removing all non-running images.'
-                  });
-      } else {
-        this.emit('gc:diskspace:info',
-                  {message: 'Diskspace threshold not reached. ' +
-                            'Removing only expired images.'
-                  });
-      }
-      yield this.removeUnusedImages(exceedsThreshold);
+    // Worker should be capable of providing a minimum amount of diskspace for
+    // each task its capable of claiming.  Images that are not running will be
+    // removed if they are expired or if there is not enough diskspace remaining
+    // for each available task the worker can claim.
+    let availableCapacity = await this.taskListener.availableCapacity();
+    var exceedsThreshold = await exceedsDiskspaceThreshold(this.dockerVolume,
+                             this.diskspaceThreshold,
+                             availableCapacity,
+                             this.log,
+                             this.stats);
+    if (exceedsThreshold) {
+      this.emit('gc:diskspace:warning',
+                {message: 'Diskspace threshold reached. ' +
+                          'Removing all non-running images.'
+                });
+    } else {
+      this.emit('gc:diskspace:info',
+                {message: 'Diskspace threshold not reached. ' +
+                          'Removing only expired images.'
+                });
+    }
+    await this.removeUnusedImages(exceedsThreshold);
 
-      for (var i = 0; i < this.managers.length; i++) {
-        yield this.managers[i].clear(exceedsThreshold);
-      }
+    for (var i = 0; i < this.managers.length; i++) {
+      await this.managers[i].clear(exceedsThreshold);
+    }
 
-      this.log('garbage collection finished');
-      this.emit('gc:sweep:stop');
-    }).bind(this)();
+    this.log('garbage collection finished');
+    this.emit('gc:sweep:stop');
     this.scheduleSweep(this.interval);
   }
 };

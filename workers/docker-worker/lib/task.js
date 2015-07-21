@@ -6,7 +6,6 @@ import DockerProc from 'dockerode-process';
 import util from 'util';
 import uuid from 'uuid';
 import { PassThrough } from 'stream';
-import request from 'superagent-promise';
 import States from './states';
 
 import features from './features';
