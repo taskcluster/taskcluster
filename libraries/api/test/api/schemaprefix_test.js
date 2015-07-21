@@ -1,4 +1,4 @@
-suite("api/validate", function() {
+suite("api/schemaPrefix", function() {
   require('superagent-hawk')(require('superagent'));
   var request         = require('superagent-promise');
   var assert          = require('assert');
@@ -8,11 +8,11 @@ suite("api/validate", function() {
   var express         = require('express');
   var path            = require('path');
 
-
   // Create test api
   var api = new base.API({
     title:        "Test Api",
-    description:  "Another test api"
+    description:  "Another test api",
+    schemaPrefix: 'http://localhost:4321/'
   });
 
   // Declare a method we can test input with
@@ -20,7 +20,7 @@ suite("api/validate", function() {
     method:   'get',
     route:    '/test-input',
     name:     'testInput',
-    input:    'http://localhost:4321/test-schema.json',
+    input:    'test-schema.json',
     title:    "Test End-Point",
     description:  "Place we can call to test something",
   }, function(req, res) {
@@ -32,49 +32,11 @@ suite("api/validate", function() {
     method:   'get',
     route:    '/test-output',
     name:     'testInput',
-    output:   'http://localhost:4321/test-schema.json',
+    output:   'test-schema.json',
     title:    "Test End-Point",
     description:  "Place we can call to test something",
   }, function(req, res) {
     res.reply({value: 4});
-  });
-
-  // Declare a method we can use to test invalid output
-  api.declare({
-    method:   'get',
-    route:    '/test-invalid-output',
-    name:     'testInput',
-    output:   'http://localhost:4321/test-schema.json',
-    title:    "Test End-Point",
-    description:  "Place we can call to test something",
-  }, function(req, res) {
-    res.reply({value: 12});
-  });
-
-  // Declare a method we can test input validation skipping on
-  api.declare({
-    method:   'get',
-    route:    '/test-skip-input-validation',
-    name:     'testInputSkipInputValidation',
-    input:    'http://localhost:4321/test-schema.json',
-    skipInputValidation: true,
-    title:    "Test End-Point",
-    description:  "Place we can call to test something",
-  }, function(req, res) {
-    res.status(200).send("Hello World");
-  });
-
-  // Declare a method we can test output validation skipping on
-  api.declare({
-    method:   'get',
-    route:    '/test-skip-output-validation',
-    name:     'testOutputSkipInputValidation',
-    output:    'http://localhost:4321/test-schema.json',
-    skipOutputValidation: true,
-    title:    "Test End-Point",
-    description:  "Place we can call to test something",
-  }, function(req, res) {
-    res.reply({value: 12});
   });
 
   // Reference to mock authentication server
@@ -182,42 +144,6 @@ suite("api/validate", function() {
       .then(function(res) {
         assert(res.ok, "Request okay");
         assert(res.body.value === 4, "Got wrong value");
-      });
-  });
-
-  // test invalid output
-  test("output (invalid)", function() {
-    var url = 'http://localhost:61515/test-invalid-output';
-    return request
-      .get(url)
-      .end()
-      .then(function(res) {
-        assert(res.status === 500, "Request wasn't 500");
-      });
-  });
-
-  // test skipping input validation
-  test("skip input validation", function() {
-    var url = 'http://localhost:61515/test-skip-input-validation';
-    return request
-      .get(url)
-      .send({value: 100})
-      .end()
-      .then(function(res) {
-        assert(res.ok, "Request failed");
-        assert(res.text === "Hello World", "Got wrong value");
-      });
-  });
-
-  // test skipping output validation
-  test("skip output validation", function() {
-    var url = 'http://localhost:61515/test-skip-output-validation';
-    return request
-      .get(url)
-      .end()
-      .then(function(res) {
-        assert(res.ok, "Request failed");
-        assert(res.body.value === 12, "Got wrong value");
       });
   });
 });

@@ -10,6 +10,7 @@ var Promise     = require('promise');
 var assert      = require('assert');
 var path        = require('path');
 var yaml        = require('js-yaml');
+var urljoin     = require('url-join');
 
 var utils       = require('./utils');
 
@@ -71,7 +72,8 @@ var Validator = function(schemas) {
   });
 };
 
-/** Validate a JSON object given a schema identifier
+/**
+ * Validate a JSON object given a schema identifier
  * return null if there is no errors and list of errors if we have errors.
  *
  * For a decent introduction to JSON schemas see:
@@ -119,6 +121,7 @@ Validator.prototype.register = function(schema) {
  *   publish:           true,                     // Publish schemas from folder
  *   schemaPrefix:      'queue/v1/'               // Prefix within S3 bucket
  *   schemaBucket:      'schemas.taskcluster.net',// Schema publication bucket
+ *   schemaBaseUrl:     'http://schemas.t..c.net',// Schema baseUrl
  *   aws: {             // AWS credentials and region for schemaBucket
  *    accessKeyId:        '...',
  *    secretAccessKey:    '...',
@@ -130,7 +133,8 @@ Validator.prototype.register = function(schema) {
 var validator = function(options) {
   // Provide default options
   options = _.defaults(options || {}, {
-    schemaBucket:    'schemas.taskcluster.net'
+    schemaBucket:     'schemas.taskcluster.net',
+    schemaBaseUrl:    'schemas.taskcluster.net'
   });
 
   // Create validator
@@ -191,14 +195,35 @@ var validator = function(options) {
           throw err;
         }
 
-        // Register with the validator
-        validator.register(schema);
-
         // Find relative path and use it as name
         var name = path.relative(options.folder, filePath);
 
         // Replace .yaml and .yml with .json
         name = name.replace(/\.ya?ml$/, '.json');
+
+        // Determine schema id
+        var id = urljoin(
+          options.schemaBaseUrl,
+          options.schemaPrefix,
+          name
+        ) + '#';
+
+        // Add schema id, if already present
+        if (!schema.id) {
+          schema.id = id;
+        }
+
+        // Validate schema id, if set manually
+        if (schema.id !== id) {
+          debug("Bad schema name: %s expected: %s", schema.id, id);
+          throw new Error(
+            "Wrong schemaId: " + schema.id + " expected: " + id +
+            ", notice you don't have to specify one! We will set it for you!"
+          );
+        }
+
+        // Register with the validator
+        validator.register(schema);
 
         // Log that we loaded schema
         debug("Loaded: %s", filePath);
