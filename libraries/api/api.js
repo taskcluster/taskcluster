@@ -34,7 +34,7 @@ var series        = require('./lib/series');
  * This validates body against the schema given in `options.input` and returns
  * and a 400 error messages to request if there is a schema mismatch.
  * Handlers below this should output the reply JSON structure with `req.reply`.
- * this will validate it against `options.output` if provided.
+ * this will validate it against `outputSchema` if provided.
  * Handlers may output errors using `req.json`, as `req.reply` will validate
  * against schema and always returns a 200 OK reply.
  */
@@ -702,7 +702,8 @@ var handle = function(handler, context) {
  * options:
  * {
  *   title:         "API Title",
- *   description:   "API description in markdown"
+ *   description:   "API description in markdown",
+ *   schemaPrefix:  "http://schemas..../queue/",    // Prefix for all schemas
  * }
  *
  * The API object will only modified by declarations, when `mount` or `publish`
@@ -713,7 +714,9 @@ var API = function(options) {
   ['title', 'description'].forEach(function(key) {
     assert(options[key], "Option '" + key + "' must be provided");
   });
-  this._options = options;
+  this._options = _.defaults({}, options, {
+    schemaPrefix: ''
+  });
   this._entries = [];
 };
 
@@ -749,6 +752,12 @@ API.prototype.declare = function(options, handler) {
     assert(options[key], "Option '" + key + "' must be provided");
   });
   options.handler = handler;
+  if (options.input) {
+    options.input = this._options.schemaPrefix + options.input;
+  }
+  if (options.output) {
+    options.output = this._options.schemaPrefix + options.output;
+  }
   this._entries.push(options);
 };
 
@@ -876,7 +885,7 @@ API.prototype.router = function(options) {
  *
  * options:
  * {
- *   baseUrl:    'https://example.com/v1' // URL under which routes are mounted
+ *   baseUrl:       'https://example.com/v1'  // URL where routes are mounted
  * }
  */
 API.prototype.reference = function(options) {
@@ -949,7 +958,7 @@ API.prototype.reference = function(options) {
  *
  * options:
  * {
- *   baseUrl:         'https://example.com/v1' // URL under which routes are mounted
+ *   baseUrl:         'https://example.com/v1' // URL where routes are mounted
  *   referencePrefix: 'queue/v1/api.json'      // Prefix within S3 bucket
  *   referenceBucket: 'reference.taskcluster.net',
  *   aws: {             // AWS credentials and region
