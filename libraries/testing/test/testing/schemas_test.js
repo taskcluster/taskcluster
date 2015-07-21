@@ -3,7 +3,8 @@ suite('testing.schema', function() {
   var path  = require('path');
   base.testing.schemas({
     validator: {
-      folder:     path.join(__dirname, 'schemas'),
+      folder:         path.join(__dirname, 'schemas'),
+      schemaBaseUrl:  'http://localhost:1234/'
     },
     cases: [
       {
@@ -25,7 +26,8 @@ suite('testing.schema w. schemaPrefix', function() {
   var path  = require('path');
   base.testing.schemas({
     validator: {
-      folder:     path.join(__dirname, 'schemas'),
+      folder:         path.join(__dirname, 'schemas'),
+      schemaBaseUrl:  'http://localhost:1234/'
     },
     cases: [
       {
