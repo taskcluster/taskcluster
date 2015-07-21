@@ -299,25 +299,9 @@ class QueueService {
       '1'                     // priority, currently just hardcoded to 1
     ].join('-');
 
-
-    // Construct queue w. legacy name
-    var legacyName = [
-      this.prefix,    // prefix all queues
-      base32.encode(decodeUrlSafeBase64(provisionerId))
-        .toString('utf8')
-        .toLowerCase()
-        .replace(/=*$/, ''),
-      base32.encode(decodeUrlSafeBase64(workerType))
-        .toString('utf8')
-        .toLowerCase()
-        .replace(/=*$/, ''),
-      '1'             // priority, currently just hardcoded to 1
-    ].join('-');
-
     // Return and cache promise that we created this queue
     return this.queues[id] = Promise.all([
-      this._ensureQueueAndMetadata(name, provisionerId, workerType),
-      this._ensureQueueAndMetadata(legacyName, provisionerId, workerType)
+      this._ensureQueueAndMetadata(name, provisionerId, workerType)
     ]).catch(err => {
       debug("[alert-operator] Failed to ensure azure queue: %s, as JSON: %j",
             err, err, err.stack);
@@ -509,24 +493,8 @@ class QueueService {
     // Find visibility timeout we'll encoding in signed poll URLs
     var pendingPollTimeout = Math.floor(this.pendingPollTimeout / 1000);
 
-    // Construct queue w. legacy name
-    // TODO: Remove this once legacy queues are empty...
-    var legacyName = [
-      this.prefix,    // prefix all queues
-      base32.encode(decodeUrlSafeBase64(provisionerId))
-        .toString('utf8')
-        .toLowerCase()
-        .replace(/=*$/, ''),
-      base32.encode(decodeUrlSafeBase64(workerType))
-        .toString('utf8')
-        .toLowerCase()
-        .replace(/=*$/, ''),
-      '1'             // priority, currently just hardcoded to 1
-    ].join('-');
-
     // For each queue name, return signed URLs for the queue
     var queues = [
-      legacyName, // Return legacy queue first, so empty it first
       queueName
     ].map(queueName => {
       // Create shared access signature
@@ -562,31 +530,10 @@ class QueueService {
     // Find name of azure queue
     var queueName = await this.ensurePendingQueue(provisionerId, workerType);
 
-    // Construct queue w. legacy name
-    // TODO: Remove this once legacy queues are empty...
-    var legacyName = [
-      this.prefix,    // prefix all queues
-      base32.encode(decodeUrlSafeBase64(provisionerId))
-        .toString('utf8')
-        .toLowerCase()
-        .replace(/=*$/, ''),
-      base32.encode(decodeUrlSafeBase64(workerType))
-        .toString('utf8')
-        .toLowerCase()
-        .replace(/=*$/, ''),
-      '1'             // priority, currently just hardcoded to 1
-    ].join('-');
-
-    // Find messages count from primary and legacy queue
-    var [
-      count,
-      legacyCount
-    ] = (await Promise.all([
+    // Find messages count queues
+    return _.sum((await Promise.all([
       this.client.getMetadata(queueName),
-      this.client.getMetadata(legacyName)
-    ])).map(_.property('messageCount'));
-
-    return count + legacyCount;
+    ])).map(r => r.messageCount));
   }
 };
 
