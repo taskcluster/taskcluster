@@ -24,16 +24,21 @@ suite("validator", function() {
     }
 
     return base.validator({
-      publish:      true,
-      schemaPrefix: 'base/test/',
-      schemaBucket: cfg.get('schemaTestBucket'),
-      aws:          cfg.get('aws'),
-      folder:       path.join(__dirname, 'schemas'),
-      constants:    {"my-constant": 42}
+      publish:        true,
+      schemaPrefix:   'base/test/',
+      schemaBucket:   cfg.get('schemaTestBucket'),
+      aws:            cfg.get('aws'),
+      folder:         path.join(__dirname, 'publish-schemas'),
+      constants:      {"my-constant": 42},
+      schemaBaseUrl:  'http://localhost:1203/'
     }).then(function(validator) {
       var errors = validator.check({
         value: 42
-      }, 'http://localhost:1203/test-schema.json');
+      }, 'http://localhost:1203/base/test/test-schema.json');
+      assert(errors === null, "Got errors");
+      var errors = validator.check({
+        value: 42
+      }, 'http://localhost:1203/base/test/auto-named-schema.json');
       assert(errors === null, "Got errors");
 
       // Get the file... we don't bother checking the contents this is good
