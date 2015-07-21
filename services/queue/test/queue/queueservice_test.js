@@ -114,7 +114,7 @@ suite('queue/QueueService', function() {
     // Get signedPollUrl and signedDeleteUrl
     var {
       queues: [
-        {}, {
+        {
           signedPollUrl,
           signedDeleteUrl
         }
@@ -210,46 +210,5 @@ suite('queue/QueueService', function() {
 
     // Get meta-data, this will fail if the queue was deleted
     await queueService.client.getMetadata(queueName);
-  });
-
-  // TODO: Remove this test case when legacy queues are phased out
-  test("Update meta-data of legacy queue", async () => {
-    var taskId  = slugid.v4();
-    var runId   = 0;
-    var task    = {
-      taskId:             taskId,
-      provisionerId:      slugid.v4(),
-      workerType:         slugid.v4(),
-      deadline:           new Date(new Date().getTime() + 5 * 60 * 1000)
-    };
-
-    var base32  = require('thirty-two');
-    var decodeUrlSafeBase64 = function(data) {
-      return new Buffer(data.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
-    };
-
-    var legacyName = [
-      queueService.prefix,    // prefix all queues
-      base32.encode(decodeUrlSafeBase64(task.provisionerId))
-        .toString('utf8')
-        .toLowerCase()
-        .replace(/=*$/, ''),
-      base32.encode(decodeUrlSafeBase64(task.workerType))
-        .toString('utf8')
-        .toLowerCase()
-        .replace(/=*$/, ''),
-      '1'             // priority, currently just hardcoded to 1
-    ].join('-');
-
-    // Create legacy queue
-    await queueService.client.createQueue(legacyName);
-
-    // Put message into pending queue
-    await queueService.putPendingMessage(task, runId);
-
-    // Expect that meta-data for legacy queue is now set
-    let {metadata} = await queueService.client.getMetadata(legacyName);
-    assume(metadata).owns('provisioner_id', task.provisionerId);
-    assume(metadata).owns('worker_type', task.workerType);
   });
 });
