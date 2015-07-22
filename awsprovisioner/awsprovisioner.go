@@ -221,26 +221,26 @@ func New(clientId string, accessToken string) *Auth {
 // KeyPair
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createWorkerType
-func (a *Auth) CreateWorkerType(workerType string, payload *GetWorkerTypeRequest) (*GetWorkerTypeRequest1, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/worker-type/"+workerType+"", new(GetWorkerTypeRequest1))
-	return responseObject.(*GetWorkerTypeRequest1), callSummary
+func (a *Auth) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "PUT", "/worker-type/"+workerType+"", new(GetWorkerTypeRequest))
+	return responseObject.(*GetWorkerTypeRequest), callSummary
 }
 
 // Update a workerType and ensure that all regions have the require
 // KeyPair
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#updateWorkerType
-func (a *Auth) UpdateWorkerType(workerType string, payload *GetWorkerTypeRequest) (*GetWorkerTypeRequest1, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/worker-type/"+workerType+"/update", new(GetWorkerTypeRequest1))
-	return responseObject.(*GetWorkerTypeRequest1), callSummary
+func (a *Auth) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "POST", "/worker-type/"+workerType+"/update", new(GetWorkerTypeRequest))
+	return responseObject.(*GetWorkerTypeRequest), callSummary
 }
 
 // Retreive a WorkerType definition
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#workerType
-func (a *Auth) WorkerType(workerType string) (*GetWorkerTypeRequest1, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/worker-type/"+workerType+"", new(GetWorkerTypeRequest1))
-	return responseObject.(*GetWorkerTypeRequest1), callSummary
+func (a *Auth) WorkerType(workerType string) (*GetWorkerTypeRequest, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/worker-type/"+workerType+"", new(GetWorkerTypeRequest))
+	return responseObject.(*GetWorkerTypeRequest), callSummary
 }
 
 // Delete a WorkerType definition, submits requests to kill all
@@ -315,41 +315,22 @@ func (a *Auth) GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, *C
 	return responseObject.(*GetAllLaunchSpecsResponse), callSummary
 }
 
-// WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS
-// Shut down every single EC2 instance associated with this workerType.
-// This means every single last one.  You probably don't want to use
-// this method, which is why it has an obnoxious name.  Don't even try
-// to claim you didn't know what this method does!
-//
-// **This API end-point is experimental and may be subject to change without warning.**
-//
-// See http://docs.taskcluster.net/aws-provisioner/api-docs/#terminateAllInstancesOfWorkerType
-func (a *Auth) TerminateAllInstancesOfWorkerType(workerType string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "POST", "/worker-type/"+workerType+"/terminate-all-instances", nil)
-	return callSummary
-}
-
-// WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS
-// Shut down every single EC2 instance managed by this provisioner.
-// This means every single last one.  You probably don't want to use
-// this method, which is why it has an obnoxious name.  Don't even try
-// to claim you didn't know what this method does!
-//
-// **This API end-point is experimental and may be subject to change without warning.**
-//
-// See http://docs.taskcluster.net/aws-provisioner/api-docs/#shutdownEverySingleEc2InstanceManagedByThisProvisioner
-func (a *Auth) ShutdownEverySingleEc2InstanceManagedByThisProvisioner() *CallSummary {
-	_, callSummary := a.apiCall(nil, "POST", "/shutdown/every/single/ec2/instance/managed/by/this/provisioner", nil)
-	return callSummary
-}
-
-// Documented later...
-//
-// **Warning** this api end-point is **not stable**
+// DEPRECATED.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#awsState
 func (a *Auth) AwsState() *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/aws-state/", nil)
+	_, callSummary := a.apiCall(nil, "GET", "/aws-state", nil)
+	return callSummary
+}
+
+// Return the state of a given workertype as stored by the provisioner.
+// This state is stored as three lists: 1 for all instances, 1 for requests
+// which show in the ec2 api and 1 list for those only tracked internally
+// in the provisioner.
+//
+// See http://docs.taskcluster.net/aws-provisioner/api-docs/#state
+func (a *Auth) State(workerType string) *CallSummary {
+	_, callSummary := a.apiCall(nil, "GET", "/state/"+workerType+"", nil)
 	return callSummary
 }
 
@@ -394,8 +375,8 @@ type (
 
 	// A worker launchSpecification and required metadata
 	//
-	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#
-	GetWorkerTypeRequest struct {
+	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#
+	CreateWorkerTypeRequest struct {
 		// True if this worker type is allowed on demand instances.  Currently
 		// ignored
 		CanUseOndemand bool `json:"canUseOndemand"`
@@ -496,8 +477,8 @@ type (
 
 	// A worker launchSpecification and required metadata
 	//
-	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#
-	GetWorkerTypeRequest1 struct {
+	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#
+	GetWorkerTypeRequest struct {
 		// True if this worker type is allowed on demand instances.  Currently
 		// ignored
 		CanUseOndemand bool `json:"canUseOndemand"`

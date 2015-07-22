@@ -756,8 +756,8 @@ Entry 0     =
     Entry Args        = '[workerType]'
     Entry Name        = 'createWorkerType'
     Entry Scopes      = '[[aws-provisioner:manage-worker-type:<workerType>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#'
-    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#'
+    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
     Entry Title       = 'Create new Worker Type'
     Entry Description = 'Create a worker type and ensure that all EC2 regions have the required
 KeyPair'
@@ -768,8 +768,8 @@ Entry 1     =
     Entry Args        = '[workerType]'
     Entry Name        = 'updateWorkerType'
     Entry Scopes      = '[[aws-provisioner:manage-worker-type:<workerType>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#'
-    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#'
+    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
     Entry Title       = 'Update Worker Type'
     Entry Description = 'Update a workerType and ensure that all regions have the require
 KeyPair'
@@ -781,7 +781,7 @@ Entry 2     =
     Entry Name        = 'workerType'
     Entry Scopes      = '[[aws-provisioner:view-worker-type:<workerType>] [aws-provisioner:manage-worker-type:<workerType>]]'
     Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
     Entry Title       = 'Get Worker Type'
     Entry Description = 'Retreive a WorkerType definition'
 Entry 3     =
@@ -879,52 +879,30 @@ are not valid
 **This API end-point is experimental and may be subject to change without warning.**'
 Entry 10    =
     Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/worker-type/<workerType>/terminate-all-instances'
-    Entry Args        = '[workerType]'
-    Entry Name        = 'terminateAllInstancesOfWorkerType'
-    Entry Scopes      = '[[aws-provisioner:all-stop aws-provisioner:aws]]'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Shutdown Every Ec2 Instance of this Worker Type'
-    Entry Description = 'WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS 
-Shut down every single EC2 instance associated with this workerType. 
-This means every single last one.  You probably don't want to use 
-this method, which is why it has an obnoxious name.  Don't even try 
-to claim you didn't know what this method does!
-
-**This API end-point is experimental and may be subject to change without warning.**'
-Entry 11    =
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/shutdown/every/single/ec2/instance/managed/by/this/provisioner'
-    Entry Args        = '[]'
-    Entry Name        = 'shutdownEverySingleEc2InstanceManagedByThisProvisioner'
-    Entry Scopes      = '[[aws-provisioner:all-stop aws-provisioner:aws]]'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Shutdown Every Single Ec2 Instance Managed By This Provisioner'
-    Entry Description = 'WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS 
-Shut down every single EC2 instance managed by this provisioner. 
-This means every single last one.  You probably don't want to use 
-this method, which is why it has an obnoxious name.  Don't even try 
-to claim you didn't know what this method does!
-
-**This API end-point is experimental and may be subject to change without warning.**'
-Entry 12    =
-    Entry Type        = 'function'
     Entry Method      = 'get'
-    Entry Route       = '/aws-state/'
+    Entry Route       = '/aws-state'
     Entry Args        = '[]'
     Entry Name        = 'awsState'
-    Entry Scopes      = '[[aws-provisioner:view-aws-state]]'
+    Entry Scopes      = '[[aws-provisioner:aws-state]]'
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Get AWS State for all worker types'
-    Entry Description = 'Documented later...
-
-**Warning** this api end-point is **not stable**'
-Entry 13    =
+    Entry Description = 'DEPRECATED.'
+Entry 11    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/state/<workerType>'
+    Entry Args        = '[workerType]'
+    Entry Name        = 'state'
+    Entry Scopes      = '[[aws-provisioner:view-worker-type:<workerType>]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Get AWS State for a worker type'
+    Entry Description = 'Return the state of a given workertype as stored by the provisioner. 
+This state is stored as three lists: 1 for all instances, 1 for requests
+which show in the ec2 api and 1 list for those only tracked internally
+in the provisioner.'
+Entry 12    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -937,7 +915,7 @@ Entry 13    =
     Entry Description = 'Documented later...
 
 **Warning** this api end-point is **not stable**.'
-Entry 14    =
+Entry 13    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/api-reference'
@@ -1018,12 +996,12 @@ IsOutputSchema         = 'false'
 SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#'
 
 
-http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#
-===================================================================================
+http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#
+==================================================================================
 Additional Properties  = 'false'
 Description            = 'A worker launchSpecification and required metadata
 '
-ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#'
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
 Properties
   Property 'canUseOndemand' =
     Description            = 'True if this worker type is allowed on demand instances.  Currently
@@ -1294,12 +1272,12 @@ Properties
     SourceURL              = ''
 Required               = '[launchSpec userData secrets scopes maxCapacity scalingRatio minPrice maxPrice instanceTypes regions]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Get Worker Type Request'
+Title                  = 'Create Worker Type Request'
 Type                   = 'object'
-TypeName               = 'GetWorkerTypeRequest'
+TypeName               = 'CreateWorkerTypeRequest'
 IsInputSchema          = 'true'
 IsOutputSchema         = 'false'
-SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
 
 
 http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#
@@ -1367,12 +1345,12 @@ IsOutputSchema         = 'true'
 SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#'
 
 
-http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#
-=================================================================================
+http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#
+================================================================================
 Additional Properties  = 'false'
 Description            = 'A worker launchSpecification and required metadata
 '
-ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#'
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
 Properties
   Property 'canUseOndemand' =
     Description            = 'True if this worker type is allowed on demand instances.  Currently
@@ -1664,10 +1642,10 @@ Required               = '[workerType launchSpec userData secrets scopes minCapa
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Get Worker Type Request'
 Type                   = 'object'
-TypeName               = 'GetWorkerTypeRequest1'
+TypeName               = 'GetWorkerTypeRequest'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'true'
-SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
 
 
 http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#
