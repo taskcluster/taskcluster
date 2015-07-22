@@ -4,61 +4,41 @@ deals with the extract of both single and multiple artifacts from the docker
 container.
 */
 
-var waitForEvent = require('../wait_for_event');
-var _ = require('lodash');
-var mime = require('mime');
-var https = require('https');
-var tarStream = require('tar-stream');
-var debug = require('debug')('docker-worker:middleware:artifact_extractor');
-var format = require('util').format;
-var Promise = require('promise');
-var url = require('url');
+import waitForEvent from '../wait_for_event';
+import _ from 'lodash';
+import mime from 'mime';
+import tarStream from 'tar-stream';
+import Debug from 'debug';
+import Promise from 'promise';
+import uploadArtifact from '../upload_to_s3';
+
+let debug = Debug('docker-worker:middleware:artifact_extractor');
 
 export default class Artifacts {
-  async getPutUrl(handler, path, expires, contentType) {
-    var queue = handler.runtime.queue;
-    var result = await queue.createArtifact(
-      handler.status.taskId,
-      handler.runId,
-      path,
-      {
-        // We have a bias for s3 but azure would work just as well...
-        storageType: 's3',
-        expires: expires,
-        contentType: contentType
-      }
-    );
-
-    return result.putUrl;
-  }
-
   async uploadArtifact(taskHandler, name, artifact) {
-    var container = taskHandler.dockerProcess.container;
-    var queue = taskHandler.runtime.queue;
-    var path = artifact.path;
-    var expiry = artifact.expires;
+    let errors = [];
+    let container = taskHandler.dockerProcess.container;
+    let queue = taskHandler.runtime.queue;
+    let path = artifact.path;
+    let expiry = new Date(artifact.expires);
 
     // Task specific information needed to generated signed put requests.
-    var taskId = taskHandler.status.taskId;
-    var runId = taskHandler.claim.runId;
-    var workerId = taskHandler.runtime.workerId;
-    var workerGroup = taskHandler.runtime.workerGroup;
+    let taskId = taskHandler.status.taskId;
+    let runId = taskHandler.claim.runId;
 
     // Raw tar stream for the content.
-    var contentStream;
+    let contentStream;
     try {
       contentStream = await (new Promise((accept, reject) => {
-        return container.copy({ Resource: path }, function(err, data) {
+        return container.copy({Resource: path}, (err, data) => {
           if (err) reject(err);
           accept(data);
         });
       }));
     } catch (e) {
+      let error = `Artifact "${name}" not found at "${path}"`;
       // Log the error...
-      taskHandler.stream.write(taskHandler.fmtLog(
-        'Artifact "%s" not found at path "%s" skipping.',
-        name, path
-      ));
+      taskHandler.stream.write(taskHandler.fmtLog(error));
 
       // Create the artifact but as the type of "error" to indicate it is
       // missing.
@@ -66,19 +46,28 @@ export default class Artifacts {
         storageType: 'error',
         expires: expiry,
         reason: 'file-missing-on-worker',
-        message: 'Artifact not found in path: "' + path  + '"'
+        message: error
       });
 
-      return;
+      throw new Error(error);
     }
-    var tarExtract = tarStream.extract();
+
+    let tarExtract = tarStream.extract();
 
     // Begin unpacking the tar.
     contentStream.pipe(tarExtract);
 
-    var ctx = this;
-    var checkedArtifactType = false;
-    var entryHandler = async function (header, stream, cb) {
+    let checkedArtifactType = false;
+
+    let entryHandler = async function (header, stream, cb) {
+      // Trim the first part of the path off the entry.
+      let entryName = name;
+      let entryPath = header.name.split('/');
+      entryPath.shift();
+      if (entryPath.length && entryPath[0]) {
+        entryName += '/' + entryPath.join('/');
+      }
+
       // The first item in the tar should always match the intended artifact
       // type.
       if (!checkedArtifactType) {
@@ -86,6 +75,13 @@ export default class Artifacts {
         // contents so we do not need to check more then once.
         checkedArtifactType = true;
         if (header.type !== artifact.type) {
+          let error =
+            `Error uploading "${entryName}". Expected artifact to ` +
+            `be a "${artifact.type}" but was "${header.type}"`;
+
+          taskHandler.stream.write(taskHandler.fmtLog(error));
+          errors.push(error);
+
           // Remove the entry listener immediately so no more entries are consumed
           // while uploading the error artifact.
           tarExtract.removeListener('entry', entryHandler);
@@ -95,17 +91,15 @@ export default class Artifacts {
             storageType: 'error',
             expires: expiry,
             reason: 'invalid-resource-on-worker',
-            message: format(
-              'Expected artifact to be a "%s" was "%s"',
-              artifact.type, header.type
-            )
+            message: error
           });
-
 
           // Destroy the stream.
           tarExtract.destroy();
-          // Notify the `finish` listener that we are done.
+
+          // Notify the 'finish' listener that we are done.
           tarExtract.emit('finish');
+
           return;
         }
       }
@@ -117,60 +111,21 @@ export default class Artifacts {
         return;
       }
 
-      // Trim the first part of the path off the entry.
-      var entryName = name;
-      var entryPath = header.name.split('/');
-      entryPath.shift();
-      if (entryPath.length && entryPath[0]) {
-        entryName += '/' + entryPath.join('/');
-      }
-
-      var contentType = mime.lookup(header.name);
-      var contentLength = header.size;
-      var putUrl =
-        await ctx.getPutUrl(taskHandler, entryName, expiry, contentType);
-
-      let parsedUrl = url.parse(putUrl);
-      let options = {
-        hostname: parsedUrl.hostname,
-        path: parsedUrl.path,
-        method: 'PUT',
-        headers: {
-          'Content-Type': contentType,
-          'Content-Length': contentLength,
-        }
+      let headers = {
+        'content-type': mime.lookup(header.name),
+        'content-length': header.size
       };
 
-      var putReq = https.request(options);
-
-      // Stream tar entry to request before ending the request
-      stream.pipe(putReq);
-
-      var response;
       try {
-        response = await new Promise((accept, reject) => {
-          putReq.on('response', (res) => { accept(res); });
-          putReq.on('error', (err) => { reject(err); });
-        });
-        // Flush the data from the reponse so it's not held in memory
-        response.resume();
-
-        // If there was an error uploading the artifact note that in the result.
-        if (response.statusCode !== 200) {
-          taskHandler.stream.write(taskHandler.fmtLog(
-            'Artifact "%s" failed to upload "%s" error code: %s',
-            name,
-            header.name,
-            response.statusCode
-          ));
-        }
+        await uploadArtifact(taskHandler, stream, entryName, expiry, headers);
       } catch(err) {
-        taskHandler.stream.write(taskHandler.fmtLog(
-          'Artifact "%s" failed to upload "%s" error: %s',
-          name,
-          header.name,
-          err
-        )); 
+        debug(err);
+        // Log each error but don't throw yet.  Try to upload as many artifacts as
+        // possible before handling the errors.
+        errors.push(err);
+        taskHandler.stream.write(
+          taskHandler.fmtLog(`Error uploading "${entryName}" artifact. ${err}`)
+        );
       }
       // Resume the stream if there is an upload failure otherwise
       // stream will never emit 'finish'
@@ -183,16 +138,18 @@ export default class Artifacts {
 
     // Wait for the tar to be finished extracting.
     await waitForEvent(tarExtract, 'finish');
-    return;
+
+    if (errors.length) {
+      throw new Error(errors.join(' | '));
+    }
   }
 
   async stopped(taskHandler) {
     // Can't create artifacts for a task that's been canceled
     if (taskHandler.isCanceled()) return;
 
-    var queue = taskHandler.runtime.queue;
-    var artifacts = taskHandler.task.payload.artifacts;
-    var errors = {};
+    let artifacts = taskHandler.task.payload.artifacts;
+    let errors = {};
 
     // Artifacts are optional...
     if (typeof artifacts !== 'object') return;
@@ -204,12 +161,11 @@ export default class Artifacts {
       });
     }));
 
-    if (errors.length > 0) {
+    if (Object.keys(errors).length) {
       _.map(errors, (value, key) => {
-        debug('Artifact upload %s failed, error: %s, as JSON: %j', key, value, value, value.stack);
+        debug('Artifact upload %s failed, %s, as JSON: %j', key, value, value, value.stack);
       });
-      throw new Error('Artifact uploads %s failed', Object.keys(errors));
+      throw new Error(`Artifact uploads ${Object.keys(errors).join(', ')} failed`);
     }
   }
-
-};
+}

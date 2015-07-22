@@ -39,7 +39,7 @@ export default class BulkLog {
     await streamClosed(this.stream);
 
     let stat = await fs.stat(this.file.path);
-    
+
     // Open a new stream to read the entire log from disk (this in theory could
     // be a huge file).
     let diskStream = fs.createReadStream(this.file.path);

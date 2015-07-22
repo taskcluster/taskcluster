@@ -1,12 +1,12 @@
-suite('Directory artifact', function() {
-  var co = require('co');
-  var testworker = require('../post_task');
-  var getArtifact = require('./helper/get_artifact');
-  var cmd = require('./helper/cmd');
-  var expires = require('./helper/expires');
+import assert from 'assert';
+import testworker from '../post_task';
+import getArtifact from './helper/get_artifact';
+import cmd from './helper/cmd';
+import expires from './helper/expires';
 
-  test('attempt to upload file as directory', co(function* () {
-    var result = yield testworker({
+suite('Directory artifact', () => {
+  test('attempt to upload file as directory', async () => {
+    let result = await testworker({
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd('echo "xfoo" > /xfoo.txt'),
@@ -26,14 +26,14 @@ suite('Directory artifact', function() {
     });
 
     // Get task specific results
-    assert.equal(result.run.state, 'completed', 'task should be successfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
-    assert.ok(result.artifacts['public/xfoo'], 'artifact is present');
+    assert.equal(result.run.state, 'failed', 'task should be unsuccessfull');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should be unsuccessfull');
+    assert.ok(result.artifacts['public/xfoo'], 'artifact should not be present');
     assert.equal(result.artifacts['public/xfoo'].storageType, 'error');
-  }));
+  });
 
-  test('upload an entire directory', co(function* () {
-    var result = yield testworker({
+  test('upload an entire directory', async () => {
+    let result = await testworker({
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
@@ -68,20 +68,15 @@ suite('Directory artifact', function() {
       ].sort()
     );
 
-    var bodies = yield {
-      bar: getArtifact(result, 'public/dir/wow/bar.txt'),
-      another: getArtifact(result, 'public/dir/wow/another.txt'),
-    };
+    let bar = await getArtifact(result, 'public/dir/wow/bar.txt');
+    let another = await getArtifact(result, 'public/dir/wow/another.txt');
 
-    assert.deepEqual(bodies, {
-      bar: 'xfoo\n',
-      another: 'text\n'
-    });
+    assert.equal(bar, 'xfoo\n');
+    assert.equal(another, 'text\n');
 
-    var testHtml = yield getArtifact(result, 'public/dir/test.html');
+    let testHtml = await getArtifact(result, 'public/dir/test.html');
     assert.ok(Buffer.byteLength(testHtml) === 1000000,
       'Size of uploaded contents of test.html does not match original.'
     );
-  }));
-
+  });
 });

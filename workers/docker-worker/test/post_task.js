@@ -1,12 +1,12 @@
-var TestWorker = require('./testworker');
-var DockerWorker = require('./dockerworker');
+import TestWorker from './testworker';
+import DockerWorker from './dockerworker';
 
-module.exports = function* postTask(payload, taskId) {
-  var worker = new TestWorker(DockerWorker);
+export default async (payload, taskId) => {
+  let worker = new TestWorker(DockerWorker);
 
-  yield worker.launch();
-  var result = yield worker.postToQueue(payload, taskId);
-  yield worker.terminate();
+  await worker.launch();
+  let result = await worker.postToQueue(payload, taskId);
+  await worker.terminate();
 
   return result;
 };
