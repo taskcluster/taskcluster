@@ -137,8 +137,8 @@ suite('artifact extration tests', () => {
     });
 
     // Get task specific results
-    assert.equal(result.run.state, 'failed', 'task should be unsuccessfull');
-    assert.equal(result.run.reasonResolved, 'failed', 'task should be unsuccessfull');
+    assert.equal(result.run.state, 'completed', 'task should be unsuccessfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be unsuccessfull');
 
     let errorMessage =
       'Error uploading "public/etc". Expected artifact to be a ' +
@@ -180,8 +180,8 @@ suite('artifact extration tests', () => {
       'Missing file was not noted in the logs'
     );
 
-    assert.equal(result.run.state, 'failed', 'task should be unsuccessfull');
-    assert.equal(result.run.reasonResolved, 'failed', 'task should be unsuccessfull');
+    assert.equal(result.run.state, 'completed', 'task should be unsuccessfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be unsuccessfull');
     assert.ok(result.artifacts['my-missing.txt']);
     assert.equal(result.artifacts['my-missing.txt'].storageType, 'error');
   });
@@ -216,9 +216,10 @@ suite('artifact extration tests', () => {
         maxRunTime: 5 * 60
       }
     });
+
     // Get task specific results.
-    assert.equal(result.run.state, 'failed', 'task should be unsuccessfull');
-    assert.equal(result.run.reasonResolved, 'failed', 'task should be unsuccessfull');
+    assert.equal(result.run.state, 'completed', 'task should be unsuccessfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be unsuccessfull');
 
     // Ensure these have no errors...
     assert.equal(result.artifacts['username.txt'].storageType, 's3');

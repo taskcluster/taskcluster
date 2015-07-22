@@ -26,8 +26,8 @@ suite('Directory artifact', () => {
     });
 
     // Get task specific results
-    assert.equal(result.run.state, 'failed', 'task should be unsuccessfull');
-    assert.equal(result.run.reasonResolved, 'failed', 'task should be unsuccessfull');
+    assert.equal(result.run.state, 'completed', 'task should be unsuccessfull');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be unsuccessfull');
     assert.ok(result.artifacts['public/xfoo'], 'artifact should not be present');
     assert.equal(result.artifacts['public/xfoo'].storageType, 'error');
   });
