@@ -49,7 +49,11 @@ export default class Artifacts {
         message: error
       });
 
-      throw new Error(error);
+      // Return without throwing an error that would cause the task to fail.  Too
+      // many tasks currently rely on the fact that the worker does not fail a task
+      // if an artifact is not present.  Need to update tasks and stakeholders
+      // before changing this behavior.
+      return;
     }
 
     let tarExtract = tarStream.extract();
@@ -80,7 +84,12 @@ export default class Artifacts {
             `be a "${artifact.type}" but was "${header.type}"`;
 
           taskHandler.stream.write(taskHandler.fmtLog(error));
-          errors.push(error);
+
+          // Return without throwing an error that would cause the task to fail.  Too
+          // many tasks currently rely on the fact that the worker does not fail a task
+          // if an artifact is not present.  Need to update tasks and stakeholders
+          // before changing this behavior.
+          //errors.push(error);
 
           // Remove the entry listener immediately so no more entries are consumed
           // while uploading the error artifact.
@@ -165,6 +174,7 @@ export default class Artifacts {
       _.map(errors, (value, key) => {
         debug('Artifact upload %s failed, %s, as JSON: %j', key, value, value, value.stack);
       });
+
       throw new Error(`Artifact uploads ${Object.keys(errors).join(', ')} failed`);
     }
   }
