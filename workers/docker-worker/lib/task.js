@@ -688,20 +688,27 @@ export default class Task {
       await this.states.stopped(this);
     }
     catch (e) {
-      let lookupId = uuid.v4();
-      this.runtime.log('task exception', {
-        taskId: this.status.taskId,
-        runId: this.runId,
-        uuid: lookupId,
-        err: e.toString(),
-        stack: e.stack
-      });
-      this.stream.write(this.fmtLog(
-        `Error: Unknown taskcluster error encountered.  Ask administrator to lookup ` +
-        `incidentId in log-file. Incident ID: ${lookupId}`
-      ));
-      success = false;
-      exitCode = -1;
+      // If task finished successfully, mark it as unsuccessfull and log an incident
+      // error in the logs.  Otherwise artifact uploading most likely will be expected
+      // to fail if the task did not finish successfully.
+      if (success) {
+        success = false;
+        exitCode = -1;
+
+        let lookupId = uuid.v4();
+        this.runtime.log('task error', {
+          taskId: this.status.taskId,
+          runId: this.runId,
+          uuid: lookupId,
+          err: e.toString(),
+          stack: e.stack
+        });
+
+        this.stream.write(this.fmtLog(
+          `Error: Unknown taskcluster error encountered.  Ask administrator to lookup ` +
+          `incidentId in log-file. Incident ID: ${lookupId}`
+        ));
+      }
     }
 
     this.stream.write(this.logFooter(success, exitCode, this.taskStart, new Date()));
