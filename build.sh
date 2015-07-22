@@ -17,7 +17,7 @@ cd "$(dirname "${0}")"
 #   git checkout -f "${name}/${name}.go"
 # done
 
-rm -rf "${GOPATH}"/bin/{hack,generatemodel}
+rm -rf "${GOPATH}/bin/generatemodel"
 rm -rf "${GOPATH}"/pkg/*/github.com/*/taskcluster-client-go
 go clean -i -x ./...
 
