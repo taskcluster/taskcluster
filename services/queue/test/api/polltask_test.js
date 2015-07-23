@@ -51,7 +51,7 @@ suite('Poll tasks', function() {
       'queue:create-task:no-provisioner/poll-test-worker',
       'queue:route:*'
     );
-    await helper.queue.createTask(taskId, taskDef)
+    await helper.queue.createTask(taskId, taskDef);
 
 
     debug("### Access Tasks from azure queue");

@@ -1,4 +1,4 @@
-suite('Create task (w. defaults)', function() {
+suite('Create task (w. defaults)', () => {
   var debug       = require('debug')('test:api:createDefaults');
   var assert      = require('assert');
   var slugid      = require('slugid');

@@ -55,7 +55,61 @@ var Task = base.Entity.configure({
     /** Time at which claim to latest run expires, new Date(0) if none */
     takenUntil:     base.Entity.types.Date
   }
+}).configure({
+  version:          2,
+  properties: {
+    taskId:         base.Entity.types.SlugId,
+    provisionerId:  base.Entity.types.String,
+    workerType:     base.Entity.types.String,
+    schedulerId:    base.Entity.types.String,
+    taskGroupId:    base.Entity.types.SlugId,
+    /** List of custom routes as strings */
+    routes:         base.Entity.types.JSON,
+    priority:       base.Entity.types.String,
+    retries:        base.Entity.types.Number,
+    retriesLeft:    base.Entity.types.Number,
+    created:        base.Entity.types.Date,
+    deadline:       base.Entity.types.Date,
+    expires:        base.Entity.types.Date,
+    /** List of scopes as strings */
+    scopes:         base.Entity.types.JSON,
+    payload:        base.Entity.types.JSON,
+    /**
+     * Meta-data object with properties:
+     * - name
+     * - description
+     * - owner
+     * - source
+     * See JSON schema for documentation.
+     */
+    metadata:       base.Entity.types.JSON,
+    /** Tags as mapping from tag-key to tag-value as string */
+    tags:           base.Entity.types.JSON,
+    extra:          base.Entity.types.JSON,
+    /**
+     * List of run objects with the following keys:
+     * - state          (required)
+     * - reasonCreated  (required)
+     * - reasonResolved (required)
+     * - workerGroup
+     * - workerId
+     * - takenUntil
+     * - scheduled
+     * - started
+     * - resolved
+     * See schema for task status structure for details.
+     * Remark that `runId` always match the index in the array.
+     */
+    runs:           base.Entity.types.JSON,
+    /** Time at which claim to latest run expires, new Date(0) if none */
+    takenUntil:     base.Entity.types.Date
+  },
+  migrate(item) {
+    item.priority = 'normal';
+    return item;
+  }
 });
+
 
 /** Return promise for the task definition */
 Task.prototype.definition = function() {
@@ -65,6 +119,7 @@ Task.prototype.definition = function() {
     schedulerId:    this.schedulerId,
     taskGroupId:    this.taskGroupId,
     routes:         _.cloneDeep(this.routes),
+    priority:       this.priority,
     retries:        this.retries,
     created:        this.created.toJSON(),
     deadline:       this.deadline.toJSON(),

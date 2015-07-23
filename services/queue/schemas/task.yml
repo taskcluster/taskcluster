@@ -61,6 +61,15 @@ properties:
       minLength:    1
     maxItems:       10
     uniqueItems:    true
+  priority:
+    title:          "Task Priority"
+    description: |
+      Priority of task, this defaults to `normal` and the scope
+      `queue:task-priority:high` is required to define a task with `priority`
+      set to `high`. Additional priority levels may be added later.
+    enum:
+      - high
+      - normal
   retries:
     title:          "Retries"
     description: |
@@ -178,6 +187,7 @@ required:
   - schedulerId
   - taskGroupId
   - routes
+  - priority
   - retries
   - created
   - deadline
