@@ -14,6 +14,7 @@ mocha                                 \
   test/api/claimtask_test.js          \
   test/api/reportcompleted_test.js    \
   test/api/polltask_test.js           \
+  test/api/priority_test.js           \
   test/api/querytasks_test.js         \
   test/api/canceltask_test.js         \
   test/api/reruntask_test.js          \
