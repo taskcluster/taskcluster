@@ -4,6 +4,7 @@
   "schedulerId":        "my-scheduler",
   "taskGroupId":        "dSlITZ4yQgmvxxAi4A8fHQ",
   "routes":             ["jonasfjs-precious-tasks.stupid-test.aws"],
+  "priority":           "normal",
   "retries":            0,
   "created":            "2014-02-01T03:22:36.356Z",
   "deadline":           "2014-03-01T03:22:36.356Z",

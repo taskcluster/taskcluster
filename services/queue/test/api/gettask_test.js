@@ -14,6 +14,7 @@ suite('Get task', function() {
     schedulerId:      'my-scheduler',
     taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
     routes:           [],
+    priority:         'normal',
     retries:          5,
     created:          taskcluster.fromNowJSON(),
     deadline:         taskcluster.fromNowJSON('3 days'),

@@ -40,6 +40,20 @@ var validateTask = function(task) {
   assert(task.deadline instanceof Date, "Expected task.deadline");
 };
 
+/** Priority to constant for use in queue name (should be a string) */
+const PRIORITY_TO_CONSTANT = {
+  high:   '5',
+  normal: '1'
+};
+_.forIn(PRIORITY_TO_CONSTANT, v => assert(typeof v === 'string'));
+
+/** Priority in order of priority from high to low */
+const PRIORITIES = [
+  'high',
+  'normal'
+];
+assert(_.xor(PRIORITIES, _.keys(PRIORITY_TO_CONSTANT)).length === 0);
+
 /**
  * Wrapper for azure queue storage, to ease our use cases.
  * Specifically, this supports managing the deadline message queue, and the
@@ -48,8 +62,8 @@ var validateTask = function(task) {
  */
 class QueueService {
   /**
-   * Create convenient azure queue storage wrapper, for managing how we interface
-   * azure queue.
+   * Create convenient azure queue storage wrapper, for managing how we
+   * interface azure queue.
    *
    * options:
    * {
@@ -87,7 +101,8 @@ class QueueService {
     // Store account name of use in SAS signed Urls
     this.accountName = options.credentials.accountName;
 
-    // Promises that queues are created, return the queue name
+    // Promises that queues are created, return mapping from priority to
+    // azure queue names.
     this.queues = {};
 
     // Resets queues cache every 25 hours, this ensures that meta-data is kept
@@ -291,25 +306,28 @@ class QueueService {
       return base32.encode(h.slice(0, 15)).toString('utf-8').toLowerCase();
     };
 
-    // Construct queue name
-    var name = [
+    // Construct queue name prefix (add priority later)
+    let namePrefix = [
       this.prefix,            // prefix all queues
       hashId(provisionerId),  // hash of provisionerId
       hashId(workerType),     // hash of workerType
-      '1'                     // priority, currently just hardcoded to 1
+      ''                      // priority, add 1 = normal, 5 = high
     ].join('-');
 
+    // Mapping from priority to queue name
+    let names = _.mapValues(PRIORITY_TO_CONSTANT, c => namePrefix + c);
+
     // Return and cache promise that we created this queue
-    return this.queues[id] = Promise.all([
-      this._ensureQueueAndMetadata(name, provisionerId, workerType)
-    ]).catch(err => {
+    return this.queues[id] = Promise.all(_.map(names, queueName => {
+      return this._ensureQueueAndMetadata(queueName, provisionerId, workerType);
+    })).catch(err => {
       debug("[alert-operator] Failed to ensure azure queue: %s, as JSON: %j",
             err, err, err.stack);
 
       // Don't cache negative results
       this.queues[id] = undefined;
       throw err;
-    }).then(() => name);
+    }).then(() => names);
   }
 
   /**
@@ -450,7 +468,7 @@ class QueueService {
     assert(typeof(runId) === 'number', "Expected runId as number");
 
     // Find name of azure queue
-    var queueName = await this.ensurePendingQueue(
+    var queueNames = await this.ensurePendingQueue(
       task.provisionerId,
       task.workerType
     );
@@ -468,7 +486,7 @@ class QueueService {
     }
 
     // Put message queue
-    return this._putMessage(queueName, {
+    return this._putMessage(queueNames[task.priority], {
       taskId:     task.taskId,
       runId:      runId
     }, {
@@ -480,7 +498,7 @@ class QueueService {
   /** Get signed URLs for polling and deleting from the azure queue */
   async signedPendingPollUrls(provisionerId, workerType) {
     // Find name of azure queue
-    var queueName = await this.ensurePendingQueue(provisionerId, workerType);
+    var queueNames = await this.ensurePendingQueue(provisionerId, workerType);
 
     // Set start of the signature to 15 min in the past
     var start = new Date();
@@ -494,9 +512,10 @@ class QueueService {
     var pendingPollTimeout = Math.floor(this.pendingPollTimeout / 1000);
 
     // For each queue name, return signed URLs for the queue
-    var queues = [
-      queueName
-    ].map(queueName => {
+
+    let queues = PRIORITIES.map(priority => {
+      let queueName = queueNames[priority];
+
       // Create shared access signature
       var sas = this.client.sas(queueName, {
         start, expiry,
@@ -528,12 +547,15 @@ class QueueService {
   /** Returns promise for number of messages pending in pending task queue */
   async countPendingMessages(provisionerId, workerType) {
     // Find name of azure queue
-    var queueName = await this.ensurePendingQueue(provisionerId, workerType);
+    var queueNames = await this.ensurePendingQueue(provisionerId, workerType);
 
     // Find messages count queues
-    return _.sum((await Promise.all([
-      this.client.getMetadata(queueName),
-    ])).map(r => r.messageCount));
+    let results = await Promise.all(_.map(queueNames, queueName => {
+      return this.client.getMetadata(queueName);
+    }));
+
+    // Sum up the messageCount property
+    return _.sum(results, 'messageCount');
   }
 };
 

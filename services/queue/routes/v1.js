@@ -384,6 +384,12 @@ api.declare({
     return;
   }
 
+  // Check scopes for priority
+  if (taskDef.priority !== 'normal' &&
+      !req.satisfies('queue:task-priority:' + taskDef.priority)) {
+    return;
+  }
+
   // Patch default values and validate timestamps
   var detail = patchAndValidateTaskDef(taskId, taskDef);
   if (detail) {
@@ -403,6 +409,7 @@ api.declare({
       schedulerId:      taskDef.schedulerId,
       taskGroupId:      taskDef.taskGroupId,
       routes:           taskDef.routes,
+      priority:         taskDef.priority,
       retries:          taskDef.retries,
       retriesLeft:      taskDef.retries,
       created:          new Date(taskDef.created),
@@ -531,6 +538,12 @@ api.declare({
     return;
   }
 
+  // Check scopes for priority
+  if (taskDef.priority !== 'normal' &&
+      !req.satisfies('queue:task-priority:' + taskDef.priority)) {
+    return;
+  }
+
   // Patch default values and validate timestamps
   var detail = patchAndValidateTaskDef(taskId, taskDef);
   if (detail) {
@@ -550,6 +563,7 @@ api.declare({
       schedulerId:      taskDef.schedulerId,
       taskGroupId:      taskDef.taskGroupId,
       routes:           taskDef.routes,
+      priority:         taskDef.priority,
       retries:          taskDef.retries,
       retriesLeft:      taskDef.retries,
       created:          new Date(taskDef.created),
