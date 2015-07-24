@@ -257,7 +257,7 @@ api.declare({
   route:          '/task/:namespace',
   name:           'insertTask',
   deferAuth:      true,
-  scopes:         ['index:insert-task:<namespace>'],
+  scopes:         [['index:insert-task:<namespace>']],
   input:          SCHEMA_PREFIX_CONST + 'insert-task-request.json#',
   output:         SCHEMA_PREFIX_CONST + 'indexed-task-response.json#',
   title:          "Insert Task into Index",
@@ -306,7 +306,7 @@ api.declare({
   route:          '/task/:namespace/artifacts/:name(*)',
   name:           'findArtifactFromTask',
   deferAuth:      true,
-  scopes:         ['queue:get-artifact:<name>'],
+  scopes:         [['queue:get-artifact:<name>']],
   title:          "Get Artifact From Indexed Task",
   description: [
     "Find task by namespace and redirect to artifact with given `name`,",
