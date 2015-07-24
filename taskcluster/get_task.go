@@ -8,14 +8,8 @@ import (
 
 // This is an incomplete mapping of tasks from taskcluster...
 type queueTask struct {
-	ProvisonerId string   `json:"provisionerId"`
-	WorkerType   string   `json:"workerType"`
-	Routing      string   `json:"routing"`
-	Retires      int      `json:"retries"`
-	Priority     int      `json:"priority"`
-	Created      string   `json:"created"`
-	Deadline     string   `json:"deadline"`
-	Scopes       []string `json:"scopes"`
+	// only scopes are needed
+	Scopes []string `json:"scopes"`
 }
 
 var taskUrl = "https://queue.taskcluster.net/v1/task/%s"
