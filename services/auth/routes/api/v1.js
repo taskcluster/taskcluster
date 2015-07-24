@@ -30,7 +30,7 @@ api.declare({
   name:       'scopes',
   input:      undefined,
   output:     SCHEMA_PREFIX_CONST + 'client-scopes-response.json#',
-  scopes:     ['auth:inspect', 'auth:credentials'],
+  scopes:     [['auth:inspect', 'auth:credentials']],
   title:      "Get Client Authorized Scopes",
   description: [
     "Returns the scopes the client is authorized to access and the date-time",
@@ -65,7 +65,7 @@ api.declare({
   name:       'getCredentials',
   input:      undefined,
   output:     SCHEMA_PREFIX_CONST + 'client-credentials-response.json#',
-  scopes:     ['auth:credentials'],
+  scopes:     [['auth:credentials']],
   title:      "Get Client Credentials",
   description: [
     "Returns the client's `accessToken` as needed for verifying signatures.",
@@ -103,7 +103,7 @@ api.declare({
   name:       'client',
   input:      undefined,
   output:     SCHEMA_PREFIX_CONST + 'get-client-response.json#',
-  scopes:     ['auth:credentials'],
+  scopes:     [['auth:credentials']],
   title:      "Get Client Information",
   description: [
     "Returns all information about a given client. This end-point is mostly for",
@@ -272,7 +272,7 @@ api.declare({
   name:       'removeClient',
   input:      undefined,
   output:     undefined,
-  scopes:     ['auth:remove-client'],
+  scopes:     [['auth:remove-client']],
   title:      "Remove Client",
   description: [
     "Delete a client with given `clientId`."
@@ -338,7 +338,7 @@ api.declare({
   name:       'listClients',
   input:      undefined,
   output:     SCHEMA_PREFIX_CONST + 'list-clients-response.json#',
-  scopes:     ['auth:list-clients'],
+  scopes:     [['auth:list-clients']],
   title:      "List Clients",
   // consider $top = 10
   description: [
@@ -365,7 +365,7 @@ api.declare({
   input:      undefined,
   output:     SCHEMA_PREFIX_CONST + 'azure-table-access-response.json#',
   deferAuth:  true,
-  scopes:     ['auth:azure-table-access:<account>/<table>'],
+  scopes:     [['auth:azure-table-access:<account>/<table>']],
   title:      "Get Shared-Access-Signature for Azure Table",
   description: [
     "Get a shared access signature (SAS) string for use with a specific Azure",
@@ -434,7 +434,7 @@ api.declare({
   input:      undefined,
   output:     SCHEMA_PREFIX_CONST + 'aws-s3-credentials-response.json#',
   deferAuth:  true,
-  scopes:     ['auth:aws-s3:<level>:<bucket>/<prefix>'],
+  scopes:     [['auth:aws-s3:<level>:<bucket>/<prefix>']],
   title:      "Get Temporary Read/Write Credentials S3",
   description: [
     "Get temporary AWS credentials for `read-write` or `read-only` access to",
