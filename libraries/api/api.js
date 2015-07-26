@@ -21,6 +21,58 @@ var hoek          = require('hoek');
 var series        = require('./lib/series');
 
 /**
+ * Create parameter validation middle-ware instance, given a mapping from
+ * parameter to regular expression or function that returns a message as string
+ * if the parameter is invalid.
+ *
+ * options:
+ * {
+ *   param1: /.../,               // Reg-exp pattern
+ *   param2(val) { return "..." } // Function, returns message if invalid
+ * }
+ *
+ * Parameters not listed in `req.params` will be ignored. But parameters
+ * present must match the pattern given in `options` or the request will be
+ * rejected with a 400 error message.
+ */
+var parameterValidator = function(options) {
+  // Validate options
+  _.forIn(options, function(pattern, param) {
+    assert(pattern instanceof RegExp || pattern instanceof Function,
+           "Pattern given for param: '" + param + "' must be a RegExp or " +
+           "a function");
+  });
+  return function(req, res) {
+    var errors = [];
+    _.forIn(req.params, function(val, param) {
+      var pattern = options[param];
+      if (pattern instanceof RegExp) {
+        if (!pattern.test(val)) {
+          errors.push(
+            "URL parameter '" + param + "' given as '" + val + "' must match " +
+            "regular expression: '" + pattern.toString() + "'"
+          );
+        }
+      } else if (pattern instanceof Function) {
+        var msg = pattern(val);
+        if (typeof(msg) === 'string') {
+          errors.push(
+            "URL parameter '" + param "' given  as '" + val +  "' is not " +
+            "valid: " + msg
+          );
+        }
+      }
+    });
+    if (errors.length > 0) {
+      return res.status(400).json({
+        'message':  "Invalid URL patterns:\n" + errors.join('\n'),
+      });
+    }
+    return next();
+  };
+};
+
+/**
  * Declare {input, output} schemas as options to validate
  *
  * options:
@@ -704,6 +756,10 @@ var handle = function(handler, context) {
  *   title:         "API Title",
  *   description:   "API description in markdown",
  *   schemaPrefix:  "http://schemas..../queue/",    // Prefix for all schemas
+ *   params: {                                      // Patterns for URL params
+ *     param1:  /.../,                // Reg-exp pattern
+ *     param2(val) { return "..." }   // Function, returns message if invalid
+ *   }
  * }
  *
  * The API object will only modified by declarations, when `mount` or `publish`
@@ -715,7 +771,8 @@ var API = function(options) {
     assert(options[key], "Option '" + key + "' must be provided");
   });
   this._options = _.defaults({}, options, {
-    schemaPrefix: ''
+    schemaPrefix:   '',
+    paramPatterns:  {}
   });
   this._entries = [];
 };
@@ -725,13 +782,18 @@ var API = function(options) {
  *
  * {
  *   method:   'post|head|put|get|delete',
- *   route:    '/object/:id/action/:parameter',        // Only on illustrated form
- *   name:     'identifierForLibraries',               // identifier used by client libraries
- *   scopes:   ['admin', 'superuser'],                 // Scopes of which user must have one
- *   input:    'http://schemas...input-schema.json',   // optional, null if no input
- *   output:   'http://schemas...output-schema.json',  // optional, null if no output
- *   skipInputValidation:    true,                     // defaults to false
- *   skipOutputValidation:   true,                     // defaults to false
+ *   route:    '/object/:id/action/:param',   // URL pattern with parameters
+ *   params: {                                // Patterns for URL params
+ *     param: /.../,              // Reg-exp pattern
+ *     id(val) { return "..." }   // Function, returns message if invalid
+ *     // The `params` option from new API(), will be used as fall-back
+ *   },
+ *   name:     'identifierForLibraries',      // identifier for client libraries
+ *   scopes:   ['admin', 'superuser'],        // Scopes for the request
+ *   input:    'input-schema.json',           // optional, null if no input
+ *   output:   'output-schema.json',          // optional, null if no output
+ *   skipInputValidation:    true,            // defaults to false
+ *   skipOutputValidation:   true,            // defaults to false
  *   title:    "My API Method",
  *   description: [
  *     "Description of method in markdown, enjoy"
@@ -751,6 +813,7 @@ API.prototype.declare = function(options, handler) {
   ['method', 'route', 'title', 'description'].forEach(function(key) {
     assert(options[key], "Option '" + key + "' must be provided");
   });
+  options.params = _.defaults({}, options.params || {}, this._options.params);
   options.handler = handler;
   if (options.input) {
     options.input = this._options.schemaPrefix + options.input;
@@ -867,6 +930,7 @@ API.prototype.router = function(options) {
     // Add authentication, schema validation and handler
     middleware.push(
       authenticate(options.nonceManager, options.clientLoader, entry),
+      parameterValidator(entry.params),
       schema(options.validator, entry),
       handle(entry.handler, options.context)
     );
