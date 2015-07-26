@@ -42,7 +42,7 @@ var parameterValidator = function(options) {
            "Pattern given for param: '" + param + "' must be a RegExp or " +
            "a function");
   });
-  return function(req, res) {
+  return function(req, res, next) {
     var errors = [];
     _.forIn(req.params, function(val, param) {
       var pattern = options[param];
@@ -57,7 +57,7 @@ var parameterValidator = function(options) {
         var msg = pattern(val);
         if (typeof(msg) === 'string') {
           errors.push(
-            "URL parameter '" + param "' given  as '" + val +  "' is not " +
+            "URL parameter '" + param + "' given  as '" + val +  "' is not " +
             "valid: " + msg
           );
         }
