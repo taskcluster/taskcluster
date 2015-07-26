@@ -6,13 +6,15 @@ suite("api/route", function() {
   var mockAuthServer  = require('../mockauthserver');
   var base            = require('../../');
   var express         = require('express');
-  var path            = require('path');
-
+  var slugid          = require('slugid');
 
   // Create test api
   var api = new base.API({
     title:        "Test Api",
-    description:  "Another test api"
+    description:  "Another test api",
+    params: {
+      taskId:     /^[a-zA-Z0-9-_]{22}$/
+    }
   });
 
   api.declare({
@@ -33,6 +35,33 @@ suite("api/route", function() {
     description:  "Place we can call to test something",
   }, function(req, res) {
     res.status(200).send(req.params.name);
+  });
+
+  api.declare({
+    method:   'get',
+    route:    '/validated-param/:taskId',
+    name:     'testParamValidation',
+    title:    "Test End-Point",
+    description:  "Place we can call to test something",
+  }, function(req, res) {
+    res.status(200).send(req.params.taskId);
+  });
+
+  api.declare({
+    method:   'get',
+    route:    '/validated-param-2/:param2',
+    name:     'testParam2Validation',
+    title:    "Test End-Point",
+    description:  "Place we can call to test something",
+    params: {
+      param2: function(value) {
+        if (value !== 'correct') {
+          return "Wrong value passed!";
+        }
+      }
+    }
+  }, function(req, res) {
+    res.status(200).send(req.params.param2);
   });
 
   // Reference to mock authentication server
@@ -122,6 +151,51 @@ suite("api/route", function() {
       .then(function(res) {
         assert(res.ok, "Request failed");
         assert(res.text === "Hello/World", "Got wrong value");
+      });
+  });
+
+  test("validated reg-exp parameter (valid)", function() {
+    var id = slugid.v4();
+    var url = 'http://localhost:23525/validated-param/' + id;
+    return request
+      .get(url)
+      .end()
+      .then(function(res) {
+        assert(res.ok, "Request failed");
+        assert(res.text === id, "Got wrong value");
+      });
+  });
+
+  test("validated reg-exp parameter (invalid)", function() {
+    var url = 'http://localhost:23525/validated-param/-';
+    return request
+      .get(url)
+      .end()
+      .then(function(res) {
+        assert(!res.ok, "Expected a failure");
+        assert(res.status === 400, "Expected a 400 error");
+      });
+  });
+
+  test("validated function parameter (valid)", function() {
+    var url = 'http://localhost:23525/validated-param-2/correct';
+    return request
+      .get(url)
+      .end()
+      .then(function(res) {
+        assert(res.ok, "Request failed");
+        assert(res.text === 'correct', "Got wrong value");
+      });
+  });
+
+  test("validated function parameter (invalid)", function() {
+    var url = 'http://localhost:23525/validated-param-2/incorrect';
+    return request
+      .get(url)
+      .end()
+      .then(function(res) {
+        assert(!res.ok, "Expected a failure");
+        assert(res.status === 400, "Expected a 400 error");
       });
   });
 
