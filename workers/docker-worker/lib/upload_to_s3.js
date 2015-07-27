@@ -29,8 +29,9 @@ export default async function uploadToS3 (task, sourceStream, artifactName, expi
   sourceStream.pipe(req);
 
   let response = await new Promise((accept, reject) => {
-    req.on('response', (res) => { accept(res); });
-    req.on('error', (err) => { reject(new Error(`Could not upload artifact. ${err}`)); });
+    req.on('response', accept);
+    req.on('error', reject);
+    req.setTimeout(5 * 60 * 1000, reject);
   });
 
   // Flush the data from the reponse so it's not held in memory
