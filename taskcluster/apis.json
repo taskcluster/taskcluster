@@ -235,7 +235,7 @@
   "AwsProvisioner": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#", 
-      "baseUrl": "https://taskcluster-aws-provisioner2.herokuapp.com/v1", 
+      "baseUrl": "https://aws-provisioner.taskcluster.net/v1", 
       "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskCluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n", 
       "entries": [
         {
@@ -243,10 +243,10 @@
             "workerType"
           ], 
           "description": "Create a worker type and ensure that all EC2 regions have the required\nKeyPair", 
-          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#", 
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#", 
           "method": "put", 
           "name": "createWorkerType", 
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#", 
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#", 
           "route": "/worker-type/<workerType>", 
           "scopes": [
             [
@@ -261,10 +261,10 @@
             "workerType"
           ], 
           "description": "Update a workerType and ensure that all regions have the require\nKeyPair", 
-          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#", 
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#", 
           "method": "post", 
           "name": "updateWorkerType", 
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#", 
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#", 
           "route": "/worker-type/<workerType>/update", 
           "scopes": [
             [
@@ -281,7 +281,7 @@
           "description": "Retreive a WorkerType definition", 
           "method": "get", 
           "name": "workerType", 
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#", 
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#", 
           "route": "/worker-type/<workerType>", 
           "scopes": [
             [
@@ -398,49 +398,33 @@
           "type": "function"
         }, 
         {
-          "args": [
-            "workerType"
-          ], 
-          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance associated with this workerType. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**", 
-          "method": "post", 
-          "name": "terminateAllInstancesOfWorkerType", 
-          "route": "/worker-type/<workerType>/terminate-all-instances", 
-          "scopes": [
-            [
-              "aws-provisioner:all-stop", 
-              "aws-provisioner:aws"
-            ]
-          ], 
-          "title": "Shutdown Every Ec2 Instance of this Worker Type", 
-          "type": "function"
-        }, 
-        {
           "args": [], 
-          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance managed by this provisioner. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**", 
-          "method": "post", 
-          "name": "shutdownEverySingleEc2InstanceManagedByThisProvisioner", 
-          "route": "/shutdown/every/single/ec2/instance/managed/by/this/provisioner", 
-          "scopes": [
-            [
-              "aws-provisioner:all-stop", 
-              "aws-provisioner:aws"
-            ]
-          ], 
-          "title": "Shutdown Every Single Ec2 Instance Managed By This Provisioner", 
-          "type": "function"
-        }, 
-        {
-          "args": [], 
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**", 
+          "description": "DEPRECATED.", 
           "method": "get", 
           "name": "awsState", 
-          "route": "/aws-state/", 
+          "route": "/aws-state", 
           "scopes": [
             [
-              "aws-provisioner:view-aws-state"
+              "aws-provisioner:aws-state"
             ]
           ], 
           "title": "Get AWS State for all worker types", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "workerType"
+          ], 
+          "description": "Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for all instances, 1 for requests\nwhich show in the ec2 api and 1 list for those only tracked internally\nin the provisioner.", 
+          "method": "get", 
+          "name": "state", 
+          "route": "/state/<workerType>", 
+          "scopes": [
+            [
+              "aws-provisioner:view-worker-type:<workerType>"
+            ]
+          ], 
+          "title": "Get AWS State for a worker type", 
           "type": "function"
         }, 
         {
