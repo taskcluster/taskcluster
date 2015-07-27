@@ -156,7 +156,7 @@ type Auth struct {
 	// Access Token required by Hawk
 	AccessToken string
 	// The URL of the API endpoint to hit.
-	// Use "https://taskcluster-aws-provisioner2.herokuapp.com/v1" for production.
+	// Use "https://aws-provisioner.taskcluster.net/v1" for production.
 	// Please note calling auth.New(clientId string, accessToken string) is an
 	// alternative way to create an Auth object with BaseURL set to production.
 	BaseURL string
@@ -212,7 +212,7 @@ func New(clientId string, accessToken string) *Auth {
 	return &Auth{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
-		BaseURL:      "https://taskcluster-aws-provisioner2.herokuapp.com/v1",
+		BaseURL:      "https://aws-provisioner.taskcluster.net/v1",
 		Authenticate: true,
 	}
 }

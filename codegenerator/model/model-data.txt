@@ -748,7 +748,7 @@ Utility factor is a relative measure of performance between two instance types.
 We multiply the utility factor by the spot price to compare instance types and
 regions when making the bidding choices.
 '
-Base URL    = 'https://taskcluster-aws-provisioner2.herokuapp.com/v1'
+Base URL    = 'https://aws-provisioner.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'put'
@@ -2874,7 +2874,7 @@ Description            = 'Definition of a task that can be scheduled
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
 Properties
-  %!v(PANIC=reflect: call of reflect.Value.IsNil on float64 Value)Required               = '[provisionerId workerType created deadline payload metadata]'
+  %!v(PANIC=reflect: call of reflect.Value.IsNil on string Value)Required               = '[provisionerId workerType created deadline payload metadata]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Definition'
 Type                   = 'object'
@@ -3941,6 +3941,17 @@ Properties
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
     SourceURL              = ''
+  Property 'priority' =
+    Description            = 'Priority of task, this defaults to `normal` and the scope
+    `queue:task-priority:high` is required to define a task with `priority`
+    set to `high`. Additional priority levels may be added later.
+    '
+    Enum                   = '[high normal]'
+    Title                  = 'Task Priority'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
   Property 'provisionerId' =
     Description            = 'Unique identifier for a provisioner, that can supply specified
     `workerType`
@@ -4074,7 +4085,7 @@ Properties
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
     SourceURL              = ''
-Required               = '[provisionerId workerType schedulerId taskGroupId routes retries created deadline scopes payload metadata tags extra]'
+Required               = '[provisionerId workerType schedulerId taskGroupId routes priority retries created deadline scopes payload metadata tags extra]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Definition'
 Type                   = 'object'
@@ -5568,7 +5579,7 @@ Description            = 'Definition of a task that can be scheduled
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
 Properties
-  %!v(PANIC=reflect: call of reflect.Value.IsNil on float64 Value)Required               = '[provisionerId workerType created deadline payload metadata]'
+  %!v(PANIC=reflect: call of reflect.Value.IsNil on string Value)Required               = '[provisionerId workerType created deadline payload metadata]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Definition'
 Type                   = 'object'

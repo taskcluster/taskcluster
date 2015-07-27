@@ -571,6 +571,10 @@ type (
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
 		Payload map[string]json.RawMessage `json:"payload"`
+		// Priority of task, this defaults to `normal` and the scope
+		// `queue:task-priority:high` is required to define a task with `priority`
+		// set to `high`. Additional priority levels may be added later.
+		Priority json.RawMessage `json:"priority"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		ProvisionerId string `json:"provisionerId"`
@@ -849,6 +853,10 @@ type (
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
 		Payload map[string]json.RawMessage `json:"payload"`
+		// Priority of task, this defaults to `normal` and the scope
+		// `queue:task-priority:high` is required to define a task with `priority`
+		// set to `high`. Additional priority levels may be added later.
+		Priority json.RawMessage `json:"priority"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		ProvisionerId string `json:"provisionerId"`
