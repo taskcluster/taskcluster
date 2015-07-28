@@ -629,8 +629,8 @@ api.declare({
   name:       'scheduleTask',
   scopes:     [
     [
-      ['queue:schedule-task'],
-      ['assume:scheduler-id:<schedulerId>/<taskGroupId>']
+      'queue:schedule-task',
+      'assume:scheduler-id:<schedulerId>/<taskGroupId>'
     ]
   ],
   deferAuth:  true,
@@ -722,8 +722,8 @@ api.declare({
   name:       'rerunTask',
   scopes:     [
     [
-      ['queue:rerun-task'],
-      ['assume:scheduler-id:<schedulerId>/<taskGroupId>']
+      'queue:rerun-task',
+      'assume:scheduler-id:<schedulerId>/<taskGroupId>'
     ]
   ],
   deferAuth:  true,
@@ -844,8 +844,8 @@ api.declare({
   name:       'cancelTask',
   scopes:     [
     [
-      ['queue:cancel-task'],
-      ['assume:scheduler-id:<schedulerId>/<taskGroupId>']
+      'queue:cancel-task',
+      'assume:scheduler-id:<schedulerId>/<taskGroupId>'
     ]
   ],
   deferAuth:  true,
@@ -1011,9 +1011,9 @@ api.declare({
   name:       'claimTask',
   scopes: [
     [
-      ['queue:claim-task'],
-      ['assume:worker-type:<provisionerId>/<workerType>'],
-      ['assume:worker-id:<workerGroup>/<workerId>']
+      'queue:claim-task',
+      'assume:worker-type:<provisionerId>/<workerType>',
+      'assume:worker-id:<workerGroup>/<workerId>'
     ]
   ],
   deferAuth:  true,
@@ -1139,8 +1139,8 @@ api.declare({
   name:       'reclaimTask',
   scopes: [
     [
-      ['queue:claim-task'],
-      ['assume:worker-id:<workerGroup>/<workerId>']
+      'queue:claim-task',
+      'assume:worker-id:<workerGroup>/<workerId>'
     ]
   ],
   deferAuth:  true,
@@ -1342,8 +1342,8 @@ api.declare({
   name:       'reportCompleted',
   scopes: [
     [
-      ['queue:resolve-task'],
-      ['assume:worker-id:<workerGroup>/<workerId>']
+      'queue:resolve-task',
+      'assume:worker-id:<workerGroup>/<workerId>'
     ]
   ],
   deferAuth:  true,
@@ -1376,8 +1376,8 @@ api.declare({
   name:       'reportFailed',
   scopes: [
     [
-      ['queue:resolve-task'],
-      ['assume:worker-id:<workerGroup>/<workerId>']
+      'queue:resolve-task',
+      'assume:worker-id:<workerGroup>/<workerId>'
     ]
   ],
   deferAuth:  true,
@@ -1412,8 +1412,8 @@ api.declare({
   name:       'reportException',
   scopes: [
     [
-      ['queue:resolve-task'],
-      ['assume:worker-id:<workerGroup>/<workerId>']
+      'queue:resolve-task',
+      'assume:worker-id:<workerGroup>/<workerId>'
     ]
   ],
   deferAuth:  true,

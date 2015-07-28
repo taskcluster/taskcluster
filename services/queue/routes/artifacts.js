@@ -409,7 +409,7 @@ api.declare({
   route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name:       'getArtifact',
   scopes: [
-    'queue:get-artifact:<name>'
+    ['queue:get-artifact:<name>']
   ],
   deferAuth:  true,
   title:      "Get Artifact from Run",
@@ -453,7 +453,7 @@ api.declare({
   route:      '/task/:taskId/artifacts/:name(*)',
   name:       'getLatestArtifact',
   scopes: [
-    'queue:get-artifact:<name>'
+    ['queue:get-artifact:<name>']
   ],
   deferAuth:  true,
   title:      "Get Artifact from Latest Run",
