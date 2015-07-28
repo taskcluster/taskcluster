@@ -38,5 +38,9 @@ module.exports = {
     diskspaceThreshold: 1 * 1000000000,
   },
 
-  dockerWorkerPrivateKey: '/worker/test/docker-worker-priv.pem'
+  dockerWorkerPrivateKey: '/worker/test/docker-worker-priv.pem',
+
+  interactive: {
+    artifactName: 'private/docker-worker-tests/'
+  }
 };

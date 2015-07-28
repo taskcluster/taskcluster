@@ -9,4 +9,3 @@
 /deploy.json
 docker-worker.conf.json
 *.box
-/bin-utils/busybox

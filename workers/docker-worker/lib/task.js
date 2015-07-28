@@ -76,6 +76,7 @@ Create a list of cached volumes that will be mounted within the docker container
 @param {object} volumes to mount in the container
  */
 async function buildVolumeBindings(taskVolumeBindings, volumeCache, taskScopes) {
+
   let neededScopes = [];
 
   for (let volumeName in taskVolumeBindings) {
@@ -180,7 +181,9 @@ export default class Task {
   @param {Array[dockerode.Container]} [links] list of dockerode containers.
   @param {object} [baseEnv] Environment variables that can be overwritten.
   */
+
   async dockerConfig(linkInfo) {
+
     let config = this.task.payload;
 
     this.runtime.stats.record('taskImage', config.image);
@@ -257,6 +260,21 @@ export default class Task {
     // If we have any binds, add them to HostConfig
     if (binds.length > 0) {
       procConfig.create.HostConfig.Binds = binds;
+    }
+
+    if(this.task.payload.features.interactive) {
+      //TODO: test with things that aren't undefined
+      let oldEntrypoint = (await this.runtime.docker.getImage(config.image).inspect()).Entrypoint;
+      if(typeof oldEntrypoint === 'string') {
+        oldEntrypoint = ['/bin/sh', '-c', oldEntrypoint];
+      } else if(oldEntrypoint === undefined) {
+        oldEntrypoint = [];
+      }
+      procConfig.create.Entrypoint = ['/.taskclusterutils/busybox',
+        'sh',
+        '-e',
+        '/.taskclusterutils/interactive_wrapper_run.sh']
+        .concat(oldEntrypoint);
     }
 
     return procConfig;
@@ -660,6 +678,24 @@ export default class Task {
       return await this.abortRun(this.taskState);
     }
     this.runtime.log('task run');
+
+    // Call started hook when container is started
+    dockerProc.once('container start', async (container) => {
+      try {
+        await this.states.started(this);
+      }
+      catch (e) {
+        debug(e.stack);
+        return await this.abortRun(
+          'states_failed',
+          this.fmtLog(
+            'Error: Task was aborted because states could not be started ' +
+            `successfully. ${e}`
+          )
+        );
+      }
+    });
+
     let exitCode = await stats.timeGen('taskRunTime', dockerProc.run({
       // Do not pull the image as part of the docker run we handle it +
       // authentication above...

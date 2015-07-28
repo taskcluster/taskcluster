@@ -8,9 +8,9 @@ import https from 'https';
 import request from 'superagent-promise';
 import TestWorker from '../testworker';
 import waitForEvent from '../../lib/wait_for_event';
-// import Debug from 'debug';
+import Debug from 'debug';
 
-// let debug = Debug('docker-worker:test:docker-save-test');
+let debug = Debug('docker-worker:test:docker-save-test');
 
 suite('use docker-save', () => {
   let worker;

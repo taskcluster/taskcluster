@@ -103,6 +103,15 @@ const features = {
     description: 'Uploads docker images as artifacts',
     defaults: false,
     module: require('./features/docker_save')
+  },
+
+  interactive: {
+    title: 'Docker Exec Interactive',
+    description: 'This allows you to interactively run commands inside the container ' + 
+                 'and attaches you to the stdin/stdout/stderr over a websocket. ' +
+                 'Can be used for SSH-like access to docker containers.',
+    defaults: false,
+    module: require('./features/interactive.js')
   }
 };
 

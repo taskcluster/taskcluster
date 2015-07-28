@@ -130,6 +130,18 @@ export default class States {
   }
 
   /**
+  Invoke the `started hook no value is expected to be returned this is
+  effectively for "side effects" monitoring the container or executing
+  scripts inside it while it's running.
+
+  @param {Task} task handler.
+  @return void.
+  */
+  started(task) {
+    return this._invoke('started', task);
+  }
+
+  /**
   Invoke the `stop` hook intended to be used to upload any artifacts created
   during the task container run (which is in a stopped state at this point).
 

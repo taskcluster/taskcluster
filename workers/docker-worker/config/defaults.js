@@ -188,5 +188,16 @@ module.exports = {
 
   dockerSave: {
     expiration: 1000 * 60 * 60 * 24 * 7
+  },
+
+  interactive: {
+    ssl: true,
+    // Minimum time, in seconds, between start of task and end of task
+    // Could be cut short due to worker node shutdown
+    minTime: 3 * 60,
+    // Extra time the task stays alive after an interactive session finishes
+    expirationAfterSession: 15 * 60,
+    //base path of the socket artifact
+    artifactName: 'private/docker-worker/'
   }
 };

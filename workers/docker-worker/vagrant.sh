@@ -19,3 +19,5 @@ depmod
 
 sudo modprobe v4l2loopback
 sudo modprobe snd-aloop
+
+sudo ln -s /vagrant /worker

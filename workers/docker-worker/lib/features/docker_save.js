@@ -46,4 +46,3 @@ export default class DockerSave {
     await image.remove();
   }
 }
- 

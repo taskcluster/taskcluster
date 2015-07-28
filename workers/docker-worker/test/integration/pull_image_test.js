@@ -6,7 +6,7 @@ suite('pull image', function() {
   var dockerUtils = require('dockerode-process/utils');
   var cmd = require('./helper/cmd');
 
-  var IMAGE = 'ubuntu:12.10';
+  var IMAGE = 'ubuntu:12.04';
 
   test('ensure image can be pulled', co(function* () {
     yield dockerUtils.removeImageIfExists(docker, IMAGE);
