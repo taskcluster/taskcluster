@@ -46,7 +46,7 @@ api.declare({
   method:       'get',
   route:        '/client/:clientId/credentials',
   name:         'getCredentials',
-  scopes:       ['auth:credentials'],
+  scopes:       [['auth:credentials']],
   title:        "Get Credentials",
   description:  "Get credentials... mock..."
 }, function(req, res) {
