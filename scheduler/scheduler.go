@@ -481,6 +481,8 @@ type (
 			// Link to source of this task-graph, should specify file, revision and repository
 			Source string `json:"source"`
 		} `json:"metadata"`
+		// List of scopes (or scope-patterns) that tasks of the task-graph is authorized to use.
+		Scopes []string                 `json:"scopes"`
 		Status TaskGraphStatusStructure `json:"status"`
 		// Arbitrary key-value tags (only strings limited to 4k)
 		Tags map[string]json.RawMessage `json:"tags"`
