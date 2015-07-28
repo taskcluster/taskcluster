@@ -15,12 +15,17 @@ export default class Stat {
     assert(config.workerNodeType, 'Worker instance type is required');
     assert(config.provisionerId, 'Provisioner ID is required');
 
+    // Not every worker might need to log stats.  If no stats are needed, and
+    // no connection string provided, use a dummy influx drain so that they are still
+    // sent to the logs but do not stop the worker from starting up.  in the future this
+    // should be a modification to taskcluster-base
     if (config.influx.connectionString) {
       this.influx = new base.stats.Influx(config.influx);
     }
     else {
       this.influx = {
-        addPoint: (...args) => { debug('stats: %j', args); }
+        addPoint: (...args) => { debug('stats: %j', args); },
+        close: () => { return; }
       };
     }
     this.reporters = {};

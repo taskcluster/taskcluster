@@ -153,7 +153,7 @@ suite('volume cache test', function () {
     var binds = cacheInstance.path + ':/docker_cache/tmp-obj-dir/';
 
     var startConfig = {
-      Binds: binds,
+      Binds: [binds],
     };
 
     yield container.start(startConfig);
@@ -168,7 +168,6 @@ suite('volume cache test', function () {
     var cacheName = 'tmp-obj::dir-' + Date.now().toString();
 
     var fullPath = path.join(localCacheDir, cacheName);
-
 
     var cache = new VolumeCache({
       cache: {

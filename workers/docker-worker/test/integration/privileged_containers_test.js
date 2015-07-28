@@ -118,8 +118,8 @@ suite('Privileged containers', () => {
     });
 
     assert.ok(
-      result.log.indexOf('mount: permission denied') !== -1,
-      'Permission denied message did not appear in the log'
+      result.log.indexOf('cannot mount block device cgroup read-only') !== -1,
+      `Mount denied message did not appear in the log. Message: ${result.log}`
     );
     assert.equal(result.run.state, 'failed', 'task should not be successfull');
     assert.equal(result.run.reasonResolved, 'failed', 'task should not be successfull');

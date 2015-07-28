@@ -25,7 +25,7 @@ module.exports = function* (credentials) {
     Image: DOCKER_IMAGE,
     Cmd: [credentials.username, credentials.password],
     Volumes: {},
-    VolumesFrom: ''
+    VolumesFrom: []
   };
 
   var container = yield docker.createContainer(createContainer);

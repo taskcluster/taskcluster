@@ -323,7 +323,7 @@ export default class TaskListener extends EventEmitter {
       let options = {};
       if (this.runtime.isolatedContainers) {
         runningState.devices['cpu'] = this.deviceManager.getDevice('cpu');
-        options.cpuset = runningState.devices['cpu'].id;
+        options.cpusetCpus = runningState.devices['cpu'].id;
       }
 
       let taskCapabilities = task.payload.capabilities || {};

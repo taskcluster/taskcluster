@@ -156,7 +156,7 @@ export default class Task {
   @param {Object} task id for this instance.
   @param {Object} claim details for this instance.
   @param {Object} options
-  @param {Number} [options.cpuset] cpu(s) to use for this container/task.
+  @param {Number} [options.cpusetCpus] cpu(s) to use for this container/task.
   */
   constructor(runtime, task, claim, options) {
     this.runtime = runtime;
@@ -223,8 +223,8 @@ export default class Task {
     };
 
     // Zero is a valid option so only check for existence.
-    if ('cpuset' in this.options) {
-      procConfig.create.Cpuset = this.options.cpuset;
+    if ('cpusetCpus' in this.options) {
+      procConfig.create.HostConfig.CpusetCpus = this.options.cpusetCpus;
     }
 
     if (this.options.devices) {

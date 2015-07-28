@@ -11,7 +11,7 @@ export default class CpuDeviceManager {
   buildDeviceList() {
     let deviceList = [];
     for (let i = 0; i < os.cpus().length; i++) {
-      deviceList.push(new CpuDevice(i));
+      deviceList.push(new CpuDevice(String(i)));
     }
 
     debug(`
@@ -37,7 +37,7 @@ export default class CpuDeviceManager {
     let device = devices[0];
     device.aquire();
 
-    debug(`Device: ${device.path} aquired`);
+    debug(`Device: ${device.id} aquired`);
 
     return device;
   }
@@ -51,12 +51,15 @@ export default class CpuDeviceManager {
 
 class CpuDevice {
   constructor(id, active=false) {
-    this.id = id
+    this.id = id;
     this.active = active;
   }
 
   aquire() {
-    if (this.active) throw new Error(`Device ${this.id} has already been aquired`);
+    if (this.active) {
+      throw new Error(`Device ${this.id} has already been aquired`);
+    }
+
     this.active = true;
   }
 
