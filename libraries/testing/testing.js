@@ -346,7 +346,7 @@ mockAuthApi.declare({
   method:       'get',
   route:        '/client/:clientId/credentials',
   name:         'getCredentials',
-  scopes:       ['auth:credentials'],
+  scopes:       [['auth:credentials']],
   title:        "Get Credentials",
   description:  "Mock implementation of getCredentials"
 }, function(req, res) {
@@ -364,7 +364,7 @@ mockAuthApi.declare({
   route:        '/azure/:account/table/:table/read-write',
   name:         'azureTableSAS',
   deferAuth:    true,
-  scopes:       ['auth:azure-table-access:<account>/<table>'],
+  scopes:       [['auth:azure-table-access:<account>/<table>']],
   title:        "Get Azure SAS",
   description:  "Mock API for azureTableSAS"
 }, function(req, res) {
