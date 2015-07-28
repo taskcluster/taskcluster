@@ -1,3 +1,4 @@
+import assert from 'assert';
 import Debug from 'debug';
 import os from 'os';
 
@@ -51,6 +52,8 @@ export default class CpuDeviceManager {
 
 class CpuDevice {
   constructor(id, active=false) {
+    // ID must be a string to be passed in the docker config option CpusetCpus
+    assert(typeof id === 'string', 'ID Must be a string');
     this.id = id;
     this.active = active;
   }
