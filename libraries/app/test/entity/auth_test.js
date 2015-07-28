@@ -25,7 +25,7 @@ suite("Entity (SAS from auth.taskcluster.net)", function() {
     route:      '/azure/:account/table/:table/read-write',
     name:       'azureTableSAS',
     deferAuth:  true,
-    scopes:     ['auth:azure-table-access:<account>/<table>'],
+    scopes:     [['auth:azure-table-access:<account>/<table>']],
     title:        "Test SAS End-Point",
     description:  "Get SAS for testing",
   }, function(req, res) {
