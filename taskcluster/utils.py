@@ -8,6 +8,12 @@ import os
 import requests
 import time
 
+try:
+  # Do not require pgpy for all tasks
+  import pgpy
+except ImportError:
+  pgpy = None
+
 MAX_RETRIES = 5
 
 log = logging.getLogger(__name__)
@@ -85,6 +91,21 @@ def slugId():
   return makeB64UrlSafe(encodeStringForB64Header(uuid.uuid4().bytes).replace('=', ''))
 
 
+def stable_slugId():
+  """Returns a closure which can be used to generate stable slugIds.
+  Stable slugIds can be used in a graph to specify task IDs in multiple
+  places without regenerating them, e.g. taskId, requires, etc.
+  """
+  _cache = {}
+
+  def closure(name):
+    if name not in _cache:
+      _cache[name] = slugId()
+    return _cache[name]
+
+  return closure
+
+
 def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
   """ Make an HTTP request and retry it until success, return request """
   retry = -1
@@ -147,3 +168,35 @@ def putFile(filename, url, contentType):
       'Content-Length': contentLength,
       'Content-Type': contentType,
     })
+
+
+def encrypt_env_var_message(task_id, start_time, end_time, name, value):
+  return {
+    "messageVersion": "1",
+    "taskId": task_id,
+    "startTime": start_time,
+    "endTime": end_time,
+    "name": name,
+    "value": value
+  }
+
+
+def encrypt_env_var(task_id, start_time, end_time, name, value, key_file):
+  message = str(json.dumps(encrypt_env_var_message(task_id, start_time,
+                                                   end_time, name, value)))
+  return encrypt(message, key_file)
+
+
+def encrypt(message, key_file):
+  """Encrypt and base64 encode message.
+
+  :type message: str or unicode
+  :type key_file: str or unicode
+  :return: base64 representation of binary (unarmoured) encrypted message
+  """
+  if not pgpy:
+    raise RuntimeError("Install `pgpy' to use encryption")
+  key, _ = pgpy.PGPKey.from_file(key_file)
+  msg = pgpy.PGPMessage.new(message)
+  encrypted = key.encrypt(msg)
+  return base64.b64encode(encrypted.__bytes__())

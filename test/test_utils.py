@@ -1,5 +1,6 @@
 import datetime
 import uuid
+import os
 
 import taskcluster.utils as subject
 import httmock
@@ -7,6 +8,9 @@ import mock
 import requests
 
 import base
+from unittest import TestCase
+from hypothesis import given
+import hypothesis.strategies as st
 
 
 # https://docs.python.org/2/library/datetime.html#tzinfo-objects
@@ -155,3 +159,49 @@ class TestPutfile(base.TCTest):
     with mock.patch.object(subject, 'makeSingleHttpRequest') as p:
       subject.putFile('setup.py', 'http://www.example.com', 'text/plain')
       p.assert_called_once_with('put', 'http://www.example.com', mock.ANY, mock.ANY)
+
+
+class TestStableSlugIdClosure(TestCase):
+
+  @given(st.text())
+  def test_repeat(self, text):
+    s = subject.stable_slugId()
+    self.assertEqual(s(text), s(text))
+
+  def test_not_equal(self):
+    s = subject.stable_slugId()
+    self.assertNotEqual(s("first"), s("second"))
+
+  @given(st.text())
+  def test_invalidate(self, text):
+    s1 = subject.stable_slugId()
+    s2 = subject.stable_slugId()
+    self.assertNotEqual(s1(text), s2(text))
+
+
+class TestEncryptEnvVarMessage(TestCase):
+
+  @given(st.text(), st.one_of(st.floats(), st.integers()),
+         st.one_of(st.floats(), st.integers()), st.text(), st.text())
+  def test_message_format(self, taskId, startTime, endTime, name, value):
+    self.assertDictEqual(
+      subject.encrypt_env_var_message(taskId, startTime, endTime, name,
+                                      value),
+      {
+        "messageVersion": "1",
+        "taskId": taskId,
+        "startTime": startTime,
+        "endTime": endTime,
+        "name": name,
+        "value": value
+      }
+    )
+
+
+class TestEncrypt(TestCase):
+
+  @given(st.text())
+  def test_generic(self, text):
+    key_file = os.path.join(os.path.dirname(__file__), "docker-worker-pub.pem")
+    self.assertTrue(subject.encrypt(text, key_file).startswith("wcB"),
+                    "Encrypted string should always start with 'wcB'")
