@@ -177,13 +177,6 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 		for _, j := range apiDefs[i].schemaURLs {
 			apiDefs[i].schemas[j].TypeName = utils.Normalise(*apiDefs[i].schemas[j].Title, TypeName)
 		}
-		//////////////////////////////////////////////////////////////////////////////
-		// these next four lines are a temporary hack while waiting for https://github.com/taskcluster/taskcluster-queue/pull/31
-		if x, ok := apiDefs[i].schemas["http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#"]; ok {
-			y := "object"
-			x.Properties.Properties["artifacts"].Items.Type = &y
-		}
-		//////////////////////////////////////////////////////////////////////////////
 	}
 	return apiDefs
 }
