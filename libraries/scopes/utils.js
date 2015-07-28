@@ -20,24 +20,18 @@ exports.listFolder = function(folder, fileList) {
   return fileList;
 };
 
-/** Normalize scope sets
- *
- * Normalize a scope-set, basically wrap strings in an extra array if a layer
- * is missing. Examples:
- *    'a'           -> [['a']]        // 'a' must be satisfied
- *    ['a', 'b']    -> [['a'], ['b']] // 'a' or 'b' must be satisfied
- *    [['a', 'b']]  -> [['a', 'b']]   // 'a' and 'b' must be satisfied
+/**
+ * Validate scope-sets for well-formedness.  See scopeMatch for the description
+ * of a scope-set.
  */
-exports.normalizeScopeSets = function(scopesets) {
-  if (typeof(scopesets) == 'string') {
-    scopesets = [[scopesets]];
-  }
-  return scopesets.map(function(scopeset) {
-    if (typeof(scopeset) == 'string') {
-      return [scopeset];
-    }
-    return scopeset;
-  });
+exports.validateScopeSets = function(scopesets) {
+  var msg = "scopes must be an array of arrays of strings (disjunctive normal form)";
+  assert(Array.isArray(scopesets), msg);
+  assert(scopesets.every(function(conj) {
+      return Array.isArray(conj) && conj.every(function(scope) {
+          return typeof(scope) == 'string'
+      });
+  }), msg);
 };
 
 /**
@@ -54,13 +48,11 @@ exports.normalizeScopeSets = function(scopesets) {
  * Also expressed as ('a' and 'b') or 'c'.
  */
 exports.scopeMatch = function(scopePatterns, scopesets) {
-  var scopesets = exports.normalizeScopeSets(scopesets);
-  if (typeof(scopePatterns) == 'string') {
-    scopePatterns = [scopePatterns];
-  }
-  assert(scopesets instanceof Array, "scopesets must be a string or an array");
+  exports.validateScopeSets(scopesets);
+  assert(scopePatterns instanceof Array && scopePatterns.every(function(scope) {
+    return typeof(scope) === 'string';
+  }), "scopes must be an array of strings");
   return scopesets.some(function(scopeset) {
-    assert(scopesets instanceof Array, "scopeset must be a string or an array");
     return scopeset.every(function(scope) {
       return scopePatterns.some(function(pattern) {
         if (scope === pattern) {
