@@ -5,28 +5,31 @@ suite("scopeMatch", function() {
   var mktest = function(scopePatterns, scopesets, matches) {
     return function() {
       var res;
+      var exception;
+
       try {
         res = utils.scopeMatch(scopePatterns, scopesets);
       } catch (e) {
         res = 'exception';
+        exception = e
       }
       assert(res == matches,
         "Incorrect result for scopeMatch(" +
         JSON.stringify(scopePatterns) +
-        ", " + JSON.stringify(scopesets) + ")")
+        ", " + JSON.stringify(scopesets) + ") -> " + res + ' ' + exception)
     };
   };
 
   test("single exact match, string",
-    mktest(["foo:bar"], "foo:bar", true));
+    mktest(["foo:bar"], "foo:bar", 'exception'));
   test("single exact match, [string]",
-    mktest(["foo:bar"], ["foo:bar"], true));
+    mktest(["foo:bar"], ["foo:bar"], 'exception'));
   test("single exact match, [[string]]",
     mktest(["foo:bar"], [["foo:bar"]], true));
   test("empty string in scopesets",
-    mktest(["foo:bar"], '', false));
+    mktest(["foo:bar"], '', 'exception'));
   test("empty [string] in scopesets",
-    mktest(["foo:bar"], [''], false));
+    mktest(["foo:bar"], [''], 'exception'));
   test("empty [[string]] in scopesets",
     mktest(["foo:bar"], [['']], false));
   test("prefix",
@@ -38,7 +41,7 @@ suite("scopeMatch", function() {
   test("star but not prefix",
     mktest(["bar:*"], [['foo:bar:bing']], false));
   test("disjunction strings",
-    mktest(["bar:*"], ['foo:x', 'bar:x'], true));
+    mktest(["bar:*"], ['foo:x', 'bar:x'], 'exception'));
   test("disjunction [strings]",
     mktest(["bar:*"], [['foo:x'], ['bar:x']], true));
   test("conjunction",
@@ -55,6 +58,8 @@ suite("scopeMatch", function() {
     mktest(["foo:bar"], {}, 'exception'));
   test("non-string scopeset",
     mktest(["foo:bar"], [{}], 'exception'));
+  test("non-string scope",
+    mktest(["foo:bar"], [[{}]], 'exception'));
   test("empty disjunction in scopesets",
     mktest(["foo:bar"], [], false));
 });
