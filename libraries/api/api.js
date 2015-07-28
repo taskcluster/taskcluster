@@ -790,6 +790,8 @@ var API = function(options) {
  *   },
  *   name:     'identifierForLibraries',      // identifier for client libraries
  *   scopes:   ['admin', 'superuser'],        // Scopes for the request
+ *   scopes:   [['admin'], ['per1', 'per2']], // Scopes in disjunctive form
+ *                                            // admin OR (per1 AND per2)
  *   input:    'input-schema.json',           // optional, null if no input
  *   output:   'output-schema.json',          // optional, null if no output
  *   skipInputValidation:    true,            // defaults to false
@@ -814,6 +816,9 @@ API.prototype.declare = function(options, handler) {
     assert(options[key], "Option '" + key + "' must be provided");
   });
   options.params = _.defaults({}, options.params || {}, this._options.params);
+  if ('scopes' in options) {
+    utils.validateScopeSets(options.scopes);
+  }
   options.handler = handler;
   if (options.input) {
     options.input = this._options.schemaPrefix + options.input;
