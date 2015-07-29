@@ -777,26 +777,69 @@ var API = function(options) {
   this._entries = [];
 };
 
+/** Stability levels offered by API method */
+var stability = {
+  /**
+   * API has been marked for deprecation and should not be used in new clients.
+   *
+   * Note, documentation string for a deprecated API end-point should outline
+   * the deprecation strategy.
+   */
+  deprecated:       'deprecated',
+  /**
+   * Unless otherwise stated API may change and resources may be deleted
+   * without warning. Often we will, however, try to deprecate the API first
+   * and keep around as `deprecated`.
+   *
+   * **Intended Usage:**
+   *  - Prototype API end-points,
+   *  - API end-points intended displaying unimportant state.
+   *    (e.g. API to fetch state from a provisioner)
+   *  - Prototypes used in non-critical production by third parties,
+   *  - API end-points of little public interest,
+   *    (e.g. API to define workerTypes for a provisioner)
+   *
+   * Generally, this is a good stability levels for anything under-development,
+   * or when we know that there is a limited number of consumers so fixing
+   * the world after breaking the API is easy.
+   */
+  experimental:     'experimental',
+  /**
+   * API is stable and we will not delete resources or break the API suddenly.
+   * As a guideline we will always facilitate gradual migration if we change
+   * a stable API.
+   *
+   * **Intended Usage:**
+   *  - API end-points used in critical production.
+   *  - APIs so widely used that refactoring would be hard.
+   */
+  stable:           'stable'
+};
+
+// List of valid stability-levels
+var STABILITY_LEVELS = _.values(stability);
+
 /**
  * Declare an API end-point entry, where options is on the following form:
  *
  * {
  *   method:   'post|head|put|get|delete',
- *   route:    '/object/:id/action/:param',   // URL pattern with parameters
- *   params: {                                // Patterns for URL params
- *     param: /.../,              // Reg-exp pattern
- *     id(val) { return "..." }   // Function, returns message if invalid
+ *   route:    '/object/:id/action/:param',      // URL pattern with parameters
+ *   params: {                                   // Patterns for URL params
+ *     param: /.../,                             // Reg-exp pattern
+ *     id(val) { return "..." }                  // Function, returns message if invalid
  *     // The `params` option from new API(), will be used as fall-back
  *   },
- *   name:     'identifierForLibraries',      // identifier for client libraries
- *   scopes:   ['admin', 'superuser'],        // Scopes for the request
- *   scopes:   [['admin'], ['per1', 'per2']], // Scopes in disjunctive form
- *                                            // admin OR (per1 AND per2)
- *   input:    'input-schema.json',           // optional, null if no input
- *   output:   'output-schema.json',          // optional, null if no output
- *   skipInputValidation:    true,            // defaults to false
- *   skipOutputValidation:   true,            // defaults to false
- *   title:    "My API Method",
+ *   name:     'identifierForLibraries',         // identifier for client libraries
+ *   stability: base.API.stability.experimental, // API stability level
+ *   scopes:   ['admin', 'superuser'],           // Scopes for the request
+ *   scopes:   [['admin'], ['per1', 'per2']],    // Scopes in disjunctive form
+ *                                               // admin OR (per1 AND per2)
+ *   input:    'input-schema.json',              // optional, null if no input
+ *   output:   'output-schema.json',             // optional, null if no output
+ *   skipInputValidation:    true,               // defaults to false
+ *   skipOutputValidation:   true,               // defaults to false
+ *   title:     "My API Method",
  *   description: [
  *     "Description of method in markdown, enjoy"
  *   ].join('\n')
@@ -815,6 +858,13 @@ API.prototype.declare = function(options, handler) {
   ['method', 'route', 'title', 'description'].forEach(function(key) {
     assert(options[key], "Option '" + key + "' must be provided");
   });
+  // Default to experimental API end-points
+  if (!options.stability) {
+    options.stability = stability.experimental;
+  }
+  assert(STABILITY_LEVELS.indexOf(options.stability) !== -1,
+         "options.stability must be a valid stability-level, " +
+         "see base.API.stability for valid options");
   options.params = _.defaults({}, options.params || {}, this._options.params);
   if ('scopes' in options) {
     utils.validateScopeSets(options.scopes);
@@ -985,6 +1035,7 @@ API.prototype.reference = function(options) {
         route:          route,
         args:           params,
         name:           entry.name,
+        stability:      entry.stability,
         title:          entry.title,
         description:    entry.description
       };
@@ -1110,3 +1161,4 @@ module.exports = API;
 API.authenticate  = authenticate;
 API.schema        = schema;
 API.handle        = handle;
+API.stability     = stability;
