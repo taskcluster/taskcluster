@@ -83,11 +83,12 @@ suite("api/publish", function() {
 
     // Declare a simple method
     api.declare({
-      method:   'get',
-      route:    '/test',
-      name:     'test',
-      title:    "Test End-Point",
+      method:       'get',
+      route:        '/test',
+      name:         'test',
+      title:        "Test End-Point",
       description:  "Place we can call to test something",
+      stability:    base.API.stability.stable
     }, function(req, res) {
       res.send(200, "Hello World");
     });
