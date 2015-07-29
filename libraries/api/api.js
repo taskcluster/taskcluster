@@ -989,7 +989,7 @@ API.prototype.reference = function(options) {
         description:    entry.description
       };
       if (entry.scopes) {
-        retval.scopes = utils.normalizeScopeSets(entry.scopes);
+        retval.scopes = entry.scopes;
       }
       if (entry.input) {
         retval.input  = entry.input;
