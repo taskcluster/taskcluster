@@ -134,7 +134,7 @@ var validator = function(options) {
   // Provide default options
   options = _.defaults(options || {}, {
     schemaBucket:     'schemas.taskcluster.net',
-    schemaBaseUrl:    'schemas.taskcluster.net'
+    schemaBaseUrl:    'http://schemas.taskcluster.net'
   });
 
   // Create validator
