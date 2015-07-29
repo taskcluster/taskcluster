@@ -10,7 +10,7 @@
         "metadata": {
           "name": "Docker-worker tests - 1",
           "description": "Runs entire docker-worker test suite",
-          "source": "http://todo.com/soon",
+          "source": "https://github.com/taskcluster/docker-worker",
           "owner": "mozilla@mozilla.org"
         },
         "workerType": "worker-ci-test",
@@ -45,7 +45,7 @@
         "metadata": {
           "name": "Docker-worker tests - 2",
           "description": "Runs entire docker-worker test suite",
-          "source": "http://todo.com/soon",
+          "source": "https://github.com/taskcluster/docker-worker",
           "owner": "mozilla@mozilla.org"
         },
         "workerType": "worker-ci-test",
@@ -80,7 +80,7 @@
         "metadata": {
           "name": "Docker-worker tests - 3",
           "description": "Runs entire docker-worker test suite",
-          "source": "http://todo.com/soon",
+          "source": "https://github.com/taskcluster/docker-worker",
           "owner": "mozilla@mozilla.org"
         },
         "workerType": "worker-ci-test",
@@ -115,7 +115,7 @@
         "metadata": {
           "name": "Docker-worker tests - 4",
           "description": "Runs entire docker-worker test suite",
-          "source": "http://todo.com/soon",
+          "source": "https://github.com/taskcluster/docker-worker",
           "owner": "mozilla@mozilla.org"
         },
         "workerType": "worker-ci-test",
@@ -150,7 +150,7 @@
         "metadata": {
           "name": "Docker-worker tests - 5",
           "description": "Runs entire docker-worker test suite",
-          "source": "http://todo.com/soon",
+          "source": "https://github.com/taskcluster/docker-worker",
           "owner": "mozilla@mozilla.org"
         },
         "workerType": "worker-ci-test",
@@ -163,6 +163,41 @@
         "payload": {
           "command": [
             "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 5 --total-chunks 5"
+          ],
+          "image": "taskcluster/worker-ci:0.0.3",
+          "maxRunTime": 3600,
+          "capabilities": {
+            "privileged": true,
+            "devices": {
+              "loopbackAudio": true,
+              "loopbackVideo": true
+            }
+          }
+        },
+        "extra": {
+        },
+        "schedulerId": "task-graph-scheduler"
+      }
+    },
+    {
+      "reruns": 2,
+      "task": {
+        "metadata": {
+          "name": "Docker-worker tests - all",
+          "description": "Runs entire docker-worker test suite",
+          "source": "https://github.com/taskcluster/docker-worker",
+          "owner": "mozilla@mozilla.org"
+        },
+        "workerType": "worker-ci-test",
+        "provisionerId": "aws-provisioner-v1",
+        "scopes": [
+          "docker-worker:capability:privileged",
+          "docker-worker:capability:device:loopbackAudio",
+          "docker-worker:capability:device:loopbackVideo"
+        ],
+        "payload": {
+          "command": [
+            "npm install && ./build.sh && ./test/docker-worker-test"
           ],
           "image": "taskcluster/worker-ci:0.0.3",
           "maxRunTime": 3600,

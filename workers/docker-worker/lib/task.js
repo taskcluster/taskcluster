@@ -262,7 +262,7 @@ export default class Task {
       procConfig.create.HostConfig.Binds = binds;
     }
 
-    if(this.task.payload.features.interactive) {
+    if(this.task.payload.features && this.task.payload.features.interactive) {
       //TODO: test with things that aren't undefined
       let oldEntrypoint = (await this.runtime.docker.getImage(config.image).inspect()).Entrypoint;
       if(typeof oldEntrypoint === 'string') {
