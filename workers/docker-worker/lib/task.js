@@ -10,6 +10,7 @@ import States from './states';
 
 import features from './features';
 import getHostname from './util/hostname';
+import { hasPrefixedScopes } from './util/scopes';
 import { pullDockerImage, IMAGE_ERROR } from './pull_image_to_stream';
 import { scopeMatch } from 'taskcluster-base/utils';
 import waitForEvent from './wait_for_event';
@@ -76,18 +77,9 @@ Create a list of cached volumes that will be mounted within the docker container
 @param {object} volumes to mount in the container
  */
 async function buildVolumeBindings(taskVolumeBindings, volumeCache, taskScopes) {
-
-  let neededScopes = [];
-
-  for (let volumeName in taskVolumeBindings) {
-    neededScopes.push('docker-worker:cache:' + volumeName);
-
-    if (!scopeMatch(taskScopes, neededScopes)) {
-      throw new Error(
-        'Insufficient scopes to attach "' + volumeName + '" as a cached ' +
-        'volume.  Try adding ' + neededScopes + ' to the .scopes array.'
-      );
-    }
+  if (!hasPrefixedScopes('docker-worker:cache:', taskVolumeBindings, taskScopes)) {
+    throw new Error('Insufficient scopes to attach cache volumes.  The task must ' +
+    'have scope `docker-worker:cache:<cache-name>` for each cache in `payload.caches`.');
   }
 
   let bindings = [];
@@ -125,10 +117,13 @@ function runAsPrivileged(task, allowPrivilegedTasks) {
 }
 
 function buildDeviceBindings(devices, taskScopes) {
+  if (!hasPrefixedScopes('docker-worker:capability:device:', devices, taskScopes)) {
+    throw new Error('Insufficient scopes to attach devices to task container.  The ' +
+    'task must have scope `docker-worker:capability:device:<dev-name>` for each device.');
+  }
+
   let deviceBindings = [];
-  let neededScopes = [];
   for (let deviceType in devices) {
-    neededScopes.push(`docker-worker:capability:device:${deviceType}`);
     let device = devices[deviceType];
     device.mountPoints.forEach((mountPoint) => {
       deviceBindings.push(
@@ -141,12 +136,6 @@ function buildDeviceBindings(devices, taskScopes) {
     });
   }
 
-  if (!scopeMatch(taskScopes, neededScopes)) {
-    throw new Error(
-      'Insufficient scopes to attach devices to task container.' +
-      'Try adding ' + neededScopes + ' to the .scopes array.'
-    );
-  }
 
   return deviceBindings;
 }

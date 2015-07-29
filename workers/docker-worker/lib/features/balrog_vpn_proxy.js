@@ -43,7 +43,7 @@ export default class BalrogVPNProxy {
 
   async link(task) {
     let featureScope = FEATURE_SCOPE_PREFIX + this.featureName;
-    if (!scopeMatch(task.task.scopes, featureScope)) {
+    if (!scopeMatch(task.task.scopes, [[featureScope]])) {
       throw new Error(
         `Insufficient scopes to use '${this.featureName}' feature.  ` +
         `Try adding ${featureScope} to the .scopes array.`

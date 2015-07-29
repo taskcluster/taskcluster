@@ -95,7 +95,7 @@ export async function pullDockerImage(runtime, imageName, scopes, taskId, runId,
     let credentials = dockerImage.credentials(runtime.registries, defaultRegistry);
     if (credentials) {
       // Validate scopes on the image if we have credentials for it...
-      if (!scopeMatch(scopes, IMAGE_SCOPE_PREFIX + dockerImageName)) {
+      if (!scopeMatch(scopes, [[IMAGE_SCOPE_PREFIX + dockerImageName]])) {
         throw new Error(
           'Insufficient scopes to pull : "' + dockerImageName + '" try adding ' +
           IMAGE_SCOPE_PREFIX + dockerImageName + ' to the .scopes array.'

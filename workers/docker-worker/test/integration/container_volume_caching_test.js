@@ -250,7 +250,7 @@ suite('volume cache tests', function () {
       assert.equal(result.run.reasonResolved, 'failed',
         'Task completed successfully when it should not have.');
 
-      var expectedError = 'Insufficient scopes to attach "' + cacheName + '"';
+      var expectedError = 'Insufficient scopes to attach cache volumes.';
       assert.ok(result.log.indexOf(expectedError) !== -1,
         'Insufficient scopes error message did not appear in the log'
       );

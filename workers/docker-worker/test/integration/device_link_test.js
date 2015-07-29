@@ -89,10 +89,11 @@ suite('device linking within containers', () => {
     );
   });
 
-  test('task failed when scopes not specified', async () => {
+  test('task failed when all scopes not specified', async () => {
     worker = new TestWorker(DockerWorker);
     await worker.launch();
     let task = {
+      scopes: ['docker-worker:capability:device:loopbackVideo'],
       payload: {
         capabilities: {
           devices: {
@@ -144,12 +145,6 @@ suite('device linking within containers', () => {
     settings.configure({
       capacity: 1,
       deviceManagement: {
-        loopbackAudio: {
-          enabled: true
-        },
-        loopbackVideo: {
-          enabled: true
-        },
         phone: {
           enabled: true,
           sims: '1',
@@ -170,7 +165,6 @@ suite('device linking within containers', () => {
       payload: {
         capabilities: {
           devices: {
-            loopbackVideo: true,
             phone: {
               type: 'flame-kk',
               sims: '1',
