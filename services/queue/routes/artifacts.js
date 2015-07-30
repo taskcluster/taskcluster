@@ -242,7 +242,19 @@ api.declare({
         artifact.expires.getTime() > expires.getTime()) {
       return res.status(409).json({
         message:  "Artifact already exists, with different type or " +
-                  " later expiration"
+                  " later expiration",
+        error: {
+          originalArtifact: {
+            storageType:  artifact.storageType,
+            contentType:  artifact.contentType,
+            expires:      artifact.expires,
+          },
+          newArtifact: {
+            storageType:  storageType,
+            contentType:  contentType,
+            expires:      expires
+          }
+        }
       });
     }
 

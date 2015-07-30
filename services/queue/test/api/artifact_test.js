@@ -408,7 +408,7 @@ suite('Post artifacts', function() {
       workerId:       'my-worker'
     });
 
-    debug("### Report exception");
+    debug("### Report completed");
     await helper.queue.reportCompleted(taskId, 0);
 
     debug("### Send post artifact request");
@@ -444,5 +444,89 @@ suite('Post artifacts', function() {
     }).catch(err => {
       assume(err.statusCode).equals(409);
     });
+  });
+
+  test("Can update expiration of artifact", async () => {
+    var taskId = slugid.v4();
+    debug("### Creating task");
+    await helper.queue.createTask(taskId, taskDef);
+
+    debug("### Claiming task");
+    // First runId is always 0, so we should be able to claim it here
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    var expirationIn1Day = taskcluster.fromNowJSON('1 day');
+    var expirationIn2Days = taskcluster.fromNowJSON('2 days');
+
+    debug("### Send post artifact request");
+    await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
+      storageType:  's3',
+      expires:      expirationIn1Day,
+      contentType:  'application/json'
+    });
+
+    debug("### Send second post artifact request to update expiration");
+    await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
+      storageType:  's3',
+      expires:      expirationIn2Days,
+      contentType:  'application/json'
+    }).catch(async (err) => {
+      await helper.queue.reportCompleted(taskId, 0);
+      debug("Got error: %s, as JSON %j", err, err);
+      throw err;
+    });
+
+    var artifacts = await helper.queue.listArtifacts(taskId, 0);
+
+    await helper.queue.reportCompleted(taskId, 0);
+
+    var savedExpiration = new Date(artifacts.artifacts[0].expires).getTime();
+    var originalExpiration = new Date(expirationIn1Day).getTime();
+
+    assume(savedExpiration).is.greaterThan(originalExpiration);
+  });
+
+  test("Can not update content type of artifact", async () => {
+    var taskId = slugid.v4();
+    debug("### Creating task");
+    await helper.queue.createTask(taskId, taskDef);
+
+    debug("### Claiming task");
+    // First runId is always 0, so we should be able to claim it here
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    debug("### Send post artifact request");
+    await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
+      storageType:  's3',
+      expires:      taskcluster.fromNowJSON('1 day'),
+      contentType:  'application/json'
+    });
+
+    debug("### Send second post artifact request to update content type");
+    await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
+      storageType:  's3',
+      expires:      taskcluster.fromNowJSON('1 day'),
+      contentType:  'text/plain'
+    }).then(async () => {
+      await helper.queue.reportCompleted(taskId, 0);
+      assume().fail("Expected request to be unsuccessful");
+    }, async (err) => {
+      debug("Got error: %s, as JSON %j", err, err);
+      await helper.queue.reportCompleted(taskId, 0);
+      assume(err.message).includes('Artifact already exists');
+      assume(err.body.error).contains('originalArtifact', 'newArtifact');
+    });
+
+    var artifacts = await helper.queue.listArtifacts(taskId, 0);
+    var artifact = artifacts.artifacts[0];
+
+    // Ensure content type was not updated
+    assume(artifact.contentType).equals('application/json');
   });
 });
