@@ -5,8 +5,9 @@ suite('validate', function() {
   // Run test cases using schemas testing utility from taskcluster-base
   base.testing.schemas({
     validator: {
-      folder:       path.join(__dirname, '..', 'schemas'),
-      constants:    require('../schemas/constants')
+      folder:         path.join(__dirname, '..', 'schemas'),
+      constants:      require('../schemas/constants'),
+      schemaPrefix:   'queue/v1/'
     },
     basePath:       path.join(__dirname, 'validate_test'),
     schemaPrefix:   'http://schemas.taskcluster.net/',

@@ -1,14 +1,13 @@
-$schema:  http://json-schema.org/draft-04/schema#
-title:        "Task Running Message"
+$schema:          http://json-schema.org/draft-04/schema#
+title:            "Task Claim Response"
 description: |
-  Message reporting that a given run of a task have started
-type:         object
+  Response to a successful task claim
+type:             object
 properties:
-  version:    {$const: message-version}
-  status:     {$ref: http://schemas.taskcluster.net/queue/v1/task-status.json#}
+  status: {$ref: "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
   runId:
     description: |
-      Id of the run that just started, always starts from 0
+      `run-id` assigned to this run of the task
     type:         integer
     minimum:      {$const: min-run-id}
     maximum:      {$const: max-run-id}
@@ -28,13 +27,12 @@ properties:
     pattern:      {$const: identifier-pattern}
   takenUntil:
     description: |
-      Time at which the run expires and is resolved as `failed`, if the run
-      isn't reclaimed.
+      Time at which the run expires and is resolved as `failed`,
+      if the run isn't reclaimed.
     type:         string
     format:       date-time
 additionalProperties: false
 required:
-  - version
   - status
   - runId
   - workerGroup

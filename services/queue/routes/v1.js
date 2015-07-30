@@ -5,9 +5,6 @@ var assert    = require('assert');
 var _         = require('lodash');
 var base      = require('taskcluster-base');
 
-// Common schema prefix
-var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
-
 // Maximum number runs allowed
 var MAX_RUNS_ALLOWED    = 50;
 
@@ -52,6 +49,11 @@ var MAX_RUNS_ALLOWED    = 50;
  * can't cause the last deadline message to get ignored either.
  */
 
+// Common patterns URL parameters
+var SLUGID_PATTERN      = /^[a-zA-Z0-9-_]{22}$/;
+var GENERIC_ID_PATTERN  = /^[a-zA-Z0-9-_]{1,22}$/;
+var RUN_ID_PATTERN      = /^[1-9]*[0-9]+$/;
+
 /** API end-point for version v1/
  *
  * In this API implementation we shall assume the following context:
@@ -81,107 +83,17 @@ var api = new base.API({
     " * Schedulers, who create tasks to be executed,",
     " * Workers, who execute tasks, and",
     " * Tools, that wants to inspect the state of a task."
-  ].join('\n')
-});
-
-// List of slugid parameters
-var SLUGID_PARAMS = [
-  'taskId'
-];
-
-// List of identifier parameters
-var IDENTIFIER_PARAMS = [
-  'provisionerId',
-  'workerType',
-  'workerGroup',
-  'workerId'
-];
-
-// List of integer parameters
-var INT_PARAMS = [
-  'runId'
-];
-
-/**
- * Check parameters against regular expressions for identifiers
- * and send a 401 response with an error in case of malformed URL parameters
- *
- * returns true if there was no errors.
- */
-var checkParams = function(req, res) {
-  var errors = [];
-  _.forIn(req.params, function(value, key) {
-    // Validate slugid parameters
-    if (SLUGID_PARAMS.indexOf(key) !== -1) {
-      if (!/^[a-zA-Z0-9-_]{22}$/.test(value)) {
-        errors.push({
-          message:  "Parameter '" + key + "' is not a slugid",
-          error:    value
-        });
-      }
-    }
-
-    // Validate identifier parameters
-    if (IDENTIFIER_PARAMS.indexOf(key) !== -1) {
-      // Validate format
-      if (!/^[a-zA-Z0-9-_]*$/.test(value)) {
-        errors.push({
-          message:  "Parameter '" + key + "' does not match [a-zA-Z0-9-_]* " +
-                    "as required for identifiers",
-          error:    value
-        });
-      }
-
-      // Validate minimum length
-      if (value.length == 0) {
-        errors.push({
-          message:  "Parameter '" + key + "' must be longer than 0 characters",
-          error:    value
-        });
-      }
-
-      // Validate maximum length
-      if (value.length > 22) {
-        errors.push({
-          message:  "Parameter '" + key + "' cannot be more than 22 characters",
-          error:    value
-        });
-      }
-    }
-
-    // Validate and parse integer parameters
-    if (INT_PARAMS.indexOf(key) !== -1) {
-      if (!/^[0-9]+$/.test(value)) {
-        errors.push({
-          message:  "Parameter '" + key + "' does not match [0-9]+",
-          error:    value
-        });
-      } else {
-        var number = parseInt(value);
-        if (_.isNaN(number)) {
-          errors.push({
-            message:  "Parameter '" + key + "' parses to NaN",
-            error:    value
-          });
-        }
-      }
-    }
-  });
-
-  // Check for errors and reply if necessary
-  if (errors.length != 0) {
-    res.status(401).json({
-      message:  "Malformed URL parameters",
-      error:    errors
-    });
-    return false;
+  ].join('\n'),
+  schemaPrefix:       'http://schemas.taskcluster.net/queue/v1/',
+  params: {
+    taskId:           SLUGID_PATTERN,
+    provisionerId:    GENERIC_ID_PATTERN,
+    workerType:       GENERIC_ID_PATTERN,
+    workerGroup:      GENERIC_ID_PATTERN,
+    workerId:         GENERIC_ID_PATTERN,
+    runId:            RUN_ID_PATTERN
   }
-  // No errors
-  return true;
-};
-
-// Export checkParams for use in artifacts.js
-api.checkParams = checkParams;
+});
 
 // Export api
 module.exports = api;
@@ -192,8 +104,8 @@ api.declare({
   route:      '/task/:taskId',
   name:       'task',
   idempotent: true,
-  scopes:     undefined,
-  output:     SCHEMA_PREFIX_CONST + 'task.json#',
+  scopes:     [[]],
+  output:     'task.json#',
   title:      "Get Task Definition",
   description: [
     "This end-point will return the task-definition. Notice that the task",
@@ -201,11 +113,6 @@ api.declare({
     "specified the queue may provide a default value."
   ].join('\n')
 }, async function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   // Load Task entity
   let task = await this.Task.load({
     taskId:     req.params.taskId
@@ -230,19 +137,14 @@ api.declare({
   method:   'get',
   route:    '/task/:taskId/status',
   name:     'status',
-  scopes:   undefined,  // Still no auth required
+  scopes:   [[]],
   input:    undefined,  // No input is accepted
-  output:   SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  output:   'task-status-response.json#',
   title:    "Get task status",
   description: [
     "Get task status structure from `taskId`"
   ].join('\n')
 }, async function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   // Load Task entity
   let task = await this.Task.load({
     taskId:     req.params.taskId
@@ -337,8 +239,8 @@ api.declare({
   idempotent: true,
   scopes:     [['queue:create-task:<provisionerId>/<workerType>']],
   deferAuth:  true,
-  input:      SCHEMA_PREFIX_CONST + 'create-task-request.json#',
-  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  input:      'create-task-request.json#',
+  output:     'task-status-response.json#',
   title:      "Create New Task",
   description: [
     "Create a new task, this is an **idempotent** operation, so repeat it if",
@@ -361,11 +263,6 @@ api.declare({
     "for completed tasks you have posted."
   ].join('\n')
 }, async function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   var taskId  = req.params.taskId;
   var taskDef = req.body;
 
@@ -386,7 +283,7 @@ api.declare({
 
   // Check scopes for priority
   if (taskDef.priority !== 'normal' &&
-      !req.satisfies('queue:task-priority:' + taskDef.priority)) {
+      !req.satisfies([['queue:task-priority:' + taskDef.priority]])) {
     return;
   }
 
@@ -495,8 +392,8 @@ api.declare({
     ['queue:create-task:<provisionerId>/<workerType>']
   ],
   deferAuth:  true,
-  input:      SCHEMA_PREFIX_CONST + 'create-task-request.json#',
-  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  input:      'create-task-request.json#',
+  output:     'task-status-response.json#',
   title:      "Define Task",
   description: [
     "Define a task without scheduling it. This API end-point allows you to",
@@ -515,11 +412,6 @@ api.declare({
     "task definition as previously defined this operation is safe to retry."
   ].join('\n')
 }, async function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   var taskId  = req.params.taskId;
   var taskDef = req.body;
 
@@ -540,7 +432,7 @@ api.declare({
 
   // Check scopes for priority
   if (taskDef.priority !== 'normal' &&
-      !req.satisfies('queue:task-priority:' + taskDef.priority)) {
+      !req.satisfies([['queue:task-priority:' + taskDef.priority]])) {
     return;
   }
 
@@ -635,7 +527,7 @@ api.declare({
   ],
   deferAuth:  true,
   input:      undefined, // No input accepted
-  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  output:     'task-status-response.json#',
   title:      "Schedule Defined Task",
   description: [
     "If you have define a task using `defineTask` API end-point, then you",
@@ -648,11 +540,6 @@ api.declare({
     "To reschedule a task previously resolved, use `rerunTask`."
   ].join('\n')
 }, async function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   // Load Task entity
   var taskId = req.params.taskId;
   var task = await this.Task.load({taskId: taskId}, true);
@@ -728,7 +615,7 @@ api.declare({
   ],
   deferAuth:  true,
   input:      undefined, // No input accepted
-  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  output:     'task-status-response.json#',
   title:      "Rerun a Resolved Task",
   description: [
     "This method _reruns_ a previously resolved task, even if it was",
@@ -745,11 +632,6 @@ api.declare({
     "current task status."
   ].join('\n')
 }, async function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   // Load Task entity
   var taskId  = req.params.taskId;
   var task    = await this.Task.load({taskId: taskId}, true);
@@ -850,7 +732,7 @@ api.declare({
   ],
   deferAuth:  true,
   input:      undefined, // No input accepted
-  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  output:     'task-status-response.json#',
   title:      "Cancel Task",
   description: [
     "This method will cancel a task that is either `unscheduled`, `pending` or",
@@ -867,11 +749,6 @@ api.declare({
     "return the current task status."
   ].join('\n')
 }, async function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   // Load Task entity
   var taskId  = req.params.taskId;
   var task    = await this.Task.load({taskId: taskId}, true);
@@ -966,7 +843,7 @@ api.declare({
     ]
   ],
   deferAuth:  true,
-  output:     SCHEMA_PREFIX_CONST + 'poll-task-urls-response.json#',
+  output:     'poll-task-urls-response.json#',
   title:      "Get Urls to Poll Pending Tasks",
   description: [
     "Get a signed URLs to get and delete messages from azure queue.",
@@ -974,11 +851,6 @@ api.declare({
     "with `claimTask`, and afterwards you should always delete the message."
   ].join('\n')
 }, async function(req, res) {
-    // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   var provisionerId = req.params.provisionerId;
   var workerType    = req.params.workerType;
 
@@ -1017,18 +889,13 @@ api.declare({
     ]
   ],
   deferAuth:  true,
-  input:      SCHEMA_PREFIX_CONST + 'task-claim-request.json#',
-  output:     SCHEMA_PREFIX_CONST + 'task-claim-response.json#',
+  input:      'task-claim-request.json#',
+  output:     'task-claim-response.json#',
   title:      "Claim task",
   description: [
     "claim a task, more to be added later..."
   ].join('\n')
 }, async function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   var taskId      = req.params.taskId;
   var runId       = parseInt(req.params.runId);
 
@@ -1144,17 +1011,12 @@ api.declare({
     ]
   ],
   deferAuth:  true,
-  output:     SCHEMA_PREFIX_CONST + 'task-claim-response.json#',
+  output:     'task-claim-response.json#',
   title:      "Reclaim task",
   description: [
     "reclaim a task more to be added later..."
   ].join('\n')
 }, async function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   var taskId = req.params.taskId;
   var runId  = parseInt(req.params.runId);
 
@@ -1348,17 +1210,12 @@ api.declare({
   ],
   deferAuth:  true,
   input:      undefined,  // No input at this point
-  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  output:     'task-status-response.json#',
   title:      "Report Run Completed",
   description: [
     "Report a task completed, resolving the run as `completed`."
   ].join('\n')
 }, function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   var taskId = req.params.taskId;
   var runId  = parseInt(req.params.runId);
   // Backwards compatibility with very old workers, should be dropped in the
@@ -1382,7 +1239,7 @@ api.declare({
   ],
   deferAuth:  true,
   input:      undefined,  // No input at this point
-  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  output:     'task-status-response.json#',
   title:      "Report Run Failed",
   description: [
     "Report a run failed, resolving the run as `failed`. Use this to resolve",
@@ -1394,11 +1251,6 @@ api.declare({
     "which should be reported with `reportException`."
   ].join('\n')
 }, function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   var taskId        = req.params.taskId;
   var runId         = parseInt(req.params.runId);
 
@@ -1417,8 +1269,8 @@ api.declare({
     ]
   ],
   deferAuth:  true,
-  input:      SCHEMA_PREFIX_CONST + 'task-exception-request.json#',
-  output:     SCHEMA_PREFIX_CONST + 'task-status-response.json#',
+  input:      'task-exception-request.json#',
+  output:     'task-status-response.json#',
   title:      "Report Task Exception",
   description: [
     "Resolve a run as _exception_. Generally, you will want to report tasks as",
@@ -1429,11 +1281,6 @@ api.declare({
     "resource does not exist."
   ].join('\n')
 }, async function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   var taskId        = req.params.taskId;
   var runId         = parseInt(req.params.runId);
   var reason        = req.body.reason;
@@ -1552,7 +1399,7 @@ api.declare({
   name:       'pendingTasks',
   scopes:     [['queue:pending-tasks:<provisionerId>/<workerType>']],
   deferAuth:  true,
-  output:     SCHEMA_PREFIX_CONST + 'pending-tasks-response.json#',
+  output:     'pending-tasks-response.json#',
   title:      "Get Number of Pending Tasks",
   description: [
     "Documented later...",
@@ -1561,11 +1408,6 @@ api.declare({
     "",
   ].join('\n')
 }, async function(req, res) {
-  // Validate parameters
-  if (!checkParams(req, res)) {
-    return;
-  }
-
   var provisionerId = req.params.provisionerId;
   var workerType    = req.params.workerType;
 

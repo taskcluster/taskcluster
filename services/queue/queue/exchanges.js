@@ -1,9 +1,6 @@
 var base      = require('taskcluster-base');
 var assert    = require('assert');
 
-// Common schema prefix
-var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/queue/v1/';
-
 /** Declaration of exchanges offered by the queue */
 var exchanges = new base.Exchanges({
   title:      "Queue AMQP Exchanges",
@@ -61,7 +58,8 @@ var exchanges = new base.Exchanges({
     "server crashes at wrong time. Ideally, we'll address this in the",
     "future. For now we suggest you ignore this corner case, and notify us",
     "if this corner case is of concern to you."
-  ].join('\n')
+  ].join('\n'),
+  schemaPrefix:         'http://schemas.taskcluster.net/queue/v1/'
 });
 
 // Export exchanges
@@ -176,7 +174,7 @@ exchanges.declare({
     "using `createTask`."
   ].join('\n'),
   routingKey:         buildCommonRoutingKey(),
-  schema:             SCHEMA_PREFIX_CONST + 'task-defined-message.json#',
+  schema:             'task-defined-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder,
   CCBuilder:          commonCCBuilder
@@ -197,7 +195,7 @@ exchanges.declare({
     "significantly without affecting general responsiveness."
   ].join('\n'),
   routingKey:         buildCommonRoutingKey({hasRun: true}),
-  schema:             SCHEMA_PREFIX_CONST + 'task-pending-message.json#',
+  schema:             'task-pending-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder,
   CCBuilder:          commonCCBuilder
@@ -214,7 +212,7 @@ exchanges.declare({
     "and a message is posted on this exchange."
   ].join('\n'),
   routingKey:         buildCommonRoutingKey({hasRun: true, hasWorker: true}),
-  schema:             SCHEMA_PREFIX_CONST + 'task-running-message.json#',
+  schema:             'task-running-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder,
   CCBuilder:          commonCCBuilder
@@ -247,7 +245,7 @@ exchanges.declare({
     "successfully."
   ].join('\n'),
   routingKey:         buildCommonRoutingKey({hasRun: true, hasWorker: true}),
-  schema:             SCHEMA_PREFIX_CONST + 'artifact-created-message.json#',
+  schema:             'artifact-created-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder,
   CCBuilder:          commonCCBuilder
@@ -267,7 +265,7 @@ exchanges.declare({
     "available from the task status structure."
   ].join('\n'),
   routingKey:         buildCommonRoutingKey({hasRun: true, hasWorker: true}),
-  schema:             SCHEMA_PREFIX_CONST + 'task-completed-message.json#',
+  schema:             'task-completed-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder,
   CCBuilder:          commonCCBuilder
@@ -285,7 +283,7 @@ exchanges.declare({
     "task specific code exited non-zero.",
   ].join('\n'),
   routingKey:         buildCommonRoutingKey(),
-  schema:             SCHEMA_PREFIX_CONST + 'task-failed-message.json#',
+  schema:             'task-failed-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder,
   CCBuilder:          commonCCBuilder
@@ -307,7 +305,7 @@ exchanges.declare({
     "to the `reasonResolved` property for the last run."
   ].join('\n'),
   routingKey:         buildCommonRoutingKey(),
-  schema:             SCHEMA_PREFIX_CONST + 'task-exception-message.json#',
+  schema:             'task-exception-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder,
   CCBuilder:          commonCCBuilder
