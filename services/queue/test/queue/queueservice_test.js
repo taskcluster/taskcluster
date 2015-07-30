@@ -153,8 +153,8 @@ suite('queue/QueueService', function() {
 
     debug("### Delete pending message");
     var deleteMessageUrl = queue.signedDeleteUrl
-                            .replace('{{messageId}}', message.MessageId)
-                            .replace('{{popReceipt}}', message.PopReceipt);
+          .replace('{{messageId}}', encodeURIComponent(message.MessageId))
+          .replace('{{popReceipt}}', encodeURIComponent(message.PopReceipt));
     var res = await request.del(deleteMessageUrl).buffer().end();
     assert(res.ok, "Message failed to delete");
   });
@@ -215,8 +215,8 @@ suite('queue/QueueService', function() {
 
     debug("### Delete pending message");
     var deleteMessageUrl = queue.signedDeleteUrl
-                            .replace('{{messageId}}', message.MessageId)
-                            .replace('{{popReceipt}}', message.PopReceipt);
+          .replace('{{messageId}}', encodeURIComponent(message.MessageId))
+          .replace('{{popReceipt}}', encodeURIComponent(message.PopReceipt));
     var res = await request.del(deleteMessageUrl).buffer().end();
     assert(res.ok, "Message failed to delete");
   });

@@ -1,4 +1,3 @@
-id:       http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#
 $schema:  http://json-schema.org/draft-04/schema#"
 title:          "Artifact Created Message"
 description: |
