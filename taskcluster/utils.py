@@ -8,15 +8,16 @@ import os
 import requests
 import time
 
+MAX_RETRIES = 5
+
+log = logging.getLogger(__name__)
+
 try:
   # Do not require pgpy for all tasks
   import pgpy
 except ImportError:
   pgpy = None
-
-MAX_RETRIES = 5
-
-log = logging.getLogger(__name__)
+  log.debug("Encryption disabled. Install pgpy to enable.")
 
 # Regular expression matching: X days Y hours Z minutes
 r = re.compile('^(\s*(\d+)\s*d(ays?)?)?' +
@@ -91,7 +92,7 @@ def slugId():
   return makeB64UrlSafe(encodeStringForB64Header(uuid.uuid4().bytes).replace('=', ''))
 
 
-def stable_slugId():
+def stableSlugId():
   """Returns a closure which can be used to generate stable slugIds.
   Stable slugIds can be used in a graph to specify task IDs in multiple
   places without regenerating them, e.g. taskId, requires, etc.
@@ -170,33 +171,33 @@ def putFile(filename, url, contentType):
     })
 
 
-def encrypt_env_var_message(task_id, start_time, end_time, name, value):
+def _messageForEncryptedEnvVar(taskId, startTime, endTime, name, value):
   return {
     "messageVersion": "1",
-    "taskId": task_id,
-    "startTime": start_time,
-    "endTime": end_time,
+    "taskId": taskId,
+    "startTime": startTime,
+    "endTime": endTime,
     "name": name,
     "value": value
   }
 
 
-def encrypt_env_var(task_id, start_time, end_time, name, value, key_file):
-  message = str(json.dumps(encrypt_env_var_message(task_id, start_time,
-                                                   end_time, name, value)))
-  return encrypt(message, key_file)
+def encryptEnvVar(taskId, startTime, endTime, name, value, keyFile):
+  message = str(json.dumps(_messageForEncryptedEnvVar(
+    taskId, startTime, endTime, name, value)))
+  return encrypt(message, keyFile)
 
 
-def encrypt(message, key_file):
+def encrypt(message, keyFile):
   """Encrypt and base64 encode message.
 
   :type message: str or unicode
-  :type key_file: str or unicode
+  :type keyFile: str or unicode
   :return: base64 representation of binary (unarmoured) encrypted message
   """
   if not pgpy:
     raise RuntimeError("Install `pgpy' to use encryption")
-  key, _ = pgpy.PGPKey.from_file(key_file)
+  key, _ = pgpy.PGPKey.from_file(keyFile)
   msg = pgpy.PGPMessage.new(message)
   encrypted = key.encrypt(msg)
   return base64.b64encode(encrypted.__bytes__())

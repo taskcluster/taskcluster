@@ -165,17 +165,17 @@ class TestStableSlugIdClosure(TestCase):
 
   @given(st.text())
   def test_repeat(self, text):
-    s = subject.stable_slugId()
+    s = subject.stableSlugId()
     self.assertEqual(s(text), s(text))
 
   def test_not_equal(self):
-    s = subject.stable_slugId()
+    s = subject.stableSlugId()
     self.assertNotEqual(s("first"), s("second"))
 
   @given(st.text())
   def test_invalidate(self, text):
-    s1 = subject.stable_slugId()
-    s2 = subject.stable_slugId()
+    s1 = subject.stableSlugId()
+    s2 = subject.stableSlugId()
     self.assertNotEqual(s1(text), s2(text))
 
 
@@ -184,18 +184,16 @@ class TestEncryptEnvVarMessage(TestCase):
   @given(st.text(), st.one_of(st.floats(), st.integers()),
          st.one_of(st.floats(), st.integers()), st.text(), st.text())
   def test_message_format(self, taskId, startTime, endTime, name, value):
-    self.assertDictEqual(
-      subject.encrypt_env_var_message(taskId, startTime, endTime, name,
-                                      value),
-      {
-        "messageVersion": "1",
-        "taskId": taskId,
-        "startTime": startTime,
-        "endTime": endTime,
-        "name": name,
-        "value": value
-      }
-    )
+    expected = {
+      "messageVersion": "1",
+      "taskId": taskId,
+      "startTime": startTime,
+      "endTime": endTime,
+      "name": name,
+      "value": value
+    }
+    self.assertDictEqual(expected, subject._messageForEncryptedEnvVar(
+      taskId, startTime, endTime, name, value))
 
 
 class TestEncrypt(TestCase):
