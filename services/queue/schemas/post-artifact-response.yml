@@ -1,0 +1,111 @@
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "Post Artifact Response"
+description: |
+  Response to a request for posting an artifact.
+  Note that the `storageType` property is referenced in the request as well.
+oneOf:
+  - title:          "S3 Artifact Response"
+    description: |
+      Response to a request for a signed PUT URL that will allow you to
+      upload an artifact to an S3 bucket managed by the queue.
+    type:           object
+    properties:
+      storageType:
+        description: |
+          Artifact storage type, in this case `'s3'`
+        type:       string
+        enum:
+          - s3
+      putUrl:
+        description: |
+          URL to which a `PUT` request can be made to upload the artifact
+          requested. Note, the `Content-Length` must be specified correctly,
+          and the `ContentType` header must be set the value specified below.
+        type:       string
+        format:     uri
+      expires:
+        description: |
+          Date-time after which the signed `putUrl` no longer works
+        type:       string
+        format:     date-time
+      contentType:
+        description: |
+          Artifact mime-type, must be specified as header when uploading with
+          the signed `putUrl`.
+        type:       string
+        maxLength:  255
+    additionalProperties: false
+    required:
+      - storageType
+      - putUrl
+      - expires
+      - contentType
+  - title:          "Azure Artifact Response"
+    description: |
+      Response to a request for an Azure Shared Access Signature (SAS)
+      that will allow you to upload an artifact to an Azure blob storage
+      container managed by the queue.
+    type:           object
+    properties:
+      storageType:
+        description: |
+          Artifact storage type, in this case `azure`
+        type:       string
+        enum:
+          - azure
+      expires:
+        description: |
+          Date-time after which Shared Access Signature (SAS) will
+          seize to work.
+        type:       string
+        format:     date-time
+      contentType:
+        description: |
+          Artifact mime-type, should be specified with the
+          `x-ms-blob-content-type` when committing the block.
+        type:       string
+        maxLength:  255
+      putUrl:
+        description: |
+          Shared Access Signature (SAS) with write permissions, see
+          [Azure REST API]
+          (http://msdn.microsoft.com/en-US/library/azure/dn140256.aspx)
+          reference for details on how to use this.
+        type:       string
+        format:     uri
+    additionalProperties: false
+    required:
+      - storageType
+      - expires
+      - contentType
+      - putUrl
+  - title:          "Redirect Artifact Response"
+    description: |
+      Response to a request for the queue to redirect to a URL for a given
+      artifact.
+    type:           object
+    properties:
+      storageType:
+        description: |
+          Artifact storage type, in this case `reference`
+        type:       string
+        enum:
+          - reference
+    additionalProperties: false
+    required:
+      - storageType
+  - title:          "Error Artifact Response"
+    description: |
+      Response to a request for the queue to reply `403` (forbidden) with
+      `reason` and `message` to any `GET` request for this artifact.
+    type:           object
+    properties:
+      storageType:
+        description: |
+          Artifact storage type, in this case `error`
+        type:       string
+        enum:
+          - error
+    additionalProperties: false
+    required:
+      - storageType
