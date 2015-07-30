@@ -197,4 +197,16 @@ suite('Create task', function() {
       debug("Expected error: %j", err, err);
     });
   });
+
+  test("createTask invalid taskId -> 400", async () => {
+    var taskId = "my-invalid-slugid";
+
+    // Verify that we can't modify the task
+    await helper.queue.createTask(taskId, taskDef).then(() => {
+      throw new Error("This operation should have failed!");
+    }, (err) => {
+      assume(err.statusCode).equals(400);
+      debug("Expected error: %j", err, err);
+    });
+  });
 });

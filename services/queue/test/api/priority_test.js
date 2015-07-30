@@ -28,7 +28,7 @@ suite("task.priority", () => {
     };
   };
 
-  test("Can submit 'high' w. queue:task-priority:high", async () => {
+  test("Can create 'high' w. queue:task-priority:high", async () => {
     helper.scopes(
       'queue:create-task:no-provisioner/priority-test-worker',
       'queue:task-priority:high'
@@ -36,7 +36,7 @@ suite("task.priority", () => {
     await helper.queue.createTask(slugid.v4(), makeTask('high'));
   });
 
-  test("Can't submit 'high' without queue:task-priority:high", async () => {
+  test("Can't create 'high' without queue:task-priority:high", async () => {
     helper.scopes(
       'queue:create-task:no-provisioner/priority-test-worker'
     );
@@ -47,11 +47,37 @@ suite("task.priority", () => {
     });
   });
 
-  test("Can submit 'normal' without queue:task-priority:high", async () => {
+  test("Can create 'normal' without queue:task-priority:high", async () => {
     helper.scopes(
       'queue:create-task:no-provisioner/priority-test-worker'
     );
     await helper.queue.createTask(slugid.v4(), makeTask('normal'));
+  });
+
+  test("Can define 'high' w. queue:task-priority:high", async () => {
+    helper.scopes(
+      'queue:define-task:no-provisioner/priority-test-worker',
+      'queue:task-priority:high'
+    );
+    await helper.queue.defineTask(slugid.v4(), makeTask('high'));
+  });
+
+  test("Can't define 'high' without queue:task-priority:high", async () => {
+    helper.scopes(
+      'queue:define-task:no-provisioner/priority-test-worker'
+    );
+    await helper.queue.defineTask(slugid.v4(), makeTask('high')).then(() => {
+      assert(false, "Expected 400 error!");
+    }, err => {
+      debug("Got error as expected");
+    });
+  });
+
+  test("Can define 'normal' without queue:task-priority:high", async () => {
+    helper.scopes(
+      'queue:define-task:no-provisioner/priority-test-worker'
+    );
+    await helper.queue.defineTask(slugid.v4(), makeTask('normal'));
   });
 
   test("poll 'high' before 'low'", async () => {
