@@ -12,6 +12,13 @@ MAX_RETRIES = 5
 
 log = logging.getLogger(__name__)
 
+try:
+  # Do not require pgpy for all tasks
+  import pgpy
+except ImportError:
+  pgpy = None
+  log.debug("Encryption disabled. Install pgpy to enable.")
+
 # Regular expression matching: X days Y hours Z minutes
 r = re.compile('^(\s*(\d+)\s*d(ays?)?)?' +
                '(\s*(\d+)\s*h(ours?)?)?' +
@@ -85,6 +92,21 @@ def slugId():
   return makeB64UrlSafe(encodeStringForB64Header(uuid.uuid4().bytes).replace('=', ''))
 
 
+def stableSlugId():
+  """Returns a closure which can be used to generate stable slugIds.
+  Stable slugIds can be used in a graph to specify task IDs in multiple
+  places without regenerating them, e.g. taskId, requires, etc.
+  """
+  _cache = {}
+
+  def closure(name):
+    if name not in _cache:
+      _cache[name] = slugId()
+    return _cache[name]
+
+  return closure
+
+
 def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
   """ Make an HTTP request and retry it until success, return request """
   retry = -1
@@ -147,3 +169,61 @@ def putFile(filename, url, contentType):
       'Content-Length': contentLength,
       'Content-Type': contentType,
     })
+
+
+def _messageForEncryptedEnvVar(taskId, startTime, endTime, name, value):
+  return {
+    "messageVersion": "1",
+    "taskId": taskId,
+    "startTime": startTime,
+    "endTime": endTime,
+    "name": name,
+    "value": value
+  }
+
+
+def encryptEnvVar(taskId, startTime, endTime, name, value, keyFile):
+  message = str(json.dumps(_messageForEncryptedEnvVar(
+    taskId, startTime, endTime, name, value)))
+  return base64.b64encode(_encrypt(message, keyFile))
+
+
+def _encrypt(message, keyFile):
+  """Encrypt and base64 encode message.
+
+  :type message: str or unicode
+  :type keyFile: str or unicode
+  :return: base64 representation of binary (unarmoured) encrypted message
+  """
+  if not pgpy:
+    raise RuntimeError("Install `pgpy' to use encryption")
+  key, _ = pgpy.PGPKey.from_file(keyFile)
+  msg = pgpy.PGPMessage.new(message)
+  encrypted = key.encrypt(msg)
+  return encrypted.__bytes__()
+
+
+def decryptMessage(message, privateKey):
+  """Decrypt base64-encoded message
+  :param message: base64-encode message
+  :param privateKey: path to private key
+  :return: decrypted message dictionary
+  """
+  decodedMessage = base64.b64decode(message)
+  return json.loads(_decrypt(decodedMessage, privateKey))
+
+
+def _decrypt(blob, privateKey):
+  """
+  :param blob: encrypted binary string
+  :param privateKey: path to private key
+  :return: decrypted text
+
+  """
+  if not pgpy:
+    raise RuntimeError("Install `pgpy' to use encryption")
+  key, _ = pgpy.PGPKey.from_file(privateKey)
+  msg = pgpy.PGPMessage()
+  msg.parse(blob)
+  decrypted = key.decrypt(msg)
+  return decrypted.message

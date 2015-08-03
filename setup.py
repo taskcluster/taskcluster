@@ -16,6 +16,8 @@ tests_require = [
   'flake8==2.2.5',
   'subprocess32==3.2.6',
   'psutil==2.1.3',
+  'hypothesis',
+  'pgpy'
 ]
 
 install_requires = [

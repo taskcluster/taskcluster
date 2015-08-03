@@ -1,5 +1,6 @@
 import datetime
 import uuid
+import os
 
 import taskcluster.utils as subject
 import httmock
@@ -7,6 +8,9 @@ import mock
 import requests
 
 import base
+from unittest import TestCase
+from hypothesis import given
+import hypothesis.strategies as st
 
 
 # https://docs.python.org/2/library/datetime.html#tzinfo-objects
@@ -155,3 +159,80 @@ class TestPutfile(base.TCTest):
     with mock.patch.object(subject, 'makeSingleHttpRequest') as p:
       subject.putFile('setup.py', 'http://www.example.com', 'text/plain')
       p.assert_called_once_with('put', 'http://www.example.com', mock.ANY, mock.ANY)
+
+
+class TestStableSlugIdClosure(TestCase):
+
+  @given(st.text())
+  def test_repeat(self, text):
+    s = subject.stableSlugId()
+    self.assertEqual(s(text), s(text))
+
+  def test_not_equal(self):
+    s = subject.stableSlugId()
+    self.assertNotEqual(s("first"), s("second"))
+
+  @given(st.text())
+  def test_invalidate(self, text):
+    s1 = subject.stableSlugId()
+    s2 = subject.stableSlugId()
+    self.assertNotEqual(s1(text), s2(text))
+
+
+class TestEncryptEnvVarMessage(TestCase):
+
+  @given(st.text(), st.one_of(st.floats(), st.integers()),
+         st.one_of(st.floats(), st.integers()), st.text(), st.text())
+  def test_message_format(self, taskId, startTime, endTime, name, value):
+    expected = {
+      "messageVersion": "1",
+      "taskId": taskId,
+      "startTime": startTime,
+      "endTime": endTime,
+      "name": name,
+      "value": value
+    }
+    self.assertDictEqual(expected, subject._messageForEncryptedEnvVar(
+      taskId, startTime, endTime, name, value))
+
+
+class TestEncrypt(TestCase):
+
+  @given(st.text(), st.one_of(st.floats(), st.integers()),
+         st.one_of(st.floats(), st.integers()), st.text(), st.text())
+  def test_generic(self, taskId, startTime, endTime, name, value):
+    key_file = os.path.join(os.path.dirname(__file__), "public.key")
+
+    self.assertTrue(subject.encryptEnvVar(taskId, startTime, endTime, name,
+                                          value, key_file).startswith("wcB"),
+                    "Encrypted string should always start with 'wcB'")
+
+
+class TestDecrypt(TestCase):
+
+  def test_encypt_text(self):
+    privateKey = os.path.join(os.path.dirname(__file__), "secret.key")
+    publicKey = os.path.join(os.path.dirname(__file__), "public.key")
+    text = "Hello \U0001F4A9!"
+    encrypted = subject._encrypt(text, publicKey)
+    self.assertNotEqual(text, encrypted)
+    decrypted = subject._decrypt(encrypted, privateKey)
+    self.assertEqual(text, decrypted)
+
+
+class TestDecryptMessage(TestCase):
+
+  def test_decryptMessage(self):
+    privateKey = os.path.join(os.path.dirname(__file__), "secret.key")
+    publicKey = os.path.join(os.path.dirname(__file__), "public.key")
+    expected = {
+      "messageVersion": "1",
+      "taskId": "abcd",
+      "startTime": 1,
+      "endTime": 2,
+      "name": "Name",
+      "value": "Value"
+    }
+    encrypted = subject.encryptEnvVar("abcd", 1, 2, "Name", "Value", publicKey)
+    decrypted = subject.decryptMessage(encrypted, privateKey)
+    self.assertDictEqual(expected, decrypted)
