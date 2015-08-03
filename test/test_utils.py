@@ -198,8 +198,41 @@ class TestEncryptEnvVarMessage(TestCase):
 
 class TestEncrypt(TestCase):
 
-  @given(st.text())
-  def test_generic(self, text):
-    key_file = os.path.join(os.path.dirname(__file__), "docker-worker-pub.pem")
-    self.assertTrue(subject.encrypt(text, key_file).startswith("wcB"),
+  @given(st.text(), st.one_of(st.floats(), st.integers()),
+         st.one_of(st.floats(), st.integers()), st.text(), st.text())
+  def test_generic(self, taskId, startTime, endTime, name, value):
+    key_file = os.path.join(os.path.dirname(__file__), "public.key")
+
+    self.assertTrue(subject.encryptEnvVar(taskId, startTime, endTime, name,
+                                          value, key_file).startswith("wcB"),
                     "Encrypted string should always start with 'wcB'")
+
+
+class TestDecrypt(TestCase):
+
+  def test_encypt_text(self):
+    privateKey = os.path.join(os.path.dirname(__file__), "secret.key")
+    publicKey = os.path.join(os.path.dirname(__file__), "public.key")
+    text = "Hello \U0001F4A9!"
+    encrypted = subject._encrypt(text, publicKey)
+    self.assertNotEqual(text, encrypted)
+    decrypted = subject._decrypt(encrypted, privateKey)
+    self.assertEqual(text, decrypted)
+
+
+class TestDecryptMessage(TestCase):
+
+  def test_decryptMessage(self):
+    privateKey = os.path.join(os.path.dirname(__file__), "secret.key")
+    publicKey = os.path.join(os.path.dirname(__file__), "public.key")
+    expected = {
+      "messageVersion": "1",
+      "taskId": "abcd",
+      "startTime": 1,
+      "endTime": 2,
+      "name": "Name",
+      "value": "Value"
+    }
+    encrypted = subject.encryptEnvVar("abcd", 1, 2, "Name", "Value", publicKey)
+    decrypted = subject.decryptMessage(encrypted, privateKey)
+    self.assertDictEqual(expected, decrypted)

@@ -185,10 +185,10 @@ def _messageForEncryptedEnvVar(taskId, startTime, endTime, name, value):
 def encryptEnvVar(taskId, startTime, endTime, name, value, keyFile):
   message = str(json.dumps(_messageForEncryptedEnvVar(
     taskId, startTime, endTime, name, value)))
-  return encrypt(message, keyFile)
+  return base64.b64encode(_encrypt(message, keyFile))
 
 
-def encrypt(message, keyFile):
+def _encrypt(message, keyFile):
   """Encrypt and base64 encode message.
 
   :type message: str or unicode
@@ -200,4 +200,30 @@ def encrypt(message, keyFile):
   key, _ = pgpy.PGPKey.from_file(keyFile)
   msg = pgpy.PGPMessage.new(message)
   encrypted = key.encrypt(msg)
-  return base64.b64encode(encrypted.__bytes__())
+  return encrypted.__bytes__()
+
+
+def decryptMessage(message, privateKey):
+  """Decrypt base64-encoded message
+  :param message: base64-encode message
+  :param privateKey: path to private key
+  :return: decrypted message dictionary
+  """
+  decodedMessage = base64.b64decode(message)
+  return json.loads(_decrypt(decodedMessage, privateKey))
+
+
+def _decrypt(blob, privateKey):
+  """
+  :param blob: encrypted binary string
+  :param privateKey: path to private key
+  :return: decrypted text
+
+  """
+  if not pgpy:
+    raise RuntimeError("Install `pgpy' to use encryption")
+  key, _ = pgpy.PGPKey.from_file(privateKey)
+  msg = pgpy.PGPMessage()
+  msg.parse(blob)
+  decrypted = key.decrypt(msg)
+  return decrypted.message
