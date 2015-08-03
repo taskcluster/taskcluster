@@ -1,0 +1,21 @@
+language: go
+
+go:
+  - 1.4
+
+script:
+  - ./build.sh
+
+# currently cannot customise per user fork, see:
+# https://github.com/travis-ci/travis-ci/issues/1094
+notifications:
+  irc:
+    channels:
+      - "irc.mozilla.org#taskcluster-bots"
+    on_success: always
+    on_failure: always
+    template:
+      - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
+      - "Change view : %{compare_url}"
+      - "Build details : %{build_url}"
+      - "Commit message : %{commit_message}"

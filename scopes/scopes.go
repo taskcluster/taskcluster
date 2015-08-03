@@ -1,3 +1,4 @@
+// Package scopes provides utilities for manipulating and interpreting Taskcluster scopes.
 package scopes
 
 import (
@@ -5,90 +6,58 @@ import (
 )
 
 type (
-	Given    []string
+	// `Given` represents a set of scopes assigned to a client.  For example:
+	//
+	//  myScopes := scopes.Given{
+	//  	"abc:*",
+	//  	"123:4:56",
+	//  	"xyz",
+	//  	"AB:*",
+	//  }
+	//
+	// In order for a given scope to satisfy a required scope, either the given
+	// scope and required scope need to match as strings, or the given scope
+	// needs to be a prefix of the required scope, plus the `*` character. For
+	// example, the given scope `abc:*` satisfies the required scope `abc:def`.
+	Given []string
+	// `Required` represents (in disjunctive normal form) permutations of
+	// scopes that are sufficient to authorise a client to perform a particular
+	// action. For example:
+	//
+	//  requiredScopes := scopes.Required{
+	//  	{"abc:def", "AB:CD:EF"},
+	//  	{"123:4:5"},
+	//  	{"abc:def", "123:4"},
+	//  	{"Xxyz"},
+	//  }
+	//
+	// represents the requirement that the following scopes are "satisfied":
+	//
+	//  ("abc:def" AND "AB:CD:EF") OR "123:4:5" OR ("abc:def" AND "123:4") OR "Xxyz"
+	//
+	// Please note Required scopes do _not_ contain wildcard characters; they are
+	// literal strings. This differs from Given scopes.
 	Required [][]string
 )
 
-// Calls function `matches(j)` for each `j` in `list` until `true` is returned,
-// or the list is exhausted. Returns `true` if result `true` was returned from
-// `matches(j)` for some `j`, otherwise false.
-func some(list []interface{}, matches func(interface{}) bool) bool {
-	for _, j := range list {
-		if matches(j) {
-			return true
+// Returns `true` if the given scopes satisfy the required scopes.
+//
+func (given *Given) Satisfies(required *Required) bool {
+checkRequired:
+	// outer loop - any scope set can pass in order to pass scope sets
+	for _, set := range *required {
+		// inner loop - all scopes have to pass in order to pass scope set
+		for _, scope := range set {
+			// just need to find one given scope to satisfy required scope
+			for _, pattern := range *given {
+				if scope == pattern || (strings.HasSuffix(pattern, "*") && strings.HasPrefix(scope, pattern[0:len(pattern)-1])) {
+					goto scopeMatch
+				}
+			}
+			continue checkRequired
+		scopeMatch:
 		}
+		return true
 	}
 	return false
-}
-
-// Calls function `matches(j)` for each `j` in `list` until `false` is returned,
-// or the list is exhausted. Returns `false` if result `false` was returned from
-// `matches(j)` for some `j`, otherwise true.
-func every(list []interface{}, matches func(interface{}) bool) bool {
-	for _, j := range list {
-		if !matches(j) {
-			return false
-		}
-	}
-	return true
-}
-
-// Returns true if `given` satisfies `required`.
-//
-// `given` is a pointer to an array of strings such as:
-//
-//  &[]string{
-//  	"abc:*",
-//  	"123:4:56",
-//  	"xyz",
-//  	"AB:*",
-//  }
-//
-// `required` is a pointer to an array of arrays of strings such as:
-//
-//  &[][]string{
-//  	{"abc:def", "AB:CD:EF"},
-//  	{"123:4:5"},
-//  	{"abc:def", "123:4"},
-//  	{"Xxyz"},
-//  }
-//
-// 1) The `*` when specified at the end of a scope in `given` operates as a
-// wildcard, matching anything.
-//
-// 2) Each string of inner []string of `required` must be satisfied for the
-// []string to be satisfied.  `required` is satisfied if only one of the outer
-// []string of the [][]string is satisfied. In other words, outer array =>
-// logical OR, inner array => logical AND.
-//
-// In the example above, Satisfies would return true, since the scopes
-// "abc:def" and "AB:CD:EF" are satisfied by "abc:*" and "AB:*".
-func (given *Given) Satisfies(required *Required) bool {
-	requiredI := make([]interface{}, len(*required))
-	for i, d := range *required {
-		requiredI[i] = d
-	}
-	return some(requiredI, func(scopeSet interface{}) bool {
-		scopeSetI := make([]interface{}, len(scopeSet.([]string)))
-		for i, d := range scopeSet.([]string) {
-			scopeSetI[i] = d
-		}
-		return every(scopeSetI, func(scope interface{}) bool {
-			scopeString := scope.(string)
-			givenI := make([]interface{}, len(*given))
-			for i, d := range *given {
-				givenI[i] = d
-			}
-			return some(givenI, func(pattern interface{}) bool {
-				patternString := pattern.(string)
-				if scopeString == patternString {
-					return true
-				}
-				if strings.HasSuffix(patternString, "*") {
-					return strings.HasPrefix(scopeString, patternString[0:len(patternString)-1])
-				}
-				return false
-			})
-		})
-	})
 }
