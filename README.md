@@ -2,6 +2,7 @@
 <img hspace="20" align="left" src="https://tools.taskcluster.net/lib/assets/taskcluster-120.png" />
 [![Build Status](https://secure.travis-ci.org/taskcluster/taskcluster-base-go.png)](http://travis-ci.org/taskcluster/taskcluster-base-go)
 [![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster-base-go?status.png)](https://godoc.org/github.com/taskcluster/taskcluster-base-go)
+[![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster-base-go/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster-base-go?branch=master)
 
 A go (golang) port of taskcluster-base utility functions.
 
@@ -28,14 +29,19 @@ import (
 )
 
 func main() {
-	givenScopes := scopes.Given{"abc", "def"}
-	requiredScopes := scopes.Required{{"ABC", "DEF"}, {"abc", "def", "ghi"}, {"123"}}
+	givenScopes := scopes.Given{"queue:*", "docker-worker:image:taskcluster/builder:0.5.6"}
+	requiredScopes := scopes.Required{{"queue:define-task:aws-provisioner-v1/build-c4-2xlarge", "docker-worker:cache:tc-vcs"}, {"queue:define-task:*"}}
 	fmt.Printf("Are scopes satisfied? %v\n", givenScopes.Satisfies(&requiredScopes))
 }
 ```
 
+See [formal definitions](http://docs.taskcluster.net/presentations/scopes/#/definitions)
+for more information about scope satisfaction.
+
 ## Contributing
-Contributions are welcome. Please fork, and issue a Pull Request back with an explanation of your changes.
+Contributions are welcome. Please fork, and issue a Pull Request back with an
+explanation of your changes.
 
 ## Travis
-Travis build [success/failure messages](http://travis-ci.org/taskcluster/taskcluster-base-go) are posted to irc channel #tcclient-go on irc.mozilla.org:6697.
+Travis build [success/failure messages](http://travis-ci.org/taskcluster/taskcluster-base-go)
+are posted to irc channel #taskcluster-bots on irc.mozilla.org:6697.
