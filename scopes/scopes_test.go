@@ -53,8 +53,8 @@ func TestTwoRequiredFirstMissing(t *testing.T) {
 		},
 		Required{
 			{
-				"a", // satisfied by "a"
-				"b", // NOT satisfied
+				"a", // NOT satisfied
+				"b", // satisfied by "b"
 			}, // => NOT satisfied
 		}, // => NOT satisfied
 	)
@@ -216,9 +216,26 @@ func TestStarNotExpandedWhenNotAtEnd(t *testing.T) {
 	)
 }
 
+// This example demonstrates the use of a required scope with a trailing `*`
+// character.
+func ExampleGiven_Satisfies_wildcard() {
+	given := Given{"queue:*"}
+	fmt.Println(given.Satisfies(&Required{{"queue:route:*"}}))
+	fmt.Println(given.Satisfies(&Required{{"queue:*"}}))
+	fmt.Println(given.Satisfies(&Required{{"*"}}))
+
+	given = Given{"queue:route"}
+	fmt.Println(given.Satisfies(&Required{{"queue:*"}}))
+	// Output:
+	// true
+	// true
+	// false
+	// false
+}
+
 // This rather complex example is commented to demonstrate the evaluation
 // process.
-func ExampleGiven_Satisfies() {
+func ExampleGiven_Satisfies_compound() {
 	given := Given{
 		"abc:*",
 		"123:4:56",
