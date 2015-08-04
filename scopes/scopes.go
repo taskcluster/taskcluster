@@ -1,4 +1,8 @@
-// Package scopes provides utilities for manipulating and interpreting Taskcluster scopes.
+// Package scopes provides utilities for manipulating and interpreting
+// Taskcluster scopes.
+//
+// See http://docs.taskcluster.net/presentations/scopes/#/definitions for
+// formal definitions.
 package scopes
 
 import (
@@ -35,13 +39,16 @@ type (
 	//
 	//  ("abc:def" AND "AB:CD:EF") OR "123:4:5" OR ("abc:def" AND "123:4") OR "Xxyz"
 	//
-	// Please note Required scopes do _not_ contain wildcard characters; they are
-	// literal strings. This differs from Given scopes.
+	// Please note that since a required scope satisfies a given scope if they
+	// are equal, required scopes ending with a `*` can be used, although are
+	// relatively uncommon. See the examples.
 	Required [][]string
 )
 
 // Returns `true` if the given scopes satisfy the required scopes.
 //
+// This function is ported from
+// https://github.com/taskcluster/taskcluster-base/blob/218225942212e24596cee211389c276b2b985ffe/utils.js#L37-L68
 func (given *Given) Satisfies(required *Required) bool {
 checkRequired:
 	// outer loop - any scope set can pass in order to pass scope sets
