@@ -10,7 +10,7 @@ before_install:
   - go get golang.org/x/tools/cmd/vet
 
 script:
-  - go test -v -coverprofile=coverage.report ./...
+  - go test -v -coverprofile=coverage.report
 
 after_script:
   - go tool cover -func=coverage.report
