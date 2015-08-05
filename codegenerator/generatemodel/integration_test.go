@@ -38,9 +38,9 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 	now := time.Now().Local()
 	inAnHour := now.Add(time.Hour * 1)
 	aYearAgo := now.AddDate(-1, 0, 0)
-	t.Log()
+	t.Log("")
 	t.Log("  => Task " + taskId + " was created on " + created.Format("Mon, 2 Jan 2006 at 15:04:00 -0700"))
-	t.Log()
+	t.Log("")
 	if created.After(inAnHour) {
 		t.Log("Current time: " + now.Format("Mon, 2 Jan 2006 at 15:04:00 -0700"))
 		t.Error("Task " + taskId + " has a creation date that is over an hour in the future")
