@@ -1,7 +1,7 @@
 # generic-worker
 <img src="https://tools.taskcluster.net/lib/assets/taskcluster-120.png" />
-[![Build Status](https://secure.travis-ci.org/taskcluster/generic-worker.png)](http://travis-ci.org/taskcluster/generic-worker)
-[![GoDoc](https://godoc.org/github.com/taskcluster/generic-worker?status.png)](https://godoc.org/github.com/taskcluster/generic-worker)
+[![Build Status](https://travis-ci.org/taskcluster/generic-worker.svg?branch=master)](http://travis-ci.org/taskcluster/generic-worker)
+[![GoDoc](https://godoc.org/github.com/taskcluster/generic-worker?status.svg)](https://godoc.org/github.com/taskcluster/generic-worker)
 [![Coverage Status](https://coveralls.io/repos/taskcluster/generic-worker/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/generic-worker?branch=master)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
