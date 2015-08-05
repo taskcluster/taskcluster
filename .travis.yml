@@ -23,7 +23,7 @@ install:
 
 script:
   - "go install -v ./..."
-  - "${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report ./..."
+  - "test $GIMME_OS.$GIMME_ARCH = linux.amd64 && {GOPATH}/bin/gotestcover -v -coverprofile=coverage.report ./..."
   - "go tool cover -func=coverage.report"
 
 after_script:
