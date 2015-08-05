@@ -11,11 +11,11 @@ before_install:
   - go get github.com/pierrre/gotestcover
 
 script:
-  - ${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report ./...
+  - ${HOME}/gopath/bin/gotestcover -v -coverprofile=coverage.report ./...
 
 after_script:
   - go tool cover -func=coverage.report
-  - ${GOPATH}/bin/goveralls -coverprofile=coverage.report -service=travis-ci
+  - ${HOME}/gopath/bin/goveralls -coverprofile=coverage.report -service=travis-ci
 
 # currently cannot customise per user fork, see:
 # https://github.com/travis-ci/travis-ci/issues/1094
