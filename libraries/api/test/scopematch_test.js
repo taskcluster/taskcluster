@@ -34,6 +34,10 @@ suite("scopeMatch", function() {
     mktest(["foo:bar"], [['']], false));
   test("prefix",
     mktest(["foo:*"], [['foo:bar']], true));
+  test("star not at end",
+    mktest(["foo:*:bing"], [['foo:bar:bing']], false));
+  test("star at beginnging",
+    mktest(["*:bar"], [['foo:bar']], false));
   test("prefix with no star",
     mktest(["foo:"], [['foo:bar']], false));
   test("star but not prefix",
