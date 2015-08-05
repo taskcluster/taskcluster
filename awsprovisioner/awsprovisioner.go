@@ -11,7 +11,7 @@
 // The AWS Provisioner is responsible for provisioning instances on EC2 for use in
 // TaskCluster.  The provisioner maintains a set of worker configurations which
 // can be managed with an API that is typically available at
-// aws-provisioner.taskcluster.net.  This API can also perform basic instance
+// aws-provisioner.taskcluster.net/v1.  This API can also perform basic instance
 // management tasks in addition to maintaining the internal state of worker type
 // configuration information.
 //
@@ -224,8 +224,29 @@ func New(clientId string, accessToken string) *Auth {
 	}
 }
 
-// Create a worker type and ensure that all EC2 regions have the required
-// KeyPair
+// Create a worker type.  A worker type contains all the configuration
+// needed for the provisioner to manage the instances.  Each worker type
+// knows which regions and which instance types are allowed for that
+// worker type.  Remember that Capacity is the number of concurrent tasks
+// that can be run on a given EC2 resource and that Utility is the relative
+// performance rate between different instance types.  There is no way to
+// configure different regions to have different sets of instance types
+// so ensure that all instance types are available in all regions.
+// This function is idempotent.
+//
+// Once a worker type is in the provisioner, a back ground process will
+// begin creating instances for it based on its capacity bounds and its
+// pending task count from the Queue.  It is the worker's responsibility
+// to shut itself down.  The provisioner has a limit (currently 96hours)
+// for all instances to prevent zombie instances from running indefinitely.
+//
+// The provisioner will ensure that all instances created are tagged with
+// aws resource tags containing the provisioner id and the worker type.
+//
+// If provided, the secrets in the global, region and instance type sections
+// are available using the secrets api.  If specified, the scopes provided
+// will be used to generate a set of temporary credentials available with
+// the other secrets.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createWorkerType
 func (a *Auth) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
@@ -233,8 +254,17 @@ func (a *Auth) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequ
 	return responseObject.(*GetWorkerTypeRequest), callSummary
 }
 
-// Update a workerType and ensure that all regions have the require
-// KeyPair
+// Provide a new copy of a worker type to replace the existing one.
+// This will overwrite the existing worker type definition if there
+// is already a worker type of that name.  This method will return a
+// 200 response along with a copy of the worker type definition created
+// Note that if you are using the result of a GET on the worker-type
+// end point that you will need to delete the lastModified and workerType
+// keys from the object returned, since those fields are not allowed
+// the request body for this method
+//
+// Otherwise, all input requirements and actions are the same as the
+// create method.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#updateWorkerType
 func (a *Auth) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
@@ -242,7 +272,11 @@ func (a *Auth) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequ
 	return responseObject.(*GetWorkerTypeRequest), callSummary
 }
 
-// Retreive a WorkerType definition
+// Retreive a copy of the requested worker type definition.
+// This copy contains a lastModified field as well as the worker
+// type name.  As such, it will require manipulation to be able to
+// use the results of this method to submit date to the update
+// method.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#workerType
 func (a *Auth) WorkerType(workerType string) (*GetWorkerTypeRequest, *CallSummary) {
@@ -250,8 +284,16 @@ func (a *Auth) WorkerType(workerType string) (*GetWorkerTypeRequest, *CallSummar
 	return responseObject.(*GetWorkerTypeRequest), callSummary
 }
 
-// Delete a WorkerType definition, submits requests to kill all
-// instances and delete the KeyPair from all configured EC2 regions
+// Delete a worker type definition.  This method will only delete
+// the worker type definition from the storage table.  The actual
+// deletion will be handled by a background worker.  As soon as this
+// method is called for a worker type, the background worker will
+// immediately submit requests to cancel all spot requests for this
+// worker type as well as killing all instances regardless of their
+// state.  If you want to gracefully remove a worker type, you must
+// either ensure that no tasks are created with that worker type name
+// or you could theoretically set maxCapacity to 0, though, this is
+// not a supported or tested action
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeWorkerType
 func (a *Auth) RemoveWorkerType(workerType string) *CallSummary {
@@ -259,7 +301,10 @@ func (a *Auth) RemoveWorkerType(workerType string) *CallSummary {
 	return callSummary
 }
 
-// List all known WorkerType names
+// Return a list of string worker type names.  These are the names
+// of all managed worker types known to the provisioner.  This does
+// not include worker types which are left overs from a deleted worker
+// type definition but are still running in AWS.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#listWorkerTypes
 func (a *Auth) ListWorkerTypes() (*ListWorkerTypes, *CallSummary) {
@@ -319,9 +364,9 @@ func (a *Auth) RemoveSecret(token string) *CallSummary {
 	return callSummary
 }
 
-// Return the EC2 LaunchSpecifications for all combinations of regions
-// and instance types or a list of reasons why the launch specifications
-// are not valid
+// This method returns a preview of all possible launch specifications
+// that this worker type definition could submit to EC2.  It is used to
+// test worker types, nothing more
 //
 // **This API end-point is experimental and may be subject to change without warning.**
 //
@@ -331,7 +376,10 @@ func (a *Auth) GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, *C
 	return responseObject.(*GetAllLaunchSpecsResponse), callSummary
 }
 
-// DEPRECATED.
+// This method is a left over and will be removed as soon as the
+// tools.tc.net UI is updated to use the per-worker state
+//
+// **DEPRECATED.**
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#awsState
 func (a *Auth) AwsState() *CallSummary {
