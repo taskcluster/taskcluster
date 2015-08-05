@@ -2,7 +2,7 @@
 <img hspace="20" align="left" src="https://tools.taskcluster.net/lib/assets/taskcluster-120.png" />
 [![Build Status](https://secure.travis-ci.org/taskcluster/taskcluster-client-go.png)](http://travis-ci.org/taskcluster/taskcluster-client-go)
 [![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster-client-go?status.png)](https://godoc.org/github.com/taskcluster/taskcluster-client-go)
-+[![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster-client-go/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster-client-go?branch=master)
+[![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster-client-go/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster-client-go?branch=master)
 
 A go (golang) port of taskcluster-client.
 
