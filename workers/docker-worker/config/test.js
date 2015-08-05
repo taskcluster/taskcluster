@@ -31,12 +31,14 @@ module.exports = {
   },
 
   cache: {
-    volumeCachePath: path.join(__dirname, '..', 'test', 'tmp')
+    volumeCachePath: path.join('/tmp', 'test-cache')
   },
 
   capacityManagement: {
     diskspaceThreshold: 1 * 1000000000,
   },
+
+  dockerVolume: '/tmp',
 
   dockerWorkerPrivateKey: '/worker/test/docker-worker-priv.pem',
 

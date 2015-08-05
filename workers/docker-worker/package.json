@@ -54,6 +54,7 @@
     "statsd-client": "0.0.15",
     "superagent": "^1.1.0",
     "superagent-promise": "^0.2.0",
+    "tar-fs": "^1.7.0",
     "tar-stream": "^1.2.1",
     "taskcluster-azure-blobstream": "^0.3.0",
     "taskcluster-base": "^0.7.0",

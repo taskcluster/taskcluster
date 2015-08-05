@@ -15,7 +15,7 @@ suite('volume cache test', function () {
   var cmd = require('./integration/helper/cmd');
 
   // Location on the machine running the test where the cache will live
-  var localCacheDir = path.join(__dirname, 'tmp');
+  var localCacheDir = path.join('/tmp', 'test-cache');
 
   var log = createLogger({
     source: 'top',

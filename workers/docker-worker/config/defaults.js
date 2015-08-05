@@ -187,7 +187,7 @@ module.exports = {
   dockerWorkerPrivateKey: '/etc/docker-worker-priv.pem',
 
   dockerSave: {
-    expiration: 1000 * 60 * 60 * 24 * 7
+    expiration: '7 days'
   },
 
   interactive: {

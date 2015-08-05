@@ -202,7 +202,7 @@ export default class VolumeCache {
   once a container has been completed removed. Local cached volume will remain
   on the filesystem to be used by the next container/task.
 
-  @param {String} Cache key int he format of <cache name>::<instance id>
+  @param {String} Cache key in the format of <cache name>::<instance id>
   */
   async release(cacheKey) {
     this.set(cacheKey, {mounted: false, lastUsed: Date.now()})
@@ -212,7 +212,7 @@ export default class VolumeCache {
   /**
   Set a property for a cached volume.
 
-  @param {String} Cache key int he format of <cache name>::<instance id>
+  @param {String} Cache key in the format of <cache name>::<instance id>
   @param {Object} Key name and value for the property to be set.
   */
   async set(cacheKey, value) {
@@ -221,5 +221,18 @@ export default class VolumeCache {
     for (var key in value) {
       this.cache[cacheName][instanceId][key] = value[key];
     }
+  }
+
+  /**
+  Get the name and location of a cache on disk.
+
+  @param {String} Cache key in the format of <cache name>::<instance id>
+  */
+  getCacheDetails(cacheKey) {
+    var cacheSplit = cacheKey.split(KEY_DELIMITER);
+    return({
+      cacheName: cacheSplit[0],
+      cacheLocation: path.join(this.rootCachePath, cacheSplit[0], cacheSplit[1] + '/')
+    });
   }
 }
