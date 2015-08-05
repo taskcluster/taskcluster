@@ -1,4 +1,9 @@
 # livelog
+<img hspace="20" align="left" src="https://tools.taskcluster.net/lib/assets/taskcluster-120.png" />
+[![Build Status](https://travis-ci.org/taskcluster/livelog.svg?branch=master)](http://travis-ci.org/taskcluster/livelog)
+[![GoDoc](https://godoc.org/github.com/taskcluster/livelog?status.svg)](https://godoc.org/github.com/taskcluster/livelog)
+[![Coverage Status](https://coveralls.io/repos/taskcluster/livelog/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/livelog?branch=master)
+[![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
 ## TODO
   - [x] byte range fetching
