@@ -1,4 +1,4 @@
-package test
+package main
 
 import (
 	"code.google.com/p/go-uuid/uuid"
@@ -11,8 +11,7 @@ import (
 
 // Generates a 22 character random slugId that is url-safe ([0-9a-zA-Z_\-]*)
 func slug() string {
-	uuid := uuid.NewRandom()
-	return base64.URLEncoding.EncodeToString(uuid)[:22]
+	return base64.URLEncoding.EncodeToString(uuid.NewRandom())[:22]
 }
 
 // This is a silly test that looks for the latest mozilla-central buildbot linux64 l10n build
@@ -22,8 +21,8 @@ func slug() string {
 //
 // Note, no credentials are needed, so this can be run even on travis-ci.org, for example
 func TestFindLatestBuildbotTask(t *testing.T) {
-	Index := index.Auth{}
-	Queue := queue.Auth{}
+	Index := index.New("", "")
+	Queue := queue.New("", "")
 	itr, cs1 := Index.FindTask("buildbot.branches.mozilla-central.linux64.l10n")
 	if cs1.Error != nil {
 		t.Fatalf("%v\n", cs1.Error)
@@ -33,21 +32,21 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 	if cs2.Error != nil {
 		t.Fatalf("%v\n", cs2.Error)
 	}
-	created := td.Created
+	created := td.Created.Local()
 
 	// calculate time an hour in the future to allow for clock drift
-	now := time.Now()
+	now := time.Now().Local()
 	inAnHour := now.Add(time.Hour * 1)
 	aYearAgo := now.AddDate(-1, 0, 0)
 	t.Log()
-	t.Log("  => Task " + taskId + " was created on " + created.Format("Mon, 2 Jan 2006 at 15:04:00 +0700"))
+	t.Log("  => Task " + taskId + " was created on " + created.Format("Mon, 2 Jan 2006 at 15:04:00 -0700"))
 	t.Log()
 	if created.After(inAnHour) {
-		t.Log("Current time: " + now.Format("Mon, 2 Jan 2006 at 15:04:00 +0700"))
+		t.Log("Current time: " + now.Format("Mon, 2 Jan 2006 at 15:04:00 -0700"))
 		t.Error("Task " + taskId + " has a creation date that is over an hour in the future")
 	}
 	if created.Before(aYearAgo) {
-		t.Log("Current time: " + now.Format("Mon, 2 Jan 2006 at 15:04:00 +0700"))
+		t.Log("Current time: " + now.Format("Mon, 2 Jan 2006 at 15:04:00 -0700"))
 		t.Error("Task " + taskId + " has a creation date that is over a year old")
 	}
 
