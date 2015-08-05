@@ -104,7 +104,7 @@ export default class WebsocketServer {
 
     //set expiration stuff
     this.semaphore.acquire();
-    this.semaphore.release(task.runtime.interactive.maxTime * 1000);
+    this.semaphore.release(task.runtime.interactive.minTime * 1000);
     this.server.on('session added', () => {
       this.semaphore.acquire();
     });
@@ -162,7 +162,7 @@ export default class WebsocketServer {
       //delete the lockfile, allowing the task to die if it hasn't already
       await fs.unlink(this.lock);
     } catch (err) {
-      debug('[alert-operator] lock file has disappeared!');
+      task.runtime.log('[alert-operator] lock file has disappeared!');
       debug(err);
     }
   }

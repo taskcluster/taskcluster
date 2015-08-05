@@ -43,7 +43,7 @@ export default class SharedFileLock {
     if(this.count === 0 && this.locked) {
       let err = await Promise.denodeify(fs.flock)(this.lockFd, 'un');
       if(err) {
-        debug('couldn\'t unlock, this is probably bad');
+        debug('[alert-operator] couldn\'t unlock, this is probably bad');
         debug(err);
       } else {
         this.locked = false;

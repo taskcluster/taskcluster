@@ -18,14 +18,14 @@ suite('use docker exec websocket server', () => {
   // If taskcluster/artifact upload is under high load, this number needs to be adjusted up.
   // It also causes the test to be slower by 2X that many seconds, so be careful with this.
   // TODO: add polling to tests so they don't rely as much on this type of timing
-  let maxTime = 90;
+  let minTime = 90;
   let expTime = 10;
   setup(async () => {
     settings.cleanup();
     settings.configure({
       interactive: {
         ssl: true,
-        maxTime: maxTime,
+        minTime: minTime,
         expirationAfterSession: expTime
       }
     });
@@ -153,7 +153,7 @@ suite('use docker exec websocket server', () => {
       client.close();
     });
 
-    await base.testing.sleep(maxTime * 1000 + 10000);
+    await base.testing.sleep(minTime * 1000 + 10000);
     //should be dead here
     let dead = true;
     let failClient = new DockerExecClient({
@@ -210,7 +210,7 @@ suite('use docker exec websocket server', () => {
       connected = true;
     });
 
-    await base.testing.sleep(maxTime * 1000 + 1000);
+    await base.testing.sleep(minTime * 1000 + 1000);
     //should still be alive here, even though it was dead here last time
     //This is because cat is still alive
     let status = await worker.queue.status(taskId);
