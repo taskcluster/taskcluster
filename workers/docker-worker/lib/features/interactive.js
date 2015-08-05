@@ -138,7 +138,7 @@ export default class WebsocketServer {
         url: url.format({
           protocol: 'https',
           host: 'tools.taskcluster.net',
-          pathname: '/interactive',
+          pathname: '/interactive/',
           query: {
             taskId: task.status.taskId,
             runId: task.runId,
