@@ -1,5 +1,7 @@
-FROM ubuntu:14.04
+FROM progrium/busybox
 MAINTAINER James Lal [:lightsofapollo] <jlal@mozilla.com>
+
+RUN opkg-install ca-certificates
 
 EXPOSE 60023
 EXPOSE 60022
