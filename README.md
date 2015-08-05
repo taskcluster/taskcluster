@@ -1,7 +1,7 @@
 Taskcluster Client Library in Python
 ======================================
 
-[![Build Status](https://travis-ci.org/jhford/taskcluster-client.py.svg?branch=master)](https://travis-ci.org/jhford/taskcluster-client.py)
+[![Build Status](https://travis-ci.org/taskcluster/taskcluster-client.py.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-client.py)
 
 This is a library used to interact with Taskcluster within Python programs.  It
 presents the entire REST API to consumers as well as being able to generate
