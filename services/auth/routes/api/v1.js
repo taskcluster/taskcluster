@@ -34,7 +34,7 @@ api.declare({
   title:      "Get Client Authorized Scopes",
   description: [
     "Returns the scopes the client is authorized to access and the date-time",
-    "when the clients authorization is set to expire.",
+    "when the client's authorization is set to expire.",
     "",
     "This API end-point allows you inspect clients without getting access to",
     "credentials, as provided by the `getCredentials` request below."
