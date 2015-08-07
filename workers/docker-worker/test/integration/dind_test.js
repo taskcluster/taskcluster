@@ -31,9 +31,9 @@ suite('use dind-service', () => {
       }
     });
 
-    assert.equal(result.run.state, 'completed', 'task should be successfull');
+    assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed',
-                 'task should be successfull');
+                 'task should be successful');
     assert.ok(result.log.indexOf('BusyBox is a multi-call binary') !== -1,
               'Expected to see busybox --help message');
   });

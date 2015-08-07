@@ -36,8 +36,8 @@ suite('artifact extration tests', () => {
     });
 
     // Get task specific results
-    assert.equal(result.run.state, 'completed', 'task should be successfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
 
     assert.deepEqual(
       Object.keys(result.artifacts).sort(), ['public/xfoo', 'public/bar'].sort()
@@ -74,8 +74,8 @@ suite('artifact extration tests', () => {
     });
 
     // Get task specific results
-    assert.equal(result.run.state, 'completed', 'task should be successfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
     assert.ok('public/test.html' in result.artifacts,
               'Artifact does not appear in the list of uploaded artifacts');
 
@@ -111,8 +111,8 @@ suite('artifact extration tests', () => {
     });
 
     // Get task specific results
-    assert.equal(result.run.state, 'completed', 'task should be successfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
     assert.ok('public/test' in result.artifacts,
               'Artifact does not appear in the list of uploaded artifacts');
     let contentType = 'application/octet-stream';
@@ -137,8 +137,8 @@ suite('artifact extration tests', () => {
     });
 
     // Get task specific results
-    assert.equal(result.run.state, 'completed', 'task should be unsuccessfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be unsuccessfull');
+    assert.equal(result.run.state, 'completed', 'task should be unsuccessful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be unsuccessful');
 
     let errorMessage =
       'Error uploading "public/etc". Expected artifact to be a ' +
@@ -180,8 +180,8 @@ suite('artifact extration tests', () => {
       'Missing file was not noted in the logs'
     );
 
-    assert.equal(result.run.state, 'completed', 'task should be unsuccessfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be unsuccessfull');
+    assert.equal(result.run.state, 'completed', 'task should be unsuccessful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be unsuccessful');
     assert.ok(result.artifacts['my-missing.txt']);
     assert.equal(result.artifacts['my-missing.txt'].storageType, 'error');
   });
@@ -218,8 +218,8 @@ suite('artifact extration tests', () => {
     });
 
     // Get task specific results.
-    assert.equal(result.run.state, 'completed', 'task should be unsuccessfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be unsuccessfull');
+    assert.equal(result.run.state, 'completed', 'task should be unsuccessful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be unsuccessful');
 
     // Ensure these have no errors...
     assert.equal(result.artifacts['username.txt'].storageType, 's3');

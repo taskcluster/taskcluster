@@ -56,8 +56,8 @@ suite('Reclaiming task', function() {
       'Last reclaim occurs after the first reclaim'
     );
 
-    assert.equal(result.run.state, 'completed', 'task should be successfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
   }));
 });
 

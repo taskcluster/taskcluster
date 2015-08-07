@@ -18,8 +18,8 @@ suite('pull image', function() {
       }
     });
 
-    assert.equal(result.run.state, 'completed', 'task should be successfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
   }));
 
   test('Task marked as failed if image cannot be pulled', co(function* () {
@@ -30,8 +30,8 @@ suite('pull image', function() {
         maxRunTime: 5 * 60
       }
     });
-    assert.equal(result.run.state, 'failed', 'task should be successfull');
-    assert.equal(result.run.reasonResolved, 'failed', 'task should be successfull');
+    assert.equal(result.run.state, 'failed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should be successful');
   }));
 });
 

@@ -42,8 +42,8 @@ suite('Privileged containers', () => {
 
     let errorMessage = 'Insufficient scopes to run task in privileged mode';
     assert.ok(result.log.indexOf(errorMessage) !== -1);
-    assert.equal(result.run.state, 'failed', 'task should not be successfull');
-    assert.equal(result.run.reasonResolved, 'failed', 'task should not be successfull');
+    assert.equal(result.run.state, 'failed', 'task should not be successful');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should not be successful');
   });
 
   test('task error when privileged requested but not enabled in worker', async () => {
@@ -67,8 +67,8 @@ suite('Privileged containers', () => {
 
     let errorMessage = 'Error: Cannot run task using docker privileged mode';
     assert.ok(result.log.indexOf(errorMessage) !== -1);
-    assert.equal(result.run.state, 'failed', 'task should not be successfull');
-    assert.equal(result.run.reasonResolved, 'failed', 'task should not be successfull');
+    assert.equal(result.run.state, 'failed', 'task should not be successful');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should not be successful');
   });
 
   test('allow task to run in privileged mode', async () => {
@@ -97,8 +97,8 @@ suite('Privileged containers', () => {
     });
 
     console.log(result.log);
-    assert.equal(result.run.state, 'completed', 'task should be successfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
   });
 
   test('task cannot run privileged commands if privileged mode disabled', async () => {
@@ -121,7 +121,7 @@ suite('Privileged containers', () => {
       result.log.indexOf('cannot mount block device cgroup read-only') !== -1,
       `Mount denied message did not appear in the log. Message: ${result.log}`
     );
-    assert.equal(result.run.state, 'failed', 'task should not be successfull');
-    assert.equal(result.run.reasonResolved, 'failed', 'task should not be successfull');
+    assert.equal(result.run.state, 'failed', 'task should not be successful');
+    assert.equal(result.run.reasonResolved, 'failed', 'task should not be successful');
   });
 });

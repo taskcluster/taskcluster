@@ -81,8 +81,8 @@ suite('encrypted private env variables', function() {
 
     var result = yield testworker(taskPayload, taskId);
 
-    assert.equal(result.run.state, 'completed', 'task should be successfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
     assert.ok(result.log.indexOf(secretDataContent1) !== -1, 'env is dumped');
     assert.ok(result.log.indexOf(secretDataContent2) !== -1, 'env is dumped');
   }));
@@ -275,8 +275,8 @@ suite('encrypted private env variables', function() {
     var expected2 = secretDataContent2;
     var result = yield testworker(taskPayload, taskId);
 
-    assert.equal(result.run.state, 'completed', 'task should be successfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
     assert.ok(result.log.indexOf(expected1) !== -1);
     assert.ok(result.log.indexOf(expected2) !== -1);
   }));

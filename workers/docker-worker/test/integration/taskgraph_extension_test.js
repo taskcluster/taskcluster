@@ -96,15 +96,15 @@ suite('Extend Task Graph', function() {
       return task.taskId === customTaskId;
     })[0];
 
-    assert.equal(extendingTask.run.state, 'completed', 'extending task should be successfull');
-    assert.equal(extendingTask.run.reasonResolved, 'completed', 'extending task should be successfull');
+    assert.equal(extendingTask.run.state, 'completed', 'extending task should be successful');
+    assert.equal(extendingTask.run.reasonResolved, 'completed', 'extending task should be successful');
     assert.ok(
       extendingTask.log.indexOf('extended graph') !== -1,
       'log is shown with graph extension'
     );
 
-    assert.equal(customTask.run.state, 'completed', 'custom task should be successfull');
-    assert.equal(customTask.run.reasonResolved, 'completed', 'custom task should be successfull');
+    assert.equal(customTask.run.state, 'completed', 'custom task should be successful');
+    assert.equal(customTask.run.reasonResolved, 'completed', 'custom task should be successful');
     assert.ok(
       customTask.log.indexOf('wooot custom') !== 1, 'correctly executed commands'
     );

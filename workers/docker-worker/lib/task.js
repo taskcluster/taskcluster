@@ -713,7 +713,7 @@ export default class Task {
       await this.states.stopped(this);
     }
     catch (e) {
-      // If task finished successfully, mark it as unsuccessfull and log an incident
+      // If task finished successfully, mark it as unsuccessful and log an incident
       // error in the logs.  Otherwise artifact uploading most likely will be expected
       // to fail if the task did not finish successfully.
       if (success) {

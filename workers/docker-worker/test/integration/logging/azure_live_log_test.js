@@ -33,8 +33,8 @@ suite('live logging', function() {
       'public/logs/azure_live.log'
     );
 
-    assert.equal(result.run.state, 'completed', 'task should be successfull');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be successfull');
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
     assert.ok(azureLiveLog.indexOf(log) !== -1, 'contains each expected line');
   }));
 });
