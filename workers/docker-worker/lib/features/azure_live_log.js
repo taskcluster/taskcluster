@@ -52,8 +52,9 @@ export default class LiveLog {
     var queue = task.runtime.queue;
 
     // Create date when this artifact should expire (see config).
-    var expiration =
-      new Date(Date.now() + task.runtime.logging.liveLogExpires);
+    var expiration = new Date(
+      Math.min(Date.now() + task.runtime.logging.liveLogExpires,
+      new Date(task.task.expires)));
 
     var options = {
       storageType: 'azure',

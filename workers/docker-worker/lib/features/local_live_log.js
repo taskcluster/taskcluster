@@ -138,8 +138,10 @@ export default class TaskclusterLogs {
     let queue = task.runtime.queue;
 
     // Intentionally used the same expiration as the bulkLog
-    let expiration =
-      new Date(Date.now() + task.runtime.logging.bulkLogExpires);
+    let expiration = new Date(
+      Math.min(Date.now() + task.runtime.logging.bulkLogExpires,
+      new Date(task.task.expires)));
+
 
     // Create the redirect artifact...
     await queue.createArtifact(
@@ -177,8 +179,9 @@ export default class TaskclusterLogs {
 
     // Switch references to the new log file on s3 rather then the local worker
     // server...
-    let expiration =
-      new Date(Date.now() + task.runtime.logging.bulkLogExpires);
+    let expiration = new Date(
+      Math.min(Date.now() + task.runtime.logging.bulkLogExpires,
+      new Date(task.task.expires)));
 
     await task.runtime.queue.createArtifact(
       task.status.taskId,

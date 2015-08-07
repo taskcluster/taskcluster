@@ -52,5 +52,4 @@ export default class SharedFileLock {
     }
     debug('released; count is %s', this.count);
   }
-
 }

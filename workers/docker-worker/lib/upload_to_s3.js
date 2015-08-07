@@ -12,7 +12,7 @@ export default async function uploadToS3 (task, sourceStream, artifactName, expi
       // Why s3? It's currently cheaper to store data in s3 this could easily
       // be used with azure simply by changing s3 -> azure.
       storageType: 's3',
-      expires: expiration.toJSON(),
+      expires: new Date(Math.min(expiration, new Date(task.task.expires))),
       contentType: httpsHeaders['content-type']
     }
   );

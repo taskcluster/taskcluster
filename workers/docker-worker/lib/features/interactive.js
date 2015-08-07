@@ -114,7 +114,9 @@ export default class WebsocketServer {
 
     task.runtime.log('create websocket server at ', {socketUrl});
 
-    let expiration = new Date(Date.now() + task.task.payload.maxRunTime * 1000);
+    let expiration = new Date(
+      Math.min(Date.now() + task.task.payload.maxRunTime,
+      new Date(task.task.expires)));
     let queue = task.runtime.queue;
 
     let socketArtifact = queue.createArtifact(

@@ -1,5 +1,6 @@
 import request from 'superagent-promise';
 import slugid from 'slugid';
+import taskcluster from 'taskcluster-client';
 
 import cmd from '../helper/cmd';
 import DockerWorker from '../../dockerworker';
@@ -45,7 +46,7 @@ suite('live logging', () => {
 
   test('live log url contains access token', async () => {
     let taskId = slugid.v4();
-    var task = {
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command:        [
@@ -57,9 +58,6 @@ suite('live logging', () => {
         maxRunTime: 3 * 60
       }
     };
-
-    worker = new TestWorker(DockerWorker);
-    await worker.launch();
 
     worker.postToQueue(task, taskId);
     await waitForEvent(worker, 'task run');
@@ -78,6 +76,25 @@ suite('live logging', () => {
       token.length,
       22, 'Token should be 22 characters long'
     );
+  });
 
+  test('live log expiration date', async () => {
+    let expiration = taskcluster.fromNowJSON('30 minutes');
+    let result = await worker.postToQueue({
+      expires: expiration,
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: [
+          '/bin/bash',
+          '-c',
+          'echo "first command!"'
+        ],
+        maxRunTime: 3 * 60
+      }
+    });
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+    assert(result.artifacts['public/logs/live.log'].expires === expiration,
+      'expiration date of live log improperly set');
   });
 });
