@@ -38,7 +38,6 @@
     "dockerode-promise": "0.1.0",
     "fs-ext": "^0.4.5",
     "http-proxy": "^1.11.1",
-    "jayschema": "^0.3.1",
     "lodash": "^3.10.0",
     "middleware-object-hooks": "0.0.3",
     "mime": "^1.3.4",

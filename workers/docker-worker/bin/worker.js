@@ -172,7 +172,9 @@ async function main () {
 
   config.scheduler =
     new taskcluster.Scheduler({ credentials: config.taskcluster });
-  config.schema = require('../lib/schema')();
+
+  config.validator = await base.validator();
+  config.validator.register(require('../schemas/payload'));
 
   // Only catch these metrics when running on aws host.  Running within
   // test environment causes numerous issues.

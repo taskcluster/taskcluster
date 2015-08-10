@@ -5,6 +5,7 @@ import Debug from 'debug';
 import DockerProc from 'dockerode-process';
 import util from 'util';
 import uuid from 'uuid';
+import { validator } from 'taskcluster-base';
 import { PassThrough } from 'stream';
 import States from './states';
 
@@ -599,10 +600,10 @@ export default class Task {
       return await this.abortRun(this.taskState);
     }
     // Validate the schema!
-    let payloadErrors =
-      this.runtime.schema.validate(this.task.payload, PAYLOAD_SCHEMA);
+    let payloadErrors = this.runtime.validator.check(this.task.payload,
+                                                     PAYLOAD_SCHEMA)
 
-    if (payloadErrors.length) {
+    if (payloadErrors) {
       // Inform the user that this task has failed due to some configuration
       // error on their part.
       this.taskException = 'malformed-payload';
