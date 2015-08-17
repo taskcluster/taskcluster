@@ -19,7 +19,7 @@ import _ from 'lodash';
 
 let debug = new Debug('runTask');
 
-const PAYLOAD_SCHEMA =
+export const PAYLOAD_SCHEMA =
   'http://schemas.taskcluster.net/docker-worker/v1/payload.json#';
 
 // TODO probably a terrible error message, look at making it better later
@@ -141,7 +141,7 @@ function buildDeviceBindings(devices, taskScopes) {
   return deviceBindings;
 }
 
-export default class Task {
+export class Task {
   /**
   @param {Object} runtime global runtime.
   @param {Object} task id for this instance.

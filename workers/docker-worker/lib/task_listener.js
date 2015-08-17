@@ -8,7 +8,7 @@ var QUEUE_PREFIX = 'worker/v1/';
 var debug = require('debug')('docker-worker:task-listener');
 var taskcluster = require('taskcluster-client');
 
-var Task = require('./task');
+var { Task } = require('./task');
 var EventEmitter = require('events').EventEmitter;
 var TaskQueue = require('./queueservice');
 var exceedsDiskspaceThreshold = require('./util/capacity').exceedsDiskspaceThreshold;

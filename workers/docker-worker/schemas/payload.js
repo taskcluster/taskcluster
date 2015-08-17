@@ -46,7 +46,7 @@ module.exports = {
   "title": "Docker worker payload",
   "description": "`.payload` field of the queue.",
   "type": "object",
-  "required": ["image", "command", "maxRunTime"],
+  "required": ["image", "maxRunTime"],
   "properties": {
     "image": {
       "title": "Docker image.",
@@ -118,10 +118,10 @@ module.exports = {
     "command": {
       "title": "Docker command to run (see docker api).",
       "type": "array",
-      "minItems": 1,
       "items": {
         "type": "string"
       },
+      "default": [],
       "description": "Example: `['/bin/bash', '-c', 'ls']`."
     },
     "encryptedEnv": {
