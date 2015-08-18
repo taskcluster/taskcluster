@@ -164,6 +164,14 @@ export default class TaskclusterLogs {
 
   async killed(task) {
     debug('switching live log redirect to backing log...')
+    try {
+      await this.container.stop();
+    } catch (e) {
+      // Catch any errors when stopping the container, but don't throw an exception
+      // that would cause the task to fail.
+      debug('Caught error when stopping live log container. %s %s', e, e.stack);
+    }
+
     // Can't create artifacts for a task that's been canceled
     if (task.isCanceled()) {
       // Cleanup all references to the live logging server...

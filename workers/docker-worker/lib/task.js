@@ -137,7 +137,6 @@ function buildDeviceBindings(devices, taskScopes) {
     });
   }
 
-
   return deviceBindings;
 }
 
@@ -462,11 +461,32 @@ export class Task {
   Reclaim the current task and schedule the next reclaim...
   */
   async reclaimTask() {
-    this.runtime.log('issue reclaim');
+    this.runtime.log('reclaiming task', {claim: this.claim});
 
-    this.claim = await this.runtime.queue.reclaimTask(this.status.taskId, this.runId);
+    try {
+      this.claim = await this.runtime.queue.reclaimTask(this.status.taskId, this.runId);
+    } catch (e) {
+      debug('Caught error while reclaiming task. %s, as JSON %j', e, e);
 
-    this.runtime.log('issued reclaim', { claim: this.claim });
+      let errorMessage = `Error: Could not reclaim task. ${e}`;
+      this.runtime.log('error reclaiming task', {
+        claim: this.claim,
+        error: errorMessage
+      });
+
+      // If status code is 409, assume that the run has already been resolved
+      // and/or the deadline-exceeded.  Task run should be handled as though it were
+      // canceled.
+      if (e.statusCode === 409) {
+        this.cancel('canceled', errorMessage);
+      } else {
+        this.abort(errorMessage);
+      }
+
+      return;
+    }
+
+    this.runtime.log('reclaimed task', { claim: this.claim });
     await this.scheduleReclaim(this.claim);
   }
 
@@ -521,7 +541,7 @@ export class Task {
    * will allow time to upload artifacts and report the run as an exception instead.
    *
    * @param {String} reason - Reason for aborting the test run (Example: worker-shutdown)
-   */
+  */
   abort(reason) {
     this.taskState = 'aborted';
     this.taskException = reason;
@@ -540,18 +560,21 @@ export class Task {
    * be done after a run is resolved.
    *
    * @param {String} reason - Reason for cancellation
+   * @param {String} error - Optional error message to provide.
    */
-  cancel(reason) {
+  cancel(exception, errorMessage=CANCEL_ERROR) {
     this.taskState = 'canceled';
-    this.taskException = reason;
+    this.taskException = exception;
 
     this.runtime.log('cancel task', {
-      taskId: this.status.taskId, runId: this.runId
+      taskId: this.status.taskId,
+      runId: this.runId,
+      message: errorMessage
     });
 
     if (this.dockerProcess) this.dockerProcess.kill();
 
-    this.stream.write(this.fmtLog(CANCEL_ERROR));
+    this.stream.write(this.fmtLog(errorMessage));
   }
 
   /**
@@ -750,4 +773,4 @@ export class Task {
     }
     return success;
   }
-};
+}

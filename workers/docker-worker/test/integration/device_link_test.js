@@ -6,7 +6,7 @@ import cmd from './helper/cmd';
 import app from '../fixtures/testdroid_cloud';
 import http from 'http';
 import waitForEvent from '../../lib/wait_for_event';
-import os from 'os';
+import { execSync } from 'child_process';
 
 suite('device linking within containers', () => {
 
@@ -132,10 +132,24 @@ suite('device linking within containers', () => {
     // prior to claiming a task.
     let server = http.createServer(app.callback());
     let testdroidUrl;
-    let ip = os.networkInterfaces().docker0.find((networkInterface) => {
-      return networkInterface.family === 'IPv4';
-    });
-    ip = ip.address;
+
+    // Don't trust nodes os.networkInterfaces as it doesn't always report docker0
+    // even when the system recognizes it and it's up/connected
+    let ipCmd = 'ifconfig docker0 | awk \'/inet addr/{print substr($2,6)}\'';
+    let ip;
+
+    ip = execSync(ipCmd);
+    ip = ip.toString().replace('\n', '');
+
+    // Test to make sure a valid IP address was returned and not some error or
+    // blank string
+    if (!/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(ip)) {
+      throw new Error(
+        'IP address for docker interface could not be determined. ' +
+        'Ensure that docker is running and the interface is available.'
+      );
+    }
+
     server.listen(() => {
       testdroidUrl = `http:\/\/${ip}:${server.address().port}/`;
     });
@@ -190,7 +204,7 @@ suite('device linking within containers', () => {
     );
   });
 
-  test('host capacity adjusted when device capacity is less than worke capacity', async () => {
+  test('host capacity adjusted when device capacity is less than worker capacity', async () => {
     // XXX: This could change, right now the vagrant image has 8 video devices, and 30 audio
     // Adjusted running capacity should be the lowest device capacity, 8 in this case.
     settings.configure({
