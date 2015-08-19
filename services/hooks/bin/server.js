@@ -3,13 +3,13 @@ var debug = require('debug')('cron:bin:server');
 var base = require('taskcluster-base');
 
 /* Launch server */
-var launch = async function(profile) {
+var launch = function(profile) {
     debug("Launching with profile: %s", profile);
 
     // Load configuration
     var cfg = base.config({
         defaults:   require('../config/defaults'),
-        profile:    require('../config' + profile),
+        profile:    require('../config/' + profile),
         filename:   'taskcluster-cron'
     });
 
@@ -18,7 +18,7 @@ var launch = async function(profile) {
     // create resources
     // create api router
     // create app
-    app = base.app({
+    var app = base.app({
         port:       Number(process.env.PORT || cfg.get('server:port')),
         env:        cfg.get('server:env'),
         forceSSL:   cfg.get('server:forceSSL'),
