@@ -4,7 +4,7 @@
   "main": "bin/server.js",
   "scripts": {
     "start": "babel-node bin/server.js $PROFILE",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./test/runtests.sh"
   },
   "author": "",
   "license": "MPL-2.0"
