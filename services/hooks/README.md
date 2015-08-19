@@ -1,3 +1,3 @@
-TaskCluster Cron
+TaskCluster Hooks
 ================
-Scheduling periodic tasks via Taskcluster
+A hooks service for triggering tasks from events.
