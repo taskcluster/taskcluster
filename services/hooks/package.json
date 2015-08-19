@@ -7,5 +7,11 @@
     "test": "./test/runtests.sh"
   },
   "author": "",
-  "license": "MPL-2.0"
+  "license": "MPL-2.0",
+  "dependencies": {
+    "babel": "^5.8.21",
+    "debug": "^2.2.0",
+    "taskcluster-base": "^0.8.1",
+    "taskcluster-client": "^0.22.4"
+  }
 }
