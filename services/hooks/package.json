@@ -1,0 +1,10 @@
+{
+  "name": "taskcluster-cron",
+  "version": "0.0.1",
+  "main": "bin/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MPL-2.0"
+}
