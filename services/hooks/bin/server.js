@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var debug = require('debug')('cron:bin:server');
+var debug = require('debug')('hooks:bin:server');
 var base = require('taskcluster-base');
 
 /* Launch server */
@@ -10,7 +10,7 @@ var launch = function(profile) {
     var cfg = base.config({
         defaults:   require('../config/defaults'),
         profile:    require('../config/' + profile),
-        filename:   'taskcluster-cron'
+        filename:   'taskcluster-hooks'
     });
 
     // Start monitoring the process
