@@ -1,5 +1,5 @@
 {
-  "name": "taskcluster-cron",
+  "name": "taskcluster-hooks",
   "version": "0.0.1",
   "main": "bin/server.js",
   "scripts": {
