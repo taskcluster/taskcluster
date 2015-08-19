@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "main": "bin/server.js",
   "scripts": {
+    "start": "babel-node bin/server.js $PROFILE",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
