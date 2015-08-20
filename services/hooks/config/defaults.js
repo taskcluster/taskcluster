@@ -31,5 +31,35 @@ module.exports = {
       clientId:      undefined,
       accessToken:   undefined
     }
+  },
+
+  // Azure credentials configuration
+  azure:
+  {
+    accountName: undefined,
+    accountKey: undefined
+  },
+
+  // Pulse Credentials
+  pulse:
+  {
+    username: undefined,
+    password: undefined
+  },
+
+  // AWS SDK configuration for publication of schemas and references
+  aws:
+  {
+    // Access key id (typically configured using environment variables)
+    accessKeyId: undefined,
+
+    // Secret access key (typically configured using environment variables)
+    secretAccessKey: undefined,
+
+    // Default AWS regision, where the S3 bucket lives
+    region: 'us-west-2',
+
+    // Lock API version
+    apiVersion: '2014-01-01'
   }
 };
