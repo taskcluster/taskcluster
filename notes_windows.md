@@ -2,7 +2,7 @@ In order to set up a new AWS Provisioner Worker Type running on Windows, follow 
 
 1. Launch a Windows instance in AWS with the following UserData:
 
-```powershell
+   ```powershell
 <powershell>
 
 $client = New-Object system.net.WebClient;
@@ -50,8 +50,7 @@ $env:DEBUG = "*"
 $p = Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install --config C:\\generic-worker\\generic-worker.config" -wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 $p.HasExited
 </powershell>
-```
-
+   ```
 2. Connect to the instance
 3. Install any additional toolchains required for your tasks
 4. Snapshot the instance, creating an AMI
