@@ -1,0 +1,14 @@
+$schema:        http://json-schema.org/draft-04/schema#
+title:          "hook definition"
+description:    |
+    representation of a hook to be scheduled
+type:           object
+properties:
+    groups:
+        title: "Groups"
+        type: array
+        items:
+            type: string
+additionalProperties: false
+required:
+    - groups
