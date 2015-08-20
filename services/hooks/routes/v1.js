@@ -1,11 +1,11 @@
-var Promise = require('promise')l
-var debug   = require('debug')('routes:v1');
+var Promise = require('promise');
+var debug   = require('debug')('hooks:routes:v1');
 var base    = require('taskcluster-base');
 
 var api = new base.API({
   title: "Hooks API Documentation",
   description: "Todo",
-  schemaPrefic: 'http://schemas.taskcluster.net/queue/v1/',
+  schemaPrefix: 'http://schemas.taskcluster.net/queue/v1/'
 });
 
 // Export api
@@ -20,7 +20,7 @@ api.declare({
   scopes:     [[]],
   output:     'list-hook-groups-response.json',
   title:      'List hook groups',
-  description: ''
+  description: 'todo'
 }, async function(req, res) {
 
 });
@@ -35,7 +35,7 @@ api.declare({
   scopes:     [[]],
   output:     'list-hooks-response.json',
   title:      'List hooks in a given group',
-  description: ''
+  description: 'todo'
 }, async function(req, res) {
 
 });
@@ -50,7 +50,7 @@ api.declare({
   scopes:     [[]],
   output:     'hook-defintion.json',
   title:      'Get hook definition',
-  description: ''
+  description: 'todo'
 }, async function(req, res) {
 
 });
@@ -62,11 +62,11 @@ api.declare({
   route:      '/hooks/:hookGroup/:hookId',
   name:       'createHook',
   idempotent: true,
-  scopes:     [["hooks:modify-hook:<hookGroup>/<hookId>]],
+  scopes:     [["hooks:modify-hook:<hookGroup>/<hookId>"]],
   input:      'create-hook-request.json',
   output:     'hook-defintion.json',
   title:      'Create a hook',
-  description: ''
+  description: 'todo'
 }, async function(req, res) {
 
 });
@@ -78,11 +78,11 @@ api.declare({
   route:      '/hooks/:hookGroup/:hookId',
   name:       'updateHook',
   idempotent: true,
-  scopes:     [["hooks:modify-hook:<hookGroup>/<hookId>]],
+  scopes:     [["hooks:modify-hook:<hookGroup>/<hookId>"]],
   input:      'create-hook-request.json',
   output:     'hook-definition.json',
   title:      'Update a hook',
-  description: ''
+  description: 'todo'
 }, async function(req, res) {
 
 });
@@ -94,9 +94,9 @@ api.declare({
   route:      '/hooks/:hookGroup/:hookId/token',
   name:       'getTriggerToken',
   idempotent: true,
-  scopes:     [["hooks:get-trigger-token:<hookGroup>/<hookId>]],
+  scopes:     [["hooks:get-trigger-token:<hookGroup>/<hookId>"]],
   title:      'Get a trigger token',
-  description: ''
+  description: 'todo'
 }, async function(req, res) {
 
 });
@@ -108,9 +108,9 @@ api.declare({
   route:      '/hooks/:hookGroup/:hookId/token',
   name:       'resetTriggerToken',
   idempotent: true,
-  scopes:     [["hooks:reset-trigger-token:<hookGroup>/<hookId>]],
+  scopes:     [["hooks:reset-trigger-token:<hookGroup>/<hookId>"]],
   title:      'Reset a trigger token',
-  description: ''
+  description: 'todo'
 }, async function(req, res) {
 
 });
@@ -126,7 +126,7 @@ api.declare({
   input:      'trigger-payload.json',
   output:     'trigger-response.json',
   title:      'Trigger a hook with a token',
-  description: ''
+  description: 'todo'
 }, async function(req, res) {
 
 });
@@ -143,7 +143,7 @@ api.declare({
   input:      'trigger-playload.json',
   output:     'trigger-response.json',
   title:      'Trigger a hook',
-  description: ''
+  description: 'todo'
 }, async function(req, res) {
 
 });
