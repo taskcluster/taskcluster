@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-var debug = require('debug')('hooks:bin:server');
-var base = require('taskcluster-base');
-var v1 = require('../routes/v1');
-var path = require('path');
+var debug   = require('debug')('hooks:bin:server');
+var base    = require('taskcluster-base');
+var v1      = require('../routes/v1');
+var path    = require('path');
 var Promise = require('promise');
 
 /* Launch server */
@@ -11,9 +11,9 @@ var launch = async function(profile) {
 
   // Load configuration
   var cfg = base.config({
-    defaults: require('../config/defaults'),
-    profile:  require('../config/' + profile),
-    filename: 'taskcluster-hooks'
+    defaults:  require('../config/defaults'),
+    profile:   require('../config/' + profile),
+    filename:  'taskcluster-hooks'
   });
 
   // Create a validator
@@ -22,10 +22,10 @@ var launch = async function(profile) {
   await Promise.all([
       (async () => {
         validator = await base.validator({
-          folder: path.join(__dirname, '..', 'schemas'),
-          constants: require('../schemas/constants'),
-          publish: false,
-          schemaPrefix: 'hooks/v1/'
+          folder:        path.join(__dirname, '..', 'schemas'),
+          constants:     require('../schemas/constants'),
+          publish:       false,
+          schemaPrefix:  'hooks/v1/'
         });
       })()
       ]);
@@ -34,21 +34,21 @@ var launch = async function(profile) {
   debug("Creating API router");
 
   var router = await v1.setup({
-    validator: validator,
-    authBaseUrl: cfg.get('taskcluster:authBaseUrl'),
-    credentials: cfg.get('taskcluster:credentials'),
-    baseUrl: cfg.get('server:publicUrl') + '/v1',
-    referencePrefix: 'hooks/v1/api.json'
+    validator:        validator,
+    authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
+    credentials:      cfg.get('taskcluster:credentials'),
+    baseUrl:          cfg.get('server:publicUrl') + '/v1',
+    referencePrefix:  'hooks/v1/api.json'
   });
 
   debug("Configuring app");
 
   // create app
   var app = base.app({
-    port:       Number(process.env.PORT || cfg.get('server:port')),
-    env:        cfg.get('server:env'),
-    forceSSL:   cfg.get('server:forceSSL'),
-    trustProxy: cfg.get('server:trustProxy')
+    port:        Number(process.env.PORT || cfg.get('server:port')),
+    env:         cfg.get('server:env'),
+    forceSSL:    cfg.get('server:forceSSL'),
+    trustProxy:  cfg.get('server:trustProxy')
   });
 
   // Mount API router
