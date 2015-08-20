@@ -1,0 +1,13 @@
+$schema:        http://json-schema.org/draft-04/schema#
+title:          "list hooks"
+description:    |
+    list of hooks
+type:           object
+properties:
+    hooks:
+        title: "Hooks"
+        type: array
+        items: {$ref: "http://schemas.taskcluster.net/hooks/v1/hook-definition.json"}
+additionalProperties: false
+required:
+    - hooks

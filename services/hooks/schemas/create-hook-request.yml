@@ -1,8 +1,7 @@
-id:             http://schemas/taskcluster.net/index/v1/create-hook-request.json
 $schema:        http://json-schema.org/draft-04/schema#
-title:          "Create Hook Request"
+title:          "create hook request"
 description:    |
-    Representation of a hook to be scheduled
+    representation of a hook to be scheduled
 type:           object
 properties:
     name:
@@ -27,7 +26,8 @@ properties:
         maxLength:  255
     emailOnError:
         title:      "Email on error"
-        type:       bool
+        type:       boolean
+        default:    true
     bindings:
         type:   object
         properties:
@@ -37,6 +37,7 @@ properties:
             routingKey:
                 title: "Routing Key"
                 type: string
+        additionalProperties: false
         required:
             - exchange
             - routingKey
@@ -47,8 +48,9 @@ properties:
     deadline:
         type: string
     task:   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
-    required:
-        - title
-        - description
-        - owner
-        - task
+additionalProperties: false
+required:
+    - title
+    - description
+    - owner
+    - task
