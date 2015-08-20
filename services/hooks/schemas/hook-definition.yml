@@ -1,0 +1,60 @@
+$schema:        http://json-schema.org/draft-04/schema#
+title:          "hook definition"
+description:    |
+    representation of a hook to be scheduled
+type:           object
+properties:
+    name:
+        title:      "Name"
+        description: |
+            Human readable name of the hook, used to briefly give an idea about
+            what the hook does.
+        type:       string
+        maxLength:  255
+    description:
+        title:      "Description"
+        description:    |
+            Human readable description of the hook
+        type:       string
+        maxLength:  32768
+    owner:
+        title:     "Owner"
+        description: |
+            E-mail of the persion who caused this task. This is the person who
+            is contacted in the event of an error in scheduling.
+        type:       string
+        maxLength:  255
+    emailOnError:
+        title:      "Email on error"
+        type:       boolean
+        default:    true
+    bindings:
+        type:   object
+        properties:
+            exchange:
+                title: "Exchange"
+                type: string
+            routingKey:
+                title: "Routing Key"
+                type: string
+        additionalProperties: false
+        required:
+            - exchange
+            - routingKey
+    schedule:
+        type: string
+    expiry:
+        type: string
+    deadline:
+        type: string
+    task:   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
+additionalProperties: false
+required:
+    - title
+    - description
+    - owner
+    - task
+    - emailOnError
+    - bindings
+    - expiry
+    - deadline
