@@ -1,0 +1,21 @@
+{
+    "name": "example hook",
+    "description": "todo",
+    "owner": "nobody@example.com",
+    "expiry": "1 year",
+    "deadline": "1 day",
+    "task":
+    {
+        "provisionerId": "aws-provisioner-v1",
+        "workerType": "b2gtest",
+        "created": "2015-08-21T20:11:18.287Z",
+        "deadline": "2015-08-21T21:11:18.287Z",
+        "payload": {},
+        "metadata": {
+            "name": "Example Task",
+            "description": "Markdown description of **what** this task does",
+            "owner": "name@example.com",
+            "source": "http://tools.taskcluster.net/task-creator/"
+        }
+    }
+}
