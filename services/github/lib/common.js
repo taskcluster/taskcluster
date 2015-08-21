@@ -19,6 +19,7 @@ common.loadConfig = function(profile) {
       'taskclusterGithub_publishMetaData',
       'taskcluster_credentials_clientId',
       'taskcluster_credentials_accessToken',
+      'github_credentials_token',
       'aws_accessKeyId',
       'aws_secretAccessKey',
       'influx_connectionString',
