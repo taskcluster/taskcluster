@@ -5,23 +5,43 @@ var _         = require('lodash');
 // Common schema prefix
 var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/github/v1/';
 
-// Convert GitHub event types to their expected publisher name
-function eventTypeToPublisherName(eventType) {
-  let firstUnderscore = eventType.indexOf("_")
-  if (firstUnderscore < 0) {
-    return eventType
-  }
-  let publisherName = eventType.substring(0, firstUnderscore)
-  publisherName += eventType.substring(
-    firstUnderscore + 1, firstUnderscore + 2).toUpperCase()
-  publisherName += eventType.substring(firstUnderscore + 2, eventType.length)
-  return eventTypeToPublisherName(publisherName)
-};
-
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
 function sanitizeGitHubField(field) {
   return field.replace(/[^a-zA-Z0-9-_\.]/gi, '').replace(/\./g, '%')
+};
+
+// Reduce a pull request WebHook's data to only fields needed to checkout a
+// revision
+function getPullRequestDetails(eventData) {
+  return {
+    event: 'pull_request.' + eventData.action,
+    // The base branch is simply referred to as branch, to remove
+    // confusion when dealing with push requests, which only have
+    // a single branch
+    branch: eventData.pull_request.base.label.split(':')[1],
+    pullNumber: eventData.number,
+    baseUser: eventData.pull_request.base.user.login,
+    baseRepoUrl: eventData.pull_request.base.repo.clone_url,
+    baseSha: eventData.pull_request.base.sha,
+    baseRef: eventData.pull_request.base.ref,
+    headUser: eventData.pull_request.head.user.login,
+    headRepoUrl: eventData.pull_request.head.repo.clone_url,
+    headBranch: eventData.pull_request.head.label.split(':')[1],
+    headSha: eventData.pull_request.head.sha,
+    headRef: eventData.pull_request.head.ref
+  };
+};
+
+function getPushDetails(eventData) {
+  return {
+    event: 'push',
+    branch: eventData.repository.default_branch,
+    headUser: eventData.head_commit.author.username,
+    headRepoUrl: eventData.repository.clone_url,
+    headSha: eventData.head_commit.id,
+    headRef: eventData.head_commit.ref
+  };
 };
 
 /** API end-point for version v1/
@@ -68,14 +88,6 @@ api.declare({
     req.status(400).send("Request missing a body");
   }
 
-  // When pulse is activated, locate valid publishers by naming
-  // convention and fail if we don't find one which matches the
-  // event type
-  if (!(this.publisher[eventTypeToPublisherName(eventType)] instanceof Function)) {
-    res.status(400).send("No publisher available for X-GitHub-Event: " + eventType);
-    return;
-  }
-
   let webhookSecret = this.cfg.get('webhook:secret');
   let xHubSignature = req.headers['x-hub-signature'];
 
@@ -95,17 +107,33 @@ api.declare({
     }
   }
 
-  let msg = {
-    organization: sanitizeGitHubField(body.organization.login),
-    repository: sanitizeGitHubField(body.repository.name),
-    details: {commits: body.commits, pull_request: body.pull_request}
-  };
+  let msg = {};
+  let publisherKey = '';
 
-  if (body.action) {
-    msg.action = body.action
+  if (eventType == 'pull_request') {
+    msg.organization = sanitizeGitHubField(body.repository.owner.login),
+    msg.action = body.action;
+    msg.details = getPullRequestDetails(body);
+    publisherKey = 'pullRequest';
+  } else if (eventType == 'push') {
+    msg.organization = sanitizeGitHubField(body.repository.owner.name),
+    msg.details = getPushDetails(body);
+    publisherKey = 'push';
+  } else{
+    // Looks like no publisherKey is available
+    res.status(400).send("No publisher available for X-GitHub-Event: " + eventType);
+    return;
   }
 
-  await this.publisher[eventTypeToPublisherName(eventType)](msg);
+  // Not all webhook payloads include an e-mail for the user who triggered
+  // an event.
+  let headUser = msg.details.headUser;
+  let userDetails = await this.githubAPI.users(headUser).fetch();
+
+  msg.details.headUserEmail = userDetails.email || headUser + '@noreply.github.com'
+  msg.repository = sanitizeGitHubField(body.repository.name);
+
+  await this.publisher[publisherKey](msg);
 
   res.status(204).send();
 });

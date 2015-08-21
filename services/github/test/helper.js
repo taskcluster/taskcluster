@@ -9,27 +9,13 @@ var api         = require('../lib/api');
 var taskcluster = require('taskcluster-client');
 var mocha       = require('mocha');
 var exchanges   = require('../lib/exchanges');
+var common      = require('../lib/common');
 var bin = {
   server:         require('../bin/server'),
 };
 
 // Load configuration
-var cfg = base.config({
-  defaults:     require('../config/defaults'),
-  profile:      require('../config/test'),
-  envs: [
-  'webhook_secret',
-  'pulse_username',
-  'pulse_password',
-  'taskclusterGithub_publishMetaData',
-  'taskcluster_credentials_clientId',
-  'taskcluster_credentials_accessToken',
-  'aws_accessKeyId',
-  'aws_secretAccessKey',
-  'influx_connectionString'
-  ],
-  filename:     'taskcluster-github'
-});
+var cfg = common.loadConfig('test');
 
 // Some default clients for the mockAuthServer
 var defaultClients = [
@@ -97,6 +83,8 @@ mocha.before(async () => {
   port:     cfg.get('taskcluster:authPort'),
   clients:  defaultClients
   });
+
+  helper.validator = await common.buildValidator(cfg);
 
   // Skip tests if no credentials are configured
   if (!helper.canRunIntegrationTests) {

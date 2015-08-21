@@ -25,6 +25,20 @@ module.exports = {
     }
   },
 
+  // Github Configuration
+  github: {
+    config: {
+      version: '3.0.0',
+      debug: false,
+      protocol: 'https',
+      timeout: 5000
+    },
+    credentials: {
+      token: "",
+      type: "oauth"
+    }
+  },
+
   // Server configuration
   server: {
     // Public URL from which the server can be accessed (used for persona)

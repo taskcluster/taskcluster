@@ -1,9 +1,10 @@
 var base      = require('taskcluster-base');
 var assert    = require('assert');
+var common    = require('./common');
 var _         = require('lodash');
 
 // Common schema prefix
-var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/github/v1/';
+var SCHEMA_PREFIX_CONST = common.SCHEMA_PREFIX_CONST;
 
 /** Build common routing key construct for `exchanges.declare` */
 var commonRoutingKey = function(options) {

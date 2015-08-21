@@ -3,47 +3,26 @@ var debug             = require('debug')('github:server');
 var base              = require('taskcluster-base');
 var api               = require('../lib/api');
 var path              = require('path');
+var common            = require('../lib/common');
 var Promise           = require('promise');
 var exchanges         = require('../lib/exchanges');
 var _                 = require('lodash');
+var Octokat           = require('octokat');
 
 /** Launch server */
 var launch = async function(profile, publisher) {
   debug("Launching with profile: %s", profile);
+  var cfg = common.loadConfig(profile);
 
-  // Load configuration
-  var cfg = base.config({
-    defaults:     require('../config/defaults'),
-    profile:      require('../config/' + profile),
-    envs: [
-      'pulse_username',
-      'pulse_password',
-      'taskclusterGithub_publishMetaData',
-      'taskcluster_credentials_clientId',
-      'taskcluster_credentials_accessToken',
-      'aws_accessKeyId',
-      'aws_secretAccessKey',
-      'influx_connectionString',
-      'webhook_secret'
-    ],
-    filename:     'taskcluster-github'
-  });
-
-  // Create a default stats drain, which just prints to stdout
-  let statsDrain = {
-      addPoint: (...args) => {debug("stats:", args)}
-  }
-
-  // Create InfluxDB connection for submitting statistics
-  let influxConnectionString = cfg.get('influx:connectionString')
-  if (influxConnectionString) {
-      statsDrain = new base.stats.Influx({
-        connectionString:   influxConnectionString,
-        maxDelay:           cfg.get('influx:maxDelay'),
-        maxPendingPoints:   cfg.get('influx:maxPendingPoints')
-      });
-  } else {
-      debug("Missing influx_connectionString: stats collection disabled.")
+  try {
+    var statsDrain = common.buildInfluxStatsDrain(
+      cfg.get('influx:connectionString'),
+      cfg.get('influx:maxDelay'),
+      cfg.get('influx:maxPendingPoints')
+    );
+  } catch(e) {
+    debug("Missing influx_connectionStraing: stats collection disabled.");
+    var statsDrain = common.stdoutStatsDrain;
   }
 
   // Start monitoring the process
@@ -53,13 +32,7 @@ var launch = async function(profile, publisher) {
     process:    'server'
   });
 
-  let validator = await base.validator({
-    folder:           path.join(__dirname, '..', 'schemas'),
-    constants:        require('../schemas/constants'),
-    publish:          cfg.get('taskclusterGithub:publishMetaData') === 'true',
-    schemaPrefix:     'github/v1/',
-    aws:              cfg.get('aws')
-  });
+  let validator = await common.buildValidator(cfg);
 
   let pulseCredentials = cfg.get('pulse')
   if (publisher) {
@@ -80,11 +53,14 @@ var launch = async function(profile, publisher) {
     throw "Can't initialize pulse publisher: missing credentials"
  }
 
+  // A single connection to the GithubAPI to pass into the router context
+  var githubAPI = new Octokat(cfg.get('github:credentials'));
+
   // Create API router and publish reference if needed
   debug("Creating API router");
 
   let router = await api.setup({
-    context:          {publisher, cfg},
+    context:          {publisher, cfg, githubAPI},
     validator:        validator,
     authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
     credentials:      cfg.get('taskcluster:credentials'),
