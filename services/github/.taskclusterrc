@@ -1,0 +1,9 @@
+---
+version: 1
+tasks:
+  - payload:
+      image: "ubuntu:latest"
+      command:
+        - "/bin/bash"
+        - "-c"
+        - "echo finished"
