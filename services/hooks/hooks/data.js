@@ -8,8 +8,10 @@ var Promis = require('promise');
 var Hook = base.Entity.configure({
   version:        1,
   partitionKey:   base.Entity.keys.CompositeKey('groupId', 'hookId'),
-  rowKey:         base.Entity.keys.StringKey('hook'),
+  rowKey:         base.Entity.keys.ConstantKey('hook'),
   properties: {
+    groupId:      base.Entity.types.String,
+    hookId:       base.Entity.types.String,
     name:         base.Entity.types.String,
     deadline:     base.Entity.types.Date,
     data:         base.Entity.types.JSON,
