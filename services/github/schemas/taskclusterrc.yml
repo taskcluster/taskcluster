@@ -1,0 +1,216 @@
+id:                 http://schemas.taskcluster.net/github/v1/taskclusterrc.json#
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "taskclusterrc format"
+description: |
+ Description of a taskclusterrc file, which may be used to generate a taskgraph
+ and tasks.
+type:               object
+properties:
+  version:
+    description:    "taskclusterrc version"
+    enum:           [1]
+  scopes:
+    title:          "Scopes"
+    description: |
+      List of scopes (or scope-patterns) that the task is
+      authorized to use.
+    type:           array
+    default: [
+          'queue:*',
+          'docker-worker:*',
+          'scheduler:*'
+        ]
+    items:
+      title:        "Scope"
+      description: |
+        A scope (or scope-patterns) which the task is
+        authorized to use. This can be a string or a string
+        ending with `*` which will authorize all scopes for
+        which the string is a prefix.
+      type:         string
+  metadata:         {$const: metadata}
+  routes:
+    title:          "Graph Specific Routes"
+    description: |
+      List of graph specific routes, AMQP messages will be CC'ed to these routes.
+    type:           array
+    default:
+      - "taskcluster-github.{{ organization }}.{{ repository }}.{{ headSha }}"
+  tasks:
+    type:           array
+    default:        []
+    items:
+        title:              "Task Definition"
+        description: |
+          Definition of a task that can be scheduled
+        type:               object
+        properties:
+          provisionerId:
+            title:          "Provisioner Id"
+            description: |
+              Unique identifier for a provisioner, that can supply specified
+              `workerType`
+            type:           string
+            minLength:      {$const: identifier-min-length}
+            maxLength:      {$const: identifier-max-length}
+            pattern:        {$const: identifier-pattern}
+            default:        "aws-provisioner-v1"
+          workerType:
+            title:          "Worker Type"
+            description: |
+              Unique identifier for a worker-type within a specific provisioner
+            type:           string
+            minLength:      {$const: identifier-min-length}
+            maxLength:      {$const: identifier-max-length}
+            pattern:        {$const: identifier-pattern}
+            default:        "b2gtest"
+          routes:
+            title:          "Task Specific Routes"
+            description: |
+              List of task specific routes, AMQP messages will be CC'ed to these routes.
+            type:           array
+            default:        []
+            items:
+              title:        "Task Specific Route"
+              description: |
+                A task specific route, AMQP messages will be CC'ed with a routing key
+                matching `route.<task-specific route>`. It's possible to dot (`.`) in
+                the task specific route to make sub-keys, etc. See the RabbitMQ
+                [tutorial](http://www.rabbitmq.com/tutorials/tutorial-five-python.html)
+                for examples on how to use routing-keys.
+              type:         string
+              maxLength:    249
+              minLength:    1
+            maxItems:       10
+            uniqueItems:    true
+          retries:
+            title:          "Retries"
+            description: |
+              Number of times to retry the task in case of infrastructure issues.
+              An _infrastructure issue_ is a worker node that crashes or is shutdown,
+              these events are to be expected.
+            type:           integer
+            minimum:        0
+            maximum:        50
+            default:        5
+          created:          {$const: created}
+          deadline:         {$const: deadline}
+          scopes:
+            title:          "Scopes"
+            description: |
+              List of scopes (or scope-patterns) that the task is
+              authorized to use.
+            type:           array
+            default:        []
+            items:
+              title:        "Scope"
+              description: |
+                A scope (or scope-patterns) which the task is
+                authorized to use. This can be a string or a string
+                ending with `*` which will authorize all scopes for
+                which the string is a prefix.
+              type:         string
+          payload:
+            title:          "Task Payload"
+            description: |
+              Task-specific payload following worker-specific format. For example the
+              `docker-worker` requires keys like: `image`, `commands` and
+              `features`. Refer to the documentation of `docker-worker` for details.
+            type:           object
+            properties:
+              maxRunTime:
+                title: "Max run time"
+                description: |
+                  Maximum amount of time a task may run before failing.
+                type: integer
+                default: 7200
+              env:
+                title: "Env"
+                description: "Environment variables."
+                type: object
+                default:
+                  GITHUB_EVENT: "{{ event }}"
+                  GITHUB_BRANCH: "{{ branch }}"
+                  GITHUB_PULL_REQUEST: "{{ pullNumber }}"
+                  GITHUB_BASE_REPO_URL: "{{ baseRepoUrl }}"
+                  GITHUB_BASE_USER: "{{ baseUser }}"
+                  GITHUB_BASE_SHA: "{{ baseSha }}"
+                  GITHUB_BASE_BRANCH: "{{ branch }}"
+                  GITHUB_BASE_REF: "{{ baseRef }}"
+                  GITHUB_HEAD_REPO_URL: "{{ headRepoUrl }}"
+                  GITHUB_HEAD_USER: "{{ headUser }}"
+                  GITHUB_HEAD_SHA: "{{ headSha }}"
+                  GITHUB_HEAD_BRANCH: "{{ headBranch }}"
+                  GITHUB_HEAD_REF: "{{ headRef }}"
+                  GITHUB_HEAD_USER_EMAIL: "{{ headUserEmail }}"
+            additionalProperties: true
+          metadata:          {$const: metadata}
+          tags:
+            title:            "Tags"
+            description: |
+              Arbitrary key-value tags (only strings limited to 4k). These can be used
+              to attach informal meta-data to a task. Use this for informal tags that
+              tasks can be classified by. You can also think of strings here as
+              candidates for formal meta-data. Something like
+              `purpose: 'build' || 'test'` is a good example.
+            type:             object
+            additionalProperties:
+              type:           string
+              maxLength:      4096
+          extra:
+            title:            "Extra Data"
+            description: |
+              Object with properties that can hold any kind of extra data that should be
+              associated with the task. This can be data for the task which doesn't
+              fit into `payload`, or it can supplementary data for use in services
+              listening for events from this task. For example this could be details to
+              display on _treeherder_, or information for indexing the task. Please, try
+              to put all related information under one property, so `extra` data keys
+              for treeherder reporting and task indexing don't conflict, hence, we have
+              reusable services. **Warning**, do not stuff large data-sets in here,
+              task definitions should not take-up multiple MiBs.
+            type:             object
+            default:
+              github_events:
+                - pull_request.opened
+                - pull_request.updated
+              whitelist:
+                orgs:
+                  - "{{ organization }}"
+            properties:
+              github_events:
+                title: "GitHub Events"
+                description: |
+                  A list of github events which will trigger this job.
+                type: array
+                default:
+                  - pull_request.opened
+                  - pull_request.updated
+              whitelist:
+                title: "Whitelist"
+                description: |
+                  Users and organizations which may trigger this job.
+                type: object
+                default:
+                  orgs:
+                    - "{{ organization }}"
+                  users: []
+                properties:
+                  orgs:
+                    title: "Orgs"
+                    description: |
+                      A list of organizations whose members may trigger this job.
+                    type: array
+                  users:
+                    title: "Users"
+                    description: |
+                      A list of users may trigger this job.
+                    type: array
+            additionalProperties: true
+        additionalProperties: false
+        required:
+          - payload
+additionalProperties: false
+required:
+  - version
+  - tasks
