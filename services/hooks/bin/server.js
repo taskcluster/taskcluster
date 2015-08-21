@@ -32,6 +32,13 @@ var launch = async function(profile) {
     process:      'server'
   });
 
+  // Create Groups table
+  var Groups = data.Groups.setup({
+    table:        cfg.get('hooks:groupsTableName'),
+    credentials:  cfg.get('azure'),
+    process:      'server'
+  });
+
   // Create a validator
   debug("Waiting for resources to be created");
   var validator, publisher;
@@ -51,7 +58,8 @@ var launch = async function(profile) {
 
   var router = await v1.setup({
     context: {
-      Hook:           Hook
+      Hook:           Hook,
+      Groups:         Groups
     },
     validator:        validator,
     authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),

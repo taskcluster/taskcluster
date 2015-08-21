@@ -9,7 +9,10 @@ module.exports = {
     exchangePrefix: 'v1/',
 
     // Azure table name for hooks
-    hookTableName:  'Hooks'
+    hookTableName:  'Hooks',
+
+    // Azure table name for group listing
+    groupsTableName: 'Groups'
   },
 
   // Server configuration
