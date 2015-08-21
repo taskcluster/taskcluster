@@ -1,4 +1,17 @@
 module.exports = {
+  // Taskcluster Hooks configuration
+  hooks:
+  {
+    // Publish references and schemas
+    publishMetaData: 'false',
+
+    // Prefix for exchanges declared
+    exchangePrefix: 'v1/',
+
+    // Azure table name for hooks
+    hookTableName:  'Hooks'
+  },
+
   // Server configuration
   server:
   {

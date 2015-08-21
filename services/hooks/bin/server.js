@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-var debug   = require('debug')('hooks:bin:server');
 var base    = require('taskcluster-base');
-var v1      = require('../routes/v1');
+var data    = require('../hooks/data');
+var debug   = require('debug')('hooks:bin:server');
 var path    = require('path');
 var Promise = require('promise');
+var v1      = require('../routes/v1');
 
 /* Launch server */
 var launch = async function(profile) {
@@ -13,7 +14,22 @@ var launch = async function(profile) {
   var cfg = base.config({
     defaults:  require('../config/defaults'),
     profile:   require('../config/' + profile),
+    envs: [
+      'pulse_username',
+      'pulse_password',
+      'taskcluster_credentials_clientId',
+      'taskcluster_credentuals_accessToken',
+      'azure_accountName',
+      'azure_accountKey'
+    ],
     filename:  'taskcluster-hooks'
+  });
+
+  // Create Hooks table
+  var Hook = data.Hook.setup({
+    table:        cfg.get('hooks:hookTableName'),
+    credentials:  cfg.get('azure'),
+    process:      'server'
   });
 
   // Create a validator
@@ -24,7 +40,7 @@ var launch = async function(profile) {
         validator = await base.validator({
           folder:        path.join(__dirname, '..', 'schemas'),
           constants:     require('../schemas/constants'),
-          publish:       false,
+          publish:       cfg.get('hooks:publishMetaData') == 'true',
           schemaPrefix:  'hooks/v1/'
         });
       })()
@@ -34,9 +50,13 @@ var launch = async function(profile) {
   debug("Creating API router");
 
   var router = await v1.setup({
+    context: {
+      Hook:           Hook
+    },
     validator:        validator,
     authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
     credentials:      cfg.get('taskcluster:credentials'),
+    pubish:           cfg.get('hooks:publishMetaData') == 'true',
     baseUrl:          cfg.get('server:publicUrl') + '/v1',
     referencePrefix:  'hooks/v1/api.json'
   });
