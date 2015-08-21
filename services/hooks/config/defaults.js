@@ -12,7 +12,10 @@ module.exports = {
     hookTableName:  'Hooks',
 
     // Azure table name for group listing
-    groupsTableName: 'Groups'
+    groupsTableName: 'Groups',
+
+    // Azure account
+    azureAccount:   undefined
   },
 
   // Server configuration
@@ -47,13 +50,6 @@ module.exports = {
       clientId:      undefined,
       accessToken:   undefined
     }
-  },
-
-  // Azure credentials configuration
-  azure:
-  {
-    accountName: undefined,
-    accountKey: undefined
   },
 
   // Pulse Credentials

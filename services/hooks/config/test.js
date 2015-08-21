@@ -1,4 +1,9 @@
 module.exports = {
+  hooks:
+  {
+    hookTableName: 'amiyaguchi_hooks',
+    groupsTableName: 'amiyaguchi_groups'
+  },
   server:
   {
     publicUrl: 'http://localhost:60003',
