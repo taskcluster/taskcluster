@@ -7,8 +7,8 @@ var Promis = require('promise');
 /** Entity for tracking hooks and associated state **/
 var Hook = base.Entity.configure({
   version:        1,
-  partitionKey:   base.Entity.keys.CompositeKey('groupId', 'hookId'),
-  rowKey:         base.Entity.keys.ConstantKey('hook'),
+  partitionKey:   base.Entity.keys.StringKey('groupId'),
+  rowKey:         base.Entity.keys.StringKey('hookId'),
   properties: {
     groupId:      base.Entity.types.String,
     hookId:       base.Entity.types.String,
@@ -38,3 +38,17 @@ Hook.expire = async function(now) {
 
 // export Hook
 exports.Hook = Hook;
+
+
+/** Entity for tracking all groups **/
+var Groups = base.Entity.configure({
+  version:       1,
+  partitionKey:  base.Entity.keys.ConstantKey('GroupKeys'),
+  rowKey:        base.Entity.keys.StringKey('groupId'),
+  properties: {
+    groupId:     base.Entity.types.String
+  }
+});
+
+// export Groups
+exports.Groups = Groups;
