@@ -15,7 +15,7 @@ module.exports = {
   },
 
   server: {
-    publicUrl:                    'https://github.taskcluster.net',
+    publicUrl:                    'https://taskcluster-github.herokuapp.com',
     port:                         80,
     env:                          'production',
     forceSSL:                     true,
