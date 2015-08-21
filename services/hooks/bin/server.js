@@ -18,24 +18,25 @@ var launch = async function(profile) {
       'pulse_username',
       'pulse_password',
       'taskcluster_credentials_clientId',
-      'taskcluster_credentuals_accessToken',
-      'azure_accountName',
-      'azure_accountKey'
+      'taskcluster_credentials_accessToken',
+      'hooks_azureAccount'
     ],
     filename:  'taskcluster-hooks'
   });
 
   // Create Hooks table
   var Hook = data.Hook.setup({
+    account:      cfg:get('hooks:azureAccount'),
     table:        cfg.get('hooks:hookTableName'),
-    credentials:  cfg.get('azure'),
+    credentials:  cfg.get('taskcluster:credentials'),
     process:      'server'
   });
 
   // Create Groups table
   var Groups = data.Groups.setup({
+    account:      cfg.get('hooks:azureAccount'),
     table:        cfg.get('hooks:groupsTableName'),
-    credentials:  cfg.get('azure'),
+    credentials:  cfg.get('taskcluster:credentials'),
     process:      'server'
   });
 
@@ -48,7 +49,10 @@ var launch = async function(profile) {
           folder:        path.join(__dirname, '..', 'schemas'),
           constants:     require('../schemas/constants'),
           publish:       cfg.get('hooks:publishMetaData') == 'true',
-          schemaPrefix:  'hooks/v1/'
+          schemaPrefix:  'hooks/v1/',
+          preload: [
+            'http://schemas.taskcluster.net/queue/v1/create-task-request.json'
+          ]
         });
       })()
       ]);
