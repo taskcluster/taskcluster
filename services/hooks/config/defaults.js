@@ -22,7 +22,7 @@ module.exports = {
   server:
   {
     // Public URL from which the server can be accessed
-    publicUrl:  'https://cron.taskcluster.net',
+    publicUrl:  'https://hooks.taskcluster.net',
 
     // Port to listen for requests on
     port:       undefined,

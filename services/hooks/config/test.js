@@ -1,8 +1,8 @@
 module.exports = {
   hooks:
   {
-    hookTableName: 'amiyaguchi_hooks',
-    groupsTableName: 'amiyaguchi_groups'
+    hookTableName: 'amiyaguchihooks',
+    groupsTableName: 'amiyaguchigroups'
   },
   server:
   {
