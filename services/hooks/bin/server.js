@@ -26,7 +26,7 @@ var launch = async function(profile) {
 
   // Create Hooks table
   var Hook = data.Hook.setup({
-    account:      cfg:get('hooks:azureAccount'),
+    account:      cfg.get('hooks:azureAccount'),
     table:        cfg.get('hooks:hookTableName'),
     credentials:  cfg.get('taskcluster:credentials'),
     process:      'server'
