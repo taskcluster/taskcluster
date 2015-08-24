@@ -186,7 +186,7 @@ class DeadlineResolver {
 
     // Publish messages about the last run if it was resolved here
     var run = _.last(task.runs);
-    if (run.reasonResolved  === 'deadline-exceeded' ||
+    if (run.reasonResolved  === 'deadline-exceeded' &&
         run.state           === 'exception') {
       debug("Resolved taskId: %s, by deadline", taskId);
       await this.publisher.taskException({
