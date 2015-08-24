@@ -103,6 +103,18 @@ suite('TaskCluster-Github taskclusterrc', () => {
     });
 
   buildConfigTest(
+    'Pull Event, Single Task Config',
+    configPath + 'taskclusterrc.single.yml',
+    {
+      payload:    buildMessage({details: {event: 'pull_request.updated'}}),
+      userInfo:   buildUserInfo(),
+    },
+    {
+      'tasks[0].task.extra.github_events': ['pull_request.opened', 'pull_request.updated'],
+      'metadata.owner': 'test@test.com'
+    });
+
+  buildConfigTest(
     'Push Event (Push Task + Pull Task)',
     configPath + 'taskclusterrc.push_task_and_pull_task.yml',
     {
@@ -111,7 +123,8 @@ suite('TaskCluster-Github taskclusterrc', () => {
     },
     {
       'metadata.owner': 'test@test.com',
-      'tasks[0].task.payload.command': ['test']
+      'tasks[0].task.payload.command': ['test'],
+      'tasks[0].task.extra.github_events': ['push']
     });
 
   buildConfigTest(
