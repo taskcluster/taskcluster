@@ -19,24 +19,23 @@ var launch = async function(profile) {
       'pulse_password',
       'taskcluster_credentials_clientId',
       'taskcluster_credentials_accessToken',
-      'hooks_azureAccount'
+      'azure_accountName',
+      'azure_accountKey'
     ],
     filename:  'taskcluster-hooks'
   });
 
   // Create Hooks table
   var Hook = data.Hook.setup({
-    account:      cfg.get('hooks:azureAccount'),
     table:        cfg.get('hooks:hookTableName'),
-    credentials:  cfg.get('taskcluster:credentials'),
+    credentials:  cfg.get('azure'),
     process:      'server'
   });
 
   // Create Groups table
   var Groups = data.Groups.setup({
-    account:      cfg.get('hooks:azureAccount'),
     table:        cfg.get('hooks:groupsTableName'),
-    credentials:  cfg.get('taskcluster:credentials'),
+    credentials:  cfg.get('azure'),
     process:      'server'
   });
 
@@ -54,8 +53,10 @@ var launch = async function(profile) {
             'http://schemas.taskcluster.net/queue/v1/create-task-request.json'
           ]
         });
-      })()
-      ]);
+      })(),
+      Hook.ensureTable(),
+      Groups.ensureTable()
+  ]);
 
   // Create API router and publish reference if needed
   debug("Creating API router");

@@ -1,8 +1,11 @@
 {
-    "name": "example hook",
-    "description": "todo",
-    "owner": "nobody@example.com",
-    "expiry": "1 year",
+    "metadata":
+    {
+        "name": "example hook",
+        "description": "todo",
+        "owner": "nobody@example.com"
+    },
+    "expires": "1 year",
     "deadline": "1 day",
     "task":
     {

@@ -4,30 +4,38 @@ description:    |
     representation of a hook to be scheduled
 type:           object
 properties:
-    name:
-        title:      "Name"
-        description: |
-            Human readable name of the hook, used to briefly give an idea about
-            what the hook does.
-        type:       string
-        maxLength:  255
-    description:
-        title:      "Description"
-        description:    |
-            Human readable description of the hook
-        type:       string
-        maxLength:  32768
-    owner:
-        title:     "Owner"
-        description: |
-            E-mail of the persion who caused this task. This is the person who
-            is contacted in the event of an error in scheduling.
-        type:       string
-        maxLength:  255
-    emailOnError:
-        title:      "Email on error"
-        type:       boolean
-        default:    true
+    metadata:
+        type: object
+        properties:
+            name:
+                title:      "Name"
+                description: |
+                    Human readable name of the hook, used to briefly give an idea about
+                    what the hook does.
+                type:       string
+                maxLength:  255
+            description:
+                title:      "Description"
+                description:    |
+                    Human readable description of the hook
+                type:       string
+                maxLength:  32768
+            owner:
+                title:     "Owner"
+                description: |
+                    E-mail of the persion who caused this task. This is the person who
+                    is contacted in the event of an error in scheduling.
+                type:       string
+                maxLength:  255
+            emailOnError:
+                title:      "Email on error"
+                type:       boolean
+                default:    true
+        additionalProperties: false
+        required:
+            - name
+            - description
+            - owner
     bindings:
         type:   object
         properties:
@@ -43,14 +51,15 @@ properties:
             - routingKey
     schedule:
         type: string
-    expiry:
+        maxLength: 255
+    expires:
         type: string
+        maxLength: 255
     deadline:
         type: string
+        maxLength: 255
     task:   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
 additionalProperties: false
 required:
-    - title
-    - description
-    - owner
+    - metadata
     - task
