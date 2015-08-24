@@ -1,8 +1,8 @@
 var base   = require('taskcluster-base');
 var debug  = require('debug')('hooks:data');
 var assert = require('assert');
-var Promis = require('promise');
-
+var Promise = require('promise');
+var _       = require('lodash');
 
 /** Entity for tracking hooks and associated state **/
 var Hook = base.Entity.configure({
@@ -12,9 +12,10 @@ var Hook = base.Entity.configure({
   properties: {
     groupId:      base.Entity.types.String,
     hookId:       base.Entity.types.String,
-    name:         base.Entity.types.String,
+    metadata:     base.Entity.types.JSON,
+    task:         base.Entity.types.JSON,
+    bindings:     base.Entity.types.JSON,
     deadline:     base.Entity.types.Date,
-    data:         base.Entity.types.JSON,
     expires:      base.Entity.types.Date
   }
 });
@@ -35,6 +36,17 @@ Hook.expire = async function(now) {
   });
   return count;
 }
+
+/** Return promise for hook definition */
+Hook.prototype.definition = function() {
+  return Promise.resolve({
+    metadata: _.cloneDeep(this.metadata),
+    task:     _.cloneDeep(this.task),
+    bindings: _.cloneDeep(this.bindings),
+    deadline: this.deadline.toJSON(),
+    expires:  this.expires.toJSON()
+  });
+};
 
 // export Hook
 exports.Hook = Hook;

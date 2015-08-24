@@ -11,6 +11,7 @@
   "dependencies": {
     "babel": "^5.8.21",
     "debug": "^2.2.0",
+    "lodash": "^3.10.1",
     "promise": "^7.0.4",
     "taskcluster-base": "^0.8.1",
     "taskcluster-client": "^0.22.4"
