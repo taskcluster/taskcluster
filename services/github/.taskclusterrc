@@ -2,8 +2,8 @@
 version: 1
 tasks:
   - payload:
-      image: "quay.io/mrrrgn/ubuntu-build:0.0.2"
+      image: "quay.io/mrrrgn/ubuntu-ci:0.0.0"
       command:
         - "/bin/bash"
         - "-c"
-        - "git clone $GITHUB_HEAD_REPO_URL repo && cd repo && git checkout $GITHUB_HEAD_BRANCH && npm install . && npm test"
+        - "npm install . && npm test"
