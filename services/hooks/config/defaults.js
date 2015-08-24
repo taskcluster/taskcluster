@@ -37,6 +37,12 @@ module.exports = {
     trustProxy: false
   },
 
+  azure:
+  {
+    accountName: undefined,
+    accountKey:  undefined
+  },
+
   // TaskCluster configuration
   taskcluster:
   {

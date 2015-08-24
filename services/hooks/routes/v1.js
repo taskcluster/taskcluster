@@ -1,11 +1,12 @@
 var Promise = require('promise');
 var debug   = require('debug')('hooks:routes:v1');
 var base    = require('taskcluster-base');
+var taskcluster  = require('taskcluster-client');
 
 var api = new base.API({
-  title: "Hooks API Documentation",
-  description: "Todo",
-  schemaPrefix: 'http://schemas.taskcluster.net/queue/v1/'
+  title:         "Hooks API Documentation",
+  description:   "Todo",
+  schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/'
 });
 
 // Export api
@@ -17,12 +18,17 @@ api.declare({
   route:        '/hooks',
   name:         'listHookGroups',
   idempotent:   true,
-  scopes:       [[]],
   output:       'list-hook-groups-response.json',
   title:        'List hook groups',
   description:  'todo'
 }, async function(req, res) {
-
+  let groups = await this.Groups.query();
+  let groupIds = groups.data.map(function(item) {
+    return item.groupId;
+  });
+  return res.reply({
+    groups: groupIds
+  });
 });
 
 
@@ -32,7 +38,6 @@ api.declare({
   route:        '/hooks/:hookGroup',
   name:         'listHooks',
   idempotent:   true,
-  scopes:       [[]],
   output:       'list-hooks-response.json',
   title:        'List hooks in a given group',
   description:  'todo'
@@ -47,7 +52,6 @@ api.declare({
   route:        '/hooks/:hookGroup/:hookId',
   name:         'hook',
   idempotent:   true,
-  scopes:       [[]],
   output:       'hook-defintion.json',
   title:        'Get hook definition',
   description:  'todo'
@@ -62,13 +66,59 @@ api.declare({
   route:        '/hooks/:hookGroup/:hookId',
   name:         'createHook',
   idempotent:   true,
-  scopes:       [["hooks:modify-hook:<hookGroup>/<hookId>"]],
+  //scopes:       [["hooks:modify-hook:<hookGroup>/<hookId>"]],
   input:        'create-hook-request.json',
-  output:       'hook-defintion.json',
+  output:       'hook-definition.json',
   title:        'Create a hook',
   description:  'todo'
 }, async function(req, res) {
+  var hookGroup = req.params.hookGroup;
+  var hookId = req.params.hookId;
+  var hookDef = req.body;
 
+  // Test if the group exists
+  try {
+    await this.Groups.load({ groupId: hookGroup });
+  }
+  catch(err) {
+    if ( !err || err.code !== 'ResourceNotFound') {
+      throw err;
+    }
+    await this.Groups.create({ groupId: hookGroup });
+  }
+
+  // try to create a Hook entity
+  try {
+    let bindings = hookDef.bindings ?
+      hookDef.bindings :
+      {
+        exchange: 'exchange/taskcluster-hooks/v1/trigger',
+        routingKey: hookGroup + '/' + hookId
+      }
+
+    var hook = await this.Hook.create({
+      groupId: hookGroup,
+      hookId: hookId,
+      metadata: hookDef.metadata,
+      task: hookDef.task,
+      bindings: bindings,
+      deadline: taskcluster.fromNow(hookDef.deadline),
+      expires: taskcluster.fromNow(hookDef.expiry)
+    });
+  }
+  catch (err) {
+    if (!err || err.code !== 'EntityAlreadyExists') {
+      throw err;
+    }
+    return res.status(409).json({
+      message: "hookGroup: " + hookGroup + " hookId: " + hookId +
+        " already used by another task"
+    });
+  }
+
+  var def = await hook.definition();
+
+  return res.reply(def);
 });
 
 
@@ -122,7 +172,6 @@ api.declare({
   route:        '/hooks/:hookGroup/:hookId/trigger/:token',
   name:         'triggerHookWithToken',
   idempotent:   true,
-  scopes:       [[]],
   input:        'trigger-payload.json',
   output:       'trigger-response.json',
   title:        'Trigger a hook with a token',
