@@ -2,6 +2,7 @@ var Promise     = require('promise');
 var debug       = require('debug')('hooks:routes:v1');
 var base        = require('taskcluster-base');
 var taskcluster = require('taskcluster-client');
+var slugid      = require('slugid');
 
 var api = new base.API({
   title:         "Hooks API Documentation",
@@ -214,10 +215,31 @@ api.declare({
   idempotent:   true,
   scopes:       [["hooks:trigger-hook:<hookGroup>/<hookId>"]],
   deferAuth:    true,
-  input:        'trigger-playload.json',
-  output:       'trigger-response.json',
+  //input:        undefined,
+  output:       'task-status.json',
   title:        'Trigger a hook',
   description:  'todo'
 }, async function(req, res) {
+  var hookGroup = req.params.hookGroup;
+  var hookId    = req.params.hookId;
 
+  var hook = await this.Hook.load({groupId: hookGroup, hookId: hookId}, true);
+
+  // Return a 404 if the hook entity doesn't exist
+  if (!hook) {
+    return res.status(404).json({
+      message: "Hook not found"
+    });
+  }
+
+  var definition = await hook.definition();
+  var task = definition.task;
+  task.deadline = taskcluster.fromNow('1 day');
+  task.created = new Date().toJSON();
+  var taskId = slugid.v4();
+  this.queue.createTask(taskId, task).then(function(resp) {
+    console.log(taskId);
+    console.log(resp);
+    return res.reply(resp)
+  });
 });
