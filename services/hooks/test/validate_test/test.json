@@ -7,6 +7,7 @@
     },
     "expires": "1 year",
     "deadline": "1 day",
+    "schedule": "friday at 6pm",
     "task":
     {
         "provisionerId": "aws-provisioner-v1",
