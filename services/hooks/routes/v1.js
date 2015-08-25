@@ -3,6 +3,7 @@ var debug       = require('debug')('hooks:routes:v1');
 var base        = require('taskcluster-base');
 var taskcluster = require('taskcluster-client');
 var slugid      = require('slugid');
+var datejs      = require('date.js');
 
 var api = new base.API({
   title:         "Hooks API Documentation",
@@ -42,7 +43,7 @@ api.declare({
   title:        'List hooks in a given group',
   description:  'todo'
 }, async function(req, res) {
-  var hooks = this.Hook.query({groupId: req.params.hookGroup}, {})
+  var hooks = await this.Hook.query({groupId: req.params.hookGroup}, {});
   var retval = {};
   retval.hooks = await Promise.all(
       hooks.entries.map(item => {
@@ -127,7 +128,7 @@ api.declare({
       expires:            hookDef.expire ? hookDef.expire :      '',
       schedule:           hookDef.schedule ? hookDef.schedule :  '',
       nextTaskId:         slugid.v4(),
-      nextScheduledDate:  new Date(0)
+      nextScheduledDate:  hookDef.schedule? datejs(hookDef.schedule) : new Date(0)
     });
   }
   catch (err) {
