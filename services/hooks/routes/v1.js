@@ -1,7 +1,7 @@
-var Promise = require('promise');
-var debug   = require('debug')('hooks:routes:v1');
-var base    = require('taskcluster-base');
-var taskcluster  = require('taskcluster-client');
+var Promise     = require('promise');
+var debug       = require('debug')('hooks:routes:v1');
+var base        = require('taskcluster-base');
+var taskcluster = require('taskcluster-client');
 
 var api = new base.API({
   title:         "Hooks API Documentation",
@@ -22,12 +22,12 @@ api.declare({
   title:        'List hook groups',
   description:  'todo'
 }, async function(req, res) {
-  let groups = await this.Groups.query();
-  let groupIds = groups.data.map(function(item) {
-    return item.groupId;
-  });
-  return res.reply({
-    groups: groupIds
+  return this.Groups.query({}, {}).then(function(data) {
+    var retval = {};
+    retval.groups = data.entries.map(function(item) {
+      return item.groupId;
+    });
+    return res.reply(retval);
   });
 });
 
@@ -42,7 +42,17 @@ api.declare({
   title:        'List hooks in a given group',
   description:  'todo'
 }, async function(req, res) {
-
+  return this.Hook.query({
+    groupId: req.params.hookGroup
+  }, {}).then(function(data) {
+    var retval = {};
+    Promise.all(data.entries.map(function(item) {
+      return item.definition();
+    })).then(function(results) {
+      retval.hooks = results;
+      return res.reply(retval);
+    });
+  });
 });
 
 
@@ -52,11 +62,26 @@ api.declare({
   route:        '/hooks/:hookGroup/:hookId',
   name:         'hook',
   idempotent:   true,
-  output:       'hook-defintion.json',
+  output:       'hook-definition.json',
   title:        'Get hook definition',
   description:  'todo'
 }, async function(req, res) {
+  let hook = await this.Hook.load({
+    groupId: req.params.hookGroup,
+    hookId:  req.params.hookId
+  }, true);
 
+  // Handle the case where the hook doesn't exist
+  if (!hook) {
+    return res.status(404).json({
+      message: "Hook not found"
+    });
+  }
+
+  // Create Hook definition
+  let definition = await hook.definition();
+
+  return res.reply(definition);
 });
 
 
@@ -73,8 +98,8 @@ api.declare({
   description:  'todo'
 }, async function(req, res) {
   var hookGroup = req.params.hookGroup;
-  var hookId = req.params.hookId;
-  var hookDef = req.body;
+  var hookId    = req.params.hookId;
+  var hookDef   = req.body;
 
   // Test if the group exists
   try {
@@ -87,23 +112,23 @@ api.declare({
     await this.Groups.create({ groupId: hookGroup });
   }
 
-  // try to create a Hook entity
+  // Try to create a Hook entity
   try {
     let bindings = hookDef.bindings ?
       hookDef.bindings :
       {
-        exchange: 'exchange/taskcluster-hooks/v1/trigger',
-        routingKey: hookGroup + '/' + hookId
+        exchange:    'exchange/taskcluster-hooks/v1/trigger',
+        routingKey:  hookGroup + '/' + hookId
       }
 
     var hook = await this.Hook.create({
-      groupId: hookGroup,
-      hookId: hookId,
-      metadata: hookDef.metadata,
-      task: hookDef.task,
-      bindings: bindings,
-      deadline: taskcluster.fromNow(hookDef.deadline),
-      expires: taskcluster.fromNow(hookDef.expiry)
+      groupId:   hookGroup,
+      hookId:    hookId,
+      metadata:  hookDef.metadata,
+      task:      hookDef.task,
+      bindings:  bindings,
+      deadline:  taskcluster.fromNow(hookDef.deadline),
+      expires:   taskcluster.fromNow(hookDef.expiry)
     });
   }
   catch (err) {
@@ -116,9 +141,9 @@ api.declare({
     });
   }
 
-  var def = await hook.definition();
+  let definition = await hook.definition();
 
-  return res.reply(def);
+  return res.reply(definition);
 });
 
 
