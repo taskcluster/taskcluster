@@ -4,6 +4,12 @@ description:    |
     representation of a hook to be scheduled
 type:           object
 properties:
+    groupId:
+        type: string
+        maxLength: 255
+    hookId:
+        type: string
+        maxLength: 255
     metadata:
         type: object
         properties:
@@ -59,6 +65,8 @@ properties:
     task:   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
 additionalProperties: false
 required:
+    - groupId
+    - hookId
     - metadata
     - task
     - bindings
