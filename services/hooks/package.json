@@ -10,6 +10,7 @@
   "license": "MPL-2.0",
   "dependencies": {
     "babel": "^5.8.21",
+    "date.js": "^0.2.0",
     "debug": "^2.2.0",
     "lodash": "^3.10.1",
     "promise": "^7.0.4",

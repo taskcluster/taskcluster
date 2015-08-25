@@ -3,50 +3,52 @@ var debug  = require('debug')('hooks:data');
 var assert = require('assert');
 var Promise = require('promise');
 var _       = require('lodash');
+var datejs  = require('date.js');
 
 /** Entity for tracking hooks and associated state **/
 var Hook = base.Entity.configure({
-  version:        1,
-  partitionKey:   base.Entity.keys.StringKey('groupId'),
-  rowKey:         base.Entity.keys.StringKey('hookId'),
-  properties: {
-    groupId:      base.Entity.types.String,
-    hookId:       base.Entity.types.String,
-    metadata:     base.Entity.types.JSON,
-    task:         base.Entity.types.JSON,
-    bindings:     base.Entity.types.JSON,
-    deadline:     base.Entity.types.Date,
-    expires:      base.Entity.types.Date
+  version:              1,
+  partitionKey:         base.Entity.keys.StringKey('groupId'),
+  rowKey:               base.Entity.keys.StringKey('hookId'),
+  properties:           {
+    groupId:            base.Entity.types.String,
+    hookId:             base.Entity.types.String,
+    metadata:           base.Entity.types.JSON,
+    task:               base.Entity.types.JSON,
+    bindings:           base.Entity.types.JSON,
+    deadline:           base.Entity.types.String,
+    expires:            base.Entity.types.String,
+    schedule:           base.Entity.types.String,
+    nextTaskId:         base.Entity.types.SlugId,
+    nextScheduledDate:  base.Entity.types.Date
   }
 });
 
-/**
- * Expire hooks that are past their expiration.
- *
- * Returns a promise that all expired hooks have been deleted
- */
-Hook.expire = async function(now) {
-  assert(now instanceof Date, "now must be given as option");
-  var count = 0;
-  await base.Entity.scan.call(this, {
-    expires:  base.Entity.op.lessThan(now)
-  }, {
-    limit:    250, // max number of concurrent delete operations
-    handler:  (hook) => { count++; return hook.remove(true); }
-  });
-  return count;
-}
-
 /** Return promise for hook definition */
 Hook.prototype.definition = function() {
-  return Promise.resolve({
+  var definition = {
+    hookId:   this.hookId,
+    groupId:  this.groupId,
     metadata: _.cloneDeep(this.metadata),
     task:     _.cloneDeep(this.task),
     bindings: _.cloneDeep(this.bindings),
-    deadline: this.deadline.toJSON(),
-    expires:  this.expires.toJSON()
-  });
+    deadline: this.deadline,
+    expires:  this.expires
+  };
+  if (this.schedule) { definition.schedule = this.schedule; }
+
+  return Promise.resolve(definition);
 };
+
+Hook.prototype.taskPayload = function() {
+  let payload = _.cloneDeep(this.task);
+  payload.created = new Date().toJSON();
+  payload.deadline = datejs(this.deadline).toJSON();
+  if (this.expires) {
+    task.expires = datejs(this.expires).toJSON();
+  }
+  return Promise.resolve(payload);
+}
 
 // export Hook
 exports.Hook = Hook;

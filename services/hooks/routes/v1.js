@@ -23,13 +23,12 @@ api.declare({
   title:        'List hook groups',
   description:  'todo'
 }, async function(req, res) {
-  return this.Groups.query({}, {}).then(function(data) {
-    var retval = {};
-    retval.groups = data.entries.map(function(item) {
-      return item.groupId;
-    });
-    return res.reply(retval);
+  var groups = await this.Groups.query({}, {});
+  var retval = {};
+  retval.groups = groups.entries.map(item => {
+    return item.groupId;
   });
+  return res.reply(retval);
 });
 
 
@@ -43,17 +42,13 @@ api.declare({
   title:        'List hooks in a given group',
   description:  'todo'
 }, async function(req, res) {
-  return this.Hook.query({
-    groupId: req.params.hookGroup
-  }, {}).then(function(data) {
-    var retval = {};
-    Promise.all(data.entries.map(function(item) {
-      return item.definition();
-    })).then(function(results) {
-      retval.hooks = results;
-      return res.reply(retval);
-    });
-  });
+  var hooks = this.Hook.query({groupId: req.params.hookGroup}, {})
+  var retval = {};
+  retval.hooks = await Promise.all(
+      hooks.entries.map(item => {
+        return item.definition();
+      }));
+  return res.reply(retval);
 });
 
 
@@ -118,18 +113,21 @@ api.declare({
     let bindings = hookDef.bindings ?
       hookDef.bindings :
       {
-        exchange:    'exchange/taskcluster-hooks/v1/trigger',
-        routingKey:  hookGroup + '/' + hookId
+        exchange:    '',
+        routingKey:  '#'
       }
 
     var hook = await this.Hook.create({
-      groupId:   hookGroup,
-      hookId:    hookId,
-      metadata:  hookDef.metadata,
-      task:      hookDef.task,
-      bindings:  bindings,
-      deadline:  taskcluster.fromNow(hookDef.deadline),
-      expires:   taskcluster.fromNow(hookDef.expiry)
+      groupId:            hookGroup,
+      hookId:             hookId,
+      metadata:           hookDef.metadata,
+      task:               hookDef.task,
+      bindings:           bindings,
+      deadline:           hookDef.deadline,
+      expires:            hookDef.expire ? hookDef.expire :      '',
+      schedule:           hookDef.schedule ? hookDef.schedule :  '',
+      nextTaskId:         slugid.v4(),
+      nextScheduledDate:  new Date(0)
     });
   }
   catch (err) {
@@ -215,14 +213,12 @@ api.declare({
   idempotent:   true,
   scopes:       [["hooks:trigger-hook:<hookGroup>/<hookId>"]],
   deferAuth:    true,
-  //input:        undefined,
   output:       'task-status.json',
   title:        'Trigger a hook',
   description:  'todo'
 }, async function(req, res) {
   var hookGroup = req.params.hookGroup;
   var hookId    = req.params.hookId;
-
   var hook = await this.Hook.load({groupId: hookGroup, hookId: hookId}, true);
 
   // Return a 404 if the hook entity doesn't exist
@@ -232,14 +228,7 @@ api.declare({
     });
   }
 
-  var definition = await hook.definition();
-  var task = definition.task;
-  task.deadline = taskcluster.fromNow('1 day');
-  task.created = new Date().toJSON();
-  var taskId = slugid.v4();
-  this.queue.createTask(taskId, task).then(function(resp) {
-    console.log(taskId);
-    console.log(resp);
-    return res.reply(resp)
-  });
+  var payload = await hook.taskPayload();
+  var resp = await this.queue.createTask(slugid.v4(), payload);
+  return res.reply(resp);
 });
