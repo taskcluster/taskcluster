@@ -173,7 +173,7 @@ properties:
             default:
               github_events:
                 - pull_request.opened
-                - pull_request.synchronized
+                - pull_request.synchronize
               whitelist:
                 orgs:
                   - "{{ organization }}"
@@ -185,7 +185,7 @@ properties:
                 type: array
                 default:
                   - pull_request.opened
-                  - pull_request.synchronized
+                  - pull_request.synchronize
               whitelist:
                 title: "Whitelist"
                 description: |
