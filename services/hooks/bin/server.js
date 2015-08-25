@@ -4,6 +4,7 @@ var data    = require('../hooks/data');
 var debug   = require('debug')('hooks:bin:server');
 var path    = require('path');
 var Promise = require('promise');
+var taskcluster = require('taskcluster-client');
 var v1      = require('../routes/v1');
 
 /* Launch server */
@@ -50,7 +51,8 @@ var launch = async function(profile) {
           publish:       cfg.get('hooks:publishMetaData') == 'true',
           schemaPrefix:  'hooks/v1/',
           preload: [
-            'http://schemas.taskcluster.net/queue/v1/create-task-request.json'
+            'http://schemas.taskcluster.net/queue/v1/create-task-request.json',
+            'http://schemas.taskcluster.net/queue/v1/task-status.json'
           ]
         });
       })(),
@@ -64,7 +66,11 @@ var launch = async function(profile) {
   var router = await v1.setup({
     context: {
       Hook:           Hook,
-      Groups:         Groups
+      Groups:         Groups,
+      queue:          new taskcluster.Queue({
+        credentials:  cfg.get('taskcluster:credentials'),
+        baseUrl:      cfg.get('taskcluster:queueBaseUrl')
+      })
     },
     validator:        validator,
     authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
