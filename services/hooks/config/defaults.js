@@ -46,8 +46,11 @@ module.exports = {
   // TaskCluster configuration
   taskcluster:
   {
-    // BaseUrl for auth, if default built-in baseUrl isn't provided
+    // BaseUrl for auth, if default built-in baseUrl isn't used
     authBaseUrl:   undefined,
+
+    // BaseUrl for queue, if default built-in baseUrl isn't used
+    queueuBaseUrl:  undefined,
 
     // TaskCluster credentials for this sever, these must have scopes"
     // auth:credentials
