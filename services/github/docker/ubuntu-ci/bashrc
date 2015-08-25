@@ -1,0 +1,10 @@
+####
+# This bashrc will try to begin any session by checking out a github repository
+# and moving into it.
+####
+
+if [ -n GITHUB_HEAD_REPO_URL ]; then
+    git clone $GITHUB_HEAD_REPO_URL repo && cd repo && git checkout $GITHUB_HEAD_BRANCH
+else
+    echo "No \$GITHUB_HEAD_REPO_URL set, skipping project checkout."
+fi
