@@ -2,9 +2,9 @@
 version: 1
 tasks:
   - payload:
-      image: "quay.io/mrrrgn/ubuntu-ci:0.0.0"
+      image: "quay.io/mrrrgn/ubuntu-ci:0.0.1"
       command:
         - "/bin/bash"
         - "--login"
         - "-c"
-        - "npm install . && npm test"
+        - "checkout-pull-request && npm install . && npm test"
