@@ -10,6 +10,9 @@ RUN apt-get install -y git \
     nodejs-legacy \
     npm
 
+RUN pip install virtualenv
+RUN pip install virtualenvwrapper
+
 # configure git and install tc-vcs
 RUN git config --global user.email "nobody@mozilla.com" && \
     git config --global user.name "mozilla"
