@@ -106,11 +106,11 @@ suite('TaskCluster-Github taskclusterrc', () => {
     'Pull Event, Single Task Config',
     configPath + 'taskclusterrc.single.yml',
     {
-      payload:    buildMessage({details: {event: 'pull_request.updated'}}),
+      payload:    buildMessage({details: {event: 'pull_request.synchronize'}}),
       userInfo:   buildUserInfo(),
     },
     {
-      'tasks[0].task.extra.github_events': ['pull_request.opened', 'pull_request.updated'],
+      'tasks[0].task.extra.github_events': ['pull_request.opened', 'pull_request.synchronize'],
       'metadata.owner': 'test@test.com'
     });
 
@@ -137,6 +137,6 @@ suite('TaskCluster-Github taskclusterrc', () => {
     {
       'metadata.owner': 'test@test.com',
       'tasks[0].task.payload.command': ['test'],
-      'tasks[0].task.extra.github_events': ['pull_request.opened', 'pull_request.updated']
+      'tasks[0].task.extra.github_events': ['pull_request.opened', 'pull_request.synchronize']
     });
 });
