@@ -127,6 +127,7 @@ api.declare({
       deadline:           hookDef.deadline,
       expires:            hookDef.expire ? hookDef.expire :      '',
       schedule:           hookDef.schedule ? hookDef.schedule :  '',
+      accessToken:        slugid.v4(),
       nextTaskId:         slugid.v4(),
       nextScheduledDate:  hookDef.schedule? datejs(hookDef.schedule) : new Date(0)
     });
@@ -168,12 +169,29 @@ api.declare({
   method:       'get',
   route:        '/hooks/:hookGroup/:hookId/token',
   name:         'getTriggerToken',
-  idempotent:   true,
-  scopes:       [["hooks:get-trigger-token:<hookGroup>/<hookId>"]],
+  //scopes:       [["hooks:get-trigger-token:<hookGroup>/<hookId>"]],
+  input:        undefined,
+  output:       'trigger-token-response.json',
   title:        'Get a trigger token',
-  description:  'todo'
+  description: [
+    "Retrieve a unique secret token for triggering the specified hook. This",
+    "token can be deactivated with resetTriggerToken."
+  ].join('\n')
 }, async function(req, res) {
+  let hook = await this.Hook.load({
+    groupId: req.params.hookGroup,
+    hookId:  req.params.hookId
+  }, true);
 
+  if (!hook) {
+    return res.status(404).json({
+      message: "Hook not found"
+    });
+  }
+
+  return res.reply({
+    token: hook.accessToken
+  });
 });
 
 
@@ -182,12 +200,33 @@ api.declare({
   method:       'post',
   route:        '/hooks/:hookGroup/:hookId/token',
   name:         'resetTriggerToken',
-  idempotent:   true,
-  scopes:       [["hooks:reset-trigger-token:<hookGroup>/<hookId>"]],
+  //scopes:       [["hooks:reset-trigger-token:<hookGroup>/<hookId>"]],
+  input:        undefined,
+  output:       'trigger-token-response.json',
   title:        'Reset a trigger token',
-  description:  'todo'
+  description: [
+    "Reset the token for triggering a given hook. This invalidates token that",
+    "may have been issued via getTriggerToken with a new token."
+  ].join('\n')
 }, async function(req, res) {
+  let hook = await this.Hook.load({
+    groupId: req.params.hookGroup,
+    hookId:  req.params.hookId
+  }, true);
 
+  if (!hook) {
+    return res.status(404).json({
+      message: "Hook not found"
+    });
+  }
+
+  await hook.modify((hook) => {
+    hook.accessToken = slugid.v4();
+  });
+
+  return res.reply({
+    token: hook.accessToken
+  });
 });
 
 
@@ -198,11 +237,32 @@ api.declare({
   name:         'triggerHookWithToken',
   idempotent:   true,
   input:        'trigger-payload.json',
-  output:       'trigger-response.json',
+  output:       'task-status.json',
   title:        'Trigger a hook with a token',
   description:  'todo'
 }, async function(req, res) {
+  var hook = await this.Hook.load({
+    groupId: req.params.hookGroup,
+    hookId:  req.params.hookId
+  }, true);
 
+  // Return a 404 if the hook entity doesn't exist
+  if (!hook) {
+    return res.status(404).json({
+      message: "Hook not found"
+    });
+  }
+
+  // Return 401 if the token doesn't match
+  if (req.params.token !== hook.accessToken) {
+    return res.status(401).json({
+      message: "Invalid token"
+    });
+  }
+
+  let payload = await hook.taskPayload();
+  let resp = await this.queue.createTask(slugid.v4(), payload);
+  return res.reply(resp);
 });
 
 
@@ -218,9 +278,10 @@ api.declare({
   title:        'Trigger a hook',
   description:  'todo'
 }, async function(req, res) {
-  var hookGroup = req.params.hookGroup;
-  var hookId    = req.params.hookId;
-  var hook = await this.Hook.load({groupId: hookGroup, hookId: hookId}, true);
+  var hook = await this.Hook.load({
+    groupId: req.params.hookGroup,
+    hookId:  req.params.hookId
+  }, true);
 
   // Return a 404 if the hook entity doesn't exist
   if (!hook) {
@@ -229,7 +290,7 @@ api.declare({
     });
   }
 
-  var payload = await hook.taskPayload();
-  var resp = await this.queue.createTask(slugid.v4(), payload);
+  let payload = await hook.taskPayload();
+  let resp = await this.queue.createTask(slugid.v4(), payload);
   return res.reply(resp);
 });

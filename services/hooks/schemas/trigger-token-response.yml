@@ -1,0 +1,12 @@
+$schema:        http://json-schema.org/draft-04/schema#
+title:          "trigger token response"
+description:    |
+    secret token for a trigger
+type:           object
+properties:
+    token:
+        title: "Token"
+        type: string
+additionalProperties: false
+required:
+    - token
