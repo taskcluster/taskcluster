@@ -9,6 +9,7 @@
   "author": "",
   "license": "MPL-2.0",
   "dependencies": {
+    "assume": "^1.2.5",
     "babel": "^5.8.21",
     "date.js": "^0.2.0",
     "debug": "^2.2.0",
