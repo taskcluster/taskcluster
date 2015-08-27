@@ -110,7 +110,7 @@ suite('TaskCluster-Github taskclusterrc', () => {
       userInfo:   buildUserInfo(),
     },
     {
-      'tasks[0].task.extra.github_events': ['pull_request.opened', 'pull_request.synchronize'],
+      'tasks[0].task.extra.github_events': ['pull_request.opened', 'pull_request.synchronize', 'pull_request.reopened'],
       'metadata.owner': 'test@test.com'
     });
 
@@ -137,6 +137,6 @@ suite('TaskCluster-Github taskclusterrc', () => {
     {
       'metadata.owner': 'test@test.com',
       'tasks[0].task.payload.command': ['test'],
-      'tasks[0].task.extra.github_events': ['pull_request.opened', 'pull_request.synchronize']
+      'tasks[0].task.extra.github_events': ['pull_request.opened', 'pull_request.synchronize', 'pull_request.reopened'],
     });
 });
