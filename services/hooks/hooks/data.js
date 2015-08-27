@@ -19,8 +19,9 @@ var Hook = base.Entity.configure({
     deadline:           base.Entity.types.String,
     expires:            base.Entity.types.String,
     schedule:           base.Entity.types.String,
+    accessToken:        base.Entity.types.SlugId,
     nextTaskId:         base.Entity.types.SlugId,
-    nextScheduledDate:  base.Entity.types.Date
+    nextScheduledDate:  base.Entity.types.Date,
   }
 });
 
