@@ -1,12 +1,24 @@
 module.exports = {
   hooks:
   {
-    hookTableName: 'amiyaguchihooks',
-    groupsTableName: 'amiyaguchigroups'
+    publishMetaData:  'false',
+    hookTableName:    'TestHooks',
+    groupsTableName:  'TestGroups'
   },
+
+  taskcluster:
+  {
+    authBaseUrl:      'http://localhost:60407/v1',
+    credentials:
+    {
+      clientId:       "test-server",
+      accessToken:    "none"
+    }
+  },
+
   server:
   {
-    publicUrl: 'http://localhost:60003',
-    port:       60003
+    publicUrl:        'http://localhost:60401',
+    port:             60401
   }
-}
+};
