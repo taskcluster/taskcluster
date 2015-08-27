@@ -3,4 +3,6 @@
 
 mocha \
     test/validate_test.js \
+    test/api/createhook_test.js \
+    test/api/listhookgroups_test.js \
     ;
