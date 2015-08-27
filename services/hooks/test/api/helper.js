@@ -1,12 +1,13 @@
-var assert          = require('assert');
-var Promise         = require('promise');
-var path            = require('path');
-var _               = require('lodash');
-var base            = require('taskcluster-base');
-var data            = require('../../hooks/data');
-var v1              = require('../../routes/v1');
-var taskcluster     = require('taskcluster-client');
-var mocha           = require('mocha');
+var _           = require('lodash');
+var assert      = require('assert');
+var base        = require('taskcluster-base');
+var data        = require('../../hooks/data');
+var debug       = require('debug')('test:api:helper');
+var mocha       = require('mocha');
+var path        = require('path');
+var Promise     = require('promise');
+var taskcluster = require('taskcluster-client');
+var v1          = require('../../routes/v1');
 var bin = {
   server:             require('../../bin/server')
 };
@@ -46,23 +47,12 @@ var cfg = helper.cfg = base.config({
   filename:     'taskcluster-hooks'
 });
 
-// Create Hooks table
-var Hook = data.Hook.setup({
-  table:        cfg.get('hooks:hookTableName'),
-  credentials:  cfg.get('azure'),
-  process:      'testing'
-});
-
-// Create Groups table
-var Groups = data.Groups.setup({
-  table:        cfg.get('hooks:groupsTableName'),
-  credentials:  cfg.get('azure'),
-  process:      'testing'
-});
 
 // Hold reference to authServer
 var authServer = null;
 var webServer = null;
+var Hook = null;
+var Groups = null;
 
 // Setup before tests
 mocha.before(async () => {
@@ -70,6 +60,20 @@ mocha.before(async () => {
   authServer = await base.testing.createMockAuthServer({
     port:     60407, // This is hardcoded into config/test.js
     clients:  defaultClients
+  });
+
+  // Create Hooks table
+  Hook = data.Hook.setup({
+    table:        cfg.get('hooks:hookTableName'),
+    credentials:  cfg.get('azure'),
+    process:      'testing'
+  });
+
+  // Create Groups table
+  Groups = data.Groups.setup({
+    table:        cfg.get('hooks:groupsTableName'),
+    credentials:  cfg.get('azure'),
+    process:      'testing'
   });
 
   webServer = await bin.server(testProfile);
@@ -101,16 +105,9 @@ var toTerminate = [];
 
 // Setup before each test
 mocha.beforeEach(async () => {
-  // Remove all hooks and groups
-  let hooks = await Hook.scan({}, {});
-  await Promise.all(hooks.entries.map((hook) => {
-    return hook.remove();
-  }));
-
-  let groups = await Groups.scan({}, {});
-  await Promise.all(groups.entries.map((group) => {
-    return group.remove();
-  }));
+  // Remove all entities before each test
+  await Hook.scan({},{handler: hook => {return hook.remove();}});
+  await Groups.scan({},{handler: group => {return group.remove();}});
 
   // Setup client with all scopes
   helper.scopes();
