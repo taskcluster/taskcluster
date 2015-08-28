@@ -33,11 +33,20 @@ suite('Get task', function() {
     extra: {}
   };
 
-  test("getTask", async () => {
+  test("task(taskId) is correct", async () => {
     var taskId = slugid.v4();
 
     await helper.queue.createTask(taskId, taskDef);
     var taskDef2 = await helper.queue.task(taskId);
+    assume(taskDef2).deep.equals(taskDef);
+  });
+
+  test("task(taskId) doesn't require credentials", async () => {
+    var taskId = slugid.v4();
+    await helper.queue.createTask(taskId, taskDef);
+
+    var queue = new helper.Queue();
+    var taskDef2 = await queue.task(taskId);
     assume(taskDef2).deep.equals(taskDef);
   });
 });
