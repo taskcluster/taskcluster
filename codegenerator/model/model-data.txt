@@ -3034,7 +3034,7 @@ http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#
 Description            = 'Response to a request for the number of pending tasks for a given
 `provisionerId` and `workerType`.
 '
-ID                     = 'http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#'
 Properties
   Property 'pendingTasks' =
     Description            = 'An approximate number of pending tasks for the given `provisionerId` and
@@ -3120,8 +3120,10 @@ Properties
           message again.
           To use this URL you must substitute `{{messageId}}` and
           `{{popReceipt}}` with `MessageId` and `PopReceipt` from the XML
-          response the `signedPollUrl` gave you. Note this URL only works
-          with `DELETE` request.
+          response the `signedPollUrl` gave you. It is important that you
+          `encodeURIComponent` both `MessageId` and `PopReceipt` prior to
+          substitution, otherwise you will experience intermittent failures!
+          Note this URL only works with `DELETE` request.
           '
           Format                 = 'uri'
           Title                  = 'Signed Delete Message URL'
@@ -3183,10 +3185,17 @@ ID                     = 'http://schemas.taskcluster.net/queue/v1/post-artifact-
 OneOf
   Item '0' =
     Additional Properties  = 'false'
-    Description            = 'Request for a signed PUT URL that will allow you to upload an artifact to an S3 bucket managed by the queue.'
+    Description            = 'Request for a signed PUT URL that will allow you to upload an artifact
+    to an S3 bucket managed by the queue.
+    '
     Properties
       Property 'contentType' =
-        Description            = 'Artifact mime-type, when uploading artifact to the signed `PUT` URL returned from this request this must given with the `ContentType` header. Please, provide correct mime-type, this make tooling a lot easier, specifically, always using `application/json` for JSON artifacts.'
+        Description            = 'Artifact mime-type, when uploading artifact to the signed
+        `PUT` URL returned from this request this must given with the
+         `ContentType` header. Please, provide correct mime-type,
+         this make tooling a lot easier, specifically,
+         always using `application/json` for JSON artifacts.
+        '
         MaxLength              = '255'
         Type                   = 'string'
         TypeName               = ''
@@ -3194,7 +3203,11 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'expires' =
-        Description            = 'Date-time after which the artifact should be deleted. Note, that these will be collected over time, and artifacts may remain available after expiration. S3 based artifacts are identified in azure table storage and explicitly deleted on S3 after expiration.'
+        Description            = 'Date-time after which the artifact should be deleted. Note, that
+        these will be collected over time, and artifacts may remain
+        available after expiration. S3 based artifacts are identified in
+        azure table storage and explicitly deleted on S3 after expiration.
+        '
         Format                 = 'date-time'
         Type                   = 'string'
         TypeName               = ''
@@ -3202,8 +3215,10 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'storageType' =
-        Description            = 'Artifact storage type, in this case `'s3'`'
+        Description            = 'Artifact storage type, in this case `'s3'`
+        '
         Enum                   = '[s3]'
+        Type                   = 'string'
         TypeName               = ''
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
@@ -3217,10 +3232,17 @@ OneOf
     SourceURL              = ''
   Item '1' =
     Additional Properties  = 'false'
-    Description            = 'Request for an Azure Shared Access Signature (SAS) that will allow you to upload an artifact to an Azure blob storage container managed by the queue.'
+    Description            = 'Request for an Azure Shared Access Signature (SAS) that will allow
+    you to upload an artifact to an Azure blob storage container managed
+    by the queue.
+    '
     Properties
       Property 'contentType' =
-        Description            = 'Artifact mime-type, when uploading artifact please use the same `Content-Type`, consistently using the correct mime-type make tooling a lot easier, specifically, always using `application/json` for JSON artifacts.'
+        Description            = 'Artifact mime-type, when uploading artifact please use the same
+        `Content-Type`, consistently using the correct mime-type make
+        tooling a lot easier, specifically, always using `application/json`
+        for JSON artifacts.
+        '
         MaxLength              = '255'
         Type                   = 'string'
         TypeName               = ''
@@ -3228,7 +3250,12 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'expires' =
-        Description            = 'Date-time after which the artifact should be deleted. Note, that these will be collected over time, and artifacts may remain available after expiration. Azure based artifacts are identified in azure table storage and explicitly deleted in the azure storage container after expiration.'
+        Description            = 'Date-time after which the artifact should be deleted.
+        Note, that these will be collected over time, and artifacts may
+        remain available after expiration. Azure based artifacts are
+        identified in azure table storage and explicitly deleted in the
+        azure storage container after expiration.
+        '
         Format                 = 'date-time'
         Type                   = 'string'
         TypeName               = ''
@@ -3236,8 +3263,10 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'storageType' =
-        Description            = 'Artifact storage type, in this case `azure`'
+        Description            = 'Artifact storage type, in this case `azure`
+        '
         Enum                   = '[azure]'
+        Type                   = 'string'
         TypeName               = ''
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
@@ -3251,10 +3280,21 @@ OneOf
     SourceURL              = ''
   Item '2' =
     Additional Properties  = 'false'
-    Description            = 'Request the queue to redirect to a URL for a given artifact. This allows you to reference artifacts that aren't managed by the queue. The queue will still authenticate the request, so depending on the level of secrecy required, secret URLs **might** work. Note, this is mainly useful for public artifacts, for example temporary files directly stored on the worker host and only available there for a specific amount of time.'
+    Description            = 'Request the queue to redirect to a URL for a given artifact.
+    This allows you to reference artifacts that aren't managed by the queue.
+    The queue will still authenticate the request, so depending on the level
+    of secrecy required, secret URLs **might** work. Note, this is mainly
+    useful for public artifacts, for example temporary files directly
+    stored on the worker host and only available there for a specific
+    amount of time.
+    '
     Properties
       Property 'contentType' =
-        Description            = 'Artifact mime-type for the resource to which the queue should redirect. Please use the same `Content-Type`, consistently using the correct mime-type make tooling a lot easier, specifically, always using `application/json` for JSON artifacts.'
+        Description            = 'Artifact mime-type for the resource to which the queue should
+        redirect. Please use the same `Content-Type`, consistently using
+        the correct mime-type make tooling a lot easier, specifically,
+        always using `application/json` for JSON artifacts.
+        '
         MaxLength              = '255'
         Type                   = 'string'
         TypeName               = ''
@@ -3262,7 +3302,10 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'expires' =
-        Description            = 'Date-time after which the queue should no longer redirect to this URL. Note, that the queue will and cannot delete the resource your URL references, you are responsible for doing that yourself.'
+        Description            = 'Date-time after which the queue should no longer redirect to this URL.
+        Note, that the queue will and cannot delete the resource your URL
+        references, you are responsible for doing that yourself.
+        '
         Format                 = 'date-time'
         Type                   = 'string'
         TypeName               = ''
@@ -3270,14 +3313,18 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'storageType' =
-        Description            = 'Artifact storage type, in this case `reference`'
+        Description            = 'Artifact storage type, in this case `reference`
+        '
         Enum                   = '[reference]'
+        Type                   = 'string'
         TypeName               = ''
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'url' =
-        Description            = 'URL to which the queue should redirect using a `303` (See other) redirect.'
+        Description            = 'URL to which the queue should redirect using a `303` (See other)
+        redirect.
+        '
         Format                 = 'uri'
         Type                   = 'string'
         TypeName               = ''
@@ -3293,10 +3340,16 @@ OneOf
     SourceURL              = ''
   Item '3' =
     Additional Properties  = 'false'
-    Description            = 'Request the queue to reply `403` (forbidden) with `reason` and `message` to any `GET` request for this artifact. This is mainly useful as a way for a task to declare that it failed to provide an artifact it wanted to upload.'
+    Description            = 'Request the queue to reply `403` (forbidden) with `reason` and `message`
+    to any `GET` request for this artifact. This is mainly useful as a way
+    for a task to declare that it failed to provide an artifact it wanted
+    to upload.
+    '
     Properties
       Property 'expires' =
-        Description            = 'Date-time after which the queue should stop replying with the error and forget about the artifact.'
+        Description            = 'Date-time after which the queue should stop replying with the error
+        and forget about the artifact.
+        '
         Format                 = 'date-time'
         Type                   = 'string'
         TypeName               = ''
@@ -3304,7 +3357,8 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'message' =
-        Description            = 'Human readable explanation of why the artifact is missing'
+        Description            = 'Human readable explanation of why the artifact is missing
+        '
         MaxLength              = '4096'
         Type                   = 'string'
         TypeName               = ''
@@ -3312,15 +3366,19 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'reason' =
-        Description            = 'Reason why the artifact doesn't exist.'
+        Description            = 'Reason why the artifact doesn't exist.
+        '
         Enum                   = '[file-missing-on-worker invalid-resource-on-worker too-large-file-on-worker]'
+        Type                   = 'string'
         TypeName               = ''
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'storageType' =
-        Description            = 'Artifact storage type, in this case `error`'
+        Description            = 'Artifact storage type, in this case `error`
+        '
         Enum                   = '[error]'
+        Type                   = 'string'
         TypeName               = ''
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
@@ -3342,15 +3400,21 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-
 
 http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#
 ====================================================================
-Description            = 'Response to a request for posting an artifact. Note that the `storageType` property is referenced in the request as well.'
+Description            = 'Response to a request for posting an artifact.
+Note that the `storageType` property is referenced in the request as well.
+'
 ID                     = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#'
 OneOf
   Item '0' =
     Additional Properties  = 'false'
-    Description            = 'Response to a request for a signed PUT URL that will allow you to upload an artifact to an S3 bucket managed by the queue.'
+    Description            = 'Response to a request for a signed PUT URL that will allow you to
+    upload an artifact to an S3 bucket managed by the queue.
+    '
     Properties
       Property 'contentType' =
-        Description            = 'Artifact mime-type, must be specified as header when uploading with the signed `putUrl`.'
+        Description            = 'Artifact mime-type, must be specified as header when uploading with
+        the signed `putUrl`.
+        '
         MaxLength              = '255'
         Type                   = 'string'
         TypeName               = ''
@@ -3358,7 +3422,8 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'expires' =
-        Description            = 'Date-time after which the signed `putUrl` no longer works'
+        Description            = 'Date-time after which the signed `putUrl` no longer works
+        '
         Format                 = 'date-time'
         Type                   = 'string'
         TypeName               = ''
@@ -3366,7 +3431,10 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'putUrl' =
-        Description            = 'URL to which a `PUT` request can be made to upload the artifact requested. Note, the `Content-Length` must be specified correctly, and the `ContentType` header must be set the value specified below.'
+        Description            = 'URL to which a `PUT` request can be made to upload the artifact
+        requested. Note, the `Content-Length` must be specified correctly,
+        and the `ContentType` header must be set the value specified below.
+        '
         Format                 = 'uri'
         Type                   = 'string'
         TypeName               = ''
@@ -3374,8 +3442,10 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'storageType' =
-        Description            = 'Artifact storage type, in this case `'s3'`'
+        Description            = 'Artifact storage type, in this case `'s3'`
+        '
         Enum                   = '[s3]'
+        Type                   = 'string'
         TypeName               = ''
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
@@ -3389,10 +3459,15 @@ OneOf
     SourceURL              = ''
   Item '1' =
     Additional Properties  = 'false'
-    Description            = 'Response to a request for an Azure Shared Access Signature (SAS) that will allow you to upload an artifact to an Azure blob storage container managed by the queue.'
+    Description            = 'Response to a request for an Azure Shared Access Signature (SAS)
+    that will allow you to upload an artifact to an Azure blob storage
+    container managed by the queue.
+    '
     Properties
       Property 'contentType' =
-        Description            = 'Artifact mime-type, should be specified with the `x-ms-blob-content-type` when committing the block.'
+        Description            = 'Artifact mime-type, should be specified with the
+        `x-ms-blob-content-type` when committing the block.
+        '
         MaxLength              = '255'
         Type                   = 'string'
         TypeName               = ''
@@ -3400,7 +3475,9 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'expires' =
-        Description            = 'Date-time after which Shared Access Signature (SAS) will seize to work.'
+        Description            = 'Date-time after which Shared Access Signature (SAS) will
+        seize to work.
+        '
         Format                 = 'date-time'
         Type                   = 'string'
         TypeName               = ''
@@ -3408,7 +3485,11 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'putUrl' =
-        Description            = 'Shared Access Signature (SAS) with write permissions, see [Azure REST API](http://msdn.microsoft.com/en-US/library/azure/dn140256.aspx) reference for details on how to use this.'
+        Description            = 'Shared Access Signature (SAS) with write permissions, see
+        [Azure REST API]
+        (http://msdn.microsoft.com/en-US/library/azure/dn140256.aspx)
+        reference for details on how to use this.
+        '
         Format                 = 'uri'
         Type                   = 'string'
         TypeName               = ''
@@ -3416,8 +3497,10 @@ OneOf
         IsOutputSchema         = 'false'
         SourceURL              = ''
       Property 'storageType' =
-        Description            = 'Artifact storage type, in this case `azure`'
+        Description            = 'Artifact storage type, in this case `azure`
+        '
         Enum                   = '[azure]'
+        Type                   = 'string'
         TypeName               = ''
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
@@ -3431,11 +3514,15 @@ OneOf
     SourceURL              = ''
   Item '2' =
     Additional Properties  = 'false'
-    Description            = 'Response to a request for the queue to redirect to a URL for a given artifact.'
+    Description            = 'Response to a request for the queue to redirect to a URL for a given
+    artifact.
+    '
     Properties
       Property 'storageType' =
-        Description            = 'Artifact storage type, in this case `reference`'
+        Description            = 'Artifact storage type, in this case `reference`
+        '
         Enum                   = '[reference]'
+        Type                   = 'string'
         TypeName               = ''
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
@@ -3449,11 +3536,15 @@ OneOf
     SourceURL              = ''
   Item '3' =
     Additional Properties  = 'false'
-    Description            = 'Response to a request for the queue to reply `403` (forbidden) with `reason` and `message` to any `GET` request for this artifact.'
+    Description            = 'Response to a request for the queue to reply `403` (forbidden) with
+    `reason` and `message` to any `GET` request for this artifact.
+    '
     Properties
       Property 'storageType' =
-        Description            = 'Artifact storage type, in this case `error`'
+        Description            = 'Artifact storage type, in this case `error`
+        '
         Enum                   = '[error]'
+        Type                   = 'string'
         TypeName               = ''
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
@@ -3476,11 +3567,13 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-
 http://schemas.taskcluster.net/queue/v1/task-claim-request.json#
 ================================================================
 Additional Properties  = 'false'
-Description            = 'Request to claim (or reclaim) a task'
+Description            = 'Request to claim (or reclaim) a task
+'
 ID                     = 'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#'
 Properties
   Property 'workerGroup' =
-    Description            = 'Identifier for group that worker claiming the task is a part of.'
+    Description            = 'Identifier for group that worker claiming the task is a part of.
+    '
     MaxLength              = '22'
     MinLength              = '1'
     Pattern                = '^([a-zA-Z0-9-_]*)$'
@@ -3490,7 +3583,8 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'workerId' =
-    Description            = 'Identifier for worker within the given workerGroup'
+    Description            = 'Identifier for worker within the given workerGroup
+    '
     MaxLength              = '22'
     MinLength              = '1'
     Pattern                = '^([a-zA-Z0-9-_]*)$'
@@ -3512,11 +3606,13 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-claim-req
 http://schemas.taskcluster.net/queue/v1/task-claim-response.json#
 =================================================================
 Additional Properties  = 'false'
-Description            = 'Response to a successful task claim'
+Description            = 'Response to a successful task claim
+'
 ID                     = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
 Properties
   Property 'runId' =
-    Description            = '`run-id` assigned to this run of the task'
+    Description            = '`run-id` assigned to this run of the task
+    '
     Maximum                = '1000'
     Minimum                = '0'
     Type                   = 'integer'
@@ -3531,7 +3627,9 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'takenUntil' =
-    Description            = 'Time at which the run expires and is resolved as `failed`, if the run isn't reclaimed.'
+    Description            = 'Time at which the run expires and is resolved as `failed`,
+    if the run isn't reclaimed.
+    '
     Format                 = 'date-time'
     Type                   = 'string'
     TypeName               = ''
@@ -3539,7 +3637,8 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'workerGroup' =
-    Description            = 'Identifier for the worker-group within which this run started.'
+    Description            = 'Identifier for the worker-group within which this run started.
+    '
     MaxLength              = '22'
     MinLength              = '1'
     Pattern                = '^([a-zA-Z0-9-_]*)$'
@@ -3549,7 +3648,8 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'workerId' =
-    Description            = 'Identifier for the worker executing this run.'
+    Description            = 'Identifier for the worker executing this run.
+    '
     MaxLength              = '22'
     MinLength              = '1'
     Pattern                = '^([a-zA-Z0-9-_]*)$'
@@ -3607,7 +3707,8 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-exception
 http://schemas.taskcluster.net/queue/v1/task-status-response.json#
 ==================================================================
 Additional Properties  = 'false'
-Description            = 'Response to a task status request'
+Description            = 'Response to a task status request
+'
 ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
 Properties
   Property 'status' =
@@ -3631,7 +3732,7 @@ http://schemas.taskcluster.net/queue/v1/task-status.json#
 Additional Properties  = 'false'
 Description            = 'A representation of **task status** as known by the queue
 '
-ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.json'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
 Properties
   Property 'deadline' =
     Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
@@ -5188,7 +5289,7 @@ http://schemas.taskcluster.net/queue/v1/task-status.json#
 Additional Properties  = 'false'
 Description            = 'A representation of **task status** as known by the queue
 '
-ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.json'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
 Properties
   Property 'deadline' =
     Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
