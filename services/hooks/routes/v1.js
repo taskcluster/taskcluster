@@ -88,7 +88,7 @@ api.declare({
   route:        '/hooks/:hookGroup/:hookId',
   name:         'createHook',
   idempotent:   true,
-  //scopes:       [["hooks:modify-hook:<hookGroup>/<hookId>"]],
+  scopes:       [["hooks:modify-hook:<hookGroup>/<hookId>"]],
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Create a hook',
