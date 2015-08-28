@@ -8,13 +8,24 @@ suite('Create hook', function() {
   var hookDef = require('./test_definition');
 
   test("createHook", async () => {
-      helper.scopes('hooks:modify-hook:foo/bar');
-
-      debug("### Create hook");
       var r1 = await helper.hooks.createHook('foo', 'bar', hookDef);
-
-      debug("### Get hook definition");
       var r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
+  });
+
+  test("createHook with invalid scopes", async () => {
+    helper.scopes('hooks:modify-hook:wrong/scope');
+    await helper.hooks.createHook('foo', 'bar', hookDef).then(
+        () => { throw new Error("Expected an authentication error"); },
+        (err) => { debug("Got expected authentication error: %s", err); });
+  });
+
+  test("listHookGroups returns valid length of groups", async () => {
+    var input = ['foo', 'bar', 'baz', 'qux'];
+    for (let i =0; i < input.length; i++) {
+      await helper.hooks.createHook(input[i], 'testHook', hookDef);
+    }
+    var r1 = await helper.hooks.listHookGroups();
+    assume(r1.groups.length).equals(input.length);
   });
 });
