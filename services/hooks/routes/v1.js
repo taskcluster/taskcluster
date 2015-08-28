@@ -22,7 +22,10 @@ api.declare({
   idempotent:   true,
   output:       'list-hook-groups-response.json',
   title:        'List hook groups',
-  description:  'todo'
+  description: [
+    "This endpoint will return a list of all available groups that defined",
+    "hooks belong to."
+  ].join('\n')
 }, async function(req, res) {
   var groups = await this.Groups.query({}, {});
   var retval = {};
@@ -41,7 +44,9 @@ api.declare({
   idempotent:   true,
   output:       'list-hooks-response.json',
   title:        'List hooks in a given group',
-  description:  'todo'
+  description: [
+    "Get a list of all the hook definitions within a given hook group."
+  ].join('\n')
 }, async function(req, res) {
   var hooks = await this.Hook.query({groupId: req.params.hookGroup}, {});
   var retval = {};
@@ -61,7 +66,9 @@ api.declare({
   idempotent:   true,
   output:       'hook-definition.json',
   title:        'Get hook definition',
-  description:  'todo'
+  description: [
+    "This end-point will return the hook-defintion."
+  ].join('\n')
 }, async function(req, res) {
   let hook = await this.Hook.load({
     groupId: req.params.hookGroup,
@@ -92,7 +99,11 @@ api.declare({
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Create a hook',
-  description:  'todo'
+  description: [
+    "Define and create a hook that will spawn a task when triggered. This",
+    "hook can be triggered through the web endpoint, or through a message",
+    "on the Pulse exchange that the hook is binded to."
+  ].join('\n')
 }, async function(req, res) {
   var hookGroup = req.params.hookGroup;
   var hookId    = req.params.hookId;
@@ -158,11 +169,82 @@ api.declare({
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Update a hook',
-  description:  'todo'
+  description: [
+    "Update the hook definition."
+  ].join('\n')
 }, async function(req, res) {
+  var hookGroup = req.params.hookGroup;
+  var hookId = req.params.hookId;
+  var hookDef = req.body;
 
+  var hook = await Hook.load({
+    groupId: hookGroup,
+    hookId: hookId
+  }, true);
+
+  if (!hook) {
+    return res.status(404).json({
+      message: "Hook not found. " +
+        "Use PUT instead of PATCH to create a resource."
+    });
+  }
+
+  let bindings = hookDef.bindings ?
+    hookDef.bindings :
+    {
+      exchange:    '',
+      routingKey:  '#'
+    }
+
+  // Attempt to modify properities of the hook
+  await hook.modify((hook) => {
+    hook.metadata          = hookDef.metadata;
+    hook.task              = hookDef.task;
+    hook.bindings          = bindings;
+    hook.deadline          = hookDef.deadline;
+    hook.expires           = hookDef.expire ? hookDef.expire : '';
+    hook.schedule          = hookdef.schedule ? hookDef.schedule : '';
+    hook.nextScheduledDate = hookDef.schedule ? datejs(hookDef.schedule) : new Date(0);
+  });
+
+  let definition = await hook.definition();
+  return res.reply(definition);
 });
 
+/** Delete hook definition**/
+api.declare({
+  method:       'delete',
+  route:        '/hooks/:hookGroup/:hookId',
+  name:         'removeHook',
+  idempotent:   true,
+  scopes:       [["hooks:modify-hook:<hookGroup>/<hookId>"]],
+  title:        'Delete a hook',
+  description: [
+    "Remove a hook definition."
+  ].join('\n')
+}, async function(req, res) {
+  var groupId = req.params.hookGroup;
+  var hookId = req.params.hookId;
+
+  // Remove the resource if it exists
+  await this.Hook.query({
+    groupId: groupId,
+    hookId: hookId
+  }, {
+    handler: (hook) => {
+      return hook.remove();
+    }
+  });
+
+  // Remove the groupId if it's unmapped
+  var removeGroup = true;
+  await this.Groups.query({}, {
+    handler: () => {
+      removeGroup = false;
+    }
+  });
+
+});
 
 /** Get secret token for a trigger **/
 api.declare({
@@ -239,7 +321,9 @@ api.declare({
   input:        'trigger-payload.json',
   output:       'task-status.json',
   title:        'Trigger a hook with a token',
-  description:  'todo'
+  description: [
+    "This endpoint triggers a defined hook with a valid token."
+  ].join('\n')
 }, async function(req, res) {
   var hook = await this.Hook.load({
     groupId: req.params.hookGroup,
@@ -276,7 +360,9 @@ api.declare({
   deferAuth:    true,
   output:       'task-status.json',
   title:        'Trigger a hook',
-  description:  'todo'
+  description: [
+    "Trigger a hook, given that you have the correct scoping for it"
+  ].join('\n')
 }, async function(req, res) {
   var hook = await this.Hook.load({
     groupId: req.params.hookGroup,
