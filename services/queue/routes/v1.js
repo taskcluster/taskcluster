@@ -104,7 +104,6 @@ api.declare({
   route:      '/task/:taskId',
   name:       'task',
   idempotent: true,
-  scopes:     [[]],
   output:     'task.json#',
   title:      "Get Task Definition",
   description: [
@@ -137,7 +136,6 @@ api.declare({
   method:   'get',
   route:    '/task/:taskId/status',
   name:     'status',
-  scopes:   [[]],
   input:    undefined,  // No input is accepted
   output:   'task-status-response.json#',
   title:    "Get task status",
