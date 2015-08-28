@@ -12,21 +12,6 @@ var bin = {
   server:             require('../../bin/server')
 };
 
-// Some default clients for the mockAuthServer
-var defaultClients = [
-  {
-    clientId:     'test-server',  // Hardcoded into config/test.js
-    accessToken:  'none',
-    scopes:       ['auth:credentials', 'auth:can-delegate'],
-    expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
-  }, {
-    clientId:     'test-client',  // Used in default Queue creation
-    accessToken:  'none',
-    scopes:       ['*'],
-    expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
-  }
-];
-
 var testProfile = 'test';
 
 // Create and export helper object
@@ -47,6 +32,23 @@ var cfg = helper.cfg = base.config({
   filename:     'taskcluster-hooks'
 });
 
+// Some default clients for the mockAuthServer
+var defaultClients = [
+  {
+    // Loaded from config so we can authenticated against the real queue
+    // Note that we still use a mock auth server to avoid having the scope
+    // auth:credentials assigned to our test client
+    clientId:     cfg.get('taskcluster:credentials:clientId'),
+    accessToken:  cfg.get('taskcluster:credentials:accessToken'),
+    scopes:       ['auth:*'],
+    expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
+  }, {
+    clientId:     'test-client',  // Used in default Hooks creation
+    accessToken:  'none',
+    scopes:       ['*'],
+    expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
+  }
+];
 
 // Hold reference to authServer
 var authServer = null;
@@ -58,8 +60,9 @@ var Groups = null;
 mocha.before(async () => {
   // Create mock authentication server
   authServer = await base.testing.createMockAuthServer({
-    port:     60407, // This is hardcoded into config/test.js
-    clients:  defaultClients
+    port: 60407,
+    clients:  defaultClients,
+    credentials: cfg.get('taskcluster:credentials')
   });
 
   // Create Hooks table
@@ -93,6 +96,7 @@ mocha.before(async () => {
         clientId:       'test-client',
         accessToken:    'none'
       },
+      //authBaseUrl: cfg.get('taskcluster:authBaseUrl'),
       authorizedScopes: (scopes.length > 0 ? scopes : undefined)
     });
   };
