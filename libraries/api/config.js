@@ -48,13 +48,25 @@ var config = function(options) {
   // Load configuration from file
   if (options.filename) {
     // Config from current working folder if present
-    cfg.file('local', options.filename + '.conf.json');
+    cfg.file('local', {
+      dir:    process.cwd(),
+      file:   options.filename + '.conf.json',
+      search: true
+    });
 
     // User configuration
-    cfg.file('user', '~/.' + options.filename + '.conf.json');
+    cfg.file('user', {
+      dir:    process.env.HOME,
+      file:   '.' + options.filename + '.conf.json',
+      search: true
+    });
 
     // Global configuration
-    cfg.file('global', '/etc/' + options.filename + '.conf.json');
+    cfg.file('global', {
+      dir:    '/etc',
+      file:   options.filename + '.conf.json',
+      search: true
+    });
   }
 
   // Load default values from profile
