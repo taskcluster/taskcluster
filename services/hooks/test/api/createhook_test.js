@@ -20,6 +20,48 @@ suite('Create hook', function() {
         (err) => { debug("Got expected authentication error: %s", err); });
   });
 
+  test("createHook fails if resource already exists", async () => {
+    await helper.hooks.createHook('foo', 'bar', hookDef);
+    helper.hooks.createHook('foo', 'bar', hookDef).then(
+        () => { throw new Error("Expected an error"); },
+        (err) => { debug("Got expected error: %s", err); });
+  });
+
+  test("updateHook fails if resource doesnt exists", async () => {
+    helper.hooks.updateHook('foo', 'bar', hookDef).then(
+        () => { throw new Error("Expected an error"); },
+        (err) => { assume(err.status).equals(404); });
+  });
+
+  test("updateHook", async () => {
+    var input = require('./test_definition');
+    var r1 = await helper.hooks.createHook('foo', 'bar', input);
+
+    input.metadata.owner = "test@test.org";
+    var r2 = await helper.hooks.updateHook('foo', 'bar', input);
+    assume(r2.metadata).deep.not.equals(r1.metadata);
+    assume(r2.task).deep.equals(r1.task);
+  });
+
+  test("removeHook", async () => {
+      await helper.hooks.createHook('foo', 'bar', hookDef);
+      await helper.hooks.removeHook('foo', 'bar');
+      helper.hooks.hook('foo', 'bar').then(
+          () => { throw new Error("The resource should not exist"); },
+          (err) => { assume(err.status).equals(404); });
+  });
+
+  test("removeHook removed empty groups", async () => {
+      await helper.hooks.createHook('foo', 'bar', hookDef);
+      var r1 = await helper.hooks.listHooks('foo');
+      assume(r1.hooks.length).equals(1);
+
+      await helper.hooks.removeHook('foo', 'bar');
+      helper.hooks.listHooks('foo').then(
+          () => { throw new Error("The group should not exist"); },
+          (err) => { assume(err.status).equals(404); });
+  });
+
   test("listHookGroups returns valid length of groups", async () => {
     var input = ['foo', 'bar', 'baz', 'qux'];
     for (let i =0; i < input.length; i++) {
