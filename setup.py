@@ -3,7 +3,7 @@
 # The VERSION variable is automagically changed
 # by release.sh.  Make sure you understand how
 # that script works if you want to change this
-VERSION='0.0.16'
+VERSION='0.0.24'
 
 from setuptools import setup
 
@@ -16,10 +16,12 @@ tests_require = [
   'flake8==2.2.5',
   'subprocess32==3.2.6',
   'psutil==2.1.3',
+  'hypothesis',
+  'pgpy'
 ]
 
 install_requires = [
-  'requests==2.4.3',
+  'requests>=2.4.3,<=2.7.0',
   'PyHawk_with_a_single_extra_commit==0.1.5',
   #  'PyHawk==0.1.4',
 ]

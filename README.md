@@ -1,7 +1,7 @@
 Taskcluster Client Library in Python
 ======================================
 
-[![Build Status](https://travis-ci.org/jhford/taskcluster-client.py.svg?branch=master)](https://travis-ci.org/jhford/taskcluster-client.py)
+[![Build Status](https://travis-ci.org/taskcluster/taskcluster-client.py.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-client.py)
 
 This is a library used to interact with Taskcluster within Python programs.  It
 presents the entire REST API to consumers as well as being able to generate
@@ -103,8 +103,55 @@ index = taskcluster.Index(options)
  * `index.insertTask(namespace, payload) -> result`
  * `index.insertTask(payload, namespace='value') -> result`
 
+#### Get Artifact From Indexed Task
+ * `index.findArtifactFromTask(namespace, name) -> None`
+ * `index.findArtifactFromTask(namespace='value', name='value') -> None`
+
 #### Ping Server
  * `index.ping() -> None`
+
+
+
+
+### Methods in `taskcluster.PurgeCache`
+```python
+// Create PurgeCache client instance
+import taskcluster
+purgeCache = taskcluster.PurgeCache(options)
+```
+#### Purge Worker Cache
+ * `purgeCache.purgeCache(provisionerId, workerType, payload) -> None`
+ * `purgeCache.purgeCache(payload, provisionerId='value', workerType='value') -> None`
+
+#### Ping Server
+ * `purgeCache.ping() -> None`
+
+
+
+
+### Exchanges in `taskcluster.AwsProvisionerEvents`
+```python
+// Create AwsProvisionerEvents client instance
+import taskcluster
+awsProvisionerEvents = taskcluster.AwsProvisionerEvents(options)
+```
+#### WorkerType Created Message
+ * `awsProvisionerEvents.workerTypeCreated(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * workerType is required  Description: WorkerType that this message concerns.
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### WorkerType Updated Message
+ * `awsProvisionerEvents.workerTypeUpdated(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * workerType is required  Description: WorkerType that this message concerns.
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### WorkerType Removed Message
+ * `awsProvisionerEvents.workerTypeRemoved(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * workerType is required  Description: WorkerType that this message concerns.
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 
 
@@ -153,6 +200,12 @@ auth = taskcluster.Auth(options)
 #### Get Temporary Read/Write Credentials S3
  * `auth.awsS3Credentials(level, bucket, prefix) -> result`
  * `auth.awsS3Credentials(level='value', bucket='value', prefix='value') -> result`
+
+#### List Clients
+ * `auth.exportClients() -> result`
+
+#### Import Clients
+ * `auth.importClients(payload) -> result`
 
 #### Ping Server
  * `auth.ping() -> None`
@@ -244,6 +297,21 @@ queue = taskcluster.Queue(options)
 
 #### Ping Server
  * `queue.ping() -> None`
+
+
+
+
+### Exchanges in `taskcluster.PurgeCacheEvents`
+```python
+// Create PurgeCacheEvents client instance
+import taskcluster
+purgeCacheEvents = taskcluster.PurgeCacheEvents(options)
+```
+#### Purge Cache Messages
+ * `purgeCacheEvents.purgeCache(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * provisionerId is required  Description: `provisionerId` under which to purge cache.
+   * workerType is required  Description: `workerType` for which to purge cache.
 
 
 
@@ -380,6 +448,70 @@ scheduler = taskcluster.Scheduler(options)
 
 #### Ping Server
  * `scheduler.ping() -> None`
+
+
+
+
+### Methods in `taskcluster.AwsProvisioner`
+```python
+// Create AwsProvisioner client instance
+import taskcluster
+awsProvisioner = taskcluster.AwsProvisioner(options)
+```
+#### Create new Worker Type
+ * `awsProvisioner.createWorkerType(workerType, payload) -> result`
+ * `awsProvisioner.createWorkerType(payload, workerType='value') -> result`
+
+#### Update Worker Type
+ * `awsProvisioner.updateWorkerType(workerType, payload) -> result`
+ * `awsProvisioner.updateWorkerType(payload, workerType='value') -> result`
+
+#### Get Worker Type
+ * `awsProvisioner.workerType(workerType) -> result`
+ * `awsProvisioner.workerType(workerType='value') -> result`
+
+#### Delete Worker Type
+ * `awsProvisioner.removeWorkerType(workerType) -> None`
+ * `awsProvisioner.removeWorkerType(workerType='value') -> None`
+
+#### List Worker Types
+ * `awsProvisioner.listWorkerTypes() -> result`
+
+#### Create new Secret
+ * `awsProvisioner.createSecret(token, payload) -> None`
+ * `awsProvisioner.createSecret(payload, token='value') -> None`
+
+#### Get a Secret
+ * `awsProvisioner.getSecret(token) -> result`
+ * `awsProvisioner.getSecret(token='value') -> result`
+
+#### Report an instance starting
+ * `awsProvisioner.instanceStarted(instanceId, token) -> None`
+ * `awsProvisioner.instanceStarted(instanceId='value', token='value') -> None`
+
+#### Remove a Secret
+ * `awsProvisioner.removeSecret(token) -> None`
+ * `awsProvisioner.removeSecret(token='value') -> None`
+
+#### Get All Launch Specifications for WorkerType
+ * `awsProvisioner.getLaunchSpecs(workerType) -> result`
+ * `awsProvisioner.getLaunchSpecs(workerType='value') -> result`
+
+#### Shutdown Every Ec2 Instance of this Worker Type
+ * `awsProvisioner.terminateAllInstancesOfWorkerType(workerType) -> None`
+ * `awsProvisioner.terminateAllInstancesOfWorkerType(workerType='value') -> None`
+
+#### Shutdown Every Single Ec2 Instance Managed By This Provisioner
+ * `awsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() -> None`
+
+#### Get AWS State for all worker types
+ * `awsProvisioner.awsState() -> None`
+
+#### Ping Server
+ * `awsProvisioner.ping() -> None`
+
+#### api reference
+ * `awsProvisioner.apiReference() -> None`
 
 
 
