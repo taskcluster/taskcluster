@@ -177,7 +177,7 @@ api.declare({
   var hookId = req.params.hookId;
   var hookDef = req.body;
 
-  var hook = await Hook.load({
+  var hook = await this.Hook.load({
     groupId: hookGroup,
     hookId: hookId
   }, true);
@@ -203,7 +203,7 @@ api.declare({
     hook.bindings          = bindings;
     hook.deadline          = hookDef.deadline;
     hook.expires           = hookDef.expire ? hookDef.expire : '';
-    hook.schedule          = hookdef.schedule ? hookDef.schedule : '';
+    hook.schedule          = hookDef.schedule ? hookDef.schedule : '';
     hook.nextScheduledDate = hookDef.schedule ? datejs(hookDef.schedule) : new Date(0);
   });
 
