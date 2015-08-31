@@ -1,6 +1,7 @@
 "use strict";
 
 var parseTime = require('./parsetime');
+var slugid    = require('slugid');
 
 /**
  * Create a Date object offset = '1d 2h 3min' into the future
@@ -55,3 +56,8 @@ var fromNowJSON = function(offset, reference) {
 
 // Export fromNowJSON
 exports.fromNowJSON = fromNowJSON;
+
+// Export function to generate _nice_ slugids
+exports.slugid = function() {
+  return slugid.nice();
+};
