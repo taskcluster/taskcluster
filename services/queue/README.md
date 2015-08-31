@@ -20,37 +20,48 @@ _The following itemization of folders outlines how this project is structured._
 Development
 -----------
 
-To run tests under vagrant you'll need a configuration file with access
-credentials for S3 and Azure Blob and Table Storage. It is useful overwrite
-the configs given in `config/test.js` with a local configuration file
-`taskcluster-queue.conf.json` as illustrated below:
+To run tests you'll need a configuration file with access credentials for S3
+and Azure Blob and Table Storage, as well as pulse credentials and an influx db
+account. To do this, create a local configuration file
+`taskcluster-queue.conf.json` in the root directory of the taskcluster-queue
+project, populated with your credentials like this:
 
 ```
 {
   "aws": {
-    "accessKeyId":        "...",
-    "secretAccessKey":    "...",
+    "accessKeyId":        "xxx",
+    "secretAccessKey":    "xxx",
     "region":             "us-west-2"
   },
   "azure": {
-    "accountName":        "...",
-    "accountKey":         "..."
+    "accountName":        "xxx",
+    "accountKey":         "xxx"
+  },
+  "pulse": {
+    "username":           "xxx",
+    "password":           "xxx"
+  },
+  "influx": {
+    "connectionString":   "https://xxx:xxx@xxx.influxdb.com:8087/db/xxx"
   }
 }
 ```
 
-For S3 we have a dummy bucket called `test-bucket-for-any-garbage` which stores objects for 24 hours. Mozilla developers can get access from a taskcluster
-developer, or you can setup a custom a bucket and overwrite the bucket name
-as well as the credentials.
+For safety reasons, this file is added to the `.gitignore` file.
 
-Same thing applies for azure, though it's as nicely scoped, and doesn't clean up
-on it's own.
+For S3 we have a dummy bucket called `test-bucket-for-any-garbage` which stores
+objects for 24 hours. Mozilla developers can get access from a taskcluster
+developer, or you can setup a custom a bucket and overwrite the bucket name as
+well as the credentials.
+
+Same thing applies for azure, though it's not as nicely scoped, and doesn't
+clean up on its own.
 
 
 Deployment
 ----------
-Code is deployed from master to heroku whenever code hits master
-(and it passes travis ci)
+Code is deployed from master to heroku whenever code hits master (and it passes
+travis ci)
 
 The following processes are designed to run constantly:
 
