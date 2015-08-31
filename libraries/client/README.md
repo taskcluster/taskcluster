@@ -598,6 +598,20 @@ var dateObject2 = taskcluster.fromNow("1 year", dateObject1);
 // dateObject2  = now() + 1 year, 2 days and 3 hours
 ```
 
+## Generating slugids
+In node you can rely on the `slugid` module to generate slugids, but we already
+need it in `taskcluster-client` and expose the preferred slugid generation
+function as `taskcluster.slugid()`.
+
+```js
+var taskcluster = require('taskcluster-client');
+
+// Generate new taskId
+var taskId = taskcluster.slugid();
+```
+
+The generates _nice_ random slugids, refer to slugid module for further details.
+
 ## Using `taskcluster-client` in a Browser
 Running the script `utils/browserify.js` will generate `taskcluster-client.js`
 using browserify. This does not contain any listener, but all the API logic
