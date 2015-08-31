@@ -53,8 +53,6 @@ var defaultClients = [
 // Hold reference to authServer
 var authServer = null;
 var webServer = null;
-var Hook = null;
-var Groups = null;
 
 // Setup before tests
 mocha.before(async () => {
@@ -66,14 +64,14 @@ mocha.before(async () => {
   });
 
   // Create Hooks table
-  Hook = data.Hook.setup({
+  helper.Hook = data.Hook.setup({
     table:        cfg.get('hooks:hookTableName'),
     credentials:  cfg.get('azure'),
     process:      'testing'
   });
 
   // Create Groups table
-  Groups = data.Groups.setup({
+  helper.Groups = data.Groups.setup({
     table:        cfg.get('hooks:groupsTableName'),
     credentials:  cfg.get('azure'),
     process:      'testing'
@@ -110,8 +108,8 @@ var toTerminate = [];
 // Setup before each test
 mocha.beforeEach(async () => {
   // Remove all entities before each test
-  await Hook.scan({},{handler: hook => {return hook.remove();}});
-  await Groups.scan({},{handler: group => {return group.remove();}});
+  await helper.Hook.scan({},{handler: hook => {return hook.remove();}});
+  await helper.Groups.scan({},{handler: group => {return group.remove();}});
 
   // Setup client with all scopes
   helper.scopes();
