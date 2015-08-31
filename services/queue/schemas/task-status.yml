@@ -118,6 +118,8 @@ properties:
             - claim-expired
             - worker-shutdown
             - malformed-payload
+            - resource-unavailable
+            - internal-error
         workerGroup:
           title:        "Worker Group"
           description: |
