@@ -88,6 +88,38 @@ api.declare({
   return res.reply(definition);
 });
 
+/** Get next scheduled hook date */
+api.declare({
+  method:       'get',
+  route:        '/hooks/:hookGroup/:hookId/schedule',
+  name:         'getHookSchedule',
+  output:       'hook-schedule.json',
+  title:        'Get hook schedule',
+  description: [
+    "This end-point will return the next scheduled date of a hook."
+  ].join('\n')
+}, async function(req, res) {
+  let hook = await this.Hook.load({
+    groupId: req.params.hookGroup,
+    hookId:  req.params.hookId
+  }, true);
+
+  // Handle the case where the hook doesn't exist
+  if (!hook) {
+    return res.status(404).json({
+      message: "Hook not found"
+    });
+  }
+
+  // Return a schedule only if a schedule is defined
+  if (hook.schedule) {
+    return res.reply({
+      schedule: hook.schedule,
+      nextScheduledDate: hook.nextScheduledDate.toJSON()
+    });
+  }
+  return res.reply({});
+});
 
 /** Create a hook **/
 api.declare({
@@ -194,7 +226,7 @@ api.declare({
     {
       exchange:    '',
       routingKey:  '#'
-    }
+    };
 
   // Attempt to modify properities of the hook
   await hook.modify((hook) => {
@@ -207,6 +239,7 @@ api.declare({
     hook.nextScheduledDate = hookDef.schedule ? datejs(hookDef.schedule) : new Date(0);
   });
 
+  await hook.reload();
   let definition = await hook.definition();
   return res.reply(definition);
 });
@@ -227,23 +260,36 @@ api.declare({
   var hookId = req.params.hookId;
 
   // Remove the resource if it exists
-  await this.Hook.query({
+  let hook = await this.Hook.load({
     groupId: groupId,
     hookId: hookId
-  }, {
-    handler: (hook) => {
-      return hook.remove();
-    }
-  });
+  }, true);
+
+  if (!hook) {
+    return res.status(404).json({
+      message: "Resource does not exist."
+    });
+  }
+
+  await hook.remove();
 
   // Remove the groupId if it's unmapped
   var removeGroup = true;
-  await this.Groups.query({}, {
+  await this.Hook.query({
+    groupId: groupId
+  }, {
     handler: () => {
       removeGroup = false;
     }
   });
 
+  if (removeGroup) {
+    let group = await this.Groups.load({groupId: groupId}, true);
+    if (group) {
+      await group.remove();
+    }
+  }
+  return res.status(200).json({});
 });
 
 /** Get secret token for a trigger **/
