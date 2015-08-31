@@ -11,7 +11,7 @@ var azure           = require('fast-azure-storage');
 var taskcluster     = require('taskcluster-client');
 var https           = require('https');
 var series          = require('./series');
-var AzureAgent      = require('./azureagent');
+var crypto          = require('crypto');
 
 // ** Coding Style **
 // To ease reading of this component we recommend the following code guidelines:
@@ -61,6 +61,7 @@ var RESERVED_PROPERTY_NAMES = [
 
   // Reserved for internal use
   'Version',
+  'Signature',
 
   // Properties built-in to expose built-in properties
   'version',
@@ -119,11 +120,14 @@ Entity.prototype.__mapping      = undefined;  // Schema mapping to types
 Entity.prototype.__version      = 0;          // Schema version
 Entity.prototype.__partitionKey = undefined;  // PartitionKey builder
 Entity.prototype.__rowKey       = undefined;  // RowKey builder
+Entity.prototype.__sign         = undefined;  // Method to compute signature
+Entity.prototype.__hasSigning   = false;      // Some version has signing
 
-// Define properties set in
+// Define properties set in setup
 Entity.prototype.__client       = undefined;  // Azure table client
 Entity.prototype.__aux          = undefined;  // Azure table client wrapper
 Entity.prototype.__table        = undefined;  // Azure table name
+Entity.prototype.__signingKey   = undefined;  // Secret key for signing entities
 
 // Define properties set in constructor
 Entity.prototype._properties    = undefined;  // Deserialized shadow object
@@ -156,6 +160,22 @@ var wrapEntityClass = function(Class) {
   };
 };
 
+/** Fixed time comparison of two buffers */
+var fixedTimeComparison = function(b1, b2) {
+  var mismatch = 0;
+  mismatch |= !(b1 instanceof Buffer);
+  mismatch |= !(b2 instanceof Buffer);
+  mismatch |= (b1.length !== b2.length);
+  if (mismatch === 1) {
+    return false;
+  }
+  var n = b1.length;
+  for(var i = 0; i < n; i++) {
+    mismatch |= (b1[i] ^ b2[i]);
+  }
+  return (mismatch === 0);
+};
+
 /**
  * Configure a subclass of `this` (`Entity` or subclass thereof) with following
  * options:
@@ -170,6 +190,7 @@ var wrapEntityClass = function(Class) {
  *     prop3:           Entity.types.Number,
  *     prop4:           Entity.types.JSON
  *   },
+ *   signEntities:      false,                // HMAC sign entities
  *   context: [                               // Required context keys
  *     'prop5'                                // Constant specified in setup()
  *   ],
@@ -260,17 +281,24 @@ var wrapEntityClass = function(Class) {
  * configuration keys and constants for use in Entity instance methods.
  */
 Entity.configure = function(options) {
-  assert(options,                                 "options must be given");
-  assert(typeof(options.version) === 'number',    "version must be a number");
-  assert(typeof(options.properties) === 'object', "properties must be given");
-  options = _.defaults({}, options, {
-    context:      []
-  });
-  assert(options.context instanceof Array,        "context must be an array");
-
   // Identify the parent class, that is always `this` so we can use it on
   // subclasses
   var Parent = this;
+
+  // Validate options
+  assert(options,                                 "options must be given");
+  assert(typeof(options.version) === 'number',    "version must be a number");
+  assert(typeof(options.properties) === 'object', "properties must be given");
+  assert(!this.prototype.__hasSigning ||
+         typeof(options.signEntities) === 'boolean',
+         "When signEntities has been specified once, newer versions **MUST** " +
+         "specify this property explicitly (there is no good default value)");
+  options = _.defaults({}, options, {
+    context:      [],
+    signEntities: false
+  });
+  assert(options.context instanceof Array,        "context must be an array");
+
 
   // Create a subclass of Parent
   var subClass = function(entity) {
@@ -373,6 +401,51 @@ Entity.configure = function(options) {
     });
   }
 
+  // Create sign method
+  var sign = null;
+  if (options.signEntities === true) {
+    // Order keys for consistency
+    var keys = _.keys(mapping).sort();
+    sign = function(properties) {
+      var hash  = crypto.createHmac('sha512', this.__signingKey);
+      var buf   = new Buffer(4);
+      var n     = keys.length;
+      for (var i = 0; i < n; i++) {
+        var property  = keys[i];
+        var type      = mapping[property];
+        var value     = type.hash(properties[property]);
+
+        // Hash [uint32 - len(property)] [bytes - property]
+        buf.writeUInt32BE(Buffer.byteLength(property, 'utf8'), 0);
+        hash.update(buf, 'utf8');
+        hash.update(property, 'utf8');
+
+        // Hash [uint32 - len(value)] [bytes - value]
+        var len;
+        if (typeof(value) === 'string') {
+          len = Buffer.byteLength(value, 'utf8');
+        } else {
+          len = value.length;
+        }
+        buf.writeUInt32BE(len, 0);
+        hash.update(buf);
+        hash.update(value, 'utf8');
+      }
+      return hash.digest();
+    };
+    subClass.prototype.__sign = sign;
+
+    // Record that a __hasSigning is needed
+    // We don't set this false, because we want to inherit the option, if some
+    // earlier version required a signing, then we require a signingKey in
+    // the .setup() step
+    subClass.prototype.__hasSigning = true;
+  } else {
+    // This version doesn't have a sign function, but __hasSigning might still
+    // be true, if earlier version does have signing.
+    subClass.prototype.__sign = undefined;
+  }
+
   // define __deserialize in two ways
   if (options.version === 1) {
     // If version is 1, we just assert that an deserialize properties
@@ -382,6 +455,12 @@ Entity.configure = function(options) {
       _.forIn(mapping, function(type, property) {
         properties[property] = type.deserialize(entity);
       });
+      if (sign) {
+        var signature = new Buffer(entity.Signature, 'base64');
+        if (!fixedTimeComparison(signature, sign.call(this, properties))) {
+          throw new Error("Signature validation failed!");
+        }
+      }
       return properties;
     };
   } else {
@@ -397,13 +476,19 @@ Entity.configure = function(options) {
              "entity.Version is greater than configured version!");
       // Migrate, if necessary
       if (entity.Version < options.version) {
-        return options.migrate.call(this, deserialize(entity));
+        return options.migrate.call(this, deserialize.call(this, entity));
       }
       // Deserialize properties, if not migrated
       var properties = {};
       _.forIn(mapping, function(type, property) {
         properties[property] = type.deserialize(entity);
       });
+      if (sign) {
+        var signature = new Buffer(entity.Signature, 'base64');
+        if (!fixedTimeComparison(signature, sign.call(this, properties))) {
+          throw new Error("Signature validation failed!");
+        }
+      }
       return properties;
     };
   }
@@ -421,6 +506,10 @@ Entity.configure = function(options) {
     _.forIn(mapping, function(type, property) {
       type.serialize(entity, properties[property]);
     });
+    if (sign) {
+      entity['Signature@odata.type'] = 'Edm.Binary';
+      entity['Signature'] = sign.call(this, properties).toString('base64');
+    }
     return entity;
   };
 
@@ -441,8 +530,9 @@ Entity.configure = function(options) {
  *     clientId:        "...",              // TaskCluster clientId
  *     accessToken:     "...",              // TaskCluster accessToken
  *   },
- *   agent:             https.Agent,        // Agent to use (default AzureAgent)
+ *   agent:             https.Agent,        // Agent to use (default a global)
  *   authBaseUrl:       "...",              // baseUrl for auth (optional)
+ *   signingKey:        "...",              // Key for HMAC signing entities
  *   drain:             base.stats.Influx,  // Statistics drain (optional)
  *   component:         '<name>',           // Component in stats (if drain)
  *   process:           'server',           // Process in stats (if drain)
@@ -519,9 +609,10 @@ Entity.setup = function(options) {
   // Don't allow setup to run twice, there is no reasons for this. In particular
   // it could give issues with access properties
   assert(
-    subClass.prototype.__client === undefined &&
-    subClass.prototype.__aux    === undefined &&
-    subClass.prototype.__table  === undefined,
+    subClass.prototype.__client     === undefined &&
+    subClass.prototype.__aux        === undefined &&
+    subClass.prototype.__table      === undefined &&
+    subClass.prototype.__signingKey === undefined,
     "This `Entity` subclass is already setup!"
   );
 
@@ -548,6 +639,17 @@ Entity.setup = function(options) {
            "context key '" + key + "' was not declared in Entity.configure");
     subClass.prototype[key] = val;
   });
+
+  // Set signing key if needed
+  if (subClass.prototype.__hasSigning) {
+    assert(typeof(options.signingKey) === 'string',
+           "signingKey is required when {signEntities: true} is set in " +
+           "one of the versions of the Entity versions");
+    subClass.prototype.__signingKey = new Buffer(options.signingKey, 'utf8');
+  } else {
+    assert(!options.signingKey, "Don't specify options.signingKey when "  +
+                                "entities aren't signed!");
+  }
 
   // Set azure table name
   subClass.prototype.__table = options.table;
@@ -863,12 +965,13 @@ Entity.prototype.modify = function(modifier) {
       self._properties,
       self._properties
     )).then(function() {
-      var isChanged     = false;    // Track if we have changes
       var entityChanges = {};       // Track changes we have to upload
       var mode          = 'merge';  // Track update mode
 
       // If we don't have schema version changes
       if (self._version === self.__version) {
+        var isChanged     = false;  // Track if we have changes
+
         // Check if `self._properties` have been changed and serialize changes
         // to `entityChanges` while flagging changes in `isChanged`
         _.forIn(self.__mapping, function(type, property) {
@@ -878,6 +981,19 @@ Entity.prototype.modify = function(modifier) {
             isChanged = true;
           }
         });
+
+        // Check for changes
+        if (!isChanged) {
+          debug("Return modify trivially, as no changes was made by modifier");
+          return self;
+        }
+
+        // Compute new signature if changed
+        if (self.__sign) {
+          entityChanges['Signature@odata.type'] = 'Edm.Binary';
+          entityChanges['Signature'] = self.__sign(self._properties)
+                                           .toString('base64');
+        }
       } else {
         // If we have a schema version upgrade replace all properties
         mode          = 'replace';
@@ -885,11 +1001,6 @@ Entity.prototype.modify = function(modifier) {
         entityChanges = self.__serialize(self._properties);
       }
 
-      // Check for changes
-      if (!isChanged) {
-        debug("Return modify trivially, as no change was applied by modifier");
-        return self;
-      }
 
       // Check for key modifications
       assert(self._partitionKey === self.__partitionKey.exact(self._properties),
@@ -929,10 +1040,7 @@ Entity.prototype.modify = function(modifier) {
       }
 
       // Reload and try again
-      return Entity.prototype.reload.call(self).then(function() {
-        // Attempt to modify again
-        return attemptModify();
-      });
+      return Entity.prototype.reload.call(self).then(attemptModify);
     });
   };
 
