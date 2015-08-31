@@ -5,7 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	docopt "github.com/docopt/docopt-go"
-	"github.com/petemoore/jsonschema2go/jsonschema2go"
+	"github.com/taskcluster/jsonschema2go/jsonschema2go"
 	"io"
 	"os"
 )

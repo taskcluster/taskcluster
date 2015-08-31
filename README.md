@@ -1,6 +1,6 @@
 # jsonschema2go
-[![Build Status](https://secure.travis-ci.org/petemoore/jsonschema2go.png)](http://travis-ci.org/petemoore/jsonschema2go)
-[![GoDoc](https://godoc.org/github.com/petemoore/jsonschema2go?status.png)](https://godoc.org/github.com/petemoore/jsonschema2go)
+[![Build Status](https://secure.travis-ci.org/taskcluster/jsonschema2go.png)](http://travis-ci.org/taskcluster/jsonschema2go)
+[![GoDoc](https://godoc.org/github.com/taskcluster/jsonschema2go?status.png)](https://godoc.org/github.com/taskcluster/jsonschema2go)
 # Overview
 Are you writing a service in go that needs to interpret json data, and you already have a json schema definition for the format of the json?
 
@@ -280,7 +280,7 @@ Now you can unmarshal your json data into &TaskDefinition{} and you are done!
 # Installation
 
 ```
-go get github.com/petemoore/jsonschema2go
+go get github.com/taskcluster/jsonschema2go
 ```
 
 # Usage
@@ -317,7 +317,7 @@ package main
 
 import (
   "fmt"
-  "github.com/petemoore/jsonschema2go/jsonschema2go"
+  "github.com/taskcluster/jsonschema2go/jsonschema2go"
 )
 
 func main() {
