@@ -27,6 +27,13 @@ suite('Create hook', function() {
         (err) => { debug("Got expected error: %s", err); });
   });
 
+  test("createHook creates associated group", async () => {
+    await helper.hooks.createHook('baz', 'qux', hookDef);
+    var r1 = await helper.hooks.listHookGroups();
+    assume(r1.groups.length).equals(1);
+    assume(r1.groups).contains('baz');
+  });
+
   test("updateHook fails if resource doesnt exists", async () => {
     helper.hooks.updateHook('foo', 'bar', hookDef).then(
         () => { throw new Error("Expected an error"); },
@@ -60,6 +67,34 @@ suite('Create hook', function() {
       helper.hooks.listHooks('foo').then(
           () => { throw new Error("The group should not exist"); },
           (err) => { assume(err.status).equals(404); });
+  });
+
+  test("createHook without a schedule", async () => {
+    await helper.hooks.createHook('foo', 'bar', hookDef);
+    var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
+    assume(r1).is.empty();
+  });
+
+  test("createHook with a schedule every hour", async () => {
+    let input = require('./test_definition');
+    input.schedule = "1 hour";
+    await helper.hooks.createHook('foo', 'bar', input);
+    var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
+    assert(new Date(r1.nextScheduledDate) > new Date());
+  });
+
+  test("createHook update schedule from hourly to biweekly", async () => {
+    let input = require('./test_definition');
+
+    input.schedule = "1 hour";
+    await helper.hooks.createHook('foo', 'bar', input);
+    var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
+
+    input.schedule = "2 weeks";
+    await helper.hooks.updateHook('foo', 'bar', input);
+    var r2 = await helper.hooks.getHookSchedule('foo', 'bar');
+
+    assert (new Date(r2.nextScheduledDate) > new Date(r1.nextScheduledDate));
   });
 
   test("listHookGroups returns valid length of groups", async () => {

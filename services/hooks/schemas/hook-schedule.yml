@@ -1,0 +1,12 @@
+$schema: http://json-schema.org/draft-04/schema#
+title:   "hook schedule"
+description: |
+    information about the next scheduled hook time
+type: object
+properties:
+    schedule:
+        type: string
+    nextScheduledDate:
+        type: string
+        format: date-time
+additionalProperties: false

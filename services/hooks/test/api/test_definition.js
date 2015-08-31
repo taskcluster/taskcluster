@@ -23,7 +23,6 @@ module.exports = {
   },
   expires:          '10 days',
   deadline:         '3 days',
-  schedule:         'tomorrow at 12pm',
   metadata: {
     name:           'Unit testing hook',
     description:    'Hook created during unit tests',
