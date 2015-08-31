@@ -12,7 +12,7 @@ mocha                                 \
   test/api/minimumtask_test.js        \
   test/api/gettask_test.js            \
   test/api/claimtask_test.js          \
-  test/api/reportcompleted_test.js    \
+  test/api/resolvetask_test.js        \
   test/api/polltask_test.js           \
   test/api/priority_test.js           \
   test/api/querytasks_test.js         \
