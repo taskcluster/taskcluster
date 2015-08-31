@@ -373,11 +373,17 @@ func (a *Auth) ReportFailed(taskId string, runId string) (*TaskStatusResponse, *
 }
 
 // Resolve a run as _exception_. Generally, you will want to report tasks as
-// failed instead of exception. But if the payload is malformed, or
-// dependencies referenced does not exists you should also report exception.
-// However, do not report exception if an external resources is unavailable
-// because of network failure, etc. Only if you can validate that the
-// resource does not exist.
+// failed instead of exception. You should `reportException` if,
+//
+//   * The `task.payload` is invalid,
+//   * Non-existent resources are referenced,
+//   * Declared actions cannot be executed due to unavailable resources,
+//   * The worker had to shutdown prematurely, or,
+//   * The worker experienced an unknown error.
+//
+// Do not use this to signal that some user-specified code crashed for any
+// reason specific to this code. If user-specific code hits a resource that
+// is temporarily unavailable worker should report task _failed_.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportException
 func (a *Auth) ReportException(taskId string, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, *CallSummary) {
@@ -727,16 +733,30 @@ type (
 	TaskExceptionRequest struct {
 		// Reason that the task is resolved with an exception. This is a subset
 		// of the values for `resolvedReason` given in the task status structure.
-		// Please, report `worker-shutdown` if the run failed because the worker
-		// had to shutdown (spot node disappearing).
-		// And report `malformed-payload` if the `task.payload` doesn't match the
-		// schema for the worker payload, or referenced dependencies doesn't exists.
-		// In either case, you should still log the error to a log file under the
+		// **Report `worker-shutdown`** if the run failed because the worker
+		// had to shutdown (spot node disappearing). In case of `worker-shutdown`
+		// the queue will immediately **retry** the task, by making a new run.
+		// This is much faster than ignoreing the issue and letting the task _retry_
+		// by claim expiration. For any other _reason_ reported the queue will not
+		// retry the task.
+		// **Report `malformed-payload`** if the `task.payload` doesn't match the
+		// schema for the worker payload, or referenced resource doesn't exists.
+		// In either case, you should still log the error to a log file for the
 		// specific run.
-		// In case if `worker-shutdown` the queue will immediately **retry** the
-		// task, by making a new run. This is much faster than ignoreing the issue
-		// and letting the task _retry_ by claim expiration. For any other _reason_
-		// reported the queue will not retry the task.
+		// **Report `resource-unavailable`** if a resource/service needed or
+		// referenced in `task.payload` is _temporarily_ unavailable. Do not use this
+		// unless you know the resource exists, if the resource doesn't exist you
+		// should report `malformed-payload`. Example use-case if you contact the
+		// index (a service) on behalf of the task, because of a declaration in
+		// ´task.payload`, and the service (index) is temporarily down. Don't use
+		// this if a URL returns 404, but if it returns 503 or hits a timeout when
+		// you retry the request, then this _may_ be a valid exception. The queue
+		// assumes that workers have applied retries as needed, and will not retry
+		//  the task.
+		// **Report `internal-error` if the worker experienced an unhandled internal
+		// error from which it couldn't recover. The queue will not retry runs
+		// resolved with this reason, but you are clearly signaling that this is a
+		// bug in the worker code.
 		Reason json.RawMessage `json:"reason"`
 	}
 
