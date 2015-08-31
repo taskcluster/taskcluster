@@ -3,8 +3,8 @@ package queueevents
 import (
 	"errors"
 	"fmt"
-	"github.com/petemoore/pulse-go/pulse"
 	"github.com/streadway/amqp"
+	"github.com/taskcluster/pulse-go/pulse"
 )
 
 func Example_taskClusterSniffer() {
