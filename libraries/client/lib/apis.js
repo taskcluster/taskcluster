@@ -17,12 +17,10 @@ module.exports = {
           ],
           "name": "scopes",
           "title": "Get Client Authorized Scopes",
-          "description": "Returns the scopes the client is authorized to access and the date-time\nwhere the clients authorization is set to expire.\n\nThis API end-point allows you inspect clients without getting access to\ncredentials, as provide by the `getCredentials` request below.",
+          "description": "Returns the scopes the client is authorized to access and the date-time\nwhen the clients authorization is set to expire.\n\nThis API end-point allows you inspect clients without getting access to\ncredentials, as provided by the `getCredentials` request below.",
           "scopes": [
             [
-              "auth:inspect"
-            ],
-            [
+              "auth:inspect",
               "auth:credentials"
             ]
           ],
@@ -37,7 +35,7 @@ module.exports = {
           ],
           "name": "getCredentials",
           "title": "Get Client Credentials",
-          "description": "Returns the clients `accessToken` as needed for verifying signatures.\nThis API end-point also returns the list of scopes the client is\nauthorized for and the date-time where the client authorization expires\n\nRemark, **if you don't need** the `accessToken` but only want to see what\nscopes a client is authorized for, you should use the `getScopes`\nfunction described above.",
+          "description": "Returns the client's `accessToken` as needed for verifying signatures.\nThis API end-point also returns the list of scopes the client is\nauthorized for and the date-time where the client authorization expires\n\nRemark, **if you don't need** the `accessToken` but only want to see what\nscopes a client is authorized for, you should use the `getScopes`\nfunction described above.",
           "scopes": [
             [
               "auth:credentials"
@@ -54,7 +52,7 @@ module.exports = {
           ],
           "name": "client",
           "title": "Get Client Information",
-          "description": "Returns all information about a given client. This end-point is mostly\nbuilding tools to administrate clients. Do not use if you only want to\nauthenticate a request, see `getCredentials` for this purpose.",
+          "description": "Returns all information about a given client. This end-point is mostly for\nbuilding tools to administrate clients. Do not use if you only want to\nauthenticate a request; see `getCredentials` for this purpose.",
           "scopes": [
             [
               "auth:credentials"
@@ -71,7 +69,7 @@ module.exports = {
           ],
           "name": "createClient",
           "title": "Create Client",
-          "description": "Create client with given `clientId`, `name`, `expires`, `scopes` and\n`description`. The `accessToken` will always be generated server-side,\nand will be returned from this request.\n\n**Required scopes**, in addition the scopes listed\nabove, the caller must also posses the all the scopes that is given to\nthe client that is created.",
+          "description": "Create a client with given `clientId`, `name`, `expires`, `scopes` and\n`description`. The `accessToken` will always be generated server-side,\nand will be returned from this request.\n\n**Required scopes**: in addition the scopes listed above, the \n`scopes` property must be satisfied by the caller's scopes.",
           "scopes": [
             [
               "auth:create-client",
@@ -90,7 +88,7 @@ module.exports = {
           ],
           "name": "modifyClient",
           "title": "Modify Client",
-          "description": "Modify client `name`, `expires`, `scopes` and\n`description`.\n\n**Required scopes**, in addition the scopes listed\nabove, the caller must also posses the all the scopes that is given to\nthe client that is updated.",
+          "description": "Modify client `name`, `expires`, `scopes` and\n`description`.\n\n**Required scopes**: in addition the scopes listed\nabove, the `scopes` property must be satisfied by the caller's\nscopes.  The client's existing scopes are not considered.",
           "scopes": [
             [
               "auth:modify-client",
@@ -125,7 +123,7 @@ module.exports = {
           ],
           "name": "resetCredentials",
           "title": "Reset Client Credentials",
-          "description": "Reset credentials for a client. This will generate a new `accessToken`.\nas always the `accessToken` will be generated server-side and returned.",
+          "description": "Reset credentials for a client. This will generate a new `accessToken`.\nAs always, the `accessToken` will be generated server-side and returned.",
           "scopes": [
             [
               "auth:reset-credentials",
@@ -141,7 +139,7 @@ module.exports = {
           "args": [],
           "name": "listClients",
           "title": "List Clients",
-          "description": "Return list with all clients",
+          "description": "Return a list of all clients, not including their access tokens.",
           "scopes": [
             [
               "auth:list-clients"
@@ -159,7 +157,7 @@ module.exports = {
           ],
           "name": "azureTableSAS",
           "title": "Get Shared-Access-Signature for Azure Table",
-          "description": "Get an SAS string for use with a specific Azure Table Storage table.\nNote, this will create the table, if it doesn't already exists.",
+          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.  Note, this will create the table, if it doesn't\nalready exist.",
           "scopes": [
             [
               "auth:azure-table-access:<account>/<table>"
@@ -178,7 +176,7 @@ module.exports = {
           ],
           "name": "awsS3Credentials",
           "title": "Get Temporary Read/Write Credentials S3",
-          "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials is returned. Please note that the `level`\nparameter is required in the scope guarding access.\n\nThe credentials are set of expire after an hour, but this behavior may be\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intent to maintain active credentials in your\napplication.\n\nPlease notice that your `prefix` may not start with slash `/`, it is\nallowed on S3, but we forbid it here to discourage bad behavior.\nAlso note that if your `prefix` doesn't end in a slash `/` the STS\ncredentials will not require one to be to inserted. This is mainly a\nconcern when assigning scopes to users and doing this right will prevent\npoor behavior. After we often want the `prefix` to be a folder in a\n`/` delimited folder structure.",
+          "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned. Please note that the `level`\nparameter is required in the scope guarding access.\n\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.\n\nPlease note that your `prefix` may not start with slash `/`. Such a prefix\nis allowed on S3, but we forbid it here to discourage bad behavior.\n\nAlso note that if your `prefix` doesn't end in a slash `/`, the STS\ncredentials may allow access to unexpected keys, as S3 does not treat\nslashes specially.  For example, a prefix of `my-folder` will allow\naccess to `my-folder/file.txt` as expected, but also to `my-folder.txt`,\nwhich may not be intended.",
           "scopes": [
             [
               "auth:aws-s3:<level>:<bucket>/<prefix>"
@@ -228,6 +226,105 @@ module.exports = {
           "name": "ping",
           "title": "Ping Server",
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
+        }
+      ]
+    }
+  },
+  "AwsProvisionerEvents": {
+    "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json",
+    "reference": {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
+      "title": "AWS Provisioner Pulse Exchanges",
+      "description": "Exchanges from the provisioner... more docs later",
+      "exchangePrefix": "exchange/taskcluster-aws-provisioner/",
+      "entries": [
+        {
+          "type": "topic-exchange",
+          "exchange": "worker-type-created",
+          "name": "workerTypeCreated",
+          "title": "WorkerType Created Message",
+          "description": "When a new `workerType` is created a message will be published to this\nexchange.",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "workerType",
+              "summary": "WorkerType that this message concerns.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+              "multipleWords": true,
+              "required": false
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#"
+        },
+        {
+          "type": "topic-exchange",
+          "exchange": "worker-type-updated",
+          "name": "workerTypeUpdated",
+          "title": "WorkerType Updated Message",
+          "description": "When a `workerType` is updated a message will be published to this\nexchange.",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "workerType",
+              "summary": "WorkerType that this message concerns.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+              "multipleWords": true,
+              "required": false
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#"
+        },
+        {
+          "type": "topic-exchange",
+          "exchange": "worker-type-removed",
+          "name": "workerTypeRemoved",
+          "title": "WorkerType Removed Message",
+          "description": "When a `workerType` is removed a message will be published to this\nexchange.",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "workerType",
+              "summary": "WorkerType that this message concerns.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+              "multipleWords": true,
+              "required": false
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#"
         }
       ]
     }
@@ -338,6 +435,382 @@ module.exports = {
       ]
     }
   },
+  "SchedulerEvents": {
+    "referenceUrl": "http://references.taskcluster.net/scheduler/v1/exchanges.json",
+    "reference": {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
+      "title": "Scheduler AMQP Exchanges",
+      "description": "The scheduler, typically available at `scheduler.taskcluster.net` is\nresponsible for accepting task-graphs and schedule tasks on the queue as\ntheir dependencies are completed successfully.\n\nThis document describes the AMQP exchanges offered by the scheduler,\nwhich allows third-party listeners to monitor task-graph submission and\nresolution. These exchanges targets the following audience:\n * Reporters, who displays the state of task-graphs or emails people on\n   failures, and\n * End-users, who wants notification of completed task-graphs\n\n**Remark**, the task-graph scheduler will require that the `schedulerId`\nfor tasks is set to the `schedulerId` for the task-graph scheduler. In\nproduction the `schedulerId` is typically `\"task-graph-scheduler\"`.\nFurthermore, the task-graph scheduler will also require that\n`taskGroupId` is equal to the `taskGraphId`.\n\nCombined these requirements ensures that `schedulerId` and `taskGroupId`\nhave the same position in the routing keys for the queue exchanges.\nSee queue documentation for details on queue exchanges. Hence, making\nit easy to listen for all tasks in a given task-graph.\n\nNote that routing key entries 2 through 7 used for exchanges on the\ntask-graph scheduler is hardcoded to `_`. This is done to preserve\npositional equivalence with exchanges offered by the queue.",
+      "exchangePrefix": "exchange/taskcluster-scheduler/v1/",
+      "entries": [
+        {
+          "type": "topic-exchange",
+          "exchange": "task-graph-running",
+          "name": "taskGraphRunning",
+          "title": "Task-Graph Running Message",
+          "description": "When a task-graph is submitted it immediately starts running and a\nmessage is posted on this exchange to indicate that a task-graph have\nbeen submitted.",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "taskId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "runId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerGroup",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "provisionerId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerType",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "schedulerId",
+              "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "taskGraphId",
+              "summary": "Identifier for the task-graph this message concerns",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+              "multipleWords": true,
+              "required": false
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#"
+        },
+        {
+          "type": "topic-exchange",
+          "exchange": "task-graph-extended",
+          "name": "taskGraphExtended",
+          "title": "Task-Graph Extended Message",
+          "description": "When a task-graph is extended, that is additional tasks is added to the\ntask-graph, a message is posted on this exchange. This is useful if you\nare monitoring a task-graph and what to track states of the individual\ntasks in the task-graph.",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "taskId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "runId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerGroup",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "provisionerId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerType",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "schedulerId",
+              "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "taskGraphId",
+              "summary": "Identifier for the task-graph this message concerns",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+              "multipleWords": true,
+              "required": false
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#"
+        },
+        {
+          "type": "topic-exchange",
+          "exchange": "task-graph-blocked",
+          "name": "taskGraphBlocked",
+          "title": "Task-Graph Blocked Message",
+          "description": "When a task is completed unsuccessfully and all reruns have been\nattempted, the task-graph will not complete successfully and it's\ndeclared to be _blocked_, by some task that consistently completes\nunsuccessfully.\n\nWhen a task-graph becomes blocked a messages is posted to this exchange.\nThe message features the `taskId` of the task that caused the task-graph\nto become blocked.",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "taskId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "runId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerGroup",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "provisionerId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerType",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "schedulerId",
+              "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "taskGraphId",
+              "summary": "Identifier for the task-graph this message concerns",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+              "multipleWords": true,
+              "required": false
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#"
+        },
+        {
+          "type": "topic-exchange",
+          "exchange": "task-graph-finished",
+          "name": "taskGraphFinished",
+          "title": "Task-Graph Finished Message",
+          "description": "When all tasks of a task-graph have completed successfully, the\ntask-graph is declared to be finished, and a message is posted to this\nexchange.",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "taskId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "runId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerGroup",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "provisionerId",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "workerType",
+              "summary": "Always takes the value `_`",
+              "multipleWords": false,
+              "required": false
+            },
+            {
+              "name": "schedulerId",
+              "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "taskGraphId",
+              "summary": "Identifier for the task-graph this message concerns",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "reserved",
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+              "multipleWords": true,
+              "required": false
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#"
+        }
+      ]
+    }
+  },
+  "PurgeCacheEvents": {
+    "referenceUrl": "http://references.taskcluster.net/purge-cache/v1/exchanges.json",
+    "reference": {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
+      "title": "Purge-Cache Exchanges",
+      "description": "The purge-cache service, typically available at\n`purge-cache.taskcluster.net`, is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the exchange offered for workers by the\ncache-purge service.",
+      "exchangePrefix": "exchange/taskcluster-purge-cache/v1/",
+      "entries": [
+        {
+          "type": "topic-exchange",
+          "exchange": "purge-cache",
+          "name": "purgeCache",
+          "title": "Purge Cache Messages",
+          "description": "When a cache purge is requested  a message will be posted on this\nexchange with designated `provisionerId` and `workerType` in the\nrouting-key and the name of the `cacheFolder` as payload",
+          "routingKey": [
+            {
+              "name": "routingKeyKind",
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+              "constant": "primary",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "provisionerId",
+              "summary": "`provisionerId` under which to purge cache.",
+              "multipleWords": false,
+              "required": true
+            },
+            {
+              "name": "workerType",
+              "summary": "`workerType` for which to purge cache.",
+              "multipleWords": false,
+              "required": true
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#"
+        }
+      ]
+    }
+  },
+  "PurgeCache": {
+    "referenceUrl": "http://references.taskcluster.net/purge-cache/v1/api.json",
+    "reference": {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "title": "Purge Cache API Documentation",
+      "description": "The purge-cache service, typically available at\n`purge-cache.taskcluster.net`, is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the API end-point for publishing the pulse\nmessage. This is mainly intended to be used by tools.",
+      "baseUrl": "https://purge-cache.taskcluster.net/v1",
+      "entries": [
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/purge-cache/<provisionerId>/<workerType>",
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "name": "purgeCache",
+          "title": "Purge Worker Cache",
+          "description": "Publish a purge-cache message to purge caches named `cacheName` with\n`provisionerId` and `workerType` in the routing-key. Workers should\nbe listening for this message and purge caches when they see it.",
+          "scopes": [
+            [
+              "purge-cache:<provisionerId>/<workerType>:<cacheName>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
+        }
+      ]
+    }
+  },
   "Index": {
     "referenceUrl": "http://references.taskcluster.net/index/v1/api.json",
     "reference": {
@@ -432,420 +905,6 @@ module.exports = {
       ]
     }
   },
-  "AwsProvisioner": {
-    "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/api.json",
-    "reference": {
-      "version": 0,
-      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "title": "AWS Provisioner API Documentation",
-      "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskCluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n",
-      "baseUrl": "https://taskcluster-aws-provisioner2.herokuapp.com/v1",
-      "entries": [
-        {
-          "type": "function",
-          "method": "put",
-          "route": "/worker-type/<workerType>",
-          "args": [
-            "workerType"
-          ],
-          "name": "createWorkerType",
-          "title": "Create new Worker Type",
-          "description": "Create a worker type and ensure that all EC2 regions have the required\nKeyPair",
-          "scopes": [
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/worker-type/<workerType>/update",
-          "args": [
-            "workerType"
-          ],
-          "name": "updateWorkerType",
-          "title": "Update Worker Type",
-          "description": "Update a workerType and ensure that all regions have the require\nKeyPair",
-          "scopes": [
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type2-request.json#",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/worker-type/<workerType>",
-          "args": [
-            "workerType"
-          ],
-          "name": "workerType",
-          "title": "Get Worker Type",
-          "description": "Retreive a WorkerType definition",
-          "scopes": [
-            [
-              "aws-provisioner:view-worker-type:<workerType>"
-            ],
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type2-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "delete",
-          "route": "/worker-type/<workerType>",
-          "args": [
-            "workerType"
-          ],
-          "name": "removeWorkerType",
-          "title": "Delete Worker Type",
-          "description": "Delete a WorkerType definition, submits requests to kill all \ninstances and delete the KeyPair from all configured EC2 regions",
-          "scopes": [
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/list-worker-types",
-          "args": [],
-          "name": "listWorkerTypes",
-          "title": "List Worker Types",
-          "description": "List all known WorkerType names",
-          "scopes": [
-            [
-              "aws-provisioner:list-worker-types"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "put",
-          "route": "/secret/<token>",
-          "args": [
-            "token"
-          ],
-          "name": "createSecret",
-          "title": "Create new Secret",
-          "description": "Insert a secret into the secret storage.  This should not\nnormally be done through this API, but is provided for testing\nand completeness",
-          "scopes": [
-            [
-              "aws-provisioner:create-secret"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/secret/<token>",
-          "args": [
-            "token"
-          ],
-          "name": "getSecret",
-          "title": "Get a Secret",
-          "description": "Retreive a secret from storage.  It is important that this secret is\ndeleted by the consumer, or else the secrets will be visible to any\nprocess which can read HTTP on the worker localhost interface.",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/instance-started/<instanceId>/<token>",
-          "args": [
-            "instanceId",
-            "token"
-          ],
-          "name": "instanceStarted",
-          "title": "Report an instance starting",
-          "description": "An instance will report in by giving its instance id as well\nas its security token.  The token is given and checked to ensure\nthat it matches a real token that exists to ensure that random\nmachines do not check in.  We could generate a different token\nbut that seems like overkill"
-        },
-        {
-          "type": "function",
-          "method": "delete",
-          "route": "/secret/<token>",
-          "args": [
-            "token"
-          ],
-          "name": "removeSecret",
-          "title": "Remove a Secret",
-          "description": "Remove a secret.  It is very important that the consumer of a \nsecret delete the secret from storage before handing over control\nto another process or else it could read the HTTP UserData endpoint\nand use the getSecrete() api here to get the secrets"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/worker-type/<workerType>/launch-specifications",
-          "args": [
-            "workerType"
-          ],
-          "name": "getLaunchSpecs",
-          "title": "Get All Launch Specifications for WorkerType",
-          "description": "Return the EC2 LaunchSpecifications for all combinations of regions\nand instance types or a list of reasons why the launch specifications\nare not valid\n\n**This API end-point is experimental and may be subject to change without warning.**",
-          "scopes": [
-            [
-              "aws-provisioner:view-worker-type:<workerType>"
-            ],
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#"
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/worker-type/<workerType>/terminate-all-instances",
-          "args": [
-            "workerType"
-          ],
-          "name": "terminateAllInstancesOfWorkerType",
-          "title": "Shutdown Every Ec2 Instance of this Worker Type",
-          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance associated with this workerType. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**",
-          "scopes": [
-            [
-              "aws-provisioner:all-stop",
-              "aws-provisioner:aws"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/shutdown/every/single/ec2/instance/managed/by/this/provisioner",
-          "args": [],
-          "name": "shutdownEverySingleEc2InstanceManagedByThisProvisioner",
-          "title": "Shutdown Every Single Ec2 Instance Managed By This Provisioner",
-          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance managed by this provisioner. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**",
-          "scopes": [
-            [
-              "aws-provisioner:all-stop",
-              "aws-provisioner:aws"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/aws-state/",
-          "args": [],
-          "name": "awsState",
-          "title": "Get AWS State for all worker types",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**",
-          "scopes": [
-            [
-              "aws-provisioner:view-aws-state"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/ping",
-          "args": [],
-          "name": "ping",
-          "title": "Ping Server",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/api-reference",
-          "args": [],
-          "name": "apiReference",
-          "title": "api reference",
-          "description": "Get an API reference!\n\n**Warning** this api end-point is **not stable**."
-        }
-      ]
-    }
-  },
-  "AwsProvisionerEvents": {
-    "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json",
-    "reference": {
-      "version": 0,
-      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
-      "title": "AWS Provisioner Pulse Exchanges",
-      "description": "Exchanges from the provisioner... more docs later",
-      "exchangePrefix": "exchange/taskcluster-aws-provisioner/",
-      "entries": [
-        {
-          "type": "topic-exchange",
-          "exchange": "worker-type-created",
-          "name": "workerTypeCreated",
-          "title": "WorkerType Created Message",
-          "description": "When a new `workerType` is created a message will be published to this\nexchange.",
-          "routingKey": [
-            {
-              "name": "routingKeyKind",
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
-              "constant": "primary",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "workerType",
-              "summary": "WorkerType that this message concerns.",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "reserved",
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
-              "multipleWords": true,
-              "required": false
-            }
-          ],
-          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#"
-        },
-        {
-          "type": "topic-exchange",
-          "exchange": "worker-type-updated",
-          "name": "workerTypeUpdated",
-          "title": "WorkerType Updated Message",
-          "description": "When a `workerType` is updated a message will be published to this\nexchange.",
-          "routingKey": [
-            {
-              "name": "routingKeyKind",
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
-              "constant": "primary",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "workerType",
-              "summary": "WorkerType that this message concerns.",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "reserved",
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
-              "multipleWords": true,
-              "required": false
-            }
-          ],
-          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#"
-        },
-        {
-          "type": "topic-exchange",
-          "exchange": "worker-type-removed",
-          "name": "workerTypeRemoved",
-          "title": "WorkerType Removed Message",
-          "description": "When a `workerType` is removed a message will be published to this\nexchange.",
-          "routingKey": [
-            {
-              "name": "routingKeyKind",
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
-              "constant": "primary",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "workerType",
-              "summary": "WorkerType that this message concerns.",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "reserved",
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
-              "multipleWords": true,
-              "required": false
-            }
-          ],
-          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#"
-        }
-      ]
-    }
-  },
-  "PurgeCache": {
-    "referenceUrl": "http://references.taskcluster.net/purge-cache/v1/api.json",
-    "reference": {
-      "version": 0,
-      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "title": "Purge Cache API Documentation",
-      "description": "The purge-cache service, typically available at\n`purge-cache.taskcluster.net`, is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the API end-point for publishing the pulse\nmessage. This is mainly intended to be used by tools.",
-      "baseUrl": "https://purge-cache.taskcluster.net/v1",
-      "entries": [
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/purge-cache/<provisionerId>/<workerType>",
-          "args": [
-            "provisionerId",
-            "workerType"
-          ],
-          "name": "purgeCache",
-          "title": "Purge Worker Cache",
-          "description": "Publish a purge-cache message to purge caches named `cacheName` with\n`provisionerId` and `workerType` in the routing-key. Workers should\nbe listening for this message and purge caches when they see it.",
-          "scopes": [
-            [
-              "purge-cache:<provisionerId>/<workerType>:<cacheName>"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/ping",
-          "args": [],
-          "name": "ping",
-          "title": "Ping Server",
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
-        }
-      ]
-    }
-  },
-  "PurgeCacheEvents": {
-    "referenceUrl": "http://references.taskcluster.net/purge-cache/v1/exchanges.json",
-    "reference": {
-      "version": 0,
-      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
-      "title": "Purge-Cache Exchanges",
-      "description": "The purge-cache service, typically available at\n`purge-cache.taskcluster.net`, is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the exchange offered for workers by the\ncache-purge service.",
-      "exchangePrefix": "exchange/taskcluster-purge-cache/v1/",
-      "entries": [
-        {
-          "type": "topic-exchange",
-          "exchange": "purge-cache",
-          "name": "purgeCache",
-          "title": "Purge Cache Messages",
-          "description": "When a cache purge is requested  a message will be posted on this\nexchange with designated `provisionerId` and `workerType` in the\nrouting-key and the name of the `cacheFolder` as payload",
-          "routingKey": [
-            {
-              "name": "routingKeyKind",
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
-              "constant": "primary",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "provisionerId",
-              "summary": "`provisionerId` under which to purge cache.",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "workerType",
-              "summary": "`workerType` for which to purge cache.",
-              "multipleWords": false,
-              "required": true
-            }
-          ],
-          "schema": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#"
-        }
-      ]
-    }
-  },
   "Queue": {
     "referenceUrl": "http://references.taskcluster.net/queue/v1/api.json",
     "reference": {
@@ -863,6 +922,7 @@ module.exports = {
             "taskId"
           ],
           "name": "task",
+          "stability": "experimental",
           "title": "Get Task Definition",
           "description": "This end-point will return the task-definition. Notice that the task\ndefinition may have been modified by queue, if an optional property isn't\nspecified the queue may provide a default value.",
           "output": "http://schemas.taskcluster.net/queue/v1/task.json#"
@@ -875,6 +935,7 @@ module.exports = {
             "taskId"
           ],
           "name": "status",
+          "stability": "experimental",
           "title": "Get task status",
           "description": "Get task status structure from `taskId`",
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#"
@@ -887,6 +948,7 @@ module.exports = {
             "taskId"
           ],
           "name": "createTask",
+          "stability": "experimental",
           "title": "Create New Task",
           "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**, the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then the poster will be required to posses the\nscope `queue:route:<route>`. And when the an AMQP message about the task\nis published the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.",
           "scopes": [
@@ -905,6 +967,7 @@ module.exports = {
             "taskId"
           ],
           "name": "defineTask",
+          "stability": "experimental",
           "title": "Define Task",
           "description": "Define a task without scheduling it. This API end-point allows you to\nupload a task definition without having scheduled. The task won't be\nreported as pending until it is scheduled, see the scheduleTask API \nend-point.\n\nThe purpose of this API end-point is allow schedulers to upload task\ndefinitions without the tasks becoming _pending_ immediately. This useful\nif you have a set of dependent tasks. Then you can upload all the tasks\nand when the dependencies of a tasks have been resolved, you can schedule\nthe task by calling `/task/:taskId/schedule`. This eliminates the need to\nstore tasks somewhere else while waiting for dependencies to resolve.\n\n**Note** this operation is **idempotent**, as long as you upload the same\ntask definition as previously defined this operation is safe to retry.",
           "scopes": [
@@ -926,6 +989,7 @@ module.exports = {
             "taskId"
           ],
           "name": "scheduleTask",
+          "stability": "experimental",
           "title": "Schedule Defined Task",
           "description": "If you have define a task using `defineTask` API end-point, then you\ncan schedule the task to be scheduled using this method.\nThis will announce the task as pending and workers will be allowed, to\nclaim it and resolved the task.\n\n**Note** this operation is **idempotent** and will not fail or complain\nif called with `taskId` that is already scheduled, or even resolved.\nTo reschedule a task previously resolved, use `rerunTask`.",
           "scopes": [
@@ -944,6 +1008,7 @@ module.exports = {
             "taskId"
           ],
           "name": "rerunTask",
+          "stability": "experimental",
           "title": "Rerun a Resolved Task",
           "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nisn't either `failed` or `completed`, this operation will just return the\ncurrent task status.",
           "scopes": [
@@ -962,6 +1027,7 @@ module.exports = {
             "taskId"
           ],
           "name": "cancelTask",
+          "stability": "experimental",
           "title": "Cancel Task",
           "description": "This method will cancel a task that is either `unscheduled`, `pending` or\n`running`. It will resolve the current run as `exception` with\n`reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.\nit doesn't have any runs, an initial run will be added and resolved as\ndescribed above. Hence, after canceling a task, it cannot be scheduled\nwith `queue.scheduleTask`, but a new run can be created with\n`queue.rerun`. These semantics is equivalent to calling\n`queue.scheduleTask` immediately followed by `queue.cancelTask`.\n\n**Remark** this operation is idempotent, if you try to cancel a task that\nisn't `unscheduled`, `pending` or `running`, this operation will just\nreturn the current task status.",
           "scopes": [
@@ -981,6 +1047,7 @@ module.exports = {
             "workerType"
           ],
           "name": "pollTaskUrls",
+          "stability": "experimental",
           "title": "Get Urls to Poll Pending Tasks",
           "description": "Get a signed URLs to get and delete messages from azure queue.\nOnce messages are polled from here, you can claim the referenced task\nwith `claimTask`, and afterwards you should always delete the message.",
           "scopes": [
@@ -1000,6 +1067,7 @@ module.exports = {
             "runId"
           ],
           "name": "claimTask",
+          "stability": "experimental",
           "title": "Claim task",
           "description": "claim a task, more to be added later...",
           "scopes": [
@@ -1021,6 +1089,7 @@ module.exports = {
             "runId"
           ],
           "name": "reclaimTask",
+          "stability": "experimental",
           "title": "Reclaim task",
           "description": "reclaim a task more to be added later...",
           "scopes": [
@@ -1040,6 +1109,7 @@ module.exports = {
             "runId"
           ],
           "name": "reportCompleted",
+          "stability": "experimental",
           "title": "Report Run Completed",
           "description": "Report a task completed, resolving the run as `completed`.",
           "scopes": [
@@ -1059,6 +1129,7 @@ module.exports = {
             "runId"
           ],
           "name": "reportFailed",
+          "stability": "experimental",
           "title": "Report Run Failed",
           "description": "Report a run failed, resolving the run as `failed`. Use this to resolve\na run that failed because the task specific code behaved unexpectedly.\nFor example the task exited non-zero, or didn't produce expected output.\n\nDon't use this if the task couldn't be run because if malformed payload,\nor other unexpected condition. In these cases we have a task exception,\nwhich should be reported with `reportException`.",
           "scopes": [
@@ -1078,8 +1149,9 @@ module.exports = {
             "runId"
           ],
           "name": "reportException",
+          "stability": "experimental",
           "title": "Report Task Exception",
-          "description": "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. But if the payload is malformed, or\ndependencies referenced does not exists you should also report exception.\nHowever, do not report exception if an external resources is unavailable\nbecause of network failure, etc. Only if you can validate that the\nresource does not exist.",
+          "description": "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. You should `reportException` if,\n\n  * The `task.payload` is invalid,\n  * Non-existent resources are referenced,\n  * Declared actions cannot be executed due to unavailable resources,\n  * The worker had to shutdown prematurely, or,\n  * The worker experienced an unknown error.\n\nDo not use this to signal that some user-specified code crashed for any\nreason specific to this code. If user-specific code hits a resource that\nis temporarily unavailable worker should report task _failed_.",
           "scopes": [
             [
               "queue:resolve-task",
@@ -1099,6 +1171,7 @@ module.exports = {
             "name"
           ],
           "name": "createArtifact",
+          "stability": "experimental",
           "title": "Create Artifact",
           "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 4 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\n\n**S3 artifacts**, is useful for static files which will be stored on S3.\nWhen creating an S3 artifact the queue will return a pre-signed URL\nto which you can do a `PUT` request to upload your artifact. Note\nthat `PUT` request **must** specify the `content-length` header and\n**must** give the `content-type` header the same value as in the request\nto `createArtifact`.\n\n**Azure artifacts**, are stored in _Azure Blob Storage_ service, which\ngiven the consistency guarantees and API interface offered by Azure is\nmore suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
           "scopes": [
@@ -1120,6 +1193,7 @@ module.exports = {
             "name"
           ],
           "name": "getArtifact",
+          "stability": "experimental",
           "title": "Get Artifact from Run",
           "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.",
           "scopes": [
@@ -1137,6 +1211,7 @@ module.exports = {
             "name"
           ],
           "name": "getLatestArtifact",
+          "stability": "experimental",
           "title": "Get Artifact from Latest Run",
           "description": "Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
           "scopes": [
@@ -1154,6 +1229,7 @@ module.exports = {
             "runId"
           ],
           "name": "listArtifacts",
+          "stability": "experimental",
           "title": "Get Artifacts from Run",
           "description": "Returns a list of artifacts and associated meta-data for a given run.",
           "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#"
@@ -1166,6 +1242,7 @@ module.exports = {
             "taskId"
           ],
           "name": "listLatestArtifacts",
+          "stability": "experimental",
           "title": "Get Artifacts from Latest Run",
           "description": "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.",
           "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#"
@@ -1179,6 +1256,7 @@ module.exports = {
             "workerType"
           ],
           "name": "pendingTasks",
+          "stability": "experimental",
           "title": "Get Number of Pending Tasks",
           "description": "Documented later...\nThis probably the end-point that will remain after rewriting to azure\nqueue storage...\n",
           "scopes": [
@@ -1194,6 +1272,7 @@ module.exports = {
           "route": "/ping",
           "args": [],
           "name": "ping",
+          "stability": "experimental",
           "title": "Ping Server",
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
         }
@@ -1709,298 +1788,235 @@ module.exports = {
       ]
     }
   },
-  "SchedulerEvents": {
-    "referenceUrl": "http://references.taskcluster.net/scheduler/v1/exchanges.json",
+  "AwsProvisioner": {
+    "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/api.json",
     "reference": {
       "version": 0,
-      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
-      "title": "Scheduler AMQP Exchanges",
-      "description": "The scheduler, typically available at `scheduler.taskcluster.net` is\nresponsible for accepting task-graphs and schedule tasks on the queue as\ntheir dependencies are completed successfully.\n\nThis document describes the AMQP exchanges offered by the scheduler,\nwhich allows third-party listeners to monitor task-graph submission and\nresolution. These exchanges targets the following audience:\n * Reporters, who displays the state of task-graphs or emails people on\n   failures, and\n * End-users, who wants notification of completed task-graphs\n\n**Remark**, the task-graph scheduler will require that the `schedulerId`\nfor tasks is set to the `schedulerId` for the task-graph scheduler. In\nproduction the `schedulerId` is typically `\"task-graph-scheduler\"`.\nFurthermore, the task-graph scheduler will also require that\n`taskGroupId` is equal to the `taskGraphId`.\n\nCombined these requirements ensures that `schedulerId` and `taskGroupId`\nhave the same position in the routing keys for the queue exchanges.\nSee queue documentation for details on queue exchanges. Hence, making\nit easy to listen for all tasks in a given task-graph.\n\nNote that routing key entries 2 through 7 used for exchanges on the\ntask-graph scheduler is hardcoded to `_`. This is done to preserve\npositional equivalence with exchanges offered by the queue.",
-      "exchangePrefix": "exchange/taskcluster-scheduler/v1/",
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "title": "AWS Provisioner API Documentation",
+      "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskCluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net/v1.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n\nWhen a new EC2 instance is instantiated, its user data contains a token in\n`securityToken` that can be used with the `getSecret` method to retrieve\nthe worker's credentials and any needed passwords or other restricted\ninformation.  The worker is responsible for deleting the secret after\nretrieving it, to prevent dissemination of the secret to other proceses\nwhich can read the instance user data.\n",
+      "baseUrl": "https://aws-provisioner.taskcluster.net/v1",
       "entries": [
         {
-          "type": "topic-exchange",
-          "exchange": "task-graph-running",
-          "name": "taskGraphRunning",
-          "title": "Task-Graph Running Message",
-          "description": "When a task-graph is submitted it immediately starts running and a\nmessage is posted on this exchange to indicate that a task-graph have\nbeen submitted.",
-          "routingKey": [
-            {
-              "name": "routingKeyKind",
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
-              "constant": "primary",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "taskId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "runId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "workerGroup",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "workerId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "provisionerId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "workerType",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "schedulerId",
-              "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "taskGraphId",
-              "summary": "Identifier for the task-graph this message concerns",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "reserved",
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
-              "multipleWords": true,
-              "required": false
-            }
+          "type": "function",
+          "method": "put",
+          "route": "/worker-type/<workerType>",
+          "args": [
+            "workerType"
           ],
-          "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#"
+          "name": "createWorkerType",
+          "stability": "experimental",
+          "title": "Create new Worker Type",
+          "description": "Create a worker type.  A worker type contains all the configuration\nneeded for the provisioner to manage the instances.  Each worker type\nknows which regions and which instance types are allowed for that\nworker type.  Remember that Capacity is the number of concurrent tasks\nthat can be run on a given EC2 resource and that Utility is the relative\nperformance rate between different instance types.  There is no way to\nconfigure different regions to have different sets of instance types\nso ensure that all instance types are available in all regions.\nThis function is idempotent.\n\nOnce a worker type is in the provisioner, a back ground process will\nbegin creating instances for it based on its capacity bounds and its\npending task count from the Queue.  It is the worker's responsibility\nto shut itself down.  The provisioner has a limit (currently 96hours)\nfor all instances to prevent zombie instances from running indefinitely.\n\nThe provisioner will ensure that all instances created are tagged with\naws resource tags containing the provisioner id and the worker type.\n\nIf provided, the secrets in the global, region and instance type sections\nare available using the secrets api.  If specified, the scopes provided\nwill be used to generate a set of temporary credentials available with\nthe other secrets.",
+          "scopes": [
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#",
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#"
         },
         {
-          "type": "topic-exchange",
-          "exchange": "task-graph-extended",
-          "name": "taskGraphExtended",
-          "title": "Task-Graph Extended Message",
-          "description": "When a task-graph is extended, that is additional tasks is added to the\ntask-graph, a message is posted on this exchange. This is useful if you\nare monitoring a task-graph and what to track states of the individual\ntasks in the task-graph.",
-          "routingKey": [
-            {
-              "name": "routingKeyKind",
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
-              "constant": "primary",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "taskId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "runId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "workerGroup",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "workerId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "provisionerId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "workerType",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "schedulerId",
-              "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "taskGraphId",
-              "summary": "Identifier for the task-graph this message concerns",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "reserved",
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
-              "multipleWords": true,
-              "required": false
-            }
+          "type": "function",
+          "method": "post",
+          "route": "/worker-type/<workerType>/update",
+          "args": [
+            "workerType"
           ],
-          "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#"
+          "name": "updateWorkerType",
+          "stability": "experimental",
+          "title": "Update Worker Type",
+          "description": "Provide a new copy of a worker type to replace the existing one.\nThis will overwrite the existing worker type definition if there\nis already a worker type of that name.  This method will return a\n200 response along with a copy of the worker type definition created\nNote that if you are using the result of a GET on the worker-type\nend point that you will need to delete the lastModified and workerType\nkeys from the object returned, since those fields are not allowed\nthe request body for this method\n\nOtherwise, all input requirements and actions are the same as the\ncreate method.",
+          "scopes": [
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#",
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#"
         },
         {
-          "type": "topic-exchange",
-          "exchange": "task-graph-blocked",
-          "name": "taskGraphBlocked",
-          "title": "Task-Graph Blocked Message",
-          "description": "When a task is completed unsuccessfully and all reruns have been\nattempted, the task-graph will not complete successfully and it's\ndeclared to be _blocked_, by some task that consistently completes\nunsuccessfully.\n\nWhen a task-graph becomes blocked a messages is posted to this exchange.\nThe message features the `taskId` of the task that caused the task-graph\nto become blocked.",
-          "routingKey": [
-            {
-              "name": "routingKeyKind",
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
-              "constant": "primary",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "taskId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "runId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "workerGroup",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "workerId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "provisionerId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "workerType",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "schedulerId",
-              "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "taskGraphId",
-              "summary": "Identifier for the task-graph this message concerns",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "reserved",
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
-              "multipleWords": true,
-              "required": false
-            }
+          "type": "function",
+          "method": "get",
+          "route": "/worker-type/<workerType>",
+          "args": [
+            "workerType"
           ],
-          "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#"
+          "name": "workerType",
+          "stability": "experimental",
+          "title": "Get Worker Type",
+          "description": "Retreive a copy of the requested worker type definition.\nThis copy contains a lastModified field as well as the worker\ntype name.  As such, it will require manipulation to be able to\nuse the results of this method to submit date to the update\nmethod.",
+          "scopes": [
+            [
+              "aws-provisioner:view-worker-type:<workerType>"
+            ],
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#"
         },
         {
-          "type": "topic-exchange",
-          "exchange": "task-graph-finished",
-          "name": "taskGraphFinished",
-          "title": "Task-Graph Finished Message",
-          "description": "When all tasks of a task-graph have completed successfully, the\ntask-graph is declared to be finished, and a message is posted to this\nexchange.",
-          "routingKey": [
-            {
-              "name": "routingKeyKind",
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
-              "constant": "primary",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "taskId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "runId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "workerGroup",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "workerId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "provisionerId",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "workerType",
-              "summary": "Always takes the value `_`",
-              "multipleWords": false,
-              "required": false
-            },
-            {
-              "name": "schedulerId",
-              "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "taskGraphId",
-              "summary": "Identifier for the task-graph this message concerns",
-              "multipleWords": false,
-              "required": true
-            },
-            {
-              "name": "reserved",
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
-              "multipleWords": true,
-              "required": false
-            }
+          "type": "function",
+          "method": "delete",
+          "route": "/worker-type/<workerType>",
+          "args": [
+            "workerType"
           ],
-          "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#"
+          "name": "removeWorkerType",
+          "stability": "experimental",
+          "title": "Delete Worker Type",
+          "description": "Delete a worker type definition.  This method will only delete\nthe worker type definition from the storage table.  The actual\ndeletion will be handled by a background worker.  As soon as this\nmethod is called for a worker type, the background worker will\nimmediately submit requests to cancel all spot requests for this\nworker type as well as killing all instances regardless of their\nstate.  If you want to gracefully remove a worker type, you must\neither ensure that no tasks are created with that worker type name\nor you could theoretically set maxCapacity to 0, though, this is\nnot a supported or tested action",
+          "scopes": [
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/list-worker-types",
+          "args": [],
+          "name": "listWorkerTypes",
+          "stability": "experimental",
+          "title": "List Worker Types",
+          "description": "Return a list of string worker type names.  These are the names\nof all managed worker types known to the provisioner.  This does\nnot include worker types which are left overs from a deleted worker\ntype definition but are still running in AWS.",
+          "scopes": [
+            [
+              "aws-provisioner:list-worker-types"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "put",
+          "route": "/secret/<token>",
+          "args": [
+            "token"
+          ],
+          "name": "createSecret",
+          "stability": "experimental",
+          "title": "Create new Secret",
+          "description": "Insert a secret into the secret storage.  The supplied secrets will\nbe provided verbatime via `getSecret`, while the supplied scopes will\nbe converted into credentials by `getSecret`.\n\nThis method is not ordinarily used in production; instead, the provisioner\ncreates a new secret directly for each spot bid.",
+          "scopes": [
+            [
+              "aws-provisioner:create-secret"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/secret/<token>",
+          "args": [
+            "token"
+          ],
+          "name": "getSecret",
+          "stability": "experimental",
+          "title": "Get a Secret",
+          "description": "Retrieve a secret from storage.  The result contains any passwords or\nother restricted information verbatim as well as a temporary credential\nbased on the scopes specified when the secret was created.\n\nIt is important that this secret is deleted by the consumer (`removeSecret`),\nor else the secrets will be visible to any process which can access the\nuser data associated with the instance.",
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/instance-started/<instanceId>/<token>",
+          "args": [
+            "instanceId",
+            "token"
+          ],
+          "name": "instanceStarted",
+          "stability": "experimental",
+          "title": "Report an instance starting",
+          "description": "An instance will report in by giving its instance id as well\nas its security token.  The token is given and checked to ensure\nthat it matches a real token that exists to ensure that random\nmachines do not check in.  We could generate a different token\nbut that seems like overkill"
+        },
+        {
+          "type": "function",
+          "method": "delete",
+          "route": "/secret/<token>",
+          "args": [
+            "token"
+          ],
+          "name": "removeSecret",
+          "stability": "experimental",
+          "title": "Remove a Secret",
+          "description": "Remove a secret.  After this call, a call to `getSecret` with the given\ntoken will return no information.\n\nIt is very important that the consumer of a \nsecret delete the secret from storage before handing over control\nto untrusted processes to prevent credential and/or secret leakage."
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/worker-type/<workerType>/launch-specifications",
+          "args": [
+            "workerType"
+          ],
+          "name": "getLaunchSpecs",
+          "stability": "experimental",
+          "title": "Get All Launch Specifications for WorkerType",
+          "description": "This method returns a preview of all possible launch specifications\nthat this worker type definition could submit to EC2.  It is used to\ntest worker types, nothing more\n\n**This API end-point is experimental and may be subject to change without warning.**",
+          "scopes": [
+            [
+              "aws-provisioner:view-worker-type:<workerType>"
+            ],
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ],
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/aws-state",
+          "args": [],
+          "name": "awsState",
+          "stability": "experimental",
+          "title": "Get AWS State for all worker types",
+          "description": "This method is a left over and will be removed as soon as the\ntools.tc.net UI is updated to use the per-worker state\n\n**DEPRECATED.**",
+          "scopes": [
+            [
+              "aws-provisioner:aws-state"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/state/<workerType>",
+          "args": [
+            "workerType"
+          ],
+          "name": "state",
+          "stability": "experimental",
+          "title": "Get AWS State for a worker type",
+          "description": "Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for all instances, 1 for requests\nwhich show in the ec2 api and 1 list for those only tracked internally\nin the provisioner.",
+          "scopes": [
+            [
+              "aws-provisioner:view-worker-type:<workerType>"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "args": [],
+          "name": "ping",
+          "stability": "experimental",
+          "title": "Ping Server",
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**."
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/api-reference",
+          "args": [],
+          "name": "apiReference",
+          "stability": "experimental",
+          "title": "api reference",
+          "description": "Get an API reference!\n\n**Warning** this api end-point is **not stable**."
         }
       ]
     }
