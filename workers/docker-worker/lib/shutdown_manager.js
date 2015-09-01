@@ -8,7 +8,7 @@ export default class ShutdownManager extends EventEmitter {
   constructor(host, config) {
     super();
     this.idleTimeout = null;
-    this.host = host;
+    this.host = config.hostManager;
     this.config = config;
     this.stats = config.stats;
     this.nodeTerminationPoll = config.shutdown.nodeTerminationPoll || 5000;

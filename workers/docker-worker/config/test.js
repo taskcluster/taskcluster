@@ -13,6 +13,12 @@ module.exports = {
     randomizationFactor: 0.25
   },
 
+  taskQueue: {
+    pollInterval: 1000,
+    pollIntervalMultiplier: 4,
+    slowdownDivisor: 2
+  },
+
   influx: {
     maxDelay: 1,
     maxPendingPoints: 1,

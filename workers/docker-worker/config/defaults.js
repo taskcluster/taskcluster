@@ -128,6 +128,24 @@ module.exports = {
   taskQueue: {
     // Task queue will be polled on a frequent interval for new pending tasks
     pollInterval: 5 * 1000,
+    // Task queue will be polled slower near the end of a billing cycle by this many times
+    // The higher this number is, the more likely we are to overkill on scaling down
+    // The lower this number is, the more likely we are to keep containers alive at lower than
+    // maximum capacity
+    // No particular reasoning for the choice of 12, just a trial for now
+    pollIntervalMultiplier: 12,
+    // Task polling will slow down in the last 1/x of a billing cycle
+    // Task run times have a distribution of something like 3/6/9min=Q1/2/3, so by reducing the number
+    // of tasks we grab in the last 60/3=20 min, we can increase the chances of a node dying
+    // if there is enough capacity to handle tasks without it
+    // If we increase this time (decrease the number here), it will decrease the efficiency
+    // of a node as it nears the end stages because there's a chance it could pick up two short tasks
+    // before it dies.
+    // If we decrease this time (increase the number here), it will cause more nodes to live past
+    // the next threshold (0:58:00, 1:58:00, etc) in exchange for increasing efficiency near end of life.
+    // Ideally we want to keep the period less than double the average task but more than the runtime of
+    // most (say, ~75%) of tasks.
+    slowdownDivisor: 3,
     // If signed url for queue expires within now()+expiration, refresh queues
     expiration: 5 * 60 * 1000,
     // Number of times to retry requests to the task queue

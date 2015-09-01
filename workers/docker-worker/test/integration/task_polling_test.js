@@ -1,9 +1,10 @@
-import waitForEvent from '../../lib/wait_for_event';
-import * as settings from '../settings';
+import base from 'taskcluster-base';
 import cmd from './helper/cmd';
-import slugid from 'slugid';
 import DockerWorker from '../dockerworker';
+import * as settings from '../settings';
+import slugid from 'slugid';
 import TestWorker from '../testworker';
+import waitForEvent from '../../lib/wait_for_event';
 
 suite('Task Polling', () => {
 
@@ -45,7 +46,7 @@ suite('Task Polling', () => {
 
     await waitForEvent(worker, 'created task');
     let claimedTask = false;
-    worker.on('claim task', () => claimTask = true);
+    worker.on('claim task', () => claimedTask = true);
     let count = 0;
     // Wait for a few polling cycles and ensure a task hasn't been claimed and
     // proper alert has been logged
@@ -96,5 +97,34 @@ suite('Task Polling', () => {
       assert.equal(taskRes.run.state, 'completed');
       assert.equal(taskRes.run.reasonResolved, 'completed');
     });
+  });
+
+  test('task polling at normal speed', async () => {
+    settings.billingCycleUptime(30);
+    settings.billingCycleInterval(40);
+
+    worker = new TestWorker(DockerWorker);
+    await worker.launch();
+    //make sure the polling timer is accurate
+    await base.testing.sleep(6000);
+
+    settings.billingCycleUptime(0);
+    let pollingMessage = await waitForEvent(worker, 'polling');
+    assert(pollingMessage.message ===  'polling interval adjusted' &&
+      pollingMessage.oldInterval > pollingMessage.newInterval)
+  });
+
+  test('task polling slows down', async () => {
+    settings.billingCycleUptime(0);
+    settings.billingCycleInterval(40);
+    worker = new TestWorker(DockerWorker);
+    await worker.launch();
+    //make sure the polling timer is accurate
+    await base.testing.sleep(6000);
+
+    settings.billingCycleUptime(30);
+    let pollingMessage = await waitForEvent(worker, 'polling');
+        assert(pollingMessage.message ===  'polling interval adjusted' &&
+          pollingMessage.oldInterval < pollingMessage.newInterval)
   });
 });

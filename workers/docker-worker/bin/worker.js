@@ -222,6 +222,8 @@ async function main () {
 
   var runtime = new Runtime(config);
 
+  runtime.hostManager = host;
+
   // Instantiate PrivateKey object for decrypting secure data
   // (currently encrypted environment variables)
   runtime.privateKey = new PrivateKey(runtime.dockerWorkerPrivateKey);

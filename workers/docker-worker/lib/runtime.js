@@ -1,5 +1,5 @@
 /**
-Holds all runtime configuration options for the worker with various convince 
+Holds all runtime configuration options for the worker with various convenience 
 methods.
 */
 var assert = require('assert');
@@ -69,7 +69,12 @@ Runtime.prototype = {
   /**
   Used to decrypt secure environment variables
   */
-  privateKey: null
+  privateKey: null,
+
+  /**
+  Host instance
+  */
+  hostManager: null
 };
 
 module.exports = Runtime;
