@@ -613,9 +613,10 @@ var taskId = taskcluster.slugid();
 The generates _nice_ random slugids, refer to slugid module for further details.
 
 ## Using `taskcluster-client` in a Browser
-Running the script `utils/browserify.js` will generate `taskcluster-client.js`
-using browserify. This does not contain any listener, but all the API logic
-and references is present. To get AMQP events in the browser use
+Running the script `bin/update-apis.js browserify` will generate
+`taskcluster-client.js` using browserify. This does not contain any listener,
+but all the API logic and references is present. To get AMQP events in the
+browser use
 [events.taskcluster.net](https://github.com/taskcluster/taskcluster-events).
 
 ## Updating Builtin APIs
