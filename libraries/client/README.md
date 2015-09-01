@@ -183,15 +183,6 @@ var scheduler = new taskcluster.Scheduler(options);
  * `scheduler.inspectTask(taskGraphId, taskId) : result`
  * `scheduler.ping() : void`
 
-### Methods in `taskcluster.PurgeCache`
-```js
-// Create PurgeCache client instance with default baseUrl:
-//  - https://purge-cache.taskcluster.net/v1
-var purgeCache = new taskcluster.PurgeCache(options);
-```
- * `purgeCache.purgeCache(provisionerId, workerType, payload) : void`
- * `purgeCache.ping() : void`
-
 ### Methods in `taskcluster.Index`
 ```js
 // Create Index client instance with default baseUrl:
@@ -204,6 +195,37 @@ var index = new taskcluster.Index(options);
  * `index.insertTask(namespace, payload) : result`
  * `index.findArtifactFromTask(namespace, name) : void`
  * `index.ping() : void`
+
+### Methods in `taskcluster.AwsProvisioner`
+```js
+// Create AwsProvisioner client instance with default baseUrl:
+//  - https://taskcluster-aws-provisioner2.herokuapp.com/v1
+var awsProvisioner = new taskcluster.AwsProvisioner(options);
+```
+ * `awsProvisioner.createWorkerType(workerType, payload) : result`
+ * `awsProvisioner.updateWorkerType(workerType, payload) : result`
+ * `awsProvisioner.workerType(workerType) : result`
+ * `awsProvisioner.removeWorkerType(workerType) : void`
+ * `awsProvisioner.listWorkerTypes() : result`
+ * `awsProvisioner.createSecret(token, payload) : void`
+ * `awsProvisioner.getSecret(token) : result`
+ * `awsProvisioner.instanceStarted(instanceId, token) : void`
+ * `awsProvisioner.removeSecret(token) : void`
+ * `awsProvisioner.getLaunchSpecs(workerType) : result`
+ * `awsProvisioner.terminateAllInstancesOfWorkerType(workerType) : void`
+ * `awsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() : void`
+ * `awsProvisioner.awsState() : void`
+ * `awsProvisioner.ping() : void`
+ * `awsProvisioner.apiReference() : void`
+
+### Methods in `taskcluster.PurgeCache`
+```js
+// Create PurgeCache client instance with default baseUrl:
+//  - https://purge-cache.taskcluster.net/v1
+var purgeCache = new taskcluster.PurgeCache(options);
+```
+ * `purgeCache.purgeCache(provisionerId, workerType, payload) : void`
+ * `purgeCache.ping() : void`
 
 ### Methods in `taskcluster.Queue`
 ```js
@@ -232,27 +254,6 @@ var queue = new taskcluster.Queue(options);
  * `queue.pendingTasks(provisionerId, workerType) : result`
  * `queue.ping() : void`
 
-### Methods in `taskcluster.AwsProvisioner`
-```js
-// Create AwsProvisioner client instance with default baseUrl:
-//  - https://aws-provisioner.taskcluster.net/v1
-var awsProvisioner = new taskcluster.AwsProvisioner(options);
-```
- * `awsProvisioner.createWorkerType(workerType, payload) : result`
- * `awsProvisioner.updateWorkerType(workerType, payload) : result`
- * `awsProvisioner.workerType(workerType) : result`
- * `awsProvisioner.removeWorkerType(workerType) : void`
- * `awsProvisioner.listWorkerTypes() : result`
- * `awsProvisioner.createSecret(token, payload) : void`
- * `awsProvisioner.getSecret(token) : result`
- * `awsProvisioner.instanceStarted(instanceId, token) : void`
- * `awsProvisioner.removeSecret(token) : void`
- * `awsProvisioner.getLaunchSpecs(workerType) : result`
- * `awsProvisioner.awsState() : void`
- * `awsProvisioner.state(workerType) : void`
- * `awsProvisioner.ping() : void`
- * `awsProvisioner.apiReference() : void`
-
 ### Exchanges in `taskcluster.AwsProvisionerEvents`
 ```js
 // Create AwsProvisionerEvents client instance with default exchangePrefix:
@@ -262,17 +263,6 @@ var awsProvisionerEvents = new taskcluster.AwsProvisionerEvents(options);
  * `awsProvisionerEvents.workerTypeCreated(routingKeyPattern) : binding-info`
  * `awsProvisionerEvents.workerTypeUpdated(routingKeyPattern) : binding-info`
  * `awsProvisionerEvents.workerTypeRemoved(routingKeyPattern) : binding-info`
-
-### Exchanges in `taskcluster.SchedulerEvents`
-```js
-// Create SchedulerEvents client instance with default exchangePrefix:
-//  - exchange/taskcluster-scheduler/v1/
-var schedulerEvents = new taskcluster.SchedulerEvents(options);
-```
- * `schedulerEvents.taskGraphRunning(routingKeyPattern) : binding-info`
- * `schedulerEvents.taskGraphExtended(routingKeyPattern) : binding-info`
- * `schedulerEvents.taskGraphBlocked(routingKeyPattern) : binding-info`
- * `schedulerEvents.taskGraphFinished(routingKeyPattern) : binding-info`
 
 ### Exchanges in `taskcluster.PurgeCacheEvents`
 ```js
@@ -295,6 +285,17 @@ var queueEvents = new taskcluster.QueueEvents(options);
  * `queueEvents.taskCompleted(routingKeyPattern) : binding-info`
  * `queueEvents.taskFailed(routingKeyPattern) : binding-info`
  * `queueEvents.taskException(routingKeyPattern) : binding-info`
+
+### Exchanges in `taskcluster.SchedulerEvents`
+```js
+// Create SchedulerEvents client instance with default exchangePrefix:
+//  - exchange/taskcluster-scheduler/v1/
+var schedulerEvents = new taskcluster.SchedulerEvents(options);
+```
+ * `schedulerEvents.taskGraphRunning(routingKeyPattern) : binding-info`
+ * `schedulerEvents.taskGraphExtended(routingKeyPattern) : binding-info`
+ * `schedulerEvents.taskGraphBlocked(routingKeyPattern) : binding-info`
+ * `schedulerEvents.taskGraphFinished(routingKeyPattern) : binding-info`
 
 <!-- END OF GENERATED DOCS -->
 
