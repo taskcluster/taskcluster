@@ -23,7 +23,7 @@ export const PAYLOAD_SCHEMA =
   'http://schemas.taskcluster.net/docker-worker/v1/payload.json#';
 
 // TODO probably a terrible error message, look at making it better later
-const CANCEL_ERROR = 'Error: Task was canceled by another entity. This can happen using ' +
+const CANCEL_ERROR = 'Task was canceled by another entity. This can happen using ' +
                    'a taskcluster client or by cancelling a task within Treeherder.';
 
 /*
@@ -274,6 +274,11 @@ export class Task {
     return '[taskcluster] ' + util.format.apply(this, args) + '\r\n';
   }
 
+  fmtErrorLog() {
+    let args = Array.prototype.slice.call(arguments);
+    return '[taskcluster:error] ' + util.format.apply(this, args) + '\r\n';
+  }
+
   logHeader() {
     let header = this.fmtLog(
       'taskId: %s, workerId: %s',
@@ -309,8 +314,8 @@ export class Task {
   }
 
   logSchemaErrors(prefix, errors) {
-    return this.fmtLog(
-      'Error: %s format is invalid json schema errors:\n %s',
+    return this.fmtErrorLog(
+      '%s format is invalid json schema errors:\n %s',
       prefix, JSON.stringify(errors, null, 2)
     );
   }
@@ -449,8 +454,8 @@ export class Task {
       // will cause run to stop processing the task and give us an error
       // exit code.
       this.dockerProcess.kill();
-      this.stream.write(this.fmtLog(
-        'Error: Task timeout after %d seconds. Force killing container.',
+      this.stream.write(this.fmtErrorLog(
+        'Task timeout after %d seconds. Force killing container.',
         this.task.payload.maxRunTime
       ));
     }.bind(this), maxRuntimeMS);
@@ -468,7 +473,7 @@ export class Task {
     } catch (e) {
       debug('Caught error while reclaiming task. %s, as JSON %j', e, e);
 
-      let errorMessage = `Error: Could not reclaim task. ${e}`;
+      let errorMessage = `Could not reclaim task. ${e}`;
       this.runtime.log('error reclaiming task', {
         claim: this.claim,
         error: errorMessage
@@ -548,7 +553,7 @@ export class Task {
     if (this.dockerProcess) this.dockerProcess.kill();
 
     this.stream.write(
-      this.fmtLog(`Error: Task has been aborted prematurely. Reason: ${reason}`)
+      this.fmtErrorLog(`Task has been aborted prematurely. Reason: ${reason}`)
     );
   }
 
@@ -574,7 +579,7 @@ export class Task {
 
     if (this.dockerProcess) this.dockerProcess.kill();
 
-    this.stream.write(this.fmtLog(errorMessage));
+    this.stream.write(this.fmtErrorLog(errorMessage));
   }
 
   /**
@@ -609,8 +614,8 @@ export class Task {
       debug(e.stack);
       return await this.abortRun(
         'states_failed',
-        this.fmtLog(
-          'Error: Task was aborted because states could not be created ' +
+        this.fmtErrorLog(
+          'Task was aborted because states could not be created ' +
           `successfully. ${e}`
         )
       );
@@ -624,7 +629,7 @@ export class Task {
     }
     // Validate the schema!
     let payloadErrors = this.runtime.validator.check(this.task.payload,
-                                                     PAYLOAD_SCHEMA)
+                                                     PAYLOAD_SCHEMA);
 
     if (payloadErrors) {
       // Inform the user that this task has failed due to some configuration
@@ -655,7 +660,7 @@ export class Task {
     } catch (e) {
       return await this.abortRun(
         'pull_failed',
-        this.fmtLog(IMAGE_ERROR, this.task.payload.image, e)
+        this.fmtErrorLog(IMAGE_ERROR, this.task.payload.image, e)
       );
     }
 
@@ -669,7 +674,7 @@ export class Task {
     try {
       dockerConfig = await this.dockerConfig(linkInfo);
     } catch (e) {
-      let error = this.fmtLog('Error: Docker configuration could not be ' +
+      let error = this.fmtErrorLog('Docker configuration could not be ' +
         'created.  This may indicate an authentication error when validating ' +
         'scopes necessary for running the task. \n %s', e);
       return await this.abortRun('docker_configuration', error);
@@ -690,7 +695,6 @@ export class Task {
     if (this.isCanceled() || this.isAborted()) {
       return await this.abortRun(this.taskState);
     }
-    this.runtime.log('task run');
 
     // Call started hook when container is started
     dockerProc.once('container start', async (container) => {
@@ -701,19 +705,22 @@ export class Task {
         debug(e.stack);
         return await this.abortRun(
           'states_failed',
-          this.fmtLog(
-            'Error: Task was aborted because states could not be started ' +
+          this.fmtErrorLog(
+            'Task was aborted because states could not be started ' +
             `successfully. ${e}`
           )
         );
       }
     });
 
+    this.runtime.log('task run');
+    this.stream.write(this.fmtLog('=== Task Starting ==='));
     let exitCode = await stats.timeGen('taskRunTime', dockerProc.run({
       // Do not pull the image as part of the docker run we handle it +
       // authentication above...
       pull: false
     }));
+    this.stream.write(this.fmtLog('=== Task Finished ==='));
 
     let success = exitCode === 0;
 
@@ -753,8 +760,8 @@ export class Task {
           stack: e.stack
         });
 
-        this.stream.write(this.fmtLog(
-          `Error: Unknown taskcluster error encountered.  Ask administrator to lookup ` +
+        this.stream.write(this.fmtErrorLog(
+          `Unknown taskcluster error encountered.  Ask administrator to lookup ` +
           `incidentId in log-file. Incident ID: ${lookupId}`
         ));
       }

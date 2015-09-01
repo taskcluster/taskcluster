@@ -31,7 +31,7 @@ export default class ExtendTaskGraph {
       contentStream = await container.copy({ Resource: graphPath });
     } catch (e) {
       // Let the consumer know the graph file cannot be found.
-      taskHandler.stream.write(taskHandler.fmtLog(
+      taskHandler.stream.write(taskHandler.fmtErrorLog(
         'Graph extension not found at path "%s" skipping...',
         graphPath
       ));
@@ -52,7 +52,7 @@ export default class ExtendTaskGraph {
       if (checkTarType) {
         checkTarType = false;
         if (header.type !== 'file') {
-          taskHandler.stream.write(taskHandler.fmtLog(
+          taskHandler.stream.write(taskHandler.fmtErrorLog(
             'Unexpected multiple files in task graph extension path'
           ));
           // Destroy the stream and manually emit the finish event so we can
@@ -75,7 +75,7 @@ export default class ExtendTaskGraph {
     try {
       extension = JSON.parse(entryJSON);
     } catch (e) {
-      taskHandler.stream.write(taskHandler.fmtLog(
+      taskHandler.stream.write(taskHandler.fmtErrorLog(
         'Invalid json in taskgraph extension path: "%s" dumping file...'
       ));
       taskHandler.stream.write(entryJSON);
@@ -91,7 +91,7 @@ export default class ExtendTaskGraph {
         graphId, graphPath
       ));
     } catch (error) {
-      taskHandler.stream.write(taskHandler.fmtLog(
+      taskHandler.stream.write(taskHandler.fmtErrorLog(
         'Graph server error while extending task graph id %s : %s, %j',
         graphId, error, error.body
       ));
@@ -111,7 +111,7 @@ export default class ExtendTaskGraph {
 
     // If there is no scheduler id we cannot extend the graph.
     if (task.schedulerId !== 'task-graph-scheduler') {
-      return taskHandler.stream.write(taskHandler.fmtLog(
+      return taskHandler.stream.write(taskHandler.fmtErrorLog(
         "No taskGroupId (task graph id) extension is not possible"
       ));
     }

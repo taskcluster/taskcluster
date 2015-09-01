@@ -64,7 +64,7 @@ suite('balrog vpn proxy', () => {
     });
 
     assert.ok(
-      result.log.includes('[taskcluster] Error: Task was aborted because states'),
+      result.log.includes('[taskcluster:error] Task was aborted because states'),
       'Error does not container message about states being aborted'
     );
     assert.ok(

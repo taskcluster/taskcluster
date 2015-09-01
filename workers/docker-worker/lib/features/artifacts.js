@@ -38,7 +38,7 @@ export default class Artifacts {
     } catch (e) {
       let error = `Artifact "${name}" not found at "${path}"`;
       // Log the error...
-      taskHandler.stream.write(taskHandler.fmtLog(error));
+      taskHandler.stream.write(taskHandler.fmtErrorLog(error));
 
       // Create the artifact but as the type of "error" to indicate it is
       // missing.
@@ -83,7 +83,7 @@ export default class Artifacts {
             `Error uploading "${entryName}". Expected artifact to ` +
             `be a "${artifact.type}" but was "${header.type}"`;
 
-          taskHandler.stream.write(taskHandler.fmtLog(error));
+          taskHandler.stream.write(taskHandler.fmtErrorLog(error));
 
           // Return without throwing an error that would cause the task to fail.  Too
           // many tasks currently rely on the fact that the worker does not fail a task
@@ -133,7 +133,7 @@ export default class Artifacts {
         // possible before handling the errors.
         errors.push(err);
         taskHandler.stream.write(
-          taskHandler.fmtLog(`Error uploading "${entryName}" artifact. ${err}`)
+          taskHandler.fmtErrorLog(`Error uploading "${entryName}" artifact. ${err}`)
         );
       }
       // Resume the stream if there is an upload failure otherwise

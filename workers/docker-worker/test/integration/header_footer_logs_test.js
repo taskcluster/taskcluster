@@ -3,7 +3,7 @@ suite('Header/Footer logs', function() {
   var testworker = require('../post_task');
   var cmd = require('./helper/cmd');
 
-  test('Successful task', co(function* () {
+  test('Unsuccessful task', co(function* () {
     var result = yield testworker({
       payload: {
         image: 'taskcluster/test-ubuntu',
@@ -19,7 +19,7 @@ suite('Header/Footer logs', function() {
 
     var tcLogs = result.log.match(/\[taskcluster\](.*)/g);
     var start = tcLogs[0];
-    var end = tcLogs[1];
+    var end = tcLogs[tcLogs.length-1];
 
     // ensure task id in in the start...
     assert.ok(start.indexOf(result.taskId) !== -1, 'start log has taskId');

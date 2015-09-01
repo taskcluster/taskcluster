@@ -303,7 +303,7 @@ suite('use docker exec websocket server', () => {
     debug('posting to queue');
     let res = await worker.postToQueue(task, taskId);
     debug(res.log);
-    assert(/\[taskcluster\] Error: Task was aborted because states could not be started/
+    assert(/\[taskcluster:error\] Task was aborted because states could not be started/
       .test(res.log));
   });
 });

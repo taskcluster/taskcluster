@@ -19,7 +19,7 @@ suite('worker timeouts', function() {
     assert.ok(result.log.indexOf('Hello') !== -1);
     assert.ok(result.log.indexOf('done') === -1);
     assert.ok(
-      result.log.indexOf('[taskcluster] Error: Task timeout') !== -1,
+      result.log.indexOf('[taskcluster:error] Task timeout') !== -1,
       'Task should contain logs about timeout'
     );
   }));

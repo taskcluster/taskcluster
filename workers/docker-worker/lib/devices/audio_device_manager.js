@@ -29,7 +29,7 @@ export default class AudioDeviceManager {
         deviceList.push(new AudioDevice(`${BASE_DIR}/${deviceFile}`));
       }
       catch(e) {
-        debug(`Error creating audio device. Error: ${e}`);
+        debug(`Could not create audio device. Error: ${e}`);
       }
     });
 
