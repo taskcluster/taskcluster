@@ -20,7 +20,10 @@ module.exports = {
     azureAccounts:                  "{}",
 
     // ClientId to use when issuing temporary credentials
-    clientIdForTempCreds:  undefined
+    clientIdForTempCreds:           undefined,
+
+    // Timeout for client cache entires
+    clientCacheTimeout:             10 * 60 * 60 * 1000
   },
 
   // Server configuration

@@ -18,7 +18,9 @@ module.exports = {
     // Must be configured locally
     azureAccounts:    "{}",
 
-    clientIdForTempCreds: 'ctVNevJPRbe6ICL5-nhZkw'
+    clientIdForTempCreds: 'ctVNevJPRbe6ICL5-nhZkw',
+
+    clientCacheTimeout: 1000
   },
 
   test: {

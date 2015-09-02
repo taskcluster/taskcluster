@@ -33,7 +33,7 @@ if (!cfg.get('azure:accountKey') ||
 var webServer = null;
 mocha.before(async () => {
   webServer = await server('test');
-
+  webServer.setTimeout(500);
 
   // Create client for working with API
   helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';

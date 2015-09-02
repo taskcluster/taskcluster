@@ -1,0 +1,68 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:    "Hawk Signature Authentication Request"
+description: |
+  Request to authenticate a hawk request.
+type:                     object
+properties:
+  method:
+    type:                 string
+    enum:
+      - get
+      - post
+      - put
+      - head
+      - delete
+      - options
+      - trace
+      - copy
+      - lock
+      - mkcol
+      - move
+      - purge
+      - propfind
+      - proppatch
+      - unlock
+      - report
+      - mkactivity
+      - checkout
+      - merge
+      - m-search
+      - notify
+      - subscribe
+      - unsubscribe
+      - patch
+      - search
+      - connect
+    description: |
+      HTTP method of the request being authenticated.
+  resource:
+    type:                 string
+    description: |
+      Resource the request operates on including querystring. This is the
+      string that follows the HTTP method.
+      **Note,** order of querystring elements is important.
+  host:
+    type:                 string
+    format:               hostname
+    description: |
+      Host for which the request came in, this is typically the `Host` header
+      excluding the port if any.
+  port:
+    type:                 integer
+    minimum:              0
+    maximum:              65535
+    description: |
+      Port on which the request came in, this is typically `80` or `443`.
+      If you are running behind a reverse proxy look for the `x-forwarded-port`
+      header.
+  authorization:
+    type:                 string
+    description: |
+      Authorization header, **must** only be specified if request being
+      authenticated has a `Authorization` header.
+additionalProperties:     false
+required:
+  - method
+  - resource
+  - host
+  - port
