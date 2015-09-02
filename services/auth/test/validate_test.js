@@ -6,81 +6,61 @@
  */
 var testCases = [
   {
-    path:     'schemas/client-scopes-ok1.json',
-    schema:   'http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#',
+    path:     'client-scopes-ok1.json',
+    schema:   'auth/v1/client-scopes-response.json#',
     success:  true
   }, {
-    path:     'schemas/client-scopes-ok2.json',
-    schema:   'http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#',
+    path:     'client-scopes-ok2.json',
+    schema:   'auth/v1/client-scopes-response.json#',
     success:  true
   }, {
-    path:     'schemas/client-scopes-ok3.json',
-    schema:   'http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#',
+    path:     'client-scopes-ok3.json',
+    schema:   'auth/v1/client-scopes-response.json#',
     success:  true
   }, {
-    path:     'schemas/client-scopes-fail1.json',
-    schema:   'http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#',
+    path:     'client-scopes-fail1.json',
+    schema:   'auth/v1/client-scopes-response.json#',
     success:  false
   }, {
-    path:     'schemas/client-scopes-fail2.json',
-    schema:   'http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#',
+    path:     'client-scopes-fail2.json',
+    schema:   'auth/v1/client-scopes-response.json#',
     success:  false
   }, {
-    path:     'schemas/client-credentials-ok.json',
-    schema:   'http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#',
+    path:     'client-credentials-ok.json',
+    schema:   'auth/v1/client-credentials-response.json#',
     success:  true
   }, {
-    path:     'schemas/client-credentials-fail.json',
-    schema:   'http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#',
+    path:     'client-credentials-fail.json',
+    schema:   'auth/v1/client-credentials-response.json#',
+    success:  false
+  }, {
+    path:     'authenticate-hawk-request.json',
+    schema:   'auth/v1/authenticate-hawk-request.json#',
+    success:  true
+  }, {
+    path:     'authenticate-hawk-request-ipv4.json',
+    schema:   'auth/v1/authenticate-hawk-request.json#',
+    success:  true
+  }, {
+    path:     'authenticate-hawk-request-bad.json',
+    schema:   'auth/v1/authenticate-hawk-request.json#',
     success:  false
   }
 ];
 
-suite("validate", () => {
-  var fs          = require('fs');
-  var path        = require('path');
-  var assert      = require('assert');
-  var base        = require('taskcluster-base');
-  var validator = null;
+var path        = require('path');
+var base        = require('taskcluster-base');
 
-  // Setup validator
-  setup(() => {
-    return base.validator({
-      folder:           path.join(__dirname, '..', 'schemas'),
-      constants:        require('../schemas/constants'),
-    }).then(function(validator_) {
-      validator = validator_;
-    });
+suite('validate', function() {
+  // Run test cases using schemas testing utility from taskcluster-base
+  base.testing.schemas({
+    validator: {
+      folder:         path.join(__dirname, '..', 'schemas'),
+      constants:      require('../schemas/constants'),
+      schemaPrefix:   'auth/v1/'
+    },
+    basePath:       path.join(__dirname, 'schemas'),
+    schemaPrefix:   'http://schemas.taskcluster.net/',
+    cases:          testCases
   });
-
-  // Create a test for each test case
-  testCases.forEach(testCase => {
-    test(testCase.path, () => {
-      // Load test data
-      var filePath = path.join(__dirname, testCase.path);
-      var data = fs.readFileSync(filePath, {encoding: 'utf-8'});
-      var json = JSON.parse(data);
-
-      // Validate json
-      var errors = validator.check(json, testCase.schema);
-
-      // Test errors
-      if(testCase.success) {
-        if (errors !== null) {
-          console.log("Errors:");
-          errors.forEach(error => console.log(error));
-        }
-        assert(errors === null,
-               "Schema doesn't match test for " + testCase.path);
-      } else {
-        assert(errors !== null,
-               "Schema matches unexpectedly test for " + testCase.path);
-      }
-    });
-  });
-
-  // Release validator
-  teardown(() => {
-    validator = null;
-  })
 });
