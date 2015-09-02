@@ -122,12 +122,14 @@ Entity.prototype.__partitionKey = undefined;  // PartitionKey builder
 Entity.prototype.__rowKey       = undefined;  // RowKey builder
 Entity.prototype.__sign         = undefined;  // Method to compute signature
 Entity.prototype.__hasSigning   = false;      // Some version has signing
+Entity.prototype.__hasEncrypted = false;      // Some type has encryption
 
 // Define properties set in setup
 Entity.prototype.__client       = undefined;  // Azure table client
 Entity.prototype.__aux          = undefined;  // Azure table client wrapper
 Entity.prototype.__table        = undefined;  // Azure table name
 Entity.prototype.__signingKey   = undefined;  // Secret key for signing entities
+Entity.prototype.__cryptoKey    = undefined;  // Key for encrypted properties
 
 // Define properties set in constructor
 Entity.prototype._properties    = undefined;  // Deserialized shadow object
@@ -401,6 +403,14 @@ Entity.configure = function(options) {
     });
   }
 
+  // Check if we have any encrypted properties
+  var hasEncrypted = _.some(mapping, function(type) {return type.isEncrypted;});
+  if (hasEncrypted) {
+    // We only set this property, if a previous schema version had encryption
+    // we still need to provide the key in .setup({...})
+    subClass.prototype.__hasEncrypted = true;
+  }
+
   // Create sign method
   var sign = null;
   if (options.signEntities === true) {
@@ -451,9 +461,10 @@ Entity.configure = function(options) {
     // If version is 1, we just assert that an deserialize properties
     subClass.prototype.__deserialize = function(entity) {
       assert(entity.Version === 1, "entity.Version isn't 1");
+      var cryptoKey  = this.__cryptoKey;
       var properties = {};
       _.forIn(mapping, function(type, property) {
-        properties[property] = type.deserialize(entity);
+        properties[property] = type.deserialize(entity, cryptoKey);
       });
       if (sign) {
         var signature = new Buffer(entity.Signature, 'base64');
@@ -479,9 +490,10 @@ Entity.configure = function(options) {
         return options.migrate.call(this, deserialize.call(this, entity));
       }
       // Deserialize properties, if not migrated
+      var cryptoKey  = this.__cryptoKey;
       var properties = {};
       _.forIn(mapping, function(type, property) {
-        properties[property] = type.deserialize(entity);
+        properties[property] = type.deserialize(entity, cryptoKey);
       });
       if (sign) {
         var signature = new Buffer(entity.Signature, 'base64');
@@ -503,8 +515,9 @@ Entity.configure = function(options) {
       RowKey:       subClass.prototype.__rowKey.exact(properties),
       Version:      subClass.prototype.__version
     };
+    var cryptoKey = this.__cryptoKey;
     _.forIn(mapping, function(type, property) {
-      type.serialize(entity, properties[property]);
+      type.serialize(entity, properties[property], cryptoKey);
     });
     if (sign) {
       entity['Signature@odata.type'] = 'Edm.Binary';
@@ -533,6 +546,7 @@ Entity.configure = function(options) {
  *   agent:             https.Agent,        // Agent to use (default a global)
  *   authBaseUrl:       "...",              // baseUrl for auth (optional)
  *   signingKey:        "...",              // Key for HMAC signing entities
+ *   cryptoKey:         "...",              // Key for encrypted properties
  *   drain:             base.stats.Influx,  // Statistics drain (optional)
  *   component:         '<name>',           // Component in stats (if drain)
  *   process:           'server',           // Process in stats (if drain)
@@ -639,6 +653,19 @@ Entity.setup = function(options) {
            "context key '" + key + "' was not declared in Entity.configure");
     subClass.prototype[key] = val;
   });
+
+  // Set encryption key if needed
+  if (subClass.prototype.__hasEncrypted) {
+    assert(typeof(options.cryptoKey) === 'string',
+           "cryptoKey is required when a property is encrypted in any " +
+           "of the schema versions.");
+    var secret  = new Buffer(options.cryptoKey, 'base64');
+    assert(secret.length === 32, "cryptoKey must be 32 bytes in base64");
+    subClass.prototype.__cryptoKey = secret;
+  } else {
+    assert(!options.cryptoKey, "Don't specify options.cryptoKey when " +
+                                   "there aren't any encrypted properties!");
+  }
 
   // Set signing key if needed
   if (subClass.prototype.__hasSigning) {
@@ -977,7 +1004,7 @@ Entity.prototype.modify = function(modifier) {
         _.forIn(self.__mapping, function(type, property) {
           var value = self._properties[property];
           if (!type.equal(properties[property], value)) {
-            type.serialize(entityChanges, value);
+            type.serialize(entityChanges, value, self.__cryptoKey);
             isChanged = true;
           }
         });

@@ -7,6 +7,7 @@ var debug           = require('debug')('base:entity:types');
 var slugid          = require('slugid');
 var stringify       = require('json-stable-stringify');
 var buffertools     = require('buffertools');
+var crypto          = require('crypto');
 var azure           = require('fast-azure-storage');
 var fmt             = azure.Table.Operators;
 
@@ -46,8 +47,23 @@ BaseType.prototype.isOrdered    = false;
  */
 BaseType.prototype.isComparable = false;
 
-/** Serialize value to target for property */
-BaseType.prototype.serialize = function(target, value) {
+/**
+ * Does element of this type encrypt their content
+ *
+ * If `true` the `cryptoKey` will be given as 3rd and 2nd parameter for
+ * `serialize` and `deserialize`, respectively. When given the encryption key
+ * is always 32 bytes assumed to already random.
+ */
+BaseType.prototype.isEncrypted = false;
+
+/**
+ * Serialize value to target for property
+ *
+ * Will serialize `value` to `target` object, given `cryptoKey` if this
+ * is an encrypting type (one that has `isEncrypted: true`) the type must
+ * encrypted the data with `cryptoKey` before saving it to target.
+ */
+BaseType.prototype.serialize = function(target, value, cryptoKey) {
   throw new Error("Not implemented");
 };
 
@@ -84,8 +100,13 @@ BaseType.prototype.hash = function(value) {
   return this.string(value);
 };
 
-/** Deserialize value for property from source */
-BaseType.prototype.deserialize = function(source) {
+/**
+ * Deserialize value for property from source
+ *
+ * If this is an encrypting type (one that has `isEncrypted: true`) the type
+ * must decrypted the data with `cryptoKey` before deserializing it.
+ */
+BaseType.prototype.deserialize = function(source, cryptoKey) {
   throw new Error("Not implemented");
 };
 
@@ -362,17 +383,17 @@ BaseBufferType.prototype.isOrdered    = false;
 BaseBufferType.prototype.isComparable = false;
 
 /** Transform value to buffer */
-BaseBufferType.prototype.toBuffer = function(value) {
+BaseBufferType.prototype.toBuffer = function(value, cryptoKey) {
   throw new Error("Not implemented");
 };
 
 /** Transform value from buffer */
-BaseBufferType.prototype.fromBuffer = function(buffer) {
+BaseBufferType.prototype.fromBuffer = function(buffer, cryptoKey) {
   throw new Error("Not implemented");
 };
 
-BaseBufferType.prototype.serialize = function(target, value) {
-  value = this.toBuffer(value);
+BaseBufferType.prototype.serialize = function(target, value, cryptoKey) {
+  value = this.toBuffer(value, cryptoKey);
   assert(value.length <= 256 * 1024, "Can't store buffers > 256kb");
   // We have one chunk per 64kb
   var chunks = Math.ceil(value.length / (64 * 1024));
@@ -389,7 +410,7 @@ BaseBufferType.prototype.hash = function(value) {
   return this.toBuffer(value);
 };
 
-BaseBufferType.prototype.deserialize = function(source) {
+BaseBufferType.prototype.deserialize = function(source, cryptoKey) {
   var n = source['__bufchunks_' + this.property];
   checkType('BaseBufferType', '__bufchunks_' + this.property, n, 'number');
 
@@ -397,7 +418,7 @@ BaseBufferType.prototype.deserialize = function(source) {
   for(var i = 0; i < n; i++) {
     chunks[i] = new Buffer(source['__buf' + i + '_' + this.property], 'base64');
   }
-  return this.fromBuffer(Buffer.concat(chunks));
+  return this.fromBuffer(Buffer.concat(chunks), cryptoKey);
 };
 
 BaseBufferType.prototype.filter = function() {
@@ -532,6 +553,179 @@ JSONType.prototype.clone = function(value) {
 
 // Export JSONType as JSON
 exports.JSON = JSONType;
+
+/******************** Encrypted Base Type ********************/
+
+/** Encrypted Base Entity type */
+var EncryptedBaseType = function(property) {
+  BaseBufferType.apply(this, arguments);
+};
+
+// Inherit from BaseBufferType
+util.inherits(EncryptedBaseType, BaseBufferType);
+
+// This type is encrypted an will need the encryption key
+EncryptedBaseType.prototype.isEncrypted = true;
+
+/** Transform value to buffer */
+EncryptedBaseType.prototype.toPlainBuffer = function(value) {
+  throw new Error("Not implemented");
+};
+
+/** Transform value from buffer */
+EncryptedBaseType.prototype.fromPlainBuffer = function(buffer) {
+  throw new Error("Not implemented");
+};
+
+EncryptedBaseType.prototype.toBuffer = function(value, cryptoKey) {
+  var plainBuffer = this.toPlainBuffer(value);
+  // Need room for initialization vector and any padding
+  assert(plainBuffer.length <= 256 * 1024 - 32,
+         "Can't store buffers > 256 * 1024 - 32 bytes");
+  var iv          = crypto.randomBytes(16);
+  var cipher      = crypto.createCipheriv('aes-256-cbc', cryptoKey, iv);
+  var c1          = cipher.update(plainBuffer);
+  var c2          = cipher.final();
+  return Buffer.concat([iv, c1, c2]);
+};
+
+EncryptedBaseType.prototype.fromBuffer = function(buffer, cryptoKey) {
+  var iv          = buffer.slice(0, 16);
+  var decipher    = crypto.createDecipheriv('aes-256-cbc', cryptoKey, iv);
+  var b1          = decipher.update(buffer.slice(16));
+  var b2          = decipher.final();
+  return this.fromPlainBuffer(Buffer.concat([b1, b2]));
+};
+
+EncryptedBaseType.prototype.hash = function(value) {
+  return this.toPlainBuffer(value);
+};
+
+/******************** Encrypted Blob Type ********************/
+
+/** Encrypted Blob Entity type */
+var EncryptedBlobType = function(property) {
+  EncryptedBaseType.apply(this, arguments);
+};
+
+// Inherit from EncryptedBaseType
+util.inherits(EncryptedBlobType, EncryptedBaseType);
+
+EncryptedBlobType.prototype.validate = function(value) {
+  assert(Buffer.isBuffer(value),
+         "EncryptedBlobType '" + this.property + "' expected a Buffer");
+};
+
+EncryptedBlobType.prototype.toPlainBuffer = function(value) {
+  this.validate(value);
+  return value;
+};
+
+EncryptedBlobType.prototype.fromPlainBuffer = function(value) {
+  this.validate(value);
+  return value;
+};
+
+EncryptedBlobType.prototype.equal = function(value1, value2) {
+  this.validate(value1);
+  this.validate(value2);
+  if (value1 === value2) {
+    return true;
+  }
+  if (value1.length !== value2.length) {
+    return false;
+  }
+  return buffertools.compare(value1, value2) === 0;
+};
+
+EncryptedBlobType.prototype.clone = function(value) {
+  this.validate(value);
+  return new Buffer(value);
+};
+
+// Export EncryptedBlobType as EncryptedBlob
+exports.EncryptedBlob = EncryptedBlobType;
+
+/******************** Encrypted Text Type ********************/
+
+/** Encrypted Text Entity type */
+var EncryptedTextType = function(property) {
+  EncryptedBaseType.apply(this, arguments);
+};
+
+// Inherit from EncryptedBaseType
+util.inherits(EncryptedTextType, EncryptedBaseType);
+
+EncryptedTextType.prototype.validate = function(value) {
+  checkType('EncryptedTextType', this.property, value, 'string');
+};
+
+EncryptedTextType.prototype.toPlainBuffer = function(value) {
+  this.validate(value);
+  return new Buffer(value, 'utf8');
+};
+
+EncryptedTextType.prototype.fromPlainBuffer = function(value) {
+  return value.toString('utf8');
+};
+
+EncryptedTextType.prototype.equal = function(value1, value2) {
+  return value1 === value2;
+};
+
+EncryptedTextType.prototype.hash = function(value) {
+  return value;
+};
+
+EncryptedTextType.prototype.clone = function(value) {
+  return value;
+};
+
+// Export EncryptedTextType as Text
+exports.EncryptedText = EncryptedTextType;
+
+/******************** Encrypted JSON Type ********************/
+
+/** Encrypted JSON Entity type */
+var EncryptedJSONType = function(property) {
+  EncryptedBaseType.apply(this, arguments);
+};
+
+// Inherit from EncryptedBaseType
+util.inherits(EncryptedJSONType, EncryptedBaseType);
+
+EncryptedJSONType.prototype.validate = function(value) {
+  checkType('EncryptedJSONType', this.property, value, [
+    'string',
+    'number',
+    'object',
+    'boolean'
+  ]);
+};
+
+EncryptedJSONType.prototype.toPlainBuffer = function(value) {
+  this.validate(value);
+  return new Buffer(JSON.stringify(value), 'utf8');
+};
+
+EncryptedJSONType.prototype.fromPlainBuffer = function(value) {
+  return JSON.parse(value.toString('utf8'));
+};
+
+EncryptedJSONType.prototype.equal = function(value1, value2) {
+  return _.isEqual(value1, value2);
+};
+
+EncryptedJSONType.prototype.hash = function(value) {
+  return stringify(value);
+};
+
+EncryptedJSONType.prototype.clone = function(value) {
+  return _.cloneDeep(value);
+};
+
+// Export EncryptedJSONType as EncryptedJSON
+exports.EncryptedJSON = EncryptedJSONType;
 
 /******************** SlugIdArray Type ********************/
 
