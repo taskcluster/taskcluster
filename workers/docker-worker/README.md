@@ -101,7 +101,7 @@ list](/deploy/checklist.md)
   - [packer](www.packer.io)
   - make
   - node 0.12 or greater
-  - credentials for required services
+  - credentials for required services (i.e. AWS)
 
 
 ### Building AMI's
@@ -118,8 +118,13 @@ are important.
       
       - You need to run some expensive one-off installation.
 
+      - You need to update ssl/gpg keys
+
       Note that you need to _manually_ update the `sourceAMI` field in
       the `app.json` file after you create a new base AMI.
+
+      Also note to generate this base AMI, access to the ssl and gpg keys that
+      the work needs is necessary.
 
       *Example*:
 
@@ -132,9 +137,6 @@ are important.
       
       - You need to update diamond/statsd/configs (not packages).
       
-      - You need to update any baked in credentials (these usually can
-        be overriden in the provisioner but sometimes this is desirable).
-
       Note: That just because you deploy an AMI does not mean anyone is
       using it.. Usually you need to also update a provisioner workerType with
       the new AMI id.

@@ -1,4 +1,6 @@
-#! /bin/bash -e
+#! /bin/bash
+
+set -e
 
 cmd_help() {
   echo "Usage: ./deploy/bin/build"
@@ -47,7 +49,16 @@ cmd_app() {
 
 cmd_base() {
   local git_rev=$(git rev-parse --verify HEAD)
-  packer_run build $@ --var "workerRevision=$git_rev" $(packer_config base)
+
+  # build config file
+  make target/packer/base.json -C deploy
+
+  packer_run \
+    build \
+    $@ \
+    -var-file $(template_vars base) \
+    -var "workerRevision=$git_rev" \
+    $(packer_config base)
 }
 
 if [ ! -x $(which packer) ];

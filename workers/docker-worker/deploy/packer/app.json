@@ -5,25 +5,10 @@
     "npmPackage":          "",
     "templateContents":    "",
     "sourceAMI":           "ami-afa1ae9f",
-    "logglyAccount":       "",
-    "logglyAuth":          "",
-    "papertrail":          "",
     "fsType":              "",
     "workerRevision":      ""
   },
   "provisioners": [
-    {
-      "type":           "file",
-      "source":         "deploy/packer/app/scripts/configure-syslog.py",
-      "destination":    "/tmp/loggly.py"
-    },
-    {
-      "type": "shell",
-      "inline": [
-        "chmod u+x /tmp/loggly.py",
-        "sudo python /tmp/loggly.py setup -y -s {{user `logglyAccount`}} -a {{user `logglyAuth`}}"
-      ]
-    },
     {
       "type":           "file",
       "source":         "{{user `npmPackage`}}",
@@ -45,7 +30,6 @@
     },
     {
       "type":           "shell",
-      "environment_vars": ["PAPERTRAIL={{user `papertrail`}}"],
       "inline": [
         "/tmp/deploy.sh /tmp/deploy.tar.gz /tmp/docker-worker.tgz"
       ]

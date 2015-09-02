@@ -1,4 +1,7 @@
-#! /bin/bash -vex
+#! /bin/bash
+
+set -v -e -x
+
 lsb_release -a
 
 # add docker group and add current user to it

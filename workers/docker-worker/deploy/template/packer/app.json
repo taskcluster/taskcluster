@@ -1,8 +1,5 @@
 {
   "templateContents": "deploy.tar.gz",
-  "logglyAccount": "{{loggly.account}}",
-  "logglyAuth": "{{loggly.token}}",
-  "papertrail": "{{papertrail}}",
   "fsType": "{{filesystem}}"
 }
 
