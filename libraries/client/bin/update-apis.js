@@ -7,6 +7,7 @@ var program     = require('commander');
 var _           = require('lodash');
 var Promise     = require('promise');
 var browserify  = require('browserify');
+var stringify   = require('json-stable-stringify');
 
 // Markers for start and end of documentation section
 var DOCS_START_MARKER = '<!-- START OF GENERATED DOCS -->';
@@ -20,7 +21,11 @@ var saveApis = function() {
   // Path to apis.js file
   var apis_js = path.join(__dirname, '../lib', 'apis.js');
   // Create content
-  var content = "module.exports = " + JSON.stringify(apis, null, 2) + ";";
+  // Use json-stable-stringify rather than JSON.stringify to guarantee
+  // consistent ordering (see http://bugzil.la/1200519)
+  var content = "module.exports = " + stringify(apis, {
+    space: '  '
+  }) + ";";
   fs.writeFileSync(apis_js, content, {encoding: 'utf-8'});
 };
 
@@ -37,7 +42,8 @@ var updateDocs = function() {
   ];
 
   // Generate documentation for methods
-  docs = docs.concat(_.keys(apis).filter(function(name) {
+  // Sort by api name: http://bugzil.la/1200519
+  docs = docs.concat(_.keys(apis).sort().filter(function(name) {
       // Find component that hold functions
       return apis[name].reference.entries.some(function(entry) {
         return entry.type === 'function';
@@ -70,7 +76,8 @@ var updateDocs = function() {
 
 
   // Generate documentation for exchanges
-  docs = docs.concat(_.keys(apis).filter(function(name) {
+  // Sort by exchange name: http://bugzil.la/1200519
+  docs = docs.concat(_.keys(apis).sort().filter(function(name) {
       // Find component that hold functions
       return apis[name].reference.entries.some(function(entry) {
         return entry.type === 'topic-exchange';
