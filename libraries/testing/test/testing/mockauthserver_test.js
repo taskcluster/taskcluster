@@ -4,6 +4,7 @@ suite('testing.createMockAuthServer', function() {
   require('superagent-hawk')(require('superagent'));
   var request   = require('superagent-promise');
   var assert    = require('assert');
+  var hawk      = require('hawk');
 
   var helper  = require('../entity/helper');
   var cfg = helper.loadConfig();
@@ -54,6 +55,80 @@ suite('testing.createMockAuthServer', function() {
       });
   });
 
+  test("Can getCredentials w. auth:credentials (payload hash)", function() {
+    var reqUrl = 'http://localhost:1207/v1/client/authed-client/credentials';
+    var header = hawk.client.header(reqUrl, 'GET', {
+      credentials: {
+        id:         'authed-client',
+        key:        'test-token',
+        algorithm:  'sha256',
+      },
+      payload:      ''
+    });
+    return request
+      .get(reqUrl)
+      .set('Authorization', header.field)
+      .end().then(function(res) {
+        assert(res.ok, "Failed to get credentials");
+      });
+  });
+
+  test("Can getCredentials w. auth:credentials (invalid hash)", function() {
+    var reqUrl = 'http://localhost:1207/v1/client/authed-client/credentials';
+    var header = hawk.client.header(reqUrl, 'GET', {
+      credentials: {
+        id:         'authed-client',
+        key:        'test-token',
+        algorithm:  'sha256',
+      },
+      payload:      'wrong-payload'
+    });
+    return request
+      .get(reqUrl)
+      .set('Authorization', header.field)
+      .end().then(function(res) {
+        assert(!res.ok, "Expected an error");
+      });
+  });
+
+  test("Can getCredentials w. auth:credentials (authorizedScopes)", function() {
+    var reqUrl = 'http://localhost:1207/v1/client/authed-client/credentials';
+    var header = hawk.client.header(reqUrl, 'GET', {
+      credentials: {
+        id:         'authed-client',
+        key:        'test-token',
+        algorithm:  'sha256',
+      },
+      ext: new Buffer(JSON.stringify({
+        authorizedScopes: ['auth:credentials']
+      })).toString('base64')
+    });
+    return request
+      .get(reqUrl)
+      .set('Authorization', header.field)
+      .end().then(function(res) {
+        assert(res.ok, "Failed to get credentials");
+      });
+  });
+
+  test("Can getCredentials w. auth:credentials (bewit)", function() {
+    var reqUrl = 'http://localhost:1207/v1/client/authed-client/credentials';
+    var bewit = (hawk.client.getBewit || hawk.client.bewit)(reqUrl, {
+      credentials: {
+        id:         'authed-client',
+        key:        'test-token',
+        algorithm:  'sha256'
+      },
+      ttlSec:       15 * 60,
+      ext:          undefined
+    });
+    return request
+      .get(reqUrl + '?bewit=' + bewit)
+      .end().then(function(res) {
+        assert(res.ok, "Failed to get credentials");
+      });
+  });
+
   test("Can't getCredentials without auth:credentials", function() {
     return request
       .get('http://localhost:1207/v1/client/authed-client/credentials')
@@ -62,6 +137,26 @@ suite('testing.createMockAuthServer', function() {
         key:        'test-token',
         algorithm:  'sha256'
       })
+      .end().then(function(res) {
+        assert(!res.ok, "Request should have failed");
+      });
+  });
+
+  test("Can't ... without auth:credentials (authorizedScopes)", function() {
+    var reqUrl = 'http://localhost:1207/v1/client/authed-client/credentials';
+    var header = hawk.client.header(reqUrl, 'GET', {
+      credentials: {
+        id:         'authed-client',
+        key:        'test-token',
+        algorithm:  'sha256',
+      },
+      ext: new Buffer(JSON.stringify({
+        authorizedScopes: ['auth:credential-']
+      })).toString('base64')
+    });
+    return request
+      .get(reqUrl)
+      .set('Authorization', header.field)
       .end().then(function(res) {
         assert(!res.ok, "Request should have failed");
       });
