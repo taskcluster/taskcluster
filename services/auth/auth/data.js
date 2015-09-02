@@ -61,25 +61,8 @@ Client.remove = function(clientId) {
   return base.LegacyEntity.remove.call(this, clientId, ROW_KEY_CONST);
 };
 
-/** Create a clientLoader that can be used with base.API instances */
+/** Create a clientLoader that works with base.API.createSignatureValidator */
 Client.createClientLoader = function() {
-  var Class = this;
-  return function(clientId) {
-    return Class.load(clientId).then(function(client) {
-      return new base.API.authenticate.Client({
-        clientId:       client.clientId,
-        accessToken:    client.accessToken,
-        scopes:         client.scopes,
-        expires:        client.expires
-      });
-    }).catch(function(err) {
-      debug('Failed to load client: ' + clientId);
-      throw err;
-    });
-  };
-};
-
-Client.createClientLoader2 = function() {
   var Client = this;
   return async (clientId) => {
     try {
@@ -99,16 +82,15 @@ Client.createClientLoader2 = function() {
   };
 };
 
-
 /** Create caching client loader */
-Client.createClientLoader3 = function(options) {
+Client.createCachedClientLoader = function(options) {
   options = _.defaults(options || {}, {
     cacheTimeout:       10 * 60 * 60 * 1000
   });
   assert(typeof(options.cacheTimeout) == 'number',
          "Expected options.cacheTimeout to be a number!");
 
-  var clientLoader = this.createClientLoader2();
+  var clientLoader = this.createClientLoader();
   var cache = {};
   setInterval(() => {
     // clean up cache

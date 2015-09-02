@@ -71,7 +71,7 @@ var launch = function(profile) {
     })
   ]).then(function() {
     var signatureValidator = base.API.createSignatureValidator({
-      clientLoader: Client.createClientLoader3({
+      clientLoader: Client.createCachedClientLoader({
         cacheTimeout:       cfg.get('auth:clientCacheTimeout')
       })
     });
