@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-var base    = require('taskcluster-base');
-var data    = require('../hooks/data');
-var debug   = require('debug')('hooks:bin:server');
-var path    = require('path');
-var Promise = require('promise');
+var base        = require('taskcluster-base');
+var data        = require('../hooks/data');
+var debug       = require('debug')('hooks:bin:server');
+var path        = require('path');
+var Promise     = require('promise');
 var taskcluster = require('taskcluster-client');
-var v1      = require('../routes/v1');
+var v1          = require('../routes/v1');
 
 /* Launch server */
 var launch = async function(profile) {
