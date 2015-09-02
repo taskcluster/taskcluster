@@ -358,6 +358,19 @@ mockAuthApi.declare({
   res.status(200).json(client);
 });
 
+/** Declare method for signature validation */
+mockAuthApi.declare({
+  method:       'post',
+  route:        '/authenticate-hawk',
+  name:         'authenticateHawk',
+  title:        "Validate Hawk Signature",
+  description:  "Mock implementation of authenticateHawk"
+}, function(req, res) {
+  return this.signatureValidator(req.body).then(function(result) {
+    res.status(200).json(result);
+  });
+});
+
 /** Mock API for azureTableSAS */
 mockAuthApi.declare({
   method:       'get',
@@ -443,6 +456,8 @@ var createClientLoader = function(clients) {
   };
 };
 
+
+
 /**
  * Create an mock authentication server for testing
  *
@@ -481,23 +496,40 @@ var createMockAuthServer = function(options) {
     // Create application
     var app = base.app(options);
 
+    var signatureValidator = base.API.createSignatureValidator({
+      clientLoader: function(clientId) {
+        var client = _.find(options.clients, {
+          clientId: clientId
+        });
+        if (!client) {
+          throw new Error("No such clientId: " + clientId);
+        }
+        return client;
+      }
+    });
+
     // Create router for the API
     var router =  mockAuthApi.router({
       context: {
-        clients:        options.clients,
-        azureAccounts:  options.azureAccounts,
-        credentials:    options.credentials,
-        authBaseUrl:    options.authBaseUrl
+        clients:            options.clients,
+        azureAccounts:      options.azureAccounts,
+        credentials:        options.credentials,
+        authBaseUrl:        options.authBaseUrl,
+        signatureValidator: signatureValidator
       },
-      validator:      validator,
-      clientLoader:   createClientLoader(options.clients)
+      validator:          validator,
+      signatureValidator: signatureValidator
     });
 
     // Mount router
     app.use('/v1', router);
 
     // Create server
-    return app.createServer();
+    return app.createServer().then(function(server) {
+      // Time out connections after 500 ms, prevents tests from hanging
+      server.setTimeout(500);
+      return server;
+    });
   });
 };
 
