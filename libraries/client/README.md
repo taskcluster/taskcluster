@@ -169,19 +169,26 @@ var auth = new taskcluster.Auth(options);
  * `auth.importClients(payload) : result`
  * `auth.ping() : void`
 
-### Methods in `taskcluster.Scheduler`
+### Methods in `taskcluster.AwsProvisioner`
 ```js
-// Create Scheduler client instance with default baseUrl:
-//  - https://scheduler.taskcluster.net/v1
-var scheduler = new taskcluster.Scheduler(options);
+// Create AwsProvisioner client instance with default baseUrl:
+//  - https://aws-provisioner.taskcluster.net/v1
+var awsProvisioner = new taskcluster.AwsProvisioner(options);
 ```
- * `scheduler.createTaskGraph(taskGraphId, payload) : result`
- * `scheduler.extendTaskGraph(taskGraphId, payload) : result`
- * `scheduler.status(taskGraphId) : result`
- * `scheduler.info(taskGraphId) : result`
- * `scheduler.inspect(taskGraphId) : result`
- * `scheduler.inspectTask(taskGraphId, taskId) : result`
- * `scheduler.ping() : void`
+ * `awsProvisioner.createWorkerType(workerType, payload) : result`
+ * `awsProvisioner.updateWorkerType(workerType, payload) : result`
+ * `awsProvisioner.workerType(workerType) : result`
+ * `awsProvisioner.removeWorkerType(workerType) : void`
+ * `awsProvisioner.listWorkerTypes() : result`
+ * `awsProvisioner.createSecret(token, payload) : void`
+ * `awsProvisioner.getSecret(token) : result`
+ * `awsProvisioner.instanceStarted(instanceId, token) : void`
+ * `awsProvisioner.removeSecret(token) : void`
+ * `awsProvisioner.getLaunchSpecs(workerType) : result`
+ * `awsProvisioner.awsState() : void`
+ * `awsProvisioner.state(workerType) : void`
+ * `awsProvisioner.ping() : void`
+ * `awsProvisioner.apiReference() : void`
 
 ### Methods in `taskcluster.Index`
 ```js
@@ -195,28 +202,6 @@ var index = new taskcluster.Index(options);
  * `index.insertTask(namespace, payload) : result`
  * `index.findArtifactFromTask(namespace, name) : void`
  * `index.ping() : void`
-
-### Methods in `taskcluster.AwsProvisioner`
-```js
-// Create AwsProvisioner client instance with default baseUrl:
-//  - https://taskcluster-aws-provisioner2.herokuapp.com/v1
-var awsProvisioner = new taskcluster.AwsProvisioner(options);
-```
- * `awsProvisioner.createWorkerType(workerType, payload) : result`
- * `awsProvisioner.updateWorkerType(workerType, payload) : result`
- * `awsProvisioner.workerType(workerType) : result`
- * `awsProvisioner.removeWorkerType(workerType) : void`
- * `awsProvisioner.listWorkerTypes() : result`
- * `awsProvisioner.createSecret(token, payload) : void`
- * `awsProvisioner.getSecret(token) : result`
- * `awsProvisioner.instanceStarted(instanceId, token) : void`
- * `awsProvisioner.removeSecret(token) : void`
- * `awsProvisioner.getLaunchSpecs(workerType) : result`
- * `awsProvisioner.terminateAllInstancesOfWorkerType(workerType) : void`
- * `awsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() : void`
- * `awsProvisioner.awsState() : void`
- * `awsProvisioner.ping() : void`
- * `awsProvisioner.apiReference() : void`
 
 ### Methods in `taskcluster.PurgeCache`
 ```js
@@ -253,6 +238,20 @@ var queue = new taskcluster.Queue(options);
  * `queue.listLatestArtifacts(taskId) : result`
  * `queue.pendingTasks(provisionerId, workerType) : result`
  * `queue.ping() : void`
+
+### Methods in `taskcluster.Scheduler`
+```js
+// Create Scheduler client instance with default baseUrl:
+//  - https://scheduler.taskcluster.net/v1
+var scheduler = new taskcluster.Scheduler(options);
+```
+ * `scheduler.createTaskGraph(taskGraphId, payload) : result`
+ * `scheduler.extendTaskGraph(taskGraphId, payload) : result`
+ * `scheduler.status(taskGraphId) : result`
+ * `scheduler.info(taskGraphId) : result`
+ * `scheduler.inspect(taskGraphId) : result`
+ * `scheduler.inspectTask(taskGraphId, taskId) : result`
+ * `scheduler.ping() : void`
 
 ### Exchanges in `taskcluster.AwsProvisionerEvents`
 ```js
@@ -621,12 +620,9 @@ browser use
 
 ## Updating Builtin APIs
 When releasing a new version of the `taskcluster-client` library, we should
-always update the builtin references using `utils/update-apis.js` this
+always update the builtin references using `bin/update-apis.js update`. This
 maintenance script can be used to list, show, add, remove and update builtin
 API definitions.
-
-When `apis.json` is updated, please run `utils/generate-docs.js` to update
-the documentation in this file.
 
 ##License
 The taskcluster client library is released on [MPL 2.0](http://mozilla.org/MPL/2.0/).
