@@ -107,6 +107,36 @@ def stableSlugId():
   return closure
 
 
+def scope_match(assumed_scopes, required_scope_sets):
+  """
+    Take a list of a assumed scopes, and a list of required scope sets on
+    disjunctive normal form, and check if any of the required scope sets are
+    satisfied.
+
+    Example:
+
+      required_scope_sets = [
+        ["scopeA", "scopeB"],
+        ["scopeC"]
+      ]
+
+    In this case assumed_scopes must contain, either:
+    "scopeA" AND "scopeB", OR just "scopeC".
+  """
+  for scope_set in required_scope_sets:
+    for required_scope in scope_set:
+      for scope in assumed_scopes:
+        if scope == required_scope:
+          break     # required_scope satisifed, no need to check more scopes
+        if scope.endswith("*") and required_scope.startswith(scope[:-1]):
+          break     # required_scope satisifed, no need to check more scopes
+      else:
+        break       # required_scope not satisfied, stop checking scope_set
+    else:
+      return True   # scope_set satisfied, so we're happy
+  return False      # none of the required_scope_sets were satisfied
+
+
 def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
   """ Make an HTTP request and retry it until success, return request """
   retry = -1

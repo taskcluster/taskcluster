@@ -236,3 +236,82 @@ class TestDecryptMessage(TestCase):
     encrypted = subject.encryptEnvVar("abcd", 1, 2, "Name", "Value", publicKey)
     decrypted = subject.decryptMessage(encrypted, privateKey)
     self.assertDictEqual(expected, decrypted)
+
+
+class TestScopeMatch(TestCase):
+  def assertScopeMatch(self, assumed, required_scope_sets, expected):
+    try:
+      result = subject.scope_match(assumed, required_scope_sets)
+      self.assertEqual(result, expected)
+    except:
+      if expected != 'exception':
+          raise
+
+  def test_single_exact_match_string_except_1(self):
+    self.assertScopeMatch(["foo:bar"], "foo:bar", "exception")
+
+  def test_single_exact_match_string_except_2(self):
+    self.assertScopeMatch(["foo:bar"], ["foo:bar"], "exception")
+
+  def test_single_exact_match_string(self):
+    self.assertScopeMatch(["foo:bar"], [["foo:bar"]], True)
+
+  def test_empty_string_in_scopesets_except_1(self):
+    self.assertScopeMatch(["foo:bar"], "", "exception")
+
+  def test_empty_string_in_scopesets_except_2(self):
+    self.assertScopeMatch(["foo:bar"], [""], "exception")
+
+  def test_empty_string_in_scopesets(self):
+    self.assertScopeMatch(["foo:bar"], [[""]], False)
+
+  def test_prefix(self):
+    self.assertScopeMatch(["foo:*"], [["foo:bar"]], True)
+
+  def test_star_not_at_end(self):
+    self.assertScopeMatch(["foo:*:bing"], [["foo:bar:bing"]], False)
+
+  def test_star_at_beginnging(self):
+    self.assertScopeMatch(["*:bar"], [["foo:bar"]], False)
+
+  def test_prefix_with_no_star(self):
+    self.assertScopeMatch(["foo:"], [["foo:bar"]], False)
+
+  def test_star_but_not_prefix_1(self):
+    self.assertScopeMatch(["foo:bar:*"], [["bar:bing"]], False)
+
+  def test_star_but_not_prefix_2(self):
+    self.assertScopeMatch(["bar:*"], [["foo:bar:bing"]], False)
+
+  def test_disjunction_strings_except(self):
+    self.assertScopeMatch(["bar:*"], ["foo:x", "bar:x"], "exception")
+
+  def test_disjunction_strings_2(self):
+    self.assertScopeMatch(["bar:*"], [["foo:x"], ["bar:x"]], True)
+
+  def test_conjunction(self):
+    self.assertScopeMatch(["bar:*", "foo:x"], [["foo:x", "bar:y"]], True)
+
+  def test_empty_pattern(self):
+    self.assertScopeMatch([""], [["foo:bar"]], False)
+
+  def test_empty_patterns(self):
+    self.assertScopeMatch([], [["foo:bar"]], False)
+
+  def test_bare_star(self):
+    self.assertScopeMatch(["*"], [["foo:bar", "bar:bing"]], True)
+
+  def test_empty_conjunction_in_scopesets(self):
+    self.assertScopeMatch(["foo:bar"], [[]], True)
+
+  def test_non_string_scopesets(self):
+    self.assertScopeMatch(["foo:bar"], {}, "exception")
+
+  def test_non_string_scopeset(self):
+    self.assertScopeMatch(["foo:bar"], [{}], "exception")
+
+  def test_non_string_scope(self):
+    self.assertScopeMatch(["foo:bar"], [[{}]], "exception")
+
+  def test_empty_disjunction_in_scopesets(self):
+    self.assertScopeMatch(["foo:bar"], [], False)
