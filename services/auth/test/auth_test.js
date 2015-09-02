@@ -6,6 +6,7 @@ suite('api', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var assume      = require('assume');
+  var base        = require('taskcluster-base');
 
   test('ping', async () => {
     await helper.auth.ping();
@@ -95,6 +96,11 @@ suite('api', function() {
         clientId:     result.clientId,
         accessToken:  result.accessToken
       }
+    });
+
+    await base.testing.poll(async () => {
+      // Poll repeatedly as we have to wait for the cache get clean
+      client = await authNew.getCredentials(clientId);
     });
     client = await authNew.getCredentials(clientId);
     assert(client.accessToken === result.accessToken);

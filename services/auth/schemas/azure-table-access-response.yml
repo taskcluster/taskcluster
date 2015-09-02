@@ -1,4 +1,3 @@
-id:       http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
 $schema:  http://json-schema.org/draft-04/schema#
 title:                      "Azure Shared-Access-Signature Response"
 description: |
