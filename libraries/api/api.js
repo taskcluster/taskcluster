@@ -19,6 +19,12 @@ var stats         = require('./lib/stats');
 var crypto        = require('crypto');
 var hoek          = require('hoek');
 var series        = require('./lib/series');
+var http          = require('http');
+var https         = require('https');
+var cryptiles     = require('cryptiles');
+
+// Default baseUrl for authentication server
+var AUTH_BASE_URL = 'https://auth.taskcluster.net/v1';
 
 /**
  * Create parameter validation middle-ware instance, given a mapping from
@@ -255,7 +261,8 @@ Client.prototype.limit = function(ext) {
       .digest('base64');
 
     // Validate signature
-    if (typeof(cert.signature) !== 'string' || cert.signature !== signature) {
+    if (typeof(cert.signature) !== 'string' ||
+        !cryptiles.fixedTimeComparison(cert.signature, signature)){
       throw new Error("ext.certificate.signature is not valid");
     }
 
@@ -720,6 +727,502 @@ authenticate.clientCache  = clientCache;
 authenticate.clientLoader = clientLoader;
 authenticate.nonceManager = nonceManager;
 
+
+
+
+/**
+ * Limit the client scopes and possibly use temporary keys.
+ *
+ * Takes a client object on the form: `{clientId, accessToken, scopes}`,
+ * applies scope restrictions, certificate validation and returns a clone if
+ * modified (otherwise it returns the original).
+ */
+var limitClientWithExt = function(client, ext) {
+  // Attempt to parse ext
+  try {
+    ext = JSON.parse(new Buffer(ext, 'base64').toString('utf-8'));
+  }
+  catch(err) {
+    debug("Failed to parse ext, leave error for signature validation!",
+          err, err.stack);
+    throw new Error("Failed to parse ext");
+  }
+
+  // Handle certificates
+  if (ext.certificate) {
+    var cert = ext.certificate;
+    // Validate the certificate
+    if (!(cert instanceof Object)) {
+      throw new Error("ext.certificate must be a JSON object");
+    }
+    if (cert.version !== 1) {
+      throw new Error("ext.certificate.version must be 1");
+    }
+    if (typeof(cert.seed) !== 'string') {
+      throw new Error('ext.certificate.seed must be a string');
+    }
+    if (cert.seed.length !== 44) {
+      throw new Error('ext.certificate.seed is too small');
+    }
+    if (typeof(cert.start) !== 'number') {
+      throw new Error('ext.certificate.start must be a number');
+    }
+    if (typeof(cert.expiry) !== 'number') {
+      throw new Error('ext.certificate.expiry must be a number');
+    }
+    if (!cert.scopes instanceof Array) {
+      throw new Error("ext.certificate.scopes must be an array");
+    }
+    if (cert.scopes.some(function(scope) {
+      return typeof(scope) !== 'string';
+    })) {
+      throw new Error("ext.certificate.scopes must be an array of strings");
+    }
+
+    // Check start and expiry
+    var now = new Date().getTime();
+    if (cert.start > now) {
+      throw new Error("ext.certificate.start > now");
+    }
+    if (cert.expiry < now) {
+      throw new Error("ext.certificate.expiry < now");
+    }
+    // Check max time between start and expiry
+    if (cert.expiry - cert.start > 31 * 24 * 60 * 60 * 1000) {
+      throw new Error("ext.certificate cannot last longer than 31 days!");
+    }
+
+    // Validate certificate scopes are subset of client
+    if (!utils.scopeMatch(client.scopes, [cert.scopes])) {
+      throw new Error("ext.certificate issuer doesn't have sufficient scopes");
+    }
+
+    // Generate certificate signature
+    var signature = crypto.createHmac('sha256', client.accessToken)
+      .update([
+        'version:'  + '1',
+        'seed:'     + cert.seed,
+        'start:'    + cert.start,
+        'expiry:'   + cert.expiry,
+        'scopes:',
+      ].concat(cert.scopes).join('\n'))
+      .digest('base64');
+
+    // Validate signature
+    if (typeof(cert.signature) !== 'string' ||
+        !cryptiles.fixedTimeComparison(cert.signature, signature)) {
+      throw new Error("ext.certificate.signature is not valid");
+    }
+
+    // Regenerate temporary key
+    var temporaryKey = crypto.createHmac('sha256', client.accessToken)
+      .update(cert.seed)
+      .digest('base64')
+      .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
+      .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
+      .replace(/=/g,  '');  // Drop '==' padding
+
+    // Update scopes and accessToken
+    client = {
+      clientId:     client.clientId,
+      accessToken:  temporaryKey,
+      scopes:       cert.scopes
+    };
+  }
+
+  // Handle scope restriction with authorizedScopes
+  if (ext.authorizedScopes) {
+    // Validate input format
+    if (!ext.authorizedScopes instanceof Array) {
+      throw new Error("ext.authorizedScopes must be an array");
+    }
+    if (ext.authorizedScopes.some(function(scope) {
+      return typeof(scope) !== 'string';
+    })) {
+      throw new Error("ext.authorizedScopes must be an array of strings");
+    }
+
+    // Validate authorizedScopes scopes are subset of client
+    if (!utils.scopeMatch(client.scopes, [ext.authorizedScopes])) {
+      throw new Error("ext.authorizedScopes oversteps your scopes");
+    }
+
+    // Update scopes on client object
+    client = {
+      clientId:     client.clientId,
+      accessToken:  client.accessToken,
+      scopes:       ext.authorizedScopes
+    };
+  }
+
+  // Return modified client
+  return client;
+};
+
+
+/**
+ * Make a function for the signature validation.
+ *
+ * options:
+ * {
+ *    clientLoader:   async (clientId) => {clientId, accessToken, scopes},
+ *    nonceManager:   nonceManager({size: ...})
+ * }
+ *
+ * The function returned takes an object:
+ *     {method, resource, host, port, authorization}
+ * And returns promise for an object on one of the forms:
+ *     {status: 'auth-failed', message},
+ *     {status: 'auth-success', scheme, scopes}, or,
+ *     {status: 'auth-success', scheme, scopes, hash}
+ *
+ * The method returned by this function works as `signatureValidator` for
+ * `remoteAuthentication`.
+ */
+var createSignatureValidator = function(options) {
+  assert(options.clientLoader instanceof Function,
+         "options.clientLoader must be a function");
+  var loadCredentials = function(clientId, ext, callback) {
+    Promise.resolve(options.clientLoader(clientId)).then(function(client) {
+      if (ext) {
+        // We check certificates and apply limitations to authorizedScopes here,
+        // if we've parsed ext incorrectly it could be a security issue, as
+        // scope elevation _might_ be possible. But it's a rather unlikely
+        // exploit... Besides we have plenty of obscurity to protect us here :)
+        client = limitClientWithExt(client, ext);
+      }
+      callback(null, {
+        clientToken:  client.clientId,
+        key:          client.accessToken,
+        algorithm:    'sha256',
+        scopes:       client.scopes
+      });
+    }).catch(callback);
+  };
+  return function(req) {
+    return new Promise(function(accept) {
+      var authenticated = function(err, credentials, artifacts) {
+        var result = null;
+        if (err) {
+          var message = "Unknown authorization error";
+          if (err.output && err.output.payload && err.output.payload.error) {
+            message = err.output.payload.error;
+            if (err.output.payload.message) {
+              message += ": " + err.output.payload.message;
+            }
+          } else if(err.message) {
+            message = err.message;
+          }
+          result = {
+            status:   'auth-failed',
+            message:  '' + message
+          };
+        } else {
+          result = {
+            status:   'auth-success',
+            scheme:   'hawk',
+            scopes:   credentials.scopes
+          };
+          if (artifacts.hash) {
+            result.hash = artifacts.hash;
+          }
+        }
+        return accept(result);
+      };
+      if (req.authorization) {
+        hawk.server.authenticate({
+          method:           req.method.toUpperCase(),
+          url:              req.resource,
+          host:             req.host,
+          port:             req.port,
+          authorization:    req.authorization
+        }, function(clientId, callback) {
+          var ext = undefined;
+
+          // Parse authorization header for ext
+          var attrs = hawk.utils.parseAuthorizationHeader(
+            req.authorization
+          );
+          // Extra ext
+          if (!(attrs instanceof Error)) {
+            ext = attrs.ext;
+          }
+
+          // Get credentials with ext
+          loadCredentials(clientId, ext, callback);
+        }, {
+          // Not sure if JSON stringify is not deterministic by specification.
+          // I suspect not, so we'll postpone this till we're sure we want to do
+          // payload validation and how we want to do it.
+          //payload:      JSON.stringify(req.body),
+
+          // We found that clients often have time skew (particularly on OSX)
+          // since all our services require https we hardcode the allowed skew
+          // to a very high number (15 min) similar to AWS.
+          timestampSkewSec: 15 * 60,
+
+          // Provide nonce manager
+          nonceFunc:    options.nonceManager
+        }, authenticated);
+      } else {
+      // If there is no authorization header we'll attempt a login with bewit
+        hawk.uri.authenticate({
+          method:           req.method.toUpperCase(),
+          url:              req.resource,
+          host:             req.host,
+          port:             req.port
+        }, function(clientId, callback) {
+          var ext = undefined;
+
+          // Get bewit string (stolen from hawk)
+          var parts = req.resource.match(
+            /^(\/.*)([\?&])bewit\=([^&$]*)(?:&(.+))?$/
+          );
+          var bewitString = hoek.base64urlDecode(parts[3]);
+          if (!(bewitString instanceof Error)) {
+            // Split string as hawk does it
+            var parts = bewitString.split('\\');
+            if (parts.length === 4 && parts[3]) {
+              ext = parts[3];
+            }
+          }
+
+          // Get credentials with ext
+          loadCredentials(clientId, ext, callback);
+        }, {}, authenticated);
+      }
+    });
+  };
+};
+
+/**
+ * Make a function for the remote signature validation.
+ *
+ * options:
+ * {
+ *    authBaseUrl:   'https://....' // baseUrl for authentication server
+ * }
+ *
+ * The function returns takes an object:
+ *     {method, resource, host, port, authorization}
+ * And return promise for an object on one of the forms:
+ *     {status: 'auth-failed', message},
+ *     {status: 'auth-success', scheme, scopes}, or,
+ *     {status: 'auth-success', scheme, scopes, hash}
+ *
+ * The method returned by this function works as `signatureValidator` for
+ * `remoteAuthentication`.
+ */
+var createRemoteSignatureValidator = function(options) {
+  assert(options.authBaseUrl, "options.authBaseUrl is required");
+  var agent = null;
+  if (/^https:/.test(options.authBaseUrl)) {
+    agent = new https.Agent({
+      keepAlive:  true,
+      maxSockets: 50
+    });
+  } else {
+    agent = new http.Agent({
+      keepAlive:  true,
+      maxSockets: 50
+    });
+  }
+  return function(data) {
+    return request
+      .post(options.authBaseUrl + '/authenticate-hawk')
+      .agent(agent)
+      .type('json')
+      //TODO: Use TC-client when we have auth.tc.net deployed...
+      //      So we get both retries and decent agent implementation
+      .send(data)
+      .end()
+      .then(function(res) {
+        if (!res.ok) {
+          throw new Error(
+            "Received status code: " + res.status + " from /authenticate-hawk"
+          );
+        }
+        return res.body;
+      });
+  };
+};
+
+/**
+ * Authenticate client using remote API end-point and validate that he satisfies
+ * one of the sets of scopes required. Skips validation if `options.scopes` is
+ * `undefined`.
+ *
+ * options:
+ * {
+ *    signatureValidator:   async (data) => {message}, {scheme, scopes}, or
+ *                                          {scheme, scopes, hash}
+ * },
+ *
+ * where `data` is the form: {method, url, host, port, authorization}.
+ *
+ * entry:
+ * {
+ *   scopes:  [
+ *     'service:method:action:<resource>'
+ *     ['admin', 'superuser'],
+ *   ]
+ *   deferAuth:   false // defaults to false
+ * }
+ *
+ * Check that the client is authenticated and has scope patterns that satisfies
+ * either `'service:method:action:<resource>'` or both `'admin'` and
+ * `'superuser'`. If the client has pattern "service:*" this will match any
+ * scope that starts with "service:" as is the case in the example above.
+ *
+ * This also adds a method `req.satisfies(scopes, noReply)` to the `request`
+ * object. Calling this method with a set of scopes-sets return `true` if the
+ * client satisfies one of the scopes-sets. If the client does not satisfy one
+ * of the scopes-sets it returns `false` and sends an error message unless
+ * `noReply = true`.
+ *
+ * If `deferAuth` is set to `true`, then authentication will be postponed to
+ * the first invocation of `req.satisfies`. Further note, that if
+ * `req.satisfies` is called with an object as first argument (instead of a
+ * list), then it'll assume this object is a mapping from scope parameters to
+ * values. e.g. `req.satisfies({resource: "my-resource"})` will check that
+ * the client satisfies `'service:method:action:my-resource'`.
+ * (This is useful when working with dynamic scope strings).
+ *
+ * Remark `deferAuth` will not perform authorization unless, `req.satisfies({})`
+ * is called either without arguments or with an object as first argument.
+ *
+ * Reports 401 if authentication fails.
+ */
+var remoteAuthentication = function(options, entry) {
+  assert(options.signatureValidator instanceof Function,
+         "Expected options.signatureValidator to be a function!");
+  // Returns promise for object on the form: {error, message, scopes}
+  var authenticate = function(req) {
+    // Check that we're not using two authentication schemes, we could
+    // technically allow two. There are cases where we redirect and it would be
+    // smart to let bewit overwrite header authentication.
+    // But neither Azure or AWS tolerates two authentication schemes,
+    // so this is probably a fair policy for now. We can always allow more.
+    if (req.headers && req.headers.authorization &&
+        req.query && req.query.bewit) {
+      return Promise.resolve({
+        message:  "Cannot use two authentication schemes at once " +
+                  "this request has both bewit in querystring and " +
+                  "and 'authorization' header"
+      });
+    }
+
+    // If no authentication is provided, we just return valid with zero scopes
+    if ((!req.query || !req.query.bewit) &&
+        (!req.headers || !req.headers.authorization)) {
+      return Promise.resolve({
+        status: 'no-auth',
+        scheme: 'none',
+        scopes: []
+      });
+    }
+
+    // Parse host header
+    var host = hawk.utils.parseHost(req);
+    // Find port, overwrite if forwarded by reverse proxy
+    var port = host.port;
+    if (req.headers['x-forwarded-port'] !== undefined) {
+      port = parseInt(req.headers['x-forwarded-port']);
+    }
+
+    // Send input to signatureValidator (auth server or local validator)
+    return Promise.resolve(options.signatureValidator({
+      method:           req.method.toLowerCase(),
+      resource:         req.originalUrl,
+      host:             host.name,
+      port:             parseInt(port),
+      authorization:    req.headers.authorization
+    }, options));
+  };
+
+  return function(req, res, next) {
+    return authenticate(req).then(function(result) {
+      /**
+       * Create method to check if request satisfies a scope-set from required
+       * set of scope-sets.
+       * Return true, if successful and if unsuccessful it replies with
+       * error to `res`, unless `noReply` is `true`.
+       */
+      req.satisfies = function(scopesets, noReply) {
+        // If authentication failed
+        if (result.status === 'auth-failed') {
+          if (!noReply) {
+            res.status(401).json({
+              message: result.message
+            });
+          }
+          return false;
+        }
+
+        // Validate request hash if one is provided
+        if (typeof(result.hash) === 'string' && result.scheme === 'hawk') {
+          var hash = hawk.crypto.calculatePayloadHash(
+            new Buffer(req.text, 'utf-8'),
+            'sha256',
+            req.headers['content-type']
+          );
+          if (result.hash !== hash) {
+            if (!noReply) {
+              res.status(401).json({
+                message: "Invalid payload hash"
+              });
+            }
+            return false;
+          }
+          // Don't validate hash on subsequent calls to satisfies
+          result.hash = undefined;
+        }
+
+        // If we're not given an array, we assume it's a set of parameters that
+        // must be used to parameterize the original scopesets
+        if (!(scopesets instanceof Array)) {
+          var params = scopesets;
+          scopesets = _.cloneDeep(entry.scopes, function(scope) {
+            if(typeof(scope) === 'string') {
+              return scope.replace(/<([^>]+)>/g, function(match, param) {
+                var value = params[param];
+                return value === undefined ? match : value;
+              });
+            }
+          });
+        }
+
+        // Test that we have scope intersection, and hence, is authorized
+        var retval = utils.scopeMatch(result.scopes, scopesets);
+        if (!retval && !noReply) {
+          res.status(401).json({
+            message:  "Authorization Failed",
+            error: {
+              info:       "None of the scope-sets was satisfied",
+              scopesets:  scopesets,
+              scopes:     result.scopes
+            }
+          });
+        }
+        return retval;
+      };
+
+      // If authentication is deferred or satisfied, then we proceed
+      if (!entry.scopes || entry.deferAuth || req.satisfies(entry.scopes)) {
+        next();
+      }
+    }).catch(function(err) {
+      var incidentId = uuid.v4();
+      console.log("Internal error (incidentId: " + incidentId + ") " +
+                  err.stack);
+      return res.status(500).json({
+        message:      "Ask administrator to lookup incidentId in log-file",
+        incidentId:   incidentId
+      });
+    });
+  };
+};
+
 /**
  * Handle API end-point request
  *
@@ -891,7 +1394,7 @@ API.prototype.declare = function(options, handler) {
  *   nonceManager:        function(nonce, ts, cb) { // Check for replay attack
  *   clientLoader:        function(clientId) {      // Return promise for client
  *   authBaseUrl:         'http://auth.example.net' // BaseUrl for auth server
- *   credentials: {
+ *   credentials: {               // Omit to use remote signature validation
  *     clientId:          '...',  // TaskCluster clientId
  *     accessToken:       '...'   // Access token for clientId
  *     // Client must have the 'auth:credentials' scope.
@@ -914,18 +1417,33 @@ API.prototype.router = function(options) {
     inputLimit:           '10mb',
     allowedCORSOrigin:    '*',
     context:              {},
-    nonceManager:         nonceManager()
+    nonceManager:         nonceManager(),
+    signatureValidator:   createRemoteSignatureValidator({
+      authBaseUrl:        options.authBaseUrl || AUTH_BASE_URL
+    })
   });
 
-  // Create clientLoader, if not provided
-  if (!options.clientLoader) {
-    assert(options.credentials, "Either credentials or clientLoader is required");
-    // Create clientLoader
-    options.clientLoader = clientLoader(_.defaults({
-      baseUrl:            options.authBaseUrl
-    }, options.credentials));
-    // Wrap in a clientCache
-    options.clientLoader = clientCache(options.clientLoader);
+  // Authentication strategy (default to remote authentication)
+  var authStrategy = function(entry) {
+    return remoteAuthentication({
+      signatureValidator: options.signatureValidator
+    }, entry);
+  };
+
+  // Create caching authentication strategy if possible
+  if (options.clientLoader || options.credentials) {
+    if (!options.clientLoader) {
+      // Create clientLoader
+      options.clientLoader = clientLoader(_.defaults({
+        baseUrl:            options.authBaseUrl
+      }, options.credentials));
+      // Wrap in a clientCache
+      options.clientLoader = clientCache(options.clientLoader);
+    }
+    // Replace auth strategy
+    authStrategy = function(entry) {
+      return authenticate(options.nonceManager, options.clientLoader, entry);
+    };
   }
 
   // Create statistics reporter
@@ -938,10 +1456,29 @@ API.prototype.router = function(options) {
   // Create router
   var router = express.Router();
 
-  // Use JSON middleware
-  router.use(bodyParser.json({
-    limit:                options.inputLimit
-  }));
+  // Use JSON middleware, and add hack to store text as req.text
+  router.use(bodyParser.text({
+    limit:          options.inputLimit,
+    type:           'application/json'
+  }), function(req, res, next) {
+    if (typeof(req.body) === 'string' && req.body !== '') {
+      req.text = req.body;
+      try {
+        req.body = JSON.parse(req.text);
+        if (!(req.body instanceof Object)) {
+          throw new Error("Must be an object or array");
+        }
+      } catch (err) {
+        return res.status(400).json({
+          message: "Invalid JSON input: " + err.message
+        });
+      }
+    } else {
+      req.text = '';
+      req.body = {};
+    }
+    next();
+  });
 
   // Allow CORS requests to the API
   if (options.allowedCORSOrigin) {
@@ -984,7 +1521,7 @@ API.prototype.router = function(options) {
 
     // Add authentication, schema validation and handler
     middleware.push(
-      authenticate(options.nonceManager, options.clientLoader, entry),
+      authStrategy(entry),
       parameterValidator(entry.params),
       schema(options.validator, entry),
       handle(entry.handler, options.context)
@@ -1162,3 +1699,4 @@ API.authenticate  = authenticate;
 API.schema        = schema;
 API.handle        = handle;
 API.stability     = stability;
+API.createSignatureValidator = createSignatureValidator;
