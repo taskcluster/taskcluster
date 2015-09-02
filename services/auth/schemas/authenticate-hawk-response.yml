@@ -1,0 +1,59 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:                    "Hawk Signature Authentication Response"
+description: |
+  Response from a request to authenticate a hawk request.
+anyOf:
+  - title:                    "Authentication Successful Response"
+    type:                     object
+    properties:
+      status:
+        description: |
+          The kind of response, `auth-failed` or `auth-success`.
+        type:                 string
+        enum:
+          - auth-success
+      scopes:
+        description: |
+          List of scopes the client is authorized to access
+        type:                 array
+        items:
+          description: |
+            Scope the client is authorized to access
+          type:               string
+      scheme:
+        description: |
+          Authentication scheme the client used. Generally, you don't need to
+          read this property unless `hash` is provided and you want to validate
+          the payload hash. Additional values may be added in the future.
+        type:                 string
+        enum:
+          - hawk
+      hash:
+        description: |
+          Payload as extracted from `Authentication` header. This property is
+          only present if a hash is available. You are not required to validate
+          this hash, but if you do, please check `scheme` to ensure that it's
+          on a scheme you support.
+        type:                 string
+    additionalProperties:       false
+    required:
+      - status
+      - scopes
+      - scheme
+  - title:                    "Authentication Failed Response"
+    type:                     object
+    properties:
+      status:
+        description: |
+          The kind of response, `auth-failed` or `auth-success`.
+        type:                 string
+        enum:
+          - auth-failed
+      message:
+        type:                 string
+        description: |
+          Message saying why the authentication failed.
+    additionalProperties:       false
+    required:
+      - status
+      - message

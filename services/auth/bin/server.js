@@ -70,23 +70,30 @@ var launch = function(profile) {
       return Client.createRootClient(cfg.get('auth:root'));
     })
   ]).then(function() {
+    var signatureValidator = base.API.createSignatureValidator({
+      clientLoader: Client.createClientLoader3({
+        cacheTimeout:       cfg.get('auth:clientCacheTimeout')
+      })
+    });
+
     // Create API router and publish reference if needed
     return v1.setup({
       context: {
-        validator:      validator,
-        Client:         Client,
-        azureAccounts:  JSON.parse(cfg.get('auth:azureAccounts')),
-        sts:            new AWS.STS(cfg.get('aws')),
-        rootClientId:   cfg.get('auth:root:clientId')
+        validator,
+        Client,
+        signatureValidator,
+        azureAccounts:      JSON.parse(cfg.get('auth:azureAccounts')),
+        sts:                new AWS.STS(cfg.get('aws')),
+        rootClientId:       cfg.get('auth:root:clientId'),
       },
-      validator:        validator,
-      clientLoader:     Client.createClientLoader(),
-      publish:          cfg.get('auth:publishMetaData') === 'true',
-      baseUrl:          cfg.get('server:publicUrl') + '/v1',
-      referencePrefix:  'auth/v1/api.json',
-      aws:              cfg.get('aws'),
-      component:        cfg.get('auth:statsComponent'),
-      drain:            influx
+      validator:          validator,
+      signatureValidator: signatureValidator,
+      publish:            cfg.get('auth:publishMetaData') === 'true',
+      baseUrl:            cfg.get('server:publicUrl') + '/v1',
+      referencePrefix:    'auth/v1/api.json',
+      aws:                cfg.get('aws'),
+      component:          cfg.get('auth:statsComponent'),
+      drain:              influx
     });
   }).then(function(router) {
     // Create app

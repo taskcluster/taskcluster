@@ -1,0 +1,7 @@
+{ 
+  "method": "get",
+  "resource": "/v1/client/authed-client/credentials?hello=world",
+  "host": "this@is@not@valid!",
+  "port": 1207,
+  "authorization": "Hawk id=\"authed-client\", ts=\"1439419405\", nonce=\"nlSAIZ\", hash=\"B0weSUXsMcb5UhL41FZbrUJCAotzSI3HawE1NPLRUz8=\", mac=\"wz6IeHMz83B7IWrWPSo7+0WoSuIO7pzcy5ZyjN7c1So=\""
+}

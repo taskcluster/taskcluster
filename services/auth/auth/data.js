@@ -1,6 +1,7 @@
 var debug   = require('debug')('auth:data:client');
 var base    = require('taskcluster-base');
 var assert  = require('assert');
+var _       = require('lodash');
 
 /** Configure a client Entity subclass */
 var Client = base.LegacyEntity.configure({
@@ -75,6 +76,70 @@ Client.createClientLoader = function() {
       debug('Failed to load client: ' + clientId);
       throw err;
     });
+  };
+};
+
+Client.createClientLoader2 = function() {
+  var Client = this;
+  return async (clientId) => {
+    try {
+      var client = await Client.load(clientId);
+    } catch (err) {
+      debug('Failed to load client: ' + clientId);
+      throw new Error("Failed to load client");
+    }
+    if (client.expires.getTime() < new Date().getTime()) {
+      throw new Error("Credentials expired!");
+    }
+    return {
+      clientId:     client.clientId,
+      accessToken:  client.accessToken,
+      scopes:       client.scopes
+    };
+  };
+};
+
+
+/** Create caching client loader */
+Client.createClientLoader3 = function(options) {
+  options = _.defaults(options || {}, {
+    cacheTimeout:       10 * 60 * 60 * 1000
+  });
+  assert(typeof(options.cacheTimeout) == 'number',
+         "Expected options.cacheTimeout to be a number!");
+
+  var clientLoader = this.createClientLoader2();
+  var cache = {};
+  setInterval(() => {
+    // clean up cache
+    var now = new Date().getTime();
+    _.keys(cache).forEach(clientId => {
+      if (cache[clientId].reloadAt < now) {
+        delete cache[clientId];
+      }
+    });
+  }, options.cacheTimeout);
+
+  return async (clientId) => {
+    var now = new Date().getTime();
+    var entry = cache[clientId];
+    if (!entry || entry.reloadAt < now) {
+      var error = null, client = null;
+      try {
+        client = await clientLoader(clientId);
+      } catch (err) {
+        error = err;
+      }
+      cache[clientId] = entry = {
+        client,
+        error,
+        reloadAt: now + options.cacheTimeout
+      };
+    }
+    if (entry.error) {
+      throw entry.error;
+    }
+    return entry.client;
   };
 };
 

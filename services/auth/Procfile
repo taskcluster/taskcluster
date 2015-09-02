@@ -1,1 +1,1 @@
-web: babel-node bin/server.js production
+web: babel-node bin/server.js $PROFILE

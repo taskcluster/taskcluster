@@ -655,6 +655,26 @@ api.declare({
   }));
 });
 
+/** Get all client information */
+api.declare({
+  method:     'post',
+  route:      '/authenticate-hawk',
+  name:       'authenticateHawk',
+  input:      SCHEMA_PREFIX_CONST + 'authenticate-hawk-request.json#',
+  output:     SCHEMA_PREFIX_CONST + 'authenticate-hawk-response.json#',
+  title:      "Authenticate Hawk Request",
+  description: [
+    "Validate the request signature given on input and return list of scopes",
+    "that the authenticating client has.",
+    "",
+    "This method is used by other services that wish rely on TaskCluster",
+    "credentials for authentication. This way we can use Hawk without having",
+    "the secret credentials leave this service."
+  ].join('\n')
+}, function(req, res) {
+  return this.signatureValidator(req.body).then(result => res.reply(result));
+});
+
 /** Check that the server is a alive */
 api.declare({
   method:   'get',

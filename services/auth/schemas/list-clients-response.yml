@@ -1,4 +1,3 @@
-id:       http://schemas.taskcluster.net/auth/v1/list-clients-response.json#
 $schema:  http://json-schema.org/draft-04/schema#
 title:                      "List Clients Response"
 description: |

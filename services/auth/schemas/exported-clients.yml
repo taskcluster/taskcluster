@@ -1,4 +1,3 @@
-id:       http://schemas.taskcluster.net/auth/v1/exported-clients.json#
 $schema:  http://json-schema.org/draft-04/schema#
 title:                      "Exported Clients"
 description: |
