@@ -82,9 +82,8 @@ api.declare({
     });
   }
 
-  // Create Hook definition
+  // Reply with the hook definition
   let definition = await hook.definition();
-
   return res.reply(definition);
 });
 
@@ -185,8 +184,8 @@ api.declare({
     });
   }
 
+  // Reply with the hook definition
   let definition = await hook.definition();
-
   return res.reply(definition);
 });
 
@@ -228,7 +227,7 @@ api.declare({
       routingKey:  '#'
     };
 
-  // Attempt to modify properities of the hook
+  // Attempt to modify properties of the hook
   await hook.modify((hook) => {
     hook.metadata          = hookDef.metadata;
     hook.task              = hookDef.task;
@@ -239,7 +238,6 @@ api.declare({
     hook.nextScheduledDate = hookDef.schedule ? datejs(hookDef.schedule) : new Date(0);
   });
 
-  await hook.reload();
   let definition = await hook.definition();
   return res.reply(definition);
 });
@@ -297,7 +295,7 @@ api.declare({
   method:       'get',
   route:        '/hooks/:hookGroup/:hookId/token',
   name:         'getTriggerToken',
-  //scopes:       [["hooks:get-trigger-token:<hookGroup>/<hookId>"]],
+  scopes:       [["hooks:get-trigger-token:<hookGroup>/<hookId>"]],
   input:        undefined,
   output:       'trigger-token-response.json',
   title:        'Get a trigger token',
@@ -328,7 +326,7 @@ api.declare({
   method:       'post',
   route:        '/hooks/:hookGroup/:hookId/token',
   name:         'resetTriggerToken',
-  //scopes:       [["hooks:reset-trigger-token:<hookGroup>/<hookId>"]],
+  scopes:       [["hooks:reset-trigger-token:<hookGroup>/<hookId>"]],
   input:        undefined,
   output:       'trigger-token-response.json',
   title:        'Reset a trigger token',
@@ -363,7 +361,6 @@ api.declare({
   method:       'post',
   route:        '/hooks/:hookGroup/:hookId/trigger/:token',
   name:         'triggerHookWithToken',
-  idempotent:   true,
   input:        'trigger-payload.json',
   output:       'task-status.json',
   title:        'Trigger a hook with a token',
@@ -401,9 +398,7 @@ api.declare({
   method:       'post',
   route:        '/hooks/:hookGroup/:hookId/trigger',
   name:         'triggerHook',
-  idempotent:   true,
   scopes:       [["hooks:trigger-hook:<hookGroup>/<hookId>"]],
-  deferAuth:    true,
   output:       'task-status.json',
   title:        'Trigger a hook',
   description: [
