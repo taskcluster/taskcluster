@@ -127,14 +127,14 @@ def scope_match(assumed_scopes, required_scope_sets):
     for required_scope in scope_set:
       for scope in assumed_scopes:
         if scope == required_scope:
-          break   # required_scope satisifed, no need to check more scopes
+          break     # required_scope satisifed, no need to check more scopes
         if scope.endswith("*") and required_scope.startswith(scope[:-1]):
-          break   # required_scope satisifed, no need to check more scopes
+          break     # required_scope satisifed, no need to check more scopes
       else:
-        break     # required_scope not satisfied, don't check reset of scope_set
+        break       # required_scope not satisfied, stop checking scope_set
     else:
-      return True # scope_set satisfied, so we're happy
-  return False    # none of the required_scope_sets were satisfied
+      return True   # scope_set satisfied, so we're happy
+  return False      # none of the required_scope_sets were satisfied
 
 
 def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
