@@ -23,7 +23,7 @@ def docApi(name, ref):
       '```',
     ])
 
-  for function in functions:
+  for function in sorted(functions, key=lambda x: x['name']):
     methodName = function['name']
     args = function['args']
     hasOutput = not not function.get('output', False)
@@ -59,7 +59,7 @@ def docApi(name, ref):
       '```',
     ])
 
-  for exchange in exchanges:
+  for exchange in sorted(exchanges, key=lambda x: x['title']):
     lines.append('#### %s' % exchange['title'])
     lines.append(' * `%s.%s(routingKeyPattern) -> routingKey`' % (instName, exchange['name']))
     for key in exchange['routingKey']:
