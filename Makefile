@@ -57,7 +57,7 @@ $(NODE_BIN):
 	curl -LO $(NODE_URL)
 	tar zxf node-$(NODE_VER)-$(NODE_PLAT).tar.gz
 	$(NPM_INST) debug
-	$(NPM_INST) taskcluster-base
+	$(NPM_INST) taskcluster-base@0.8.3
 
 # For convenience
 node: $(NODE_BIN)
