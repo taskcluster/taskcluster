@@ -110,11 +110,22 @@ class TestBase64Utils(base.TCTest):
     self.assertEqual(expected, actual)
 
 
-class TestSlugId(base.TCTest):
+# first bit of uuid set, which should get unset
+class TestSlugIdNotNice(base.TCTest):
   def test_slug_id(self):
     with mock.patch('uuid.uuid4') as p:
       p.return_value = uuid.UUID('bed97923-7616-4ec8-85ed-4b695f67ac2e')
-      expected = 'vtl5I3YWTsiF7UtpX2esLg'
+      expected = 'Ptl5I3YWTsiF7UtpX2esLg'
+      actual = subject.slugId()
+      self.assertEqual(expected, actual)
+
+
+# first bit of uuid unset, should remain unset
+class TestSlugIdNice(base.TCTest):
+  def test_slug_id(self):
+    with mock.patch('uuid.uuid4') as p:
+      p.return_value = uuid.UUID('3ed97923-7616-4ec8-85ed-4b695f67ac2e')
+      expected = 'Ptl5I3YWTsiF7UtpX2esLg'
       actual = subject.slugId()
       self.assertEqual(expected, actual)
 
