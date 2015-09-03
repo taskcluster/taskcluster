@@ -167,6 +167,7 @@ var auth = new taskcluster.Auth(options);
  * `auth.awsS3Credentials(level, bucket, prefix) : result`
  * `auth.exportClients() : result`
  * `auth.importClients(payload) : result`
+ * `auth.authenticateHawk(payload) : result`
  * `auth.ping() : void`
 
 ### Methods in `taskcluster.AwsProvisioner`
