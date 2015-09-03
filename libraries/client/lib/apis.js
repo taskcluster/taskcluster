@@ -9,7 +9,7 @@ module.exports = {
           "args": [
             "clientId"
           ],
-          "description": "Returns the scopes the client is authorized to access and the date-time\nwhen the clients authorization is set to expire.\n\nThis API end-point allows you inspect clients without getting access to\ncredentials, as provided by the `getCredentials` request below.",
+          "description": "Returns the scopes the client is authorized to access and the date-time\nwhen the client's authorization is set to expire.\n\nThis API end-point allows you inspect clients without getting access to\ncredentials, as provided by the `getCredentials` request below.",
           "method": "get",
           "name": "scopes",
           "output": "http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#",
@@ -20,6 +20,7 @@ module.exports = {
               "auth:credentials"
             ]
           ],
+          "stability": "experimental",
           "title": "Get Client Authorized Scopes",
           "type": "function"
         },
@@ -37,6 +38,7 @@ module.exports = {
               "auth:credentials"
             ]
           ],
+          "stability": "experimental",
           "title": "Get Client Credentials",
           "type": "function"
         },
@@ -54,6 +56,7 @@ module.exports = {
               "auth:credentials"
             ]
           ],
+          "stability": "experimental",
           "title": "Get Client Information",
           "type": "function"
         },
@@ -73,6 +76,7 @@ module.exports = {
               "auth:credentials"
             ]
           ],
+          "stability": "experimental",
           "title": "Create Client",
           "type": "function"
         },
@@ -92,6 +96,7 @@ module.exports = {
               "auth:credentials"
             ]
           ],
+          "stability": "experimental",
           "title": "Modify Client",
           "type": "function"
         },
@@ -108,6 +113,7 @@ module.exports = {
               "auth:remove-client"
             ]
           ],
+          "stability": "experimental",
           "title": "Remove Client",
           "type": "function"
         },
@@ -126,6 +132,7 @@ module.exports = {
               "auth:credentials"
             ]
           ],
+          "stability": "experimental",
           "title": "Reset Client Credentials",
           "type": "function"
         },
@@ -142,6 +149,7 @@ module.exports = {
               "auth:list-clients"
             ]
           ],
+          "stability": "experimental",
           "title": "List Clients",
           "type": "function"
         },
@@ -160,6 +168,7 @@ module.exports = {
               "auth:azure-table-access:<account>/<table>"
             ]
           ],
+          "stability": "experimental",
           "title": "Get Shared-Access-Signature for Azure Table",
           "type": "function"
         },
@@ -179,6 +188,7 @@ module.exports = {
               "auth:aws-s3:<level>:<bucket>/<prefix>"
             ]
           ],
+          "stability": "experimental",
           "title": "Get Temporary Read/Write Credentials S3",
           "type": "function"
         },
@@ -196,6 +206,7 @@ module.exports = {
               "auth:credentials"
             ]
           ],
+          "stability": "experimental",
           "title": "List Clients",
           "type": "function"
         },
@@ -215,7 +226,21 @@ module.exports = {
               "auth:credentials"
             ]
           ],
+          "stability": "experimental",
           "title": "Import Clients",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Validate the request signature given on input and return list of scopes\nthat the authenticating client has.\n\nThis method is used by other services that wish rely on TaskCluster\ncredentials for authentication. This way we can use Hawk without having\nthe secret credentials leave this service.",
+          "input": "http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#",
+          "method": "post",
+          "name": "authenticateHawk",
+          "output": "http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#",
+          "route": "/authenticate-hawk",
+          "stability": "experimental",
+          "title": "Authenticate Hawk Request",
           "type": "function"
         },
         {
@@ -225,6 +250,7 @@ module.exports = {
           "method": "get",
           "name": "ping",
           "route": "/ping",
+          "stability": "experimental",
           "title": "Ping Server",
           "type": "function"
         }
