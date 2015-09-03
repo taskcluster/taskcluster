@@ -26,6 +26,8 @@ set -x;
 # Now, let's modify the version number
 sed -i "s,^VERSION=.*$,VERSION=\'$VERSION\',g" setup.py
 
+make update-readme
+make docs
 make
 # Now, let's commit this change.  We only care to commit
 # setup.py because we've already verified that it's the
