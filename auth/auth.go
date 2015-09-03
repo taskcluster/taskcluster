@@ -32,6 +32,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/taskcluster/httpbackoff"
 	hawk "github.com/tent/hawk-go"
@@ -199,7 +200,7 @@ func New(clientId string, accessToken string) *Auth {
 }
 
 // Returns the scopes the client is authorized to access and the date-time
-// when the clients authorization is set to expire.
+// when the client's authorization is set to expire.
 //
 // This API end-point allows you inspect clients without getting access to
 // credentials, as provided by the `getCredentials` request below.
@@ -339,6 +340,19 @@ func (a *Auth) ImportClients(payload *ExportedClients) (*ExportedClients, *CallS
 	return responseObject.(*ExportedClients), callSummary
 }
 
+// Validate the request signature given on input and return list of scopes
+// that the authenticating client has.
+//
+// This method is used by other services that wish rely on TaskCluster
+// credentials for authentication. This way we can use Hawk without having
+// the secret credentials leave this service.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#authenticateHawk
+func (a *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest) (*HawkSignatureAuthenticationResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "POST", "/authenticate-hawk", new(HawkSignatureAuthenticationResponse))
+	return responseObject.(*HawkSignatureAuthenticationResponse), callSummary
+}
+
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
@@ -350,6 +364,33 @@ func (a *Auth) Ping() *CallSummary {
 }
 
 type (
+	// Request to authenticate a hawk request.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#
+	HawkSignatureAuthenticationRequest struct {
+		// Authorization header, **must** only be specified if request being
+		// authenticated has a `Authorization` header.
+		Authorization string `json:"authorization"`
+		// Host for which the request came in, this is typically the `Host` header
+		// excluding the port if any.
+		Host string `json:"host"`
+		// HTTP method of the request being authenticated.
+		Method string `json:"method"`
+		// Port on which the request came in, this is typically `80` or `443`.
+		// If you are running behind a reverse proxy look for the `x-forwarded-port`
+		// header.
+		Port int `json:"port"`
+		// Resource the request operates on including querystring. This is the
+		// string that follows the HTTP method.
+		// **Note,** order of querystring elements is important.
+		Resource string `json:"resource"`
+	}
+
+	// Response from a request to authenticate a hawk request.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#
+	HawkSignatureAuthenticationResponse json.RawMessage
+
 	// Response for a request to get access to an S3 bucket.
 	//
 	// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#
@@ -486,3 +527,19 @@ type (
 		Scopes []string `json:"scopes"`
 	}
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// HawkSignatureAuthenticationResponse is of type json.RawMessage...
+func (this *HawkSignatureAuthenticationResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *HawkSignatureAuthenticationResponse) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
