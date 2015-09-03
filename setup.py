@@ -17,14 +17,14 @@ tests_require = [
   'subprocess32==3.2.6',
   'psutil==2.1.3',
   'hypothesis',
-  'pgpy',
-  'slugid'
+  'pgpy'
 ]
 
 install_requires = [
   'requests>=2.4.3,<=2.7.0',
   'PyHawk_with_a_single_extra_commit==0.1.5',
   #  'PyHawk==0.1.4',
+  'slugid',
 ]
 
 if __name__ == '__main__':

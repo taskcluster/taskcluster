@@ -5,7 +5,7 @@ import base64
 import logging
 import os
 import requests
-import slugid as slugid_
+import slugid
 import time
 
 MAX_RETRIES = 5
@@ -89,7 +89,7 @@ def encodeStringForB64Header(s):
 def slugId():
   """ Generate a taskcluster slugid.  This is a V4 UUID encoded into
   URL-Safe Base64 (RFC 4648, sec 5) with '=' padding removed """
-  return slugid_.nice()
+  return slugid.nice()
 
 
 def stableSlugId():
