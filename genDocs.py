@@ -79,7 +79,7 @@ def genDocs(apiFile):
   with open(apiFile) as f:
     api = json.load(f)
   lines = [startDocs]
-  for apiName, apiRef in api.items():
+  for apiName, apiRef in sorted(api.items()):
     lines.extend(docApi(apiName, apiRef['reference'])) 
     lines.append('\n')
 
