@@ -81,50 +81,123 @@ figuring out how to configure the python logging module but do want debug messag
 
 <!-- START OF GENERATED DOCS -->
 
-### Methods in `taskcluster.Index`
+### Methods in `taskcluster.Auth`
 ```python
-// Create Index client instance
+// Create Auth client instance
 import taskcluster
-index = taskcluster.Index(options)
+auth = taskcluster.Auth(options)
 ```
-#### Get Artifact From Indexed Task
- * `index.findArtifactFromTask(namespace, name) -> None`
- * `index.findArtifactFromTask(namespace='value', name='value') -> None`
+#### Get Client Authorized Scopes
+ * `auth.scopes(clientId) -> result`
+ * `auth.scopes(clientId='value') -> result`
 
-#### Find Indexed Task
- * `index.findTask(namespace) -> result`
- * `index.findTask(namespace='value') -> result`
+#### Get Client Credentials
+ * `auth.getCredentials(clientId) -> result`
+ * `auth.getCredentials(clientId='value') -> result`
 
-#### Insert Task into Index
- * `index.insertTask(namespace, payload) -> result`
- * `index.insertTask(payload, namespace='value') -> result`
+#### Get Client Information
+ * `auth.client(clientId) -> result`
+ * `auth.client(clientId='value') -> result`
 
-#### List Namespaces
- * `index.listNamespaces(namespace, payload) -> result`
- * `index.listNamespaces(payload, namespace='value') -> result`
+#### Create Client
+ * `auth.createClient(clientId, payload) -> result`
+ * `auth.createClient(payload, clientId='value') -> result`
 
-#### List Tasks
- * `index.listTasks(namespace, payload) -> result`
- * `index.listTasks(payload, namespace='value') -> result`
+#### Modify Client
+ * `auth.modifyClient(clientId, payload) -> result`
+ * `auth.modifyClient(payload, clientId='value') -> result`
+
+#### Remove Client
+ * `auth.removeClient(clientId) -> None`
+ * `auth.removeClient(clientId='value') -> None`
+
+#### Reset Client Credentials
+ * `auth.resetCredentials(clientId) -> result`
+ * `auth.resetCredentials(clientId='value') -> result`
+
+#### List Clients
+ * `auth.listClients() -> result`
+
+#### Get Shared-Access-Signature for Azure Table
+ * `auth.azureTableSAS(account, table) -> result`
+ * `auth.azureTableSAS(account='value', table='value') -> result`
+
+#### Get Temporary Read/Write Credentials S3
+ * `auth.awsS3Credentials(level, bucket, prefix) -> result`
+ * `auth.awsS3Credentials(level='value', bucket='value', prefix='value') -> result`
+
+#### List Clients
+ * `auth.exportClients() -> result`
+
+#### Import Clients
+ * `auth.importClients(payload) -> result`
+
+#### Authenticate Hawk Request
+ * `auth.authenticateHawk(payload) -> result`
 
 #### Ping Server
- * `index.ping() -> None`
+ * `auth.ping() -> None`
 
 
 
 
-### Methods in `taskcluster.PurgeCache`
+### Methods in `taskcluster.AwsProvisioner`
 ```python
-// Create PurgeCache client instance
+// Create AwsProvisioner client instance
 import taskcluster
-purgeCache = taskcluster.PurgeCache(options)
+awsProvisioner = taskcluster.AwsProvisioner(options)
 ```
-#### Ping Server
- * `purgeCache.ping() -> None`
+#### Create new Worker Type
+ * `awsProvisioner.createWorkerType(workerType, payload) -> result`
+ * `awsProvisioner.createWorkerType(payload, workerType='value') -> result`
 
-#### Purge Worker Cache
- * `purgeCache.purgeCache(provisionerId, workerType, payload) -> None`
- * `purgeCache.purgeCache(payload, provisionerId='value', workerType='value') -> None`
+#### Update Worker Type
+ * `awsProvisioner.updateWorkerType(workerType, payload) -> result`
+ * `awsProvisioner.updateWorkerType(payload, workerType='value') -> result`
+
+#### Get Worker Type
+ * `awsProvisioner.workerType(workerType) -> result`
+ * `awsProvisioner.workerType(workerType='value') -> result`
+
+#### Delete Worker Type
+ * `awsProvisioner.removeWorkerType(workerType) -> None`
+ * `awsProvisioner.removeWorkerType(workerType='value') -> None`
+
+#### List Worker Types
+ * `awsProvisioner.listWorkerTypes() -> result`
+
+#### Create new Secret
+ * `awsProvisioner.createSecret(token, payload) -> None`
+ * `awsProvisioner.createSecret(payload, token='value') -> None`
+
+#### Get a Secret
+ * `awsProvisioner.getSecret(token) -> result`
+ * `awsProvisioner.getSecret(token='value') -> result`
+
+#### Report an instance starting
+ * `awsProvisioner.instanceStarted(instanceId, token) -> None`
+ * `awsProvisioner.instanceStarted(instanceId='value', token='value') -> None`
+
+#### Remove a Secret
+ * `awsProvisioner.removeSecret(token) -> None`
+ * `awsProvisioner.removeSecret(token='value') -> None`
+
+#### Get All Launch Specifications for WorkerType
+ * `awsProvisioner.getLaunchSpecs(workerType) -> result`
+ * `awsProvisioner.getLaunchSpecs(workerType='value') -> result`
+
+#### Get AWS State for all worker types
+ * `awsProvisioner.awsState() -> None`
+
+#### Get AWS State for a worker type
+ * `awsProvisioner.state(workerType) -> None`
+ * `awsProvisioner.state(workerType='value') -> None`
+
+#### Ping Server
+ * `awsProvisioner.ping() -> None`
+
+#### api reference
+ * `awsProvisioner.apiReference() -> None`
 
 
 
@@ -141,77 +214,80 @@ awsProvisionerEvents = taskcluster.AwsProvisionerEvents(options)
    * workerType is required  Description: WorkerType that this message concerns.
    * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
-#### WorkerType Removed Message
- * `awsProvisionerEvents.workerTypeRemoved(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * workerType is required  Description: WorkerType that this message concerns.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
 #### WorkerType Updated Message
  * `awsProvisionerEvents.workerTypeUpdated(routingKeyPattern) -> routingKey`
    * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
    * workerType is required  Description: WorkerType that this message concerns.
    * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
+#### WorkerType Removed Message
+ * `awsProvisionerEvents.workerTypeRemoved(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * workerType is required  Description: WorkerType that this message concerns.
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 
 
-### Methods in `taskcluster.Auth`
+
+### Methods in `taskcluster.Index`
 ```python
-// Create Auth client instance
+// Create Index client instance
 import taskcluster
-auth = taskcluster.Auth(options)
+index = taskcluster.Index(options)
 ```
-#### Authenticate Hawk Request
- * `auth.authenticateHawk(payload) -> result`
+#### Find Indexed Task
+ * `index.findTask(namespace) -> result`
+ * `index.findTask(namespace='value') -> result`
 
-#### Get Temporary Read/Write Credentials S3
- * `auth.awsS3Credentials(level, bucket, prefix) -> result`
- * `auth.awsS3Credentials(level='value', bucket='value', prefix='value') -> result`
+#### List Namespaces
+ * `index.listNamespaces(namespace, payload) -> result`
+ * `index.listNamespaces(payload, namespace='value') -> result`
 
-#### Get Shared-Access-Signature for Azure Table
- * `auth.azureTableSAS(account, table) -> result`
- * `auth.azureTableSAS(account='value', table='value') -> result`
+#### List Tasks
+ * `index.listTasks(namespace, payload) -> result`
+ * `index.listTasks(payload, namespace='value') -> result`
 
-#### Get Client Information
- * `auth.client(clientId) -> result`
- * `auth.client(clientId='value') -> result`
+#### Insert Task into Index
+ * `index.insertTask(namespace, payload) -> result`
+ * `index.insertTask(payload, namespace='value') -> result`
 
-#### Create Client
- * `auth.createClient(clientId, payload) -> result`
- * `auth.createClient(payload, clientId='value') -> result`
-
-#### List Clients
- * `auth.exportClients() -> result`
-
-#### Get Client Credentials
- * `auth.getCredentials(clientId) -> result`
- * `auth.getCredentials(clientId='value') -> result`
-
-#### Import Clients
- * `auth.importClients(payload) -> result`
-
-#### List Clients
- * `auth.listClients() -> result`
-
-#### Modify Client
- * `auth.modifyClient(clientId, payload) -> result`
- * `auth.modifyClient(payload, clientId='value') -> result`
+#### Get Artifact From Indexed Task
+ * `index.findArtifactFromTask(namespace, name) -> None`
+ * `index.findArtifactFromTask(namespace='value', name='value') -> None`
 
 #### Ping Server
- * `auth.ping() -> None`
+ * `index.ping() -> None`
 
-#### Remove Client
- * `auth.removeClient(clientId) -> None`
- * `auth.removeClient(clientId='value') -> None`
 
-#### Reset Client Credentials
- * `auth.resetCredentials(clientId) -> result`
- * `auth.resetCredentials(clientId='value') -> result`
 
-#### Get Client Authorized Scopes
- * `auth.scopes(clientId) -> result`
- * `auth.scopes(clientId='value') -> result`
+
+### Methods in `taskcluster.PurgeCache`
+```python
+// Create PurgeCache client instance
+import taskcluster
+purgeCache = taskcluster.PurgeCache(options)
+```
+#### Purge Worker Cache
+ * `purgeCache.purgeCache(provisionerId, workerType, payload) -> None`
+ * `purgeCache.purgeCache(payload, provisionerId='value', workerType='value') -> None`
+
+#### Ping Server
+ * `purgeCache.ping() -> None`
+
+
+
+
+### Exchanges in `taskcluster.PurgeCacheEvents`
+```python
+// Create PurgeCacheEvents client instance
+import taskcluster
+purgeCacheEvents = taskcluster.PurgeCacheEvents(options)
+```
+#### Purge Cache Messages
+ * `purgeCacheEvents.purgeCache(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * provisionerId is required  Description: `provisionerId` under which to purge cache.
+   * workerType is required  Description: `workerType` for which to purge cache.
 
 
 
@@ -222,17 +298,13 @@ auth = taskcluster.Auth(options)
 import taskcluster
 queue = taskcluster.Queue(options)
 ```
-#### Cancel Task
- * `queue.cancelTask(taskId) -> result`
- * `queue.cancelTask(taskId='value') -> result`
+#### Get Task Definition
+ * `queue.task(taskId) -> result`
+ * `queue.task(taskId='value') -> result`
 
-#### Claim task
- * `queue.claimTask(taskId, runId, payload) -> result`
- * `queue.claimTask(payload, taskId='value', runId='value') -> result`
-
-#### Create Artifact
- * `queue.createArtifact(taskId, runId, name, payload) -> result`
- * `queue.createArtifact(payload, taskId='value', runId='value', name='value') -> result`
+#### Get task status
+ * `queue.status(taskId) -> result`
+ * `queue.status(taskId='value') -> result`
 
 #### Create New Task
  * `queue.createTask(taskId, payload) -> result`
@@ -241,6 +313,46 @@ queue = taskcluster.Queue(options)
 #### Define Task
  * `queue.defineTask(taskId, payload) -> result`
  * `queue.defineTask(payload, taskId='value') -> result`
+
+#### Schedule Defined Task
+ * `queue.scheduleTask(taskId) -> result`
+ * `queue.scheduleTask(taskId='value') -> result`
+
+#### Rerun a Resolved Task
+ * `queue.rerunTask(taskId) -> result`
+ * `queue.rerunTask(taskId='value') -> result`
+
+#### Cancel Task
+ * `queue.cancelTask(taskId) -> result`
+ * `queue.cancelTask(taskId='value') -> result`
+
+#### Get Urls to Poll Pending Tasks
+ * `queue.pollTaskUrls(provisionerId, workerType) -> result`
+ * `queue.pollTaskUrls(provisionerId='value', workerType='value') -> result`
+
+#### Claim task
+ * `queue.claimTask(taskId, runId, payload) -> result`
+ * `queue.claimTask(payload, taskId='value', runId='value') -> result`
+
+#### Reclaim task
+ * `queue.reclaimTask(taskId, runId) -> result`
+ * `queue.reclaimTask(taskId='value', runId='value') -> result`
+
+#### Report Run Completed
+ * `queue.reportCompleted(taskId, runId) -> result`
+ * `queue.reportCompleted(taskId='value', runId='value') -> result`
+
+#### Report Run Failed
+ * `queue.reportFailed(taskId, runId) -> result`
+ * `queue.reportFailed(taskId='value', runId='value') -> result`
+
+#### Report Task Exception
+ * `queue.reportException(taskId, runId, payload) -> result`
+ * `queue.reportException(payload, taskId='value', runId='value') -> result`
+
+#### Create Artifact
+ * `queue.createArtifact(taskId, runId, name, payload) -> result`
+ * `queue.createArtifact(payload, taskId='value', runId='value', name='value') -> result`
 
 #### Get Artifact from Run
  * `queue.getArtifact(taskId, runId, name) -> None`
@@ -265,57 +377,6 @@ queue = taskcluster.Queue(options)
 #### Ping Server
  * `queue.ping() -> None`
 
-#### Get Urls to Poll Pending Tasks
- * `queue.pollTaskUrls(provisionerId, workerType) -> result`
- * `queue.pollTaskUrls(provisionerId='value', workerType='value') -> result`
-
-#### Reclaim task
- * `queue.reclaimTask(taskId, runId) -> result`
- * `queue.reclaimTask(taskId='value', runId='value') -> result`
-
-#### Report Run Completed
- * `queue.reportCompleted(taskId, runId) -> result`
- * `queue.reportCompleted(taskId='value', runId='value') -> result`
-
-#### Report Task Exception
- * `queue.reportException(taskId, runId, payload) -> result`
- * `queue.reportException(payload, taskId='value', runId='value') -> result`
-
-#### Report Run Failed
- * `queue.reportFailed(taskId, runId) -> result`
- * `queue.reportFailed(taskId='value', runId='value') -> result`
-
-#### Rerun a Resolved Task
- * `queue.rerunTask(taskId) -> result`
- * `queue.rerunTask(taskId='value') -> result`
-
-#### Schedule Defined Task
- * `queue.scheduleTask(taskId) -> result`
- * `queue.scheduleTask(taskId='value') -> result`
-
-#### Get task status
- * `queue.status(taskId) -> result`
- * `queue.status(taskId='value') -> result`
-
-#### Get Task Definition
- * `queue.task(taskId) -> result`
- * `queue.task(taskId='value') -> result`
-
-
-
-
-### Exchanges in `taskcluster.PurgeCacheEvents`
-```python
-// Create PurgeCacheEvents client instance
-import taskcluster
-purgeCacheEvents = taskcluster.PurgeCacheEvents(options)
-```
-#### Purge Cache Messages
- * `purgeCacheEvents.purgeCache(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * provisionerId is required  Description: `provisionerId` under which to purge cache.
-   * workerType is required  Description: `workerType` for which to purge cache.
-
 
 
 
@@ -325,60 +386,8 @@ purgeCacheEvents = taskcluster.PurgeCacheEvents(options)
 import taskcluster
 queueEvents = taskcluster.QueueEvents(options)
 ```
-#### Artifact Creation Messages
- * `queueEvents.artifactCreated(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId is required  Description: `taskId` for the task this message concerns
-   * runId is required  Description: `runId` of latest run for the task, `_` if no run is exists for the task.
-   * workerGroup is required  Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
-   * workerId is required  Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
-   * provisionerId is required  Description: `provisionerId` this task is targeted at.
-   * workerType is required  Description: `workerType` this task must run on.
-   * schedulerId is required  Description: `schedulerId` this task was created by.
-   * taskGroupId is required  Description: `taskGroupId` this task was created in.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
-#### Task Completed Messages
- * `queueEvents.taskCompleted(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId is required  Description: `taskId` for the task this message concerns
-   * runId is required  Description: `runId` of latest run for the task, `_` if no run is exists for the task.
-   * workerGroup is required  Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
-   * workerId is required  Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
-   * provisionerId is required  Description: `provisionerId` this task is targeted at.
-   * workerType is required  Description: `workerType` this task must run on.
-   * schedulerId is required  Description: `schedulerId` this task was created by.
-   * taskGroupId is required  Description: `taskGroupId` this task was created in.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
 #### Task Defined Messages
  * `queueEvents.taskDefined(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId is required  Description: `taskId` for the task this message concerns
-   * runId Description: `runId` of latest run for the task, `_` if no run is exists for the task.
-   * workerGroup Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
-   * workerId Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
-   * provisionerId is required  Description: `provisionerId` this task is targeted at.
-   * workerType is required  Description: `workerType` this task must run on.
-   * schedulerId is required  Description: `schedulerId` this task was created by.
-   * taskGroupId is required  Description: `taskGroupId` this task was created in.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
-#### Task Exception Messages
- * `queueEvents.taskException(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId is required  Description: `taskId` for the task this message concerns
-   * runId Description: `runId` of latest run for the task, `_` if no run is exists for the task.
-   * workerGroup Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
-   * workerId Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
-   * provisionerId is required  Description: `provisionerId` this task is targeted at.
-   * workerType is required  Description: `workerType` this task must run on.
-   * schedulerId is required  Description: `schedulerId` this task was created by.
-   * taskGroupId is required  Description: `taskGroupId` this task was created in.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
-#### Task Failed Messages
- * `queueEvents.taskFailed(routingKeyPattern) -> routingKey`
    * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
    * taskId is required  Description: `taskId` for the task this message concerns
    * runId Description: `runId` of latest run for the task, `_` if no run is exists for the task.
@@ -416,6 +425,58 @@ queueEvents = taskcluster.QueueEvents(options)
    * taskGroupId is required  Description: `taskGroupId` this task was created in.
    * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
+#### Artifact Creation Messages
+ * `queueEvents.artifactCreated(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * taskId is required  Description: `taskId` for the task this message concerns
+   * runId is required  Description: `runId` of latest run for the task, `_` if no run is exists for the task.
+   * workerGroup is required  Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+   * workerId is required  Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
+   * provisionerId is required  Description: `provisionerId` this task is targeted at.
+   * workerType is required  Description: `workerType` this task must run on.
+   * schedulerId is required  Description: `schedulerId` this task was created by.
+   * taskGroupId is required  Description: `taskGroupId` this task was created in.
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### Task Completed Messages
+ * `queueEvents.taskCompleted(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * taskId is required  Description: `taskId` for the task this message concerns
+   * runId is required  Description: `runId` of latest run for the task, `_` if no run is exists for the task.
+   * workerGroup is required  Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+   * workerId is required  Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
+   * provisionerId is required  Description: `provisionerId` this task is targeted at.
+   * workerType is required  Description: `workerType` this task must run on.
+   * schedulerId is required  Description: `schedulerId` this task was created by.
+   * taskGroupId is required  Description: `taskGroupId` this task was created in.
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### Task Failed Messages
+ * `queueEvents.taskFailed(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * taskId is required  Description: `taskId` for the task this message concerns
+   * runId Description: `runId` of latest run for the task, `_` if no run is exists for the task.
+   * workerGroup Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+   * workerId Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
+   * provisionerId is required  Description: `provisionerId` this task is targeted at.
+   * workerType is required  Description: `workerType` this task must run on.
+   * schedulerId is required  Description: `schedulerId` this task was created by.
+   * taskGroupId is required  Description: `taskGroupId` this task was created in.
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### Task Exception Messages
+ * `queueEvents.taskException(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * taskId is required  Description: `taskId` for the task this message concerns
+   * runId Description: `runId` of latest run for the task, `_` if no run is exists for the task.
+   * workerGroup Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+   * workerId Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
+   * provisionerId is required  Description: `provisionerId` this task is targeted at.
+   * workerType is required  Description: `workerType` this task must run on.
+   * schedulerId is required  Description: `schedulerId` this task was created by.
+   * taskGroupId is required  Description: `taskGroupId` this task was created in.
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
 
 
 
@@ -433,6 +494,10 @@ scheduler = taskcluster.Scheduler(options)
  * `scheduler.extendTaskGraph(taskGraphId, payload) -> result`
  * `scheduler.extendTaskGraph(payload, taskGraphId='value') -> result`
 
+#### Task Graph Status
+ * `scheduler.status(taskGraphId) -> result`
+ * `scheduler.status(taskGraphId='value') -> result`
+
 #### Task Graph Information
  * `scheduler.info(taskGraphId) -> result`
  * `scheduler.info(taskGraphId='value') -> result`
@@ -448,71 +513,6 @@ scheduler = taskcluster.Scheduler(options)
 #### Ping Server
  * `scheduler.ping() -> None`
 
-#### Task Graph Status
- * `scheduler.status(taskGraphId) -> result`
- * `scheduler.status(taskGraphId='value') -> result`
-
-
-
-
-### Methods in `taskcluster.AwsProvisioner`
-```python
-// Create AwsProvisioner client instance
-import taskcluster
-awsProvisioner = taskcluster.AwsProvisioner(options)
-```
-#### api reference
- * `awsProvisioner.apiReference() -> None`
-
-#### Get AWS State for all worker types
- * `awsProvisioner.awsState() -> None`
-
-#### Create new Secret
- * `awsProvisioner.createSecret(token, payload) -> None`
- * `awsProvisioner.createSecret(payload, token='value') -> None`
-
-#### Create new Worker Type
- * `awsProvisioner.createWorkerType(workerType, payload) -> result`
- * `awsProvisioner.createWorkerType(payload, workerType='value') -> result`
-
-#### Get All Launch Specifications for WorkerType
- * `awsProvisioner.getLaunchSpecs(workerType) -> result`
- * `awsProvisioner.getLaunchSpecs(workerType='value') -> result`
-
-#### Get a Secret
- * `awsProvisioner.getSecret(token) -> result`
- * `awsProvisioner.getSecret(token='value') -> result`
-
-#### Report an instance starting
- * `awsProvisioner.instanceStarted(instanceId, token) -> None`
- * `awsProvisioner.instanceStarted(instanceId='value', token='value') -> None`
-
-#### List Worker Types
- * `awsProvisioner.listWorkerTypes() -> result`
-
-#### Ping Server
- * `awsProvisioner.ping() -> None`
-
-#### Remove a Secret
- * `awsProvisioner.removeSecret(token) -> None`
- * `awsProvisioner.removeSecret(token='value') -> None`
-
-#### Delete Worker Type
- * `awsProvisioner.removeWorkerType(workerType) -> None`
- * `awsProvisioner.removeWorkerType(workerType='value') -> None`
-
-#### Get AWS State for a worker type
- * `awsProvisioner.state(workerType) -> None`
- * `awsProvisioner.state(workerType='value') -> None`
-
-#### Update Worker Type
- * `awsProvisioner.updateWorkerType(workerType, payload) -> result`
- * `awsProvisioner.updateWorkerType(payload, workerType='value') -> result`
-
-#### Get Worker Type
- * `awsProvisioner.workerType(workerType) -> result`
- * `awsProvisioner.workerType(workerType='value') -> result`
-
 
 
 
@@ -522,8 +522,8 @@ awsProvisioner = taskcluster.AwsProvisioner(options)
 import taskcluster
 schedulerEvents = taskcluster.SchedulerEvents(options)
 ```
-#### Task-Graph Blocked Message
- * `schedulerEvents.taskGraphBlocked(routingKeyPattern) -> routingKey`
+#### Task-Graph Running Message
+ * `schedulerEvents.taskGraphRunning(routingKeyPattern) -> routingKey`
    * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
    * taskId Description: Always takes the value `_`
    * runId Description: Always takes the value `_`
@@ -548,8 +548,8 @@ schedulerEvents = taskcluster.SchedulerEvents(options)
    * taskGraphId is required  Description: Identifier for the task-graph this message concerns
    * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
-#### Task-Graph Finished Message
- * `schedulerEvents.taskGraphFinished(routingKeyPattern) -> routingKey`
+#### Task-Graph Blocked Message
+ * `schedulerEvents.taskGraphBlocked(routingKeyPattern) -> routingKey`
    * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
    * taskId Description: Always takes the value `_`
    * runId Description: Always takes the value `_`
@@ -561,8 +561,8 @@ schedulerEvents = taskcluster.SchedulerEvents(options)
    * taskGraphId is required  Description: Identifier for the task-graph this message concerns
    * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
-#### Task-Graph Running Message
- * `schedulerEvents.taskGraphRunning(routingKeyPattern) -> routingKey`
+#### Task-Graph Finished Message
+ * `schedulerEvents.taskGraphFinished(routingKeyPattern) -> routingKey`
    * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
    * taskId Description: Always takes the value `_`
    * runId Description: Always takes the value `_`

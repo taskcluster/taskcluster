@@ -23,7 +23,7 @@ def docApi(name, ref):
       '```',
     ])
 
-  for function in sorted(functions, key=lambda x: x['name']):
+  for function in functions:
     methodName = function['name']
     args = function['args']
     hasOutput = not not function.get('output', False)
@@ -59,7 +59,7 @@ def docApi(name, ref):
       '```',
     ])
 
-  for exchange in sorted(exchanges, key=lambda x: x['title']):
+  for exchange in exchanges:
     lines.append('#### %s' % exchange['title'])
     lines.append(' * `%s.%s(routingKeyPattern) -> routingKey`' % (instName, exchange['name']))
     for key in exchange['routingKey']:
@@ -79,7 +79,7 @@ def genDocs(apiFile):
   with open(apiFile) as f:
     api = json.load(f)
   lines = [startDocs]
-  for apiName, apiRef in api.items():
+  for apiName, apiRef in sorted(api.items()):
     lines.extend(docApi(apiName, apiRef['reference'])) 
     lines.append('\n')
 
