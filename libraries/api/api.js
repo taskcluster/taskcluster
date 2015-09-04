@@ -22,6 +22,7 @@ var series        = require('./lib/series');
 var http          = require('http');
 var https         = require('https');
 var cryptiles     = require('cryptiles');
+var taskcluster   = require('taskcluster-client');
 
 // Default baseUrl for authentication server
 var AUTH_BASE_URL = 'https://auth.taskcluster.net/v1';
@@ -1015,35 +1016,11 @@ var createSignatureValidator = function(options) {
  */
 var createRemoteSignatureValidator = function(options) {
   assert(options.authBaseUrl, "options.authBaseUrl is required");
-  var agent = null;
-  if (/^https:/.test(options.authBaseUrl)) {
-    agent = new https.Agent({
-      keepAlive:  true,
-      maxSockets: 50
-    });
-  } else {
-    agent = new http.Agent({
-      keepAlive:  true,
-      maxSockets: 50
-    });
-  }
+  var auth = new taskcluster.Auth({
+    baseUrl: options.authBaseUrl
+  });
   return function(data) {
-    return request
-      .post(options.authBaseUrl + '/authenticate-hawk')
-      .agent(agent)
-      .type('json')
-      //TODO: Use TC-client when we have auth.tc.net deployed...
-      //      So we get both retries and decent agent implementation
-      .send(data)
-      .end()
-      .then(function(res) {
-        if (!res.ok) {
-          throw new Error(
-            "Received status code: " + res.status + " from /authenticate-hawk"
-          );
-        }
-        return res.body;
-      });
+    return auth.authenticateHawk(data);
   };
 };
 
