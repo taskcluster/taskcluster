@@ -154,7 +154,7 @@ suite("api/auth", function() {
       })
       .end()
       .then(function(res) {
-        assert(res.status === 401, "Request didn't failed");
+        assert(res.status === 401, "Request didn't fail");
       });
   });
 
@@ -250,7 +250,7 @@ suite("api/auth", function() {
       })
       .end()
       .then(function(res) {
-        assert(res.status === 401, "Request didn't failed");
+        assert(res.status === 401, "Request didn't fail");
       });
   });
 
@@ -323,7 +323,7 @@ suite("api/auth", function() {
       })
       .end()
       .then(function(res) {
-        assert(res.status === 401, "Request didn't failed");
+        assert(res.status === 401, "Request didn't fail");
       });
   });
 
@@ -349,7 +349,7 @@ suite("api/auth", function() {
       })
       .end()
       .then(function(res) {
-        assert(res.status === 401, "Request didn't failed");
+        assert(res.status === 401, "Request didn't fail");
       });
   });
 
