@@ -496,17 +496,6 @@ class TestAuthenticationMockServer(base.TCTest):
     result = client.getCredentials('admin')
     self.assertEqual(result['accessToken'], 'adminToken')
 
-  def test_mock_auth_invalid(self):
-    client = self.clientClass({
-      'baseUrl': self.baseUrl,
-      'credentials': {
-        'clientId': 'unknown',
-        'accessToken': 'adminToken',
-      }
-    })
-    with self.assertRaises(exc.TaskclusterAuthFailure):
-      client.getCredentials('admin')
-
   def test_mock_auth_ascii_encodable_unicode(self):
     client = self.clientClass({
       'baseUrl': self.baseUrl,
@@ -527,17 +516,6 @@ class TestAuthenticationMockServer(base.TCTest):
           'accessToken': u"\U0001F4A9",
         }
       })
-
-  def test_mock_auth_expired(self):
-    client = self.clientClass({
-      'baseUrl': self.baseUrl,
-      'credentials': {
-        'clientId': 'expired',
-        'accessToken': 'expiredToken',
-      }
-    })
-    with self.assertRaises(exc.TaskclusterAuthFailure):
-      client.getCredentials('admin')
 
   def test_mock_auth_bad_scope(self):
     client = self.clientClass({
