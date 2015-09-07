@@ -6,33 +6,60 @@
 # state.  The second phase is modifying files, tagging, commiting and pushing
 # to pypi
 
+OFFICIAL_GIT_REPO='git@github.com:taskcluster/taskcluster-client.py'
+
+# step into directory containing this script
+cd "$(dirname "${0}")"
+
+# exit in case of bad exit code
 set -e
 
 # Phase 1: Testing things
-if [ -z $VERSION ] ; then
-  echo "You must specify a version using \$VERSION"
-  exit 1
+
+# VERSION should have form x.y.z where x, y, z are positive integers
+if ! echo "${VERSION}" | grep -q '^\(0\|[1-9][0-9]*\)\.\(0\|[1-9][0-9]*\)\.\(0\|[1-9][0-9]*\)$'; then
+  echo "VERSION = '${VERSION}'"
+  echo "Please set it to a release version, of the form x.y.z where x, y, z are positive integers"
+  exit 64
+fi
+
+# Make sure git tag doesn't already exist on remote
+if [ "$(git ls-remote -t "${OFFICIAL_GIT_REPO}" "${VERSION}" 2>&1 | wc -l | tr -d ' ')" != '0' ]; then
+  echo "git tag '${VERSION}' already exists remotely on ${OFFICIAL_GIT_REPO},"
+  echo "or there was an error checking whether it existed."
+  exit 65
 fi
 
 # Local changes will not be in the release, so they should be dealt with before
-# continuing.  git stash can help here!
-modified="$(git status --porcelain --untracked=no)"
-if [ -n "$modified" ] ; then
+# continuing. git stash can help here! Untracked files can make it into release
+# so let's make sure we have none of them either.
+modified="$(git status --porcelain)"
+if [ -n "$modified" ]; then
   echo "There are changes in the local tree.  This probably means"
   echo "you'll do something unintentional.  For safety's sake, please"
-  echo "revert or stash them\!"
-  exit 1
+  echo 'revert or stash them!'
+  exit 66
 fi
 
-# This is a check that you're on a local branch called master.  I should
-# probably check that you're on a branch that tracks the origin's master branch
-# but that might be too much.
-branch=$(git branch | grep "^* " | sed "s/^* //")
-if [ "$branch" != 'master' ] ; then
-  echo "You must create a release off master branch\!"
+# Check that the current HEAD is also the tip of the official repo master
+# branch. If the commits match, it does not matter what the local branch
+# name is, or even if we have a detached head.
+remoteMasterSha="$(git ls-remote "${OFFICIAL_GIT_REPO}" master | cut -f1)"
+localMasterSha="$(git rev-parse HEAD)"
+if [ "${remoteMasterSha}" != "${localMasterSha}" ]; then
+  echo "Locally, you are on commit ${localMasterSha}."
+  echo "The remote taskcluster repo is on commit ${remoteMasterSha}."
+  echo "Make sure to git push/pull so that they both point to the same commit."
+  exit 67
 fi
 
-set -x;
+set -x
+
+# Make sure that build environment is clean
+git clean -fdx
+
+# Make sure dev-env target has been run, and run clean just to be safe too
+make clean dev-env
 
 # Test that we can generate Python docs
 make docs
@@ -43,7 +70,12 @@ make
 # Phase 2: Modifying and pushing
 
 # Version number
-sed -i "s,^VERSION=.*$,VERSION=\'$VERSION\',g" setup.py
+# Avoid sed -i to be mac compatible
+tmpFile="$(mktemp -t setup.py.XXXXXXXXXX)"
+# copy rather than move, so file permissions are retained in original file
+cp setup.py "${tmpFile}"
+cat "${tmpFile}" | sed "s,^VERSION=.*$,VERSION='$VERSION',g" > setup.py
+rm "${tmpFile}"
 
 # Update the readme file
 make update-readme
@@ -62,5 +94,9 @@ fi
 # only file which is changing
 git commit -m "Version $VERSION" $commitFiles
 git tag "$VERSION"
-git push github.com:taskcluster/taskcluster-client.py master "$VERSION"
-python setup.py sdist upload
+git push "${OFFICIAL_GIT_REPO}" "$VERSION:$VERSION"
+python setup.py sdist
+# use twine to upload to protect pypi credentials (python setup.py upload sends
+# creds in cleartext)
+pip install twine
+twine upload -s dist/*
