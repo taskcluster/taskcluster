@@ -46,7 +46,7 @@ Hook.prototype.taskPayload = function() {
   payload.created = new Date().toJSON();
   payload.deadline = datejs(this.deadline).toJSON();
   if (this.expires) {
-    task.expires = datejs(this.expires).toJSON();
+    payload.expires = datejs(this.expires).toJSON();
   }
   return Promise.resolve(payload);
 }
