@@ -17,6 +17,10 @@ set -e
 # Phase 1: Testing things
 
 # VERSION should have form x.y.z where x, y, z are positive integers
+# Note that \(0\|[1-9][0-9]*\) means that the only allowed number to
+# begin with 0 is the number 0 itself. All other numbers begin with
+# [1-9]. Also this regex requires at least one character, so '' does
+# not match.
 if ! echo "${VERSION}" | grep -q '^\(0\|[1-9][0-9]*\)\.\(0\|[1-9][0-9]*\)\.\(0\|[1-9][0-9]*\)$'; then
   echo "VERSION = '${VERSION}'"
   echo "Please set it to a release version, of the form x.y.z where x, y, z are positive integers"
@@ -38,6 +42,8 @@ if [ -n "$modified" ]; then
   echo "There are changes in the local tree.  This probably means"
   echo "you'll do something unintentional.  For safety's sake, please"
   echo 'revert or stash them!'
+  echo
+  git status
   exit 66
 fi
 
@@ -53,10 +59,20 @@ if [ "${remoteMasterSha}" != "${localMasterSha}" ]; then
   exit 67
 fi
 
-set -x
-
 # Make sure that build environment is clean
-git clean -fdx
+if [ "$(git clean -ndx 2>&1 | wc -l | tr -d ' ')" != 0 ]; then
+  echo "You have local changes to files/directories that are in your git ignore list."
+  echo "These need to be removed, as they may interfere with the build. Release builds"
+  echo "need to be clean builds. To clean your directory, run:"
+  echo
+  echo "  git -C '$(pwd)' clean -fdx"
+  echo
+  echo "This will have the following effect:"
+  git clean -ndx
+  exit 68
+fi
+
+set -x
 
 # Make sure dev-env target has been run, and run clean just to be safe too
 make clean dev-env
@@ -94,7 +110,7 @@ fi
 # only file which is changing
 git commit -m "Version $VERSION" $commitFiles
 git tag "$VERSION"
-git push "${OFFICIAL_GIT_REPO}" "$VERSION:$VERSION"
+git push "${OFFICIAL_GIT_REPO}" "+refs/tags/$VERSION:refs/tags/$VERSION" "+refs/tags/$VERSION:refs/heads/master"
 python setup.py sdist
 # use twine to upload to protect pypi credentials (python setup.py upload sends
 # creds in cleartext)
