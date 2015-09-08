@@ -333,7 +333,7 @@ util.inherits(SlugIdType, BaseValueType);
 SlugIdType.prototype.isOrdered    = true;
 SlugIdType.prototype.isComparable = true;
 
-var _slugIdExpr = /^[a-z0-9_-]{22}$/i;
+var _slugIdExpr = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/i;
 
 SlugIdType.prototype.validate = function(value) {
   checkType('SlugIdType', this.property, value, 'string');
