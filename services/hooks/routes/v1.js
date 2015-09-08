@@ -27,12 +27,13 @@ api.declare({
     "hooks belong to."
   ].join('\n')
 }, async function(req, res) {
-  var groups = await this.Groups.query({}, {});
-  var retval = {};
-  retval.groups = groups.entries.map(item => {
-    return item.groupId;
+  var groups = [];
+  await this.Groups.query({},{
+    handler: (item) => {
+      groups.push(item.groupId);
+    }
   });
-  return res.reply(retval);
+  return res.reply({groups: groups});
 });
 
 
@@ -48,13 +49,15 @@ api.declare({
     "Get a list of all the hook definitions within a given hook group."
   ].join('\n')
 }, async function(req, res) {
-  var hooks = await this.Hook.query({groupId: req.params.hookGroup}, {});
-  var retval = {};
-  retval.hooks = await Promise.all(
-      hooks.entries.map(item => {
-        return item.definition();
-      }));
-  return res.reply(retval);
+  var hooks = [];
+  await this.Hook.query({
+    groupId: req.params.hookGroup
+  }, {
+    handler: async (hook) => {
+      hooks.push(await hook.definition());
+    }
+  });
+  return res.reply({hooks: hooks});
 });
 
 
@@ -167,7 +170,7 @@ api.declare({
       task:               hookDef.task,
       bindings:           bindings,
       deadline:           hookDef.deadline,
-      expires:            hookDef.expire ? hookDef.expire :      '',
+      expires:            hookDef.expires ? hookDef.expires :    '',
       schedule:           hookDef.schedule ? hookDef.schedule :  '',
       accessToken:        slugid.v4(),
       nextTaskId:         slugid.v4(),
@@ -233,7 +236,7 @@ api.declare({
     hook.task              = hookDef.task;
     hook.bindings          = bindings;
     hook.deadline          = hookDef.deadline;
-    hook.expires           = hookDef.expire ? hookDef.expire : '';
+    hook.expires           = hookDef.expires ? hookDef.expires : '';
     hook.schedule          = hookDef.schedule ? hookDef.schedule : '';
     hook.nextScheduledDate = hookDef.schedule ? datejs(hookDef.schedule) : new Date(0);
   });
