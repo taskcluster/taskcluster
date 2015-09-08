@@ -50,7 +50,7 @@ var MAX_RUNS_ALLOWED    = 50;
  */
 
 // Common patterns URL parameters
-var SLUGID_PATTERN      = /^[a-zA-Z0-9-_]{22}$/;
+var SLUGID_PATTERN      = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 var GENERIC_ID_PATTERN  = /^[a-zA-Z0-9-_]{1,22}$/;
 var RUN_ID_PATTERN      = /^[1-9]*[0-9]+$/;
 
