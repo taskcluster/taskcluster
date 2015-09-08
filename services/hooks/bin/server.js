@@ -74,7 +74,6 @@ var launch = async function(profile) {
     },
     validator:        validator,
     authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
-    credentials:      cfg.get('taskcluster:credentials'),
     pubish:           cfg.get('hooks:publishMetaData') == 'true',
     baseUrl:          cfg.get('server:publicUrl') + '/v1',
     referencePrefix:  'hooks/v1/api.json'
