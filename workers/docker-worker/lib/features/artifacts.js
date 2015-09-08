@@ -4,13 +4,14 @@ deals with the extract of both single and multiple artifacts from the docker
 container.
 */
 
-import waitForEvent from '../wait_for_event';
 import _ from 'lodash';
 import mime from 'mime';
 import tarStream from 'tar-stream';
 import Debug from 'debug';
 import Promise from 'promise';
+
 import uploadArtifact from '../upload_to_s3';
+import waitForEvent from '../wait_for_event';
 
 let debug = Debug('docker-worker:middleware:artifact_extractor');
 
@@ -133,7 +134,7 @@ export default class Artifacts {
         // possible before handling the errors.
         errors.push(err);
         taskHandler.stream.write(
-          taskHandler.fmtErrorLog(`Error uploading "${entryName}" artifact. ${err}`)
+          taskHandler.fmtErrorLog(`Error uploading "${entryName}" artifact. ${err.message}`)
         );
       }
       // Resume the stream if there is an upload failure otherwise
@@ -175,7 +176,7 @@ export default class Artifacts {
         debug('Artifact upload %s failed, %s, as JSON: %j', key, value, value, value.stack);
       });
 
-      throw new Error(`Artifact uploads ${Object.keys(errors).join(', ')} failed`);
+      throw new Error('Encountered error when uploading artifact(s)');
     }
   }
 }

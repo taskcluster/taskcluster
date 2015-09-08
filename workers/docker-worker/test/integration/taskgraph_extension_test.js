@@ -131,7 +131,7 @@ suite('Extend Task Graph', function() {
           payload: {
             image: 'taskcluster/test-ubuntu',
             command: cmd(
-              'touch /graph.json'
+              'echo "{foo:bar}" > /graph.json'
             ),
             features: {},
             artifacts: {},
@@ -142,13 +142,14 @@ suite('Extend Task Graph', function() {
       }]
     });
 
+    console.log(result[0].log);
     assert.ok(
-      result[0].log.indexOf("Invalid json in taskgraph extension path") !== -1,
+      result[0].log.includes("Invalid json in taskgraph extension path"),
       'Task graph should have been logged as invalid'
     );
     assert.ok(
-      result[0].log.indexOf("Incident ID") !== -1,
-      'Incident lookup message did not appear in the log'
+      result[0].log.includes('foo:bar'),
+      'Error message should include contents of invalid json file'
     );
     assert.ok(
       result[0].run.state === 'failed',
@@ -220,12 +221,8 @@ suite('Extend Task Graph', function() {
     });
 
     assert.ok(
-      result[0].log.indexOf("Graph server error while extending task graph") !== -1,
+      result[0].log.includes("Graph server error while extending task graph"),
       'Task graph error not logged'
-    );
-    assert.ok(
-      result[0].log.indexOf("Incident ID") !== -1,
-      'Incident lookup message did not appear in the log'
     );
     assert.ok(
       result[0].run.state === 'failed',

@@ -1,8 +1,10 @@
 /**
 This module handles extending the task graph as a by-product of a task's run.
 */
+var debug = require('debug')('docker-worker:middleware:extendTaskGraph');
 var waitForEvent = require('../wait_for_event');
 var tarStream = require('tar-stream');
+
 
 async function drain (listener) {
   var buffer = '';
@@ -52,14 +54,13 @@ export default class ExtendTaskGraph {
       if (checkTarType) {
         checkTarType = false;
         if (header.type !== 'file') {
-          taskHandler.stream.write(taskHandler.fmtErrorLog(
-            'Unexpected multiple files in task graph extension path'
-          ));
           // Destroy the stream and manually emit the finish event so we can
           // continue on to the next graph or exit.
           stream.destroy();
           stream.emit('finish');
-          return;
+          throw new Error(
+            'Unexpected multiple files in task graph extension path.'
+          );
         }
       }
       // Consume the stream and store the raw json here.
@@ -75,11 +76,10 @@ export default class ExtendTaskGraph {
     try {
       extension = JSON.parse(entryJSON);
     } catch (e) {
-      taskHandler.stream.write(taskHandler.fmtErrorLog(
-        'Invalid json in taskgraph extension path: "%s" dumping file...'
-      ));
-      taskHandler.stream.write(entryJSON);
-      throw e;
+      throw new Error(
+        'Invalid json in taskgraph extension path: "' + graphPath + '". ' +
+        'Dumping file. ' + JSON.stringify(entryJSON, null, 2)
+      );
     }
 
     // Extend the graph!
@@ -91,11 +91,10 @@ export default class ExtendTaskGraph {
         graphId, graphPath
       ));
     } catch (error) {
-      taskHandler.stream.write(taskHandler.fmtErrorLog(
-        'Graph server error while extending task graph id %s : %s, %j',
-        graphId, error, error.body
-      ));
-      throw error;
+      throw new Error(
+        'Graph server error while extending task graph id ' + graphId + ' : ' +
+        error.message + ', ' + error.body
+      );
     }
   }
 
@@ -111,16 +110,24 @@ export default class ExtendTaskGraph {
 
     // If there is no scheduler id we cannot extend the graph.
     if (task.schedulerId !== 'task-graph-scheduler') {
-      return taskHandler.stream.write(taskHandler.fmtErrorLog(
-        "No taskGroupId (task graph id) extension is not possible"
-      ));
+      throw new Error(
+        'No taskGroupId (task graph id) extension is not possible'
+      );
     }
 
     // Iterate through the graphs extending where possible.
+    let errors = [];
     await Promise.all(payload.graphs.map(async (graph) => {
-      await this.extendTaskGraph(taskHandler, graph);
+      await this.extendTaskGraph(taskHandler, graph).catch(error => errors.push(error));
     }));
 
-    taskHandler.stream.write(taskHandler.fmtLog("Done extending graph"));
+    if (errors.length > 0) {
+      throw new Error(
+        'Error encountered when attempting to extend task graph. ' +
+        errors.map(e => e.message).join(' | ')
+      );
+    }
+
+    taskHandler.stream.write(taskHandler.fmtLog('Done extending graph'));
   }
-};
+}

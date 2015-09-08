@@ -60,7 +60,7 @@ export default class States {
       {state: method}
     ).then(results => {
       if (errors.length > 0) {
-        throw new Error(errors.map(e => (e.toString() + e.stack)).join(' | '));
+        throw new Error(errors.map(e => e.message).join(' | '));
       }
       return results;
     });

@@ -2,7 +2,7 @@
  * Responsible for decrypting and validating private environment variable in task payload
  */
 
-var debug = require('debug')('privateKey');
+var debug = require('debug')('docker-worker:privateKey');
 var enums = require('openpgp/src/enums');
 var fs      = require('fs');
 var _       = require('lodash');
