@@ -13,7 +13,7 @@ suite("api/route", function() {
     title:        "Test Api",
     description:  "Another test api",
     params: {
-      taskId:     /^[a-zA-Z0-9-_]{22}$/
+      taskId:     /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/
     }
   });
 
