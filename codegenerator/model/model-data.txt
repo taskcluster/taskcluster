@@ -502,7 +502,7 @@ Properties
   Property 'clientId' =
     Description            = 'ClientId of the client scopes is requested about
     '
-    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -553,7 +553,7 @@ Properties
   Property 'clientId' =
     Description            = 'ClientId of the client scopes is requested about
     '
-    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -677,7 +677,7 @@ Items
     Property 'clientId' =
       Description            = 'ClientId of the client scopes is requested about
       '
-      Pattern                = '^[a-zA-Z0-9-_]{22}$'
+      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -763,7 +763,7 @@ Properties
   Property 'clientId' =
     Description            = 'ClientId of the client scopes is requested about
     '
-    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -838,7 +838,7 @@ Items
     Property 'clientId' =
       Description            = 'ClientId of the client scopes is requested about
       '
-      Pattern                = '^[a-zA-Z0-9-_]{22}$'
+      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -2261,7 +2261,7 @@ Properties
     [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
     stripped of `=` padding.
     '
-    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Title                  = 'Task Identifier'
     Type                   = 'string'
     TypeName               = ''
@@ -2322,7 +2322,7 @@ Properties
     [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
     stripped of `=` padding.
     '
-    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Title                  = 'Task Identifier'
     Type                   = 'string'
     TypeName               = ''
@@ -2524,7 +2524,7 @@ Properties
           [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
           stripped of `=` padding.
           '
-          Pattern                = '^[a-zA-Z0-9-_]{22}$'
+          Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
           Title                  = 'Task Identifier'
           Type                   = 'string'
           TypeName               = ''
@@ -4141,7 +4141,7 @@ Properties
     scheduler identified by `schedulerId`. For tasks scheduled by the
     task-graph scheduler, this is the `taskGraphId`.
     '
-    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Title                  = 'Task-Group Identifier'
     Type                   = 'string'
     TypeName               = ''
@@ -4153,7 +4153,7 @@ Properties
     [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
     stripped of `=` padding.
     '
-    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Title                  = 'Task Identifier'
     Type                   = 'string'
     TypeName               = ''
@@ -4433,7 +4433,7 @@ Properties
     task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
     property isn't specified.
     '
-    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Title                  = 'Task-Group Identifier'
     Type                   = 'string'
     TypeName               = ''
@@ -5698,7 +5698,7 @@ Properties
     scheduler identified by `schedulerId`. For tasks scheduled by the
     task-graph scheduler, this is the `taskGraphId`.
     '
-    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Title                  = 'Task-Group Identifier'
     Type                   = 'string'
     TypeName               = ''
@@ -5710,7 +5710,7 @@ Properties
     [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
     stripped of `=` padding.
     '
-    Pattern                = '^[a-zA-Z0-9-_]{22}$'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Title                  = 'Task Identifier'
     Type                   = 'string'
     TypeName               = ''
@@ -6092,7 +6092,7 @@ Properties
           Description            = 'List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.'
           Items
             Description            = '`taskId` for task that requires this task to be _successfully completed_ before it can be scheduled.'
-            Pattern                = '^[a-zA-Z0-9-_]{22}'
+            Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
             Title                  = 'Dependent `taskId`'
             Type                   = 'string'
             TypeName               = ''
@@ -6118,7 +6118,7 @@ Properties
           Description            = 'List of required `taskId`s'
           Items
             Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
-            Pattern                = '^[a-zA-Z0-9-_]{22}'
+            Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
             Title                  = 'Required `taskId`'
             Type                   = 'string'
             TypeName               = ''
@@ -6135,7 +6135,7 @@ Properties
           Description            = 'List of `taskId`s that have yet to complete successfully, before this task can be scheduled.'
           Items
             Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
-            Pattern                = '^[a-zA-Z0-9-_]{22}'
+            Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
             Title                  = 'Required `taskId`'
             Type                   = 'string'
             TypeName               = ''
@@ -6186,7 +6186,7 @@ Properties
           SourceURL              = ''
         Property 'taskId' =
           Description            = 'Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.'
-          Pattern                = '^[a-zA-Z0-9-_]{22}'
+          Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
           Title                  = 'Task Identifier'
           Type                   = 'string'
           TypeName               = ''
@@ -6226,7 +6226,7 @@ Properties
     Description            = 'List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.'
     Items
       Description            = '`taskId` for task that requires this task to be _successfully completed_ before it can be scheduled.'
-      Pattern                = '^[a-zA-Z0-9-_]{22}'
+      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
       Title                  = 'Dependent `taskId`'
       Type                   = 'string'
       TypeName               = ''
@@ -6252,7 +6252,7 @@ Properties
     Description            = 'List of required `taskId`s'
     Items
       Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
-      Pattern                = '^[a-zA-Z0-9-_]{22}'
+      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
       Title                  = 'Required `taskId`'
       Type                   = 'string'
       TypeName               = ''
@@ -6269,7 +6269,7 @@ Properties
     Description            = 'List of `taskId`s that have yet to complete successfully, before this task can be scheduled.'
     Items
       Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
-      Pattern                = '^[a-zA-Z0-9-_]{22}'
+      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
       Title                  = 'Required `taskId`'
       Type                   = 'string'
       TypeName               = ''
@@ -6320,7 +6320,7 @@ Properties
     SourceURL              = ''
   Property 'taskId' =
     Description            = 'Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.'
-    Pattern                = '^[a-zA-Z0-9-_]{22}'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Title                  = 'Task Identifier'
     Type                   = 'string'
     TypeName               = ''
@@ -6470,7 +6470,7 @@ Properties
     SourceURL              = ''
   Property 'taskGraphId' =
     Description            = 'Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.'
-    Pattern                = '^[a-zA-Z0-9-_]{22}'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -6972,7 +6972,7 @@ Properties
     SourceURL              = ''
   Property 'taskId' =
     Description            = 'Unique `taskId` that is blocking this task-graph from completion.'
-    Pattern                = '^[a-zA-Z0-9-_]{22}'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -7107,7 +7107,7 @@ Properties
     SourceURL              = ''
   Property 'taskGraphId' =
     Description            = 'Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.'
-    Pattern                = '^[a-zA-Z0-9-_]{22}'
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
