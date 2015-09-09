@@ -54,7 +54,7 @@ this script.
 ## Download via `go get`
 
 ```sh
-go get github.com/lightsofapollo/taskcluster-proxy
+go get github.com/taskcluster/taskcluster-proxy
 ```
 
 ## Hacking
@@ -63,7 +63,7 @@ Follow usual go path setup + godeps.
 
 ```sh
 # inside the project root which will look something like:
-# $GOPATH/src/github.com/lightsofapollo/taskcluster-proxy
+# $GOPATH/src/github.com/taskcluster/taskcluster-proxy
 godep go build
 ```
 
