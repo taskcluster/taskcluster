@@ -4,7 +4,7 @@
   "variables": {
     "npmPackage":          "",
     "templateContents":    "",
-    "sourceAMI":           "ami-afa1ae9f",
+    "sourceAMI":           "ami-75fce145",
     "fsType":              "",
     "workerRevision":      ""
   },
