@@ -5,14 +5,6 @@ language: node_js
 node_js:
 - '0.10'
 script: npm test
-deploy:
-  provider: heroku
-  strategy: git
-  app: taskcluster-index
-  on:
-    repo: taskcluster/taskcluster-index
-  api_key:
-    secure: r/rRQGUsOymghKMOIx00UtkcRg3J9302U0Aossxdiu1gVomeUvwAR/LOBX+ljVtPxDAvFrkRAwsXF5xf8htnqkEkhL/KVkGOBsAWRPw9HJqYCSvv7oxM1PutXAvTbiu50JezW+6Y6Y14Q79D4quGQNofcjgxI6lbiGWtS6y93jI=
 before_install:
 - openssl aes-256-cbc -K $encrypted_beb0c80d0d86_key -iv $encrypted_beb0c80d0d86_iv
   -in taskcluster-index.conf.json.enc -out taskcluster-index.conf.json -d
