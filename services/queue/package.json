@@ -22,12 +22,12 @@
     "lodash":               "^3.6.0",
     "promise":              "6.1.0",
     "slugid":               "1.0.3",
-    "taskcluster-base":     "0.8.1",
+    "taskcluster-base":     "0.8.5",
     "thirty-two":           "^0.0.2",
     "url-join":             "0.0.1",
     "uuid":                 "2.0.1",
     "babel":                "^5.0.9",
-    "taskcluster-client":   "^0.22.0",
+    "taskcluster-client":   "^0.22.6",
     "kexec":                "^1.2.0",
     "superagent":           "^1.1.0",
     "superagent-promise":   "^0.2.0",
@@ -42,7 +42,7 @@
     "assume":               "^1.2.4"
   },
   "engines": {
-    "node":                 "0.12.x",
-    "npm":                  "2.7.x"
+    "node":                 "^0.12.0",
+    "npm":                  "^2.0.0"
   }
 }

@@ -21,7 +21,7 @@ var defaultClients = [
   {
     clientId:     'test-server',  // Hardcoded into config/test.js
     accessToken:  'none',
-    scopes:       ['auth:credentials', 'auth:can-delegate'],
+    scopes:       [''],
     expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
   }, {
     clientId:     'test-client',  // Used in default Queue creation
