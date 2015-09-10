@@ -69,7 +69,6 @@ var launch = async function(profile) {
     context:          {publisher},
     validator:        validator,
     authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
-    credentials:      cfg.get('taskcluster:credentials'),
     publish:          cfg.get('purgeCache:publishMetaData') === 'true',
     baseUrl:          cfg.get('server:publicUrl') + '/v1',
     referencePrefix:  'purge-cache/v1/api.json',
