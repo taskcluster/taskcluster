@@ -109,7 +109,7 @@ Handlers.prototype.completed = function(message) {
   }).map(function(route) {
     return that.routeRegexp.exec(route)[1];
   }).filter(function(namespace) {
-    return helpers.isValidNamespace(namespace);
+    return helpers.namespaceFormat.test(namespace);
   });
 
   // If there is no namespace we better log this
