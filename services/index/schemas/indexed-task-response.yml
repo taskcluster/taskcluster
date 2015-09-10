@@ -1,4 +1,3 @@
-id:         http://schemas.taskcluster.net/index/v1/indexed-task-response.json
 $schema:    http://json-schema.org/draft-04/schema#
 title:              "Indexed Task Response"
 description: |

@@ -1,4 +1,3 @@
-id:       http://schemas.taskcluster.net/index/v1/list-namespaces-request.json
 $schema:  http://json-schema.org/draft-04/schema#
 title:              "List Namespaces Request"
 description: |

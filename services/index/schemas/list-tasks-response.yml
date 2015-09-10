@@ -1,4 +1,3 @@
-id:       http://schemas.taskcluster.net/index/v1/list-tasks-response.json
 $schema:  http://json-schema.org/draft-04/schema#
 title:              "List Tasks Response"
 description: |

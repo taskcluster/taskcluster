@@ -5,8 +5,6 @@ var assert      = require('assert');
 var base        = require('taskcluster-base');
 var helpers     = require('../../index/helpers');
 
-// Common schema prefix
-var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/index/v1/';
 
 /**
  * API end-point for version v1/
@@ -111,7 +109,11 @@ var api = new base.API({
     "and pick up all messages about release builds. Hence, it is a",
     "good idea to document task index hierarchies, as these make up extension",
     "points in their own."
-  ].join('\n')
+  ].join('\n'),
+  schemaPrefix:       'http://schemas.taskcluster.net/index/v1/',
+  params: {
+    namespace:        helpers.namespaceFormat
+  }
 });
 
 // Export api
@@ -123,7 +125,7 @@ api.declare({
   method:         'get',
   route:          '/task/:namespace',
   name:           'findTask',
-  output:         SCHEMA_PREFIX_CONST + 'indexed-task-response.json#',
+  output:         'indexed-task-response.json#',
   title:          "Find Indexed Task",
   description: [
     "Find task by namespace, if no task existing for the given namespace, this",
@@ -132,16 +134,6 @@ api.declare({
 }, function(req, res) {
   var ctx = this;
   var namespace = req.params.namespace || '';
-
-  // Validate that namespace is allowed
-  if (!helpers.isValidNamespace(namespace)) {
-    return res.status(400).json({
-      message:  "Invalidate characters in namespace",
-      error: {
-        namespace:  namespace
-      }
-    });
-  }
 
   // Get namespace and ensure that we have a least one dot
   namespace = namespace.split('.');
@@ -176,8 +168,8 @@ api.declare({
   method:         'post',
   route:          '/namespaces/:namespace?',
   name:           'listNamespaces',
-  input:          SCHEMA_PREFIX_CONST + 'list-namespaces-request.json#',
-  output:         SCHEMA_PREFIX_CONST + 'list-namespaces-response.json#',
+  input:          'list-namespaces-request.json#',
+  output:         'list-namespaces-response.json#',
   title:          "List Namespaces",
   description: [
     "List the namespaces immediately under a given namespace. This end-point",
@@ -217,8 +209,8 @@ api.declare({
   method:         'post',
   route:          '/tasks/:namespace?',
   name:           'listTasks',
-  input:          SCHEMA_PREFIX_CONST + 'list-tasks-request.json#',
-  output:         SCHEMA_PREFIX_CONST + 'list-tasks-response.json#',
+  input:          'list-tasks-request.json#',
+  output:         'list-tasks-response.json#',
   title:          "List Tasks",
   description: [
     "List the tasks immediately under a given namespace. This end-point",
@@ -258,8 +250,8 @@ api.declare({
   name:           'insertTask',
   deferAuth:      true,
   scopes:         [['index:insert-task:<namespace>']],
-  input:          SCHEMA_PREFIX_CONST + 'insert-task-request.json#',
-  output:         SCHEMA_PREFIX_CONST + 'indexed-task-response.json#',
+  input:          'insert-task-request.json#',
+  output:         'indexed-task-response.json#',
   title:          "Insert Task into Index",
   description: [
     "Insert a task into the index. Please see the introduction above, for how",
@@ -269,16 +261,6 @@ api.declare({
   var ctx   = this;
   var input = req.body;
   var namespace = req.params.namespace || '';
-
-  // Validate that namespace is allowed
-  if (!helpers.isValidNamespace(namespace)) {
-    return res.status(400).json({
-      message:  "Invalidate characters in namespace",
-      error: {
-        namespace:  namespace
-      }
-    });
-  }
 
   // Authenticate request by providing parameters
   if(!req.satisfies({
@@ -317,16 +299,6 @@ api.declare({
   var ctx = this;
   var namespace = req.params.namespace || '';
   var artifactName = req.params.name;
-
-  // Validate that namespace is allowed
-  if (!helpers.isValidNamespace(namespace)) {
-    return res.status(400).json({
-      message:  "Invalidate characters in namespace",
-      error: {
-        namespace:  namespace
-      }
-    });
-  }
 
   // Authenticate request by providing parameters
   if(!/^public\//.test(artifactName) && !req.satisfies({

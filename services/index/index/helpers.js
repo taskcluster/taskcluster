@@ -83,10 +83,5 @@ var insertTask = function(namespace, input, options) {
 // Export insertTask
 exports.insertTask = insertTask;
 
-/** Check if namespace is valid */
-var isValidNamespace = function(namespace) {
-  return /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/.test(namespace);
-};
-
-// Export isValidNamespace
-exports.isValidNamespace = isValidNamespace;
+/** Regular expression for valid namespaces */
+exports.namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;
