@@ -38,8 +38,9 @@ export default class Artifacts {
       }));
     } catch (e) {
       let error = `Artifact "${name}" not found at "${path}"`;
-      // Log the error...
-      taskHandler.stream.write(taskHandler.fmtErrorLog(error));
+      // Log the error but not as an error so that other systems to not think it's
+      // a fatal issue
+      taskHandler.stream.write(taskHandler.fmtLog(error));
 
       // Create the artifact but as the type of "error" to indicate it is
       // missing.
