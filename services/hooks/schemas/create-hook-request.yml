@@ -36,23 +36,23 @@ properties:
       - name
       - description
       - owner
-    bindings:
-      type:                 object
-      properties:
-        exchange:
-          title:            "Exchange"
-          type:             string
+  bindings:
+    type:                 object
+    properties:
+      exchange:
+        title:            "Exchange"
+        type:             string
         routingKey:         {$const: routing}
-      additionalProperties: false
-      required:
-        - exchange
-        - routingKey
-    schedule:
-      type:                 string
-      maxLength:            255
-    expires:                {$const: expires}
-    deadline:               {$const: deadline}
-    task:                   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
+    additionalProperties: false
+    required:
+      - exchange
+      - routingKey
+  schedule:
+    type:                 string
+    maxLength:            255
+  expires:                {$const: expires}
+  deadline:               {$const: deadline}
+  task:                   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
 additionalProperties:       false
 required:
   - metadata

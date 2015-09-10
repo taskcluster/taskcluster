@@ -1,74 +1,70 @@
-$schema:        http://json-schema.org/draft-04/schema#
-title:          "hook definition"
-description:    |
-    representation of a hook to be scheduled
-type:           object
+$schema:                  http://json-schema.org/draft-04/schema#
+title:                    "hook definition"
+description: |
+  Definition of a hook that can be triggered and schedule
+type:                     object
 properties:
-    groupId:
-        type: string
-        maxLength: 255
-    hookId:
-        type: string
-        maxLength: 255
-    metadata:
-        type: object
-        properties:
-            name:
-                title:      "Name"
-                description: |
-                    Human readable name of the hook, used to briefly give an idea about
-                    what the hook does.
-                type:       string
-                maxLength:  255
-            description:
-                title:      "Description"
-                description:    |
-                    Human readable description of the hook
-                type:       string
-                maxLength:  32768
-            owner:
-                title:     "Owner"
-                description: |
-                    E-mail of the persion who caused this task. This is the person who
-                    is contacted in the event of an error in scheduling.
-                type:       string
-                maxLength:  255
-            emailOnError:
-                title:      "Email on error"
-                type:       boolean
-                default:    true
-        additionalProperties: false
-        required:
-            - name
-            - description
-            - owner
-            - emailOnError
-    bindings:
-        type:   object
-        properties:
-            exchange:
-                title: "Exchange"
-                type: string
-            routingKey:
-                title: "Routing Key"
-                type: string
-        additionalProperties: false
-        required:
-            - exchange
-            - routingKey
-    schedule:
-        type: string
-    expires:
-        type: string
-    deadline:
-        type: string
-    task:   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
-additionalProperties: false
+  groupId:
+    type:                 string
+    maxLength:            255
+  hookId:
+      type:               string
+      maxLength:          255
+  metadata:
+    type:                 object
+    properties:
+      name:
+        title:            "Name"
+        description: |
+          Human readable name of the hook, used to briefly give an idea about
+          what the hook does.
+        type:             string
+        maxLength:        255
+      description:
+        title:            "Description"
+        description: |
+          Human readable description of the hook
+        type:             string
+        maxLength:        32768
+      owner:
+        title:            "Owner"
+        description: |
+          E-mail of the persion who created this hook. This is the person who is
+          contacted in the event of an error in scheduling.
+        type:             string
+        maxLength:        255
+      emailOnError:
+        title:            "Email on error"
+        type:             boolean
+        default:          true
+    additionalProperties: false
+    required:
+      - name
+      - description
+      - owner
+  bindings:
+    type:                 object
+    properties:
+      exchange:
+        title:            "Exchange"
+        type:             string
+        routingKey:       {$const: routing}
+    additionalProperties: false
+    required:
+      - exchange
+      - routingKey
+  schedule:
+    type:                 string
+    maxLength:            255
+  expires:                {$const: expires}
+  deadline:               {$const: deadline}
+  task:                   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
+additionalProperties:     false
 required:
-    - groupId
-    - hookId
-    - metadata
-    - task
-    - bindings
-    - expires
-    - deadline
+  - groupId
+  - hookId
+  - metadata
+  - task
+  - bindings
+  - expires
+  - deadline
