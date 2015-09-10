@@ -502,7 +502,7 @@ Properties
   Property 'clientId' =
     Description            = 'ClientId of the client scopes is requested about
     '
-    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+    Pattern                = '^[A-Za-z0-9_-]{22}$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -553,7 +553,7 @@ Properties
   Property 'clientId' =
     Description            = 'ClientId of the client scopes is requested about
     '
-    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+    Pattern                = '^[A-Za-z0-9_-]{22}$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -677,7 +677,7 @@ Items
     Property 'clientId' =
       Description            = 'ClientId of the client scopes is requested about
       '
-      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+      Pattern                = '^[A-Za-z0-9_-]{22}$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -763,7 +763,7 @@ Properties
   Property 'clientId' =
     Description            = 'ClientId of the client scopes is requested about
     '
-    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+    Pattern                = '^[A-Za-z0-9_-]{22}$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -838,7 +838,7 @@ Items
     Property 'clientId' =
       Description            = 'ClientId of the client scopes is requested about
       '
-      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+      Pattern                = '^[A-Za-z0-9_-]{22}$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
