@@ -3,7 +3,7 @@ package taskcluster_test
 import (
 	"testing"
 
-	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
+	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
 )
 
 // XXX: This is a terrible test since it will eventually fail but the docker

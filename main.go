@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	docopt "github.com/docopt/docopt-go"
-	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
+	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
 )
 
 var version = "Taskcluster proxy 1.0"

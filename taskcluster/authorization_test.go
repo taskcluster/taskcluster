@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	tc "github.com/lightsofapollo/taskcluster-proxy/taskcluster"
+	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
 )
 
 var CLIENT_ID = os.Getenv("TASKCLUSTER_CLIENT_ID")
@@ -47,6 +47,7 @@ func readJson(http *http.Response) (*getScopesResponse, error) {
 }
 
 func TestBewit(t *testing.T) {
+	checkTest(t)
 	url := fmt.Sprintf("https://auth.taskcluster.net/v1/client/%s/scopes", CLIENT_ID)
 
 	bewitUrl, err := tc.Bewit(CLIENT_ID, ACCESS_TOKEN, url)
