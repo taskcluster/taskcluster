@@ -14,8 +14,8 @@
     "promise":                          "6.0.1",
     "lodash":                           "2.4.1",
     "debug":                            "2.1.1",
-    "taskcluster-client":               "0.22.0",
-    "taskcluster-base":                 "0.7.22",
+    "taskcluster-client":               "^0.22.6",
+    "taskcluster-base":                 "0.8.5",
     "superagent":                       "^1.2.0",
     "superagent-promise":               "^0.2.0"
   },
@@ -24,6 +24,7 @@
     "slugid":                           "1.0.3"
   },
   "engines": {
-    "node":                             "0.12.x"
+    "node":                             "^0.12.0",
+    "npm":                              "^2.0.0"
   }
 }
