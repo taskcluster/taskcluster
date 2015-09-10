@@ -31,7 +31,7 @@ api.declare({
   route:      '/purge-cache/:provisionerId/:workerType',
   name:       'purgeCache',
   scopes:     [
-    'purge-cache:<provisionerId>/<workerType>:<cacheName>'
+    ['purge-cache:<provisionerId>/<workerType>:<cacheName>']
   ],
   deferAuth:  true,
   input:      SCHEMA_PREFIX_CONST + 'purge-cache-request.json#',
