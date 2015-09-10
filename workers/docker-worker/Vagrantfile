@@ -12,6 +12,6 @@ Vagrant.configure("2") do |config|
 SCRIPT
 
   config.vm.provision "shell", path: 'vagrant.sh'
-  config.vm.provision "docker", images: [], version: "1.7.1"
+  config.vm.provision "docker", images: [], version: "1.6.1"
 
 end

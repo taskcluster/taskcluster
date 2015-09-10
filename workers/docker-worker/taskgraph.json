@@ -24,7 +24,7 @@
           "command": [
             "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 1 --total-chunks 5"
           ],
-          "image": "taskcluster/worker-ci:0.0.3",
+          "image": "taskcluster/worker-ci:0.0.4",
           "maxRunTime": 3600,
           "capabilities": {
             "privileged": true,
@@ -59,7 +59,7 @@
           "command": [
             "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 2 --total-chunks 5"
           ],
-          "image": "taskcluster/worker-ci:0.0.3",
+          "image": "taskcluster/worker-ci:0.0.4",
           "maxRunTime": 3600,
           "capabilities": {
             "privileged": true,
@@ -94,7 +94,7 @@
           "command": [
             "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 3 --total-chunks 5"
           ],
-          "image": "taskcluster/worker-ci:0.0.3",
+          "image": "taskcluster/worker-ci:0.0.4",
           "maxRunTime": 3600,
           "capabilities": {
             "privileged": true,
@@ -129,7 +129,7 @@
           "command": [
             "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 4 --total-chunks 5"
           ],
-          "image": "taskcluster/worker-ci:0.0.3",
+          "image": "taskcluster/worker-ci:0.0.4",
           "maxRunTime": 3600,
           "capabilities": {
             "privileged": true,
@@ -164,7 +164,7 @@
           "command": [
             "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 5 --total-chunks 5"
           ],
-          "image": "taskcluster/worker-ci:0.0.3",
+          "image": "taskcluster/worker-ci:0.0.4",
           "maxRunTime": 3600,
           "capabilities": {
             "privileged": true,
@@ -199,7 +199,7 @@
           "command": [
             "npm install && ./build.sh && ./test/docker-worker-test"
           ],
-          "image": "taskcluster/worker-ci:0.0.3",
+          "image": "taskcluster/worker-ci:0.0.4",
           "maxRunTime": 3600,
           "capabilities": {
             "privileged": true,
