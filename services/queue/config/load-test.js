@@ -13,6 +13,11 @@ module.exports = {
     deadlineQueue:                'loadtest-deadline-queue'
   },
 
+  // TaskCluster configuration
+  taskcluster: {
+    authBaseUrl:                  'https://tc-auth-load-test.herokuapp.com/v1',
+  },
+
   server: {
     publicUrl:                    'https://tc-queue-load-test.herokuapp.com',
     port:                         80,
