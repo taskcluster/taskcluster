@@ -44,7 +44,7 @@ suite("API", function() {
     });
   });
 
-  test('find (non-existing', function() {
+  test('find (non-existing)', function() {
     var ns = slugid.v4() + '.' + slugid.v4();
     return subject.index.findTask(ns).then(function() {
       assert(false, "This shouldn't have worked");
@@ -53,7 +53,7 @@ suite("API", function() {
     });
   });
 
-  test('list namespaces (top-level)', function() {
+  test('list top-level namespaces', function() {
     return subject.index.listNamespaces('', {}).then(function(result) {
       result.namespaces.forEach(function(ns) {
         assert(ns.namespace.indexOf('.') === -1, "shouldn't have any dots");
@@ -61,8 +61,26 @@ suite("API", function() {
     });
   });
 
-  test('list tasks (top-level)', function() {
+  test('list top-level namespaces (without auth)', function() {
+    var index = new subject.Index();
+    return index.listNamespaces('', {}).then(function(result) {
+      result.namespaces.forEach(function(ns) {
+        assert(ns.namespace.indexOf('.') === -1, "shouldn't have any dots");
+      });
+    });
+  });
+
+  test('list top-level tasks', function() {
     return subject.index.listTasks('', {}).then(function(result) {
+      result.tasks.forEach(function(task) {
+        assert(task.namespace.indexOf('.') === -1, "shouldn't have any dots");
+      });
+    });
+  });
+
+  test('list top-level tasks (without auth)', function() {
+    var index = new subject.Index();
+    return index.listTasks('', {}).then(function(result) {
       result.tasks.forEach(function(task) {
         assert(task.namespace.indexOf('.') === -1, "shouldn't have any dots");
       });

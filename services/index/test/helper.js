@@ -30,7 +30,7 @@ var defaultClients = [
     // auth:credentials assigned to our test client
     clientId:     cfg.get('taskcluster:credentials:clientId'),
     accessToken:  cfg.get('taskcluster:credentials:accessToken'),
-    scopes:       ['auth:*'],
+    scopes:       ['auth:azure-table-access:*'],
     expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
   }, {
     clientId:     'test-client',  // Used in default Index creation
