@@ -53,9 +53,7 @@ properties:
     required:
       - exchange
       - routingKey
-  schedule:
-    type:                 string
-    maxLength:            255
+  schedule:               {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
   expires:                {$const: expires}
   deadline:               {$const: deadline}
   task:                   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
