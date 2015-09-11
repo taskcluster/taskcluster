@@ -90,7 +90,7 @@ function Expand-ZIPFile($file, $destination, $url)
 Set-ExecutionPolicy Unrestricted -Force -Scope Process
 
 # install chocolatey package manager
-iex ($client.DownloadString('https://chocolatey.org/install.ps1'))
+Invoke-Expression ($client.DownloadString('https://chocolatey.org/install.ps1'))
 
 # download mozilla-build installer
 $client.DownloadFile("https://api.pub.build.mozilla.org/tooltool/sha512/03b4ca2bebede21a29f739165030bfc7058a461ffe38113452e976193e382d3ba6df8a48ac843b70429e23481e6327f43c86ffd88e4ce16263d072ef7e14e692", "C:\MozillaBuildSetup-2.0.0.exe")
