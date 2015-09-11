@@ -249,10 +249,22 @@ suite("Entity (create/load/modify DataTypes)", function() {
     "Hello World Again"
   );
   testType(
-    'Entity.types.Number',
+    'Entity.types.Number (float)',
     base.Entity.types.Number,
     42.3,
     56.7
+  );
+  testType(
+    'Entity.types.Number (large)',
+    base.Entity.types.Number,
+    12147483648,
+    13147483648
+  );
+  testType(
+    'Entity.types.Number (int)',
+    base.Entity.types.Number,
+    45,
+    1256
   );
   testType(
     'Entity.types.Date',
