@@ -1,0 +1,7 @@
+{
+    "format": {
+        "type": "monthly",
+        "dayOfMonth": [1, 23],
+        "timeOfDay": [0]
+    }
+}

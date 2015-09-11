@@ -1,0 +1,84 @@
+$schema:        http://json-schema.org/draft-04/schema#
+title:          "Schedule format"
+description: |
+    schema for scheduling hooks
+type: object
+definitions:
+  timeOfDay:
+    type: array
+    minItems: 1
+    items:
+      type: integer
+      minimum: 0
+      maximum: 23
+    uniqueItems: true
+  none:
+    properties:
+      type:
+        enum: ['none']
+    additionalProperties: false
+    required:
+      - type
+  daily:
+    properties:
+      type:
+        enum: ["daily"]
+      timeOfDay: {$ref: "#/definitions/timeOfDay"}
+    additionalProperties: false
+    required:
+      - type
+      - timeOfDay
+  weekly:
+    properties:
+      type:
+        enum: ['weekly']
+      dayOfWeek:
+        type: array
+        minItems: 1
+        items:
+          enum:
+            - sunday
+            - monday
+            - tuesday
+            - wednesday
+            - thursday
+            - friday
+            - saturday
+        uniqueItems: true
+      timeOfDay: {$ref: "#/definitions/timeOfDay"}
+    additionalProperties: false
+    required:
+      - type
+      - dayOfWeek
+      - timeOfDay
+  monthly:
+    properties:
+      type:
+        enum: ['monthly']
+      dayOfMonth:
+        type: array
+        minItems: 1
+        items:
+          type: integer
+          minimum: 1
+          maximum: 31
+        uniqueItems: true
+      timeOfDay: {$ref: "#/definitions/timeOfDay"}
+    additionalProperties: false
+    required:
+      - type
+      - dayOfMonth
+      - timeOfDay
+properties:
+  format:
+    type: object
+    oneOf:
+      [
+        {$ref: "#/definitions/none"},
+        {$ref: "#/definitions/daily"},
+        {$ref: "#/definitions/weekly"},
+        {$ref: "#/definitions/monthly"}
+      ]
+additionalProperties: false
+required:
+  - format

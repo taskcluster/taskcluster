@@ -1,0 +1,7 @@
+{
+    "format": {
+        "type": "weekly",
+        "dayOfWeek": ["friday"],
+        "timeOfDay": [0]
+    }
+}
