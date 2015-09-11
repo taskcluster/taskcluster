@@ -106,6 +106,7 @@ choco install -y windows-sdk-8.1
 
 # install Visual Studio community edition 2013
 choco install -y visualstudiocommunity2013
+# $client.DownloadFile("https://go.microsoft.com/fwlink/?LinkId=532495&clcid=0x409", "C:\vs_community.exe")
 
 # install PSTools
 md "C:\PSTools"
