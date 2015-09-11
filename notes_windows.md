@@ -102,10 +102,10 @@ $p = Start-Process "C:\MozillaBuildSetup-2.0.0.exe" -ArgumentList "/S" -wait -No
 $p.HasExited
 
 # install Windows SDK 8.1
-choco install windows-sdk-8.1
+choco install -y windows-sdk-8.1
 
 # install Visual Studio community edition 2013
-choco install visualstudiocommunity2013
+choco install -y visualstudiocommunity2013
 
 # install PSTools
 md "C:\PSTools"
