@@ -1,0 +1,13 @@
+{
+    "format": {
+        "type": "weekly",
+        "dayOfWeek": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+        ],
+        "timeOfDay": [0, 12]
+    }
+}

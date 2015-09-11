@@ -75,26 +75,12 @@ suite('Create hook', function() {
     assume(r1).is.empty();
   });
 
-  test("createHook with a schedule every hour", async () => {
+  test("createHook with a daily schedule", async () => {
     let input = require('./test_definition');
-    input.schedule = "1 hour";
+    input.schedule = {format: {type: "daily", timeOfDay: [0]}};
     await helper.hooks.createHook('foo', 'bar', input);
     var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
     assert(new Date(r1.nextScheduledDate) > new Date());
-  });
-
-  test("createHook update schedule from hourly to biweekly", async () => {
-    let input = require('./test_definition');
-
-    input.schedule = "1 hour";
-    await helper.hooks.createHook('foo', 'bar', input);
-    var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
-
-    input.schedule = "2 weeks";
-    await helper.hooks.updateHook('foo', 'bar', input);
-    var r2 = await helper.hooks.getHookSchedule('foo', 'bar');
-
-    assert (new Date(r2.nextScheduledDate) > new Date(r1.nextScheduledDate));
   });
 
   test("listHookGroups returns valid length of groups", async () => {
