@@ -15,7 +15,7 @@
     "lodash":                           "2.4.1",
     "debug":                            "2.1.1",
     "taskcluster-client":               "^0.22.6",
-    "taskcluster-base":                 "0.8.5",
+    "taskcluster-base":                 "0.8.6",
     "superagent":                       "^1.2.0",
     "superagent-promise":               "^0.2.0"
   },
