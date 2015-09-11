@@ -139,5 +139,107 @@ SLUGID=$(~/venvs/xxx/bin/python -c 'import slugid; print slugid.nice()')
 B64_ENCODED_USER_DATA=$(base64 firefox.userdata)
 aws --region us-west-2 ec2 run-instances --image-id ami-4dbcb67d --key-name pmoore-oregan-us-west-2 --security-groups "RDP only" --user-data $B64_ENCODED_USER_DATA --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=75,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior terminate --client-token $SLUGID
 sleep 3600
-aws --region us-west-2 ec2 create-image --instance-id i-8702da42 --name "win2012r2 mozillabuild pmoore" --description "firefox desktop builds on windows - taskcluster worker"
+aws --region us-west-2 ec2 create-image --instance-id i-00ed82c6 --name "win2012r2 mozillabuild pmoore" --description "firefox desktop builds on windows - taskcluster worker"
+```
+
+Output
+------
+
+```
+pmoore@Petes-iMac:~ $ aws ec2 run-instances --image-id ami-4dbcb67d --key-name pmoore-oregan-us-west-2 --security-groups "RDP only" --user-data $B64_ENCODED_USER_DATA --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=75,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior terminate --client-token $SLUGID
+{
+    "OwnerId": "692406183521", 
+    "ReservationId": "r-38791fce", 
+    "Groups": [], 
+    "Instances": [
+        {
+            "Monitoring": {
+                "State": "disabled"
+            }, 
+            "PublicDnsName": "", 
+            "Platform": "windows", 
+            "State": {
+                "Code": 0, 
+                "Name": "pending"
+            }, 
+            "EbsOptimized": false, 
+            "LaunchTime": "2015-09-11T18:42:57.000Z", 
+            "PrivateIpAddress": "172.31.26.113", 
+            "ProductCodes": [], 
+            "VpcId": "vpc-24233046", 
+            "StateTransitionReason": "", 
+            "InstanceId": "i-00ed82c6", 
+            "ImageId": "ami-4dbcb67d", 
+            "PrivateDnsName": "ip-172-31-26-113.us-west-2.compute.internal", 
+            "KeyName": "pmoore-oregan-us-west-2", 
+            "SecurityGroups": [
+                {
+                    "GroupName": "RDP only", 
+                    "GroupId": "sg-f1db5a95"
+                }
+            ], 
+            "ClientToken": "IZVUbW-gTrevGOk5PyP1kQ", 
+            "SubnetId": "subnet-26f2c052", 
+            "InstanceType": "c4.2xlarge", 
+            "NetworkInterfaces": [
+                {
+                    "Status": "in-use", 
+                    "MacAddress": "06:40:fd:49:9f:a9", 
+                    "SourceDestCheck": true, 
+                    "VpcId": "vpc-24233046", 
+                    "Description": "", 
+                    "NetworkInterfaceId": "eni-843937cd", 
+                    "PrivateIpAddresses": [
+                        {
+                            "PrivateDnsName": "ip-172-31-26-113.us-west-2.compute.internal", 
+                            "Primary": true, 
+                            "PrivateIpAddress": "172.31.26.113"
+                        }
+                    ], 
+                    "PrivateDnsName": "ip-172-31-26-113.us-west-2.compute.internal", 
+                    "Attachment": {
+                        "Status": "attaching", 
+                        "DeviceIndex": 0, 
+                        "DeleteOnTermination": true, 
+                        "AttachmentId": "eni-attach-c7928ce6", 
+                        "AttachTime": "2015-09-11T18:42:57.000Z"
+                    }, 
+                    "Groups": [
+                        {
+                            "GroupName": "RDP only", 
+                            "GroupId": "sg-f1db5a95"
+                        }
+                    ], 
+                    "SubnetId": "subnet-26f2c052", 
+                    "OwnerId": "692406183521", 
+                    "PrivateIpAddress": "172.31.26.113"
+                }
+            ], 
+            "SourceDestCheck": true, 
+            "Placement": {
+                "Tenancy": "default", 
+                "GroupName": "", 
+                "AvailabilityZone": "us-west-2b"
+            }, 
+            "Hypervisor": "xen", 
+            "BlockDeviceMappings": [], 
+            "Architecture": "x86_64", 
+            "StateReason": {
+                "Message": "pending", 
+                "Code": "pending"
+            }, 
+            "RootDeviceName": "/dev/sda1", 
+            "VirtualizationType": "hvm", 
+            "RootDeviceType": "ebs", 
+            "AmiLaunchIndex": 0
+        }
+    ]
+}
+```
+
+```
+pmoore@Petes-iMac:~/go/src/github.com/taskcluster/generic-worker master $ aws --region us-west-2 ec2 create-image --instance-id i-00ed82c6 --name "win2012r2 mozillabuild pmoore" --description "firefox desktop builds on windows - taskcluster worker"
+{
+    "ImageId": "ami-fb1d01cb"
+}
 ```
