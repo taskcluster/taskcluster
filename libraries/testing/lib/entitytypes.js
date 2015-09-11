@@ -185,7 +185,7 @@ exports.String = StringType;
 
 /******************** Number Type ********************/
 
-/** String Entity type */
+/** Number Entity type */
 var NumberType = function(property) {
   BaseValueType.apply(this, arguments);
 };
@@ -197,9 +197,29 @@ NumberType.prototype.validate = function(value) {
   checkType('NumberType', this.property, value, 'number');
 };
 
+NumberType.prototype.serialize = function(target, value) {
+  this.validate(value);
+  if (value % 1  === 0 && Math.abs(value) >= 2147483648) {
+    target[this.property] = value.toString();
+    target[this.property + '@odata.type'] = 'Edm.Int64';
+  } else {
+    // No type info for Edm.Double or Edm.Int32
+    target[this.property] = value;
+  }
+};
+
 NumberType.prototype.string = function(value) {
   this.validate(value);
   return value.toString();
+};
+
+NumberType.prototype.deserialize = function(source) {
+  var value = source[this.property];
+  if (source[this.property + '@odata.type'] === 'Edm.Int64') {
+    value = parseInt(value);
+  }
+  this.validate(value);
+  return value;
 };
 
 NumberType.prototype.filter = function(op, filterBuilder) {
