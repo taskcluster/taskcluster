@@ -48,7 +48,7 @@ properties:
       exchange:
         title:            "Exchange"
         type:             string
-        routingKey:       {$const: routing}
+      routingKey:       {$const: routing}
     additionalProperties: false
     required:
       - exchange
