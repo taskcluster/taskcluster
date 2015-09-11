@@ -391,6 +391,9 @@ api.declare({
   }
 
   let payload = await hook.taskPayload();
+  let taskId = slugid.v4();
+
+  debug('triggering hook  %s/%s with token and with taskId: %s', hook.groupId, hook.hookId, taskId);
   let resp = await this.queue.createTask(slugid.v4(), payload);
   return res.reply(resp);
 });
@@ -421,6 +424,10 @@ api.declare({
   }
 
   let payload = await hook.taskPayload();
-  let resp = await this.queue.createTask(slugid.v4(), payload);
+  let taskId = slugid.v4();
+
+  debug('triggering hook %s/%s with taskId: %s', hook.groupId, hook.hookId, taskId);
+  let resp = await this.queue.createTask(taskId, payload);
+
   return res.reply(resp);
 });
