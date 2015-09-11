@@ -128,3 +128,16 @@ $p.HasExited
 </powershell>
 
 ```
+
+Script to create AMI
+====================
+
+This section is work-in-progress...
+
+```bash
+SLUGID=$(~/venvs/xxx/bin/python -c 'import slugid; print slugid.nice()')
+B64_ENCODED_USER_DATA=$(base64 firefox.userdata)
+aws --region us-west-2 ec2 run-instances --image-id ami-4dbcb67d --key-name pmoore-oregan-us-west-2 --security-groups "RDP only" --user-data $B64_ENCODED_USER_DATA --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=75,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior terminate --client-token $SLUGID
+sleep 3600
+aws --region us-west-2 ec2 create-image --instance-id i-8702da42 --name "win2012r2 mozillabuild pmoore" --description "firefox desktop builds on windows - taskcluster worker"
+```

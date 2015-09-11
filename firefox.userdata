@@ -1,0 +1,57 @@
+<powershell>
+
+# needed for making http requests
+$client = New-Object system.net.WebClient
+
+# utility function to download a zip file and extract it
+function Expand-ZIPFile($file, $destination, $url)
+{
+    $client.DownloadFile($url, $file)
+    $shell = new-object -com shell.application
+    $zip = $shell.NameSpace($file)
+    foreach($item in $zip.items())
+    {
+        $shell.Namespace($destination).copyhere($item)
+    }
+}
+
+# allow powershell scripts to run
+Set-ExecutionPolicy Unrestricted -Force -Scope Process
+
+# install chocolatey package manager
+Invoke-Expression ($client.DownloadString('https://chocolatey.org/install.ps1'))
+
+# download mozilla-build installer
+$client.DownloadFile("https://api.pub.build.mozilla.org/tooltool/sha512/03b4ca2bebede21a29f739165030bfc7058a461ffe38113452e976193e382d3ba6df8a48ac843b70429e23481e6327f43c86ffd88e4ce16263d072ef7e14e692", "C:\MozillaBuildSetup-2.0.0.exe")
+
+# run mozilla-build installer in silent (/S) mode
+$p = Start-Process "C:\MozillaBuildSetup-2.0.0.exe" -ArgumentList "/S" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\MozillaBuild-2.0.0_install.log" -RedirectStandardError "C:\MozillaBuild-2.0.0_install.err"
+
+# wait for install to finish
+$p.HasExited
+
+# install Windows SDK 8.1
+choco install -y windows-sdk-8.1
+
+# install Visual Studio community edition 2013
+choco install -y visualstudiocommunity2013
+# $client.DownloadFile("https://go.microsoft.com/fwlink/?LinkId=532495&clcid=0x409", "C:\vs_community.exe")
+
+# install PSTools
+md "C:\PSTools"
+Expand-ZIPFile -File "C:\PSTools\PSTools.zip" -Destination "C:\PSTools" -Url "https://download.sysinternals.com/files/PSTools.zip"
+
+# install nssm
+Expand-ZIPFile -File "C:\nssm-2.24.zip" -Destination "C:\" -Url "http://www.nssm.cc/release/nssm-2.24.zip"
+
+# download generic-worker
+md C:\generic-worker
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v1.0.11/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+
+# enable DEBUG logs for generic-worker install
+$env:DEBUG = "*"
+
+# install generic-worker
+$p = Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install --config C:\\generic-worker\\generic-worker.config" -wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+$p.HasExited
+</powershell>
