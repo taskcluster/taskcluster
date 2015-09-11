@@ -8,7 +8,7 @@ In order to set up a new AWS Provisioner Worker Type running on Windows, follow 
    ```powershell
    <powershell>
    
-   $client = New-Object system.net.WebClient;
+   $client = New-Object system.net.WebClient
    
    function Expand-ZIPFile($file, $destination, $url)
    {
@@ -71,8 +71,10 @@ building Firefox.
 ```powershell
 <powershell>
 
+# needed for making http requests
 $client = New-Object system.net.WebClient
 
+# utility function to download a zip file and extract it
 function Expand-ZIPFile($file, $destination, $url)
 {
     $client.DownloadFile($url, $file)
@@ -84,15 +86,26 @@ function Expand-ZIPFile($file, $destination, $url)
     }
 }
 
+# allow powershell scripts to run
+Set-ExecutionPolicy Unrestricted -Force -Scope Process
+
+# install chocolatey package manager
+iex ($client.DownloadString('https://chocolatey.org/install.ps1'))
+
 # download mozilla-build installer
 $client.DownloadFile("https://api.pub.build.mozilla.org/tooltool/sha512/03b4ca2bebede21a29f739165030bfc7058a461ffe38113452e976193e382d3ba6df8a48ac843b70429e23481e6327f43c86ffd88e4ce16263d072ef7e14e692", "C:\MozillaBuildSetup-2.0.0.exe")
+
 # run mozilla-build installer in silent (/S) mode
 $p = Start-Process "C:\MozillaBuildSetup-2.0.0.exe" -ArgumentList "/S" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\MozillaBuild-2.0.0_install.log" -RedirectStandardError "C:\MozillaBuild-2.0.0_install.err"
+
+# wait for install to finish
 $p.HasExited
 
 # install Windows SDK 8.1
+choco install windows-sdk-8.1
 
 # install Visual Studio community edition 2013
+choco install visualstudiocommunity2013
 
 # install PSTools
 md "C:\PSTools"
