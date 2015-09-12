@@ -18,7 +18,7 @@ var Hook = base.Entity.configure({
     bindings:           base.Entity.types.JSON,
     deadline:           base.Entity.types.String,
     expires:            base.Entity.types.String,
-    schedule:           base.Entity.types.String,
+    schedule:           base.Entity.types.JSON,
     accessToken:        base.Entity.types.SlugId,
     nextTaskId:         base.Entity.types.SlugId,
     nextScheduledDate:  base.Entity.types.Date,
@@ -27,18 +27,16 @@ var Hook = base.Entity.configure({
 
 /** Return promise for hook definition */
 Hook.prototype.definition = function() {
-  var definition = {
+  return Promise.resolve({
     hookId:   this.hookId,
     groupId:  this.groupId,
     metadata: _.cloneDeep(this.metadata),
     task:     _.cloneDeep(this.task),
     bindings: _.cloneDeep(this.bindings),
+    schedule: _.cloneDeep(this.schedule),
     deadline: this.deadline,
     expires:  this.expires
-  };
-  if (this.schedule) { definition.schedule = this.schedule; }
-
-  return Promise.resolve(definition);
+  });
 };
 
 Hook.prototype.taskPayload = function() {
