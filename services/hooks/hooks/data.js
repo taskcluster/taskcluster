@@ -1,9 +1,9 @@
-var base   = require('taskcluster-base');
-var debug  = require('debug')('hooks:data');
-var assert = require('assert');
-var Promise = require('promise');
-var _       = require('lodash');
-var datejs  = require('date.js');
+var base        = require('taskcluster-base');
+var debug       = require('debug')('hooks:data');
+var assert      = require('assert');
+var Promise     = require('promise');
+var taskcluster = require('taskcluster-client');
+var _           = require('lodash');
 
 /** Entity for tracking hooks and associated state **/
 var Hook = base.Entity.configure({
@@ -42,9 +42,9 @@ Hook.prototype.definition = function() {
 Hook.prototype.taskPayload = function() {
   let payload = _.cloneDeep(this.task);
   payload.created = new Date().toJSON();
-  payload.deadline = datejs(this.deadline).toJSON();
+  payload.deadline = taskcluster.fromNow(this.deadline).toJSON();
   if (this.expires) {
-    payload.expires = datejs(this.expires).toJSON();
+    payload.expires = taskcluster.fromNow(this.expires).toJSON();
   }
   return Promise.resolve(payload);
 }
