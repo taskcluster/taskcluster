@@ -1,9 +1,9 @@
 var assert  = require('assert');
 var base    = require('taskcluster-base');
 var data    = require('data');
-var datejs  = require('date.js');
 var Promise = require('promise');
 var slugid  = require('slugid');
+var utils   = require('./utils');
 
 /**
  * The Scheduler will periodically check for tasks in azure storage that are
@@ -66,18 +66,18 @@ class Scheduler {
   /** Polls for hooks that need to be scheduled and handles them in a loop */
   async poll() {
     while(!this.stopping) {
-      // Get all hooks that have a schedule defined, and a scheduled date
-      // that is less than the current time
+      // Get all hooks that have a scheduled date that is earlier than now
       var hooks = await this.Hook.scan({
-        schedule:           base.Entity.Op.notEqual(''),
         nextScheduledDate:  base.Entity.Op.lessThan(new Date())
       }, {});
 
-      await Promise.all(hooks.entries.map((hook) => {
+      await Promise.all(hooks.entries.filter((hook) => {
+        return hook.schedule.format.type !== 'none';
+      }).map((hook) => {
         // Don't let a single error break the loop, since it'll be retried later
         return this.handleHook(hook).catch((err) => {
           debug("Failed to handle hook: %j" +
-              ", with err: %s, as JSON: %j", hook, err, err, err.stack);
+                ", with err: %s, as JSON: %j", hook, err, err, err.stack);
         });
       }));
 
@@ -96,7 +96,7 @@ class Scheduler {
     let resp = await queue.createTask(hook.nextTaskId, task);
     await hook.modify((hook) => {
       hook.nextTaskId        = slugid();
-      hook.nextScheduledDate = datejs(hook.schedule);
+      hook.nextScheduledDate = utils.nextDate(hook.schedule);
     });
   }
 }
