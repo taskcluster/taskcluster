@@ -64,5 +64,6 @@ required:
   - metadata
   - task
   - bindings
+  - schedule
   - expires
   - deadline
