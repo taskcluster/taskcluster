@@ -2,12 +2,12 @@
 
 # needed for making http requests
 $client = New-Object system.net.WebClient
+$shell = new-object -com shell.application
 
 # utility function to download a zip file and extract it
 function Expand-ZIPFile($file, $destination, $url)
 {
     $client.DownloadFile($url, $file)
-    $shell = new-object -com shell.application
     $zip = $shell.NameSpace($file)
     foreach($item in $zip.items())
     {
@@ -26,9 +26,6 @@ $client.DownloadFile("https://api.pub.build.mozilla.org/tooltool/sha512/03b4ca2b
 
 # run mozilla-build installer in silent (/S) mode
 $p = Start-Process "C:\MozillaBuildSetup-2.0.0.exe" -ArgumentList "/S" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\MozillaBuild-2.0.0_install.log" -RedirectStandardError "C:\MozillaBuild-2.0.0_install.err"
-
-# wait for install to finish
-$p.HasExited
 
 # install Windows SDK 8.1
 choco install -y windows-sdk-8.1
@@ -53,5 +50,19 @@ $env:DEBUG = "*"
 
 # install generic-worker
 $p = Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install --config C:\\generic-worker\\generic-worker.config" -wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
-$p.HasExited
+
+# add extra config needed
+$config = [System.Convert]::FromBase64String("UEsDBAoAAAAAAA2hN0cIOIW2JwAAACcAAAAJAAAAZ2FwaS5kYXRhQUl6YVN5RC1zLW1YTDRtQnpGN0tNUmtoVENJYkcyUktuUkdYekpjUEsDBAoAAAAAACehN0cVjoCGIAAAACAAAAAVAAAAY3Jhc2gtc3RhdHMtYXBpLnRva2VuODhmZjU3ZDcxMmFlNDVkYmJlNDU3NDQ1NWZjYmNjM2VQSwMECgAAAAAANKE3RxYFa6ViAAAAYgAAABQAAABnb29nbGUtb2F1dGgtYXBpLmtleTE0NzkzNTM0MzU4Mi1qZmwwZTBwc2M3a2gxbXV0MW5mdGI3ZGUwZjFoMHJvMC5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSBLdEhDRkNjMDlsdEN5SkNqQ3dIN1pKd0cKUEsDBAoAAAAAAEShN0ctdLepZAAAAGQAAAAYAAAAZ29vZ2xlLW9hdXRoLWFwaS5rZXlfYmFr77u/MTQ3OTM1MzQzNTgyLWpmbDBlMHBzYzdraDFtdXQxbmZ0YjdkZTBmMWgwcm8wLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIEt0SENGQ2MwOWx0Q3lKQ2pDd0g3Wkp3R1BLAwQKAAAAAABYoTdHJ3EEFiQAAAAkAAAADwAAAG1vemlsbGEtYXBpLmtleTNiNGQyN2RkLTcwM2QtNDA5NC04Mzk4LTRkZTJjNzYzNTA1YVBLAwQKAAAAAABkoTdHMi/H2yQAAAAkAAAAHgAAAG1vemlsbGEtZGVza3RvcC1nZW9sb2MtYXBpLmtleTdlNDBmNjhjLTc5MzgtNGM1ZC05Zjk1LWU2MTY0N2MyMTNlYlBLAwQKAAAAAABxoTdHJ3EEFiQAAAAkAAAAHQAAAG1vemlsbGEtZmVubmVjLWdlb2xvYy1hcGkua2V5M2I0ZDI3ZGQtNzAzZC00MDk0LTgzOTgtNGRlMmM3NjM1MDVhUEsDBBQAAAAIAHyhN0fa715hagAAAHMAAAANAAAAcmVsZW5nYXBpLnRva0ut9MpIck/O9M/08gyt8jT0y/Sy1Eut9CpINvYFCVZGhnhm+jh7Faa4Z4P4Br4QvkFqhCOIX56ca5CZFqiXU5VoWeaSm20S6eblE+rpXJDiFxoRVBphnFFZUmrpkphd7m4aVWXsFxQeCABQSwECHgMKAAAAAAANoTdHCDiFticAAAAnAAAACQAAAAAAAAABAAAApIEAAAAAZ2FwaS5kYXRhUEsBAh4DCgAAAAAAJ6E3RxWOgIYgAAAAIAAAABUAAAAAAAAAAQAAAKSBTgAAAGNyYXNoLXN0YXRzLWFwaS50b2tlblBLAQIeAwoAAAAAADShN0cWBWulYgAAAGIAAAAUAAAAAAAAAAEAAACkgaEAAABnb29nbGUtb2F1dGgtYXBpLmtleVBLAQIeAwoAAAAAAEShN0ctdLepZAAAAGQAAAAYAAAAAAAAAAEAAACkgTUBAABnb29nbGUtb2F1dGgtYXBpLmtleV9iYWtQSwECHgMKAAAAAABYoTdHJ3EEFiQAAAAkAAAADwAAAAAAAAABAAAApIHPAQAAbW96aWxsYS1hcGkua2V5UEsBAh4DCgAAAAAAZKE3RzIvx9skAAAAJAAAAB4AAAAAAAAAAQAAAKSBIAIAAG1vemlsbGEtZGVza3RvcC1nZW9sb2MtYXBpLmtleVBLAQIeAwoAAAAAAHGhN0cncQQWJAAAACQAAAAdAAAAAAAAAAEAAACkgYACAABtb3ppbGxhLWZlbm5lYy1nZW9sb2MtYXBpLmtleVBLAQIeAxQAAAAIAHyhN0fa715hagAAAHMAAAANAAAAAAAAAAEAAACkgd8CAAByZWxlbmdhcGkudG9rUEsFBgAAAAAIAAgAEQIAAHQDAAAAAA==")
+md C:\builds
+Set-Content -Path "C:\builds\config.zip" -Value $config -Encoding Byte
+$zip = $shell.NameSpace("C:\builds\config.zip")
+foreach($item in $zip.items())
+{
+    $shell.Namespace("C:\builds").copyhere($item)
+}
+rm "C:\builds\config.zip"
+
+# initial clone of mozilla-central
+$p = Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\python\Scripts\hg clone https://hg.mozilla.org/mozilla-central C:\gecko" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\hg_initial_clone.log" -RedirectStandardError "C:\hg_initial_clone.err"
+
 </powershell>
