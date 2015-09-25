@@ -599,7 +599,7 @@ if not os.environ.get('NO_TESTS_OVER_WIRE'):
 
     def test_insert_to_index(self):
       payload = {
-        'taskId': 'a' * 22,
+        'taskId': utils.slugId(),
         'rank': 1,
         'data': {'test': 'data'},
         'expires': '2015-09-09T19:19:15.879Z'
