@@ -437,7 +437,7 @@ class TestBuildSignedUrl(ClientTest):
   def test_builds_surl_positional(self):
     expBewit = 'Y2xpZW50SWRcOTAxXENVUHFtY1lSeW5Ua' + \
                '3NBS1BDaTJLUm5palgwR3hpWjFRUE9rMF' + \
-               'Viamc2U1U9XGUzMD0='
+               'Viamc2U1U9XGUzMD0'
     expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=' + expBewit
     actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', 'arg1')
     self.assertEqual(expected, actual)
@@ -445,7 +445,7 @@ class TestBuildSignedUrl(ClientTest):
   def test_builds_surl_keyword(self):
     expBewit = 'Y2xpZW50SWRcOTAxXENVUHFtY1lSeW5Ua' + \
                '3NBS1BDaTJLUm5palgwR3hpWjFRUE9rMF' + \
-               'Viamc2U1U9XGUzMD0='
+               'Viamc2U1U9XGUzMD0'
     expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=' + expBewit
     actual = self.client.buildSignedUrl('two_args_no_input', arg0='arg0', arg1='arg1')
     self.assertEqual(expected, actual)
@@ -564,8 +564,8 @@ class TestAuthenticationMockServer(base.TCTest):
     client = self.clientClass({
       'baseUrl': self.baseUrl,
       'credentials': {
-        'clientId': 'expired',
-        'accessToken': 'expiredToken',
+        'clientId': 'badScope',
+        'accessToken': 'badScopeToken',
       }
     })
     signedUrl = client.buildSignedUrl('getCredentials', 'admin')
