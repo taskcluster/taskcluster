@@ -144,8 +144,6 @@ async function main () {
     debug('running in isolated containers mode...');
   }
 
-  debug('configuration loaded', JSON.stringify(config, null, 4));
-
   // Initialize the classes and objects with core functionality used by higher
   // level docker-worker components.
   config.docker = require('../lib/docker')();
