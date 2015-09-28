@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"testing"
 )
@@ -26,9 +25,7 @@ func TestBadPayloadValidate(t *testing.T) {
 	badPayload := make(map[string]json.RawMessage)
 	badPayload["command"] = json.RawMessage(`bad payload, not even json`)
 	task := TaskRun{Definition: queue.TaskDefinition1{Payload: badPayload}}
-	fmt.Println("validate 1")
 	err := task.validatePayload()
-	fmt.Println("validate 2")
 	if err == nil {
 		t.Fatalf("Bad task payload should not have passed validation")
 	}
