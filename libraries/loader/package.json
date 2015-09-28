@@ -1,0 +1,27 @@
+{
+  "name": "taskcluster-loader",
+  "version": "0.0.1",
+  "description": "a component loader for taskcluster",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "./test/runtests.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taskcluster/taskcluster-loader.git"
+  },
+  "keywords": [
+    "loader",
+    "taskcluster",
+    "component"
+  ],
+  "author": "John Ford <jhford.mozilla@com>",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/taskcluster/taskcluster-loader/issues"
+  },
+  "homepage": "https://github.com/taskcluster/taskcluster-loader#readme"
+}
