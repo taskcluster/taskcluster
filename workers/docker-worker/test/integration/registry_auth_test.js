@@ -54,7 +54,7 @@ suite('Docker custom private registry', () => {
     }
   });
 
-  test('success1', async () => {
+  test('success', async () => {
     let registries = {};
     registries[registryProxy.imageName('')] = CREDENTIALS;
     settings.configure({registries: registries});
