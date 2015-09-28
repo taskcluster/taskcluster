@@ -4,7 +4,8 @@
 cd "$(dirname "${0}")"
 
 # generate a random slugid for aws client token...
-SLUGID=$(~/venvs/xxx/bin/python -c 'import slugid; print slugid.nice()')
+go get github.com/taskcluster/slugid-go/slug
+SLUGID=$("${GOPATH}/bin/slug")
 
 # aws cli docs lie, they say userdata must be base64 encoded, but cli encodes for you, so just cat it...
 USER_DATA="$(cat firefox.userdata)"
