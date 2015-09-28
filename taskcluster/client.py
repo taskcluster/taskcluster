@@ -180,26 +180,25 @@ class BaseClient(object):
     }
 
     def genBewit():
-      # We need to fix the output of get_bewit.  It returns a base64 encoded
-      # string, which contains a list of tokens seperated by '\' characters.
-      # The first one is the clientId, the second is an int, the third is some
-      # base64 encoded data, the fourth is the ext param.  The problem is that
-      # the nested base64 must be normal (i.e. not url safe) base64 for the
-      # server to understand.
+      # We need to fix the output of get_bewit.  It returns a url-safe base64
+      # encoded string, which contains a list of tokens separated by '\'.
+      # The first one is the clientId, the second is an int, the third is
+      # url-safe base64 encoded MAC, the fourth is the ext param.
+      # The problem is that the nested url-safe base64 encoded MAC must be
+      # base64 (i.e. not url safe) or server-side will complain.
       _bewit = hawk.client.get_bewit(requestUrl, bewitOpts)
       decoded = _bewit.decode('base64')
       decodedParts = decoded.split('\\')
       decodedParts[2] = utils.makeB64UrlUnsafe(decodedParts[2])
-      return utils.makeB64UrlSafe(utils.encodeStringForB64Header('\\'.join(decodedParts)))
+      decoded = '\\'.join(decodedParts)
+      _bewit = utils.makeB64UrlSafe(utils.encodeStringForB64Header(decoded))
+      # Also we must drop the = padding, as done by hoek.base64urlEncode
+      return _bewit.rstrip('=')
 
     bewit = genBewit()
-    bewitDecoded = bewit.decode('base64')
 
     if not bewit:
       raise exceptions.TaskclusterFailure('Did not receive a bewit')
-
-    if '_' in bewitDecoded or '-' in bewitDecoded:
-      raise exceptions.TaskclusterFailure('Not sure why this causes server side failure!')
 
     u = urlparse.urlparse(requestUrl)
     return urlparse.urlunparse((
