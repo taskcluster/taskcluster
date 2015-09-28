@@ -1,47 +1,91 @@
-suite('Docker custom private registry', function() {
-  var co = require('co');
-  var waitForEvent = require('../../lib/wait_for_event');
-  var settings = require('../settings');
-  var cmd = require('./helper/cmd');
-  var slugid = require('slugid');
-  var proxy = require('./helper/proxy');
-  var docker = require('../../lib/docker')();
-  var dockerUtils = require('dockerode-process/utils');
+import assert from 'assert';
+import slugid from 'slugid';
 
-  var DockerWorker = require('../dockerworker');
-  var TestWorker = require('../testworker');
+import cmd from './helper/cmd';
+import Docker from '../../lib/docker';
+import DockerWorker from '../dockerworker';
+import Registry from './helper/docker_registry';
+import * as settings from '../settings';
+import TestWorker from '../testworker';
 
-  var REGISTRY = 'registry.hub.docker.com';
+const CREDENTIALS = {
+  username: 'testuser',
+  password: 'testpassword',
+  email: 'xfoo@g.com'
+};
 
-  // Ensure we don't leave behind our test configurations.
-  teardown(settings.cleanup);
+const IMAGE_NAME = 'busybox:latest';
+const REPO_IMAGE_NAME = `${CREDENTIALS.username}/${IMAGE_NAME}`;
 
-  var registryProxy;
-  var credentials = { username: 'user', password: 'pass', email: 'xfoo@g.com' };
+let registryProxy;
+let worker;
+let registryImageName;
+let docker = Docker();
 
-  var worker;
-  setup(co(function * () {
+suite('Docker custom private registry', () => {
+  suiteSetup(async () => {
+    registryProxy = new Registry(docker);
+    await registryProxy.start();
+    registryImageName = await registryProxy.loadImageWithTag(IMAGE_NAME, CREDENTIALS);
+  });
+
+  suiteTeardown(async () => {
+    if (registryProxy) {
+      await registryProxy.close();
+    }
+  });
+
+  setup(() => {
     // For interfacing with the docker registry.
     worker = new TestWorker(DockerWorker, slugid.v4(), slugid.v4());
-    registryProxy = yield proxy(credentials);
-  }));
+  });
 
-  teardown(co(function* () {
-    yield [worker.terminate(), registryProxy.close()];
-  }));
+  teardown(async () => {
+    await worker.terminate();
+    settings.cleanup();
+    try {
+      let image = await docker.getImage(registryImageName);
+      await image.remove({force: true});
+    } catch(e) {
+      // 404's are ok if the test failed to pull the image
+      if (e.statusCode !== 404) {
+        throw e;
+      }
+    }
+  });
 
-  test('success', co(function* () {
-    var imageName = registryProxy.imageName('lightsofapollo/busybox:latest');
-    var registries = {};
-    registries[registryProxy.imageName('')] = credentials;
-    settings.configure({ registries: registries });
+  test('success1', async () => {
+    let registries = {};
+    registries[registryProxy.imageName('')] = CREDENTIALS;
+    settings.configure({registries: registries});
 
-    yield worker.launch();
+    await worker.launch();
 
-    var result = yield worker.postToQueue({
-      scopes: ['docker-worker:image:' + imageName],
+    let result = await worker.postToQueue({
+      scopes: ['docker-worker:image:' + registryImageName],
       payload: {
-        image: imageName,
+        image: registryImageName,
+        command: cmd('ls'),
+        maxRunTime: 60 * 60
+      }
+    });
+    console.log(result.log);
+    assert.equal(result.run.state, 'completed', 'auth download works');
+    assert.equal(result.run.reasonResolved, 'completed', 'auth download works');
+    assert.ok(result.log.includes(registryImageName), 'correct image name');
+  });
+
+  test('success - with star', async () => {
+    let registries = {};
+    registries[registryProxy.imageName('')] = CREDENTIALS;
+    settings.configure({registries: registries});
+
+    await worker.launch();
+
+    let result = await worker.postToQueue({
+      scopes: ['docker-worker:image:' + registryImageName.split('/')[0] + '/*'],
+      payload: {
+        image: registryImageName,
         command: cmd('ls'),
         maxRunTime: 60 * 60
       }
@@ -49,45 +93,20 @@ suite('Docker custom private registry', function() {
 
     assert.equal(result.run.state, 'completed', 'auth download works');
     assert.equal(result.run.reasonResolved, 'completed', 'auth download works');
-    assert.ok(result.log.indexOf(imageName) !== '-1', 'correct image name');
-  }));
+    assert.ok(result.log.includes(registryImageName), 'correct image name');
+  });
 
-  test('success - with star', co(function* () {
-    var imageName = registryProxy.imageName('lightsofapollo/busybox:latest');
-    var registries = {};
-    registries[registryProxy.imageName('')] = credentials;
-    settings.configure({ registries: registries });
+  test('failed scopes', async () => {
+    let registries = {};
+    registries[registryProxy.imageName('')] = CREDENTIALS;
+    settings.configure({registries: registries});
 
-    yield worker.launch();
+    await worker.launch();
 
-    var result = yield worker.postToQueue({
-      scopes: ['docker-worker:image:' + imageName.split('/')[0] + '/*'],
-      payload: {
-        image: imageName,
-        command: cmd('ls'),
-        maxRunTime: 60 * 60
-      }
-    });
-
-    assert.equal(result.run.state, 'completed', 'auth download works');
-    assert.equal(result.run.reasonResolved, 'completed', 'auth download works');
-    assert.ok(result.log.indexOf(imageName) !== '-1', 'correct image name');
-  }));
-
-  test('failed scopes', co(function* () {
-    var imageName = registryProxy.imageName('lightsofapollo/busybox:latest');
-
-    // Ensure this credential request fails...
-    var registries = {};
-    registries[registryProxy.imageName('')] = credentials;
-    settings.configure({ registries: registries });
-
-    yield worker.launch();
-
-    var result = yield worker.postToQueue({
+    let result = await worker.postToQueue({
       scopes: [],
       payload: {
-        image: imageName,
+        image: registryImageName,
         command: cmd('ls'),
         maxRunTime: 60 * 60
       }
@@ -95,26 +114,31 @@ suite('Docker custom private registry', function() {
 
     assert.equal(result.run.state, 'failed', 'auth download works');
     assert.equal(result.run.reasonResolved, 'failed', 'auth download works');
-    assert.ok(result.log.indexOf(imageName) !== '-1', 'correct image name');
-    assert.ok(result.log.indexOf('Insufficient scopes to pull') !== '-1', 'correct error message');
-  }));
+    assert.ok(result.log.includes(registryImageName), 'correct image name');
+    assert.ok(result.log.includes('Insufficient scopes to pull'), 'correct error message');
+  });
 
-  test('failed auth', co(function* () {
-    var imageName = registryProxy.imageName('lightsofapollo/busybox:latest');
-
-    // Ensure this credential request fails...
-    var registries = {};
+  test('failed auth', async () => {
+    let registries = {};
     registries[registryProxy.imageName('')] = {
       username: 'fail', password: 'fail'
     };
-    settings.configure({ registries: registries });
+    settings.configure({
+      registries: registries,
+      dockerConfig: {
+        defaultRegistry: 'registry.hub.docker.com',
+        maxAttempts: 1,
+        delayFactor: 100,
+        randomizationFactor: 0.25
+      }
+    });
 
-    yield worker.launch();
+    await worker.launch();
 
-    var result = yield worker.postToQueue({
-      scopes: ['docker-worker:image:' + imageName],
+    let result = await worker.postToQueue({
+      scopes: ['docker-worker:image:' + registryImageName],
       payload: {
-        image: imageName,
+        image: registryImageName,
         command: cmd('ls'),
         maxRunTime: 60 * 60
       }
@@ -122,7 +146,7 @@ suite('Docker custom private registry', function() {
 
     assert.equal(result.run.state, 'failed', 'auth download works');
     assert.equal(result.run.reasonResolved, 'failed', 'auth download works');
-    assert.ok(result.log.indexOf(imageName) !== '-1', 'correct image name');
-    assert.ok(result.log.indexOf('HTTP code: 403') !== '-1', 'authorization failed');
-  }));
+    assert.ok(result.log.includes(registryImageName), 'correct image name');
+    assert.ok(result.log.includes(`image ${REPO_IMAGE_NAME}`), 'authorization failed');
+  });
 });

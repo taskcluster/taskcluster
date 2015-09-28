@@ -660,7 +660,7 @@ export class Task {
     } catch (e) {
       return await this.abortRun(
         'pull_failed',
-        this.fmtErrorLog(IMAGE_ERROR, this.task.payload.image, e)
+        this.fmtErrorLog(IMAGE_ERROR, this.task.payload.image, e.message)
       );
     }
 

@@ -56,7 +56,7 @@ export async function pullImageStreamTo(docker, image, stream, options={}) {
       return;
     } catch (err) {
       if (attempts >= config.maxAttempts) {
-        throw new Error(err);
+        throw err;
       }
 
       let delay = Math.pow(2, attempts - 1) * config.delayFactor;
