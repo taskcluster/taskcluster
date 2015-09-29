@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "./test/runtests.sh",
-    "compile": "rm -rf lib/ && babel -d lib/ src/",
+    "compile": "rm -rf lib/ && babel --source-maps -d lib/ src/",
     "prepublish": "npm run compile"
   },
   "repository": {
