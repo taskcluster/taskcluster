@@ -1,5 +1,5 @@
 let assume = require('assume');
-let debug = require('debug')('bin:loader');
+let debug = require('debug')('taskcluster:loader');
 let Promise = require('promise');
 
 function loader(componentDirectory, requiredVirtualComponents) {
@@ -22,8 +22,10 @@ function loader(componentDirectory, requiredVirtualComponents) {
       if (!visited) {
         visited = [];
       } else if (visited.includes(name)) {
-        throw new Error('Component '
-            + name + ' is involved in a dependency cycle with ' + JSON.stringify(visited));
+        let errStr = 'Component ' + name + 
+          ' is involved in a dependency cycle with ' + JSON.stringify(visited);
+        debug(errStr);
+        throw new Error(errStr);
       }
 
       /**
@@ -31,7 +33,7 @@ function loader(componentDirectory, requiredVirtualComponents) {
        * want to re-initialize it
        */
       if (initializedComponents[name]) {
-        debug('using %s from cache', name);
+        debug('Using previously loaded %s', name);
         return initializedComponents[name];
       }
 
@@ -43,13 +45,18 @@ function loader(componentDirectory, requiredVirtualComponents) {
       let component;
       if (requiredVirtualComponents.includes(name)) {
         component = virtualComponents[name];
+
         if (!component) {
-          throw new Error('Component ' + name + ' must be a virtual component');
+          let errStr = 'Component ' + name + ' must be a virtual component';
+          debug(errStr);
+          throw new Error(errStr);
         }
       } else {
         component = componentDirectory[name];
         if (!component) {
-          throw new Error('Component ' + name + ' must not be a virtual component');
+          let errStr = 'Component ' + name + ' must not be a virtual component';
+          debug(errStr);
+          throw new Error(errStr);
         }
       }
 
@@ -58,16 +65,19 @@ function loader(componentDirectory, requiredVirtualComponents) {
 
       if (typeof component === 'object' && typeof component.setup === 'function') {
         for (let requirement of component.requires || []) {
-          //debug('loading requirement of %s: %s', name, requirement);
+          debug('loading requirement of %s: %s', name, requirement);
           components[requirement] = loadComponent(requirement, visited.concat([name]));
         }
         componentValue = component.setup.call(null, components);
       } else {
+        debug('component is a flat value');
         componentValue = component;
       }
 
       if (!componentValue) {
-        throw new Error('Unable to initialize ' + name);
+        let errStr = 'Unable to initialize ' + name;
+        debug(errStr);
+        throw new Error(errStr);
       }
       initializedComponents[name] = Promise.resolve(componentValue);
 
