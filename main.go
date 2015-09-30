@@ -935,6 +935,10 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 	if err != nil {
 		return err
 	}
+	// check we have a mime type!
+	if artifact.MimeType == "" {
+		return fmt.Errorf("Cannot upload artifact %s since no Mime Type has been specified\n", artifact)
+	}
 	task.Artifacts = append(task.Artifacts, artifact)
 	debug("MimeType in queue request: %v", artifact.MimeType)
 	par := queue.PostArtifactRequest(json.RawMessage(`{"storageType": "s3", "expires": "` + artifact.Expires.UTC().Format("2006-01-02T15:04:05.000Z0700") + `", "contentType": "` + artifact.MimeType + `"}`))
@@ -1014,7 +1018,13 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 	artifacts := make([]Artifact, len(task.Payload.Artifacts))
 	debug("Artifacts:")
 	for i, artifact := range task.Payload.Artifacts {
-		artifacts[i] = Artifact{CanonicalPath: canonicalPath(artifact.Path), Expires: artifact.Expires, MimeType: mime.TypeByExtension(filepath.Ext(artifact.Path))}
+		mimeType := mime.TypeByExtension(filepath.Ext(artifact.Path))
+		// ensure we have a mimeType, since AWS requires it
+		if mimeType == "" {
+			// application/octet-stream is the mime type for "unknown"
+			mimeType = "application/octet-stream"
+		}
+		artifacts[i] = Artifact{CanonicalPath: canonicalPath(artifact.Path), Expires: artifact.Expires, MimeType: mimeType}
 		debug("Path: %v, Type: %v, Expires: %v", artifact.Path, artifact.Type, artifact.Expires)
 		debug("Canonical path: %v, Expires: %v, Mime type: %v", artifacts[i].CanonicalPath, artifacts[i].Expires, artifacts[i].MimeType)
 	}
