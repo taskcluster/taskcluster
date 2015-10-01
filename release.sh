@@ -111,8 +111,4 @@ fi
 git commit -m "Version $VERSION" $commitFiles
 git tag "$VERSION"
 git push "${OFFICIAL_GIT_REPO}" "+refs/tags/$VERSION:refs/tags/$VERSION" "+refs/tags/$VERSION:refs/heads/master"
-python setup.py sdist
-# use twine to upload to protect pypi credentials (python setup.py upload can
-# send creds in cleartext)
-source env-python/bin/activate
-twine upload -s dist/*
+python setup.py sdist upload
