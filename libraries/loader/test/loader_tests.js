@@ -1,19 +1,20 @@
 let assume = require('assume');
-let subject = require('../lib/loader');
+let subject = require('../src/loader');
 let debug = require('debug')('test:loader');
+let assert = require('assert');
 
-describe('component loader', function() {
-  it('should load a single component with a static value', async function() {
+describe('component loader', () => {
+  it('should load a single component with a static value', async () => {
     let a = {a: 1};
 
     let load = subject({
       test: a,
-    })({});
+    });
 
     assume(await load('test')).equals(a);
   });
   
-  it('should load a single component with setup function', async function() {
+  it('should load a single component with setup function', async () => {
     let a = {a: 1};
 
     let load = subject({
@@ -22,15 +23,15 @@ describe('component loader', function() {
           return a;
         }
       }
-    })();
+    });
 
     assume(await load('test')).equals(a);
   });
   
-  it('should load a virtual component', async function() {
+  it('should accept a virtual component', async () => {
     let a = {a: 1};
 
-    let baseLoader = subject({
+    let load = subject({
       test: {
         requires: ['dep'],
         setup: deps => {
@@ -38,19 +39,29 @@ describe('component loader', function() {
         }
       }
     }, ['dep']);
-    
-    let load = baseLoader({
-      dep: {
-        setup: () => {
-          return a
-        },
-      },
-    });
 
-    assume(await load('test')).equals(a);
+    assume(await load('test', {
+      dep: a
+    })).equals(a);
   });
 
-  it('different loaders should have independent components', async function() {
+  it('should forbid undefined components', async () => {
+    try {
+      let load = subject({
+        test: {
+          requires: ['dep'],
+          setup: deps => {
+            return deps.dep;
+          }
+        }
+      });
+    } catch (e) {
+      return; // Ignore expected error
+    }
+    assert(false, "Expected an error");
+  });
+
+  it('different loaders should have independent components', async () => {
     let components = {
       test: {
         setup: () => {
@@ -59,28 +70,28 @@ describe('component loader', function() {
       },
     };
 
-    let loadA = subject(components)({});
-    let loadB = subject(components)({});
+    let loadA = subject(components);
+    let loadB = subject(components);
 
     let valA = await loadA('test');
     let valB = await loadB('test');
 
-    assume(valA).does.not.equal(valB); 
+    assume(valA).does.not.equal(valB);
   });
   
-  it('should not reinitialize components', async function() {
+  it('should reinitialize components', async () => {
     let load = subject({
       test: {
         setup: () => {
           return {a: 1};
         }
       }
-    })({});
+    });
 
-    assume(await load('test')).equals(await load('test')); 
+    assume(await load('test')).does.not.equal(await load('test'));
   });
 
-  it('should load a simple dependency', async function() {
+  it('should load a simple dependency', async () => {
     let a = {a: 1};
     let called = false;
     
@@ -94,50 +105,19 @@ describe('component loader', function() {
       base: {
         requires: ['dep'],
         setup: async deps => {
-          assume(a).equal(await deps.dep);
+          assume(a).equal(deps.dep);
           return deps.dep;
         }
       }
-    })();
-
-    assume(called).is.false();
-    assume(await load('base')).equals(a);
-    assume(called).is.true();
-  });
-
-  it('should load a simple virtual dependency', async function() {
-    let a = {a: 1};
-    let called = false;
-    
-    let baseLoader = subject({
-      dep: {
-        setup: () => {
-          return 2;
-        }
-      },
-      base: {
-        requires: ['dep', 'dep2'],
-        setup: async deps => {
-          assume(a).equal(await deps.dep2);
-          return deps.dep2;
-        }
-      }
-    }, ['dep2']);
-
-    assume(called).is.false();
-    let load = baseLoader({
-      dep2: {
-        setup: () => {
-          called = true;
-          return a;
-        },
-      },
     });
+
+    assume(called).is.false();
     assume(await load('base')).equals(a);
     assume(called).is.true();
   });
 
-  it('should detect and bail on cyclic dependency', async function() {
+
+  it('should detect and bail on cyclic dependency', async () => {
     try {
       let load = subject({
         dep1: {
@@ -156,29 +136,26 @@ describe('component loader', function() {
           requires: ['dep1'],
           setup: () => true
         },
-      })({});
-      await load('base');
-      throw new Error('this should not work');
+      });
     } catch (e) {
-      if (!e.message.match(/^Cyclical dependency:/)) {
+      if (!e.message.match(/circular dependency/)) {
         throw e;
       }
+      return;
     }
+    assert(false, "Expected an exception");
   });
 
-  it('should load different types of static dependencies', async function() {
+  it('should load different types of static dependencies', async () => {
     let a = {a: 1};
     let b = {b: 2};
     let c = {c: 2};
-    let baseLoader = subject({
+    let load = subject({
       string: 'a-string',
       object: a,
       number: 123.456,
-      promise: new Promise(res => { res(b) }),
+      promise: Promise.resolve(b),
       func: () => { return c },
-    }, ['base']);
-
-    let load = baseLoader({
       base: {
         requires: ['string', 'object', 'number', 'promise', 'func'],
         setup: async deps => {
@@ -194,7 +171,7 @@ describe('component loader', function() {
     await load('base');
   });
 
-  it('should work with a complex dependency graph', async function() {
+  it('should work with a complex dependency graph', async () => {
     let load = subject({
       dep1: {
         requires: ['dep2', 'dep3'],
@@ -220,12 +197,12 @@ describe('component loader', function() {
           return true;
         }
       },
-    })({});
+    });
 
     await load('base');
   });
   
-  it('should be able to build a graphviz file', async function() {
+  it('should be able to build a graphviz file', async () => {
     let load = subject({
       dep1: {
         requires: ['dep2', 'dep3'],
@@ -255,13 +232,11 @@ describe('component loader', function() {
         requires: ['dep5', 'dep6'],
         setup: () => true,
       },
-    })({
       dep5: true,
       dep6: true,
     });
     let expected = [
-      '// This graph shows all dependencies for this loader',
-      '// including virtual dependencies.',
+      '// This graph shows all dependencies for this loader.',
       '// You might find http://www.webgraphviz.com/ useful!',
       '',
       'digraph G {',
@@ -285,49 +260,21 @@ describe('component loader', function() {
       '}',
     ].join('\n');
 
-    let graph = load('graphviz');
-    debug(graph);
+    let graph = await load('graphviz');
     assume(expected).equal(graph);
   });
 
-  it('should not allow redefining internal components by base components', function () {
-    try {
-      subject({
-        table: 123,
-      })();
-      throw new Error();
-    } catch (e) {
-      if (!e.message.match(/^table is reserved for internal loader target$/)) {
-        throw e;
-      }
-    }
-  });
-
-  it('should not allow redefining internal components by virtual components', function () {
-    try {
-      subject({})({
-        table: 123,
-      })
-      throw new Error();
-    } catch (e) {
-      if (!e.message.match(/^table is reserved for internal loader target$/)) {
-        throw e;
-      }
-    }
-
-  });
-
-  it('should fail fast when a virtual component is a dupe of a real one', function() {
+  it('should fail when a virtual component is a dupe of a real one', () => {
     try {
       let load = subject({
         dep1: 'string',
-      }, ['dep1'])
-      throw new Error();
+      }, ['dep1']);
     } catch (e) {
-      if (!e.message.match(/^Unknown assertation failure occured, assumed `\[ 'dep1' \]` to have a length of 0$/)) {
+      if (!e.message.match(/assertation failure/)) {
         throw e;
-      }     
+      }
+      return;
     }
-
+    assert(false, "Expected an error");
   });
 });
