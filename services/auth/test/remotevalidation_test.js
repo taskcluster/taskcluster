@@ -30,6 +30,11 @@ suite("Remote Signature Validation", () => {
     });
   });
 
+  var rootCredentials = {
+    clientId: 'root',
+    accessToken: helper.rootAccessToken
+  };
+
   var server, baseUrl, MyClient, myClient;
   before(async () => {
     // Create application
@@ -57,7 +62,7 @@ suite("Remote Signature Validation", () => {
     MyClient = taskcluster.createClient(reference);
     myClient = new MyClient({
       baseUrl,
-      credentials: helper.root
+      credentials: rootCredentials
     });
   });
 
@@ -104,7 +109,7 @@ suite("Remote Signature Validation", () => {
     var myClient2 = new MyClient({
       baseUrl,
       credentials: {
-        clientId: helper.root.clientId,
+        clientId: 'root',
         accessToken: 'nicetry'
       }
     });
@@ -121,7 +126,7 @@ suite("Remote Signature Validation", () => {
       credentials:  taskcluster.createTemporaryCredentials({
         expiry:       taskcluster.fromNow('10 min'),
         scopes:       ['myapi:*'],
-        credentials:  helper.root
+        credentials:  rootCredentials
       })
     });
     var result = await myClient2.resource();
@@ -134,7 +139,7 @@ suite("Remote Signature Validation", () => {
       credentials:  taskcluster.createTemporaryCredentials({
         expiry:       taskcluster.fromNow('10 min'),
         scopes:       ['myapi--'],
-        credentials:  helper.root
+        credentials:  rootCredentials
       })
     });
     await myClient2.resource().then(() => {
@@ -150,7 +155,7 @@ suite("Remote Signature Validation", () => {
       credentials:  taskcluster.createTemporaryCredentials({
         expiry:       taskcluster.fromNow('10 min'),
         scopes:       ['myapi:*'],
-        credentials:  helper.root
+        credentials:  rootCredentials
       }),
       authorizedScopes: ['myapi:resource']
     });
@@ -164,7 +169,7 @@ suite("Remote Signature Validation", () => {
       credentials:  taskcluster.createTemporaryCredentials({
         expiry:       taskcluster.fromNow('10 min'),
         scopes:       ['myapi:*'],
-        credentials:  helper.root
+        credentials:  rootCredentials
       }),
       authorizedScopes: ['myapi:-']
     });
@@ -181,7 +186,7 @@ suite("Remote Signature Validation", () => {
       credentials:  taskcluster.createTemporaryCredentials({
         expiry:       taskcluster.fromNow('10 min'),
         scopes:       ['myapi:'],
-        credentials:  helper.root
+        credentials:  rootCredentials
       }),
       authorizedScopes: ['myapi:*']
     });

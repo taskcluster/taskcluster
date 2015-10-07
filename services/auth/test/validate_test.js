@@ -6,34 +6,6 @@
  */
 var testCases = [
   {
-    path:     'client-scopes-ok1.json',
-    schema:   'auth/v1/client-scopes-response.json#',
-    success:  true
-  }, {
-    path:     'client-scopes-ok2.json',
-    schema:   'auth/v1/client-scopes-response.json#',
-    success:  true
-  }, {
-    path:     'client-scopes-ok3.json',
-    schema:   'auth/v1/client-scopes-response.json#',
-    success:  true
-  }, {
-    path:     'client-scopes-fail1.json',
-    schema:   'auth/v1/client-scopes-response.json#',
-    success:  false
-  }, {
-    path:     'client-scopes-fail2.json',
-    schema:   'auth/v1/client-scopes-response.json#',
-    success:  false
-  }, {
-    path:     'client-credentials-ok.json',
-    schema:   'auth/v1/client-credentials-response.json#',
-    success:  true
-  }, {
-    path:     'client-credentials-fail.json',
-    schema:   'auth/v1/client-credentials-response.json#',
-    success:  false
-  }, {
     path:     'authenticate-hawk-request.json',
     schema:   'auth/v1/authenticate-hawk-request.json#',
     success:  true

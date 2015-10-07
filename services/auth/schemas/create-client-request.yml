@@ -1,38 +1,21 @@
 $schema:  http://json-schema.org/draft-04/schema#
-title:                      "Get Client Credentials Response"
+title:                      "Create Client Request"
 description: |
-  Credentials, scopes and expiration date for a client
+  Properties to create a client.
 type:                       object
 properties:
-  name:
+  expires:
     description: |
-      Human readable name of this set of credentials, typical
-      component/server-name or IRC nickname of the user.
+      Date and time where the clients access is set to expire
     type:                   string
-    maxLength:              255
+    format:                 date-time
   description:
     description: |
       Description of what these credentials are used for in markdown.
-      Please write a few details here, including who is the owner, point of
-      contact. Why it is scoped as is, think of this as documentation.
+      Should include who is the owner, point of contact.
     type:                   string
-    maxLength:              4096
-  scopes:
-    description: |
-      List of scopes the client is authorized to access
-    type:                   array
-    items:
-      description: |
-        Scopes the client is authorized to access
-      type:                 string
-  expires:
-    description: |
-      Date and time where the clients credentials are set to expire
-    type:                   string
-    format:                 date-time
+    maxLength:              10240
 additionalProperties:       false
 required:
-  - name
-  - description
-  - scopes
   - expires
+  - description

@@ -1,0 +1,16 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:        "Client Message"
+description: |
+  Message reporting that a client has changed
+type:         object
+properties:
+  version:    {$const: message-version}
+  clientId:
+    description: |
+      `clientId` of the client that was changed
+    type:                 string
+    pattern:              {"$const": "identifier-pattern"}
+additionalProperties: false
+required:
+  - version
+  - clientId

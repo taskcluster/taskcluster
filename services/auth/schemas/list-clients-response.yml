@@ -1,48 +1,7 @@
 $schema:  http://json-schema.org/draft-04/schema#
-title:                      "List Clients Response"
+title:                      "List Client Response"
 description: |
-  Get a list of all clients, including basic information, but not credentials.
+  List of clients
 type:                       array
 items:
-  description: |
-    Information about a client.
-  type:                     object
-  properties:
-    clientId:
-      description: |
-        ClientId of the client scopes is requested about
-      type:                 string
-      pattern:              {"$const": "slugid-pattern"}
-    scopes:
-      description: |
-        List of scopes the client is authorized to access
-      type:                   array
-      items:
-        description: |
-          Scope the client is authorized to access
-        type:                 string
-    expires:
-      description: |
-        Date and time where the clients credentials are set to expire
-      type:                   string
-      format:                 date-time
-    name:
-      description: |
-        Human readable name of this set of credentials, typical
-        component/server-name or IRC nickname of the user.
-      type:                   string
-      maxLength:              255
-    description:
-      description: |
-        Description of what these credentials are used for in markdown.
-        Should include who is the owner, point of contact.
-        Why it is scoped as is, think of this as documentation.
-      type:                   string
-      maxLength:              4096
-  additionalProperties:       false
-  required:
-    - clientId
-    - scopes
-    - expires
-    - name
-    - description
+  $ref: 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#'
