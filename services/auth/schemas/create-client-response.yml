@@ -1,14 +1,20 @@
 $schema:  http://json-schema.org/draft-04/schema#
-title:                      "Get Client Response"
+title:                      "Create Client Response"
 description: |
-  Get all details about a client, useful for tools modifying a client
+  All details about a client including the `accessToken`
 type:                       object
 properties:
   clientId:
     description: |
-      ClientId of the client scopes is requested about
+      ClientId of the client
     type:                 string
     pattern:              {"$const": "identifier-pattern"}
+  accessToken:
+    description: |
+      AccessToken used for authenticating requests, you should store this
+      you won't be able to retrive it again!
+    type:                 string
+    pattern:              {"$const":  "access-token-pattern"}
   expires:
     description: |
       Date and time where the clients access is set to expire
@@ -54,6 +60,7 @@ properties:
 additionalProperties:       false
 required:
   - clientId
+  - accessToken
   - expires
   - description
   - created

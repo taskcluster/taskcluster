@@ -15,7 +15,7 @@ items:
       description: |
         AccessToken used for authenticating requests
       type:                 string
-      pattern:              {"$const":  "accessToken-pattern"}
+      pattern:              {"$const":  "access-token-pattern"}
     scopes:
       description: |
         List of scopes the client is authorized to access

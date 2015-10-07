@@ -1,0 +1,53 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:                      "Get Role Response"
+description: |
+  Get all details about a role
+type:                       object
+properties:
+  roleId:
+    description: |
+      roleId of the role requested
+    type:                 string
+  scopes:
+    description: |
+      List of scopes the role grants access to
+    type:                   array
+    items:
+      description: |
+        Scope the role grants access to
+      type:                 string
+  description:
+    description: |
+      Description of what this role is used for in markdown.
+      Should include who is the owner, point of contact.
+    type:                   string
+    maxLength:              10240
+    # 10 kb
+  created:
+    description: |
+      Date and time when this role was created
+    type:                   string
+    format:                 date-time
+  lastModified:
+    description: |
+      Date and time of last modification
+    type:                   string
+    format:                 date-time
+  expandedScopes:
+    description: |
+      List of scopes granted anyone who assumes this role, including anything
+      granted by roles that can be assumed when you have this role.
+      Hence, this includes any scopes in-directly granted as well.
+    type:                   array
+    items:
+      description: |
+        Scope this role grants
+      type:                 string
+additionalProperties:       false
+required:
+  - roleId
+  - scopes
+  - description
+  - created
+  - lastModified
+  - expandedScopes

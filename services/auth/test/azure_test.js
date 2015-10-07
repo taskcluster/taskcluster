@@ -17,12 +17,17 @@ suite('azure table (sas)', function() {
     });
   });
 
+  var rootCredentials = {
+    clientId: 'root',
+    accessToken: helper.rootAccessToken
+  };
+
 
   test('azureTableSAS (allowed table)', function() {
     // Restrict access a bit
     var auth = new helper.Auth({
       baseUrl:          helper.baseUrl,
-      credentials:      helper.root,
+      credentials:      rootCredentials,
       authorizedScopes: [
         'auth:azure-table-access:' + helper.testaccount + '/allowedTable'
       ]
@@ -41,7 +46,7 @@ suite('azure table (sas)', function() {
     // Restrict access a bit
     var auth = new helper.Auth({
       baseUrl:          helper.baseUrl,
-      credentials:      helper.root,
+      credentials:      rootCredentials,
       authorizedScopes: [
         'auth:azure-table-access:' + helper.testaccount + '/allowedTable'
       ]
