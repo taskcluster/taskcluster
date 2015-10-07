@@ -1,5 +1,6 @@
 let assume = require('assume');
 let subject = require('../lib/loader');
+let debug = require('debug')('test:loader');
 
 describe('component loader', function() {
   it('should load a single component with a static value', async function() {
@@ -7,7 +8,7 @@ describe('component loader', function() {
 
     let load = subject({
       test: a,
-    })();
+    })({});
 
     assume(await load('test')).equals(a);
   });
@@ -58,8 +59,8 @@ describe('component loader', function() {
       },
     };
 
-    let loadA = subject(components)();
-    let loadB = subject(components)();
+    let loadA = subject(components)({});
+    let loadB = subject(components)({});
 
     let valA = await loadA('test');
     let valB = await loadB('test');
@@ -74,7 +75,7 @@ describe('component loader', function() {
           return {a: 1};
         }
       }
-    })();
+    })({});
 
     assume(await load('test')).equals(await load('test')); 
   });
@@ -137,38 +138,29 @@ describe('component loader', function() {
   });
 
   it('should detect and bail on cyclic dependency', async function() {
-    let load = subject({
-      dep1: {
-        requires: ['dep2'],
-        setup: () => {
-          return true;
-        }
-      },
-      dep2: {
-        requires: ['dep3'],
-        setup: () => {
-          return true;
-        }
-      },
-      dep3: {
-        requires: ['dep1'],
-        setup: () => {
-          return true;
-        }
-      },
-      base: {
-        requires: ['dep1'],
-        setup: () => {
-          return true;
-        }
-      },
-    })();
-
     try {
+      let load = subject({
+        dep1: {
+          requires: ['dep2'],
+          setup: () => true
+        },
+        dep2: {
+          requires: ['dep3'],
+          setup: () => true
+        },
+        dep3: {
+          requires: ['dep1'],
+          setup: () => true
+        },
+        base: {
+          requires: ['dep1'],
+          setup: () => true
+        },
+      })({});
       await load('base');
       throw new Error('this should not work');
     } catch (e) {
-      if (!e.message.match(/^Component dep1 is involved in a dependency cycle with \["base","dep1","dep2","dep3"\]$/)) {
+      if (!e.message.match(/^Cyclical dependency:/)) {
         throw e;
       }
     }
@@ -206,27 +198,19 @@ describe('component loader', function() {
     let load = subject({
       dep1: {
         requires: ['dep2', 'dep3'],
-        setup: () => {
-          return true;
-        }
+        setup: () => true
       },
       dep2: {
         requires: ['dep4'],
-        setup: () => {
-          return true;
-        }
+        setup: () => true
       },
       dep3: {
         requires: ['dep4'],
-        setup: () => {
-          return true;
-        }
+        setup: () => true
       },
       dep4: {
         requires: [],
-        setup: () => {
-          return true;
-        }
+        setup: () => true
       },
       staticDep1: 'john',
       base: {
@@ -236,8 +220,114 @@ describe('component loader', function() {
           return true;
         }
       },
-    })();
+    })({});
 
     await load('base');
+  });
+  
+  it('should be able to build a graphviz file', async function() {
+    let load = subject({
+      dep1: {
+        requires: ['dep2', 'dep3'],
+        setup: () => true,
+      },
+      dep2: {
+        requires: ['dep4'],
+        setup: () => true,
+      },
+      dep3: {
+        requires: ['dep4'],
+        setup: () => true,
+      },
+      dep4: {
+        requires: [],
+        setup: () => true,
+      },
+      staticDep1: 'john',
+      base: {
+        requires: ['dep1', 'staticDep1'],
+        setup: async deps => {
+          assume(await deps.staticDep1).equals('john');
+          return true;
+        }
+      },
+      otherBase: {
+        requires: ['dep5', 'dep6'],
+        setup: () => true,
+      },
+    })({
+      dep5: true,
+      dep6: true,
+    });
+    let expected = [
+      '// This graph shows all dependencies for this loader',
+      '// including virtual dependencies.',
+      '// You might find http://www.webgraphviz.com/ useful!',
+      '',
+      'digraph G {',
+      '  "otherBase"',
+      '  "otherBase" -> "dep5" [dir=back]',
+      '  "otherBase" -> "dep6" [dir=back]',
+      '  "dep6"',
+      '  "dep5"',
+      '  "base"',
+      '  "base" -> "dep1" [dir=back]',
+      '  "base" -> "staticDep1" [dir=back]',
+      '  "staticDep1"',
+      '  "dep1"',
+      '  "dep1" -> "dep2" [dir=back]',
+      '  "dep1" -> "dep3" [dir=back]',
+      '  "dep3"',
+      '  "dep3" -> "dep4" [dir=back]',
+      '  "dep2"',
+      '  "dep2" -> "dep4" [dir=back]',
+      '  "dep4"',
+      '}',
+    ].join('\n');
+
+    let graph = load('graphviz');
+    debug(graph);
+    assume(expected).equal(graph);
+  });
+
+  it('should not allow redefining internal components by base components', function () {
+    try {
+      subject({
+        table: 123,
+      })();
+      throw new Error();
+    } catch (e) {
+      if (!e.message.match(/^table is reserved for internal loader target$/)) {
+        throw e;
+      }
+    }
+  });
+
+  it('should not allow redefining internal components by virtual components', function () {
+    try {
+      subject({})({
+        table: 123,
+      })
+      throw new Error();
+    } catch (e) {
+      if (!e.message.match(/^table is reserved for internal loader target$/)) {
+        throw e;
+      }
+    }
+
+  });
+
+  it('should fail fast when a virtual component is a dupe of a real one', function() {
+    try {
+      let load = subject({
+        dep1: 'string',
+      }, ['dep1'])
+      throw new Error();
+    } catch (e) {
+      if (!e.message.match(/^Unknown assertation failure occured, assumed `\[ 'dep1' \]` to have a length of 0$/)) {
+        throw e;
+      }     
+    }
+
   });
 });
