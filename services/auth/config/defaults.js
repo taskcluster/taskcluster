@@ -2,28 +2,34 @@ module.exports = {
   // Component specific configuration
   auth: {
     // Azure table for the client table
-    clientTableName:                'TestClients',
+    clientTableName:                'Clients',
+
+    // Azure table for the roles table
+    rolesTableName:                 'Roles',
+
+    // Key for signing in base.Entity (sufficiently random string required)
+    tableSigningKey:                undefined,
+    // Key for data encryption in base.Entity (32 random bytes as base64)
+    tableCryptoKey:                 undefined,
 
     // Publish references and schemas
     publishMetaData:                'false',
 
+    // Exchange prefix for exchanges declared
+    exchangePrefix:                 'v1/',
+
     // Name of component in statistics
     statsComponent:                 'auth',
 
-    // root credentials artificially inserted when application is started
-    root: {
-      clientId:                     undefined,
-      accessToken:                  undefined
-    },
+    // root accessToken, if defined will cause root client to be
+    // automatically created when application is started
+    rootAccessToken:                undefined,
 
     // Accounts that auth can delegate access to, as JSON
     azureAccounts:                  "{}",
 
     // ClientId to use when issuing temporary credentials
-    clientIdForTempCreds:           undefined,
-
-    // Timeout for client cache entires
-    clientCacheTimeout:             10 * 60 * 60 * 1000
+    clientIdForTempCreds:           undefined
   },
 
   // Server configuration
@@ -54,6 +60,12 @@ module.exports = {
 
     // Azure table storage account key
     accountKey:                     undefined
+  },
+
+  // Pulse credentials
+  pulse: {
+    username:                       undefined,
+    password:                       undefined
   },
 
   // InfluxDB for statistics

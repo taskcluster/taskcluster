@@ -2,12 +2,15 @@ var debug         = require('debug')('queue:bin:load-test');
 var base          = require('taskcluster-base');
 var Promise       = require('promise');
 var _             = require('lodash');
-var v1            = require('../routes/api/v1');
+var v1            = require('../auth/v1');
 var https         = require('https');
 var http          = require('http');
 var hawk          = require('hawk');
 var taskcluster   = require('taskcluster-client');
 var assert        = require('assert');
+
+// run with:
+// heroku run -s performance-m --app tc-auth-load-test babel-node bin/load-test.js load-test
 
 /** Launch server */
 var launch = async function(profile) {
@@ -18,15 +21,18 @@ var launch = async function(profile) {
     defaults:     require('../config/defaults'),
     profile:      require('../config/' + profile),
     envs: [
+      'auth_tableSigningKey',
+      'auth_tableCryptoKey',
       'server_publicUrl',
       'server_cookieSecret',
       'azure_accountName',
       'azure_accountKey',
+      'pulse_username',
+      'pulse_password',
       'aws_accessKeyId',
       'aws_secretAccessKey',
       'influx_connectionString',
-      'auth_root_clientId',
-      'auth_root_accessToken',
+      'auth_rootAccessToken',
       'auth_azureAccounts',
       'auth_clientIdForTempCreds'
     ],
@@ -59,7 +65,10 @@ var launch = async function(profile) {
       start: new Date(),
       expiry: taskcluster.fromNow("1 hour"),
       scopes: ["auth:credentials"],
-      credentials: cfg.get('auth:root')
+      credentials: {
+        clientId: 'root',
+        accessToken: cfg.get('auth:rootAccessToken')
+      }
     });
     var reqUrl = 'http://localhost:1207/v1/client/authed-client/credentials';
     var header = hawk.client.header(reqUrl, 'GET', {
@@ -104,7 +113,7 @@ var launch = async function(profile) {
       }, 3 * 60 * 1000);
       while(true) {
         await auth.authenticateHawk(reqForVerification).then(result => {
-          assert(result.error === false, "Validation error");
+          assert(result.status === 'auth-success', "Validation error");
           success += 1;
         }).catch(err => {
           failed += 1;

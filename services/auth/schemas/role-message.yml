@@ -1,0 +1,15 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:        "Role Message"
+description: |
+  Message reporting that a role has changed
+type:         object
+properties:
+  version:    {$const: message-version}
+  roleId:
+    description: |
+      `roleId` of the role that was changed
+    type:                 string
+additionalProperties: false
+required:
+  - version
+  - roleId
