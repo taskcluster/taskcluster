@@ -1,0 +1,25 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:                      "Create Role Request"
+description: |
+  Data to create or update a role.
+type:                       object
+properties:
+  scopes:
+    description: |
+      List of scopes the role grants access to
+    type:                   array
+    items:
+      description: |
+        Scope the role grants access to
+      type:                 string
+  description:
+    description: |
+      Description of what this role is used for in markdown.
+      Should include who is the owner, point of contact.
+    type:                   string
+    maxLength:              10240
+    # 10 kb
+additionalProperties:       false
+required:
+  - scopes
+  - description
