@@ -273,6 +273,7 @@ describe('component loader', () => {
       let load = subject({
         dep1: 'string',
       }, ['dep1']);
+      throw new Error();
     } catch (e) {
       if (!e.message.match(/assertation failure/)) {
         throw e;
@@ -280,5 +281,88 @@ describe('component loader', () => {
       return;
     }
     assert(false, "Expected an error");
+  });
+
+  // We want to splatter bad component definitions against our component
+  // validator
+  let badDef = [
+    ['def that is a string', 'this ought to fail'],
+    ['def with non-func setup property', { setup: 'hi' }],
+    ['def with missing setup property', {}],
+    ['def with requires that is not array', {
+      setup: () => {},
+      requires: 'hi',
+    }],
+    ['def with requires that is not array of only strings', {
+      setup: () => {},
+      requires: ['a', 1, 'b'],
+    }],
+  ];
+  for (let x of badDef) {
+    it('should fail on a ' + x[0], () => {
+      try {
+        subject({a: x[1]});
+        throw new Error();
+      } catch (e) {
+        if (!e.message.match(/^Invalid component definition:/)) {
+          throw e;
+        }
+        return;
+      }
+    });
+  }
+
+  it('should handle sync vs async properly', async () => {
+    let rv = {a: 1};
+    let orderCalled = [];
+    let load = subject({
+      dep1: {
+        requires: ['dep2'],
+        setup: d => {
+          orderCalled.push('dep1');
+          return new Promise((r) => {
+            setTimeout(() => {
+              r(d.dep2);
+            }, 200);
+          });
+        },
+      },
+      dep2: {
+        requires: ['dep3'],
+        setup: d => {
+          orderCalled.push('dep2');
+          return d.dep3;
+        },
+      },
+      dep3: {
+        requires: ['dep4'],
+        setup: d => {
+          orderCalled.push('dep3');
+          return new Promise((r) => {
+            setTimeout(() => {
+              r(d.dep4);
+            }, 200);
+          });
+        },
+      },
+      dep4: {
+        requires: [],
+        setup: () => {
+          orderCalled.push('dep4');
+          return rv;
+        },
+      },
+      base: {
+        requires: ['dep1'],
+        setup: d => {
+          orderCalled.push('base');
+          return d.dep1;
+        }
+      },
+
+    });
+
+    assume(await load('base', {})).equals(rv);
+    assume(orderCalled).eql(['dep4', 'dep3', 'dep2', 'dep1', 'base']);
   });
 });
