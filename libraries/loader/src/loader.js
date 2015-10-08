@@ -121,7 +121,7 @@ let renderGraph = (componentDirectory, sortedComponents) => {
  * let config = await load('config', {profile: 'test'});
  * ```
  */
-let loader = (componentDirectory, virtualComponents = []) => {
+function loader (componentDirectory, virtualComponents = []) {
   assume(componentDirectory).is.an('object');
   assume(virtualComponents).is.an('array');
   assume(_.intersection(
@@ -154,11 +154,12 @@ let loader = (componentDirectory, virtualComponents = []) => {
   let topoSorted = tsort.sort();
 
   // Add graphviz target, if it doesn't exist, we'll just render it as string
-  if (!componentDirectory.graphviz) {
-    componentDirectory.graphviz = renderGraph(componentDirectory, topoSorted);
+  if (componentDirectory.graphviz || virtualComponents.includes('graphviz')) {
+    throw new Error('graphviz is reserved for an internal component');
   }
+  componentDirectory.graphviz = renderGraph(componentDirectory, topoSorted);
 
-  return (target, options = {}) => {
+  return function(target, options = {}) {
     assume(target).is.a('string');
     // Check that all virtual components are defined
     assume(options).is.an('object');
@@ -173,7 +174,7 @@ let loader = (componentDirectory, virtualComponents = []) => {
     }
 
     // Load a component
-    let load = (target) => {
+    function load(target) {
       if (!loading[target]) {
         var def = componentDirectory[target];
         // If component is a flat value we don't have to call setup
