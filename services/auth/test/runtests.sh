@@ -7,6 +7,7 @@ mocha                             \
   test/role_test.js               \
   test/rolelogic_test.js          \
   test/grantsrole_test.js         \
+  test/normalizescopes_test.js    \
   test/remotevalidation_test.js   \
   test/azure_test.js              \
   test/s3_test.js                 \
