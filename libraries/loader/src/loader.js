@@ -7,26 +7,26 @@ let TopoSort = require('topo-sort');
 
 /** Validate component definition */
 function validateComponent(def, name) {
+  let e = "Invalid component definition: " + name;
   // Check that it's an object
   if (typeof(def) !== 'object' && def !== null && def !== undefined) {
-    throw new Error("Invalidate component definition: " + name);
+    throw new Error(e + ' must be an object, null or undefined');
   }
   // Check that is object has a setup function
   if (!(def.setup instanceof Function)) {
-    throw new Error("Invalidate component definition: " + name);
+    throw new Error(e + ' is missing setup function');
   }
   // If requires is defined, then we check that it's an array of strings
   if (def.requires) {
     if (!(def.requires instanceof Array)) {
-      throw new Error("Invalidate component definition: " + name);
+      throw new Error(e + ' if present, requires must be array');
     }
     // Check that all entries in def.requires are strings
     if (!def.requires.every(entry => typeof(entry) === 'string')) {
-      throw new Error("Invalidate component definition: " + name);
+      throw new Error(e + ' all items in requires must be strings');
     }
   }
 }
-
 
 /**
  * Render componentDirectory to dot format for graphviz given a
