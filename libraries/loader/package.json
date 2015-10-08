@@ -9,6 +9,7 @@
   "scripts": {
     "test": "./test/runtests.sh",
     "compile": "rm -rf lib/ && babel -sd lib/ src/",
+    "pretest": "npm run compile",
     "prepublish": "npm run compile"
   },
   "repository": {
