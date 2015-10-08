@@ -18,11 +18,12 @@ tests_require = [
   'psutil==2.1.3',
   'hypothesis',
   'pgpy',
-  'twine',
 ]
 
+# requests has a policy of not breaking apis between major versions
+# http://docs.python-requests.org/en/latest/community/release-process/
 install_requires = [
-  'requests>=2.4.3,<=2.7.0',
+  'requests>=2.4.3,<3',
   'PyHawk_with_a_single_extra_commit==0.1.5',
   #  'PyHawk==0.1.4',
   'slugid',
