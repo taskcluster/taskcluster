@@ -5,6 +5,16 @@ let Promise = require('promise');
 let _ = require('lodash');
 let TopoSort = require('topo-sort');
 
+
+// see babel issue 2215
+function includes(a, v) {
+  if (a.indexOf(v) === -1) {
+    return false;
+  }
+  return true;
+}
+
+
 /** Validate component definition */
 function validateComponent(def, name) {
   let e = "Invalid component definition: " + name;
@@ -134,7 +144,7 @@ function loader (componentDirectory, virtualComponents = []) {
   _.forEach(componentDirectory, (def, name) => {
     validateComponent(def, name);
     for(let dep of def.requires || []) {
-      if (!componentDirectory[dep] && !virtualComponents.includes(dep)) {
+      if (!componentDirectory[dep] && !includes(virtualComponents, dep)) {
         throw new Error('Cannot require undefined component: ' + dep);
       }
     }
@@ -151,7 +161,7 @@ function loader (componentDirectory, virtualComponents = []) {
   let topoSorted = tsort.sort();
 
   // Add graphviz target, if it doesn't exist, we'll just render it as string
-  if (componentDirectory.graphviz || virtualComponents.includes('graphviz')) {
+  if (componentDirectory.graphviz || includes(virtualComponents, 'graphviz')) {
     throw new Error('graphviz is reserved for an internal component');
   }
   componentDirectory.graphviz = {
