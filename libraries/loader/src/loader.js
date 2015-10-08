@@ -5,25 +5,26 @@ let Promise = require('promise');
 let _ = require('lodash');
 let TopoSort = require('topo-sort');
 
-/** Check if a value is a flat value or a component definition */
-function isComponent(def) {
+/** Validate component definition */
+function validateComponent(def, name) {
   // Check that it's an object
   if (typeof(def) !== 'object' && def !== null && def !== undefined) {
-    return false;
+    throw new Error("Invalidate component definition: " + name);
   }
   // Check that is object has a setup function
   if (!(def.setup instanceof Function)) {
-    return false;
+    throw new Error("Invalidate component definition: " + name);
   }
   // If requires is defined, then we check that it's an array of strings
   if (def.requires) {
     if (!(def.requires instanceof Array)) {
-      return false;
+      throw new Error("Invalidate component definition: " + name);
     }
     // Check that all entries in def.requires are strings
-    return def.requires.every(entry => typeof(entry) === 'string');
+    if (!def.requires.every(entry => typeof(entry) === 'string')) {
+      throw new Error("Invalidate component definition: " + name);
+    }
   }
-  return true;
 }
 
 
@@ -42,10 +43,8 @@ function renderGraph(componentDirectory, sortedComponents) {
   for (let component of sortedComponents) {
     dot.push(util.format('  "%s"', component));
     let def = componentDirectory[component];
-    if (def && isComponent(def)) {
-      for (let dep of def.requires || []) {
-        dot.push(util.format('  "%s" -> "%s" [dir=back]', component, dep));
-      }
+    for (let dep of def.requires || []) {
+      dot.push(util.format('  "%s" -> "%s" [dir=back]', component, dep));
     }
   }
   dot.push('}');
@@ -57,11 +56,13 @@ function renderGraph(componentDirectory, sortedComponents) {
  * Construct a component loader function.
  *
  * The `componentDirectory` is an object mapping from component names to
- * component loaders or flat values as follows:
+ * component loaders as follows:
  * ```js
  * let load = loader({
- *   // Flat value
- *   profile: 'test',
+ *   // Component loader that always returns 'test'
+ *   profile: {
+ *     setup: () => 'test'
+ *   },
  *
  *   // Component loader that requires profile as input to the setup function
  *   config: {
@@ -99,7 +100,7 @@ function renderGraph(componentDirectory, sortedComponents) {
  * Naturally, you can also load config `await load('config');` which is useful
  * for testing.
  *
- * Sometimes it's not convenient to hard code flat values into the component
+ * Sometimes it's not convenient to hard code constant values into the component
  * directory, in the example above someone might want to load the
  * components with a different profile. Instead you can specify "profile" as
  * a `virtualComponents`, then it must be provided as an options when loading.
@@ -131,11 +132,10 @@ function loader (componentDirectory, virtualComponents = []) {
 
   // Check for undefined components
   _.forEach(componentDirectory, (def, name) => {
-    if (isComponent(def)) {
-      for(let dep of def.requires || []) {
-        if (!componentDirectory[dep] && !virtualComponents.includes(dep)) {
-          throw new Error('Cannot require undefined component: ' + dep);
-        }
+    validateComponent(def, name);
+    for(let dep of def.requires || []) {
+      if (!componentDirectory[dep] && !virtualComponents.includes(dep)) {
+        throw new Error('Cannot require undefined component: ' + dep);
       }
     }
   });
@@ -143,11 +143,7 @@ function loader (componentDirectory, virtualComponents = []) {
   // Do topological sort to check for cycles
   let tsort = new TopoSort();
   _.forEach(componentDirectory, (def, name) => {
-    if (isComponent(def)) {
-      tsort.add(name, def.requires || []);
-    } else {
-      tsort.add(name, []);
-    }
+    tsort.add(name, def.requires || []);
   });
   for (let name of virtualComponents) {
     tsort.add(name, []);
@@ -158,7 +154,9 @@ function loader (componentDirectory, virtualComponents = []) {
   if (componentDirectory.graphviz || virtualComponents.includes('graphviz')) {
     throw new Error('graphviz is reserved for an internal component');
   }
-  componentDirectory.graphviz = renderGraph(componentDirectory, topoSorted);
+  componentDirectory.graphviz = {
+    setup: () => renderGraph(componentDirectory, topoSorted)
+  };
 
   return function(target, options = {}) {
     options = _.clone(options);
@@ -179,11 +177,7 @@ function loader (componentDirectory, virtualComponents = []) {
     function load(target) {
       if (!loaded[target]) {
         var def = componentDirectory[target];
-        // If component is a flat value we don't have to call setup
-        if (!isComponent(def)) {
-          return loaded[target] = Promise.resolve(def);
-        }
-        // Otherwise we initialize, this won't cause an infinite loop because
+        // Initialize component, this won't cause an infinite loop because
         // we've already check that the componentDirectory is a DAG
         let requires = def.requires || [];
         return loaded[target] = Promise.all(requires.map(load)).then(deps => {
