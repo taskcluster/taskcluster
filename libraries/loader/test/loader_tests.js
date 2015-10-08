@@ -8,7 +8,7 @@ describe('component loader', () => {
     let a = {a: 1};
 
     let load = subject({
-      test: a,
+      test: {setup: () => a},
     });
 
     assume(await load('test')).equals(a);
@@ -151,11 +151,11 @@ describe('component loader', () => {
     let b = {b: 2};
     let c = {c: 2};
     let load = subject({
-      string: 'a-string',
-      object: a,
-      number: 123.456,
-      promise: Promise.resolve(b),
-      func: () => { return c },
+      string: {setup: () => 'a-string'},
+      object: {setup: () => a},
+      number: {setup: () => 123.456},
+      promise: {setup: () => Promise.resolve(b)},
+      func: {setup: ()=> () => { return c }},
       base: {
         requires: ['string', 'object', 'number', 'promise', 'func'],
         setup: async deps => {
@@ -189,7 +189,9 @@ describe('component loader', () => {
         requires: [],
         setup: () => true
       },
-      staticDep1: 'john',
+      staticDep1: {
+        setup: () => 'john'
+      },
       base: {
         requires: ['dep1', 'staticDep1'],
         setup: async deps => {
@@ -220,7 +222,9 @@ describe('component loader', () => {
         requires: [],
         setup: () => true,
       },
-      staticDep1: 'john',
+      staticDep1: {
+        setup: () => 'john'
+      },
       base: {
         requires: ['dep1', 'staticDep1'],
         setup: async deps => {
@@ -232,8 +236,8 @@ describe('component loader', () => {
         requires: ['dep5', 'dep6'],
         setup: () => true,
       },
-      dep5: true,
-      dep6: true,
+      dep5: {setup: () => true},
+      dep6: {setup: () => true},
     });
     let expected = [
       '// This graph shows all dependencies for this loader.',
