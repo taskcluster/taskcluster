@@ -127,6 +127,7 @@ function loader (componentDirectory, virtualComponents = []) {
   assume(_.intersection(
     _.keys(componentDirectory), virtualComponents)
   ).has.length(0);
+  componentDirectory = _.clone(componentDirectory);
 
   // Check for undefined components
   _.forEach(componentDirectory, (def, name) => {
@@ -160,6 +161,7 @@ function loader (componentDirectory, virtualComponents = []) {
   componentDirectory.graphviz = renderGraph(componentDirectory, topoSorted);
 
   return function(target, options = {}) {
+    options = _.clone(options);
     assume(target).is.a('string');
     // Check that all virtual components are defined
     assume(options).is.an('object');
