@@ -1,5 +1,5 @@
 {
-  "name": "taskcluster-loader",
+  "name": "taskcluster-lib-loader",
   "version": "0.0.1",
   "description": "a component loader for taskcluster",
   "main": "index.js",
