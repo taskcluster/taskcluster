@@ -170,23 +170,23 @@ function loader (componentDirectory, virtualComponents = []) {
     }
 
     // Keep state of loaded components, make the virtual ones immediately loaded
-    let loading = {};
+    let loaded = {};
     for (let vComp of virtualComponents) {
-      loading[vComp] = Promise.resolve(options[vComp]);
+      loaded[vComp] = Promise.resolve(options[vComp]);
     }
 
     // Load a component
     function load(target) {
-      if (!loading[target]) {
+      if (!loaded[target]) {
         var def = componentDirectory[target];
         // If component is a flat value we don't have to call setup
         if (!isComponent(def)) {
-          return loading[target] = Promise.resolve(def);
+          return loaded[target] = Promise.resolve(def);
         }
         // Otherwise we initialize, this won't cause an infinite loop because
         // we've already check that the componentDirectory is a DAG
         let requires = def.requires || [];
-        return loading[target] = Promise.all(requires.map(load)).then(deps => {
+        return loaded[target] = Promise.all(requires.map(load)).then(deps => {
           let ctx = {};
           for(let i = 0; i < deps.length; i++) {
             ctx[def.requires[i]] = deps[i];
@@ -194,7 +194,7 @@ function loader (componentDirectory, virtualComponents = []) {
           return def.setup.call(null, ctx);
         });
       }
-      return loading[target];
+      return loaded[target];
     };
 
     return load(target);
