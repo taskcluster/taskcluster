@@ -34,7 +34,3 @@ node_modules
 Session.vim
 .netrwhist
 *~
-
-
-# Project things
-lib/
