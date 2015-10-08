@@ -64,7 +64,40 @@ var launch = async function(profile) {
     var tempCreds = taskcluster.createTemporaryCredentials({
       start: new Date(),
       expiry: taskcluster.fromNow("1 hour"),
-      scopes: ["auth:credentials"],
+      scopes: [
+        'auth:credentials',
+        'assume:worker-type:aws-provisioner/dockerhost-g2',
+        'assume:worker-id:*',
+        'client-id:-69R5nFgQhmFalR2J3y9pA',
+        'client-id:-ojkeT4cQ8iPqzfjX6YqPw',
+        'client-id:-yX0fVeLQWWwZ8wS0DHz9Q',
+        'client-id:00F-p0pNSaSklX6COjCTHg',
+        'client-id:09tML-c8Tf6pYehxK8Rrpw',
+        'client-id:0BI2Jg_ZSuCHg6bEyPdD9A',
+        'client-id:DqpvW5MaS7*',
+        'client-id:JmhqKvaWTHmnxmRqoORBaA',
+        'client-id:KHa1Y5wARRGL8R6GAsgW3w',
+        'client-id:LY8eSq1WTb6qKMrWKGTvqw',
+        'client-id:LvL_9Z2FQLa2gO-3AgCQ_A',
+        'client-id:LvhIONB6TAKCeZsbmrImrA',
+        'client-id:MC7GCZfURkCGO8rS9KxgTg',
+        'client-id:N6l8rTzKRdCsLxXpboKNuw',
+        'client-id:NJ3G1h8ARkGhekYPFYhmVw',
+        'client-id:O6yB_zofTjCAjPSu4iYKoA',
+        'client-id:OXSb5WUVQk6STvKkCPitgw',
+        'client-id:Po0gCUk-Rx-OzBV_bcOkhQ',
+        'client-id:QUUeaAazTAmU6F3Sc29zvQ',
+        'client-id:SUkfDCeyStmQbgu4f4yXCg',
+        'client-id:SbTaWGCUSnG65E4dqLpxDQ',
+        'client-id:T9J-xA9JSUKQzfR99NRtMg',
+        'client-id:WX5WaEuzTwGh0Q-zpGSoWg',
+        'client-id:XJhrEh8MSG-34W5qQjRadQ',
+        'client-id:XsQX5VRnSCi_gG1Fbby0AQ',
+        'client-id:_9TuTPNUSQKMW8wcMIsrxA',
+        'client-id:_XwhECl7T_WBWcOdRQFVkA',
+        'client-id:_rUyXCLtT0SSDw37PXFIFw',
+        'client-id:a8298TjkQf2*'
+      ],
       credentials: {
         clientId: 'root',
         accessToken: cfg.get('auth:rootAccessToken')
@@ -151,7 +184,7 @@ var launch = async function(profile) {
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
 
-  /*
+
   // 16 req in parallel
   while(loops < 16) startLoop();
   await base.testing.sleep(CYCLE_SECONDS * 1000);
