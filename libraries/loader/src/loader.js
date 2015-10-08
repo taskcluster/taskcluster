@@ -6,7 +6,7 @@ let _ = require('lodash');
 let TopoSort = require('topo-sort');
 
 /** Check if a value is a flat value or a component definition */
-let isComponent = (def) => {
+function isComponent(def) {
   // Check that it's an object
   if (typeof(def) !== 'object' && def !== null && def !== undefined) {
     return false;
@@ -24,14 +24,14 @@ let isComponent = (def) => {
     return def.requires.every(entry => typeof(entry) === 'string');
   }
   return true;
-};
+}
 
 
 /**
  * Render componentDirectory to dot format for graphviz given a
  * topologically sorted list of components
  */
-let renderGraph = (componentDirectory, sortedComponents) => {
+function renderGraph(componentDirectory, sortedComponents) {
   let dot = [
     '// This graph shows all dependencies for this loader.',
     '// You might find http://www.webgraphviz.com/ useful!',
@@ -51,7 +51,7 @@ let renderGraph = (componentDirectory, sortedComponents) => {
   dot.push('}');
 
   return dot.join('\n');
-};
+}
 
 /*
  * Construct a component loader function.
