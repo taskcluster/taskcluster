@@ -42,7 +42,7 @@ dev-env: $(VENV)/bin/python
 .PHONY: clean
 clean:
 	rm -rf node-$(NODE_VER)-$(NODE_PLAT) node_modules
-	rm -rf *.egg
+	rm -rf *.egg *.egg-info dist/
 	find . -name "*.py?" -exec rm {} +
 	rm -rf env-*
 
