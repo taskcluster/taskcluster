@@ -315,7 +315,7 @@ class ScopeResolver extends events.EventEmitter {
       return !scopes.some(other => {
         // If `scope` is `other`, then we can't filter it! It has to be
         // strictly greater than (otherwise scopes would filter themselves)
-        if (other === other) {
+        if (other === scope) {
           return false;
         }
         // But if the other one ends with '*' and `scope` starts with its
