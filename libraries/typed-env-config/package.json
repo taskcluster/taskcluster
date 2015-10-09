@@ -15,6 +15,7 @@
     "url": "https://github.com/taskcluster/taskcluster-lib-config.git"
   },
   "dependencies": {
+    "babel-runtime": "^5.8.25",
     "lodash": "2.4.1",
     "nconf": "0.6.9"
   },
