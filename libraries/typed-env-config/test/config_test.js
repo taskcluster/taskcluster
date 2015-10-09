@@ -1,9 +1,9 @@
 suite("config", function() {
   var assert  = require('assert');
-  var base    = require('../');
+  var config = require('../lib/config');
 
   test("defaults", function() {
-    var cfg = base.config({
+    var cfg = config({
       defaults: {test: {value: 42}}
     });
 
@@ -11,7 +11,7 @@ suite("config", function() {
   });
 
   test("profile", function() {
-    var cfg = base.config({
+    var cfg = config({
       defaults: {test: {value: 41}},
       profile:  {test: {value: 42}}
     });
@@ -23,7 +23,7 @@ suite("config", function() {
     // Set environment variable
     process.env.test_value = '41';
 
-    var cfg = base.config({
+    var cfg = config({
       defaults: {test: {value: 42}},
       envs: [
         'test_value'
@@ -38,7 +38,7 @@ suite("config", function() {
     // Ensure that environment variable isn't set
     delete process.env.test_value;
 
-    var cfg = base.config({
+    var cfg = config({
       defaults: {test: {value: 42}},
       envs: [
         'test_value'
@@ -49,7 +49,7 @@ suite("config", function() {
   });
 
   test("filename", function() {
-    var cfg = base.config({
+    var cfg = config({
       filename: 'test/taskcluster-base-test'
     });
     assert(cfg.get('test') == "ok it works", "Failed to load from file");
