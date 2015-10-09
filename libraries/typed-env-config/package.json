@@ -1,9 +1,10 @@
 {
   "name": "taskcluster-lib-config",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-config",
   "license": "MPL-2.0",
+  "main": "./lib/config",
   "scripts": {
     "compile": "rm -rf lib/ .test/ && babel -sd lib/ src/ && babel -sd .test/ test/",
     "prepublish": "npm run compile",
