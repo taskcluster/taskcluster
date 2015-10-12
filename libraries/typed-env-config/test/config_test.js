@@ -50,7 +50,7 @@ suite("config", function() {
 
   test("filename", function() {
     var cfg = config({
-      filename: 'test/taskcluster-base-test'
+      filename: 'test/taskcluster-config-test'
     });
     assert(cfg.get('test') == "ok it works", "Failed to load from file");
   });
