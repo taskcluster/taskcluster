@@ -1,58 +1,153 @@
 suite("config", function() {
-  var assert  = require('assert');
-  var config = require('../lib/config');
+  var config  = require('../');
+  var path    = require('path');
+  var assume  = require('assume');
 
-  test("defaults", function() {
-    var cfg = config({
-      defaults: {test: {value: 42}}
-    });
-
-    assert(cfg.get('test:value') == 42);
-  });
-
-  test("profile", function() {
-    var cfg = config({
-      defaults: {test: {value: 41}},
-      profile:  {test: {value: 42}}
-    });
-
-    assert(cfg.get('test:value') == 42);
-  });
-
-  test("env", function() {
-    // Set environment variable
-    process.env.test_value = '41';
-
-    var cfg = config({
-      defaults: {test: {value: 42}},
-      envs: [
-        'test_value'
+  test("load yaml", () => {
+    let cfg = config({
+      files: [
+        path.join(__dirname, 'test.yml')
       ]
     });
 
-    assert(cfg.get('test:value') == '41');
-    assert(cfg.get('HOME') == undefined);
+    assume(cfg).deep.equals({
+      text: ['Hello', 'World']
+    });
   });
 
-  test("fallback from env", function() {
-    // Ensure that environment variable isn't set
-    delete process.env.test_value;
+  test("load profile", () => {
+    let cfg = config({
+      files: [
+        path.join(__dirname, 'test-profile.yml')
+      ],
+      profile:  'danish'
+    });
 
-    var cfg = config({
-      defaults: {test: {value: 42}},
-      envs: [
-        'test_value'
+    assume(cfg).deep.equals({
+      text: ['Hej', 'Verden']
+    });
+  });
+
+  test("load profile (default)", () => {
+    let cfg = config({
+      files: [
+        path.join(__dirname, 'test-profile.yml')
       ]
     });
 
-    assert(cfg.get('test:value') == 42);
+    assume(cfg).deep.equals({
+      text: ['Hello', 'World']
+    });
   });
 
-  test("filename", function() {
-    var cfg = config({
-      filename: 'test/taskcluster-config-test'
+  test("load !env", () => {
+    let cfg = config({
+      files: [
+        path.join(__dirname, 'test-env.yml')
+      ],
+      env: {
+        ENV_VARIABLE:     'env-var-value',
+        ENV_NUMBER:       '32.4',
+        ENV_DEFINED:      'true',
+        ENV_TRUE:         'true',
+        ENV_FALSE:        'false',
+        ENV_JSON:         '{"test": 42}',
+        ENV_LIST:         'abc def "qouted string" \'\''
+      }
     });
-    assert(cfg.get('test') == "ok it works", "Failed to load from file");
+
+    assume(cfg).deep.equals({
+      text:       'env-var-value',
+      text2:      'env-var-value',
+      number:     32.4,
+      unsetflag:  false,
+      setflag:    true,
+      soTrue:     true,
+      unTrue:     false,
+      json:       {test: 42},
+      list:       ["abc", "def", "qouted string", ""]
+    });
+  });
+
+  test("load missing file", () => {
+    let cfg = config({
+      files: [
+        path.join(__dirname, 'file-that-doesnt-exist.yml')
+      ]
+    });
+
+    assume(cfg).deep.equals(undefined);
+  });
+
+  test("load yaml (merge missing file)", () => {
+    let cfg = config({
+      files: [
+        path.join(__dirname, 'test.yml'),
+        path.join(__dirname, 'file-that-doesnt-exist.yml')
+      ]
+    });
+
+    assume(cfg).deep.equals({
+      text: ['Hello', 'World']
+    });
+  });
+
+  test("load !env and overwrite text", () => {
+    let cfg = config({
+      files: [
+        path.join(__dirname, 'test.yml'),
+        path.join(__dirname, 'test-env.yml')
+      ],
+      env: {
+        ENV_VARIABLE:     'env-var-value',
+        ENV_NUMBER:       '32.4',
+        ENV_DEFINED:      'true',
+        ENV_TRUE:         'true',
+        ENV_FALSE:        'false',
+        ENV_JSON:         '{"test": 42}',
+        ENV_LIST:         'abc def "qouted string" \'\''
+      }
+    });
+
+    assume(cfg).deep.equals({
+      text:       'env-var-value',
+      text2:      'env-var-value',
+      number:     32.4,
+      unsetflag:  false,
+      setflag:    true,
+      soTrue:     true,
+      unTrue:     false,
+      json:       {test: 42},
+      list:       ["abc", "def", "qouted string", ""]
+    });
+  });
+
+  test("load !env and fallback text", () => {
+    let cfg = config({
+      files: [
+        path.join(__dirname, 'test.yml'),
+        path.join(__dirname, 'test-env.yml')
+      ],
+      env: {
+        ENV_NUMBER:       '32.4',
+        ENV_DEFINED:      'true',
+        ENV_TRUE:         'true',
+        ENV_FALSE:        'false',
+        ENV_JSON:         '{"test": 42}',
+        ENV_LIST:         'abc def "qouted string" \'\''
+      }
+    });
+
+    assume(cfg).deep.equals({
+      text:       ['Hello', 'World'],
+      text2:      undefined,
+      number:     32.4,
+      unsetflag:  false,
+      setflag:    true,
+      soTrue:     true,
+      unTrue:     false,
+      json:       {test: 42},
+      list:       ["abc", "def", "qouted string", ""]
+    });
   });
 });
-
