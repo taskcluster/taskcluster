@@ -1,27 +1,29 @@
 {
   "name": "taskcluster-lib-config",
-  "version": "0.8.8",
+  "version": "0.9.0",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
-  "description": "taskcluster-lib-config",
+  "description": "Configuration loader that injects env variables into YAML",
   "license": "MPL-2.0",
   "main": "./lib/config",
   "scripts": {
-    "compile": "rm -rf lib/ .test/ && babel -sd lib/ src/ && babel -sd .test/ test/",
+    "compile": "rm -rf lib/ && babel -sd lib/ src/",
     "prepublish": "npm run compile",
     "pretest": "npm run compile",
-    "test": "mocha .test/*_test.js"
+    "test": "mocha test/*_test.js"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/taskcluster/taskcluster-lib-config.git"
   },
   "dependencies": {
+    "js-yaml": "^3.3.0",
+    "lodash": "^3.10.1",
     "babel-runtime": "^5.8.25",
-    "lodash": "2.4.1",
-    "nconf": "0.6.9"
+    "debug": "^2.2.0"
   },
   "devDependencies": {
     "babel": "^5.8.23",
-    "mocha": "2.0.1"
+    "mocha": "^2.3.3",
+    "assume": "^1.3.1"
   }
 }

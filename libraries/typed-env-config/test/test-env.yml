@@ -1,0 +1,10 @@
+Defaults:
+  text:       !env           ENV_VARIABLE
+  text2:      !env:string    ENV_VARIABLE
+  number:     !env:number    ENV_NUMBER
+  unsetflag:  !env:flag      ENV_UNDEFINED
+  setflag:    !env:flag      ENV_DEFINED
+  soTrue:     !env:bool      ENV_TRUE
+  unTrue:     !env:bool      ENV_FALSE
+  json:       !env:json      ENV_JSON
+  list:       !env:list      ENV_LIST
