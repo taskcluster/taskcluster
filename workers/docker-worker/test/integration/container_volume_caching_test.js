@@ -9,8 +9,22 @@ suite('volume cache tests', function () {
   var DockerWorker = require('../dockerworker');
   var TestWorker = require('../testworker');
   var waitForEvent = require('../../lib/wait_for_event');
+  var taskcluster = require('taskcluster-client');
+  var slugid = require('slugid');
 
   var localCacheDir = path.join(__dirname, '..', 'tmp');
+  var volumeCacheDir = path.join('/', 'worker', 'test', 'tmp');
+
+  var purgeCache;
+
+  setup(function () {
+    purgeCache = new taskcluster.PurgeCache({
+      credentials: {
+        clientId: process.env.TASKCLUSTER_CLIENT_ID,
+        accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN
+      }
+    });
+  });
 
   teardown(function () {
     settings.cleanup();
@@ -353,5 +367,116 @@ suite('volume cache tests', function () {
       'Cached volume was not released'
     );
     yield worker.terminate();
+  }));
+
+  test('purge cache after run task', co(function* () {
+    var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+    var neededScope = 'docker-worker:cache:' + cacheName;
+    var fullCacheDir = path.join(localCacheDir, cacheName);
+    settings.configure({
+      cache: {
+        volumeCachePath: volumeCacheDir
+      },
+      garbageCollection: {
+        interval: 100
+      }
+    });
+
+    var task = {
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd(
+          'echo "foo" > /tmp-obj-dir/foo.txt',
+          'ls /tmp-obj-dir'
+        ),
+        features: {
+          localLiveLog: true
+        },
+        cache: {},
+        maxRunTime:         5 * 60
+      },
+      scopes: [neededScope]
+    };
+
+    task.payload.cache[cacheName] = '/tmp-obj-dir';
+
+    let worker = new TestWorker(DockerWorker);
+    yield worker.launch();
+    let result = yield worker.postToQueue(task);
+
+    assert.equal(result.run.state, 'completed');
+    assert.equal(result.run.reasonResolved, 'completed');
+
+    yield [
+      purgeCache.purgeCache(
+        worker.provisionerId,
+        worker.workerType, {
+          cacheName: cacheName
+      }),
+      waitForEvent(worker, 'cache volume removed')
+    ]
+
+      yield worker.terminate()
+
+    assert.equal(fs.readdirSync(fullCacheDir).length, 0);
+  }));
+
+  test('purge cache during run task', co(function* () {
+    var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+    var neededScope = 'docker-worker:cache:' + cacheName;
+    var fullCacheDir = path.join(localCacheDir, cacheName);
+    settings.configure({
+      cache: {
+        volumeCachePath: volumeCacheDir
+      },
+      garbageCollection: {
+        interval: 100
+      }
+    });
+
+    var task = {
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd(
+          'echo "foo" > /tmp-obj-dir/foo.txt',
+          'sleep 30'
+        ),
+        features: {
+          localLiveLog: true
+        },
+        cache: {},
+        maxRunTime:         5 * 60
+      },
+      scopes: [neededScope]
+    };
+
+    task.payload.cache[cacheName] = '/tmp-obj-dir';
+
+    let worker = new TestWorker(DockerWorker);
+
+    var task_ran = false;
+    worker.on('task run', co(function* () {
+      yield [
+        purgeCache.purgeCache(
+          worker.provisionerId,
+          worker.workerType, {
+            cacheName: cacheName
+        }),
+        waitForEvent(worker, 'cache volume removed')
+      ];
+
+      task_ran = true;
+    }));
+
+    yield worker.launch();
+    let result = yield worker.postToQueue(task);
+
+    assert.equal(result.run.state, 'completed');
+    assert.equal(result.run.reasonResolved, 'completed');
+
+    yield worker.terminate();
+
+    assert.ok(task_ran);
+    assert.equal(fs.readdirSync(fullCacheDir).length, 0);
   }));
 });

@@ -164,7 +164,7 @@ suite('artifact extration tests', () => {
         ),
         artifacts: {
           // Name -> Source
-          'my-missing.txt': {
+          'public/my-missing.txt': {
             type: 'file',
             path: '/this-file-is-missing.txt',
             expires: expires()
@@ -174,7 +174,7 @@ suite('artifact extration tests', () => {
       }
     });
 
-    let errorMessage = '[taskcluster] Artifact "my-missing.txt" not found at "/this-file-is-missing.txt"';
+    let errorMessage = '[taskcluster] Artifact "public/my-missing.txt" not found at "/this-file-is-missing.txt"';
     assert.ok(
       result.log.includes(errorMessage),
       'Missing file was not noted in the logs'
@@ -182,8 +182,8 @@ suite('artifact extration tests', () => {
 
     assert.equal(result.run.state, 'completed', 'task should be unsuccessful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be unsuccessful');
-    assert.ok(result.artifacts['my-missing.txt']);
-    assert.equal(result.artifacts['my-missing.txt'].storageType, 'error');
+    assert.ok(result.artifacts['public/my-missing.txt']);
+    assert.equal(result.artifacts['public/my-missing.txt'].storageType, 'error');
   });
 
   test('both missing and found artifacts', async () => {
@@ -197,17 +197,17 @@ suite('artifact extration tests', () => {
         ),
         artifacts: {
           // name -> source
-          'username.txt': {
+          'public/username.txt': {
             type: 'file',
             path: 'username.txt',
             expires: expires()
           },
-          'passwd.txt': {
+          'public/passwd.txt': {
             type: 'file',
             path: '/etc/passwd',
             expires: expires()
           },
-          'my-missing.txt': {
+          'public/my-missing.txt': {
             type: 'file',
             path: '/this-file-is-missing.txt',
             expires: expires()
@@ -222,10 +222,10 @@ suite('artifact extration tests', () => {
     assert.equal(result.run.reasonResolved, 'completed', 'task should be unsuccessful');
 
     // Ensure these have no errors...
-    assert.equal(result.artifacts['username.txt'].storageType, 's3');
-    assert.equal(result.artifacts['passwd.txt'].storageType, 's3');
+    assert.equal(result.artifacts['public/username.txt'].storageType, 's3');
+    assert.equal(result.artifacts['public/passwd.txt'].storageType, 's3');
 
     // Missing artifact should have an error...
-    assert.equal(result.artifacts['my-missing.txt'].storageType, 'error');
+    assert.equal(result.artifacts['public/my-missing.txt'].storageType, 'error');
   });
 });

@@ -62,6 +62,31 @@ function o() {
   program.option.apply(program, arguments);
 }
 
+async function listenForPurgeCacheEvents(runtime, volumeCache) {
+  // see task_listener.js, listenForCancelEvents() comment
+  if (!runtime.pulse || !runtime.pulse.username || !runtime.pulse.password) {
+    runtime.log('[alert-operator] pulse credentials missing');
+    return;
+  }
+
+  let purgeCacheEvents = new taskcluster.PurgeCacheEvents();
+  let purgeCacheListener = new taskcluster.PulseListener({
+    credentials: runtime.pulse
+  });
+
+  await purgeCacheListener.bind(purgeCacheEvents.purgeCache({
+    workerType: runtime.workerType,
+    provisionerId: runtime.provisionerId
+  }));
+
+  purgeCacheListener.on('message', function (message) {
+    volumeCache.purge(message.payload.cacheName);
+  });
+
+  await purgeCacheListener.resume();
+  return purgeCacheListener;
+}
+
 // Usage.
 program.usage(
 '[options] <profile> \n\n' +
@@ -226,6 +251,8 @@ async function main () {
   // (currently encrypted environment variables)
   runtime.privateKey = new PrivateKey(runtime.dockerWorkerPrivateKey);
 
+  runtime.purgeCacheListener = listenForPurgeCacheEvents(runtime, config.volumeCache);
+
   // Billing cycle logic is host specific so we cannot handle shutdowns without
   // both the host and the configuration to shutdown.
   if (host && config.shutdown) {
@@ -276,6 +303,7 @@ async function main () {
       async function halt() {
         taskListener.pause();
         await taskListener.close();
+        await runtime.purgeCacheListener.close();
       }
       if (taskListener.isIdle()) return await halt;
       taskListener.once('idle', halt);

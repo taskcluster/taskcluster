@@ -5,6 +5,7 @@ var fs = require('fs');
 var mkdirp = require('mkdirp');
 var rmrf = require('rimraf');
 var uuid = require('uuid');
+import _ from 'lodash';
 
 var KEY_DELIMITER = '::';
 
@@ -79,7 +80,8 @@ export default class VolumeCache {
     this.cache[cacheName][instanceId] = {
       path: instancePath,
       mounted: false,
-      lastUsed: lastUsed
+      lastUsed: lastUsed,
+      purge: false
     };
 
     // Create a cache key that can be used by consumers of the cache in the
@@ -120,6 +122,8 @@ export default class VolumeCache {
   @param {Boolean} Disksapce threshold reached
   */
   async clear(exceedsDiskspaceThreshold) {
+    await this.doPurge();
+
     if (!exceedsDiskspaceThreshold) return;
     for (var cacheName in this.cache) {
       for (var instance in this.cache[cacheName]) {
@@ -168,10 +172,11 @@ export default class VolumeCache {
       var instanceIds = sortInstanceIds(this.cache[cacheName]);
       for (var i = 0; i < instanceIds.length; i++) {
         var id = instanceIds[i];
-        if (!this.cache[cacheName][id].mounted) {
+        let instance = this.cache[cacheName][id];
+        if (!instance.mounted && !instance.purge) {
           instanceId = id;
-          this.cache[cacheName][id].mounted = true;
-          this.cache[cacheName][id].lastUsed = Date.now();
+          instance.mounted = true;
+          instance.lastUsed = Date.now();
           break;
         }
       }
@@ -233,6 +238,30 @@ export default class VolumeCache {
     return({
       cacheName: cacheSplit[0],
       cacheLocation: path.join(this.rootCachePath, cacheSplit[0], cacheSplit[1] + '/')
+    });
+  }
+
+  /**
+   Try to remove caches marked for purge.
+   */
+  async doPurge() {
+    _.forOwn(this.cache, (cache, cacheName) => {
+      _.forOwn(cache, async (instance, instanceid) => {
+        if (instance.purge && !instance.mounted) {
+          await this.removeCacheVolume(cacheName, instanceid);
+        }
+      });
+    });
+  }
+
+  /**
+   Mark cache for purge and try to remove it.
+
+   @param cacheName {String} Name of the cache.
+   */
+  purge(cacheName) {
+    _.forOwn(this.cache[cacheName], (instance) => {
+     instance.purge = true;
     });
   }
 }

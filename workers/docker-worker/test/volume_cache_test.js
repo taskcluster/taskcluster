@@ -185,4 +185,46 @@ suite('volume cache test', function () {
       'have.'
     );
   }));
+
+  test('purge volume cache', co(function* () {
+    var cache = new VolumeCache({
+      cache: {
+        volumeCachePath: localCacheDir
+      },
+      log: debug,
+      stats: stats
+    });
+
+    var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+    var fullPath = path.join(localCacheDir, cacheName);
+
+    var instance1 = yield cache.get(cacheName);
+    var instance2 = yield cache.get(cacheName);
+
+    yield cache.release(instance1.key);
+
+    // should remove only instance1
+    cache.purge(cacheName);
+
+    var instance3 = yield cache.get(cacheName);
+    assert.ok(instance3.key !== instance1.key);
+
+    yield cache.release(instance2);
+    yield cache.release(instance3);
+
+    cache.purge(cacheName);
+
+    var instance4 = yield cache.get(cacheName);
+
+    assert.ok(instance4.key !== instance3.key);
+    assert.ok(instance4.key !== instance2.key);
+
+    instance1 = yield cache.get(cacheName);
+    cache.purge(cacheName);
+    yield cache.release(instance1.key);
+
+    // Cannot return a volume marked for purge
+    instance2 = yield cache.get(cacheName);
+    assert.ok(instance1.key !== instance2.key);
+  }));
 });
