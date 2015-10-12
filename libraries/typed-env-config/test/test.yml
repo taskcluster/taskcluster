@@ -1,0 +1,5 @@
+Defaults:
+  text:
+    - Hello
+    - World
+Profiles:
