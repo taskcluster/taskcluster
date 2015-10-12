@@ -1,7 +1,6 @@
-env:
-  global:
-  - DEBUG='* -superagent -express:* -mocha:*'
 language: node_js
+sudo: false
 node_js:
 - '0.12'
+- stable
 script: npm test
