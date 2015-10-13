@@ -27,6 +27,11 @@ var Client = base.Entity.configure({
   context:          ['resolver']
 });
 
+/** Get scopes granted to this client */
+Client.prototype.expandedScopes = function() {
+  return this.resolver.resolve(['assume:client-id:' + this.clientId]);
+};
+
 /** Get JSON representation of client */
 Client.prototype.json = function() {
   return {
@@ -37,7 +42,7 @@ Client.prototype.json = function() {
     lastModified:   this.details.lastModified,
     lastDateUsed:   this.details.lastDateUsed,
     lastRotated:    this.details.lastRotated,
-    expandedScopes: this.resolver.resolve(['assume:client-id:' + this.clientId])
+    expandedScopes: this.scopes()
   };
 };
 
