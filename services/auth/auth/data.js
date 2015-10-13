@@ -42,7 +42,7 @@ Client.prototype.json = function() {
     lastModified:   this.details.lastModified,
     lastDateUsed:   this.details.lastDateUsed,
     lastRotated:    this.details.lastRotated,
-    expandedScopes: this.scopes()
+    expandedScopes: this.expandedScopes()
   };
 };
 
