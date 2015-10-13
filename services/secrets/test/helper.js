@@ -6,10 +6,16 @@ import mocha from 'mocha';
 import common from '../lib/common';
 var bin = {
   server: require('../bin/server'),
+  expireSecrets: require('../bin/expire-secrets')
 };
 
 // Create and export helper object
 var helper = module.exports = {};
+
+// Allow tests to run expire-secrets
+helper.expireSecrets = () => {
+  return bin.expireSecrets('test');
+};
 
 // Load configuration
 var cfg = common.loadConfig('test');
@@ -33,20 +39,30 @@ const ClientExpiration = new Date((new Date()).getTime() + (60 * 1000));
 // Some default clients for the mockAuthServer
 var defaultClients = [
   {
-  clientId:     'captain-write', // can write captain's secrets
-  scopes:       [
-    'secrets:set:captain:*',
-    'secrets:update:captain:*',
-    'secrets:remove:captain:*'
-  ],
-  expiry:      ClientExpiration,
-  credentials:  cfg.get('taskcluster:credentials')
+    clientId:     'captain-write', // can write captain's secrets
+    scopes:       [
+      'secrets:set:captain:*',
+      'secrets:update:captain:*',
+      'secrets:remove:captain:*'
+    ],
+    expiry:       ClientExpiration,
+    credentials:  cfg.get('taskcluster:credentials')
   }, {
-  clientId:     'captain-read', // can read captain's secrets
-  accessToken:  'none',
-  scopes:       ['secrets:get:captain:*'],
-  expiry:      ClientExpiration,
-  credentials:  cfg.get('taskcluster:credentials')
+    clientId:     'captain-read', // can read captain's secrets
+    accessToken:  'none',
+    scopes:       ['secrets:get:captain:*'],
+    expiry:       ClientExpiration,
+    credentials:  cfg.get('taskcluster:credentials')
+  }, {
+    clientId:     'captain-read-write',
+    scopes:       [
+      'secrets:set:captain:*',
+      'secrets:update:captain:*',
+      'secrets:remove:captain:*',
+      'secrets:get:captain:*'
+    ],
+    expiry:       ClientExpiration,
+    credentials:  cfg.get('taskcluster:credentials')
   }
 ];
 

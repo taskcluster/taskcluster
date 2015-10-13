@@ -1,4 +1,11 @@
 module.exports = {
+  taskclusterSecrets: {
+    publishMetaData:              'false',
+    statsComponent:               'secrets',
+    // Time delay before expiring secrets, in readable format, see:
+    // taskcluster.fromNow, notice this should be negative!
+    secretExpirationDelay:        '- 30 seconds'
+  },
 
   // TaskCluster configuration
   taskcluster: {

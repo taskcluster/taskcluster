@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 import Debug from 'debug';
 import base from 'taskcluster-base';
-import api from '../lib/api';
 import data from '../lib/data';
 import path from 'path';
 import common from '../lib/common';
 import Promise from 'promise';
 import _ from 'lodash';
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
 
-let debug = Debug('secrets:server');
+let debug = Debug('secrets:expire-secrets');
 
-/** Launch server */
+/** Launch expire-secrets */
 let launch = async function(profile) {
   debug("Launching with profile: %s", profile);
   var cfg = common.loadConfig(profile);
@@ -30,10 +31,9 @@ let launch = async function(profile) {
   base.stats.startProcessUsageReporting({
     drain:      statsDrain,
     component:  cfg.get('taskclusterSecrets:statsComponent'),
-    process:    'server'
+    process:    'expire-secrets'
   });
 
-  let validator = await common.buildValidator(cfg);
   let entity = data.SecretEntity.setup({
     account:          cfg.get('azure:accountName'),
     credentials:      cfg.get('taskcluster:credentials'),
@@ -42,57 +42,40 @@ let launch = async function(profile) {
     signingKey:       cfg.get('azure:signingKey'),
     drain:            statsDrain,
     component:        cfg.get('taskclusterSecrets:statsComponent'),
-    process:          'server'
+    process:          'expire-secrets'
   });
 
-  // Create API router and publish reference if needed
-  debug("Creating API router");
+  // Find an secret expiration delay
+  var delay = cfg.get('taskclusterSecrets:secretExpirationDelay');
+  var now   = taskcluster.fromNow(delay);
+  assert(!_.isNaN(now), "Can't have NaN as now");
 
-  let router = await api.setup({
-    context:          {cfg, entity},
-    authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
-    credentials:      cfg.get('taskcluster:credentials'),
-    validator:        validator,
-    publish:          cfg.get('taskclusterSecrets:publishMetaData') === 'true',
-    baseUrl:          cfg.get('server:publicUrl') + '/v1',
-    referencePrefix:  'secrets/v1/api.json',
-    aws:              cfg.get('aws'),
-    component:        cfg.get('taskclusterSecrets:statsComponent'),
-    drain:            statsDrain
-  });
+  debug("Expiring secrets");
+  let count = await entity.expire(now);
+  debug("Expired %i secrets", count);
 
-  debug("Configuring app");
-
-  // Create app
-  var app = base.app({
-    port:           Number(process.env.PORT || cfg.get('server:port')),
-    env:            cfg.get('server:env'),
-    forceSSL:       cfg.get('server:forceSSL'),
-    trustProxy:     cfg.get('server:trustProxy')
-  });
-
-  // Mount API router
-  app.use('/v1', router);
-
-  // Create server
-  debug("Launching server");
-  return app.createServer();
+  // Stop recording statistics and send any stats that we have
+  return statsDrain.close();
 };
 
-// If server.js is executed start the server
+
+// If expire-secrets.js is executed run launch
 if (!module.parent) {
   // Find configuration profile
   var profile = process.argv[2];
   if (!profile) {
-    console.log("Usage: server.js [profile]");
+    console.log("Usage: expire-secrets.js [profile]")
     console.error("ERROR: No configuration profile is provided");
   }
   // Launch with given profile
   launch(profile).then(function() {
-    debug("Launched server successfully");
+    debug("Expired secrets successfully");
+    // Close the process we're done now
+    process.exit(0);
   }).catch(function(err) {
-    debug("Failed to start server, err: %s, as JSON: %j", err, err, err.stack);
-    // If we didn't launch the server we should crash
+    debug("Failed to start expire-secrets, err: %s, as JSON: %j",
+          err, err, err.stack);
+    // If we didn't launch the expire-secrets we should crash
     process.exit(1);
   });
 }
