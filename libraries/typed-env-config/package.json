@@ -6,10 +6,10 @@
   "license": "MPL-2.0",
   "main": "./lib/config",
   "scripts": {
-    "compile": "rm -rf lib/ && babel -sd lib/ src/",
+    "compile": "rm -rf lib/ .test/ && mkdir -p lib .test && babel -sd lib/ src/ && babel --copy-files -sd .test/ test/",
     "prepublish": "npm run compile",
     "pretest": "npm run compile",
-    "test": "mocha test/*_test.js"
+    "test": "mocha .test/*_test.js"
   },
   "repository": {
     "type": "git",
