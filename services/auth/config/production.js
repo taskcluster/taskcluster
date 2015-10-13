@@ -5,7 +5,7 @@ module.exports = {
     rolesTableName:                 'Roles',
 
     // Publish references and schemas
-    publishMetaData:                'true'
+    publishMetaData:                'false'
   },
 
   // Server configuration
