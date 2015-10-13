@@ -50,5 +50,6 @@ common.buildInfluxStatsDrain = function(connectionString, maxDelay, maxPendingPo
 
 // This makes a good drain when influxdb isn't configured
 common.stdoutStatsDrain = {
-    addPoint: (...args) => {debug("stats:", args)}
+  addPoint(...args) {debug("stats:", args)},
+  close() {}
 };

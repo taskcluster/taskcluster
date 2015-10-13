@@ -3,17 +3,6 @@ import common from './common';
 import slugid from 'slugid';
 import _ from 'lodash';
 
-/**
- * Check to see if a resource is stale
- **/
-function hasExpired(expires) {
-  let currentTime = new Date();
-  let expireTime = new Date(expires);
-  if (currentTime > expireTime) {
-    return true;
-  }
-  return false;
-};
 
 /** API end-point for version v1/
  *
@@ -37,7 +26,7 @@ module.exports = api;
 /** Define tasks */
 api.declare({
   method:      'put',
-  route:       '/name/:name(*)',
+  route:       '/secrets/:name(*)',
   deferAuth:   true,
   name:        'set',
   input:       common.SCHEMA_PREFIX_CONST + "secret.json#",
@@ -45,9 +34,11 @@ api.declare({
   title:       'Create New Secret',
   description: 'Set a secret associated with some key.'
 }, async function(req, res) {
-    req.satisfies(req.params);
     let {name} = req.params;
     let {secret, expires} = req.body;
+    if (!req.satisfies({name})) {
+      return;
+    }
     try {
       await this.entity.create({
         name:       name,
@@ -71,8 +62,8 @@ api.declare({
 });
 
 api.declare({
-  method:      'patch',
-  route:       '/name/:name(*)',
+  method:      'post',
+  route:       '/secrets/:name(*)',
   deferAuth:   true,
   name:        'update',
   input:       common.SCHEMA_PREFIX_CONST + "secret.json#",
@@ -80,9 +71,11 @@ api.declare({
   title:       'Update A Secret',
   description: 'Update a secret associated with some key.'
 }, async function(req, res) {
-    req.satisfies(req.params);
-    let {name} = req.params;
     let {secret, expires} = req.body;
+    let {name} = req.params;
+    if (!req.satisfies({name})) {
+      return;
+    }
     let item = await this.entity.load({name}, true);
     if (!item) {
       res.status(404).send(`Can't update, no resource named ${name} found`);
@@ -97,15 +90,17 @@ api.declare({
 
 api.declare({
   method:      'delete',
-  route:       '/name/:name(*)',
+  route:       '/secrets/:name(*)',
   deferAuth:   true,
   name:        'remove',
   scopes:      [['secrets:remove:<name>']],
   title:       'Delete Secret',
   description: 'Delete the secret attached to some key.'
 }, async function(req, res) {
-  req.satisfies(req.params);
   let {name} = req.params;
+  if (!req.satisfies({name})) {
+    return;
+  }
   try {
     await this.entity.remove({name: name});
   } catch(e) {
@@ -121,7 +116,7 @@ api.declare({
 
 api.declare({
   method:      'get',
-  route:       '/name/:name(*)',
+  route:       '/secrets/:name(*)',
   deferAuth:   true,
   name:        'get',
   output:      common.SCHEMA_PREFIX_CONST + "secret.json#",
@@ -129,8 +124,10 @@ api.declare({
   title:       'Read Secret',
   description: 'Read the secret attached to some key.'
 }, async function(req, res) {
-  req.satisfies(req.params);
   let {name} = req.params;
+  if (!req.satisfies({name})) {
+    return;
+  }
   let item = undefined;
   try {
     item = await this.entity.load({name});
@@ -142,7 +139,7 @@ api.declare({
       throw e;
     }
   }
-  if (hasExpired(item.expires)) {
+  if (item.isExpired()) {
     res.status(410).send('The requested resource has expired.');
   } else {
     res.status(200).json(item.json());
