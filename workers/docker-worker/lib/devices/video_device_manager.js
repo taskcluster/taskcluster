@@ -20,7 +20,7 @@ export default class VideoDeviceManager {
                         });
     }
     catch (e) {
-      debug(`Caught error when gathering video devices. ${e}`);
+      debug(`Caught error when gathering video devices. ${e.stack || e}`);
       return [];
     }
 

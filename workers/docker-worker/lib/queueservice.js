@@ -33,9 +33,9 @@ async function makeRequest(method, url, retries, retryInterval, payload) {
         return response;
       }
       catch (e) {
-        debug(`Error requesting ${url}. ${e} status code: ${e.statusCode} Retries left: ${retries}`);
+        debug(`Error requesting ${url}. ${e.stack || e} status code: ${e.statusCode} Retries left: ${retries}`);
         if (retries === 0) {
-          throw new Error(`Could not complete request. status code: ${e.statusCode} ${e}`);
+          throw new Error(`Could not complete request. status code: ${e.statusCode} ${e.stack || e}`);
         }
       }
       await sleep(retryInterval);

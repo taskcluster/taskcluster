@@ -20,7 +20,7 @@ export default class AudioDeviceManager {
                         });
     }
     catch (e) {
-      debug(`Caught error when gathering audio devices. ${e}`);
+      debug(`Caught error when gathering audio devices. ${e.stack || e}`);
       return [];
     }
 
@@ -29,7 +29,7 @@ export default class AudioDeviceManager {
         deviceList.push(new AudioDevice(`${BASE_DIR}/${deviceFile}`));
       }
       catch(e) {
-        debug(`Could not create audio device. Error: ${e}`);
+        debug(`Could not create audio device. Error: ${e.stack || e}`);
       }
     });
 

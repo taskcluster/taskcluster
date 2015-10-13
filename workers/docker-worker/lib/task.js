@@ -356,7 +356,7 @@ export class Task {
     }
     catch (e) {
       // Do not throw, killing the states is a best effort here when aborting
-      debug(`Caught error while killing state handlers. ${e}`);
+      debug(`Caught error while killing state handlers. ${e.stack || e}`);
     }
 
 
@@ -473,7 +473,7 @@ export class Task {
     } catch (e) {
       debug('Caught error while reclaiming task. %s, as JSON %j', e, e);
 
-      let errorMessage = `Could not reclaim task. ${e}`;
+      let errorMessage = `Could not reclaim task. ${e.stack || e}`;
       this.runtime.log('error reclaiming task', {
         claim: this.claim,
         error: errorMessage
@@ -616,7 +616,7 @@ export class Task {
         'states_failed',
         this.fmtErrorLog(
           'Task was aborted because states could not be created ' +
-          `successfully. ${e}`
+          `successfully. ${e.stack || e}`
         )
       );
     }
@@ -707,7 +707,7 @@ export class Task {
           'states_failed',
           this.fmtErrorLog(
             'Task was aborted because states could not be started ' +
-            `successfully. ${e}`
+            `successfully. ${e.stack || e}`
           )
         );
       }
