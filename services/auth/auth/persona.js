@@ -15,52 +15,55 @@ var taskcluster     = require('taskcluster-client');
 var url             = require('url');
 
 /** Index page (the only page we have) */
-var renderIndex = function(authFailed, req, res) {
-  // Load client so we can sign
-  var Client = req.app.globals.Client;
-  Client.load(req.app.globals.clientIdForTempCreds).then(function(client) {
-    return taskcluster.createTemporaryCredentials({
+var renderIndex = async function(authFailed, req, res) {
+
+  let credentials = {
+    clientId:     '',
+    accessToken:  '',
+    certificate:  'Internal server error'
+  };
+  try {
+    // Load client so we can sign
+    let client = await req.app.globals.Client.load({
+      clientId: req.app.globals.clientIdForTempCreds
+    });
+    credentials = taskcluster.createTemporaryCredentials({
       start:        new Date(),
       expiry:       new Date(new Date().getTime() + 31 * 24 * 60 * 60 * 1000),
-      scopes:       client.scopes,
+      scopes:       client.expandedScopes(),
       credentials:  {
         clientId:     client.clientId,
         accessToken:  client.accessToken
       }
     });
-  }, function(err) {
+  } catch (err) {
     debug("Error loading client: %s, as JSON: %j", err, err, err.stack);
-    return {
-      clientId:     '',
-      accessToken:  '',
-      certificate:  'Internal server error'
-    };
-  }).then(function(credentials) {
-    if (typeof(credentials.certificate) !== 'string') {
-      credentials.certificate = JSON.stringify(credentials.certificate);
-    }
+  }
 
-    // Add temporary credentials to target URL
-    var target = undefined;
-    if (req.query.target) {
-      target = url.parse(req.query.target);
-      delete target.search;
-      if (!target.query) {
-        target.query = {};
-      }
-      target.query.clientId     = credentials.clientId;
-      target.query.accessToken  = credentials.accessToken;
-      target.query.certificate  = credentials.certificate;
-    }
+  if (typeof(credentials.certificate) !== 'string') {
+    credentials.certificate = JSON.stringify(credentials.certificate);
+  }
 
-    // Render login page
-    res.render('login', {
-      query:        req.query,
-      target:       url.format(target),
-      credentials:  credentials,
-      querystring:  querystring.stringify(req.query),
-      authFailed:   authFailed
-    });
+  // Add temporary credentials to target URL
+  var target = undefined;
+  if (req.query.target) {
+    target = url.parse(req.query.target);
+    delete target.search;
+    if (!target.query) {
+      target.query = {};
+    }
+    target.query.clientId     = credentials.clientId;
+    target.query.accessToken  = credentials.accessToken;
+    target.query.certificate  = credentials.certificate;
+  }
+
+  // Render login page
+  res.render('login', {
+    query:        req.query,
+    target:       url.format(target),
+    credentials:  credentials,
+    querystring:  querystring.stringify(req.query),
+    authFailed:   authFailed
   });
 };
 
