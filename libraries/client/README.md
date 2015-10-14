@@ -155,19 +155,21 @@ that either resolves without giving a value or rejects with an error.
 //  - https://auth.taskcluster.net/v1
 var auth = new taskcluster.Auth(options);
 ```
- * `auth.scopes(clientId) : result`
- * `auth.getCredentials(clientId) : result`
+ * `auth.listClients() : result`
  * `auth.client(clientId) : result`
  * `auth.createClient(clientId, payload) : result`
- * `auth.modifyClient(clientId, payload) : result`
- * `auth.removeClient(clientId) : void`
- * `auth.resetCredentials(clientId) : result`
- * `auth.listClients() : result`
- * `auth.azureTableSAS(account, table) : result`
+ * `auth.resetAccessToken(clientId) : result`
+ * `auth.updateClient(clientId, payload) : result`
+ * `auth.deleteClient(clientId) : void`
+ * `auth.listRoles() : result`
+ * `auth.role(roleId) : result`
+ * `auth.createRole(roleId, payload) : result`
+ * `auth.updateRole(roleId, payload) : result`
+ * `auth.deleteRole(roleId) : void`
  * `auth.awsS3Credentials(level, bucket, prefix) : result`
- * `auth.exportClients() : result`
- * `auth.importClients(payload) : result`
+ * `auth.azureTableSAS(account, table) : result`
  * `auth.authenticateHawk(payload) : result`
+ * `auth.importClients(payload) : void`
  * `auth.ping() : void`
 
 ### Methods in `taskcluster.AwsProvisioner`
