@@ -16,6 +16,31 @@
     <script src="../taskcluster-client.js"></script>
     <script>
     suite("client (browserify)", function() {
+      var TestAuth = null;
+      test("createClient", function() {
+        TestAuth = taskcluster.createClient({
+          version: 0,
+          $schema: "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+          title: "Mock Auth Server",
+          description: "Auth server for testing",
+          baseUrl: "http://localhost:62351/v1",
+          entries: [
+            {
+              type: "function",
+              method: "get",
+              route: "/client/<clientId>/credentials",
+              args: [
+                "clientId"
+              ],
+              name: "getCredentials",
+              stability: "experimental",
+              title: "Get Credentials",
+              description: "Mock implementation of getCredentials",
+              scopes: [["auth:credentials"]]
+            }
+          ]
+        });
+      });
 
       test("loaded", function() {
         if (!window.taskcluster.Queue) {
@@ -33,7 +58,7 @@
       });
 
       test("Build signed url (in browser)", function() {
-        var auth = new taskcluster.Auth({
+        var auth = new TestAuth({
           credentials: {
             clientId:       'test-client',
             accessToken:    'test-token',
@@ -44,7 +69,7 @@
 
 
       test("Request with authentication", function() {
-        var auth = new taskcluster.Auth({
+        var auth = new TestAuth({
           baseUrl:      'http://localhost:62351/v1',
           credentials: {
             clientId:       'test-client',
@@ -55,7 +80,7 @@
       });
 
       test('getCredentials using authorizedScopes', function() {
-        var auth = new taskcluster.Auth({
+        var auth = new TestAuth({
           baseUrl:      'http://localhost:62351/v1',
           credentials: {
             clientId:       'test-client',
@@ -70,7 +95,7 @@
       });
 
       test('getCredentials using authorizedScopes (unauthorized)', function() {
-        var auth = new taskcluster.Auth({
+        var auth = new TestAuth({
           baseUrl:      'http://localhost:62351/v1',
           credentials: {
             clientId:       'test-client',
@@ -96,7 +121,7 @@
             accessToken:    'test-token',
           },
         });
-        var auth = new taskcluster.Auth({
+        var auth = new TestAuth({
           baseUrl: 'http://localhost:62351/v1',
           credentials: tempCreds
         });
@@ -115,7 +140,7 @@
             accessToken:    'test-token',
           },
         });
-        var auth = new taskcluster.Auth({
+        var auth = new TestAuth({
           baseUrl: 'http://localhost:62351/v1',
           credentials: tempCreds
         });
@@ -129,7 +154,7 @@
       });
 
       test('Build signed url', function(done) {
-        var auth = new taskcluster.Auth({
+        var auth = new TestAuth({
           baseUrl: 'http://localhost:62351/v1',
           credentials: {
             clientId:       'test-client',
