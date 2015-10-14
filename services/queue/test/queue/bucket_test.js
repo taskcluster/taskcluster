@@ -87,4 +87,15 @@ suite('queue/bucket_test', function() {
     assert(res.ok, "get request failed");
     assert(res.body.message === 'Hello', "wrong message");
   });
+
+  test("uses bucketCDN", () => {
+    // Create bucket instance
+    var bucket = new Bucket({
+      bucket:       cfg.get('queue:publicArtifactBucket'),
+      credentials:  cfg.get('aws'),
+      bucketCDN:    "https://example.com"
+    });
+    var url = bucket.createGetUrl("test");
+    assert(url === "https://example.com/test");
+  });
 });
