@@ -20,6 +20,7 @@ var launch = async function(profile) {
     envs: [
       'auth_tableSigningKey',
       'auth_tableCryptoKey',
+      'auth_publishMetaData',
       'server_publicUrl',
       'server_cookieSecret',
       'azure_accountName',
