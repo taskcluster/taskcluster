@@ -69,7 +69,10 @@ module.exports = {
     publicArtifactBucketProxies: {},
 
     // Use publicArtifactBucketProxies
-    usePublicArtifactBucketProxy: 'true'
+    usePublicArtifactBucketProxy: 'true',
+
+    // CDN for public artifact bucket
+    publicArtifactBucketCDN: undefined
   },
 
   // TaskCluster configuration
