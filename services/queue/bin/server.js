@@ -31,7 +31,8 @@ var launch = async function(profile) {
       'azure_accountName',
       'azure_accountKey',
       'influx_connectionString',
-      'queue_usePublicArtifactBucketProxy'
+      'queue_usePublicArtifactBucketProxy',
+      'queue_publicArtifactBucketCDN'
     ],
     filename:     'taskcluster-queue'
   });
@@ -53,7 +54,8 @@ var launch = async function(profile) {
   // Create artifact bucket instances
   var publicArtifactBucket = new Bucket({
     bucket:             cfg.get('queue:publicArtifactBucket'),
-    credentials:        cfg.get('aws')
+    credentials:        cfg.get('aws'),
+    bucketCDN:          cfg.get('queue:publicArtifactBucketCDN')
   });
   var privateArtifactBucket = new Bucket({
     bucket:             cfg.get('queue:privateArtifactBucket'),

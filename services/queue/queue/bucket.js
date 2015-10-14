@@ -13,13 +13,21 @@ var Promise     = require('promise');
  *   credentials: {
  *     accessKeyId:      // ...
  *     secretAccessKey:  // ...
- *   }
+ *   },
+ *   bucketCDN:          // https://cdn-for-bucket.com
  * }
  */
 var Bucket = function(options) {
   assert(options,             "options must be given");
   assert(options.bucket,      "bucket must be specified");
   assert(options.credentials, "credentials must be specified");
+  assert(!options.bucketCDN || typeof(options.bucketCDN) === 'string',
+         "Expected bucketCDN to be a hostname or empty string for none");
+  if (options.bucketCDN) {
+    assert(/^https?:\/\//.test(options.bucketCDN), "bucketCDN must be http(s)");
+    assert(/[^\/]$/.test(options.bucketCDN),
+           "bucketCDN shouldn't end with slash");
+  }
   // Ensure access to the bucket property
   this.bucket = options.bucket;
   // Create S3 client
@@ -28,6 +36,8 @@ var Bucket = function(options) {
       Bucket:   options.bucket
     }
   }, options.credentials));
+  // Store bucket CDN
+  this.bucketCDN = options.bucketCDN;
 };
 
 // Export Bucket
@@ -66,7 +76,10 @@ Bucket.prototype.createPutUrl = function(prefix, options) {
  * Create an unsigned GET URL
  */
 Bucket.prototype.createGetUrl = function(prefix) {
-  assert(prefix,                "prefix must be given");
+  assert(prefix, "prefix must be given");
+  if (this.bucketCDN) {
+    return `${this.bucketCDN}/${prefix}`;
+  }
   return `${this.s3.endpoint.href}${this.bucket}/${prefix}`;
 };
 
