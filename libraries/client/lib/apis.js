@@ -3,80 +3,49 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://auth.taskcluster.net/v1",
-      "description": "Authentication related API end-points for taskcluster.",
+      "description": "Authentication related API end-points for TaskCluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authenticate request signed with TaskCluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, expiration and description.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling TaskCluster APIs.\n\nEach client is assigned a single scope on the form:\n`assume:client-id:<clientId>`, this scope doesn't really do much on its\nown. But when you dive into the roles section you'll see that you can\ncreate a role: `client-id:<clientId>` that assigns scopes to the client.\nThis way it's easy to audit all scope assignments, by only listing roles.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\nAs previously mentioned each client gets the scope:\n`assume:client-id:<clientId>`, it trivially follows that you can create a\nrole with the `roleId`: `client-id:<clientId>` to assign additional\nscopes to a client. You can also create a role `client-id:user-*`\nif you wish to assign a set of scopes to all clients whose `clientId`\nstarts with `user-`.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskCluster credentials to grant access to a third-party service used\nby many TaskCluster components.",
       "entries": [
         {
           "args": [
-            "clientId"
           ],
-          "description": "Returns the scopes the client is authorized to access and the date-time\nwhen the client's authorization is set to expire.\n\nThis API end-point allows you inspect clients without getting access to\ncredentials, as provided by the `getCredentials` request below.",
+          "description": "Get a list of all clients.",
           "method": "get",
-          "name": "scopes",
-          "output": "http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#",
-          "route": "/client/<clientId>/scopes",
-          "scopes": [
-            [
-              "auth:inspect",
-              "auth:credentials"
-            ]
-          ],
-          "stability": "experimental",
-          "title": "Get Client Authorized Scopes",
+          "name": "listClients",
+          "output": "http://schemas.taskcluster.net/auth/v1/list-clients-response.json#",
+          "route": "/clients/",
+          "stability": "stable",
+          "title": "List Clients",
           "type": "function"
         },
         {
           "args": [
             "clientId"
           ],
-          "description": "Returns the client's `accessToken` as needed for verifying signatures.\nThis API end-point also returns the list of scopes the client is\nauthorized for and the date-time where the client authorization expires\n\nRemark, **if you don't need** the `accessToken` but only want to see what\nscopes a client is authorized for, you should use the `getScopes`\nfunction described above.",
-          "method": "get",
-          "name": "getCredentials",
-          "output": "http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#",
-          "route": "/client/<clientId>/credentials",
-          "scopes": [
-            [
-              "auth:credentials"
-            ]
-          ],
-          "stability": "experimental",
-          "title": "Get Client Credentials",
-          "type": "function"
-        },
-        {
-          "args": [
-            "clientId"
-          ],
-          "description": "Returns all information about a given client. This end-point is mostly for\nbuilding tools to administrate clients. Do not use if you only want to\nauthenticate a request; see `getCredentials` for this purpose.",
+          "description": "Get information about a single client.",
           "method": "get",
           "name": "client",
           "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#",
-          "route": "/client/<clientId>",
-          "scopes": [
-            [
-              "auth:credentials"
-            ]
-          ],
-          "stability": "experimental",
-          "title": "Get Client Information",
+          "route": "/clients/<clientId>",
+          "stability": "stable",
+          "title": "Get Client",
           "type": "function"
         },
         {
           "args": [
             "clientId"
           ],
-          "description": "Create a client with given `clientId`, `name`, `expires`, `scopes` and\n`description`. The `accessToken` will always be generated server-side,\nand will be returned from this request.\n\n**Required scopes**: in addition the scopes listed above, the \n`scopes` property must be satisfied by the caller's scopes.",
+          "description": "Create a new client and get the `accessToken` for this client.\nYou should store the `accessToken` from this API call as there is no\nother way to retrieve it.\n\nIf you loose the `accessToken` you can call `resetAccessToken` to reset\nit, and a new `accessToken` will be returned, but you cannot retrieve the\ncurrent `accessToken`.\n\nIf a client with the same `clientId` already exists this operation will\nfail. Use `updateClient` if you wish to update an existing client.",
           "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
           "method": "put",
           "name": "createClient",
-          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#",
-          "route": "/client/<clientId>",
+          "output": "http://schemas.taskcluster.net/auth/v1/create-client-response.json#",
+          "route": "/clients/<clientId>",
           "scopes": [
             [
-              "auth:create-client",
-              "auth:credentials"
+              "auth:create-client:<clientId>"
             ]
           ],
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Create Client",
           "type": "function"
         },
@@ -84,92 +53,134 @@ module.exports = {
           "args": [
             "clientId"
           ],
-          "description": "Modify client `name`, `expires`, `scopes` and\n`description`.\n\n**Required scopes**: in addition the scopes listed\nabove, the `scopes` property must be satisfied by the caller's\nscopes.  The client's existing scopes are not considered.",
+          "description": "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you loose it\nyou must reset the accessToken to acquire it again.",
+          "method": "post",
+          "name": "resetAccessToken",
+          "output": "http://schemas.taskcluster.net/auth/v1/create-client-response.json#",
+          "route": "/clients/<clientId>/reset",
+          "scopes": [
+            [
+              "auth:reset-access-token:<clientId>"
+            ]
+          ],
+          "stability": "stable",
+          "title": "Reset `accessToken`",
+          "type": "function"
+        },
+        {
+          "args": [
+            "clientId"
+          ],
+          "description": "Update an exisiting client. This is really only useful for changing the\ndescription and expiration, as you won't be allowed to the `clientId`\nor `accessToken`.",
           "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#",
           "method": "post",
-          "name": "modifyClient",
+          "name": "updateClient",
           "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#",
-          "route": "/client/<clientId>/modify",
+          "route": "/clients/<clientId>",
           "scopes": [
             [
-              "auth:modify-client",
-              "auth:credentials"
+              "auth:update-client:<clientId>"
             ]
           ],
-          "stability": "experimental",
-          "title": "Modify Client",
+          "stability": "stable",
+          "title": "Update Client",
           "type": "function"
         },
         {
           "args": [
             "clientId"
           ],
-          "description": "Delete a client with given `clientId`.",
+          "description": "Delete a client, please note that any roles related to this client must\nbe deleted independently.",
           "method": "delete",
-          "name": "removeClient",
-          "route": "/client/<clientId>",
+          "name": "deleteClient",
+          "route": "/clients/<clientId>",
           "scopes": [
             [
-              "auth:remove-client"
+              "auth:delete-client:<clientId>"
             ]
           ],
-          "stability": "experimental",
-          "title": "Remove Client",
+          "stability": "stable",
+          "title": "Delete Client",
           "type": "function"
         },
         {
           "args": [
-            "clientId"
           ],
-          "description": "Reset credentials for a client. This will generate a new `accessToken`.\nAs always, the `accessToken` will be generated server-side and returned.",
+          "description": "Get a list of all roles, each role object also includes the list of\nscopes it expands to.",
+          "method": "get",
+          "name": "listRoles",
+          "output": "http://schemas.taskcluster.net/auth/v1/list-roles-response.json#",
+          "route": "/roles/",
+          "stability": "stable",
+          "title": "List Roles",
+          "type": "function"
+        },
+        {
+          "args": [
+            "roleId"
+          ],
+          "description": "Get information about a single role, including the set of scopes that the\nrole expands to.",
+          "method": "get",
+          "name": "role",
+          "output": "http://schemas.taskcluster.net/auth/v1/get-role-response.json#",
+          "route": "/roles/<roleId>",
+          "stability": "stable",
+          "title": "Get Role",
+          "type": "function"
+        },
+        {
+          "args": [
+            "roleId"
+          ],
+          "description": "Create a new role. If there already exists a role with the same `roleId`\nthis operation will fail. Use `updateRole` to modify an existing role",
+          "input": "http://schemas.taskcluster.net/auth/v1/create-role-request.json#",
+          "method": "put",
+          "name": "createRole",
+          "output": "http://schemas.taskcluster.net/auth/v1/get-role-response.json#",
+          "route": "/roles/<roleId>",
+          "scopes": [
+            [
+              "auth:create-role:<roleId>"
+            ]
+          ],
+          "stability": "stable",
+          "title": "Create Role",
+          "type": "function"
+        },
+        {
+          "args": [
+            "roleId"
+          ],
+          "description": "Update existing role.",
+          "input": "http://schemas.taskcluster.net/auth/v1/create-role-request.json#",
           "method": "post",
-          "name": "resetCredentials",
-          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#",
-          "route": "/client/<clientId>/reset-credentials",
+          "name": "updateRole",
+          "output": "http://schemas.taskcluster.net/auth/v1/get-role-response.json#",
+          "route": "/roles/<roleId>",
           "scopes": [
             [
-              "auth:reset-credentials",
-              "auth:credentials"
+              "auth:update-role:<roleId>"
             ]
           ],
-          "stability": "experimental",
-          "title": "Reset Client Credentials",
+          "stability": "stable",
+          "title": "Update Role",
           "type": "function"
         },
         {
           "args": [
+            "roleId"
           ],
-          "description": "Return a list of all clients, not including their access tokens.",
-          "method": "get",
-          "name": "listClients",
-          "output": "http://schemas.taskcluster.net/auth/v1/list-clients-response.json#",
-          "route": "/list-clients",
+          "description": "Delete a role. This operation will succeed regardless of whether or not\nthe role exists.",
+          "method": "delete",
+          "name": "deleteRole",
+          "route": "/roles/<roleId>",
           "scopes": [
             [
-              "auth:list-clients"
+              "auth:delete-role:<roleId>"
             ]
           ],
-          "stability": "experimental",
-          "title": "List Clients",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account",
-            "table"
-          ],
-          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.  Note, this will create the table, if it doesn't\nalready exist.",
-          "method": "get",
-          "name": "azureTableSAS",
-          "output": "http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#",
-          "route": "/azure/<account>/table/<table>/read-write",
-          "scopes": [
-            [
-              "auth:azure-table-access:<account>/<table>"
-            ]
-          ],
-          "stability": "experimental",
-          "title": "Get Shared-Access-Signature for Azure Table",
+          "stability": "stable",
+          "title": "Delete Role",
           "type": "function"
         },
         {
@@ -194,40 +205,21 @@ module.exports = {
         },
         {
           "args": [
+            "account",
+            "table"
           ],
-          "description": "Export all clients except the root client, as a JSON list.\nThis list can be imported later using `importClients`.",
+          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.  Note, this will create the table, if it doesn't\nalready exist.",
           "method": "get",
-          "name": "exportClients",
-          "output": "http://schemas.taskcluster.net/auth/v1/exported-clients.json#",
-          "route": "/export-clients",
+          "name": "azureTableSAS",
+          "output": "http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#",
+          "route": "/azure/<account>/table/<table>/read-write",
           "scopes": [
             [
-              "auth:export-clients",
-              "auth:credentials"
+              "auth:azure-table-access:<account>/<table>"
             ]
           ],
-          "stability": "experimental",
-          "title": "List Clients",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "description": "Import client from JSON list, overwriting any clients that already\nexists. Returns a list of all clients imported.",
-          "input": "http://schemas.taskcluster.net/auth/v1/exported-clients.json#",
-          "method": "post",
-          "name": "importClients",
-          "output": "http://schemas.taskcluster.net/auth/v1/exported-clients.json#",
-          "route": "/import-clients",
-          "scopes": [
-            [
-              "auth:import-clients",
-              "auth:create-client",
-              "auth:credentials"
-            ]
-          ],
-          "stability": "experimental",
-          "title": "Import Clients",
+          "stability": "stable",
+          "title": "Get Shared-Access-Signature for Azure Table",
           "type": "function"
         },
         {
@@ -239,8 +231,27 @@ module.exports = {
           "name": "authenticateHawk",
           "output": "http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#",
           "route": "/authenticate-hawk",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Authenticate Hawk Request",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Import client from JSON list, overwriting any clients that already\nexists. Returns a list of all clients imported.",
+          "input": "http://schemas.taskcluster.net/auth/v1/exported-clients.json#",
+          "method": "post",
+          "name": "importClients",
+          "route": "/import-clients",
+          "scopes": [
+            [
+              "auth:import-clients",
+              "auth:create-client",
+              "auth:credentials"
+            ]
+          ],
+          "stability": "deprecated",
+          "title": "Import Legacy Clients",
           "type": "function"
         },
         {
@@ -611,6 +622,7 @@ module.exports = {
           "name": "findTask",
           "output": "http://schemas.taskcluster.net/index/v1/indexed-task-response.json#",
           "route": "/task/<namespace>",
+          "stability": "experimental",
           "title": "Find Indexed Task",
           "type": "function"
         },
@@ -624,6 +636,7 @@ module.exports = {
           "name": "listNamespaces",
           "output": "http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#",
           "route": "/namespaces/<namespace>",
+          "stability": "experimental",
           "title": "List Namespaces",
           "type": "function"
         },
@@ -637,6 +650,7 @@ module.exports = {
           "name": "listTasks",
           "output": "http://schemas.taskcluster.net/index/v1/list-tasks-response.json#",
           "route": "/tasks/<namespace>",
+          "stability": "experimental",
           "title": "List Tasks",
           "type": "function"
         },
@@ -655,6 +669,7 @@ module.exports = {
               "index:insert-task:<namespace>"
             ]
           ],
+          "stability": "experimental",
           "title": "Insert Task into Index",
           "type": "function"
         },
@@ -672,6 +687,7 @@ module.exports = {
               "queue:get-artifact:<name>"
             ]
           ],
+          "stability": "experimental",
           "title": "Get Artifact From Indexed Task",
           "type": "function"
         },
@@ -682,6 +698,7 @@ module.exports = {
           "method": "get",
           "name": "ping",
           "route": "/ping",
+          "stability": "experimental",
           "title": "Ping Server",
           "type": "function"
         }
@@ -712,6 +729,7 @@ module.exports = {
               "purge-cache:<provisionerId>/<workerType>:<cacheName>"
             ]
           ],
+          "stability": "experimental",
           "title": "Purge Worker Cache",
           "type": "function"
         },
@@ -722,6 +740,7 @@ module.exports = {
           "method": "get",
           "name": "ping",
           "route": "/ping",
+          "stability": "experimental",
           "title": "Ping Server",
           "type": "function"
         }
@@ -1677,6 +1696,7 @@ module.exports = {
               "scheduler:create-task-graph"
             ]
           ],
+          "stability": "experimental",
           "title": "Create new task-graph",
           "type": "function"
         },
@@ -1695,6 +1715,7 @@ module.exports = {
               "scheduler:extend-task-graph:<taskGraphId>"
             ]
           ],
+          "stability": "experimental",
           "title": "Extend existing task-graph",
           "type": "function"
         },
@@ -1707,6 +1728,7 @@ module.exports = {
           "name": "status",
           "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json",
           "route": "/task-graph/<taskGraphId>/status",
+          "stability": "experimental",
           "title": "Task Graph Status",
           "type": "function"
         },
@@ -1719,6 +1741,7 @@ module.exports = {
           "name": "info",
           "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json",
           "route": "/task-graph/<taskGraphId>/info",
+          "stability": "experimental",
           "title": "Task Graph Information",
           "type": "function"
         },
@@ -1731,6 +1754,7 @@ module.exports = {
           "name": "inspect",
           "output": "http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json",
           "route": "/task-graph/<taskGraphId>/inspect",
+          "stability": "experimental",
           "title": "Inspect Task Graph",
           "type": "function"
         },
@@ -1744,6 +1768,7 @@ module.exports = {
           "name": "inspectTask",
           "output": "http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json",
           "route": "/task-graph/<taskGraphId>/inspect/<taskId>",
+          "stability": "experimental",
           "title": "Inspect Task from a Task-Graph",
           "type": "function"
         },
@@ -1754,6 +1779,7 @@ module.exports = {
           "method": "get",
           "name": "ping",
           "route": "/ping",
+          "stability": "experimental",
           "title": "Ping Server",
           "type": "function"
         }
