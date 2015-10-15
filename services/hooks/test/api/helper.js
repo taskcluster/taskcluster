@@ -111,8 +111,6 @@ helper.setupApi = function() {
     helper.scopes();
   });
 
-  var toTerminate = [];
-
   // Setup before each test
   setup(async () => {
     // Remove all entities before each test
@@ -121,16 +119,6 @@ helper.setupApi = function() {
 
     // Setup client with all scopes
     helper.scopes();
-    // Reset list of processes to terminate
-    toTerminate = [];
-  });
-
-  teardown(async () => {
-    // Terminate process that we started in this test
-    await Promise.all(toTerminate.map((proc) => {
-      return proc.terminate();
-    }));
-    toTerminate = [];
   });
 
   // Cleanup after tests
