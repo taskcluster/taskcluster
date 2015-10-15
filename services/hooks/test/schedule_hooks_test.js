@@ -1,20 +1,16 @@
-suite('bin/schedule-hooks.js', () => {
+suite('bin/schedule-hooks.js', function() {
   var assert            = require('assert');
-  var assume            = require('assume');
   var schedule_hooks    = require('../bin/schedule-hooks');
   var Scheduler         = require('../hooks/scheduler');
-  var debug             = require('debug')('test:test_schedule_hooks');
+  var helper            = require('./helper');
 
-  var scheduler = null;
-
-  teardown(async () => {
-    if (scheduler) {
-      await scheduler.terminate();
-    }
-    scheduler = null;
-  });
+  // these tests require Azure credentials (for the Hooks table)
+  if (!helper.hasAzureCredentials) {
+    this.pending = true;
+  }
 
   test('schedule_hooks launches a scheduler', async () => {
-    scheduler = await schedule_hooks('test');
+    var scheduler = await schedule_hooks('test', {noStart: true});
+    assert(scheduler instanceof Scheduler);
   });
 });
