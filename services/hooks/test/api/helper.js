@@ -3,7 +3,6 @@ var assert      = require('assert');
 var base        = require('taskcluster-base');
 var data        = require('../../hooks/data');
 var debug       = require('debug')('test:api:helper');
-var mocha       = require('mocha');
 var path        = require('path');
 var Promise     = require('promise');
 var taskcluster = require('taskcluster-client');
@@ -50,84 +49,100 @@ var defaultClients = [
   }
 ];
 
-// Hold reference to authServer
-var authServer = null;
-var webServer = null;
+// Call this in suites or tests that make API calls; it will set up
+// what's required to respond to those calls.  But note that this
+// requires credentials (taskcluster-hooks.conf.json); returns false
+// if those credentials are not available.
+helper.setupApi = function() {
+  if (!cfg.get('azure:accountName')) {
+    return false;
+  }
 
-// Setup before tests
-mocha.before(async () => {
-  // Create mock authentication server
-  authServer = await base.testing.createMockAuthServer({
-    port: 60407,
-    clients:  defaultClients,
-    credentials: cfg.get('taskcluster:credentials')
-  });
+  // Hold reference to authServer
+  var authServer = null;
+  var webServer = null;
 
-  // Create Hooks table
-  helper.Hook = data.Hook.setup({
-    table:        cfg.get('hooks:hookTableName'),
-    credentials:  cfg.get('azure'),
-    process:      'testing'
-  });
-
-  // Create Groups table
-  helper.Groups = data.Groups.setup({
-    table:        cfg.get('hooks:groupsTableName'),
-    credentials:  cfg.get('azure'),
-    process:      'testing'
-  });
-
-  webServer = await bin.server(testProfile);
-
-  // Create client for working with API
-  helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
-  var reference = v1.reference({baseUrl: helper.baseUrl});
-  helper.Hooks = taskcluster.createClient(reference);
-  // Utility to create an Hooks instance with limited scopes
-  helper.scopes = (...scopes) => {
-    helper.hooks = new helper.Hooks({
-      // Ensure that we use global agent, to avoid problems with keepAlive
-      // preventing tests from exiting
-      agent:            require('http').globalAgent,
-      baseUrl:          helper.baseUrl,
-      credentials: {
-        clientId:       'test-client',
-        accessToken:    'none'
-      },
-      //authBaseUrl: cfg.get('taskcluster:authBaseUrl'),
-      authorizedScopes: (scopes.length > 0 ? scopes : undefined)
+  // Setup before tests
+  suiteSetup(async () => {
+    console.log("before");
+    // Create mock authentication server
+    authServer = await base.testing.createMockAuthServer({
+      port: 60407,
+      clients:  defaultClients,
+      credentials: cfg.get('taskcluster:credentials')
     });
-  };
 
-  // Initialize queue client
-  helper.scopes();
-});
+    // Create Hooks table
+    helper.Hook = data.Hook.setup({
+      table:        cfg.get('hooks:hookTableName'),
+      credentials:  cfg.get('azure'),
+      process:      'testing'
+    });
 
-var toTerminate = [];
+    // Create Groups table
+    helper.Groups = data.Groups.setup({
+      table:        cfg.get('hooks:groupsTableName'),
+      credentials:  cfg.get('azure'),
+      process:      'testing'
+    });
 
-// Setup before each test
-mocha.beforeEach(async () => {
-  // Remove all entities before each test
-  await helper.Hook.scan({},{handler: hook => {return hook.remove();}});
-  await helper.Groups.scan({},{handler: group => {return group.remove();}});
+    webServer = await bin.server(testProfile);
 
-  // Setup client with all scopes
-  helper.scopes();
-  // Reset list of processes to terminate
-  toTerminate = [];
-});
+    // Create client for working with API
+    helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
+    var reference = v1.reference({baseUrl: helper.baseUrl});
+    helper.Hooks = taskcluster.createClient(reference);
+    // Utility to create an Hooks instance with limited scopes
+    helper.scopes = (...scopes) => {
+      helper.hooks = new helper.Hooks({
+        // Ensure that we use global agent, to avoid problems with keepAlive
+        // preventing tests from exiting
+        agent:            require('http').globalAgent,
+        baseUrl:          helper.baseUrl,
+        credentials: {
+          clientId:       'test-client',
+          accessToken:    'none'
+        },
+        //authBaseUrl: cfg.get('taskcluster:authBaseUrl'),
+        authorizedScopes: (scopes.length > 0 ? scopes : undefined)
+      });
+    };
 
-mocha.afterEach(async () => {
-  // Terminate process that we started in this test
-  await Promise.all(toTerminate.map((proc) => {
-    return proc.terminate();
-  }));
-  toTerminate = [];
-});
+    // Initialize queue client
+    helper.scopes();
+  });
 
-// Cleanup after tests
-mocha.after(async () => {
-  // Kill webServer
-  await webServer.terminate();
-  await authServer.terminate();
-});
+  var toTerminate = [];
+
+  // Setup before each test
+  setup(async () => {
+    console.log("beforeEach");
+    // Remove all entities before each test
+    await helper.Hook.scan({},{handler: hook => {return hook.remove();}});
+    await helper.Groups.scan({},{handler: group => {return group.remove();}});
+
+    // Setup client with all scopes
+    helper.scopes();
+    // Reset list of processes to terminate
+    toTerminate = [];
+  });
+
+  teardown(async () => {
+    console.log("afterEach");
+    // Terminate process that we started in this test
+    await Promise.all(toTerminate.map((proc) => {
+      return proc.terminate();
+    }));
+    toTerminate = [];
+  });
+
+  // Cleanup after tests
+  suiteTeardown(async () => {
+    console.log("after");
+    // Kill webServer
+    await webServer.terminate();
+    await authServer.terminate();
+  });
+
+  return true;
+};

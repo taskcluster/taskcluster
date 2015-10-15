@@ -3,6 +3,10 @@ suite('List hook groups', function () {
   var assume = require('assume');
   var helper = require('./helper');
 
+  if (!helper.setupApi()) {
+    this.pending = true;
+  }
+
   var taskDef = require('./test_definition');
 
   test("getTriggerToken returns the same token", async () => {
