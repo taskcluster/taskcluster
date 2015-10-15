@@ -51,7 +51,7 @@ class Scheduler {
     this.stopping = false;
 
     // Create a promise that we're done looping
-    this.done = this.poll().catch((err) => {
+    this.done = this.loopUntilStopped().catch((err) => {
       debug("Error: %s, as JSON: %j", err, err, err.stack);
       throw err;
     }).then(() => {
@@ -65,24 +65,27 @@ class Scheduler {
     return this.done;
   }
 
-  /** Polls for hooks that need to be scheduled and handles them in a loop */
   async poll() {
+    // Get all hooks that have a scheduled date that is earlier than now
+    var hooks = await this.Hook.scan({
+      nextScheduledDate:  base.Entity.op.lessThan(new Date())
+    }, {});
+
+    await Promise.all(hooks.entries.filter((hook) => {
+      return hook.schedule.format.type !== 'none';
+    }).map((hook) => {
+      // Don't let a single error break the loop, since it'll be retried later
+      return this.handleHook(hook).catch((err) => {
+        debug("Failed to handle hook: %j" +
+              ", with err: %s, as JSON: %j", hook, err, err, err.stack);
+      });
+    }));
+  }
+
+  /** Polls for hooks that need to be scheduled and handles them in a loop */
+  async loopUntilStopped() {
     while(!this.stopping) {
-      // Get all hooks that have a scheduled date that is earlier than now
-      var hooks = await this.Hook.scan({
-        nextScheduledDate:  base.Entity.op.lessThan(new Date())
-      }, {});
-
-      await Promise.all(hooks.entries.filter((hook) => {
-        return hook.schedule.format.type !== 'none';
-      }).map((hook) => {
-        // Don't let a single error break the loop, since it'll be retried later
-        return this.handleHook(hook).catch((err) => {
-          debug("Failed to handle hook: %j" +
-                ", with err: %s, as JSON: %j", hook, err, err, err.stack);
-        });
-      }));
-
+      await this.poll();
       await this.sleep(this.pollingDelay);
     }
   }
@@ -95,9 +98,9 @@ class Scheduler {
   /** Handle spawning a new task for a given hook that needs to be scheduled */
   async handleHook(hook) {
     let task = await hook.taskPayload();
-    let resp = await queue.createTask(hook.nextTaskId, task);
+    let resp = await this.queue.createTask(hook.nextTaskId, task);
     await hook.modify((hook) => {
-      hook.nextTaskId        = slugid();
+      hook.nextTaskId        = slugid.v4();
       hook.nextScheduledDate = utils.nextDate(hook.schedule);
     });
   }
