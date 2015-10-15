@@ -256,6 +256,18 @@ var scheduler = new taskcluster.Scheduler(options);
  * `scheduler.inspectTask(taskGraphId, taskId) : result`
  * `scheduler.ping() : void`
 
+### Methods in `taskcluster.Secrets`
+```js
+// Create Secrets client instance with default baseUrl:
+//  - https://secrets.taskcluster.net/v1
+var secrets = new taskcluster.Secrets(options);
+```
+ * `secrets.set(name, payload) : void`
+ * `secrets.update(name, payload) : void`
+ * `secrets.remove(name) : void`
+ * `secrets.get(name) : result`
+ * `secrets.ping() : void`
+
 ### Exchanges in `taskcluster.AwsProvisionerEvents`
 ```js
 // Create AwsProvisionerEvents client instance with default exchangePrefix:
