@@ -2084,5 +2084,99 @@ module.exports = {
       "version": 0
     },
     "referenceUrl": "http://references.taskcluster.net/scheduler/v1/exchanges.json"
+  },
+  "Secrets": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "baseUrl": "https://secrets.taskcluster.net/v1",
+      "description": "The secrets service, typically available at\n`tools.taskcluster.net`, is responsible for managing\nsecure data in TaskCluster.",
+      "entries": [
+        {
+          "args": [
+            "name"
+          ],
+          "description": "Set a secret associated with some key.",
+          "input": "http://schemas.taskcluster.net/secrets/v1/secret.json#",
+          "method": "put",
+          "name": "set",
+          "route": "/secrets/<name>",
+          "scopes": [
+            [
+              "secrets:set:<name>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Create New Secret",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "description": "Update a secret associated with some key.",
+          "input": "http://schemas.taskcluster.net/secrets/v1/secret.json#",
+          "method": "post",
+          "name": "update",
+          "route": "/secrets/<name>",
+          "scopes": [
+            [
+              "secrets:update:<name>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Update A Secret",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "description": "Delete the secret attached to some key.",
+          "method": "delete",
+          "name": "remove",
+          "route": "/secrets/<name>",
+          "scopes": [
+            [
+              "secrets:remove:<name>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Delete Secret",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "description": "Read the secret attached to some key.",
+          "method": "get",
+          "name": "get",
+          "output": "http://schemas.taskcluster.net/secrets/v1/secret.json#",
+          "route": "/secrets/<name>",
+          "scopes": [
+            [
+              "secrets:get:<name>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Read Secret",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "method": "get",
+          "name": "ping",
+          "route": "/ping",
+          "stability": "experimental",
+          "title": "Ping Server",
+          "type": "function"
+        }
+      ],
+      "title": "TaskCluster Secrets API Documentation",
+      "version": 0
+    },
+    "referenceUrl": "http://references.taskcluster.net/secrets/v1/api.json"
   }
 };
