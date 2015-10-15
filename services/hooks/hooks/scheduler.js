@@ -1,9 +1,11 @@
-var assert  = require('assert');
-var base    = require('taskcluster-base');
-var data    = require('data');
-var Promise = require('promise');
-var slugid  = require('slugid');
-var utils   = require('./utils');
+var assert      = require('assert');
+var base        = require('taskcluster-base');
+var data        = require('./data');
+var debug       = require('debug')('hooks:scheduler');
+var Promise     = require('promise');
+var slugid      = require('slugid');
+var utils       = require('./utils');
+var taskcluster = require('taskcluster-client');
 
 /**
  * The Scheduler will periodically check for tasks in azure storage that are
@@ -49,7 +51,7 @@ class Scheduler {
     this.stopping = false;
 
     // Create a promise that we're done looping
-    this.done = poll().catch((err) => {
+    this.done = this.poll().catch((err) => {
       debug("Error: %s, as JSON: %j", err, err, err.stack);
       throw err;
     }).then(() => {
@@ -68,7 +70,7 @@ class Scheduler {
     while(!this.stopping) {
       // Get all hooks that have a scheduled date that is earlier than now
       var hooks = await this.Hook.scan({
-        nextScheduledDate:  base.Entity.Op.lessThan(new Date())
+        nextScheduledDate:  base.Entity.op.lessThan(new Date())
       }, {});
 
       await Promise.all(hooks.entries.filter((hook) => {
