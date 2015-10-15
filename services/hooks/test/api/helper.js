@@ -64,7 +64,6 @@ helper.setupApi = function() {
 
   // Setup before tests
   suiteSetup(async () => {
-    console.log("before");
     // Create mock authentication server
     authServer = await base.testing.createMockAuthServer({
       port: 60407,
@@ -116,7 +115,6 @@ helper.setupApi = function() {
 
   // Setup before each test
   setup(async () => {
-    console.log("beforeEach");
     // Remove all entities before each test
     await helper.Hook.scan({},{handler: hook => {return hook.remove();}});
     await helper.Groups.scan({},{handler: group => {return group.remove();}});
@@ -128,7 +126,6 @@ helper.setupApi = function() {
   });
 
   teardown(async () => {
-    console.log("afterEach");
     // Terminate process that we started in this test
     await Promise.all(toTerminate.map((proc) => {
       return proc.terminate();
@@ -138,7 +135,6 @@ helper.setupApi = function() {
 
   // Cleanup after tests
   suiteTeardown(async () => {
-    console.log("after");
     // Kill webServer
     await webServer.terminate();
     await authServer.terminate();
