@@ -35,22 +35,7 @@ var launch = async function(profile) {
 
   // Create a validator
   debug("Waiting for resources to be created");
-  var validator;
-  await Promise.all([
-      (async () => {
-        validator = await base.validator({
-          folder:        path.join(__dirname, '..', 'schemas'),
-          constants:     require('../schemas/constants'),
-          publish:       cfg.get('hooks:publishMetaData') == 'true',
-          schemaPrefix:  'hooks/v1/',
-          preload: [
-            'http://schemas.taskcluster.net/queue/v1/create-task-request.json',
-            'http://schemas.taskcluster.net/queue/v1/task-status.json'
-          ]
-        });
-      })(),
-      Hook.ensureTable(),
-  ]);
+  await Hook.ensureTable();
 
   // Create scheduler
   var scheduler = new Scheduler({
