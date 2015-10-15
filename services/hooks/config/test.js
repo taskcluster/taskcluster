@@ -11,8 +11,8 @@ module.exports = {
     authBaseUrl:      'http://localhost:60407/v1',
     credentials:
     {
-      clientId:       "test-server",
-      accessToken:    "none"
+      clientId:       undefined,
+      accessToken:    undefined
     }
   },
 
