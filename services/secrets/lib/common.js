@@ -24,6 +24,7 @@ common.loadConfig = function(profile) {
       'aws_accessKeyId',
       'aws_secretAccessKey',
       'influx_connectionString',
+      'taskclusterSecrets_publishMetaData'
     ],
     filename:     'taskcluster-secrets'
   });
