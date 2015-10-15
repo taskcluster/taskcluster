@@ -8,7 +8,9 @@ var Scheduler   = require('../hooks/scheduler');
 var taskcluster = require('taskcluster-client');
 
 /* Launch schedule-hooks */
-var launch = async function(profile) {
+var launch = async function(profile, options) {
+  options = options || {};
+
   debug("Launching with profile: %s", profile);
 
   // Load configuration
@@ -48,7 +50,9 @@ var launch = async function(profile) {
   });
 
   // Start scheduler
-  scheduler.start();
+  if (!options.noStart) {
+    scheduler.start();
+  }
 
   // Notify the parent process, so this worker can run using LocalApp
   base.app.notifyLocalAppInParentProcess();
