@@ -15,7 +15,7 @@ module.exports = {
   },
 
   server: {
-    publicUrl:                    'https://taskcluster-secrets.herokuapp.com',
+    publicUrl:                    'https://secrets.taskcluster.net',
     port:                         80,
     env:                          'production',
     forceSSL:                     true,
