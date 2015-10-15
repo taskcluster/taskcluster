@@ -30,7 +30,7 @@ suite('List hook groups', function () {
     await helper.hooks.triggerHook('foo', 'bar');
   });
 
-  test("triggerHookWithToken sucessfully triggers task", async () => {
+  test("triggerHookWithToken successfully triggers task", async () => {
     let payload = {};
     await helper.hooks.createHook('foo', 'bar', taskDef);
     var res = helper.hooks.getTriggerToken('foo', 'bar');
