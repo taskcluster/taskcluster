@@ -3,7 +3,11 @@ module.exports = {
   {
     publishMetaData:  'false',
     hookTableName:    'TestHooks',
-    groupsTableName:  'TestGroups'
+    groupsTableName:  'TestGroups',
+    schedule:
+    {
+      pollingDelay: 1
+    }
   },
 
   taskcluster:
