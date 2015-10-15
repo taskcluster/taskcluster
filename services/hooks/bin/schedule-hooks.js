@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var base        = require('taskcluster-base');
 var data        = require('../hooks/data');
-var debug       = require('debug')('hooks:bin:server');
+var debug       = require('debug')('hooks:schedule-hooks');
 var path        = require('path');
 var Promise     = require('promise');
 var Scheduler   = require('../hooks/scheduler');
@@ -68,7 +68,7 @@ var launch = async function(profile) {
   // Notify the parent process, so this worker can run using LocalApp
   base.app.notifyLocalAppInParentProcess();
 
-  return resolver;
+  return scheduler;
 };
 
 // If schedule-hooks.js is executed run launch

@@ -15,7 +15,13 @@ module.exports = {
     groupsTableName: 'Groups',
 
     // Azure account
-    azureAccount:   undefined
+    azureAccount:   undefined,
+
+    schedule:
+    {
+      // delay between poll operations (ms)
+      pollingDelay: 60000
+    }
   },
 
   // Server configuration
