@@ -139,12 +139,12 @@ suite('Scheduler', function() {
           hookId:      'test'
       }, true);
 
-      let fired = creator.fireCalls.map((c) => { return {
-          taskId: c.options.taskId,
-          taskName: c.hook.task.metadata.name,
-        };
-      });
-      assume(fired).deep.equals([{taskId: oldTaskId, taskName: 'test task'}]);
+      assume(creator.fireCalls).deep.equals([{
+          hookGroupId: 'tests',
+          hookId: 'test',
+          payload: {},
+          options: {taskId: oldTaskId}
+        }]);
       assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);
       assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
     });

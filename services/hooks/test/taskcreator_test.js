@@ -61,9 +61,9 @@ suite('MockTaskCreator', function() {
   });
 
   test("the fire method records calls", async function() {
-    creator.fire("hook", "payload", "options");
+    creator.fire({hookGroupId: 'g', hookId: 'h'}, {p: 1}, {o: 1});
     assume(creator.fireCalls).deep.equals([
-      {hook: 'hook', payload: 'payload', options: 'options'}
+      {hookGroupId: 'g', hookId: 'h', payload: {p: 1}, options: {o: 1}}
     ]);
   });
 });

@@ -110,6 +110,9 @@ helper.setupApi = function() {
     // Remove all entities before each test
     await helper.Hook.scan({},{handler: hook => {return hook.remove();}});
 
+    // reset the list of fired tasks
+    helper.creator.fireCalls = [];
+
     // Setup client with all scopes
     helper.scopes();
   });

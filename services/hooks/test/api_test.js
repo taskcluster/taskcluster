@@ -180,17 +180,29 @@ suite('API', function() {
   });
 
   suite("triggerHook", function() {
-    test("should launch task", async () => {
+    test("should launch task with the given payload", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
-      await helper.hooks.triggerHook('foo', 'bar', {});
+      await helper.hooks.triggerHook('foo', 'bar', {a: "payload"});
+      assume(helper.creator.fireCalls).deep.equals([{
+          hookGroupId: 'foo',
+          hookId: 'bar',
+          payload: {a: "payload"},
+          options: {}
+        }]);
     });
   });
 
   suite("triggerHookWithToken", function() {
-    test("successfully triggers task", async () => {
+    test("successfully triggers task with the given payload", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
       var res = helper.hooks.getTriggerToken('foo', 'bar');
-      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, {});
+      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, {a: "payload"});
+      assume(helper.creator.fireCalls).deep.equals([{
+          hookGroupId: 'foo',
+          hookId: 'bar',
+          payload: {a: "payload"},
+          options: {}
+        }]);
     });
 
     test("should fail with invalid token", async () => {
