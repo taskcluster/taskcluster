@@ -57,6 +57,11 @@ api.declare({
       hooks.push(await hook.definition());
     }
   });
+  if (hooks.length == 0) {
+    return res.status(404).json({
+      message: "No such group"
+    });
+  }
   return res.reply({hooks: hooks});
 });
 
@@ -356,7 +361,8 @@ api.declare({
     });
   }
 
-  // Return 401 if the token doesn't match
+  // Return 401 if the token doesn't exist or doesn't match
+  console.log(req.params.token, hook.accessToken);
   if (req.params.token !== hook.accessToken) {
     return res.status(401).json({
       message: "Invalid token"
