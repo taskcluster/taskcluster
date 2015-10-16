@@ -240,14 +240,12 @@ exports.createClient = function(reference, name) {
                         " arguments");
       }
       // Substitute parameters into route
-      var endpoint = entry.route;
-      entry.args.forEach(function(arg) {
-        var value = args.shift();
-        // Replace with empty string in case of undefined or null argument
-        if (value === undefined || value === null) {
-          value = '';
+      var endpoint = entry.route.replace(/<([^<>]+)>/g, function(text, arg) {
+        var index = entry.args.indexOf(arg);
+        if (index !== -1) {
+          return encodeURIComponent(args[index]);
         }
-        endpoint = endpoint.replace('<' + arg + '>', value);
+        return text; // Preserve original
       });
       // Create url for the request
       var url = this._options.baseUrl + endpoint;

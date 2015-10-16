@@ -16,6 +16,11 @@ suite('mockAuthServer', function() {
           accessToken:  'test-token',
           scopes:       ['auth:credentials'],
           expires:      new Date(2092, 0, 0, 0, 0, 0, 0)
+        }, {
+          clientId:     'test/client',
+          accessToken:  'test/token',
+          scopes:       ['auth:credentials'],
+          expires:      new Date(2092, 0, 0, 0, 0, 0, 0)
         }
       ]
     }).then(function(server) {
@@ -49,6 +54,23 @@ suite('mockAuthServer', function() {
     // Inspect the credentials
     return auth.getCredentials('test-client').then(function(client) {
       assert(client.clientId === 'test-client', "Expected clientId");
+    });
+  });
+
+  test('getCredentials with / escaped', function() {
+    var reference = base.testing.createMockAuthServer.mockAuthApi.reference({
+      baseUrl: 'http://localhost:62351/v1'
+    });
+    var Auth = new taskcluster.createClient(reference);
+    var auth = new Auth({
+      credentials: {
+        clientId:     'test-client',
+        accessToken:  'test-token'
+      }
+    });
+    // Inspect the credentials
+    return auth.getCredentials('test/client').then(function(client) {
+      assert(client.clientId === 'test/client', "Expected clientId");
     });
   });
 
