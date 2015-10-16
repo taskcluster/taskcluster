@@ -78,13 +78,6 @@ helper.setupApi = function() {
       process:      'testing'
     });
 
-    // Create Groups table
-    helper.Groups = data.Groups.setup({
-      table:        cfg.get('hooks:groupsTableName'),
-      credentials:  cfg.get('azure'),
-      process:      'testing'
-    });
-
     webServer = await bin.server(testProfile);
 
     // Create client for working with API
@@ -115,7 +108,6 @@ helper.setupApi = function() {
   setup(async () => {
     // Remove all entities before each test
     await helper.Hook.scan({},{handler: hook => {return hook.remove();}});
-    await helper.Groups.scan({},{handler: group => {return group.remove();}});
 
     // Setup client with all scopes
     helper.scopes();

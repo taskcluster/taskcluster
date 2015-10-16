@@ -11,9 +11,6 @@ module.exports = {
     // Azure table name for hooks
     hookTableName:  'Hooks',
 
-    // Azure table name for group listing
-    groupsTableName: 'Groups',
-
     // Azure account
     azureAccount:   undefined,
 
