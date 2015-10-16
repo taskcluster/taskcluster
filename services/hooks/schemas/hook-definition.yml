@@ -4,7 +4,7 @@ description: |
   Definition of a hook that can be triggered and schedule
 type:                     object
 properties:
-  groupId:
+  hookGroupId:
     type:                 string
     maxLength:            255
   hookId:
@@ -59,7 +59,7 @@ properties:
   task:                   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
 additionalProperties:     false
 required:
-  - groupId
+  - hookGroupId
   - hookId
   - metadata
   - task
