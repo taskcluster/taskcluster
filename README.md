@@ -87,15 +87,10 @@ figuring out how to configure the python logging module but do want debug messag
 import taskcluster
 auth = taskcluster.Auth(options)
 ```
-#### Get Client Authorized Scopes
- * `auth.scopes(clientId) -> result`
- * `auth.scopes(clientId='value') -> result`
+#### List Clients
+ * `auth.listClients() -> result`
 
-#### Get Client Credentials
- * `auth.getCredentials(clientId) -> result`
- * `auth.getCredentials(clientId='value') -> result`
-
-#### Get Client Information
+#### Get Client
  * `auth.client(clientId) -> result`
  * `auth.client(clientId='value') -> result`
 
@@ -103,37 +98,50 @@ auth = taskcluster.Auth(options)
  * `auth.createClient(clientId, payload) -> result`
  * `auth.createClient(payload, clientId='value') -> result`
 
-#### Modify Client
- * `auth.modifyClient(clientId, payload) -> result`
- * `auth.modifyClient(payload, clientId='value') -> result`
+#### Reset `accessToken`
+ * `auth.resetAccessToken(clientId) -> result`
+ * `auth.resetAccessToken(clientId='value') -> result`
 
-#### Remove Client
- * `auth.removeClient(clientId) -> None`
- * `auth.removeClient(clientId='value') -> None`
+#### Update Client
+ * `auth.updateClient(clientId, payload) -> result`
+ * `auth.updateClient(payload, clientId='value') -> result`
 
-#### Reset Client Credentials
- * `auth.resetCredentials(clientId) -> result`
- * `auth.resetCredentials(clientId='value') -> result`
+#### Delete Client
+ * `auth.deleteClient(clientId) -> None`
+ * `auth.deleteClient(clientId='value') -> None`
 
-#### List Clients
- * `auth.listClients() -> result`
+#### List Roles
+ * `auth.listRoles() -> result`
 
-#### Get Shared-Access-Signature for Azure Table
- * `auth.azureTableSAS(account, table) -> result`
- * `auth.azureTableSAS(account='value', table='value') -> result`
+#### Get Role
+ * `auth.role(roleId) -> result`
+ * `auth.role(roleId='value') -> result`
+
+#### Create Role
+ * `auth.createRole(roleId, payload) -> result`
+ * `auth.createRole(payload, roleId='value') -> result`
+
+#### Update Role
+ * `auth.updateRole(roleId, payload) -> result`
+ * `auth.updateRole(payload, roleId='value') -> result`
+
+#### Delete Role
+ * `auth.deleteRole(roleId) -> None`
+ * `auth.deleteRole(roleId='value') -> None`
 
 #### Get Temporary Read/Write Credentials S3
  * `auth.awsS3Credentials(level, bucket, prefix) -> result`
  * `auth.awsS3Credentials(level='value', bucket='value', prefix='value') -> result`
 
-#### List Clients
- * `auth.exportClients() -> result`
-
-#### Import Clients
- * `auth.importClients(payload) -> result`
+#### Get Shared-Access-Signature for Azure Table
+ * `auth.azureTableSAS(account, table) -> result`
+ * `auth.azureTableSAS(account='value', table='value') -> result`
 
 #### Authenticate Hawk Request
  * `auth.authenticateHawk(payload) -> result`
+
+#### Import Legacy Clients
+ * `auth.importClients(payload) -> None`
 
 #### Ping Server
  * `auth.ping() -> None`
@@ -573,6 +581,34 @@ schedulerEvents = taskcluster.SchedulerEvents(options)
    * schedulerId is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
    * taskGraphId is required  Description: Identifier for the task-graph this message concerns
    * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+
+
+
+### Methods in `taskcluster.Secrets`
+```python
+// Create Secrets client instance
+import taskcluster
+secrets = taskcluster.Secrets(options)
+```
+#### Create New Secret
+ * `secrets.set(name, payload) -> None`
+ * `secrets.set(payload, name='value') -> None`
+
+#### Update A Secret
+ * `secrets.update(name, payload) -> None`
+ * `secrets.update(payload, name='value') -> None`
+
+#### Delete Secret
+ * `secrets.remove(name) -> None`
+ * `secrets.remove(name='value') -> None`
+
+#### Read Secret
+ * `secrets.get(name) -> result`
+ * `secrets.get(name='value') -> result`
+
+#### Ping Server
+ * `secrets.ping() -> None`
 
 
 
