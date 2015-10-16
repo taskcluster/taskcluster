@@ -30,7 +30,7 @@ api.declare({
   var groups = new Set();
   await this.Hook.scan({},{
     handler: (item) => {
-      groups.add(item.groupId);
+      groups.add(item.hookGroupId);
     }
   });
   return res.reply({groups: Array.from(groups)});
@@ -40,7 +40,7 @@ api.declare({
 /** Get hooks in a given group **/
 api.declare({
   method:       'get',
-  route:        '/hooks/:hookGroup',
+  route:        '/hooks/:hookGroupId',
   name:         'listHooks',
   idempotent:   true,
   output:       'list-hooks-response.json',
@@ -51,7 +51,7 @@ api.declare({
 }, async function(req, res) {
   var hooks = [];
   await this.Hook.query({
-    groupId: req.params.hookGroup
+    hookGroupId: req.params.hookGroupId
   }, {
     handler: async (hook) => {
       hooks.push(await hook.definition());
@@ -69,7 +69,7 @@ api.declare({
 /** Get hook definition **/
 api.declare({
   method:       'get',
-  route:        '/hooks/:hookGroup/:hookId',
+  route:        '/hooks/:hookGroupId/:hookId',
   name:         'hook',
   idempotent:   true,
   output:       'hook-definition.json',
@@ -79,8 +79,8 @@ api.declare({
   ].join('\n')
 }, async function(req, res) {
   let hook = await this.Hook.load({
-    groupId: req.params.hookGroup,
-    hookId:  req.params.hookId
+    hookGroupId: req.params.hookGroupId,
+    hookId:      req.params.hookId
   }, true);
 
   // Handle the case where the hook doesn't exist
@@ -98,7 +98,7 @@ api.declare({
 /** Get next scheduled hook date */
 api.declare({
   method:       'get',
-  route:        '/hooks/:hookGroup/:hookId/schedule',
+  route:        '/hooks/:hookGroupId/:hookId/schedule',
   name:         'getHookSchedule',
   output:       'hook-schedule.json',
   title:        'Get hook schedule',
@@ -107,8 +107,8 @@ api.declare({
   ].join('\n')
 }, async function(req, res) {
   let hook = await this.Hook.load({
-    groupId: req.params.hookGroup,
-    hookId:  req.params.hookId
+    hookGroupId: req.params.hookGroupId,
+    hookId:      req.params.hookId
   }, true);
 
   // Handle the case where the hook doesn't exist
@@ -131,10 +131,10 @@ api.declare({
 /** Create a hook **/
 api.declare({
   method:       'put',
-  route:        '/hooks/:hookGroup/:hookId',
+  route:        '/hooks/:hookGroupId/:hookId',
   name:         'createHook',
   idempotent:   true,
-  scopes:       [["hooks:modify-hook:<hookGroup>/<hookId>"]],
+  scopes:       [["hooks:modify-hook:<hookGroupId>/<hookId>"]],
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Create a hook',
@@ -144,7 +144,7 @@ api.declare({
     "on the Pulse exchange that the hook is binded to."
   ].join('\n')
 }, async function(req, res) {
-  var hookGroup = req.params.hookGroup;
+  var hookGroupId = req.params.hookGroupId;
   var hookId    = req.params.hookId;
   var hookDef   = req.body;
 
@@ -158,7 +158,7 @@ api.declare({
       }
 
     var hook = await this.Hook.create({
-      groupId:            hookGroup,
+      hookGroupId:        hookGroupId,
       hookId:             hookId,
       metadata:           hookDef.metadata,
       task:               hookDef.task,
@@ -176,7 +176,7 @@ api.declare({
       throw err;
     }
     return res.status(409).json({
-      message: "hookGroup: " + hookGroup + " hookId: " + hookId +
+      message: "hookGroupId: " + hookGroupId + " hookId: " + hookId +
         " already used by another task"
     });
   }
@@ -190,10 +190,10 @@ api.declare({
 /** Update hook definition**/
 api.declare({
   method:       'patch',
-  route:        '/hooks/:hookGroup/:hookId',
+  route:        '/hooks/:hookGroupId/:hookId',
   name:         'updateHook',
   idempotent:   true,
-  scopes:       [["hooks:modify-hook:<hookGroup>/<hookId>"]],
+  scopes:       [["hooks:modify-hook:<hookGroupId>/<hookId>"]],
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Update a hook',
@@ -201,13 +201,13 @@ api.declare({
     "Update the hook definition."
   ].join('\n')
 }, async function(req, res) {
-  var hookGroup = req.params.hookGroup;
+  var hookGroupId = req.params.hookGroupId;
   var hookId = req.params.hookId;
   var hookDef = req.body;
 
   var hook = await this.Hook.load({
-    groupId: hookGroup,
-    hookId: hookId
+    hookGroupId: hookGroupId,
+    hookId:      hookId
   }, true);
 
   if (!hook) {
@@ -242,22 +242,22 @@ api.declare({
 /** Delete hook definition**/
 api.declare({
   method:       'delete',
-  route:        '/hooks/:hookGroup/:hookId',
+  route:        '/hooks/:hookGroupId/:hookId',
   name:         'removeHook',
   idempotent:   true,
-  scopes:       [["hooks:modify-hook:<hookGroup>/<hookId>"]],
+  scopes:       [["hooks:modify-hook:<hookGroupId>/<hookId>"]],
   title:        'Delete a hook',
   description: [
     "Remove a hook definition."
   ].join('\n')
 }, async function(req, res) {
-  var groupId = req.params.hookGroup;
+  var hookGroupId = req.params.hookGroupId;
   var hookId = req.params.hookId;
 
   // Remove the resource if it exists
   let hook = await this.Hook.load({
-    groupId: groupId,
-    hookId: hookId
+    hookGroupId: hookGroupId,
+    hookId:      hookId
   }, true);
 
   if (!hook) {
@@ -274,9 +274,9 @@ api.declare({
 /** Get secret token for a trigger **/
 api.declare({
   method:       'get',
-  route:        '/hooks/:hookGroup/:hookId/token',
+  route:        '/hooks/:hookGroupId/:hookId/token',
   name:         'getTriggerToken',
-  scopes:       [["hooks:get-trigger-token:<hookGroup>/<hookId>"]],
+  scopes:       [["hooks:get-trigger-token:<hookGroupId>/<hookId>"]],
   input:        undefined,
   output:       'trigger-token-response.json',
   title:        'Get a trigger token',
@@ -286,8 +286,8 @@ api.declare({
   ].join('\n')
 }, async function(req, res) {
   let hook = await this.Hook.load({
-    groupId: req.params.hookGroup,
-    hookId:  req.params.hookId
+    hookGroupId: req.params.hookGroupId,
+    hookId:      req.params.hookId
   }, true);
 
   if (!hook) {
@@ -305,9 +305,9 @@ api.declare({
 /** Reset a trigger token **/
 api.declare({
   method:       'post',
-  route:        '/hooks/:hookGroup/:hookId/token',
+  route:        '/hooks/:hookGroupId/:hookId/token',
   name:         'resetTriggerToken',
-  scopes:       [["hooks:reset-trigger-token:<hookGroup>/<hookId>"]],
+  scopes:       [["hooks:reset-trigger-token:<hookGroupId>/<hookId>"]],
   input:        undefined,
   output:       'trigger-token-response.json',
   title:        'Reset a trigger token',
@@ -317,8 +317,8 @@ api.declare({
   ].join('\n')
 }, async function(req, res) {
   let hook = await this.Hook.load({
-    groupId: req.params.hookGroup,
-    hookId:  req.params.hookId
+    hookGroupId: req.params.hookGroupId,
+    hookId:      req.params.hookId
   }, true);
 
   if (!hook) {
@@ -340,7 +340,7 @@ api.declare({
 /** Trigger hook from a webhook with a token **/
 api.declare({
   method:       'post',
-  route:        '/hooks/:hookGroup/:hookId/trigger/:token',
+  route:        '/hooks/:hookGroupId/:hookId/trigger/:token',
   name:         'triggerHookWithToken',
   input:        'trigger-payload.json',
   output:       'task-status.json',
@@ -350,8 +350,8 @@ api.declare({
   ].join('\n')
 }, async function(req, res) {
   var hook = await this.Hook.load({
-    groupId: req.params.hookGroup,
-    hookId:  req.params.hookId
+    hookGroupId: req.params.hookGroupId,
+    hookId:      req.params.hookId
   }, true);
 
   // Return a 404 if the hook entity doesn't exist
@@ -372,7 +372,7 @@ api.declare({
   let payload = await hook.taskPayload();
   let taskId = slugid.v4();
 
-  debug('triggering hook  %s/%s with token and with taskId: %s', hook.groupId, hook.hookId, taskId);
+  debug('triggering hook  %s/%s with token and with taskId: %s', hook.hookGroupId, hook.hookId, taskId);
   let resp = await this.queue.createTask(slugid.v4(), payload);
   return res.reply(resp);
 });
@@ -381,9 +381,9 @@ api.declare({
 /** Trigger a hook for debugging **/
 api.declare({
   method:       'post',
-  route:        '/hooks/:hookGroup/:hookId/trigger',
+  route:        '/hooks/:hookGroupId/:hookId/trigger',
   name:         'triggerHook',
-  scopes:       [["hooks:trigger-hook:<hookGroup>/<hookId>"]],
+  scopes:       [["hooks:trigger-hook:<hookGroupId>/<hookId>"]],
   output:       'task-status.json',
   title:        'Trigger a hook',
   description: [
@@ -391,8 +391,8 @@ api.declare({
   ].join('\n')
 }, async function(req, res) {
   var hook = await this.Hook.load({
-    groupId: req.params.hookGroup,
-    hookId:  req.params.hookId
+    hookGroupId: req.params.hookGroupId,
+    hookId:      req.params.hookId
   }, true);
 
   // Return a 404 if the hook entity doesn't exist
@@ -405,7 +405,7 @@ api.declare({
   let payload = await hook.taskPayload();
   let taskId = slugid.v4();
 
-  debug('triggering hook %s/%s with taskId: %s', hook.groupId, hook.hookId, taskId);
+  debug('triggering hook %s/%s with taskId: %s', hook.hookGroupId, hook.hookId, taskId);
   let resp = await this.queue.createTask(taskId, payload);
 
   return res.reply(resp);

@@ -53,7 +53,7 @@ suite('Scheduler', function() {
     setup(async () => {
       await scheduler.Hook.scan({},{handler: hook => {return hook.remove();}});
       var hookParams = {
-        groupId:            'tests',
+        hookGroupId:        'tests',
         metadata:           {},
         task:               {},
         bindings:           {},
@@ -98,7 +98,7 @@ suite('Scheduler', function() {
       await scheduler.Hook.scan({},{handler: hook => {return hook.remove();}});
 
       hook = await scheduler.Hook.create({
-        groupId:            'tests',
+        hookGroupId:        'tests',
         hookId:             'test',
         metadata:           {},
         task:               {
@@ -129,8 +129,8 @@ suite('Scheduler', function() {
       await scheduler.handleHook(hook);
 
       let updatedHook = await scheduler.Hook.load({
-          groupId: 'tests',
-          hookId:  'test'
+          hookGroupId: 'tests',
+          hookId:      'test'
       }, true);
 
       assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);
