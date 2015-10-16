@@ -1,4 +1,5 @@
 suite('API', function() {
+  var _           = require('lodash');
   var assert      = require('assert');
   var assume      = require('assume');
   var debug       = require('debug')('test:api:createhook');
@@ -10,7 +11,9 @@ suite('API', function() {
 
   // Use the same hook definition for everything
   var hookDef = require('./test_definition');
-  var taskDef = require('./test_definition');
+  let dailyHookDef = _.defaults({
+      schedule: {format: {type: "daily", timeOfDay: [0]}}
+    }, hookDef);
 
   suite("createHook", function() {
     test("creates a hookd", async () => {
@@ -28,7 +31,7 @@ suite('API', function() {
 
     test("fails if resource already exists", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
-      return helper.hooks.createHook('foo', 'bar', hookDef).then(
+      await helper.hooks.createHook('foo', 'bar', hookDef).then(
           () => { throw new Error("Expected an error"); },
           (err) => { debug("Got expected error: %s", err); });
     });
@@ -47,9 +50,7 @@ suite('API', function() {
     });
 
     test("with a daily schedule", async () => {
-      let input = require('./test_definition');
-      input.schedule = {format: {type: "daily", timeOfDay: [0]}};
-      await helper.hooks.createHook('foo', 'bar', input);
+      await helper.hooks.createHook('foo', 'bar', dailyHookDef);
       var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
       assert(new Date(r1.nextScheduledDate) > new Date());
     });
@@ -67,9 +68,9 @@ suite('API', function() {
     });
 
     test("updateHook fails if resource doesn't exist", async () => {
-      helper.hooks.updateHook('foo', 'bar', hookDef).then(
+      await helper.hooks.updateHook('foo', 'bar', hookDef).then(
           () => { throw new Error("Expected an error"); },
-          (err) => { assume(err.status).equals(404); });
+          (err) => { assume(err.statusCode).equals(404); });
     });
   });
 
@@ -77,9 +78,9 @@ suite('API', function() {
     test("removes a hook", async () => {
         await helper.hooks.createHook('foo', 'bar', hookDef);
         await helper.hooks.removeHook('foo', 'bar');
-        helper.hooks.hook('foo', 'bar').then(
+        await helper.hooks.hook('foo', 'bar').then(
             () => { throw new Error("The resource should not exist"); },
-            (err) => { assume(err.status).equals(404); });
+            (err) => { assume(err.statusCode).equals(404); });
     });
 
     test("removed empty groups", async () => {
@@ -88,21 +89,52 @@ suite('API', function() {
         assume(r1.hooks.length).equals(1);
 
         await helper.hooks.removeHook('foo', 'bar');
-        helper.hooks.listHooks('foo').then(
+        await helper.hooks.listHooks('foo').then(
             () => { throw new Error("The group should not exist"); },
-            (err) => { assume(err.status).equals(404); });
+            (err) => { assume(err.statusCode).equals(404); });
     });
   });
 
   suite("listHookGroups", function() {
-    test("returns valid length of groups", async () => {
+    test("returns valid groups", async () => {
       var input = ['foo', 'bar', 'baz', 'qux'];
       for (let i =0; i < input.length; i++) {
         await helper.hooks.createHook(input[i], 'testHook1', hookDef);
         await helper.hooks.createHook(input[i], 'testHook2', hookDef);
       }
       var r1 = await helper.hooks.listHookGroups();
-      assume(r1.groups.length).equals(input.length);
+      input.sort();
+      r1.groups.sort();
+      assume(r1.groups).eql(input);
+    });
+  });
+
+  suite("listHooks", function() {
+    test("lists hooks in the given group only", async () => {
+      var input = ['foo', 'bar', 'baz', 'qux'];
+      for (let i =0; i < input.length; i++) {
+        await helper.hooks.createHook('grp1', input[i], hookDef);
+        await helper.hooks.createHook('grp2', input[i], hookDef);
+      }
+      var r1 = await helper.hooks.listHooks("grp1");
+      var got = r1.hooks.map((h) => { return h.hookId; });
+      input.sort();
+      got.sort();
+      assume(got).eql(input);
+    });
+  });
+
+  suite("hook", function() {
+    test("returns a hook", async () => {
+      await helper.hooks.createHook('gp', 'hk', hookDef);
+      var r1 = await helper.hooks.hook("gp", "hk");
+      assume(r1.metadata.name).equals("Unit testing hook");
+    });
+
+    test("fails if no hook exists", async () => {
+      await helper.hooks.hook('foo', 'bar').then(
+          () => { throw new Error("The resource should not exist"); },
+          (err) => { assume(err.statusCode).equals(404); });
     });
   });
 
@@ -112,6 +144,27 @@ suite('API', function() {
       var r1 = await helper.hooks.getTriggerToken('foo', 'bar');
       var r2 = await helper.hooks.getTriggerToken('foo', 'bar');
       assume(r1).deep.equals(r2);
+    });
+  });
+
+  suite("getHookSchedule", function() {
+    test("returns {} for a non-scheduled task", async () => {
+      await helper.hooks.createHook('foo', 'bar', hookDef);
+      var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
+      assume(r1).deep.equals({});
+    });
+
+    test("returns the schedule for a -scheduled task", async () => {
+      await helper.hooks.createHook('foo', 'bar', dailyHookDef);
+      var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
+      assume(r1).contains('nextScheduledDate');
+      assume(r1.schedule).deep.eql({format: {type: "daily", timeOfDay: [0]}});
+    });
+
+    test("fails if no hook exists", async () => {
+      await helper.hooks.hook('foo', 'bar').then(
+          () => { throw new Error("The resource should not exist"); },
+          (err) => { assume(err.statusCode).equals(404); });
     });
   });
 
@@ -138,13 +191,13 @@ suite('API', function() {
       let payload = {};
       await helper.hooks.createHook('foo', 'bar', hookDef);
       var res = helper.hooks.getTriggerToken('foo', 'bar');
-      helper.hooks.triggerHookWithToken('foo', 'bar', res.token, payload);
+      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, payload);
     });
 
     test("should fail with invalid token", async () => {
       let payload = {};
       await helper.hooks.createHook('foo', 'bar', hookDef);
-      helper.hooks.triggerHookWithToken('foo', 'bar', 'invalidtoken', payload).then(
+      await helper.hooks.triggerHookWithToken('foo', 'bar', 'invalidtoken', payload).then(
           () => { throw new Error("This operation should have failed!"); },
           (err) => { assume(err.statusCode).equals(401); });
     });
@@ -152,10 +205,10 @@ suite('API', function() {
     test("fails with invalidated token", async () => {
       let payload = {};
       await helper.hooks.createHook('foo', 'bar', hookDef);
-      let res = helper.hooks.getTriggerToken('foo', 'bar');
+      let res = await helper.hooks.getTriggerToken('foo', 'bar');
 
       await helper.hooks.resetTriggerToken('foo', 'bar');
-      helper.hooks.triggerHookWithToken('foo', 'bar', res.token, payload).then(
+      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, payload).then(
           () => { throw new Error("This operation should have failed!"); },
           (err) => { assume(err.statusCode).equals(401); });
     });
