@@ -47,15 +47,5 @@ Hook.prototype.definition = function() {
   });
 };
 
-Hook.prototype.taskPayload = function() {
-  let payload = _.cloneDeep(this.task);
-  payload.created = new Date().toJSON();
-  payload.deadline = taskcluster.fromNow(this.deadline).toJSON();
-  if (this.expires) {
-    payload.expires = taskcluster.fromNow(this.expires).toJSON();
-  }
-  return Promise.resolve(payload);
-}
-
 // export Hook
 exports.Hook = Hook;

@@ -182,16 +182,15 @@ suite('API', function() {
   suite("triggerHook", function() {
     test("should launch task", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
-      await helper.hooks.triggerHook('foo', 'bar');
+      await helper.hooks.triggerHook('foo', 'bar', {});
     });
   });
 
   suite("triggerHookWithToken", function() {
     test("successfully triggers task", async () => {
-      let payload = {};
       await helper.hooks.createHook('foo', 'bar', hookDef);
       var res = helper.hooks.getTriggerToken('foo', 'bar');
-      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, payload);
+      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, {});
     });
 
     test("should fail with invalid token", async () => {
