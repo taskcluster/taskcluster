@@ -1,6 +1,7 @@
 var base        = require('taskcluster-base');
 var data        = require('../hooks/data');
 var taskcluster = require('taskcluster-client');
+var taskcreator = require('../hooks/taskcreator');
 var v1          = require('../routes/v1');
 var bin = {
   server:             require('../bin/server')
@@ -46,6 +47,8 @@ var defaultClients = [
 
 helper.hasAzureCredentials = cfg.get('azure:accountName');
 
+helper.hasTcCredentials = cfg.get('taskcluster:credentials');
+
 // Call this in suites or tests that make API calls; it will set up
 // what's required to respond to those calls.  But note that this
 // requires credentials (taskcluster-hooks.conf.json); returns false
@@ -75,7 +78,8 @@ helper.setupApi = function() {
       process:      'testing'
     });
 
-    webServer = await bin.server(testProfile);
+    helper.creator = new taskcreator.MockTaskCreator()
+    webServer = await bin.server(testProfile, {taskcreator: helper.creator});
 
     // Create client for working with API
     helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
