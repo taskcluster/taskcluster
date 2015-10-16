@@ -2,6 +2,7 @@ var assert      = require('assert');
 var slugid      = require('slugid');
 var taskcluster = require('taskcluster-client');
 var debug       = require('debug')('hooks:taskcreator');
+var _           = require('lodash');
 
 class TaskCreator {
   /** Create a TaskCreator instance.
@@ -16,6 +17,16 @@ class TaskCreator {
     assert(options.credentials instanceof Object,
         "Expected credentials");
     this.credentials = options.credentials;
+  }
+
+  taskForHook(hook) {
+    let task = _.cloneDeep(hook.task);
+    task.created = new Date().toJSON();
+    task.deadline = taskcluster.fromNow(hook.deadline).toJSON();
+    if (hook.expires) {
+      task.expires = taskcluster.fromNow(hook.expires).toJSON();
+    }
+    return Promise.resolve(task);
   }
 
   /**
@@ -39,11 +50,10 @@ class TaskCreator {
     });
 
     // TODO: payload is ignored right now
-    // TODO: get rid of hook.taskPayload
 
     debug('firing hook %s/%s to create taskId: %s',
         hook.hookGroupId, hook.hookId, taskId);
-    let resp = await queue.createTask(taskId, hook.task);
+    let resp = await queue.createTask(taskId, this.taskForHook(hook));
     return resp;
   };
 }
