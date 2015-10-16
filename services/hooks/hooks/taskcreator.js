@@ -67,8 +67,13 @@ class MockTaskCreator extends TaskCreator {
   }
 
   async fire(hook, payload, options) {
-    this.fireCalls.push({hook, payload, options});
-    var taskId = options? options.taskId : slugid.v4();
+    options = options || {};
+    this.fireCalls.push({
+      hookGroupId: hook.hookGroupId,
+      hookId: hook.hookId,
+      payload,
+      options});
+    var taskId = options.taskId || slugid.v4();
     return {
       "status": {
         "taskId": taskId,
