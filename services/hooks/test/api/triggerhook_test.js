@@ -1,4 +1,4 @@
-suite('List hook groups', function () {
+suite('Triggering hooks', function () {
   var debug = require('debug')('test:api:triggerhooks');
   var assume = require('assume');
   var helper = require('./helper');

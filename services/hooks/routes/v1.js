@@ -27,13 +27,13 @@ api.declare({
     "hooks belong to."
   ].join('\n')
 }, async function(req, res) {
-  var groups = [];
-  await this.Groups.query({},{
+  var groups = new Set();
+  await this.Hook.scan({},{
     handler: (item) => {
-      groups.push(item.groupId);
+      groups.add(item.groupId);
     }
   });
-  return res.reply({groups: groups});
+  return res.reply({groups: Array.from(groups)});
 });
 
 
@@ -142,17 +142,6 @@ api.declare({
   var hookGroup = req.params.hookGroup;
   var hookId    = req.params.hookId;
   var hookDef   = req.body;
-
-  // Test if the group exists
-  try {
-    await this.Groups.load({ groupId: hookGroup });
-  }
-  catch(err) {
-    if ( !err || err.code !== 'ResourceNotFound') {
-      throw err;
-    }
-    await this.Groups.create({ groupId: hookGroup });
-  }
 
   // Try to create a Hook entity
   try {
@@ -274,22 +263,6 @@ api.declare({
 
   await hook.remove();
 
-  // Remove the groupId if it's unmapped
-  var removeGroup = true;
-  await this.Hook.query({
-    groupId: groupId
-  }, {
-    handler: () => {
-      removeGroup = false;
-    }
-  });
-
-  if (removeGroup) {
-    let group = await this.Groups.load({groupId: groupId}, true);
-    if (group) {
-      await group.remove();
-    }
-  }
   return res.status(200).json({});
 });
 

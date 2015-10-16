@@ -51,17 +51,3 @@ Hook.prototype.taskPayload = function() {
 
 // export Hook
 exports.Hook = Hook;
-
-
-/** Entity for tracking all groups **/
-var Groups = base.Entity.configure({
-  version:       1,
-  partitionKey:  base.Entity.keys.ConstantKey('GroupKeys'),
-  rowKey:        base.Entity.keys.StringKey('groupId'),
-  properties: {
-    groupId:     base.Entity.types.String
-  }
-});
-
-// export Groups
-exports.Groups = Groups;
