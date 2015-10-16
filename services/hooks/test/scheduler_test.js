@@ -2,22 +2,28 @@ suite('Scheduler', function() {
   var _                 = require('lodash');
   var assert            = require('assert');
   var assume            = require('assume');
-  var schedule_hooks    = require('../bin/schedule-hooks');
   var Scheduler         = require('../hooks/scheduler');
   var slugid            = require('slugid');
   var debug             = require('debug')('test:test_schedule_hooks');
   var helper            = require('./helper');
+  var taskcreator       = require('../hooks/taskcreator');
 
   this.slow(500);
 
   // these tests require Azure credentials (for the Hooks table)
-  if (!helper.hasAzureCredentials) {
+  if (!helper.setupApi()) {
     this.pending = true;
   }
 
   var scheduler = null;
+  var creator = null;
   setup(async () => {
-    scheduler = await schedule_hooks('test', {noStart: true});
+    creator = new taskcreator.MockTaskCreator();
+    scheduler = new Scheduler({
+      Hook: helper.Hook,
+      taskcreator: creator,
+      pollingDelay: 1
+    });
   });
 
   teardown(async () => {
@@ -133,6 +139,12 @@ suite('Scheduler', function() {
           hookId:      'test'
       }, true);
 
+      let fired = creator.fireCalls.map((c) => { return {
+          taskId: c.options.taskId,
+          taskName: c.hook.task.metadata.name,
+        };
+      });
+      assume(fired).deep.equals([{taskId: oldTaskId, taskName: 'test task'}]);
       assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);
       assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
     });

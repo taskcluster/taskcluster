@@ -4,12 +4,13 @@ var data        = require('../hooks/data');
 var debug       = require('debug')('hooks:bin:server');
 var path        = require('path');
 var Promise     = require('promise');
-var taskcluster = require('taskcluster-client');
+var taskcreator = require('../hooks/taskcreator');
 var v1          = require('../routes/v1');
 
 /* Launch server */
-var launch = async function(profile) {
+var launch = async function(profile, options) {
   debug("Launching with profile: %s", profile);
+  options = options || {};
 
   // Load configuration
   var cfg = base.config({
@@ -55,13 +56,13 @@ var launch = async function(profile) {
   // Create API router and publish reference if needed
   debug("Creating API router");
 
+  var creator = options.taskcreator || new taskcreator.TaskCreator({
+        credentials:  cfg.get('taskcluster:credentials'),
+  });
   var router = await v1.setup({
     context: {
       Hook:           Hook,
-      queue:          new taskcluster.Queue({
-        credentials:  cfg.get('taskcluster:credentials'),
-        baseUrl:      cfg.get('taskcluster:queueBaseUrl')
-      })
+      taskcreator:    creator,
     },
     validator:        validator,
     authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
