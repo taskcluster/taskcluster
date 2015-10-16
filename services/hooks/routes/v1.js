@@ -271,6 +271,9 @@ api.declare({
   return res.status(200).json({});
 });
 
+// XXX disabled for the first draft of this service
+if (0) {
+
 /** Get secret token for a trigger **/
 api.declare({
   method:       'get',
@@ -335,7 +338,6 @@ api.declare({
     token: hook.accessToken
   });
 });
-
 
 /** Trigger hook from a webhook with a token **/
 api.declare({
@@ -406,3 +408,4 @@ api.declare({
   let resp = await this.taskcreator.fire(hook, payload);
   return res.reply(resp);
 });
+}
