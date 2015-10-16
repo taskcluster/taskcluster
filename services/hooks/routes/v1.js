@@ -349,6 +349,8 @@ api.declare({
     "This endpoint triggers a defined hook with a valid token."
   ].join('\n')
 }, async function(req, res) {
+  var payload = req.body;
+
   var hook = await this.Hook.load({
     hookGroupId: req.params.hookGroupId,
     hookId:      req.params.hookId
@@ -369,9 +371,6 @@ api.declare({
     });
   }
 
-  let payload = await hook.taskPayload();
-  let taskId = slugid.v4();
-
   let resp = await this.taskcreator.fire(hook, payload);
   return res.reply(resp);
 });
@@ -383,12 +382,15 @@ api.declare({
   route:        '/hooks/:hookGroupId/:hookId/trigger',
   name:         'triggerHook',
   scopes:       [["hooks:trigger-hook:<hookGroupId>/<hookId>"]],
+  input:        'trigger-payload.json',
   output:       'task-status.json',
   title:        'Trigger a hook',
   description: [
     "Trigger a hook, given that you have the correct scoping for it"
   ].join('\n')
 }, async function(req, res) {
+  var payload = req.body;
+
   var hook = await this.Hook.load({
     hookGroupId: req.params.hookGroupId,
     hookId:      req.params.hookId
@@ -401,10 +403,6 @@ api.declare({
     });
   }
 
-  let payload = await hook.taskPayload();
-  let taskId = slugid.v4();
-
   let resp = await this.taskcreator.fire(hook, payload);
-
   return res.reply(resp);
 });
