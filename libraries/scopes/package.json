@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-scopes",
-  "version": "0.8.6",
+  "version": "0.8.8",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-scopes",
   "license": "MPL-2.0",
