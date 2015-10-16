@@ -33,13 +33,6 @@ var launch = async function(profile) {
     process:      'server'
   });
 
-  // Create Groups table
-  var Groups = data.Groups.setup({
-    table:        cfg.get('hooks:groupsTableName'),
-    credentials:  cfg.get('azure'),
-    process:      'server'
-  });
-
   // Create a validator
   debug("Waiting for resources to be created");
   var validator, publisher;
@@ -57,7 +50,6 @@ var launch = async function(profile) {
         });
       })(),
       Hook.ensureTable(),
-      Groups.ensureTable()
   ]);
 
   // Create API router and publish reference if needed
@@ -66,7 +58,6 @@ var launch = async function(profile) {
   var router = await v1.setup({
     context: {
       Hook:           Hook,
-      Groups:         Groups,
       queue:          new taskcluster.Queue({
         credentials:  cfg.get('taskcluster:credentials'),
         baseUrl:      cfg.get('taskcluster:queueBaseUrl')

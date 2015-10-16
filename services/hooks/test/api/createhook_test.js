@@ -27,7 +27,7 @@ suite('Create hook', function() {
 
   test("createHook fails if resource already exists", async () => {
     await helper.hooks.createHook('foo', 'bar', hookDef);
-    helper.hooks.createHook('foo', 'bar', hookDef).then(
+    return helper.hooks.createHook('foo', 'bar', hookDef).then(
         () => { throw new Error("Expected an error"); },
         (err) => { debug("Got expected error: %s", err); });
   });
@@ -91,7 +91,8 @@ suite('Create hook', function() {
   test("listHookGroups returns valid length of groups", async () => {
     var input = ['foo', 'bar', 'baz', 'qux'];
     for (let i =0; i < input.length; i++) {
-      await helper.hooks.createHook(input[i], 'testHook', hookDef);
+      await helper.hooks.createHook(input[i], 'testHook1', hookDef);
+      await helper.hooks.createHook(input[i], 'testHook2', hookDef);
     }
     var r1 = await helper.hooks.listHookGroups();
     assume(r1.groups.length).equals(input.length);
