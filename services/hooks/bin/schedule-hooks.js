@@ -5,7 +5,7 @@ var debug       = require('debug')('hooks:schedule-hooks');
 var path        = require('path');
 var Promise     = require('promise');
 var Scheduler   = require('../hooks/scheduler');
-var taskcluster = require('taskcluster-client');
+var taskcreator = require('../hooks/taskcreator');
 
 /* Launch schedule-hooks */
 var launch = async function(profile, options) {
@@ -42,9 +42,8 @@ var launch = async function(profile, options) {
   // Create scheduler
   var scheduler = new Scheduler({
     Hook:           Hook,
-    queue:          new taskcluster.Queue({
+    taskcreator:    new taskcreator.TaskCreator({
       credentials:  cfg.get('taskcluster:credentials'),
-      baseUrl:      cfg.get('taskcluster:queueBaseUrl')
     }),
     pollingDelay:   cfg.get('hooks:schedule:pollingDelay')
   });

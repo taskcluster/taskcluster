@@ -5,7 +5,7 @@ var debug       = require('debug')('hooks:scheduler');
 var Promise     = require('promise');
 var slugid      = require('slugid');
 var utils       = require('./utils');
-var taskcluster = require('taskcluster-client');
+var taskcreator = require('./taskcreator');
 
 /**
  * The Scheduler will periodically check for tasks in azure storage that are
@@ -19,7 +19,7 @@ class Scheduler {
    * options:
    * {
    *   Hook:          // instance of data.Hook
-   *   queue:         // instance of taskcluster-client.Queue
+   *   taskcreator:   // instance of taskcreator.TaskCreator
    *   pollingDelay:  // number of ms to sleep between polling
    * }
    * */
@@ -27,13 +27,13 @@ class Scheduler {
     assert(options, "options must be given");
     assert(options.Hook.prototype instanceof data.Hook,
         "Expected data.Hook instance");
-    assert(options.queue instanceof taskcluster.Queue,
-        "An instance of taskcluster.Queue is required");
+    assert(options.taskcreator instanceof taskcreator.TaskCreator,
+        "An instance of taskcreator.TaskCreator is required");
     assert(typeof(options.pollingDelay) == 'number',
         "Expected pollingDelay to be a number");
     // Store options on this for use in event handlers
     this.Hook         = options.Hook;
-    this.queue        = options.queue;
+    this.taskcreator  = options.taskcreator;
     this.pollingDelay = options.pollingDelay;
 
     // Promise that the polling is done
@@ -97,8 +97,8 @@ class Scheduler {
 
   /** Handle spawning a new task for a given hook that needs to be scheduled */
   async handleHook(hook) {
-    let task = await hook.taskPayload();
-    let resp = await this.queue.createTask(hook.nextTaskId, task);
+    // TODO: if this fails due to 401, we should still consider it scheduled
+    await this.taskcreator.fire(hook, {}, {taskId: hook.nextTaskId});
     await hook.modify((hook) => {
       hook.nextTaskId        = slugid.v4();
       hook.nextScheduledDate = utils.nextDate(hook.schedule);
