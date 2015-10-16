@@ -1,7 +1,7 @@
-suite("validScope", function() {
-  var assert  = require('assert');
-  var utils   = require('../utils.js');
+var assert  = require('assert');
+var utils   = require('../lib/scopes.js');
 
+suite("validScope", function() {
   test("Normal-looking scopes are OK", function() {
     assert(utils.validScope("auth:credentials"));
   });
@@ -32,8 +32,6 @@ suite("validScope", function() {
 });
 
 suite("scopeMatch", function() {
-  var assert  = require('assert');
-  var utils   = require('../utils.js');
 
   var mktest = function(scopePatterns, scopesets, matches) {
     return function() {
