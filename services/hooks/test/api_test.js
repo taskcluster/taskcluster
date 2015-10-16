@@ -139,6 +139,9 @@ suite('API', function() {
   });
 
   suite("getTriggerToken", function() {
+    // XXX disabled for the first draft of this service
+    this.pending = true;
+
     test("returns the same token", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
       var r1 = await helper.hooks.getTriggerToken('foo', 'bar');
@@ -169,6 +172,9 @@ suite('API', function() {
   });
 
   suite("resetTriggerToken", function() {
+    // XXX disabled for the first draft of this service
+    this.pending = true;
+
     test("creates a new token", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
       var r1 = await helper.hooks.getTriggerToken('foo', 'bar');
@@ -180,6 +186,9 @@ suite('API', function() {
   });
 
   suite("triggerHook", function() {
+    // XXX disabled for the first draft of this service
+    this.pending = true;
+
     test("should launch task with the given payload", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
       await helper.hooks.triggerHook('foo', 'bar', {a: "payload"});
@@ -193,6 +202,9 @@ suite('API', function() {
   });
 
   suite("triggerHookWithToken", function() {
+    // XXX disabled for the first draft of this service
+    this.pending = true;
+
     test("successfully triggers task with the given payload", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
       var res = helper.hooks.getTriggerToken('foo', 'bar');
