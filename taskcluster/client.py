@@ -14,6 +14,7 @@ import datetime
 import calendar
 import requests
 import time
+import urllib
 
 # For finding apis.json
 from pkg_resources import resource_string
@@ -303,7 +304,8 @@ class BaseClient(object):
       toReplace = "<%s>" % arg
       if toReplace not in route:
         raise exceptions.TaskclusterFailure('Arg %s not found in route for %s' % (arg, entry['name']))
-      route = route.replace("<%s>" % arg, str(val))
+      val = urllib.quote(str(val).encode("utf-8"))
+      route = route.replace("<%s>" % arg, val)
 
     return route.lstrip('/')
 
