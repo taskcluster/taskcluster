@@ -1,4 +1,4 @@
-Defaults:
+defaults:
   text:       !env           ENV_VARIABLE
   text2:      !env:string    ENV_VARIABLE
   number:     !env:number    ENV_NUMBER

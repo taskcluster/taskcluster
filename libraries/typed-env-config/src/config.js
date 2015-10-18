@@ -14,20 +14,19 @@ let assert = require('assert');
  *     'config.yml',        // Defaults are relative to process.cwd
  *     'user-config.yml'
  *   ]
- *   profile:  undefined,   // Profile to apply
+ *   profile:  process.env.NODE_ENV, // Profile to apply
  *   env:      process.env  // Environment variables (mapping string to strings)
  * }
  * ```
  *
  * Configuration Format:
  * ```yaml
- * Defaults:
+ * defaults:
  *   hostname:     localhost
  *   port:         8080
- * Profiles:
- *   production:
- *     hostname:   example.com
- *     port:       !env:number PORT
+ * production:
+ *   hostname:   example.com
+ *   port:       !env:number PORT
  * ```
  *
  * The following special YAML types can be used to load from environment
@@ -51,7 +50,7 @@ let config = (options) => {
       'config.yml',
       'user-config.yml'
     ],
-    profile:  undefined,
+    profile:  process.env.NODE_ENV || undefined,
     env:      process.env
   });
   assert(options.files instanceof Array, "Expected an array of files");
@@ -158,15 +157,15 @@ let config = (options) => {
       throw new Error("Can't parse YAML from: " + file + " " + err.toString());
     }
     // Add defaults to list of configurations if present
-    if (data.Defaults) {
-      assert(typeof(data.Defaults) === 'object',
-             "'Defaults' must be an object");
-      cfgs.unshift(data.Defaults);
+    if (data.defaults) {
+      assert(typeof(data.defaults) === 'object',
+             "'defaults' must be an object");
+      cfgs.unshift(data.defaults);
     }
 
     // Add profile to list of configurations, if it is given
-    if (data.Profiles && options.profile && data.Profiles[options.profile]) {
-      let profile = data.Profiles[options.profile];
+    if (options.profile && data[options.profile]) {
+      let profile = data[options.profile];
       assert(typeof(profile) === 'object', "profile must be an object");
       cfgs.unshift(profile);
     }
