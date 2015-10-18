@@ -1,9 +1,8 @@
-Defaults:
+defaults:
   text:
     - Hello
     - World
-Profiles:
-  danish:
-    text:
-      - Hej
-      - Verden
+danish:
+  text:
+    - Hej
+    - Verden
