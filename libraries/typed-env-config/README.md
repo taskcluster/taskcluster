@@ -7,16 +7,15 @@ configuration.
 
 The **configuration format** looks as follows.
 ```yaml
-Defaults:
+defaults:
   hostname:     localhost
   port:         8080
-Profiles:
-  production:
-    hostname:   !env HOSTNAME
-    port:       !env:number PORT
-  test:
-    hostname:   localhost
-    port:       1234
+production: # profile 'production'
+  hostname:   !env HOSTNAME
+  port:       !env:number PORT
+test: # profile 'test'
+  hostname:   localhost
+  port:       1234
 ```
 The syntax extensions `!env <name>` is replaced with the value of the
 environment variable `<name>`. This is further extended to support loading
@@ -62,9 +61,9 @@ the configuration loader complain about missing files, but it will complain
 about ill formated files and missing profiles.
 
 If you specify `{profile: 'test'}` when loading the example configuration file
-listed at the top of this document, the loader will first load the `Defaults`
-section and then merge in values from the `Profiles.test` section overwriting
-values set in `Defaults`.
+listed at the top of this document, the loader will first load the `defaults`
+section and then merge in values from the `test` section overwriting
+values set in `defaults`.
 
 If there is both a `config.yml` and `user-config.yml` file, the `config.yml`
 will be loaded first and have the profile merged, before the `user-config.yml`

@@ -1,3 +1,4 @@
 user-config.yml
 node_modules/
 .test/
+lib/
