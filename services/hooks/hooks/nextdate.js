@@ -1,4 +1,4 @@
-var debug = require('debug')('hooks:utils');
+var debug = require('debug')('hooks:nextdate');
 
 var days  = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
@@ -79,7 +79,7 @@ var nextDate = function(schedule, reference) {
 };
 
 // Export function
-exports.nextDate = nextDate;
+module.exports = nextDate;
 
 /** Calculate the number of days in a given month and year
  *

@@ -3,7 +3,7 @@ var debug       = require('debug')('hooks:routes:v1');
 var Promise     = require('promise');
 var slugid      = require('slugid');
 var taskcluster = require('taskcluster-client');
-var utils       = require('../hooks/utils');
+var nextDate    = require('../hooks/nextdate');
 
 var api = new base.API({
   title:         "Hooks API Documentation",
@@ -186,7 +186,7 @@ api.declare({
       schedule:           hookDef.schedule ? hookDef.schedule : {format: {type: "none"}},
       accessToken:        slugid.v4(),
       nextTaskId:         slugid.v4(),
-      nextScheduledDate:  hookDef.schedule ? utils.nextDate(hookDef.schedule) : new Date(0)
+      nextScheduledDate:  hookDef.schedule ? nextDate(hookDef.schedule) : new Date(0)
     });
   }
   catch (err) {
@@ -251,7 +251,7 @@ api.declare({
     hook.deadline          = hookDef.deadline;
     hook.expires           = hookDef.expires ? hookDef.expires : '';
     hook.schedule          = hookDef.schedule ? hookDef.schedule : {format: {type: "none"}};
-    hook.nextScheduledDate = hookDef.schedule ? utils.nextDate(hookDef.schedule) : new Date(0);
+    hook.nextScheduledDate = hookDef.schedule ? nextDate(hookDef.schedule) : new Date(0);
   });
 
   let definition = await hook.definition();
