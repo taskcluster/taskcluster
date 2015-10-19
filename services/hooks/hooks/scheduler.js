@@ -97,7 +97,8 @@ class Scheduler {
 
   /** Handle spawning a new task for a given hook that needs to be scheduled */
   async handleHook(hook) {
-    // TODO: if this fails due to 401, we should still consider it scheduled
+    // TODO: (when we have hook logging) if this fails due to 401, we should
+    // still consider it scheduled
     await this.taskcreator.fire(hook, {}, {taskId: hook.nextTaskId});
     await hook.modify((hook) => {
       hook.nextTaskId        = slugid.v4();
