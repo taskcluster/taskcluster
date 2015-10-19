@@ -65,7 +65,7 @@ suite('Scheduler', function() {
         bindings:           {},
         deadline:           '1 day',
         expires:            '1 day',
-        schedule:           {format: {type: "daily"}},
+        schedule:           ["0 0 0 * * *"],
         accessToken:        slugid.v4(),
       };
 
@@ -84,7 +84,7 @@ suite('Scheduler', function() {
       await scheduler.Hook.create(_.defaults({
         hookId:             'pastHookNotScheduled',
         nextTaskId:         slugid.v4(),
-        schedule:           {format: {type: "none"}},
+        schedule:           [],
         nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
       }, hookParams));
     });
@@ -121,7 +121,7 @@ suite('Scheduler', function() {
         bindings:           {},
         deadline:           '1 day',
         expires:            '1 day',
-        schedule:           {format: {type: "daily", timeOfDay: [1]}},
+        schedule:           ["0 0 0 * * *"],
         accessToken:        slugid.v4(),
         nextTaskId:         slugid.v4(),
         nextScheduledDate:  new Date(3000, 0, 0, 0, 0, 0, 0),
