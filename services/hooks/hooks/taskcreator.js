@@ -53,8 +53,7 @@ class TaskCreator {
 
     debug('firing hook %s/%s to create taskId: %s',
         hook.hookGroupId, hook.hookId, taskId);
-    let resp = await queue.createTask(taskId, this.taskForHook(hook));
-    return resp;
+    return await queue.createTask(taskId, await this.taskForHook(hook));
   };
 }
 
