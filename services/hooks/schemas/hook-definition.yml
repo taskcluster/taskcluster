@@ -1,7 +1,7 @@
 $schema:                  http://json-schema.org/draft-04/schema#
 title:                    "hook definition"
 description: |
-  Definition of a hook that can be triggered and schedule
+  Definition of a hook that will create tasks when defined events occur.
 type:                     object
 properties:
   hookGroupId:

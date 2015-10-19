@@ -12,7 +12,7 @@ suite('API', function() {
   // Use the same hook definition for everything
   var hookDef = require('./test_definition');
   let dailyHookDef = _.defaults({
-      schedule: {format: {type: "daily", timeOfDay: [0]}}
+      schedule: ["0 0 3 * * *"],
     }, hookDef);
 
   suite("createHook", function() {
@@ -161,7 +161,7 @@ suite('API', function() {
       await helper.hooks.createHook('foo', 'bar', dailyHookDef);
       var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
       assume(r1).contains('nextScheduledDate');
-      assume(r1.schedule).deep.eql({format: {type: "daily", timeOfDay: [0]}});
+      assume(r1.schedule).deep.eql(["0 0 3 * * *"]);
     });
 
     test("fails if no hook exists", async () => {

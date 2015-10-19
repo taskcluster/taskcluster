@@ -1,6 +1,1 @@
-{
-    "format": {
-        "type": "daily",
-        "timeOfDay": [0]
-    }
-}
+["0 0 0 * * *"]

@@ -135,7 +135,7 @@ api.declare({
   }
 
   // Return a schedule only if a schedule is defined
-  if (hook.schedule.format.type != "none") {
+  if (hook.schedule.length > 0) {
     return res.reply({
       schedule: hook.schedule,
       nextScheduledDate: hook.nextScheduledDate.toJSON()
@@ -175,6 +175,7 @@ api.declare({
         routingKey:  '#'
       }
 
+    var schedule = hookDef.schedule ? hookDef.schedule : [];
     var hook = await this.Hook.create({
       hookGroupId:        hookGroupId,
       hookId:             hookId,
@@ -183,10 +184,10 @@ api.declare({
       bindings:           bindings,
       deadline:           hookDef.deadline,
       expires:            hookDef.expires ? hookDef.expires : '',
-      schedule:           hookDef.schedule ? hookDef.schedule : {format: {type: "none"}},
+      schedule:           schedule,
       accessToken:        slugid.v4(),
       nextTaskId:         slugid.v4(),
-      nextScheduledDate:  hookDef.schedule ? nextDate(hookDef.schedule) : new Date(0)
+      nextScheduledDate:  nextDate(schedule)
     });
   }
   catch (err) {
@@ -244,14 +245,15 @@ api.declare({
     };
 
   // Attempt to modify properties of the hook
+  var schedule = hookDef.schedule ? hookDef.schedule : [];
   await hook.modify((hook) => {
     hook.metadata          = hookDef.metadata;
     hook.task              = hookDef.task;
     hook.bindings          = bindings;
     hook.deadline          = hookDef.deadline;
     hook.expires           = hookDef.expires ? hookDef.expires : '';
-    hook.schedule          = hookDef.schedule ? hookDef.schedule : {format: {type: "none"}};
-    hook.nextScheduledDate = hookDef.schedule ? nextDate(hookDef.schedule) : new Date(0);
+    hook.schedule          = schedule;
+    hook.nextScheduledDate = nextDate(schedule);
   });
 
   let definition = await hook.definition();
