@@ -72,7 +72,7 @@ class Scheduler {
     }, {});
 
     await Promise.all(hooks.entries.filter((hook) => {
-      return hook.schedule.format.type !== 'none';
+      return hook.schedule.length > 0;
     }).map((hook) => {
       // Don't let a single error break the loop, since it'll be retried later
       return this.handleHook(hook).catch((err) => {

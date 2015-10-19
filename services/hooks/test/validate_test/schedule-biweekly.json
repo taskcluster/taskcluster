@@ -1,7 +1,1 @@
-{
-    "format": {
-        "type": "monthly",
-        "dayOfMonth": [1, 14],
-        "timeOfDay": [12]
-    }
-}
+["0 0 12 1,14 * *"]
