@@ -7,7 +7,21 @@ var utils       = require('../hooks/utils');
 
 var api = new base.API({
   title:         "Hooks API Documentation",
-  description:   "Todo",
+  description:   [
+    "Hooks are a mechanism for creating tasks in response to events.",
+    "",
+    "Hooks are identified with a hook-group ID and a hook ID.",
+    "",
+    "When an event occurs, the resulting task is automatically created.  The",
+    "task is created using the role `hook-id:<hook-group-id>/<hook-id>`, which",
+    "must have scopes to make the creteTask call, including satisfying all",
+    "scopes in `task.scopes`.",
+    "",
+
+    "Hooks can have a 'schedule' indicating specific times that new tasks should",
+    "be created.",  // TODO: examples
+
+  ].join('\n'),
   schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/'
 });
 
@@ -23,8 +37,7 @@ api.declare({
   output:       'list-hook-groups-response.json',
   title:        'List hook groups',
   description: [
-    "This endpoint will return a list of all available groups that defined",
-    "hooks belong to."
+    "This endpoint will return a list of all hook groups with at least one hook.",
   ].join('\n')
 }, async function(req, res) {
   var groups = new Set();
@@ -46,7 +59,8 @@ api.declare({
   output:       'list-hooks-response.json',
   title:        'List hooks in a given group',
   description: [
-    "Get a list of all the hook definitions within a given hook group."
+    "This endpoint will return a list of all the hook definitions within a",
+    "given hook group."
   ].join('\n')
 }, async function(req, res) {
   var hooks = [];
@@ -75,7 +89,8 @@ api.declare({
   output:       'hook-definition.json',
   title:        'Get hook definition',
   description: [
-    "This end-point will return the hook-defintion."
+    "This endpoint will return the hook defintion for the given hook group id",
+    "and hook id."
   ].join('\n')
 }, async function(req, res) {
   let hook = await this.Hook.load({
@@ -103,7 +118,8 @@ api.declare({
   output:       'hook-schedule.json',
   title:        'Get hook schedule',
   description: [
-    "This end-point will return the next scheduled date of a hook."
+    "This endpoint will return the schedule and next scheduled creation time",
+    "for the given hook."
   ].join('\n')
 }, async function(req, res) {
   let hook = await this.Hook.load({
@@ -139,9 +155,11 @@ api.declare({
   output:       'hook-definition.json',
   title:        'Create a hook',
   description: [
-    "Define and create a hook that will spawn a task when triggered. This",
-    "hook can be triggered through the web endpoint, or through a message",
-    "on the Pulse exchange that the hook is binded to."
+    "This endpoint will create a new hook.",
+    "",
+    "The caller's credentials need not satisfy `hook.task.scopes`. Instead,",
+    "the role for the hook must satisfy these scopes as well as the necessary",
+    "scopes to add the task to the queue.",
   ].join('\n')
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
@@ -198,7 +216,8 @@ api.declare({
   output:       'hook-definition.json',
   title:        'Update a hook',
   description: [
-    "Update the hook definition."
+    "This endpoint will update an existing hook.  All fields except",
+    "`hookGroupId` and `hookId` can be modified.",
   ].join('\n')
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
@@ -248,7 +267,7 @@ api.declare({
   scopes:       [["hooks:modify-hook:<hookGroupId>/<hookId>"]],
   title:        'Delete a hook',
   description: [
-    "Remove a hook definition."
+    "This endpoint will remove a hook definition."
   ].join('\n')
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
