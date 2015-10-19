@@ -4,7 +4,7 @@ var data        = require('./data');
 var debug       = require('debug')('hooks:scheduler');
 var Promise     = require('promise');
 var slugid      = require('slugid');
-var utils       = require('./utils');
+var nextDate    = require('./nextdate');
 var taskcreator = require('./taskcreator');
 
 /**
@@ -102,7 +102,7 @@ class Scheduler {
     await this.taskcreator.fire(hook, {}, {taskId: hook.nextTaskId});
     await hook.modify((hook) => {
       hook.nextTaskId        = slugid.v4();
-      hook.nextScheduledDate = utils.nextDate(hook.schedule);
+      hook.nextScheduledDate = nextDate(hook.schedule);
     });
   }
 }
