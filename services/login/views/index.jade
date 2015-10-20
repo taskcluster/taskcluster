@@ -1,0 +1,114 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    if title
+      title TaskCluster - Authentication
+    else
+      title TaskCluster - Authentication
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+
+    // Bootstrap
+    link(rel='stylesheet',
+         href='/assets/bootstrap/css/bootstrap.min.css')
+    link(rel='stylesheet',
+         href='/assets/bootstrap/css/bootstrap-theme.min.css')
+
+    // Custom styling
+    link(rel='stylesheet', href='/assets/style.css')
+
+    // jQuery and Bootstrap Javascript
+    script(src='/assets/jquery.min.js')
+    script(src='/assets/bootstrap/js/bootstrap.min.js')
+
+    // Persona login script
+    script(src='https://login.persona.org/include.js')
+
+    // Marked for rendering markdown
+    script(src='/assets/marked.min.js')
+
+    // Script with various hacks for this page
+    script(src='/assets/script.js')
+  body.container
+    div.row
+      div.col-md-10.col-md-offset-1#content
+        h1 TaskCluster Authentication
+        hr
+        p
+          | Login with your accounts, you will be given scopes based on LDAP and
+          | Mozillians groups as you authenticate with each account.
+        br
+        if !user.hasMozillianUser()
+          form#persona-form(action='/login/persona', method='post')
+            input#persona-assertion(type='hidden', name='assertion')
+            button.btn.btn-primary#persona-signin(type='submit')
+              i.glyphicon.glyphicon-log-in
+              | &nbsp;Sign-in with Mozillians
+          br
+        if !user.hasLDAPUser()
+          form(action='/login/sso', method='post')
+            button.btn.btn-primary(type='submit')
+              i.glyphicon.glyphicon-log-in
+              | &nbsp;Sign-in with SSO
+          br
+        if credentials
+          span#grant-area(style='display: none')
+            h2 Grant Credentials to&nbsp;
+              code.grant-target
+            hr
+            p
+              | The following tool have requested access to your temporary
+              | credentials.
+            dl.dl-horizontal
+              dt Target
+              dd
+                b
+                  code.grant-target
+              dt Description
+              dd#grant-description
+              dt
+              dd
+                a.btn.btn-primary#grant-button(href='#')
+                  i.glyphicon.glyphicon-lock
+                  | &nbsp;Grant Access
+                | &nbsp;(only grant access to trusted services!)
+            br
+          script.
+            load("!{querystring.stringify(credentials)}");
+          h2 Temporary Credentials
+          hr
+          p
+            | Below you'll find temporary credentials with the scopes you have
+            | been granted.
+          dl.dl-horizontal#credentials
+            dt ClientId
+            dd
+              code #{credentials.clientId}
+            dt AccessToken
+            dd
+              code #{credentials.accessToken}
+            dt Certificate
+            dd
+              pre(style="white-space: pre-line;")
+                | #{credentials.certificate}
+          br
+          h2 Authorized Scopes
+          hr
+          dl.dl-horizontal
+            p You have been granted the following scopes.
+            dt Scopes
+            dd
+              ul
+                each scope in user.scopes()
+                  li
+                    code #{scope}
+              | (These may indirectly assign you additional scopes)
+            dt
+            dd
+              br
+              form(action='/logout', method='post')
+                button.btn.btn-danger(type='submit')
+                  i.glyphicon.glyphicon-log-out
+                  | &nbsp;Sign-out
+                br
+            br
