@@ -84,4 +84,7 @@ module.exports = {
 
   // Slugid pattern, for when-ever that is useful
   "slugid-pattern":  "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+
+  // Pattern for scope names, for when-ever that is useful
+  "scope-pattern":   "^[\x20-\x7e]*",
 };

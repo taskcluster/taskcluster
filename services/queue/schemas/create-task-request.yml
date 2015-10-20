@@ -106,8 +106,10 @@ properties:
         A scope (or scope-patterns) which the task is
         authorized to use. This can be a string or a string
         ending with `*` which will authorize all scopes for
-        which the string is a prefix.
+        which the string is a prefix.  Scopes must be composed of
+        printable ASCII characters and spaces.
       type:         string
+      pattern:      {$const: scope-pattern}
   payload:
     title:          "Task Payload"
     description: |
