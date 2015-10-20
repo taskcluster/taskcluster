@@ -1,0 +1,76 @@
+Defaults:
+  app:
+    cookieSecrets: !env:list COOKIE_SECRETS
+    temporaryCredentials:
+      # Set the credentials to be valid 15 min before creation
+      # (allowing for a bit of clock skew)
+      startOffset:    '- 15 min'
+      # Set the credential to expire after 3 days
+      expiry:         '3 days'
+      # Credentials to issuing temporary credentials should have scopes:
+      # - assume:mozillians-user:*
+      # - assume:mozillians-group:*
+      # - assume:ldap-user:*
+      # - assume:ldap-group:*
+      credentials:
+        clientId:     !env TASKCLUSTER_CLIENT_ID
+        accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
+  mozillians:
+    apiKey:         !env MOZILLIANS_API_KEY
+    allowedGroups:  !env:list MOZILLIANS_ALLOWED_GROUPS
+  sso:
+    entryPoint:     !env SSO_ENTRYPOINT
+    certificate:    !env SSO_CERTIFICATE
+    issuer:         'taskcluster-login'
+    allowedGroups:  !env:list SSO_ALLOWED_GROUPS
+  server:
+    port:       !env:number PORT
+    forceSSL:   !env:flag FORCE_SSL
+    trustProxy: !env:flag TRUST_PROXY
+    publicUrl:  !env PUBLIC_URL
+Profiles:
+  production:
+    server:
+      forceSSL: true
+  test:
+    mozillians:
+      group: ['taskcluster-users']
+    server:
+      port: 60174
+      publicUrl: http://localhost:60174
+  ngrok:
+    app:
+      cookieSecrets: ['Shhh']
+      temporaryCredentials:
+        credentials:
+          clientId:     'dummy'
+          accessToken:  'lol no secret here'
+    mozillians:
+      allowedGroups: ['taskcluster-users']
+    sso:
+      allowedGroups: ['releng', 'shipit', 'Everyone', 'team_moco', 'shipitdev']
+      issuer: taskcluster-login.ngrok.io
+      entryPoint: "https://mozilla.oktapreview.com/app/mozilla_taskcluster_1/exk58q0ytqJycvEJ10h7/sso/saml"
+      certificate: >
+        MIIDnjCCAoagAwIBAgIGAUsUDdUaMA0GCSqGSIb3DQEBBQUAMIGPMQswCQYDVQQGEwJVUzETMBEG
+        A1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzENMAsGA1UECgwET2t0YTEU
+        MBIGA1UECwwLU1NPUHJvdmlkZXIxEDAOBgNVBAMMB21vemlsbGExHDAaBgkqhkiG9w0BCQEWDWlu
+        Zm9Ab2t0YS5jb20wHhcNMTUwMTIyMjM0OTI1WhcNNDUwMTIyMjM1MDI1WjCBjzELMAkGA1UEBhMC
+        VVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAoM
+        BE9rdGExFDASBgNVBAsMC1NTT1Byb3ZpZGVyMRAwDgYDVQQDDAdtb3ppbGxhMRwwGgYJKoZIhvcN
+        AQkBFg1pbmZvQG9rdGEuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs28LxTNP
+        mhUxw5Spomu3voYxTXUewguJynUBUQ3iTQVpvAVZS8nXIP7CSo6257lJwS5+eKixCNzLCfkxc+yH
+        Uoa8qv2DXWD4Kmqnaq8ijCRnyNvX+c8Hfn2EYH9caoRrs1NxC2bWQo02FXUZdo4KAYUSvMC+9p++
+        3o+daS6I/+J7iKCTi7vKDV0IF2I2SLdoCJzhxkLJ2fJRg/t6rQ0qG+aBRjx9E4RlMpvPfBney3k8
+        ZxRBhH7WwhWY4jIOETSYZY62d2amUlHegvqMVuXpc3wjdxD3YV+2nILad6HLppCKR53cq+VDh6rO
+        AxDSSHYGfqXIWFDGOTOpSdoNnmy6swIDAQABMA0GCSqGSIb3DQEBBQUAA4IBAQAkvhAmawj5ptqu
+        9fg74npE64shfHguW4GKmG80Zc9fshUX057eIfNsNOEl+cnULJ9X02umld6VEbv3BTFLIpE/iK3i
+        rwmTVLp27u2FxHo0qm7bs1sRZIsSQ7dvnIX3M++tcKqKdEIDjNvAM5IgB0xph2KQ6bkqovWOceHv
+        9G2eDrGqEfmL44pASZ8xwY3kn6qUUY1hSjWI3pkROTeW+VCCR/gA1/I0PhaNcT5UoZ7b2F0ptGsu
+        CGq4KkDUXXTIHRl+f3VNDPJBjxVZBpkpYEdNFnhcmWADwNgtmYwW4rYgb4s7VaGA5Hg75Z3NPlR4
+        Brq4s05ixFJAciflA4b7mnic
+    server:
+      port: 60174
+      publicUrl: https://taskcluster-login.ngrok.io
+      forceSSL:   true
+      trustProxy: true

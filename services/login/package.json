@@ -1,0 +1,34 @@
+{
+  "name": "taskcluster-login",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Server for giving temporary taskcluster credentials to users.",
+  "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/taskcluster/taskcluster-login.git"
+  },
+  "scripts": {
+    "compile": "babel-compile -c taskcluster-lib-rules/babel src:lib",
+    "postinstall": "npm run compile"
+  },
+  "dependencies": {
+    "babel-runtime": "^5.8.25",
+    "body-parser": "^1.14.1",
+    "cookie-session": "^1.2.0",
+    "express": "^4.13.3",
+    "express-sslify": "^0.1.2",
+    "jade": "^1.11.0",
+    "lodash": "^3.10.1",
+    "passport": "^0.3.0",
+    "passport-persona": "jonasfj/passport-persona",
+    "passport-saml": "^0.13.0",
+    "source-map-support": "^0.3.2",
+    "taskcluster-client": "^0.23.0",
+    "taskcluster-lib-config": "^0.9.1",
+    "mozillians-client": "^0.1.0",
+    "babel-compile": "^0.0.3",
+    "taskcluster-lib-rules": "^1.0.3"
+  }
+}
