@@ -15,7 +15,6 @@
     "lodash": "^3.10.1",
     "mocha": "^2.2.5",
     "promise": "^7.0.4",
-    "slugid": "^1.0.3",
     "taskcluster-base": "^0.8.4",
     "taskcluster-client": "^0.22.4",
     "cron-parser": "^1.0.1"
