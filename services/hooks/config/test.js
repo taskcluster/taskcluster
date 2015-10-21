@@ -2,7 +2,10 @@ module.exports = {
   hooks:
   {
     publishMetaData:  'false',
+    azureAccount:     'jungle',
     hookTableName:    'TestHooks3',
+    tableSigningKey:  'not-a-secret-so-you-cant-guess-it',
+    tableCryptoKey:   'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
     schedule:
     {
       pollingDelay: 1
@@ -12,8 +15,8 @@ module.exports = {
   taskcluster:
   {
     authBaseUrl:      'http://localhost:60407/v1',
-    credentials:
-    {
+    // Should have scope: 'auth:azure-table-access:jungle/*'
+    credentials: {
       clientId:       undefined,
       accessToken:    undefined
     }
