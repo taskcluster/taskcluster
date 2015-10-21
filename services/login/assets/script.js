@@ -35,12 +35,19 @@ jQuery.extend({
 var query = $.getQueryString();
 if (typeof(query.target) === 'string' &&
     typeof(query.description) === 'string') {
-  localStorage.setItem('grant-request', JSON.stringify({
-    target: query.target,
-    description: query.description
-  }));
-  // Get rid of those ugly query-strings...
-  window.location = '/';
+  var a = document.createElement('a');
+  a.href = query.target;
+  if (a.protocol === 'https' || a.hostname === 'localhost') {
+    localStorage.setItem('grant-request', JSON.stringify({
+      target: query.target,
+      description: query.description
+    }));
+    // Get rid of those ugly query-strings...
+    window.location = '/';
+  } else {
+    console.log("target " + query.target + " isn't valid, http only allowed " +
+                "for localhost");
+  }
 }
 
 // Check if we can naively redirect to a host
@@ -147,7 +154,6 @@ function load(credentials) {
   $('#grant-button').click(function(e) {
     e.preventDefault();
     // check if host is allowed... and proceed if it is...
-    //TODO: consider only allowing http for localhost.
     if (!isAllowedHost(hostname)) {
       // Reset and show dialog
       $('#hostname-input').val('');
