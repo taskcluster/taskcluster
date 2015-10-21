@@ -72,7 +72,7 @@ suite('Scheduler', function() {
       await scheduler.Hook.create(_.defaults({
         hookId:             'futureHook',
         nextTaskId:         taskcluster.slugid(),
-        nextScheduledDate:  new Date(3000, 0, 0, 0, 0, 0, 0),
+        nextScheduledDate:  new Date(4000, 0, 0, 0, 0, 0, 0),
       }, hookParams));
 
       await scheduler.Hook.create(_.defaults({
@@ -85,7 +85,7 @@ suite('Scheduler', function() {
         hookId:             'pastHookNotScheduled',
         nextTaskId:         taskcluster.slugid(),
         schedule:           [],
-        nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
+        nextScheduledDate:  new Date(4000, 0, 0, 0, 0, 0, 0),
       }, hookParams));
     });
 
