@@ -45,6 +45,39 @@ module.exports = {
     "type":         "string",
   },
 
+  // Hook metadata
+  "metadata": {
+    type: "object",
+    properties: {
+      name: {
+        title: "Name",
+        description: "Human readable name of the hook",
+        type: "string",
+        maxLength: 255
+      },
+      description: {
+        title: "Description",
+        description: "Long-form of the hook's purpose and behavior",
+        type: "string",
+        maxLength: 32768
+      },
+      owner: {
+        title: "Owner",
+        description: "Email of the person or group responsible for this hook.",
+        type: "string",
+        maxLength: 255
+      },
+      emailOnError: {
+        title: "Email on error",
+        description: "Whether to email the owner on an error creating the task.",
+        type: "boolean",
+        default: true
+      }
+    },
+    additionalProperties: false,
+    required: ["name", "description", "owner"]
+  },
+
   // Slugid pattern, for when-ever that is useful
   "slugid-pattern":  "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
 };

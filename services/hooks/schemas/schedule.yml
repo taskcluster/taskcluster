@@ -2,8 +2,8 @@ $schema:        http://json-schema.org/draft-04/schema#
 title:          "Hook schedule"
 description: |
     Definition of the times at which a hook will result in creation of a task.
-    If several patterns are specified, tasks will be created at each specified
-    by one or more patterns.
+    If several patterns are specified, tasks will be created at any time
+    specified by one or more patterns.
 type: array
 items:
   title: "Cron Pattern"
@@ -11,3 +11,4 @@ items:
   description: |
       Cron-like specification for when tasks should be created.  The pattern is
       parsed in a UTC context.  See https://www.npmjs.com/package/cron-parser.
+      Note that tasks may not be created at exactly the time specified.
