@@ -21,7 +21,7 @@ var Hook = base.Entity.configure({
     // timings for the task (in fromNow format, e.g., "1 day")
     deadline:           base.Entity.types.String,
     expires:            base.Entity.types.String,
-    // schedule for this task
+    // schedule for this task (see schemas/schedule.yml)
     schedule:           base.Entity.types.JSON,
     // access token used to trigger this task via webhook
     accessToken:        base.Entity.types.SlugId,

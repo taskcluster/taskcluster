@@ -9,17 +9,18 @@ var api = new base.API({
   description:   [
     "Hooks are a mechanism for creating tasks in response to events.",
     "",
-    "Hooks are identified with a hook-group ID and a hook ID.",
+    "Hooks are identified with a `hookGroupId` and a `hookId`.",
     "",
     "When an event occurs, the resulting task is automatically created.  The",
-    "task is created using the role `hook-id:<hook-group-id>/<hook-id>`, which",
+    "task is created using the role `hook-id:<hookGroupId>/<hookId>`, which",
     "must have scopes to make the creteTask call, including satisfying all",
     "scopes in `task.scopes`.",
     "",
-
     "Hooks can have a 'schedule' indicating specific times that new tasks should",
-    "be created.",  // TODO: examples
-
+    "be created.  Each schedule is in a simple cron format, per ",
+    "https://www.npmjs.com/package/cron-parser.  For example:",
+    " * `[\"0 0 1 * * *\"]` -- daily at 1:00 UTC",
+    " * `[\"0 0 9,21 * * 1-5\", \"0 0 12 * * 0,6\"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
   ].join('\n'),
   schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/'
 });
@@ -88,8 +89,8 @@ api.declare({
   output:       'hook-definition.json',
   title:        'Get hook definition',
   description: [
-    "This endpoint will return the hook defintion for the given hook group id",
-    "and hook id."
+    "This endpoint will return the hook defintion for the given `hookGroupId`",
+    "and hookId."
   ].join('\n')
 }, async function(req, res) {
   let hook = await this.Hook.load({
