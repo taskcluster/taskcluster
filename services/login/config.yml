@@ -1,6 +1,10 @@
 Defaults:
   app:
     cookieSecrets: !env:list COOKIE_SECRETS
+    allowedRedirectHosts:
+      - localhost
+      - tools.taskcluster.net
+      - docs.taskcluster.net
     temporaryCredentials:
       # Set the credentials to be valid 15 min before creation
       # (allowing for a bit of clock skew)
