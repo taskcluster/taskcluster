@@ -149,6 +149,7 @@ api.declare({
   method:       'put',
   route:        '/hooks/:hookGroupId/:hookId',
   name:         'createHook',
+  deferAuth:    true,
   idempotent:   true,
   scopes:       [["hooks:modify-hook:<hookGroupId>/<hookId>"]],
   input:        'create-hook-request.json',
@@ -165,6 +166,10 @@ api.declare({
   var hookGroupId = req.params.hookGroupId;
   var hookId    = req.params.hookId;
   var hookDef   = req.body;
+
+  if (!req.satisfies({hookGroupId, hookId})) {
+    return;
+  }
 
   // Try to create a Hook entity
   try {
@@ -211,6 +216,7 @@ api.declare({
   method:       'patch',
   route:        '/hooks/:hookGroupId/:hookId',
   name:         'updateHook',
+  deferAuth:    true,
   idempotent:   true,
   scopes:       [["hooks:modify-hook:<hookGroupId>/<hookId>"]],
   input:        'create-hook-request.json',
@@ -224,6 +230,10 @@ api.declare({
   var hookGroupId = req.params.hookGroupId;
   var hookId = req.params.hookId;
   var hookDef = req.body;
+
+  if (!req.satisfies({hookGroupId, hookId})) {
+    return;
+  }
 
   var hook = await this.Hook.load({
     hookGroupId: hookGroupId,
@@ -266,6 +276,7 @@ api.declare({
   route:        '/hooks/:hookGroupId/:hookId',
   name:         'removeHook',
   idempotent:   true,
+  deferAuth:    true,
   scopes:       [["hooks:modify-hook:<hookGroupId>/<hookId>"]],
   title:        'Delete a hook',
   description: [
@@ -274,6 +285,10 @@ api.declare({
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
   var hookId = req.params.hookId;
+
+  if (!req.satisfies({hookGroupId, hookId})) {
+    return;
+  }
 
   // Remove the resource if it exists
   let hook = await this.Hook.load({
@@ -300,6 +315,7 @@ api.declare({
   method:       'get',
   route:        '/hooks/:hookGroupId/:hookId/token',
   name:         'getTriggerToken',
+  deferAuth:    true,
   scopes:       [["hooks:get-trigger-token:<hookGroupId>/<hookId>"]],
   input:        undefined,
   output:       'trigger-token-response.json',
@@ -309,6 +325,12 @@ api.declare({
     "token can be deactivated with resetTriggerToken."
   ].join('\n')
 }, async function(req, res) {
+  var hookGroupId = req.params.hookGroupId;
+  var hookId    = req.params.hookId;
+  if (!req.satisfies({hookGroupId, hookId})) {
+    return;
+  }
+
   let hook = await this.Hook.load({
     hookGroupId: req.params.hookGroupId,
     hookId:      req.params.hookId
@@ -331,6 +353,7 @@ api.declare({
   method:       'post',
   route:        '/hooks/:hookGroupId/:hookId/token',
   name:         'resetTriggerToken',
+  deferAuth:    true,
   scopes:       [["hooks:reset-trigger-token:<hookGroupId>/<hookId>"]],
   input:        undefined,
   output:       'trigger-token-response.json',
@@ -340,6 +363,12 @@ api.declare({
     "may have been issued via getTriggerToken with a new token."
   ].join('\n')
 }, async function(req, res) {
+  var hookGroupId = req.params.hookGroupId;
+  var hookId    = req.params.hookId;
+  if (!req.satisfies({hookGroupId, hookId})) {
+    return;
+  }
+
   let hook = await this.Hook.load({
     hookGroupId: req.params.hookGroupId,
     hookId:      req.params.hookId
@@ -404,6 +433,7 @@ api.declare({
   method:       'post',
   route:        '/hooks/:hookGroupId/:hookId/trigger',
   name:         'triggerHook',
+  deferAuth:    true,
   scopes:       [["hooks:trigger-hook:<hookGroupId>/<hookId>"]],
   input:        'trigger-payload.json',
   output:       'task-status.json',
@@ -412,6 +442,12 @@ api.declare({
     "Trigger a hook, given that you have the correct scoping for it"
   ].join('\n')
 }, async function(req, res) {
+  var hookGroupId = req.params.hookGroupId;
+  var hookId    = req.params.hookId;
+  if (!req.satisfies({hookGroupId, hookId})) {
+    return;
+  }
+
   var payload = req.body;
 
   var hook = await this.Hook.load({
