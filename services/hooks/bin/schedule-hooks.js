@@ -23,15 +23,22 @@ var launch = async function(profile, options) {
       'taskcluster_credentials_clientId',
       'taskcluster_credentials_accessToken',
       'azure_accountName',
-      'azure_accountKey'
+      'azure_accountKey',
+      'hooks_tableSigningKey',
+      'hooks_tableCryptoKey',
+      'hooks_publishMetaData',
     ],
     filename:  'taskcluster-hooks'
   });
 
   // Create Hooks table
   var Hook = data.Hook.setup({
+    account:      cfg.get('hooks:azureAccount'),
     table:        cfg.get('hooks:hookTableName'),
-    credentials:  cfg.get('azure'),
+    credentials:  cfg.get('taskcluster:credentials'),
+    authBaseUrl:  cfg.get('taskcluster:authBaseUrl')
+    signingKey:   cfg.get('hooks:tableSigningKey'),
+    cryptoKey:    cfg.get('hooks:tableCryptoKey'),
     process:      'schedule-hooks'
   });
 
