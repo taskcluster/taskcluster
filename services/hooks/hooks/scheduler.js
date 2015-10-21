@@ -71,17 +71,10 @@ class Scheduler extends events.EventEmitter {
     // Get all hooks that have a scheduled date that is earlier than now
     var hooks = await this.Hook.scan({
       nextScheduledDate:  base.Entity.op.lessThan(new Date())
-    }, {});
-
-    await Promise.all(hooks.entries.filter((hook) => {
-      return hook.schedule.length > 0;
-    }).map((hook) => {
-      // Don't let a single error break the loop, since it'll be retried later
-      return this.handleHook(hook).catch((err) => {
-        debug("Failed to handle hook: %j" +
-              ", with err: %s, as JSON: %j", hook, err, err, err.stack);
-      });
-    }));
+    }, {
+      limit: 100,
+      handler: (hook) => this.handleHook(hook),
+    });
   }
 
   /** Polls for hooks that need to be scheduled and handles them in a loop */
@@ -101,15 +94,28 @@ class Scheduler extends events.EventEmitter {
   async handleHook(hook) {
     // TODO: (when we have hook logging) if this fails due to 401, we should
     // still consider it scheduled
-    await this.taskcreator.fire(hook, {}, {
-      taskId: hook.nextTaskId,
-      // use the next scheduled date as task.created, to ensure idempotency
-      created: hook.nextScheduledDate
-    });
-    await hook.modify((hook) => {
-      hook.nextTaskId        = taskcluster.slugid();
-      hook.nextScheduledDate = nextDate(hook.schedule);
-    });
+    try {
+      await this.taskcreator.fire(hook, {}, {
+        taskId: hook.nextTaskId,
+        // use the next scheduled date as task.created, to ensure idempotency
+        created: hook.nextScheduledDate
+      });
+    } catch(err) {
+      debug("Failed to handle hook: %j" +
+            ", with err: %s, as JSON: %j", hook, err, err, err.stack);
+      return;
+    }
+
+    try {
+      await hook.modify((hook) => {
+        hook.nextTaskId        = taskcluster.slugid();
+        hook.nextScheduledDate = nextDate(hook.schedule);
+      });
+    } catch(err) {
+      debug("Failed to update hook (will re-fire): %j" +
+            ", with err: %s, as JSON: %j", hook, err, err, err.stack);
+      return;
+    }
   }
 }
 
