@@ -6,7 +6,12 @@ type: object
 properties:
   schedule: {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
   nextScheduledDate:
-    description: "The next time this hook's task is scheduled to be created"
+    description: |
+      The next time this hook's task is scheduled to be created. This property
+      is only present if there is a scheduled next time. Some hooks don't have
+      any schedules.
     type: string
     format: date-time
 additionalProperties: false
+required:
+  - schedule
