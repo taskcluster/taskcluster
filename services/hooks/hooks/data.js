@@ -28,7 +28,7 @@ var Hook = base.Entity.configure({
     triggerToken:       base.Entity.types.EncryptedText,
     // the taskId that will be used next time this hook is scheduled;
     // this allows scheduling to be idempotent
-    nextTaskId:         base.Entity.types.SlugId,
+    nextTaskId:         base.Entity.types.EncryptedText,
     // next date at which this task is scheduled to run
     nextScheduledDate:  base.Entity.types.Date,
   }

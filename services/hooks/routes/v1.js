@@ -139,10 +139,16 @@ api.declare({
   if (hook.schedule.length > 0) {
     return res.reply({
       schedule: hook.schedule,
-      nextScheduledDate: hook.nextScheduledDate.toJSON()
+      nextScheduledDate: hook.nextScheduledDate.toJSON(),
+      // Remark: nextTaskId cannot be exposed here, it's a secret.
+      // If someone could predict the taskId they could use it, breaking this
+      // service at best, at worst maybe exploit it to elevate from defineTask
+      // to createTask without scope to schedule a task.
     });
   }
-  return res.reply({});
+  return res.reply({
+    schedule: hook.schedule,
+  });
 });
 
 /** Create a hook **/
@@ -168,12 +174,7 @@ api.declare({
   var hookId    = req.params.hookId;
   var hookDef   = req.body;
 
-  hookDef = _.defaults({}, hookDef, {
-    hookGroupId,
-    hookId,
-    schedule: [],
-    expires: ''
-  });
+  hookDef = _.defaults({hookGroupId, hookId}, hookDef);
 
   if (!req.satisfies({hookGroupId, hookId})) {
     return;
@@ -192,10 +193,8 @@ api.declare({
     if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;
     }
-    let existingHook = await this.Hook.load({
-        hookGroupId: req.params.hookGroupId,
-        hookId:      req.params.hookId
-    }, true);
+    let existingHook = await this.Hook.load({hookGroupId, hookId}, true);
+
     if (!_.isEqual(hookDef, await existingHook.definition())) {
       return res.status(409).json({
         message: "hook `" + hookGroupId + "/" + hookId + "` already exists."
@@ -232,10 +231,7 @@ api.declare({
     return;
   }
 
-  var hook = await this.Hook.load({
-    hookGroupId: hookGroupId,
-    hookId:      hookId
-  }, true);
+  var hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
     return res.status(404).json({
@@ -280,10 +276,7 @@ api.declare({
   }
 
   // Remove the resource if it exists
-  let hook = await this.Hook.remove({
-    hookGroupId: hookGroupId,
-    hookId:      hookId
-  }, true);
+  await this.Hook.remove({hookGroupId, hookId}, true);
 
   return res.status(200).json({});
 });
@@ -347,10 +340,7 @@ api.declare({
     return;
   }
 
-  let hook = await this.Hook.load({
-    hookGroupId: req.params.hookGroupId,
-    hookId:      req.params.hookId
-  }, true);
+  let hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
     return res.status(404).json({
@@ -427,10 +417,7 @@ api.declare({
 
   var payload = req.body;
 
-  var hook = await this.Hook.load({
-    hookGroupId: req.params.hookGroupId,
-    hookId:      req.params.hookId
-  }, true);
+  var hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   // Return a 404 if the hook entity doesn't exist
   if (!hook) {
