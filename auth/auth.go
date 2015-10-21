@@ -599,12 +599,12 @@ type (
 	// List of clients
 	//
 	// See http://schemas.taskcluster.net/auth/v1/list-clients-response.json#
-	ListClientResponse array
+	ListClientResponse []GetClientResponse
 
 	// List of roles
 	//
 	// See http://schemas.taskcluster.net/auth/v1/list-roles-response.json#
-	ListRolesResponse array
+	ListRolesResponse []GetRoleResponse
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since

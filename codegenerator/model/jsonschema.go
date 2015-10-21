@@ -124,6 +124,10 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 			var newType string
 			newType, extraPackages, rawMessageTypes = jsonSubSchema.Items.TypeDefinition(false, extraPackages, rawMessageTypes)
 			typ = "[]" + newType
+		} else {
+			if refSubSchema := jsonSubSchema.Items.RefSubSchema; refSubSchema != nil {
+				typ = "[]" + refSubSchema.TypeName
+			}
 		}
 	case "object":
 		if s := jsonSubSchema.Properties; s != nil {
