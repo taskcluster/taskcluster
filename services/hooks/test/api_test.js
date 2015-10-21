@@ -29,9 +29,16 @@ suite('API', function() {
           (err) => { debug("Got expected authentication error: %s", err); });
     });
 
-    test("fails if resource already exists", async () => {
+    test("succeeds if a matching resource already exists", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
-      await helper.hooks.createHook('foo', 'bar', hookDef).then(
+      await helper.hooks.createHook('foo', 'bar', hookDef);
+    });
+
+    test("fails if different resource already exists", async () => {
+      await helper.hooks.createHook('foo', 'bar', hookDef);
+      let newHookDef = _.cloneDeep(hookDef);
+      newHookDef.expires = '11 days';
+      await helper.hooks.createHook('foo', 'bar', newHookDef).then(
           () => { throw new Error("Expected an error"); },
           (err) => { debug("Got expected error: %s", err); });
     });

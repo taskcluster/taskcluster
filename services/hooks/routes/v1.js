@@ -3,6 +3,7 @@ var debug       = require('debug')('hooks:routes:v1');
 var Promise     = require('promise');
 var taskcluster = require('taskcluster-client');
 var nextDate    = require('../hooks/nextdate');
+var _           = require('lodash');
 
 var api = new base.API({
   title:         "Hooks API Documentation",
@@ -167,40 +168,44 @@ api.declare({
   var hookId    = req.params.hookId;
   var hookDef   = req.body;
 
+  hookDef = _.defaults({}, hookDef, {
+    hookGroupId,
+    hookId,
+    schedule: [],
+    expires: ''
+  });
+
   if (!req.satisfies({hookGroupId, hookId})) {
     return;
   }
 
   // Try to create a Hook entity
   try {
-    var schedule = hookDef.schedule ? hookDef.schedule : [];
-    var hook = await this.Hook.create({
-      hookGroupId:        hookGroupId,
-      hookId:             hookId,
-      metadata:           hookDef.metadata,
-      task:               hookDef.task,
-      bindings:           [], // TODO
-      deadline:           hookDef.deadline,
-      expires:            hookDef.expires ? hookDef.expires : '',
-      schedule:           schedule,
-      accessToken:        taskcluster.slugid(),
-      nextTaskId:         taskcluster.slugid(),
-      nextScheduledDate:  nextDate(schedule)
-    });
+    var hook = await this.Hook.create(
+      _.defaults({}, hookDef, {
+        bindings:           [], // TODO
+        accessToken:        taskcluster.slugid(),
+        nextTaskId:         taskcluster.slugid(),
+        nextScheduledDate:  nextDate(hookDef.schedule)
+      }));
   }
   catch (err) {
     if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;
     }
-    return res.status(409).json({
-      message: "hookGroupId: " + hookGroupId + " hookId: " + hookId +
-        " already used by another task"
-    });
+    let existingHook = await this.Hook.load({
+        hookGroupId: req.params.hookGroupId,
+        hookId:      req.params.hookId
+    }, true);
+    if (!_.isEqual(hookDef, await existingHook.definition())) {
+      return res.status(409).json({
+        message: "hook `" + hookGroupId + "/" + hookId + "` already exists."
+      });
+    }
   }
 
   // Reply with the hook definition
-  let definition = await hook.definition();
-  return res.reply(definition);
+  return res.reply(hookDef);
 });
 
 
