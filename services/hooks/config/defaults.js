@@ -1,12 +1,14 @@
 module.exports = {
   // Taskcluster Hooks configuration
-  hooks:
-  {
+  hooks: {
     // Publish references and schemas
     publishMetaData: 'false',
 
     // Prefix for exchanges declared
     exchangePrefix: 'v1/',
+
+    // Azure account to use for hooks
+    azureAccount: undefined,
 
     // Azure table name for hooks
     hookTableName:  'Hooks',
@@ -14,11 +16,15 @@ module.exports = {
     // Azure account
     azureAccount:   undefined,
 
-    schedule:
-    {
+    // Key for signing in base.Entity (random string required)
+    tableSigningKey:  undefined,
+    // Key for data encryption in base.Entity (32 random bytes as base64)
+    tableCryptoKey    undefined,
+
+    schedule: {
       // delay between poll operations (ms)
       pollingDelay: 60000
-    }
+    },
   },
 
   // Server configuration
