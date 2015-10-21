@@ -2,7 +2,7 @@ module.exports = {
   hooks:
   {
     publishMetaData:  'false',
-    hookTableName:    'TestHooks2',
+    hookTableName:    'TestHooks3',
     schedule:
     {
       pollingDelay: 1

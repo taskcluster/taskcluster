@@ -184,7 +184,7 @@ api.declare({
     var hook = await this.Hook.create(
       _.defaults({}, hookDef, {
         bindings:           [], // TODO
-        accessToken:        taskcluster.slugid(),
+        triggerToken:       taskcluster.slugid(),
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  nextDate(hookDef.schedule)
       }));
@@ -325,7 +325,7 @@ api.declare({
   }
 
   return res.reply({
-    token: hook.accessToken
+    token: hook.triggerToken
   });
 });
 
@@ -363,11 +363,11 @@ api.declare({
   }
 
   await hook.modify((hook) => {
-    hook.accessToken = taskcluster.slugid();
+    hook.triggerToken = taskcluster.slugid();
   });
 
   return res.reply({
-    token: hook.accessToken
+    token: hook.triggerToken
   });
 });
 
@@ -398,7 +398,7 @@ api.declare({
   }
 
   // Return 401 if the token doesn't exist or doesn't match
-  if (req.params.token !== hook.accessToken) {
+  if (req.params.token !== hook.triggerToken) {
     return res.status(401).json({
       message: "Invalid token"
     });
