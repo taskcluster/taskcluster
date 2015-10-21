@@ -8,7 +8,50 @@
 // This package was generated from the schema defined at
 // http://references.taskcluster.net/auth/v1/api.json
 
-// Authentication related API end-points for taskcluster.
+// Authentication related API end-points for TaskCluster and related
+// services. These API end-points are of interest if you wish to:
+//   * Authenticate request signed with TaskCluster credentials,
+//   * Manage clients and roles,
+//   * Inspect or audit clients and roles,
+//   * Gain access to various services guarded by this API.
+//
+// ### Clients
+// The authentication service manages _clients_, at a high-level each client
+// consists of a `clientId`, an `accessToken`, expiration and description.
+// The `clientId` and `accessToken` can be used for authentication when
+// calling TaskCluster APIs.
+//
+// Each client is assigned a single scope on the form:
+// `assume:client-id:<clientId>`, this scope doesn't really do much on its
+// own. But when you dive into the roles section you'll see that you can
+// create a role: `client-id:<clientId>` that assigns scopes to the client.
+// This way it's easy to audit all scope assignments, by only listing roles.
+//
+// ### Roles
+// A _role_ consists of a `roleId`, a set of scopes and a description.
+// Each role constitutes a simple _expansion rule_ that says if you have
+// the scope: `assume:<roleId>` you get the set of scopes the role has.
+// Think of the `assume:<roleId>` as a scope that allows a client to assume
+// a role.
+//
+// As in scopes the `*` kleene star also have special meaning if it is
+// located at the end of a `roleId`. If you have a role with the following
+// `roleId`: `my-prefix*`, then any client which has a scope staring with
+// `assume:my-prefix` will be allowed to assume the role.
+//
+// As previously mentioned each client gets the scope:
+// `assume:client-id:<clientId>`, it trivially follows that you can create a
+// role with the `roleId`: `client-id:<clientId>` to assign additional
+// scopes to a client. You can also create a role `client-id:user-*`
+// if you wish to assign a set of scopes to all clients whose `clientId`
+// starts with `user-`.
+//
+// ### Guarded Services
+// The authentication service also has API end-points for delegating access
+// to some guarded service such as AWS S3, or Azure Table Storage.
+// Generally, we add API end-points to this server when we wish to use
+// TaskCluster credentials to grant access to a third-party service used
+// by many TaskCluster components.
 //
 // See: http://docs.taskcluster.net/auth/api-docs
 //
@@ -20,7 +63,7 @@
 //
 // and then call one or more of auth's methods, e.g.:
 //
-//  data, callSummary := Auth.Scopes(.....)
+//  data, callSummary := Auth.ListClients(.....)
 // handling any errors...
 //  if callSummary.Error != nil {
 //  	// handle error...
@@ -186,7 +229,7 @@ type CallSummary struct {
 //  Auth := auth.New("123", "456")                       // set clientId and accessToken
 //  Auth.Authenticate = false                            // disable authentication (true by default)
 //  Auth.BaseURL = "http://localhost:1234/api/Auth/v1"   // alternative API endpoint (production by default)
-//  data, callSummary := Auth.Scopes(.....)              // for example, call the Scopes(.....) API endpoint (described further down)...
+//  data, callSummary := Auth.ListClients(.....)         // for example, call the ListClients(.....) API endpoint (described further down)...
 //  if callSummary.Error != nil {
 //  	// handle errors...
 //  }
@@ -199,101 +242,113 @@ func New(clientId string, accessToken string) *Auth {
 	}
 }
 
-// Returns the scopes the client is authorized to access and the date-time
-// when the client's authorization is set to expire.
+// Get a list of all clients.
 //
-// This API end-point allows you inspect clients without getting access to
-// credentials, as provided by the `getCredentials` request below.
-//
-// See http://docs.taskcluster.net/auth/api-docs/#scopes
-func (a *Auth) Scopes(clientId string) (*GetClientScopesResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/client/"+clientId+"/scopes", new(GetClientScopesResponse))
-	return responseObject.(*GetClientScopesResponse), callSummary
+// See http://docs.taskcluster.net/auth/api-docs/#listClients
+func (a *Auth) ListClients() (*ListClientResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/clients/", new(ListClientResponse))
+	return responseObject.(*ListClientResponse), callSummary
 }
 
-// Returns the client's `accessToken` as needed for verifying signatures.
-// This API end-point also returns the list of scopes the client is
-// authorized for and the date-time where the client authorization expires
-//
-// Remark, **if you don't need** the `accessToken` but only want to see what
-// scopes a client is authorized for, you should use the `getScopes`
-// function described above.
-//
-// See http://docs.taskcluster.net/auth/api-docs/#getCredentials
-func (a *Auth) GetCredentials(clientId string) (*GetClientCredentialsResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/client/"+clientId+"/credentials", new(GetClientCredentialsResponse))
-	return responseObject.(*GetClientCredentialsResponse), callSummary
-}
-
-// Returns all information about a given client. This end-point is mostly for
-// building tools to administrate clients. Do not use if you only want to
-// authenticate a request; see `getCredentials` for this purpose.
+// Get information about a single client.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#client
 func (a *Auth) Client(clientId string) (*GetClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/client/"+clientId+"", new(GetClientResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/clients/"+clientId+"", new(GetClientResponse))
 	return responseObject.(*GetClientResponse), callSummary
 }
 
-// Create a client with given `clientId`, `name`, `expires`, `scopes` and
-// `description`. The `accessToken` will always be generated server-side,
-// and will be returned from this request.
+// Create a new client and get the `accessToken` for this client.
+// You should store the `accessToken` from this API call as there is no
+// other way to retrieve it.
 //
-// **Required scopes**: in addition the scopes listed above, the
-// `scopes` property must be satisfied by the caller's scopes.
+// If you loose the `accessToken` you can call `resetAccessToken` to reset
+// it, and a new `accessToken` will be returned, but you cannot retrieve the
+// current `accessToken`.
+//
+// If a client with the same `clientId` already exists this operation will
+// fail. Use `updateClient` if you wish to update an existing client.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#createClient
-func (a *Auth) CreateClient(clientId string, payload *GetClientCredentialsResponse1) (*GetClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/client/"+clientId+"", new(GetClientResponse))
+func (a *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "PUT", "/clients/"+clientId+"", new(CreateClientResponse))
+	return responseObject.(*CreateClientResponse), callSummary
+}
+
+// Reset a clients `accessToken`, this will revoke the existing
+// `accessToken`, generate a new `accessToken` and return it from this
+// call.
+//
+// There is no way to retrieve an existing `accessToken`, so if you loose it
+// you must reset the accessToken to acquire it again.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#resetAccessToken
+func (a *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "POST", "/clients/"+clientId+"/reset", new(CreateClientResponse))
+	return responseObject.(*CreateClientResponse), callSummary
+}
+
+// Update an exisiting client. This is really only useful for changing the
+// description and expiration, as you won't be allowed to the `clientId`
+// or `accessToken`.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#updateClient
+func (a *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "POST", "/clients/"+clientId+"", new(GetClientResponse))
 	return responseObject.(*GetClientResponse), callSummary
 }
 
-// Modify client `name`, `expires`, `scopes` and
-// `description`.
+// Delete a client, please note that any roles related to this client must
+// be deleted independently.
 //
-// **Required scopes**: in addition the scopes listed
-// above, the `scopes` property must be satisfied by the caller's
-// scopes.  The client's existing scopes are not considered.
-//
-// See http://docs.taskcluster.net/auth/api-docs/#modifyClient
-func (a *Auth) ModifyClient(clientId string, payload *GetClientCredentialsResponse1) (*GetClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/client/"+clientId+"/modify", new(GetClientResponse))
-	return responseObject.(*GetClientResponse), callSummary
-}
-
-// Delete a client with given `clientId`.
-//
-// See http://docs.taskcluster.net/auth/api-docs/#removeClient
-func (a *Auth) RemoveClient(clientId string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "DELETE", "/client/"+clientId+"", nil)
+// See http://docs.taskcluster.net/auth/api-docs/#deleteClient
+func (a *Auth) DeleteClient(clientId string) *CallSummary {
+	_, callSummary := a.apiCall(nil, "DELETE", "/clients/"+clientId+"", nil)
 	return callSummary
 }
 
-// Reset credentials for a client. This will generate a new `accessToken`.
-// As always, the `accessToken` will be generated server-side and returned.
+// Get a list of all roles, each role object also includes the list of
+// scopes it expands to.
 //
-// See http://docs.taskcluster.net/auth/api-docs/#resetCredentials
-func (a *Auth) ResetCredentials(clientId string) (*GetClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/client/"+clientId+"/reset-credentials", new(GetClientResponse))
-	return responseObject.(*GetClientResponse), callSummary
+// See http://docs.taskcluster.net/auth/api-docs/#listRoles
+func (a *Auth) ListRoles() (*ListRolesResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/roles/", new(ListRolesResponse))
+	return responseObject.(*ListRolesResponse), callSummary
 }
 
-// Return a list of all clients, not including their access tokens.
+// Get information about a single role, including the set of scopes that the
+// role expands to.
 //
-// See http://docs.taskcluster.net/auth/api-docs/#listClients
-func (a *Auth) ListClients() (*ListClientsResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/list-clients", new(ListClientsResponse))
-	return responseObject.(*ListClientsResponse), callSummary
+// See http://docs.taskcluster.net/auth/api-docs/#role
+func (a *Auth) Role(roleId string) (*GetRoleResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/roles/"+roleId+"", new(GetRoleResponse))
+	return responseObject.(*GetRoleResponse), callSummary
 }
 
-// Get a shared access signature (SAS) string for use with a specific Azure
-// Table Storage table.  Note, this will create the table, if it doesn't
-// already exist.
+// Create a new role. If there already exists a role with the same `roleId`
+// this operation will fail. Use `updateRole` to modify an existing role
 //
-// See http://docs.taskcluster.net/auth/api-docs/#azureTableSAS
-func (a *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSignatureResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/azure/"+account+"/table/"+table+"/read-write", new(AzureSharedAccessSignatureResponse))
-	return responseObject.(*AzureSharedAccessSignatureResponse), callSummary
+// See http://docs.taskcluster.net/auth/api-docs/#createRole
+func (a *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "PUT", "/roles/"+roleId+"", new(GetRoleResponse))
+	return responseObject.(*GetRoleResponse), callSummary
+}
+
+// Update existing role.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#updateRole
+func (a *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(payload, "POST", "/roles/"+roleId+"", new(GetRoleResponse))
+	return responseObject.(*GetRoleResponse), callSummary
+}
+
+// Delete a role. This operation will succeed regardless of whether or not
+// the role exists.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#deleteRole
+func (a *Auth) DeleteRole(roleId string) *CallSummary {
+	_, callSummary := a.apiCall(nil, "DELETE", "/roles/"+roleId+"", nil)
+	return callSummary
 }
 
 // Get temporary AWS credentials for `read-write` or `read-only` access to
@@ -322,22 +377,14 @@ func (a *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AW
 	return responseObject.(*AWSS3CredentialsResponse), callSummary
 }
 
-// Export all clients except the root client, as a JSON list.
-// This list can be imported later using `importClients`.
+// Get a shared access signature (SAS) string for use with a specific Azure
+// Table Storage table.  Note, this will create the table, if it doesn't
+// already exist.
 //
-// See http://docs.taskcluster.net/auth/api-docs/#exportClients
-func (a *Auth) ExportClients() (*ExportedClients, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/export-clients", new(ExportedClients))
-	return responseObject.(*ExportedClients), callSummary
-}
-
-// Import client from JSON list, overwriting any clients that already
-// exists. Returns a list of all clients imported.
-//
-// See http://docs.taskcluster.net/auth/api-docs/#importClients
-func (a *Auth) ImportClients(payload *ExportedClients) (*ExportedClients, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/import-clients", new(ExportedClients))
-	return responseObject.(*ExportedClients), callSummary
+// See http://docs.taskcluster.net/auth/api-docs/#azureTableSAS
+func (a *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSignatureResponse, *CallSummary) {
+	responseObject, callSummary := a.apiCall(nil, "GET", "/azure/"+account+"/table/"+table+"/read-write", new(AzureSharedAccessSignatureResponse))
+	return responseObject.(*AzureSharedAccessSignatureResponse), callSummary
 }
 
 // Validate the request signature given on input and return list of scopes
@@ -351,6 +398,15 @@ func (a *Auth) ImportClients(payload *ExportedClients) (*ExportedClients, *CallS
 func (a *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest) (*HawkSignatureAuthenticationResponse, *CallSummary) {
 	responseObject, callSummary := a.apiCall(payload, "POST", "/authenticate-hawk", new(HawkSignatureAuthenticationResponse))
 	return responseObject.(*HawkSignatureAuthenticationResponse), callSummary
+}
+
+// Import client from JSON list, overwriting any clients that already
+// exists. Returns a list of all clients imported.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#importClients
+func (a *Auth) ImportClients(payload *ExportedClients) *CallSummary {
+	_, callSummary := a.apiCall(payload, "POST", "/import-clients", nil)
+	return callSummary
 }
 
 // Documented later...
@@ -423,46 +479,53 @@ type (
 		Sas string `json:"sas"`
 	}
 
-	// Credentials, scopes and expiration date for a client
-	//
-	// See http://schemas.taskcluster.net/auth/v1/client-credentials-response.json#
-	GetClientCredentialsResponse struct {
-		// AccessToken used for authenticating requests
-		AccessToken string `json:"accessToken"`
-		// ClientId of the client scopes is requested about
-		ClientId string `json:"clientId"`
-		// Date and time where the clients credentials are set to expire
-		Expires time.Time `json:"expires"`
-		// List of scopes the client is authorized to access
-		Scopes []string `json:"scopes"`
-	}
-
-	// Scopes and expiration date for a client
-	//
-	// See http://schemas.taskcluster.net/auth/v1/client-scopes-response.json#
-	GetClientScopesResponse struct {
-		// ClientId of the client scopes is requested about
-		ClientId string `json:"clientId"`
-		// Date and time where the clients credentials are set to expire
-		Expires time.Time `json:"expires"`
-		// List of scopes the client is authorized to access
-		Scopes []string `json:"scopes"`
-	}
-
-	// Credentials, scopes and expiration date for a client
+	// Properties to create a client.
 	//
 	// See http://schemas.taskcluster.net/auth/v1/create-client-request.json#
-	GetClientCredentialsResponse1 struct {
+	CreateClientRequest struct {
 		// Description of what these credentials are used for in markdown.
-		// Please write a few details here, including who is the owner, point of
-		// contact. Why it is scoped as is, think of this as documentation.
+		// Should include who is the owner, point of contact.
 		Description string `json:"description"`
-		// Date and time where the clients credentials are set to expire
+		// Date and time where the clients access is set to expire
 		Expires time.Time `json:"expires"`
-		// Human readable name of this set of credentials, typical
-		// component/server-name or IRC nickname of the user.
-		Name string `json:"name"`
-		// List of scopes the client is authorized to access
+	}
+
+	// All details about a client including the `accessToken`
+	//
+	// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#
+	CreateClientResponse struct {
+		// AccessToken used for authenticating requests, you should store this
+		// you won't be able to retrive it again!
+		AccessToken string `json:"accessToken"`
+		// ClientId of the client
+		ClientId string `json:"clientId"`
+		// Date and time when this client was created
+		Created time.Time `json:"created"`
+		// Description of what these credentials are used for in markdown.
+		// Should include who is the owner, point of contact.
+		Description string `json:"description"`
+		// List of scopes granted to this client by matching roles.
+		ExpandedScopes []string `json:"expandedScopes"`
+		// Date and time where the clients access is set to expire
+		Expires time.Time `json:"expires"`
+		// Date of last time this client was used. Will only be updated every 6 hours
+		// or so this may be off by up-to 6 hours. But it still gives a solid hint
+		// as to whether or not this client is in use.
+		LastDateUsed time.Time `json:"lastDateUsed"`
+		// Date and time of last modification
+		LastModified time.Time `json:"lastModified"`
+		// Date and time of when the `accessToken` was reset last time.
+		LastRotated time.Time `json:"lastRotated"`
+	}
+
+	// Data to create or update a role.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/create-role-request.json#
+	CreateRoleRequest struct {
+		// Description of what this role is used for in markdown.
+		// Should include who is the owner, point of contact.
+		Description string `json:"description"`
+		// List of scopes the role grants access to
 		Scopes []string `json:"scopes"`
 	}
 
@@ -487,45 +550,61 @@ type (
 		Scopes []string `json:"scopes"`
 	}
 
-	// Get all detaisl about a client, useful for tools modifying a client
+	// Get all details about a client, useful for tools modifying a client
 	//
 	// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#
 	GetClientResponse struct {
-		// AccessToken used for authenticating requests
-		AccessToken string `json:"accessToken"`
 		// ClientId of the client scopes is requested about
 		ClientId string `json:"clientId"`
+		// Date and time when this client was created
+		Created time.Time `json:"created"`
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
-		// Why it is scoped as is, think of this as documentation.
 		Description string `json:"description"`
-		// Date and time where the clients credentials are set to expire
+		// List of scopes granted to this client by matching roles.
+		ExpandedScopes []string `json:"expandedScopes"`
+		// Date and time where the clients access is set to expire
 		Expires time.Time `json:"expires"`
-		// Human readable name of this set of credentials, typical
-		// component/server-name or IRC nickname of the user.
-		Name string `json:"name"`
-		// List of scopes the client is authorized to access
+		// Date of last time this client was used. Will only be updated every 6 hours
+		// or so this may be off by up-to 6 hours. But it still gives a solid hint
+		// as to whether or not this client is in use.
+		LastDateUsed time.Time `json:"lastDateUsed"`
+		// Date and time of last modification
+		LastModified time.Time `json:"lastModified"`
+		// Date and time of when the `accessToken` was reset last time.
+		LastRotated time.Time `json:"lastRotated"`
+	}
+
+	// Get all details about a role
+	//
+	// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#
+	GetRoleResponse struct {
+		// Date and time when this role was created
+		Created time.Time `json:"created"`
+		// Description of what this role is used for in markdown.
+		// Should include who is the owner, point of contact.
+		Description string `json:"description"`
+		// List of scopes granted anyone who assumes this role, including anything
+		// granted by roles that can be assumed when you have this role.
+		// Hence, this includes any scopes in-directly granted as well.
+		ExpandedScopes []string `json:"expandedScopes"`
+		// Date and time of last modification
+		LastModified time.Time `json:"lastModified"`
+		// roleId of the role requested
+		RoleId string `json:"roleId"`
+		// List of scopes the role grants access to
 		Scopes []string `json:"scopes"`
 	}
 
-	// Get a list of all clients, including basic information, but not credentials.
+	// List of clients
 	//
 	// See http://schemas.taskcluster.net/auth/v1/list-clients-response.json#
-	ListClientsResponse []struct {
-		// ClientId of the client scopes is requested about
-		ClientId string `json:"clientId"`
-		// Description of what these credentials are used for in markdown.
-		// Should include who is the owner, point of contact.
-		// Why it is scoped as is, think of this as documentation.
-		Description string `json:"description"`
-		// Date and time where the clients credentials are set to expire
-		Expires time.Time `json:"expires"`
-		// Human readable name of this set of credentials, typical
-		// component/server-name or IRC nickname of the user.
-		Name string `json:"name"`
-		// List of scopes the client is authorized to access
-		Scopes []string `json:"scopes"`
-	}
+	ListClientResponse array
+
+	// List of roles
+	//
+	// See http://schemas.taskcluster.net/auth/v1/list-roles-response.json#
+	ListRolesResponse array
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since

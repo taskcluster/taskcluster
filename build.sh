@@ -12,7 +12,7 @@ done
 
 cd "$(dirname "${0}")"
 # uncomment if build.sh fails to build due to invalid generated code...
-# for name in auth awsprovisioner{,events} index queue{,events} scheduler{,events}
+# for name in auth awsprovisioner{,events} index queue{,events} scheduler{,events} purgecache{,events} secrets
 # do
 #   git checkout -f "${name}/${name}.go"
 # done

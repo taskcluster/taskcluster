@@ -39,5 +39,9 @@
         "url": "http://references.taskcluster.net/purge-cache/v1/exchanges.json",
         "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json",
         "docroot": "http://docs.taskcluster.net/services/purge-cache"
+    }, {
+        "url": "http://references.taskcluster.net/secrets/v1/api.json",
+        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
+        "docroot": "http://docs.taskcluster.net/services/secrets"
     }
 ]
