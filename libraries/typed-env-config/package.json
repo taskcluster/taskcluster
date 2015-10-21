@@ -1,5 +1,5 @@
 {
-  "name": "taskcluster-lib-config",
+  "name": "typed-env-config",
   "version": "0.10.0",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Configuration loader that injects env variables into YAML",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/taskcluster/taskcluster-lib-config.git"
+    "url": "https://github.com/taskcluster/typed-env-config.git"
   },
   "dependencies": {
     "babel-runtime": "^5.8.25",

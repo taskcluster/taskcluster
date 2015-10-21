@@ -1,7 +1,7 @@
 let _ = require('lodash');
 let yaml = require('js-yaml');
 let fs = require('fs');
-let debug = require('debug')('taskcluster-lib-config');
+let debug = require('debug')('typed-env-config');
 let assert = require('assert');
 
 /**
