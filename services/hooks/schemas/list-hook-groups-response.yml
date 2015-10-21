@@ -1,14 +1,14 @@
 $schema:        http://json-schema.org/draft-04/schema#
 title:          "Hook groups"
 description:    |
-    List of hookGroupIds.
+  List of `hookGroupIds`.
 type:           object
 properties:
-    groups:
-        title: "Groups"
-        type: array
-        items:
-            type: string
+  groups:
+    title: "Groups"
+    type: array
+    items:
+      type: string
 additionalProperties: false
 required:
-    - groups
+  - groups
