@@ -1,5 +1,4 @@
 var assert      = require('assert');
-var slugid            = require('slugid');
 var taskcluster = require('taskcluster-client');
 var debug       = require('debug')('hooks:taskcreator');
 var _           = require('lodash');
@@ -39,7 +38,7 @@ class TaskCreator {
   */
   async fire(hook, payload, options) {
     options = _.defaults({}, options, {
-      taskId: slugid.v4(),
+      taskId: taskcluster.slugid(),
       created: new Date(),
     });
 
@@ -75,14 +74,14 @@ class MockTaskCreator extends TaskCreator {
       hookId: hook.hookId,
       payload,
       options});
-    var taskId = options.taskId || slugid.v4();
+    var taskId = options.taskId || taskcluster.slugid();
     return {
       "status": {
         "taskId": taskId,
         "provisionerId": hook.task.provisionerId,
         "workerType": hook.task.workerType,
         "schedulerId": "-",
-        "taskGroupId": slugid.v4(),
+        "taskGroupId": taskcluster.slugid(),
         "deadline": "2015-10-18T22:32:59.706Z",
         "expires": "2016-10-18T22:32:59.706Z",
         "retriesLeft": 5,

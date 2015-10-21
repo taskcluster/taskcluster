@@ -3,7 +3,6 @@ suite('TaskCreator', function() {
   var taskcreator       = require('../hooks/taskcreator');
   var debug             = require('debug')('test:test_schedule_hooks');
   var helper            = require('./helper');
-  var slugid            = require('slugid');
   var data              = require('../hooks/data');
   var taskcluster       = require('taskcluster-client');
 
@@ -65,15 +64,15 @@ suite('TaskCreator', function() {
       deadline:           '1 day',
       expires:            '1 day',
       schedule:           {format: {type: "none"}},
-      accessToken:        slugid.v4(),
-      nextTaskId:         slugid.v4(),
+      accessToken:        taskcluster.slugid(),
+      nextTaskId:         taskcluster.slugid(),
       nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
     });
   };
 
   test("firing a real task succeeds", async function() {
     let hook = await createHook(['jungle:tc-hooks-tests:scope/required/for/task/1']);
-    let taskId = slugid.v4();
+    let taskId = taskcluster.slugid();
     let resp = await creator.fire(hook, {payload: true}, {taskId});
     assume(resp.status.taskId).equals(taskId);
     assume(resp.status.workerType).equals(hook.task.workerType);

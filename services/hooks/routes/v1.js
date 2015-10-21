@@ -1,7 +1,6 @@
 var base        = require('taskcluster-base');
 var debug       = require('debug')('hooks:routes:v1');
 var Promise     = require('promise');
-var slugid      = require('slugid');
 var taskcluster = require('taskcluster-client');
 var nextDate    = require('../hooks/nextdate');
 
@@ -185,8 +184,8 @@ api.declare({
       deadline:           hookDef.deadline,
       expires:            hookDef.expires ? hookDef.expires : '',
       schedule:           schedule,
-      accessToken:        slugid.v4(),
-      nextTaskId:         slugid.v4(),
+      accessToken:        taskcluster.slugid(),
+      nextTaskId:         taskcluster.slugid(),
       nextScheduledDate:  nextDate(schedule)
     });
   }
@@ -352,7 +351,7 @@ api.declare({
   }
 
   await hook.modify((hook) => {
-    hook.accessToken = slugid.v4();
+    hook.accessToken = taskcluster.slugid();
   });
 
   return res.reply({

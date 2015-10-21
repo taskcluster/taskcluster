@@ -3,7 +3,7 @@ var base        = require('taskcluster-base');
 var data        = require('./data');
 var debug       = require('debug')('hooks:scheduler');
 var Promise     = require('promise');
-var slugid      = require('slugid');
+var taskcluster = require('taskcluster-client');
 var nextDate    = require('./nextdate');
 var taskcreator = require('./taskcreator');
 
@@ -105,7 +105,7 @@ class Scheduler {
       created: hook.nextScheduledDate
     });
     await hook.modify((hook) => {
-      hook.nextTaskId        = slugid.v4();
+      hook.nextTaskId        = taskcluster.slugid();
       hook.nextScheduledDate = nextDate(hook.schedule);
     });
   }
