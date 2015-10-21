@@ -73,8 +73,12 @@ helper.setupApi = function() {
 
     // Create Hooks table
     helper.Hook = data.Hook.setup({
+      account:      cfg.get('hooks:azureAccount'),
       table:        cfg.get('hooks:hookTableName'),
-      credentials:  cfg.get('azure'),
+      credentials:  cfg.get('taskcluster:credentials'),
+      authBaseUrl:  cfg.get('taskcluster:authBaseUrl'),
+      signingKey:   cfg.get('hooks:tableSigningKey'),
+      cryptoKey:    cfg.get('hooks:tableCryptoKey'),
       process:      'testing'
     });
 
