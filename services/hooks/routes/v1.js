@@ -188,8 +188,7 @@ api.declare({
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  nextDate(hookDef.schedule)
       }));
-  }
-  catch (err) {
+  } catch (err) {
     if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;
     }
@@ -211,7 +210,7 @@ api.declare({
 
 /** Update hook definition**/
 api.declare({
-  method:       'patch',
+  method:       'post',
   route:        '/hooks/:hookGroupId/:hookId',
   name:         'updateHook',
   deferAuth:    true,
@@ -304,7 +303,7 @@ api.declare({
   title:        'Get a trigger token',
   description: [
     "Retrieve a unique secret token for triggering the specified hook. This",
-    "token can be deactivated with resetTriggerToken."
+    "token can be deactivated with `resetTriggerToken`."
   ].join('\n')
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
@@ -313,10 +312,7 @@ api.declare({
     return;
   }
 
-  let hook = await this.Hook.load({
-    hookGroupId: req.params.hookGroupId,
-    hookId:      req.params.hookId
-  }, true);
+  let hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
     return res.status(404).json({
