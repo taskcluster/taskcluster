@@ -16,7 +16,7 @@ var Hook = base.Entity.configure({
     metadata:           base.Entity.types.JSON,
     // task template
     task:               base.Entity.types.JSON,
-    // pulse bindings
+    // pulse bindings (TODO; empty for now)
     bindings:           base.Entity.types.JSON,
     // timings for the task (in fromNow format, e.g., "1 day")
     deadline:           base.Entity.types.String,
@@ -40,7 +40,6 @@ Hook.prototype.definition = function() {
     hookGroupId:  this.hookGroupId,
     metadata:     _.cloneDeep(this.metadata),
     task:         _.cloneDeep(this.task),
-    bindings:     _.cloneDeep(this.bindings),
     schedule:     _.cloneDeep(this.schedule),
     deadline:     this.deadline,
     expires:      this.expires

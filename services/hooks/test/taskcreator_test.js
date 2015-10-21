@@ -60,7 +60,7 @@ suite('TaskCreator', function() {
           purpose:        'taskcluster-testing'
         },
       },
-      bindings:           {},
+      bindings:           [],
       deadline:           '1 day',
       expires:            '1 day',
       schedule:           {format: {type: "none"}},
