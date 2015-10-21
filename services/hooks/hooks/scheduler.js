@@ -1,4 +1,5 @@
 var assert      = require('assert');
+var events      = require('events');
 var base        = require('taskcluster-base');
 var data        = require('./data');
 var debug       = require('debug')('hooks:scheduler');
@@ -13,7 +14,7 @@ var taskcreator = require('./taskcreator');
  * a defined schedule will be run if it's schedule is valid and the next
  * scheduled date is in the past.
  */
-class Scheduler {
+class Scheduler extends events.EventEmitter {
   /** Create a Scheduler instance.
    *
    * options:
@@ -24,6 +25,7 @@ class Scheduler {
    * }
    * */
   constructor(options) {
+    super();
     assert(options, "options must be given");
     assert(options.Hook.prototype instanceof data.Hook,
         "Expected data.Hook instance");
@@ -53,7 +55,7 @@ class Scheduler {
     // Create a promise that we're done looping
     this.done = this.loopUntilStopped().catch((err) => {
       debug("Error: %s, as JSON: %j", err, err, err.stack);
-      throw err;
+      this.emit('error', err);
     }).then(() => {
       this.done = null;
     });
