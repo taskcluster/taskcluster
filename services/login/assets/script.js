@@ -43,7 +43,40 @@ if (typeof(query.target) === 'string' &&
   window.location = '/';
 }
 
+// Check if we can naively redirect to a host
+function isAllowedHost(host) {
+  if (window.allowedHosts.indexOf(host) !== -1) {
+    return true;
+  }
+  try {
+    var hosts = JSON.parse(localStorage.getItem('allowed-hosts') || '[]');
+    return hosts.indexOf(host) !== -1;
+  } catch(err) {
+    console.log("Ignore JSON.parse errors... (probably invalid value)");
+  }
+  return false;
+}
+
+// Store a host as have been approved, so we don't have to approve it again.
+function setAllowedHost(host) {
+  var hosts = [];
+  try {
+    hosts = JSON.parse(localStorage.getItem('allowed-hosts') || '[]');
+  } catch(err) {
+    console.log("Ignore JSON.parse errors... (probably invalid value)");
+  }
+  if (!(hosts instanceof Array)) {
+    hosts = [];
+  }
+  if (hosts.indexOf(host) !== -1) {
+    hosts.push(host);
+    localStorage.setItem('allowed-hosts', JSON.stringify(hosts));
+  }
+}
+
+
 function load(credentials) {
+  // Get query from localStorage
   var query = null;
   try {
     var value = localStorage.getItem('grant-request');
@@ -59,16 +92,73 @@ function load(credentials) {
     console.log("Ignoring JSON.parse errors... (probably invalid value)");
     return;
   }
+
+  // Render description and display it
   $('#grant-description').html(marked(query.description , {
     sanitize: true,
     gfm: true,
     tables: true,
     breaks: true
   }));
-  $('#grant-button').attr('href', query.target + '?' + credentials);
-  $('#grant-button').click(function() {
+
+  // Create url for redirecting to target
+  var redirectTarget = query.target + '?' + credentials;
+  // Use the grant-button as cheap url parser
+  $('#grant-button').attr('href', redirectTarget);
+  var hostname = $('#grant-button')[0].hostname;
+  // Do the actual redirect
+  var gotoRedirectTarget = function() {
+    // Remove the request from localStorage
     localStorage.removeItem('grant-request');
+    // Remember in localStorage that the host has been approved
+    setAllowedHost(hostname);
+    // redirect to target...
+    window.location = redirectTarget;
+  };
+
+  // Set hostname
+  $('.grant-hostname').text(hostname);
+
+  // Prepare dialog
+  $('#hostname-input').bind(
+    'propertychange change click keyup input paste', function() {
+      // update disabled state of button on any change...
+      if ($('#hostname-input').val().trim() === hostname) {
+        $('#confirm-grant-button').removeClass('disabled');
+      } else {
+        $('#confirm-grant-button').addClass('disabled');
+      }
   });
+  // If grant button is clicked check if we should redirect...
+  $('#confirm-grant-button').click(function() {
+    if ($('#hostname-input').val().trim() === hostname) {
+      gotoRedirectTarget();
+    }
+  });
+  // If someone hits enter we'll take that as clicking the button too...
+  $('#hostname-input').keyup(function(e) {
+    if (e.keyCode == 13) {
+      if ($('#hostname-input').val().trim() === hostname) {
+        gotoRedirectTarget();
+      }
+    }
+  });
+  // When someone hits the big grant button...
+  $('#grant-button').click(function(e) {
+    e.preventDefault();
+    // check if host is allowed... and proceed if it is...
+    //TODO: consider only allowing http for localhost.
+    if (!isAllowedHost(hostname)) {
+      // Reset and show dialog
+      $('#hostname-input').val('');
+      $('#approve-dialog').modal('show');
+      $('#hostname-input').focus();
+    } else {
+      // Redirect now...
+      gotoRedirectTarget();
+    }
+  });
+  // Set target url... and show the grant area...
   $('.grant-target').text(query.target);
   $('#grant-area').show();
 };

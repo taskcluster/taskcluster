@@ -147,7 +147,8 @@ let launch = async (profile) =>  {
     let credentials = user.createCredentials(cfg.app.temporaryCredentials);
     res.render('index', {
       user, credentials,
-      querystring
+      querystring,
+      allowedHosts: ['localhost', 'test']
     });
   });
 
