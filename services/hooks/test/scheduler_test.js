@@ -3,10 +3,10 @@ suite('Scheduler', function() {
   var assert            = require('assert');
   var assume            = require('assume');
   var Scheduler         = require('../hooks/scheduler');
-  var slugid            = require('slugid');
   var debug             = require('debug')('test:test_schedule_hooks');
   var helper            = require('./helper');
   var taskcreator       = require('../hooks/taskcreator');
+  var taskcluster       = require('taskcluster-client');
 
   this.slow(500);
 
@@ -66,24 +66,24 @@ suite('Scheduler', function() {
         deadline:           '1 day',
         expires:            '1 day',
         schedule:           ["0 0 0 * * *"],
-        accessToken:        slugid.v4(),
+        accessToken:        taskcluster.slugid(),
       };
 
       await scheduler.Hook.create(_.defaults({
         hookId:             'futureHook',
-        nextTaskId:         slugid.v4(),
+        nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  new Date(3000, 0, 0, 0, 0, 0, 0),
       }, hookParams));
 
       await scheduler.Hook.create(_.defaults({
         hookId:             'pastHook',
-        nextTaskId:         slugid.v4(),
+        nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
       }, hookParams));
 
       await scheduler.Hook.create(_.defaults({
         hookId:             'pastHookNotScheduled',
-        nextTaskId:         slugid.v4(),
+        nextTaskId:         taskcluster.slugid(),
         schedule:           [],
         nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
       }, hookParams));
@@ -122,8 +122,8 @@ suite('Scheduler', function() {
         deadline:           '1 day',
         expires:            '1 day',
         schedule:           ["0 0 0 * * *"],
-        accessToken:        slugid.v4(),
-        nextTaskId:         slugid.v4(),
+        accessToken:        taskcluster.slugid(),
+        nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  new Date(3000, 0, 0, 0, 0, 0, 0),
       });
     });
