@@ -143,7 +143,10 @@ suite('Scheduler', function() {
           hookGroupId: 'tests',
           hookId: 'test',
           payload: {},
-          options: {taskId: oldTaskId}
+          options: {
+            taskId: oldTaskId,
+            created: new Date(3000, 0, 0, 0, 0, 0, 0),
+          }
         }]);
       assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);
       assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
