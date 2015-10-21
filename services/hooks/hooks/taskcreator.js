@@ -22,9 +22,9 @@ class TaskCreator {
   taskForHook(hook) {
     let task = _.cloneDeep(hook.task);
     task.created = new Date().toJSON();
-    task.deadline = taskcluster.fromNow(hook.deadline).toJSON();
+    task.deadline = taskcluster.fromNowJSON(hook.deadline);
     if (hook.expires) {
-      task.expires = taskcluster.fromNow(hook.expires).toJSON();
+      task.expires = taskcluster.fromNowJSON(hook.expires);
     }
     return Promise.resolve(task);
   }
