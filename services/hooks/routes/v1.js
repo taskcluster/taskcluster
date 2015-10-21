@@ -401,7 +401,6 @@ api.declare({
   }
 
   // Return 401 if the token doesn't exist or doesn't match
-  console.log(req.params.token, hook.accessToken);
   if (req.params.token !== hook.accessToken) {
     return res.status(401).json({
       message: "Invalid token"
