@@ -173,20 +173,13 @@ api.declare({
 
   // Try to create a Hook entity
   try {
-    let bindings = hookDef.bindings ?
-      hookDef.bindings :
-      {
-        exchange:    '',
-        routingKey:  '#'
-      }
-
     var schedule = hookDef.schedule ? hookDef.schedule : [];
     var hook = await this.Hook.create({
       hookGroupId:        hookGroupId,
       hookId:             hookId,
       metadata:           hookDef.metadata,
       task:               hookDef.task,
-      bindings:           bindings,
+      bindings:           [], // TODO
       deadline:           hookDef.deadline,
       expires:            hookDef.expires ? hookDef.expires : '',
       schedule:           schedule,
@@ -247,19 +240,11 @@ api.declare({
     });
   }
 
-  let bindings = hookDef.bindings ?
-    hookDef.bindings :
-    {
-      exchange:    '',
-      routingKey:  '#'
-    };
-
   // Attempt to modify properties of the hook
   var schedule = hookDef.schedule ? hookDef.schedule : [];
   await hook.modify((hook) => {
     hook.metadata          = hookDef.metadata;
     hook.task              = hookDef.task;
-    hook.bindings          = bindings;
     hook.deadline          = hookDef.deadline;
     hook.expires           = hookDef.expires ? hookDef.expires : '';
     hook.schedule          = schedule;
