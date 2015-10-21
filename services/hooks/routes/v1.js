@@ -281,18 +281,10 @@ api.declare({
   }
 
   // Remove the resource if it exists
-  let hook = await this.Hook.load({
+  let hook = await this.Hook.remove({
     hookGroupId: hookGroupId,
     hookId:      hookId
   }, true);
-
-  if (!hook) {
-    return res.status(404).json({
-      message: "Resource does not exist."
-    });
-  }
-
-  await hook.remove();
 
   return res.status(200).json({});
 });
