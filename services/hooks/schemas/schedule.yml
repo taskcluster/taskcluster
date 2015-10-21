@@ -10,5 +10,8 @@ items:
   type: string
   description: |
       Cron-like specification for when tasks should be created.  The pattern is
-      parsed in a UTC context.  See https://www.npmjs.com/package/cron-parser.
+      parsed in a UTC context.
+      See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
       Note that tasks may not be created at exactly the time specified.
+uniqueItems: true
+default: []

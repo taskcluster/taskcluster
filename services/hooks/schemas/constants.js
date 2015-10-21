@@ -32,8 +32,14 @@ module.exports = {
     "description":  "Deadline of the task, `pending` and `running` runs are " +
                     "resolved as **failed** if not resolved by other means " +
                     "before the deadline. Note, deadline cannot be more than" +
-                    "5 days into the future",
+                    "5 days into the future.\n\n" +
+                    "Must be specified as `A years B months C days D hours E " +
+                    "minutes F seconds`, though you may leave out zeros. For " +
+                    "more details see: `taskcluster.fromNow` in " +
+                    "[taskcluster-client](https://github.com/taskcluster/" +
+                    "taskcluster-client)",
     "type":         "string",
+    "default":      "1 day",
   },
 
   // Expiration of task
@@ -41,8 +47,14 @@ module.exports = {
     "title":        "Expiration",
     "description":  "Task expiration, time at which task definition and " +
                     "status is deleted. Notice that all artifacts for the " +
-                    "must have an expiration that is no later than this.",
+                    "must have an expiration that is no later than this.\n\n" +
+                    "Must be specified as `A years B months C days D hours E " +
+                    "minutes F seconds`, though you may leave out zeros. For " +
+                    "more details see: `taskcluster.fromNow` in " +
+                    "[taskcluster-client](https://github.com/taskcluster/" +
+                    "taskcluster-client)",
     "type":         "string",
+    "default":      "3 months",
   },
 
   // Hook metadata
