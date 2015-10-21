@@ -107,9 +107,13 @@ class Scheduler extends events.EventEmitter {
     }
 
     try {
+      let oldTaskId = hook.nextTaskId;
       await hook.modify((hook) => {
-        hook.nextTaskId        = taskcluster.slugid();
-        hook.nextScheduledDate = nextDate(hook.schedule);
+        // only modify if another scheduler isn't racing with us
+        if (hook.nextTaskId === oldTaskId) {
+            hook.nextTaskId        = taskcluster.slugid();
+            hook.nextScheduledDate = nextDate(hook.schedule);
+        }
       });
     } catch(err) {
       debug("Failed to update hook (will re-fire): %j" +
