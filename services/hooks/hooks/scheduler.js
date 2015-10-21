@@ -99,7 +99,11 @@ class Scheduler {
   async handleHook(hook) {
     // TODO: (when we have hook logging) if this fails due to 401, we should
     // still consider it scheduled
-    await this.taskcreator.fire(hook, {}, {taskId: hook.nextTaskId});
+    await this.taskcreator.fire(hook, {}, {
+      taskId: hook.nextTaskId,
+      // use the next scheduled date as task.created, to ensure idempotency
+      created: hook.nextScheduledDate
+    });
     await hook.modify((hook) => {
       hook.nextTaskId        = slugid.v4();
       hook.nextScheduledDate = nextDate(hook.schedule);

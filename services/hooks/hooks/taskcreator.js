@@ -19,12 +19,14 @@ class TaskCreator {
     this.credentials = options.credentials;
   }
 
-  taskForHook(hook) {
+  taskForHook(hook, options) {
     let task = _.cloneDeep(hook.task);
-    task.created = new Date().toJSON();
-    task.deadline = taskcluster.fromNowJSON(hook.deadline);
+    let created = options.created || new Date();
+
+    task.created = created.toJSON();
+    task.deadline = taskcluster.fromNowJSON(hook.deadline, created);
     if (hook.expires) {
-      task.expires = taskcluster.fromNowJSON(hook.expires);
+      task.expires = taskcluster.fromNowJSON(hook.expires, created);
     }
     return Promise.resolve(task);
   }
@@ -32,11 +34,13 @@ class TaskCreator {
   /**
   * Fire the given hook, using the given payload (interpolating it into the task
   * definition).  If options.taskId is set, it will be used as the taskId;
-  * otherwise a new taskId will be created.
+  * otherwise a new taskId will be created.  If options.created is set, then
+  * it is used as the creation time for the task (to ensure idempotency).
   */
   async fire(hook, payload, options) {
     options = options || {};
     var taskId = options.taskId;
+    var created = options.created || new Date();
     if (!taskId) {
       taskId = slugid.v4();
     }
@@ -53,7 +57,7 @@ class TaskCreator {
 
     debug('firing hook %s/%s to create taskId: %s',
         hook.hookGroupId, hook.hookId, taskId);
-    return await queue.createTask(taskId, await this.taskForHook(hook));
+    return await queue.createTask(taskId, await this.taskForHook(hook, created));
   };
 }
 
