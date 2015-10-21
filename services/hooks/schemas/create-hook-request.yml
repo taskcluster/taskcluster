@@ -1,41 +1,10 @@
 $schema:                    http://json-schema.org/draft-04/schema#
-title:                      "Hook Definition"
+title:                      "Hook creation request"
 description: |
-  Definition of a hook that can be triggered and schedule
+  Definition of a hook that can create tasks at defined times.
 type:                       object
 properties:
-  metadata:
-    type:                   object
-    properties:
-      name:
-        title:              "Name"
-        description: |
-          Human readable name of the hook, used to briefly give an idea about
-          what the hook does.
-        type:               string
-        maxLength:          255
-      description:
-        title:              "Description"
-        description:    |
-          Human readable description of the hook
-        type:               string
-        maxLength:          32768
-      owner:
-        title:              "Owner"
-        description: |
-          E-mail of the persion who created this hook. This is the person who is
-          contacted in the event of an error in scheduling.
-        type:               string
-        maxLength:          255
-      emailOnError:
-        title:              "Email on error"
-        type:               boolean
-        default:            true
-    additionalProperties:   false
-    required:
-      - name
-      - description
-      - owner
+  metadata:               {$const: metadata}
   schedule:               {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
   expires:                {$const: expires}
   deadline:               {$const: deadline}

@@ -1,7 +1,7 @@
 $schema:        http://json-schema.org/draft-04/schema#
-title:          "hook definition"
+title:          "Hook groups"
 description:    |
-    representation of a hook to be scheduled
+    List of hookGroupIds.
 type:           object
 properties:
     groups:
