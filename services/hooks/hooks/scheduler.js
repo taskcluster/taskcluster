@@ -87,7 +87,7 @@ class Scheduler extends events.EventEmitter {
 
   /** Sleep for `delay` ms, returns a promise */
   sleep(delay) {
-    return new Promise((accept) => { setTimeout(accept, delay); });
+    return new Promise(accept => setTimeout(accept, delay));
   }
 
   /** Handle spawning a new task for a given hook that needs to be scheduled */
