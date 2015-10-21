@@ -28,7 +28,7 @@ class TaskCreator {
     if (hook.expires) {
       task.expires = taskcluster.fromNowJSON(hook.expires, created);
     }
-    return Promise.resolve(task);
+    return task;
   }
 
   /**
@@ -57,7 +57,7 @@ class TaskCreator {
 
     debug('firing hook %s/%s to create taskId: %s',
         hook.hookGroupId, hook.hookId, taskId);
-    return await queue.createTask(taskId, await this.taskForHook(hook, created));
+    return await queue.createTask(taskId, this.taskForHook(hook, created));
   };
 }
 
