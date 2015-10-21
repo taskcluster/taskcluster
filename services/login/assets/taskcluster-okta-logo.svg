@@ -7,10 +7,11 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="140"
-   height="40"
+   width="100"
+   height="37"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.3.1 r9886"
@@ -20,6 +21,28 @@
    inkscape:export-ydpi="90">
   <defs
      id="defs4">
+    <linearGradient
+       id="linearGradient4060">
+      <stop
+         style="stop-color:#141414;stop-opacity:1;"
+         offset="0"
+         id="stop4062" />
+      <stop
+         id="stop4068"
+         offset="1"
+         style="stop-color:#141414;stop-opacity:0.3137255;" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4042">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop4044" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop4046" />
+    </linearGradient>
     <marker
        inkscape:stockid="Arrow2Lend"
        orient="auto"
@@ -101,6 +124,71 @@
          transform="matrix(-0.8,0,0,-0.8,-10,0)"
          inkscape:connector-curvature="0" />
     </marker>
+    <filter
+       inkscape:collect="always"
+       id="filter3906">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.19975159"
+         id="feGaussianBlur3908" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter3949">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.39950318"
+         id="feGaussianBlur3951" />
+    </filter>
+    <filter
+       color-interpolation-filters="sRGB"
+       inkscape:collect="always"
+       id="filter3949-7">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.39950318"
+         id="feGaussianBlur3951-1" />
+    </filter>
+    <filter
+       color-interpolation-filters="sRGB"
+       inkscape:collect="always"
+       id="filter3949-3">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.39950318"
+         id="feGaussianBlur3951-8" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter4038"
+       x="-0.020567937"
+       width="1.0411359"
+       y="-0.14417132"
+       height="1.2883426">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.59925477"
+         id="feGaussianBlur4040" />
+    </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4042"
+       id="linearGradient4048"
+       x1="60.911373"
+       y1="37.729042"
+       x2="60.911373"
+       y2="4.001545"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4060"
+       id="linearGradient4066"
+       x1="62.786373"
+       y1="37.070114"
+       x2="62.786373"
+       y2="13.182856"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.0176708,0,0,1.0176708,-1.7654674,-0.88158459)" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -109,9 +197,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="8"
-     inkscape:cx="73.44535"
-     inkscape:cy="24.60392"
+     inkscape:zoom="5.6568543"
+     inkscape:cx="33.393591"
+     inkscape:cy="30.309826"
      inkscape:document-units="px"
      inkscape:current-layer="layer2"
      showgrid="false"
@@ -145,7 +233,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1012.3622)"
+     transform="translate(0,-1015.3622)"
      style="display:none"
      sodipodi:insensitive="true">
     <rect
@@ -161,7 +249,7 @@
      id="layer2"
      inkscape:label="Layer"
      style="display:inline"
-     transform="translate(0,-8)">
+     transform="translate(0,-11)">
     <rect
        style="color:#000000;fill:#222222;fill-opacity:1;stroke:none;stroke-width:0.89999998;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        id="rect3069-0-1-1"
@@ -172,7 +260,7 @@
     <g
        style="display:inline"
        id="g4813-8"
-       transform="matrix(1.1694645,0,0,1.1694645,-56.078122,-223.498)">
+       transform="matrix(0.80045979,0,0,0.80045979,-38.081847,-142.64207)">
       <path
          sodipodi:type="arc"
          style="color:#000000;fill:#222222;fill-opacity:1;stroke:#00d8ff;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
@@ -476,15 +564,25 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-size:17.29499244999999874px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#222222;fill-opacity:1;stroke:none;font-family:Nimbus Sans L;-inkscape-font-specification:Nimbus Sans L"
-       x="39.826344"
-       y="34.102997"
-       id="text3207"
+       style="font-size:13.19243336px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:url(#linearGradient4066);fill-opacity:1;stroke:none;font-family:Noto Sans;-inkscape-font-specification:Noto Sans"
+       x="28.418056"
+       y="34.461143"
+       id="text3032"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan3209"
-         x="39.826344"
-         y="34.102997"
-         style="font-size:17px;font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-family:FreeSans;-inkscape-font-specification:FreeSans Semi-Bold;fill:#222222;fill-opacity:1">TaskCluster</tspan></text>
-  </g>
+         id="tspan3034"
+         x="28.418056"
+         y="34.461143"
+         style="font-size:13.22972012px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:url(#linearGradient4066);fill-opacity:1;font-family:Noto Sans;-inkscape-font-specification:Noto Sans">TaskCluster</tspan></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4050"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Monospace;font-style:normal;font-weight:normal;font-size:16px;line-height:125%;letter-spacing:0px;word-spacing:0px;-inkscape-font-specification:Monospace;font-stretch:normal;font-variant:normal"><flowRegion
+         id="flowRegion4052"><rect
+           id="rect4054"
+           width="2.125"
+           height="33"
+           x="59.125"
+           y="-28.5" /></flowRegion><flowPara
+         id="flowPara4056"></flowPara></flowRoot>  </g>
 </svg>
