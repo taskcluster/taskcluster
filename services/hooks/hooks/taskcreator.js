@@ -1,5 +1,5 @@
 var assert      = require('assert');
-var slugid      = require('slugid');
+var slugid            = require('slugid');
 var taskcluster = require('taskcluster-client');
 var debug       = require('debug')('hooks:taskcreator');
 var _           = require('lodash');
@@ -38,12 +38,10 @@ class TaskCreator {
   * it is used as the creation time for the task (to ensure idempotency).
   */
   async fire(hook, payload, options) {
-    options = options || {};
-    var taskId = options.taskId;
-    var created = options.created || new Date();
-    if (!taskId) {
-      taskId = slugid.v4();
-    }
+    options = _.defaults({}, options, {
+      taskId: slugid.v4(),
+      created: new Date(),
+    });
 
     // create a queue instance with its authorized scopes limited to those
     // assigned to the hook.
@@ -56,8 +54,9 @@ class TaskCreator {
     // TODO: payload is ignored right now
 
     debug('firing hook %s/%s to create taskId: %s',
-        hook.hookGroupId, hook.hookId, taskId);
-    return await queue.createTask(taskId, this.taskForHook(hook, created));
+        hook.hookGroupId, hook.hookId, options.taskId);
+    return await queue.createTask(options.taskId,
+      this.taskForHook(hook, options.created));
   };
 }
 
