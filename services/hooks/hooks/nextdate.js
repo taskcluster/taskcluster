@@ -1,6 +1,9 @@
 var debug  = require('debug')('hooks:nextdate');
 var parser = require('cron-parser');
 
+// Far in the future, but still within Azure's range
+var FUTURE = new Date(4000, 1, 1);
+
 /** Return the next scheduled date that is greater than the reference, in UTC.
  */
 var nextDate = function(schedule, reference) {
@@ -18,8 +21,7 @@ var nextDate = function(schedule, reference) {
     }
   });
 
-  // always return a date, even if it's 1970
-  return next || new Date(0);
+  return next || FUTURE;
 };
 
 module.exports = nextDate;
