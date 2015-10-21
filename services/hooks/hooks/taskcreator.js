@@ -24,9 +24,7 @@ class TaskCreator {
 
     task.created = created.toJSON();
     task.deadline = taskcluster.fromNowJSON(hook.deadline, created);
-    if (hook.expires) {
-      task.expires = taskcluster.fromNowJSON(hook.expires, created);
-    }
+    task.expires = taskcluster.fromNowJSON(hook.expires, created);
     return task;
   }
 
