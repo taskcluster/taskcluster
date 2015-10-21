@@ -148,7 +148,7 @@ let launch = async (profile) =>  {
     res.render('index', {
       user, credentials,
       querystring,
-      allowedHosts: ['localhost', 'test']
+      allowedHosts: cfg.app.allowedRedirectHosts
     });
   });
 
