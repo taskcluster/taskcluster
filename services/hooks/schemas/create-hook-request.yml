@@ -36,17 +36,6 @@ properties:
       - name
       - description
       - owner
-  bindings:
-    type:                 object
-    properties:
-      exchange:
-        title:            "Exchange"
-        type:             string
-      routingKey:         {$const: routing}
-    additionalProperties: false
-    required:
-      - exchange
-      - routingKey
   schedule:               {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
   expires:                {$const: expires}
   deadline:               {$const: deadline}
