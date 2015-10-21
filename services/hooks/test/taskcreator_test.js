@@ -49,9 +49,6 @@ suite('TaskCreator', function() {
         workerType:       'test-worker',
         schedulerId:      'my-scheduler',
         taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
-        created:          taskcluster.fromNowJSON(),
-        deadline:         taskcluster.fromNowJSON('3 days'),
-        expires:          taskcluster.fromNowJSON('10 days'),
         scopes:           scopes,
         payload:          {},
         metadata:         {
