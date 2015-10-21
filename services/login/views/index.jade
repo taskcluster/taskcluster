@@ -27,6 +27,9 @@ html(lang='en')
     // Marked for rendering markdown
     script(src='/assets/marked.min.js')
 
+    script.
+      var allowedHosts = !{JSON.stringify(allowedHosts).replace(/<\//g, "<\\/")};
+
     // Script with various hacks for this page
     script(src='/assets/script.js')
   body.container
@@ -73,6 +76,35 @@ html(lang='en')
                   | &nbsp;Grant Access
                 | &nbsp;(only grant access to trusted services!)
             br
+            div.modal.fade#approve-dialog(role='dialog', data-keyboard='true')
+              div.modal-dialog.modal-md
+                div.modal-content
+                  div.modal-header
+                    button.close(data-dismiss='modal', aria-label='close')
+                      span(aria-hidden='true')
+                        | &times;
+                    h4.modal-title
+                      | Confirm Access Grant to Untrusted Host
+                  div.modal-body(style='padding-left: 30px; padding-right: 30px')
+                    | You are about to send you credentials to:
+                    br
+                    div(style='padding-left: 30px;')
+                      code.grant-target
+                    br
+                    | Confirm trust by typing the hostname
+                    code.grant-hostname
+                    | in the textbox.
+                    input.form-control#hostname-input(
+                      type='text',
+                      placeholder='host...',
+                      style='margin-top: 5px; margin-bottom: 5px;'
+                    )
+                    | (don't worry we'll remember your choice to next time).
+                  div.modal-footer
+                    button.btn.btn-danger(data-dismiss='modal') Cancel
+                    button.btn.btn-primary.disabled#confirm-grant-button
+                      i.glyphicon.glyphicon-lock
+                      | &nbsp;Confirm Access Grant
           script.
             load("!{querystring.stringify(credentials)}");
           h2 Temporary Credentials
