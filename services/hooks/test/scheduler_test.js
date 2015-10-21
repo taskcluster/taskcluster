@@ -66,7 +66,7 @@ suite('Scheduler', function() {
         deadline:           '1 day',
         expires:            '1 day',
         schedule:           ["0 0 0 * * *"],
-        accessToken:        taskcluster.slugid(),
+        triggerToken:       taskcluster.slugid(),
       };
 
       await scheduler.Hook.create(_.defaults({
@@ -122,7 +122,7 @@ suite('Scheduler', function() {
         deadline:           '1 day',
         expires:            '1 day',
         schedule:           ["0 0 0 * * *"],
-        accessToken:        taskcluster.slugid(),
+        triggerToken:       taskcluster.slugid(),
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  new Date(3000, 0, 0, 0, 0, 0, 0),
       });
