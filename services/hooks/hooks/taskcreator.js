@@ -60,7 +60,7 @@ class TaskCreator {
   };
 }
 
-module.exports.TaskCreator = TaskCreator;
+exports.TaskCreator = TaskCreator;
 
 class MockTaskCreator extends TaskCreator {
   constructor() {
@@ -93,4 +93,4 @@ class MockTaskCreator extends TaskCreator {
   }
 }
 
-module.exports.MockTaskCreator = MockTaskCreator;
+exports.MockTaskCreator = MockTaskCreator;
