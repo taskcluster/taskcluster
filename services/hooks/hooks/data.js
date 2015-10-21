@@ -24,7 +24,7 @@ var Hook = base.Entity.configure({
     // schedule for this task (see schemas/schedule.yml)
     schedule:           base.Entity.types.JSON,
     // access token used to trigger this task via webhook
-    accessToken:        base.Entity.types.SlugId,
+    triggerToken:       base.Entity.types.SlugId,
     // the taskId that will be used next time this hook is scheduled;
     // this allows scheduling to be idempotent
     nextTaskId:         base.Entity.types.SlugId,

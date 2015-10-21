@@ -64,7 +64,7 @@ suite('TaskCreator', function() {
       deadline:           '1 day',
       expires:            '1 day',
       schedule:           {format: {type: "none"}},
-      accessToken:        taskcluster.slugid(),
+      triggerToken:       taskcluster.slugid(),
       nextTaskId:         taskcluster.slugid(),
       nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
     });
