@@ -14,12 +14,12 @@ anyOf:
           - auth-success
       scopes:
         description: |
-          List of scopes the client is authorized to access
+          List of scopes the client is authorized to access.  Scopes must be
+          composed of printable ASCII characters and spaces.
         type:                 array
         items:
-          description: |
-            Scope the client is authorized to access
           type:               string
+          pattern: "^[\x20-\x7e]*"
       scheme:
         description: |
           Authentication scheme the client used. Generally, you don't need to
