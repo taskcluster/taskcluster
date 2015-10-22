@@ -77,14 +77,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/taskcluster/httpbackoff"
-	hawk "github.com/tent/hawk-go"
-	D "github.com/tj/go-debug"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
 	"time"
+
+	"github.com/taskcluster/httpbackoff"
+	hawk "github.com/tent/hawk-go"
+	D "github.com/tj/go-debug"
 )
 
 var (
@@ -254,7 +256,7 @@ func (a *Auth) ListClients() (*ListClientResponse, *CallSummary) {
 //
 // See http://docs.taskcluster.net/auth/api-docs/#client
 func (a *Auth) Client(clientId string) (*GetClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/clients/"+clientId+"", new(GetClientResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse))
 	return responseObject.(*GetClientResponse), callSummary
 }
 
@@ -271,7 +273,7 @@ func (a *Auth) Client(clientId string) (*GetClientResponse, *CallSummary) {
 //
 // See http://docs.taskcluster.net/auth/api-docs/#createClient
 func (a *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/clients/"+clientId+"", new(CreateClientResponse))
+	responseObject, callSummary := a.apiCall(payload, "PUT", "/clients/"+url.QueryEscape(clientId), new(CreateClientResponse))
 	return responseObject.(*CreateClientResponse), callSummary
 }
 
@@ -284,7 +286,7 @@ func (a *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*Cre
 //
 // See http://docs.taskcluster.net/auth/api-docs/#resetAccessToken
 func (a *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/clients/"+clientId+"/reset", new(CreateClientResponse))
+	responseObject, callSummary := a.apiCall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/reset", new(CreateClientResponse))
 	return responseObject.(*CreateClientResponse), callSummary
 }
 
@@ -294,7 +296,7 @@ func (a *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *CallSu
 //
 // See http://docs.taskcluster.net/auth/api-docs/#updateClient
 func (a *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/clients/"+clientId+"", new(GetClientResponse))
+	responseObject, callSummary := a.apiCall(payload, "POST", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse))
 	return responseObject.(*GetClientResponse), callSummary
 }
 
@@ -303,7 +305,7 @@ func (a *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*Get
 //
 // See http://docs.taskcluster.net/auth/api-docs/#deleteClient
 func (a *Auth) DeleteClient(clientId string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "DELETE", "/clients/"+clientId+"", nil)
+	_, callSummary := a.apiCall(nil, "DELETE", "/clients/"+url.QueryEscape(clientId), nil)
 	return callSummary
 }
 
@@ -321,7 +323,7 @@ func (a *Auth) ListRoles() (*ListRolesResponse, *CallSummary) {
 //
 // See http://docs.taskcluster.net/auth/api-docs/#role
 func (a *Auth) Role(roleId string) (*GetRoleResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/roles/"+roleId+"", new(GetRoleResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse))
 	return responseObject.(*GetRoleResponse), callSummary
 }
 
@@ -330,7 +332,7 @@ func (a *Auth) Role(roleId string) (*GetRoleResponse, *CallSummary) {
 //
 // See http://docs.taskcluster.net/auth/api-docs/#createRole
 func (a *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/roles/"+roleId+"", new(GetRoleResponse))
+	responseObject, callSummary := a.apiCall(payload, "PUT", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse))
 	return responseObject.(*GetRoleResponse), callSummary
 }
 
@@ -338,7 +340,7 @@ func (a *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleRe
 //
 // See http://docs.taskcluster.net/auth/api-docs/#updateRole
 func (a *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/roles/"+roleId+"", new(GetRoleResponse))
+	responseObject, callSummary := a.apiCall(payload, "POST", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse))
 	return responseObject.(*GetRoleResponse), callSummary
 }
 
@@ -347,7 +349,7 @@ func (a *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleRe
 //
 // See http://docs.taskcluster.net/auth/api-docs/#deleteRole
 func (a *Auth) DeleteRole(roleId string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "DELETE", "/roles/"+roleId+"", nil)
+	_, callSummary := a.apiCall(nil, "DELETE", "/roles/"+url.QueryEscape(roleId), nil)
 	return callSummary
 }
 
@@ -373,7 +375,7 @@ func (a *Auth) DeleteRole(roleId string) *CallSummary {
 //
 // See http://docs.taskcluster.net/auth/api-docs/#awsS3Credentials
 func (a *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/aws/s3/"+level+"/"+bucket+"/"+prefix+"", new(AWSS3CredentialsResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse))
 	return responseObject.(*AWSS3CredentialsResponse), callSummary
 }
 
@@ -383,7 +385,7 @@ func (a *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AW
 //
 // See http://docs.taskcluster.net/auth/api-docs/#azureTableSAS
 func (a *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSignatureResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/azure/"+account+"/table/"+table+"/read-write", new(AzureSharedAccessSignatureResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", new(AzureSharedAccessSignatureResponse))
 	return responseObject.(*AzureSharedAccessSignatureResponse), callSummary
 }
 

@@ -59,14 +59,16 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/taskcluster/httpbackoff"
-	hawk "github.com/tent/hawk-go"
-	D "github.com/tj/go-debug"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
 	"time"
+
+	"github.com/taskcluster/httpbackoff"
+	hawk "github.com/tent/hawk-go"
+	D "github.com/tj/go-debug"
 )
 
 var (
@@ -250,7 +252,7 @@ func New(clientId string, accessToken string) *Auth {
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createWorkerType
 func (a *Auth) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/worker-type/"+workerType+"", new(GetWorkerTypeRequest))
+	responseObject, callSummary := a.apiCall(payload, "PUT", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest))
 	return responseObject.(*GetWorkerTypeRequest), callSummary
 }
 
@@ -268,7 +270,7 @@ func (a *Auth) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequ
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#updateWorkerType
 func (a *Auth) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/worker-type/"+workerType+"/update", new(GetWorkerTypeRequest))
+	responseObject, callSummary := a.apiCall(payload, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(GetWorkerTypeRequest))
 	return responseObject.(*GetWorkerTypeRequest), callSummary
 }
 
@@ -280,7 +282,7 @@ func (a *Auth) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequ
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#workerType
 func (a *Auth) WorkerType(workerType string) (*GetWorkerTypeRequest, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/worker-type/"+workerType+"", new(GetWorkerTypeRequest))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest))
 	return responseObject.(*GetWorkerTypeRequest), callSummary
 }
 
@@ -297,7 +299,7 @@ func (a *Auth) WorkerType(workerType string) (*GetWorkerTypeRequest, *CallSummar
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeWorkerType
 func (a *Auth) RemoveWorkerType(workerType string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "DELETE", "/worker-type/"+workerType+"", nil)
+	_, callSummary := a.apiCall(nil, "DELETE", "/worker-type/"+url.QueryEscape(workerType), nil)
 	return callSummary
 }
 
@@ -321,7 +323,7 @@ func (a *Auth) ListWorkerTypes() (*ListWorkerTypes, *CallSummary) {
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createSecret
 func (a *Auth) CreateSecret(token string, payload *GetSecretRequest) *CallSummary {
-	_, callSummary := a.apiCall(payload, "PUT", "/secret/"+token+"", nil)
+	_, callSummary := a.apiCall(payload, "PUT", "/secret/"+url.QueryEscape(token), nil)
 	return callSummary
 }
 
@@ -335,7 +337,7 @@ func (a *Auth) CreateSecret(token string, payload *GetSecretRequest) *CallSummar
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#getSecret
 func (a *Auth) GetSecret(token string) (*GetSecretResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/secret/"+token+"", new(GetSecretResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/secret/"+url.QueryEscape(token), new(GetSecretResponse))
 	return responseObject.(*GetSecretResponse), callSummary
 }
 
@@ -347,7 +349,7 @@ func (a *Auth) GetSecret(token string) (*GetSecretResponse, *CallSummary) {
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#instanceStarted
 func (a *Auth) InstanceStarted(instanceId string, token string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/instance-started/"+instanceId+"/"+token+"", nil)
+	_, callSummary := a.apiCall(nil, "GET", "/instance-started/"+url.QueryEscape(instanceId)+"/"+url.QueryEscape(token), nil)
 	return callSummary
 }
 
@@ -360,7 +362,7 @@ func (a *Auth) InstanceStarted(instanceId string, token string) *CallSummary {
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeSecret
 func (a *Auth) RemoveSecret(token string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "DELETE", "/secret/"+token+"", nil)
+	_, callSummary := a.apiCall(nil, "DELETE", "/secret/"+url.QueryEscape(token), nil)
 	return callSummary
 }
 
@@ -372,7 +374,7 @@ func (a *Auth) RemoveSecret(token string) *CallSummary {
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#getLaunchSpecs
 func (a *Auth) GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/worker-type/"+workerType+"/launch-specifications", new(GetAllLaunchSpecsResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", new(GetAllLaunchSpecsResponse))
 	return responseObject.(*GetAllLaunchSpecsResponse), callSummary
 }
 
@@ -394,7 +396,7 @@ func (a *Auth) AwsState() *CallSummary {
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#state
 func (a *Auth) State(workerType string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/state/"+workerType+"", nil)
+	_, callSummary := a.apiCall(nil, "GET", "/state/"+url.QueryEscape(workerType), nil)
 	return callSummary
 }
 

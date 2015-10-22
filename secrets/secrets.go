@@ -35,14 +35,16 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/taskcluster/httpbackoff"
-	hawk "github.com/tent/hawk-go"
-	D "github.com/tj/go-debug"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
 	"time"
+
+	"github.com/taskcluster/httpbackoff"
+	hawk "github.com/tent/hawk-go"
+	D "github.com/tj/go-debug"
 )
 
 var (
@@ -204,7 +206,7 @@ func New(clientId string, accessToken string) *Auth {
 //
 // See http://docs.taskcluster.net/services/secrets/#set
 func (a *Auth) Set(name string, payload *ATaskClusterSecret) *CallSummary {
-	_, callSummary := a.apiCall(payload, "PUT", "/secrets/"+name+"", nil)
+	_, callSummary := a.apiCall(payload, "PUT", "/secrets/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 
@@ -212,7 +214,7 @@ func (a *Auth) Set(name string, payload *ATaskClusterSecret) *CallSummary {
 //
 // See http://docs.taskcluster.net/services/secrets/#update
 func (a *Auth) Update(name string, payload *ATaskClusterSecret) *CallSummary {
-	_, callSummary := a.apiCall(payload, "POST", "/secrets/"+name+"", nil)
+	_, callSummary := a.apiCall(payload, "POST", "/secrets/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 
@@ -220,7 +222,7 @@ func (a *Auth) Update(name string, payload *ATaskClusterSecret) *CallSummary {
 //
 // See http://docs.taskcluster.net/services/secrets/#remove
 func (a *Auth) Remove(name string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "DELETE", "/secrets/"+name+"", nil)
+	_, callSummary := a.apiCall(nil, "DELETE", "/secrets/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 
@@ -228,7 +230,7 @@ func (a *Auth) Remove(name string) *CallSummary {
 //
 // See http://docs.taskcluster.net/services/secrets/#get
 func (a *Auth) Get(name string) (*ATaskClusterSecret, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/secrets/"+name+"", new(ATaskClusterSecret))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/secrets/"+url.QueryEscape(name), new(ATaskClusterSecret))
 	return responseObject.(*ATaskClusterSecret), callSummary
 }
 
