@@ -42,14 +42,16 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/taskcluster/httpbackoff"
-	hawk "github.com/tent/hawk-go"
-	D "github.com/tj/go-debug"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
 	"time"
+
+	"github.com/taskcluster/httpbackoff"
+	hawk "github.com/tent/hawk-go"
+	D "github.com/tj/go-debug"
 )
 
 var (
@@ -272,7 +274,7 @@ func New(clientId string, accessToken string) *Auth {
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#createTaskGraph
 func (a *Auth) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1) (*TaskGraphStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/task-graph/"+taskGraphId+"", new(TaskGraphStatusResponse))
+	responseObject, callSummary := a.apiCall(payload, "PUT", "/task-graph/"+url.QueryEscape(taskGraphId), new(TaskGraphStatusResponse))
 	return responseObject.(*TaskGraphStatusResponse), callSummary
 }
 
@@ -292,7 +294,7 @@ func (a *Auth) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#extendTaskGraph
 func (a *Auth) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition) (*TaskGraphStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/task-graph/"+taskGraphId+"/extend", new(TaskGraphStatusResponse))
+	responseObject, callSummary := a.apiCall(payload, "POST", "/task-graph/"+url.QueryEscape(taskGraphId)+"/extend", new(TaskGraphStatusResponse))
 	return responseObject.(*TaskGraphStatusResponse), callSummary
 }
 
@@ -304,7 +306,7 @@ func (a *Auth) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition)
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#status
 func (a *Auth) Status(taskGraphId string) (*TaskGraphStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+taskGraphId+"/status", new(TaskGraphStatusResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/status", new(TaskGraphStatusResponse))
 	return responseObject.(*TaskGraphStatusResponse), callSummary
 }
 
@@ -317,7 +319,7 @@ func (a *Auth) Status(taskGraphId string) (*TaskGraphStatusResponse, *CallSummar
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#info
 func (a *Auth) Info(taskGraphId string) (*TaskGraphInfoResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+taskGraphId+"/info", new(TaskGraphInfoResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/info", new(TaskGraphInfoResponse))
 	return responseObject.(*TaskGraphInfoResponse), callSummary
 }
 
@@ -336,7 +338,7 @@ func (a *Auth) Info(taskGraphId string) (*TaskGraphInfoResponse, *CallSummary) {
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspect
 func (a *Auth) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+taskGraphId+"/inspect", new(InspectTaskGraphResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect", new(InspectTaskGraphResponse))
 	return responseObject.(*InspectTaskGraphResponse), callSummary
 }
 
@@ -355,7 +357,7 @@ func (a *Auth) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *CallSumm
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspectTask
 func (a *Auth) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraphTaskResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+taskGraphId+"/inspect/"+taskId+"", new(InspectTaskGraphTaskResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect/"+url.QueryEscape(taskId), new(InspectTaskGraphTaskResponse))
 	return responseObject.(*InspectTaskGraphTaskResponse), callSummary
 }
 

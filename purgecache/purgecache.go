@@ -38,13 +38,15 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/taskcluster/httpbackoff"
-	hawk "github.com/tent/hawk-go"
-	D "github.com/tj/go-debug"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
+
+	"github.com/taskcluster/httpbackoff"
+	hawk "github.com/tent/hawk-go"
+	D "github.com/tj/go-debug"
 )
 
 var (
@@ -208,7 +210,7 @@ func New(clientId string, accessToken string) *Auth {
 //
 // See http://docs.taskcluster.net/services/purge-cache/#purgeCache
 func (a *Auth) PurgeCache(provisionerId string, workerType string, payload *PurgeCacheRequest) *CallSummary {
-	_, callSummary := a.apiCall(payload, "POST", "/purge-cache/"+provisionerId+"/"+workerType+"", nil)
+	_, callSummary := a.apiCall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil)
 	return callSummary
 }
 

@@ -121,14 +121,16 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/taskcluster/httpbackoff"
-	hawk "github.com/tent/hawk-go"
-	D "github.com/tj/go-debug"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
 	"time"
+
+	"github.com/taskcluster/httpbackoff"
+	hawk "github.com/tent/hawk-go"
+	D "github.com/tj/go-debug"
 )
 
 var (
@@ -291,7 +293,7 @@ func New(clientId string, accessToken string) *Auth {
 //
 // See http://docs.taskcluster.net/services/index/#findTask
 func (a *Auth) FindTask(namespace string) (*IndexedTaskResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+namespace+"", new(IndexedTaskResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse))
 	return responseObject.(*IndexedTaskResponse), callSummary
 }
 
@@ -306,7 +308,7 @@ func (a *Auth) FindTask(namespace string) (*IndexedTaskResponse, *CallSummary) {
 //
 // See http://docs.taskcluster.net/services/index/#listNamespaces
 func (a *Auth) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/namespaces/"+namespace+"", new(ListNamespacesResponse))
+	responseObject, callSummary := a.apiCall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse))
 	return responseObject.(*ListNamespacesResponse), callSummary
 }
 
@@ -321,7 +323,7 @@ func (a *Auth) ListNamespaces(namespace string, payload *ListNamespacesRequest) 
 //
 // See http://docs.taskcluster.net/services/index/#listTasks
 func (a *Auth) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/tasks/"+namespace+"", new(ListTasksResponse))
+	responseObject, callSummary := a.apiCall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse))
 	return responseObject.(*ListTasksResponse), callSummary
 }
 
@@ -330,7 +332,7 @@ func (a *Auth) ListTasks(namespace string, payload *ListTasksRequest) (*ListTask
 //
 // See http://docs.taskcluster.net/services/index/#insertTask
 func (a *Auth) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/task/"+namespace+"", new(IndexedTaskResponse))
+	responseObject, callSummary := a.apiCall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse))
 	return responseObject.(*IndexedTaskResponse), callSummary
 }
 
@@ -340,7 +342,7 @@ func (a *Auth) InsertTask(namespace string, payload *InsertTaskRequest) (*Indexe
 //
 // See http://docs.taskcluster.net/services/index/#findArtifactFromTask
 func (a *Auth) FindArtifactFromTask(namespace string, name string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/task/"+namespace+"/artifacts/"+name+"", nil)
+	_, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
 	"github.com/xeipuuv/gojsonschema"
 	"go/format"
+	"golang.org/x/tools/imports"
 	"io"
 	"net/http"
 	"os"
@@ -231,9 +232,17 @@ func GenerateCode(goOutputDir, modelData string) {
 		content = strings.Replace(content, "%%{imports}", extraPackagesString, -1)
 		sourceFile := filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go")
 		fmt.Println("Formatting source code " + sourceFile + "...")
-		formattedContent, err := format.Source([]byte(content))
-		// in case of formatting failure, let's keep the unformatted version so
-		// we can troubleshoot more easily...
+		// first run goimports to clean up unused imports
+		fixedImports, err := imports.Process(sourceFile, []byte(content), nil)
+		// only proceed, if that worked...
+		var formattedContent []byte
+		if err == nil {
+			// now run a standard system format
+			formattedContent, err = format.Source(fixedImports)
+		}
+		// in case of formatting failure from either of the above formatting
+		// steps, let's keep the unformatted version so we can troubleshoot
+		// more easily...
 		if err != nil {
 			utils.WriteStringToFile(content, sourceFile)
 		}

@@ -42,14 +42,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/taskcluster/httpbackoff"
-	hawk "github.com/tent/hawk-go"
-	D "github.com/tj/go-debug"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
 	"time"
+
+	"github.com/taskcluster/httpbackoff"
+	hawk "github.com/tent/hawk-go"
+	D "github.com/tj/go-debug"
 )
 
 var (
@@ -213,7 +215,7 @@ func New(clientId string, accessToken string) *Auth {
 //
 // See http://docs.taskcluster.net/queue/api-docs/#task
 func (a *Auth) Task(taskId string) (*TaskDefinition1, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+taskId+"", new(TaskDefinition1))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId), new(TaskDefinition1))
 	return responseObject.(*TaskDefinition1), callSummary
 }
 
@@ -221,7 +223,7 @@ func (a *Auth) Task(taskId string) (*TaskDefinition1, *CallSummary) {
 //
 // See http://docs.taskcluster.net/queue/api-docs/#status
 func (a *Auth) Status(taskId string) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+taskId+"/status", new(TaskStatusResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/status", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -246,7 +248,7 @@ func (a *Auth) Status(taskId string) (*TaskStatusResponse, *CallSummary) {
 //
 // See http://docs.taskcluster.net/queue/api-docs/#createTask
 func (a *Auth) CreateTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/task/"+taskId+"", new(TaskStatusResponse))
+	responseObject, callSummary := a.apiCall(payload, "PUT", "/task/"+url.QueryEscape(taskId), new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -267,7 +269,7 @@ func (a *Auth) CreateTask(taskId string, payload *TaskDefinition) (*TaskStatusRe
 //
 // See http://docs.taskcluster.net/queue/api-docs/#defineTask
 func (a *Auth) DefineTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/task/"+taskId+"/define", new(TaskStatusResponse))
+	responseObject, callSummary := a.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/define", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -282,7 +284,7 @@ func (a *Auth) DefineTask(taskId string, payload *TaskDefinition) (*TaskStatusRe
 //
 // See http://docs.taskcluster.net/queue/api-docs/#scheduleTask
 func (a *Auth) ScheduleTask(taskId string) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+taskId+"/schedule", new(TaskStatusResponse))
+	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/schedule", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -301,7 +303,7 @@ func (a *Auth) ScheduleTask(taskId string) (*TaskStatusResponse, *CallSummary) {
 //
 // See http://docs.taskcluster.net/queue/api-docs/#rerunTask
 func (a *Auth) RerunTask(taskId string) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+taskId+"/rerun", new(TaskStatusResponse))
+	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/rerun", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -320,7 +322,7 @@ func (a *Auth) RerunTask(taskId string) (*TaskStatusResponse, *CallSummary) {
 //
 // See http://docs.taskcluster.net/queue/api-docs/#cancelTask
 func (a *Auth) CancelTask(taskId string) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+taskId+"/cancel", new(TaskStatusResponse))
+	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/cancel", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -330,7 +332,7 @@ func (a *Auth) CancelTask(taskId string) (*TaskStatusResponse, *CallSummary) {
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pollTaskUrls
 func (a *Auth) PollTaskUrls(provisionerId string, workerType string) (*PollTaskUrlsResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/poll-task-url/"+provisionerId+"/"+workerType+"", new(PollTaskUrlsResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(PollTaskUrlsResponse))
 	return responseObject.(*PollTaskUrlsResponse), callSummary
 }
 
@@ -338,7 +340,7 @@ func (a *Auth) PollTaskUrls(provisionerId string, workerType string) (*PollTaskU
 //
 // See http://docs.taskcluster.net/queue/api-docs/#claimTask
 func (a *Auth) ClaimTask(taskId string, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/task/"+taskId+"/runs/"+runId+"/claim", new(TaskClaimResponse))
+	responseObject, callSummary := a.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/claim", new(TaskClaimResponse))
 	return responseObject.(*TaskClaimResponse), callSummary
 }
 
@@ -346,7 +348,7 @@ func (a *Auth) ClaimTask(taskId string, runId string, payload *TaskClaimRequest)
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reclaimTask
 func (a *Auth) ReclaimTask(taskId string, runId string) (*TaskClaimResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+taskId+"/runs/"+runId+"/reclaim", new(TaskClaimResponse))
+	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskClaimResponse))
 	return responseObject.(*TaskClaimResponse), callSummary
 }
 
@@ -354,7 +356,7 @@ func (a *Auth) ReclaimTask(taskId string, runId string) (*TaskClaimResponse, *Ca
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportCompleted
 func (a *Auth) ReportCompleted(taskId string, runId string) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+taskId+"/runs/"+runId+"/completed", new(TaskStatusResponse))
+	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/completed", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -368,7 +370,7 @@ func (a *Auth) ReportCompleted(taskId string, runId string) (*TaskStatusResponse
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportFailed
 func (a *Auth) ReportFailed(taskId string, runId string) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+taskId+"/runs/"+runId+"/failed", new(TaskStatusResponse))
+	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/failed", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -387,7 +389,7 @@ func (a *Auth) ReportFailed(taskId string, runId string) (*TaskStatusResponse, *
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportException
 func (a *Auth) ReportException(taskId string, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/task/"+taskId+"/runs/"+runId+"/exception", new(TaskStatusResponse))
+	responseObject, callSummary := a.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/exception", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -452,7 +454,7 @@ func (a *Auth) ReportException(taskId string, runId string, payload *TaskExcepti
 //
 // See http://docs.taskcluster.net/queue/api-docs/#createArtifact
 func (a *Auth) CreateArtifact(taskId string, runId string, name string, payload *PostArtifactRequest) (*PostArtifactResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/task/"+taskId+"/runs/"+runId+"/artifacts/"+name+"", new(PostArtifactResponse))
+	responseObject, callSummary := a.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(PostArtifactResponse))
 	return responseObject.(*PostArtifactResponse), callSummary
 }
 
@@ -470,7 +472,7 @@ func (a *Auth) CreateArtifact(taskId string, runId string, name string, payload 
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getArtifact
 func (a *Auth) GetArtifact(taskId string, runId string, name string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/task/"+taskId+"/runs/"+runId+"/artifacts/"+name+"", nil)
+	_, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 
@@ -492,7 +494,7 @@ func (a *Auth) GetArtifact(taskId string, runId string, name string) *CallSummar
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getLatestArtifact
 func (a *Auth) GetLatestArtifact(taskId string, name string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/task/"+taskId+"/artifacts/"+name+"", nil)
+	_, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 
@@ -500,7 +502,7 @@ func (a *Auth) GetLatestArtifact(taskId string, name string) *CallSummary {
 //
 // See http://docs.taskcluster.net/queue/api-docs/#listArtifacts
 func (a *Auth) ListArtifacts(taskId string, runId string) (*ListArtifactsResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+taskId+"/runs/"+runId+"/artifacts", new(ListArtifactsResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", new(ListArtifactsResponse))
 	return responseObject.(*ListArtifactsResponse), callSummary
 }
 
@@ -509,7 +511,7 @@ func (a *Auth) ListArtifacts(taskId string, runId string) (*ListArtifactsRespons
 //
 // See http://docs.taskcluster.net/queue/api-docs/#listLatestArtifacts
 func (a *Auth) ListLatestArtifacts(taskId string) (*ListArtifactsResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+taskId+"/artifacts", new(ListArtifactsResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse))
 	return responseObject.(*ListArtifactsResponse), callSummary
 }
 
@@ -519,7 +521,7 @@ func (a *Auth) ListLatestArtifacts(taskId string) (*ListArtifactsResponse, *Call
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pendingTasks
 func (a *Auth) PendingTasks(provisionerId string, workerType string) (*CountPendingTasksResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/pending/"+provisionerId+"/"+workerType+"", new(CountPendingTasksResponse))
+	responseObject, callSummary := a.apiCall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse))
 	return responseObject.(*CountPendingTasksResponse), callSummary
 }
 

@@ -97,6 +97,11 @@ func (api *API) generateAPICode(apiName string) string {
 
 	content := comment
 	content += "package " + api.apiDef.PackageName + "\n"
+
+	// note: we remove unused imports later, so e.g. if net/url is not used, it
+	// will get removed later using:
+	// https://godoc.org/golang.org/x/tools/imports
+
 	content += `
 import (
 	"bytes"
@@ -107,6 +112,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
 	"github.com/taskcluster/httpbackoff"
 	hawk "github.com/tent/hawk-go"
@@ -359,13 +365,14 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 	content := comment
 	content += "func (a *Auth) " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
 	if entry.Output != "" {
-		content += "\tresponseObject, callSummary := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "))\n"
+		content += "\tresponseObject, callSummary := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "))\n"
 		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), callSummary\n"
 	} else {
-		content += "\t_, callSummary := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + ", -1), ">", " + \"", -1) + "\", nil)\n"
+		content += "\t_, callSummary := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil)\n"
 		content += "\treturn callSummary\n"
 	}
 	content += "}\n"
 	content += "\n"
-	return content
+	// can remove any code that added an empty string to another string
+	return strings.Replace(content, ` + ""`, "", -1)
 }
