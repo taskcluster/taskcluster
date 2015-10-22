@@ -18,12 +18,14 @@ items:
       pattern:              {"$const":  "access-token-pattern"}
     scopes:
       description: |
-        List of scopes the client is authorized to access
+        List of scopes the client is authorized to access.  Scopes must be
+        composed of printable ASCII characters and spaces.
       type:                   array
       items:
         description: |
           Scope the client is authorized to access
         type:                 string
+        pattern:              "^[\x20-\x7e]*"
     expires:
       description: |
         Date and time where the clients credentials are set to expire

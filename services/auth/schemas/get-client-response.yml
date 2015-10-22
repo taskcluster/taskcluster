@@ -45,12 +45,14 @@ properties:
     format:                 date-time
   expandedScopes:
     description: |
-      List of scopes granted to this client by matching roles.
+      List of scopes granted to this client by matching roles.  Scopes must be
+      composed of printable ASCII characters and spaces.
     type:                   array
     items:
       description: |
         Scope that client is granted by a role
       type:                 string
+      pattern:              "^[\x20-\x7e]*"
 additionalProperties:       false
 required:
   - clientId
