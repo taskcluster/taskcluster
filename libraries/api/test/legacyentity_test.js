@@ -4,10 +4,11 @@ suite("LegacyEntity", function() {
   var _       = require('lodash');
   var Promise = require('promise');
   var base    = require('../');
+  var config  = require('taskcluster-lib-config');
   var debug   = require('debug')('base:test:entity');
 
   // Load test configuration
-  var cfg = base.config({
+  var cfg = config({
     envs: [
       'azure_accountName',
       'azure_accountKey',
