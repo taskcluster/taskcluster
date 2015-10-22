@@ -426,7 +426,8 @@ type (
 		// The date at which the secret is no longer guarunteed to exist
 		Expiration time.Time `json:"expiration"`
 		// List of strings which are scopes for temporary credentials to give
-		// to the worker through the secret system
+		// to the worker through the secret system.  Scopes must be composed of
+		// printable ASCII characters and spaces.
 		Scopes []string `json:"scopes"`
 		// Free form object which contains the secrets stored
 		Secrets map[string]json.RawMessage `json:"secrets"`
@@ -457,7 +458,8 @@ type (
 			InstanceType string `json:"instanceType"`
 			// LaunchSpecification entries unique to this InstanceType
 			LaunchSpec map[string]json.RawMessage `json:"launchSpec"`
-			// Scopes which should be included for this InstanceType
+			// Scopes which should be included for this InstanceType.  Scopes must
+			// be composed of printable ASCII characters and spaces.
 			Scopes []string `json:"scopes"`
 			// Static Secrets unique to this InstanceType
 			Secrets map[string]json.RawMessage `json:"secrets"`
@@ -494,7 +496,8 @@ type (
 			} `json:"launchSpec"`
 			// The Amazon AWS Region being configured.  Example: us-west-1
 			Region string `json:"region"`
-			// Scopes which should be included for this Region
+			// Scopes which should be included for this Region.  Scopes must be
+			// composed of printable ASCII characters and spaces.
 			Scopes []string `json:"scopes"`
 			// Static Secrets unique to this Region
 			Secrets map[string]json.RawMessage `json:"secrets"`
@@ -512,7 +515,8 @@ type (
 		// If using a scaling ratio of 0, the provisioner will attempt to keep the
 		// capacity of pending spot requests equal to the number of pending tasks.
 		ScalingRatio int `json:"scalingRatio"`
-		// Scopes to issue credentials to for all regions
+		// Scopes to issue credentials to for all regions Scopes must be composed of
+		// printable ASCII characters and spaces.
 		Scopes []string `json:"scopes"`
 		// Static secrets entries which are used in all regions and all instance types
 		Secrets map[string]json.RawMessage `json:"secrets"`
@@ -559,7 +563,8 @@ type (
 			InstanceType string `json:"instanceType"`
 			// LaunchSpecification entries unique to this InstanceType
 			LaunchSpec map[string]json.RawMessage `json:"launchSpec"`
-			// Scopes which should be included for this InstanceType
+			// Scopes which should be included for this InstanceType.  Scopes must
+			// be composed of printable ASCII characters and spaces.
 			Scopes []string `json:"scopes"`
 			// Static Secrets unique to this InstanceType
 			Secrets map[string]json.RawMessage `json:"secrets"`
@@ -599,7 +604,8 @@ type (
 			} `json:"launchSpec"`
 			// The Amazon AWS Region being configured.  Example: us-west-1
 			Region string `json:"region"`
-			// Scopes which should be included for this Region
+			// Scopes which should be included for this Region.  Scopes must be
+			// composed of printable ASCII characters and spaces.
 			Scopes []string `json:"scopes"`
 			// Static Secrets unique to this Region
 			Secrets map[string]json.RawMessage `json:"secrets"`
@@ -617,7 +623,8 @@ type (
 		// If using a scaling ratio of 0, the provisioner will attempt to keep the
 		// capacity of pending spot requests equal to the number of pending tasks.
 		ScalingRatio int `json:"scalingRatio"`
-		// Scopes to issue credentials to for all regions
+		// Scopes to issue credentials to for all regions.  Scopes must be composed
+		// of printable ASCII characters and spaces.
 		Scopes []string `json:"scopes"`
 		// Static secrets entries which are used in all regions and all instance types
 		Secrets map[string]json.RawMessage `json:"secrets"`

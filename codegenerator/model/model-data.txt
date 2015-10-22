@@ -1335,9 +1335,11 @@ Properties
     SourceURL              = ''
   Property 'scopes' =
     Description            = 'List of strings which are scopes for temporary credentials to give
-    to the worker through the secret system
+    to the worker through the secret system.  Scopes must be composed of
+    printable ASCII characters and spaces.
     '
     Items
+      Pattern                = '^[ -~]*'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -1441,9 +1443,11 @@ Properties
           IsOutputSchema         = 'false'
           SourceURL              = ''
         Property 'scopes' =
-          Description            = 'Scopes which should be included for this InstanceType
+          Description            = 'Scopes which should be included for this InstanceType.  Scopes must
+          be composed of printable ASCII characters and spaces.
           '
           Items
+            Pattern                = '^[ -~]*'
             Type                   = 'string'
             TypeName               = ''
             IsInputSchema          = 'false'
@@ -1570,9 +1574,11 @@ Properties
           IsOutputSchema         = 'false'
           SourceURL              = ''
         Property 'scopes' =
-          Description            = 'Scopes which should be included for this Region
+          Description            = 'Scopes which should be included for this Region.  Scopes must be
+          composed of printable ASCII characters and spaces.
           '
           Items
+            Pattern                = '^[ -~]*'
             Type                   = 'string'
             TypeName               = ''
             IsInputSchema          = 'false'
@@ -1628,9 +1634,11 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'scopes' =
-    Description            = 'Scopes to issue credentials to for all regions
+    Description            = 'Scopes to issue credentials to for all regions Scopes must be composed of
+    printable ASCII characters and spaces.
     '
     Items
+      Pattern                = '^[ -~]*'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -1790,9 +1798,11 @@ Properties
           IsOutputSchema         = 'false'
           SourceURL              = ''
         Property 'scopes' =
-          Description            = 'Scopes which should be included for this InstanceType
+          Description            = 'Scopes which should be included for this InstanceType.  Scopes must
+          be composed of printable ASCII characters and spaces.
           '
           Items
+            Pattern                = '^[ -~]*'
             Type                   = 'string'
             TypeName               = ''
             IsInputSchema          = 'false'
@@ -1929,9 +1939,11 @@ Properties
           IsOutputSchema         = 'false'
           SourceURL              = ''
         Property 'scopes' =
-          Description            = 'Scopes which should be included for this Region
+          Description            = 'Scopes which should be included for this Region.  Scopes must be
+          composed of printable ASCII characters and spaces.
           '
           Items
+            Pattern                = '^[ -~]*'
             Type                   = 'string'
             TypeName               = ''
             IsInputSchema          = 'false'
@@ -1987,9 +1999,11 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'scopes' =
-    Description            = 'Scopes to issue credentials to for all regions
+    Description            = 'Scopes to issue credentials to for all regions.  Scopes must be composed
+    of printable ASCII characters and spaces.
     '
     Items
+      Pattern                = '^[ -~]*'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
