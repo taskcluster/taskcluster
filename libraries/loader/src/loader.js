@@ -179,9 +179,9 @@ function loader (componentDirectory, virtualComponents = []) {
 
     // Keep state of loaded components, make the virtual ones immediately loaded
     let loaded = {};
-    for (let vComp of virtualComponents) {
-      loaded[vComp] = Promise.resolve(options[vComp]);
-    }
+    _.forEach(options, (comp, key) => {
+      loaded[key] = Promise.resolve(comp);
+    });
 
     // Load a component
     function load(target) {

@@ -45,6 +45,21 @@ describe('component loader', () => {
     })).equals(a);
   });
 
+  it('should allow overwrites', async () => {
+    let load = subject({
+      test: {
+        requires: [],
+        setup: () => {
+          return "Hello World";
+        }
+      }
+    }, []);
+
+    assume(await load('test', {
+      test: 'Mocking Hello World'
+    })).equals('Mocking Hello World');
+  });
+
   it('should forbid undefined components', async () => {
     try {
       let load = subject({
