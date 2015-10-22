@@ -1,5 +1,6 @@
 suite("api/publish", function() {
   var base            = require('../../');
+  var config  = require('taskcluster-lib-config');
   var aws             = require('aws-sdk-promise');
   var assert          = require('assert');
   var Promise         = require('promise');
@@ -17,7 +18,7 @@ suite("api/publish", function() {
 
   // Test publish reference from mockAuthServer
   test("publish reference from mockAuthServer", function() {
-    var cfg = base.config({
+    var cfg = config({
       envs: [
         'aws_accessKeyId',
         'aws_secretAccessKey',
@@ -58,7 +59,7 @@ suite("api/publish", function() {
 
   // Test simple method
   test("publish minimal reference", function() {
-    var cfg = base.config({
+    var cfg = config({
       envs: [
         'aws_accessKeyId',
         'aws_secretAccessKey',

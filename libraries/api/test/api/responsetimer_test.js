@@ -5,11 +5,12 @@ suite("api/responsetimer", function() {
   var Promise         = require('promise');
   var mockAuthServer  = require('../mockauthserver');
   var base            = require('../../');
+  var config  = require('taskcluster-lib-config');
   var express         = require('express');
   var path            = require('path');
 
   // Load necessary configuration
-  var cfg = base.config({
+  var cfg = config({
     envs: [
       'influxdb_connectionString',
     ],
