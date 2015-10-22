@@ -2,6 +2,7 @@
 
 suite('testing.PulseTestReceiver', function() {
   var base          = require('../../');
+  var config        = require('taskcluster-lib-config');
   var assert        = require('assert');
   var path          = require('path');
   var fs            = require('fs');
@@ -9,7 +10,7 @@ suite('testing.PulseTestReceiver', function() {
   var taskcluster   = require('taskcluster-client')
 
   // Load necessary configuration
-  var cfg = base.config({
+  var cfg = config({
     filename:               'taskcluster-base-test'
   });
 
