@@ -13,13 +13,10 @@ module.exports = {
     // Azure table name for hooks
     hookTableName:  'Hooks',
 
-    // Azure account
-    azureAccount:   undefined,
-
     // Key for signing in base.Entity (random string required)
-    tableSigningKey:  undefined,
+    tableSigningKey: undefined,
     // Key for data encryption in base.Entity (32 random bytes as base64)
-    tableCryptoKey    undefined,
+    tableCryptoKey: undefined,
 
     schedule: {
       // delay between poll operations (ms)
