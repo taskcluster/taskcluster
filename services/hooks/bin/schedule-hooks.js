@@ -36,7 +36,7 @@ var launch = async function(profile, options) {
     account:      cfg.get('hooks:azureAccount'),
     table:        cfg.get('hooks:hookTableName'),
     credentials:  cfg.get('taskcluster:credentials'),
-    authBaseUrl:  cfg.get('taskcluster:authBaseUrl')
+    authBaseUrl:  cfg.get('taskcluster:authBaseUrl'),
     signingKey:   cfg.get('hooks:tableSigningKey'),
     cryptoKey:    cfg.get('hooks:tableCryptoKey'),
     process:      'schedule-hooks'
