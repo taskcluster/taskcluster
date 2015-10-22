@@ -3,11 +3,12 @@ suite("validator", function() {
   var path    = require('path');
   var aws     = require('aws-sdk-promise');
   var base    = require('../');
+  var config  = require('taskcluster-lib-config');
   var http    = require('http');
 
 
   test("test publish", function() {
-    var cfg = base.config({
+    var cfg = config({
       envs: [
         'aws_accessKeyId',
         'aws_secretAccessKey',
