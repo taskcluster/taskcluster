@@ -36,7 +36,7 @@ if __name__ == '__main__':
     description='Python client for Taskcluster',
     author='John Ford',
     author_email='jhford@mozilla.com',
-    url='taskcluster.github.io/taskcluster-client.py',
+    url='https://github.com/taskcluster/taskcluster-client.py',
     packages=['taskcluster'],
     package_data={
       'taskcluster': ['**.json']
