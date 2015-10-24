@@ -12,7 +12,22 @@ var path        = require('path');
 var yaml        = require('js-yaml');
 var urljoin     = require('url-join');
 
-var utils       = require('./utils');
+/** List files in folder recursively */
+function listFolder(folder, fileList) {
+  if (fileList == undefined) {
+    fileList = [];
+  }
+  fs.readdirSync(folder).forEach(function(obj) {
+    var objPath = path.join(folder, obj);
+    if (fs.statSync(objPath).isDirectory()) {
+      return exports.listFolder(objPath, fileList);
+    } else {
+      fileList.push(objPath);
+    }
+  });
+  return fileList;
+};
+
 
 
 /** Render {$const: <key>} into JSON schema */
@@ -163,7 +178,7 @@ var validator = function(options) {
     };
 
     // Register JSON schemas from folder
-    utils.listFolder(options.folder).forEach(function(filePath) {
+    listFolder(options.folder).forEach(function(filePath) {
       // We shall only import JSON files
       if (!/\.(json|ya?ml)$/.test(filePath)) {
         return;
