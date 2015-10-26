@@ -13,7 +13,7 @@ var path          = require('path');
 var fs            = require('fs');
 require('superagent-hawk')(require('superagent'));
 var request       = require('superagent-promise');
-var Validator     = require('./validator').Validator;
+var Validator     = require('./index').validator.Validator;
 var utils         = require('./utils');
 var stats         = require('taskcluster-lib-stats');
 var crypto        = require('crypto');
