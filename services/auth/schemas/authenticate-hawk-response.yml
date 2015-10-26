@@ -19,7 +19,7 @@ anyOf:
         type:                 array
         items:
           type:               string
-          pattern: "^[\x20-\x7e]*"
+          pattern: "^[\x20-\x7e]*$"
       scheme:
         description: |
           Authentication scheme the client used. Generally, you don't need to

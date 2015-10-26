@@ -52,7 +52,7 @@ properties:
       description: |
         Scope that client is granted by a role
       type:                 string
-      pattern:              "^[\x20-\x7e]*"
+      pattern:              "^[\x20-\x7e]*$"
 additionalProperties:       false
 required:
   - clientId
