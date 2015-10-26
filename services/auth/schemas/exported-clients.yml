@@ -25,7 +25,7 @@ items:
         description: |
           Scope the client is authorized to access
         type:                 string
-        pattern:              "^[\x20-\x7e]*"
+        pattern:              "^[\x20-\x7e]*$"
     expires:
       description: |
         Date and time where the clients credentials are set to expire
