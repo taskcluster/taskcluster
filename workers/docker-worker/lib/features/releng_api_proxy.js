@@ -59,7 +59,7 @@ export default class RelengAPIProxy {
       // wait for the initial server response...
       await waitForPort(inspect.NetworkSettings.IPAddress, '80', INIT_TIMEOUT);
     } catch (e) {
-      throw new Error('Failed to initialize releng API proxy service.');
+      throw new Error('Failed to initialize releng API proxy service due to: ' + e.name + ': ' + e.message);
     }
 
     return {
