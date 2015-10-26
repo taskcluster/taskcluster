@@ -1339,7 +1339,7 @@ Properties
     printable ASCII characters and spaces.
     '
     Items
-      Pattern                = '^[ -~]*'
+      Pattern                = '^[ -~]*$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -1447,7 +1447,7 @@ Properties
           be composed of printable ASCII characters and spaces.
           '
           Items
-            Pattern                = '^[ -~]*'
+            Pattern                = '^[ -~]*$'
             Type                   = 'string'
             TypeName               = ''
             IsInputSchema          = 'false'
@@ -1578,7 +1578,7 @@ Properties
           composed of printable ASCII characters and spaces.
           '
           Items
-            Pattern                = '^[ -~]*'
+            Pattern                = '^[ -~]*$'
             Type                   = 'string'
             TypeName               = ''
             IsInputSchema          = 'false'
@@ -1638,7 +1638,7 @@ Properties
     printable ASCII characters and spaces.
     '
     Items
-      Pattern                = '^[ -~]*'
+      Pattern                = '^[ -~]*$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -1802,7 +1802,7 @@ Properties
           be composed of printable ASCII characters and spaces.
           '
           Items
-            Pattern                = '^[ -~]*'
+            Pattern                = '^[ -~]*$'
             Type                   = 'string'
             TypeName               = ''
             IsInputSchema          = 'false'
@@ -1943,7 +1943,7 @@ Properties
           composed of printable ASCII characters and spaces.
           '
           Items
-            Pattern                = '^[ -~]*'
+            Pattern                = '^[ -~]*$'
             Type                   = 'string'
             TypeName               = ''
             IsInputSchema          = 'false'
@@ -2003,7 +2003,7 @@ Properties
     of printable ASCII characters and spaces.
     '
     Items
-      Pattern                = '^[ -~]*'
+      Pattern                = '^[ -~]*$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
