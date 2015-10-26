@@ -14,6 +14,10 @@ var testCases = [
     schema:   'auth/v1/authenticate-hawk-request.json#',
     success:  true
   }, {
+    path:     'create-role-request.json',
+    schema:   'auth/v1/create-role-request.json#',
+    success:  true
+  }, {
     path:     'authenticate-hawk-request-bad.json',
     schema:   'auth/v1/authenticate-hawk-request.json#',
     success:  false
