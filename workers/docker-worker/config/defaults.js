@@ -43,7 +43,7 @@ module.exports = {
 
   features: {
     relengAPIProxy: {
-      image: 'quay.io/djmitche/relengapi-proxy:0.0.2',
+      image: 'taskcluster/relengapi-proxy:0.0.2',
       token: process.env.RELENG_API_TOKEN
     }
   },
