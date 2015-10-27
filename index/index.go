@@ -102,13 +102,13 @@
 //
 // How to use this package
 //
-// First create an authentication object:
+// First create an Index object:
 //
-//  Index := index.New("myClientId", "myAccessToken")
+//  myIndex := index.New("myClientId", "myAccessToken")
 //
-// and then call one or more of auth's methods, e.g.:
+// and then call one or more of myIndex's methods, e.g.:
 //
-//  data, callSummary := Index.FindTask(.....)
+//  data, callSummary := myIndex.FindTask(.....)
 // handling any errors...
 //  if callSummary.Error != nil {
 //  	// handle error...
@@ -142,7 +142,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
+func (myIndex *Index) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	var jsonPayload []byte
@@ -162,23 +162,23 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
+		httpRequest, err := http.NewRequest(method, myIndex.BaseURL+route, ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", auth.BaseURL+route, auth.BaseURL, err)
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", myIndex.BaseURL+route, myIndex.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
-		if auth.Authenticate {
+		if myIndex.Authenticate {
 			credentials := &hawk.Credentials{
-				ID:   auth.ClientId,
-				Key:  auth.AccessToken,
+				ID:   myIndex.ClientId,
+				Key:  myIndex.AccessToken,
 				Hash: sha256.New,
 			}
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if auth.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + auth.Certificate + "}"))
+			if myIndex.Certificate != "" {
+				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + myIndex.Certificate + "}"))
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
@@ -219,21 +219,21 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 }
 
 // The entry point into all the functionality in this package is to create an
-// Auth object.  It contains your authentication credentials, which are
+// Index object.  It contains your authentication credentials, which are
 // required for all HTTP operations.
-type Auth struct {
+type Index struct {
 	// Client ID required by Hawk
 	ClientId string
 	// Access Token required by Hawk
 	AccessToken string
 	// The URL of the API endpoint to hit.
 	// Use "https://index.taskcluster.net/v1" for production.
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with BaseURL set to production.
+	// Please note calling index.New(clientId string, accessToken string) is an
+	// alternative way to create an Index object with BaseURL set to production.
 	BaseURL string
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with Authenticate set to true.
+	// Please note calling index.New(clientId string, accessToken string) is an
+	// alternative way to create an Index object with Authenticate set to true.
 	Authenticate bool
 	// Certificate for temporary credentials
 	Certificate string
@@ -266,21 +266,21 @@ type CallSummary struct {
 	Attempts int
 }
 
-// Returns a pointer to Auth, configured to run against production.  If you
+// Returns a pointer to Index, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
 // taskcluster-proxy) by setting Authenticate to false.
 //
 // For example:
-//  Index := index.New("123", "456")                       // set clientId and accessToken
-//  Index.Authenticate = false                             // disable authentication (true by default)
-//  Index.BaseURL = "http://localhost:1234/api/Index/v1"   // alternative API endpoint (production by default)
-//  data, callSummary := Index.FindTask(.....)             // for example, call the FindTask(.....) API endpoint (described further down)...
+//  myIndex := index.New("123", "456")                       // set clientId and accessToken
+//  myIndex.Authenticate = false                             // disable authentication (true by default)
+//  myIndex.BaseURL = "http://localhost:1234/api/Index/v1"   // alternative API endpoint (production by default)
+//  data, callSummary := myIndex.FindTask(.....)             // for example, call the FindTask(.....) API endpoint (described further down)...
 //  if callSummary.Error != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Auth {
-	return &Auth{
+func New(clientId string, accessToken string) *Index {
+	return &Index{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://index.taskcluster.net/v1",
@@ -292,8 +292,8 @@ func New(clientId string, accessToken string) *Auth {
 // API end-point respond `404`.
 //
 // See http://docs.taskcluster.net/services/index/#findTask
-func (a *Auth) FindTask(namespace string) (*IndexedTaskResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse))
+func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *CallSummary) {
+	responseObject, callSummary := myIndex.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse))
 	return responseObject.(*IndexedTaskResponse), callSummary
 }
 
@@ -307,8 +307,8 @@ func (a *Auth) FindTask(namespace string) (*IndexedTaskResponse, *CallSummary) {
 // services, as that makes little sense.
 //
 // See http://docs.taskcluster.net/services/index/#listNamespaces
-func (a *Auth) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse))
+func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, *CallSummary) {
+	responseObject, callSummary := myIndex.apiCall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse))
 	return responseObject.(*ListNamespacesResponse), callSummary
 }
 
@@ -322,8 +322,8 @@ func (a *Auth) ListNamespaces(namespace string, payload *ListNamespacesRequest) 
 // services, as that makes little sense.
 //
 // See http://docs.taskcluster.net/services/index/#listTasks
-func (a *Auth) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse))
+func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, *CallSummary) {
+	responseObject, callSummary := myIndex.apiCall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse))
 	return responseObject.(*ListTasksResponse), callSummary
 }
 
@@ -331,8 +331,8 @@ func (a *Auth) ListTasks(namespace string, payload *ListTasksRequest) (*ListTask
 // to index successfully completed tasks automatically, using custom routes.
 //
 // See http://docs.taskcluster.net/services/index/#insertTask
-func (a *Auth) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse))
+func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, *CallSummary) {
+	responseObject, callSummary := myIndex.apiCall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse))
 	return responseObject.(*IndexedTaskResponse), callSummary
 }
 
@@ -341,8 +341,8 @@ func (a *Auth) InsertTask(namespace string, payload *InsertTaskRequest) (*Indexe
 // `404`.
 //
 // See http://docs.taskcluster.net/services/index/#findArtifactFromTask
-func (a *Auth) FindArtifactFromTask(namespace string, name string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil)
+func (myIndex *Index) FindArtifactFromTask(namespace string, name string) *CallSummary {
+	_, callSummary := myIndex.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 
@@ -351,8 +351,8 @@ func (a *Auth) FindArtifactFromTask(namespace string, name string) *CallSummary 
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/services/index/#ping
-func (a *Auth) Ping() *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/ping", nil)
+func (myIndex *Index) Ping() *CallSummary {
+	_, callSummary := myIndex.apiCall(nil, "GET", "/ping", nil)
 	return callSummary
 }
 

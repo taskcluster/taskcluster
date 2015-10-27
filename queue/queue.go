@@ -22,13 +22,13 @@
 //
 // How to use this package
 //
-// First create an authentication object:
+// First create a Queue object:
 //
-//  Queue := queue.New("myClientId", "myAccessToken")
+//  myQueue := queue.New("myClientId", "myAccessToken")
 //
-// and then call one or more of auth's methods, e.g.:
+// and then call one or more of myQueue's methods, e.g.:
 //
-//  data, callSummary := Queue.Task(.....)
+//  data, callSummary := myQueue.Task(.....)
 // handling any errors...
 //  if callSummary.Error != nil {
 //  	// handle error...
@@ -63,7 +63,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
+func (myQueue *Queue) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	var jsonPayload []byte
@@ -83,23 +83,23 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
+		httpRequest, err := http.NewRequest(method, myQueue.BaseURL+route, ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", auth.BaseURL+route, auth.BaseURL, err)
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", myQueue.BaseURL+route, myQueue.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
-		if auth.Authenticate {
+		if myQueue.Authenticate {
 			credentials := &hawk.Credentials{
-				ID:   auth.ClientId,
-				Key:  auth.AccessToken,
+				ID:   myQueue.ClientId,
+				Key:  myQueue.AccessToken,
 				Hash: sha256.New,
 			}
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if auth.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + auth.Certificate + "}"))
+			if myQueue.Certificate != "" {
+				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + myQueue.Certificate + "}"))
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
@@ -139,22 +139,22 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	return result, callSummary
 }
 
-// The entry point into all the functionality in this package is to create an
-// Auth object.  It contains your authentication credentials, which are
+// The entry point into all the functionality in this package is to create a
+// Queue object.  It contains your authentication credentials, which are
 // required for all HTTP operations.
-type Auth struct {
+type Queue struct {
 	// Client ID required by Hawk
 	ClientId string
 	// Access Token required by Hawk
 	AccessToken string
 	// The URL of the API endpoint to hit.
 	// Use "https://queue.taskcluster.net/v1" for production.
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with BaseURL set to production.
+	// Please note calling queue.New(clientId string, accessToken string) is an
+	// alternative way to create a Queue object with BaseURL set to production.
 	BaseURL string
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with Authenticate set to true.
+	// Please note calling queue.New(clientId string, accessToken string) is an
+	// alternative way to create a Queue object with Authenticate set to true.
 	Authenticate bool
 	// Certificate for temporary credentials
 	Certificate string
@@ -187,21 +187,21 @@ type CallSummary struct {
 	Attempts int
 }
 
-// Returns a pointer to Auth, configured to run against production.  If you
+// Returns a pointer to Queue, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
 // taskcluster-proxy) by setting Authenticate to false.
 //
 // For example:
-//  Queue := queue.New("123", "456")                       // set clientId and accessToken
-//  Queue.Authenticate = false                             // disable authentication (true by default)
-//  Queue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
-//  data, callSummary := Queue.Task(.....)                 // for example, call the Task(.....) API endpoint (described further down)...
+//  myQueue := queue.New("123", "456")                       // set clientId and accessToken
+//  myQueue.Authenticate = false                             // disable authentication (true by default)
+//  myQueue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
+//  data, callSummary := myQueue.Task(.....)                 // for example, call the Task(.....) API endpoint (described further down)...
 //  if callSummary.Error != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Auth {
-	return &Auth{
+func New(clientId string, accessToken string) *Queue {
+	return &Queue{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://queue.taskcluster.net/v1",
@@ -214,16 +214,16 @@ func New(clientId string, accessToken string) *Auth {
 // specified the queue may provide a default value.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#task
-func (a *Auth) Task(taskId string) (*TaskDefinition1, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId), new(TaskDefinition1))
+func (myQueue *Queue) Task(taskId string) (*TaskDefinition1, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId), new(TaskDefinition1))
 	return responseObject.(*TaskDefinition1), callSummary
 }
 
 // Get task status structure from `taskId`
 //
 // See http://docs.taskcluster.net/queue/api-docs/#status
-func (a *Auth) Status(taskId string) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/status", new(TaskStatusResponse))
+func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/status", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -247,8 +247,8 @@ func (a *Auth) Status(taskId string) (*TaskStatusResponse, *CallSummary) {
 // for completed tasks you have posted.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#createTask
-func (a *Auth) CreateTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/task/"+url.QueryEscape(taskId), new(TaskStatusResponse))
+func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(payload, "PUT", "/task/"+url.QueryEscape(taskId), new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -268,8 +268,8 @@ func (a *Auth) CreateTask(taskId string, payload *TaskDefinition) (*TaskStatusRe
 // task definition as previously defined this operation is safe to retry.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#defineTask
-func (a *Auth) DefineTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/define", new(TaskStatusResponse))
+func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/define", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -283,8 +283,8 @@ func (a *Auth) DefineTask(taskId string, payload *TaskDefinition) (*TaskStatusRe
 // To reschedule a task previously resolved, use `rerunTask`.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#scheduleTask
-func (a *Auth) ScheduleTask(taskId string) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/schedule", new(TaskStatusResponse))
+func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/schedule", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -302,8 +302,8 @@ func (a *Auth) ScheduleTask(taskId string) (*TaskStatusResponse, *CallSummary) {
 // current task status.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#rerunTask
-func (a *Auth) RerunTask(taskId string) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/rerun", new(TaskStatusResponse))
+func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/rerun", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -321,8 +321,8 @@ func (a *Auth) RerunTask(taskId string) (*TaskStatusResponse, *CallSummary) {
 // return the current task status.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#cancelTask
-func (a *Auth) CancelTask(taskId string) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/cancel", new(TaskStatusResponse))
+func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/cancel", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -331,32 +331,32 @@ func (a *Auth) CancelTask(taskId string) (*TaskStatusResponse, *CallSummary) {
 // with `claimTask`, and afterwards you should always delete the message.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pollTaskUrls
-func (a *Auth) PollTaskUrls(provisionerId string, workerType string) (*PollTaskUrlsResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(PollTaskUrlsResponse))
+func (myQueue *Queue) PollTaskUrls(provisionerId string, workerType string) (*PollTaskUrlsResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "GET", "/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(PollTaskUrlsResponse))
 	return responseObject.(*PollTaskUrlsResponse), callSummary
 }
 
 // claim a task, more to be added later...
 //
 // See http://docs.taskcluster.net/queue/api-docs/#claimTask
-func (a *Auth) ClaimTask(taskId string, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/claim", new(TaskClaimResponse))
+func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/claim", new(TaskClaimResponse))
 	return responseObject.(*TaskClaimResponse), callSummary
 }
 
 // reclaim a task more to be added later...
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reclaimTask
-func (a *Auth) ReclaimTask(taskId string, runId string) (*TaskClaimResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskClaimResponse))
+func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskClaimResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskClaimResponse))
 	return responseObject.(*TaskClaimResponse), callSummary
 }
 
 // Report a task completed, resolving the run as `completed`.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportCompleted
-func (a *Auth) ReportCompleted(taskId string, runId string) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/completed", new(TaskStatusResponse))
+func (myQueue *Queue) ReportCompleted(taskId string, runId string) (*TaskStatusResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/completed", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -369,8 +369,8 @@ func (a *Auth) ReportCompleted(taskId string, runId string) (*TaskStatusResponse
 // which should be reported with `reportException`.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportFailed
-func (a *Auth) ReportFailed(taskId string, runId string) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/failed", new(TaskStatusResponse))
+func (myQueue *Queue) ReportFailed(taskId string, runId string) (*TaskStatusResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/failed", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -388,8 +388,8 @@ func (a *Auth) ReportFailed(taskId string, runId string) (*TaskStatusResponse, *
 // is temporarily unavailable worker should report task _failed_.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportException
-func (a *Auth) ReportException(taskId string, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/exception", new(TaskStatusResponse))
+func (myQueue *Queue) ReportException(taskId string, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/exception", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
 
@@ -453,8 +453,8 @@ func (a *Auth) ReportException(taskId string, runId string, payload *TaskExcepti
 // reference artifacts your process has created.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#createArtifact
-func (a *Auth) CreateArtifact(taskId string, runId string, name string, payload *PostArtifactRequest) (*PostArtifactResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(PostArtifactResponse))
+func (myQueue *Queue) CreateArtifact(taskId string, runId string, name string, payload *PostArtifactRequest) (*PostArtifactResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(PostArtifactResponse))
 	return responseObject.(*PostArtifactResponse), callSummary
 }
 
@@ -471,8 +471,8 @@ func (a *Auth) CreateArtifact(taskId string, runId string, name string, payload 
 // use that URL with a normal HTTP client.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getArtifact
-func (a *Auth) GetArtifact(taskId string, runId string, name string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil)
+func (myQueue *Queue) GetArtifact(taskId string, runId string, name string) *CallSummary {
+	_, callSummary := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 
@@ -493,16 +493,16 @@ func (a *Auth) GetArtifact(taskId string, runId string, name string) *CallSummar
 // the latest run. Otherwise, just us the most convenient API end-point.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getLatestArtifact
-func (a *Auth) GetLatestArtifact(taskId string, name string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil)
+func (myQueue *Queue) GetLatestArtifact(taskId string, name string) *CallSummary {
+	_, callSummary := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 
 // Returns a list of artifacts and associated meta-data for a given run.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#listArtifacts
-func (a *Auth) ListArtifacts(taskId string, runId string) (*ListArtifactsResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", new(ListArtifactsResponse))
+func (myQueue *Queue) ListArtifacts(taskId string, runId string) (*ListArtifactsResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", new(ListArtifactsResponse))
 	return responseObject.(*ListArtifactsResponse), callSummary
 }
 
@@ -510,8 +510,8 @@ func (a *Auth) ListArtifacts(taskId string, runId string) (*ListArtifactsRespons
 // from the given task.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#listLatestArtifacts
-func (a *Auth) ListLatestArtifacts(taskId string) (*ListArtifactsResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse))
+func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse))
 	return responseObject.(*ListArtifactsResponse), callSummary
 }
 
@@ -520,8 +520,8 @@ func (a *Auth) ListLatestArtifacts(taskId string) (*ListArtifactsResponse, *Call
 // queue storage...
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pendingTasks
-func (a *Auth) PendingTasks(provisionerId string, workerType string) (*CountPendingTasksResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse))
+func (myQueue *Queue) PendingTasks(provisionerId string, workerType string) (*CountPendingTasksResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse))
 	return responseObject.(*CountPendingTasksResponse), callSummary
 }
 
@@ -530,8 +530,8 @@ func (a *Auth) PendingTasks(provisionerId string, workerType string) (*CountPend
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#ping
-func (a *Auth) Ping() *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/ping", nil)
+func (myQueue *Queue) Ping() *CallSummary {
+	_, callSummary := myQueue.apiCall(nil, "GET", "/ping", nil)
 	return callSummary
 }
 

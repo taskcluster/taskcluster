@@ -57,13 +57,13 @@
 //
 // How to use this package
 //
-// First create an authentication object:
+// First create an Auth object:
 //
-//  Auth := auth.New("myClientId", "myAccessToken")
+//  myAuth := auth.New("myClientId", "myAccessToken")
 //
-// and then call one or more of auth's methods, e.g.:
+// and then call one or more of myAuth's methods, e.g.:
 //
-//  data, callSummary := Auth.ListClients(.....)
+//  data, callSummary := myAuth.ListClients(.....)
 // handling any errors...
 //  if callSummary.Error != nil {
 //  	// handle error...
@@ -98,7 +98,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
+func (myAuth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	var jsonPayload []byte
@@ -118,23 +118,23 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
+		httpRequest, err := http.NewRequest(method, myAuth.BaseURL+route, ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", auth.BaseURL+route, auth.BaseURL, err)
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", myAuth.BaseURL+route, myAuth.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
-		if auth.Authenticate {
+		if myAuth.Authenticate {
 			credentials := &hawk.Credentials{
-				ID:   auth.ClientId,
-				Key:  auth.AccessToken,
+				ID:   myAuth.ClientId,
+				Key:  myAuth.AccessToken,
 				Hash: sha256.New,
 			}
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if auth.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + auth.Certificate + "}"))
+			if myAuth.Certificate != "" {
+				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + myAuth.Certificate + "}"))
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
@@ -228,10 +228,10 @@ type CallSummary struct {
 // taskcluster-proxy) by setting Authenticate to false.
 //
 // For example:
-//  Auth := auth.New("123", "456")                       // set clientId and accessToken
-//  Auth.Authenticate = false                            // disable authentication (true by default)
-//  Auth.BaseURL = "http://localhost:1234/api/Auth/v1"   // alternative API endpoint (production by default)
-//  data, callSummary := Auth.ListClients(.....)         // for example, call the ListClients(.....) API endpoint (described further down)...
+//  myAuth := auth.New("123", "456")                       // set clientId and accessToken
+//  myAuth.Authenticate = false                            // disable authentication (true by default)
+//  myAuth.BaseURL = "http://localhost:1234/api/Auth/v1"   // alternative API endpoint (production by default)
+//  data, callSummary := myAuth.ListClients(.....)         // for example, call the ListClients(.....) API endpoint (described further down)...
 //  if callSummary.Error != nil {
 //  	// handle errors...
 //  }
@@ -247,16 +247,16 @@ func New(clientId string, accessToken string) *Auth {
 // Get a list of all clients.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#listClients
-func (a *Auth) ListClients() (*ListClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/clients/", new(ListClientResponse))
+func (myAuth *Auth) ListClients() (*ListClientResponse, *CallSummary) {
+	responseObject, callSummary := myAuth.apiCall(nil, "GET", "/clients/", new(ListClientResponse))
 	return responseObject.(*ListClientResponse), callSummary
 }
 
 // Get information about a single client.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#client
-func (a *Auth) Client(clientId string) (*GetClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse))
+func (myAuth *Auth) Client(clientId string) (*GetClientResponse, *CallSummary) {
+	responseObject, callSummary := myAuth.apiCall(nil, "GET", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse))
 	return responseObject.(*GetClientResponse), callSummary
 }
 
@@ -272,8 +272,8 @@ func (a *Auth) Client(clientId string) (*GetClientResponse, *CallSummary) {
 // fail. Use `updateClient` if you wish to update an existing client.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#createClient
-func (a *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/clients/"+url.QueryEscape(clientId), new(CreateClientResponse))
+func (myAuth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, *CallSummary) {
+	responseObject, callSummary := myAuth.apiCall(payload, "PUT", "/clients/"+url.QueryEscape(clientId), new(CreateClientResponse))
 	return responseObject.(*CreateClientResponse), callSummary
 }
 
@@ -285,8 +285,8 @@ func (a *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*Cre
 // you must reset the accessToken to acquire it again.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#resetAccessToken
-func (a *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/reset", new(CreateClientResponse))
+func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *CallSummary) {
+	responseObject, callSummary := myAuth.apiCall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/reset", new(CreateClientResponse))
 	return responseObject.(*CreateClientResponse), callSummary
 }
 
@@ -295,8 +295,8 @@ func (a *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *CallSu
 // or `accessToken`.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#updateClient
-func (a *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse))
+func (myAuth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, *CallSummary) {
+	responseObject, callSummary := myAuth.apiCall(payload, "POST", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse))
 	return responseObject.(*GetClientResponse), callSummary
 }
 
@@ -304,8 +304,8 @@ func (a *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*Get
 // be deleted independently.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#deleteClient
-func (a *Auth) DeleteClient(clientId string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "DELETE", "/clients/"+url.QueryEscape(clientId), nil)
+func (myAuth *Auth) DeleteClient(clientId string) *CallSummary {
+	_, callSummary := myAuth.apiCall(nil, "DELETE", "/clients/"+url.QueryEscape(clientId), nil)
 	return callSummary
 }
 
@@ -313,8 +313,8 @@ func (a *Auth) DeleteClient(clientId string) *CallSummary {
 // scopes it expands to.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#listRoles
-func (a *Auth) ListRoles() (*ListRolesResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/roles/", new(ListRolesResponse))
+func (myAuth *Auth) ListRoles() (*ListRolesResponse, *CallSummary) {
+	responseObject, callSummary := myAuth.apiCall(nil, "GET", "/roles/", new(ListRolesResponse))
 	return responseObject.(*ListRolesResponse), callSummary
 }
 
@@ -322,8 +322,8 @@ func (a *Auth) ListRoles() (*ListRolesResponse, *CallSummary) {
 // role expands to.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#role
-func (a *Auth) Role(roleId string) (*GetRoleResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse))
+func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, *CallSummary) {
+	responseObject, callSummary := myAuth.apiCall(nil, "GET", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse))
 	return responseObject.(*GetRoleResponse), callSummary
 }
 
@@ -331,16 +331,16 @@ func (a *Auth) Role(roleId string) (*GetRoleResponse, *CallSummary) {
 // this operation will fail. Use `updateRole` to modify an existing role
 //
 // See http://docs.taskcluster.net/auth/api-docs/#createRole
-func (a *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse))
+func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *CallSummary) {
+	responseObject, callSummary := myAuth.apiCall(payload, "PUT", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse))
 	return responseObject.(*GetRoleResponse), callSummary
 }
 
 // Update existing role.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#updateRole
-func (a *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse))
+func (myAuth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *CallSummary) {
+	responseObject, callSummary := myAuth.apiCall(payload, "POST", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse))
 	return responseObject.(*GetRoleResponse), callSummary
 }
 
@@ -348,8 +348,8 @@ func (a *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleRe
 // the role exists.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#deleteRole
-func (a *Auth) DeleteRole(roleId string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "DELETE", "/roles/"+url.QueryEscape(roleId), nil)
+func (myAuth *Auth) DeleteRole(roleId string) *CallSummary {
+	_, callSummary := myAuth.apiCall(nil, "DELETE", "/roles/"+url.QueryEscape(roleId), nil)
 	return callSummary
 }
 
@@ -374,8 +374,8 @@ func (a *Auth) DeleteRole(roleId string) *CallSummary {
 // which may not be intended.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#awsS3Credentials
-func (a *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse))
+func (myAuth *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *CallSummary) {
+	responseObject, callSummary := myAuth.apiCall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse))
 	return responseObject.(*AWSS3CredentialsResponse), callSummary
 }
 
@@ -384,8 +384,8 @@ func (a *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AW
 // already exist.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#azureTableSAS
-func (a *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSignatureResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", new(AzureSharedAccessSignatureResponse))
+func (myAuth *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSignatureResponse, *CallSummary) {
+	responseObject, callSummary := myAuth.apiCall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", new(AzureSharedAccessSignatureResponse))
 	return responseObject.(*AzureSharedAccessSignatureResponse), callSummary
 }
 
@@ -397,8 +397,8 @@ func (a *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSi
 // the secret credentials leave this service.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#authenticateHawk
-func (a *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest) (*HawkSignatureAuthenticationResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/authenticate-hawk", new(HawkSignatureAuthenticationResponse))
+func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest) (*HawkSignatureAuthenticationResponse, *CallSummary) {
+	responseObject, callSummary := myAuth.apiCall(payload, "POST", "/authenticate-hawk", new(HawkSignatureAuthenticationResponse))
 	return responseObject.(*HawkSignatureAuthenticationResponse), callSummary
 }
 
@@ -406,8 +406,8 @@ func (a *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest) (*H
 // exists. Returns a list of all clients imported.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#importClients
-func (a *Auth) ImportClients(payload *ExportedClients) *CallSummary {
-	_, callSummary := a.apiCall(payload, "POST", "/import-clients", nil)
+func (myAuth *Auth) ImportClients(payload *ExportedClients) *CallSummary {
+	_, callSummary := myAuth.apiCall(payload, "POST", "/import-clients", nil)
 	return callSummary
 }
 
@@ -416,8 +416,8 @@ func (a *Auth) ImportClients(payload *ExportedClients) *CallSummary {
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#ping
-func (a *Auth) Ping() *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/ping", nil)
+func (myAuth *Auth) Ping() *CallSummary {
+	_, callSummary := myAuth.apiCall(nil, "GET", "/ping", nil)
 	return callSummary
 }
 

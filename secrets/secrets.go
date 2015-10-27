@@ -16,13 +16,13 @@
 //
 // How to use this package
 //
-// First create an authentication object:
+// First create a Secrets object:
 //
-//  Secrets := secrets.New("myClientId", "myAccessToken")
+//  mySecrets := secrets.New("myClientId", "myAccessToken")
 //
-// and then call one or more of auth's methods, e.g.:
+// and then call one or more of mySecrets's methods, e.g.:
 //
-//  callSummary := Secrets.Set(.....)
+//  callSummary := mySecrets.Set(.....)
 // handling any errors...
 //  if callSummary.Error != nil {
 //  	// handle error...
@@ -56,7 +56,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
+func (mySecrets *Secrets) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	var jsonPayload []byte
@@ -76,23 +76,23 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
+		httpRequest, err := http.NewRequest(method, mySecrets.BaseURL+route, ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", auth.BaseURL+route, auth.BaseURL, err)
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", mySecrets.BaseURL+route, mySecrets.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
-		if auth.Authenticate {
+		if mySecrets.Authenticate {
 			credentials := &hawk.Credentials{
-				ID:   auth.ClientId,
-				Key:  auth.AccessToken,
+				ID:   mySecrets.ClientId,
+				Key:  mySecrets.AccessToken,
 				Hash: sha256.New,
 			}
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if auth.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + auth.Certificate + "}"))
+			if mySecrets.Certificate != "" {
+				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + mySecrets.Certificate + "}"))
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
@@ -132,22 +132,22 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	return result, callSummary
 }
 
-// The entry point into all the functionality in this package is to create an
-// Auth object.  It contains your authentication credentials, which are
+// The entry point into all the functionality in this package is to create a
+// Secrets object.  It contains your authentication credentials, which are
 // required for all HTTP operations.
-type Auth struct {
+type Secrets struct {
 	// Client ID required by Hawk
 	ClientId string
 	// Access Token required by Hawk
 	AccessToken string
 	// The URL of the API endpoint to hit.
 	// Use "https://secrets.taskcluster.net/v1" for production.
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with BaseURL set to production.
+	// Please note calling secrets.New(clientId string, accessToken string) is an
+	// alternative way to create a Secrets object with BaseURL set to production.
 	BaseURL string
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with Authenticate set to true.
+	// Please note calling secrets.New(clientId string, accessToken string) is an
+	// alternative way to create a Secrets object with Authenticate set to true.
 	Authenticate bool
 	// Certificate for temporary credentials
 	Certificate string
@@ -180,21 +180,21 @@ type CallSummary struct {
 	Attempts int
 }
 
-// Returns a pointer to Auth, configured to run against production.  If you
+// Returns a pointer to Secrets, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
 // taskcluster-proxy) by setting Authenticate to false.
 //
 // For example:
-//  Secrets := secrets.New("123", "456")                       // set clientId and accessToken
-//  Secrets.Authenticate = false                               // disable authentication (true by default)
-//  Secrets.BaseURL = "http://localhost:1234/api/Secrets/v1"   // alternative API endpoint (production by default)
-//  callSummary := Secrets.Set(.....)                          // for example, call the Set(.....) API endpoint (described further down)...
+//  mySecrets := secrets.New("123", "456")                       // set clientId and accessToken
+//  mySecrets.Authenticate = false                               // disable authentication (true by default)
+//  mySecrets.BaseURL = "http://localhost:1234/api/Secrets/v1"   // alternative API endpoint (production by default)
+//  callSummary := mySecrets.Set(.....)                          // for example, call the Set(.....) API endpoint (described further down)...
 //  if callSummary.Error != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Auth {
-	return &Auth{
+func New(clientId string, accessToken string) *Secrets {
+	return &Secrets{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://secrets.taskcluster.net/v1",
@@ -205,32 +205,32 @@ func New(clientId string, accessToken string) *Auth {
 // Set a secret associated with some key.
 //
 // See http://docs.taskcluster.net/services/secrets/#set
-func (a *Auth) Set(name string, payload *ATaskClusterSecret) *CallSummary {
-	_, callSummary := a.apiCall(payload, "PUT", "/secrets/"+url.QueryEscape(name), nil)
+func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) *CallSummary {
+	_, callSummary := mySecrets.apiCall(payload, "PUT", "/secrets/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 
 // Update a secret associated with some key.
 //
 // See http://docs.taskcluster.net/services/secrets/#update
-func (a *Auth) Update(name string, payload *ATaskClusterSecret) *CallSummary {
-	_, callSummary := a.apiCall(payload, "POST", "/secrets/"+url.QueryEscape(name), nil)
+func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) *CallSummary {
+	_, callSummary := mySecrets.apiCall(payload, "POST", "/secrets/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 
 // Delete the secret attached to some key.
 //
 // See http://docs.taskcluster.net/services/secrets/#remove
-func (a *Auth) Remove(name string) *CallSummary {
-	_, callSummary := a.apiCall(nil, "DELETE", "/secrets/"+url.QueryEscape(name), nil)
+func (mySecrets *Secrets) Remove(name string) *CallSummary {
+	_, callSummary := mySecrets.apiCall(nil, "DELETE", "/secrets/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 
 // Read the secret attached to some key.
 //
 // See http://docs.taskcluster.net/services/secrets/#get
-func (a *Auth) Get(name string) (*ATaskClusterSecret, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/secrets/"+url.QueryEscape(name), new(ATaskClusterSecret))
+func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary) {
+	responseObject, callSummary := mySecrets.apiCall(nil, "GET", "/secrets/"+url.QueryEscape(name), new(ATaskClusterSecret))
 	return responseObject.(*ATaskClusterSecret), callSummary
 }
 
@@ -239,8 +239,8 @@ func (a *Auth) Get(name string) (*ATaskClusterSecret, *CallSummary) {
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/services/secrets/#ping
-func (a *Auth) Ping() *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/ping", nil)
+func (mySecrets *Secrets) Ping() *CallSummary {
+	_, callSummary := mySecrets.apiCall(nil, "GET", "/ping", nil)
 	return callSummary
 }
 

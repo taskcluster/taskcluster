@@ -23,13 +23,13 @@
 //
 // How to use this package
 //
-// First create an authentication object:
+// First create a Scheduler object:
 //
-//  Scheduler := scheduler.New("myClientId", "myAccessToken")
+//  myScheduler := scheduler.New("myClientId", "myAccessToken")
 //
-// and then call one or more of auth's methods, e.g.:
+// and then call one or more of myScheduler's methods, e.g.:
 //
-//  data, callSummary := Scheduler.CreateTaskGraph(.....)
+//  data, callSummary := myScheduler.CreateTaskGraph(.....)
 // handling any errors...
 //  if callSummary.Error != nil {
 //  	// handle error...
@@ -63,7 +63,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
+func (myScheduler *Scheduler) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	var jsonPayload []byte
@@ -83,23 +83,23 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
+		httpRequest, err := http.NewRequest(method, myScheduler.BaseURL+route, ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", auth.BaseURL+route, auth.BaseURL, err)
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", myScheduler.BaseURL+route, myScheduler.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
-		if auth.Authenticate {
+		if myScheduler.Authenticate {
 			credentials := &hawk.Credentials{
-				ID:   auth.ClientId,
-				Key:  auth.AccessToken,
+				ID:   myScheduler.ClientId,
+				Key:  myScheduler.AccessToken,
 				Hash: sha256.New,
 			}
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if auth.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + auth.Certificate + "}"))
+			if myScheduler.Certificate != "" {
+				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + myScheduler.Certificate + "}"))
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
@@ -139,22 +139,22 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	return result, callSummary
 }
 
-// The entry point into all the functionality in this package is to create an
-// Auth object.  It contains your authentication credentials, which are
+// The entry point into all the functionality in this package is to create a
+// Scheduler object.  It contains your authentication credentials, which are
 // required for all HTTP operations.
-type Auth struct {
+type Scheduler struct {
 	// Client ID required by Hawk
 	ClientId string
 	// Access Token required by Hawk
 	AccessToken string
 	// The URL of the API endpoint to hit.
 	// Use "https://scheduler.taskcluster.net/v1" for production.
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with BaseURL set to production.
+	// Please note calling scheduler.New(clientId string, accessToken string) is an
+	// alternative way to create a Scheduler object with BaseURL set to production.
 	BaseURL string
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with Authenticate set to true.
+	// Please note calling scheduler.New(clientId string, accessToken string) is an
+	// alternative way to create a Scheduler object with Authenticate set to true.
 	Authenticate bool
 	// Certificate for temporary credentials
 	Certificate string
@@ -187,21 +187,21 @@ type CallSummary struct {
 	Attempts int
 }
 
-// Returns a pointer to Auth, configured to run against production.  If you
+// Returns a pointer to Scheduler, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
 // taskcluster-proxy) by setting Authenticate to false.
 //
 // For example:
-//  Scheduler := scheduler.New("123", "456")                       // set clientId and accessToken
-//  Scheduler.Authenticate = false                                 // disable authentication (true by default)
-//  Scheduler.BaseURL = "http://localhost:1234/api/Scheduler/v1"   // alternative API endpoint (production by default)
-//  data, callSummary := Scheduler.CreateTaskGraph(.....)          // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
+//  myScheduler := scheduler.New("123", "456")                       // set clientId and accessToken
+//  myScheduler.Authenticate = false                                 // disable authentication (true by default)
+//  myScheduler.BaseURL = "http://localhost:1234/api/Scheduler/v1"   // alternative API endpoint (production by default)
+//  data, callSummary := myScheduler.CreateTaskGraph(.....)          // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
 //  if callSummary.Error != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Auth {
-	return &Auth{
+func New(clientId string, accessToken string) *Scheduler {
+	return &Scheduler{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://scheduler.taskcluster.net/v1",
@@ -273,8 +273,8 @@ func New(clientId string, accessToken string) *Auth {
 // another component to listen for completed tasks you have posted.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#createTaskGraph
-func (a *Auth) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1) (*TaskGraphStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "PUT", "/task-graph/"+url.QueryEscape(taskGraphId), new(TaskGraphStatusResponse))
+func (myScheduler *Scheduler) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1) (*TaskGraphStatusResponse, *CallSummary) {
+	responseObject, callSummary := myScheduler.apiCall(payload, "PUT", "/task-graph/"+url.QueryEscape(taskGraphId), new(TaskGraphStatusResponse))
 	return responseObject.(*TaskGraphStatusResponse), callSummary
 }
 
@@ -293,8 +293,8 @@ func (a *Auth) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1
 // within a task in the task-graph being modified.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#extendTaskGraph
-func (a *Auth) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition) (*TaskGraphStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(payload, "POST", "/task-graph/"+url.QueryEscape(taskGraphId)+"/extend", new(TaskGraphStatusResponse))
+func (myScheduler *Scheduler) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition) (*TaskGraphStatusResponse, *CallSummary) {
+	responseObject, callSummary := myScheduler.apiCall(payload, "POST", "/task-graph/"+url.QueryEscape(taskGraphId)+"/extend", new(TaskGraphStatusResponse))
 	return responseObject.(*TaskGraphStatusResponse), callSummary
 }
 
@@ -305,8 +305,8 @@ func (a *Auth) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition)
 // **Note**, that `finished` implies successfully completion.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#status
-func (a *Auth) Status(taskGraphId string) (*TaskGraphStatusResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/status", new(TaskGraphStatusResponse))
+func (myScheduler *Scheduler) Status(taskGraphId string) (*TaskGraphStatusResponse, *CallSummary) {
+	responseObject, callSummary := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/status", new(TaskGraphStatusResponse))
 	return responseObject.(*TaskGraphStatusResponse), callSummary
 }
 
@@ -318,8 +318,8 @@ func (a *Auth) Status(taskGraphId string) (*TaskGraphStatusResponse, *CallSummar
 // end-point instead.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#info
-func (a *Auth) Info(taskGraphId string) (*TaskGraphInfoResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/info", new(TaskGraphInfoResponse))
+func (myScheduler *Scheduler) Info(taskGraphId string) (*TaskGraphInfoResponse, *CallSummary) {
+	responseObject, callSummary := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/info", new(TaskGraphInfoResponse))
 	return responseObject.(*TaskGraphInfoResponse), callSummary
 }
 
@@ -337,8 +337,8 @@ func (a *Auth) Info(taskGraphId string) (*TaskGraphInfoResponse, *CallSummary) {
 // the future.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspect
-func (a *Auth) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect", new(InspectTaskGraphResponse))
+func (myScheduler *Scheduler) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *CallSummary) {
+	responseObject, callSummary := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect", new(InspectTaskGraphResponse))
 	return responseObject.(*InspectTaskGraphResponse), callSummary
 }
 
@@ -356,8 +356,8 @@ func (a *Auth) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *CallSumm
 // the future.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspectTask
-func (a *Auth) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraphTaskResponse, *CallSummary) {
-	responseObject, callSummary := a.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect/"+url.QueryEscape(taskId), new(InspectTaskGraphTaskResponse))
+func (myScheduler *Scheduler) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraphTaskResponse, *CallSummary) {
+	responseObject, callSummary := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect/"+url.QueryEscape(taskId), new(InspectTaskGraphTaskResponse))
 	return responseObject.(*InspectTaskGraphTaskResponse), callSummary
 }
 
@@ -366,8 +366,8 @@ func (a *Auth) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraph
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#ping
-func (a *Auth) Ping() *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/ping", nil)
+func (myScheduler *Scheduler) Ping() *CallSummary {
+	_, callSummary := myScheduler.apiCall(nil, "GET", "/ping", nil)
 	return callSummary
 }
 

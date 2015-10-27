@@ -19,13 +19,13 @@
 //
 // How to use this package
 //
-// First create an authentication object:
+// First create a PurgeCache object:
 //
-//  Purgecache := purgecache.New("myClientId", "myAccessToken")
+//  purgeCache := purgecache.New("myClientId", "myAccessToken")
 //
-// and then call one or more of auth's methods, e.g.:
+// and then call one or more of purgeCache's methods, e.g.:
 //
-//  callSummary := Purgecache.PurgeCache(.....)
+//  callSummary := purgeCache.PurgeCache(.....)
 // handling any errors...
 //  if callSummary.Error != nil {
 //  	// handle error...
@@ -58,7 +58,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
+func (purgeCache *PurgeCache) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	var jsonPayload []byte
@@ -78,23 +78,23 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
+		httpRequest, err := http.NewRequest(method, purgeCache.BaseURL+route, ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", auth.BaseURL+route, auth.BaseURL, err)
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", purgeCache.BaseURL+route, purgeCache.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
-		if auth.Authenticate {
+		if purgeCache.Authenticate {
 			credentials := &hawk.Credentials{
-				ID:   auth.ClientId,
-				Key:  auth.AccessToken,
+				ID:   purgeCache.ClientId,
+				Key:  purgeCache.AccessToken,
 				Hash: sha256.New,
 			}
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if auth.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + auth.Certificate + "}"))
+			if purgeCache.Certificate != "" {
+				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + purgeCache.Certificate + "}"))
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
@@ -134,22 +134,22 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	return result, callSummary
 }
 
-// The entry point into all the functionality in this package is to create an
-// Auth object.  It contains your authentication credentials, which are
+// The entry point into all the functionality in this package is to create a
+// PurgeCache object.  It contains your authentication credentials, which are
 // required for all HTTP operations.
-type Auth struct {
+type PurgeCache struct {
 	// Client ID required by Hawk
 	ClientId string
 	// Access Token required by Hawk
 	AccessToken string
 	// The URL of the API endpoint to hit.
 	// Use "https://purge-cache.taskcluster.net/v1" for production.
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with BaseURL set to production.
+	// Please note calling purgecache.New(clientId string, accessToken string) is an
+	// alternative way to create a PurgeCache object with BaseURL set to production.
 	BaseURL string
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with Authenticate set to true.
+	// Please note calling purgecache.New(clientId string, accessToken string) is an
+	// alternative way to create a PurgeCache object with Authenticate set to true.
 	Authenticate bool
 	// Certificate for temporary credentials
 	Certificate string
@@ -182,21 +182,21 @@ type CallSummary struct {
 	Attempts int
 }
 
-// Returns a pointer to Auth, configured to run against production.  If you
+// Returns a pointer to PurgeCache, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
 // taskcluster-proxy) by setting Authenticate to false.
 //
 // For example:
-//  Purgecache := purgecache.New("123", "456")                       // set clientId and accessToken
-//  Purgecache.Authenticate = false                                  // disable authentication (true by default)
-//  Purgecache.BaseURL = "http://localhost:1234/api/PurgeCache/v1"   // alternative API endpoint (production by default)
-//  callSummary := Purgecache.PurgeCache(.....)                      // for example, call the PurgeCache(.....) API endpoint (described further down)...
+//  purgeCache := purgecache.New("123", "456")                       // set clientId and accessToken
+//  purgeCache.Authenticate = false                                  // disable authentication (true by default)
+//  purgeCache.BaseURL = "http://localhost:1234/api/PurgeCache/v1"   // alternative API endpoint (production by default)
+//  callSummary := purgeCache.PurgeCache(.....)                      // for example, call the PurgeCache(.....) API endpoint (described further down)...
 //  if callSummary.Error != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Auth {
-	return &Auth{
+func New(clientId string, accessToken string) *PurgeCache {
+	return &PurgeCache{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://purge-cache.taskcluster.net/v1",
@@ -209,8 +209,8 @@ func New(clientId string, accessToken string) *Auth {
 // be listening for this message and purge caches when they see it.
 //
 // See http://docs.taskcluster.net/services/purge-cache/#purgeCache
-func (a *Auth) PurgeCache(provisionerId string, workerType string, payload *PurgeCacheRequest) *CallSummary {
-	_, callSummary := a.apiCall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil)
+func (purgeCache *PurgeCache) PurgeCache(provisionerId string, workerType string, payload *PurgeCacheRequest) *CallSummary {
+	_, callSummary := purgeCache.apiCall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil)
 	return callSummary
 }
 
@@ -219,8 +219,8 @@ func (a *Auth) PurgeCache(provisionerId string, workerType string, payload *Purg
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/services/purge-cache/#ping
-func (a *Auth) Ping() *CallSummary {
-	_, callSummary := a.apiCall(nil, "GET", "/ping", nil)
+func (purgeCache *PurgeCache) Ping() *CallSummary {
+	_, callSummary := purgeCache.apiCall(nil, "GET", "/ping", nil)
 	return callSummary
 }
 
