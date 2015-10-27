@@ -85,6 +85,9 @@ func (subSchema JsonSubSchema) String() string {
 	result += describe("Schema", subSchema.Schema)
 	result += describe("Title", subSchema.Title)
 	result += describe("Type", subSchema.Type)
+	if subSchema.Type == nil && subSchema.Ref == nil {
+		result += "Type HAS NOT BEEN SET!!!\n"
+	}
 	result += describe("TypeName", &subSchema.TypeName)
 	result += describe("IsInputSchema", &subSchema.IsInputSchema)
 	result += describe("IsOutputSchema", &subSchema.IsOutputSchema)

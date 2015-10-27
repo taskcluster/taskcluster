@@ -3,8 +3,11 @@ package main
 import (
 	"code.google.com/p/go-uuid/uuid"
 	"encoding/base64"
+	"encoding/json"
+	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go/index"
 	"github.com/taskcluster/taskcluster-client-go/queue"
+	"os"
 	"testing"
 	"time"
 )
@@ -19,7 +22,7 @@ func slug() string {
 //
 // Could easily break at a point in the future, at which point we can change to something else.
 //
-// Note, no credentials are needed, so this can be run even on travis-ci.org, for example
+// Note, no credentials are needed, so this can be run even on travis-ci.org, for example.
 func TestFindLatestBuildbotTask(t *testing.T) {
 	Index := index.New("", "")
 	Queue := queue.New("", "")
@@ -52,66 +55,61 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 
 }
 
-//    //
-//    // Tests whether it is possible to define a task against the production
-//    // Queue.
-//     //
-//    func TestDefineTask(t *testing.T) {
-//        String clientId = System.getenv("TASKCLUSTER_CLIENT_ID")
-//        String accessToken = System.getenv("TASKCLUSTER_ACCESS_TOKEN")
-//        String certificate = System.getenv("TASKCLUSTER_CERTIFICATE")
-//        Assume.assumeFalse(clientId == null || clientId == "" || accessToken == null || accessToken == "")
-//        Queue queue
-//        if (certificate == null || certificate == "") {
-//            queue = new Queue(clientId, accessToken)
-//        } else {
-//            queue = new Queue(clientId, accessToken, certificate)
-//        }
-//        String taskId = slug()
-//        TaskDefinition td = new TaskDefinition()
-//        td.created = new Date()
-//        Calendar c = Calendar.getInstance()
-//        c.setTime(td.created)
-//        c.add(Calendar.DATE, 1)
-//        td.deadline = c.getTime()
-//        td.expires = td.deadline
-//        Map<String, Object> index = new HashMap<String, Object>()
-//        index.put("rank", 12345)
-//        Map<String, Object> extra = new HashMap<String, Object>()
-//        extra.put("index", index)
-//        td.extra = extra
-//        td.metadata = td.new Metadata()
-//        td.metadata.description = "Stuff"
-//        td.metadata.name = "[TC] Pete"
-//        td.metadata.owner = "pmoore@mozilla.com"
-//        td.metadata.source = "http://somewhere.com/"
-//        Map<String, Object> features = new HashMap<String, Object>()
-//        features.put("relengAPIProxy", true)
-//        Map<String, Object> payload = new HashMap<String, Object>()
-//        payload.put("features", features)
-//        td.payload = payload
-//        td.provisionerId = "win-provisioner"
-//        td.retries = 5
-//        td.routes = new String[] { "tc-treeherder.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163",
-//                "tc-treeherder-stage.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163" }
-//        td.schedulerId = "junit-test-scheduler"
-//        td.scopes = new String[] { "docker-worker:image:taskcluster/builder:0.5.6",
-//                "queue:define-task:aws-provisioner-v1/build-c4-2xlarge" }
-//
-//        Map<String, Object> tags = new HashMap<String, Object>()
-//        tags.put("createdForUser", "cbook@mozilla.com")
-//        td.tags = tags
-//        td.taskGroupId = "dtwuF2n9S-i83G37V9eBuQ"
-//        td.workerType = "win2008-worker"
-//
-//        try {
-//            CallSummary<TaskDefinition, TaskStatusResponse> cs = queue.defineTask(taskId, td)
-//            Assert.assertEquals(cs.requestPayload.provisionerId, "win-provisioner")
-//            Assert.assertEquals(cs.responsePayload.status.schedulerId, "junit-test-scheduler")
-//            Assert.assertEquals(cs.responsePayload.status.retriesLeft, 5)
-//            Assert.assertEquals(cs.responsePayload.status.state, "unscheduled")
-//        } catch (APICallFailure e) {
-//            e.printStackTrace()
-//            Assert.fail("Exception thrown")
-//        }
-//    }
+// Tests whether it is possible to define a task against the production Queue.
+func TestDefineTask(t *testing.T) {
+	clientId := os.Getenv("TASKCLUSTER_CLIENT_ID")
+	accessToken := os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
+	certificate := os.Getenv("TASKCLUSTER_CERTIFICATE")
+	if clientId == "" || accessToken == "" {
+		t.Skip("Skipping test TestDefineTask since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
+	}
+	myQueue := queue.New(clientId, accessToken)
+	myQueue.Certificate = certificate
+
+	taskId := slugid.Nice()
+	td := new(queue.TaskDefinition)
+	td.Created = time.Now()
+	td.Deadline = td.Created.AddDate(0, 0, 1)
+	td.Expires = td.Deadline
+	td.Extra = make(map[string]json.RawMessage)
+	td.Extra["index"] = json.RawMessage(`{"rank":12345}`)
+	td.Metadata.Description = "Stuff"
+	td.Metadata.Name = "[TC] Pete"
+	td.Metadata.Owner = "pmoore@mozilla.com"
+	td.Metadata.Source = "http://everywhere.com/"
+	td.Payload = make(map[string]json.RawMessage)
+	td.Payload["features"] = json.RawMessage(`{"relengApiProxy":true}`)
+	td.ProvisionerId = "win-provisioner"
+	td.Retries = 5
+	td.Routes = []string{
+		"tc-treeherder.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163",
+		"tc-treeherder-stage.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163",
+	}
+	td.SchedulerId = "go-test-test-scheduler"
+	td.Scopes = []string{
+		"docker-worker:image:taskcluster/builder:0.5.6",
+		"queue:define-task:aws-provisioner-v1/build-c4-2xlarge",
+	}
+	td.Tags = make(map[string]json.RawMessage)
+	td.Tags["createdForUser"] = json.RawMessage("cbook@mozilla.com")
+	td.Priority = json.RawMessage(`"high"`)
+	td.TaskGroupId = "dtwuF2n9S-i83G37V9eBuQ"
+	td.WorkerType = "win2008-worker"
+
+	tsr, cs := myQueue.DefineTask(taskId, td)
+	if cs.Error != nil {
+		t.Fatalf("Exception thrown: %s", cs.Error)
+	}
+	if provisionerId := cs.HttpRequestObject.(*queue.TaskDefinition).ProvisionerId; provisionerId != "win-provisioner" {
+		t.Error("provisionerId 'win-provisioner' expected but got %s", provisionerId)
+	}
+	if schedulerId := tsr.Status.SchedulerId; schedulerId != "go-test-test-scheduler" {
+		t.Error("schedulerId 'go-test-test-scheduler' expected but got %s", schedulerId)
+	}
+	if retriesLeft := tsr.Status.RetriesLeft; retriesLeft != 5 {
+		t.Error("Expected 'retriesLeft' to be 5, but got %s", retriesLeft)
+	}
+	if state := tsr.Status.State; string(state) != `"unscheduled"` {
+		t.Error("Expected 'state' to be 'unscheduled', but got %s", state)
+	}
+}

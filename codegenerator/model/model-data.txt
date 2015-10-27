@@ -436,6 +436,7 @@ Description            = 'Response from a request to authenticate a hawk request
 ID                     = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Hawk Signature Authentication Response'
+Type HAS NOT BEEN SET!!!
 TypeName               = 'HawkSignatureAuthenticationResponse'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'true'
@@ -2551,6 +2552,7 @@ Properties
           Description            = 'Name of namespace within it's parent namespace.
           '
           Title                  = 'Name'
+          Type HAS NOT BEEN SET!!!
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -2846,6 +2848,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -3344,6 +3347,7 @@ Properties
           '
           Enum                   = '[s3 azure reference error]'
           Title                  = 'Artifact Storage-Type'
+          Type HAS NOT BEEN SET!!!
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -3734,6 +3738,7 @@ OneOf
     SourceURL              = ''
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Post Artifact Request'
+Type HAS NOT BEEN SET!!!
 TypeName               = 'PostArtifactRequest'
 IsInputSchema          = 'true'
 IsOutputSchema         = 'false'
@@ -3900,6 +3905,7 @@ OneOf
     SourceURL              = ''
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Post Artifact Response'
+Type HAS NOT BEEN SET!!!
 TypeName               = 'PostArtifactResponse'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'true'
@@ -4046,6 +4052,7 @@ Properties
     bug in the worker code.
     '
     Enum                   = '[worker-shutdown malformed-payload resource-unavailable internal-error]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -4145,6 +4152,7 @@ Properties
           '
           Enum                   = '[scheduled retry rerun exception]'
           Title                  = 'Reason Created'
+          Type HAS NOT BEEN SET!!!
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -4157,6 +4165,7 @@ Properties
           '
           Enum                   = '[completed failed deadline-exceeded canceled claim-expired worker-shutdown malformed-payload resource-unavailable internal-error]'
           Title                  = 'Reason Resolved'
+          Type HAS NOT BEEN SET!!!
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -4212,6 +4221,7 @@ Properties
           '
           Enum                   = '[pending running completed failed exception]'
           Title                  = 'Run State'
+          Type HAS NOT BEEN SET!!!
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -4287,6 +4297,7 @@ Properties
     '
     Enum                   = '[unscheduled pending running completed failed exception]'
     Title                  = 'State'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -4470,6 +4481,7 @@ Properties
     '
     Enum                   = '[high normal]'
     Title                  = 'Task Priority'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5240,12 +5252,14 @@ Properties
         '
         Enum                   = '[s3 azure reference error]'
         Title                  = 'Artifact Storage-Type'
+        Type HAS NOT BEEN SET!!!
         TypeName               = ''
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
         SourceURL              = ''
     Required               = '[storageType name expires contentType]'
     Title                  = 'Artifact Created'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5269,6 +5283,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5333,6 +5348,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5386,6 +5402,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5427,6 +5444,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5492,6 +5510,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5554,6 +5573,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5604,6 +5624,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5702,6 +5723,7 @@ Properties
           '
           Enum                   = '[scheduled retry rerun exception]'
           Title                  = 'Reason Created'
+          Type HAS NOT BEEN SET!!!
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -5714,6 +5736,7 @@ Properties
           '
           Enum                   = '[completed failed deadline-exceeded canceled claim-expired worker-shutdown malformed-payload resource-unavailable internal-error]'
           Title                  = 'Reason Resolved'
+          Type HAS NOT BEEN SET!!!
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -5769,6 +5792,7 @@ Properties
           '
           Enum                   = '[pending running completed failed exception]'
           Title                  = 'Run State'
+          Type HAS NOT BEEN SET!!!
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -5844,6 +5868,7 @@ Properties
     '
     Enum                   = '[unscheduled pending running completed failed exception]'
     Title                  = 'State'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -6335,6 +6360,7 @@ Properties
           Description            = 'State of the task as considered by the scheduler'
           Enum                   = '[unscheduled scheduled completed failed exception]'
           Title                  = 'Task Node State'
+          Type HAS NOT BEEN SET!!!
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -6469,6 +6495,7 @@ Properties
     Description            = 'State of the task as considered by the scheduler'
     Enum                   = '[unscheduled scheduled completed failed exception]'
     Title                  = 'Task Node State'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -6619,6 +6646,7 @@ Properties
   Property 'state' =
     Description            = 'Task-graph state, this enum is **frozen** new values will **not** be added.'
     Enum                   = '[running blocked finished]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -7136,6 +7164,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -7165,6 +7194,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -7194,6 +7224,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -7223,6 +7254,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -7256,6 +7288,7 @@ Properties
   Property 'state' =
     Description            = 'Task-graph state, this enum is **frozen** new values will **not** be added.'
     Enum                   = '[running blocked finished]'
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
