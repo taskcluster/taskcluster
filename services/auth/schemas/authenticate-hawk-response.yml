@@ -2,6 +2,7 @@ $schema:  http://json-schema.org/draft-04/schema#
 title:                    "Hawk Signature Authentication Response"
 description: |
   Response from a request to authenticate a hawk request.
+type:                     object
 anyOf:
   - title:                    "Authentication Successful Response"
     type:                     object
