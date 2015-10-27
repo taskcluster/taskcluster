@@ -30,6 +30,7 @@ export default class RelengAPIProxy {
 
     var cmd = [
         `--relengapi-token=${task.runtime.features.relengAPIProxy.token}`,
+        '--',
         task.status.taskId
     ];
 
