@@ -91,7 +91,7 @@ func TestDefineTask(t *testing.T) {
 		"queue:define-task:aws-provisioner-v1/build-c4-2xlarge",
 	}
 	td.Tags = make(map[string]json.RawMessage)
-	td.Tags["createdForUser"] = json.RawMessage("cbook@mozilla.com")
+	td.Tags["createdForUser"] = json.RawMessage(`"cbook@mozilla.com"`)
 	td.Priority = json.RawMessage(`"high"`)
 	td.TaskGroupId = "dtwuF2n9S-i83G37V9eBuQ"
 	td.WorkerType = "win2008-worker"
