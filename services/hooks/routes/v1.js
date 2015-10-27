@@ -14,7 +14,7 @@ var api = new base.API({
     "",
     "When an event occurs, the resulting task is automatically created.  The",
     "task is created using the role `hook-id:<hookGroupId>/<hookId>`, which",
-    "must have scopes to make the creteTask call, including satisfying all",
+    "must have scopes to make the createTask call, including satisfying all",
     "scopes in `task.scopes`.",
     "",
     "Hooks can have a 'schedule' indicating specific times that new tasks should",
