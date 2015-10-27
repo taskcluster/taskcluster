@@ -24,6 +24,7 @@ properties:
           maxLength:      255
         name:
           title:          "Name"
+          type:           string
           description: |
             Name of namespace within it's parent namespace.
         expires:
