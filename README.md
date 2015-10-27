@@ -12,14 +12,20 @@ The library builds the REST API methods from the same [API Reference
 format](http://docs.taskcluster.net/tools/references/index.html) as the
 Javascript client library.
 
-'NOTE:' Generating temporary credentials are implemented, but they don't work
-from this library right now
+## Notes on using Temporary Credentials
+Generating temporary credentials are implemented, but they don't work from this
+library right now.  The issue is related to the difference between how Node
+serializes Objects and how Python's json module does.
 
-'NOTE:' Using temporary credentials without specifying the Certificate will
-result in a 'Bad mac' error
+Using temporary credentials without specifying the Certificate will
+result in a 'Bad mac' error.
+
+## API Documentation
 
 The REST API methods are documented on
 [http://docs.taskcluster.net/](http://docs.taskcluster.net/)
+
+## Usage
 
 * Here's a simple command:
 
@@ -41,7 +47,7 @@ The REST API methods are documented on
     api.method('1', '2', '3', {'data': 'here'})
     ```
     Assuming apiMethod has a route of `/method/<arg1>/<arg2>/<arg3>`,
-    this will result in a calle to `/method/pie/2/3`
+    this will result in a call to `/method/pie/2/3`
 
     The same call can be achieved using keyword arguments of:
 
@@ -81,6 +87,8 @@ environment variable is set, the `__init__.py` module will set the `logging` mod
 for its logger to `logging.DEBUG` and if there are no existing handlers, add a
 `logging.StreamHandler()` instance.  This is meant to assist those who do not wish to bother
 figuring out how to configure the python logging module but do want debug messages
+
+## Methods contained in the client library
 
 <!-- START OF GENERATED DOCS -->
 
