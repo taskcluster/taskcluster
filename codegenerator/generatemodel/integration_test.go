@@ -101,15 +101,15 @@ func TestDefineTask(t *testing.T) {
 		t.Fatalf("Exception thrown: %s", cs.Error)
 	}
 	if provisionerId := cs.HttpRequestObject.(*queue.TaskDefinition).ProvisionerId; provisionerId != "win-provisioner" {
-		t.Error("provisionerId 'win-provisioner' expected but got %s", provisionerId)
+		t.Errorf("provisionerId 'win-provisioner' expected but got %s", provisionerId)
 	}
 	if schedulerId := tsr.Status.SchedulerId; schedulerId != "go-test-test-scheduler" {
-		t.Error("schedulerId 'go-test-test-scheduler' expected but got %s", schedulerId)
+		t.Errorf("schedulerId 'go-test-test-scheduler' expected but got %s", schedulerId)
 	}
 	if retriesLeft := tsr.Status.RetriesLeft; retriesLeft != 5 {
-		t.Error("Expected 'retriesLeft' to be 5, but got %s", retriesLeft)
+		t.Errorf("Expected 'retriesLeft' to be 5, but got %v", retriesLeft)
 	}
 	if state := tsr.Status.State; string(state) != `"unscheduled"` {
-		t.Error("Expected 'state' to be 'unscheduled', but got %s", state)
+		t.Errorf("Expected 'state' to be 'unscheduled', but got %s", state)
 	}
 }
