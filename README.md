@@ -12,8 +12,11 @@ The library builds the REST API methods from the same [API Reference
 format](http://docs.taskcluster.net/tools/references/index.html) as the
 Javascript client library.
 
-'NOTE:' Temporary credentials are implemented, but they don't work from this
-library right now
+'NOTE:' Generating temporary credentials are implemented, but they don't work
+from this library right now
+
+'NOTE:' Using temporary credentials without specifying the Certificate will
+result in a 'Bad mac' error
 
 The REST API methods are documented on
 [http://docs.taskcluster.net/](http://docs.taskcluster.net/)
