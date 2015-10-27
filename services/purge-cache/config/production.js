@@ -6,12 +6,7 @@ module.exports = {
   },
 
   taskcluster: {
-    authBaseUrl:                  'https://auth.taskcluster.net/v1',
-    credentials: {
-      // Provided by environment variable
-      clientId:                   undefined,
-      accessToken:                undefined
-    }
+    authBaseUrl:                  'https://auth.taskcluster.net/v1'
   },
 
   server: {
