@@ -14,15 +14,7 @@ module.exports = {
   // TaskCluster configuration
   taskcluster: {
     // BaseUrl for auth, if default built-in baseUrl isn't to be provided
-    authBaseUrl:                  undefined,
-
-    // TaskCluster credentials for this server, these must have scopes:
-    // auth:credentials
-    // (typically configured using environment variables)
-    credentials: {
-      clientId:                   undefined,
-      accessToken:                undefined
-    }
+    authBaseUrl:                  undefined
   },
 
   // Server configuration

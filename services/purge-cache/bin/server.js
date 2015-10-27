@@ -19,8 +19,6 @@ var launch = async function(profile) {
       'pulse_username',
       'pulse_password',
       'purgeCache_publishMetaData',
-      'taskcluster_credentials_clientId',
-      'taskcluster_credentials_accessToken',
       'aws_accessKeyId',
       'aws_secretAccessKey',
       'influx_connectionString'
