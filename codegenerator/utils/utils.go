@@ -60,3 +60,13 @@ func Normalise(name string, dict map[string]bool) string {
 	dict[normalisedName] = true
 	return normalisedName
 }
+
+// Returns the indefinite article (in English) for a the given noun, which is
+// 'an' for nouns beginning with a vowel, otherwise 'a'.
+func IndefiniteArticle(noun string) string {
+	if strings.ContainsRune("AEIOUaeiou", rune(noun[0])) {
+		return "an"
+	} else {
+		return "a"
+	}
+}

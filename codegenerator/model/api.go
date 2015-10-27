@@ -49,20 +49,14 @@ func (api *API) postPopulate(apiDef *APIDefinition) {
 }
 
 func (api *API) generateAPICode(apiName string) string {
-	// package name and variable name cannot be the same
+	// package name and variable name are ideally not the same
 	// so find a way to make them different...
+	// also don't allow type variable name to be the same as
+	// the type name
 	// e.g. switch case of first character, and if first
 	// character is not can't switch case for whatever
 	// reason, prefix variable name with "my"
-	var exampleVarName string
-	switch firstChar := string(api.apiDef.PackageName[0]); {
-	case strings.ToUpper(firstChar) != firstChar:
-		exampleVarName = strings.ToUpper(firstChar) + api.apiDef.PackageName[1:]
-	case strings.ToLower(firstChar) != firstChar:
-		exampleVarName = strings.ToLower(firstChar) + api.apiDef.PackageName[1:]
-	default:
-		exampleVarName = "my" + api.apiDef.PackageName
-	}
+	exampleVarName := api.apiDef.ExampleVarName
 	exampleCall := ""
 	// here we choose an example API method to call, just the first one in the list of api.Entries
 	// We need to first see if it returns one or two variables...
@@ -83,11 +77,11 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "//\n"
 	comment += "// How to use this package\n"
 	comment += "//\n"
-	comment += "// First create an authentication object:\n"
+	comment += "// First create " + utils.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + " object:\n"
 	comment += "//\n"
 	comment += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(\"myClientId\", \"myAccessToken\")\n"
 	comment += "//\n"
-	comment += "// and then call one or more of auth's methods, e.g.:\n"
+	comment += "// and then call one or more of " + exampleVarName + "'s methods, e.g.:\n"
 	comment += "//\n"
 	comment += exampleCall + "\n"
 	comment += "// handling any errors...\n"
@@ -129,7 +123,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (auth *Auth) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
+func (` + exampleVarName + ` *` + api.apiDef.Name + `) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	var jsonPayload []byte
@@ -149,23 +143,23 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, auth.BaseURL+route, ioReader)
+		httpRequest, err := http.NewRequest(method, ` + exampleVarName + `.BaseURL+route, ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", auth.BaseURL+route, auth.BaseURL, err)
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", ` + exampleVarName + `.BaseURL+route, ` + exampleVarName + `.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
-		if auth.Authenticate {
+		if ` + exampleVarName + `.Authenticate {
 			credentials := &hawk.Credentials{
-				ID:   auth.ClientId,
-				Key:  auth.AccessToken,
+				ID:   ` + exampleVarName + `.ClientId,
+				Key:  ` + exampleVarName + `.AccessToken,
 				Hash: sha256.New,
 			}
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if auth.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + auth.Certificate + "}"))
+			if ` + exampleVarName + `.Certificate != "" {
+				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + ` + exampleVarName + `.Certificate + "}"))
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
@@ -204,24 +198,23 @@ func (auth *Auth) apiCall(payload interface{}, method, route string, result inte
 	// Return result and callSummary
 	return result, callSummary
 }
-`
-	content += `
-// The entry point into all the functionality in this package is to create an
-// Auth object.  It contains your authentication credentials, which are
+
+// The entry point into all the functionality in this package is to create ` + utils.IndefiniteArticle(api.apiDef.Name) + `
+// ` + api.apiDef.Name + ` object.  It contains your authentication credentials, which are
 // required for all HTTP operations.
-type Auth struct {
+type ` + api.apiDef.Name + ` struct {
 	// Client ID required by Hawk
 	ClientId string
 	// Access Token required by Hawk
 	AccessToken string
 	// The URL of the API endpoint to hit.
 	// Use ` + "\"" + api.BaseURL + "\"" + ` for production.
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with BaseURL set to production.
+	// Please note calling ` + api.apiDef.PackageName + `.New(clientId string, accessToken string) is an
+	// alternative way to create ` + utils.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + ` object with BaseURL set to production.
 	BaseURL string
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with Authenticate set to true.
+	// Please note calling ` + api.apiDef.PackageName + `.New(clientId string, accessToken string) is an
+	// alternative way to create ` + utils.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + ` object with Authenticate set to true.
 	Authenticate bool
 	// Certificate for temporary credentials
 	Certificate string
@@ -254,7 +247,7 @@ type CallSummary struct {
 	Attempts int
 }
 
-// Returns a pointer to Auth, configured to run against production.  If you
+// Returns a pointer to ` + api.apiDef.Name + `, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
 // taskcluster-proxy) by setting Authenticate to false.
@@ -268,8 +261,8 @@ type CallSummary struct {
 	content += "//  if callSummary.Error != nil {\n"
 	content += "//  	// handle errors...\n"
 	content += "//  }\n"
-	content += "func New(clientId string, accessToken string) *Auth {\n"
-	content += "\treturn &Auth{\n"
+	content += "func New(clientId string, accessToken string) *" + api.apiDef.Name + " {\n"
+	content += "\treturn &" + api.apiDef.Name + "{\n"
 	content += "\t\tClientId: clientId,\n"
 	content += "\t\tAccessToken: accessToken,\n"
 	content += "\t\tBaseURL: \"" + api.BaseURL + "\",\n"
@@ -363,12 +356,12 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 	}
 
 	content := comment
-	content += "func (a *Auth) " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
+	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
 	if entry.Output != "" {
-		content += "\tresponseObject, callSummary := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "))\n"
+		content += "\tresponseObject, callSummary := " + entry.Parent.apiDef.ExampleVarName + ".apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "))\n"
 		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), callSummary\n"
 	} else {
-		content += "\t_, callSummary := a.apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil)\n"
+		content += "\t_, callSummary := " + entry.Parent.apiDef.ExampleVarName + ".apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil)\n"
 		content += "\treturn callSummary\n"
 	}
 	content += "}\n"

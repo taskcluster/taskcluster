@@ -39,15 +39,16 @@ type APIModel interface {
 // APIDefinition represents the definition of a REST API, comprising of the URL to the defintion
 // of the API in json format, together with a URL to a json schema to validate the definition
 type APIDefinition struct {
-	URL         string `json:"url"`
-	SchemaURL   string `json:"schema"`
-	Name        string `json:"name"`
-	DocRoot     string `json:"docroot"`
-	Data        APIModel
-	schemaURLs  []string
-	schemas     map[string]*JsonSubSchema
-	PackageName string
-	PackagePath string
+	URL            string `json:"url"`
+	SchemaURL      string `json:"schema"`
+	Name           string `json:"name"`
+	DocRoot        string `json:"docroot"`
+	Data           APIModel
+	schemaURLs     []string
+	schemas        map[string]*JsonSubSchema
+	PackageName    string
+	ExampleVarName string
+	PackagePath    string
 }
 
 func (a *APIDefinition) generateAPICode() string {
@@ -204,6 +205,18 @@ func validateJson(schemaUrl, docUrl string) {
 func GenerateCode(goOutputDir, modelData string) {
 	for i := range apiDefs {
 		apiDefs[i].PackageName = strings.ToLower(apiDefs[i].Name)
+		// Used throughout docs, and also methods that use the class, we need a
+		// variable name to be used when referencing the go type. It should not
+		// clash with either the package name or the go type of the principle
+		// member of the package (e.g. awsprovisioner.AwsProvisioner). We'll
+		// lowercase the name (e.g. awsProvisioner) and if that clashes with
+		// either package or principle member, we'll just use my<Name>. This
+		// results in e.g. `var myQueue queue.Queue`, but `var awsProvisioner
+		// awsprovisioner.AwsProvisioner`.
+		apiDefs[i].ExampleVarName = strings.ToLower(string(apiDefs[i].Name[0])) + apiDefs[i].Name[1:]
+		if apiDefs[i].ExampleVarName == apiDefs[i].Name || apiDefs[i].ExampleVarName == apiDefs[i].PackageName {
+			apiDefs[i].ExampleVarName = "my" + apiDefs[i].Name
+		}
 		apiDefs[i].PackagePath = filepath.Join(goOutputDir, apiDefs[i].PackageName)
 		err = os.MkdirAll(apiDefs[i].PackagePath, 0755)
 		utils.ExitOnFail(err)
