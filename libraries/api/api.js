@@ -1237,7 +1237,8 @@ var handle = function(handler, context) {
  *   params: {                                      // Patterns for URL params
  *     param1:  /.../,                // Reg-exp pattern
  *     param2(val) { return "..." }   // Function, returns message if invalid
- *   }
+ *   },
+ *   context:       []                // List of required context properties
  * }
  *
  * The API object will only modified by declarations, when `mount` or `publish`
@@ -1250,7 +1251,8 @@ var API = function(options) {
   });
   this._options = _.defaults({}, options, {
     schemaPrefix:   '',
-    paramPatterns:  {}
+    paramPatterns:  {},
+    context:        []
   });
   this._entries = [];
 };
@@ -1396,6 +1398,12 @@ API.prototype.router = function(options) {
     signatureValidator:   createRemoteSignatureValidator({
       authBaseUrl:        options.authBaseUrl || AUTH_BASE_URL
     })
+  });
+
+  // Validate context
+  this._options.context.forEach(function(property) {
+    assert(options.context[property] !== undefined,
+           "Context must have declared property: '" + property + "'");
   });
 
   // Authentication strategy (default to remote authentication)
