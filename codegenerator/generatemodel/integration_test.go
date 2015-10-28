@@ -61,9 +61,12 @@ func TestDefineTask(t *testing.T) {
 
 	taskId := slugid.Nice()
 	td := new(queue.TaskDefinition)
-	td.Created = time.Now()
-	td.Deadline = td.Created.AddDate(0, 0, 1)
-	td.Expires = td.Deadline
+	created := time.Now()
+	deadline := created.AddDate(0, 0, 1)
+	expires := deadline
+	td.Created = queue.Time(created)
+	td.Deadline = queue.Time(deadline)
+	td.Expires = queue.Time(expires)
 	td.Extra = json.RawMessage(`{"index":{"rank":12345}}`)
 	td.Metadata.Description = "Stuff"
 	td.Metadata.Name = "[TC] Pete"
@@ -108,51 +111,54 @@ func TestDefineTask(t *testing.T) {
 		t.Errorf("Expected 'state' to be 'unscheduled', but got %s", state)
 	}
 	submittedPayload := cs.HttpRequestBody
+
+	// only the contents is relevant below - the formatting and order of properties does not matter
+	// since a json comparison is done, not a string comparison...
 	expectedJson := []byte(`
 	{
-	  "created":"` + td.Created.UTC().Format("2006-01-02T15:04:05.000Z") + `",
-	  "deadline":"` + td.Deadline.UTC().Format("2006-01-02T15:04:05.000Z") + `",
-	  "expires":"` + td.Expires.UTC().Format("2006-01-02T15:04:05.000Z") + `",
+	  "created":  "` + created.UTC().Format("2006-01-02T15:04:05.000Z") + `",
+	  "deadline": "` + deadline.UTC().Format("2006-01-02T15:04:05.000Z") + `",
+	  "expires":  "` + expires.UTC().Format("2006-01-02T15:04:05.000Z") + `",
 
-	  "taskGroupId":"dtwuF2n9S-i83G37V9eBuQ",
-	  "workerType":"win2008-worker",
-	  "schedulerId":"go-test-test-scheduler",
+	  "taskGroupId": "dtwuF2n9S-i83G37V9eBuQ",
+	  "workerType":  "win2008-worker",
+	  "schedulerId": "go-test-test-scheduler",
 
-	  "payload":{
-	    "features":{
+	  "payload": {
+	    "features": {
 	      "relengApiProxy":true
 	    }
 	  },
 
-	  "priority":"high",
-	  "provisionerId":"win-provisioner",
-	  "retries":5,
+	  "priority":      "high",
+	  "provisionerId": "win-provisioner",
+	  "retries":       5,
 
-	  "routes":[
+	  "routes": [
 	    "tc-treeherder.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163",
 	    "tc-treeherder-stage.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163"
 	  ],
 
-	  "scopes":[
+	  "scopes": [
 	    "docker-worker:image:taskcluster/builder:0.5.6",
 	    "queue:define-task:aws-provisioner-v1/build-c4-2xlarge"
 	  ],
 
-	  "tags":{
-	    "createdForUser":"cbook@mozilla.com"
+	  "tags": {
+	    "createdForUser": "cbook@mozilla.com"
 	  },
 
-	  "extra":{
-	    "index":{
-	      "rank":12345
+	  "extra": {
+	    "index": {
+	      "rank": 12345
 	    }
 	  },
 
-	  "metadata":{
-	    "description":"Stuff",
-	    "name":"[TC] Pete",
-	    "owner":"pmoore@mozilla.com",
-	    "source":"http://everywhere.com/"
+	  "metadata": {
+	    "description": "Stuff",
+	    "name":        "[TC] Pete",
+	    "owner":       "pmoore@mozilla.com",
+	    "source":      "http://everywhere.com/"
 	  }
 	}
 	`)
@@ -186,7 +192,8 @@ func jsonEqual(a []byte, b []byte) (bool, []byte, []byte, error) {
 }
 
 // Takes json []byte input, unmarshals and then marshals, in order to get a
-// canonical representation of json (i.e. formatted with objects ordered)
+// canonical representation of json (i.e. formatted with objects ordered).
+// Ugly and perhaps inefficient, but effective! :p
 func formatJson(a []byte) ([]byte, error) {
 	tmpObj := new(interface{})
 	err := json.Unmarshal(a, &tmpObj)
