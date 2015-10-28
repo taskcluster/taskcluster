@@ -24,7 +24,7 @@ properties:
     description: |
       Identifier for the worker within which the run with the created artifact
       is running.
-    type: "string"
+    type:         string
     minLength:    {$const: "identifier-min-length"}
     maxLength:    {$const: "identifier-max-length"}
     pattern:      {$const: "identifier-pattern"}
@@ -32,12 +32,14 @@ properties:
     title:        "Artifact Created"
     description: |
       Information about the artifact that was created
+    type:         object
     properties:
       storageType:
         title:    "Artifact Storage-Type"
         description: |
           This is the `storageType` for the request that was used to create the
           artifact.
+        type:         string
         enum:
           - s3
           - azure
