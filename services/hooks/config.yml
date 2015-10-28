@@ -38,7 +38,7 @@ production:
   app:
     hookTable:        Hooks
   taskcluster:
-    authBaseUrl:      null
+    authBaseUrl:      https://auth.taskcluster.net/v1
   server:
     publicUrl:        https://hooks.taskcluster.net
     env:              production
