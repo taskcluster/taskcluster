@@ -28,7 +28,7 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 	if cs2.Error != nil {
 		t.Fatalf("%v\n", cs2.Error)
 	}
-	created := td.Created.Local()
+	created := time.Time(td.Created).Local()
 
 	// calculate time an hour in the future to allow for clock drift
 	now := time.Now().Local()

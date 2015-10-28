@@ -164,17 +164,15 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 	case "boolean":
 		typ = "bool"
 	// json type string maps to go type string, so only need to test case of when
-	// string is a json date-time, so we can convert to go type time.Time...
+	// string is a json date-time, so we can convert to go type Time...
 	case "string":
 		if f := jsonSubSchema.Format; f != nil {
 			if *f == "date-time" {
-				typ = "time.Time"
+				typ = "Time"
 			}
 		}
 	}
 	switch typ {
-	case "time.Time":
-		extraPackages["time"] = true
 	case "json.RawMessage":
 		extraPackages["encoding/json"] = true
 		if withComments {

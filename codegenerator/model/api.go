@@ -108,6 +108,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"time"
 	"github.com/taskcluster/httpbackoff"
 	hawk "github.com/tent/hawk-go"
 	D "github.com/tj/go-debug"

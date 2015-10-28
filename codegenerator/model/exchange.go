@@ -135,6 +135,7 @@ func (exchange *Exchange) generateAPICode(exchangeName string) string {
 import (
 	"reflect"
 	"strings"
+	"time.Time"
 %%{imports}
 )
 
