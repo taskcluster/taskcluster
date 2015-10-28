@@ -174,24 +174,15 @@ func (task *TaskRun) String() string {
 	response += fmt.Sprintf("Created:                 %v\n", task.Definition.Created)
 	response += fmt.Sprintf("Deadline:                %v\n", task.Definition.Deadline)
 	response += fmt.Sprintf("Expires:                 %v\n", task.Definition.Expires)
-	response += fmt.Sprintf("Extra:\n")
-	for i, j := range task.Definition.Extra {
-		response += fmt.Sprintf("  %-40v %s\n", i+":", j)
-	}
+	response += fmt.Sprintf("Extra:                   %v\n", task.Definition.Extra)
 	response += fmt.Sprintf("Metadata:                %v\n", task.Definition.Metadata)
-	response += fmt.Sprintf("Payload:\n")
-	for i, j := range task.Definition.Payload {
-		response += fmt.Sprintf("  %-40v %s\n", i+":", j)
-	}
+	response += fmt.Sprintf("Payload:                 %v\n", task.Definition.Payload)
 	response += fmt.Sprintf("Provisioner Id:          %v\n", task.Definition.ProvisionerId)
 	response += fmt.Sprintf("Retries:                 %v\n", task.Definition.Retries)
 	response += fmt.Sprintf("Routes:                  %#v\n", task.Definition.Routes)
 	response += fmt.Sprintf("SchedulerId:             %v\n", task.Definition.SchedulerId)
 	response += fmt.Sprintf("Scopes:                  %#v\n", task.Definition.Scopes)
-	response += fmt.Sprintf("Tags:\n")
-	for i, j := range task.Definition.Tags {
-		response += fmt.Sprintf("  %-40v %s\n", i+":", j)
-	}
+	response += fmt.Sprintf("Tags:                    %v\n", task.Definition.Tags)
 	response += fmt.Sprintf("Task Group Id:           %v\n", task.Definition.TaskGroupId)
 	response += fmt.Sprintf("Worker Type:             %v\n", task.Definition.WorkerType)
 	response += fmt.Sprintf("==========================================\n")

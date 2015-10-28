@@ -59,7 +59,7 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 		return err
 	}
 	c.ProvisionerId = userData.ProvisionerId
-	awsprov := awsprovisioner.Auth{
+	awsprov := awsprovisioner.AwsProvisioner{
 		Authenticate: false,
 		BaseURL:      userData.ProvisionerBaseUrl,
 	}

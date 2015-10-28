@@ -40,7 +40,7 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		// We do this by updating updateMe channel, so that on future
 		// iterations of this select statement, we read from this new
 		// channel.
-		refreshWait := signedURLs.Expires.Sub(time.Now().Add(time.Second * time.Duration(prematurity)))
+		refreshWait := time.Time(signedURLs.Expires).Sub(time.Now().Add(time.Second * time.Duration(prematurity)))
 		debug("Refreshing signed urls in %v", refreshWait.String())
 		updateMe = time.After(refreshWait)
 		for i, q := range signedURLs.Queues {

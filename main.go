@@ -35,7 +35,7 @@ var (
 	TaskUser OSUser
 	// Queue is the object we will use for accessing queue api. See
 	// http://docs.taskcluster.net/queue/api-docs/
-	Queue *queue.Auth
+	Queue *queue.Queue
 	// See SignedURLsManager() for more information:
 	// signedURsRequestChan is the channel you can pass a channel to, to get
 	// back signed urls from the Task Cluster Queue, for querying Azure queues.
@@ -580,7 +580,7 @@ func (task *TaskRun) setReclaimTimer() {
 	// denoted in `takenUntil` expires. It's recommended that this attempted a few
 	// minutes prior to expiration, to allow for clock drift.
 
-	takenUntil := task.TaskClaimResponse.Status.Runs[task.RunId].TakenUntil
+	takenUntil := time.Time(task.TaskClaimResponse.Status.Runs[task.RunId].TakenUntil)
 	// Attempt to reclaim 3 mins earlier...
 	reclaimTime := takenUntil.Add(time.Minute * -3)
 	waitTimeUntilReclaim := reclaimTime.Sub(time.Now())
@@ -620,24 +620,8 @@ func (task *TaskRun) fetchTaskDefinition() error {
 }
 
 func (task *TaskRun) validatePayload() error {
-	// To get payload, first marshal task.Definition.Payload into json
-	// (currently it is a map[string]json.RawMessage).
-	unmarshaledPayload := make(map[string]interface{})
-	for i, j := range task.Definition.Payload {
-		var x interface{} = nil
-		err := json.Unmarshal(j, &x)
-		if err != nil {
-			return err
-		}
-		unmarshaledPayload[i] = x
-	}
-	jsonPayload, err := json.Marshal(unmarshaledPayload)
-	// It shouldn't be possible to get an error here, since we are marshaling a
-	// subset of something we previously unmarshaled - but never say never...
-	if err != nil {
-		return err
-	}
-	debug("Json Payload: %v", string(jsonPayload))
+	jsonPayload := task.Definition.Payload
+	debug("Json Payload: %v", jsonPayload)
 	schemaLoader := gojsonschema.NewStringLoader(taskPayloadSchema())
 	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
