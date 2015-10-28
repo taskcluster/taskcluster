@@ -9,7 +9,8 @@ suite('TaskCreator', function() {
   this.slow(500);
 
   // these tests require TaskCluster credentials (for the queue insert)
-  if (!helper.hasTcCredentials || !helper.hasAzureCredentials) {
+  // and to do helper setup (which configures Hooks)
+  if (!helper.setup()) {
     this.pending = true;
   }
 
@@ -23,23 +24,13 @@ suite('TaskCreator', function() {
 
   var creator = null;
   var hookDef = require('./test_definition');
-  var Hook;
 
   setup(async () => {
-    creator = new taskcreator.TaskCreator({
-      credentials: helper.cfg.get('taskcluster:credentials'),
-    });
-
-    Hook = data.Hook.setup({
-      table:        helper.cfg.get('hooks:hookTableName'),
-      credentials:  helper.cfg.get('azure'),
-      process:      'testing'
-    });
-    await Hook.scan({},{handler: hook => {return hook.remove();}});
+    creator = await helper.load('taskcreator', helper.loadOptions);
   });
 
   var createHook = async function(scopes) {
-    return await Hook.create({
+    return await helper.Hook.create({
       hookGroupId:        "tc-hooks-tests",
       hookId:             "tc-test-hook",
       metadata:           {},
