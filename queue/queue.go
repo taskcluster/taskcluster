@@ -958,7 +958,7 @@ func (t Time) MarshalJSON() ([]byte, error) {
 		// See golang.org/issue/4556#c15 for more discussion.
 		return nil, errors.New("queue.Time.MarshalJSON: year outside of range [0,9999]")
 	}
-	return []byte(time.Time(t).UTC().Format(`"2006-01-02T15:04:05.000Z"`)), nil
+	return []byte(`"` + t.String() + `"`), nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
@@ -969,4 +969,10 @@ func (t *Time) UnmarshalJSON(data []byte) (err error) {
 	*x, err = time.Parse(`"`+time.RFC3339+`"`, string(data))
 	*t = Time(*x)
 	return
+}
+
+// Returns the Time in canonical RFC3339 representation, e.g.
+// 2015-10-27T20:36:19.255Z
+func (t Time) String() string {
+	return time.Time(t).UTC().Format("2006-01-02T15:04:05.000Z")
 }
