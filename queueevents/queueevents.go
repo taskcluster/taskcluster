@@ -89,6 +89,7 @@ package queueevents
 
 import (
 	"encoding/json"
+	"errors"
 	"reflect"
 	"strings"
 	"time"
@@ -450,7 +451,7 @@ type (
 		Status TaskStatusStructure `json:"status"`
 		// Time at which the run expires and is resolved as `failed`, if the run
 		// isn't reclaimed.
-		TakenUntil time.Time `json:"takenUntil"`
+		TakenUntil Time `json:"takenUntil"`
 		// Message version
 		Version json.RawMessage `json:"version"`
 		// Identifier for the worker-group within which this run started.
@@ -464,9 +465,9 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 	TaskStatusStructure struct {
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
-		Deadline time.Time `json:"deadline"`
+		Deadline Time `json:"deadline"`
 		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
-		Expires time.Time `json:"expires"`
+		Expires Time `json:"expires"`
 		// Unique identifier for the provisioner that this task must be scheduled on
 		ProvisionerId string `json:"provisionerId"`
 		// Number of retries left for the task in case of infrastructure issues
@@ -484,22 +485,22 @@ type (
 			// Date-time at which this run was resolved, ie. when the run changed
 			// state from `running` to either `completed`, `failed` or `exception`.
 			// This property is only present after the run as been resolved.
-			Resolved time.Time `json:"resolved"`
+			Resolved Time `json:"resolved"`
 			// Id of this task run, `run-id`s always starts from `0`
 			RunId int `json:"runId"`
 			// Date-time at which this run was scheduled, ie. when the run was
 			// created in state `pending`.
-			Scheduled time.Time `json:"scheduled"`
+			Scheduled Time `json:"scheduled"`
 			// Date-time at which this run was claimed, ie. when the run changed
 			// state from `pending` to `running`. This property is only present
 			// after the run has been claimed.
-			Started time.Time `json:"started"`
+			Started Time `json:"started"`
 			// State of this run
 			State json.RawMessage `json:"state"`
 			// Time at which the run expires and is resolved as `failed`, if the
 			// run isn't reclaimed. Note, only present after the run has been
 			// claimed.
-			TakenUntil time.Time `json:"takenUntil"`
+			TakenUntil Time `json:"takenUntil"`
 			// Identifier for group that worker who executes this run is a part of,
 			// this identifier is mainly used for efficient routing.
 			// Note, this property is only present after the run is claimed.
@@ -526,3 +527,39 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 )
+
+// Wraps time.Time in order that json serialisation/deserialisation can be adapted.
+// Marshaling time.Time types results in RFC3339 dates with nanosecond precision
+// in the user's timezone. In order that the json date representation is consistent
+// between what we send in json payloads, and what taskcluster services return,
+// we wrap time.Time into type queueevents.Time which marshals instead
+// to the same format used by the TaskCluster services; UTC based, with millisecond
+// precision, using 'Z' timezone, e.g. 2015-10-27T20:36:19.255Z.
+type Time time.Time
+
+// MarshalJSON implements the json.Marshaler interface.
+// The time is a quoted string in RFC 3339 format, with sub-second precision added if present.
+func (t Time) MarshalJSON() ([]byte, error) {
+	if y := time.Time(t).Year(); y < 0 || y >= 10000 {
+		// RFC 3339 is clear that years are 4 digits exactly.
+		// See golang.org/issue/4556#c15 for more discussion.
+		return nil, errors.New("queue.Time.MarshalJSON: year outside of range [0,9999]")
+	}
+	return []byte(`"` + t.String() + `"`), nil
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+// The time is expected to be a quoted string in RFC 3339 format.
+func (t *Time) UnmarshalJSON(data []byte) (err error) {
+	// Fractional seconds are handled implicitly by Parse.
+	x := new(time.Time)
+	*x, err = time.Parse(`"`+time.RFC3339+`"`, string(data))
+	*t = Time(*x)
+	return
+}
+
+// Returns the Time in canonical RFC3339 representation, e.g.
+// 2015-10-27T20:36:19.255Z
+func (t Time) String() string {
+	return time.Time(t).UTC().Format("2006-01-02T15:04:05.000Z")
+}

@@ -465,7 +465,7 @@ type (
 			SessionToken string `json:"sessionToken"`
 		} `json:"credentials"`
 		// Date and time of when the temporary credentials expires.
-		Expires time.Time `json:"expires"`
+		Expires Time `json:"expires"`
 	}
 
 	// Response to a request for an Shared-Access-Signature to access and Azure
@@ -474,7 +474,7 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
 	AzureSharedAccessSignatureResponse struct {
 		// Date and time of when the Shared-Access-Signature expires.
-		Expiry time.Time `json:"expiry"`
+		Expiry Time `json:"expiry"`
 		// Shared-Access-Signature string. This is the querystring parameters to
 		// be appened after `?` or `&` depending on whether or not a querystring is
 		// already present in the URL.
@@ -489,7 +489,7 @@ type (
 		// Should include who is the owner, point of contact.
 		Description string `json:"description"`
 		// Date and time where the clients access is set to expire
-		Expires time.Time `json:"expires"`
+		Expires Time `json:"expires"`
 	}
 
 	// All details about a client including the `accessToken`
@@ -502,22 +502,22 @@ type (
 		// ClientId of the client
 		ClientId string `json:"clientId"`
 		// Date and time when this client was created
-		Created time.Time `json:"created"`
+		Created Time `json:"created"`
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
 		Description string `json:"description"`
 		// List of scopes granted to this client by matching roles.
 		ExpandedScopes []string `json:"expandedScopes"`
 		// Date and time where the clients access is set to expire
-		Expires time.Time `json:"expires"`
+		Expires Time `json:"expires"`
 		// Date of last time this client was used. Will only be updated every 6 hours
 		// or so this may be off by up-to 6 hours. But it still gives a solid hint
 		// as to whether or not this client is in use.
-		LastDateUsed time.Time `json:"lastDateUsed"`
+		LastDateUsed Time `json:"lastDateUsed"`
 		// Date and time of last modification
-		LastModified time.Time `json:"lastModified"`
+		LastModified Time `json:"lastModified"`
 		// Date and time of when the `accessToken` was reset last time.
-		LastRotated time.Time `json:"lastRotated"`
+		LastRotated Time `json:"lastRotated"`
 	}
 
 	// Data to create or update a role.
@@ -544,7 +544,7 @@ type (
 		// Why it is scoped as is, think of this as documentation.
 		Description string `json:"description"`
 		// Date and time where the clients credentials are set to expire
-		Expires time.Time `json:"expires"`
+		Expires Time `json:"expires"`
 		// Human readable name of this set of credentials, typical
 		// component/server-name or IRC nickname of the user.
 		Name string `json:"name"`
@@ -559,22 +559,22 @@ type (
 		// ClientId of the client scopes is requested about
 		ClientId string `json:"clientId"`
 		// Date and time when this client was created
-		Created time.Time `json:"created"`
+		Created Time `json:"created"`
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
 		Description string `json:"description"`
 		// List of scopes granted to this client by matching roles.
 		ExpandedScopes []string `json:"expandedScopes"`
 		// Date and time where the clients access is set to expire
-		Expires time.Time `json:"expires"`
+		Expires Time `json:"expires"`
 		// Date of last time this client was used. Will only be updated every 6 hours
 		// or so this may be off by up-to 6 hours. But it still gives a solid hint
 		// as to whether or not this client is in use.
-		LastDateUsed time.Time `json:"lastDateUsed"`
+		LastDateUsed Time `json:"lastDateUsed"`
 		// Date and time of last modification
-		LastModified time.Time `json:"lastModified"`
+		LastModified Time `json:"lastModified"`
 		// Date and time of when the `accessToken` was reset last time.
-		LastRotated time.Time `json:"lastRotated"`
+		LastRotated Time `json:"lastRotated"`
 	}
 
 	// Get all details about a role
@@ -582,7 +582,7 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#
 	GetRoleResponse struct {
 		// Date and time when this role was created
-		Created time.Time `json:"created"`
+		Created Time `json:"created"`
 		// Description of what this role is used for in markdown.
 		// Should include who is the owner, point of contact.
 		Description string `json:"description"`
@@ -591,7 +591,7 @@ type (
 		// Hence, this includes any scopes in-directly granted as well.
 		ExpandedScopes []string `json:"expandedScopes"`
 		// Date and time of last modification
-		LastModified time.Time `json:"lastModified"`
+		LastModified Time `json:"lastModified"`
 		// roleId of the role requested
 		RoleId string `json:"roleId"`
 		// List of scopes the role grants access to
@@ -619,8 +619,44 @@ func (this *HawkSignatureAuthenticationResponse) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
 func (this *HawkSignatureAuthenticationResponse) UnmarshalJSON(data []byte) error {
 	if this == nil {
-		return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
+		return errors.New("HawkSignatureAuthenticationResponse: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil
+}
+
+// Wraps time.Time in order that json serialisation/deserialisation can be adapted.
+// Marshaling time.Time types results in RFC3339 dates with nanosecond precision
+// in the user's timezone. In order that the json date representation is consistent
+// between what we send in json payloads, and what taskcluster services return,
+// we wrap time.Time into type auth.Time which marshals instead
+// to the same format used by the TaskCluster services; UTC based, with millisecond
+// precision, using 'Z' timezone, e.g. 2015-10-27T20:36:19.255Z.
+type Time time.Time
+
+// MarshalJSON implements the json.Marshaler interface.
+// The time is a quoted string in RFC 3339 format, with sub-second precision added if present.
+func (t Time) MarshalJSON() ([]byte, error) {
+	if y := time.Time(t).Year(); y < 0 || y >= 10000 {
+		// RFC 3339 is clear that years are 4 digits exactly.
+		// See golang.org/issue/4556#c15 for more discussion.
+		return nil, errors.New("queue.Time.MarshalJSON: year outside of range [0,9999]")
+	}
+	return []byte(`"` + t.String() + `"`), nil
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+// The time is expected to be a quoted string in RFC 3339 format.
+func (t *Time) UnmarshalJSON(data []byte) (err error) {
+	// Fractional seconds are handled implicitly by Parse.
+	x := new(time.Time)
+	*x, err = time.Parse(`"`+time.RFC3339+`"`, string(data))
+	*t = Time(*x)
+	return
+}
+
+// Returns the Time in canonical RFC3339 representation, e.g.
+// 2015-10-27T20:36:19.255Z
+func (t Time) String() string {
+	return time.Time(t).UTC().Format("2006-01-02T15:04:05.000Z")
 }

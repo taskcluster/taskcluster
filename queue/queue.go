@@ -536,7 +536,6 @@ func (myQueue *Queue) Ping() *CallSummary {
 }
 
 type (
-	Time time.Time
 	// Definition of a task that can be scheduled
 	//
 	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
@@ -627,7 +626,7 @@ type (
 			ContentType string `json:"contentType"`
 			// Date and time after which the artifact created will be automatically
 			// deleted by the queue.
-			Expires time.Time `json:"expires"`
+			Expires Time `json:"expires"`
 			// Name of the artifact that was created, this is useful if you want to
 			// attempt to fetch the artifact.
 			Name string `json:"name"`
@@ -660,7 +659,7 @@ type (
 	PollTaskUrlsResponse struct {
 		// Date and time after which the signed URLs provided in this response
 		// expires and not longer works for authentication.
-		Expires time.Time `json:"expires"`
+		Expires Time `json:"expires"`
 		// List of signed URLs for queues to poll tasks from, they must be called
 		// in the order they are given. As the first entry in this array **may**
 		// have higher priority.
@@ -723,7 +722,7 @@ type (
 		Status TaskStatusStructure `json:"status"`
 		// Time at which the run expires and is resolved as `failed`,
 		// if the run isn't reclaimed.
-		TakenUntil time.Time `json:"takenUntil"`
+		TakenUntil Time `json:"takenUntil"`
 		// Identifier for the worker-group within which this run started.
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker executing this run.
@@ -775,9 +774,9 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 	TaskStatusStructure struct {
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
-		Deadline time.Time `json:"deadline"`
+		Deadline Time `json:"deadline"`
 		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
-		Expires time.Time `json:"expires"`
+		Expires Time `json:"expires"`
 		// Unique identifier for the provisioner that this task must be scheduled on
 		ProvisionerId string `json:"provisionerId"`
 		// Number of retries left for the task in case of infrastructure issues
@@ -795,22 +794,22 @@ type (
 			// Date-time at which this run was resolved, ie. when the run changed
 			// state from `running` to either `completed`, `failed` or `exception`.
 			// This property is only present after the run as been resolved.
-			Resolved time.Time `json:"resolved"`
+			Resolved Time `json:"resolved"`
 			// Id of this task run, `run-id`s always starts from `0`
 			RunId int `json:"runId"`
 			// Date-time at which this run was scheduled, ie. when the run was
 			// created in state `pending`.
-			Scheduled time.Time `json:"scheduled"`
+			Scheduled Time `json:"scheduled"`
 			// Date-time at which this run was claimed, ie. when the run changed
 			// state from `pending` to `running`. This property is only present
 			// after the run has been claimed.
-			Started time.Time `json:"started"`
+			Started Time `json:"started"`
 			// State of this run
 			State json.RawMessage `json:"state"`
 			// Time at which the run expires and is resolved as `failed`, if the
 			// run isn't reclaimed. Note, only present after the run has been
 			// claimed.
-			TakenUntil time.Time `json:"takenUntil"`
+			TakenUntil Time `json:"takenUntil"`
 			// Identifier for group that worker who executes this run is a part of,
 			// this identifier is mainly used for efficient routing.
 			// Note, this property is only present after the run is claimed.
@@ -842,14 +841,14 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task.json#
 	TaskDefinition1 struct {
 		// Creation time of task
-		Created time.Time `json:"created"`
+		Created Time `json:"created"`
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
-		Deadline time.Time `json:"deadline"`
+		Deadline Time `json:"deadline"`
 		// Task expiration, time at which task definition and status is deleted.
 		// Notice that all artifacts for the must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may subject to change).
-		Expires time.Time `json:"expires"`
+		Expires Time `json:"expires"`
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services
@@ -949,6 +948,15 @@ func (this *PostArtifactResponse) UnmarshalJSON(data []byte) error {
 	*this = append((*this)[0:0], data...)
 	return nil
 }
+
+// Wraps time.Time in order that json serialisation/deserialisation can be adapted.
+// Marshaling time.Time types results in RFC3339 dates with nanosecond precision
+// in the user's timezone. In order that the json date representation is consistent
+// between what we send in json payloads, and what taskcluster services return,
+// we wrap time.Time into type queue.Time which marshals instead
+// to the same format used by the TaskCluster services; UTC based, with millisecond
+// precision, using 'Z' timezone, e.g. 2015-10-27T20:36:19.255Z.
+type Time time.Time
 
 // MarshalJSON implements the json.Marshaler interface.
 // The time is a quoted string in RFC 3339 format, with sub-second precision added if present.

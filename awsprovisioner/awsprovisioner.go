@@ -427,7 +427,7 @@ type (
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#
 	GetSecretRequest struct {
 		// The date at which the secret is no longer guarunteed to exist
-		Expiration time.Time `json:"expiration"`
+		Expiration Time `json:"expiration"`
 		// List of strings which are scopes for temporary credentials to give
 		// to the worker through the secret system.  Scopes must be composed of
 		// printable ASCII characters and spaces.
@@ -580,7 +580,7 @@ type (
 		} `json:"instanceTypes"`
 		// ISO Date string (e.g. new Date().toISOString()) which represents the time
 		// when this worker type definition was last altered (inclusive of creation)
-		LastModified time.Time `json:"lastModified"`
+		LastModified Time `json:"lastModified"`
 		// Launch Specification entries which are used in all regions and all instance types
 		LaunchSpec json.RawMessage `json:"launchSpec"`
 		// Maximum number of capacity units to be provisioned.
@@ -652,8 +652,44 @@ func (this *GetAllLaunchSpecsResponse) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
 func (this *GetAllLaunchSpecsResponse) UnmarshalJSON(data []byte) error {
 	if this == nil {
-		return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
+		return errors.New("GetAllLaunchSpecsResponse: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil
+}
+
+// Wraps time.Time in order that json serialisation/deserialisation can be adapted.
+// Marshaling time.Time types results in RFC3339 dates with nanosecond precision
+// in the user's timezone. In order that the json date representation is consistent
+// between what we send in json payloads, and what taskcluster services return,
+// we wrap time.Time into type awsprovisioner.Time which marshals instead
+// to the same format used by the TaskCluster services; UTC based, with millisecond
+// precision, using 'Z' timezone, e.g. 2015-10-27T20:36:19.255Z.
+type Time time.Time
+
+// MarshalJSON implements the json.Marshaler interface.
+// The time is a quoted string in RFC 3339 format, with sub-second precision added if present.
+func (t Time) MarshalJSON() ([]byte, error) {
+	if y := time.Time(t).Year(); y < 0 || y >= 10000 {
+		// RFC 3339 is clear that years are 4 digits exactly.
+		// See golang.org/issue/4556#c15 for more discussion.
+		return nil, errors.New("queue.Time.MarshalJSON: year outside of range [0,9999]")
+	}
+	return []byte(`"` + t.String() + `"`), nil
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+// The time is expected to be a quoted string in RFC 3339 format.
+func (t *Time) UnmarshalJSON(data []byte) (err error) {
+	// Fractional seconds are handled implicitly by Parse.
+	x := new(time.Time)
+	*x, err = time.Parse(`"`+time.RFC3339+`"`, string(data))
+	*t = Time(*x)
+	return
+}
+
+// Returns the Time in canonical RFC3339 representation, e.g.
+// 2015-10-27T20:36:19.255Z
+func (t Time) String() string {
+	return time.Time(t).UTC().Format("2006-01-02T15:04:05.000Z")
 }

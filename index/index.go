@@ -120,6 +120,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -364,7 +365,7 @@ type (
 		// Data that was reported with the task. This is an arbitrary JSON object.
 		Data json.RawMessage `json:"data"`
 		// Date at which this entry expires from the task index.
-		Expires time.Time `json:"expires"`
+		Expires Time `json:"expires"`
 		// Namespace of the indexed task, used to find the indexed task in the index.
 		Namespace string `json:"namespace"`
 		// If multiple tasks are indexed with the same `namespace` the task with the
@@ -386,7 +387,7 @@ type (
 		// So stay well, below that limit.
 		Data json.RawMessage `json:"data"`
 		// Date at which this entry expires from the task index.
-		Expires time.Time `json:"expires"`
+		Expires Time `json:"expires"`
 		// If multiple tasks are indexed with the same `namespace` the task with the
 		// highest `rank` will be stored and returned in later requests. If two tasks
 		// has the same `rank` the latest task will be stored.
@@ -422,7 +423,7 @@ type (
 		Namespaces []struct {
 			// Date at which this entry, and by implication all entries below it,
 			// expires from the task index.
-			Expires time.Time `json:"expires"`
+			Expires Time `json:"expires"`
 			// Name of namespace within it's parent namespace.
 			Name string `json:"name"`
 			// Fully qualified name of the namespace, you can use this to list
@@ -458,7 +459,7 @@ type (
 			// object.
 			Data json.RawMessage `json:"data"`
 			// Date at which this entry expires from the task index.
-			Expires time.Time `json:"expires"`
+			Expires Time `json:"expires"`
 			// Namespace of the indexed task, used to find the indexed task in the
 			// index.
 			Namespace string `json:"namespace"`
@@ -474,3 +475,39 @@ type (
 		} `json:"tasks"`
 	}
 )
+
+// Wraps time.Time in order that json serialisation/deserialisation can be adapted.
+// Marshaling time.Time types results in RFC3339 dates with nanosecond precision
+// in the user's timezone. In order that the json date representation is consistent
+// between what we send in json payloads, and what taskcluster services return,
+// we wrap time.Time into type index.Time which marshals instead
+// to the same format used by the TaskCluster services; UTC based, with millisecond
+// precision, using 'Z' timezone, e.g. 2015-10-27T20:36:19.255Z.
+type Time time.Time
+
+// MarshalJSON implements the json.Marshaler interface.
+// The time is a quoted string in RFC 3339 format, with sub-second precision added if present.
+func (t Time) MarshalJSON() ([]byte, error) {
+	if y := time.Time(t).Year(); y < 0 || y >= 10000 {
+		// RFC 3339 is clear that years are 4 digits exactly.
+		// See golang.org/issue/4556#c15 for more discussion.
+		return nil, errors.New("queue.Time.MarshalJSON: year outside of range [0,9999]")
+	}
+	return []byte(`"` + t.String() + `"`), nil
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+// The time is expected to be a quoted string in RFC 3339 format.
+func (t *Time) UnmarshalJSON(data []byte) (err error) {
+	// Fractional seconds are handled implicitly by Parse.
+	x := new(time.Time)
+	*x, err = time.Parse(`"`+time.RFC3339+`"`, string(data))
+	*t = Time(*x)
+	return
+}
+
+// Returns the Time in canonical RFC3339 representation, e.g.
+// 2015-10-27T20:36:19.255Z
+func (t Time) String() string {
+	return time.Time(t).UTC().Format("2006-01-02T15:04:05.000Z")
+}

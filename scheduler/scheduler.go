@@ -41,6 +41,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -377,14 +378,14 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
 	TaskDefinition struct {
 		// Creation time of task
-		Created time.Time `json:"created"`
+		Created Time `json:"created"`
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
-		Deadline time.Time `json:"deadline"`
+		Deadline Time `json:"deadline"`
 		// Task expiration, time at which task definition and status is deleted.
 		// Notice that all artifacts for the must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may subject to change).
-		Expires time.Time `json:"expires"`
+		Expires Time `json:"expires"`
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services
@@ -612,3 +613,39 @@ type (
 		} `json:"tasks"`
 	}
 )
+
+// Wraps time.Time in order that json serialisation/deserialisation can be adapted.
+// Marshaling time.Time types results in RFC3339 dates with nanosecond precision
+// in the user's timezone. In order that the json date representation is consistent
+// between what we send in json payloads, and what taskcluster services return,
+// we wrap time.Time into type scheduler.Time which marshals instead
+// to the same format used by the TaskCluster services; UTC based, with millisecond
+// precision, using 'Z' timezone, e.g. 2015-10-27T20:36:19.255Z.
+type Time time.Time
+
+// MarshalJSON implements the json.Marshaler interface.
+// The time is a quoted string in RFC 3339 format, with sub-second precision added if present.
+func (t Time) MarshalJSON() ([]byte, error) {
+	if y := time.Time(t).Year(); y < 0 || y >= 10000 {
+		// RFC 3339 is clear that years are 4 digits exactly.
+		// See golang.org/issue/4556#c15 for more discussion.
+		return nil, errors.New("queue.Time.MarshalJSON: year outside of range [0,9999]")
+	}
+	return []byte(`"` + t.String() + `"`), nil
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+// The time is expected to be a quoted string in RFC 3339 format.
+func (t *Time) UnmarshalJSON(data []byte) (err error) {
+	// Fractional seconds are handled implicitly by Parse.
+	x := new(time.Time)
+	*x, err = time.Parse(`"`+time.RFC3339+`"`, string(data))
+	*t = Time(*x)
+	return
+}
+
+// Returns the Time in canonical RFC3339 representation, e.g.
+// 2015-10-27T20:36:19.255Z
+func (t Time) String() string {
+	return time.Time(t).UTC().Format("2006-01-02T15:04:05.000Z")
+}
