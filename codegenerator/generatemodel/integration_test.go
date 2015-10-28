@@ -183,6 +183,8 @@ func TestDefineTask(t *testing.T) {
 		t.Log("Actual:")
 		t.Errorf("%s", formattedActual)
 	}
+
+	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskId)
 }
 
 // Checks whether two json []byte are equivalent (equal) by formatting/ordering
