@@ -23,6 +23,6 @@
     "taskcluster-base": "^0.8.4",
     "taskcluster-client": "^0.22.4",
     "typed-env-config": "^0.10.0",
-    "taskcluster-lib-loader": "taskcluster/taskcluster-lib-loader#allow-overwrites"
+    "taskcluster-lib-loader": "0.0.8"
   }
 }
