@@ -149,6 +149,9 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 				if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 					comment += "\n"
 				}
+				if regex := s.Properties[j].Pattern; regex != nil {
+					comment += "//\n// Syntax: " + *regex + "\n"
+				}
 				typ += comment
 				// struct member name and type, as part of struct definition
 				typ += fmt.Sprintf("\t%v %v `json:\"%v\"`\n", memberName, subType, j)
