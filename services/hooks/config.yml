@@ -1,0 +1,66 @@
+defaults:
+  # defaults outlining all configuration options and some sane defaults
+  app:
+    component:        hooks
+    hookTable:        !env HOOK_TABLE_NAME
+    publishMetaData:  !env:flag PUBLISH_METADATA
+    scheduler:
+      pollingDelay:   60000
+  influx:
+    connectionString: !env INFLUX_CONNECTION
+    maxDelay:         300
+    maxPendingPoints: 300
+  azureTable:
+    account:          !env AZURE_ACCOUNT
+    signingKey:       !env TABLE_SIGNING_KEY
+    cryptoKey:        !env TABLE_CRYPTO_KEY
+  taskcluster:
+    authBaseUrl:      null
+    credentials:
+      clientId:       !env TASKCLUSTER_CLIENT_ID
+      accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
+  server:
+    publicUrl:        !env PUBLIC_URL
+    env:              !env NODE_ENV
+    forceSSL:         !env:flag FORCE_SSL
+    trustProxy:       false
+  #pulse:
+  #  username: !env PULSE_USERNAME
+  #  password: !env PULSE_PASSWORD
+  aws:
+    # Credentials with access to references/schemas.taskcluster.net if you wish
+    # to publish meta-data
+    accessKeyId:      !env AWS_ACCESS_KEY_ID
+    secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
+    region:           us-west-2
+    apiVersion:       2014-01-01
+production:
+  app:
+    hookTable:        Hooks
+  taskcluster:
+    authBaseUrl:      null
+  server:
+    publicUrl:        https://hooks.taskcluster.net
+    env:              production
+    forceSSL:         true
+    trustProxy:       true
+test:
+  # See user-config-example.yml for secrets credentials required for tests
+  app:
+    component:        hooks-tests
+    hookTable:        HooksTestTable
+    publishMetaData:  false
+    scheduler:
+      pollingDelay:   5000
+  azureTable:
+    account:          'jungle'
+    signingKey:       'not a secret'
+    cryptoKey:        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
+  taskcluster:
+    authBaseUrl:      http://localhost:60407/v1
+  server:
+    port:             60401
+    publicUrl:        'http://localhost:60401'
+    env:              development
+    forceSSL:         false
+    trustProxy:       false
