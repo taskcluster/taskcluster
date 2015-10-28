@@ -1,9 +1,7 @@
 {
   "name": "taskcluster-hooks",
   "version": "0.0.1",
-  "main": "bin/server.js",
   "scripts": {
-    "start": "babel-node bin/server.js $PROFILE",
     "test": "./test/runtests.sh"
   },
   "repository": {
@@ -24,5 +22,9 @@
     "taskcluster-client": "^0.22.4",
     "typed-env-config": "^0.10.0",
     "taskcluster-lib-loader": "0.0.8"
+  },
+  "engines": {
+    "node":                 "0.12.x",
+    "npm":                  "2.7.x"
   }
 }
