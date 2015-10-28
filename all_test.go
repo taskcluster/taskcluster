@@ -22,8 +22,7 @@ func TestBadPayloadValidate(t *testing.T) {
 		return r, e
 	}()
 
-	badPayload := make(map[string]json.RawMessage)
-	badPayload["command"] = json.RawMessage(`bad payload, not even json`)
+	badPayload := json.RawMessage(`bad payload, not even json`)
 	task := TaskRun{Definition: queue.TaskDefinition1{Payload: badPayload}}
 	err := task.validatePayload()
 	if err == nil {
