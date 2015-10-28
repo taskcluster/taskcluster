@@ -585,6 +585,8 @@ type (
 		Priority json.RawMessage `json:"priority"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		ProvisionerId string `json:"provisionerId"`
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
@@ -597,6 +599,8 @@ type (
 		// Along with the `taskGroupId` this is used to form the permission scope
 		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
 		// this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		SchedulerId string `json:"schedulerId"`
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
@@ -611,8 +615,12 @@ type (
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
 		// property isn't specified.
+		//
+		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupId string `json:"taskGroupId"`
 		// Unique identifier for a worker-type within a specific provisioner
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerType string `json:"workerType"`
 	}
 
@@ -648,8 +656,12 @@ type (
 		// **upper-bound** on the number of pending tasks.
 		PendingTasks int `json:"pendingTasks"`
 		// Unique identifier for the provisioner
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		ProvisionerId string `json:"provisionerId"`
 		// Identifier for worker type within the specified provisioner
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerType string `json:"workerType"`
 	}
 
@@ -708,8 +720,12 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-claim-request.json#
 	TaskClaimRequest struct {
 		// Identifier for group that worker claiming the task is a part of.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for worker within the given workerGroup
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerId string `json:"workerId"`
 	}
 
@@ -724,8 +740,12 @@ type (
 		// if the run isn't reclaimed.
 		TakenUntil Time `json:"takenUntil"`
 		// Identifier for the worker-group within which this run started.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker executing this run.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerId string `json:"workerId"`
 	}
 
@@ -778,6 +798,8 @@ type (
 		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
 		Expires Time `json:"expires"`
 		// Unique identifier for the provisioner that this task must be scheduled on
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		ProvisionerId string `json:"provisionerId"`
 		// Number of retries left for the task in case of infrastructure issues
 		RetriesLeft int `json:"retriesLeft"`
@@ -813,13 +835,19 @@ type (
 			// Identifier for group that worker who executes this run is a part of,
 			// this identifier is mainly used for efficient routing.
 			// Note, this property is only present after the run is claimed.
+			//
+			// Syntax: ^([a-zA-Z0-9-_]*)$
 			WorkerGroup string `json:"workerGroup"`
 			// Identifier for worker evaluating this run within given
 			// `workerGroup`. Note, this property is only available after the run
 			// has been claimed.
+			//
+			// Syntax: ^([a-zA-Z0-9-_]*)$
 			WorkerId string `json:"workerId"`
 		} `json:"runs"`
 		// Identifier for the scheduler that _defined_ this task.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		SchedulerId string `json:"schedulerId"`
 		// State of this task. This is just an auxiliary property derived from state
 		// of latests run, or `unscheduled` if none.
@@ -827,12 +855,18 @@ type (
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.
+		//
+		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupId string `json:"taskGroupId"`
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
+		//
+		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskId string `json:"taskId"`
 		// Identifier for worker type within the specified provisioner
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerType string `json:"workerType"`
 	}
 
@@ -885,6 +919,8 @@ type (
 		Priority json.RawMessage `json:"priority"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		ProvisionerId string `json:"provisionerId"`
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
@@ -897,6 +933,8 @@ type (
 		// Along with the `taskGroupId` this is used to form the permission scope
 		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
 		// this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		SchedulerId string `json:"schedulerId"`
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
@@ -911,8 +949,12 @@ type (
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
 		// property isn't specified.
+		//
+		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupId string `json:"taskGroupId"`
 		// Unique identifier for a worker-type within a specific provisioner
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerType string `json:"workerType"`
 	}
 )

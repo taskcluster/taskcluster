@@ -498,8 +498,12 @@ type (
 	CreateClientResponse struct {
 		// AccessToken used for authenticating requests, you should store this
 		// you won't be able to retrive it again!
+		//
+		// Syntax: ^[a-zA-Z0-9-_]{22,66}$
 		AccessToken string `json:"accessToken"`
 		// ClientId of the client
+		//
+		// Syntax: ^[a-zA-Z0-9-_]{1,22}$
 		ClientId string `json:"clientId"`
 		// Date and time when this client was created
 		Created Time `json:"created"`
@@ -536,8 +540,12 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#
 	ExportedClients []struct {
 		// AccessToken used for authenticating requests
+		//
+		// Syntax: ^[a-zA-Z0-9-_]{22,66}$
 		AccessToken string `json:"accessToken"`
 		// ClientId of the client scopes is requested about
+		//
+		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		ClientId string `json:"clientId"`
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
@@ -557,6 +565,8 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#
 	GetClientResponse struct {
 		// ClientId of the client scopes is requested about
+		//
+		// Syntax: ^[a-zA-Z0-9-_]{1,22}$
 		ClientId string `json:"clientId"`
 		// Date and time when this client was created
 		Created Time `json:"created"`

@@ -98,10 +98,14 @@ type (
 		// by `cacheName` regardless of cache type.
 		CacheName string `json:"cacheName"`
 		// `provisionerId` under which the `workerType` we want to purge for exists.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		ProvisionerId string `json:"provisionerId"`
 		// Message version
 		Version int `json:"version"`
 		// `workerType` we wish to purge cache for.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerType string `json:"workerType"`
 	}
 )

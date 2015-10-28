@@ -422,6 +422,8 @@ type (
 		Priority json.RawMessage `json:"priority"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		ProvisionerId string `json:"provisionerId"`
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
@@ -434,6 +436,8 @@ type (
 		// Along with the `taskGroupId` this is used to form the permission scope
 		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
 		// this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		SchedulerId string `json:"schedulerId"`
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
@@ -448,8 +452,12 @@ type (
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
 		// property isn't specified.
+		//
+		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupId string `json:"taskGroupId"`
 		// Unique identifier for a worker-type within a specific provisioner
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerType string `json:"workerType"`
 	}
 
@@ -465,6 +473,8 @@ type (
 			Reruns int            `json:"reruns"`
 			Task   TaskDefinition `json:"task"`
 			// Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.
+			//
+			// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 			TaskId string `json:"taskId"`
 		} `json:"tasks"`
 	}
@@ -508,6 +518,8 @@ type (
 			// State of the task as considered by the scheduler
 			State string `json:"state"`
 			// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
+			//
+			// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 			TaskId string `json:"taskId"`
 		} `json:"tasks"`
 	}
@@ -533,6 +545,8 @@ type (
 		// State of the task as considered by the scheduler
 		State string `json:"state"`
 		// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
+		//
+		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskId string `json:"taskId"`
 	}
 
@@ -568,10 +582,14 @@ type (
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#
 	TaskGraphStatusStructure struct {
 		// Unique identifier for task-graph scheduler managing the given task-graph
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		SchedulerId string `json:"schedulerId"`
 		// Task-graph state, this enum is **frozen** new values will **not** be added.
 		State string `json:"state"`
 		// Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
+		//
+		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGraphId string `json:"taskGraphId"`
 	}
 
@@ -609,6 +627,8 @@ type (
 			Reruns int            `json:"reruns"`
 			Task   TaskDefinition `json:"task"`
 			// Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.
+			//
+			// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 			TaskId string `json:"taskId"`
 		} `json:"tasks"`
 	}

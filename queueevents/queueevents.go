@@ -366,9 +366,13 @@ type (
 		Version json.RawMessage `json:"version"`
 		// Identifier for the worker-group within which the run with the created
 		// artifacted is running.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker within which the run with the created artifact
 		// is running.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerId string `json:"workerId"`
 	}
 
@@ -382,8 +386,12 @@ type (
 		// Message version
 		Version json.RawMessage `json:"version"`
 		// Identifier for the worker-group within which this run ran.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker that executed this run.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerId string `json:"workerId"`
 	}
 
@@ -409,10 +417,14 @@ type (
 		Version json.RawMessage `json:"version"`
 		// Identifier for the worker-group within which the last attempt of the task
 		// ran. Not provided, if `deadline` was exceeded before a run was started.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the last worker that failed to report, causing the task
 		// to fail. Not provided, if `deadline` was exceeded before a run
 		// was started.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerId string `json:"workerId"`
 	}
 
@@ -426,8 +438,12 @@ type (
 		// Message version
 		Version json.RawMessage `json:"version"`
 		// Identifier for the worker-group within which this run ran.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker that executed this run.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerId string `json:"workerId"`
 	}
 
@@ -455,8 +471,12 @@ type (
 		// Message version
 		Version json.RawMessage `json:"version"`
 		// Identifier for the worker-group within which this run started.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerGroup string `json:"workerGroup"`
 		// Identifier for the worker executing this run.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerId string `json:"workerId"`
 	}
 
@@ -469,6 +489,8 @@ type (
 		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
 		Expires Time `json:"expires"`
 		// Unique identifier for the provisioner that this task must be scheduled on
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		ProvisionerId string `json:"provisionerId"`
 		// Number of retries left for the task in case of infrastructure issues
 		RetriesLeft int `json:"retriesLeft"`
@@ -504,13 +526,19 @@ type (
 			// Identifier for group that worker who executes this run is a part of,
 			// this identifier is mainly used for efficient routing.
 			// Note, this property is only present after the run is claimed.
+			//
+			// Syntax: ^([a-zA-Z0-9-_]*)$
 			WorkerGroup string `json:"workerGroup"`
 			// Identifier for worker evaluating this run within given
 			// `workerGroup`. Note, this property is only available after the run
 			// has been claimed.
+			//
+			// Syntax: ^([a-zA-Z0-9-_]*)$
 			WorkerId string `json:"workerId"`
 		} `json:"runs"`
 		// Identifier for the scheduler that _defined_ this task.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		SchedulerId string `json:"schedulerId"`
 		// State of this task. This is just an auxiliary property derived from state
 		// of latests run, or `unscheduled` if none.
@@ -518,12 +546,18 @@ type (
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.
+		//
+		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupId string `json:"taskGroupId"`
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
+		//
+		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskId string `json:"taskId"`
 		// Identifier for worker type within the specified provisioner
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
 		WorkerType string `json:"workerType"`
 	}
 )

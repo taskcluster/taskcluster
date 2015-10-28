@@ -375,6 +375,8 @@ type (
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
+		//
+		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskId string `json:"taskId"`
 	}
 
@@ -395,6 +397,8 @@ type (
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
+		//
+		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskId string `json:"taskId"`
 	}
 
@@ -471,6 +475,8 @@ type (
 			// Unique task identifier, this is UUID encoded as
 			// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 			// stripped of `=` padding.
+			//
+			// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 			TaskId string `json:"taskId"`
 		} `json:"tasks"`
 	}

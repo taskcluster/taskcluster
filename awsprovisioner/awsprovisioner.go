@@ -634,6 +634,8 @@ type (
 		// UserData entries which are used in all regions and all instance types
 		UserData json.RawMessage `json:"userData"`
 		// The ID of the workerType
+		//
+		// Syntax: ^[A-Za-z0-9+/=_-]{1,22}$
 		WorkerType string `json:"workerType"`
 	}
 
