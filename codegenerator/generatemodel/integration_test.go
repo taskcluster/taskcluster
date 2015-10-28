@@ -71,14 +71,12 @@ func TestDefineTask(t *testing.T) {
 	td.Created = time.Now()
 	td.Deadline = td.Created.AddDate(0, 0, 1)
 	td.Expires = td.Deadline
-	td.Extra = make(map[string]json.RawMessage)
-	td.Extra["index"] = json.RawMessage(`{"rank":12345}`)
+	td.Extra = json.RawMessage(`{"index":{"rank":12345}}`)
 	td.Metadata.Description = "Stuff"
 	td.Metadata.Name = "[TC] Pete"
 	td.Metadata.Owner = "pmoore@mozilla.com"
 	td.Metadata.Source = "http://everywhere.com/"
-	td.Payload = make(map[string]json.RawMessage)
-	td.Payload["features"] = json.RawMessage(`{"relengApiProxy":true}`)
+	td.Payload = json.RawMessage(`{"features":{"relengApiProxy":true}}`)
 	td.ProvisionerId = "win-provisioner"
 	td.Retries = 5
 	td.Routes = []string{
@@ -90,8 +88,7 @@ func TestDefineTask(t *testing.T) {
 		"docker-worker:image:taskcluster/builder:0.5.6",
 		"queue:define-task:aws-provisioner-v1/build-c4-2xlarge",
 	}
-	td.Tags = make(map[string]json.RawMessage)
-	td.Tags["createdForUser"] = json.RawMessage(`"cbook@mozilla.com"`)
+	td.Tags = json.RawMessage(`{"createdForUser":"cbook@mozilla.com"}`)
 	td.Priority = json.RawMessage(`"high"`)
 	td.TaskGroupId = "dtwuF2n9S-i83G37V9eBuQ"
 	td.WorkerType = "win2008-worker"
