@@ -5,7 +5,7 @@ suite('API', function() {
   var debug       = require('debug')('test:api:createhook');
   var helper      = require('./helper');
 
-  if (!helper.setupApi()) {
+  if (!helper.setup()) {
     this.pending = true;
   }
 
@@ -53,7 +53,7 @@ suite('API', function() {
     test("without a schedule", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
       var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
-      assume(r1).is.empty();
+      assume(r1).deep.equals({schedule: []});
     });
 
     test("with a daily schedule", async () => {
@@ -158,10 +158,10 @@ suite('API', function() {
   });
 
   suite("getHookSchedule", function() {
-    test("returns {} for a non-scheduled task", async () => {
+    test("returns {schedule: []} for a non-scheduled task", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
       var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
-      assume(r1).deep.equals({});
+      assume(r1).deep.equals({schedule: []});
     });
 
     test("returns the schedule for a -scheduled task", async () => {
