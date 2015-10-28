@@ -20,6 +20,7 @@ defaults:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
   server:
+    port:             !env:number PORT
     publicUrl:        !env PUBLIC_URL
     env:              !env NODE_ENV
     forceSSL:         !env:flag FORCE_SSL
