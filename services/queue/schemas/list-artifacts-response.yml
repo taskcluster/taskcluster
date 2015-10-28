@@ -20,6 +20,7 @@ properties:
           description: |
             This is the `storageType` for the request that was used to create
             the artifact.
+          type:         string
           enum:
             - s3
             - azure
