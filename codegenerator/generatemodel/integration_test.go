@@ -1,8 +1,6 @@
 package main
 
 import (
-	"code.google.com/p/go-uuid/uuid"
-	"encoding/base64"
 	"encoding/json"
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go/index"
@@ -11,11 +9,6 @@ import (
 	"testing"
 	"time"
 )
-
-// Generates a 22 character random slugId that is url-safe ([0-9a-zA-Z_\-]*)
-func slug() string {
-	return base64.URLEncoding.EncodeToString(uuid.NewRandom())[:22]
-}
 
 // This is a silly test that looks for the latest mozilla-central buildbot linux64 l10n build
 // and asserts that it must have a created time between a year ago and an hour in the future.
@@ -94,6 +87,11 @@ func TestDefineTask(t *testing.T) {
 	td.WorkerType = "win2008-worker"
 
 	tsr, cs := myQueue.DefineTask(taskId, td)
+
+	//////////////////////////////////
+	// And now validate results.... //
+	//////////////////////////////////
+
 	if cs.Error != nil {
 		t.Fatalf("Exception thrown: %s", cs.Error)
 	}
@@ -109,4 +107,91 @@ func TestDefineTask(t *testing.T) {
 	if state := tsr.Status.State; string(state) != `"unscheduled"` {
 		t.Errorf("Expected 'state' to be 'unscheduled', but got %s", state)
 	}
+	submittedPayload := cs.HttpRequestBody
+	expectedJson := []byte(`
+	{
+	  "created":"` + td.Created.UTC().Format("2006-01-02T15:04:05.000Z") + `",
+	  "deadline":"` + td.Deadline.UTC().Format("2006-01-02T15:04:05.000Z") + `",
+	  "expires":"` + td.Expires.UTC().Format("2006-01-02T15:04:05.000Z") + `",
+
+	  "taskGroupId":"dtwuF2n9S-i83G37V9eBuQ",
+	  "workerType":"win2008-worker",
+	  "schedulerId":"go-test-test-scheduler",
+
+	  "payload":{
+	    "features":{
+	      "relengApiProxy":true
+	    }
+	  },
+
+	  "priority":"high",
+	  "provisionerId":"win-provisioner",
+	  "retries":5,
+
+	  "routes":[
+	    "tc-treeherder.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163",
+	    "tc-treeherder-stage.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163"
+	  ],
+
+	  "scopes":[
+	    "docker-worker:image:taskcluster/builder:0.5.6",
+	    "queue:define-task:aws-provisioner-v1/build-c4-2xlarge"
+	  ],
+
+	  "tags":{
+	    "createdForUser":"cbook@mozilla.com"
+	  },
+
+	  "extra":{
+	    "index":{
+	      "rank":12345
+	    }
+	  },
+
+	  "metadata":{
+	    "description":"Stuff",
+	    "name":"[TC] Pete",
+	    "owner":"pmoore@mozilla.com",
+	    "source":"http://everywhere.com/"
+	  }
+	}
+	`)
+
+	jsonCorrect, formattedExpected, formattedActual, err := jsonEqual(expectedJson, []byte(submittedPayload))
+	if err != nil {
+		t.Fatalf("Exception thrown formatting json data!\n%s", err)
+	}
+
+	if !jsonCorrect {
+		t.Log("Anticipated json not generated. Expected:")
+		t.Logf("%s", formattedExpected)
+		t.Log("Actual:")
+		t.Errorf("%s", formattedActual)
+	}
+}
+
+// Checks whether two json []byte are equivalent (equal) by formatting/ordering
+// both of them consistently, and then comparing if formatted versions are
+// identical. Returns true/false together with formatted json, and any error.
+func jsonEqual(a []byte, b []byte) (bool, []byte, []byte, error) {
+	a_, err := formatJson(a)
+	if err != nil {
+		return false, nil, nil, err
+	}
+	b_, err := formatJson(b)
+	if err != nil {
+		return false, a_, nil, err
+	}
+	return string(a_) == string(b_), a_, b_, nil
+}
+
+// Takes json []byte input, unmarshals and then marshals, in order to get a
+// canonical representation of json (i.e. formatted with objects ordered)
+func formatJson(a []byte) ([]byte, error) {
+	tmpObj := new(interface{})
+	err := json.Unmarshal(a, &tmpObj)
+	if err != nil {
+		return a, err
+	}
+	return json.MarshalIndent(&tmpObj, "", "  ")
 }
