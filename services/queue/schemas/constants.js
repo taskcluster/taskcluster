@@ -79,6 +79,7 @@ module.exports = {
   // Message version numbers
   "message-version": {
     "description":  "Message version",
+    "type":         "integer",
     "enum":         [1]
   },
 
