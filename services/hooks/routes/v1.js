@@ -13,8 +13,8 @@ var api = new base.API({
     "Hooks are identified with a `hookGroupId` and a `hookId`.",
     "",
     "When an event occurs, the resulting task is automatically created.  The",
-    "task is created using the role `hook-id:<hookGroupId>/<hookId>`, which",
-    "must have scopes to make the createTask call, including satisfying all",
+    "task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,",
+    "which must have scopes to make the createTask call, including satisfying all",
     "scopes in `task.scopes`.",
     "",
     "Hooks can have a 'schedule' indicating specific times that new tasks should",
@@ -158,16 +158,19 @@ api.declare({
   name:         'createHook',
   deferAuth:    true,
   idempotent:   true,
-  scopes:       [["hooks:modify-hook:<hookGroupId>/<hookId>"]],
+  scopes:       [[
+                    "hooks:modify-hook:<hookGroupId>/<hookId>",
+                    "assume:hook-id:<hookGroupId>/<hookId>",
+                ]],
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Create a hook',
   description: [
     "This endpoint will create a new hook.",
     "",
-    "The caller's credentials need not satisfy `hook.task.scopes`. Instead,",
-    "the role for the hook must satisfy these scopes as well as the necessary",
-    "scopes to add the task to the queue.",
+    "The caller's credentials must include the role that will be used to",
+    "create the task.  That role must satisfy task.scopes as well as the",
+    "necessary scopes to add the task to the queue.",
   ].join('\n')
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
@@ -214,7 +217,10 @@ api.declare({
   name:         'updateHook',
   deferAuth:    true,
   idempotent:   true,
-  scopes:       [["hooks:modify-hook:<hookGroupId>/<hookId>"]],
+  scopes:       [[
+                    "hooks:modify-hook:<hookGroupId>/<hookId>",
+                    "assume:hook-id:<hookGroupId>/<hookId>",
+                ]],
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Update a hook',
