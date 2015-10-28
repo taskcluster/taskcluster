@@ -14,6 +14,7 @@ properties:
         Scope the role grants access to
       type:                 string
       pattern: "^[\x20-\x7e]*$"
+    uniqueItems:            true
   description:
     description: |
       Description of what this role is used for in markdown.

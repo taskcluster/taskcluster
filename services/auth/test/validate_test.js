@@ -14,9 +14,41 @@ var testCases = [
     schema:   'auth/v1/authenticate-hawk-request.json#',
     success:  true
   }, {
-    path:     'create-role-request.json',
+    path:     'create-role-request1.json',
     schema:   'auth/v1/create-role-request.json#',
     success:  true
+  }, {
+    path:     'create-role-request2.json',
+    schema:   'auth/v1/create-role-request.json#',
+    success:  true
+  }, {
+    path:     'create-role-request3.json',
+    schema:   'auth/v1/create-role-request.json#',
+    success:  true
+  }, {
+    path:     'create-role-request-bad-scope1.json',
+    schema:   'auth/v1/create-role-request.json#',
+    success:  false
+  }, {
+    path:     'create-role-request-bad-scope2.json',
+    schema:   'auth/v1/create-role-request.json#',
+    success:  false
+  }, {
+    path:     'create-role-request-bad-scope3.json',
+    schema:   'auth/v1/create-role-request.json#',
+    success:  false
+  }, {
+    path:     'create-role-request-bad-scope4.json',
+    schema:   'auth/v1/create-role-request.json#',
+    success:  false
+  }, {
+    path:     'create-role-request-bad-scope5.json',
+    schema:   'auth/v1/create-role-request.json#',
+    success:  false
+  }, {
+    path:     'create-role-request-unique.json',
+    schema:   'auth/v1/create-role-request.json#',
+    success:  false
   }, {
     path:     'authenticate-hawk-request-bad.json',
     schema:   'auth/v1/authenticate-hawk-request.json#',
