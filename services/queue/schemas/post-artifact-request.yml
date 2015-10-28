@@ -1,6 +1,7 @@
 $schema:            http://json-schema.org/draft-04/schema#
 title:              "Post Artifact Request"
 description: "Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well."
+type:               object
 oneOf:
   - title:          "S3 Artifact Request"
     description: |

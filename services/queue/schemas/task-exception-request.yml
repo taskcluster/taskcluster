@@ -5,6 +5,7 @@ description: |
 type:     object
 properties:
   reason:
+    type:    string
     enum:
       - worker-shutdown
       - malformed-payload

@@ -58,6 +58,7 @@ properties:
     description: |
       State of this task. This is just an auxiliary property derived from state
       of latests run, or `unscheduled` if none.
+    type:           string
     enum:
       - unscheduled
       - pending
@@ -87,6 +88,7 @@ properties:
           title:          "Run State"
           description: |
             State of this run
+          type:           string
           enum:
             - pending
             - running
@@ -97,7 +99,8 @@ properties:
           title:          "Reason Created"
           description: |
             Reason for the creation of this run,
-            **more reasons may be added in the future**."
+            **more reasons may be added in the future**.
+          type:           string
           enum:
             - scheduled
             - retry
@@ -110,6 +113,7 @@ properties:
             useful for runs resolved as `exception`.
             Note, **more reasons may be added in the future**, also this
             property is only available after the run is resolved.
+          type:           string
           enum:
             - completed
             - failed
