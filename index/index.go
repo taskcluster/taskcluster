@@ -424,7 +424,7 @@ type (
 			// expires from the task index.
 			Expires time.Time `json:"expires"`
 			// Name of namespace within it's parent namespace.
-			Name json.RawMessage `json:"name"`
+			Name string `json:"name"`
 			// Fully qualified name of the namespace, you can use this to list
 			// namespaces or tasks under this namespace.
 			Namespace string `json:"namespace"`

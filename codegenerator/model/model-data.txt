@@ -2552,7 +2552,7 @@ Properties
           Description            = 'Name of namespace within it's parent namespace.
           '
           Title                  = 'Name'
-          Type HAS NOT BEEN SET!!!
+          Type                   = 'string'
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -2848,7 +2848,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'integer'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -6360,7 +6360,7 @@ Properties
           Description            = 'State of the task as considered by the scheduler'
           Enum                   = '[unscheduled scheduled completed failed exception]'
           Title                  = 'Task Node State'
-          Type HAS NOT BEEN SET!!!
+          Type                   = 'string'
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -6495,7 +6495,7 @@ Properties
     Description            = 'State of the task as considered by the scheduler'
     Enum                   = '[unscheduled scheduled completed failed exception]'
     Title                  = 'Task Node State'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -6646,7 +6646,7 @@ Properties
   Property 'state' =
     Description            = 'Task-graph state, this enum is **frozen** new values will **not** be added.'
     Enum                   = '[running blocked finished]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -7164,7 +7164,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'integer'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -7194,7 +7194,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'integer'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -7224,7 +7224,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'integer'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -7254,7 +7254,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'integer'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -7288,7 +7288,7 @@ Properties
   Property 'state' =
     Description            = 'Task-graph state, this enum is **frozen** new values will **not** be added.'
     Enum                   = '[running blocked finished]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'

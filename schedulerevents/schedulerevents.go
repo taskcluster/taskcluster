@@ -60,7 +60,6 @@
 package schedulerevents
 
 import (
-	"encoding/json"
 	"reflect"
 	"strings"
 )
@@ -218,7 +217,7 @@ type (
 		// Unique `taskId` that is blocking this task-graph from completion.
 		TaskId string `json:"taskId"`
 		// Message version
-		Version json.RawMessage `json:"version"`
+		Version int `json:"version"`
 	}
 
 	// Messages as posted to `scheduler/v1/task-graph-extended` informing the world that a task-graph have been extended.
@@ -227,7 +226,7 @@ type (
 	TaskGraphExtendedMessage struct {
 		Status TaskGraphStatusStructure `json:"status"`
 		// Message version
-		Version json.RawMessage `json:"version"`
+		Version int `json:"version"`
 	}
 
 	// Message that all tasks in a task-graph have now completed successfully and the graph is _finished_.
@@ -236,7 +235,7 @@ type (
 	TaskGraphFinishedMessage struct {
 		Status TaskGraphStatusStructure `json:"status"`
 		// Message version
-		Version json.RawMessage `json:"version"`
+		Version int `json:"version"`
 	}
 
 	// Messages as posted to `scheduler/v1/task-graph-running` informing the world that a new task-graph have been submitted.
@@ -245,7 +244,7 @@ type (
 	NewTaskGraphMessage struct {
 		Status TaskGraphStatusStructure `json:"status"`
 		// Message version
-		Version json.RawMessage `json:"version"`
+		Version int `json:"version"`
 	}
 
 	// A representation of **task-graph status** as known by the scheduler, without the state of all individual tasks.
@@ -255,7 +254,7 @@ type (
 		// Unique identifier for task-graph scheduler managing the given task-graph
 		SchedulerId string `json:"schedulerId"`
 		// Task-graph state, this enum is **frozen** new values will **not** be added.
-		State json.RawMessage `json:"state"`
+		State string `json:"state"`
 		// Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		TaskGraphId string `json:"taskGraphId"`
 	}

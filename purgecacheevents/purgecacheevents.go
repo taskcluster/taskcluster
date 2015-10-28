@@ -41,7 +41,6 @@
 package purgecacheevents
 
 import (
-	"encoding/json"
 	"reflect"
 	"strings"
 )
@@ -99,7 +98,7 @@ type (
 		// `provisionerId` under which the `workerType` we want to purge for exists.
 		ProvisionerId string `json:"provisionerId"`
 		// Message version
-		Version json.RawMessage `json:"version"`
+		Version int `json:"version"`
 		// `workerType` we wish to purge cache for.
 		WorkerType string `json:"workerType"`
 	}
