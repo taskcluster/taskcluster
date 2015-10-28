@@ -104,7 +104,7 @@ properties:
         ending with `*` which will authorize all scopes for
         which the string is a prefix.  Scopes must be composed of
         printable ASCII characters and spaces.
-      type:         string,
+      type:         string
       pattern:      {$const: scope-pattern}
   payload:
     title:          "Task Payload"
