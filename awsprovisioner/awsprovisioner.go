@@ -58,6 +58,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -432,7 +433,7 @@ type (
 		// printable ASCII characters and spaces.
 		Scopes []string `json:"scopes"`
 		// Free form object which contains the secrets stored
-		Secrets map[string]json.RawMessage `json:"secrets"`
+		Secrets json.RawMessage `json:"secrets"`
 		// A Slug ID which is the uniquely addressable token to access this
 		// set of secrets
 		Token string `json:"token"`
@@ -459,21 +460,21 @@ type (
 			// InstanceType name for Amazon.
 			InstanceType string `json:"instanceType"`
 			// LaunchSpecification entries unique to this InstanceType
-			LaunchSpec map[string]json.RawMessage `json:"launchSpec"`
+			LaunchSpec json.RawMessage `json:"launchSpec"`
 			// Scopes which should be included for this InstanceType.  Scopes must
 			// be composed of printable ASCII characters and spaces.
 			Scopes []string `json:"scopes"`
 			// Static Secrets unique to this InstanceType
-			Secrets map[string]json.RawMessage `json:"secrets"`
+			Secrets json.RawMessage `json:"secrets"`
 			// UserData entries unique to this InstanceType
-			UserData map[string]json.RawMessage `json:"userData"`
+			UserData json.RawMessage `json:"userData"`
 			// This number is a relative measure of performance between two instance
 			// types.  It is multiplied by the spot price from Amazon to figure out
 			// which instance type is the cheapest one
 			Utility int `json:"utility"`
 		} `json:"instanceTypes"`
 		// Launch Specification entries which are used in all regions and all instance types
-		LaunchSpec map[string]json.RawMessage `json:"launchSpec"`
+		LaunchSpec json.RawMessage `json:"launchSpec"`
 		// Maximum number of capacity units to be provisioned.
 		MaxCapacity int `json:"maxCapacity"`
 		// Maximum price we'll pay.  Like minPrice, this takes into account the
@@ -502,9 +503,9 @@ type (
 			// composed of printable ASCII characters and spaces.
 			Scopes []string `json:"scopes"`
 			// Static Secrets unique to this Region
-			Secrets map[string]json.RawMessage `json:"secrets"`
+			Secrets json.RawMessage `json:"secrets"`
 			// UserData entries unique to this Region
-			UserData map[string]json.RawMessage `json:"userData"`
+			UserData json.RawMessage `json:"userData"`
 		} `json:"regions"`
 		// A scaling ratio of `0.2` means that the provisioner will attempt to keep
 		// the number of pending tasks around 20% of the provisioned capacity.
@@ -521,15 +522,15 @@ type (
 		// printable ASCII characters and spaces.
 		Scopes []string `json:"scopes"`
 		// Static secrets entries which are used in all regions and all instance types
-		Secrets map[string]json.RawMessage `json:"secrets"`
+		Secrets json.RawMessage `json:"secrets"`
 		// UserData entries which are used in all regions and all instance types
-		UserData map[string]json.RawMessage `json:"userData"`
+		UserData json.RawMessage `json:"userData"`
 	}
 
 	// All of the launch specifications for a worker type
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#
-	GetAllLaunchSpecsResponse map[string]json.RawMessage
+	GetAllLaunchSpecsResponse json.RawMessage
 
 	// Secrets from the provisioner
 	//
@@ -542,7 +543,7 @@ type (
 			ClientId    string `json:"clientId"`
 		} `json:"credentials"`
 		// Free-form object which contains secrets from the worker type definition
-		Data map[string]json.RawMessage `json:"data"`
+		Data json.RawMessage `json:"data"`
 	}
 
 	// A worker launchSpecification and required metadata
@@ -564,14 +565,14 @@ type (
 			// InstanceType name for Amazon.
 			InstanceType string `json:"instanceType"`
 			// LaunchSpecification entries unique to this InstanceType
-			LaunchSpec map[string]json.RawMessage `json:"launchSpec"`
+			LaunchSpec json.RawMessage `json:"launchSpec"`
 			// Scopes which should be included for this InstanceType.  Scopes must
 			// be composed of printable ASCII characters and spaces.
 			Scopes []string `json:"scopes"`
 			// Static Secrets unique to this InstanceType
-			Secrets map[string]json.RawMessage `json:"secrets"`
+			Secrets json.RawMessage `json:"secrets"`
 			// UserData entries unique to this InstanceType
-			UserData map[string]json.RawMessage `json:"userData"`
+			UserData json.RawMessage `json:"userData"`
 			// This number is a relative measure of performance between two instance
 			// types.  It is multiplied by the spot price from Amazon to figure out
 			// which instance type is the cheapest one
@@ -581,7 +582,7 @@ type (
 		// when this worker type definition was last altered (inclusive of creation)
 		LastModified time.Time `json:"lastModified"`
 		// Launch Specification entries which are used in all regions and all instance types
-		LaunchSpec map[string]json.RawMessage `json:"launchSpec"`
+		LaunchSpec json.RawMessage `json:"launchSpec"`
 		// Maximum number of capacity units to be provisioned.
 		MaxCapacity int `json:"maxCapacity"`
 		// Maximum price we'll pay.  Like minPrice, this takes into account the
@@ -610,9 +611,9 @@ type (
 			// composed of printable ASCII characters and spaces.
 			Scopes []string `json:"scopes"`
 			// Static Secrets unique to this Region
-			Secrets map[string]json.RawMessage `json:"secrets"`
+			Secrets json.RawMessage `json:"secrets"`
 			// UserData entries unique to this Region
-			UserData map[string]json.RawMessage `json:"userData"`
+			UserData json.RawMessage `json:"userData"`
 		} `json:"regions"`
 		// A scaling ratio of `0.2` means that the provisioner will attempt to keep
 		// the number of pending tasks around 20% of the provisioned capacity.
@@ -629,9 +630,9 @@ type (
 		// of printable ASCII characters and spaces.
 		Scopes []string `json:"scopes"`
 		// Static secrets entries which are used in all regions and all instance types
-		Secrets map[string]json.RawMessage `json:"secrets"`
+		Secrets json.RawMessage `json:"secrets"`
 		// UserData entries which are used in all regions and all instance types
-		UserData map[string]json.RawMessage `json:"userData"`
+		UserData json.RawMessage `json:"userData"`
 		// The ID of the workerType
 		WorkerType string `json:"workerType"`
 	}
@@ -640,3 +641,19 @@ type (
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#
 	ListWorkerTypes []string
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// GetAllLaunchSpecsResponse is of type json.RawMessage...
+func (this *GetAllLaunchSpecsResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *GetAllLaunchSpecsResponse) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}

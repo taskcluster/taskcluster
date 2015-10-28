@@ -252,6 +252,6 @@ type (
 		// An expiration date for this secret.
 		Expires time.Time `json:"expires"`
 		// The secret value to be encrypted.
-		Secret map[string]json.RawMessage `json:"secret"`
+		Secret json.RawMessage `json:"secret"`
 	}
 )
