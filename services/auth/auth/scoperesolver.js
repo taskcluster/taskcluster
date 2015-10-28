@@ -5,6 +5,7 @@ var events      = require('events');
 var base        = require('taskcluster-base');
 var debug       = require('debug')('auth:ScopeResolver');
 var Promise     = require('promise');
+var dfa         = require('./dfa');
 
 class ScopeResolver extends events.EventEmitter {
   /** Create ScopeResolver */
@@ -202,32 +203,9 @@ class ScopeResolver extends events.EventEmitter {
 
   /** Compute fixed point over this._roles, and construct _clientCache */
   _computeFixedPoint() {
-    // Add initial value for expandedScopes for each role R
-    for (let R of this._roles) {
-      R.expandedScopes = _.clone(R.scopes);
-    }
-
-    // Compute fixed-point of roles.expandedScopes for each role R
-    for (let R of this._roles) {
-      let count = 0;
-      while (count !== R.expandedScopes.length) {
-        // Count number of scopes, we don't add any we have fixed point
-        count = R.expandedScopes.length;
-        for (let role of this._roles) {
-          // if R can assume role, then we union the scope sets, as there is a
-          // finite number of strings here this will reach a fixed-point
-          let test = (scope) => ScopeResolver.grantsRole(scope, role.roleId);
-          if (R.expandedScopes.some(test)) {
-            R.expandedScopes = _.union(R.expandedScopes, role.expandedScopes);
-          }
-        }
-      }
-    }
-
-    // Compress scopes (removing scopes covered by other star scopes)
-    for(let R of this._roles) {
-      R.expandedScopes = ScopeResolver.normalizeScopes(R.expandedScopes);
-    }
+    //console.time("_computeFixedPoint");
+    this._resolver = dfa.computeFixedPoint(this._roles);
+    //console.timeEnd("_computeFixedPoint");
 
     // Construct client cache
     this._clientCache = {};
@@ -255,22 +233,14 @@ class ScopeResolver extends events.EventEmitter {
    * authorized roles.
    */
   resolve(scopes) {
+    let granted = dfa.sortScopesForMerge(_.clone(scopes));
     for (let scope of scopes) {
-      // Skip scopes that doesn't cover "assume:", this is just a quick
-      // under-approximation
-      if (!scope.startsWith('assume:') && !scope.endsWith('*')) {
-        continue;
-      }
-
-      // For each role, expand if the role can be assumed, note we don't need to
-      // traverse the scopes added... As we the fixed-point for all roles.
-      for (let role of this._roles) {
-        if (ScopeResolver.grantsRole(scope, role.roleId)) {
-          scopes = _.union(scopes, role.expandedScopes);
-        }
+      let found = this._resolver(scope);
+      if (found.length > 0) {
+        granted = dfa.mergeScopeSets(granted, found);
       }
     }
-    return ScopeResolver.normalizeScopes(scopes);
+    return granted;
   }
 
   createSignatureValidator(options = {}) {
@@ -308,20 +278,21 @@ class ScopeResolver extends events.EventEmitter {
    * level of authority.
    */
   static normalizeScopes(scopes) {
+    //return scopes;
     // Filter out any duplicate scopes (so we only have unique strings)
     scopes = _.uniq(scopes);
     // Filter out scopes that are covered by some other scope
     return scopes.filter(scope => {
-      return !scopes.some(other => {
+      return scopes.every(other => {
         // If `scope` is `other`, then we can't filter it! It has to be
         // strictly greater than (otherwise scopes would filter themselves)
         if (other === scope) {
-          return false;
+          return true;
         }
         // But if the other one ends with '*' and `scope` starts with its
         // prefix then `other` is strictly greater than `scope` and we filter
         // out `scope`.
-        return other.endsWith('*') && scope.startsWith(other.slice(0, -1));
+        return !(other.endsWith('*') && scope.startsWith(other.slice(0, -1)));
       });
     });
   }
