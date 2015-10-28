@@ -6,6 +6,7 @@ mocha                             \
   test/client_test.js             \
   test/role_test.js               \
   test/rolelogic_test.js          \
+  test/dfa_test.js                \
   test/grantsrole_test.js         \
   test/normalizescopes_test.js    \
   test/remotevalidation_test.js   \
