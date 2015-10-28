@@ -107,6 +107,9 @@ func TestDefineTask(t *testing.T) {
 	if cs.Error != nil {
 		t.Fatalf("Exception thrown: %s", cs.Error)
 	}
+
+	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskId)
+
 	if provisionerId := cs.HttpRequestObject.(*queue.TaskDefinition).ProvisionerId; provisionerId != "win-provisioner" {
 		t.Errorf("provisionerId 'win-provisioner' expected but got %s", provisionerId)
 	}
@@ -183,8 +186,6 @@ func TestDefineTask(t *testing.T) {
 		t.Log("Actual:")
 		t.Errorf("%s", formattedActual)
 	}
-
-	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskId)
 }
 
 // Checks whether two json []byte are equivalent (equal) by formatting/ordering
