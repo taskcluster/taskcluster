@@ -6,17 +6,23 @@
     "start": "babel-node bin/server.js $PROFILE",
     "test": "./test/runtests.sh"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/taskcluster/taskcluster-hooks.git"
+  },
   "author": "",
   "license": "MPL-2.0",
   "dependencies": {
     "assume": "^1.2.5",
     "babel": "^5.8.21",
+    "cron-parser": "^1.0.1",
     "debug": "^2.2.0",
     "lodash": "^3.10.1",
     "mocha": "^2.2.5",
     "promise": "^7.0.4",
     "taskcluster-base": "^0.8.4",
     "taskcluster-client": "^0.22.4",
-    "cron-parser": "^1.0.1"
+    "typed-env-config": "^0.10.0",
+    "taskcluster-lib-loader": "taskcluster/taskcluster-lib-loader#allow-overwrites"
   }
 }

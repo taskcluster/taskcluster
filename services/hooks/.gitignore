@@ -2,3 +2,4 @@ node_modules/
 .eslintrc
 exports.sh
 /taskcluster-hooks.conf.json
+user-config.yml

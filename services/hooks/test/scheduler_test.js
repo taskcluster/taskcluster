@@ -11,7 +11,7 @@ suite('Scheduler', function() {
   this.slow(500);
 
   // these tests require Azure credentials (for the Hooks table)
-  if (!helper.setupApi()) {
+  if (!helper.setup()) {
     this.pending = true;
   }
 

@@ -3,58 +3,45 @@ var data        = require('../hooks/data');
 var taskcluster = require('taskcluster-client');
 var taskcreator = require('../hooks/taskcreator');
 var v1          = require('../routes/v1');
-var bin = {
-  server:             require('../bin/server')
-};
+var load        = require('../bin/main');
+var config      = require('typed-env-config');
+var _           = require('lodash');
 
-var testProfile = 'test';
+var cfg = config({profile: 'test'});
 
-// Create and export helper object
-var helper = module.exports = {};
 
-// Load configuration
-var cfg = helper.cfg = base.config({
-  defaults:     require('../config/defaults'),
-  profile:      require('../config/' + testProfile),
-  envs: [
-    'pulse_username',
-    'pulse_password',
-    'taskcluster_credentials_clientId',
-    'taskcluster_credentials_accessToken',
-    'azure_accountName',
-    'azure_accountKey'
-  ],
-  filename:     'taskcluster-hooks'
-});
-
-// Some default clients for the mockAuthServer
 var defaultClients = [
   {
     // Loaded from config so we can authenticated against the real queue
     // Note that we still use a mock auth server to avoid having the scope
-    // auth:credentials assigned to our test client
-    clientId:     cfg.get('taskcluster:credentials:clientId'),
-    accessToken:  cfg.get('taskcluster:credentials:accessToken'),
-    scopes:       ['auth:*'],
+    // hooks:* assigned to our test client
+    clientId:     cfg.taskcluster.credentials.clientId,
+    accessToken:  cfg.taskcluster.credentials.accessToken,
+    scopes:       ['hooks:*', 'auth:*'],
     expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
   }, {
-    clientId:     'test-client',  // Used in default Hooks creation
+    clientId:     'test-client',  // Used in default Hooks client creation
     accessToken:  'none',
     scopes:       ['*'],
     expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
   }
 ];
 
-helper.hasAzureCredentials = cfg.get('azure:accountName');
+var helper = module.exports = {};
 
-helper.hasTcCredentials = cfg.get('taskcluster:credentials');
+helper.load = load;
+helper.loadOptions = {profile: 'test', process: 'test-helper'};
 
-// Call this in suites or tests that make API calls; it will set up
+
+helper.hasTcCredentials = cfg.taskcluster.credentials.accessToken;
+
+
+// Call this in suites or tests that make API calls, hooks etc; it will set up
 // what's required to respond to those calls.  But note that this
 // requires credentials (taskcluster-hooks.conf.json); returns false
 // if those credentials are not available.
-helper.setupApi = function() {
-  if (!helper.hasAzureCredentials) {
+helper.setup = function() {
+  if (!helper.hasTcCredentials) {
     return false;
   }
 
@@ -68,22 +55,23 @@ helper.setupApi = function() {
     authServer = await base.testing.createMockAuthServer({
       port: 60407,
       clients:  defaultClients,
-      credentials: cfg.get('taskcluster:credentials')
+      credentials: cfg.taskcluster.credentials
     });
+    // 500ms as coded into tc-base doesn't work, this need to live here until we
+    // land a fix in tc-base (currently not brave enough to upgrade tc-base)
+    authServer.setTimeout(30 * 1000);
 
     // Create Hooks table
-    helper.Hook = data.Hook.setup({
-      account:      cfg.get('hooks:azureAccount'),
-      table:        cfg.get('hooks:hookTableName'),
-      credentials:  cfg.get('taskcluster:credentials'),
-      authBaseUrl:  cfg.get('taskcluster:authBaseUrl'),
-      signingKey:   cfg.get('hooks:tableSigningKey'),
-      cryptoKey:    cfg.get('hooks:tableCryptoKey'),
-      process:      'testing'
-    });
+    helper.Hook = await load('Hook', helper.loadOptions);
+
+    // Remove all entities before each test
+    await helper.Hook.scan({}, {handler: hook => hook.remove()});
 
     helper.creator = new taskcreator.MockTaskCreator()
-    webServer = await bin.server(testProfile, {taskcreator: helper.creator});
+    webServer = await load('server', _.defaults({
+      Hook: helper.Hook,
+      taskcreator: helper.creator,
+    }, helper.loadOptions));
 
     // Create client for working with API
     helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
@@ -112,7 +100,7 @@ helper.setupApi = function() {
   // Setup before each test
   setup(async () => {
     // Remove all entities before each test
-    await helper.Hook.scan({},{handler: hook => {return hook.remove();}});
+    await helper.Hook.scan({}, {handler: hook => hook.remove()});
 
     // reset the list of fired tasks
     helper.creator.fireCalls = [];
@@ -130,3 +118,5 @@ helper.setupApi = function() {
 
   return true;
 };
+
+

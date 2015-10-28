@@ -5,7 +5,28 @@ description: |
 type:                       object
 properties:
   metadata:               {$const: metadata}
-  schedule:               {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
+  schedule:
+    # It would be prettier with:
+    # {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
+    # but it breaks "default" handling, schema library is a bit sketchy when it
+    # come to the "default" keyword.. I'm looking at an alernative that is
+    # both faster and implements "default" correctly.
+    # (there corner cases with anyof, and $ref that isn't handled well.)
+    description: |
+      Definition of the times at which a hook will result in creation of a task.
+      If several patterns are specified, tasks will be created at any time
+      specified by one or more patterns.
+    type: array
+    items:
+      title: "Cron Pattern"
+      type: string
+      description: |
+          Cron-like specification for when tasks should be created.  The pattern is
+          parsed in a UTC context.
+          See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
+          Note that tasks may not be created at exactly the time specified.
+    uniqueItems: true
+    default: []
   expires:                {$const: expires}
   deadline:               {$const: deadline}
   task:                   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
