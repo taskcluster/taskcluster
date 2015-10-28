@@ -304,18 +304,19 @@ suite('api (role logic)', function() {
         excludes: ['*']
       }
     ],
-  });
+  }); // */
 
-  test("indirect roles works (with 25 roles)", {
+  const N = 50;
+  test("indirect roles works (with " + N + " roles)", {
     roles: [
       {
         roleId: 'client-id:big-test-client',
         scopes: ['assume:test-role-0']
       }, {
-        roleId: 'test-role-25',
+        roleId: 'test-role-' + N,
         scopes: ['special-scope']
       }
-    ].concat(_.range(25).map(i => {
+    ].concat(_.range(N).map(i => {
       return {
         roleId: 'test-role-' + i,
         scopes: ['assume:test-role-' + (i + 1)]
@@ -326,10 +327,44 @@ suite('api (role logic)', function() {
         clientId:   'big-test-client',
         includes: [
           'special-scope'
-        ].concat(_.range(25 + 1).map(i => 'assume:test-role-' + i)),
+        ].concat(_.range(N + 1).map(i => 'assume:test-role-' + i)),
         excludes: ['*']
       }
     ],
+  }); //*/
+
+  const M = 5;  // depth
+  const K = 50; // multiplier
+  test('test with depth = ' + M + " x " + K, {
+    roles: _.flatten([
+      _.flatten(_.range(K).map(k => {
+        return _.flatten(_.range(M).map(m => {
+          return {
+            roleId: 'k-' + k + '-' + m,
+            scopes: ['assume:k-' + k + '-' + (m + 1)]
+          };
+        }));
+      })),
+      _.range(K).map(k => {
+        return {
+          roleId: 'k-' + k + '-' + M,
+          scopes: ['special-scope']
+        };
+      }),
+      [{
+        roleId: 'client-id:c',
+        scopes: ['assume:k-2-0']
+      }]
+    ]),
+    clients: [
+      {
+        clientId: 'c',
+        includes: [
+          'special-scope'
+        ].concat(_.range(M + 1).map(i => 'assume:k-2-' + i)),
+        excludes: ['*']
+      }
+    ]
   });
 
 

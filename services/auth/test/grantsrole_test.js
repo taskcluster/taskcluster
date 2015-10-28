@@ -97,7 +97,23 @@ suite("ScopeResolver (grantsRole)", () => {
       scope:    'assume:task-run-id:12345',
       role:     'client-id:*',
       result:   false
-    },
+    }, {
+      scope:    'assume:a',
+      role:     'a*',
+      result:   true
+    }, {
+      scope:    'assume:a*',
+      role:     'a*',
+      result:   true
+    }, {
+      scope:    'assume:a*',
+      role:     'a',
+      result:   true
+    }, {
+      scope:    'assume:ab*',
+      role:     'ac*',
+      result:   false
+    }
   ].forEach(({scope, role, result}) => {
     test(`grantsRole(${scope}, ${role}) === ${result}`, () => {
       assert(ScopeResolver.grantsRole(scope, role) === result,
