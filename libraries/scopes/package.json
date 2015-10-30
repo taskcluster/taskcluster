@@ -2,7 +2,7 @@
   "name": "taskcluster-lib-scopes",
   "version": "0.8.8",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
-  "description": "taskcluster-lib-scopes",
+  "description": "Scope checking utilities for TaskCluster",
   "license": "MPL-2.0",
   "scripts": {
     "compile": "babel-compile -c taskcluster-lib-rules/babel src:lib test:.test",
@@ -10,6 +10,7 @@
     "pretest": "npm run compile",
     "test": "mocha .test/*_test.js"
   },
+  "main": "./lib/scopes",
   "repository": {
     "type": "git",
     "url": "https://github.com/taskcluster/taskcluster-lib-scopes.git"
@@ -18,9 +19,8 @@
     "babel-runtime": "^5.8.25"
   },
   "devDependencies": {
-    "babel-compile": "0.0.3",
-    "mocha": "2.0.1",
+    "babel-compile": "^0.1.0",
+    "mocha": "^2.0.1",
     "taskcluster-lib-rules": "^1.0.5"
-  },
-  "main": "./lib/scopes"
+  }
 }
