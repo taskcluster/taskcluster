@@ -1,9 +1,17 @@
 package main
 
-// taskPayload returns json schema for the payload part of the task definition
-// please note we use a go string and do not load an external file, since we
-// want this to be part of the compiled executable, and not rely on an external
-// file
+// Returns json schema for the payload part of the task definition. Please
+// note we use a go string and do not load an external file, since we want this
+// to be *part of the compiled executable*. If this sat in another file that
+// was loaded at runtime, it would not be burned into the build, which would be
+// bad for the following two reasons:
+//  1) we could no longer distribute a single binary file that didn't require
+//     installation/extraction
+//  2) the payload schema is specific to the version of the code, therefore
+//     should be versioned directly with the code and *frozen on build*.
+//
+// Run `generic-worker show-payload-schema` to output this schema to standard
+// out.
 func taskPayloadSchema() string {
 	return `{
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
@@ -48,13 +56,13 @@ func taskPayloadSchema() string {
           "type": {
             "title": "Artifact upload type.",
             "type": "string",
-            "enum": ["file"],
-			"description": "Currently only ` + "`file`" + ` is supported"
+            "enum": ["file", "directory"],
+			"description": "Artifacts can be either an individual ` + "`file`" + ` or a ` + "`directory`" + ` containing potentially multiple files with recursively included subdirectories"
           },
           "path": {
             "title": "Artifact location",
             "type": "string",
-            "description": "Location of artifact in container"
+            "description": "Filesystem path of artifact"
           },
           "expires": {
             "title": "Expiry date and time",
