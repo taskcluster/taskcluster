@@ -1,8 +1,4 @@
-"use strict";
-
-var fs          = require('fs');
-var path        = require('path');
-var assert      = require('assert');
+let assert = require('assert');
 
 /**
  * Determine whether a scope is valid.  Scopes must be strings of ASCII
@@ -10,9 +6,9 @@ var assert      = require('assert');
  * whitespace)
  */
 
-var _validScope = /^[\x20-\x7e]*$/;
+let _validScope = /^[\x20-\x7e]*$/;
 exports.validScope = function(scope) {
-    return typeof(scope) == 'string' && _validScope.test(scope);
+  return typeof(scope) == 'string' && _validScope.test(scope);
 };
 
 /**
@@ -20,7 +16,7 @@ exports.validScope = function(scope) {
  * of a scope-set.
  */
 exports.validateScopeSets = function(scopesets) {
-  var msg = "scopes must be an array of arrays of strings " +
+  let msg = "scopes must be an array of arrays of strings " +
             "(disjunctive normal form)";
   assert(Array.isArray(scopesets), msg);
   assert(scopesets.every(function(conj) {
