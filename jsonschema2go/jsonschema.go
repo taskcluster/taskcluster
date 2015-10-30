@@ -361,14 +361,13 @@ package ` + packageName + `
 	extraPackagesContent := ""
 	for j, k := range extraPackages {
 		if k {
-			extraPackagesContent += Indent("\""+j+"\"", "\t")
+			extraPackagesContent += Indent("\""+j+"\"\n", "\t")
 		}
 	}
 
 	if extraPackagesContent != "" {
 		content += `import (
-` + extraPackagesContent + `
-)
+` + extraPackagesContent + `)
 
 `
 	}
