@@ -21,7 +21,10 @@ var defaultClients = [
   {
     clientId:     'test-server',  // Hardcoded into config/test.js
     accessToken:  'none',
-    scopes:       [''],
+    scopes: [
+      '*', // Needed to issue temp creds with task.scopes in (re)claimTask
+      'queue:claim-task:*'  // Needed to issue temp creds in (re)claimTask
+    ],
     expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
   }, {
     clientId:     'test-client',  // Used in default Queue creation

@@ -168,6 +168,101 @@ suite('Post artifacts', function() {
     await get404(url);
   });
 
+  test("Post S3 artifact (with temp creds)", async () => {
+    var taskId = slugid.v4();
+    debug("### Creating task");
+    let taskDef2 = _.defaults({
+      scopes: ['queue:create-artifact:public/s3.json']
+    }, taskDef);
+    await helper.queue.createTask(taskId, taskDef2);
+
+    debug("### Claiming task");
+    // First runId is always 0, so we should be able to claim it here
+    let {credentials} = await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    debug("### Send post artifact request");
+    let queue = new helper.Queue({credentials});
+    var r1 = await queue.createArtifact(taskId, 0, 'public/s3.json', {
+      storageType:  's3',
+      expires:      taskcluster.fromNowJSON('1 day'),
+      contentType:  'application/json'
+    });
+    assume(r1.putUrl).is.ok();
+
+    debug("### Uploading to putUrl");
+    var res = await request.put(r1.putUrl).send({message: "Hello World"}).end();
+    assume(res.ok).is.ok();
+
+    debug("### Download Artifact (runId: 0)");
+    var url = helper.queue.buildUrl(
+      helper.queue.getArtifact,
+      taskId, 0, 'public/s3.json'
+    );
+    debug("Fetching artifact from: %s", url);
+    res = await getWith303Redirect(url);
+    assume(res.ok).is.ok();
+    assume(res.body).to.be.eql({message: "Hello World"});
+
+    debug("### Download Artifact (latest)");
+    var url = helper.queue.buildUrl(
+      helper.queue.getLatestArtifact,
+      taskId, 'public/s3.json'
+    );
+    debug("Fetching artifact from: %s", url);
+    res = await getWith303Redirect(url);
+    assume(res.ok).is.ok();
+    assume(res.body).to.be.eql({message: "Hello World"});
+
+    debug("### List artifacts");
+    var r2 = await helper.queue.listArtifacts(taskId, 0);
+    assume(r2.artifacts.length).equals(1);
+
+    debug("### List artifacts from latest run");
+    var r3 = await helper.queue.listLatestArtifacts(taskId);
+    assume(r3.artifacts.length).equals(1);
+
+    debug("### Download Artifact (runId: 0) using proxy");
+    var url = helper.queue.buildUrl(
+      helper.queue.getArtifact,
+      taskId, 0, 'public/s3.json'
+    );
+    debug("Get ip-ranges from EC2");
+    var {body} = await request.get(AWS_IP_RANGES_URL).end();
+    var ipRange = body.prefixes.filter(prefix => {
+      return prefix.service === 'EC2' && prefix.region === 'us-east-1';
+    })[0].ip_prefix;
+    var fakeIp = new Netmask(ipRange).first;
+    debug("Fetching artifact from: %s", url);
+    try {
+      res = await request
+                    .get(url)
+                    .set('x-forwarded-for', fakeIp)
+                    .redirects(0)
+                    .end();
+    }
+    catch(err) {
+      res = err.response;
+    }
+    assume(res.statusCode).equals(303);
+    assert(res.headers.location.indexOf('proxy-for-us-east-1'),
+           "Expected res.headers.location to contain proxy-for-us-east-1");
+
+    debug("### Expire artifacts");
+    // config/test.js hardcoded to expire artifact 4 days in the future
+    await helper.expireArtifacts();
+
+    debug("### Attempt to download Artifact (runId: 0)");
+    var url = helper.queue.buildUrl(
+      helper.queue.getArtifact,
+      taskId, 0, 'public/s3.json'
+    );
+    debug("Fetching artifact from: %s", url);
+    await get404(url);
+  });
+
   test("Post S3 artifact (with bad scopes)", async () => {
     var taskId = slugid.v4();
     debug("### Creating task");
@@ -196,6 +291,33 @@ suite('Post artifacts', function() {
     });
   });
 
+  test("Post S3 artifact (with bad scopes in task.scopes)", async () => {
+    var taskId = slugid.v4();
+    debug("### Creating task");
+    let taskDef2 = _.defaults({
+      scopes: ['queue:create-artifact:public/another-s3.json']
+    }, taskDef);
+    await helper.queue.createTask(taskId, taskDef2);
+
+    debug("### Claiming task");
+    // First runId is always 0, so we should be able to claim it here
+    let {credentials} = await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    debug("### Send post artifact request");
+    let queue = new helper.Queue({credentials});
+    await queue.createArtifact(taskId, 0, 'public/s3.json', {
+      storageType:  's3',
+      expires:      taskcluster.fromNowJSON('1 day'),
+      contentType:  'application/json'
+    }).then(() => {
+      assume().fail("Expected authentication error");
+    }, (err) => {
+      debug("Got expected authentication error: %s", err);
+    });
+  });
 
   test("Post Azure artifact", async () => {
     var taskId = slugid.v4();
