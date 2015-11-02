@@ -149,6 +149,20 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 				if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 					comment += "\n"
 				}
+				if enum := s.Properties[j].Enum; enum != nil {
+					switch t := enum.(type) {
+					case []interface{}:
+						comment += "//\n// Possible values:\n"
+						for _, i := range t {
+							switch i.(type) {
+							case float64:
+								comment += fmt.Sprintf("//   * %v\n", i)
+							default:
+								comment += fmt.Sprintf("//   * %q\n", i)
+							}
+						}
+					}
+				}
 				if regex := s.Properties[j].Pattern; regex != nil {
 					comment += "//\n// Syntax: " + *regex + "\n"
 				}
