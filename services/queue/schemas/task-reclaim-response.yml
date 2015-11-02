@@ -31,7 +31,6 @@ properties:
       with reason `claim-expired` if the run haven't been reclaimed.
     type:         string
     format:       date-time
-  task: {$ref: "http://schemas.taskcluster.net/queue/v1/task.json#"}
   credentials:  {$const: task-credentials}
 additionalProperties: false
 required:
@@ -40,5 +39,4 @@ required:
   - workerGroup
   - workerId
   - takenUntil
-  - task
   - credentials
