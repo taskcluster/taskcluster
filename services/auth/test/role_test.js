@@ -105,10 +105,17 @@ suite('api (roles)', function() {
   test('updateRole (add scope)', async() => {
     await helper.events.listenFor('e1', helper.authEvents.roleUpdated());
 
-    await helper.auth.updateRole('client-id:' + clientId, {
+    let r1 = await helper.auth.role('client-id:' + clientId);
+
+    await base.testing.sleep(100);
+
+    let r2 = await helper.auth.updateRole('client-id:' + clientId, {
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-3']
     });
+    assume(new Date(r2.lastModified).getTime()).greaterThan(
+      new Date(r1.lastModified).getTime()
+    );
 
     let role = await helper.auth.role('client-id:' + clientId);
     assume(role.expandedScopes.sort()).deep.equals([
