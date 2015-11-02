@@ -52,7 +52,9 @@ var launch = async function(profile) {
   });
 
   // Create resolver
-  var resolver = new ScopeResolver();
+  var resolver = new ScopeResolver({
+    maxLastUsedDelay: cfg.get('auth:maxLastUsedDelay'),
+  });
 
   // Configure client table
   var Client = data.Client.setup({
