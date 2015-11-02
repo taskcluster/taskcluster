@@ -95,6 +95,55 @@ suite('api (client)', function() {
     assume(client2).has.not.own('accessToken');
   });
 
+  test("auth.createRole and use client", async () => {
+    // Clean up from any dirty tests
+    await helper.auth.deleteRole('client-id:nobody');
+
+    // Create a new role
+    let role = await helper.auth.createRole('client-id:nobody', {
+      description: 'test prefix role',
+      scopes: ['myapi:*']
+    });
+
+    // Fetch client
+    let r1 = await helper.auth.client('nobody');
+
+    // Sleep 4 seconds, forcing an update of lastUsed date in test config
+    await base.testing.sleep(4000);
+
+    // Reseting the accessToken causes a reload, which re-evaluates whether or
+    // not to update the lastDateUsed
+    let client = await helper.auth.resetAccessToken('nobody');
+
+    // Create testClient
+    var testClient = new helper.TestClient({
+      baseUrl: helper.testBaseUrl,
+      credentials: {
+        clientId: 'nobody',
+        accessToken: client.accessToken,
+      },
+    });
+    await testClient.resource();
+
+    await base.testing.poll(async () => {
+      // Fetch client again and check that lastUsed was updated
+      let r2 = await helper.auth.client('nobody');
+      assume(new Date(r2.lastDateUsed).getTime()).greaterThan(
+        new Date(r1.lastDateUsed).getTime()
+      );
+    });
+
+    await testClient.resource();
+
+    // Fetch client again and check that lastUsed wasn't updated
+    let r3 = await helper.auth.client('nobody');
+    assume(new Date(r3.lastDateUsed).getTime()).equals(
+      new Date(r3.lastDateUsed).getTime()
+    );
+
+    // Clean up test (just a best effort clean up)
+    await helper.auth.deleteRole('client-id:nobody');
+  });
 
   test("auth.updateClient", async () => {
     await helper.events.listenFor('e1', helper.authEvents.clientUpdated({

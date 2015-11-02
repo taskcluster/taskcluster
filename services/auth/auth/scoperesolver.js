@@ -9,8 +9,17 @@ var dfa         = require('./dfa');
 
 class ScopeResolver extends events.EventEmitter {
   /** Create ScopeResolver */
-  constructor() {
+  constructor(options = {}) {
     super();
+
+    // Provide default options
+    options = _.defaults({}, options, {
+      // Maximum time that lastUsed must be behind, must always be negative
+      maxLastUsedDelay: '-6h',
+    });
+    this._maxLastUsedDelay = options.maxLastUsedDelay;
+    assert(/^ *-/.test(options.maxLastUsedDelay),
+           'maxLastUsedDelay must be negative');
 
     // List of client objects on the form:
     // {
@@ -120,10 +129,11 @@ class ScopeResolver extends events.EventEmitter {
       if (client) {
         // For reasoning on structure, see reload()
         let lastUsedDate = new Date(client.details.lastDateUsed);
+        let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
         this._clients.push({
           clientId:       client.clientId,
           accessToken:    client.accessToken,
-          updateLastUsed: lastUsedDate < taskcluster.fromNow('-6h')
+          updateLastUsed: lastUsedDate < minLastUsed
         });
       }
       this._computeFixedPoint();
@@ -162,13 +172,14 @@ class ScopeResolver extends events.EventEmitter {
         this._Client.scan({}, {
           handler: client => {
             let lastUsedDate = new Date(client.details.lastDateUsed);
+            let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
             clients.push({
               clientId:       client.clientId,
               accessToken:    client.accessToken,
               // Note that lastUsedDate should be updated, if it's out-dated by
               // more than 6 hours.
               // (cheap way to know if it's been used recently)
-              updateLastUsed: lastUsedDate < taskcluster.fromNow('-6h')
+              updateLastUsed: lastUsedDate < minLastUsed
             });
           }
         }),
@@ -219,10 +230,11 @@ class ScopeResolver extends events.EventEmitter {
 
   /** Update lastDateUsed for a clientId */
   async _updateLastUsed(clientId) {
-    let client = await this._Client({clientId});
+    let client = await this._Client.load({clientId});
     await client.modify(client => {
       let lastUsedDate = new Date(client.details.lastDateUsed);
-      if (lastUsedDate < taskcluster.fromNow('-6h')) {
+      let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
+      if (lastUsedDate < minLastUsed) {
         client.details.lastDateUsed = new Date().toJSON();
       }
     });
