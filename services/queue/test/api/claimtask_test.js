@@ -62,6 +62,9 @@ suite('Claim task', function() {
     // time before the request was made
     assume(takenUntil.getTime()).is.greaterThan(before.getTime() - 1);
 
+    // Check that task definition is included..
+    assume(r1.task).deep.equals(await helper.queue.task(taskId));
+
     debug("### Waiting for task running message");
     var m1 = await helper.events.waitFor('running');
     assume(m1.payload.status).deep.equals(r1.status);
@@ -70,12 +73,32 @@ suite('Claim task', function() {
     var r2 = await helper.queue.status(taskId);
     assume(r2.status).deep.equals(r1.status);
 
-    await base.testing.sleep(100);
 
+    debug("### reclaimTask");
+    await base.testing.sleep(100);
     // Again we talking about the first run, so runId must still be 0
     var r3 = await helper.queue.reclaimTask(taskId, 0);
     var takenUntil2 = new Date(r3.takenUntil);
     assume(takenUntil2.getTime()).is.greaterThan(takenUntil.getTime() - 1);
+
+    debug("### reclaimTask using temp creds from claim");
+    await base.testing.sleep(100);
+    // Works because r1.credentials expires at takenUntil, and are not revoked
+    // on reclaimTask
+    var queue = new helper.Queue({credentials: r1.credentials});
+    var r4 = await queue.reclaimTask(taskId, 0);
+    var takenUntil3 = new Date(r4.takenUntil);
+    assume(takenUntil3.getTime()).is.greaterThan(takenUntil.getTime() - 1);
+    assume(takenUntil3.getTime()).is.greaterThan(takenUntil2.getTime() - 1);
+
+    debug("### reclaimTask using temp creds from reclaim");
+    await base.testing.sleep(100);
+    var queue2 = new helper.Queue({credentials: r4.credentials});
+    var r5 = await queue2.reclaimTask(taskId, 0);
+    var takenUntil4 = new Date(r5.takenUntil);
+    assume(takenUntil4.getTime()).is.greaterThan(takenUntil.getTime() - 1);
+    assume(takenUntil4.getTime()).is.greaterThan(takenUntil2.getTime() - 1);
+    assume(takenUntil4.getTime()).is.greaterThan(takenUntil3.getTime() - 1);
   });
 
 

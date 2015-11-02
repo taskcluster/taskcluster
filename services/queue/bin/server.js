@@ -159,7 +159,8 @@ var launch = async function(profile) {
       publicBucket:   publicArtifactBucket,
       privateBucket:  privateArtifactBucket,
       regionResolver: regionResolver,
-      publicProxies:  cfg.get('queue:publicArtifactBucketProxies')
+      publicProxies:  cfg.get('queue:publicArtifactBucketProxies'),
+      credentials:    cfg.get('taskcluster:credentials'),
     },
     validator:        validator,
     authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),

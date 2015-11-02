@@ -49,7 +49,7 @@ suite('Resolve task', function() {
 
     debug("### Claiming task");
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
+    let r1 = await helper.queue.claimTask(taskId, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker'
     });
@@ -67,6 +67,10 @@ suite('Resolve task', function() {
 
     debug("### Reporting task completed (again)");
     await helper.queue.reportCompleted(taskId, 0);
+
+    debug("### Reporting task completed (using temp creds)");
+    let queue = new helper.Queue({credentials: r1.credentials});
+    await queue.reportCompleted(taskId, 0);
   });
 
   test("reportFailed is idempotent", async () => {
@@ -88,7 +92,7 @@ suite('Resolve task', function() {
 
     debug("### Claiming task");
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
+    let r1 = await helper.queue.claimTask(taskId, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker'
     });
@@ -106,6 +110,10 @@ suite('Resolve task', function() {
 
     debug("### Reporting task failed (again)");
     await helper.queue.reportFailed(taskId, 0);
+
+    debug("### Reporting task failed (using temp creds)");
+    let queue = new helper.Queue({credentials: r1.credentials});
+    await queue.reportFailed(taskId, 0);
   });
 
   test("reportException (malformed-payload) is idempotent", async () => {
@@ -127,7 +135,7 @@ suite('Resolve task', function() {
 
     debug("### Claiming task");
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
+    let r1 = await helper.queue.claimTask(taskId, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker'
     });
@@ -155,6 +163,12 @@ suite('Resolve task', function() {
     var {status: s2} = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('malformed-payload');
+
+    debug("### Reporting task exception (using temp creds)");
+    let queue = new helper.Queue({credentials: r1.credentials});
+    await queue.reportException(taskId, 0, {
+      reason:     'malformed-payload'
+    });
   });
 
   test("reportException (resource-unavailable) is idempotent", async () => {
@@ -176,7 +190,7 @@ suite('Resolve task', function() {
 
     debug("### Claiming task");
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
+    let r1 = await helper.queue.claimTask(taskId, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker'
     });
@@ -204,6 +218,12 @@ suite('Resolve task', function() {
     var {status: s2} = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('resource-unavailable');
+
+    debug("### Reporting task exception (using temp creds)");
+    let queue = new helper.Queue({credentials: r1.credentials});
+    await queue.reportException(taskId, 0, {
+      reason:     'resource-unavailable'
+    });
   });
 
   test("reportException (internal-error) is idempotent", async () => {
@@ -225,7 +245,7 @@ suite('Resolve task', function() {
 
     debug("### Claiming task");
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
+    let r1 = await helper.queue.claimTask(taskId, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker'
     });
@@ -253,6 +273,12 @@ suite('Resolve task', function() {
     var {status: s2} = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('internal-error');
+
+    debug("### Reporting task exception (using temp creds)");
+    let queue = new helper.Queue({credentials: r1.credentials});
+    await queue.reportException(taskId, 0, {
+      reason:     'internal-error'
+    });
   });
 
   test("reportException can't overwrite reason", async () => {

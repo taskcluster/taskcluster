@@ -27,7 +27,7 @@
     "url-join":             "0.0.1",
     "uuid":                 "2.0.1",
     "babel":                "^5.0.9",
-    "taskcluster-client":   "^0.22.6",
+    "taskcluster-client":   "^0.23.2",
     "kexec":                "^1.2.0",
     "superagent":           "^1.1.0",
     "superagent-promise":   "^0.2.0",
