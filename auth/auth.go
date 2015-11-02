@@ -433,6 +433,34 @@ type (
 		// excluding the port if any.
 		Host string `json:"host"`
 		// HTTP method of the request being authenticated.
+		//
+		// Possible values:
+		//   * "get"
+		//   * "post"
+		//   * "put"
+		//   * "head"
+		//   * "delete"
+		//   * "options"
+		//   * "trace"
+		//   * "copy"
+		//   * "lock"
+		//   * "mkcol"
+		//   * "move"
+		//   * "purge"
+		//   * "propfind"
+		//   * "proppatch"
+		//   * "unlock"
+		//   * "report"
+		//   * "mkactivity"
+		//   * "checkout"
+		//   * "merge"
+		//   * "m-search"
+		//   * "notify"
+		//   * "subscribe"
+		//   * "unsubscribe"
+		//   * "patch"
+		//   * "search"
+		//   * "connect"
 		Method string `json:"method"`
 		// Port on which the request came in, this is typically `80` or `443`.
 		// If you are running behind a reverse proxy look for the `x-forwarded-port`

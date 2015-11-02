@@ -221,6 +221,9 @@ type (
 		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskId string `json:"taskId"`
 		// Message version
+		//
+		// Possible values:
+		//   * 1
 		Version int `json:"version"`
 	}
 
@@ -230,6 +233,9 @@ type (
 	TaskGraphExtendedMessage struct {
 		Status TaskGraphStatusStructure `json:"status"`
 		// Message version
+		//
+		// Possible values:
+		//   * 1
 		Version int `json:"version"`
 	}
 
@@ -239,6 +245,9 @@ type (
 	TaskGraphFinishedMessage struct {
 		Status TaskGraphStatusStructure `json:"status"`
 		// Message version
+		//
+		// Possible values:
+		//   * 1
 		Version int `json:"version"`
 	}
 
@@ -248,6 +257,9 @@ type (
 	NewTaskGraphMessage struct {
 		Status TaskGraphStatusStructure `json:"status"`
 		// Message version
+		//
+		// Possible values:
+		//   * 1
 		Version int `json:"version"`
 	}
 
@@ -260,6 +272,11 @@ type (
 		// Syntax: ^([a-zA-Z0-9-_]*)$
 		SchedulerId string `json:"schedulerId"`
 		// Task-graph state, this enum is **frozen** new values will **not** be added.
+		//
+		// Possible values:
+		//   * "running"
+		//   * "blocked"
+		//   * "finished"
 		State string `json:"state"`
 		// Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		//

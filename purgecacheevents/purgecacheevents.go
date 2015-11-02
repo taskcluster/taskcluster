@@ -102,6 +102,9 @@ type (
 		// Syntax: ^([a-zA-Z0-9-_]*)$
 		ProvisionerId string `json:"provisionerId"`
 		// Message version
+		//
+		// Possible values:
+		//   * 1
 		Version int `json:"version"`
 		// `workerType` we wish to purge cache for.
 		//

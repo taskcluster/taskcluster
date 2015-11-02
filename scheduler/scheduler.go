@@ -419,6 +419,10 @@ type (
 		// Priority of task, this defaults to `normal` and the scope
 		// `queue:task-priority:high` is required to define a task with `priority`
 		// set to `high`. Additional priority levels may be added later.
+		//
+		// Possible values:
+		//   * "high"
+		//   * "normal"
 		Priority json.RawMessage `json:"priority"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
@@ -516,6 +520,13 @@ type (
 			// true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.
 			Satisfied bool `json:"satisfied"`
 			// State of the task as considered by the scheduler
+			//
+			// Possible values:
+			//   * "unscheduled"
+			//   * "scheduled"
+			//   * "completed"
+			//   * "failed"
+			//   * "exception"
 			State string `json:"state"`
 			// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 			//
@@ -543,6 +554,13 @@ type (
 		// true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.
 		Satisfied bool `json:"satisfied"`
 		// State of the task as considered by the scheduler
+		//
+		// Possible values:
+		//   * "unscheduled"
+		//   * "scheduled"
+		//   * "completed"
+		//   * "failed"
+		//   * "exception"
 		State string `json:"state"`
 		// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		//
@@ -586,6 +604,11 @@ type (
 		// Syntax: ^([a-zA-Z0-9-_]*)$
 		SchedulerId string `json:"schedulerId"`
 		// Task-graph state, this enum is **frozen** new values will **not** be added.
+		//
+		// Possible values:
+		//   * "running"
+		//   * "blocked"
+		//   * "finished"
 		State string `json:"state"`
 		// Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		//

@@ -582,6 +582,10 @@ type (
 		// Priority of task, this defaults to `normal` and the scope
 		// `queue:task-priority:high` is required to define a task with `priority`
 		// set to `high`. Additional priority levels may be added later.
+		//
+		// Possible values:
+		//   * "high"
+		//   * "normal"
 		Priority json.RawMessage `json:"priority"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
@@ -640,6 +644,12 @@ type (
 			Name string `json:"name"`
 			// This is the `storageType` for the request that was used to create
 			// the artifact.
+			//
+			// Possible values:
+			//   * "s3"
+			//   * "azure"
+			//   * "reference"
+			//   * "error"
 			StorageType json.RawMessage `json:"storageType"`
 		} `json:"artifacts"`
 	}
@@ -779,6 +789,12 @@ type (
 		// error from which it couldn't recover. The queue will not retry runs
 		// resolved with this reason, but you are clearly signaling that this is a
 		// bug in the worker code.
+		//
+		// Possible values:
+		//   * "worker-shutdown"
+		//   * "malformed-payload"
+		//   * "resource-unavailable"
+		//   * "internal-error"
 		Reason json.RawMessage `json:"reason"`
 	}
 
@@ -807,11 +823,28 @@ type (
 		Runs []struct {
 			// Reason for the creation of this run,
 			// **more reasons may be added in the future**."
+			//
+			// Possible values:
+			//   * "scheduled"
+			//   * "retry"
+			//   * "rerun"
+			//   * "exception"
 			ReasonCreated json.RawMessage `json:"reasonCreated"`
 			// Reason that run was resolved, this is mainly
 			// useful for runs resolved as `exception`.
 			// Note, **more reasons may be added in the future**, also this
 			// property is only available after the run is resolved.
+			//
+			// Possible values:
+			//   * "completed"
+			//   * "failed"
+			//   * "deadline-exceeded"
+			//   * "canceled"
+			//   * "claim-expired"
+			//   * "worker-shutdown"
+			//   * "malformed-payload"
+			//   * "resource-unavailable"
+			//   * "internal-error"
 			ReasonResolved json.RawMessage `json:"reasonResolved"`
 			// Date-time at which this run was resolved, ie. when the run changed
 			// state from `running` to either `completed`, `failed` or `exception`.
@@ -827,6 +860,13 @@ type (
 			// after the run has been claimed.
 			Started Time `json:"started"`
 			// State of this run
+			//
+			// Possible values:
+			//   * "pending"
+			//   * "running"
+			//   * "completed"
+			//   * "failed"
+			//   * "exception"
 			State json.RawMessage `json:"state"`
 			// Time at which the run expires and is resolved as `failed`, if the
 			// run isn't reclaimed. Note, only present after the run has been
@@ -851,6 +891,14 @@ type (
 		SchedulerId string `json:"schedulerId"`
 		// State of this task. This is just an auxiliary property derived from state
 		// of latests run, or `unscheduled` if none.
+		//
+		// Possible values:
+		//   * "unscheduled"
+		//   * "pending"
+		//   * "running"
+		//   * "completed"
+		//   * "failed"
+		//   * "exception"
 		State json.RawMessage `json:"state"`
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
@@ -916,6 +964,10 @@ type (
 		// Priority of task, this defaults to `normal` and the scope
 		// `queue:task-priority:high` is required to define a task with `priority`
 		// set to `high`. Additional priority levels may be added later.
+		//
+		// Possible values:
+		//   * "high"
+		//   * "normal"
 		Priority json.RawMessage `json:"priority"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
