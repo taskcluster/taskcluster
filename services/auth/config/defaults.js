@@ -29,7 +29,12 @@ module.exports = {
     azureAccounts:                  "{}",
 
     // ClientId to use when issuing temporary credentials
-    clientIdForTempCreds:           undefined
+    clientIdForTempCreds:           undefined,
+
+    // Maximum before updating lastUsed, MUST be negative
+    // A sane value is something like 6 hours as all nodes will race to update
+    // this value, and it's really only a best effort service.
+    maxLastUsedDelay: '- 6 hours'
   },
 
   // Server configuration
