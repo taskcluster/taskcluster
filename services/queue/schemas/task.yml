@@ -1,5 +1,5 @@
 $schema:            http://json-schema.org/draft-04/schema#
-title:              "Task Definition"
+title:              "Task Definition Response"
 description: |
   Definition of a task that can be scheduled
 type:               object
