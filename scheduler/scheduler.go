@@ -273,6 +273,9 @@ func New(clientId string, accessToken string) *Scheduler {
 // CC'ed with the routing-key: `route.<route>`. This is useful if you want
 // another component to listen for completed tasks you have posted.
 //
+// Required scopes:
+//   * scheduler:create-task-graph
+//
 // See http://docs.taskcluster.net/scheduler/api-docs/#createTaskGraph
 func (myScheduler *Scheduler) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1) (*TaskGraphStatusResponse, *CallSummary) {
 	responseObject, callSummary := myScheduler.apiCall(payload, "PUT", "/task-graph/"+url.QueryEscape(taskGraphId), new(TaskGraphStatusResponse))
@@ -292,6 +295,9 @@ func (myScheduler *Scheduler) CreateTaskGraph(taskGraphId string, payload *TaskG
 // _finished_ or _blocked_, this method will leave the task-graph in this
 // state. Hence, it is only truly _safe_ to call this API end-point from
 // within a task in the task-graph being modified.
+//
+// Required scopes:
+//   * scheduler:extend-task-graph:<taskGraphId>
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#extendTaskGraph
 func (myScheduler *Scheduler) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition) (*TaskGraphStatusResponse, *CallSummary) {

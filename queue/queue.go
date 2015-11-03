@@ -246,6 +246,9 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *CallSummary) 
 // `route.<route>`. This is useful if you want another component to listen
 // for completed tasks you have posted.
 //
+// Required scopes:
+//   * queue:create-task:<provisionerId>/<workerType>
+//
 // See http://docs.taskcluster.net/queue/api-docs/#createTask
 func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(payload, "PUT", "/task/"+url.QueryEscape(taskId), new(TaskStatusResponse))
@@ -267,6 +270,10 @@ func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinition) (*TaskS
 // **Note** this operation is **idempotent**, as long as you upload the same
 // task definition as previously defined this operation is safe to retry.
 //
+// Required scopes:
+//   * queue:define-task:<provisionerId>/<workerType>, or
+//   * queue:create-task:<provisionerId>/<workerType>
+//
 // See http://docs.taskcluster.net/queue/api-docs/#defineTask
 func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/define", new(TaskStatusResponse))
@@ -281,6 +288,10 @@ func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinition) (*TaskS
 // **Note** this operation is **idempotent** and will not fail or complain
 // if called with `taskId` that is already scheduled, or even resolved.
 // To reschedule a task previously resolved, use `rerunTask`.
+//
+// Required scopes:
+//   * queue:schedule-task, and
+//   * assume:scheduler-id:<schedulerId>/<taskGroupId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#scheduleTask
 func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *CallSummary) {
@@ -301,6 +312,10 @@ func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *CallSum
 // isn't either `failed` or `completed`, this operation will just return the
 // current task status.
 //
+// Required scopes:
+//   * queue:rerun-task, and
+//   * assume:scheduler-id:<schedulerId>/<taskGroupId>
+//
 // See http://docs.taskcluster.net/queue/api-docs/#rerunTask
 func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/rerun", new(TaskStatusResponse))
@@ -320,6 +335,10 @@ func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *CallSummar
 // isn't `unscheduled`, `pending` or `running`, this operation will just
 // return the current task status.
 //
+// Required scopes:
+//   * queue:cancel-task, and
+//   * assume:scheduler-id:<schedulerId>/<taskGroupId>
+//
 // See http://docs.taskcluster.net/queue/api-docs/#cancelTask
 func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/cancel", new(TaskStatusResponse))
@@ -330,6 +349,10 @@ func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *CallSumma
 // Once messages are polled from here, you can claim the referenced task
 // with `claimTask`, and afterwards you should always delete the message.
 //
+// Required scopes:
+//   * queue:poll-task-urls, and
+//   * assume:worker-type:<provisionerId>/<workerType>
+//
 // See http://docs.taskcluster.net/queue/api-docs/#pollTaskUrls
 func (myQueue *Queue) PollTaskUrls(provisionerId string, workerType string) (*PollTaskUrlsResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(nil, "GET", "/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(PollTaskUrlsResponse))
@@ -337,6 +360,11 @@ func (myQueue *Queue) PollTaskUrls(provisionerId string, workerType string) (*Po
 }
 
 // claim a task, more to be added later...
+//
+// Required scopes:
+//   * queue:claim-task, and
+//   * assume:worker-type:<provisionerId>/<workerType>, and
+//   * assume:worker-id:<workerGroup>/<workerId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#claimTask
 func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, *CallSummary) {
@@ -346,6 +374,10 @@ func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimR
 
 // reclaim a task more to be added later...
 //
+// Required scopes:
+//   * (queue:claim-task and assume:worker-id:<workerGroup>/<workerId>), or
+//   * queue:claim-task:<taskId>/<runId>
+//
 // See http://docs.taskcluster.net/queue/api-docs/#reclaimTask
 func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskClaimResponse1, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskClaimResponse1))
@@ -353,6 +385,10 @@ func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskClaimRespon
 }
 
 // Report a task completed, resolving the run as `completed`.
+//
+// Required scopes:
+//   * (queue:resolve-task and assume:worker-id:<workerGroup>/<workerId>), or
+//   * queue:claim-task:<taskId>/<runId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportCompleted
 func (myQueue *Queue) ReportCompleted(taskId string, runId string) (*TaskStatusResponse, *CallSummary) {
@@ -367,6 +403,10 @@ func (myQueue *Queue) ReportCompleted(taskId string, runId string) (*TaskStatusR
 // Don't use this if the task couldn't be run because if malformed payload,
 // or other unexpected condition. In these cases we have a task exception,
 // which should be reported with `reportException`.
+//
+// Required scopes:
+//   * (queue:resolve-task and assume:worker-id:<workerGroup>/<workerId>), or
+//   * queue:claim-task:<taskId>/<runId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportFailed
 func (myQueue *Queue) ReportFailed(taskId string, runId string) (*TaskStatusResponse, *CallSummary) {
@@ -386,6 +426,10 @@ func (myQueue *Queue) ReportFailed(taskId string, runId string) (*TaskStatusResp
 // Do not use this to signal that some user-specified code crashed for any
 // reason specific to this code. If user-specific code hits a resource that
 // is temporarily unavailable worker should report task _failed_.
+//
+// Required scopes:
+//   * (queue:resolve-task and assume:worker-id:<workerGroup>/<workerId>), or
+//   * queue:claim-task:<taskId>/<runId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportException
 func (myQueue *Queue) ReportException(taskId string, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, *CallSummary) {
@@ -452,6 +496,10 @@ func (myQueue *Queue) ReportException(taskId string, runId string, payload *Task
 // updated. You should only use this to update the `url` property for
 // reference artifacts your process has created.
 //
+// Required scopes:
+//   * (queue:create-artifact:<name> and assume:worker-id:<workerGroup>/<workerId>), or
+//   * (queue:create-artifact:<name> and queue:claim-task:<taskId>/<runId>)
+//
 // See http://docs.taskcluster.net/queue/api-docs/#createArtifact
 func (myQueue *Queue) CreateArtifact(taskId string, runId string, name string, payload *PostArtifactRequest) (*PostArtifactResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(PostArtifactResponse))
@@ -469,6 +517,9 @@ func (myQueue *Queue) CreateArtifact(taskId string, runId string, name string, p
 // stored externally. Either way, the response may not be JSON. So API
 // client users might want to generate a signed URL for this end-point and
 // use that URL with a normal HTTP client.
+//
+// Required scopes:
+//   * queue:get-artifact:<name>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getArtifact
 func (myQueue *Queue) GetArtifact(taskId string, runId string, name string) *CallSummary {
@@ -491,6 +542,9 @@ func (myQueue *Queue) GetArtifact(taskId string, runId string, name string) *Cal
 // **Remark**, this end-point is slightly slower than
 // `queue.getArtifact`, so consider that if you already know the `runId` of
 // the latest run. Otherwise, just us the most convenient API end-point.
+//
+// Required scopes:
+//   * queue:get-artifact:<name>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getLatestArtifact
 func (myQueue *Queue) GetLatestArtifact(taskId string, name string) *CallSummary {
@@ -518,6 +572,9 @@ func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse
 // Documented later...
 // This probably the end-point that will remain after rewriting to azure
 // queue storage...
+//
+// Required scopes:
+//   * queue:pending-tasks:<provisionerId>/<workerType>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pendingTasks
 func (myQueue *Queue) PendingTasks(provisionerId string, workerType string) (*CountPendingTasksResponse, *CallSummary) {

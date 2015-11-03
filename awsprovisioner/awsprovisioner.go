@@ -251,6 +251,9 @@ func New(clientId string, accessToken string) *AwsProvisioner {
 // will be used to generate a set of temporary credentials available with
 // the other secrets.
 //
+// Required scopes:
+//   * aws-provisioner:manage-worker-type:<workerType>
+//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createWorkerType
 func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
 	responseObject, callSummary := awsProvisioner.apiCall(payload, "PUT", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest))
@@ -269,6 +272,9 @@ func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payloa
 // Otherwise, all input requirements and actions are the same as the
 // create method.
 //
+// Required scopes:
+//   * aws-provisioner:manage-worker-type:<workerType>
+//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#updateWorkerType
 func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
 	responseObject, callSummary := awsProvisioner.apiCall(payload, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(GetWorkerTypeRequest))
@@ -280,6 +286,10 @@ func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payloa
 // type name.  As such, it will require manipulation to be able to
 // use the results of this method to submit date to the update
 // method.
+//
+// Required scopes:
+//   * aws-provisioner:view-worker-type:<workerType>, or
+//   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#workerType
 func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerTypeRequest, *CallSummary) {
@@ -298,6 +308,9 @@ func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerT
 // or you could theoretically set maxCapacity to 0, though, this is
 // not a supported or tested action
 //
+// Required scopes:
+//   * aws-provisioner:manage-worker-type:<workerType>
+//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeWorkerType
 func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) *CallSummary {
 	_, callSummary := awsProvisioner.apiCall(nil, "DELETE", "/worker-type/"+url.QueryEscape(workerType), nil)
@@ -308,6 +321,9 @@ func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) *CallS
 // of all managed worker types known to the provisioner.  This does
 // not include worker types which are left overs from a deleted worker
 // type definition but are still running in AWS.
+//
+// Required scopes:
+//   * aws-provisioner:list-worker-types
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#listWorkerTypes
 func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *CallSummary) {
@@ -321,6 +337,9 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *Call
 //
 // This method is not ordinarily used in production; instead, the provisioner
 // creates a new secret directly for each spot bid.
+//
+// Required scopes:
+//   * aws-provisioner:create-secret
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createSecret
 func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSecretRequest) *CallSummary {
@@ -373,6 +392,10 @@ func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) *CallSummary {
 //
 // **This API end-point is experimental and may be subject to change without warning.**
 //
+// Required scopes:
+//   * aws-provisioner:view-worker-type:<workerType>, or
+//   * aws-provisioner:manage-worker-type:<workerType>
+//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#getLaunchSpecs
 func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, *CallSummary) {
 	responseObject, callSummary := awsProvisioner.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", new(GetAllLaunchSpecsResponse))
@@ -384,6 +407,9 @@ func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAll
 //
 // **DEPRECATED.**
 //
+// Required scopes:
+//   * aws-provisioner:aws-state
+//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#awsState
 func (awsProvisioner *AwsProvisioner) AwsState() *CallSummary {
 	_, callSummary := awsProvisioner.apiCall(nil, "GET", "/aws-state", nil)
@@ -394,6 +420,9 @@ func (awsProvisioner *AwsProvisioner) AwsState() *CallSummary {
 // This state is stored as three lists: 1 for all instances, 1 for requests
 // which show in the ec2 api and 1 list for those only tracked internally
 // in the provisioner.
+//
+// Required scopes:
+//   * aws-provisioner:view-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#state
 func (awsProvisioner *AwsProvisioner) State(workerType string) *CallSummary {

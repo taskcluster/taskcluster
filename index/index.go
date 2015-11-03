@@ -331,6 +331,9 @@ func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*L
 // Insert a task into the index. Please see the introduction above, for how
 // to index successfully completed tasks automatically, using custom routes.
 //
+// Required scopes:
+//   * index:insert-task:<namespace>
+//
 // See http://docs.taskcluster.net/services/index/#insertTask
 func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, *CallSummary) {
 	responseObject, callSummary := myIndex.apiCall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse))
@@ -340,6 +343,9 @@ func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (
 // Find task by namespace and redirect to artifact with given `name`,
 // if no task existing for the given namespace, this API end-point respond
 // `404`.
+//
+// Required scopes:
+//   * queue:get-artifact:<name>
 //
 // See http://docs.taskcluster.net/services/index/#findArtifactFromTask
 func (myIndex *Index) FindArtifactFromTask(namespace string, name string) *CallSummary {

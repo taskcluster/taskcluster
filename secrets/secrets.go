@@ -205,6 +205,9 @@ func New(clientId string, accessToken string) *Secrets {
 
 // Set a secret associated with some key.
 //
+// Required scopes:
+//   * secrets:set:<name>
+//
 // See http://docs.taskcluster.net/services/secrets/#set
 func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) *CallSummary {
 	_, callSummary := mySecrets.apiCall(payload, "PUT", "/secrets/"+url.QueryEscape(name), nil)
@@ -212,6 +215,9 @@ func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) *CallSum
 }
 
 // Update a secret associated with some key.
+//
+// Required scopes:
+//   * secrets:update:<name>
 //
 // See http://docs.taskcluster.net/services/secrets/#update
 func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) *CallSummary {
@@ -221,6 +227,9 @@ func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) *Call
 
 // Delete the secret attached to some key.
 //
+// Required scopes:
+//   * secrets:remove:<name>
+//
 // See http://docs.taskcluster.net/services/secrets/#remove
 func (mySecrets *Secrets) Remove(name string) *CallSummary {
 	_, callSummary := mySecrets.apiCall(nil, "DELETE", "/secrets/"+url.QueryEscape(name), nil)
@@ -228,6 +237,9 @@ func (mySecrets *Secrets) Remove(name string) *CallSummary {
 }
 
 // Read the secret attached to some key.
+//
+// Required scopes:
+//   * secrets:get:<name>
 //
 // See http://docs.taskcluster.net/services/secrets/#get
 func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary) {

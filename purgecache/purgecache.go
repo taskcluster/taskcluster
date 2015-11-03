@@ -210,6 +210,9 @@ func New(clientId string, accessToken string) *PurgeCache {
 // `provisionerId` and `workerType` in the routing-key. Workers should
 // be listening for this message and purge caches when they see it.
 //
+// Required scopes:
+//   * purge-cache:<provisionerId>/<workerType>:<cacheName>
+//
 // See http://docs.taskcluster.net/services/purge-cache/#purgeCache
 func (purgeCache *PurgeCache) PurgeCache(provisionerId string, workerType string, payload *PurgeCacheRequest) *CallSummary {
 	_, callSummary := purgeCache.apiCall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil)

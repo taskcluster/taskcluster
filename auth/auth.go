@@ -271,6 +271,9 @@ func (myAuth *Auth) Client(clientId string) (*GetClientResponse, *CallSummary) {
 // If a client with the same `clientId` already exists this operation will
 // fail. Use `updateClient` if you wish to update an existing client.
 //
+// Required scopes:
+//   * auth:create-client:<clientId>
+//
 // See http://docs.taskcluster.net/auth/api-docs/#createClient
 func (myAuth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, *CallSummary) {
 	responseObject, callSummary := myAuth.apiCall(payload, "PUT", "/clients/"+url.QueryEscape(clientId), new(CreateClientResponse))
@@ -284,6 +287,9 @@ func (myAuth *Auth) CreateClient(clientId string, payload *CreateClientRequest) 
 // There is no way to retrieve an existing `accessToken`, so if you loose it
 // you must reset the accessToken to acquire it again.
 //
+// Required scopes:
+//   * auth:reset-access-token:<clientId>
+//
 // See http://docs.taskcluster.net/auth/api-docs/#resetAccessToken
 func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *CallSummary) {
 	responseObject, callSummary := myAuth.apiCall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/reset", new(CreateClientResponse))
@@ -294,6 +300,9 @@ func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *C
 // description and expiration, as you won't be allowed to the `clientId`
 // or `accessToken`.
 //
+// Required scopes:
+//   * auth:update-client:<clientId>
+//
 // See http://docs.taskcluster.net/auth/api-docs/#updateClient
 func (myAuth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, *CallSummary) {
 	responseObject, callSummary := myAuth.apiCall(payload, "POST", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse))
@@ -302,6 +311,9 @@ func (myAuth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) 
 
 // Delete a client, please note that any roles related to this client must
 // be deleted independently.
+//
+// Required scopes:
+//   * auth:delete-client:<clientId>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#deleteClient
 func (myAuth *Auth) DeleteClient(clientId string) *CallSummary {
@@ -330,6 +342,9 @@ func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, *CallSummary) {
 // Create a new role. If there already exists a role with the same `roleId`
 // this operation will fail. Use `updateRole` to modify an existing role
 //
+// Required scopes:
+//   * auth:create-role:<roleId>
+//
 // See http://docs.taskcluster.net/auth/api-docs/#createRole
 func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *CallSummary) {
 	responseObject, callSummary := myAuth.apiCall(payload, "PUT", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse))
@@ -337,6 +352,9 @@ func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetR
 }
 
 // Update existing role.
+//
+// Required scopes:
+//   * auth:update-role:<roleId>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#updateRole
 func (myAuth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *CallSummary) {
@@ -346,6 +364,9 @@ func (myAuth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetR
 
 // Delete a role. This operation will succeed regardless of whether or not
 // the role exists.
+//
+// Required scopes:
+//   * auth:delete-role:<roleId>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#deleteRole
 func (myAuth *Auth) DeleteRole(roleId string) *CallSummary {
@@ -373,6 +394,9 @@ func (myAuth *Auth) DeleteRole(roleId string) *CallSummary {
 // access to `my-folder/file.txt` as expected, but also to `my-folder.txt`,
 // which may not be intended.
 //
+// Required scopes:
+//   * auth:aws-s3:<level>:<bucket>/<prefix>
+//
 // See http://docs.taskcluster.net/auth/api-docs/#awsS3Credentials
 func (myAuth *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *CallSummary) {
 	responseObject, callSummary := myAuth.apiCall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse))
@@ -382,6 +406,9 @@ func (myAuth *Auth) AwsS3Credentials(level string, bucket string, prefix string)
 // Get a shared access signature (SAS) string for use with a specific Azure
 // Table Storage table.  Note, this will create the table, if it doesn't
 // already exist.
+//
+// Required scopes:
+//   * auth:azure-table-access:<account>/<table>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#azureTableSAS
 func (myAuth *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSignatureResponse, *CallSummary) {
@@ -404,6 +431,11 @@ func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest
 
 // Import client from JSON list, overwriting any clients that already
 // exists. Returns a list of all clients imported.
+//
+// Required scopes:
+//   * auth:import-clients, and
+//   * auth:create-client, and
+//   * auth:credentials
 //
 // See http://docs.taskcluster.net/auth/api-docs/#importClients
 func (myAuth *Auth) ImportClients(payload *ExportedClients) *CallSummary {
