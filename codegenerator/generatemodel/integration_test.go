@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go/index"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"os"
+	"regexp"
 	"testing"
 	"time"
 )
@@ -105,7 +107,11 @@ func TestDefineTask(t *testing.T) {
 	//////////////////////////////////
 
 	if cs.Error != nil {
-		t.Fatalf("Exception thrown: %s", cs.Error)
+		b := bytes.Buffer{}
+		cs.HttpRequest.Header.Write(&b)
+		headers := regexp.MustCompile(`(mac|nonce)="[^"]*"`).ReplaceAllString(b.String(), `$1="***********"`)
+		t.Logf("\n\nRequest sent:\n\nURL: %s\nMethod: %s\nHeaders:\n%v\nBody: %s", cs.HttpRequest.URL, cs.HttpRequest.Method, headers, cs.HttpRequestBody)
+		t.Fatalf("\n\nResponse received:\n\n%s", cs.Error)
 	}
 
 	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskId)
