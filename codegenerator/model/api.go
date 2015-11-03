@@ -333,6 +333,27 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 		comment += "\n"
 	}
+	if len(entry.Scopes) > 0 {
+		comment += "//\n"
+		comment += "// Required scopes:\n"
+		switch len(entry.Scopes) {
+		case 0:
+		case 1:
+			comment += "//   * " + strings.Join(entry.Scopes[0], ", and\n//   * ") + "\n"
+		default:
+			lines := make([]string, len(entry.Scopes))
+			for i, j := range entry.Scopes {
+				switch len(j) {
+				case 0:
+				case 1:
+					lines[i] = "//   * " + j[0]
+				default:
+					lines[i] = "//   * (" + strings.Join(j, " and ") + ")"
+				}
+			}
+			comment += strings.Join(lines, ", or\n") + "\n"
+		}
+	}
 	comment += "//\n"
 	comment += fmt.Sprintf("// See %v/#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
 	inputParams := ""
