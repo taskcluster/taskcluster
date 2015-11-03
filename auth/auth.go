@@ -570,7 +570,8 @@ type (
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
 		Description string `json:"description"`
-		// List of scopes granted to this client by matching roles.
+		// List of scopes granted to this client by matching roles.  Scopes must be
+		// composed of printable ASCII characters and spaces.
 		ExpandedScopes []string `json:"expandedScopes"`
 		// Date and time where the clients access is set to expire
 		Expires Time `json:"expires"`
@@ -591,7 +592,8 @@ type (
 		// Description of what this role is used for in markdown.
 		// Should include who is the owner, point of contact.
 		Description string `json:"description"`
-		// List of scopes the role grants access to
+		// List of scopes the role grants access to.  Scopes must be composed of
+		// printable ASCII characters and spaces.
 		Scopes []string `json:"scopes"`
 	}
 
@@ -616,7 +618,8 @@ type (
 		// Human readable name of this set of credentials, typical
 		// component/server-name or IRC nickname of the user.
 		Name string `json:"name"`
-		// List of scopes the client is authorized to access
+		// List of scopes the client is authorized to access.  Scopes must be
+		// composed of printable ASCII characters and spaces.
 		Scopes []string `json:"scopes"`
 	}
 
@@ -633,7 +636,8 @@ type (
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
 		Description string `json:"description"`
-		// List of scopes granted to this client by matching roles.
+		// List of scopes granted to this client by matching roles.  Scopes must be
+		// composed of printable ASCII characters and spaces.
 		ExpandedScopes []string `json:"expandedScopes"`
 		// Date and time where the clients access is set to expire
 		Expires Time `json:"expires"`
@@ -664,7 +668,8 @@ type (
 		LastModified Time `json:"lastModified"`
 		// roleId of the role requested
 		RoleId string `json:"roleId"`
-		// List of scopes the role grants access to
+		// List of scopes the role grants access to.  Scopes must be composed of
+		// printable ASCII characters and spaces.
 		Scopes []string `json:"scopes"`
 	}
 

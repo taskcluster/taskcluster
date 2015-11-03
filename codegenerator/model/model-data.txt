@@ -372,11 +372,11 @@ Any Of                 = 'Item '0' =
       IsOutputSchema         = 'false'
       SourceURL              = ''
     Property 'scopes' =
-      Description            = 'List of scopes the client is authorized to access
+      Description            = 'List of scopes the client is authorized to access.  Scopes must be
+      composed of printable ASCII characters and spaces.
       '
       Items
-        Description            = 'Scope the client is authorized to access
-        '
+        Pattern                = '^[ -~]*$'
         Type                   = 'string'
         TypeName               = ''
         IsInputSchema          = 'false'
@@ -436,7 +436,7 @@ Description            = 'Response from a request to authenticate a hawk request
 ID                     = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Hawk Signature Authentication Response'
-Type HAS NOT BEEN SET!!!
+Type                   = 'object'
 TypeName               = 'HawkSignatureAuthenticationResponse'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'true'
@@ -628,11 +628,13 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'expandedScopes' =
-    Description            = 'List of scopes granted to this client by matching roles.
+    Description            = 'List of scopes granted to this client by matching roles.  Scopes must be
+    composed of printable ASCII characters and spaces.
     '
     Items
       Description            = 'Scope that client is granted by a role
       '
+      Pattern                = '^[ -~]*$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -709,11 +711,13 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'scopes' =
-    Description            = 'List of scopes the role grants access to
+    Description            = 'List of scopes the role grants access to.  Scopes must be composed of
+    printable ASCII characters and spaces.
     '
     Items
       Description            = 'Scope the role grants access to
       '
+      Pattern                = '^[ -~]*$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -791,11 +795,13 @@ Items
       IsOutputSchema         = 'false'
       SourceURL              = ''
     Property 'scopes' =
-      Description            = 'List of scopes the client is authorized to access
+      Description            = 'List of scopes the client is authorized to access.  Scopes must be
+      composed of printable ASCII characters and spaces.
       '
       Items
         Description            = 'Scope the client is authorized to access
         '
+        Pattern                = '^[ -~]*$'
         Type                   = 'string'
         TypeName               = ''
         IsInputSchema          = 'false'
@@ -857,11 +863,13 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'expandedScopes' =
-    Description            = 'List of scopes granted to this client by matching roles.
+    Description            = 'List of scopes granted to this client by matching roles.  Scopes must be
+    composed of printable ASCII characters and spaces.
     '
     Items
       Description            = 'Scope that client is granted by a role
       '
+      Pattern                = '^[ -~]*$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -954,6 +962,7 @@ Properties
     Items
       Description            = 'Scope this role grants
       '
+      Pattern                = '^[ -~]*$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -982,11 +991,13 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'scopes' =
-    Description            = 'List of scopes the role grants access to
+    Description            = 'List of scopes the role grants access to.  Scopes must be composed of
+    printable ASCII characters and spaces.
     '
     Items
       Description            = 'Scope the role grants access to
       '
+      Pattern                = '^[ -~]*$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
