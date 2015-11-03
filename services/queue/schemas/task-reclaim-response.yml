@@ -1,5 +1,5 @@
 $schema:          http://json-schema.org/draft-04/schema#
-title:            "Task Claim Response"
+title:            "Task Reclaim Response"
 description: |
   Response to a successful task claim
 type:             object
