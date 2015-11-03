@@ -91,8 +91,7 @@ func TestDefineTask(t *testing.T) {
 		},
 		SchedulerId: "go-test-test-scheduler",
 		Scopes: []string{
-			"docker-worker:image:taskcluster/builder:0.5.6",
-			"queue:define-task:aws-provisioner-v1/build-c4-2xlarge",
+			"test-worker:image:toastposter/pumpkin:0.5.6",
 		},
 		Tags:        json.RawMessage(`{"createdForUser":"cbook@mozilla.com"}`),
 		Priority:    json.RawMessage(`"high"`),
@@ -158,8 +157,7 @@ func TestDefineTask(t *testing.T) {
 	  ],
 
 	  "scopes": [
-	    "docker-worker:image:taskcluster/builder:0.5.6",
-	    "queue:define-task:aws-provisioner-v1/build-c4-2xlarge"
+	    "test-worker:image:toastposter/pumpkin:0.5.6"
 	  ],
 
 	  "tags": {
@@ -183,7 +181,7 @@ func TestDefineTask(t *testing.T) {
 
 	jsonCorrect, formattedExpected, formattedActual, err := jsonEqual(expectedJson, []byte(submittedPayload))
 	if err != nil {
-		t.Fatalf("Exception thrown formatting json data!\n%s", err)
+		t.Fatalf("Exception thrown formatting json data!\n%s\n\nStruggled to format either:\n%s\n\nor:\n\n%s", err, string(expectedJson), submittedPayload)
 	}
 
 	if !jsonCorrect {
