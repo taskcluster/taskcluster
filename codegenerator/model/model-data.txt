@@ -3056,9 +3056,9 @@ Entry 9     =
     Entry Route       = '/task/<taskId>/runs/<runId>/reclaim'
     Entry Args        = '[taskId runId]'
     Entry Name        = 'reclaimTask'
-    Entry Scopes      = '[[queue:claim-task assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Scopes      = '[[queue:claim-task assume:worker-id:<workerGroup>/<workerId>] [queue:claim-task:<taskId>/<runId>]]'
     Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#'
     Entry Title       = 'Reclaim task'
     Entry Description = 'reclaim a task more to be added later...'
 Entry 10    =
@@ -3067,7 +3067,7 @@ Entry 10    =
     Entry Route       = '/task/<taskId>/runs/<runId>/completed'
     Entry Args        = '[taskId runId]'
     Entry Name        = 'reportCompleted'
-    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>] [queue:claim-task:<taskId>/<runId>]]'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Report Run Completed'
@@ -3078,7 +3078,7 @@ Entry 11    =
     Entry Route       = '/task/<taskId>/runs/<runId>/failed'
     Entry Args        = '[taskId runId]'
     Entry Name        = 'reportFailed'
-    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>] [queue:claim-task:<taskId>/<runId>]]'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Report Run Failed'
@@ -3095,7 +3095,7 @@ Entry 12    =
     Entry Route       = '/task/<taskId>/runs/<runId>/exception'
     Entry Args        = '[taskId runId]'
     Entry Name        = 'reportException'
-    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Scopes      = '[[queue:resolve-task assume:worker-id:<workerGroup>/<workerId>] [queue:claim-task:<taskId>/<runId>]]'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-exception-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Report Task Exception'
@@ -3117,7 +3117,7 @@ Entry 13    =
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts/<name>'
     Entry Args        = '[taskId runId name]'
     Entry Name        = 'createArtifact'
-    Entry Scopes      = '[[queue:create-artifact:<name> assume:worker-id:<workerGroup>/<workerId>]]'
+    Entry Scopes      = '[[queue:create-artifact:<name> assume:worker-id:<workerGroup>/<workerId>] [queue:create-artifact:<name> queue:claim-task:<taskId>/<runId>]]'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#'
     Entry Title       = 'Create Artifact'
@@ -3347,7 +3347,7 @@ Properties
           '
           Enum                   = '[s3 azure reference error]'
           Title                  = 'Artifact Storage-Type'
-          Type HAS NOT BEEN SET!!!
+          Type                   = 'string'
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -3738,7 +3738,7 @@ OneOf
     SourceURL              = ''
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Post Artifact Request'
-Type HAS NOT BEEN SET!!!
+Type                   = 'object'
 TypeName               = 'PostArtifactRequest'
 IsInputSchema          = 'true'
 IsOutputSchema         = 'false'
@@ -3958,6 +3958,54 @@ Description            = 'Response to a successful task claim
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
 Properties
+  Property 'credentials' =
+    Description            = 'Temporary credentials granting `task.scopes` and the scope:
+    `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
+    the task, upload artifacts and report task resolution.
+    
+    The temporary credentials are set to expire after `takenUntil`. They
+    won't expire exactly at `takenUntil` but shortly after, hence, requests
+    coming close `takenUntil` won't have problems even if there is a little
+    clock drift.
+    
+    Workers should use these credentials when making requests on behalf of
+    a task. This includes requests to create artifacts, reclaiming the task
+    reporting the task `completed`, `failed` or `exception`.
+    
+    Note, a new set of temporary credentials is issued when the worker
+    reclaims the task.'
+    Properties
+      Property 'accessToken' =
+        Description            = 'The `accessToken` for the temporary credentials.'
+        MinLength              = '1'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'certificate' =
+        Description            = 'The `certificate` for the temporary credentials, these are required
+        for the temporary credentials to work.'
+        MinLength              = '1'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'clientId' =
+        Description            = 'The `clientId` for the temporary credentials.'
+        MinLength              = '1'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+    Required               = '[clientId accessToken certificate]'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
   Property 'runId' =
     Description            = '`run-id` assigned to this run of the task
     '
@@ -3975,11 +4023,17 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'takenUntil' =
-    Description            = 'Time at which the run expires and is resolved as `failed`,
-    if the run isn't reclaimed.
+    Description            = 'Time at which the run expires and is resolved as `exception`,
+    with reason `claim-expired` if the run haven't been reclaimed.
     '
     Format                 = 'date-time'
     Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'task' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/task.json#'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -4006,7 +4060,7 @@ Properties
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
     SourceURL              = ''
-Required               = '[status runId workerGroup workerId takenUntil]'
+Required               = '[status runId workerGroup workerId takenUntil task credentials]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Claim Response'
 Type                   = 'object'
@@ -4052,7 +4106,7 @@ Properties
     bug in the worker code.
     '
     Enum                   = '[worker-shutdown malformed-payload resource-unavailable internal-error]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -4065,6 +4119,119 @@ TypeName               = 'TaskExceptionRequest'
 IsInputSchema          = 'true'
 IsOutputSchema         = 'false'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-exception-request.json#'
+
+
+http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#
+===================================================================
+Additional Properties  = 'false'
+Description            = 'Response to a successful task claim
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#'
+Properties
+  Property 'credentials' =
+    Description            = 'Temporary credentials granting `task.scopes` and the scope:
+    `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
+    the task, upload artifacts and report task resolution.
+    
+    The temporary credentials are set to expire after `takenUntil`. They
+    won't expire exactly at `takenUntil` but shortly after, hence, requests
+    coming close `takenUntil` won't have problems even if there is a little
+    clock drift.
+    
+    Workers should use these credentials when making requests on behalf of
+    a task. This includes requests to create artifacts, reclaiming the task
+    reporting the task `completed`, `failed` or `exception`.
+    
+    Note, a new set of temporary credentials is issued when the worker
+    reclaims the task.'
+    Properties
+      Property 'accessToken' =
+        Description            = 'The `accessToken` for the temporary credentials.'
+        MinLength              = '1'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'certificate' =
+        Description            = 'The `certificate` for the temporary credentials, these are required
+        for the temporary credentials to work.'
+        MinLength              = '1'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'clientId' =
+        Description            = 'The `clientId` for the temporary credentials.'
+        MinLength              = '1'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+    Required               = '[clientId accessToken certificate]'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'runId' =
+    Description            = '`run-id` assigned to this run of the task
+    '
+    Maximum                = '1000'
+    Minimum                = '0'
+    Type                   = 'integer'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'status' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'takenUntil' =
+    Description            = 'Time at which the run expires and is resolved as `exception`,
+    with reason `claim-expired` if the run haven't been reclaimed.
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'workerGroup' =
+    Description            = 'Identifier for the worker-group within which this run started.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'workerId' =
+    Description            = 'Identifier for the worker executing this run.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[status runId workerGroup workerId takenUntil credentials]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Claim Response'
+Type                   = 'object'
+TypeName               = 'TaskClaimResponse1'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#'
 
 
 http://schemas.taskcluster.net/queue/v1/task-status-response.json#
@@ -4148,11 +4315,11 @@ Properties
       Properties
         Property 'reasonCreated' =
           Description            = 'Reason for the creation of this run,
-          **more reasons may be added in the future**."
+          **more reasons may be added in the future**.
           '
           Enum                   = '[scheduled retry rerun exception]'
           Title                  = 'Reason Created'
-          Type HAS NOT BEEN SET!!!
+          Type                   = 'string'
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -4165,7 +4332,7 @@ Properties
           '
           Enum                   = '[completed failed deadline-exceeded canceled claim-expired worker-shutdown malformed-payload resource-unavailable internal-error]'
           Title                  = 'Reason Resolved'
-          Type HAS NOT BEEN SET!!!
+          Type                   = 'string'
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -4221,7 +4388,7 @@ Properties
           '
           Enum                   = '[pending running completed failed exception]'
           Title                  = 'Run State'
-          Type HAS NOT BEEN SET!!!
+          Type                   = 'string'
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -4297,7 +4464,7 @@ Properties
     '
     Enum                   = '[unscheduled pending running completed failed exception]'
     Title                  = 'State'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -4481,7 +4648,7 @@ Properties
     '
     Enum                   = '[high normal]'
     Title                  = 'Task Priority'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -4560,8 +4727,10 @@ Properties
       Description            = 'A scope (or scope-patterns) which the task is
       authorized to use. This can be a string or a string
       ending with `*` which will authorize all scopes for
-      which the string is a prefix.
+      which the string is a prefix.  Scopes must be composed of
+      printable ASCII characters and spaces.
       '
+      Pattern                = '^[\x20-\x7e]*$'
       Title                  = 'Scope'
       Type                   = 'string'
       TypeName               = ''
@@ -5252,14 +5421,14 @@ Properties
         '
         Enum                   = '[s3 azure reference error]'
         Title                  = 'Artifact Storage-Type'
-        Type HAS NOT BEEN SET!!!
+        Type                   = 'string'
         TypeName               = ''
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
         SourceURL              = ''
     Required               = '[storageType name expires contentType]'
     Title                  = 'Artifact Created'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'object'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5283,7 +5452,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'integer'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5348,7 +5517,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'integer'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5402,7 +5571,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'integer'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5444,7 +5613,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'integer'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5510,7 +5679,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'integer'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5573,7 +5742,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'integer'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5624,7 +5793,7 @@ Properties
   Property 'version' =
     Description            = 'Message version'
     Enum                   = '[1]'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'integer'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -5719,11 +5888,11 @@ Properties
       Properties
         Property 'reasonCreated' =
           Description            = 'Reason for the creation of this run,
-          **more reasons may be added in the future**."
+          **more reasons may be added in the future**.
           '
           Enum                   = '[scheduled retry rerun exception]'
           Title                  = 'Reason Created'
-          Type HAS NOT BEEN SET!!!
+          Type                   = 'string'
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -5736,7 +5905,7 @@ Properties
           '
           Enum                   = '[completed failed deadline-exceeded canceled claim-expired worker-shutdown malformed-payload resource-unavailable internal-error]'
           Title                  = 'Reason Resolved'
-          Type HAS NOT BEEN SET!!!
+          Type                   = 'string'
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -5792,7 +5961,7 @@ Properties
           '
           Enum                   = '[pending running completed failed exception]'
           Title                  = 'Run State'
-          Type HAS NOT BEEN SET!!!
+          Type                   = 'string'
           TypeName               = ''
           IsInputSchema          = 'false'
           IsOutputSchema         = 'false'
@@ -5868,7 +6037,7 @@ Properties
     '
     Enum                   = '[unscheduled pending running completed failed exception]'
     Title                  = 'State'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'

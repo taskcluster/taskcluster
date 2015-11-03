@@ -119,7 +119,7 @@ func TestDefineTask(t *testing.T) {
 	if retriesLeft := tsr.Status.RetriesLeft; retriesLeft != 5 {
 		t.Errorf("Expected 'retriesLeft' to be 5, but got %v", retriesLeft)
 	}
-	if state := tsr.Status.State; string(state) != `"unscheduled"` {
+	if state := tsr.Status.State; state != "unscheduled" {
 		t.Errorf("Expected 'state' to be 'unscheduled', but got %s", state)
 	}
 	submittedPayload := cs.HttpRequestBody

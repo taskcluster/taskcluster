@@ -88,7 +88,6 @@
 package queueevents
 
 import (
-	"encoding/json"
 	"errors"
 	"reflect"
 	"strings"
@@ -358,7 +357,26 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#
 	ArtifactCreatedMessage struct {
 		// Information about the artifact that was created
-		Artifact json.RawMessage `json:"artifact"`
+		Artifact struct {
+			// Mimetype for the artifact that was created.
+			ContentType string `json:"contentType"`
+			// Date and time after which the artifact created will be automatically
+			// deleted by the queue.
+			Expires Time `json:"expires"`
+			// Name of the artifact that was created, this is useful if you want to
+			// attempt to fetch the artifact. But keep in mind that just because an
+			// artifact is created doesn't mean that it's immediately available.
+			Name string `json:"name"`
+			// This is the `storageType` for the request that was used to create the
+			// artifact.
+			//
+			// Possible values:
+			//   * "s3"
+			//   * "azure"
+			//   * "reference"
+			//   * "error"
+			StorageType string `json:"storageType"`
+		} `json:"artifact"`
 		// Id of the run on which artifact was created.
 		RunId  int                 `json:"runId"`
 		Status TaskStatusStructure `json:"status"`
@@ -366,7 +384,7 @@ type (
 		//
 		// Possible values:
 		//   * 1
-		Version json.RawMessage `json:"version"`
+		Version int `json:"version"`
 		// Identifier for the worker-group within which the run with the created
 		// artifacted is running.
 		//
@@ -390,7 +408,7 @@ type (
 		//
 		// Possible values:
 		//   * 1
-		Version json.RawMessage `json:"version"`
+		Version int `json:"version"`
 		// Identifier for the worker-group within which this run ran.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
@@ -411,7 +429,7 @@ type (
 		//
 		// Possible values:
 		//   * 1
-		Version json.RawMessage `json:"version"`
+		Version int `json:"version"`
 	}
 
 	// Message reporting that TaskCluster have failed to run a task.
@@ -426,7 +444,7 @@ type (
 		//
 		// Possible values:
 		//   * 1
-		Version json.RawMessage `json:"version"`
+		Version int `json:"version"`
 		// Identifier for the worker-group within which the last attempt of the task
 		// ran. Not provided, if `deadline` was exceeded before a run was started.
 		//
@@ -451,7 +469,7 @@ type (
 		//
 		// Possible values:
 		//   * 1
-		Version json.RawMessage `json:"version"`
+		Version int `json:"version"`
 		// Identifier for the worker-group within which this run ran.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
@@ -473,7 +491,7 @@ type (
 		//
 		// Possible values:
 		//   * 1
-		Version json.RawMessage `json:"version"`
+		Version int `json:"version"`
 	}
 
 	// Message reporting that a given run of a task have started
@@ -490,7 +508,7 @@ type (
 		//
 		// Possible values:
 		//   * 1
-		Version json.RawMessage `json:"version"`
+		Version int `json:"version"`
 		// Identifier for the worker-group within which this run started.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
@@ -518,14 +536,14 @@ type (
 		// List of runs, ordered so that index `i` has `runId == i`
 		Runs []struct {
 			// Reason for the creation of this run,
-			// **more reasons may be added in the future**."
+			// **more reasons may be added in the future**.
 			//
 			// Possible values:
 			//   * "scheduled"
 			//   * "retry"
 			//   * "rerun"
 			//   * "exception"
-			ReasonCreated json.RawMessage `json:"reasonCreated"`
+			ReasonCreated string `json:"reasonCreated"`
 			// Reason that run was resolved, this is mainly
 			// useful for runs resolved as `exception`.
 			// Note, **more reasons may be added in the future**, also this
@@ -541,7 +559,7 @@ type (
 			//   * "malformed-payload"
 			//   * "resource-unavailable"
 			//   * "internal-error"
-			ReasonResolved json.RawMessage `json:"reasonResolved"`
+			ReasonResolved string `json:"reasonResolved"`
 			// Date-time at which this run was resolved, ie. when the run changed
 			// state from `running` to either `completed`, `failed` or `exception`.
 			// This property is only present after the run as been resolved.
@@ -563,7 +581,7 @@ type (
 			//   * "completed"
 			//   * "failed"
 			//   * "exception"
-			State json.RawMessage `json:"state"`
+			State string `json:"state"`
 			// Time at which the run expires and is resolved as `failed`, if the
 			// run isn't reclaimed. Note, only present after the run has been
 			// claimed.
@@ -595,7 +613,7 @@ type (
 		//   * "completed"
 		//   * "failed"
 		//   * "exception"
-		State json.RawMessage `json:"state"`
+		State string `json:"state"`
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.

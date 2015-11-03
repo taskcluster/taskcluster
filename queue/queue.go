@@ -347,9 +347,9 @@ func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimR
 // reclaim a task more to be added later...
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reclaimTask
-func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskClaimResponse, *CallSummary) {
-	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskClaimResponse))
-	return responseObject.(*TaskClaimResponse), callSummary
+func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskClaimResponse1, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskClaimResponse1))
+	return responseObject.(*TaskClaimResponse1), callSummary
 }
 
 // Report a task completed, resolving the run as `completed`.
@@ -650,7 +650,7 @@ type (
 			//   * "azure"
 			//   * "reference"
 			//   * "error"
-			StorageType json.RawMessage `json:"storageType"`
+			StorageType string `json:"storageType"`
 		} `json:"artifacts"`
 	}
 
@@ -743,12 +743,37 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#
 	TaskClaimResponse struct {
+		// Temporary credentials granting `task.scopes` and the scope:
+		// `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
+		// the task, upload artifacts and report task resolution.
+		//
+		// The temporary credentials are set to expire after `takenUntil`. They
+		// won't expire exactly at `takenUntil` but shortly after, hence, requests
+		// coming close `takenUntil` won't have problems even if there is a little
+		// clock drift.
+		//
+		// Workers should use these credentials when making requests on behalf of
+		// a task. This includes requests to create artifacts, reclaiming the task
+		// reporting the task `completed`, `failed` or `exception`.
+		//
+		// Note, a new set of temporary credentials is issued when the worker
+		// reclaims the task.
+		Credentials struct {
+			// The `accessToken` for the temporary credentials.
+			AccessToken string `json:"accessToken"`
+			// The `certificate` for the temporary credentials, these are required
+			// for the temporary credentials to work.
+			Certificate string `json:"certificate"`
+			// The `clientId` for the temporary credentials.
+			ClientId string `json:"clientId"`
+		} `json:"credentials"`
 		// `run-id` assigned to this run of the task
 		RunId  int                 `json:"runId"`
 		Status TaskStatusStructure `json:"status"`
-		// Time at which the run expires and is resolved as `failed`,
-		// if the run isn't reclaimed.
-		TakenUntil Time `json:"takenUntil"`
+		// Time at which the run expires and is resolved as `exception`,
+		// with reason `claim-expired` if the run haven't been reclaimed.
+		TakenUntil Time            `json:"takenUntil"`
+		Task       TaskDefinition1 `json:"task"`
 		// Identifier for the worker-group within which this run started.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
@@ -795,7 +820,51 @@ type (
 		//   * "malformed-payload"
 		//   * "resource-unavailable"
 		//   * "internal-error"
-		Reason json.RawMessage `json:"reason"`
+		Reason string `json:"reason"`
+	}
+
+	// Response to a successful task claim
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#
+	TaskClaimResponse1 struct {
+		// Temporary credentials granting `task.scopes` and the scope:
+		// `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
+		// the task, upload artifacts and report task resolution.
+		//
+		// The temporary credentials are set to expire after `takenUntil`. They
+		// won't expire exactly at `takenUntil` but shortly after, hence, requests
+		// coming close `takenUntil` won't have problems even if there is a little
+		// clock drift.
+		//
+		// Workers should use these credentials when making requests on behalf of
+		// a task. This includes requests to create artifacts, reclaiming the task
+		// reporting the task `completed`, `failed` or `exception`.
+		//
+		// Note, a new set of temporary credentials is issued when the worker
+		// reclaims the task.
+		Credentials struct {
+			// The `accessToken` for the temporary credentials.
+			AccessToken string `json:"accessToken"`
+			// The `certificate` for the temporary credentials, these are required
+			// for the temporary credentials to work.
+			Certificate string `json:"certificate"`
+			// The `clientId` for the temporary credentials.
+			ClientId string `json:"clientId"`
+		} `json:"credentials"`
+		// `run-id` assigned to this run of the task
+		RunId  int                 `json:"runId"`
+		Status TaskStatusStructure `json:"status"`
+		// Time at which the run expires and is resolved as `exception`,
+		// with reason `claim-expired` if the run haven't been reclaimed.
+		TakenUntil Time `json:"takenUntil"`
+		// Identifier for the worker-group within which this run started.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
+		WorkerGroup string `json:"workerGroup"`
+		// Identifier for the worker executing this run.
+		//
+		// Syntax: ^([a-zA-Z0-9-_]*)$
+		WorkerId string `json:"workerId"`
 	}
 
 	// Response to a task status request
@@ -822,14 +891,14 @@ type (
 		// List of runs, ordered so that index `i` has `runId == i`
 		Runs []struct {
 			// Reason for the creation of this run,
-			// **more reasons may be added in the future**."
+			// **more reasons may be added in the future**.
 			//
 			// Possible values:
 			//   * "scheduled"
 			//   * "retry"
 			//   * "rerun"
 			//   * "exception"
-			ReasonCreated json.RawMessage `json:"reasonCreated"`
+			ReasonCreated string `json:"reasonCreated"`
 			// Reason that run was resolved, this is mainly
 			// useful for runs resolved as `exception`.
 			// Note, **more reasons may be added in the future**, also this
@@ -845,7 +914,7 @@ type (
 			//   * "malformed-payload"
 			//   * "resource-unavailable"
 			//   * "internal-error"
-			ReasonResolved json.RawMessage `json:"reasonResolved"`
+			ReasonResolved string `json:"reasonResolved"`
 			// Date-time at which this run was resolved, ie. when the run changed
 			// state from `running` to either `completed`, `failed` or `exception`.
 			// This property is only present after the run as been resolved.
@@ -867,7 +936,7 @@ type (
 			//   * "completed"
 			//   * "failed"
 			//   * "exception"
-			State json.RawMessage `json:"state"`
+			State string `json:"state"`
 			// Time at which the run expires and is resolved as `failed`, if the
 			// run isn't reclaimed. Note, only present after the run has been
 			// claimed.
@@ -899,7 +968,7 @@ type (
 		//   * "completed"
 		//   * "failed"
 		//   * "exception"
-		State json.RawMessage `json:"state"`
+		State string `json:"state"`
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.
@@ -968,7 +1037,7 @@ type (
 		// Possible values:
 		//   * "high"
 		//   * "normal"
-		Priority json.RawMessage `json:"priority"`
+		Priority string `json:"priority"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		//
