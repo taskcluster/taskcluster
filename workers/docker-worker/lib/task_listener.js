@@ -334,8 +334,8 @@ export default class TaskListener extends EventEmitter {
         }
       );
 
-      // Fetch full task definition.
-      var task = await this.runtime.queue.task(runningState.taskId);
+      // Look up full task definition in claim response.
+      var task = claim.task
 
       // Date when the task was created.
       var created = new Date(task.created);
