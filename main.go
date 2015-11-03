@@ -344,18 +344,7 @@ func FindAndRunTask() bool {
 			break
 		}
 		task.setReclaimTimer()
-		err = task.fetchTaskDefinition()
-		if err != nil {
-			debug("TASK EXCEPTION: Not able to fetch task definition for task %v", task.TaskId)
-			debug("%v", err)
-			taskStatusUpdate <- TaskStatusUpdate{
-				Task:   task,
-				Status: Errored,
-				Reason: "worker-shutdown", // internal error ("fetch-definition-failure")
-			}
-			reportPossibleError(<-taskStatusUpdateErr)
-			break
-		}
+		task.fetchTaskDefinition()
 		err = task.validatePayload()
 		if err != nil {
 			debug("TASK EXCEPTION: Not able to validate task payload for task %v", task.TaskId)
@@ -608,15 +597,9 @@ func (task *TaskRun) setReclaimTimer() {
 	)
 }
 
-func (task *TaskRun) fetchTaskDefinition() error {
+func (task *TaskRun) fetchTaskDefinition() {
 	// Fetch task definition
-	definition, callSummary := Queue.Task(task.TaskId)
-	if err := callSummary.Error; err != nil {
-		return err
-	}
-	task.Definition = *definition
-	debug("Successfully retrieved Task Definition (http response code %v)", callSummary.HttpResponse.StatusCode)
-	return nil
+	task.Definition = task.TaskClaimResponse.Task
 }
 
 func (task *TaskRun) validatePayload() error {
