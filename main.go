@@ -580,7 +580,7 @@ func (task *TaskRun) setReclaimTimer() {
 	// denoted in `takenUntil` expires. It's recommended that this attempted a few
 	// minutes prior to expiration, to allow for clock drift.
 
-	takenUntil := time.Time(task.TaskClaimResponse.Status.Runs[task.RunId].TakenUntil)
+	takenUntil := time.Time(task.TaskReclaimResponse.Status.Runs[task.RunId].TakenUntil)
 	// Attempt to reclaim 3 mins earlier...
 	reclaimTime := takenUntil.Add(time.Minute * -3)
 	waitTimeUntilReclaim := reclaimTime.Sub(time.Now())

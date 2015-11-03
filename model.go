@@ -45,18 +45,19 @@ type (
 	// TaskId and RunId are taken from the json encoding of
 	// QueueMessage.MessageId that we get back from Azure
 	TaskRun struct {
-		TaskId            string                  `json:"taskId"`
-		RunId             uint                    `json:"runId"`
-		QueueMessage      QueueMessage            `json:"-"`
-		SignedURLPair     SignedURLPair           `json:"-"`
-		ClaimCallSummary  queue.CallSummary       `json:"-"`
-		TaskClaimRequest  queue.TaskClaimRequest  `json:"-"`
-		TaskClaimResponse queue.TaskClaimResponse `json:"-"`
-		Definition        queue.TaskDefinition1   `json:"-"`
-		Payload           GenericWorkerPayload    `json:"-"`
-		Artifacts         []Artifact              `json:"-"`
-		Status            TaskStatus              `json:"-"`
-		Commands          []Command               `json:"-"`
+		TaskId              string                   `json:"taskId"`
+		RunId               uint                     `json:"runId"`
+		QueueMessage        QueueMessage             `json:"-"`
+		SignedURLPair       SignedURLPair            `json:"-"`
+		ClaimCallSummary    queue.CallSummary        `json:"-"`
+		TaskClaimRequest    queue.TaskClaimRequest   `json:"-"`
+		TaskClaimResponse   queue.TaskClaimResponse  `json:"-"`
+		TaskReclaimResponse queue.TaskClaimResponse1 `json:"-"`
+		Definition          queue.TaskDefinition1    `json:"-"`
+		Payload             GenericWorkerPayload     `json:"-"`
+		Artifacts           []Artifact               `json:"-"`
+		Status              TaskStatus               `json:"-"`
+		Commands            []Command                `json:"-"`
 		// not exported
 		reclaimTimer *time.Timer
 	}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -46,7 +45,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error) {
 	// proper concurrency handling
 
 	reportException := func(task *TaskRun, reason string) error {
-		ter := queue.TaskExceptionRequest{Reason: json.RawMessage(`"` + reason + `"`)}
+		ter := queue.TaskExceptionRequest{Reason: reason}
 		tsr, callSummary := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
 		if callSummary.Error != nil {
 			debug("Not able to report exception for task %v:", task.TaskId)
@@ -130,7 +129,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error) {
 			return err
 		}
 
-		task.TaskClaimResponse = *tcrsp
+		task.TaskReclaimResponse = *tcrsp
 		debug("Reclaimed task %v successfully (http response code %v).", task.TaskId, callSummary.HttpResponse.StatusCode)
 		return nil
 	}
