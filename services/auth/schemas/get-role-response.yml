@@ -8,6 +8,7 @@ properties:
     description: |
       roleId of the role requested
     type:                 string
+    pattern:              {$const: roleId}
   scopes:
     description: |
       List of scopes the role grants access to.  Scopes must be composed of

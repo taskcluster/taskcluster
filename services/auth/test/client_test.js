@@ -19,7 +19,7 @@ suite('api (client)', function() {
   test("auth.client (no credentials)", async () => {
     await (new helper.Auth()).client('root');
   });
-  const CLIENT_ID = 'nobody';
+  const CLIENT_ID = 'nobody/sds:ad_asd/df-sAdSfchsdfsdfs';
   test("auth.deleteClient (non-existent)", async () => {
     await helper.events.listenFor('e1', helper.authEvents.clientDeleted({
       clientId:  CLIENT_ID

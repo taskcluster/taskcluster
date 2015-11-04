@@ -9,8 +9,12 @@
  */
 module.exports = {
   // Things like clientId
-  "identifier-pattern":       "^[a-zA-Z0-9-_]{1,22}$",
-  "access-token-pattern":     "^[a-zA-Z0-9-_]{22,66}$",
+  "identifier-pattern":       "^[a-zA-Z0-9_-]{1,22}$",
+  "access-token-pattern":     "^[a-zA-Z0-9_-]{22,66}$",
+  // Printable ascii string for roleId
+  "roleId": "^[\\x20-\\x7e]+$",
+
+  "clientId": "^[A-Za-z0-9@/:._-]+$",
 
   // Slugid pattern, for when-ever that is useful
   "slugid-pattern":           "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-]" +

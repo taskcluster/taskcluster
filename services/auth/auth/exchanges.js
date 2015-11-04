@@ -20,27 +20,8 @@ var exchanges = new base.Exchanges({
 // Export exchanges
 module.exports = exchanges;
 
-/** Build client routing key construct for `exchanges.declare` */
-var buildClientRoutingKey = (options) => {
-  return [
-    {
-      name:             'clientId',
-      summary:          "`clientId` that was affected by this change.",
-      required:         true,
-      maxSize:          22
-    }, {
-      name:             'reserved',
-      summary:          "Space reserved for future routing-key entries, you " +
-                        "should always match this entry with `#`. As " +
-                        "automatically done by our tooling, if not specified.",
-      multipleWords:    true,
-      maxSize:          1
-    }
-  ];
-};
-
-/** Build role routing key construct for `exchanges.declare` */
-var buildRoleRoutingKey = (options) => {
+/** Build routing key construct for `exchanges.declare` */
+var buildRoutingKey = (options) => {
   return [
     {
       name:             'reserved',
@@ -59,13 +40,6 @@ var commonMessageBuilder = (message) => {
   return message;
 };
 
-/** Build a client routing key from message */
-var clientRoutingKeyBuilder = (message) => {
-  return {
-    clientId: message.clientId,
-  };
-};
-
 exchanges.declare({
   exchange:           'client-created',
   name:               'clientCreated',
@@ -73,10 +47,10 @@ exchanges.declare({
   description: [
     "Message that a new client has been created."
   ].join('\n'),
-  routingKey:         buildClientRoutingKey(),
+  routingKey:         buildRoutingKey(),
   schema:             'client-message.json#',
   messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  clientRoutingKeyBuilder,
+  routingKeyBuilder:  () => '',
   CCBuilder:          () => []
 });
 
@@ -87,10 +61,10 @@ exchanges.declare({
   description: [
     "Message that a new client has been updated."
   ].join('\n'),
-  routingKey:         buildClientRoutingKey(),
+  routingKey:         buildRoutingKey(),
   schema:             'client-message.json#',
   messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  clientRoutingKeyBuilder,
+  routingKeyBuilder:  () => '',
   CCBuilder:          () => []
 });
 
@@ -101,10 +75,10 @@ exchanges.declare({
   description: [
     "Message that a new client has been deleted."
   ].join('\n'),
-  routingKey:         buildClientRoutingKey(),
+  routingKey:         buildRoutingKey(),
   schema:             'client-message.json#',
   messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  clientRoutingKeyBuilder,
+  routingKeyBuilder:  () => '',
   CCBuilder:          () => []
 });
 
@@ -115,7 +89,7 @@ exchanges.declare({
   description: [
     "Message that a new role has been created."
   ].join('\n'),
-  routingKey:         buildRoleRoutingKey(),
+  routingKey:         buildRoutingKey(),
   schema:             'role-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  () => '',
@@ -129,7 +103,7 @@ exchanges.declare({
   description: [
     "Message that a new role has been updated."
   ].join('\n'),
-  routingKey:         buildRoleRoutingKey(),
+  routingKey:         buildRoutingKey(),
   schema:             'role-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  () => '',
@@ -143,7 +117,7 @@ exchanges.declare({
   description: [
     "Message that a new role has been deleted."
   ].join('\n'),
-  routingKey:         buildRoleRoutingKey(),
+  routingKey:         buildRoutingKey(),
   schema:             'role-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  () => '',
