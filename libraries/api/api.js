@@ -247,7 +247,8 @@ Client.prototype.limit = function(ext) {
 
     // Validate certificate scopes are subset of client
     if (!client.satisfies([cert.scopes])) {
-      throw new Error("ext.certificate issuer doesn't have sufficient scopes");
+      throw new Error("ext.certificate issuer `" + client.clientId +
+                      "` doesn't have sufficient scopes");
     }
 
     // Generate certificate signature
@@ -795,7 +796,8 @@ var limitClientWithExt = function(client, ext) {
 
     // Validate certificate scopes are subset of client
     if (!utils.scopeMatch(client.scopes, [cert.scopes])) {
-      throw new Error("ext.certificate issuer doesn't have sufficient scopes");
+      throw new Error("ext.certificate issuer `" + client.clientId +
+                      "` doesn't have sufficient scopes");
     }
 
     // Generate certificate signature
