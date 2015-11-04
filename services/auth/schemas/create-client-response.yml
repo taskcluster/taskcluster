@@ -8,7 +8,7 @@ properties:
     description: |
       ClientId of the client
     type:                 string
-    pattern:              {"$const": "identifier-pattern"}
+    pattern:              {$const: clientId}
   accessToken:
     description: |
       AccessToken used for authenticating requests, you should store this

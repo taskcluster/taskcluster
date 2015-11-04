@@ -9,7 +9,7 @@ properties:
     description: |
       `clientId` of the client that was changed
     type:                 string
-    pattern:              {"$const": "identifier-pattern"}
+    pattern:              {$const: clientId}
 additionalProperties: false
 required:
   - version

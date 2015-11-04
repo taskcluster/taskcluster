@@ -8,7 +8,7 @@ properties:
     description: |
       ClientId of the client scopes is requested about
     type:                 string
-    pattern:              {"$const": "identifier-pattern"}
+    pattern:              {$const: clientId}
   expires:
     description: |
       Date and time where the clients access is set to expire
