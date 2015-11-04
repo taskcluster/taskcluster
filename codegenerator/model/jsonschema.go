@@ -67,7 +67,7 @@ func (subSchema JsonSubSchema) String() string {
 	result += describe("Additional Properties", subSchema.AdditionalProperties)
 	result += describe("All Of", subSchema.AllOf)
 	result += describe("Any Of", subSchema.AnyOf)
-	result += describe("Default", subSchema.Default)
+	// result += describe("Default", subSchema.Default)
 	result += describe("Description", subSchema.Description)
 	result += describe("Enum", subSchema.Enum)
 	result += describe("Format", subSchema.Format)
