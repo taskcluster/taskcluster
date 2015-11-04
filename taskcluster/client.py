@@ -304,7 +304,7 @@ class BaseClient(object):
       toReplace = "<%s>" % arg
       if toReplace not in route:
         raise exceptions.TaskclusterFailure('Arg %s not found in route for %s' % (arg, entry['name']))
-      val = urllib.quote(str(val).encode("utf-8"))
+      val = urllib.quote(str(val).encode("utf-8"), '')
       route = route.replace("<%s>" % arg, val)
 
     return route.lstrip('/')
