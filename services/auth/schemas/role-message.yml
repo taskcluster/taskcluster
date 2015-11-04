@@ -9,6 +9,7 @@ properties:
     description: |
       `roleId` of the role that was changed
     type:                 string
+    pattern: {$const: roleId}
 additionalProperties: false
 required:
   - version

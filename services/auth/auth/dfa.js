@@ -457,7 +457,7 @@ let buildResolver = (roles) => {
       }
       // For each key of the state object that isn't 'prefix' or 'end' we have
       // a transition to another state. So we render the switch for that DFA.
-      c += d + '  case \'' + character + '\':\n';
+      c += d + '  case ' + JSON.stringify(character) + ':\n';
       c += renderDFA(s, depth + 1);
       c += d + '    break;\n';
     });
