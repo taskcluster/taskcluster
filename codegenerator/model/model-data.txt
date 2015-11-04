@@ -2513,7 +2513,30 @@ Description            = 'Request to list namespaces within a given namespace.
 '
 ID                     = 'http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#'
 Properties
-  %!v(PANIC=reflect: call of reflect.Value.IsNil on float64 Value)Schema                 = 'http://json-schema.org/draft-04/schema#'
+  Property 'continuationToken' =
+    Description            = 'A continuation token previously returned in a response to this list
+    request. This property is optional and should not be provided for first
+    requests.
+    '
+    Title                  = 'Continuation Token'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'limit' =
+    Description            = 'Maximum number of results per page. If there are more results than this
+    a continuation token will be return.
+    '
+    Maximum                = '1000'
+    Minimum                = '1'
+    Title                  = 'Result limit'
+    Type                   = 'integer'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Namespaces Request'
 Type                   = 'object'
 TypeName               = 'ListNamespacesRequest'
@@ -2609,7 +2632,30 @@ Description            = 'Request to list tasks within a given namespace.
 '
 ID                     = 'http://schemas.taskcluster.net/index/v1/list-tasks-request.json#'
 Properties
-  %!v(PANIC=reflect: call of reflect.Value.IsNil on float64 Value)Schema                 = 'http://json-schema.org/draft-04/schema#'
+  Property 'continuationToken' =
+    Description            = 'A continuation token previously returned in a response to this list
+    request. This property is optional and should not be provided for first
+    requests.
+    '
+    Title                  = 'Continuation Token'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'limit' =
+    Description            = 'Maximum number of results per page. If there are more results than this
+    a continuation token will be return.
+    '
+    Maximum                = '1000'
+    Minimum                = '1'
+    Title                  = 'Result limit'
+    Type                   = 'integer'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Tasks Request'
 Type                   = 'object'
 TypeName               = 'ListTasksRequest'
@@ -3295,7 +3341,272 @@ Description            = 'Definition of a task that can be scheduled
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
 Properties
-  %!v(PANIC=reflect: call of reflect.Value.IsNil on string Value)Required               = '[provisionerId workerType created deadline payload metadata]'
+  Property 'created' =
+    Description            = 'Creation time of task'
+    Format                 = 'date-time'
+    Title                  = 'Created'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'deadline' =
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
+    Format                 = 'date-time'
+    Title                  = 'Deadline'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'expires' =
+    Description            = 'Task expiration, time at which task definition and status is deleted.
+    Notice that all artifacts for the must have an expiration that is no
+    later than this. If this property isn't it will be set to `deadline`
+    plus one year (this default may subject to change).
+    '
+    Format                 = 'date-time'
+    Title                  = 'Expiration'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'extra' =
+    Description            = 'Object with properties that can hold any kind of extra data that should be
+    associated with the task. This can be data for the task which doesn't
+    fit into `payload`, or it can supplementary data for use in services
+    listening for events from this task. For example this could be details to
+    display on _treeherder_, or information for indexing the task. Please, try
+    to put all related information under one property, so `extra` data keys
+    for treeherder reporting and task indexing don't conflict, hence, we have
+    reusable services. **Warning**, do not stuff large data-sets in here,
+    task definitions should not take-up multiple MiBs.
+    '
+    Title                  = 'Extra Data'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'metadata' =
+    Additional Properties  = 'false'
+    Description            = 'Required task metadata
+    '
+    Properties
+      Property 'description' =
+        Description            = 'Human readable description of the task, please **explain** what the
+        task does. A few lines of documentation is not going to hurt you.
+        '
+        MaxLength              = '32768'
+        Title                  = 'Description'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'name' =
+        Description            = 'Human readable name of task, used to very briefly given an idea about
+        what the task does.
+        '
+        MaxLength              = '255'
+        Title                  = 'Name'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'owner' =
+        Description            = 'E-mail of person who caused this task, e.g. the person who did
+        `hg push`. The person we should contact to ask why this task is here.
+        '
+        Format                 = 'email'
+        MaxLength              = '255'
+        Title                  = 'Owner'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'source' =
+        Description            = 'Link to source of this task, should specify a file, revision and
+        repository. This should be place someone can go an do a git/hg blame
+        to who came up with recipe for this task.
+        '
+        Format                 = 'uri'
+        MaxLength              = '4096'
+        Title                  = 'Source'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+    Required               = '[name description owner source]'
+    Title                  = 'Meta-data'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'payload' =
+    Description            = 'Task-specific payload following worker-specific format. For example the
+    `docker-worker` requires keys like: `image`, `commands` and
+    `features`. Refer to the documentation of `docker-worker` for details.
+    '
+    Title                  = 'Task Payload'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'priority' =
+    Description            = 'Priority of task, this defaults to `normal` and the scope
+    `queue:task-priority:high` is required to define a task with `priority`
+    set to `high`. Additional priority levels may be added later.
+    '
+    Enum                   = '[high normal]'
+    Title                  = 'Task Priority'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'provisionerId' =
+    Description            = 'Unique identifier for a provisioner, that can supply specified
+    `workerType`
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Provisioner Id'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'retries' =
+    Description            = 'Number of times to retry the task in case of infrastructure issues.
+    An _infrastructure issue_ is a worker node that crashes or is shutdown,
+    these events are to be expected.
+    '
+    Maximum                = '50'
+    Minimum                = '0'
+    Title                  = 'Retries'
+    Type                   = 'integer'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'routes' =
+    Description            = 'List of task specific routes, AMQP messages will be CC'ed to these routes.
+    '
+    Items
+      Description            = 'A task specific route, AMQP messages will be CC'ed with a routing key
+      matching `route.<task-specific route>`. It's possible to dot (`.`) in
+      the task specific route to make sub-keys, etc. See the RabbitMQ
+      [tutorial](http://www.rabbitmq.com/tutorials/tutorial-five-python.html)
+      for examples on how to use routing-keys.
+      '
+      MaxLength              = '249'
+      MinLength              = '1'
+      Title                  = 'Task Specific Route'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Title                  = 'Task Specific Routes'
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'schedulerId' =
+    Description            = 'Identifier for the scheduler that _defined_ this task, this can be an
+    identifier for a user or a service like the `"task-graph-scheduler"`.
+    Along with the `taskGroupId` this is used to form the permission scope
+    `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
+    this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Scheduler Identifier'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'scopes' =
+    Description            = 'List of scopes (or scope-patterns) that the task is
+    authorized to use.
+    '
+    Items
+      Description            = 'A scope (or scope-patterns) which the task is
+      authorized to use. This can be a string or a string
+      ending with `*` which will authorize all scopes for
+      which the string is a prefix.  Scopes must be composed of
+      printable ASCII characters and spaces.
+      '
+      Pattern                = '^[\x20-\x7e]*$'
+      Title                  = 'Scope'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Title                  = 'Scopes'
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'tags' =
+    Additional Properties  = 'MaxLength              = '4096'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+    '
+    Description            = 'Arbitrary key-value tags (only strings limited to 4k). These can be used
+    to attach informal meta-data to a task. Use this for informal tags that
+    tasks can be classified by. You can also think of strings here as
+    candidates for formal meta-data. Something like
+    `purpose: 'build' || 'test'` is a good example.
+    '
+    Title                  = 'Tags'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'taskGroupId' =
+    Description            = 'Identifier for a group of tasks scheduled together with this task, by
+    scheduler identified by `schedulerId`. For tasks scheduled by the
+    task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
+    property isn't specified.
+    '
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+    Title                  = 'Task-Group Identifier'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'workerType' =
+    Description            = 'Unique identifier for a worker-type within a specific provisioner
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Worker Type'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[provisionerId workerType created deadline payload metadata]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Definition'
 Type                   = 'object'
@@ -4565,7 +4876,6 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'extra' =
-    Default                = 'map[]'
     Description            = 'Object with properties that can hold any kind of extra data that should be
     associated with the task. This can be data for the task which doesn't
     fit into `payload`, or it can supplementary data for use in services
@@ -6306,7 +6616,272 @@ Description            = 'Definition of a task that can be scheduled
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
 Properties
-  %!v(PANIC=reflect: call of reflect.Value.IsNil on string Value)Required               = '[provisionerId workerType created deadline payload metadata]'
+  Property 'created' =
+    Description            = 'Creation time of task'
+    Format                 = 'date-time'
+    Title                  = 'Created'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'deadline' =
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
+    Format                 = 'date-time'
+    Title                  = 'Deadline'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'expires' =
+    Description            = 'Task expiration, time at which task definition and status is deleted.
+    Notice that all artifacts for the must have an expiration that is no
+    later than this. If this property isn't it will be set to `deadline`
+    plus one year (this default may subject to change).
+    '
+    Format                 = 'date-time'
+    Title                  = 'Expiration'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'extra' =
+    Description            = 'Object with properties that can hold any kind of extra data that should be
+    associated with the task. This can be data for the task which doesn't
+    fit into `payload`, or it can supplementary data for use in services
+    listening for events from this task. For example this could be details to
+    display on _treeherder_, or information for indexing the task. Please, try
+    to put all related information under one property, so `extra` data keys
+    for treeherder reporting and task indexing don't conflict, hence, we have
+    reusable services. **Warning**, do not stuff large data-sets in here,
+    task definitions should not take-up multiple MiBs.
+    '
+    Title                  = 'Extra Data'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'metadata' =
+    Additional Properties  = 'false'
+    Description            = 'Required task metadata
+    '
+    Properties
+      Property 'description' =
+        Description            = 'Human readable description of the task, please **explain** what the
+        task does. A few lines of documentation is not going to hurt you.
+        '
+        MaxLength              = '32768'
+        Title                  = 'Description'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'name' =
+        Description            = 'Human readable name of task, used to very briefly given an idea about
+        what the task does.
+        '
+        MaxLength              = '255'
+        Title                  = 'Name'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'owner' =
+        Description            = 'E-mail of person who caused this task, e.g. the person who did
+        `hg push`. The person we should contact to ask why this task is here.
+        '
+        Format                 = 'email'
+        MaxLength              = '255'
+        Title                  = 'Owner'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'source' =
+        Description            = 'Link to source of this task, should specify a file, revision and
+        repository. This should be place someone can go an do a git/hg blame
+        to who came up with recipe for this task.
+        '
+        Format                 = 'uri'
+        MaxLength              = '4096'
+        Title                  = 'Source'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+    Required               = '[name description owner source]'
+    Title                  = 'Meta-data'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'payload' =
+    Description            = 'Task-specific payload following worker-specific format. For example the
+    `docker-worker` requires keys like: `image`, `commands` and
+    `features`. Refer to the documentation of `docker-worker` for details.
+    '
+    Title                  = 'Task Payload'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'priority' =
+    Description            = 'Priority of task, this defaults to `normal` and the scope
+    `queue:task-priority:high` is required to define a task with `priority`
+    set to `high`. Additional priority levels may be added later.
+    '
+    Enum                   = '[high normal]'
+    Title                  = 'Task Priority'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'provisionerId' =
+    Description            = 'Unique identifier for a provisioner, that can supply specified
+    `workerType`
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Provisioner Id'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'retries' =
+    Description            = 'Number of times to retry the task in case of infrastructure issues.
+    An _infrastructure issue_ is a worker node that crashes or is shutdown,
+    these events are to be expected.
+    '
+    Maximum                = '50'
+    Minimum                = '0'
+    Title                  = 'Retries'
+    Type                   = 'integer'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'routes' =
+    Description            = 'List of task specific routes, AMQP messages will be CC'ed to these routes.
+    '
+    Items
+      Description            = 'A task specific route, AMQP messages will be CC'ed with a routing key
+      matching `route.<task-specific route>`. It's possible to dot (`.`) in
+      the task specific route to make sub-keys, etc. See the RabbitMQ
+      [tutorial](http://www.rabbitmq.com/tutorials/tutorial-five-python.html)
+      for examples on how to use routing-keys.
+      '
+      MaxLength              = '249'
+      MinLength              = '1'
+      Title                  = 'Task Specific Route'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Title                  = 'Task Specific Routes'
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'schedulerId' =
+    Description            = 'Identifier for the scheduler that _defined_ this task, this can be an
+    identifier for a user or a service like the `"task-graph-scheduler"`.
+    Along with the `taskGroupId` this is used to form the permission scope
+    `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
+    this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Scheduler Identifier'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'scopes' =
+    Description            = 'List of scopes (or scope-patterns) that the task is
+    authorized to use.
+    '
+    Items
+      Description            = 'A scope (or scope-patterns) which the task is
+      authorized to use. This can be a string or a string
+      ending with `*` which will authorize all scopes for
+      which the string is a prefix.  Scopes must be composed of
+      printable ASCII characters and spaces.
+      '
+      Pattern                = '^[\x20-\x7e]*$'
+      Title                  = 'Scope'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Title                  = 'Scopes'
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'tags' =
+    Additional Properties  = 'MaxLength              = '4096'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+    '
+    Description            = 'Arbitrary key-value tags (only strings limited to 4k). These can be used
+    to attach informal meta-data to a task. Use this for informal tags that
+    tasks can be classified by. You can also think of strings here as
+    candidates for formal meta-data. Something like
+    `purpose: 'build' || 'test'` is a good example.
+    '
+    Title                  = 'Tags'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'taskGroupId' =
+    Description            = 'Identifier for a group of tasks scheduled together with this task, by
+    scheduler identified by `schedulerId`. For tasks scheduled by the
+    task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
+    property isn't specified.
+    '
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+    Title                  = 'Task-Group Identifier'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'workerType' =
+    Description            = 'Unique identifier for a worker-type within a specific provisioner
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Worker Type'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[provisionerId workerType created deadline payload metadata]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Definition'
 Type                   = 'object'
@@ -6327,7 +6902,49 @@ Properties
     Items
       Description            = 'Representation of a tasks in the task-graph'
       Properties
-        %!v(PANIC=reflect: call of reflect.Value.IsNil on float64 Value)Required               = '[taskId task]'
+        Property 'requires' =
+          Description            = 'List of required `taskId`s'
+          Items
+            Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
+            Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+            Title                  = 'Required `taskId`'
+            Type                   = 'string'
+            TypeName               = ''
+            IsInputSchema          = 'false'
+            IsOutputSchema         = 'false'
+            SourceURL              = ''
+          Title                  = 'Required tasks'
+          Type                   = 'array'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'reruns' =
+          Description            = 'Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.'
+          Maximum                = '100'
+          Minimum                = '0'
+          Title                  = 'Re-runs'
+          Type                   = 'integer'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'task' =
+          Ref                    = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'taskId' =
+          Description            = 'Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.'
+          Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+          Title                  = 'Task Identifier'
+          Type                   = 'string'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+      Required               = '[taskId task]'
       Title                  = 'Task Node'
       Type                   = 'object'
       TypeName               = ''
@@ -6914,7 +7531,6 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'routes' =
-    Default                = '[]'
     Description            = 'List of task-graph specific routes, AMQP messages will be CC'ed to these
     routes prefixed by `'route.'`.
     '
@@ -6941,7 +7557,6 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'scopes' =
-    Default                = '[]'
     Description            = 'List of scopes (or scope-patterns) that tasks of the task-graph is
     authorized to use.
     '
@@ -6970,7 +7585,6 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
     '
-    Default                = 'map[]'
     Description            = 'Arbitrary key-value tags (only strings limited to 4k)
     '
     Title                  = 'Tags'
@@ -6984,7 +7598,49 @@ Properties
     Items
       Description            = 'Representation of a tasks in the task-graph'
       Properties
-        %!v(PANIC=reflect: call of reflect.Value.IsNil on float64 Value)Required               = '[taskId task]'
+        Property 'requires' =
+          Description            = 'List of required `taskId`s'
+          Items
+            Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
+            Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+            Title                  = 'Required `taskId`'
+            Type                   = 'string'
+            TypeName               = ''
+            IsInputSchema          = 'false'
+            IsOutputSchema         = 'false'
+            SourceURL              = ''
+          Title                  = 'Required tasks'
+          Type                   = 'array'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'reruns' =
+          Description            = 'Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.'
+          Maximum                = '100'
+          Minimum                = '0'
+          Title                  = 'Re-runs'
+          Type                   = 'integer'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'task' =
+          Ref                    = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+        Property 'taskId' =
+          Description            = 'Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.'
+          Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+          Title                  = 'Task Identifier'
+          Type                   = 'string'
+          TypeName               = ''
+          IsInputSchema          = 'false'
+          IsOutputSchema         = 'false'
+          SourceURL              = ''
+      Required               = '[taskId task]'
       Title                  = 'Task Node'
       Type                   = 'object'
       TypeName               = ''
