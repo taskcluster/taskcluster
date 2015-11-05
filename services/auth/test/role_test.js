@@ -29,18 +29,20 @@ suite('api (roles)', function() {
 
     let role = await helper.auth.createRole('client-id:' + clientId, {
       description: 'test role',
-      scopes: ['dummy-scope-1', 'auth:create-role:*']
+      scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
     assume(role.description).equals('test role');
     assume(new Date(role.created).getTime()).is.atmost(Date.now());
-    assume(role.scopes).deep.equals(['dummy-scope-1', 'auth:create-role:*']);
+    assume(role.scopes).deep.equals([
+      'dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'
+    ]);
     assume(role.expandedScopes).contains('dummy-scope-1');
     assume(role.expandedScopes).contains('auth:create-role:*');
 
     // Check that it's idempotent
     let role2 = await helper.auth.createRole('client-id:' + clientId, {
       description: 'test role',
-      scopes: ['dummy-scope-1', 'auth:create-role:*']
+      scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
     assume(role2).deep.equals(role);
 
