@@ -427,15 +427,19 @@ api.declare({
   stability:  'stable',
   title:      "Create Role",
   description: [
-    "Create a new role. If there already exists a role with the same `roleId`",
-    "this operation will fail. Use `updateRole` to modify an existing role",
+    "Create a new role.",
+    "",
+    "The caller's scopes must satisfy the new role's scopes.",
+    "",
+    "If there already exists a role with the same `roleId`this operation",
+    "will fail. Use `updateRole` to modify an existing role.",
   ].join('\n')
 }, async function(req, res) {
   let roleId    = req.params.roleId;
   let input     = req.body;
 
   // Check scopes
-  if (!req.satisfies({roleId})) {
+  if (!req.satisfies({roleId}) || !req.satisfies([input.scopes]) {
     return;
   }
 
@@ -500,7 +504,10 @@ api.declare({
   stability:  'stable',
   title:      "Update Role",
   description: [
-    "Update existing role."
+    "Update an existing role."
+    "",
+    "The caller's scopes must satisfy all of the new scopes being added, but",
+    "need not satisfy all of the client's existing scopes.",
   ].join('\n')
 }, async function(req, res) {
   let roleId    = req.params.roleId;
