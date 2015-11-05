@@ -167,8 +167,12 @@ Entry 8     =
     Entry Input       = 'http://schemas.taskcluster.net/auth/v1/create-role-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/get-role-response.json#'
     Entry Title       = 'Create Role'
-    Entry Description = 'Create a new role. If there already exists a role with the same `roleId`
-this operation will fail. Use `updateRole` to modify an existing role'
+    Entry Description = 'Create a new role.
+
+The caller's scopes must satisfy the new role's scopes.
+
+If there already exists a role with the same `roleId` this operation
+will fail. Use `updateRole` to modify an existing role.'
 Entry 9     =
     Entry Type        = 'function'
     Entry Method      = 'post'
@@ -179,7 +183,10 @@ Entry 9     =
     Entry Input       = 'http://schemas.taskcluster.net/auth/v1/create-role-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/get-role-response.json#'
     Entry Title       = 'Update Role'
-    Entry Description = 'Update existing role.'
+    Entry Description = 'Update an existing role.
+
+The caller's scopes must satisfy all of the new scopes being added, but
+need not satisfy all of the client's existing scopes.'
 Entry 10    =
     Entry Type        = 'function'
     Entry Method      = 'delete'
@@ -593,7 +600,7 @@ Properties
     Description            = 'AccessToken used for authenticating requests, you should store this
     you won't be able to retrive it again!
     '
-    Pattern                = '^[a-zA-Z0-9-_]{22,66}$'
+    Pattern                = '^[a-zA-Z0-9_-]{22,66}$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -602,7 +609,7 @@ Properties
   Property 'clientId' =
     Description            = 'ClientId of the client
     '
-    Pattern                = '^[a-zA-Z0-9-_]{1,22}$'
+    Pattern                = '^[A-Za-z0-9@/:._-]+$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -749,7 +756,7 @@ Items
     Property 'accessToken' =
       Description            = 'AccessToken used for authenticating requests
       '
-      Pattern                = '^[a-zA-Z0-9-_]{22,66}$'
+      Pattern                = '^[a-zA-Z0-9_-]{22,66}$'
       Type                   = 'string'
       TypeName               = ''
       IsInputSchema          = 'false'
@@ -837,7 +844,7 @@ Properties
   Property 'clientId' =
     Description            = 'ClientId of the client scopes is requested about
     '
-    Pattern                = '^[a-zA-Z0-9-_]{1,22}$'
+    Pattern                = '^[A-Za-z0-9@/:._-]+$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
@@ -985,6 +992,7 @@ Properties
   Property 'roleId' =
     Description            = 'roleId of the role requested
     '
+    Pattern                = '^[\x20-\x7e]+$'
     Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'

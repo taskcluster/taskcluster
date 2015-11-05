@@ -339,8 +339,12 @@ func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, *CallSummary) {
 	return responseObject.(*GetRoleResponse), callSummary
 }
 
-// Create a new role. If there already exists a role with the same `roleId`
-// this operation will fail. Use `updateRole` to modify an existing role
+// Create a new role.
+//
+// The caller's scopes must satisfy the new role's scopes.
+//
+// If there already exists a role with the same `roleId` this operation
+// will fail. Use `updateRole` to modify an existing role.
 //
 // Required scopes:
 //   * auth:create-role:<roleId>
@@ -351,7 +355,10 @@ func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetR
 	return responseObject.(*GetRoleResponse), callSummary
 }
 
-// Update existing role.
+// Update an existing role.
+//
+// The caller's scopes must satisfy all of the new scopes being added, but
+// need not satisfy all of the client's existing scopes.
 //
 // Required scopes:
 //   * auth:update-role:<roleId>
@@ -559,11 +566,11 @@ type (
 		// AccessToken used for authenticating requests, you should store this
 		// you won't be able to retrive it again!
 		//
-		// Syntax: ^[a-zA-Z0-9-_]{22,66}$
+		// Syntax: ^[a-zA-Z0-9_-]{22,66}$
 		AccessToken string `json:"accessToken"`
 		// ClientId of the client
 		//
-		// Syntax: ^[a-zA-Z0-9-_]{1,22}$
+		// Syntax: ^[A-Za-z0-9@/:._-]+$
 		ClientId string `json:"clientId"`
 		// Date and time when this client was created
 		Created Time `json:"created"`
@@ -603,7 +610,7 @@ type (
 	ExportedClients []struct {
 		// AccessToken used for authenticating requests
 		//
-		// Syntax: ^[a-zA-Z0-9-_]{22,66}$
+		// Syntax: ^[a-zA-Z0-9_-]{22,66}$
 		AccessToken string `json:"accessToken"`
 		// ClientId of the client scopes is requested about
 		//
@@ -629,7 +636,7 @@ type (
 	GetClientResponse struct {
 		// ClientId of the client scopes is requested about
 		//
-		// Syntax: ^[a-zA-Z0-9-_]{1,22}$
+		// Syntax: ^[A-Za-z0-9@/:._-]+$
 		ClientId string `json:"clientId"`
 		// Date and time when this client was created
 		Created Time `json:"created"`
@@ -667,6 +674,8 @@ type (
 		// Date and time of last modification
 		LastModified Time `json:"lastModified"`
 		// roleId of the role requested
+		//
+		// Syntax: ^[\x20-\x7e]+$
 		RoleId string `json:"roleId"`
 		// List of scopes the role grants access to.  Scopes must be composed of
 		// printable ASCII characters and spaces.
