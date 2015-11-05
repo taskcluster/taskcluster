@@ -77,14 +77,14 @@ suite('api (roles)', function() {
   });
 
   test('createRole (encodeURIComponent)', async() => {
+    // Ensure that encodeURIComponent in client library works...
     let roleId = clientId + "/test ?test=1";
-    let encodedRoleId = encodeURIComponent(roleId);
-    let role = await helper.auth.createRole(encodedRoleId, {
+    let role = await helper.auth.createRole(roleId, {
       description: 'test role for werid roleId',
       scopes: ['dummy-scope-2']
     });
     assume(role.roleId).equals(roleId);
-    await helper.auth.deleteRole(encodedRoleId);
+    await helper.auth.deleteRole(roleId);
   });
 
   test('getRole', async() => {
