@@ -431,7 +431,7 @@ api.declare({
     "",
     "The caller's scopes must satisfy the new role's scopes.",
     "",
-    "If there already exists a role with the same `roleId`this operation",
+    "If there already exists a role with the same `roleId` this operation",
     "will fail. Use `updateRole` to modify an existing role.",
   ].join('\n')
 }, async function(req, res) {
@@ -439,7 +439,7 @@ api.declare({
   let input     = req.body;
 
   // Check scopes
-  if (!req.satisfies({roleId}) || !req.satisfies([input.scopes]) {
+  if (!req.satisfies({roleId}) || !req.satisfies([input.scopes])) {
     return;
   }
 
@@ -466,7 +466,7 @@ api.declare({
         !_.isEqual(role.scopes, input.scopes) ||
         role > Date.now() - 15 * 60 * 1000) {
       res.status(409).json({
-        message: "Role with same roleId already exists, possibly" +
+        message: "Role with same roleId already exists, possibly " +
                  "an issue with retry logic or idempotency"
       });
       return null;
@@ -504,7 +504,7 @@ api.declare({
   stability:  'stable',
   title:      "Update Role",
   description: [
-    "Update an existing role."
+    "Update an existing role.",
     "",
     "The caller's scopes must satisfy all of the new scopes being added, but",
     "need not satisfy all of the client's existing scopes.",
