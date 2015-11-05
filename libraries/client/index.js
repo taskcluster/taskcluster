@@ -16,8 +16,8 @@ _.defaults(exports,
 Object.defineProperty(exports.WebListener, 'SockJS', {
   enumerable: true,
   get:        function() {
-    // Load it on demand to keep things working under node 0.11 where binary
-    // modules doesn't work well; at least have seen issues with this component
-    return require('sockjs-client-node');
+    // Load it on demand to keep things working under new node version where
+    // support might be spotty
+    return require('sockjs-client');
   }
 });
