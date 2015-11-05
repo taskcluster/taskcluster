@@ -5,16 +5,17 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
-	"github.com/xeipuuv/gojsonschema"
 	"go/format"
-	"golang.org/x/tools/imports"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
+	"github.com/xeipuuv/gojsonschema"
+	"golang.org/x/tools/imports"
 )
 
 var (
@@ -196,7 +197,7 @@ func validateJson(schemaUrl, docUrl string) {
 			fmt.Println("")
 			fmt.Printf("- %s\n", desc)
 		}
-		// os.Exit(70)
+		os.Exit(70)
 	}
 }
 
