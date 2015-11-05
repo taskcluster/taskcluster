@@ -3,6 +3,7 @@ title:              "Post Artifact Response"
 description: |
   Response to a request for posting an artifact.
   Note that the `storageType` property is referenced in the request as well.
+type:               object
 oneOf:
   - title:          "S3 Artifact Response"
     description: |
