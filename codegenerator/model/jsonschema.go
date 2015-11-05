@@ -3,10 +3,11 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
 	"reflect"
 	"sort"
 	"strconv"
+
+	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
 )
 
 type (
@@ -20,9 +21,9 @@ type (
 		AdditionalProperties *AdditionalProperties `json:"additionalProperties"`
 		AllOf                Items                 `json:"allOf"`
 		AnyOf                Items                 `json:"anyOf"`
-		Default              interface{}           `json:"default"`
+		Default              *interface{}          `json:"default"`
 		Description          *string               `json:"description"`
-		Enum                 interface{}           `json:"enum"`
+		Enum                 *interface{}          `json:"enum"`
 		Format               *string               `json:"format"`
 		ID                   *string               `json:"id"`
 		Items                *JsonSubSchema        `json:"items"`
@@ -150,7 +151,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 					comment += "\n"
 				}
 				if enum := s.Properties[j].Enum; enum != nil {
-					switch t := enum.(type) {
+					switch t := (*enum).(type) {
 					case []interface{}:
 						comment += "//\n// Possible values:\n"
 						for _, i := range t {
