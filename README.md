@@ -248,6 +248,42 @@ awsProvisionerEvents = taskcluster.AwsProvisionerEvents(options)
 
 
 
+### Methods in `taskcluster.Hooks`
+```python
+// Create Hooks client instance
+import taskcluster
+hooks = taskcluster.Hooks(options)
+```
+#### List hook groups
+ * `hooks.listHookGroups() -> result`
+
+#### List hooks in a given group
+ * `hooks.listHooks(hookGroupId) -> result`
+ * `hooks.listHooks(hookGroupId='value') -> result`
+
+#### Get hook definition
+ * `hooks.hook(hookGroupId, hookId) -> result`
+ * `hooks.hook(hookGroupId='value', hookId='value') -> result`
+
+#### Get hook schedule
+ * `hooks.getHookSchedule(hookGroupId, hookId) -> result`
+ * `hooks.getHookSchedule(hookGroupId='value', hookId='value') -> result`
+
+#### Create a hook
+ * `hooks.createHook(hookGroupId, hookId, payload) -> result`
+ * `hooks.createHook(payload, hookGroupId='value', hookId='value') -> result`
+
+#### Update a hook
+ * `hooks.updateHook(hookGroupId, hookId, payload) -> result`
+ * `hooks.updateHook(payload, hookGroupId='value', hookId='value') -> result`
+
+#### Delete a hook
+ * `hooks.removeHook(hookGroupId, hookId) -> None`
+ * `hooks.removeHook(hookGroupId='value', hookId='value') -> None`
+
+
+
+
 ### Methods in `taskcluster.Index`
 ```python
 // Create Index client instance
