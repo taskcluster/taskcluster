@@ -15,6 +15,7 @@ import (
 
 type API struct {
 	Version     interface{} `json:"version"`
+	Schema      string      `json:"$schema"`
 	Title       string      `json:"title"`
 	Description string      `json:"description"`
 	BaseURL     string      `json:"baseUrl"`
@@ -26,10 +27,12 @@ type API struct {
 func (api *API) String() string {
 	var result string = fmt.Sprintf(
 		"Version     = '%v'\n"+
+			"Schema      = '%v'\n"+
 			"Title       = '%v'\n"+
 			"Description = '%v'\n"+
 			"Base URL    = '%v'\n",
-		api.Version, api.Title, api.Description, api.BaseURL)
+		api.Version, api.Schema, api.Title, api.Description, api.BaseURL,
+	)
 	for i, entry := range api.Entries {
 		result += fmt.Sprintf("Entry %-6v=\n%v", i, entry.String())
 	}

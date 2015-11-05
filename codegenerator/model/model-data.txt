@@ -4,6 +4,7 @@ It is provided here for reference purposes, but is not used by any code.
 http://references.taskcluster.net/auth/v1/api.json
 ==================================================
 Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Authentication API'
 Description = 'Authentication related API end-points for TaskCluster and related
 services. These API end-points are of interest if you wish to:
@@ -1069,6 +1070,7 @@ SourceURL              = 'http://schemas.taskcluster.net/auth/v1/list-roles-resp
 http://references.taskcluster.net/aws-provisioner/v1/api.json
 =============================================================
 Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'AWS Provisioner API Documentation'
 Description = 'The AWS Provisioner is responsible for provisioning instances on EC2 for use in
 TaskCluster.  The provisioner maintains a set of worker configurations which
@@ -2089,6 +2091,7 @@ SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/list
 http://references.taskcluster.net/aws-provisioner/v1/exchanges.json
 ===================================================================
 Version         = '0'
+Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
 Title           = 'AWS Provisioner Pulse Exchanges'
 Description     = 'Exchanges from the provisioner... more docs later'
 Exchange Prefix = 'exchange/taskcluster-aws-provisioner/'
@@ -2205,6 +2208,7 @@ SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/work
 http://references.taskcluster.net/index/v1/api.json
 ===================================================
 Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Task Index API Documentation'
 Description = 'The task index, typically available at `index.taskcluster.net`, is
 responsible for indexing tasks. In order to ensure that tasks can be
@@ -2781,6 +2785,7 @@ SourceURL              = 'http://schemas.taskcluster.net/index/v1/list-tasks-res
 http://references.taskcluster.net/purge-cache/v1/api.json
 =========================================================
 Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Purge Cache API Documentation'
 Description = 'The purge-cache service, typically available at
 `purge-cache.taskcluster.net`, is responsible for publishing a pulse
@@ -2847,6 +2852,7 @@ SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-ca
 http://references.taskcluster.net/purge-cache/v1/exchanges.json
 ===============================================================
 Version         = '0'
+Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
 Title           = 'Purge-Cache Exchanges'
 Description     = 'The purge-cache service, typically available at
 `purge-cache.taskcluster.net`, is responsible for publishing a pulse
@@ -2944,6 +2950,7 @@ SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-ca
 http://references.taskcluster.net/queue/v1/api.json
 ===================================================
 Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Queue API Documentation'
 Description = 'The queue, typically available at `queue.taskcluster.net`, is responsible
 for accepting tasks and track their state as they are executed by
@@ -5140,6 +5147,7 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#'
 http://references.taskcluster.net/queue/v1/exchanges.json
 =========================================================
 Version         = '0'
+Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
 Title           = 'Queue AMQP Exchanges'
 Description     = 'The queue, typically available at `queue.taskcluster.net`, is responsible
 for accepting tasks and track their state as they are executed by
@@ -6430,6 +6438,7 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.js
 http://references.taskcluster.net/scheduler/v1/api.json
 =======================================================
 Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Task-Graph Scheduler API Documentation'
 Description = 'The task-graph scheduler, typically available at
 `scheduler.taskcluster.net`, is responsible for accepting task-graphs and
@@ -7698,6 +7707,7 @@ SourceURL              = 'http://schemas.taskcluster.net/scheduler/v1/task-graph
 http://references.taskcluster.net/scheduler/v1/exchanges.json
 =============================================================
 Version         = '0'
+Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
 Title           = 'Scheduler AMQP Exchanges'
 Description     = 'The scheduler, typically available at `scheduler.taskcluster.net` is
 responsible for accepting task-graphs and schedule tasks on the queue as
@@ -8182,6 +8192,7 @@ SourceURL              = 'http://schemas.taskcluster.net/scheduler/v1/task-graph
 http://references.taskcluster.net/secrets/v1/api.json
 =====================================================
 Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'TaskCluster Secrets API Documentation'
 Description = 'The secrets service, typically available at
 `tools.taskcluster.net`, is responsible for managing

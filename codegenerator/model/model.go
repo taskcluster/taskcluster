@@ -3,6 +3,7 @@ package model
 //go:generate generatemodel -u http://references.taskcluster.net/manifest.json -f apis.json -o ../.. -m model-data.txt
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"go/format"
@@ -41,7 +42,6 @@ type APIModel interface {
 // of the API in json format, together with a URL to a json schema to validate the definition
 type APIDefinition struct {
 	URL            string `json:"url"`
-	SchemaURL      string `json:"schema"`
 	Name           string `json:"name"`
 	DocRoot        string `json:"docroot"`
 	Data           APIModel
@@ -50,22 +50,31 @@ type APIDefinition struct {
 	PackageName    string
 	ExampleVarName string
 	PackagePath    string
+	SchemaURL      string
 }
 
 func (a *APIDefinition) generateAPICode() string {
 	return a.Data.generateAPICode(a.Name)
 }
 
-func (apiDef *APIDefinition) loadJson(reader io.Reader, schema *string) {
+func (apiDef *APIDefinition) loadJson(reader io.Reader) {
+	b := new(bytes.Buffer)
+	_, err := b.ReadFrom(reader)
+	utils.ExitOnFail(err)
+	data := b.Bytes()
+	f := new(interface{})
+	err = json.Unmarshal(data, f)
+	utils.ExitOnFail(err)
+	schema := (*f).(map[string]interface{})["$schema"].(string)
+	apiDef.SchemaURL = schema
 	var m APIModel
-	switch *schema {
-	case "http://schemas.taskcluster.net/base/v1/api-reference.json":
+	switch schema {
+	case "http://schemas.taskcluster.net/base/v1/api-reference.json#":
 		m = new(API)
-	case "http://schemas.taskcluster.net/base/v1/exchanges-reference.json":
+	case "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#":
 		m = new(Exchange)
 	}
-	decoder := json.NewDecoder(reader)
-	err = decoder.Decode(m)
+	err = json.Unmarshal(data, m)
 	utils.ExitOnFail(err)
 	m.setAPIDefinition(apiDef)
 	m.postPopulate(apiDef)
@@ -117,6 +126,7 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 	if err != nil {
 		fmt.Printf("Could not download api manifest from url: '%v'!\n", apiManifestUrl)
 	}
+	utils.ExitOnFail(err)
 	supDataReader, err := os.Open(supplementaryDataFile)
 	if err != nil {
 		fmt.Printf("Could not load supplementary data json file: '%v'!\n", supplementaryDataFile)
@@ -156,15 +166,16 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 		}
 	}
 	for i := range apiDefs {
-		// first check that the json schema is valid!
-		validateJson(apiDefs[i].SchemaURL, apiDefs[i].URL)
 
 		apiDefs[i].schemas = make(map[string]*JsonSubSchema)
 		var resp *http.Response
 		resp, err = http.Get(apiDefs[i].URL)
 		utils.ExitOnFail(err)
 		defer resp.Body.Close()
-		apiDefs[i].loadJson(resp.Body, &apiDefs[i].SchemaURL)
+		apiDefs[i].loadJson(resp.Body)
+
+		// check that the json schema is valid!
+		validateJson(apiDefs[i].SchemaURL, apiDefs[i].URL)
 
 		// now all data should be loaded, let's sort the schemas
 		apiDefs[i].schemaURLs = make([]string, 0, len(apiDefs[i].schemas))

@@ -1,47 +1,36 @@
 [
     {
         "url": "http://references.taskcluster.net/auth/v1/api.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
         "docroot": "http://docs.taskcluster.net/auth/api-docs"
     }, {
         "url": "http://references.taskcluster.net/queue/v1/api.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
         "docroot": "http://docs.taskcluster.net/queue/api-docs"
     }, {
         "url": "http://references.taskcluster.net/queue/v1/exchanges.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json",
         "docroot": "http://docs.taskcluster.net/queue/exchanges"
     }, {
         "url": "http://references.taskcluster.net/scheduler/v1/api.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
         "docroot": "http://docs.taskcluster.net/scheduler/api-docs"
     }, {
         "url": "http://references.taskcluster.net/scheduler/v1/exchanges.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json",
         "docroot": "http://docs.taskcluster.net/scheduler/events"
     }, {
         "url": "http://references.taskcluster.net/index/v1/api.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
         "docroot": "http://docs.taskcluster.net/services/index"
     }, {
         "url": "http://references.taskcluster.net/aws-provisioner/v1/api.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
         "docroot": "http://docs.taskcluster.net/aws-provisioner/api-docs"
     }, {
         "url": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json",
         "docroot": "http://docs.taskcluster.net/aws-provisioner/events"
     }, {
         "url": "http://references.taskcluster.net/purge-cache/v1/api.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
         "docroot": "http://docs.taskcluster.net/services/purge-cache"
     }, {
         "url": "http://references.taskcluster.net/purge-cache/v1/exchanges.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json",
         "docroot": "http://docs.taskcluster.net/services/purge-cache"
     }, {
         "url": "http://references.taskcluster.net/secrets/v1/api.json",
-        "schema": "http://schemas.taskcluster.net/base/v1/api-reference.json",
         "docroot": "http://docs.taskcluster.net/services/secrets"
     }
 ]

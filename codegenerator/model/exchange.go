@@ -14,6 +14,7 @@ import (
 
 type Exchange struct {
 	Version        interface{}     `json:"version"`
+	Schema         string          `json:"$schema"`
 	Title          string          `json:"title"`
 	Description    string          `json:"description"`
 	ExchangePrefix string          `json:"exchangePrefix"`
@@ -25,11 +26,13 @@ type Exchange struct {
 func (exchange *Exchange) String() string {
 	var result string = fmt.Sprintf(
 		"Version         = '%v'\n"+
+			"Schema          = '%v'\n"+
 			"Title           = '%v'\n"+
 			"Description     = '%v'\n"+
 			"Exchange Prefix = '%v'\n",
-		exchange.Version, exchange.Title, exchange.Description,
-		exchange.ExchangePrefix)
+		exchange.Version, exchange.Schema, exchange.Title,
+		exchange.Description, exchange.ExchangePrefix,
+	)
 	for i, entry := range exchange.Entries {
 		result += fmt.Sprintf("Entry %-6v= \n%v", i, entry.String())
 	}
