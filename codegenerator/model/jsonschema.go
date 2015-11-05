@@ -23,7 +23,7 @@ type (
 		AnyOf                Items                 `json:"anyOf"`
 		Default              *interface{}          `json:"default"`
 		Description          *string               `json:"description"`
-		Enum                 *interface{}          `json:"enum"`
+		Enum                 []interface{}         `json:"enum"`
 		Format               *string               `json:"format"`
 		ID                   *string               `json:"id"`
 		Items                *JsonSubSchema        `json:"items"`
@@ -151,16 +151,13 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 					comment += "\n"
 				}
 				if enum := s.Properties[j].Enum; enum != nil {
-					switch t := (*enum).(type) {
-					case []interface{}:
-						comment += "//\n// Possible values:\n"
-						for _, i := range t {
-							switch i.(type) {
-							case float64:
-								comment += fmt.Sprintf("//   * %v\n", i)
-							default:
-								comment += fmt.Sprintf("//   * %q\n", i)
-							}
+					comment += "//\n// Possible values:\n"
+					for _, i := range enum {
+						switch i.(type) {
+						case float64:
+							comment += fmt.Sprintf("//   * %v\n", i)
+						default:
+							comment += fmt.Sprintf("//   * %q\n", i)
 						}
 					}
 				}

@@ -2533,6 +2533,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'limit' =
+    Default                = '1000'
     Description            = 'Maximum number of results per page. If there are more results than this
     a continuation token will be return.
     '
@@ -2652,6 +2653,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'limit' =
+    Default                = '1000'
     Description            = 'Maximum number of results per page. If there are more results than this
     a continuation token will be return.
     '
@@ -3381,6 +3383,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'extra' =
+    Default                = 'map[]'
     Description            = 'Object with properties that can hold any kind of extra data that should be
     associated with the task. This can be data for the task which doesn't
     fit into `payload`, or it can supplementary data for use in services
@@ -3468,6 +3471,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'priority' =
+    Default                = 'normal'
     Description            = 'Priority of task, this defaults to `normal` and the scope
     `queue:task-priority:high` is required to define a task with `priority`
     set to `high`. Additional priority levels may be added later.
@@ -3493,6 +3497,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'retries' =
+    Default                = '5'
     Description            = 'Number of times to retry the task in case of infrastructure issues.
     An _infrastructure issue_ is a worker node that crashes or is shutdown,
     these events are to be expected.
@@ -3506,6 +3511,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'routes' =
+    Default                = '[]'
     Description            = 'List of task specific routes, AMQP messages will be CC'ed to these routes.
     '
     Items
@@ -3530,6 +3536,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'schedulerId' =
+    Default                = '-'
     Description            = 'Identifier for the scheduler that _defined_ this task, this can be an
     identifier for a user or a service like the `"task-graph-scheduler"`.
     Along with the `taskGroupId` this is used to form the permission scope
@@ -3546,6 +3553,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'scopes' =
+    Default                = '[]'
     Description            = 'List of scopes (or scope-patterns) that the task is
     authorized to use.
     '
@@ -3577,6 +3585,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
     '
+    Default                = 'map[]'
     Description            = 'Arbitrary key-value tags (only strings limited to 4k). These can be used
     to attach informal meta-data to a task. Use this for informal tags that
     tasks can be classified by. You can also think of strings here as
@@ -4884,6 +4893,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'extra' =
+    Default                = 'map[]'
     Description            = 'Object with properties that can hold any kind of extra data that should be
     associated with the task. This can be data for the task which doesn't
     fit into `payload`, or it can supplementary data for use in services
@@ -6656,6 +6666,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'extra' =
+    Default                = 'map[]'
     Description            = 'Object with properties that can hold any kind of extra data that should be
     associated with the task. This can be data for the task which doesn't
     fit into `payload`, or it can supplementary data for use in services
@@ -6743,6 +6754,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'priority' =
+    Default                = 'normal'
     Description            = 'Priority of task, this defaults to `normal` and the scope
     `queue:task-priority:high` is required to define a task with `priority`
     set to `high`. Additional priority levels may be added later.
@@ -6768,6 +6780,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'retries' =
+    Default                = '5'
     Description            = 'Number of times to retry the task in case of infrastructure issues.
     An _infrastructure issue_ is a worker node that crashes or is shutdown,
     these events are to be expected.
@@ -6781,6 +6794,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'routes' =
+    Default                = '[]'
     Description            = 'List of task specific routes, AMQP messages will be CC'ed to these routes.
     '
     Items
@@ -6805,6 +6819,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'schedulerId' =
+    Default                = '-'
     Description            = 'Identifier for the scheduler that _defined_ this task, this can be an
     identifier for a user or a service like the `"task-graph-scheduler"`.
     Along with the `taskGroupId` this is used to form the permission scope
@@ -6821,6 +6836,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'scopes' =
+    Default                = '[]'
     Description            = 'List of scopes (or scope-patterns) that the task is
     authorized to use.
     '
@@ -6852,6 +6868,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
     '
+    Default                = 'map[]'
     Description            = 'Arbitrary key-value tags (only strings limited to 4k). These can be used
     to attach informal meta-data to a task. Use this for informal tags that
     tasks can be classified by. You can also think of strings here as
@@ -6911,6 +6928,7 @@ Properties
       Description            = 'Representation of a tasks in the task-graph'
       Properties
         Property 'requires' =
+          Default                = '[]'
           Description            = 'List of required `taskId`s'
           Items
             Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
@@ -6928,6 +6946,7 @@ Properties
           IsOutputSchema         = 'false'
           SourceURL              = ''
         Property 'reruns' =
+          Default                = '0'
           Description            = 'Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.'
           Maximum                = '100'
           Minimum                = '0'
@@ -7539,6 +7558,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'routes' =
+    Default                = '[]'
     Description            = 'List of task-graph specific routes, AMQP messages will be CC'ed to these
     routes prefixed by `'route.'`.
     '
@@ -7565,6 +7585,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
   Property 'scopes' =
+    Default                = '[]'
     Description            = 'List of scopes (or scope-patterns) that tasks of the task-graph is
     authorized to use.
     '
@@ -7593,6 +7614,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = ''
     '
+    Default                = 'map[]'
     Description            = 'Arbitrary key-value tags (only strings limited to 4k)
     '
     Title                  = 'Tags'
@@ -7607,6 +7629,7 @@ Properties
       Description            = 'Representation of a tasks in the task-graph'
       Properties
         Property 'requires' =
+          Default                = '[]'
           Description            = 'List of required `taskId`s'
           Items
             Description            = '`taskId` for task that is required to be _successfully completed_ before this task is scheduled.'
@@ -7624,6 +7647,7 @@ Properties
           IsOutputSchema         = 'false'
           SourceURL              = ''
         Property 'reruns' =
+          Default                = '0'
           Description            = 'Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.'
           Maximum                = '100'
           Minimum                = '0'
