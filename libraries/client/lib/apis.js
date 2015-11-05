@@ -132,7 +132,7 @@ module.exports = {
           "args": [
             "roleId"
           ],
-          "description": "Create a new role. If there already exists a role with the same `roleId`\nthis operation will fail. Use `updateRole` to modify an existing role",
+          "description": "Create a new role.\n\nThe caller's scopes must satisfy the new role's scopes.\n\nIf there already exists a role with the same `roleId` this operation\nwill fail. Use `updateRole` to modify an existing role.",
           "input": "http://schemas.taskcluster.net/auth/v1/create-role-request.json#",
           "method": "put",
           "name": "createRole",
@@ -151,7 +151,7 @@ module.exports = {
           "args": [
             "roleId"
           ],
-          "description": "Update existing role.",
+          "description": "Update an existing role.\n\nThe caller's scopes must satisfy all of the new scopes being added, but\nneed not satisfy all of the client's existing scopes.",
           "input": "http://schemas.taskcluster.net/auth/v1/create-role-request.json#",
           "method": "post",
           "name": "updateRole",
@@ -607,6 +607,131 @@ module.exports = {
     },
     "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json"
   },
+  "Hooks": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "baseUrl": "https://hooks.taskcluster.net/v1",
+      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.\n\nHooks can have a 'schedule' indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `[\"0 0 1 * * *\"]` -- daily at 1:00 UTC\n * `[\"0 0 9,21 * * 1-5\", \"0 0 12 * * 0,6\"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
+      "entries": [
+        {
+          "args": [
+          ],
+          "description": "This endpoint will return a list of all hook groups with at least one hook.",
+          "method": "get",
+          "name": "listHookGroups",
+          "output": "http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json",
+          "route": "/hooks",
+          "stability": "experimental",
+          "title": "List hook groups",
+          "type": "function"
+        },
+        {
+          "args": [
+            "hookGroupId"
+          ],
+          "description": "This endpoint will return a list of all the hook definitions within a\ngiven hook group.",
+          "method": "get",
+          "name": "listHooks",
+          "output": "http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json",
+          "route": "/hooks/<hookGroupId>",
+          "stability": "experimental",
+          "title": "List hooks in a given group",
+          "type": "function"
+        },
+        {
+          "args": [
+            "hookGroupId",
+            "hookId"
+          ],
+          "description": "This endpoint will return the hook defintion for the given `hookGroupId`\nand hookId.",
+          "method": "get",
+          "name": "hook",
+          "output": "http://schemas.taskcluster.net/hooks/v1/hook-definition.json",
+          "route": "/hooks/<hookGroupId>/<hookId>",
+          "stability": "experimental",
+          "title": "Get hook definition",
+          "type": "function"
+        },
+        {
+          "args": [
+            "hookGroupId",
+            "hookId"
+          ],
+          "description": "This endpoint will return the schedule and next scheduled creation time\nfor the given hook.",
+          "method": "get",
+          "name": "getHookSchedule",
+          "output": "http://schemas.taskcluster.net/hooks/v1/hook-schedule.json",
+          "route": "/hooks/<hookGroupId>/<hookId>/schedule",
+          "stability": "experimental",
+          "title": "Get hook schedule",
+          "type": "function"
+        },
+        {
+          "args": [
+            "hookGroupId",
+            "hookId"
+          ],
+          "description": "This endpoint will create a new hook.\n\nThe caller's credentials must include the role that will be used to\ncreate the task.  That role must satisfy task.scopes as well as the\nnecessary scopes to add the task to the queue.",
+          "input": "http://schemas.taskcluster.net/hooks/v1/create-hook-request.json",
+          "method": "put",
+          "name": "createHook",
+          "output": "http://schemas.taskcluster.net/hooks/v1/hook-definition.json",
+          "route": "/hooks/<hookGroupId>/<hookId>",
+          "scopes": [
+            [
+              "hooks:modify-hook:<hookGroupId>/<hookId>",
+              "assume:hook-id:<hookGroupId>/<hookId>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Create a hook",
+          "type": "function"
+        },
+        {
+          "args": [
+            "hookGroupId",
+            "hookId"
+          ],
+          "description": "This endpoint will update an existing hook.  All fields except\n`hookGroupId` and `hookId` can be modified.",
+          "input": "http://schemas.taskcluster.net/hooks/v1/create-hook-request.json",
+          "method": "post",
+          "name": "updateHook",
+          "output": "http://schemas.taskcluster.net/hooks/v1/hook-definition.json",
+          "route": "/hooks/<hookGroupId>/<hookId>",
+          "scopes": [
+            [
+              "hooks:modify-hook:<hookGroupId>/<hookId>",
+              "assume:hook-id:<hookGroupId>/<hookId>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Update a hook",
+          "type": "function"
+        },
+        {
+          "args": [
+            "hookGroupId",
+            "hookId"
+          ],
+          "description": "This endpoint will remove a hook definition.",
+          "method": "delete",
+          "name": "removeHook",
+          "route": "/hooks/<hookGroupId>/<hookId>",
+          "scopes": [
+            [
+              "hooks:modify-hook:<hookGroupId>/<hookId>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Delete a hook",
+          "type": "function"
+        }
+      ],
+      "title": "Hooks API Documentation",
+      "version": 0
+    },
+    "referenceUrl": "http://references.taskcluster.net/hooks/v1/api.json"
+  },
   "Index": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
@@ -971,12 +1096,15 @@ module.exports = {
           "description": "reclaim a task more to be added later...",
           "method": "post",
           "name": "reclaimTask",
-          "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#",
+          "output": "http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#",
           "route": "/task/<taskId>/runs/<runId>/reclaim",
           "scopes": [
             [
               "queue:claim-task",
               "assume:worker-id:<workerGroup>/<workerId>"
+            ],
+            [
+              "queue:claim-task:<taskId>/<runId>"
             ]
           ],
           "stability": "experimental",
@@ -997,6 +1125,9 @@ module.exports = {
             [
               "queue:resolve-task",
               "assume:worker-id:<workerGroup>/<workerId>"
+            ],
+            [
+              "queue:claim-task:<taskId>/<runId>"
             ]
           ],
           "stability": "experimental",
@@ -1017,6 +1148,9 @@ module.exports = {
             [
               "queue:resolve-task",
               "assume:worker-id:<workerGroup>/<workerId>"
+            ],
+            [
+              "queue:claim-task:<taskId>/<runId>"
             ]
           ],
           "stability": "experimental",
@@ -1038,6 +1172,9 @@ module.exports = {
             [
               "queue:resolve-task",
               "assume:worker-id:<workerGroup>/<workerId>"
+            ],
+            [
+              "queue:claim-task:<taskId>/<runId>"
             ]
           ],
           "stability": "experimental",
@@ -1060,6 +1197,10 @@ module.exports = {
             [
               "queue:create-artifact:<name>",
               "assume:worker-id:<workerGroup>/<workerId>"
+            ],
+            [
+              "queue:create-artifact:<name>",
+              "queue:claim-task:<taskId>/<runId>"
             ]
           ],
           "stability": "experimental",

@@ -193,6 +193,20 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
  * `awsProvisioner.ping() : void`
  * `awsProvisioner.apiReference() : void`
 
+### Methods in `taskcluster.Hooks`
+```js
+// Create Hooks client instance with default baseUrl:
+//  - https://hooks.taskcluster.net/v1
+var hooks = new taskcluster.Hooks(options);
+```
+ * `hooks.listHookGroups() : result`
+ * `hooks.listHooks(hookGroupId) : result`
+ * `hooks.hook(hookGroupId, hookId) : result`
+ * `hooks.getHookSchedule(hookGroupId, hookId) : result`
+ * `hooks.createHook(hookGroupId, hookId, payload) : result`
+ * `hooks.updateHook(hookGroupId, hookId, payload) : result`
+ * `hooks.removeHook(hookGroupId, hookId) : void`
+
 ### Methods in `taskcluster.Index`
 ```js
 // Create Index client instance with default baseUrl:
