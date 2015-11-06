@@ -2205,6 +2205,748 @@ IsOutputSchema         = 'false'
 SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'
 
 
+http://references.taskcluster.net/hooks/v1/api.json
+===================================================
+Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
+Title       = 'Hooks API Documentation'
+Description = 'Hooks are a mechanism for creating tasks in response to events.
+
+Hooks are identified with a `hookGroupId` and a `hookId`.
+
+When an event occurs, the resulting task is automatically created.  The
+task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,
+which must have scopes to make the createTask call, including satisfying all
+scopes in `task.scopes`.
+
+Hooks can have a 'schedule' indicating specific times that new tasks should
+be created.  Each schedule is in a simple cron format, per 
+https://www.npmjs.com/package/cron-parser.  For example:
+ * `["0 0 1 * * *"]` -- daily at 1:00 UTC
+ * `["0 0 9,21 * * 1-5", "0 0 12 * * 0,6"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon'
+Base URL    = 'https://hooks.taskcluster.net/v1'
+Entry 0     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/hooks'
+    Entry Args        = '[]'
+    Entry Name        = 'listHookGroups'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json#'
+    Entry Title       = 'List hook groups'
+    Entry Description = 'This endpoint will return a list of all hook groups with at least one hook.'
+Entry 1     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/hooks/<hookGroupId>'
+    Entry Args        = '[hookGroupId]'
+    Entry Name        = 'listHooks'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json#'
+    Entry Title       = 'List hooks in a given group'
+    Entry Description = 'This endpoint will return a list of all the hook definitions within a
+given hook group.'
+Entry 2     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/hooks/<hookGroupId>/<hookId>'
+    Entry Args        = '[hookGroupId hookId]'
+    Entry Name        = 'hook'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#'
+    Entry Title       = 'Get hook definition'
+    Entry Description = 'This endpoint will return the hook defintion for the given `hookGroupId`
+and hookId.'
+Entry 3     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/hooks/<hookGroupId>/<hookId>/schedule'
+    Entry Args        = '[hookGroupId hookId]'
+    Entry Name        = 'getHookSchedule'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#'
+    Entry Title       = 'Get hook schedule'
+    Entry Description = 'This endpoint will return the schedule and next scheduled creation time
+for the given hook.'
+Entry 4     =
+    Entry Type        = 'function'
+    Entry Method      = 'put'
+    Entry Route       = '/hooks/<hookGroupId>/<hookId>'
+    Entry Args        = '[hookGroupId hookId]'
+    Entry Name        = 'createHook'
+    Entry Scopes      = '[[hooks:modify-hook:<hookGroupId>/<hookId> assume:hook-id:<hookGroupId>/<hookId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#'
+    Entry Title       = 'Create a hook'
+    Entry Description = 'This endpoint will create a new hook.
+
+The caller's credentials must include the role that will be used to
+create the task.  That role must satisfy task.scopes as well as the
+necessary scopes to add the task to the queue.'
+Entry 5     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/hooks/<hookGroupId>/<hookId>'
+    Entry Args        = '[hookGroupId hookId]'
+    Entry Name        = 'updateHook'
+    Entry Scopes      = '[[hooks:modify-hook:<hookGroupId>/<hookId> assume:hook-id:<hookGroupId>/<hookId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#'
+    Entry Title       = 'Update a hook'
+    Entry Description = 'This endpoint will update an existing hook.  All fields except
+`hookGroupId` and `hookId` can be modified.'
+Entry 6     =
+    Entry Type        = 'function'
+    Entry Method      = 'delete'
+    Entry Route       = '/hooks/<hookGroupId>/<hookId>'
+    Entry Args        = '[hookGroupId hookId]'
+    Entry Name        = 'removeHook'
+    Entry Scopes      = '[[hooks:modify-hook:<hookGroupId>/<hookId>]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Delete a hook'
+    Entry Description = 'This endpoint will remove a hook definition.'
+
+
+http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#
+=================================================================
+Additional Properties  = 'false'
+Description            = 'Definition of a hook that can create tasks at defined times.
+'
+ID                     = 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#'
+Properties
+  Property 'deadline' =
+    Default                = '1 day'
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future.
+    
+    Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)'
+    Title                  = 'Deadline'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'expires' =
+    Default                = '3 months'
+    Description            = 'Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
+    
+    Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)'
+    Title                  = 'Expiration'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'metadata' =
+    Additional Properties  = 'false'
+    Properties
+      Property 'description' =
+        Description            = 'Long-form of the hook's purpose and behavior'
+        MaxLength              = '32768'
+        Title                  = 'Description'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'emailOnError' =
+        Default                = 'true'
+        Description            = 'Whether to email the owner on an error creating the task.'
+        Title                  = 'Email on error'
+        Type                   = 'boolean'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'name' =
+        Description            = 'Human readable name of the hook'
+        MaxLength              = '255'
+        Title                  = 'Name'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'owner' =
+        Description            = 'Email of the person or group responsible for this hook.'
+        MaxLength              = '255'
+        Title                  = 'Owner'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+    Required               = '[name description owner]'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'schedule' =
+    Default                = '[]'
+    Description            = 'Definition of the times at which a hook will result in creation of a task.
+    If several patterns are specified, tasks will be created at any time
+    specified by one or more patterns.
+    '
+    Items
+      Description            = 'Cron-like specification for when tasks should be created.  The pattern is
+      parsed in a UTC context.
+      See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
+      Note that tasks may not be created at exactly the time specified.
+      '
+      Title                  = 'Cron Pattern'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'task' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[metadata task deadline]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Hook creation request'
+Type                   = 'object'
+TypeName               = 'HookCreationRequest'
+IsInputSchema          = 'true'
+IsOutputSchema         = 'false'
+SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#'
+
+
+http://schemas.taskcluster.net/hooks/v1/hook-definition.json#
+=============================================================
+Additional Properties  = 'false'
+Description            = 'Definition of a hook that will create tasks when defined events occur.
+'
+ID                     = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#'
+Properties
+  Property 'deadline' =
+    Default                = '1 day'
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future.
+    
+    Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)'
+    Title                  = 'Deadline'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'expires' =
+    Default                = '3 months'
+    Description            = 'Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
+    
+    Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)'
+    Title                  = 'Expiration'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'hookGroupId' =
+    MaxLength              = '255'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'hookId' =
+    MaxLength              = '255'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'metadata' =
+    Additional Properties  = 'false'
+    Properties
+      Property 'description' =
+        Description            = 'Long-form of the hook's purpose and behavior'
+        MaxLength              = '32768'
+        Title                  = 'Description'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'emailOnError' =
+        Default                = 'true'
+        Description            = 'Whether to email the owner on an error creating the task.'
+        Title                  = 'Email on error'
+        Type                   = 'boolean'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'name' =
+        Description            = 'Human readable name of the hook'
+        MaxLength              = '255'
+        Title                  = 'Name'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'owner' =
+        Description            = 'Email of the person or group responsible for this hook.'
+        MaxLength              = '255'
+        Title                  = 'Owner'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+    Required               = '[name description owner]'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'schedule' =
+    Ref                    = 'http://schemas.taskcluster.net/hooks/v1/schedule.json#'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'task' =
+    Ref                    = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[hookGroupId hookId metadata task schedule expires deadline]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Hook definition'
+Type                   = 'object'
+TypeName               = 'HookDefinition'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#'
+
+
+http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#
+===========================================================
+Additional Properties  = 'false'
+Description            = 'A description of when a hook's task will be created, and the next scheduled time
+'
+ID                     = 'http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#'
+Properties
+  Property 'nextScheduledDate' =
+    Description            = 'The next time this hook's task is scheduled to be created. This property
+    is only present if there is a scheduled next time. Some hooks don't have
+    any schedules.
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'schedule' =
+    Ref                    = 'http://schemas.taskcluster.net/hooks/v1/schedule.json#'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[schedule]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Hook schedule'
+Type                   = 'object'
+TypeName               = 'HookSchedule'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#'
+
+
+http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json#
+=======================================================================
+Additional Properties  = 'false'
+Description            = 'List of `hookGroupIds`.
+'
+ID                     = 'http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json#'
+Properties
+  Property 'groups' =
+    Items
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Title                  = 'Groups'
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[groups]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Hook groups'
+Type                   = 'object'
+TypeName               = 'HookGroups'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json#'
+
+
+http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json#
+=================================================================
+Additional Properties  = 'false'
+Description            = 'List of hooks
+'
+ID                     = 'http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json#'
+Properties
+  Property 'hooks' =
+    Items
+      Ref                    = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Title                  = 'Hooks'
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[hooks]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Hook list'
+Type                   = 'object'
+TypeName               = 'HookList'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json#'
+
+
+http://schemas.taskcluster.net/hooks/v1/schedule.json#
+======================================================
+Default                = '[]'
+Description            = 'Definition of the times at which a hook will result in creation of a task.
+If several patterns are specified, tasks will be created at any time
+specified by one or more patterns.
+'
+ID                     = 'http://schemas.taskcluster.net/hooks/v1/schedule.json#'
+Items
+  Description            = 'Cron-like specification for when tasks should be created.  The pattern is
+  parsed in a UTC context.
+  See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
+  Note that tasks may not be created at exactly the time specified.
+  '
+  Title                  = 'Cron Pattern'
+  Type                   = 'string'
+  TypeName               = ''
+  IsInputSchema          = 'false'
+  IsOutputSchema         = 'false'
+  SourceURL              = ''
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Hook schedule'
+Type                   = 'array'
+TypeName               = 'HookSchedule1'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'false'
+SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/schedule.json#'
+
+
+http://schemas.taskcluster.net/queue/v1/create-task-request.json#
+=================================================================
+Additional Properties  = 'false'
+Description            = 'Definition of a task that can be scheduled
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+Properties
+  Property 'created' =
+    Description            = 'Creation time of task'
+    Format                 = 'date-time'
+    Title                  = 'Created'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'deadline' =
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
+    Format                 = 'date-time'
+    Title                  = 'Deadline'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'expires' =
+    Description            = 'Task expiration, time at which task definition and status is deleted.
+    Notice that all artifacts for the must have an expiration that is no
+    later than this. If this property isn't it will be set to `deadline`
+    plus one year (this default may subject to change).
+    '
+    Format                 = 'date-time'
+    Title                  = 'Expiration'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'extra' =
+    Default                = 'map[]'
+    Description            = 'Object with properties that can hold any kind of extra data that should be
+    associated with the task. This can be data for the task which doesn't
+    fit into `payload`, or it can supplementary data for use in services
+    listening for events from this task. For example this could be details to
+    display on _treeherder_, or information for indexing the task. Please, try
+    to put all related information under one property, so `extra` data keys
+    for treeherder reporting and task indexing don't conflict, hence, we have
+    reusable services. **Warning**, do not stuff large data-sets in here,
+    task definitions should not take-up multiple MiBs.
+    '
+    Title                  = 'Extra Data'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'metadata' =
+    Additional Properties  = 'false'
+    Description            = 'Required task metadata
+    '
+    Properties
+      Property 'description' =
+        Description            = 'Human readable description of the task, please **explain** what the
+        task does. A few lines of documentation is not going to hurt you.
+        '
+        MaxLength              = '32768'
+        Title                  = 'Description'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'name' =
+        Description            = 'Human readable name of task, used to very briefly given an idea about
+        what the task does.
+        '
+        MaxLength              = '255'
+        Title                  = 'Name'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'owner' =
+        Description            = 'E-mail of person who caused this task, e.g. the person who did
+        `hg push`. The person we should contact to ask why this task is here.
+        '
+        Format                 = 'email'
+        MaxLength              = '255'
+        Title                  = 'Owner'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+      Property 'source' =
+        Description            = 'Link to source of this task, should specify a file, revision and
+        repository. This should be place someone can go an do a git/hg blame
+        to who came up with recipe for this task.
+        '
+        Format                 = 'uri'
+        MaxLength              = '4096'
+        Title                  = 'Source'
+        Type                   = 'string'
+        TypeName               = ''
+        IsInputSchema          = 'false'
+        IsOutputSchema         = 'false'
+        SourceURL              = ''
+    Required               = '[name description owner source]'
+    Title                  = 'Meta-data'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'payload' =
+    Description            = 'Task-specific payload following worker-specific format. For example the
+    `docker-worker` requires keys like: `image`, `commands` and
+    `features`. Refer to the documentation of `docker-worker` for details.
+    '
+    Title                  = 'Task Payload'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'priority' =
+    Default                = 'normal'
+    Description            = 'Priority of task, this defaults to `normal` and the scope
+    `queue:task-priority:high` is required to define a task with `priority`
+    set to `high`. Additional priority levels may be added later.
+    '
+    Enum                   = '[high normal]'
+    Title                  = 'Task Priority'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'provisionerId' =
+    Description            = 'Unique identifier for a provisioner, that can supply specified
+    `workerType`
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Provisioner Id'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'retries' =
+    Default                = '5'
+    Description            = 'Number of times to retry the task in case of infrastructure issues.
+    An _infrastructure issue_ is a worker node that crashes or is shutdown,
+    these events are to be expected.
+    '
+    Maximum                = '50'
+    Minimum                = '0'
+    Title                  = 'Retries'
+    Type                   = 'integer'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'routes' =
+    Default                = '[]'
+    Description            = 'List of task specific routes, AMQP messages will be CC'ed to these routes.
+    '
+    Items
+      Description            = 'A task specific route, AMQP messages will be CC'ed with a routing key
+      matching `route.<task-specific route>`. It's possible to dot (`.`) in
+      the task specific route to make sub-keys, etc. See the RabbitMQ
+      [tutorial](http://www.rabbitmq.com/tutorials/tutorial-five-python.html)
+      for examples on how to use routing-keys.
+      '
+      MaxLength              = '249'
+      MinLength              = '1'
+      Title                  = 'Task Specific Route'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Title                  = 'Task Specific Routes'
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'schedulerId' =
+    Default                = '-'
+    Description            = 'Identifier for the scheduler that _defined_ this task, this can be an
+    identifier for a user or a service like the `"task-graph-scheduler"`.
+    Along with the `taskGroupId` this is used to form the permission scope
+    `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
+    this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Scheduler Identifier'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'scopes' =
+    Default                = '[]'
+    Description            = 'List of scopes (or scope-patterns) that the task is
+    authorized to use.
+    '
+    Items
+      Description            = 'A scope (or scope-patterns) which the task is
+      authorized to use. This can be a string or a string
+      ending with `*` which will authorize all scopes for
+      which the string is a prefix.  Scopes must be composed of
+      printable ASCII characters and spaces.
+      '
+      Pattern                = '^[\x20-\x7e]*$'
+      Title                  = 'Scope'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = ''
+    Title                  = 'Scopes'
+    Type                   = 'array'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'tags' =
+    Additional Properties  = 'MaxLength              = '4096'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+    '
+    Default                = 'map[]'
+    Description            = 'Arbitrary key-value tags (only strings limited to 4k). These can be used
+    to attach informal meta-data to a task. Use this for informal tags that
+    tasks can be classified by. You can also think of strings here as
+    candidates for formal meta-data. Something like
+    `purpose: 'build' || 'test'` is a good example.
+    '
+    Title                  = 'Tags'
+    Type                   = 'object'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'taskGroupId' =
+    Description            = 'Identifier for a group of tasks scheduled together with this task, by
+    scheduler identified by `schedulerId`. For tasks scheduled by the
+    task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
+    property isn't specified.
+    '
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+    Title                  = 'Task-Group Identifier'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+  Property 'workerType' =
+    Description            = 'Unique identifier for a worker-type within a specific provisioner
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Worker Type'
+    Type                   = 'string'
+    TypeName               = ''
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = ''
+Required               = '[provisionerId workerType created deadline payload metadata]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Definition'
+Type                   = 'object'
+TypeName               = 'TaskDefinition'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'false'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+
+
 http://references.taskcluster.net/index/v1/api.json
 ===================================================
 Version     = '0'
