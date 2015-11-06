@@ -16,6 +16,8 @@
     <script src="../taskcluster-client.js"></script>
     <script>
     suite("client (browserify)", function() {
+      this.timeout(function() {}, 10);(30 * 1000);
+
       var TestAuth = null;
       test("createClient", function() {
         TestAuth = taskcluster.createClient({
@@ -178,6 +180,8 @@
     });
 
     suite("WebListener (browserify)", function() {
+      this.timeout(30 * 1000);
+
       test('connect and close WebListener', function() {
         var listener = new taskcluster.WebListener();
         return listener.connect().then(function() {
@@ -200,6 +204,8 @@
     });
 
     suite("utilities (browserify)", function() {
+      this.timeout(30 * 1000);
+
       test('fromNow()', function() {
         var d1 = new Date();
         var d2 = taskcluster.fromNow();
