@@ -9,11 +9,12 @@ A go (golang) port of taskcluster-client.
 
 Complete godoc documentation [here](https://godoc.org/github.com/taskcluster/taskcluster-client-go).
 
-This library provides the following eleven packages to interface with TaskCluster:
+This library provides the following twelve packages to interface with TaskCluster:
 
 ### HTTP APIs
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/awsprovisioner
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/hooks
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/index
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecache
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/queue

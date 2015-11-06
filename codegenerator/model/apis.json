@@ -15,6 +15,9 @@
         "url": "http://references.taskcluster.net/scheduler/v1/exchanges.json",
         "docroot": "http://docs.taskcluster.net/scheduler/events"
     }, {
+        "url": "http://references.taskcluster.net/hooks/v1/api.json",
+        "docroot": "http://docs.taskcluster.net/services/hooks"
+    }, {
         "url": "http://references.taskcluster.net/index/v1/api.json",
         "docroot": "http://docs.taskcluster.net/services/index"
     }, {
