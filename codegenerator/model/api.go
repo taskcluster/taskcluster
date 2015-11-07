@@ -290,6 +290,7 @@ type APIEntry struct {
 	Route       string     `json:"route"`
 	Args        []string   `json:"args"`
 	Name        string     `json:"name"`
+	Stability   string     `json:"stability"`
 	Scopes      [][]string `json:"scopes"`
 	Input       string     `json:"input"`
 	Output      string     `json:"output"`
@@ -318,14 +319,16 @@ func (entry *APIEntry) String() string {
 			"    Entry Route       = '%v'\n"+
 			"    Entry Args        = '%v'\n"+
 			"    Entry Name        = '%v'\n"+
+			"    Entry Stability   = '%v'\n"+
 			"    Entry Scopes      = '%v'\n"+
 			"    Entry Input       = '%v'\n"+
 			"    Entry Output      = '%v'\n"+
 			"    Entry Title       = '%v'\n"+
 			"    Entry Description = '%v'\n",
 		entry.Type, entry.Method, entry.Route, entry.Args,
-		entry.Name, entry.Scopes, entry.Input, entry.Output,
-		entry.Title, entry.Description)
+		entry.Name, entry.Stability, entry.Scopes, entry.Input,
+		entry.Output, entry.Title, entry.Description,
+	)
 }
 
 func (entry *APIEntry) generateAPICode(apiName string) string {
@@ -356,6 +359,10 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 			}
 			comment += strings.Join(lines, ", or\n") + "\n"
 		}
+	}
+	if entry.Stability != "stable" {
+		comment += "//\n"
+		comment += "// Stability: *** " + entry.Stability + " ***\n"
 	}
 	comment += "//\n"
 	comment += fmt.Sprintf("// See %v/#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
