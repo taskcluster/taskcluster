@@ -216,6 +216,8 @@ func New(clientId string, accessToken string) *Hooks {
 
 // This endpoint will return a list of all hook groups with at least one hook.
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/services/hooks/#listHookGroups
 func (myHooks *Hooks) ListHookGroups() (*HookGroups, *CallSummary) {
 	responseObject, callSummary := myHooks.apiCall(nil, "GET", "/hooks", new(HookGroups))
@@ -224,6 +226,8 @@ func (myHooks *Hooks) ListHookGroups() (*HookGroups, *CallSummary) {
 
 // This endpoint will return a list of all the hook definitions within a
 // given hook group.
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/hooks/#listHooks
 func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, *CallSummary) {
@@ -234,6 +238,8 @@ func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, *CallSummary) {
 // This endpoint will return the hook defintion for the given `hookGroupId`
 // and hookId.
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/services/hooks/#hook
 func (myHooks *Hooks) Hook(hookGroupId string, hookId string) (*HookDefinition, *CallSummary) {
 	responseObject, callSummary := myHooks.apiCall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition))
@@ -242,6 +248,8 @@ func (myHooks *Hooks) Hook(hookGroupId string, hookId string) (*HookDefinition, 
 
 // This endpoint will return the schedule and next scheduled creation time
 // for the given hook.
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/hooks/#getHookSchedule
 func (myHooks *Hooks) GetHookSchedule(hookGroupId string, hookId string) (*HookSchedule, *CallSummary) {
@@ -259,6 +267,8 @@ func (myHooks *Hooks) GetHookSchedule(hookGroupId string, hookId string) (*HookS
 //   * hooks:modify-hook:<hookGroupId>/<hookId>, and
 //   * assume:hook-id:<hookGroupId>/<hookId>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/services/hooks/#createHook
 func (myHooks *Hooks) CreateHook(hookGroupId string, hookId string, payload *HookCreationRequest) (*HookDefinition, *CallSummary) {
 	responseObject, callSummary := myHooks.apiCall(payload, "PUT", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition))
@@ -272,6 +282,8 @@ func (myHooks *Hooks) CreateHook(hookGroupId string, hookId string, payload *Hoo
 //   * hooks:modify-hook:<hookGroupId>/<hookId>, and
 //   * assume:hook-id:<hookGroupId>/<hookId>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/services/hooks/#updateHook
 func (myHooks *Hooks) UpdateHook(hookGroupId string, hookId string, payload *HookCreationRequest) (*HookDefinition, *CallSummary) {
 	responseObject, callSummary := myHooks.apiCall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition))
@@ -282,6 +294,8 @@ func (myHooks *Hooks) UpdateHook(hookGroupId string, hookId string, payload *Hoo
 //
 // Required scopes:
 //   * hooks:modify-hook:<hookGroupId>/<hookId>
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/hooks/#removeHook
 func (myHooks *Hooks) RemoveHook(hookGroupId string, hookId string) *CallSummary {

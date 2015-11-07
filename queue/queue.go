@@ -213,6 +213,8 @@ func New(clientId string, accessToken string) *Queue {
 // definition may have been modified by queue, if an optional property isn't
 // specified the queue may provide a default value.
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/queue/api-docs/#task
 func (myQueue *Queue) Task(taskId string) (*TaskDefinition1, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId), new(TaskDefinition1))
@@ -220,6 +222,8 @@ func (myQueue *Queue) Task(taskId string) (*TaskDefinition1, *CallSummary) {
 }
 
 // Get task status structure from `taskId`
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#status
 func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *CallSummary) {
@@ -249,6 +253,8 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *CallSummary) 
 // Required scopes:
 //   * queue:create-task:<provisionerId>/<workerType>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/queue/api-docs/#createTask
 func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(payload, "PUT", "/task/"+url.QueryEscape(taskId), new(TaskStatusResponse))
@@ -274,6 +280,8 @@ func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinition) (*TaskS
 //   * queue:define-task:<provisionerId>/<workerType>, or
 //   * queue:create-task:<provisionerId>/<workerType>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/queue/api-docs/#defineTask
 func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/define", new(TaskStatusResponse))
@@ -292,6 +300,8 @@ func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinition) (*TaskS
 // Required scopes:
 //   * queue:schedule-task, and
 //   * assume:scheduler-id:<schedulerId>/<taskGroupId>
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#scheduleTask
 func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *CallSummary) {
@@ -316,6 +326,8 @@ func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *CallSum
 //   * queue:rerun-task, and
 //   * assume:scheduler-id:<schedulerId>/<taskGroupId>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/queue/api-docs/#rerunTask
 func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/rerun", new(TaskStatusResponse))
@@ -339,6 +351,8 @@ func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *CallSummar
 //   * queue:cancel-task, and
 //   * assume:scheduler-id:<schedulerId>/<taskGroupId>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/queue/api-docs/#cancelTask
 func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/cancel", new(TaskStatusResponse))
@@ -353,6 +367,8 @@ func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *CallSumma
 //   * queue:poll-task-urls, and
 //   * assume:worker-type:<provisionerId>/<workerType>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/queue/api-docs/#pollTaskUrls
 func (myQueue *Queue) PollTaskUrls(provisionerId string, workerType string) (*PollTaskUrlsResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(nil, "GET", "/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(PollTaskUrlsResponse))
@@ -366,6 +382,8 @@ func (myQueue *Queue) PollTaskUrls(provisionerId string, workerType string) (*Po
 //   * assume:worker-type:<provisionerId>/<workerType>, and
 //   * assume:worker-id:<workerGroup>/<workerId>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/queue/api-docs/#claimTask
 func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/claim", new(TaskClaimResponse))
@@ -378,6 +396,8 @@ func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimR
 //   * (queue:claim-task and assume:worker-id:<workerGroup>/<workerId>), or
 //   * queue:claim-task:<taskId>/<runId>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/queue/api-docs/#reclaimTask
 func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskClaimResponse1, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskClaimResponse1))
@@ -389,6 +409,8 @@ func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskClaimRespon
 // Required scopes:
 //   * (queue:resolve-task and assume:worker-id:<workerGroup>/<workerId>), or
 //   * queue:claim-task:<taskId>/<runId>
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportCompleted
 func (myQueue *Queue) ReportCompleted(taskId string, runId string) (*TaskStatusResponse, *CallSummary) {
@@ -407,6 +429,8 @@ func (myQueue *Queue) ReportCompleted(taskId string, runId string) (*TaskStatusR
 // Required scopes:
 //   * (queue:resolve-task and assume:worker-id:<workerGroup>/<workerId>), or
 //   * queue:claim-task:<taskId>/<runId>
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportFailed
 func (myQueue *Queue) ReportFailed(taskId string, runId string) (*TaskStatusResponse, *CallSummary) {
@@ -430,6 +454,8 @@ func (myQueue *Queue) ReportFailed(taskId string, runId string) (*TaskStatusResp
 // Required scopes:
 //   * (queue:resolve-task and assume:worker-id:<workerGroup>/<workerId>), or
 //   * queue:claim-task:<taskId>/<runId>
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportException
 func (myQueue *Queue) ReportException(taskId string, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, *CallSummary) {
@@ -500,6 +526,8 @@ func (myQueue *Queue) ReportException(taskId string, runId string, payload *Task
 //   * (queue:create-artifact:<name> and assume:worker-id:<workerGroup>/<workerId>), or
 //   * (queue:create-artifact:<name> and queue:claim-task:<taskId>/<runId>)
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/queue/api-docs/#createArtifact
 func (myQueue *Queue) CreateArtifact(taskId string, runId string, name string, payload *PostArtifactRequest) (*PostArtifactResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(PostArtifactResponse))
@@ -520,6 +548,8 @@ func (myQueue *Queue) CreateArtifact(taskId string, runId string, name string, p
 //
 // Required scopes:
 //   * queue:get-artifact:<name>
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getArtifact
 func (myQueue *Queue) GetArtifact(taskId string, runId string, name string) *CallSummary {
@@ -546,6 +576,8 @@ func (myQueue *Queue) GetArtifact(taskId string, runId string, name string) *Cal
 // Required scopes:
 //   * queue:get-artifact:<name>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/queue/api-docs/#getLatestArtifact
 func (myQueue *Queue) GetLatestArtifact(taskId string, name string) *CallSummary {
 	_, callSummary := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil)
@@ -553,6 +585,8 @@ func (myQueue *Queue) GetLatestArtifact(taskId string, name string) *CallSummary
 }
 
 // Returns a list of artifacts and associated meta-data for a given run.
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#listArtifacts
 func (myQueue *Queue) ListArtifacts(taskId string, runId string) (*ListArtifactsResponse, *CallSummary) {
@@ -562,6 +596,8 @@ func (myQueue *Queue) ListArtifacts(taskId string, runId string) (*ListArtifacts
 
 // Returns a list of artifacts and associated meta-data for the latest run
 // from the given task.
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#listLatestArtifacts
 func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse, *CallSummary) {
@@ -576,6 +612,8 @@ func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse
 // Required scopes:
 //   * queue:pending-tasks:<provisionerId>/<workerType>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/queue/api-docs/#pendingTasks
 func (myQueue *Queue) PendingTasks(provisionerId string, workerType string) (*CountPendingTasksResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse))
@@ -585,6 +623,8 @@ func (myQueue *Queue) PendingTasks(provisionerId string, workerType string) (*Co
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#ping
 func (myQueue *Queue) Ping() *CallSummary {

@@ -404,6 +404,8 @@ func (myAuth *Auth) DeleteRole(roleId string) *CallSummary {
 // Required scopes:
 //   * auth:aws-s3:<level>:<bucket>/<prefix>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/auth/api-docs/#awsS3Credentials
 func (myAuth *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *CallSummary) {
 	responseObject, callSummary := myAuth.apiCall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse))
@@ -444,6 +446,8 @@ func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest
 //   * auth:create-client, and
 //   * auth:credentials
 //
+// Stability: *** deprecated ***
+//
 // See http://docs.taskcluster.net/auth/api-docs/#importClients
 func (myAuth *Auth) ImportClients(payload *ExportedClients) *CallSummary {
 	_, callSummary := myAuth.apiCall(payload, "POST", "/import-clients", nil)
@@ -453,6 +457,8 @@ func (myAuth *Auth) ImportClients(payload *ExportedClients) *CallSummary {
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/auth/api-docs/#ping
 func (myAuth *Auth) Ping() *CallSummary {

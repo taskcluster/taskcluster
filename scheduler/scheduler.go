@@ -276,6 +276,8 @@ func New(clientId string, accessToken string) *Scheduler {
 // Required scopes:
 //   * scheduler:create-task-graph
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/scheduler/api-docs/#createTaskGraph
 func (myScheduler *Scheduler) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1) (*TaskGraphStatusResponse, *CallSummary) {
 	responseObject, callSummary := myScheduler.apiCall(payload, "PUT", "/task-graph/"+url.QueryEscape(taskGraphId), new(TaskGraphStatusResponse))
@@ -299,6 +301,8 @@ func (myScheduler *Scheduler) CreateTaskGraph(taskGraphId string, payload *TaskG
 // Required scopes:
 //   * scheduler:extend-task-graph:<taskGraphId>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/scheduler/api-docs/#extendTaskGraph
 func (myScheduler *Scheduler) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition) (*TaskGraphStatusResponse, *CallSummary) {
 	responseObject, callSummary := myScheduler.apiCall(payload, "POST", "/task-graph/"+url.QueryEscape(taskGraphId)+"/extend", new(TaskGraphStatusResponse))
@@ -310,6 +314,8 @@ func (myScheduler *Scheduler) ExtendTaskGraph(taskGraphId string, payload *TaskG
 // `blocked` or `finished`.
 //
 // **Note**, that `finished` implies successfully completion.
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#status
 func (myScheduler *Scheduler) Status(taskGraphId string) (*TaskGraphStatusResponse, *CallSummary) {
@@ -323,6 +329,8 @@ func (myScheduler *Scheduler) Status(taskGraphId string) (*TaskGraphStatusRespon
 //
 // If you want more detailed information use the `inspectTaskGraph`
 // end-point instead.
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#info
 func (myScheduler *Scheduler) Info(taskGraphId string) (*TaskGraphInfoResponse, *CallSummary) {
@@ -343,6 +351,8 @@ func (myScheduler *Scheduler) Info(taskGraphId string) (*TaskGraphInfoResponse, 
 // as we do not promise it will remain fully backward compatible in
 // the future.
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspect
 func (myScheduler *Scheduler) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *CallSummary) {
 	responseObject, callSummary := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect", new(InspectTaskGraphResponse))
@@ -362,6 +372,8 @@ func (myScheduler *Scheduler) Inspect(taskGraphId string) (*InspectTaskGraphResp
 // as we do not promise it will remain fully backward compatible in
 // the future.
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspectTask
 func (myScheduler *Scheduler) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraphTaskResponse, *CallSummary) {
 	responseObject, callSummary := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect/"+url.QueryEscape(taskId), new(InspectTaskGraphTaskResponse))
@@ -371,6 +383,8 @@ func (myScheduler *Scheduler) InspectTask(taskGraphId string, taskId string) (*I
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#ping
 func (myScheduler *Scheduler) Ping() *CallSummary {

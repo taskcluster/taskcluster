@@ -208,6 +208,8 @@ func New(clientId string, accessToken string) *Secrets {
 // Required scopes:
 //   * secrets:set:<name>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/services/secrets/#set
 func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) *CallSummary {
 	_, callSummary := mySecrets.apiCall(payload, "PUT", "/secrets/"+url.QueryEscape(name), nil)
@@ -218,6 +220,8 @@ func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) *CallSum
 //
 // Required scopes:
 //   * secrets:update:<name>
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/secrets/#update
 func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) *CallSummary {
@@ -230,6 +234,8 @@ func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) *Call
 // Required scopes:
 //   * secrets:remove:<name>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/services/secrets/#remove
 func (mySecrets *Secrets) Remove(name string) *CallSummary {
 	_, callSummary := mySecrets.apiCall(nil, "DELETE", "/secrets/"+url.QueryEscape(name), nil)
@@ -241,6 +247,8 @@ func (mySecrets *Secrets) Remove(name string) *CallSummary {
 // Required scopes:
 //   * secrets:get:<name>
 //
+// Stability: *** experimental ***
+//
 // See http://docs.taskcluster.net/services/secrets/#get
 func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary) {
 	responseObject, callSummary := mySecrets.apiCall(nil, "GET", "/secrets/"+url.QueryEscape(name), new(ATaskClusterSecret))
@@ -250,6 +258,8 @@ func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary) {
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
+//
+// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/secrets/#ping
 func (mySecrets *Secrets) Ping() *CallSummary {
