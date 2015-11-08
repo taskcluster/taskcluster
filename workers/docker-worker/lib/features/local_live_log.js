@@ -24,6 +24,7 @@ let debug = Debug('taskcluster-docker-worker:features:local_live_log');
 // Alias used to link the proxy.
 export default class TaskclusterLogs {
   constructor() {
+    this.featureName = 'localLiveLog';
     /**
     Docker container used in the linking process.
     */

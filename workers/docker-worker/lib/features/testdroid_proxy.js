@@ -16,6 +16,7 @@ const MISSING_PHONE_CONFIGURATION = 'Phone device configuration must be supplied
 
 export default class TestdroidProxy {
   constructor() {
+    this.featureName = 'testdroidProxy';
     /**
     Docker container used in the linking process.
     */

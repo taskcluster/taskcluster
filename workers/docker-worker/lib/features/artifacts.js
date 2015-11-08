@@ -16,6 +16,10 @@ import waitForEvent from '../wait_for_event';
 let debug = Debug('docker-worker:middleware:artifact_extractor');
 
 export default class Artifacts {
+  constructor() {
+    this.featureName = 'artifactHandler';
+  }
+
   async uploadArtifact(taskHandler, name, artifact) {
     let errors = [];
     let container = taskHandler.dockerProcess.container;

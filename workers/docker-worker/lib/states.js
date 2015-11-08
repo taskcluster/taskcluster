@@ -53,9 +53,13 @@ export default class States {
     return this.stats.timeGen(
       'stateChange',
       Promise.all(
-        hooks.map(hook => hook[method](task))
-             .map(r => Promise.resolve(r))
-             .map(p => p.catch(err => errors.push(err)))
+        hooks.map(hook => {
+          return hook[method](task)
+            .then(info => { return info; })
+            .catch(err => {
+              errors.push(new Error(`Error calling '${method}' for ${hook.featureName} : ${err.message}`));
+            });
+        })
       ),
       {state: method}
     ).then(results => {

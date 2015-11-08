@@ -17,6 +17,7 @@ const MAX_RANDOM_PORT_ATTEMPTS = 20;
 
 export default class WebsocketServer {
   constructor () {
+    this.featureName = 'dockerInteractive';
     let id = slugid.v4();
     this.path = '/' + id;
     this.lock = path.join('/tmp/', id + '.lock');

@@ -67,6 +67,11 @@ suite('balrog vpn proxy', () => {
       result.log.includes('[taskcluster:error] Task was aborted because states'),
       'Error does not container message about states being aborted'
     );
+
+    assert.ok(
+      result.log.includes('Error calling \'link\' for balrogVPNProxy'),
+      'Error does not contain the name of the feature'
+    );
     assert.ok(
       result.log.includes('Insufficient scopes to use \'balrogVPNProxy\''),
       'Error does not contain message about insufficient scopes'

@@ -13,6 +13,7 @@ const INIT_TIMEOUT = 2000;
 
 export default class TaskclusterProxy {
   constructor () {
+    this.featureName = 'taskclusterProxy';
     /**
     Docker container used in the linking process.
     */

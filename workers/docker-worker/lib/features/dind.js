@@ -20,6 +20,7 @@ const INIT_TIMEOUT = 30 * 1000;
 
 export default class DockerInDocker {
   constructor() {
+    this.featureName = 'dind';
     // dind-service container
     this.container = null;
     this.tmpFolder = path.join('/tmp', slugid.v4());
@@ -76,7 +77,7 @@ export default class DockerInDocker {
     };
   }
 
-  killed(task) {
+  async killed(task) {
     task.runtime.gc.removeContainer(this.container.id);
 
     // Remove temporary folder, this should be possible even though container

@@ -14,6 +14,7 @@ const INIT_TIMEOUT = 2000;
 
 export default class RelengAPIProxy {
   constructor () {
+    this.featureName = 'relengAPIProxy';
     /**
     Docker container used in the linking process.
     */

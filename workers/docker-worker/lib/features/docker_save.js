@@ -12,6 +12,9 @@ import zlib from 'zlib';
 let debug = Debug('docker-worker:features:docker-save');
 
 export default class DockerSave {
+  constructor() {
+    this.featureName = 'dockerSave';
+  }
   //commits and uploads the docker image as an artifact
   async uploadContainer(task) {
     //temporary path for saved file

@@ -337,7 +337,7 @@ export class Task {
       taskId: this.status.taskId,
       runId: this.runId,
       exception: this.taskException || '',
-      err: error
+      error: error.stack || error
     });
 
     if (error) this.stream.write(error);
@@ -356,9 +356,11 @@ export class Task {
     }
     catch (e) {
       // Do not throw, killing the states is a best effort here when aborting
-      debug(`Caught error while killing state handlers. ${e.stack || e}`);
+      //
+      this.runtime.log('error killing states', {
+        error: `Could not kill states properly. ${e.stack}`
+      });
     }
-
 
     if (this.isAborted()) {
       let queue = this.runtime.queue;
@@ -471,8 +473,6 @@ export class Task {
     try {
       this.claim = await this.runtime.queue.reclaimTask(this.status.taskId, this.runId);
     } catch (e) {
-      debug('Caught error while reclaiming task. %s, as JSON %j', e, e);
-
       let errorMessage = `Could not reclaim task. ${e.stack || e}`;
       this.runtime.log('error reclaiming task', {
         claim: this.claim,
@@ -611,13 +611,13 @@ export class Task {
       await this.states.created(this);
     }
     catch (e) {
-      debug(e.stack);
       return await this.abortRun(
         'states_failed',
         this.fmtErrorLog(
           'Task was aborted because states could not be created ' +
-          `successfully. ${e.stack || e}`
-        )
+          `successfully. ${e.message}`
+        ),
+        e
       );
     }
 
@@ -702,13 +702,13 @@ export class Task {
         await this.states.started(this);
       }
       catch (e) {
-        debug(e.stack);
         return await this.abortRun(
           'states_failed',
           this.fmtErrorLog(
             'Task was aborted because states could not be started ' +
-            `successfully. ${e.stack || e}`
-          )
+            `successfully. ${e}`
+          ),
+          e
         );
       }
     });
@@ -743,8 +743,8 @@ export class Task {
     try {
       await this.states.stopped(this);
     } catch (e) {
-      // If task finished successfully, mark it as unsuccessful and log an incident
-      // error in the logs.  Otherwise artifact uploading most likely will be expected
+      // If task finished successfully, mark it as unsuccessful.
+      // Otherwise artifact uploading most likely will be expected
       // to fail if the task did not finish successfully.
       if (success) {
         success = false;
@@ -759,7 +759,20 @@ export class Task {
     // Wait for the stream to end entirely before killing remaining containers.
     await this.stream.end();
 
-    await this.states.killed(this);
+    try {
+      await this.states.killed(this);
+    } catch(e) {
+      // If killing states was unsucessful, mark task as failed.  If error is not
+      // caught the task remains in limbo until claim expires.
+      success = false;
+
+      // Unfortunately in the current implementation, logging is bundled with killing
+      // states.  At this point the task log stream is ended, and possible the log already
+      // uploaded.  This is a best effort of capturing an error.
+      this.runtime.log('error killing states', {
+        error: `Could not kill states properly. ${e.stack || e}`
+      });
+    }
 
     // If the results validation failed we consider this task failure.
     if (this.isCanceled() || this.isAborted()) {

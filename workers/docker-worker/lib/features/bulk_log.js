@@ -16,13 +16,13 @@ var ARTIFACT_NAME = 'public/logs/terminal_bulk.log.gz';
 
 export default class BulkLog {
   constructor(artifact) {
-
+    this.featureName = 'bulkLogHandler';
     this.artifactName = artifact || ARTIFACT_NAME;
     this.file = new temporary.File();
     debug('Created BulkLog using tempfile: ' + this.file.path);
   }
 
-  created(task) {
+  async created(task) {
     // Eventually we want to save the content as gzip on s3 or azure so we
     // incrementally compress it via streams.
     var gzip = zlib.createGzip();

@@ -18,7 +18,9 @@ async function drain (listener) {
 }
 
 export default class ExtendTaskGraph {
-  constructor () {}
+  constructor () {
+    this.featureName = 'extendTaskGraph';
+  }
 
   async extendTaskGraph(taskHandler, graphPath) {
     var task = taskHandler.task;
