@@ -256,11 +256,13 @@ api.declare({
     "",
     "**Task specific routing-keys**, using the `task.routes` property you may",
     "define task specific routing-keys. If a task has a task specific ",
-    "routing-key: `<route>`, then the poster will be required to posses the",
-    "scope `queue:route:<route>`. And when the an AMQP message about the task",
-    "is published the message will be CC'ed with the routing-key: ",
+    "routing-key: `<route>`, then when the AMQP message about the task is",
+    "published, the message will be CC'ed with the routing-key: ",
     "`route.<route>`. This is useful if you want another component to listen",
-    "for completed tasks you have posted."
+    "for completed tasks you have posted.",
+    "",
+    "**Important** Any scopes the task requires are also required for creating",
+    "the task. Please see the Request Payload (Task Definition) for details."
   ].join('\n')
 }, async function(req, res) {
   var taskId  = req.params.taskId;
@@ -407,6 +409,9 @@ api.declare({
     "and when the dependencies of a tasks have been resolved, you can schedule",
     "the task by calling `/task/:taskId/schedule`. This eliminates the need to",
     "store tasks somewhere else while waiting for dependencies to resolve.",
+    "",
+    "**Important** Any scopes the task requires are also required for defining",
+    "the task. Please see the Request Payload (Task Definition) for details.",
     "",
     "**Note** this operation is **idempotent**, as long as you upload the same",
     "task definition as previously defined this operation is safe to retry."
