@@ -2,6 +2,11 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"strconv"
+	"time"
+
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/taskcluster-client-go/codegenerator/model"
 	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
@@ -49,6 +54,21 @@ func main() {
 	// Parse the docopt string and exit on any error or help message.
 	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
 	utils.ExitOnFail(err)
+
+	// allow time to be passed via env var UNIX_TIMESTAMP
+	var downloadedTime time.Time
+	switch t := os.Getenv("UNIX_TIMESTAMP"); t {
+	case "":
+		downloadedTime = time.Now()
+	default:
+		i, err := strconv.ParseInt(t, 10, 0)
+		if err != nil {
+			fmt.Printf("ERROR: Cannot convert UNIX_TIMESTAMP ('%s') to an int\n", t)
+		}
+		utils.ExitOnFail(err)
+		downloadedTime = time.Unix(i, 0)
+	}
+
 	model.LoadAPIs(arguments["-u"].(string), arguments["-f"].(string))
-	model.GenerateCode(arguments["-o"].(string), arguments["-m"].(string))
+	model.GenerateCode(arguments["-o"].(string), arguments["-m"].(string), downloadedTime)
 }

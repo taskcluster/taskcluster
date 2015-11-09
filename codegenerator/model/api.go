@@ -91,6 +91,12 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "//  if callSummary.Error != nil {\n"
 	comment += "//  	// handle error...\n"
 	comment += "//  }\n"
+	comment += "//\n"
+	comment += "// TaskCluster Schema\n"
+	comment += "//\n"
+	comment += "// The entire source code of this go package was auto-generated from the API definition\n"
+	comment += "// " + api.apiDef.URL + " downloaded on\n"
+	comment += "// " + downloadedTime.UTC().Format("Mon, 2 Jan 2006 at 15:04:00 UTC") + ".\n"
 
 	content := comment
 	content += "package " + api.apiDef.PackageName + "\n"

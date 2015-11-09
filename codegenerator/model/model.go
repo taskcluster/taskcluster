@@ -12,7 +12,9 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
 	"github.com/xeipuuv/gojsonschema"
@@ -20,8 +22,9 @@ import (
 )
 
 var (
-	apiDefs []APIDefinition
-	err     error
+	apiDefs        []APIDefinition
+	err            error
+	downloadedTime time.Time
 )
 
 type SortedAPIDefs []APIDefinition
@@ -214,7 +217,8 @@ func validateJson(schemaUrl, docUrl string) {
 
 // GenerateCode takes the objects loaded into memory in LoadAPIs
 // and writes them out as go code.
-func GenerateCode(goOutputDir, modelData string) {
+func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
+	downloadedTime = downloaded
 	for i := range apiDefs {
 		apiDefs[i].PackageName = strings.ToLower(apiDefs[i].Name)
 		// Used throughout docs, and also methods that use the class, we need a
@@ -276,7 +280,8 @@ func GenerateCode(goOutputDir, modelData string) {
 		utils.WriteStringToFile(string(formattedContent), sourceFile)
 	}
 
-	content := "The following file is an auto-generated static dump of the API models at time of code generation.\n"
+	content := "Generated: " + strconv.FormatInt(downloadedTime.Unix(), 10) + "\n"
+	content += "The following file is an auto-generated static dump of the API models at time of code generation.\n"
 	content += "It is provided here for reference purposes, but is not used by any code.\n"
 	content += "\n"
 	for i := range apiDefs {

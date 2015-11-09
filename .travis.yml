@@ -11,7 +11,7 @@ before_install:
   - go get github.com/pierrre/gotestcover
 
 script:
-  - ./build.sh
+  - ./build.sh -d
 
 after_script:
   - $HOME/gopath/bin/goveralls -coverprofile=coverage.report -service=travis-ci

@@ -1,18 +1,34 @@
 #!/bin/bash -xveu
 
-# call this script with -n to skip code generation
+# options:
+#   -n  skip code generation
+#   -d  don't change timestamp included in generated docs
+
+cd "$(dirname "${0}")"
+
+UNIX_TIMESTAMP=$(date +%s)
 
 GENERATE=true
-while getopts ":n" opt; do
+NEW_TIMESTAMP=true
+
+while getopts ":nd" opt; do
     case "${opt}" in
         n)  GENERATE=false
             ;;  
+        d)  git checkout -f codegenerator/model/model-data.txt
+            UNIX_TIMESTAMP="$(head -1 codegenerator/model/model-data.txt | sed -n 's/^Generated: //p')"
+            echo "NOT GENERATING NEW TIMESTAMP IN DOCS"
+            NEW_TIMESTAMP=false
+            # in case build.sh was run without -d option since last build
+            ;;
     esac
 done
 
-cd "$(dirname "${0}")"
+export UNIX_TIMESTAMP
+echo "UNIX_TIMESTAMP = '${UNIX_TIMESTAMP}'"
+
 # uncomment if build.sh fails to build due to invalid generated code...
-# for name in auth awsprovisioner{,events} index queue{,events} scheduler{,events} purgecache{,events} secrets
+# for name in auth awsprovisioner{,events} hooks index queue{,events} scheduler{,events} purgecache{,events} secrets
 # do
 #   git checkout -f "${name}/${name}.go"
 # done
@@ -43,4 +59,4 @@ grep -q PANIC codegenerator/model/model-data.txt && exit 68
 # finally check that generated files have been committed, and that
 # formatting code resulted in no changes...
 git status
-[ $(git status --porcelain | wc -l) == 0 ]
+"${NEW_TIMESTAMP}" || [ $(git status --porcelain | wc -l) == 0 ]
