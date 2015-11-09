@@ -67,7 +67,7 @@ func TestDefineTask(t *testing.T) {
 	deadline := created.AddDate(0, 0, 1)
 	expires := deadline
 
-	td := &queue.TaskDefinition{
+	td := &queue.TaskDefinitionRequest{
 		Created:  queue.Time(created),
 		Deadline: queue.Time(deadline),
 		Expires:  queue.Time(expires),
@@ -95,7 +95,7 @@ func TestDefineTask(t *testing.T) {
 			"test-worker:image:toastposter/pumpkin:0.5.6",
 		},
 		Tags:        json.RawMessage(`{"createdForUser":"cbook@mozilla.com"}`),
-		Priority:    json.RawMessage(`"high"`),
+		Priority:    "high",
 		TaskGroupId: "dtwuF2n9S-i83G37V9eBuQ",
 		WorkerType:  "win2008-worker",
 	}
@@ -116,7 +116,7 @@ func TestDefineTask(t *testing.T) {
 
 	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskId)
 
-	if provisionerId := cs.HttpRequestObject.(*queue.TaskDefinition).ProvisionerId; provisionerId != "win-provisioner" {
+	if provisionerId := cs.HttpRequestObject.(*queue.TaskDefinitionRequest).ProvisionerId; provisionerId != "win-provisioner" {
 		t.Errorf("provisionerId 'win-provisioner' expected but got %s", provisionerId)
 	}
 	if schedulerId := tsr.Status.SchedulerId; schedulerId != "go-test-test-scheduler" {
