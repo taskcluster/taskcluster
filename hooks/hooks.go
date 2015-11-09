@@ -38,6 +38,12 @@
 //  if callSummary.Error != nil {
 //  	// handle error...
 //  }
+//
+// TaskCluster Schema
+//
+// The entire source code of this go package was auto-generated from the API definition
+// http://references.taskcluster.net/hooks/v1/api.json downloaded on
+// Mon, 9 Nov 2015 at 16:16:00 UTC.
 package hooks
 
 import (
