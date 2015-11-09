@@ -1,11 +1,11 @@
 {
   "name": "taskcluster-lib-app",
-  "version": "0.8.8",
+  "version": "0.8.9",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-app",
   "license": "MPL-2.0",
   "scripts": {
-    "compile": "babel-compile -c taskcluster-lib-rules/babel src:lib test:.test",
+    "compile": "babel-compile -c tc-rules/babel src:lib test:.test",
     "prepublish": "npm run compile",
     "pretest": "npm run compile",
     "test": "mocha .test/*_test.js"
