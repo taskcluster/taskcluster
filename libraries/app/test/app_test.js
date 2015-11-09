@@ -1,13 +1,13 @@
 suite("app", function() {
   var assert  = require('assert');
   var path    = require('path');
-  var base    = require('../');
+  var subject = require('../');
   var request = require('superagent-promise');
 
   // Test app creation
   test("app({port: 1459})", function() {
     // Create a simple app
-    var app = base.app({
+    var app = subject({
       port:       1459,
       env:        'development',
       forceSSL:   false,
