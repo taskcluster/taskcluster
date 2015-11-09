@@ -26,9 +26,10 @@ properties:
     description: |
       Identifier for the scheduler that _defined_ this task, this can be an
       identifier for a user or a service like the `"task-graph-scheduler"`.
-      Along with the `taskGroupId` this is used to form the permission scope
-      `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
-      this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+      **Task submitter required scopes**
+      `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`.
+      This scope is also necessary to _schedule_ a defined task, or _rerun_ a
+      task.
     type:           string
     minLength:      {$const: identifier-min-length}
     maxLength:      {$const: identifier-max-length}
@@ -47,6 +48,8 @@ properties:
     title:          "Task Specific Routes"
     description: |
       List of task specific routes, AMQP messages will be CC'ed to these routes.
+      **Task submitter required scopes** `queue:route:<route>` for
+      each route given.
     type:           array
     default:        []
     items:
@@ -65,9 +68,10 @@ properties:
   priority:
     title:          "Task Priority"
     description: |
-      Priority of task, this defaults to `normal` and the scope
-      `queue:task-priority:high` is required to define a task with `priority`
-      set to `high`. Additional priority levels may be added later.
+      Priority of task, this defaults to `normal`. Additional levels may be
+      added later.
+      **Task submitter required scopes** `queue:task-priority:high` for high
+      priority tasks.
     type:           string
     enum:
       - high
@@ -109,6 +113,9 @@ properties:
         ending with `*` which will authorize all scopes for
         which the string is a prefix.  Scopes must be composed of
         printable ASCII characters and spaces.
+        **Task submitter required scopes** The same scope-pattern(s) given
+        (otherwise a task could be submitted to perform an action that the
+        task submitter is not authorized to perform).
       type:         string
       pattern:      {$const: scope-pattern}
   payload:
