@@ -333,8 +333,12 @@ func (entry *APIEntry) String() string {
 
 func (entry *APIEntry) generateAPICode(apiName string) string {
 	comment := ""
+	if entry.Stability != "stable" {
+		comment += "// Stability: *** " + strings.ToUpper(entry.Stability) + " ***\n"
+		comment += "//\n"
+	}
 	if entry.Description != "" {
-		comment = utils.Indent(entry.Description, "// ")
+		comment += utils.Indent(entry.Description, "// ")
 	}
 	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 		comment += "\n"
@@ -359,10 +363,6 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 			}
 			comment += strings.Join(lines, ", or\n") + "\n"
 		}
-	}
-	if entry.Stability != "stable" {
-		comment += "//\n"
-		comment += "// Stability: *** " + entry.Stability + " ***\n"
 	}
 	comment += "//\n"
 	comment += fmt.Sprintf("// See %v/#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
