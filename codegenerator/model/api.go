@@ -94,9 +94,10 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "//\n"
 	comment += "// TaskCluster Schema\n"
 	comment += "//\n"
-	comment += "// The entire source code of this go package was auto-generated from the API definition\n"
-	comment += "// " + api.apiDef.URL + " downloaded on\n"
-	comment += "// " + downloadedTime.UTC().Format("Mon, 2 Jan 2006 at 15:04:00 UTC") + ".\n"
+	comment += "// The source code of this go package was auto-generated from the API definition at\n"
+	comment += "// " + api.apiDef.URL + " together with the input and output schemas it references, downloaded on\n"
+	comment += "// " + downloadedTime.UTC().Format("Mon, 2 Jan 2006 at 15:04:00 UTC") + ". The code was generated\n"
+	comment += "// by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.\n"
 
 	content := comment
 	content += "package " + api.apiDef.PackageName + "\n"
