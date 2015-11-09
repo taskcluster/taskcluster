@@ -227,6 +227,8 @@ func New(clientId string, accessToken string) *AwsProvisioner {
 	}
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Create a worker type.  A worker type contains all the configuration
 // needed for the provisioner to manage the instances.  Each worker type
 // knows which regions and which instance types are allowed for that
@@ -254,14 +256,14 @@ func New(clientId string, accessToken string) *AwsProvisioner {
 // Required scopes:
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createWorkerType
 func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
 	responseObject, callSummary := awsProvisioner.apiCall(payload, "PUT", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest))
 	return responseObject.(*GetWorkerTypeRequest), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Provide a new copy of a worker type to replace the existing one.
 // This will overwrite the existing worker type definition if there
 // is already a worker type of that name.  This method will return a
@@ -277,14 +279,14 @@ func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payloa
 // Required scopes:
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#updateWorkerType
 func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
 	responseObject, callSummary := awsProvisioner.apiCall(payload, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(GetWorkerTypeRequest))
 	return responseObject.(*GetWorkerTypeRequest), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Retreive a copy of the requested worker type definition.
 // This copy contains a lastModified field as well as the worker
 // type name.  As such, it will require manipulation to be able to
@@ -295,14 +297,14 @@ func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payloa
 //   * aws-provisioner:view-worker-type:<workerType>, or
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#workerType
 func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerTypeRequest, *CallSummary) {
 	responseObject, callSummary := awsProvisioner.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest))
 	return responseObject.(*GetWorkerTypeRequest), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Delete a worker type definition.  This method will only delete
 // the worker type definition from the storage table.  The actual
 // deletion will be handled by a background worker.  As soon as this
@@ -317,14 +319,14 @@ func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerT
 // Required scopes:
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeWorkerType
 func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) *CallSummary {
 	_, callSummary := awsProvisioner.apiCall(nil, "DELETE", "/worker-type/"+url.QueryEscape(workerType), nil)
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Return a list of string worker type names.  These are the names
 // of all managed worker types known to the provisioner.  This does
 // not include worker types which are left overs from a deleted worker
@@ -333,14 +335,14 @@ func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) *CallS
 // Required scopes:
 //   * aws-provisioner:list-worker-types
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#listWorkerTypes
 func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *CallSummary) {
 	responseObject, callSummary := awsProvisioner.apiCall(nil, "GET", "/list-worker-types", new(ListWorkerTypes))
 	return responseObject.(*ListWorkerTypes), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Insert a secret into the secret storage.  The supplied secrets will
 // be provided verbatime via `getSecret`, while the supplied scopes will
 // be converted into credentials by `getSecret`.
@@ -351,14 +353,14 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *Call
 // Required scopes:
 //   * aws-provisioner:create-secret
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createSecret
 func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSecretRequest) *CallSummary {
 	_, callSummary := awsProvisioner.apiCall(payload, "PUT", "/secret/"+url.QueryEscape(token), nil)
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Retrieve a secret from storage.  The result contains any passwords or
 // other restricted information verbatim as well as a temporary credential
 // based on the scopes specified when the secret was created.
@@ -367,21 +369,19 @@ func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSec
 // or else the secrets will be visible to any process which can access the
 // user data associated with the instance.
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#getSecret
 func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretResponse, *CallSummary) {
 	responseObject, callSummary := awsProvisioner.apiCall(nil, "GET", "/secret/"+url.QueryEscape(token), new(GetSecretResponse))
 	return responseObject.(*GetSecretResponse), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // An instance will report in by giving its instance id as well
 // as its security token.  The token is given and checked to ensure
 // that it matches a real token that exists to ensure that random
 // machines do not check in.  We could generate a different token
 // but that seems like overkill
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#instanceStarted
 func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId string, token string) *CallSummary {
@@ -389,6 +389,8 @@ func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId string, token s
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Remove a secret.  After this call, a call to `getSecret` with the given
 // token will return no information.
 //
@@ -396,14 +398,14 @@ func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId string, token s
 // secret delete the secret from storage before handing over control
 // to untrusted processes to prevent credential and/or secret leakage.
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeSecret
 func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) *CallSummary {
 	_, callSummary := awsProvisioner.apiCall(nil, "DELETE", "/secret/"+url.QueryEscape(token), nil)
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // This method returns a preview of all possible launch specifications
 // that this worker type definition could submit to EC2.  It is used to
 // test worker types, nothing more
@@ -414,14 +416,14 @@ func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) *CallSummary {
 //   * aws-provisioner:view-worker-type:<workerType>, or
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#getLaunchSpecs
 func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, *CallSummary) {
 	responseObject, callSummary := awsProvisioner.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", new(GetAllLaunchSpecsResponse))
 	return responseObject.(*GetAllLaunchSpecsResponse), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // This method is a left over and will be removed as soon as the
 // tools.tc.net UI is updated to use the per-worker state
 //
@@ -430,14 +432,14 @@ func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAll
 // Required scopes:
 //   * aws-provisioner:aws-state
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#awsState
 func (awsProvisioner *AwsProvisioner) AwsState() *CallSummary {
 	_, callSummary := awsProvisioner.apiCall(nil, "GET", "/aws-state", nil)
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Return the state of a given workertype as stored by the provisioner.
 // This state is stored as three lists: 1 for all instances, 1 for requests
 // which show in the ec2 api and 1 list for those only tracked internally
@@ -446,19 +448,17 @@ func (awsProvisioner *AwsProvisioner) AwsState() *CallSummary {
 // Required scopes:
 //   * aws-provisioner:view-worker-type:<workerType>
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#state
 func (awsProvisioner *AwsProvisioner) State(workerType string) *CallSummary {
 	_, callSummary := awsProvisioner.apiCall(nil, "GET", "/state/"+url.QueryEscape(workerType), nil)
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#ping
 func (awsProvisioner *AwsProvisioner) Ping() *CallSummary {
@@ -466,11 +466,11 @@ func (awsProvisioner *AwsProvisioner) Ping() *CallSummary {
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Get an API reference!
 //
 // **Warning** this api end-point is **not stable**.
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#apiReference
 func (awsProvisioner *AwsProvisioner) ApiReference() *CallSummary {

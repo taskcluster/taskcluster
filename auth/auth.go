@@ -381,6 +381,8 @@ func (myAuth *Auth) DeleteRole(roleId string) *CallSummary {
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Get temporary AWS credentials for `read-write` or `read-only` access to
 // a given `bucket` and `prefix` within that bucket.
 // The `level` parameter can be `read-write` or `read-only` and determines
@@ -403,8 +405,6 @@ func (myAuth *Auth) DeleteRole(roleId string) *CallSummary {
 //
 // Required scopes:
 //   * auth:aws-s3:<level>:<bucket>/<prefix>
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/auth/api-docs/#awsS3Credentials
 func (myAuth *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *CallSummary) {
@@ -438,6 +438,8 @@ func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest
 	return responseObject.(*HawkSignatureAuthenticationResponse), callSummary
 }
 
+// Stability: *** DEPRECATED ***
+//
 // Import client from JSON list, overwriting any clients that already
 // exists. Returns a list of all clients imported.
 //
@@ -446,19 +448,17 @@ func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest
 //   * auth:create-client, and
 //   * auth:credentials
 //
-// Stability: *** deprecated ***
-//
 // See http://docs.taskcluster.net/auth/api-docs/#importClients
 func (myAuth *Auth) ImportClients(payload *ExportedClients) *CallSummary {
 	_, callSummary := myAuth.apiCall(payload, "POST", "/import-clients", nil)
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/auth/api-docs/#ping
 func (myAuth *Auth) Ping() *CallSummary {

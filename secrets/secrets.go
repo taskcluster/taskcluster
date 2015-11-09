@@ -203,12 +203,12 @@ func New(clientId string, accessToken string) *Secrets {
 	}
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Set a secret associated with some key.
 //
 // Required scopes:
 //   * secrets:set:<name>
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/secrets/#set
 func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) *CallSummary {
@@ -216,12 +216,12 @@ func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) *CallSum
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Update a secret associated with some key.
 //
 // Required scopes:
 //   * secrets:update:<name>
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/secrets/#update
 func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) *CallSummary {
@@ -229,12 +229,12 @@ func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) *Call
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Delete the secret attached to some key.
 //
 // Required scopes:
 //   * secrets:remove:<name>
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/secrets/#remove
 func (mySecrets *Secrets) Remove(name string) *CallSummary {
@@ -242,12 +242,12 @@ func (mySecrets *Secrets) Remove(name string) *CallSummary {
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Read the secret attached to some key.
 //
 // Required scopes:
 //   * secrets:get:<name>
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/secrets/#get
 func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary) {
@@ -255,11 +255,11 @@ func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary) {
 	return responseObject.(*ATaskClusterSecret), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/secrets/#ping
 func (mySecrets *Secrets) Ping() *CallSummary {

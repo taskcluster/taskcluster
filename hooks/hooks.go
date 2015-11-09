@@ -214,9 +214,9 @@ func New(clientId string, accessToken string) *Hooks {
 	}
 }
 
-// This endpoint will return a list of all hook groups with at least one hook.
+// Stability: *** EXPERIMENTAL ***
 //
-// Stability: *** experimental ***
+// This endpoint will return a list of all hook groups with at least one hook.
 //
 // See http://docs.taskcluster.net/services/hooks/#listHookGroups
 func (myHooks *Hooks) ListHookGroups() (*HookGroups, *CallSummary) {
@@ -224,10 +224,10 @@ func (myHooks *Hooks) ListHookGroups() (*HookGroups, *CallSummary) {
 	return responseObject.(*HookGroups), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // This endpoint will return a list of all the hook definitions within a
 // given hook group.
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/hooks/#listHooks
 func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, *CallSummary) {
@@ -235,10 +235,10 @@ func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, *CallSummary) {
 	return responseObject.(*HookList), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // This endpoint will return the hook defintion for the given `hookGroupId`
 // and hookId.
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/hooks/#hook
 func (myHooks *Hooks) Hook(hookGroupId string, hookId string) (*HookDefinition, *CallSummary) {
@@ -246,10 +246,10 @@ func (myHooks *Hooks) Hook(hookGroupId string, hookId string) (*HookDefinition, 
 	return responseObject.(*HookDefinition), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // This endpoint will return the schedule and next scheduled creation time
 // for the given hook.
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/hooks/#getHookSchedule
 func (myHooks *Hooks) GetHookSchedule(hookGroupId string, hookId string) (*HookSchedule, *CallSummary) {
@@ -257,6 +257,8 @@ func (myHooks *Hooks) GetHookSchedule(hookGroupId string, hookId string) (*HookS
 	return responseObject.(*HookSchedule), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // This endpoint will create a new hook.
 //
 // The caller's credentials must include the role that will be used to
@@ -267,14 +269,14 @@ func (myHooks *Hooks) GetHookSchedule(hookGroupId string, hookId string) (*HookS
 //   * hooks:modify-hook:<hookGroupId>/<hookId>, and
 //   * assume:hook-id:<hookGroupId>/<hookId>
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/services/hooks/#createHook
 func (myHooks *Hooks) CreateHook(hookGroupId string, hookId string, payload *HookCreationRequest) (*HookDefinition, *CallSummary) {
 	responseObject, callSummary := myHooks.apiCall(payload, "PUT", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition))
 	return responseObject.(*HookDefinition), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // This endpoint will update an existing hook.  All fields except
 // `hookGroupId` and `hookId` can be modified.
 //
@@ -282,20 +284,18 @@ func (myHooks *Hooks) CreateHook(hookGroupId string, hookId string, payload *Hoo
 //   * hooks:modify-hook:<hookGroupId>/<hookId>, and
 //   * assume:hook-id:<hookGroupId>/<hookId>
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/services/hooks/#updateHook
 func (myHooks *Hooks) UpdateHook(hookGroupId string, hookId string, payload *HookCreationRequest) (*HookDefinition, *CallSummary) {
 	responseObject, callSummary := myHooks.apiCall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition))
 	return responseObject.(*HookDefinition), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // This endpoint will remove a hook definition.
 //
 // Required scopes:
 //   * hooks:modify-hook:<hookGroupId>/<hookId>
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/hooks/#removeHook
 func (myHooks *Hooks) RemoveHook(hookGroupId string, hookId string) *CallSummary {

@@ -210,6 +210,8 @@ func New(clientId string, accessToken string) *Scheduler {
 	}
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Create a new task-graph, the `status` of the resulting JSON is a
 // task-graph status structure, you can find the `taskGraphId` in this
 // structure.
@@ -276,14 +278,14 @@ func New(clientId string, accessToken string) *Scheduler {
 // Required scopes:
 //   * scheduler:create-task-graph
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/scheduler/api-docs/#createTaskGraph
 func (myScheduler *Scheduler) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1) (*TaskGraphStatusResponse, *CallSummary) {
 	responseObject, callSummary := myScheduler.apiCall(payload, "PUT", "/task-graph/"+url.QueryEscape(taskGraphId), new(TaskGraphStatusResponse))
 	return responseObject.(*TaskGraphStatusResponse), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Add a set of tasks to an existing task-graph. The request format is very
 // similar to the request format for creating task-graphs. But `routes`
 // key, `scopes`, `metadata` and `tags` cannot be modified.
@@ -301,21 +303,19 @@ func (myScheduler *Scheduler) CreateTaskGraph(taskGraphId string, payload *TaskG
 // Required scopes:
 //   * scheduler:extend-task-graph:<taskGraphId>
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/scheduler/api-docs/#extendTaskGraph
 func (myScheduler *Scheduler) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition) (*TaskGraphStatusResponse, *CallSummary) {
 	responseObject, callSummary := myScheduler.apiCall(payload, "POST", "/task-graph/"+url.QueryEscape(taskGraphId)+"/extend", new(TaskGraphStatusResponse))
 	return responseObject.(*TaskGraphStatusResponse), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Get task-graph status, this will return the _task-graph status
 // structure_. which can be used to check if a task-graph is `running`,
 // `blocked` or `finished`.
 //
 // **Note**, that `finished` implies successfully completion.
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#status
 func (myScheduler *Scheduler) Status(taskGraphId string) (*TaskGraphStatusResponse, *CallSummary) {
@@ -323,6 +323,8 @@ func (myScheduler *Scheduler) Status(taskGraphId string) (*TaskGraphStatusRespon
 	return responseObject.(*TaskGraphStatusResponse), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Get task-graph information, this includes the _task-graph status
 // structure_, along with `metadata` and `tags`, but not information
 // about all tasks.
@@ -330,14 +332,14 @@ func (myScheduler *Scheduler) Status(taskGraphId string) (*TaskGraphStatusRespon
 // If you want more detailed information use the `inspectTaskGraph`
 // end-point instead.
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/scheduler/api-docs/#info
 func (myScheduler *Scheduler) Info(taskGraphId string) (*TaskGraphInfoResponse, *CallSummary) {
 	responseObject, callSummary := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/info", new(TaskGraphInfoResponse))
 	return responseObject.(*TaskGraphInfoResponse), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Inspect a task-graph, this returns all the information the task-graph
 // scheduler knows about the task-graph and the state of its tasks.
 //
@@ -351,14 +353,14 @@ func (myScheduler *Scheduler) Info(taskGraphId string) (*TaskGraphInfoResponse, 
 // as we do not promise it will remain fully backward compatible in
 // the future.
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspect
 func (myScheduler *Scheduler) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *CallSummary) {
 	responseObject, callSummary := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect", new(InspectTaskGraphResponse))
 	return responseObject.(*InspectTaskGraphResponse), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Inspect a task from a task-graph, this returns all the information the
 // task-graph scheduler knows about the specific task.
 //
@@ -372,19 +374,17 @@ func (myScheduler *Scheduler) Inspect(taskGraphId string) (*InspectTaskGraphResp
 // as we do not promise it will remain fully backward compatible in
 // the future.
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspectTask
 func (myScheduler *Scheduler) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraphTaskResponse, *CallSummary) {
 	responseObject, callSummary := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect/"+url.QueryEscape(taskId), new(InspectTaskGraphTaskResponse))
 	return responseObject.(*InspectTaskGraphTaskResponse), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#ping
 func (myScheduler *Scheduler) Ping() *CallSummary {

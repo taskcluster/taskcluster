@@ -289,10 +289,10 @@ func New(clientId string, accessToken string) *Index {
 	}
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Find task by namespace, if no task existing for the given namespace, this
 // API end-point respond `404`.
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/index/#findTask
 func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *CallSummary) {
@@ -300,6 +300,8 @@ func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *CallSum
 	return responseObject.(*IndexedTaskResponse), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // List the namespaces immediately under a given namespace. This end-point
 // list up to 1000 namespaces. If more namespaces are present a
 // `continuationToken` will be returned, which can be given in the next
@@ -309,14 +311,14 @@ func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *CallSum
 // **Remark**, this end-point is designed for humans browsing for tasks, not
 // services, as that makes little sense.
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/services/index/#listNamespaces
 func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, *CallSummary) {
 	responseObject, callSummary := myIndex.apiCall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse))
 	return responseObject.(*ListNamespacesResponse), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // List the tasks immediately under a given namespace. This end-point
 // list up to 1000 tasks. If more tasks are present a
 // `continuationToken` will be returned, which can be given in the next
@@ -326,21 +328,19 @@ func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRe
 // **Remark**, this end-point is designed for humans browsing for tasks, not
 // services, as that makes little sense.
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/services/index/#listTasks
 func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, *CallSummary) {
 	responseObject, callSummary := myIndex.apiCall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse))
 	return responseObject.(*ListTasksResponse), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Insert a task into the index. Please see the introduction above, for how
 // to index successfully completed tasks automatically, using custom routes.
 //
 // Required scopes:
 //   * index:insert-task:<namespace>
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/index/#insertTask
 func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, *CallSummary) {
@@ -348,6 +348,8 @@ func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (
 	return responseObject.(*IndexedTaskResponse), callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Find task by namespace and redirect to artifact with given `name`,
 // if no task existing for the given namespace, this API end-point respond
 // `404`.
@@ -355,19 +357,17 @@ func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (
 // Required scopes:
 //   * queue:get-artifact:<name>
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/services/index/#findArtifactFromTask
 func (myIndex *Index) FindArtifactFromTask(namespace string, name string) *CallSummary {
 	_, callSummary := myIndex.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil)
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/index/#ping
 func (myIndex *Index) Ping() *CallSummary {

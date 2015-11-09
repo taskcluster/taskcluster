@@ -206,6 +206,8 @@ func New(clientId string, accessToken string) *PurgeCache {
 	}
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Publish a purge-cache message to purge caches named `cacheName` with
 // `provisionerId` and `workerType` in the routing-key. Workers should
 // be listening for this message and purge caches when they see it.
@@ -213,19 +215,17 @@ func New(clientId string, accessToken string) *PurgeCache {
 // Required scopes:
 //   * purge-cache:<provisionerId>/<workerType>:<cacheName>
 //
-// Stability: *** experimental ***
-//
 // See http://docs.taskcluster.net/services/purge-cache/#purgeCache
 func (purgeCache *PurgeCache) PurgeCache(provisionerId string, workerType string, payload *PurgeCacheRequest) *CallSummary {
 	_, callSummary := purgeCache.apiCall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil)
 	return callSummary
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
-//
-// Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/services/purge-cache/#ping
 func (purgeCache *PurgeCache) Ping() *CallSummary {
