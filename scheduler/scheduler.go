@@ -396,7 +396,7 @@ type (
 	// Definition of a task that can be scheduled
 	//
 	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
-	TaskDefinition struct {
+	TaskDefinitionRequest struct {
 		// Creation time of task
 		Created Time `json:"created"`
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
@@ -436,14 +436,15 @@ type (
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
 		Payload json.RawMessage `json:"payload"`
-		// Priority of task, this defaults to `normal` and the scope
-		// `queue:task-priority:high` is required to define a task with `priority`
-		// set to `high`. Additional priority levels may be added later.
+		// Priority of task, this defaults to `normal`. Additional levels may be
+		// added later.
+		// **Task submitter required scopes** `queue:task-priority:high` for high
+		// priority tasks.
 		//
 		// Possible values:
 		//   * "high"
 		//   * "normal"
-		Priority json.RawMessage `json:"priority"`
+		Priority string `json:"priority"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		//
@@ -454,12 +455,15 @@ type (
 		// these events are to be expected.
 		Retries int `json:"retries"`
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
+		// **Task submitter required scopes** `queue:route:<route>` for
+		// each route given.
 		Routes []string `json:"routes"`
 		// Identifier for the scheduler that _defined_ this task, this can be an
 		// identifier for a user or a service like the `"task-graph-scheduler"`.
-		// Along with the `taskGroupId` this is used to form the permission scope
-		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
-		// this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+		// **Task submitter required scopes**
+		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`.
+		// This scope is also necessary to _schedule_ a defined task, or _rerun_ a
+		// task.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
 		SchedulerId string `json:"schedulerId"`
@@ -494,8 +498,8 @@ type (
 			// List of required `taskId`s
 			Requires []string `json:"requires"`
 			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
-			Reruns int            `json:"reruns"`
-			Task   TaskDefinition `json:"task"`
+			Reruns int                   `json:"reruns"`
+			Task   TaskDefinitionRequest `json:"task"`
 			// Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.
 			//
 			// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
@@ -667,8 +671,8 @@ type (
 			// List of required `taskId`s
 			Requires []string `json:"requires"`
 			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
-			Reruns int            `json:"reruns"`
-			Task   TaskDefinition `json:"task"`
+			Reruns int                   `json:"reruns"`
+			Task   TaskDefinitionRequest `json:"task"`
 			// Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.
 			//
 			// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$

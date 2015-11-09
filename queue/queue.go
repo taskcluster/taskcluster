@@ -216,9 +216,9 @@ func New(clientId string, accessToken string) *Queue {
 // Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#task
-func (myQueue *Queue) Task(taskId string) (*TaskDefinition1, *CallSummary) {
-	responseObject, callSummary := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId), new(TaskDefinition1))
-	return responseObject.(*TaskDefinition1), callSummary
+func (myQueue *Queue) Task(taskId string) (*TaskDefinitionResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId), new(TaskDefinitionResponse))
+	return responseObject.(*TaskDefinitionResponse), callSummary
 }
 
 // Get task status structure from `taskId`
@@ -244,11 +244,13 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *CallSummary) 
 //
 // **Task specific routing-keys**, using the `task.routes` property you may
 // define task specific routing-keys. If a task has a task specific
-// routing-key: `<route>`, then the poster will be required to posses the
-// scope `queue:route:<route>`. And when the an AMQP message about the task
-// is published the message will be CC'ed with the routing-key:
+// routing-key: `<route>`, then when the AMQP message about the task is
+// published, the message will be CC'ed with the routing-key:
 // `route.<route>`. This is useful if you want another component to listen
 // for completed tasks you have posted.
+//
+// **Important** Any scopes the task requires are also required for creating
+// the task. Please see the Request Payload (Task Definition) for details.
 //
 // Required scopes:
 //   * queue:create-task:<provisionerId>/<workerType>
@@ -256,7 +258,7 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *CallSummary) 
 // Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#createTask
-func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *CallSummary) {
+func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(payload, "PUT", "/task/"+url.QueryEscape(taskId), new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
@@ -273,6 +275,9 @@ func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinition) (*TaskS
 // the task by calling `/task/:taskId/schedule`. This eliminates the need to
 // store tasks somewhere else while waiting for dependencies to resolve.
 //
+// **Important** Any scopes the task requires are also required for defining
+// the task. Please see the Request Payload (Task Definition) for details.
+//
 // **Note** this operation is **idempotent**, as long as you upload the same
 // task definition as previously defined this operation is safe to retry.
 //
@@ -283,7 +288,7 @@ func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinition) (*TaskS
 // Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#defineTask
-func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinition) (*TaskStatusResponse, *CallSummary) {
+func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, *CallSummary) {
 	responseObject, callSummary := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/define", new(TaskStatusResponse))
 	return responseObject.(*TaskStatusResponse), callSummary
 }
@@ -399,9 +404,9 @@ func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimR
 // Stability: *** experimental ***
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reclaimTask
-func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskClaimResponse1, *CallSummary) {
-	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskClaimResponse1))
-	return responseObject.(*TaskClaimResponse1), callSummary
+func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskReclaimResponse, *CallSummary) {
+	responseObject, callSummary := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskReclaimResponse))
+	return responseObject.(*TaskReclaimResponse), callSummary
 }
 
 // Report a task completed, resolving the run as `completed`.
@@ -636,7 +641,7 @@ type (
 	// Definition of a task that can be scheduled
 	//
 	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
-	TaskDefinition struct {
+	TaskDefinitionRequest struct {
 		// Creation time of task
 		Created Time `json:"created"`
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
@@ -676,14 +681,15 @@ type (
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
 		Payload json.RawMessage `json:"payload"`
-		// Priority of task, this defaults to `normal` and the scope
-		// `queue:task-priority:high` is required to define a task with `priority`
-		// set to `high`. Additional priority levels may be added later.
+		// Priority of task, this defaults to `normal`. Additional levels may be
+		// added later.
+		// **Task submitter required scopes** `queue:task-priority:high` for high
+		// priority tasks.
 		//
 		// Possible values:
 		//   * "high"
 		//   * "normal"
-		Priority json.RawMessage `json:"priority"`
+		Priority string `json:"priority"`
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		//
@@ -694,12 +700,15 @@ type (
 		// these events are to be expected.
 		Retries int `json:"retries"`
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
+		// **Task submitter required scopes** `queue:route:<route>` for
+		// each route given.
 		Routes []string `json:"routes"`
 		// Identifier for the scheduler that _defined_ this task, this can be an
 		// identifier for a user or a service like the `"task-graph-scheduler"`.
-		// Along with the `taskGroupId` this is used to form the permission scope
-		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
-		// this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+		// **Task submitter required scopes**
+		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`.
+		// This scope is also necessary to _schedule_ a defined task, or _rerun_ a
+		// task.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
 		SchedulerId string `json:"schedulerId"`
@@ -869,8 +878,8 @@ type (
 		Status TaskStatusStructure `json:"status"`
 		// Time at which the run expires and is resolved as `exception`,
 		// with reason `claim-expired` if the run haven't been reclaimed.
-		TakenUntil Time            `json:"takenUntil"`
-		Task       TaskDefinition1 `json:"task"`
+		TakenUntil Time                   `json:"takenUntil"`
+		Task       TaskDefinitionResponse `json:"task"`
 		// Identifier for the worker-group within which this run started.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
@@ -923,7 +932,7 @@ type (
 	// Response to a successful task claim
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#
-	TaskClaimResponse1 struct {
+	TaskReclaimResponse struct {
 		// Temporary credentials granting `task.scopes` and the scope:
 		// `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
 		// the task, upload artifacts and report task resolution.
@@ -1087,7 +1096,7 @@ type (
 	// Definition of a task that can be scheduled
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task.json#
-	TaskDefinition1 struct {
+	TaskDefinitionResponse struct {
 		// Creation time of task
 		Created Time `json:"created"`
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future

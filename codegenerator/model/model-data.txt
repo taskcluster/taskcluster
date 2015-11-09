@@ -2823,13 +2823,14 @@ Properties
     SourceURL              = ''
   Property 'priority' =
     Default                = 'normal'
-    Description            = 'Priority of task, this defaults to `normal` and the scope
-    `queue:task-priority:high` is required to define a task with `priority`
-    set to `high`. Additional priority levels may be added later.
+    Description            = 'Priority of task, this defaults to `normal`. Additional levels may be
+    added later.
+    **Task submitter required scopes** `queue:task-priority:high` for high
+    priority tasks.
     '
     Enum                   = '[high normal]'
     Title                  = 'Task Priority'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -2853,7 +2854,7 @@ Properties
     An _infrastructure issue_ is a worker node that crashes or is shutdown,
     these events are to be expected.
     '
-    Maximum                = '50'
+    Maximum                = '49'
     Minimum                = '0'
     Title                  = 'Retries'
     Type                   = 'integer'
@@ -2864,6 +2865,8 @@ Properties
   Property 'routes' =
     Default                = '[]'
     Description            = 'List of task specific routes, AMQP messages will be CC'ed to these routes.
+    **Task submitter required scopes** `queue:route:<route>` for
+    each route given.
     '
     Items
       Description            = 'A task specific route, AMQP messages will be CC'ed with a routing key
@@ -2890,9 +2893,10 @@ Properties
     Default                = '-'
     Description            = 'Identifier for the scheduler that _defined_ this task, this can be an
     identifier for a user or a service like the `"task-graph-scheduler"`.
-    Along with the `taskGroupId` this is used to form the permission scope
-    `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
-    this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+    **Task submitter required scopes**
+    `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`.
+    This scope is also necessary to _schedule_ a defined task, or _rerun_ a
+    task.
     '
     MaxLength              = '22'
     MinLength              = '1'
@@ -2914,6 +2918,9 @@ Properties
       ending with `*` which will authorize all scopes for
       which the string is a prefix.  Scopes must be composed of
       printable ASCII characters and spaces.
+      **Task submitter required scopes** The same scope-pattern(s) given
+      (otherwise a task could be submitted to perform an action that the
+      task submitter is not authorized to perform).
       '
       Pattern                = '^[\x20-\x7e]*$'
       Title                  = 'Scope'
@@ -2976,9 +2983,9 @@ Properties
     SourceURL              = ''
 Required               = '[provisionerId workerType created deadline payload metadata]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Task Definition'
+Title                  = 'Task Definition Request'
 Type                   = 'object'
-TypeName               = 'TaskDefinition'
+TypeName               = 'TaskDefinitionRequest'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'false'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
@@ -3799,11 +3806,13 @@ year. Notice, that artifacts created by task must expire before the task.
 
 **Task specific routing-keys**, using the `task.routes` property you may
 define task specific routing-keys. If a task has a task specific 
-routing-key: `<route>`, then the poster will be required to posses the
-scope `queue:route:<route>`. And when the an AMQP message about the task
-is published the message will be CC'ed with the routing-key: 
+routing-key: `<route>`, then when the AMQP message about the task is
+published, the message will be CC'ed with the routing-key: 
 `route.<route>`. This is useful if you want another component to listen
-for completed tasks you have posted.'
+for completed tasks you have posted.
+
+**Important** Any scopes the task requires are also required for creating
+the task. Please see the Request Payload (Task Definition) for details.'
 Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'post'
@@ -3826,6 +3835,9 @@ if you have a set of dependent tasks. Then you can upload all the tasks
 and when the dependencies of a tasks have been resolved, you can schedule
 the task by calling `/task/:taskId/schedule`. This eliminates the need to
 store tasks somewhere else while waiting for dependencies to resolve.
+
+**Important** Any scopes the task requires are also required for defining
+the task. Please see the Request Payload (Task Definition) for details.
 
 **Note** this operation is **idempotent**, as long as you upload the same
 task definition as previously defined this operation is safe to retry.'
@@ -4286,13 +4298,14 @@ Properties
     SourceURL              = ''
   Property 'priority' =
     Default                = 'normal'
-    Description            = 'Priority of task, this defaults to `normal` and the scope
-    `queue:task-priority:high` is required to define a task with `priority`
-    set to `high`. Additional priority levels may be added later.
+    Description            = 'Priority of task, this defaults to `normal`. Additional levels may be
+    added later.
+    **Task submitter required scopes** `queue:task-priority:high` for high
+    priority tasks.
     '
     Enum                   = '[high normal]'
     Title                  = 'Task Priority'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -4316,7 +4329,7 @@ Properties
     An _infrastructure issue_ is a worker node that crashes or is shutdown,
     these events are to be expected.
     '
-    Maximum                = '50'
+    Maximum                = '49'
     Minimum                = '0'
     Title                  = 'Retries'
     Type                   = 'integer'
@@ -4327,6 +4340,8 @@ Properties
   Property 'routes' =
     Default                = '[]'
     Description            = 'List of task specific routes, AMQP messages will be CC'ed to these routes.
+    **Task submitter required scopes** `queue:route:<route>` for
+    each route given.
     '
     Items
       Description            = 'A task specific route, AMQP messages will be CC'ed with a routing key
@@ -4353,9 +4368,10 @@ Properties
     Default                = '-'
     Description            = 'Identifier for the scheduler that _defined_ this task, this can be an
     identifier for a user or a service like the `"task-graph-scheduler"`.
-    Along with the `taskGroupId` this is used to form the permission scope
-    `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
-    this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+    **Task submitter required scopes**
+    `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`.
+    This scope is also necessary to _schedule_ a defined task, or _rerun_ a
+    task.
     '
     MaxLength              = '22'
     MinLength              = '1'
@@ -4377,6 +4393,9 @@ Properties
       ending with `*` which will authorize all scopes for
       which the string is a prefix.  Scopes must be composed of
       printable ASCII characters and spaces.
+      **Task submitter required scopes** The same scope-pattern(s) given
+      (otherwise a task could be submitted to perform an action that the
+      task submitter is not authorized to perform).
       '
       Pattern                = '^[\x20-\x7e]*$'
       Title                  = 'Scope'
@@ -4439,9 +4458,9 @@ Properties
     SourceURL              = ''
 Required               = '[provisionerId workerType created deadline payload metadata]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Task Definition'
+Title                  = 'Task Definition Request'
 Type                   = 'object'
-TypeName               = 'TaskDefinition'
+TypeName               = 'TaskDefinitionRequest'
 IsInputSchema          = 'true'
 IsOutputSchema         = 'false'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
@@ -5058,7 +5077,7 @@ OneOf
     SourceURL              = ''
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Post Artifact Response'
-Type HAS NOT BEEN SET!!!
+Type                   = 'object'
 TypeName               = 'PostArtifactResponse'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'true'
@@ -5379,9 +5398,9 @@ Properties
     SourceURL              = ''
 Required               = '[status runId workerGroup workerId takenUntil credentials]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Task Claim Response'
+Title                  = 'Task Reclaim Response'
 Type                   = 'object'
-TypeName               = 'TaskClaimResponse1'
+TypeName               = 'TaskReclaimResponse'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'true'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#'
@@ -5943,9 +5962,9 @@ Properties
     SourceURL              = ''
 Required               = '[provisionerId workerType schedulerId taskGroupId routes priority retries created deadline scopes payload metadata tags extra]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Task Definition'
+Title                  = 'Task Definition Response'
 Type                   = 'object'
-TypeName               = 'TaskDefinition1'
+TypeName               = 'TaskDefinitionResponse'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'true'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#'
@@ -7578,13 +7597,14 @@ Properties
     SourceURL              = ''
   Property 'priority' =
     Default                = 'normal'
-    Description            = 'Priority of task, this defaults to `normal` and the scope
-    `queue:task-priority:high` is required to define a task with `priority`
-    set to `high`. Additional priority levels may be added later.
+    Description            = 'Priority of task, this defaults to `normal`. Additional levels may be
+    added later.
+    **Task submitter required scopes** `queue:task-priority:high` for high
+    priority tasks.
     '
     Enum                   = '[high normal]'
     Title                  = 'Task Priority'
-    Type HAS NOT BEEN SET!!!
+    Type                   = 'string'
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -7608,7 +7628,7 @@ Properties
     An _infrastructure issue_ is a worker node that crashes or is shutdown,
     these events are to be expected.
     '
-    Maximum                = '50'
+    Maximum                = '49'
     Minimum                = '0'
     Title                  = 'Retries'
     Type                   = 'integer'
@@ -7619,6 +7639,8 @@ Properties
   Property 'routes' =
     Default                = '[]'
     Description            = 'List of task specific routes, AMQP messages will be CC'ed to these routes.
+    **Task submitter required scopes** `queue:route:<route>` for
+    each route given.
     '
     Items
       Description            = 'A task specific route, AMQP messages will be CC'ed with a routing key
@@ -7645,9 +7667,10 @@ Properties
     Default                = '-'
     Description            = 'Identifier for the scheduler that _defined_ this task, this can be an
     identifier for a user or a service like the `"task-graph-scheduler"`.
-    Along with the `taskGroupId` this is used to form the permission scope
-    `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
-    this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+    **Task submitter required scopes**
+    `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`.
+    This scope is also necessary to _schedule_ a defined task, or _rerun_ a
+    task.
     '
     MaxLength              = '22'
     MinLength              = '1'
@@ -7669,6 +7692,9 @@ Properties
       ending with `*` which will authorize all scopes for
       which the string is a prefix.  Scopes must be composed of
       printable ASCII characters and spaces.
+      **Task submitter required scopes** The same scope-pattern(s) given
+      (otherwise a task could be submitted to perform an action that the
+      task submitter is not authorized to perform).
       '
       Pattern                = '^[\x20-\x7e]*$'
       Title                  = 'Scope'
@@ -7731,9 +7757,9 @@ Properties
     SourceURL              = ''
 Required               = '[provisionerId workerType created deadline payload metadata]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Task Definition'
+Title                  = 'Task Definition Request'
 Type                   = 'object'
-TypeName               = 'TaskDefinition'
+TypeName               = 'TaskDefinitionRequest'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'false'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
