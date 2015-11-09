@@ -1,130 +1,13 @@
 "use strict";
 
 var express         = require('express');
-var bodyParser      = require('body-parser');
-var morgan          = require('morgan');
-var methodOverride  = require('method-override');
-var cookieParser    = require('cookie-parser');
-var cookieSession   = require('cookie-session');
-var errorHandler    = require('errorhandler');
-var passport        = require('passport');
 var _               = require('lodash');
 var debug           = require('debug')("base:app");
 var assert          = require('assert');
-var moment          = require('moment');
-var marked          = require('marked');
+var morgan          = require('morgan');
 var Promise         = require('promise');
 var http            = require('http');
-var PassportPersona = require('passport-persona');
 var sslify          = require('express-sslify');
-
-/**
- * Setup Middleware for normal browser consumable HTTP end-points.
- *
- * options:
- * {
- *   cookieSecret:  "..."                          // Cookie signing secret
- *   viewFolder:    path.join(__dirnmae, 'views')  // Folder with templates
- *   assetFolder:   path.join(__dirname, 'assets') // Folder with static files
- *   publicUrl:     'http://domain.com'            // Public URL for persona
- *   personaLogin:         '/persona-auth'    // Login URL
- *   personaLogout:        '/logout'          // Logout URL
- *   personaUnauthorized:  '/unauthorized'    // Unauthorized URL
- * }
- *
- * Returns a middleware utility that ensures authentication as administrator.
- */
-var setup = function(options) {
-  var app = this;
-  assert(options.cookieSecret,    "cookieSecret is required");
-  assert(options.viewFolder,      "viewFolder is required");
-  assert(options.assetFolder,     "assetFolder is required");
-
-  // Set default options
-  _.defaults(options, {
-    personaLogin:         '/persona-auth',
-    personaLogout:        '/logout',
-    personaUnauthorized:  '/unauthorized'
-  });
-
-  app.set('views', options.viewFolder);
-  app.set('view engine', 'jade');
-  app.locals.moment = moment;
-  app.locals.marked = marked;
-
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({extended: true}));
-  app.use(methodOverride());
-  app.use(cookieParser(options.cookieSecret));
-  app.use(cookieSession({secret: options.cookieSecret}));
-  app.use(passport.initialize());
-  app.use(passport.session());
-  app.use(function(req, res, next) {
-    // Expose user to all templates, if logged in
-    res.locals.user = req.user;
-    next();
-  });
-  app.use('/assets', express.static(options.assetFolder));
-
-  // Warn if no secret was used in production
-  if ('production' == app.get('env')) {
-    var secret = options.cookieSecret;
-    if (secret == "Warn, if no secret is used on production") {
-      console.log("Warning: Customized cookie secret should be used in " +
-                  "production");
-    }
-  }
-
-  // Middleware for development
-  if (app.get('env') == 'development') {
-    app.use(errorHandler());
-  }
-
-  // Passport configuration
-  passport.use(new PassportPersona.Strategy({
-      audience:   options.publicUrl
-    }, function(email, done) {
-    debug("Signed in with:" + email);
-    if (/@mozilla\.com$/.test(email)) {
-      done(null, {email: email});
-    } else {
-      done(null, null);
-    }
-  }));
-
-  // Serialize user to signed cookie
-  passport.serializeUser(function(user, done) {
-    done(null, user.email);
-  });
-
-  // Deserialize user from signed cookie
-  passport.deserializeUser(function(email, done) {
-    done(null, {email: email});
-  });
-
-  // Facilitate persona login
-  app.post(options.personaLogin, passport.authenticate('persona', {
-      failureRedirect:        options.personaUnauthorized
-    }), function(req, res) {
-    res.redirect('/');
-  });
-
-  // Provide end-point to log out the user
-  app.get(options.personaLogout, function(req, res){
-    req.logout();
-    res.redirect('/');
-  });
-
-  // Middleware utility for requiring authentication
-  var ensureAuth = function(req, res, next) {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    res.redirect(options.personaUnauthorized);
-  };
-
-  return ensureAuth;
-};
 
 /** Notify LocalApp if running under this */
 var notifyLocalAppInParentProcess = function(port) {
@@ -208,8 +91,7 @@ var app = function(options) {
   }
 
   // Add some auxiliary methods to the app
-  app.setup           = setup;
-  app.createServer    = createServer;
+  app.createServer = createServer;
 
   return app;
 };
