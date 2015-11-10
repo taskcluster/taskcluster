@@ -563,13 +563,18 @@ func (task *TaskRun) setReclaimTimer() {
 	// Reclaiming Tasks
 	// ----------------
 	// When the worker has claimed a task, it's said to have a claim to a given
-	// `taskId`/`runId`. This claim has an expiration, see the `takenUntil` property
-	// in the _task status structure_ returned from `queue.claimTask` and
-	// `queue.reclaimTask`. A worker must call `queue.reclaimTask` before the claim
-	// denoted in `takenUntil` expires. It's recommended that this attempted a few
-	// minutes prior to expiration, to allow for clock drift.
+	// `taskId`/`runId`. This claim has an expiration, see the `takenUntil`
+	// property in the _task status structure_ returned from `queue.claimTask`
+	// and `queue.reclaimTask`. A worker must call `queue.reclaimTask` before
+	// the claim denoted in `takenUntil` expires. It's recommended that this
+	// attempted a few minutes prior to expiration, to allow for clock drift.
 
+	// First time we need to check claim response, after that, need to check reclaim response
 	takenUntil := time.Time(task.TaskReclaimResponse.Status.Runs[task.RunId].TakenUntil)
+	if takenUntil.IsZero() {
+		takenUntil = time.Time(task.TaskClaimResponse.Status.Runs[task.RunId].TakenUntil)
+	}
+
 	// Attempt to reclaim 3 mins earlier...
 	reclaimTime := takenUntil.Add(time.Minute * -3)
 	waitTimeUntilReclaim := reclaimTime.Sub(time.Now())
