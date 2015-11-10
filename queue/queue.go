@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 9 Nov 2015 at 17:04:00 UTC. The code was generated
+// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -832,11 +832,182 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#
 	PostArtifactRequest json.RawMessage
 
+	// Request for a signed PUT URL that will allow you to upload an artifact
+	// to an S3 bucket managed by the queue.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]
+	S3ArtifactRequest struct {
+		// Artifact mime-type, when uploading artifact to the signed
+		// `PUT` URL returned from this request this must given with the
+		//  `ContentType` header. Please, provide correct mime-type,
+		//  this make tooling a lot easier, specifically,
+		//  always using `application/json` for JSON artifacts.
+		ContentType string `json:"contentType"`
+		// Date-time after which the artifact should be deleted. Note, that
+		// these will be collected over time, and artifacts may remain
+		// available after expiration. S3 based artifacts are identified in
+		// azure table storage and explicitly deleted on S3 after expiration.
+		Expires Time `json:"expires"`
+		// Artifact storage type, in this case `'s3'`
+		//
+		// Possible values:
+		//   * "s3"
+		StorageType string `json:"storageType"`
+	}
+
+	// Request for an Azure Shared Access Signature (SAS) that will allow
+	// you to upload an artifact to an Azure blob storage container managed
+	// by the queue.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]
+	AzureArtifactRequest struct {
+		// Artifact mime-type, when uploading artifact please use the same
+		// `Content-Type`, consistently using the correct mime-type make
+		// tooling a lot easier, specifically, always using `application/json`
+		// for JSON artifacts.
+		ContentType string `json:"contentType"`
+		// Date-time after which the artifact should be deleted.
+		// Note, that these will be collected over time, and artifacts may
+		// remain available after expiration. Azure based artifacts are
+		// identified in azure table storage and explicitly deleted in the
+		// azure storage container after expiration.
+		Expires Time `json:"expires"`
+		// Artifact storage type, in this case `azure`
+		//
+		// Possible values:
+		//   * "azure"
+		StorageType string `json:"storageType"`
+	}
+
+	// Request the queue to redirect to a URL for a given artifact.
+	// This allows you to reference artifacts that aren't managed by the queue.
+	// The queue will still authenticate the request, so depending on the level
+	// of secrecy required, secret URLs **might** work. Note, this is mainly
+	// useful for public artifacts, for example temporary files directly
+	// stored on the worker host and only available there for a specific
+	// amount of time.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]
+	RedirectArtifactRequest struct {
+		// Artifact mime-type for the resource to which the queue should
+		// redirect. Please use the same `Content-Type`, consistently using
+		// the correct mime-type make tooling a lot easier, specifically,
+		// always using `application/json` for JSON artifacts.
+		ContentType string `json:"contentType"`
+		// Date-time after which the queue should no longer redirect to this URL.
+		// Note, that the queue will and cannot delete the resource your URL
+		// references, you are responsible for doing that yourself.
+		Expires Time `json:"expires"`
+		// Artifact storage type, in this case `reference`
+		//
+		// Possible values:
+		//   * "reference"
+		StorageType string `json:"storageType"`
+		// URL to which the queue should redirect using a `303` (See other)
+		// redirect.
+		Url string `json:"url"`
+	}
+
+	// Request the queue to reply `403` (forbidden) with `reason` and `message`
+	// to any `GET` request for this artifact. This is mainly useful as a way
+	// for a task to declare that it failed to provide an artifact it wanted
+	// to upload.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]
+	ErrorArtifactRequest struct {
+		// Date-time after which the queue should stop replying with the error
+		// and forget about the artifact.
+		Expires Time `json:"expires"`
+		// Human readable explanation of why the artifact is missing
+		Message string `json:"message"`
+		// Reason why the artifact doesn't exist.
+		//
+		// Possible values:
+		//   * "file-missing-on-worker"
+		//   * "invalid-resource-on-worker"
+		//   * "too-large-file-on-worker"
+		Reason string `json:"reason"`
+		// Artifact storage type, in this case `error`
+		//
+		// Possible values:
+		//   * "error"
+		StorageType string `json:"storageType"`
+	}
+
 	// Response to a request for posting an artifact.
 	// Note that the `storageType` property is referenced in the request as well.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#
 	PostArtifactResponse json.RawMessage
+
+	// Response to a request for a signed PUT URL that will allow you to
+	// upload an artifact to an S3 bucket managed by the queue.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]
+	S3ArtifactResponse struct {
+		// Artifact mime-type, must be specified as header when uploading with
+		// the signed `putUrl`.
+		ContentType string `json:"contentType"`
+		// Date-time after which the signed `putUrl` no longer works
+		Expires Time `json:"expires"`
+		// URL to which a `PUT` request can be made to upload the artifact
+		// requested. Note, the `Content-Length` must be specified correctly,
+		// and the `ContentType` header must be set the value specified below.
+		PutUrl string `json:"putUrl"`
+		// Artifact storage type, in this case `'s3'`
+		//
+		// Possible values:
+		//   * "s3"
+		StorageType string `json:"storageType"`
+	}
+
+	// Response to a request for an Azure Shared Access Signature (SAS)
+	// that will allow you to upload an artifact to an Azure blob storage
+	// container managed by the queue.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]
+	AzureArtifactResponse struct {
+		// Artifact mime-type, should be specified with the
+		// `x-ms-blob-content-type` when committing the block.
+		ContentType string `json:"contentType"`
+		// Date-time after which Shared Access Signature (SAS) will
+		// seize to work.
+		Expires Time `json:"expires"`
+		// Shared Access Signature (SAS) with write permissions, see
+		// [Azure REST API]
+		// (http://msdn.microsoft.com/en-US/library/azure/dn140256.aspx)
+		// reference for details on how to use this.
+		PutUrl string `json:"putUrl"`
+		// Artifact storage type, in this case `azure`
+		//
+		// Possible values:
+		//   * "azure"
+		StorageType string `json:"storageType"`
+	}
+
+	// Response to a request for the queue to redirect to a URL for a given
+	// artifact.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]
+	RedirectArtifactResponse struct {
+		// Artifact storage type, in this case `reference`
+		//
+		// Possible values:
+		//   * "reference"
+		StorageType string `json:"storageType"`
+	}
+
+	// Response to a request for the queue to reply `403` (forbidden) with
+	// `reason` and `message` to any `GET` request for this artifact.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]
+	ErrorArtifactResponse struct {
+		// Artifact storage type, in this case `error`
+		//
+		// Possible values:
+		//   * "error"
+		StorageType string `json:"storageType"`
+	}
 
 	// Request to claim (or reclaim) a task
 	//

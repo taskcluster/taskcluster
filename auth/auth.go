@@ -73,7 +73,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 9 Nov 2015 at 17:04:00 UTC. The code was generated
+// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -528,6 +528,43 @@ type (
 	//
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#
 	HawkSignatureAuthenticationResponse json.RawMessage
+
+	//
+	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]
+	AuthenticationSuccessfulResponse struct {
+		// Payload as extracted from `Authentication` header. This property is
+		// only present if a hash is available. You are not required to validate
+		// this hash, but if you do, please check `scheme` to ensure that it's
+		// on a scheme you support.
+		Hash string `json:"hash"`
+		// Authentication scheme the client used. Generally, you don't need to
+		// read this property unless `hash` is provided and you want to validate
+		// the payload hash. Additional values may be added in the future.
+		//
+		// Possible values:
+		//   * "hawk"
+		Scheme string `json:"scheme"`
+		// List of scopes the client is authorized to access.  Scopes must be
+		// composed of printable ASCII characters and spaces.
+		Scopes []string `json:"scopes"`
+		// The kind of response, `auth-failed` or `auth-success`.
+		//
+		// Possible values:
+		//   * "auth-success"
+		Status string `json:"status"`
+	}
+
+	//
+	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]
+	AuthenticationFailedResponse struct {
+		// Message saying why the authentication failed.
+		Message string `json:"message"`
+		// The kind of response, `auth-failed` or `auth-success`.
+		//
+		// Possible values:
+		//   * "auth-failed"
+		Status string `json:"status"`
+	}
 
 	// Response for a request to get access to an S3 bucket.
 	//
