@@ -3,10 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/taskcluster/httpbackoff"
-	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 	"io/ioutil"
 	"time"
+
+	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 )
 
 // for when running in aws

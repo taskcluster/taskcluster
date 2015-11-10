@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/taskcluster/taskcluster-client-go/queue"
 	"testing"
+
+	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
 // Badly formatted json payload should result in *json.SyntaxError error in task.validatePayload()

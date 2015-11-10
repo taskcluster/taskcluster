@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/xeipuuv/gojsonschema"
 	"testing"
+
+	"github.com/xeipuuv/gojsonschema"
 )
 
 // Test that the burned in payload schema is a valid json schema

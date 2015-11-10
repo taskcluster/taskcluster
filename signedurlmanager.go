@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster-client-go/queue"
 	"time"
+
+	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
 // This function is called in a dedicated go routine to both serve signed urls
