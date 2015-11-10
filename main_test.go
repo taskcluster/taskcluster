@@ -24,15 +24,15 @@ func TestBadPayloadValidate(t *testing.T) {
 	}()
 
 	badPayload := json.RawMessage(`bad payload, not even json`)
-	task := TaskRun{Definition: queue.TaskDefinition1{Payload: badPayload}}
+	task := TaskRun{Definition: queue.TaskDefinitionResponse{Payload: badPayload}}
 	err := task.validatePayload()
 	if err == nil {
 		t.Fatalf("Bad task payload should not have passed validation")
 	}
 	switch err.(type) {
+	case *json.SyntaxError:
+		t.Log("Received *json.SyntaxError as expected - all ok!")
 	default:
 		t.Errorf("Bad task payload should have retured a *json.SyntaxError error, but actually returned a %T error. The unexpected %T error was:\n%s", err, err, err)
-	case *json.SyntaxError:
-		// all ok
 	}
 }
