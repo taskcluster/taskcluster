@@ -93,6 +93,7 @@ func (apiDef *APIDefinition) loadJsonSchema(url string) *JsonSubSchema {
 	m := new(JsonSubSchema)
 	err = decoder.Decode(m)
 	utils.ExitOnFail(err)
+	m.SourceURL = url
 	m.postPopulate(apiDef)
 	return m
 }
@@ -109,7 +110,6 @@ func (apiDef *APIDefinition) cacheJsonSchema(url *string) *JsonSubSchema {
 	// only fetch if we haven't fetched already...
 	if _, ok := apiDef.schemas[*url]; !ok {
 		apiDef.schemas[*url] = apiDef.loadJsonSchema(*url)
-		apiDef.schemas[*url].SourceURL = *url
 	}
 	return apiDef.schemas[*url]
 }

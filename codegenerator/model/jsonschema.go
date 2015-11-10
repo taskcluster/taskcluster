@@ -19,8 +19,8 @@ type (
 	JsonSubSchema struct {
 		AdditionalItems      *bool                 `json:"additionalItems"`
 		AdditionalProperties *AdditionalProperties `json:"additionalProperties"`
-		AllOf                Items                 `json:"allOf"`
-		AnyOf                Items                 `json:"anyOf"`
+		AllOf                *Items                `json:"allOf"`
+		AnyOf                *Items                `json:"anyOf"`
 		Default              *interface{}          `json:"default"`
 		Description          *string               `json:"description"`
 		Enum                 []interface{}         `json:"enum"`
@@ -31,7 +31,7 @@ type (
 		MaxLength            *int                  `json:"maxLength"`
 		Minimum              *int                  `json:"minimum"`
 		MinLength            *int                  `json:"minLength"`
-		OneOf                Items                 `json:"oneOf"`
+		OneOf                *Items                `json:"oneOf"`
 		Pattern              *string               `json:"pattern"`
 		Properties           *Properties           `json:"properties"`
 		Ref                  *string               `json:"$ref"`
@@ -54,6 +54,7 @@ type (
 	Properties struct {
 		Properties          map[string]*JsonSubSchema
 		SortedPropertyNames []string
+		SourceURL           string
 	}
 
 	AdditionalProperties struct {
@@ -61,6 +62,8 @@ type (
 		Properties *JsonSubSchema
 	}
 )
+
+var itemsMap map[*Items]string = make(map[*Items]string)
 
 func (subSchema JsonSubSchema) String() string {
 	result := ""
@@ -221,11 +224,17 @@ func (p *Properties) postPopulate(apiDef *APIDefinition) {
 		p.SortedPropertyNames = make([]string, 0, len(p.Properties))
 		for propertyName := range p.Properties {
 			p.SortedPropertyNames = append(p.SortedPropertyNames, propertyName)
+			// subscehams need to have SourceURL set
+			p.Properties[propertyName].setSourceURL(p.SourceURL + "/" + propertyName)
 			// subschemas also need to be triggered to postPopulate...
 			p.Properties[propertyName].postPopulate(apiDef)
 		}
 		sort.Strings(p.SortedPropertyNames)
 	}
+}
+
+func (p *Properties) setSourceURL(url string) {
+	p.SourceURL = url
 }
 
 func (p *Properties) UnmarshalJSON(bytes []byte) (err error) {
@@ -260,10 +269,18 @@ func (items Items) String() string {
 	return result
 }
 
-func (items Items) postPopulate(apiDef *APIDefinition) {
-	for i := range items {
-		items[i].postPopulate(apiDef)
+func (items *Items) postPopulate(apiDef *APIDefinition) {
+	for i := range *items {
+		(*items)[i].setSourceURL(itemsMap[items] + "[" + strconv.Itoa(i) + "]")
+		(*items)[i].postPopulate(apiDef)
+		// add to schemas so we get a type generated for it in source code
+		apiDef.schemas[(*items)[i].SourceURL] = &(*items)[i]
 	}
+}
+
+func (items *Items) setSourceURL(url string) {
+	// can't set this in the object so need to store outside in global array
+	itemsMap[items] = url
 }
 
 func describeList(name string, value interface{}) string {
@@ -287,23 +304,29 @@ func describe(name string, value interface{}) string {
 
 type CanPopulate interface {
 	postPopulate(*APIDefinition)
+	setSourceURL(string)
 }
 
-func postPopulateIfNotNil(canPopulate CanPopulate, apiDef *APIDefinition) {
+func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate CanPopulate, apiDef *APIDefinition, suffix string) {
 	if reflect.ValueOf(canPopulate).IsValid() {
 		if !reflect.ValueOf(canPopulate).IsNil() {
+			canPopulate.setSourceURL(subSchema.SourceURL + suffix)
 			canPopulate.postPopulate(apiDef)
 		}
 	}
 }
 
 func (subSchema *JsonSubSchema) postPopulate(apiDef *APIDefinition) {
-	postPopulateIfNotNil(subSchema.AllOf, apiDef)
-	postPopulateIfNotNil(subSchema.AnyOf, apiDef)
-	postPopulateIfNotNil(subSchema.OneOf, apiDef)
-	postPopulateIfNotNil(subSchema.Items, apiDef)
-	postPopulateIfNotNil(subSchema.Properties, apiDef)
+	subSchema.postPopulateIfNotNil(subSchema.AllOf, apiDef, "/allOf")
+	subSchema.postPopulateIfNotNil(subSchema.AnyOf, apiDef, "/anyOf")
+	subSchema.postPopulateIfNotNil(subSchema.OneOf, apiDef, "/oneOf")
+	subSchema.postPopulateIfNotNil(subSchema.Items, apiDef, "/items")
+	subSchema.postPopulateIfNotNil(subSchema.Properties, apiDef, "/properties")
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
 	subSchema.RefSubSchema = apiDef.cacheJsonSchema(subSchema.Ref)
+}
+
+func (subSchema *JsonSubSchema) setSourceURL(url string) {
+	subSchema.SourceURL = url
 }
