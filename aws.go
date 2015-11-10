@@ -10,7 +10,6 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 )
 
-// for when running in aws
 func queryUserData() (*UserData, error) {
 	// http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-user-data-retrieval
 	resp, _, err := httpbackoff.Get("http://169.254.169.254/latest/user-data")

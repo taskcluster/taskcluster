@@ -44,7 +44,7 @@ In order to set up a new AWS Provisioner Worker Type running on Windows, follow 
    
    # download generic-worker
    md C:\generic-worker
-   $client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v1.0.11/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+   $client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v1.0.12/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
    
    # enable DEBUG logs for generic-worker install
    $env:DEBUG = "*"
