@@ -6,20 +6,20 @@
 
 cd "$(dirname "${0}")"
 
-UNIX_TIMESTAMP=$(date +%s)
+# in case build.sh was run with -d option since last build
+git checkout -f codegenerator/model/model-data.txt
+UNIX_TIMESTAMP="$(head -1 codegenerator/model/model-data.txt | sed -n 's/^Generated: //p')"
 
 GENERATE=true
-NEW_TIMESTAMP=true
+NEW_TIMESTAMP=false
 
 while getopts ":nd" opt; do
     case "${opt}" in
         n)  GENERATE=false
             ;;  
-        d)  git checkout -f codegenerator/model/model-data.txt
-            UNIX_TIMESTAMP="$(head -1 codegenerator/model/model-data.txt | sed -n 's/^Generated: //p')"
-            echo "NOT GENERATING NEW TIMESTAMP IN DOCS"
-            NEW_TIMESTAMP=false
-            # in case build.sh was run without -d option since last build
+        d)  UNIX_TIMESTAMP=$(date +%s)
+            echo "GENERATING NEW TIMESTAMP IN DOCS"
+            NEW_TIMESTAMP=true
             ;;
     esac
 done
