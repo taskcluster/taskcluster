@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"mime"
 	"net/http"
@@ -159,8 +160,10 @@ func resolve(base BaseArtifact) Artifact {
 		// cannot read file, create an error artifact
 		return ErrorArtifact{
 			BaseArtifact: base,
-			Message:      "",
-			Reason:       "",
+			Message:      fmt.Sprintf("Could not read file '%s'", fileReader.Name()),
+			// TODO: need to also handle "invalid-resource-on-worker"
+			// TODO: need to also handle "too-large-file-on-worker"
+			Reason: "file-missing-on-worker",
 		}
 	}
 	mimeType := mime.TypeByExtension(filepath.Ext(base.CanonicalPath))
