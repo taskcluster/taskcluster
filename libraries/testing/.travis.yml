@@ -1,9 +1,19 @@
 env:
   global:
-  - DEBUG='* -superagent -express:* -mocha:*'
+  - CXX=g++-4.8
+  - DEBUG='* -superagent -express:* -mocha:* -babel'
 language: node_js
+sudo: false
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.8
 node_js:
-- '0.11'
+- '0.12'
+- '4'
+- '5'
 services:
 - rabbitmq
 script: npm test
