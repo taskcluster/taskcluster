@@ -72,12 +72,6 @@ type (
 		logFile string
 	}
 
-	Artifact struct {
-		CanonicalPath string
-		MimeType      string
-		Expires       time.Time
-	}
-
 	// Custom time format to enable unmarshalling of azure xml directly into go
 	// object with native go time.Time implementation under-the-hood
 	azureTimeFormat struct {

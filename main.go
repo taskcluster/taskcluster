@@ -1,21 +1,17 @@
 package main
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"mime"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -804,10 +800,10 @@ func (task *TaskRun) run() error {
 				case httpbackoff.BadHttpResponseCode:
 					// if not a 5xx error, then not worth retrying...
 					if t.HttpResponseCode/100 != 5 {
-						debug("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact.CanonicalPath)
+						debug("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact)
 						finalTaskStatus = Failed
 					} else {
-						debug("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact.CanonicalPath)
+						debug("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact)
 						finalTaskStatus = Errored
 						finalReason = "worker-shutdown" // internal error (upload-failure)
 					}
@@ -869,12 +865,6 @@ func (task *TaskRun) generateCompleteLog() error {
 	return nil
 }
 
-func (task *TaskRun) uploadLog(logFile string) error {
-	// logs expire after one year...
-	logExpiry := time.Now().AddDate(1, 0, 0)
-	return task.uploadArtifact(Artifact{CanonicalPath: logFile, Expires: logExpiry, MimeType: "text/plain"})
-}
-
 func (task *TaskRun) unixCommand(command string) (Command, error) {
 	cmd := exec.Command(task.Payload.Command[0], task.Payload.Command[1:]...)
 	cmd.Stdout = os.Stdout
@@ -899,117 +889,6 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 	}
 	cmd.Env = taskEnv
 	debug("Environment: %v", taskEnv)
-}
-
-func (task *TaskRun) uploadArtifact(artifact Artifact) error {
-	// first check file exists!
-	fileReader, err := os.Open(filepath.Join(TaskUser.HomeDir, artifact.CanonicalPath))
-	if err != nil {
-		return err
-	}
-	// check we have a mime type!
-	if artifact.MimeType == "" {
-		return fmt.Errorf("Cannot upload artifact %s since no Mime Type has been specified\n", artifact)
-	}
-	task.Artifacts = append(task.Artifacts, artifact)
-	debug("MimeType in queue request: %v", artifact.MimeType)
-	par := queue.PostArtifactRequest(json.RawMessage(`{"storageType": "s3", "expires": "` + artifact.Expires.UTC().Format("2006-01-02T15:04:05.000Z0700") + `", "contentType": "` + artifact.MimeType + `"}`))
-	parsp, callSummary := Queue.CreateArtifact(
-		task.TaskId,
-		strconv.Itoa(int(task.RunId)),
-		artifact.CanonicalPath,
-		&par,
-	)
-	if callSummary.Error != nil {
-		debug("Could not upload artifact: %v", artifact)
-		debug("%v", callSummary)
-		debug("%v", parsp)
-		debug("Request Headers")
-		callSummary.HttpRequest.Header.Write(os.Stdout)
-		debug("Request Body")
-		debug(callSummary.HttpRequestBody)
-		debug("Response Headers")
-		callSummary.HttpResponse.Header.Write(os.Stdout)
-		debug("Response Body")
-		debug(callSummary.HttpResponseBody)
-		return callSummary.Error
-	}
-	debug("Response body RAW")
-	debug(callSummary.HttpResponseBody)
-	debug("Response body INTERPRETED")
-	debug(string(*parsp))
-	// unmarshal response into object
-	resp := new(S3ArtifactResponse)
-	err = json.Unmarshal(json.RawMessage(*parsp), resp)
-	if err != nil {
-		return err
-	}
-	httpClient := &http.Client{}
-	httpCall := func() (*http.Response, error, error) {
-		// instead of using fileReader, read it into memory and then use a
-		// bytes.Reader since then http.NewRequest will properly set
-		// Content-Length header for us, which is needed by the API we call
-		requestPayload, err := ioutil.ReadAll(fileReader)
-		if err != nil {
-			return nil, nil, err
-		}
-		bytesReader := bytes.NewReader(requestPayload)
-		// http.NewRequest automatically sets Content-Length correctly for bytes.Reader
-		httpRequest, err := http.NewRequest("PUT", resp.PutURL, bytesReader)
-		if err != nil {
-			return nil, nil, err
-		}
-		debug("MimeType in put request: %v", artifact.MimeType)
-		httpRequest.Header.Set("Content-Type", artifact.MimeType)
-		// request body could be a) binary and b) massive, so don't show it...
-		requestFull, dumpError := httputil.DumpRequestOut(httpRequest, false)
-		if dumpError != nil {
-			debug("Could not dump request, never mind...")
-		} else {
-			debug("Request")
-			debug(string(requestFull))
-		}
-		putResp, err := httpClient.Do(httpRequest)
-		return putResp, err, nil
-	}
-	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
-	debug("%v put requests issued to %v", putAttempts, resp.PutURL)
-	respBody, dumpError := httputil.DumpResponse(putResp, true)
-	if dumpError != nil {
-		debug("Could not dump response output, never mind...")
-	} else {
-		debug("Response")
-		debug(string(respBody))
-	}
-	return err
-}
-
-// Returns the artifacts as listed in the payload of the task (note this does
-// not include log files)
-func (task *TaskRun) PayloadArtifacts() []Artifact {
-	artifacts := make([]Artifact, len(task.Payload.Artifacts))
-	debug("Artifacts:")
-	for i, artifact := range task.Payload.Artifacts {
-		mimeType := mime.TypeByExtension(filepath.Ext(artifact.Path))
-		// ensure we have a mimeType, since AWS requires it
-		if mimeType == "" {
-			// application/octet-stream is the mime type for "unknown"
-			mimeType = "application/octet-stream"
-		}
-		artifacts[i] = Artifact{CanonicalPath: canonicalPath(artifact.Path), Expires: artifact.Expires, MimeType: mimeType}
-		debug("Path: %v, Type: %v, Expires: %v", artifact.Path, artifact.Type, artifact.Expires)
-		debug("Canonical path: %v, Expires: %v, Mime type: %v", artifacts[i].CanonicalPath, artifacts[i].Expires, artifacts[i].MimeType)
-	}
-	return artifacts
-}
-
-// The Queue expects paths to use a forward slash, so let's make sure we have a
-// way to generate a path in this format
-func canonicalPath(path string) string {
-	if os.PathSeparator == '/' {
-		return path
-	}
-	return strings.Replace(path, string(os.PathSeparator), "/", -1)
 }
 
 // writes to the file configFile with the current generic worker configuration
