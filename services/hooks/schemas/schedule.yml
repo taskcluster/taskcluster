@@ -1,9 +1,10 @@
 $schema:        http://json-schema.org/draft-04/schema#
-title:          "Hook schedule"
+title:          "Schedule"
 description: |
-    Definition of the times at which a hook will result in creation of a task.
-    If several patterns are specified, tasks will be created at any time
-    specified by one or more patterns.
+    A list of cron-style definitions to represent a set of moments in (UTC) time.
+    If several patterns are specified, a given moment in time represented by
+    more than one pattern is considered only to be counted once, in other words
+    it is allowed for the cron patterns to overlap; duplicates are redundant.
 type: array
 items:
   title: "Cron Pattern"
@@ -12,6 +13,5 @@ items:
       Cron-like specification for when tasks should be created.  The pattern is
       parsed in a UTC context.
       See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
-      Note that tasks may not be created at exactly the time specified.
 uniqueItems: true
 default: []
