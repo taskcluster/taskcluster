@@ -260,27 +260,44 @@ describe('component loader', () => {
       '',
       'digraph G {',
       '  "otherBase"',
-      '  "otherBase" -> "dep5" [dir=back]',
-      '  "otherBase" -> "dep6" [dir=back]',
+      '  "dep5" -> "otherBase" [dir=back]',
+      '  "dep6" -> "otherBase" [dir=back]',
       '  "dep6"',
       '  "dep5"',
       '  "base"',
-      '  "base" -> "dep1" [dir=back]',
-      '  "base" -> "staticDep1" [dir=back]',
+      '  "dep1" -> "base" [dir=back]',
+      '  "staticDep1" -> "base" [dir=back]',
       '  "staticDep1"',
       '  "dep1"',
-      '  "dep1" -> "dep2" [dir=back]',
-      '  "dep1" -> "dep3" [dir=back]',
+      '  "dep2" -> "dep1" [dir=back]',
+      '  "dep3" -> "dep1" [dir=back]',
       '  "dep3"',
-      '  "dep3" -> "dep4" [dir=back]',
+      '  "dep4" -> "dep3" [dir=back]',
       '  "dep2"',
-      '  "dep2" -> "dep4" [dir=back]',
+      '  "dep4" -> "dep2" [dir=back]',
       '  "dep4"',
       '}',
     ].join('\n');
 
     let graph = await load('graphviz');
     assume(expected).equal(graph);
+  });
+
+  it('should support graphviz with virtual components', async () => {
+    let a = {a: 1};
+
+    let load = subject({
+      test: {
+        requires: ['dep'],
+        setup: deps => {
+          return deps.dep;
+        }
+      }
+    }, ['dep']);
+
+    await load('graphviz', {
+      dep: a
+    });
   });
 
   it('should fail when a virtual component is a dupe of a real one', () => {
