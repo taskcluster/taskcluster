@@ -33,7 +33,7 @@ type (
 	S3Artifact struct {
 		BaseArtifact
 		MimeType           string
-		S3ArtifactResponse queue.S3ArtifactResponse
+		S3ArtifactResponse *queue.S3ArtifactResponse
 	}
 
 	AzureArtifact struct {
@@ -49,8 +49,9 @@ type (
 
 	ErrorArtifact struct {
 		BaseArtifact
-		Message string
-		Reason  string
+		Message               string
+		Reason                string
+		ErrorArtifactResponse *queue.ErrorArtifactResponse
 	}
 )
 
@@ -63,8 +64,9 @@ func (artifact ErrorArtifact) ProcessResponse() error {
 	return nil
 }
 
-func (artifact ErrorArtifact) ResponseObject() interface{} {
-	return new(queue.ErrorArtifactResponse)
+func (errArtifact ErrorArtifact) ResponseObject() interface{} {
+	errArtifact.ErrorArtifactResponse = new(queue.ErrorArtifactResponse)
+	return errArtifact.ErrorArtifactResponse
 }
 
 func (artifact S3Artifact) ProcessResponse() error {
@@ -110,8 +112,9 @@ func (artifact S3Artifact) ProcessResponse() error {
 	return err
 }
 
-func (artifact S3Artifact) ResponseObject() interface{} {
-	return new(queue.S3ArtifactResponse)
+func (s3Artifact S3Artifact) ResponseObject() interface{} {
+	s3Artifact.S3ArtifactResponse = new(queue.S3ArtifactResponse)
+	return s3Artifact.S3ArtifactResponse
 }
 
 // Returns the artifacts as listed in the payload of the task (note this does
