@@ -1,4 +1,4 @@
-Generated: 1447183931
+Generated: 1447322202
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2642,7 +2642,13 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata'
   Property 'schedule' =
-    Ref                    = 'http://schemas.taskcluster.net/hooks/v1/schedule.json#'
+    Description            = 'Definition of the times at which a hook will result in creation of a task.
+    If several patterns are specified, tasks will be created at any time
+    specified by one or more patterns.  Note that tasks may not be created
+    at exactly the time specified.
+                        {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
+    '
+    Type HAS NOT BEEN SET!!!
     TypeName               = ''
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -2689,9 +2695,9 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#/properties/schedule'
 Required               = '[schedule]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Hook schedule'
+Title                  = 'Hook schedule response'
 Type                   = 'object'
-TypeName               = 'HookSchedule'
+TypeName               = 'HookScheduleResponse'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'true'
 SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#'
@@ -2760,16 +2766,16 @@ SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/list-hooks-res
 http://schemas.taskcluster.net/hooks/v1/schedule.json#
 ======================================================
 Default                = '[]'
-Description            = 'Definition of the times at which a hook will result in creation of a task.
-If several patterns are specified, tasks will be created at any time
-specified by one or more patterns.
+Description            = 'A list of cron-style definitions to represent a set of moments in (UTC) time.
+If several patterns are specified, a given moment in time represented by
+more than one pattern is considered only to be counted once, in other words
+it is allowed for the cron patterns to overlap; duplicates are redundant.
 '
 ID                     = 'http://schemas.taskcluster.net/hooks/v1/schedule.json#'
 Items
   Description            = 'Cron-like specification for when tasks should be created.  The pattern is
   parsed in a UTC context.
   See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
-  Note that tasks may not be created at exactly the time specified.
   '
   Title                  = 'Cron Pattern'
   Type                   = 'string'
@@ -2778,9 +2784,9 @@ Items
   IsOutputSchema         = 'false'
   SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/schedule.json#/items'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Hook schedule'
+Title                  = 'Schedule'
 Type                   = 'array'
-TypeName               = 'HookSchedule1'
+TypeName               = 'Schedule'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'false'
 SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/schedule.json#'

@@ -43,7 +43,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
+// Thu, 12 Nov 2015 at 09:56:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -259,9 +259,9 @@ func (myHooks *Hooks) Hook(hookGroupId string, hookId string) (*HookDefinition, 
 // for the given hook.
 //
 // See http://docs.taskcluster.net/services/hooks/#getHookSchedule
-func (myHooks *Hooks) GetHookSchedule(hookGroupId string, hookId string) (*HookSchedule, *CallSummary) {
-	responseObject, callSummary := myHooks.apiCall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/schedule", new(HookSchedule))
-	return responseObject.(*HookSchedule), callSummary
+func (myHooks *Hooks) GetHookSchedule(hookGroupId string, hookId string) (*HookScheduleResponse, *CallSummary) {
+	responseObject, callSummary := myHooks.apiCall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/schedule", new(HookScheduleResponse))
+	return responseObject.(*HookScheduleResponse), callSummary
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -364,19 +364,24 @@ type (
 			// Email of the person or group responsible for this hook.
 			Owner string `json:"owner"`
 		} `json:"metadata"`
-		Schedule HookSchedule1         `json:"schedule"`
+		// Definition of the times at which a hook will result in creation of a task.
+		// If several patterns are specified, tasks will be created at any time
+		// specified by one or more patterns.  Note that tasks may not be created
+		// at exactly the time specified.
+		//                     {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
+		Schedule json.RawMessage       `json:"schedule"`
 		Task     TaskDefinitionRequest `json:"task"`
 	}
 
 	// A description of when a hook's task will be created, and the next scheduled time
 	//
 	// See http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#
-	HookSchedule struct {
+	HookScheduleResponse struct {
 		// The next time this hook's task is scheduled to be created. This property
 		// is only present if there is a scheduled next time. Some hooks don't have
 		// any schedules.
-		NextScheduledDate Time          `json:"nextScheduledDate"`
-		Schedule          HookSchedule1 `json:"schedule"`
+		NextScheduledDate Time     `json:"nextScheduledDate"`
+		Schedule          Schedule `json:"schedule"`
 	}
 
 	// List of `hookGroupIds`.
@@ -393,12 +398,13 @@ type (
 		Hooks []HookDefinition `json:"hooks"`
 	}
 
-	// Definition of the times at which a hook will result in creation of a task.
-	// If several patterns are specified, tasks will be created at any time
-	// specified by one or more patterns.
+	// A list of cron-style definitions to represent a set of moments in (UTC) time.
+	// If several patterns are specified, a given moment in time represented by
+	// more than one pattern is considered only to be counted once, in other words
+	// it is allowed for the cron patterns to overlap; duplicates are redundant.
 	//
 	// See http://schemas.taskcluster.net/hooks/v1/schedule.json#
-	HookSchedule1 []string
+	Schedule []string
 
 	// Definition of a task that can be scheduled
 	//
