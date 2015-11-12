@@ -20,9 +20,9 @@ import (
 
 type (
 	Artifact interface {
-		Name() string
 		ProcessResponse() error
 		ResponseObject() interface{}
+		Base() BaseArtifact
 	}
 
 	BaseArtifact struct {
@@ -33,7 +33,6 @@ type (
 	S3Artifact struct {
 		BaseArtifact
 		MimeType           string
-		S3ArtifactRequest  queue.S3ArtifactRequest
 		S3ArtifactResponse queue.S3ArtifactResponse
 	}
 
@@ -55,17 +54,13 @@ type (
 	}
 )
 
-func (base BaseArtifact) Name() string {
-	return base.CanonicalPath
+func (base BaseArtifact) Base() BaseArtifact {
+	return base
 }
 
 func (artifact ErrorArtifact) ProcessResponse() error {
 	// TODO: process error response
 	return nil
-}
-
-func (artifact S3Artifact) ResponseObject() interface{} {
-	return new(queue.S3ArtifactResponse)
 }
 
 func (artifact ErrorArtifact) ResponseObject() interface{} {
@@ -78,7 +73,7 @@ func (artifact S3Artifact) ProcessResponse() error {
 		// instead of using fileReader, read it into memory and then use a
 		// bytes.Reader since then http.NewRequest will properly set
 		// Content-Length header for us, which is needed by the API we call
-		fileReader, err := os.Open(filepath.Join(TaskUser.HomeDir, artifact.CanonicalPath))
+		fileReader, err := os.Open(filepath.Join(TaskUser.HomeDir, artifact.Base().CanonicalPath))
 		requestPayload, err := ioutil.ReadAll(fileReader)
 		if err != nil {
 			return nil, nil, err
@@ -115,6 +110,10 @@ func (artifact S3Artifact) ProcessResponse() error {
 	return err
 }
 
+func (artifact S3Artifact) ResponseObject() interface{} {
+	return new(queue.S3ArtifactResponse)
+}
+
 // Returns the artifacts as listed in the payload of the task (note this does
 // not include log files)
 func (task *TaskRun) PayloadArtifacts() []Artifact {
@@ -125,23 +124,34 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 			CanonicalPath: canonicalPath(artifact.Path),
 			Expires:       artifact.Expires,
 		}
-		// first check file exists!
 		switch artifact.Type {
 		case "file":
-			artifacts = append(artifacts, resolve(base))
+			artifacts = append(artifacts, resolve(base, "file"))
 		case "directory":
-			walkFn := func(path string, info os.FileInfo, err error) error {
-				if !info.IsDir() {
-					relativePath, err := filepath.Rel(TaskUser.HomeDir, path)
-					if err != nil {
-						debug("WIERD ERROR - skipping file: %s", err)
-						return nil
+			if errArtifact := resolve(base, "directory"); errArtifact != nil {
+				artifacts = append(artifacts, errArtifact)
+				continue
+			}
+			walkFn := func(path string, info os.FileInfo, incomingErr error) error {
+				// I think we don't need to handle incomingErr != nil since
+				// resolve(...) gets called which should catch the same issues
+				// raised in incomingErr - *** I GUESS *** !!
+				relativePath, err := filepath.Rel(TaskUser.HomeDir, path)
+				if err != nil {
+					debug("WIERD ERROR - skipping file: %s", err)
+					return nil
+				}
+				b := BaseArtifact{
+					CanonicalPath: relativePath,
+					Expires:       artifact.Expires,
+				}
+				switch {
+				case info.IsDir():
+					if errArtifact := resolve(b, "directory"); errArtifact != nil {
+						artifacts = append(artifacts, errArtifact)
 					}
-					b := BaseArtifact{
-						CanonicalPath: relativePath,
-						Expires:       artifact.Expires,
-					}
-					artifacts = append(artifacts, resolve(b))
+				default:
+					artifacts = append(artifacts, resolve(b, "file"))
 				}
 				return nil
 			}
@@ -151,20 +161,52 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 	return artifacts
 }
 
-// Pass in a BaseArtifact and it will return either an S3 Artifact if file
-// exists and is readable, or an ErrorArtifact if not
-func resolve(base BaseArtifact) Artifact {
-	fileReader, err := os.Open(filepath.Join(TaskUser.HomeDir, base.CanonicalPath))
-	defer fileReader.Close()
+// File should be resolved as an S3Artifact if file exists as file and is
+// readable, otherwise i) if it does not exist or ii) cannot be read, as a
+// "file-missing-on-worker" ErrorArtifact, otherwise if it exists as a
+// directory, as "invalid-resource-on-worker" ErrorArtifact. A directory should
+// resolve as `nil` if directory exists as directory and is readable, otherwise
+// i) if it does not exist or ii) cannot be read, as a "file-missing-on-worker"
+// ErrorArtifact, otherwise if it exists as a file, as
+// "invalid-resource-on-worker" ErrorArtifact
+// TODO: need to also handle "too-large-file-on-worker"
+func resolve(base BaseArtifact, artifactType string) Artifact {
+	fullPath := filepath.Join(TaskUser.HomeDir, base.CanonicalPath)
+	fileReader, err := os.Open(fullPath)
 	if err != nil {
-		// cannot read file, create an error artifact
+		// cannot read file/dir, create an error artifact
 		return ErrorArtifact{
 			BaseArtifact: base,
-			Message:      fmt.Sprintf("Could not read file '%s'", fileReader.Name()),
-			// TODO: need to also handle "invalid-resource-on-worker"
-			// TODO: need to also handle "too-large-file-on-worker"
-			Reason: "file-missing-on-worker",
+			Message:      fmt.Sprintf("Could not read %s '%s'", artifactType, fullPath),
+			Reason:       "file-missing-on-worker",
 		}
+	}
+	defer fileReader.Close()
+	// ok it exists, but is it right type?
+	fileinfo, err := fileReader.Stat()
+	if err != nil {
+		return ErrorArtifact{
+			BaseArtifact: base,
+			Message:      fmt.Sprintf("Could not stat %s '%s'", artifactType, fullPath),
+			Reason:       "invalid-resource-on-worker",
+		}
+	}
+	if artifactType == "file" && fileinfo.IsDir() {
+		return ErrorArtifact{
+			BaseArtifact: base,
+			Message:      fmt.Sprintf("File artifact '%s' exists as a directory, not a file, on the worker", fullPath),
+			Reason:       "invalid-resource-on-worker",
+		}
+	}
+	if artifactType == "directory" && !fileinfo.IsDir() {
+		return ErrorArtifact{
+			BaseArtifact: base,
+			Message:      fmt.Sprintf("Directory artifact '%s' exists as a file, not a directory, on the worker", fullPath),
+			Reason:       "invalid-resource-on-worker",
+		}
+	}
+	if artifactType == "directory" {
+		return nil
 	}
 	mimeType := mime.TypeByExtension(filepath.Ext(base.CanonicalPath))
 	// check we have a mime type!
@@ -210,7 +252,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 	parsp, callSummary := Queue.CreateArtifact(
 		task.TaskId,
 		strconv.Itoa(int(task.RunId)),
-		artifact.Name(),
+		artifact.Base().CanonicalPath,
 		&par,
 	)
 	if callSummary.Error != nil {

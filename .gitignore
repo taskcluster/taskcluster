@@ -19,7 +19,8 @@ _cgo_export.*
 
 _testmain.go
 
-*.exe
+# needed for test of mime type conversion - so allowing .exe files
+# *.exe
 *.test
 *.prof
 
