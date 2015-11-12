@@ -52,9 +52,9 @@ function renderGraph(componentDirectory, sortedComponents) {
 
   for (let component of sortedComponents) {
     dot.push(util.format('  "%s"', component));
-    let def = componentDirectory[component];
+    let def = componentDirectory[component] || {};
     for (let dep of def.requires || []) {
-      dot.push(util.format('  "%s" -> "%s" [dir=back]', component, dep));
+      dot.push(util.format('  "%s" -> "%s" [dir=back]', dep, component));
     }
   }
   dot.push('}');
@@ -132,7 +132,7 @@ function renderGraph(componentDirectory, sortedComponents) {
  * let config = await load('config', {profile: 'test'});
  * ```
  */
-function loader (componentDirectory, virtualComponents = []) {
+function loader(componentDirectory, virtualComponents = []) {
   assume(componentDirectory).is.an('object');
   assume(virtualComponents).is.an('array');
   assume(_.intersection(
@@ -160,12 +160,20 @@ function loader (componentDirectory, virtualComponents = []) {
   }
   let topoSorted = tsort.sort();
 
-  // Add graphviz target, if it doesn't exist, we'll just render it as string
+  // Add graphviz target
   if (componentDirectory.graphviz || includes(virtualComponents, 'graphviz')) {
     throw new Error('graphviz is reserved for an internal component');
   }
   componentDirectory.graphviz = {
     setup: () => renderGraph(componentDirectory, topoSorted)
+  };
+  // Add dump-dot target, which will print to terminal (useful for debugging)
+  if (componentDirectory['dump-dot'] ||
+      includes(virtualComponents, 'dump-dot')) {
+    throw new Error('dump-dot is reserved for an internal component');
+  }
+  componentDirectory['dump-dot'] = {
+    setup: () => console.log(renderGraph(componentDirectory, topoSorted))
   };
 
   return function(target, options = {}) {
