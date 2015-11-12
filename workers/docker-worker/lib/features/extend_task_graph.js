@@ -85,7 +85,6 @@ export default class ExtendTaskGraph {
     }
 
     // Extend the graph!
-    // TODO: Add logging to indicate task graph extension...
     try {
       var result = await scheduler.extendTaskGraph(graphId, extension);
       taskHandler.stream.write(taskHandler.fmtLog(
@@ -95,7 +94,7 @@ export default class ExtendTaskGraph {
     } catch (error) {
       throw new Error(
         'Graph server error while extending task graph id ' + graphId + ' : ' +
-        error.message + ', ' + error.body
+        error.message + ', ' + JSON.stringify(error.body.error)
       );
     }
   }
