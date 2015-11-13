@@ -1,16 +1,23 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
-var expiry queue.Time
+var (
+	expiry queue.Time
+	// all tests can share taskGroupId so we can view all test tasks in same
+	// graph later for troubleshooting
+	taskGroupId string = slugid.Nice()
+)
 
 func setup(t *testing.T) {
 	// some basic setup...
@@ -211,4 +218,81 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 				Reason:  "invalid-resource-on-worker",
 			},
 		})
+}
+
+func TestUpload(t *testing.T) {
+
+	// first create dummy task
+
+	clientId := os.Getenv("TASKCLUSTER_CLIENT_ID")
+	accessToken := os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
+	certificate := os.Getenv("TASKCLUSTER_CERTIFICATE")
+	if clientId == "" || accessToken == "" {
+		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
+	}
+	myQueue := queue.New(clientId, accessToken)
+	myQueue.Certificate = certificate
+
+	taskId := slugid.Nice()
+	// create a random workerType so parallel tests don't crash into each other
+	// give a fixed prefix so we don't have to allow workerType = * in scopes
+	workerType := generic_worker_test_slugid.Nice()
+	created := time.Now()
+	deadline := created.AddDate(0, 0, 1)
+	expires := deadline
+
+	td := &queue.TaskDefinitionRequest{
+		Created:  queue.Time(created),
+		Deadline: queue.Time(deadline),
+		Expires:  queue.Time(expires),
+		Extra:    json.RawMessage(`{}`),
+		Metadata: struct {
+			Description string `json:"description"`
+			Name        string `json:"name"`
+			Owner       string `json:"owner"`
+			Source      string `json:"source"`
+		}{
+			Description: "Test task",
+			Name:        "[TC] TestUpload",
+			Owner:       "pmoore@mozilla.com",
+			Source:      "https://github.com/taskcluster/generic-worker/blob/master/artifacts_test.go",
+		},
+		Payload: json.RawMessage(`
+		
+		{
+			"command": [
+				"fake command"
+			],
+			"maxRunTime": 7200,
+			"artifacts": [
+				{
+					"path": "SampleArtifacts/_/X.txt",
+					"expires": "` + queue.Time(expires).String() + `",
+					"type": "file"
+				}
+			]
+		}
+		
+		`),
+		ProvisionerId: "test-provisioner",
+		Retries:       1,
+		Routes:        []string{},
+		SchedulerId:   "test-scheduler",
+		Scopes:        []string{},
+		Tags:          json.RawMessage(`{"createdForUser":"pmoore@mozilla.com"}`),
+		Priority:      "normal",
+		TaskGroupId:   taskGroupId,
+		WorkerType:    workerType,
+	}
+
+	_, cs := myQueue.CreateTask(taskId, td)
+
+	if cs.Error != nil {
+		t.Fatalf("Suffered error when posting task to Queue in test setup:\n%s", cs.Error)
+	}
+
+	// now claim the task
+
+	artifacts := tr.PayloadArtifacts()
+	tr.uploadLog("SampleArtifacts/_/X.txt")
 }

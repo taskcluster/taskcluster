@@ -40,13 +40,17 @@ var (
 	// to. In future we might require more channels to perform requests in
 	// parallel, in which case we won't have a single global package var.
 	signedURLsResponseChan chan *queue.PollTaskUrlsResponse
+	// write to this to close signedurlmanager
+	signedDoneChan chan<- bool
 	// Channel to request task status updates to the TaskStatusHandler (from
 	// any goroutine)
 	taskStatusUpdate chan<- TaskStatusUpdate
 	// Channel to read errors from after requesting a task status update on
 	// taskStatusUpdate channel
 	taskStatusUpdateErr <-chan error
-	config              Config
+	// write to this to close task status update manager
+	taskStatusDoneChan chan<- bool
+	config             Config
 
 	version = "generic-worker 1.0.12"
 	usage   = `
@@ -247,7 +251,8 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 	return c, nil
 }
 
-func runWorker() {
+// returns a channel that you can send 'true' to, to shut it down
+func runWorker() <-chan bool {
 	// Any custom startup per platform...
 	err := startup()
 	// any errors are fatal
@@ -255,33 +260,44 @@ func runWorker() {
 		panic(err)
 	}
 
-	// Queue is the object we will use for accessing queue api
-	Queue = queue.New(config.ClientId, config.AccessToken)
-	Queue.Certificate = config.Certificate
+	done := make(chan bool)
+	go func() {
+		// Queue is the object we will use for accessing queue api
+		Queue = queue.New(config.ClientId, config.AccessToken)
+		Queue.Certificate = config.Certificate
 
-	// Start the SignedURLsManager in a dedicated go routine, to take care of
-	// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
-	signedURLsRequestChan, signedURLsResponseChan = SignedURLsManager()
+		// Start the SignedURLsManager in a dedicated go routine, to take care of
+		// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
+		signedURLsRequestChan, signedURLsResponseChan, signedDoneChan = SignedURLsManager()
 
-	// Start the TaskStatusHandler in a dedicated go routine, to take care of
-	// all communication with Queue regarding the status of a TaskRun.
-	taskStatusUpdate, taskStatusUpdateErr = TaskStatusHandler()
+		// Start the TaskStatusHandler in a dedicated go routine, to take care of
+		// all communication with Queue regarding the status of a TaskRun.
+		taskStatusUpdate, taskStatusUpdateErr, taskStatusDoneChan = TaskStatusHandler()
 
-	// loop forever claiming and running tasks!
-	for {
-		// make sure at least 1 second passes between iterations
-		waitASec := time.NewTimer(time.Second * 1)
-		taskFound := FindAndRunTask()
-		if !taskFound {
-			debug("No task claimed from any Azure queue...")
-		} else {
-			taskCleanup()
+		// loop forever claiming and running tasks!
+		for {
+			// make sure at least 1 second passes between iterations
+			waitASec := time.NewTimer(time.Second * 1)
+			taskFound := FindAndRunTask()
+			if !taskFound {
+				debug("No task claimed from any Azure queue...")
+			} else {
+				taskCleanup()
+			}
+			// To avoid hammering queue, make sure there is at least a second
+			// between consecutive requests. Note we do this even if a task ran,
+			// since a task could complete in less than a second.
+			select {
+			case <-waitASec.C:
+				continue
+			case <-done:
+				break
+			}
 		}
-		// To avoid hammering queue, make sure there is at least a second
-		// between consecutive requests. Note we do this even if a task ran,
-		// since a task could complete in less than a second.
-		<-waitASec.C
-	}
+		signedDoneChan <- true
+		taskStatusDoneChan <- true
+	}()
+	return done
 }
 
 // FindAndRunTask loops through the Azure queues in order, to find a task to

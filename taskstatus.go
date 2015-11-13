@@ -35,9 +35,10 @@ const (
 // informing the Queue about the status). Errors
 // from talking to the Queue are returned on err
 // channel.
-func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error) {
+func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, done chan<- bool) {
 	r := make(chan TaskStatusUpdate)
 	e := make(chan error)
+	d := make(chan bool)
 
 	// we'll make all these functions internal to TaskStatusHandler so that
 	// they can only be called inside here, so that reading/writing to the
@@ -149,40 +150,44 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error) {
 
 	go func() {
 		for {
-			update := <-r
-			// only update if either IfStatusIn is nil
-			// or it is non-nil but it has "true" value
-			// for key of current status
-			if update.IfStatusIn == nil || update.IfStatusIn[update.Status] {
-				task := update.Task
-				task.Status = update.Status
-				switch update.Status {
-				// Aborting is when you stop running a job you already claimed
-				case Aborted:
-					e <- abort(task, update.Reason)
-				// Cancelling is when you decide not to run a job which you haven't yet claimed
-				case Cancelled:
-					e <- cancel(task, update.Reason)
-				case Succeeded:
-					e <- reportCompleted(task)
-				case Failed:
-					e <- reportFailed(task)
-				case Errored:
-					e <- reportException(task, update.Reason)
-				case Claimed:
-					e <- claim(task)
-				case Reclaimed:
-					e <- reclaim(task)
-				default:
-					debug("Internal error: unknown task status: %v", update.Status)
-					os.Exit(64)
+			select {
+			case update := <-r:
+				// only update if either IfStatusIn is nil
+				// or it is non-nil but it has "true" value
+				// for key of current status
+				if update.IfStatusIn == nil || update.IfStatusIn[update.Status] {
+					task := update.Task
+					task.Status = update.Status
+					switch update.Status {
+					// Aborting is when you stop running a job you already claimed
+					case Aborted:
+						e <- abort(task, update.Reason)
+					// Cancelling is when you decide not to run a job which you haven't yet claimed
+					case Cancelled:
+						e <- cancel(task, update.Reason)
+					case Succeeded:
+						e <- reportCompleted(task)
+					case Failed:
+						e <- reportFailed(task)
+					case Errored:
+						e <- reportException(task, update.Reason)
+					case Claimed:
+						e <- claim(task)
+					case Reclaimed:
+						e <- reclaim(task)
+					default:
+						debug("Internal error: unknown task status: %v", update.Status)
+						os.Exit(64)
+					}
+				} else {
+					// current status is such that we shouldn't update to new
+					// status, so just report that no error occurred...
+					e <- nil
 				}
-			} else {
-				// current status is such that we shouldn't update to new
-				// status, so just report that no error occurred...
-				e <- nil
+			case <-d:
+				break
 			}
 		}
 	}()
-	return r, e
+	return r, e, d
 }
