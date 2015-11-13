@@ -78,10 +78,10 @@ func TestDirectoryArtifacts(t *testing.T) {
 			},
 			S3Artifact{
 				BaseArtifact: BaseArtifact{
-					CanonicalPath: "SampleArtifacts/_/X.exe",
+					CanonicalPath: "SampleArtifacts/_/X.txt",
 					Expires:       expiry,
 				},
-				MimeType: "application/x-msdownload",
+				MimeType: "text/plain; charset=utf-8",
 			},
 			S3Artifact{
 				BaseArtifact: BaseArtifact{
