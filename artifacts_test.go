@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/petemoore/pulse-go/pulse"
 	"github.com/streadway/amqp"
+	"github.com/taskcluster/pulse-go/pulse"
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-client-go/queueevents"
