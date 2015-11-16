@@ -19,7 +19,7 @@ before_install:
   - "go get github.com/pierrre/gotestcover"
 
 install:
-  - "go get -d -v ./..."
+  - "go get -d -t ./..."
 
 script:
   - "go install -v ./..."
