@@ -1,5 +1,3 @@
-// +build !windows
-
 package main
 
 // Returns json schema for the payload part of the task definition. Please
