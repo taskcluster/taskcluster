@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/queue"
@@ -33,8 +32,7 @@ type (
 
 	S3Artifact struct {
 		BaseArtifact
-		MimeType          string
-		S3ArtifactRequest *queue.S3ArtifactRequest
+		MimeType string
 	}
 
 	AzureArtifact struct {
@@ -50,9 +48,8 @@ type (
 
 	ErrorArtifact struct {
 		BaseArtifact
-		Message              string
-		Reason               string
-		ErrorArtifactRequest *queue.ErrorArtifactRequest
+		Message string
+		Reason  string
 	}
 )
 
@@ -66,12 +63,12 @@ func (artifact ErrorArtifact) ProcessResponse(response interface{}) error {
 }
 
 func (errArtifact ErrorArtifact) RequestObject() interface{} {
-	errArtifact.ErrorArtifactRequest = new(queue.ErrorArtifactRequest)
-	errArtifact.ErrorArtifactRequest.Expires = errArtifact.Expires
-	errArtifact.ErrorArtifactRequest.Message = errArtifact.Message
-	errArtifact.ErrorArtifactRequest.Reason = errArtifact.Reason
-	errArtifact.ErrorArtifactRequest.StorageType = "error"
-	return errArtifact.ErrorArtifactRequest
+	return &queue.ErrorArtifactRequest{
+		Expires:     errArtifact.Expires,
+		Message:     errArtifact.Message,
+		Reason:      errArtifact.Reason,
+		StorageType: "error",
+	}
 }
 
 func (errArtifact ErrorArtifact) ResponseObject() interface{} {
@@ -123,11 +120,11 @@ func (artifact S3Artifact) ProcessResponse(resp interface{}) error {
 }
 
 func (s3Artifact S3Artifact) RequestObject() interface{} {
-	s3Artifact.S3ArtifactRequest = new(queue.S3ArtifactRequest)
-	s3Artifact.S3ArtifactRequest.ContentType = s3Artifact.MimeType
-	s3Artifact.S3ArtifactRequest.Expires = s3Artifact.Expires
-	s3Artifact.S3ArtifactRequest.StorageType = "s3"
-	return s3Artifact.S3ArtifactRequest
+	return &queue.S3ArtifactRequest{
+		ContentType: s3Artifact.MimeType,
+		Expires:     s3Artifact.Expires,
+		StorageType: "s3",
+	}
 }
 
 func (s3Artifact S3Artifact) ResponseObject() interface{} {
@@ -250,8 +247,8 @@ func canonicalPath(path string) string {
 }
 
 func (task *TaskRun) uploadLog(logFile string) error {
-	// logs expire after one year...
-	logExpiry := queue.Time(time.Now().AddDate(1, 0, 0))
+	// logs expire when task expires
+	logExpiry := task.Definition.Expires
 	log := S3Artifact{
 		BaseArtifact: BaseArtifact{
 			CanonicalPath: logFile,

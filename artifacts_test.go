@@ -285,8 +285,10 @@ func TestUpload(t *testing.T) {
 	myQueue.Certificate = certificate
 
 	created := time.Now()
+	// deadline in one days' time
 	deadline := created.AddDate(0, 0, 1)
-	expires := deadline
+	// expiry in one month, in case we need test results
+	expires := created.AddDate(0, 1, 0)
 
 	td := &queue.TaskDefinitionRequest{
 		Created:  queue.Time(created),
@@ -308,7 +310,8 @@ func TestUpload(t *testing.T) {
 		
 		{
 			"command": [
-				"echo"
+				"echo",
+				"hello world!"
 			],
 			"maxRunTime": 7200,
 			"artifacts": [

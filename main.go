@@ -885,11 +885,18 @@ func (task *TaskRun) generateCompleteLog() error {
 
 func (task *TaskRun) unixCommand(command string) (Command, error) {
 	cmd := exec.Command(task.Payload.Command[0], task.Payload.Command[1:]...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	err := os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0700)
+	if err != nil {
+		return Command{}, err
+	}
+	log, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", "task_log.txt"))
+	if err != nil {
+		return Command{}, err
+	}
+	cmd.Stdout = log
+	cmd.Stderr = log
 	task.prepEnvVars(cmd)
-	// TODO: need to implement for unix
-	return Command{osCommand: cmd, logFile: ""}, nil
+	return Command{osCommand: cmd, logFile: "public/logs/task_log.txt"}, nil
 }
 
 func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {

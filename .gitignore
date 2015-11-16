@@ -25,3 +25,6 @@ _testmain.go
 
 # Coverage report
 coverage.report
+
+# test artifacts
+test/public/logs
