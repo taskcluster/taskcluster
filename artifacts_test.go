@@ -383,15 +383,14 @@ func TestUpload(t *testing.T) {
 	select {
 	case <-timeoutTimer.C:
 		t.Fatalf("Test timed out waiting for artifacts to be published")
-	case <-taskCompleted:
 	case <-artifactsCreatedChan:
 		for artifact, _ := range expectedArtifacts {
-			if A1 := artifactCreatedMessages[artifact]; A1 != nil {
-				if A1.Artifact.ContentType != "text/plain; charset=utf-8" {
-					t.Errorf("Artifact %s should have mime type 'text/plain; charset=utf-8' but has '%s'", artifact, A1.Artifact.ContentType)
+			if a := artifactCreatedMessages[artifact]; a != nil {
+				if a.Artifact.ContentType != "text/plain; charset=utf-8" {
+					t.Errorf("Artifact %s should have mime type 'text/plain; charset=utf-8' but has '%s'", artifact, a.Artifact.ContentType)
 				}
-				if A1.Artifact.Expires.String() != queue.Time(expires).String() {
-					t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifact, queue.Time(expires), A1.Artifact.Expires)
+				if a.Artifact.Expires.String() != queue.Time(expires).String() {
+					t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifact, queue.Time(expires), a.Artifact.Expires)
 				}
 			} else {
 				t.Errorf("Artifact '%s' not created", artifact)
