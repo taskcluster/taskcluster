@@ -21,6 +21,7 @@ import (
 type (
 	Artifact interface {
 		ProcessResponse() error
+		RequestObject() interface{}
 		ResponseObject() interface{}
 		Base() BaseArtifact
 	}
@@ -33,6 +34,7 @@ type (
 	S3Artifact struct {
 		BaseArtifact
 		MimeType           string
+		S3ArtifactRequest  *queue.S3ArtifactRequest
 		S3ArtifactResponse *queue.S3ArtifactResponse
 	}
 
@@ -51,6 +53,7 @@ type (
 		BaseArtifact
 		Message               string
 		Reason                string
+		ErrorArtifactRequest  *queue.ErrorArtifactRequest
 		ErrorArtifactResponse *queue.ErrorArtifactResponse
 	}
 )
@@ -64,12 +67,22 @@ func (artifact ErrorArtifact) ProcessResponse() error {
 	return nil
 }
 
+func (errArtifact ErrorArtifact) RequestObject() interface{} {
+	errArtifact.ErrorArtifactRequest = new(queue.ErrorArtifactRequest)
+	errArtifact.ErrorArtifactRequest.Expires = errArtifact.Expires
+	errArtifact.ErrorArtifactRequest.Message = errArtifact.Message
+	errArtifact.ErrorArtifactRequest.Reason = errArtifact.Reason
+	errArtifact.ErrorArtifactRequest.StorageType = "error"
+	return errArtifact.ErrorArtifactRequest
+}
+
 func (errArtifact ErrorArtifact) ResponseObject() interface{} {
 	errArtifact.ErrorArtifactResponse = new(queue.ErrorArtifactResponse)
 	return errArtifact.ErrorArtifactResponse
 }
 
 func (artifact S3Artifact) ProcessResponse() error {
+	fmt.Printf("Response object 3: %q\n", artifact.S3ArtifactResponse)
 	httpClient := &http.Client{}
 	httpCall := func() (*http.Response, error, error) {
 		// instead of using fileReader, read it into memory and then use a
@@ -110,6 +123,14 @@ func (artifact S3Artifact) ProcessResponse() error {
 		debug(string(respBody))
 	}
 	return err
+}
+
+func (s3Artifact S3Artifact) RequestObject() interface{} {
+	s3Artifact.S3ArtifactRequest = new(queue.S3ArtifactRequest)
+	s3Artifact.S3ArtifactRequest.ContentType = s3Artifact.MimeType
+	s3Artifact.S3ArtifactRequest.Expires = s3Artifact.Expires
+	s3Artifact.S3ArtifactRequest.StorageType = "s3"
+	return s3Artifact.S3ArtifactRequest
 }
 
 func (s3Artifact S3Artifact) ResponseObject() interface{} {
@@ -247,7 +268,7 @@ func (task *TaskRun) uploadLog(logFile string) error {
 
 func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 	task.Artifacts = append(task.Artifacts, artifact)
-	payload, err := json.Marshal(artifact)
+	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {
 		return err
 	}
@@ -278,10 +299,17 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 	debug(string(*parsp))
 	// unmarshal response into object
 	resp := artifact.ResponseObject()
+	fmt.Printf("Response object 1: %q\n", resp)
 	err = json.Unmarshal(json.RawMessage(*parsp), resp)
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Response object 2: %q\n", resp)
+	switch artifact.(type) {
+	case S3Artifact:
+		fmt.Printf("Response object 4: %q\n", artifact.(S3Artifact).S3ArtifactResponse)
+	}
+
 	err = artifact.ProcessResponse()
 	return err
 }

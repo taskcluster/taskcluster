@@ -8,8 +8,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/petemoore/pulse-go/pulse"
+	"github.com/streadway/amqp"
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/queueevents"
 )
 
 var (
@@ -222,21 +225,65 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 
 func TestUpload(t *testing.T) {
 
-	// first create dummy task
-
+	// check we have all the env vars we need to run this test
 	clientId := os.Getenv("TASKCLUSTER_CLIENT_ID")
 	accessToken := os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
 	certificate := os.Getenv("TASKCLUSTER_CERTIFICATE")
 	if clientId == "" || accessToken == "" {
 		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
 	}
+
+	pulseUsername := os.Getenv("PULSE_USERNAME")
+	pulsePassword := os.Getenv("PULSE_PASSWORD")
+	if pulseUsername == "" || pulsePassword == "" {
+		t.Skip("Skipping test since PULSE_USERNAME and/or PULSE_PASSWORD env vars are not set")
+	}
+
+	// define a unique workerType/provisionerId combination for this session
+	provisionerId := "test-provisioner"
+	// this should be sufficiently unique
+	workerType := slugid.Nice()
+	taskId := slugid.Nice()
+
+	// configure the worker
+	config = Config{
+		AccessToken:                accessToken,
+		Certificate:                certificate,
+		ClientId:                   clientId,
+		Debug:                      "*",
+		ProvisionerId:              provisionerId,
+		RefreshUrlsPrematurelySecs: 310,
+		WorkerGroup:                "test-worker-group",
+		WorkerId:                   "test-worker-id",
+		WorkerType:                 workerType,
+	}
+
+	// get the worker started
+	done := runWorker()
+
+	// start a listener for published artifacts
+	// (uses PULSE_USERNAME, PULSE_PASSWORD and prod url)
+	pulseConn := pulse.NewConnection("", "", "")
+	pulseConn.Consume(
+		"", // anonymous queue
+		func(message interface{}, delivery amqp.Delivery) {
+			a := message.(*queueevents.ArtifactCreatedMessage)
+			t.Logf("Artifact seen via pulse:\n%q", a)
+			done <- true
+		},
+		1,    // prefetch
+		true, // auto-ack
+		queueevents.ArtifactCreated{
+			TaskId:        taskId,
+			WorkerType:    workerType,
+			ProvisionerId: provisionerId,
+		},
+	)
+
+	// create dummy task
 	myQueue := queue.New(clientId, accessToken)
 	myQueue.Certificate = certificate
 
-	taskId := slugid.Nice()
-	// create a random workerType so parallel tests don't crash into each other
-	// give a fixed prefix so we don't have to allow workerType = * in scopes
-	workerType := generic_worker_test_slugid.Nice()
 	created := time.Now()
 	deadline := created.AddDate(0, 0, 1)
 	expires := deadline
@@ -261,7 +308,7 @@ func TestUpload(t *testing.T) {
 		
 		{
 			"command": [
-				"fake command"
+				"echo"
 			],
 			"maxRunTime": 7200,
 			"artifacts": [
@@ -274,7 +321,7 @@ func TestUpload(t *testing.T) {
 		}
 		
 		`),
-		ProvisionerId: "test-provisioner",
+		ProvisionerId: provisionerId,
 		Retries:       1,
 		Routes:        []string{},
 		SchedulerId:   "test-scheduler",
@@ -291,8 +338,7 @@ func TestUpload(t *testing.T) {
 		t.Fatalf("Suffered error when posting task to Queue in test setup:\n%s", cs.Error)
 	}
 
-	// now claim the task
-
-	artifacts := tr.PayloadArtifacts()
-	tr.uploadLog("SampleArtifacts/_/X.txt")
+	// wait forever
+	forever := make(chan bool)
+	<-forever
 }

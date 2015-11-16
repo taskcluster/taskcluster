@@ -11,21 +11,28 @@ import (
 func TestBadPayloadValidate(t *testing.T) {
 
 	// replace task update channels to use a dummy updater, in order to consume messages
-	taskStatusUpdate, taskStatusUpdateErr = func() (request chan<- TaskStatusUpdate, err <-chan error) {
+	taskStatusUpdate, taskStatusUpdateErr, taskStatusDoneChan = func() (chan<- TaskStatusUpdate, <-chan error, chan<- bool) {
 		r := make(chan TaskStatusUpdate)
 		e := make(chan error)
+		d := make(chan bool)
 		go func() {
 			for {
-				<-r
-				e <- nil
+				select {
+				case <-r:
+					e <- nil
+				case <-d:
+					break
+				}
 			}
 		}()
-		return r, e
+		return r, e, d
 	}()
 
 	badPayload := json.RawMessage(`bad payload, not even json`)
 	task := TaskRun{Definition: queue.TaskDefinitionResponse{Payload: badPayload}}
 	err := task.validatePayload()
+	// kill task status updater
+	taskStatusDoneChan <- true
 	if err == nil {
 		t.Fatalf("Bad task payload should not have passed validation")
 	}

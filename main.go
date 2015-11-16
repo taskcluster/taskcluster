@@ -252,7 +252,7 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 }
 
 // returns a channel that you can send 'true' to, to shut it down
-func runWorker() <-chan bool {
+func runWorker() chan<- bool {
 	// Any custom startup per platform...
 	err := startup()
 	// any errors are fatal
@@ -582,8 +582,10 @@ func (task *TaskRun) setReclaimTimer() {
 	// attempted a few minutes prior to expiration, to allow for clock drift.
 
 	// First time we need to check claim response, after that, need to check reclaim response
-	takenUntil := time.Time(task.TaskReclaimResponse.Status.Runs[task.RunId].TakenUntil)
-	if takenUntil.IsZero() {
+	var takenUntil time.Time
+	if len(task.TaskReclaimResponse.Status.Runs) > 0 {
+		takenUntil = time.Time(task.TaskReclaimResponse.Status.Runs[task.RunId].TakenUntil)
+	} else {
 		takenUntil = time.Time(task.TaskClaimResponse.Status.Runs[task.RunId].TakenUntil)
 	}
 
