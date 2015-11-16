@@ -16,3 +16,7 @@ func taskCleanup() error {
 func install(arguments map[string]interface{}) (err error) {
 	return nil
 }
+
+func (task *TaskRun) postTaskActions() error {
+	return nil
+}

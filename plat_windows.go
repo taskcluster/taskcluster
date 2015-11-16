@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -516,4 +517,36 @@ func Error(c *exec.Cmd) ([]byte, error) {
 	c.Stderr = &b
 	err := c.Run()
 	return b.Bytes(), err
+}
+
+func (task *TaskRun) postTaskActions() error {
+	completeLogFile, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", "all_commands.log"))
+	if err != nil {
+		return err
+	}
+	defer completeLogFile.Close()
+	for _, command := range task.Commands {
+		// unrun commands won't have logFile set...
+		if command.logFile != "" {
+			debug("Looking for %v", command.logFile)
+			commandLog, err := os.Open(filepath.Join(TaskUser.HomeDir, command.logFile))
+			if err != nil {
+				debug("Not found")
+				continue // file does not exist - maybe command did not run
+			}
+			debug("Found")
+			_, err = io.Copy(completeLogFile, commandLog)
+			if err != nil {
+				debug("Copy failed")
+				return err
+			}
+			debug("Copy succeeded")
+			err = commandLog.Close()
+			if err != nil {
+				return err
+			}
+		}
+	}
+	// will only upload if log concatenation succeeded
+	return task.uploadLog("public/logs/all_commands.log")
 }

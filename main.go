@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -783,28 +782,17 @@ func (task *TaskRun) run() error {
 		}
 	}
 
-	err = task.generateCompleteLog()
+	err = task.postTaskActions()
 	if err != nil {
 		debug("%#v", err)
 		if finalError == nil {
-			debug("TASK EXCEPTION when generating complete log")
+			debug("TASK EXCEPTION when running post-task actions")
 			finalTaskStatus = Errored
 			finalReason = "worker-shutdown" // internal error (log-concatenation-failure)
 			finalError = err
 		}
-	} else {
-		// only upload if log concatenation succeeded!
-		err = task.uploadLog("public/logs/all_commands.log")
-		if err != nil {
-			debug("%#v", err)
-			if finalError == nil {
-				debug("TASK EXCEPTION due to not being able to upload public/logs/all_commands.log")
-				finalTaskStatus = Errored
-				finalReason = "worker-shutdown" // internal error (upload-failure)
-				finalError = err
-			}
-		}
 	}
+
 	for _, artifact := range task.PayloadArtifacts() {
 		err := task.uploadArtifact(artifact)
 		if err != nil {
@@ -850,37 +838,6 @@ func (task *TaskRun) run() error {
 		finalError = err
 	}
 	return finalError
-}
-
-func (task *TaskRun) generateCompleteLog() error {
-	completeLogFile, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", "all_commands.log"))
-	if err != nil {
-		return err
-	}
-	defer completeLogFile.Close()
-	for _, command := range task.Commands {
-		// unrun commands won't have logFile set...
-		if command.logFile != "" {
-			debug("Looking for %v", command.logFile)
-			commandLog, err := os.Open(filepath.Join(TaskUser.HomeDir, command.logFile))
-			if err != nil {
-				debug("Not found")
-				continue // file does not exist - maybe command did not run
-			}
-			debug("Found")
-			_, err = io.Copy(completeLogFile, commandLog)
-			if err != nil {
-				debug("Copy failed")
-				return err
-			}
-			debug("Copy succeeded")
-			err = commandLog.Close()
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
 }
 
 func (task *TaskRun) unixCommand(command string) (Command, error) {
