@@ -186,6 +186,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 				}
 			case <-d:
 				break
+				close(d)
 			}
 		}
 	}()

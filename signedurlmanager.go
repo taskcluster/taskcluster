@@ -72,6 +72,7 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 				updateNeeded = true
 				// to close the manager
 			case <-doneChan:
+				close(doneChan)
 				break
 			}
 		}

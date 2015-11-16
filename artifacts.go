@@ -247,19 +247,20 @@ func canonicalPath(path string) string {
 }
 
 func (task *TaskRun) uploadLog(logFile string) error {
-	// logs expire when task expires
-	logExpiry := task.Definition.Expires
-	log := S3Artifact{
-		BaseArtifact: BaseArtifact{
-			CanonicalPath: logFile,
-			Expires:       logExpiry,
+	return task.uploadArtifact(
+		S3Artifact{
+			BaseArtifact: BaseArtifact{
+				CanonicalPath: logFile,
+				// logs expire when task expires
+				Expires: task.Definition.Expires,
+			},
+			MimeType: "text/plain",
 		},
-		MimeType: "text/plain",
-	}
-	return task.uploadArtifact(log)
+	)
 }
 
 func (task *TaskRun) uploadArtifact(artifact Artifact) error {
+	fmt.Println("Uploading artifact " + artifact.Base().CanonicalPath)
 	task.Artifacts = append(task.Artifacts, artifact)
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {

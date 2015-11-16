@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -15,6 +14,7 @@ import (
 	"time"
 
 	"github.com/dchest/uniuri"
+	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
 func processCommandOutput(callback func(line string), prog string, options ...string) error {
@@ -98,7 +98,7 @@ func createNewTaskUser() error {
 	if err != nil {
 		return err
 	}
-	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0666)
+	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0777)
 }
 
 func (user *OSUser) createNewOSUser() error {
@@ -519,34 +519,31 @@ func Error(c *exec.Cmd) ([]byte, error) {
 	return b.Bytes(), err
 }
 
-func (task *TaskRun) postTaskActions() error {
-	completeLogFile, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", "all_commands.log"))
-	if err != nil {
-		return err
+// The following code is AUTO-GENERATED. Please DO NOT edit.
+type (
+	// This schema defines the structure of the `payload` property referred to
+	// in a Task Cluster Task definition.
+	GenericWorkerPayload struct {
+		// Artifacts to be published. For example: `{ "type": "file", "path":
+		// "builds\\firefox.exe", "expires": "2015-08-19T17:30:00.000Z" }`
+		Artifacts []struct {
+			// Date when artifact should expire must be in the future
+			Expires queue.Time `json:"expires"`
+			// Filesystem path of artifact
+			Path string `json:"path"`
+			// Artifacts can be either an individual `file` or a `directory`
+			// containing potentially multiple files with recursively included
+			// subdirectories
+			Type string `json:"type"`
+		} `json:"artifacts"`
+		// One entry per command (consider each entry to be interpreted as a
+		// full line of a Windows™ .bat file). For example: `["set", "echo
+		// hello world > hello_world.txt", "set GOPATH=C:\\Go"]`.
+		Command []string `json:"command"`
+		// Example: ```{ "PATH": "C:\\Windows\\system32;C:\\Windows", "GOOS":
+		// "darwin" }```
+		Env map[string]string `json:"env"`
+		// Maximum time the task container can run in seconds
+		MaxRunTime int `json:"maxRunTime"`
 	}
-	defer completeLogFile.Close()
-	for _, command := range task.Commands {
-		// unrun commands won't have logFile set...
-		if command.logFile != "" {
-			debug("Looking for %v", command.logFile)
-			commandLog, err := os.Open(filepath.Join(TaskUser.HomeDir, command.logFile))
-			if err != nil {
-				debug("Not found")
-				continue // file does not exist - maybe command did not run
-			}
-			debug("Found")
-			_, err = io.Copy(completeLogFile, commandLog)
-			if err != nil {
-				debug("Copy failed")
-				return err
-			}
-			debug("Copy succeeded")
-			err = commandLog.Close()
-			if err != nil {
-				return err
-			}
-		}
-	}
-	// will only upload if log concatenation succeeded
-	return task.uploadLog("public/logs/all_commands.log")
-}
+)

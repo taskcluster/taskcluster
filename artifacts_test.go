@@ -259,7 +259,9 @@ func TestUpload(t *testing.T) {
 	}
 
 	// get the worker started
-	done := runWorker()
+	killWorkerChan := runWorker()
+
+	artifactCreatedMessages := []*queueevents.ArtifactCreatedMessage{}
 
 	// start a listener for published artifacts
 	// (uses PULSE_USERNAME, PULSE_PASSWORD and prod url)
@@ -268,8 +270,16 @@ func TestUpload(t *testing.T) {
 		"", // anonymous queue
 		func(message interface{}, delivery amqp.Delivery) {
 			a := message.(*queueevents.ArtifactCreatedMessage)
-			t.Logf("Artifact seen via pulse:\n%q", a)
-			done <- true
+			fmt.Printf("Artifact seen via pulse:\n%q\n", a)
+			artifactCreatedMessages = append(artifactCreatedMessages, a)
+			// once we received two messages, we can kill worker
+			if len(artifactCreatedMessages) == 3 {
+				fmt.Println("Killing test worker...")
+				killWorkerChan <- true
+				fmt.Println("Killing pulse connection...")
+				// cancel pulse consumption
+				pulseConn.AMQPConn.Close()
+			}
 		},
 		1,    // prefetch
 		true, // auto-ack
@@ -310,8 +320,10 @@ func TestUpload(t *testing.T) {
 		
 		{
 			"command": [
-				"echo",
-				"hello world!"
+				[
+					"echo",
+					"hello world!"
+				]
 			],
 			"maxRunTime": 7200,
 			"artifacts": [

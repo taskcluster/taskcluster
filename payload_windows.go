@@ -31,13 +31,9 @@ func taskPayloadSchema() string {
       "type": "array",
       "minItems": 1,
       "items": {
-        "type": "array",
-        "minItems": 1,
-        "items": {
-          "type": "string"
-        }
+        "type": "string"
       },
-	  "description": "One array per command (each command is an array of arguments). Several arrays for several commands."
+	  "description": "One entry per command (consider each entry to be interpreted as a full line of a Windows™ .bat file). For example: ` + "`" + `[\"set\", \"echo hello world > hello_world.txt\", \"set GOPATH=C:\\\\Go\"]` + "`" + `."
     },
     "env": {
       "title": "Environment variable mappings.",

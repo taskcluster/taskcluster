@@ -1,5 +1,7 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
 
+// +build !windows
+
 package main
 
 import "github.com/taskcluster/taskcluster-client-go/queue"
@@ -23,7 +25,7 @@ type (
 		// One entry per command (consider each entry to be interpreted as a
 		// full line of a Windows™ .bat file). For example: `["set", "echo
 		// hello world > hello_world.txt", "set GOPATH=C:\\Go"]`.
-		Command []string `json:"command"`
+		Command [][]string `json:"command"`
 		// Example: ```{ "PATH": "C:\\Windows\\system32;C:\\Windows", "GOOS":
 		// "darwin" }```
 		Env map[string]string `json:"env"`

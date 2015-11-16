@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -290,6 +291,8 @@ func runWorker() chan<- bool {
 			case <-waitASec.C:
 				continue
 			case <-done:
+				fmt.Println("Shutting down worker...")
+				close(done)
 				break
 			}
 		}
@@ -840,20 +843,36 @@ func (task *TaskRun) run() error {
 	return finalError
 }
 
-func (task *TaskRun) unixCommand(command string) (Command, error) {
-	cmd := exec.Command(task.Payload.Command[0], task.Payload.Command[1:]...)
-	err := os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0700)
+func (task *TaskRun) postTaskActions() error {
+	completeLogFile, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", "all_commands.log"))
 	if err != nil {
-		return Command{}, err
+		return err
 	}
-	log, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", "task_log.txt"))
-	if err != nil {
-		return Command{}, err
+	defer completeLogFile.Close()
+	for _, command := range task.Commands {
+		// unrun commands won't have logFile set...
+		if command.logFile != "" {
+			debug("Looking for %v", command.logFile)
+			commandLog, err := os.Open(filepath.Join(TaskUser.HomeDir, command.logFile))
+			if err != nil {
+				debug("Not found")
+				continue // file does not exist - maybe command did not run
+			}
+			debug("Found")
+			_, err = io.Copy(completeLogFile, commandLog)
+			if err != nil {
+				debug("Copy failed")
+				return err
+			}
+			debug("Copy succeeded")
+			err = commandLog.Close()
+			if err != nil {
+				return err
+			}
+		}
 	}
-	cmd.Stdout = log
-	cmd.Stderr = log
-	task.prepEnvVars(cmd)
-	return Command{osCommand: cmd, logFile: "public/logs/task_log.txt"}, nil
+	// will only upload if log concatenation succeeded
+	return task.uploadLog("public/logs/all_commands.log")
 }
 
 func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
