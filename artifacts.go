@@ -254,13 +254,13 @@ func (task *TaskRun) uploadLog(logFile string) error {
 				// logs expire when task expires
 				Expires: task.Definition.Expires,
 			},
-			MimeType: "text/plain",
+			MimeType: "text/plain; charset=utf-8",
 		},
 	)
 }
 
 func (task *TaskRun) uploadArtifact(artifact Artifact) error {
-	fmt.Println("Uploading artifact " + artifact.Base().CanonicalPath)
+	debug("Uploading artifact: " + artifact.Base().CanonicalPath)
 	task.Artifacts = append(task.Artifacts, artifact)
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {

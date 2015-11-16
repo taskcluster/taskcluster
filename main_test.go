@@ -38,7 +38,7 @@ func TestBadPayloadValidate(t *testing.T) {
 	}
 	switch err.(type) {
 	case *json.SyntaxError:
-		t.Log("Received *json.SyntaxError as expected - all ok!")
+		// received *json.SyntaxError as expected - all ok
 	default:
 		t.Errorf("Bad task payload should have retured a *json.SyntaxError error, but actually returned a %T error. The unexpected %T error was:\n%s", err, err, err)
 	}

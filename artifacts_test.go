@@ -259,9 +259,15 @@ func TestUpload(t *testing.T) {
 	}
 
 	// get the worker started
-	killWorkerChan := runWorker()
+	// killWorkerChan := runWorker()
+	runWorker()
 
-	artifactCreatedMessages := []*queueevents.ArtifactCreatedMessage{}
+	artifactCreatedMessages := make(map[string]*queueevents.ArtifactCreatedMessage)
+	// size 1 so that we don't block writing on taskCompleted
+	artifactsCreatedChan := make(chan bool, 1)
+	taskCompleted := make(chan bool)
+	// timeout after 15 seconds - that should be plenty
+	timeoutTimer := time.NewTimer(time.Second * 15)
 
 	// start a listener for published artifacts
 	// (uses PULSE_USERNAME, PULSE_PASSWORD and prod url)
@@ -269,21 +275,28 @@ func TestUpload(t *testing.T) {
 	pulseConn.Consume(
 		"", // anonymous queue
 		func(message interface{}, delivery amqp.Delivery) {
-			a := message.(*queueevents.ArtifactCreatedMessage)
-			fmt.Printf("Artifact seen via pulse:\n%q\n", a)
-			artifactCreatedMessages = append(artifactCreatedMessages, a)
-			// once we received two messages, we can kill worker
-			if len(artifactCreatedMessages) == 3 {
-				fmt.Println("Killing test worker...")
-				killWorkerChan <- true
-				fmt.Println("Killing pulse connection...")
-				// cancel pulse consumption
-				pulseConn.AMQPConn.Close()
+			switch message.(type) {
+			case *queueevents.ArtifactCreatedMessage:
+				a := message.(*queueevents.ArtifactCreatedMessage)
+				artifactCreatedMessages[a.Artifact.Name] = a
+				// finish after 3 artifacts have been created
+				if len(artifactCreatedMessages) == 3 {
+					// killWorkerChan <- true
+					// pulseConn.AMQPConn.Close()
+					artifactsCreatedChan <- true
+				}
+			case *queueevents.TaskCompletedMessage:
+				taskCompleted <- true
 			}
 		},
 		1,    // prefetch
 		true, // auto-ack
 		queueevents.ArtifactCreated{
+			TaskId:        taskId,
+			WorkerType:    workerType,
+			ProvisionerId: provisionerId,
+		},
+		queueevents.TaskCompleted{
 			TaskId:        taskId,
 			WorkerType:    workerType,
 			ProvisionerId: provisionerId,
@@ -353,7 +366,47 @@ func TestUpload(t *testing.T) {
 		t.Fatalf("Suffered error when posting task to Queue in test setup:\n%s", cs.Error)
 	}
 
-	// wait forever
-	forever := make(chan bool)
-	<-forever
+	expectedArtifacts := map[string]string{
+		"public/logs/all_commands.log":   "hello world!\n",
+		"public/logs/command_000000.log": "hello world!\n",
+		"SampleArtifacts/_/X.txt":        "test artifact\n",
+	}
+
+	// wait for task to complete, so we know artifact upload also completed
+	select {
+	case <-timeoutTimer.C:
+		t.Fatalf("Test timed out waiting for artifacts to be published")
+	case <-taskCompleted:
+	}
+
+	// now check artifact metadata is ok
+	select {
+	case <-timeoutTimer.C:
+		t.Fatalf("Test timed out waiting for artifacts to be published")
+	case <-taskCompleted:
+	case <-artifactsCreatedChan:
+		for artifact, _ := range expectedArtifacts {
+			if A1 := artifactCreatedMessages[artifact]; A1 != nil {
+				if A1.Artifact.ContentType != "text/plain; charset=utf-8" {
+					t.Errorf("Artifact %s should have mime type 'text/plain; charset=utf-8' but has '%s'", artifact, A1.Artifact.ContentType)
+				}
+				if A1.Artifact.Expires.String() != queue.Time(expires).String() {
+					t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifact, queue.Time(expires), A1.Artifact.Expires)
+				}
+			} else {
+				t.Errorf("Artifact '%s' not created", artifact)
+			}
+		}
+	}
+
+	// now check content was uploaded to Amazon, and is correct
+	for artifact, content := range expectedArtifacts {
+		cs = myQueue.GetLatestArtifact(taskId, artifact)
+		if cs.Error != nil {
+			t.Fatalf("Error trying to fetch artifacts from Amazon...")
+		}
+		if cs.HttpResponseBody != content {
+			t.Errorf("Artifact '%s': Was expecting content '%s' but found '%s'", artifact, content, cs.HttpResponseBody)
+		}
+	}
 }
