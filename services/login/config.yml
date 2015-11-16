@@ -14,8 +14,8 @@ Defaults:
       # Credentials to issuing temporary credentials should have scopes:
       # - assume:mozillians-user:*
       # - assume:mozillians-group:*
-      # - assume:ldap-user:*
-      # - assume:ldap-group:*
+      # - assume:mozilla-user:*
+      # - assume:mozilla-group:*
       credentials:
         clientId:     !env TASKCLUSTER_CLIENT_ID
         accessToken:  !env TASKCLUSTER_ACCESS_TOKEN

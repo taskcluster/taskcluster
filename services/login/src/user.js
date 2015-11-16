@@ -51,9 +51,9 @@ export default class User {
       });
     }
     if (this._ldapUser) {
-      scopes.push('assume:ldap-user:' + this._ldapUser);
+      scopes.push('assume:mozilla-user:' + this._ldapUser);
       this.ldapGroups.forEach(group => {
-        scopes.push('assume:ldap-group:' + group);
+        scopes.push('assume:mozilla-group:' + group);
       });
     }
     return scopes;

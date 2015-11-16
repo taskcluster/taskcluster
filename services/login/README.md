@@ -11,7 +11,7 @@ Supported authentication systems:
    and `taskcluster-groups` properties)
 
 For both LDAP and Mozillians there is a list of _allowed groups_, for each
-allowed LDAP group a user has the scope `assume:ldap-group:<group>` will be
+allowed LDAP group a user has the scope `assume:mozilla-group:<group>` will be
 issued. Similarly, the scope `assume:mozillians-group:<group>` will be granted
 with allowed Mozillians groups.
 
