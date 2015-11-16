@@ -266,8 +266,8 @@ func TestUpload(t *testing.T) {
 	// size 1 so that we don't block writing on taskCompleted
 	artifactsCreatedChan := make(chan bool, 1)
 	taskCompleted := make(chan bool)
-	// timeout after 15 seconds - that should be plenty
-	timeoutTimer := time.NewTimer(time.Second * 15)
+	// timeout after 30 seconds - that should be plenty
+	timeoutTimer := time.NewTimer(time.Second * 30)
 
 	// start a listener for published artifacts
 	// (uses PULSE_USERNAME, PULSE_PASSWORD and prod url)
