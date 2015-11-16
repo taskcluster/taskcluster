@@ -20,7 +20,7 @@ import (
 
 type (
 	Artifact interface {
-		ProcessResponse() error
+		ProcessResponse(response interface{}) error
 		RequestObject() interface{}
 		ResponseObject() interface{}
 		Base() BaseArtifact
@@ -33,9 +33,8 @@ type (
 
 	S3Artifact struct {
 		BaseArtifact
-		MimeType           string
-		S3ArtifactRequest  *queue.S3ArtifactRequest
-		S3ArtifactResponse *queue.S3ArtifactResponse
+		MimeType          string
+		S3ArtifactRequest *queue.S3ArtifactRequest
 	}
 
 	AzureArtifact struct {
@@ -51,10 +50,9 @@ type (
 
 	ErrorArtifact struct {
 		BaseArtifact
-		Message               string
-		Reason                string
-		ErrorArtifactRequest  *queue.ErrorArtifactRequest
-		ErrorArtifactResponse *queue.ErrorArtifactResponse
+		Message              string
+		Reason               string
+		ErrorArtifactRequest *queue.ErrorArtifactRequest
 	}
 )
 
@@ -62,7 +60,7 @@ func (base BaseArtifact) Base() BaseArtifact {
 	return base
 }
 
-func (artifact ErrorArtifact) ProcessResponse() error {
+func (artifact ErrorArtifact) ProcessResponse(response interface{}) error {
 	// TODO: process error response
 	return nil
 }
@@ -77,12 +75,11 @@ func (errArtifact ErrorArtifact) RequestObject() interface{} {
 }
 
 func (errArtifact ErrorArtifact) ResponseObject() interface{} {
-	errArtifact.ErrorArtifactResponse = new(queue.ErrorArtifactResponse)
-	return errArtifact.ErrorArtifactResponse
+	return new(queue.ErrorArtifactResponse)
 }
 
-func (artifact S3Artifact) ProcessResponse() error {
-	fmt.Printf("Response object 3: %q\n", artifact.S3ArtifactResponse)
+func (artifact S3Artifact) ProcessResponse(resp interface{}) error {
+	response := resp.(*queue.S3ArtifactResponse)
 	httpClient := &http.Client{}
 	httpCall := func() (*http.Response, error, error) {
 		// instead of using fileReader, read it into memory and then use a
@@ -96,7 +93,7 @@ func (artifact S3Artifact) ProcessResponse() error {
 		defer fileReader.Close()
 		bytesReader := bytes.NewReader(requestPayload)
 		// http.NewRequest automatically sets Content-Length correctly for bytes.Reader
-		httpRequest, err := http.NewRequest("PUT", artifact.S3ArtifactResponse.PutUrl, bytesReader)
+		httpRequest, err := http.NewRequest("PUT", response.PutUrl, bytesReader)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -114,7 +111,7 @@ func (artifact S3Artifact) ProcessResponse() error {
 		return putResp, err, nil
 	}
 	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
-	debug("%v put requests issued to %v", putAttempts, artifact.S3ArtifactResponse.PutUrl)
+	debug("%v put requests issued to %v", putAttempts, response.PutUrl)
 	respBody, dumpError := httputil.DumpResponse(putResp, true)
 	if dumpError != nil {
 		debug("Could not dump response output, never mind...")
@@ -134,8 +131,7 @@ func (s3Artifact S3Artifact) RequestObject() interface{} {
 }
 
 func (s3Artifact S3Artifact) ResponseObject() interface{} {
-	s3Artifact.S3ArtifactResponse = new(queue.S3ArtifactResponse)
-	return s3Artifact.S3ArtifactResponse
+	return new(queue.S3ArtifactResponse)
 }
 
 // Returns the artifacts as listed in the payload of the task (note this does
@@ -299,17 +295,9 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 	debug(string(*parsp))
 	// unmarshal response into object
 	resp := artifact.ResponseObject()
-	fmt.Printf("Response object 1: %q\n", resp)
 	err = json.Unmarshal(json.RawMessage(*parsp), resp)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Response object 2: %q\n", resp)
-	switch artifact.(type) {
-	case S3Artifact:
-		fmt.Printf("Response object 4: %q\n", artifact.(S3Artifact).S3ArtifactResponse)
-	}
-
-	err = artifact.ProcessResponse()
-	return err
+	return artifact.ProcessResponse(resp)
 }
