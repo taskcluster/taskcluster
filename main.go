@@ -296,8 +296,8 @@ func runWorker() chan<- bool {
 				break
 			}
 		}
-		signedDoneChan <- true
-		taskStatusDoneChan <- true
+		// signedDoneChan <- true
+		// taskStatusDoneChan <- true
 	}()
 	return done
 }

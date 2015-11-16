@@ -3,6 +3,7 @@
 cd "$(dirname "${0}")"
 
 function install {
+  # GOOS="${1}" GOARCH="${2}" go get -u ./...
   GOOS="${1}" GOARCH="${2}" go install ./...
   GOOS="${1}" GOARCH="${2}" go vet ./...
 }
@@ -14,7 +15,6 @@ install windows amd64
 # now the rest
 install darwin 386
 install darwin amd64
-install dragonfly 386
 install dragonfly amd64
 install freebsd 386
 install freebsd amd64
@@ -33,6 +33,6 @@ install solaris amd64
 
 find "${GOPATH}/bin" -name 'generic-worker*'
 
-go test ./...
+go test -v ./...
 
 echo "Build successful!"
