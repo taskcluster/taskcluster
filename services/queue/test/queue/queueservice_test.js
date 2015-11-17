@@ -12,34 +12,25 @@ suite('queue/QueueService', function() {
   var assume        = require('assume');
 
   // Load configuration
-  var cfg = base.config({
-    defaults:     require('../../config/defaults'),
-    profile:      require('../../config/' + 'test'),
-    envs: [
-      'azure_accountName',
-      'azure_accountKey',
-    ],
-    filename:     'taskcluster-queue'
-  });
+  var cfg = base.config({profile: 'test'});
 
   // Check that we have an account
-  if (!cfg.get('azure:accountKey')) {
-    console.log("\nWARNING:");
-    console.log("Skipping 'blobstore' tests, missing config file: " +
-                "taskcluster-queue.conf.json");
-    return;
+  let queueService = null;
+  if (cfg.azure && cfg.azure.accountKey) {
+    queueService = new QueueService({
+      // Using a different prefix as we create/delete a lot of queues and we don't
+      // want queues in state being-deleted when running the other tests
+      prefix:             cfg.app.queuePrefix2,
+      credentials:        cfg.azure,
+      claimQueue:         cfg.app.claimQueue,
+      deadlineQueue:      cfg.app.deadlineQueue,
+      pendingPollTimeout: 30 * 1000,
+      deadlineDelay:      1000
+    });
+  } else {
+    console.log("WARNING: Skipping 'blobstore' tests, missing user-config.yml");
+    this.pending = true;
   }
-
-  var queueService = new QueueService({
-    // Using a different prefix as we create/delete a lot of queues and we don't
-    // want queues in state being-deleted when running the other tests
-    prefix:             cfg.get('queue:queuePrefix2'),
-    credentials:        cfg.get('azure'),
-    claimQueue:         cfg.get('queue:claimQueue'),
-    deadlineQueue:      cfg.get('queue:deadlineQueue'),
-    pendingPollTimeout: 30 * 1000,
-    deadlineDelay:      1000
-  });
 
   // Dummy identifiers for use in this test
   var workerType    = 'no-worker';

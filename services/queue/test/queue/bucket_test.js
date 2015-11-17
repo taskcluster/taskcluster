@@ -9,30 +9,20 @@ suite('queue/bucket_test', function() {
   var request       = require('superagent-promise');
 
   // Load configuration
-  var cfg = base.config({
-    defaults:     require('../../config/defaults'),
-    profile:      require('../../config/' + 'test'),
-    envs: [
-      'aws_accessKeyId',
-      'aws_secretAccessKey',
-    ],
-    filename:     'taskcluster-queue'
-  });
+  var cfg = base.config({profile: 'test'});
 
   // Check that we have an account
-  if (!cfg.get('aws:accessKeyId')) {
-    console.log("\nWARNING:");
-    console.log("Skipping 'Bucket' tests, missing config file: " +
-                "taskcluster-queue.conf.json");
-    return;
+  let bucket = null;
+  if (cfg.aws  && cfg.aws.accessKeyId) {
+    // Create bucket instance
+    bucket = new Bucket({
+      bucket:       cfg.app.publicArtifactBucket,
+      credentials:  cfg.aws
+    });
+  } else {
+    console.log("WARNING: Skipping 'Bucket' tests, missing user-config.yml");
+    this.pending = true;
   }
-
-  // Create bucket instance
-  var bucket = new Bucket({
-    bucket:       cfg.get('queue:publicArtifactBucket'),
-    credentials:  cfg.get('aws')
-  });
-
 
   // Test that put to signed url works
   test("createPutUrl", function() {
@@ -91,8 +81,8 @@ suite('queue/bucket_test', function() {
   test("uses bucketCDN", () => {
     // Create bucket instance
     var bucket = new Bucket({
-      bucket:       cfg.get('queue:publicArtifactBucket'),
-      credentials:  cfg.get('aws'),
+      bucket:       cfg.app.publicArtifactBucket,
+      credentials:  cfg.aws,
       bucketCDN:    "https://example.com"
     });
     var url = bucket.createGetUrl("test");

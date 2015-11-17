@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-var debug         = require('debug')('queue:bin:load-test');
+var debug         = require('debug')('queue:load-test');
 var base          = require('taskcluster-base');
 var path          = require('path');
 var Promise       = require('promise');
@@ -26,28 +25,7 @@ var makeTask = () => {
 };
 
 /** Launch server */
-var launch = async function(profile) {
-  debug("Launching with profile: %s", profile);
-
-  // Load configuration
-  var cfg = base.config({
-    defaults:     require('../config/defaults'),
-    profile:      require('../config/' + profile),
-    envs: [
-      'pulse_username',
-      'pulse_password',
-      'queue_publishMetaData',
-      'taskcluster_credentials_clientId',
-      'taskcluster_credentials_accessToken',
-      'aws_accessKeyId',
-      'aws_secretAccessKey',
-      'azure_accountName',
-      'azure_accountKey',
-      'influx_connectionString'
-    ],
-    filename:     'taskcluster-queue'
-  });
-
+var launch = async function(cfg) {
   var fmt = (n) => {
     return Math.round(n * 100) / 100;
   };
@@ -69,7 +47,7 @@ var launch = async function(profile) {
     loops += 1;
     (async() => {
       var agent = new https.Agent({keepAlive: true});
-      if (cfg.get('server:publicUrl').substr(0, 5) != 'https') {
+      if (cfg.server.publicUrl.substr(0, 5) != 'https') {
         agent = new http.Agent({keepAlive: true});
       }
       var tempCreds = taskcluster.createTemporaryCredentials({
@@ -86,12 +64,12 @@ var launch = async function(profile) {
           'docker-worker:capability:device:loopbackVideo',
           'docker-worker:capability:device:loopbackAudio'
         ],
-        credentials:  cfg.get('taskcluster:credentials')
+        credentials:  cfg.taskcluster.credentials
       });
       var queue = new taskcluster.Queue({
         credentials:      tempCreds,
         retries:          0,
-        baseUrl:          cfg.get('server:publicUrl') + '/v1',
+        baseUrl:          cfg.server.publicUrl + '/v1',
         agent:            agent,
         authorizedScopes: [
           'queue:create-task:no-provisioner/test-worker',
@@ -167,24 +145,6 @@ var launch = async function(profile) {
   console.log("Exiting");
   exiting = true;
 };
-
-// If load-test.js is executed start the load-test
-if (!module.parent) {
-  // Find configuration profile
-  var profile = process.argv[2];
-  if (!profile) {
-    console.log("Usage: load-test.js [profile]")
-    console.error("ERROR: No configuration profile is provided");
-  }
-  // Launch with given profile
-  launch(profile).then(function() {
-    debug("Launched load-test successfully");
-  }).catch(function(err) {
-    debug("Failed to start load-test, err: %s, as JSON: %j", err, err, err.stack);
-    // If we didn't launch the load-test we should crash
-    process.exit(1);
-  });
-}
 
 // Export launch in-case anybody cares
 module.exports = launch;

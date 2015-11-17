@@ -1,0 +1,11 @@
+defaults:
+  aws:
+    accessKeyId:        '...'
+    secretAccessKey:    '...'
+    region:             us-west-2
+  azure:
+    accountName:        jungle
+    accountKey:         '...'
+  pulse:
+    username:           '...'
+    password:           '...'
