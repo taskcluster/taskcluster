@@ -1,0 +1,161 @@
+defaults:
+  app:
+    publishMetaData:              !env:bool PUBLISH_METADATA
+    exchangePrefix:               v1/
+
+    # Number of seconds before the claim to a run expires
+    claimTimeout:                 1200
+
+    # S3 buckets where artifacts are stored
+    publicArtifactBucket:         !env PUBLIC_ARTIFACT_BUCKET
+    privateArtifactBucket:        !env PRIVATE_ARTIFACT_BUCKET
+
+    # Azure blob container for artifacts
+    artifactContainer:            artifacts
+
+    # Azure table name for tasks, artifact meta-data
+    taskTableName:                Tasks
+    artifactTableName:            Artifacts
+
+    # Time delay before expiring artifacts, in readable format, see:
+    # taskcluster.fromNow, notice this should be negative!
+    artifactExpirationDelay:      '- 30 minutes'
+
+    # Time delay before expiring tasks, in readable format, see:
+    # taskcluster.fromNow, notice this should be negative!
+    taskExpirationDelay:          '- 30 minutes'
+
+    # Component property in the responseTime and process statistics
+    statsComponent:               queue
+
+    # Prefix for azure queues (at most 6 characters)
+    queuePrefix:                  queue
+
+    # Name of azure queue for tracking claim expiration
+    claimQueue:                   claim-queue
+
+    # Name of azure queue for tracking deadlines
+    deadlineQueue:                deadline-queue
+
+    # Number of ms before deadline expiration message arrives, past deadline
+    deadlineDelay:                60000
+
+    # Configuration for deadline-reaper
+    deadline:
+      # Number of ms to sleep after polling from an empty queue
+      pollingDelay:               5000
+      # Number of event loops to run in parallel, each taking up to 32 message
+      # in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
+      parallelism:                1
+
+    # Configuration for claim-reaper
+    claim:
+      # Number of ms to sleep after polling from an empty queue
+      pollingDelay:               5000
+      # Number of event loops to run in parallel, each taking up to 32 message
+      # in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
+      parallelism:                1
+
+    # Mapping from EC2 region to public artifact bucket proxy
+    # (Must not end with a slash!)
+    publicArtifactBucketProxies:  !env:json PUBLIC_ARTIFACT_EC2_PROXIES
+    usePublicArtifactBucketProxy: true
+
+    # CDN for public artifact bucket
+    publicArtifactBucketCDN:      !env PUBLIC_ARTIFACT_BUCKET_CDN
+
+
+  taskcluster:
+    authBaseUrl:      https://auth.taskcluster.net/v1
+    credentials:
+      clientId:       !env TASKCLUSTER_CLIENT_ID
+      accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
+
+  server:
+    port:             !env:number PORT
+    publicUrl:        !env PUBLIC_URL
+    env:              !env NODE_ENV
+    forceSSL:         !env:flag FORCE_SSL
+    trustProxy:       false
+
+  # Azure credentials (for table, blob and queue storage)
+  azure:
+    accountName:              !env AZURE_ACCOUNT_NAME
+    accountKey:               !env AZURE_ACCOUNT_KEY
+
+  pulse:
+    username:                 !env PULSE_USERNAME
+    password:                 !env PULSE_PASSWORD
+
+  influx:
+    connectionString:         !env INFLUX_CONNECTION
+    maxDelay:                 300
+    maxPendingPoints:         300
+
+  aws:
+    # Credentials with access to artifact buckets and
+    # references/schemas.taskcluster.net if you wish to publish meta-data
+    accessKeyId:      !env AWS_ACCESS_KEY_ID
+    secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
+    region:           us-west-2
+    apiVersion:       2014-01-01
+
+# Configuration in production
+production:
+  app:
+    publicArtifactBucket:         'taskcluster-public-artifacts'
+    privateArtifactBucket:        'taskcluster-private-artifacts'
+    artifactContainer:            'artifacts'
+    taskTableName:                'QueueTasks'
+    artifactTableName:            'QueueArtifacts'
+    publicArtifactBucketProxies:
+      'us-east-1':  's3-copy-proxy-us-east-1.taskcluster.svc.tutum.io'
+      'us-west-1':  's3-copy-proxy-us-west-1.taskcluster.svc.tutum.io'
+  taskcluster:
+    authBaseUrl:      https://auth.taskcluster.net/v1
+  server:
+    publicUrl:        https://queue.taskcluster.net
+    env:              production
+    forceSSL:         true
+    trustProxy:       true
+
+# Configuration of tests
+test:
+  app:
+    publishMetaData:              false
+    # For testing purposes we let claims expire very fast
+    claimTimeout:                 1
+    publicArtifactBucket:         'test-bucket-for-any-garbage'
+    privateArtifactBucket:        'test-bucket-for-any-garbage2'
+    artifactContainer:            'artifacts'
+    statsComponent:               'test-queue'
+    queuePrefix:                  'hacks'
+    queuePrefix2:                 'hacks2' # For testing deletion of queues
+    taskTableName:                'TestTasks'
+    artifactTableName:            'TestArtifacts'
+    claimQueue:                   'test-claim-queue'
+    deadlineQueue:                'test-deadline-queue'
+    deadlineDelay:                1000
+    # Positive, means we expire artifacts 4 days ahead of time, useful for
+    # testing. In production this should be "- x hours" or so...
+    artifactExpirationDelay:      '4 days'
+    # Positive, means that expire tasks 4 days ahead of time, useful for
+    # testing. In production this should be "- x hours" or so...
+    taskExpirationDelay:          '4 days'
+    deadline:
+      pollingDelay:               250
+      parallelism:                1
+    claim:
+      pollingDelay:               250
+      parallelism:                1
+    publicArtifactBucketProxies:
+      'us-east-1':    'proxy-for-us-east-1'
+  taskcluster:
+    authBaseUrl:      http://localhost:60407/v1
+    credentials:
+      clientId:       test-server
+      accessToken:    none
+  server:
+    publicUrl:        http://localhost:60401
+    port:             60401
+    env:              development

@@ -1,12 +1,18 @@
+language: node_js
+sudo: false
+node_js:
+- '4'
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.8
+script: npm test
 env:
   global:
-  - DEBUG='* -superagent -express:* -mocha:* -babel'
-language: node_js
-node_js:
-- '0.12'
-script: npm test
-services:
-- rabbitmq
+  - CXX=g++-4.8
+  - DEBUG='queue:*'
 before_install:
 - openssl aes-256-cbc -K $encrypted_e05971c47e30_key -iv $encrypted_e05971c47e30_iv
-  -in taskcluster-queue.conf.json.enc -out taskcluster-queue.conf.json -d
+  -in user-config.yml.enc -out user-config.yml -d
