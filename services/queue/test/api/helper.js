@@ -7,14 +7,7 @@ var v1              = require('../../routes/v1');
 var exchanges       = require('../../queue/exchanges');
 var taskcluster     = require('taskcluster-client');
 var mocha           = require('mocha');
-var bin = {
-  server:             require('../../bin/server'),
-  expireArtifacts:    require('../../bin/expire-artifacts'),
-  expireTasks:        require('../../bin/expire-tasks'),
-  expireQueues:       require('../../bin/expire-queues'),
-  claimReaper:        require('../../bin/claim-reaper'),
-  deadlineReaper:     require('../../bin/deadline-reaper')
-};
+var load            = require('../../src/main');
 
 // Some default clients for the mockAuthServer
 var defaultClients = [
@@ -34,64 +27,39 @@ var defaultClients = [
   }
 ];
 
-var testProfile = 'test';
+const profile = 'test';
+let loadOptions = {profile, process: 'test'};
 
 // Create and export helper object
 var helper = module.exports = {};
 
 // Load configuration
-var cfg = helper.cfg = base.config({
-  defaults:     require('../../config/defaults'),
-  profile:      require('../../config/' + testProfile),
-  envs: [
-    'aws_accessKeyId',
-    'aws_secretAccessKey',
-    'azure_accountName',
-    'azure_accountKey',
-    'pulse_username',
-    'pulse_password'
-  ],
-  filename:     'taskcluster-queue'
-});
-
-// Skip tests if no AWS credentials is configured
-if (!cfg.get('aws:secretAccessKey') ||
-    !cfg.get('azure:accountKey') ||
-    !cfg.get('pulse:password')) {
-  console.log("Skip tests due to missing credentials!");
-  process.exit(1);
-}
+var cfg = base.config({profile});
 
 // Configure PulseTestReceiver
-helper.events = new base.testing.PulseTestReceiver(cfg.get('pulse'), mocha);
+helper.events = new base.testing.PulseTestReceiver(cfg.pulse, mocha);
 
 // Allow tests to run expire-artifacts
-helper.expireArtifacts = () => {
-  return bin.expireArtifacts(testProfile);
-};
+helper.expireArtifacts = () => load('expire-artifacts', loadOptions)
 
 // Allow tests to run expire-tasks
-helper.expireTasks = () => {
-  return bin.expireTasks(testProfile);
-};
+helper.expireTasks = () => load('expire-tasks', loadOptions)
 
 // Allow tests to run expire-queues
-helper.expireQueues = () => {
-  return bin.expireQueues(testProfile);
-};
+helper.expireQueues = () => load('expire-queues', loadOptions)
 
 // Process to terminate
 var toTerminate = [];
 
 // Allow tests to start claim-reaper
 helper.claimReaper = async () => {
-  var reaper = await bin.claimReaper(testProfile);
+  var reaper = await load('claim-reaper', loadOptions);
   toTerminate.push(reaper);
   return reaper;
 };
 // Allow tests to start deadline-reaper
 helper.deadlineReaper = async () => {
-  var reaper = await bin.deadlineReaper(testProfile);
+  var reaper = await load('deadline-reaper', loadOptions)
   toTerminate.push(reaper);
   return reaper;
 };
@@ -108,7 +76,7 @@ mocha.before(async () => {
     clients:  defaultClients
   });
 
-  webServer = await bin.server(testProfile);
+  webServer = await load('server', loadOptions);
 
   // Create client for working with API
   helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
@@ -134,8 +102,8 @@ mocha.before(async () => {
 
   // Create client for binding to reference
   var exchangeReference = exchanges.reference({
-    exchangePrefix:   cfg.get('queue:exchangePrefix'),
-    credentials:      cfg.get('pulse')
+    exchangePrefix:   cfg.app.exchangePrefix,
+    credentials:      cfg.pulse
   });
   helper.QueueEvents = taskcluster.createClient(exchangeReference);
   helper.queueEvents = new helper.QueueEvents();
