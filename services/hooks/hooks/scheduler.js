@@ -69,7 +69,6 @@ class Scheduler extends events.EventEmitter {
 
   async poll() {
     // Get all hooks that have a scheduled date that is earlier than now
-    debug("polling");
     var hooks = await this.Hook.scan({
       nextScheduledDate:  base.Entity.op.lessThan(new Date())
     }, {
@@ -93,7 +92,7 @@ class Scheduler extends events.EventEmitter {
 
   /** Handle spawning a new task for a given hook that needs to be scheduled */
   async handleHook(hook) {
-    debug("firing hook %s/%s", hook.hookGroupId, hook.hookId);
+    console.log("firing hook %s/%s with taskId %s", hook.hookGroupId, hook.hookId, hook.nextTaskId);
     // TODO: (when we have hook logging) if this fails due to 401, we should
     // still consider it scheduled
     try {
@@ -103,8 +102,8 @@ class Scheduler extends events.EventEmitter {
         created: hook.nextScheduledDate
       });
     } catch(err) {
-      debug("Failed to handle hook: %j" +
-            ", with err: %s, as JSON: %j", hook, err, err, err.stack);
+      console.log("Failed to handle hook: %j" +
+                  ", with err: %s, as JSON: %j", hook, err, err, err.stack);
       return;
     }
 
@@ -118,8 +117,8 @@ class Scheduler extends events.EventEmitter {
         }
       });
     } catch(err) {
-      debug("Failed to update hook (will re-fire): %j" +
-            ", with err: %s, as JSON: %j", hook, err, err, err.stack);
+      console.log("Failed to update hook (will re-fire): %j" +
+                  ", with err: %s, as JSON: %j", hook, err, err, err.stack);
       return;
     }
   }
