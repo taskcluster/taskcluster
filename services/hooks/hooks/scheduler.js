@@ -69,6 +69,7 @@ class Scheduler extends events.EventEmitter {
 
   async poll() {
     // Get all hooks that have a scheduled date that is earlier than now
+    debug("polling");
     var hooks = await this.Hook.scan({
       nextScheduledDate:  base.Entity.op.lessThan(new Date())
     }, {
@@ -92,6 +93,7 @@ class Scheduler extends events.EventEmitter {
 
   /** Handle spawning a new task for a given hook that needs to be scheduled */
   async handleHook(hook) {
+    debug("firing hook %s/%s", hook.hookGroupId, hook.hookId);
     // TODO: (when we have hook logging) if this fails due to 401, we should
     // still consider it scheduled
     try {
