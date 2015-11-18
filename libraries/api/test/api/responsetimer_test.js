@@ -3,9 +3,10 @@ suite("api/responsetimer", function() {
   var request         = require('superagent-promise');
   var assert          = require('assert');
   var Promise         = require('promise');
-  var mockAuthServer  = require('../mockauthserver');
-  var base            = require('../../');
-  var config  = require('taskcluster-lib-config');
+  var mockAuthServer  = require('taskcluster-lib-testing/.test/mockauthserver');
+  var subject         = require('../../');
+  var base            = require('taskcluster-base');
+  var config          = require('taskcluster-lib-config');
   var express         = require('express');
   var path            = require('path');
 
@@ -24,7 +25,7 @@ suite("api/responsetimer", function() {
   }
 
   // Create test api
-  var api = new base.API({
+  var api = new subject({
     title:        "Test Api",
     description:  "Another test api"
   });
@@ -83,7 +84,7 @@ suite("api/responsetimer", function() {
         });
 
         // Create application
-        app = express();
+        var app = express();
 
         // Use router
         app.use(router);

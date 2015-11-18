@@ -13,8 +13,8 @@ var path          = require('path');
 var fs            = require('fs');
 require('superagent-hawk')(require('superagent'));
 var request       = require('superagent-promise');
-var Validator     = require('./index').validator.Validator;
-var utils         = require('./utils');
+// Someone should rename utils to scopes... 
+var utils         = require('taskcluster-lib-scopes');
 var stats         = require('taskcluster-lib-stats');
 var crypto        = require('crypto');
 var hoek          = require('hoek');
@@ -23,6 +23,7 @@ var http          = require('http');
 var https         = require('https');
 var cryptiles     = require('cryptiles');
 var taskcluster   = require('taskcluster-client');
+var Validator     = require('schema-validator-publisher').Validator;
 
 // Default baseUrl for authentication server
 var AUTH_BASE_URL = 'https://auth.taskcluster.net/v1';
@@ -1388,8 +1389,17 @@ API.prototype.declare = function(options, handler) {
  * Return an `express.Router` instance.
  */
 API.prototype.router = function(options) {
-  assert(options.validator instanceof Validator,
-         "API.router() needs a validator");
+  //assert(options.validator instanceof Validator,
+  //       "API.router() needs a validator");
+  // NOTE that instanceof Validator and similar calls will no longer work
+  // in the split-tc-base world.
+  assert(options.validator.constructor.name === 'Validator');
+  debugger;
+  ['check', 'load', 'register'].forEach(function(x) {
+    assert(typeof options.validator.constructor.prototype[x] === 'function',
+        'API.router() needs validator property with ' + x + ' function');
+  });
+
 
   // Provide default options
   options = _.defaults({}, options, {
