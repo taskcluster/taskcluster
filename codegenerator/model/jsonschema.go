@@ -99,25 +99,34 @@ func (subSchema JsonSubSchema) String() string {
 	return result
 }
 
-func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPackages map[string]bool, rawMessageTypes map[string]bool) (string, map[string]bool, map[string]bool) {
-	content := ""
+func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages map[string]bool, rawMessageTypes map[string]bool) (string, map[string]bool, map[string]bool) {
+	content := "\n"
 	comment := ""
-	if withComments {
-		content += "\n"
-		if d := jsonSubSchema.Description; d != nil {
-			if desc := *d; desc != "" {
-				comment = utils.Indent(desc, "// ")
-			}
-			if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
-				comment += "\n"
-			}
-		}
-		if url := jsonSubSchema.SourceURL; url != "" {
-			comment += "//\n// See " + url + "\n"
-		}
-		content += comment
-		content += jsonSubSchema.TypeName + " "
+	if d := jsonSubSchema.Description; d != nil {
+		comment = utils.Indent(*d, "\t// ")
 	}
+	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+		comment += "\n"
+	}
+	if enum := jsonSubSchema.Enum; enum != nil {
+		comment += "//\n// Possible values:\n"
+		for _, i := range enum {
+			switch i.(type) {
+			case float64:
+				comment += fmt.Sprintf("//   * %v\n", i)
+			default:
+				comment += fmt.Sprintf("//   * %q\n", i)
+			}
+		}
+	}
+	if regex := jsonSubSchema.Pattern; regex != nil {
+		comment += "//\n// Syntax: " + *regex + "\n"
+	}
+	if url := jsonSubSchema.SourceURL; url != "" {
+		comment += "//\n// See " + url + "\n"
+	}
+	content += comment
+	content += jsonSubSchema.TypeName + " "
 	typ := "json.RawMessage"
 	if p := jsonSubSchema.Type; p != nil {
 		typ = *p
@@ -145,31 +154,8 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 				// recursive call to build structs inside structs
 				var subType string
 				subType, extraPackages, rawMessageTypes = s.Properties[j].TypeDefinition(false, extraPackages, rawMessageTypes)
-				// comment the struct member with the description from the json
-				comment = ""
-				if d := s.Properties[j].Description; d != nil {
-					comment = utils.Indent(*d, "\t// ")
-				}
-				if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
-					comment += "\n"
-				}
-				if enum := s.Properties[j].Enum; enum != nil {
-					comment += "//\n// Possible values:\n"
-					for _, i := range enum {
-						switch i.(type) {
-						case float64:
-							comment += fmt.Sprintf("//   * %v\n", i)
-						default:
-							comment += fmt.Sprintf("//   * %q\n", i)
-						}
-					}
-				}
-				if regex := s.Properties[j].Pattern; regex != nil {
-					comment += "//\n// Syntax: " + *regex + "\n"
-				}
-				typ += comment
 				// struct member name and type, as part of struct definition
-				typ += fmt.Sprintf("\t%v %v `json:\"%v\"`\n", memberName, subType, j)
+				typ += fmt.Sprintf("\t%v %v `json:\"%v\"`\n", memberName, j, subType)
 			}
 			typ += "}"
 		} else {
@@ -193,7 +179,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 	switch typ {
 	case "json.RawMessage":
 		extraPackages["encoding/json"] = true
-		if withComments {
+		if topLevel {
 			// Special case: we have here a top level RawMessage such as
 			// queue.PostArtifactRequest - therefore need to implement
 			// Marhsal and Unmarshal methods. See:
@@ -203,8 +189,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 			rawMessageTypes[jsonSubSchema.TypeName] = true
 		}
 	}
-	content += typ
-	if withComments {
+	if topLevel {
 		content += "\n"
 	}
 	return content, extraPackages, rawMessageTypes
