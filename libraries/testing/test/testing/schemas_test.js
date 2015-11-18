@@ -1,7 +1,8 @@
+var subject  = require('../../');
+var path     = require('path');
+
 suite('testing.schema', function() {
-  var base  = require('../../');
-  var path  = require('path');
-  base.testing.schemas({
+  subject.schemas({
     validator: {
       folder:         path.join(__dirname, 'schemas'),
       schemaBaseUrl:  'http://localhost:1234/'
@@ -22,9 +23,7 @@ suite('testing.schema', function() {
 });
 
 suite('testing.schema w. schemaPrefix', function() {
-  var base  = require('../../');
-  var path  = require('path');
-  base.testing.schemas({
+  subject.schemas({
     validator: {
       folder:         path.join(__dirname, 'schemas'),
       schemaBaseUrl:  'http://localhost:1234/'
