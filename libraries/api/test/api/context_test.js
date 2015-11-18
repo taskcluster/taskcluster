@@ -1,5 +1,6 @@
 suite("API (context)", function() {
-  var base            = require('../../');
+  var base            = require('taskcluster-base');
+  var subject         = require('../../');
   var assert          = require('assert');
   var Promise         = require('promise');
   var request         = require('superagent-promise');
