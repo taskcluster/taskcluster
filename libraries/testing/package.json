@@ -5,10 +5,10 @@
   "description": "taskcluster-lib-testing",
   "license": "MPL-2.0",
   "scripts": {
-    "compile": "babel-compile -c tc-rules/babel src:lib test:.test",
+    "compile": "babel-compile -c tc-rules/babel6 src:lib test:.test",
     "prepublish": "npm run compile",
     "pretest": "npm run compile",
-    "test": "mocha .test/*_test.js"
+    "test": "mocha .test/testing/*_test.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
     "aws-sdk-promise": "0.0.0",
     "azure-entities": "^0.8.8",
     "azure-table-node": "1.4.1",
+    "babel-runtime": "^6.1.18",
     "body-parser": "1.13.3",
     "cryptiles": "^2.0.4",
     "debug": "^2.2.0",
@@ -35,6 +36,7 @@
     "superagent": "0.18.2",
     "superagent-hawk": "0.0.4",
     "superagent-promise": "0.1.2",
+    "taskcluster-base": "^0.8.10",
     "taskcluster-client": "0.23.4",
     "taskcluster-lib-legacyentities": "^0.8.7",
     "taskcluster-lib-loader": "^0.1.0",
@@ -44,8 +46,14 @@
     "uuid": "^2.0.1"
   },
   "devDependencies": {
+    "babel-compile": "^1.0.0",
+    "babel-core": "^6.1.21",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.1.20",
+    "babel-plugin-transform-runtime": "^6.1.18",
+    "babel-preset-stage-1": "^6.1.18",
+    "mocha": "2.0.1",
     "taskcluster-lib-config": "^0.8.8",
-    "mocha": "2.0.1"
+    "tc-rules": "^1.0.6"
   },
   "main": "./lib/testing.js"
 }
