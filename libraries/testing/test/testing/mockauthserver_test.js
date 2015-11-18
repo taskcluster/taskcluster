@@ -1,12 +1,12 @@
 suite('testing.createMockAuthServer', function() {
-  var base      = require('../../');
+  var subject   = require('../../lib/testing');
   var debug     = require('debug')('base:test:testing:createMockAuthServer');
   require('superagent-hawk')(require('superagent'));
   var request   = require('superagent-promise');
   var assert    = require('assert');
   var hawk      = require('hawk');
 
-  var helper  = require('../entity/helper');
+  var helper  = require('../helper');
   var cfg = helper.loadConfig();
 
   // Construct map of azure account(s) to use for testing
@@ -16,7 +16,7 @@ suite('testing.createMockAuthServer', function() {
   // Create mock auth server
   var server = null;
   setup(function() {
-    return base.testing.createMockAuthServer({
+    return subject.createMockAuthServer({
       port: 1207,
       clients: [
         {

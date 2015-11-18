@@ -1,7 +1,7 @@
 "use strict";
 
 suite('testing.PulseTestReceiver', function() {
-  var base          = require('../../');
+  var base          = require('taskcluster-base');
   var config        = require('taskcluster-lib-config');
   var assert        = require('assert');
   var path          = require('path');
