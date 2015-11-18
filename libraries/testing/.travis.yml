@@ -3,7 +3,6 @@ env:
   - CXX=g++-4.8
   - DEBUG='* -superagent -express:* -mocha:* -babel'
 language: node_js
-sudo: false
 addons:
   apt:
     sources:
@@ -14,9 +13,7 @@ node_js:
 - '0.12'
 - '4'
 - '5'
-services:
-- rabbitmq
 script: npm test
 before_install:
-- openssl aes-256-cbc -K $encrypted_505377a1c128_key -iv $encrypted_505377a1c128_iv
+- openssl aes-256-cbc -K $encrypted_f6dcbce4fb59_key -iv $encrypted_f6dcbce4fb59_iv
   -in taskcluster-base-test.conf.json.enc -out taskcluster-base-test.conf.json -d
