@@ -4,7 +4,6 @@ allows tasks to talk directly to releng api over a http proxy which
 grants a particular permission level based on the task scopes.
 */
 import waitForPort from '../wait_for_port';
-import { pullImageStreamTo } from '../pull_image_to_stream';
 
 // Alias used to link the proxy.
 const ALIAS = 'relengapi';
@@ -26,8 +25,7 @@ export default class RelengAPIProxy {
 
     // Image name for the proxy container.
     var image = task.runtime.features.relengAPIProxy.image;
-
-    await pullImageStreamTo(docker, image, process.stdout);
+    var imageId = await task.runtime.imageManager.ensureImage(image, process.stdout);
 
     var cmd = [
         `--relengapi-token=${task.runtime.features.relengAPIProxy.token}`,
@@ -37,7 +35,7 @@ export default class RelengAPIProxy {
 
     // create the container.
     this.container = await docker.createContainer({
-      Image: image,
+      Image: imageId,
 
       Tty: true,
       AttachStdin: false,

@@ -65,13 +65,8 @@ GarbageCollector.prototype = {
   },
 
   markImage: function(image) {
-    var parsedImage = parseImage(image);
-    var repository = parsedImage.repository;
-    var tag = parsedImage.tag || 'latest';
-    var imageName = repository + ':' + tag;
-
     var expiration = new Date(Date.now() + this.imageExpiration);
-    this.markedImages[imageName] = expiration;
+    this.markedImages[image] = expiration;
   },
 
   markStaleContainers: async function () {
@@ -169,25 +164,23 @@ GarbageCollector.prototype = {
     // All containers that are currently managed by the daemon will not allow
     // an image to be removed.  Consider them all running
     var containers = await this.docker.listContainers({all: true});
-    var runningImages = containers.map((container) => { return container.Image; });
+    var runningImages = containers.map((container) => { return container.Image.replace(/:latest$/, ''); });
 
     for (var image in this.markedImages) {
-      var imageId = await getImageId(this.docker, image);
-      var imageDetails = {name: image, id: imageId};
       if (!exceedsThreshold && this.markedImages[image] > new Date()) {
-          this.emit('gc:image:info', {info:'Image expiration has not been reached.',
-            image: imageDetails});
-          continue;
+        this.emit('gc:image:info', {info: 'Image expiration has not been reached.',
+          image: image});
+        continue;
       }
 
       if (runningImages.indexOf(image) === -1) {
-        var dockerImage = this.docker.getImage(imageId);
+        var dockerImage = this.docker.getImage(image);
 
         try {
           await dockerImage.remove();
           delete this.markedImages[image];
-          this.emit('gc:image:removed', {image: imageDetails});
-          this.log('image removed', {image: imageDetails});
+          this.emit('gc:image:removed', {image: image});
+          this.log('image removed', {image: image});
 
         } catch (e) {
           var message = e;
@@ -196,15 +189,15 @@ GarbageCollector.prototype = {
             delete this.markedImages[image];
           }
 
-          this.emit('gc:image:error', {message: message, image: imageDetails});
+          this.emit('gc:image:error', {message: message, image: image});
           this.log('image removal error.',
-                   {message: message, image: imageDetails});
+                   {message: message, image: image});
         }
       } else {
         var warning = 'Cannot remove image while it is running.';
-        this.emit('gc:image:warning', {message: warning, image: imageDetails});
+        this.emit('gc:image:warning', {message: warning, image: image});
         this.log('garbage collection warning',
-                 {message: warning, image: imageDetails});
+                 {message: warning, image: image});
       }
     }
   },

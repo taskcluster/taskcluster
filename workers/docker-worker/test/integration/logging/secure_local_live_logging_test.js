@@ -61,7 +61,7 @@ suite('secure local live logging', () => {
     worker.postToQueue(task, taskId);
     await waitForEvent(worker, 'task run');
 
-    let artifactUrl = `https:\/\/queue.taskcluster.net/v1/task/${taskId}/runs/0/artifacts/public/logs/live.log`
+    let artifactUrl = `https:\/\/queue.taskcluster.net/v1/task/${taskId}/runs/0/artifacts/public/logs/live.log`;
 
     // Don't follow redirect, we just care about where it's going
     let res = await getWithoutRedirect(artifactUrl);

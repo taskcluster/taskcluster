@@ -1,9 +1,10 @@
+var Docker = require('../lib/docker/docker');
 var fs = require('fs');
 var os = require('os');
 var program = require('commander');
 var taskcluster = require('taskcluster-client');
 var base = require('taskcluster-base');
-var createLogger = require('../lib/log');
+var createLogger = require('../lib/log').createLogger;
 var debug = require('debug')('docker-worker:bin:worker');
 var _ = require('lodash');
 
@@ -15,6 +16,8 @@ var GarbageCollector = require('../lib/gc');
 var VolumeCache = require('../lib/volume_cache');
 var PrivateKey = require('../lib/private_key');
 var reportHostMetrics = require('../lib/stats/host_metrics');
+var ImageManager = require('../lib/docker/image_manager');
+
 
 // Available target configurations.
 var allowedHosts = ['aws', 'test'];
@@ -246,6 +249,7 @@ async function main () {
   var runtime = new Runtime(config);
 
   runtime.hostManager = host;
+  runtime.imageManager = new ImageManager(runtime);
 
   // Instantiate PrivateKey object for decrypting secure data
   // (currently encrypted environment variables)

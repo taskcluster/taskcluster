@@ -5,8 +5,9 @@ Return the appropriate configuration defaults when on aws.
 import request from 'superagent-promise';
 import taskcluster from 'taskcluster-client';
 import _ from 'lodash';
+import { createLogger } from '../log';
 
-let log = require('../log')({
+let log = createLogger({
   source: 'host/aws'
 });
 

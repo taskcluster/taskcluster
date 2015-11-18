@@ -4,6 +4,7 @@ This module handles extending the task graph as a by-product of a task's run.
 var debug = require('debug')('docker-worker:middleware:extendTaskGraph');
 var waitForEvent = require('../wait_for_event');
 var tarStream = require('tar-stream');
+var log = require('../log');
 
 
 async function drain (listener) {
@@ -35,7 +36,7 @@ export default class ExtendTaskGraph {
       contentStream = await container.copy({ Resource: graphPath });
     } catch (e) {
       // Let the consumer know the graph file cannot be found.
-      taskHandler.stream.write(taskHandler.fmtErrorLog(
+      taskHandler.stream.write(log.fmtErrorLog(
         'Graph extension not found at path "%s" skipping...',
         graphPath
       ));
@@ -87,7 +88,7 @@ export default class ExtendTaskGraph {
     // Extend the graph!
     try {
       var result = await scheduler.extendTaskGraph(graphId, extension);
-      taskHandler.stream.write(taskHandler.fmtLog(
+      taskHandler.stream.write(log.fmtLog(
         'Successfully extended graph id: "%s" with "%s".',
         graphId, graphPath
       ));
@@ -129,6 +130,6 @@ export default class ExtendTaskGraph {
       );
     }
 
-    taskHandler.stream.write(taskHandler.fmtLog('Done extending graph'));
+    taskHandler.stream.write(log.fmtLog('Done extending graph'));
   }
 }

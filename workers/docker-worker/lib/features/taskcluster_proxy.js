@@ -4,7 +4,6 @@ allows tasks to talk directly to taskcluster services over a http proxy which
 grants a particular permission level based on the task scopes.
 */
 import waitForPort from '../wait_for_port';
-import { pullImageStreamTo } from '../pull_image_to_stream';
 
 // Alias used to link the proxy.
 const ALIAS = 'taskcluster';
@@ -25,8 +24,7 @@ export default class TaskclusterProxy {
 
     // Image name for the proxy container.
     var image = task.runtime.taskclusterProxyImage;
-
-    await pullImageStreamTo(docker, image, process.stdout);
+    var imageId = await task.runtime.imageManager.ensureImage(image, process.stdout);
 
     var assumedScope = 'assume:worker-id:' + task.runtime.workerGroup +
                        '/' + task.runtime.workerId;
@@ -40,7 +38,7 @@ export default class TaskclusterProxy {
 
     // create the container.
     this.container = await docker.createContainer({
-      Image: image,
+      Image: imageId,
 
       Tty: true,
       AttachStdin: false,

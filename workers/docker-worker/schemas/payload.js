@@ -50,7 +50,57 @@ module.exports = {
   "properties": {
     "image": {
       "title": "Docker image.",
-      "description": "Image to use for the task (registry.xfoo/user/image)."
+      "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+      "oneOf": [
+        {
+          "type": "string",
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["docker-image"]
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": ["type", "name"]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["indexed-image"]
+            },
+            "namespace": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": ["type", "namespace", "path"]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["task-image"]
+            },
+            "taskId": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": ["type", "taskId", "path"]
+        }
+      ]
     },
     "cache": {
       "title": "Caches to mount point mapping.",

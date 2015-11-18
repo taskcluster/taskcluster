@@ -6,12 +6,10 @@ grants a particular permission level based on the task scopes.
 
 import Debug from 'debug';
 import http from 'http';
-import Promise from 'promise';
 import slugid from 'slugid';
 import URL from 'url';
 
 import BulkLog from './bulk_log';
-import { pullImageStreamTo } from '../pull_image_to_stream';
 import waitForPort from '../wait_for_port';
 
 const ARTIFACT_NAME = 'public/logs/live.log';
@@ -33,7 +31,10 @@ export default class TaskclusterLogs {
   }
 
   async link(task) {
-    debug('create live log container...')
+    debug('create live log container...');
+    let taskId = task.status.taskId;
+    let runId = task.runId;
+
     // ensure we have a bulk log backing stuff...
     this.bulkLog = new BulkLog(BACKING_ARTIFACT_NAME);
     await this.bulkLog.created(task);
@@ -42,8 +43,9 @@ export default class TaskclusterLogs {
 
     // Image name for the proxy container.
     let image = task.runtime.taskclusterLogImage;
-
-    await pullImageStreamTo(docker, image, process.stdout);
+    debug('ensuring image');
+    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout);
+    debug('image verified %s', imageId);
 
     let envs = [];
     if (process.env.DEBUG) {
@@ -52,7 +54,7 @@ export default class TaskclusterLogs {
 
     // create the container.
     let createConfig = {
-      Image: image,
+      Image: imageId,
       Tty: false,
       Env: [
         "DEBUG=*",
@@ -69,12 +71,12 @@ export default class TaskclusterLogs {
     };
 
     if (task.runtime.logging.secureLiveLogging) {
-      createConfig.Env.push('SERVER_CRT_FILE=/etc/sslcert.crt')
-      createConfig.Env.push('SERVER_KEY_FILE=/etc/sslkey.key')
+      createConfig.Env.push('SERVER_CRT_FILE=/etc/sslcert.crt');
+      createConfig.Env.push('SERVER_KEY_FILE=/etc/sslkey.key');
       createConfig.HostConfig.Binds = [
         `${task.runtime.ssl.certificate}:/etc/sslcert.crt:ro`,
         `${task.runtime.ssl.key}:/etc/sslkey.key:ro`
-      ]
+      ];
     }
 
     this.container = await docker.createContainer(createConfig);
@@ -103,7 +105,7 @@ export default class TaskclusterLogs {
         runId: task.runId
       });
       // The killed method below will handle cleanup of resources...
-      return
+      return;
     }
     // Log PUT url is only available on the host itself
     let putUrl = `http:\/\/${inspect.NetworkSettings.IPAddress}:60022/log`;

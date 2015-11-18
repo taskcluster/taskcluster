@@ -1,6 +1,5 @@
 import assert from 'assert';
 import Debug from 'debug';
-import { pullDockerImage } from '../pull_image_to_stream';
 import { scopeMatch } from 'taskcluster-base/utils';
 import request from 'superagent-promise';
 import waitForPort from '../wait_for_port';
@@ -42,6 +41,7 @@ export default class BalrogVPNProxy {
   }
 
   async link(task) {
+    let docker = task.runtime.docker;
     let featureScope = FEATURE_SCOPE_PREFIX + this.featureName;
     if (!scopeMatch(task.task.scopes, [[featureScope]])) {
       throw new Error(
@@ -50,7 +50,6 @@ export default class BalrogVPNProxy {
       );
     }
 
-    let docker = task.runtime.docker;
     // Image name for the proxy container.
     let image = task.runtime.balrogVPNProxyImage;
 
@@ -60,18 +59,13 @@ export default class BalrogVPNProxy {
     // feature they are using.
     let imageScopes = [`${IMAGE_SCOPE_PREFIX+image}`];
 
-    await pullDockerImage(
-      task.runtime,
-      image,
-      imageScopes,
-      task.taskId,
-      task.runId,
-      process.stdout
-    );
+    debug('ensuring image');
+    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout);
+    debug('image verified %s', imageId);
 
     // create the container.
     this.container = await docker.createContainer({
-      Image: image,
+      Image: imageId,
       Env: [`PROXIED_SERVER=${PROXY_ADDR}`],
       Tty: true,
       AttachStdin: false,

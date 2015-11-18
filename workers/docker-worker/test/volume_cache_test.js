@@ -1,7 +1,7 @@
 suite('volume cache test', function () {
   var VolumeCache = require('../lib/volume_cache');
   var GarbageCollector = require('../lib/gc');
-  var createLogger = require('../lib/log');
+  var createLogger = require('../lib/log').createLogger;
   var debug = require('debug')('volumeCacheTest');
   var devnull = require('dev-null');
   var docker = require('../lib/docker')();
@@ -11,7 +11,6 @@ suite('volume cache test', function () {
   var mkdirp = require('mkdirp');
   var rmrf = require('rimraf');
   var co = require('co');
-  var pullImage = require('../lib/pull_image_to_stream').pullImageStreamTo;
   var cmd = require('./integration/helper/cmd');
 
   // Location on the machine running the test where the cache will live
@@ -30,10 +29,6 @@ suite('volume cache test', function () {
   };
 
   var IMAGE = 'taskcluster/test-ubuntu';
-
-  setup(co(function* () {
-    yield pullImage(docker, IMAGE, devnull());
-  }));
 
   teardown(function () {
     if (fs.existsSync(localCacheDir)) {

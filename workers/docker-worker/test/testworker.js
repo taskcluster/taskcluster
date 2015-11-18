@@ -129,6 +129,7 @@ export default class TestWorker extends EventEmitter {
     debug('post to queue %j', task);
     task = await this.queue.createTask(taskId, task);
     this.emit('created task', taskId);
+    console.log(`Created Task ID: ${taskId}`);
     return task;
   }
 

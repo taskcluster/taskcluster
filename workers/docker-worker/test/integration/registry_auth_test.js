@@ -115,7 +115,7 @@ suite('Docker custom private registry', () => {
     assert.equal(result.run.state, 'failed', 'auth download works');
     assert.equal(result.run.reasonResolved, 'failed', 'auth download works');
     assert.ok(result.log.includes(registryImageName), 'correct image name');
-    assert.ok(result.log.includes('Insufficient scopes to pull'), 'correct error message');
+    assert.ok(result.log.includes('Not authorized to use'), 'correct error message');
   });
 
   test('failed auth', async () => {

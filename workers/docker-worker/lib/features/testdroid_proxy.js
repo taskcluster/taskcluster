@@ -1,6 +1,5 @@
 import assert from 'assert';
 import waitForPort from '../wait_for_port';
-import { pullImageStreamTo } from '../pull_image_to_stream';
 import request from 'superagent-promise';
 import Debug from 'debug';
 
@@ -39,7 +38,9 @@ export default class TestdroidProxy {
     // Image name for the proxy container.
     let image = task.runtime.testdroidProxyImage;
 
-    await pullImageStreamTo(docker, image, process.stdout);
+    debug('ensuring image');
+    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout);
+    debug('image verified %s', imageId);
 
     let cmd = [
         `--cloud-url=${task.runtime.testdroid.url}`,
@@ -57,7 +58,7 @@ export default class TestdroidProxy {
 
     // create the container.
     this.container = await docker.createContainer({
-      Image: image,
+      Image: imageId,
       Env: envs,
       Tty: true,
       AttachStdin: false,

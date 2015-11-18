@@ -83,9 +83,9 @@ suite('Spot Node Termination', () => {
     // this might need to be adjusted later to have a meaningful test.  If an
     // image is removed but the intermediate layers are used elsewhere, the image
     // is just untagged.  When pull image happens, the layers are there so there is
-    // nothign to downloading causing the node termination notice to not happen
+    // nothing to downloading causing the node termination notice to not happen
     // until after the task has started usually.
-    let image = 'ubuntu:12.10'
+    let image = 'ubuntu:12.10';
     await dockerUtils.removeImageIfExists(docker, image);
     let task = {
       payload: {
@@ -98,8 +98,8 @@ suite('Spot Node Termination', () => {
     };
     let taskId = slugid.v4();
     worker = new TestWorker(DockerWorker);
-    worker.on('pull image', (msg) => {
-      if (msg.image === image) { settings.nodeTermination(); }
+    worker.on('ensure image', (msg) => {
+      if (msg.image.name === image) { settings.nodeTermination(); }
     });
     let launch = await worker.launch();
     let result = await worker.postToQueue(task, taskId);

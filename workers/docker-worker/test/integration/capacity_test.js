@@ -6,18 +6,30 @@ suite('Capacity', function() {
   var settings = require('../settings');
   var cmd = require('./helper/cmd');
   var docker = require('../../lib/docker')();
-  var pullImage = require('../../lib/pull_image_to_stream').pullImageStreamTo;
   var DockerWorker = require('../dockerworker');
   var TestWorker = require('../testworker');
+  var ImageManager = require('../../lib/docker/image_manager');
+  var logger = require('../../lib/log').createLogger;
 
   const CAPACITY = 10;
   const IMAGE = 'taskcluster/test-ubuntu:latest';
+
+  var imageManager = new ImageManager({
+    docker: docker,
+    dockerConfig: {
+      defaultRegistry: 'registry.hub.docker.com',
+      maxAttempts: 5,
+      delayFactor: 15 * 1000,
+      randomizationFactor: 0.25
+    },
+    log: logger()
+  });
 
   var worker;
   setup(co(function * () {
     // Ensure that the image is available before starting test to not skew
     // task run times
-    yield pullImage(docker, IMAGE, devnull());
+    yield imageManager.ensureImage(IMAGE, devnull());
     settings.configure({
       deviceManagement: {
         cpu: {

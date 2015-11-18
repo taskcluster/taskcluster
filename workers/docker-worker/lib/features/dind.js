@@ -8,7 +8,6 @@
 
 import _ from 'lodash';
 import waitForSocket from '../wait_for_socket';
-import { pullImageStreamTo } from '../pull_image_to_stream';
 import slugid from 'slugid';
 import rmrf from 'rimraf';
 import path from 'path';
@@ -29,15 +28,19 @@ export default class DockerInDocker {
   async link(task) {
     let docker = task.runtime.docker;
 
-    // Pull docker image and create temporary folder
-    await Promise.all([
-      pullImageStreamTo(docker, task.runtime.dindImage, process.stdout),
-      new Promise((accept, reject) => {
-        fs.mkdir(this.tmpFolder, (err) => {
-          return (err ? reject(err) : accept());
-        });
-      })
-    ]);
+    // Pull docker image
+    debug('ensuring image');
+    let imageManager = task.runtime.imageManager;
+    let image = task.runtime.dindImage;
+    let imageId = await imageManager.ensureImage(image, process.stdout);
+    debug('image verified %s', imageId);
+
+    // Create temporary directory
+    await new Promise((accept, reject) => {
+      fs.mkdir(this.tmpFolder, (err) => {
+        return err ? reject(err) : accept();
+      });
+    });
 
     this.container = await docker.createContainer({
       Image: task.runtime.dindImage,
