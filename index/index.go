@@ -118,7 +118,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 12 Nov 2015 at 09:56:00 UTC. The code was generated
+// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package index
 
@@ -383,25 +383,41 @@ func (myIndex *Index) Ping() *CallSummary {
 }
 
 type (
+
 	// Representation of an indexed task.
 	//
 	// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#
 	IndexedTaskResponse struct {
+
 		// Data that was reported with the task. This is an arbitrary JSON object.
+		//
+		// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#/properties/data
 		Data json.RawMessage `json:"data"`
+
 		// Date at which this entry expires from the task index.
+		//
+		// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#/properties/expires
 		Expires Time `json:"expires"`
+
 		// Namespace of the indexed task, used to find the indexed task in the index.
+		//
+		// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#/properties/namespace
 		Namespace string `json:"namespace"`
+
 		// If multiple tasks are indexed with the same `namespace` the task with the
 		// highest `rank` will be stored and returned in later requests. If two tasks
 		// has the same `rank` the latest task will be stored.
+		//
+		// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#/properties/rank
 		Rank int `json:"rank"`
+
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
 		//
 		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#/properties/taskId
 		TaskId string `json:"taskId"`
 	}
 
@@ -409,21 +425,33 @@ type (
 	//
 	// See http://schemas.taskcluster.net/index/v1/insert-task-request.json#
 	InsertTaskRequest struct {
+
 		// This is an arbitrary JSON object. Feel free to put whatever data you want
 		// here, but do limit it, you'll get errors if you store more than 32KB.
 		// So stay well, below that limit.
+		//
+		// See http://schemas.taskcluster.net/index/v1/insert-task-request.json#/properties/data
 		Data json.RawMessage `json:"data"`
+
 		// Date at which this entry expires from the task index.
+		//
+		// See http://schemas.taskcluster.net/index/v1/insert-task-request.json#/properties/expires
 		Expires Time `json:"expires"`
+
 		// If multiple tasks are indexed with the same `namespace` the task with the
 		// highest `rank` will be stored and returned in later requests. If two tasks
 		// has the same `rank` the latest task will be stored.
+		//
+		// See http://schemas.taskcluster.net/index/v1/insert-task-request.json#/properties/rank
 		Rank int `json:"rank"`
+
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
 		//
 		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See http://schemas.taskcluster.net/index/v1/insert-task-request.json#/properties/taskId
 		TaskId string `json:"taskId"`
 	}
 
@@ -431,12 +459,18 @@ type (
 	//
 	// See http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#
 	ListNamespacesRequest struct {
+
 		// A continuation token previously returned in a response to this list
 		// request. This property is optional and should not be provided for first
 		// requests.
+		//
+		// See http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken"`
+
 		// Maximum number of results per page. If there are more results than this
 		// a continuation token will be return.
+		//
+		// See http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#/properties/limit
 		Limit int `json:"limit"`
 	}
 
@@ -444,19 +478,34 @@ type (
 	//
 	// See http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#
 	ListNamespacesResponse struct {
+
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
+		//
+		// See http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken"`
+
 		// List of namespaces.
+		//
+		// See http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#/properties/namespaces
 		Namespaces []struct {
+
 			// Date at which this entry, and by implication all entries below it,
 			// expires from the task index.
+			//
+			// See http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#/properties/namespaces/items/properties/expires
 			Expires Time `json:"expires"`
+
 			// Name of namespace within it's parent namespace.
+			//
+			// See http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#/properties/namespaces/items/properties/name
 			Name string `json:"name"`
+
 			// Fully qualified name of the namespace, you can use this to list
 			// namespaces or tasks under this namespace.
+			//
+			// See http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#/properties/namespaces/items/properties/namespace
 			Namespace string `json:"namespace"`
 		} `json:"namespaces"`
 	}
@@ -465,12 +514,18 @@ type (
 	//
 	// See http://schemas.taskcluster.net/index/v1/list-tasks-request.json#
 	ListTasksRequest struct {
+
 		// A continuation token previously returned in a response to this list
 		// request. This property is optional and should not be provided for first
 		// requests.
+		//
+		// See http://schemas.taskcluster.net/index/v1/list-tasks-request.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken"`
+
 		// Maximum number of results per page. If there are more results than this
 		// a continuation token will be return.
+		//
+		// See http://schemas.taskcluster.net/index/v1/list-tasks-request.json#/properties/limit
 		Limit int `json:"limit"`
 	}
 
@@ -478,30 +533,51 @@ type (
 	//
 	// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#
 	ListTasksResponse struct {
+
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
+		//
+		// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken"`
+
 		// List of tasks.
+		//
+		// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks
 		Tasks []struct {
+
 			// Data that was reported with the task. This is an arbitrary JSON
 			// object.
+			//
+			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/data
 			Data json.RawMessage `json:"data"`
+
 			// Date at which this entry expires from the task index.
+			//
+			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/expires
 			Expires Time `json:"expires"`
+
 			// Namespace of the indexed task, used to find the indexed task in the
 			// index.
+			//
+			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/namespace
 			Namespace string `json:"namespace"`
+
 			// If multiple tasks are indexed with the same `namespace` the task
 			// with the highest `rank` will be stored and returned in later
 			// requests. If two tasks has the same `rank` the latest task will be
 			// stored.
+			//
+			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/rank
 			Rank int `json:"rank"`
+
 			// Unique task identifier, this is UUID encoded as
 			// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 			// stripped of `=` padding.
 			//
 			// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+			//
+			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/taskId
 			TaskId string `json:"taskId"`
 		} `json:"tasks"`
 	}

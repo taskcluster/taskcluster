@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 12 Nov 2015 at 09:56:00 UTC. The code was generated
+// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -486,22 +486,38 @@ func (awsProvisioner *AwsProvisioner) ApiReference() *CallSummary {
 }
 
 type (
+
 	// A Secret
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#
 	GetSecretRequest struct {
+
 		// The date at which the secret is no longer guarunteed to exist
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#/properties/expiration
 		Expiration Time `json:"expiration"`
+
 		// List of strings which are scopes for temporary credentials to give
 		// to the worker through the secret system.  Scopes must be composed of
 		// printable ASCII characters and spaces.
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#/properties/scopes
 		Scopes []string `json:"scopes"`
+
 		// Free form object which contains the secrets stored
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#/properties/secrets
 		Secrets json.RawMessage `json:"secrets"`
+
 		// A Slug ID which is the uniquely addressable token to access this
 		// set of secrets
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#/properties/token
 		Token string `json:"token"`
+
 		// A string describing what the secret will be used for
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 
@@ -509,68 +525,133 @@ type (
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#
 	CreateWorkerTypeRequest struct {
+
 		// True if this worker type is allowed on demand instances.  Currently
 		// ignored
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/canUseOndemand
 		CanUseOndemand bool `json:"canUseOndemand"`
+
 		// True if this worker type is allowed spot instances.  Currently ignored
 		// as all instances are Spot
-		CanUseSpot    bool `json:"canUseSpot"`
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/canUseSpot
+		CanUseSpot bool `json:"canUseSpot"`
+
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes
 		InstanceTypes []struct {
+
 			// This number represents the number of tasks that this instance type
 			// is capable of running concurrently.  This is used by the provisioner
 			// to know how many pending tasks to offset a pending instance of this
 			// type by
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/capacity
 			Capacity int `json:"capacity"`
+
 			// InstanceType name for Amazon.
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/instanceType
 			InstanceType string `json:"instanceType"`
+
 			// LaunchSpecification entries unique to this InstanceType
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/launchSpec
 			LaunchSpec json.RawMessage `json:"launchSpec"`
+
 			// Scopes which should be included for this InstanceType.  Scopes must
 			// be composed of printable ASCII characters and spaces.
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/scopes
 			Scopes []string `json:"scopes"`
+
 			// Static Secrets unique to this InstanceType
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/secrets
 			Secrets json.RawMessage `json:"secrets"`
+
 			// UserData entries unique to this InstanceType
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/userData
 			UserData json.RawMessage `json:"userData"`
+
 			// This number is a relative measure of performance between two instance
 			// types.  It is multiplied by the spot price from Amazon to figure out
 			// which instance type is the cheapest one
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/utility
 			Utility int `json:"utility"`
 		} `json:"instanceTypes"`
+
 		// Launch Specification entries which are used in all regions and all instance types
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/launchSpec
 		LaunchSpec json.RawMessage `json:"launchSpec"`
+
 		// Maximum number of capacity units to be provisioned.
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/maxCapacity
 		MaxCapacity int `json:"maxCapacity"`
+
 		// Maximum price we'll pay.  Like minPrice, this takes into account the
 		// utility factor when figuring out what the actual SpotPrice submitted
 		// to Amazon will be
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/maxPrice
 		MaxPrice int `json:"maxPrice"`
+
 		// Minimum number of capacity units to be provisioned.  A capacity unit
 		// is an abstract unit of capacity, where one capacity unit is roughly
 		// one task which should be taken off the queue
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/minCapacity
 		MinCapacity int `json:"minCapacity"`
+
 		// Minimum price to pay for an instance.  A Price is considered to be the
 		// Amazon Spot Price multiplied by the utility factor of the InstantType
 		// as specified in the instanceTypes list.  For example, if the minPrice
 		// is set to $0.5 and the utility factor is 2, the actual minimum bid
 		// used will be $0.25
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/minPrice
 		MinPrice int `json:"minPrice"`
-		Regions  []struct {
+
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions
+		Regions []struct {
+
 			// LaunchSpecification entries unique to this Region
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec
 			LaunchSpec struct {
+
 				// Per-region AMI ImageId
+				//
+				// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec/properties/ImageId
 				ImageId string `json:"ImageId"`
 			} `json:"launchSpec"`
+
 			// The Amazon AWS Region being configured.  Example: us-west-1
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/region
 			Region string `json:"region"`
+
 			// Scopes which should be included for this Region.  Scopes must be
 			// composed of printable ASCII characters and spaces.
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/scopes
 			Scopes []string `json:"scopes"`
+
 			// Static Secrets unique to this Region
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/secrets
 			Secrets json.RawMessage `json:"secrets"`
+
 			// UserData entries unique to this Region
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/userData
 			UserData json.RawMessage `json:"userData"`
 		} `json:"regions"`
+
 		// A scaling ratio of `0.2` means that the provisioner will attempt to keep
 		// the number of pending tasks around 20% of the provisioned capacity.
 		// This results in pending tasks waiting 20% of the average task execution
@@ -581,13 +662,24 @@ type (
 		// ratio may increase utilization without major delays.
 		// If using a scaling ratio of 0, the provisioner will attempt to keep the
 		// capacity of pending spot requests equal to the number of pending tasks.
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/scalingRatio
 		ScalingRatio int `json:"scalingRatio"`
+
 		// Scopes to issue credentials to for all regions Scopes must be composed of
 		// printable ASCII characters and spaces.
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/scopes
 		Scopes []string `json:"scopes"`
+
 		// Static secrets entries which are used in all regions and all instance types
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/secrets
 		Secrets json.RawMessage `json:"secrets"`
+
 		// UserData entries which are used in all regions and all instance types
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/userData
 		UserData json.RawMessage `json:"userData"`
 	}
 
@@ -600,13 +692,25 @@ type (
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#
 	GetSecretResponse struct {
+
 		// Generated Temporary credentials from the Provisioner
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/credentials
 		Credentials struct {
+
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/credentials/properties/accessToken
 			AccessToken string `json:"accessToken"`
+
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/credentials/properties/certificate
 			Certificate string `json:"certificate"`
-			ClientId    string `json:"clientId"`
+
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/credentials/properties/clientId
+			ClientId string `json:"clientId"`
 		} `json:"credentials"`
+
 		// Free-form object which contains secrets from the worker type definition
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/data
 		Data json.RawMessage `json:"data"`
 	}
 
@@ -614,71 +718,139 @@ type (
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#
 	GetWorkerTypeRequest struct {
+
 		// True if this worker type is allowed on demand instances.  Currently
 		// ignored
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/canUseOndemand
 		CanUseOndemand bool `json:"canUseOndemand"`
+
 		// True if this worker type is allowed spot instances.  Currently ignored
 		// as all instances are Spot
-		CanUseSpot    bool `json:"canUseSpot"`
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/canUseSpot
+		CanUseSpot bool `json:"canUseSpot"`
+
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes
 		InstanceTypes []struct {
+
 			// This number represents the number of tasks that this instance type
 			// is capable of running concurrently.  This is used by the provisioner
 			// to know how many pending tasks to offset a pending instance of this
 			// type by
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/capacity
 			Capacity int `json:"capacity"`
+
 			// InstanceType name for Amazon.
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/instanceType
 			InstanceType string `json:"instanceType"`
+
 			// LaunchSpecification entries unique to this InstanceType
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/launchSpec
 			LaunchSpec json.RawMessage `json:"launchSpec"`
+
 			// Scopes which should be included for this InstanceType.  Scopes must
 			// be composed of printable ASCII characters and spaces.
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/scopes
 			Scopes []string `json:"scopes"`
+
 			// Static Secrets unique to this InstanceType
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/secrets
 			Secrets json.RawMessage `json:"secrets"`
+
 			// UserData entries unique to this InstanceType
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/userData
 			UserData json.RawMessage `json:"userData"`
+
 			// This number is a relative measure of performance between two instance
 			// types.  It is multiplied by the spot price from Amazon to figure out
 			// which instance type is the cheapest one
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/utility
 			Utility int `json:"utility"`
 		} `json:"instanceTypes"`
+
 		// ISO Date string (e.g. new Date().toISOString()) which represents the time
 		// when this worker type definition was last altered (inclusive of creation)
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/lastModified
 		LastModified Time `json:"lastModified"`
+
 		// Launch Specification entries which are used in all regions and all instance types
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/launchSpec
 		LaunchSpec json.RawMessage `json:"launchSpec"`
+
 		// Maximum number of capacity units to be provisioned.
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/maxCapacity
 		MaxCapacity int `json:"maxCapacity"`
+
 		// Maximum price we'll pay.  Like minPrice, this takes into account the
 		// utility factor when figuring out what the actual SpotPrice submitted
 		// to Amazon will be
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/maxPrice
 		MaxPrice int `json:"maxPrice"`
+
 		// Minimum number of capacity units to be provisioned.  A capacity unit
 		// is an abstract unit of capacity, where one capacity unit is roughly
 		// one task which should be taken off the queue
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/minCapacity
 		MinCapacity int `json:"minCapacity"`
+
 		// Minimum price to pay for an instance.  A Price is considered to be the
 		// Amazon Spot Price multiplied by the utility factor of the InstantType
 		// as specified in the instanceTypes list.  For example, if the minPrice
 		// is set to $0.5 and the utility factor is 2, the actual minimum bid
 		// used will be $0.25
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/minPrice
 		MinPrice int `json:"minPrice"`
-		Regions  []struct {
+
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions
+		Regions []struct {
+
 			// LaunchSpecification entries unique to this Region
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec
 			LaunchSpec struct {
+
 				// Per-region AMI ImageId
+				//
+				// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec/properties/ImageId
 				ImageId string `json:"ImageId"`
 			} `json:"launchSpec"`
+
 			// The Amazon AWS Region being configured.  Example: us-west-1
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/region
 			Region string `json:"region"`
+
 			// Scopes which should be included for this Region.  Scopes must be
 			// composed of printable ASCII characters and spaces.
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/scopes
 			Scopes []string `json:"scopes"`
+
 			// Static Secrets unique to this Region
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/secrets
 			Secrets json.RawMessage `json:"secrets"`
+
 			// UserData entries unique to this Region
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/userData
 			UserData json.RawMessage `json:"userData"`
 		} `json:"regions"`
+
 		// A scaling ratio of `0.2` means that the provisioner will attempt to keep
 		// the number of pending tasks around 20% of the provisioned capacity.
 		// This results in pending tasks waiting 20% of the average task execution
@@ -689,21 +861,34 @@ type (
 		// ratio may increase utilization without major delays.
 		// If using a scaling ratio of 0, the provisioner will attempt to keep the
 		// capacity of pending spot requests equal to the number of pending tasks.
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/scalingRatio
 		ScalingRatio int `json:"scalingRatio"`
+
 		// Scopes to issue credentials to for all regions.  Scopes must be composed
 		// of printable ASCII characters and spaces.
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/scopes
 		Scopes []string `json:"scopes"`
+
 		// Static secrets entries which are used in all regions and all instance types
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/secrets
 		Secrets json.RawMessage `json:"secrets"`
+
 		// UserData entries which are used in all regions and all instance types
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/userData
 		UserData json.RawMessage `json:"userData"`
+
 		// The ID of the workerType
 		//
 		// Syntax: ^[A-Za-z0-9+/=_-]{1,22}$
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 
-	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#
 	ListWorkerTypes []string
 )

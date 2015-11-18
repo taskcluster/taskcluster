@@ -73,7 +73,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 12 Nov 2015 at 09:56:00 UTC. The code was generated
+// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -474,16 +474,24 @@ func (myAuth *Auth) Ping() *CallSummary {
 }
 
 type (
+
 	// Request to authenticate a hawk request.
 	//
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#
 	HawkSignatureAuthenticationRequest struct {
+
 		// Authorization header, **must** only be specified if request being
 		// authenticated has a `Authorization` header.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/authorization
 		Authorization string `json:"authorization"`
+
 		// Host for which the request came in, this is typically the `Host` header
 		// excluding the port if any.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host
 		Host string `json:"host"`
+
 		// HTTP method of the request being authenticated.
 		//
 		// Possible values:
@@ -513,14 +521,22 @@ type (
 		//   * "patch"
 		//   * "search"
 		//   * "connect"
+		//
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/method
 		Method string `json:"method"`
+
 		// Port on which the request came in, this is typically `80` or `443`.
 		// If you are running behind a reverse proxy look for the `x-forwarded-port`
 		// header.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/port
 		Port int `json:"port"`
+
 		// Resource the request operates on including querystring. This is the
 		// string that follows the HTTP method.
 		// **Note,** order of querystring elements is important.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/resource
 		Resource string `json:"resource"`
 	}
 
@@ -529,40 +545,56 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#
 	HawkSignatureAuthenticationResponse json.RawMessage
 
-	//
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]
 	AuthenticationSuccessfulResponse struct {
+
 		// Payload as extracted from `Authentication` header. This property is
 		// only present if a hash is available. You are not required to validate
 		// this hash, but if you do, please check `scheme` to ensure that it's
 		// on a scheme you support.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/hash
 		Hash string `json:"hash"`
+
 		// Authentication scheme the client used. Generally, you don't need to
 		// read this property unless `hash` is provided and you want to validate
 		// the payload hash. Additional values may be added in the future.
 		//
 		// Possible values:
 		//   * "hawk"
+		//
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/scheme
 		Scheme string `json:"scheme"`
+
 		// List of scopes the client is authorized to access.  Scopes must be
 		// composed of printable ASCII characters and spaces.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/scopes
 		Scopes []string `json:"scopes"`
+
 		// The kind of response, `auth-failed` or `auth-success`.
 		//
 		// Possible values:
 		//   * "auth-success"
+		//
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/status
 		Status string `json:"status"`
 	}
 
-	//
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]
 	AuthenticationFailedResponse struct {
+
 		// Message saying why the authentication failed.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]/properties/message
 		Message string `json:"message"`
+
 		// The kind of response, `auth-failed` or `auth-success`.
 		//
 		// Possible values:
 		//   * "auth-failed"
+		//
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]/properties/status
 		Status string `json:"status"`
 	}
 
@@ -570,18 +602,33 @@ type (
 	//
 	// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#
 	AWSS3CredentialsResponse struct {
+
 		// Temporary STS credentials for use when operating on S3
+		//
+		// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials
 		Credentials struct {
+
 			// Access key identifier that identifies the temporary security
 			// credentials.
+			//
+			// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials/properties/accessKeyId
 			AccessKeyId string `json:"accessKeyId"`
+
 			// Secret access key used to sign requests
+			//
+			// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials/properties/secretAccessKey
 			SecretAccessKey string `json:"secretAccessKey"`
+
 			// A token that must passed with request to use the temporary
 			// security credentials.
+			//
+			// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials/properties/sessionToken
 			SessionToken string `json:"sessionToken"`
 		} `json:"credentials"`
+
 		// Date and time of when the temporary credentials expires.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/expires
 		Expires Time `json:"expires"`
 	}
 
@@ -590,11 +637,17 @@ type (
 	//
 	// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
 	AzureSharedAccessSignatureResponse struct {
+
 		// Date and time of when the Shared-Access-Signature expires.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/expiry
 		Expiry Time `json:"expiry"`
+
 		// Shared-Access-Signature string. This is the querystring parameters to
 		// be appened after `?` or `&` depending on whether or not a querystring is
 		// already present in the URL.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/sas
 		Sas string `json:"sas"`
 	}
 
@@ -602,10 +655,16 @@ type (
 	//
 	// See http://schemas.taskcluster.net/auth/v1/create-client-request.json#
 	CreateClientRequest struct {
+
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/description
 		Description string `json:"description"`
+
 		// Date and time where the clients access is set to expire
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/expires
 		Expires Time `json:"expires"`
 	}
 
@@ -613,32 +672,59 @@ type (
 	//
 	// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#
 	CreateClientResponse struct {
+
 		// AccessToken used for authenticating requests, you should store this
 		// you won't be able to retrive it again!
 		//
 		// Syntax: ^[a-zA-Z0-9_-]{22,66}$
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/accessToken
 		AccessToken string `json:"accessToken"`
+
 		// ClientId of the client
 		//
 		// Syntax: ^[A-Za-z0-9@/:._-]+$
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/clientId
 		ClientId string `json:"clientId"`
+
 		// Date and time when this client was created
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/created
 		Created Time `json:"created"`
+
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/description
 		Description string `json:"description"`
+
 		// List of scopes granted to this client by matching roles.  Scopes must be
 		// composed of printable ASCII characters and spaces.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/expandedScopes
 		ExpandedScopes []string `json:"expandedScopes"`
+
 		// Date and time where the clients access is set to expire
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/expires
 		Expires Time `json:"expires"`
+
 		// Date of last time this client was used. Will only be updated every 6 hours
 		// or so this may be off by up-to 6 hours. But it still gives a solid hint
 		// as to whether or not this client is in use.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/lastDateUsed
 		LastDateUsed Time `json:"lastDateUsed"`
+
 		// Date and time of last modification
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/lastModified
 		LastModified Time `json:"lastModified"`
+
 		// Date and time of when the `accessToken` was reset last time.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/lastRotated
 		LastRotated Time `json:"lastRotated"`
 	}
 
@@ -646,11 +732,17 @@ type (
 	//
 	// See http://schemas.taskcluster.net/auth/v1/create-role-request.json#
 	CreateRoleRequest struct {
+
 		// Description of what this role is used for in markdown.
 		// Should include who is the owner, point of contact.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-role-request.json#/properties/description
 		Description string `json:"description"`
+
 		// List of scopes the role grants access to.  Scopes must be composed of
 		// printable ASCII characters and spaces.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-role-request.json#/properties/scopes
 		Scopes []string `json:"scopes"`
 	}
 
@@ -658,25 +750,43 @@ type (
 	//
 	// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#
 	ExportedClients []struct {
+
 		// AccessToken used for authenticating requests
 		//
 		// Syntax: ^[a-zA-Z0-9_-]{22,66}$
+		//
+		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/accessToken
 		AccessToken string `json:"accessToken"`
+
 		// ClientId of the client scopes is requested about
 		//
 		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/clientId
 		ClientId string `json:"clientId"`
+
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
 		// Why it is scoped as is, think of this as documentation.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/description
 		Description string `json:"description"`
+
 		// Date and time where the clients credentials are set to expire
+		//
+		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/expires
 		Expires Time `json:"expires"`
+
 		// Human readable name of this set of credentials, typical
 		// component/server-name or IRC nickname of the user.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/name
 		Name string `json:"name"`
+
 		// List of scopes the client is authorized to access.  Scopes must be
 		// composed of printable ASCII characters and spaces.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/scopes
 		Scopes []string `json:"scopes"`
 	}
 
@@ -684,27 +794,51 @@ type (
 	//
 	// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#
 	GetClientResponse struct {
+
 		// ClientId of the client scopes is requested about
 		//
 		// Syntax: ^[A-Za-z0-9@/:._-]+$
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/clientId
 		ClientId string `json:"clientId"`
+
 		// Date and time when this client was created
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/created
 		Created Time `json:"created"`
+
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/description
 		Description string `json:"description"`
+
 		// List of scopes granted to this client by matching roles.  Scopes must be
 		// composed of printable ASCII characters and spaces.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/expandedScopes
 		ExpandedScopes []string `json:"expandedScopes"`
+
 		// Date and time where the clients access is set to expire
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/expires
 		Expires Time `json:"expires"`
+
 		// Date of last time this client was used. Will only be updated every 6 hours
 		// or so this may be off by up-to 6 hours. But it still gives a solid hint
 		// as to whether or not this client is in use.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastDateUsed
 		LastDateUsed Time `json:"lastDateUsed"`
+
 		// Date and time of last modification
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastModified
 		LastModified Time `json:"lastModified"`
+
 		// Date and time of when the `accessToken` was reset last time.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastRotated
 		LastRotated Time `json:"lastRotated"`
 	}
 
@@ -712,23 +846,41 @@ type (
 	//
 	// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#
 	GetRoleResponse struct {
+
 		// Date and time when this role was created
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/created
 		Created Time `json:"created"`
+
 		// Description of what this role is used for in markdown.
 		// Should include who is the owner, point of contact.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/description
 		Description string `json:"description"`
+
 		// List of scopes granted anyone who assumes this role, including anything
 		// granted by roles that can be assumed when you have this role.
 		// Hence, this includes any scopes in-directly granted as well.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/expandedScopes
 		ExpandedScopes []string `json:"expandedScopes"`
+
 		// Date and time of last modification
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/lastModified
 		LastModified Time `json:"lastModified"`
+
 		// roleId of the role requested
 		//
 		// Syntax: ^[\x20-\x7e]+$
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/roleId
 		RoleId string `json:"roleId"`
+
 		// List of scopes the role grants access to.  Scopes must be composed of
 		// printable ASCII characters and spaces.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/scopes
 		Scopes []string `json:"scopes"`
 	}
 

@@ -43,7 +43,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 12 Nov 2015 at 09:56:00 UTC. The code was generated
+// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -311,83 +311,145 @@ func (myHooks *Hooks) RemoveHook(hookGroupId string, hookId string) *CallSummary
 }
 
 type (
+
 	// Definition of a hook that can create tasks at defined times.
 	//
 	// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#
 	HookCreationRequest struct {
+
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future.
 		//
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/deadline
 		Deadline string `json:"deadline"`
+
 		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
 		//
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
-		Expires  string `json:"expires"`
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/expires
+		Expires string `json:"expires"`
+
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata
 		Metadata struct {
+
 			// Long-form of the hook's purpose and behavior
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/description
 			Description string `json:"description"`
+
 			// Whether to email the owner on an error creating the task.
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/emailOnError
 			EmailOnError bool `json:"emailOnError"`
+
 			// Human readable name of the hook
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/name
 			Name string `json:"name"`
+
 			// Email of the person or group responsible for this hook.
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 		} `json:"metadata"`
+
 		// Definition of the times at which a hook will result in creation of a task.
 		// If several patterns are specified, tasks will be created at any time
 		// specified by one or more patterns.
-		Schedule []string              `json:"schedule"`
-		Task     TaskDefinitionRequest `json:"task"`
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/schedule
+		Schedule []string `json:"schedule"`
+
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/task
+		Task TaskDefinitionRequest `json:"task"`
 	}
 
 	// Definition of a hook that will create tasks when defined events occur.
 	//
 	// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#
 	HookDefinition struct {
+
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future.
 		//
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/deadline
 		Deadline string `json:"deadline"`
+
 		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
 		//
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
-		Expires     string `json:"expires"`
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/expires
+		Expires string `json:"expires"`
+
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/hookGroupId
 		HookGroupId string `json:"hookGroupId"`
-		HookId      string `json:"hookId"`
-		Metadata    struct {
+
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/hookId
+		HookId string `json:"hookId"`
+
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata
+		Metadata struct {
+
 			// Long-form of the hook's purpose and behavior
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/description
 			Description string `json:"description"`
+
 			// Whether to email the owner on an error creating the task.
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/emailOnError
 			EmailOnError bool `json:"emailOnError"`
+
 			// Human readable name of the hook
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/name
 			Name string `json:"name"`
+
 			// Email of the person or group responsible for this hook.
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 		} `json:"metadata"`
+
 		// Definition of the times at which a hook will result in creation of a task.
 		// If several patterns are specified, tasks will be created at any time
 		// specified by one or more patterns.  Note that tasks may not be created
 		// at exactly the time specified.
 		//                     {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
-		Schedule json.RawMessage       `json:"schedule"`
-		Task     TaskDefinitionRequest `json:"task"`
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/schedule
+		Schedule json.RawMessage `json:"schedule"`
+
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/task
+		Task TaskDefinitionRequest `json:"task"`
 	}
 
 	// A description of when a hook's task will be created, and the next scheduled time
 	//
 	// See http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#
 	HookScheduleResponse struct {
+
 		// The next time this hook's task is scheduled to be created. This property
 		// is only present if there is a scheduled next time. Some hooks don't have
 		// any schedules.
-		NextScheduledDate Time     `json:"nextScheduledDate"`
-		Schedule          Schedule `json:"schedule"`
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#/properties/nextScheduledDate
+		NextScheduledDate Time `json:"nextScheduledDate"`
+
+		// See http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#/properties/schedule
+		Schedule Schedule `json:"schedule"`
 	}
 
 	// List of `hookGroupIds`.
 	//
 	// See http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json#
 	HookGroups struct {
+
+		// See http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json#/properties/groups
 		Groups []string `json:"groups"`
 	}
 
@@ -395,6 +457,8 @@ type (
 	//
 	// See http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json#
 	HookList struct {
+
+		// See http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json#/properties/hooks
 		Hooks []HookDefinition `json:"hooks"`
 	}
 
@@ -410,15 +474,25 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
 	TaskDefinitionRequest struct {
+
 		// Creation time of task
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/created
 		Created Time `json:"created"`
+
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/deadline
 		Deadline Time `json:"deadline"`
+
 		// Task expiration, time at which task definition and status is deleted.
 		// Notice that all artifacts for the must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may subject to change).
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/expires
 		Expires Time `json:"expires"`
+
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services
@@ -428,27 +502,48 @@ type (
 		// for treeherder reporting and task indexing don't conflict, hence, we have
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/extra
 		Extra json.RawMessage `json:"extra"`
+
 		// Required task metadata
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata
 		Metadata struct {
+
 			// Human readable description of the task, please **explain** what the
 			// task does. A few lines of documentation is not going to hurt you.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/description
 			Description string `json:"description"`
+
 			// Human readable name of task, used to very briefly given an idea about
 			// what the task does.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/name
 			Name string `json:"name"`
+
 			// E-mail of person who caused this task, e.g. the person who did
 			// `hg push`. The person we should contact to ask why this task is here.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
+
 			// Link to source of this task, should specify a file, revision and
 			// repository. This should be place someone can go an do a git/hg blame
 			// to who came up with recipe for this task.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/source
 			Source string `json:"source"`
 		} `json:"metadata"`
+
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/payload
 		Payload json.RawMessage `json:"payload"`
+
 		// Priority of task, this defaults to `normal`. Additional levels may be
 		// added later.
 		// **Task submitter required scopes** `queue:task-priority:high` for high
@@ -457,20 +552,32 @@ type (
 		// Possible values:
 		//   * "high"
 		//   * "normal"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/priority
 		Priority string `json:"priority"`
+
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/provisionerId
 		ProvisionerId string `json:"provisionerId"`
+
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
 		// these events are to be expected.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/retries
 		Retries int `json:"retries"`
+
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		// **Task submitter required scopes** `queue:route:<route>` for
 		// each route given.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/routes
 		Routes []string `json:"routes"`
+
 		// Identifier for the scheduler that _defined_ this task, this can be an
 		// identifier for a user or a service like the `"task-graph-scheduler"`.
 		// **Task submitter required scopes**
@@ -479,26 +586,40 @@ type (
 		// task.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/schedulerId
 		SchedulerId string `json:"schedulerId"`
+
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/scopes
 		Scopes []string `json:"scopes"`
+
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
 		// to attach informal meta-data to a task. Use this for informal tags that
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/tags
 		Tags json.RawMessage `json:"tags"`
+
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
 		// property isn't specified.
 		//
 		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/taskGroupId
 		TaskGroupId string `json:"taskGroupId"`
+
 		// Unique identifier for a worker-type within a specific provisioner
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 )

@@ -352,21 +352,35 @@ func generateRoutingKey(x interface{}) string {
 }
 
 type (
+
 	// Message reporting a new artifact has been created for a given task.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#
 	ArtifactCreatedMessage struct {
+
 		// Information about the artifact that was created
+		//
+		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact
 		Artifact struct {
+
 			// Mimetype for the artifact that was created.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/contentType
 			ContentType string `json:"contentType"`
+
 			// Date and time after which the artifact created will be automatically
 			// deleted by the queue.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/expires
 			Expires Time `json:"expires"`
+
 			// Name of the artifact that was created, this is useful if you want to
 			// attempt to fetch the artifact. But keep in mind that just because an
 			// artifact is created doesn't mean that it's immediately available.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/name
 			Name string `json:"name"`
+
 			// This is the `storageType` for the request that was used to create the
 			// artifact.
 			//
@@ -375,25 +389,41 @@ type (
 			//   * "azure"
 			//   * "reference"
 			//   * "error"
+			//
+			// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/storageType
 			StorageType string `json:"storageType"`
 		} `json:"artifact"`
+
 		// Id of the run on which artifact was created.
-		RunId  int                 `json:"runId"`
+		//
+		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/runId
+		RunId int `json:"runId"`
+
+		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
+
 		// Message version
 		//
 		// Possible values:
 		//   * 1
+		//
+		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/version
 		Version int `json:"version"`
+
 		// Identifier for the worker-group within which the run with the created
 		// artifacted is running.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
+
 		// Identifier for the worker within which the run with the created artifact
 		// is running.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/workerId
 		WorkerId string `json:"workerId"`
 	}
 
@@ -401,21 +431,35 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#
 	TaskCompletedMessage struct {
+
 		// Id of the run that completed the task
-		RunId  int                 `json:"runId"`
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/runId
+		RunId int `json:"runId"`
+
+		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
+
 		// Message version
 		//
 		// Possible values:
 		//   * 1
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/version
 		Version int `json:"version"`
+
 		// Identifier for the worker-group within which this run ran.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
+
 		// Identifier for the worker that executed this run.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/workerId
 		WorkerId string `json:"workerId"`
 	}
 
@@ -424,11 +468,16 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-defined-message.json#
 	TaskDefinedMessage struct {
+
+		// See http://schemas.taskcluster.net/queue/v1/task-defined-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
+
 		// Message version
 		//
 		// Possible values:
 		//   * 1
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-defined-message.json#/properties/version
 		Version int `json:"version"`
 	}
 
@@ -436,25 +485,39 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#
 	TaskExceptionMessage struct {
+
 		// Id of the last run for the task, not provided if `deadline`
 		// was exceeded before a run was started.
-		RunId  int                 `json:"runId"`
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/runId
+		RunId int `json:"runId"`
+
+		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
+
 		// Message version
 		//
 		// Possible values:
 		//   * 1
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/version
 		Version int `json:"version"`
+
 		// Identifier for the worker-group within which the last attempt of the task
 		// ran. Not provided, if `deadline` was exceeded before a run was started.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
+
 		// Identifier for the last worker that failed to report, causing the task
 		// to fail. Not provided, if `deadline` was exceeded before a run
 		// was started.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/workerId
 		WorkerId string `json:"workerId"`
 	}
 
@@ -462,21 +525,35 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#
 	TaskFailedMessage struct {
+
 		// Id of the run that failed.
-		RunId  int                 `json:"runId"`
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/runId
+		RunId int `json:"runId"`
+
+		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
+
 		// Message version
 		//
 		// Possible values:
 		//   * 1
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/version
 		Version int `json:"version"`
+
 		// Identifier for the worker-group within which this run ran.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
+
 		// Identifier for the worker that executed this run.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/workerId
 		WorkerId string `json:"workerId"`
 	}
 
@@ -484,13 +561,21 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#
 	TaskPendingMessage struct {
+
 		// Id of run that became pending, `run-id`s always starts from 0
-		RunId  int                 `json:"runId"`
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#/properties/runId
+		RunId int `json:"runId"`
+
+		// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
+
 		// Message version
 		//
 		// Possible values:
 		//   * 1
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#/properties/version
 		Version int `json:"version"`
 	}
 
@@ -498,24 +583,41 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#
 	TaskRunningMessage struct {
+
 		// Id of the run that just started, always starts from 0
-		RunId  int                 `json:"runId"`
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/runId
+		RunId int `json:"runId"`
+
+		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
+
 		// Time at which the run expires and is resolved as `failed`, if the run
 		// isn't reclaimed.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/takenUntil
 		TakenUntil Time `json:"takenUntil"`
+
 		// Message version
 		//
 		// Possible values:
 		//   * 1
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/version
 		Version int `json:"version"`
+
 		// Identifier for the worker-group within which this run started.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
+
 		// Identifier for the worker executing this run.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/workerId
 		WorkerId string `json:"workerId"`
 	}
 
@@ -523,18 +625,34 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 	TaskStatusStructure struct {
+
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline
 		Deadline Time `json:"deadline"`
+
 		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/expires
 		Expires Time `json:"expires"`
+
 		// Unique identifier for the provisioner that this task must be scheduled on
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/provisionerId
 		ProvisionerId string `json:"provisionerId"`
+
 		// Number of retries left for the task in case of infrastructure issues
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/retriesLeft
 		RetriesLeft int `json:"retriesLeft"`
+
 		// List of runs, ordered so that index `i` has `runId == i`
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs
 		Runs []struct {
+
 			// Reason for the creation of this run,
 			// **more reasons may be added in the future**.
 			//
@@ -543,7 +661,10 @@ type (
 			//   * "retry"
 			//   * "rerun"
 			//   * "exception"
+			//
+			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonCreated
 			ReasonCreated string `json:"reasonCreated"`
+
 			// Reason that run was resolved, this is mainly
 			// useful for runs resolved as `exception`.
 			// Note, **more reasons may be added in the future**, also this
@@ -559,20 +680,35 @@ type (
 			//   * "malformed-payload"
 			//   * "resource-unavailable"
 			//   * "internal-error"
+			//
+			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonResolved
 			ReasonResolved string `json:"reasonResolved"`
+
 			// Date-time at which this run was resolved, ie. when the run changed
 			// state from `running` to either `completed`, `failed` or `exception`.
 			// This property is only present after the run as been resolved.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/resolved
 			Resolved Time `json:"resolved"`
+
 			// Id of this task run, `run-id`s always starts from `0`
+			//
+			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/runId
 			RunId int `json:"runId"`
+
 			// Date-time at which this run was scheduled, ie. when the run was
 			// created in state `pending`.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/scheduled
 			Scheduled Time `json:"scheduled"`
+
 			// Date-time at which this run was claimed, ie. when the run changed
 			// state from `pending` to `running`. This property is only present
 			// after the run has been claimed.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/started
 			Started Time `json:"started"`
+
 			// State of this run
 			//
 			// Possible values:
@@ -581,28 +717,43 @@ type (
 			//   * "completed"
 			//   * "failed"
 			//   * "exception"
+			//
+			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/state
 			State string `json:"state"`
+
 			// Time at which the run expires and is resolved as `failed`, if the
 			// run isn't reclaimed. Note, only present after the run has been
 			// claimed.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/takenUntil
 			TakenUntil Time `json:"takenUntil"`
+
 			// Identifier for group that worker who executes this run is a part of,
 			// this identifier is mainly used for efficient routing.
 			// Note, this property is only present after the run is claimed.
 			//
 			// Syntax: ^([a-zA-Z0-9-_]*)$
+			//
+			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerGroup
 			WorkerGroup string `json:"workerGroup"`
+
 			// Identifier for worker evaluating this run within given
 			// `workerGroup`. Note, this property is only available after the run
 			// has been claimed.
 			//
 			// Syntax: ^([a-zA-Z0-9-_]*)$
+			//
+			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerId
 			WorkerId string `json:"workerId"`
 		} `json:"runs"`
+
 		// Identifier for the scheduler that _defined_ this task.
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/schedulerId
 		SchedulerId string `json:"schedulerId"`
+
 		// State of this task. This is just an auxiliary property derived from state
 		// of latests run, or `unscheduled` if none.
 		//
@@ -613,22 +764,33 @@ type (
 		//   * "completed"
 		//   * "failed"
 		//   * "exception"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/state
 		State string `json:"state"`
+
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.
 		//
 		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskGroupId
 		TaskGroupId string `json:"taskGroupId"`
+
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
 		//
 		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskId
 		TaskId string `json:"taskId"`
+
 		// Identifier for worker type within the specified provisioner
 		//
 		// Syntax: ^([a-zA-Z0-9-_]*)$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 )
