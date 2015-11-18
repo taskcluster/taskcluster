@@ -1,10 +1,10 @@
 suite("api/publish", function() {
-  var base            = require('../../');
-  var config  = require('taskcluster-lib-config');
+  var subject         = require('../../');
+  var config          = require('taskcluster-lib-config');
   var aws             = require('aws-sdk-promise');
   var assert          = require('assert');
   var Promise         = require('promise');
-  var mockAuthServer  = require('../mockauthserver');
+  var mockAuthServer  = require('taskcluster-lib-testing/.test/mockauthserver');
 
   // Sanity checks for the reference
   test("reference from mockAuthServer", function() {
@@ -77,7 +77,7 @@ suite("api/publish", function() {
     }
 
     // Create test api
-    var api = new base.API({
+    var api = new subject({
       title:        "Test Api",
       description:  "Another test api"
     });
@@ -89,7 +89,7 @@ suite("api/publish", function() {
       name:         'test',
       title:        "Test End-Point",
       description:  "Place we can call to test something",
-      stability:    base.API.stability.stable
+      stability:    subject.stability.stable
     }, function(req, res) {
       res.send(200, "Hello World");
     });
