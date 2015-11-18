@@ -3,13 +3,14 @@ suite("api/schemaPrefix", function() {
   var request         = require('superagent-promise');
   var assert          = require('assert');
   var Promise         = require('promise');
-  var mockAuthServer  = require('../mockauthserver');
-  var base            = require('../../');
+  var mockAuthServer  = require('taskcluster-lib-testing/.test/mockauthserver');
+  var base            = require('taskcluster-base');
+  var subject         = require('../../');
   var express         = require('express');
   var path            = require('path');
 
   // Create test api
-  var api = new base.API({
+  var api = new subject({
     title:        "Test Api",
     description:  "Another test api",
     schemaPrefix: 'http://localhost:4321/'
@@ -72,7 +73,7 @@ suite("api/schemaPrefix", function() {
         });
 
         // Create application
-        app = express();
+        var app = express();
 
         // Use router
         app.use(router);
