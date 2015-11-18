@@ -53,7 +53,7 @@
     "babel-preset-stage-1": "^6.1.18",
     "mocha": "2.0.1",
     "taskcluster-lib-config": "^0.8.8",
-    "tc-rules": "^1.0.6"
+    "tc-rules": "^2.0.0"
   },
   "main": "./lib/testing.js"
 }
