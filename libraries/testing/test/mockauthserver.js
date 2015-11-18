@@ -1,5 +1,5 @@
 var express = require('express');
-var base    = require('../');
+var base    = require('taskcluster-base');
 var _       = require('lodash');
 var Promise = require('promise');
 var debug   = require('debug')('base:test:authserver_mock');
