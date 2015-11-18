@@ -379,12 +379,12 @@ func (t Time) String() string {
 func generatePayloadTypes(apiDef *APIDefinition) (string, map[string]bool, map[string]bool) {
 	extraPackages := make(map[string]bool)
 	rawMessageTypes := make(map[string]bool)
-	content := "type (" // intentionally no \n here since each type starts with one already
+	content := "type (\n" // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	for _, i := range apiDef.schemaURLs {
-		var newContent string
-		newContent, extraPackages, rawMessageTypes = apiDef.schemas[i].TypeDefinition(true, extraPackages, rawMessageTypes)
-		content += utils.Indent(newContent, "\t")
+		var newComment, newMember, newType string
+		newComment, newMember, newType, extraPackages, rawMessageTypes = apiDef.schemas[i].TypeDefinition(true, extraPackages, rawMessageTypes)
+		content += utils.Indent(newComment+newMember+" "+newType, "\t") + "\n"
 	}
 	return content + ")\n\n", extraPackages, rawMessageTypes
 }

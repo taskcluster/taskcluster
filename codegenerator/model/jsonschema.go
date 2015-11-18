@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
 )
@@ -99,13 +100,12 @@ func (subSchema JsonSubSchema) String() string {
 	return result
 }
 
-func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages map[string]bool, rawMessageTypes map[string]bool) (string, map[string]bool, map[string]bool) {
-	content := "\n"
-	comment := ""
+func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages map[string]bool, rawMessageTypes map[string]bool) (string, string, string, map[string]bool, map[string]bool) {
+	comment := "\n"
 	if d := jsonSubSchema.Description; d != nil {
-		comment = utils.Indent(*d, "\t// ")
+		comment += utils.Indent(*d, "\t// ")
 	}
-	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+	if comment[len(comment)-1:] != "\n" {
 		comment += "\n"
 	}
 	if enum := jsonSubSchema.Enum; enum != nil {
@@ -125,8 +125,9 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 	if url := jsonSubSchema.SourceURL; url != "" {
 		comment += "//\n// See " + url + "\n"
 	}
-	content += comment
-	content += jsonSubSchema.TypeName + " "
+	for strings.Index(comment, "\n//\n") == 0 {
+		comment = "\n" + comment[4:]
+	}
 	typ := "json.RawMessage"
 	if p := jsonSubSchema.Type; p != nil {
 		typ = *p
@@ -137,9 +138,9 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 	switch typ {
 	case "array":
 		if jsonType := jsonSubSchema.Items.Type; jsonType != nil {
-			var newType string
-			newType, extraPackages, rawMessageTypes = jsonSubSchema.Items.TypeDefinition(false, extraPackages, rawMessageTypes)
-			typ = "[]" + newType
+			var arrayType string
+			_, _, arrayType, extraPackages, rawMessageTypes = jsonSubSchema.Items.TypeDefinition(false, extraPackages, rawMessageTypes)
+			typ = "[]" + arrayType
 		} else {
 			if refSubSchema := jsonSubSchema.Items.RefSubSchema; refSubSchema != nil {
 				typ = "[]" + refSubSchema.TypeName
@@ -150,12 +151,12 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 			typ = fmt.Sprintf("struct {\n")
 			members := make(map[string]bool, len(s.SortedPropertyNames))
 			for _, j := range s.SortedPropertyNames {
-				memberName := utils.Normalise(j, members)
+				s.Properties[j].TypeName = utils.Normalise(j, members)
 				// recursive call to build structs inside structs
-				var subType string
-				subType, extraPackages, rawMessageTypes = s.Properties[j].TypeDefinition(false, extraPackages, rawMessageTypes)
+				var subComment, subMember, subType string
+				subComment, subMember, subType, extraPackages, rawMessageTypes = s.Properties[j].TypeDefinition(false, extraPackages, rawMessageTypes)
 				// struct member name and type, as part of struct definition
-				typ += fmt.Sprintf("\t%v %v `json:\"%v\"`\n", memberName, j, subType)
+				typ += fmt.Sprintf("\t%v%v %v `json:\"%v\"`\n", subComment, subMember, subType, j)
 			}
 			typ += "}"
 		} else {
@@ -189,10 +190,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 			rawMessageTypes[jsonSubSchema.TypeName] = true
 		}
 	}
-	if topLevel {
-		content += "\n"
-	}
-	return content, extraPackages, rawMessageTypes
+	return comment, jsonSubSchema.TypeName, typ, extraPackages, rawMessageTypes
 }
 
 func (p Properties) String() string {

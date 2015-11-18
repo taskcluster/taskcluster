@@ -27,18 +27,17 @@ done
 export UNIX_TIMESTAMP
 echo "UNIX_TIMESTAMP = '${UNIX_TIMESTAMP}'"
 
-# uncomment if build.sh fails to build due to invalid generated code...
-# for name in auth awsprovisioner{,events} hooks index queue{,events} scheduler{,events} purgecache{,events} secrets
-# do
-#   git checkout -f "${name}/${name}.go"
-# done
-
 rm -rf "${GOPATH}/bin/generatemodel"
 rm -rf "${GOPATH}"/pkg/*/github.com/*/taskcluster-client-go
 go clean -i -x ./...
 
+# fetch deps/build/install generatemodel tool
 go get ./codegenerator/generatemodel
-"${GENERATE}" && go generate -v ./codegenerator/generatemodel
+
+# generate code
+"${GENERATE}" && go generate -v ./codegenerator/model
+
+# fetch deps/build/install taskcluster-client-go
 go get -t -v -x ./...
 go fmt ./...
 
