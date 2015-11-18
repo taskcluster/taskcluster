@@ -18,8 +18,6 @@ module.exports = {
     // Must be configured locally
     azureAccounts:    "{}",
 
-    clientIdForTempCreds: 'ctVNevJPRbe6ICL5-nhZkw',
-
     // Special value for tests, as we don't want to wait forever
     maxLastUsedDelay: '- 3 seconds'
   },

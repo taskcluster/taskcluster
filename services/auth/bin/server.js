@@ -5,11 +5,12 @@ var v1            = require('../auth/v1');
 var path          = require('path');
 var debug         = require('debug')('server');
 var Promise       = require('promise');
-var persona       = require('../auth/persona');
 var AWS           = require('aws-sdk-promise');
 var exchanges     = require('../auth/exchanges');
 var ScopeResolver = require('../auth/scoperesolver');
 var taskcluster   = require('taskcluster-client');
+var url           = require('url');
+
 
 /** Launch server */
 var launch = async function(profile) {
@@ -31,8 +32,7 @@ var launch = async function(profile) {
       'aws_secretAccessKey',
       'influx_connectionString',
       'auth_rootAccessToken',
-      'auth_azureAccounts',
-      'auth_clientIdForTempCreds'
+      'auth_azureAccounts'
     ],
     filename:     'taskcluster-auth'
   });
@@ -161,20 +161,16 @@ var launch = async function(profile) {
   // Mount API router
   app.use('/v1', router);
 
-  // Setup middleware and authentication
-  var ensureAuth = persona.setup(app, {
-    cookieSecret:   cfg.get('server:cookieSecret'),
-    viewFolder:     path.join(__dirname, '..', 'views'),
-    assetFolder:    path.join(__dirname, '..', 'assets'),
-    development:    cfg.get('server:development') === 'true',
-    publicUrl:      cfg.get('server:publicUrl')
+  app.get('/', (req, res) => {
+    res.redirect(302, url.format({
+      protocol:       'https',
+      host:           'login.taskcluster.net',
+      query: {
+        target:       req.query.target,
+        description:  req.query.description
+      }
+    }));
   });
-
-  // Provide a client
-  app.globals = {
-    Client:               Client,
-    clientIdForTempCreds: cfg.get('auth:clientIdForTempCreds')
-  };
 
   // Create server
   return app.createServer();
