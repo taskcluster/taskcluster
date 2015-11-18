@@ -111,6 +111,7 @@ production:
     publicArtifactBucketProxies:
       'us-east-1':  's3-copy-proxy-us-east-1.taskcluster.svc.tutum.io'
       'us-west-1':  's3-copy-proxy-us-west-1.taskcluster.svc.tutum.io'
+    usePublicArtifactBucketProxy: !env:bool USE_PUBLIC_ARTIFACT_BUCKET_PROXY
   taskcluster:
     authBaseUrl:      https://auth.taskcluster.net/v1
   server:
