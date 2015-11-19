@@ -8,8 +8,10 @@ import waitForPort from '../wait_for_port';
 // Alias used to link the proxy.
 const ALIAS = 'relengapi';
 
-// Maximum time in MS to wait for the proxy socket to become available.
-const INIT_TIMEOUT = 2000;
+// Maximum time in MS to wait for the proxy socket to become available. Set to
+// 30 seconds which is the max timeout on heroku for api calls. Note: very rarely
+// should it take this long.
+const INIT_TIMEOUT = 30000;
 
 export default class RelengAPIProxy {
   constructor () {
@@ -47,6 +49,14 @@ export default class RelengAPIProxy {
 
     // Terrible hack to get container promise proxy.
     this.container = docker.getContainer(this.container.id);
+
+    // XXX: Temporary work around to get errors from the container.  Replace this
+    // with a more general purpose way of logging things from sidecar containers.
+    let debugLevel = process.env.DEBUG || '';
+    if (debugLevel.includes(this.featureName) || debugLevel === '*') {
+      let stream = await this.container.attach({stream: true, stdout: true, stderr: true});
+      stream.pipe(process.stdout);
+    }
 
     // TODO: In theory the output of the proxy might be useful consider logging
     // this somehow.

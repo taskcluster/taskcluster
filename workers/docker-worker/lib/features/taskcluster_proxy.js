@@ -7,8 +7,10 @@ import waitForPort from '../wait_for_port';
 
 // Alias used to link the proxy.
 const ALIAS = 'taskcluster';
-// Maximum time in MS to wait for the proxy socket to become available.
-const INIT_TIMEOUT = 2000;
+// Maximum time in MS to wait for the proxy socket to become available. Set to
+// 30 seconds which is the max timeout on heroku for api calls. Note: very rarely
+// should it take this long.
+const INIT_TIMEOUT = 30000;
 
 export default class TaskclusterProxy {
   constructor () {
@@ -56,8 +58,14 @@ export default class TaskclusterProxy {
     // Terrible hack to get container promise proxy.
     this.container = docker.getContainer(this.container.id);
 
-    // TODO: In theory the output of the proxy might be useful consider logging
-    // this somehow.
+    // XXX: Temporary work around to get errors from the container.  Replace this
+    // with a more general purpose way of logging things from sidecar containers.
+    let debugLevel = process.env.DEBUG || '';
+    if (debugLevel.includes(this.featureName) || debugLevel === '*') {
+      let stream = await this.container.attach({stream: true, stdout: true, stderr: true});
+      stream.pipe(process.stdout);
+    }
+
     await this.container.start({});
 
     var inspect = await this.container.inspect();
@@ -67,7 +75,7 @@ export default class TaskclusterProxy {
       // wait for the initial server response...
       await waitForPort(inspect.NetworkSettings.IPAddress, '80', INIT_TIMEOUT);
     } catch (e) {
-      throw new Error('Failed to initialize taskcluster proxy service.')
+      throw new Error('Failed to initialize taskcluster proxy service.');
     }
 
     return {
