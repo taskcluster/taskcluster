@@ -73,7 +73,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
+// Thu, 19 Nov 2015 at 13:32:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -529,6 +529,9 @@ type (
 		// If you are running behind a reverse proxy look for the `x-forwarded-port`
 		// header.
 		//
+		// Mininum:    0
+		// Maximum:    65535
+		//
 		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/port
 		Port int `json:"port"`
 
@@ -659,6 +662,8 @@ type (
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
 		//
+		// Max length: 10240
+		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/description
 		Description string `json:"description"`
 
@@ -676,14 +681,14 @@ type (
 		// AccessToken used for authenticating requests, you should store this
 		// you won't be able to retrive it again!
 		//
-		// Syntax: ^[a-zA-Z0-9_-]{22,66}$
+		// Syntax:     ^[a-zA-Z0-9_-]{22,66}$
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/accessToken
 		AccessToken string `json:"accessToken"`
 
 		// ClientId of the client
 		//
-		// Syntax: ^[A-Za-z0-9@/:._-]+$
+		// Syntax:     ^[A-Za-z0-9@/:._-]+$
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/clientId
 		ClientId string `json:"clientId"`
@@ -695,6 +700,8 @@ type (
 
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
+		//
+		// Max length: 10240
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/description
 		Description string `json:"description"`
@@ -736,6 +743,8 @@ type (
 		// Description of what this role is used for in markdown.
 		// Should include who is the owner, point of contact.
 		//
+		// Max length: 10240
+		//
 		// See http://schemas.taskcluster.net/auth/v1/create-role-request.json#/properties/description
 		Description string `json:"description"`
 
@@ -753,14 +762,14 @@ type (
 
 		// AccessToken used for authenticating requests
 		//
-		// Syntax: ^[a-zA-Z0-9_-]{22,66}$
+		// Syntax:     ^[a-zA-Z0-9_-]{22,66}$
 		//
 		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/accessToken
 		AccessToken string `json:"accessToken"`
 
 		// ClientId of the client scopes is requested about
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/clientId
 		ClientId string `json:"clientId"`
@@ -768,6 +777,8 @@ type (
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
 		// Why it is scoped as is, think of this as documentation.
+		//
+		// Max length: 4096
 		//
 		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/description
 		Description string `json:"description"`
@@ -779,6 +790,8 @@ type (
 
 		// Human readable name of this set of credentials, typical
 		// component/server-name or IRC nickname of the user.
+		//
+		// Max length: 255
 		//
 		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/name
 		Name string `json:"name"`
@@ -797,7 +810,7 @@ type (
 
 		// ClientId of the client scopes is requested about
 		//
-		// Syntax: ^[A-Za-z0-9@/:._-]+$
+		// Syntax:     ^[A-Za-z0-9@/:._-]+$
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/clientId
 		ClientId string `json:"clientId"`
@@ -809,6 +822,8 @@ type (
 
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
+		//
+		// Max length: 10240
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/description
 		Description string `json:"description"`
@@ -855,6 +870,8 @@ type (
 		// Description of what this role is used for in markdown.
 		// Should include who is the owner, point of contact.
 		//
+		// Max length: 10240
+		//
 		// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/description
 		Description string `json:"description"`
 
@@ -872,7 +889,7 @@ type (
 
 		// roleId of the role requested
 		//
-		// Syntax: ^[\x20-\x7e]+$
+		// Syntax:     ^[\x20-\x7e]+$
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/roleId
 		RoleId string `json:"roleId"`

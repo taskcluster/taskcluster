@@ -118,7 +118,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
+// Thu, 19 Nov 2015 at 13:32:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package index
 
@@ -401,6 +401,8 @@ type (
 
 		// Namespace of the indexed task, used to find the indexed task in the index.
 		//
+		// Max length: 255
+		//
 		// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#/properties/namespace
 		Namespace string `json:"namespace"`
 
@@ -415,7 +417,7 @@ type (
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#/properties/taskId
 		TaskId string `json:"taskId"`
@@ -449,7 +451,7 @@ type (
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/index/v1/insert-task-request.json#/properties/taskId
 		TaskId string `json:"taskId"`
@@ -469,6 +471,10 @@ type (
 
 		// Maximum number of results per page. If there are more results than this
 		// a continuation token will be return.
+		//
+		// Default:    1000
+		// Mininum:    1
+		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#/properties/limit
 		Limit int `json:"limit"`
@@ -505,6 +511,8 @@ type (
 			// Fully qualified name of the namespace, you can use this to list
 			// namespaces or tasks under this namespace.
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#/properties/namespaces/items/properties/namespace
 			Namespace string `json:"namespace"`
 		} `json:"namespaces"`
@@ -524,6 +532,10 @@ type (
 
 		// Maximum number of results per page. If there are more results than this
 		// a continuation token will be return.
+		//
+		// Default:    1000
+		// Mininum:    1
+		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/index/v1/list-tasks-request.json#/properties/limit
 		Limit int `json:"limit"`
@@ -560,6 +572,8 @@ type (
 			// Namespace of the indexed task, used to find the indexed task in the
 			// index.
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/namespace
 			Namespace string `json:"namespace"`
 
@@ -575,7 +589,7 @@ type (
 			// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 			// stripped of `=` padding.
 			//
-			// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+			// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 			//
 			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/taskId
 			TaskId string `json:"taskId"`

@@ -39,7 +39,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/scheduler/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
+// Thu, 19 Nov 2015 at 13:32:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package scheduler
 
@@ -434,6 +434,8 @@ type (
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
 		//
+		// Default:    map[]
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/extra
 		Extra json.RawMessage `json:"extra"`
 
@@ -445,11 +447,15 @@ type (
 			// Human readable description of the task, please **explain** what the
 			// task does. A few lines of documentation is not going to hurt you.
 			//
+			// Max length: 32768
+			//
 			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/description
 			Description string `json:"description"`
 
 			// Human readable name of task, used to very briefly given an idea about
 			// what the task does.
+			//
+			// Max length: 255
 			//
 			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/name
 			Name string `json:"name"`
@@ -457,12 +463,16 @@ type (
 			// E-mail of person who caused this task, e.g. the person who did
 			// `hg push`. The person we should contact to ask why this task is here.
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 
 			// Link to source of this task, should specify a file, revision and
 			// repository. This should be place someone can go an do a git/hg blame
 			// to who came up with recipe for this task.
+			//
+			// Max length: 4096
 			//
 			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/source
 			Source string `json:"source"`
@@ -484,13 +494,17 @@ type (
 		//   * "high"
 		//   * "normal"
 		//
+		// Default:    "normal"
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/priority
 		Priority string `json:"priority"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/provisionerId
 		ProvisionerId string `json:"provisionerId"`
@@ -499,12 +513,18 @@ type (
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
 		// these events are to be expected.
 		//
+		// Default:    5
+		// Mininum:    0
+		// Maximum:    49
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/retries
 		Retries int `json:"retries"`
 
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		// **Task submitter required scopes** `queue:route:<route>` for
 		// each route given.
+		//
+		// Default:    []
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/routes
 		Routes []string `json:"routes"`
@@ -516,13 +536,18 @@ type (
 		// This scope is also necessary to _schedule_ a defined task, or _rerun_ a
 		// task.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Default:    "-"
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/schedulerId
 		SchedulerId string `json:"schedulerId"`
 
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
+		//
+		// Default:    []
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/scopes
 		Scopes []string `json:"scopes"`
@@ -533,6 +558,8 @@ type (
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
 		//
+		// Default:    map[]
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/tags
 		Tags json.RawMessage `json:"tags"`
 
@@ -541,14 +568,16 @@ type (
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
 		// property isn't specified.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/taskGroupId
 		TaskGroupId string `json:"taskGroupId"`
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/workerType
 		WorkerType string `json:"workerType"`
@@ -566,10 +595,16 @@ type (
 
 			// List of required `taskId`s
 			//
+			// Default:    []
+			//
 			// See http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#/properties/tasks/items/properties/requires
 			Requires []string `json:"requires"`
 
 			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
+			//
+			// Default:    0
+			// Mininum:    0
+			// Maximum:    100
 			//
 			// See http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#/properties/tasks/items/properties/reruns
 			Reruns int `json:"reruns"`
@@ -579,7 +614,7 @@ type (
 
 			// Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.
 			//
-			// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+			// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 			//
 			// See http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#/properties/tasks/items/properties/taskId
 			TaskId string `json:"taskId"`
@@ -598,20 +633,28 @@ type (
 
 			// Human readable description of task-graph, **explain** what it does!
 			//
+			// Max length: 32768
+			//
 			// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#/properties/metadata/properties/description
 			Description string `json:"description"`
 
 			// Human readable name of task-graph
+			//
+			// Max length: 255
 			//
 			// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#/properties/metadata/properties/name
 			Name string `json:"name"`
 
 			// E-mail of person who caused this task-graph, e.g. the person who did `hg push`
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 
 			// Link to source of this task-graph, should specify file, revision and repository
+			//
+			// Max length: 4096
 			//
 			// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#/properties/metadata/properties/source
 			Source string `json:"source"`
@@ -642,6 +685,8 @@ type (
 
 			// Human readable name from the task definition
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#/properties/tasks/items/properties/name
 			Name string `json:"name"`
 
@@ -657,10 +702,16 @@ type (
 
 			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
 			//
+			// Mininum:    0
+			// Maximum:    999
+			//
 			// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#/properties/tasks/items/properties/reruns
 			Reruns int `json:"reruns"`
 
 			// Number of reruns that haven't been used yet.
+			//
+			// Mininum:    0
+			// Maximum:    999
 			//
 			// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#/properties/tasks/items/properties/rerunsLeft
 			RerunsLeft int `json:"rerunsLeft"`
@@ -684,7 +735,7 @@ type (
 
 			// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 			//
-			// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+			// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 			//
 			// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#/properties/tasks/items/properties/taskId
 			TaskId string `json:"taskId"`
@@ -703,6 +754,8 @@ type (
 
 		// Human readable name from the task definition
 		//
+		// Max length: 255
+		//
 		// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json#/properties/name
 		Name string `json:"name"`
 
@@ -718,10 +771,16 @@ type (
 
 		// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
 		//
+		// Mininum:    0
+		// Maximum:    999
+		//
 		// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json#/properties/reruns
 		Reruns int `json:"reruns"`
 
 		// Number of reruns that haven't been used yet.
+		//
+		// Mininum:    0
+		// Maximum:    999
 		//
 		// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json#/properties/rerunsLeft
 		RerunsLeft int `json:"rerunsLeft"`
@@ -745,7 +804,7 @@ type (
 
 		// Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json#/properties/taskId
 		TaskId string `json:"taskId"`
@@ -763,20 +822,28 @@ type (
 
 			// Human readable description of task-graph, **explain** what it does!
 			//
+			// Max length: 32768
+			//
 			// See http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json#/properties/metadata/properties/description
 			Description string `json:"description"`
 
 			// Human readable name of task-graph
+			//
+			// Max length: 255
 			//
 			// See http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json#/properties/metadata/properties/name
 			Name string `json:"name"`
 
 			// E-mail of person who caused this task-graph, e.g. the person who did `hg push`
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 
 			// Link to source of this task-graph, should specify file, revision and repository
+			//
+			// Max length: 4096
 			//
 			// See http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json#/properties/metadata/properties/source
 			Source string `json:"source"`
@@ -807,7 +874,9 @@ type (
 
 		// Unique identifier for task-graph scheduler managing the given task-graph
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#/properties/schedulerId
 		SchedulerId string `json:"schedulerId"`
@@ -824,7 +893,7 @@ type (
 
 		// Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#/properties/taskGraphId
 		TaskGraphId string `json:"taskGraphId"`
@@ -842,11 +911,15 @@ type (
 
 			// Human readable description of task-graph, **explain** what it does!
 			//
+			// Max length: 32768
+			//
 			// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/metadata/properties/description
 			Description string `json:"description"`
 
 			// Human readable name of task-graph, give people finding this an idea
 			// what this graph is about.
+			//
+			// Max length: 255
 			//
 			// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/metadata/properties/name
 			Name string `json:"name"`
@@ -854,11 +927,15 @@ type (
 			// E-mail of person who caused this task-graph, e.g. the person who did
 			// `hg push` or whatever triggered it.
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 
 			// Link to source of this task-graph, should specify file, revision and
 			// repository
+			//
+			// Max length: 4096
 			//
 			// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/metadata/properties/source
 			Source string `json:"source"`
@@ -867,16 +944,22 @@ type (
 		// List of task-graph specific routes, AMQP messages will be CC'ed to these
 		// routes prefixed by `'route.'`.
 		//
+		// Default:    []
+		//
 		// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/routes
 		Routes []string `json:"routes"`
 
 		// List of scopes (or scope-patterns) that tasks of the task-graph is
 		// authorized to use.
 		//
+		// Default:    []
+		//
 		// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/scopes
 		Scopes []string `json:"scopes"`
 
 		// Arbitrary key-value tags (only strings limited to 4k)
+		//
+		// Default:    map[]
 		//
 		// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/tags
 		Tags json.RawMessage `json:"tags"`
@@ -888,10 +971,16 @@ type (
 
 			// List of required `taskId`s
 			//
+			// Default:    []
+			//
 			// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/tasks/items/properties/requires
 			Requires []string `json:"requires"`
 
 			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
+			//
+			// Default:    0
+			// Mininum:    0
+			// Maximum:    100
 			//
 			// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/tasks/items/properties/reruns
 			Reruns int `json:"reruns"`
@@ -901,7 +990,7 @@ type (
 
 			// Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.
 			//
-			// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+			// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 			//
 			// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/tasks/items/properties/taskId
 			TaskId string `json:"taskId"`

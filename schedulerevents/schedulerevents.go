@@ -222,7 +222,7 @@ type (
 
 		// Unique `taskId` that is blocking this task-graph from completion.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#/properties/taskId
 		TaskId string `json:"taskId"`
@@ -294,7 +294,9 @@ type (
 
 		// Unique identifier for task-graph scheduler managing the given task-graph
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#/properties/schedulerId
 		SchedulerId string `json:"schedulerId"`
@@ -311,7 +313,7 @@ type (
 
 		// Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#/properties/taskGraphId
 		TaskGraphId string `json:"taskGraphId"`

@@ -365,6 +365,8 @@ type (
 
 			// Mimetype for the artifact that was created.
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/contentType
 			ContentType string `json:"contentType"`
 
@@ -377,6 +379,8 @@ type (
 			// Name of the artifact that was created, this is useful if you want to
 			// attempt to fetch the artifact. But keep in mind that just because an
 			// artifact is created doesn't mean that it's immediately available.
+			//
+			// Max length: 1024
 			//
 			// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/name
 			Name string `json:"name"`
@@ -396,6 +400,9 @@ type (
 
 		// Id of the run on which artifact was created.
 		//
+		// Mininum:    0
+		// Maximum:    1000
+		//
 		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/runId
 		RunId int `json:"runId"`
 
@@ -413,7 +420,9 @@ type (
 		// Identifier for the worker-group within which the run with the created
 		// artifacted is running.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
@@ -421,7 +430,9 @@ type (
 		// Identifier for the worker within which the run with the created artifact
 		// is running.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/workerId
 		WorkerId string `json:"workerId"`
@@ -433,6 +444,9 @@ type (
 	TaskCompletedMessage struct {
 
 		// Id of the run that completed the task
+		//
+		// Mininum:    0
+		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/runId
 		RunId int `json:"runId"`
@@ -450,14 +464,18 @@ type (
 
 		// Identifier for the worker-group within which this run ran.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for the worker that executed this run.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/workerId
 		WorkerId string `json:"workerId"`
@@ -489,6 +507,9 @@ type (
 		// Id of the last run for the task, not provided if `deadline`
 		// was exceeded before a run was started.
 		//
+		// Mininum:    0
+		// Maximum:    1000
+		//
 		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/runId
 		RunId int `json:"runId"`
 
@@ -506,7 +527,9 @@ type (
 		// Identifier for the worker-group within which the last attempt of the task
 		// ran. Not provided, if `deadline` was exceeded before a run was started.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
@@ -515,7 +538,9 @@ type (
 		// to fail. Not provided, if `deadline` was exceeded before a run
 		// was started.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/workerId
 		WorkerId string `json:"workerId"`
@@ -527,6 +552,9 @@ type (
 	TaskFailedMessage struct {
 
 		// Id of the run that failed.
+		//
+		// Mininum:    0
+		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/runId
 		RunId int `json:"runId"`
@@ -544,14 +572,18 @@ type (
 
 		// Identifier for the worker-group within which this run ran.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for the worker that executed this run.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/workerId
 		WorkerId string `json:"workerId"`
@@ -563,6 +595,9 @@ type (
 	TaskPendingMessage struct {
 
 		// Id of run that became pending, `run-id`s always starts from 0
+		//
+		// Mininum:    0
+		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#/properties/runId
 		RunId int `json:"runId"`
@@ -586,6 +621,9 @@ type (
 
 		// Id of the run that just started, always starts from 0
 		//
+		// Mininum:    0
+		// Maximum:    1000
+		//
 		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/runId
 		RunId int `json:"runId"`
 
@@ -608,14 +646,18 @@ type (
 
 		// Identifier for the worker-group within which this run started.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for the worker executing this run.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/workerId
 		WorkerId string `json:"workerId"`
@@ -638,12 +680,17 @@ type (
 
 		// Unique identifier for the provisioner that this task must be scheduled on
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/provisionerId
 		ProvisionerId string `json:"provisionerId"`
 
 		// Number of retries left for the task in case of infrastructure issues
+		//
+		// Mininum:    0
+		// Maximum:    999
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/retriesLeft
 		RetriesLeft int `json:"retriesLeft"`
@@ -693,6 +740,9 @@ type (
 
 			// Id of this task run, `run-id`s always starts from `0`
 			//
+			// Mininum:    0
+			// Maximum:    1000
+			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/runId
 			RunId int `json:"runId"`
 
@@ -732,7 +782,9 @@ type (
 			// this identifier is mainly used for efficient routing.
 			// Note, this property is only present after the run is claimed.
 			//
-			// Syntax: ^([a-zA-Z0-9-_]*)$
+			// Syntax:     ^([a-zA-Z0-9-_]*)$
+			// Min length: 1
+			// Max length: 22
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerGroup
 			WorkerGroup string `json:"workerGroup"`
@@ -741,7 +793,9 @@ type (
 			// `workerGroup`. Note, this property is only available after the run
 			// has been claimed.
 			//
-			// Syntax: ^([a-zA-Z0-9-_]*)$
+			// Syntax:     ^([a-zA-Z0-9-_]*)$
+			// Min length: 1
+			// Max length: 22
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerId
 			WorkerId string `json:"workerId"`
@@ -749,7 +803,9 @@ type (
 
 		// Identifier for the scheduler that _defined_ this task.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/schedulerId
 		SchedulerId string `json:"schedulerId"`
@@ -772,7 +828,7 @@ type (
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskGroupId
 		TaskGroupId string `json:"taskGroupId"`
@@ -781,14 +837,16 @@ type (
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskId
 		TaskId string `json:"taskId"`
 
 		// Identifier for worker type within the specified provisioner
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/workerType
 		WorkerType string `json:"workerType"`

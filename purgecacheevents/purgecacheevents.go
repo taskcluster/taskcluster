@@ -104,7 +104,9 @@ type (
 
 		// `provisionerId` under which the `workerType` we want to purge for exists.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#/properties/provisionerId
 		ProvisionerId string `json:"provisionerId"`
@@ -119,7 +121,9 @@ type (
 
 		// `workerType` we wish to purge cache for.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#/properties/workerType
 		WorkerType string `json:"workerType"`

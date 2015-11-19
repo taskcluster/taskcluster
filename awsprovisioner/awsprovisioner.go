@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
+// Thu, 19 Nov 2015 at 13:32:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -883,7 +883,7 @@ type (
 
 		// The ID of the workerType
 		//
-		// Syntax: ^[A-Za-z0-9+/=_-]{1,22}$
+		// Syntax:     ^[A-Za-z0-9+/=_-]{1,22}$
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`

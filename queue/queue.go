@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
+// Thu, 19 Nov 2015 at 13:32:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -679,6 +679,8 @@ type (
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
 		//
+		// Default:    map[]
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/extra
 		Extra json.RawMessage `json:"extra"`
 
@@ -690,11 +692,15 @@ type (
 			// Human readable description of the task, please **explain** what the
 			// task does. A few lines of documentation is not going to hurt you.
 			//
+			// Max length: 32768
+			//
 			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/description
 			Description string `json:"description"`
 
 			// Human readable name of task, used to very briefly given an idea about
 			// what the task does.
+			//
+			// Max length: 255
 			//
 			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/name
 			Name string `json:"name"`
@@ -702,12 +708,16 @@ type (
 			// E-mail of person who caused this task, e.g. the person who did
 			// `hg push`. The person we should contact to ask why this task is here.
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 
 			// Link to source of this task, should specify a file, revision and
 			// repository. This should be place someone can go an do a git/hg blame
 			// to who came up with recipe for this task.
+			//
+			// Max length: 4096
 			//
 			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/source
 			Source string `json:"source"`
@@ -729,13 +739,17 @@ type (
 		//   * "high"
 		//   * "normal"
 		//
+		// Default:    "normal"
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/priority
 		Priority string `json:"priority"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/provisionerId
 		ProvisionerId string `json:"provisionerId"`
@@ -744,12 +758,18 @@ type (
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
 		// these events are to be expected.
 		//
+		// Default:    5
+		// Mininum:    0
+		// Maximum:    49
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/retries
 		Retries int `json:"retries"`
 
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		// **Task submitter required scopes** `queue:route:<route>` for
 		// each route given.
+		//
+		// Default:    []
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/routes
 		Routes []string `json:"routes"`
@@ -761,13 +781,18 @@ type (
 		// This scope is also necessary to _schedule_ a defined task, or _rerun_ a
 		// task.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Default:    "-"
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/schedulerId
 		SchedulerId string `json:"schedulerId"`
 
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
+		//
+		// Default:    []
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/scopes
 		Scopes []string `json:"scopes"`
@@ -778,6 +803,8 @@ type (
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
 		//
+		// Default:    map[]
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/tags
 		Tags json.RawMessage `json:"tags"`
 
@@ -786,14 +813,16 @@ type (
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
 		// property isn't specified.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/taskGroupId
 		TaskGroupId string `json:"taskGroupId"`
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/workerType
 		WorkerType string `json:"workerType"`
@@ -811,6 +840,8 @@ type (
 
 			// Mimetype for the artifact that was created.
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items/properties/contentType
 			ContentType string `json:"contentType"`
 
@@ -822,6 +853,8 @@ type (
 
 			// Name of the artifact that was created, this is useful if you want to
 			// attempt to fetch the artifact.
+			//
+			// Max length: 1024
 			//
 			// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items/properties/name
 			Name string `json:"name"`
@@ -852,19 +885,25 @@ type (
 		// But there cannot be more pending tasks reported here. Ie. this is an
 		// **upper-bound** on the number of pending tasks.
 		//
+		// Mininum:    0
+		//
 		// See http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/pendingTasks
 		PendingTasks int `json:"pendingTasks"`
 
 		// Unique identifier for the provisioner
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/provisionerId
 		ProvisionerId string `json:"provisionerId"`
 
 		// Identifier for worker type within the specified provisioner
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`
@@ -938,6 +977,8 @@ type (
 		//  this make tooling a lot easier, specifically,
 		//  always using `application/json` for JSON artifacts.
 		//
+		// Max length: 255
+		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentType
 		ContentType string `json:"contentType"`
 
@@ -969,6 +1010,8 @@ type (
 		// `Content-Type`, consistently using the correct mime-type make
 		// tooling a lot easier, specifically, always using `application/json`
 		// for JSON artifacts.
+		//
+		// Max length: 255
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/contentType
 		ContentType string `json:"contentType"`
@@ -1006,6 +1049,8 @@ type (
 		// redirect. Please use the same `Content-Type`, consistently using
 		// the correct mime-type make tooling a lot easier, specifically,
 		// always using `application/json` for JSON artifacts.
+		//
+		// Max length: 255
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/contentType
 		ContentType string `json:"contentType"`
@@ -1048,6 +1093,8 @@ type (
 
 		// Human readable explanation of why the artifact is missing
 		//
+		// Max length: 4096
+		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/message
 		Message string `json:"message"`
 
@@ -1085,6 +1132,8 @@ type (
 		// Artifact mime-type, must be specified as header when uploading with
 		// the signed `putUrl`.
 		//
+		// Max length: 255
+		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/contentType
 		ContentType string `json:"contentType"`
 
@@ -1118,6 +1167,8 @@ type (
 
 		// Artifact mime-type, should be specified with the
 		// `x-ms-blob-content-type` when committing the block.
+		//
+		// Max length: 255
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/contentType
 		ContentType string `json:"contentType"`
@@ -1182,14 +1233,18 @@ type (
 
 		// Identifier for group that worker claiming the task is a part of.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-request.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for worker within the given workerGroup
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-request.json#/properties/workerId
 		WorkerId string `json:"workerId"`
@@ -1221,22 +1276,31 @@ type (
 
 			// The `accessToken` for the temporary credentials.
 			//
+			// Min length: 1
+			//
 			// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/accessToken
 			AccessToken string `json:"accessToken"`
 
 			// The `certificate` for the temporary credentials, these are required
 			// for the temporary credentials to work.
 			//
+			// Min length: 1
+			//
 			// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/certificate
 			Certificate string `json:"certificate"`
 
 			// The `clientId` for the temporary credentials.
+			//
+			// Min length: 1
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/clientId
 			ClientId string `json:"clientId"`
 		} `json:"credentials"`
 
 		// `run-id` assigned to this run of the task
+		//
+		// Mininum:    0
+		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/runId
 		RunId int `json:"runId"`
@@ -1255,14 +1319,18 @@ type (
 
 		// Identifier for the worker-group within which this run started.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for the worker executing this run.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/workerId
 		WorkerId string `json:"workerId"`
@@ -1336,22 +1404,31 @@ type (
 
 			// The `accessToken` for the temporary credentials.
 			//
+			// Min length: 1
+			//
 			// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/accessToken
 			AccessToken string `json:"accessToken"`
 
 			// The `certificate` for the temporary credentials, these are required
 			// for the temporary credentials to work.
 			//
+			// Min length: 1
+			//
 			// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/certificate
 			Certificate string `json:"certificate"`
 
 			// The `clientId` for the temporary credentials.
+			//
+			// Min length: 1
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/clientId
 			ClientId string `json:"clientId"`
 		} `json:"credentials"`
 
 		// `run-id` assigned to this run of the task
+		//
+		// Mininum:    0
+		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/runId
 		RunId int `json:"runId"`
@@ -1367,14 +1444,18 @@ type (
 
 		// Identifier for the worker-group within which this run started.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for the worker executing this run.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/workerId
 		WorkerId string `json:"workerId"`
@@ -1406,12 +1487,17 @@ type (
 
 		// Unique identifier for the provisioner that this task must be scheduled on
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/provisionerId
 		ProvisionerId string `json:"provisionerId"`
 
 		// Number of retries left for the task in case of infrastructure issues
+		//
+		// Mininum:    0
+		// Maximum:    999
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/retriesLeft
 		RetriesLeft int `json:"retriesLeft"`
@@ -1461,6 +1547,9 @@ type (
 
 			// Id of this task run, `run-id`s always starts from `0`
 			//
+			// Mininum:    0
+			// Maximum:    1000
+			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/runId
 			RunId int `json:"runId"`
 
@@ -1500,7 +1589,9 @@ type (
 			// this identifier is mainly used for efficient routing.
 			// Note, this property is only present after the run is claimed.
 			//
-			// Syntax: ^([a-zA-Z0-9-_]*)$
+			// Syntax:     ^([a-zA-Z0-9-_]*)$
+			// Min length: 1
+			// Max length: 22
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerGroup
 			WorkerGroup string `json:"workerGroup"`
@@ -1509,7 +1600,9 @@ type (
 			// `workerGroup`. Note, this property is only available after the run
 			// has been claimed.
 			//
-			// Syntax: ^([a-zA-Z0-9-_]*)$
+			// Syntax:     ^([a-zA-Z0-9-_]*)$
+			// Min length: 1
+			// Max length: 22
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerId
 			WorkerId string `json:"workerId"`
@@ -1517,7 +1610,9 @@ type (
 
 		// Identifier for the scheduler that _defined_ this task.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/schedulerId
 		SchedulerId string `json:"schedulerId"`
@@ -1540,7 +1635,7 @@ type (
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskGroupId
 		TaskGroupId string `json:"taskGroupId"`
@@ -1549,14 +1644,16 @@ type (
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskId
 		TaskId string `json:"taskId"`
 
 		// Identifier for worker type within the specified provisioner
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/workerType
 		WorkerType string `json:"workerType"`
@@ -1595,6 +1692,8 @@ type (
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
 		//
+		// Default:    map[]
+		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/extra
 		Extra json.RawMessage `json:"extra"`
 
@@ -1606,11 +1705,15 @@ type (
 			// Human readable description of the task, please **explain** what the
 			// task does. A few lines of documentation is not going to hurt you.
 			//
+			// Max length: 32768
+			//
 			// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/description
 			Description string `json:"description"`
 
 			// Human readable name of task, used to very briefly given an idea about
 			// what the task does.
+			//
+			// Max length: 255
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/name
 			Name string `json:"name"`
@@ -1618,12 +1721,16 @@ type (
 			// E-mail of person who caused this task, e.g. the person who did
 			// `hg push`. The person we should contact to ask why this task is here.
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 
 			// Link to source of this task, should specify a file, revision and
 			// repository. This should be place someone can go an do a git/hg blame
 			// to who came up with recipe for this task.
+			//
+			// Max length: 4096
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/source
 			Source string `json:"source"`
@@ -1650,7 +1757,9 @@ type (
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/provisionerId
 		ProvisionerId string `json:"provisionerId"`
@@ -1658,6 +1767,9 @@ type (
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
 		// these events are to be expected.
+		//
+		// Mininum:    0
+		// Maximum:    49
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/retries
 		Retries int `json:"retries"`
@@ -1673,7 +1785,9 @@ type (
 		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
 		// this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/schedulerId
 		SchedulerId string `json:"schedulerId"`
@@ -1698,14 +1812,16 @@ type (
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
 		// property isn't specified.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/taskGroupId
 		TaskGroupId string `json:"taskGroupId"`
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/workerType
 		WorkerType string `json:"workerType"`

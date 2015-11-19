@@ -43,7 +43,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 10 Nov 2015 at 19:32:00 UTC. The code was generated
+// Thu, 19 Nov 2015 at 13:32:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -321,12 +321,16 @@ type (
 		//
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
+		// Default:    "1 day"
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/deadline
 		Deadline string `json:"deadline"`
 
 		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
 		//
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+		//
+		// Default:    "3 months"
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/expires
 		Expires string `json:"expires"`
@@ -336,20 +340,28 @@ type (
 
 			// Long-form of the hook's purpose and behavior
 			//
+			// Max length: 32768
+			//
 			// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/description
 			Description string `json:"description"`
 
 			// Whether to email the owner on an error creating the task.
+			//
+			// Default:    true
 			//
 			// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/emailOnError
 			EmailOnError bool `json:"emailOnError"`
 
 			// Human readable name of the hook
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/name
 			Name string `json:"name"`
 
 			// Email of the person or group responsible for this hook.
+			//
+			// Max length: 255
 			//
 			// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
@@ -358,6 +370,8 @@ type (
 		// Definition of the times at which a hook will result in creation of a task.
 		// If several patterns are specified, tasks will be created at any time
 		// specified by one or more patterns.
+		//
+		// Default:    []
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/schedule
 		Schedule []string `json:"schedule"`
@@ -375,6 +389,8 @@ type (
 		//
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
+		// Default:    "1 day"
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/deadline
 		Deadline string `json:"deadline"`
 
@@ -382,12 +398,18 @@ type (
 		//
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
+		// Default:    "3 months"
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/expires
 		Expires string `json:"expires"`
 
+		// Max length: 255
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/hookGroupId
 		HookGroupId string `json:"hookGroupId"`
 
+		// Max length: 255
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/hookId
 		HookId string `json:"hookId"`
 
@@ -396,20 +418,28 @@ type (
 
 			// Long-form of the hook's purpose and behavior
 			//
+			// Max length: 32768
+			//
 			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/description
 			Description string `json:"description"`
 
 			// Whether to email the owner on an error creating the task.
+			//
+			// Default:    true
 			//
 			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/emailOnError
 			EmailOnError bool `json:"emailOnError"`
 
 			// Human readable name of the hook
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/name
 			Name string `json:"name"`
 
 			// Email of the person or group responsible for this hook.
+			//
+			// Max length: 255
 			//
 			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
@@ -467,6 +497,8 @@ type (
 	// more than one pattern is considered only to be counted once, in other words
 	// it is allowed for the cron patterns to overlap; duplicates are redundant.
 	//
+	// Default:    []
+	//
 	// See http://schemas.taskcluster.net/hooks/v1/schedule.json#
 	Schedule []string
 
@@ -503,6 +535,8 @@ type (
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
 		//
+		// Default:    map[]
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/extra
 		Extra json.RawMessage `json:"extra"`
 
@@ -514,11 +548,15 @@ type (
 			// Human readable description of the task, please **explain** what the
 			// task does. A few lines of documentation is not going to hurt you.
 			//
+			// Max length: 32768
+			//
 			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/description
 			Description string `json:"description"`
 
 			// Human readable name of task, used to very briefly given an idea about
 			// what the task does.
+			//
+			// Max length: 255
 			//
 			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/name
 			Name string `json:"name"`
@@ -526,12 +564,16 @@ type (
 			// E-mail of person who caused this task, e.g. the person who did
 			// `hg push`. The person we should contact to ask why this task is here.
 			//
+			// Max length: 255
+			//
 			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 
 			// Link to source of this task, should specify a file, revision and
 			// repository. This should be place someone can go an do a git/hg blame
 			// to who came up with recipe for this task.
+			//
+			// Max length: 4096
 			//
 			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/source
 			Source string `json:"source"`
@@ -553,13 +595,17 @@ type (
 		//   * "high"
 		//   * "normal"
 		//
+		// Default:    "normal"
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/priority
 		Priority string `json:"priority"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/provisionerId
 		ProvisionerId string `json:"provisionerId"`
@@ -568,12 +614,18 @@ type (
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
 		// these events are to be expected.
 		//
+		// Default:    5
+		// Mininum:    0
+		// Maximum:    49
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/retries
 		Retries int `json:"retries"`
 
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		// **Task submitter required scopes** `queue:route:<route>` for
 		// each route given.
+		//
+		// Default:    []
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/routes
 		Routes []string `json:"routes"`
@@ -585,13 +637,18 @@ type (
 		// This scope is also necessary to _schedule_ a defined task, or _rerun_ a
 		// task.
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Default:    "-"
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/schedulerId
 		SchedulerId string `json:"schedulerId"`
 
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
+		//
+		// Default:    []
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/scopes
 		Scopes []string `json:"scopes"`
@@ -602,6 +659,8 @@ type (
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
 		//
+		// Default:    map[]
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/tags
 		Tags json.RawMessage `json:"tags"`
 
@@ -610,14 +669,16 @@ type (
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
 		// property isn't specified.
 		//
-		// Syntax: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/taskGroupId
 		TaskGroupId string `json:"taskGroupId"`
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//
-		// Syntax: ^([a-zA-Z0-9-_]*)$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/workerType
 		WorkerType string `json:"workerType"`
