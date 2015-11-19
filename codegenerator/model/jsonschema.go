@@ -119,9 +119,45 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 			}
 		}
 	}
-	if regex := jsonSubSchema.Pattern; regex != nil {
-		comment += "//\n// Syntax: " + *regex + "\n"
+
+	// Create comments for metadata in a single paragraph. Only start new
+	// paragraph if we discover after inspecting all possible metadata, that
+	// something has been specified. If there is no metadata, no need to create
+	// a new paragraph.
+	var metadata string
+	if def := jsonSubSchema.Default; def != nil {
+		var value string
+		switch (*def).(type) {
+		case bool:
+			value = strconv.FormatBool((*def).(bool))
+		case float64:
+			value = strconv.FormatFloat((*def).(float64), 'g', -1, 64)
+		default:
+			value = fmt.Sprintf("%q", *def)
+		}
+		metadata += "// Default:    " + value + "\n"
 	}
+	if regex := jsonSubSchema.Pattern; regex != nil {
+		metadata += "// Syntax:     " + *regex + "\n"
+	}
+	if minItems := jsonSubSchema.MinLength; minItems != nil {
+		metadata += "// Min length: " + strconv.Itoa(*minItems) + "\n"
+	}
+	if maxItems := jsonSubSchema.MaxLength; maxItems != nil {
+		metadata += "// Max length: " + strconv.Itoa(*maxItems) + "\n"
+	}
+	if minimum := jsonSubSchema.Minimum; minimum != nil {
+		metadata += "// Mininum:    " + strconv.Itoa(*minimum) + "\n"
+	}
+	if maximum := jsonSubSchema.Maximum; maximum != nil {
+		metadata += "// Maximum:    " + strconv.Itoa(*maximum) + "\n"
+	}
+	// Here we check if metadata was specified, and only create new
+	// paragraph (`//\n`) if something was.
+	if len(metadata) > 0 {
+		comment += "//\n" + metadata
+	}
+
 	if url := jsonSubSchema.SourceURL; url != "" {
 		comment += "//\n// See " + url + "\n"
 	}
