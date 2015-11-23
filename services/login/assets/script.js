@@ -33,7 +33,7 @@ jQuery.extend({
 // result, basically that authenticating in two windows of the same browser
 // in parallel would cause issues... But why would people do that???
 var query = $.getQueryString();
-if (typeof(query.target) === 'string' &&
+if (typeof(query.target) === 'string' && /^http/.test(query.target) &&
     typeof(query.description) === 'string') {
   var a = document.createElement('a');
   a.href = query.target;
@@ -91,7 +91,7 @@ function load(credentials) {
       return;
     }
     query = JSON.parse(value);
-    if (typeof(query.target) !== 'string' ||
+    if (typeof(query.target) !== 'string' || query.target.length === 0 ||
         typeof(query.description) !== 'string') {
       return;
     }

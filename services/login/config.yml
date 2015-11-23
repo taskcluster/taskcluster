@@ -37,11 +37,18 @@ Profiles:
     server:
       forceSSL: true
   test:
+    app:
+      cookieSecrets: ['Shhh']
+      temporaryCredentials:
+        credentials:
+          clientId:     'dummy'
+          accessToken:  'lol no secret here'
     mozillians:
-      group: ['taskcluster-users']
+      allowedGroups: ['taskcluster-users']
     server:
       port: 60174
       publicUrl: http://localhost:60174
+      forceSSL: false
   ngrok:
     app:
       cookieSecrets: ['Shhh']
