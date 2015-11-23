@@ -10,9 +10,12 @@ SLUGID=$("${GOPATH}/bin/slug")
 # aws cli docs lie, they say userdata must be base64 encoded, but cli encodes for you, so just cat it...
 USER_DATA="$(cat firefox.userdata)"
 
+# find out latest windows 2012 r2 ami to use...
+AMI="$(aws ec2 describe-images --owners self amazon --filters "Name=platform,Values=windows" "Name=name,Values=Windows_Server-2012-R2_RTM-English-64Bit-Base*" --query 'Images[*].{A:CreationDate,B:ImageId}' --output text | sort -u | tail -1 | cut -f2)"
+
 # create base ami, and apply user-data
 # filter output, to get INSTANCE_ID
-INSTANCE_ID="$(aws --region us-west-2 ec2 run-instances --image-id ami-4dbcb67d --key-name pmoore-oregan-us-west-2 --security-groups "RDP only" --user-data "$(cat firefox.userdata)" --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=75,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior terminate --client-token "${SLUGID}" | sed -n 's/^ *"InstanceId": "\(.*\)", */\1/p')"
+INSTANCE_ID="$(aws --region us-west-2 ec2 run-instances --image-id "${AMI}" --key-name pmoore-oregan-us-west-2 --security-groups "RDP only" --user-data "$(cat firefox.userdata)" --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=75,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior terminate --client-token "${SLUGID}" | sed -n 's/^ *"InstanceId": "\(.*\)", */\1/p')"
 
 # sleep an hour, the installs take forever...
 sleep 3600
