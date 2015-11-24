@@ -48,6 +48,20 @@ html(lang='en')
               i.glyphicon.glyphicon-log-in
               | &nbsp;Sign-in with Mozillians
           br
+          if query.err == 'mozillians-lookup'
+            div.alert.alert-danger(role="alert")
+              b Mozillians Lookup Failed
+              br
+              | We successfully validated your e-mail, but when looking it up
+              | in Mozillians.org we didn't find any user with that email.
+              br
+              | Please ensure that:
+              ul
+              li Your Mozillians profile is vouched, and
+              li Your email is configured to be public (
+                a(href='https://mozillians.org/en-US/user/edit/emails/')
+                  | edit here
+                | )
         else
           div.alert.alert-info(role="alert")
             | You are signed in with
