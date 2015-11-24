@@ -77,6 +77,21 @@ let launch = async (profile) =>  {
         }
       }
 
+      if (!user.mozillianUser) {
+        // If user look up fails we write an error message
+        return done(
+          "Authorization Failed:\n" +
+          "We successfully validated your e-mail, but when looking it up\n" +
+          "in Mozillians.org we didn't find a user with the e-mail: " +
+          email + "\n" +
+          "Please ensure that:\n" +
+          "  * You Mozillians profile is vouched, and\n" +
+          "  * You email is public:\n" +
+          "    See: https://mozillians.org/en-US/user/edit/emails/",
+          null
+        );
+      }
+
       // For each group to be considered we check if the user is a member
       let groupLookups = await Promise.all(
         cfg.mozillians.allowedGroups.map(group => {
