@@ -78,18 +78,8 @@ let launch = async (profile) =>  {
       }
 
       if (!user.mozillianUser) {
-        // If user look up fails we write an error message
-        return done(
-          "Authorization Failed:\n" +
-          "We successfully validated your e-mail, but when looking it up\n" +
-          "in Mozillians.org we didn't find a user with the e-mail: " +
-          email + "\n" +
-          "Please ensure that:\n" +
-          "  * You Mozillians profile is vouched, and\n" +
-          "  * You email is public:\n" +
-          "    See: https://mozillians.org/en-US/user/edit/emails/",
-          null
-        );
+        // If lookup failed we want to print a special error message
+        return done(null, null);
       }
 
       // For each group to be considered we check if the user is a member
@@ -117,7 +107,7 @@ let launch = async (profile) =>  {
   }));
   app.post('/login/persona', passport.authenticate('persona', {
     successRedirect: '/',
-    failureRedirect: '/',
+    failureRedirect: '/?err=mozillians-lookup',
     failureFlash: true
   }));
 
@@ -163,7 +153,8 @@ let launch = async (profile) =>  {
     res.render('index', {
       user, credentials,
       querystring,
-      allowedHosts: cfg.app.allowedRedirectHosts
+      allowedHosts: cfg.app.allowedRedirectHosts,
+      query: req.query,
     });
   });
 
