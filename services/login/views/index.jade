@@ -48,12 +48,20 @@ html(lang='en')
               i.glyphicon.glyphicon-log-in
               | &nbsp;Sign-in with Mozillians
           br
+        else
+          div.alert.alert-info(role="alert")
+            | You are signed in with
+            b  Mozillians!
         if !user.hasLDAPUser()
           form(action='/login/sso', method='post')
             button.btn.btn-primary(type='submit')
               i.glyphicon.glyphicon-log-in
               | &nbsp;Sign-in with SSO
           br
+        else
+          div.alert.alert-info(role="alert")
+            | You are signed in with
+            b  SSO!
         if credentials
           span#grant-area(style='display: none')
             h2 Grant Credentials to&nbsp;
