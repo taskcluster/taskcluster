@@ -17,8 +17,7 @@ api.declare({
       'queue:create-artifact:<name>',
       'assume:worker-id:<workerGroup>/<workerId>'
     ], [
-      'queue:create-artifact:<name>',
-      'queue:claim-task:<taskId>/<runId>'
+      'queue:create-artifact:<taskId>/<runId>'
     ]
   ],
   deferAuth:  true,
