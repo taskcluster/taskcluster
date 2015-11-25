@@ -237,7 +237,16 @@ api.declare({
   route:      '/task/:taskId',
   name:       'createTask',
   idempotent: true,
-  scopes:     [['queue:create-task:<provisionerId>/<workerType>']],
+  scopes:     [
+    [
+      // Legacy scope option to be removed
+      'queue:create-task:<provisionerId>/<workerType>',
+    ], [
+      'queue:define-task:<provisionerId>/<workerType>',
+      'queue:task-group-id:<schedulerId>/<taskGroupId>',
+      'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
+    ],
+  ],
   deferAuth:  true,
   input:      'create-task-request.json#',
   output:     'task-status-response.json#',
@@ -273,11 +282,20 @@ api.declare({
     return 'queue:route:' + route;
   });
 
+  // Patch default values and validate timestamps
+  var detail = patchAndValidateTaskDef(taskId, taskDef);
+  if (detail) {
+    return res.status(detail.code).json(detail.json);
+  }
+
   // Authenticate request by providing parameters, and then validate that the
   // requester satisfies all the scopes assigned to the task
   if (!req.satisfies({
+    taskId,
     provisionerId:  taskDef.provisionerId,
-    workerType:     taskDef.workerType
+    workerType:     taskDef.workerType,
+    schedulerId:    taskDef.schedulerId,
+    taskGroupId:    taskDef.taskGroupId,
   }) || !req.satisfies([taskDef.scopes])
      || !req.satisfies([routeScopes])) {
     return;
@@ -287,12 +305,6 @@ api.declare({
   if (taskDef.priority !== 'normal' &&
       !req.satisfies([['queue:task-priority:' + taskDef.priority]])) {
     return;
-  }
-
-  // Patch default values and validate timestamps
-  var detail = patchAndValidateTaskDef(taskId, taskDef);
-  if (detail) {
-    return res.status(detail.code).json(detail.json);
   }
 
   // Insert entry in deadline queue
@@ -390,8 +402,14 @@ api.declare({
   route:      '/task/:taskId/define',
   name:       'defineTask',
   scopes:     [
+    // Legacy scopes
     ['queue:define-task:<provisionerId>/<workerType>'],
-    ['queue:create-task:<provisionerId>/<workerType>']
+    ['queue:create-task:<provisionerId>/<workerType>'],
+    [
+    // Future scope
+      'queue:define-task:<provisionerId>/<workerType>',
+      'queue:task-group-id:<schedulerId>/<taskGroupId>',
+    ]
   ],
   deferAuth:  true,
   input:      'create-task-request.json#',
@@ -425,11 +443,19 @@ api.declare({
     return 'queue:route:' + route;
   });
 
+  // Patch default values and validate timestamps
+  var detail = patchAndValidateTaskDef(taskId, taskDef);
+  if (detail) {
+    return res.status(detail.code).json(detail.json);
+  }
+
   // Authenticate request by providing parameters, and then validate that the
   // requester satisfies all the scopes assigned to the task
   if(!req.satisfies({
     provisionerId:  taskDef.provisionerId,
-    workerType:     taskDef.workerType
+    workerType:     taskDef.workerType,
+    schedulerId:    taskDef.schedulerId,
+    taskGroupId:    taskDef.taskGroupId,
   }) || !req.satisfies([taskDef.scopes])
      || !req.satisfies([routeScopes])) {
     return;
@@ -439,12 +465,6 @@ api.declare({
   if (taskDef.priority !== 'normal' &&
       !req.satisfies([['queue:task-priority:' + taskDef.priority]])) {
     return;
-  }
-
-  // Patch default values and validate timestamps
-  var detail = patchAndValidateTaskDef(taskId, taskDef);
-  if (detail) {
-    return res.status(detail.code).json(detail.json);
   }
 
   // Insert entry in deadline queue (garbage entries are acceptable)
@@ -526,8 +546,11 @@ api.declare({
   name:       'scheduleTask',
   scopes:     [
     [
+      // Legacy scope
       'queue:schedule-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>'
+    ], [
+      'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
     ]
   ],
   deferAuth:  true,
@@ -558,8 +581,9 @@ api.declare({
 
   // Authenticate request by providing parameters
   if(!req.satisfies({
+    taskId,
     schedulerId:    task.schedulerId,
-    taskGroupId:    task.taskGroupId
+    taskGroupId:    task.taskGroupId,
   })) {
     return;
   }
@@ -614,8 +638,11 @@ api.declare({
   name:       'rerunTask',
   scopes:     [
     [
+      // Legacy scopes
       'queue:rerun-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>'
+    ], [
+      'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',
     ]
   ],
   deferAuth:  true,
@@ -650,6 +677,7 @@ api.declare({
 
   // Authenticate request by providing parameters
   if(!req.satisfies({
+    taskId,
     schedulerId:    task.schedulerId,
     taskGroupId:    task.taskGroupId
   })) {
@@ -731,8 +759,11 @@ api.declare({
   name:       'cancelTask',
   scopes:     [
     [
+      // Legacy scopes
       'queue:cancel-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>'
+    ], [
+      'queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',
     ]
   ],
   deferAuth:  true,
@@ -767,6 +798,7 @@ api.declare({
 
   // Authenticate request by providing parameters
   if(!req.satisfies({
+    taskId,
     schedulerId:    task.schedulerId,
     taskGroupId:    task.taskGroupId
   })) {
@@ -843,8 +875,11 @@ api.declare({
   name:       'pollTaskUrls',
   scopes: [
     [
+      // Legacy scopes
       'queue:poll-task-urls',
       'assume:worker-type:<provisionerId>/<workerType>'
+    ], [
+      'queue:poll-task-urls:<provisionerId>/<workerType>',
     ]
   ],
   deferAuth:  true,
@@ -888,9 +923,12 @@ api.declare({
   name:       'claimTask',
   scopes: [
     [
+      // Legacy
       'queue:claim-task',
       'assume:worker-type:<provisionerId>/<workerType>',
       'assume:worker-id:<workerGroup>/<workerId>'
+    ], [
+      'queue:claim-task:<provisionerId>/<workerType>'
     ]
   ],
   deferAuth:  true,
@@ -998,7 +1036,9 @@ api.declare({
     start:  new Date(Date.now() - 15 * 60 * 1000),
     expiry: new Date(takenUntil.getTime() + 15 * 60 * 1000),
     scopes: [
-      'queue:claim-task:' + taskId + '/' + runId
+      'queue:reclaim-task:' + taskId + '/' + runId,
+      'queue:resolve-task:' + taskId + '/' + runId,
+      'queue:create-artifact:' + taskId + '/' + runId,
     ].concat(task.scopes),
     credentials: this.credentials
   });
@@ -1023,10 +1063,11 @@ api.declare({
   name:       'reclaimTask',
   scopes: [
     [
+      // Legacy
       'queue:claim-task',
       'assume:worker-id:<workerGroup>/<workerId>'
     ], [
-      'queue:claim-task:<taskId>/<runId>'
+      'queue:reclaim-task:<taskId>/<runId>'
     ]
   ],
   deferAuth:  true,
@@ -1122,7 +1163,9 @@ api.declare({
     start:  new Date(Date.now() - 15 * 60 * 1000),
     expiry: new Date(takenUntil.getTime() + 15 * 60 * 1000),
     scopes: [
-      'queue:claim-task:' + taskId + '/' + runId
+      'queue:reclaim-task:' + taskId + '/' + runId,
+      'queue:resolve-task:' + taskId + '/' + runId,
+      'queue:create-artifact:' + taskId + '/' + runId,
     ].concat(task.scopes),
     credentials: this.credentials
   });
@@ -1236,10 +1279,11 @@ api.declare({
   name:       'reportCompleted',
   scopes: [
     [
+      // Legacy
       'queue:resolve-task',
       'assume:worker-id:<workerGroup>/<workerId>'
     ], [
-      'queue:claim-task:<taskId>/<runId>'
+      'queue:resolve-task:<taskId>/<runId>'
     ]
   ],
   deferAuth:  true,
@@ -1267,10 +1311,11 @@ api.declare({
   name:       'reportFailed',
   scopes: [
     [
+      // Legacy
       'queue:resolve-task',
       'assume:worker-id:<workerGroup>/<workerId>'
     ], [
-      'queue:claim-task:<taskId>/<runId>'
+      'queue:resolve-task:<taskId>/<runId>'
     ]
   ],
   deferAuth:  true,
@@ -1300,10 +1345,11 @@ api.declare({
   name:       'reportException',
   scopes: [
     [
+      // Legacy
       'queue:resolve-task',
       'assume:worker-id:<workerGroup>/<workerId>'
     ], [
-      'queue:claim-task:<taskId>/<runId>'
+      'queue:resolve-task:<taskId>/<runId>'
     ]
   ],
   deferAuth:  true,
