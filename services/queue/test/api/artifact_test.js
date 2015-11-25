@@ -291,7 +291,7 @@ suite('Post artifacts', function() {
     });
   });
 
-  test("Post S3 artifact (with bad scopes in task.scopes)", async () => {
+  test("Post S3 artifact (with creds from claimTask)", async () => {
     var taskId = slugid.v4();
     debug("### Creating task");
     let taskDef2 = _.defaults({
@@ -312,10 +312,6 @@ suite('Post artifacts', function() {
       storageType:  's3',
       expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json'
-    }).then(() => {
-      assume().fail("Expected authentication error");
-    }, (err) => {
-      debug("Got expected authentication error: %s", err);
     });
   });
 
