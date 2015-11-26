@@ -98,13 +98,17 @@ var Role = base.Entity.configure({
 
 /** Get JSON representation of a role */
 Role.prototype.json = function() {
+  let scopes = ['assume:' + this.roleId];
+  if (this.roleId.endsWith('*')) {
+    scopes = this.scopes;
+  }
   return {
     roleId:         this.roleId,
     description:    this.description,
     created:        this.details.created,
     lastModified:   this.details.lastModified,
     scopes:         this.scopes,
-    expandedScopes: this.resolver.resolve(['assume:' + this.roleId])
+    expandedScopes: this.resolver.resolve(scopes),
   };
 };
 
