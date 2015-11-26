@@ -9,11 +9,19 @@ env:
   - "GIMME_OS=windows GIMME_ARCH=amd64"
 
 before_install:
-  - "go get github.com/axw/gocov/gocov"
-  - "go get github.com/mattn/goveralls"
-  - "go get golang.org/x/tools/cmd/cover"
-  - "go get golang.org/x/tools/cmd/vet"
-  - "go get github.com/pierrre/gotestcover"
+# workaround for travis-ci/gimme#25 to pick up latest version of gimme and run again
+  - curl -o gimme -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
+  - chmod u+x gimme
+  - unset GOROOT GOTOOLDIR
+  - eval "$(./gimme 1.4)"
+  - go version
+  - go env
+# end of workaround ###
+  - go get github.com/axw/gocov/gocov
+  - go get github.com/mattn/goveralls
+  - go get golang.org/x/tools/cmd/cover
+  - go get golang.org/x/tools/cmd/vet
+  - go get github.com/pierrre/gotestcover
 
 install:
   - "go get -d -t ./..."
