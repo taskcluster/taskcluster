@@ -9,10 +9,11 @@ env:
   - "GIMME_OS=windows GIMME_ARCH=amd64"
 
 install:
+  - go get -d -t ./...
   - "if test $GIMME_OS.$GIMME_ARCH = linux.amd64; then npm install; fi"
 
 script:
-  - go get ./...
+  - go install -v ./...
   - "if test $GIMME_OS.$GIMME_ARCH = linux.amd64; then npm test; fi"
 
 notifications:
