@@ -71,6 +71,7 @@ suite('api (roles)', function() {
     assume(new Date(role.created).getTime()).is.atmost(Date.now());
     assume(role.scopes).deep.equals(['dummy-scope-2']);
     assume(role.expandedScopes).contains('dummy-scope-2');
+    assume(role.expandedScopes).does.not.contain('assume:' + roleId);
 
     let client = await helper.auth.client(clientId);
     assume(client.expandedScopes).contains('dummy-scope-1');
