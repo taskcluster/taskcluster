@@ -1,0 +1,45 @@
+{
+  "workerType": "win2012r2",
+  "minCapacity": 0,
+  "maxCapacity": 4,
+  "scalingRatio": 0,
+  "minPrice": 0.5,
+  "maxPrice": 2,
+  "canUseOndemand": false,
+  "canUseSpot": true,
+  "instanceTypes": [
+    {
+      "instanceType": "m3.2xlarge",
+      "capacity": 1,
+      "utility": 1,
+      "secrets": {},
+      "scopes": [],
+      "userData": {},
+      "launchSpec": {}
+    }
+  ],
+  "regions": [
+    {
+      "region": "us-west-2",
+      "secrets": {},
+      "scopes": [],
+      "userData": {},
+      "launchSpec": {
+        "ImageId": "ami-0c4f5c6d"
+      }
+    }
+  ],
+  "lastModified": "2015-11-24T14:05:27.398Z",
+  "userData": {},
+  "launchSpec": {
+    "SecurityGroups": [
+      "rdp-only",
+      "ssh-only"
+    ]
+  },
+  "secrets": {},
+  "scopes": [
+    "assume:worker-type:aws-provisioner-v1/win2012r2",
+    "assume:worker-id:*"
+  ]
+}
