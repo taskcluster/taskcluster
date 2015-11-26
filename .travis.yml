@@ -17,15 +17,13 @@ before_install:
   - cd "${SRCDIR}"
   - go get ./...
 
-# the default "install" target will already run npm install and npm test...
-
-# currently cannot customise per user fork, see:
-# https://github.com/travis-ci/travis-ci/issues/1094
-# please comment out this section in your personal fork!
 notifications:
   irc:
     channels:
-      - "irc.mozilla.org#taskcluster-bots"
+      # encrypt the channel name so that user forks don't spam IRC
+      # decrypted version is "irc.mozilla.org#taskcluster-bots"
+      # see https://github.com/travis-ci/travis-ci/issues/1094
+      - secure: "iWVuoaXyzNFjdDPlo/Jac04n+4yMlcgW0uEMLvF79Z5gqe/K+kbD5iy0lCo9wUIVM9O03/8K+7mNS/SlYMiOpmziyAhEKi3X4CFErNuwy1pyriLJrZZScOqGPKkuP7+m+BBCjVXoyFRYXYQ7SncQsLlE3wtJvA7dNNSLCGUg5ys="
     on_success: always
     on_failure: always
     template:
@@ -33,3 +31,22 @@ notifications:
       - "Change view : %{compare_url}"
       - "Build details : %{build_url}"
       - "Commit message : %{commit_message}"
+
+before_deploy:
+  - cd "${SRCDIR}"
+  - GOARCH=amd64 GOOS=linux   go build -o livelog-linux-amd64
+  - GOARCH=amd64 GOOS=darwin  go build -o livelog-darwin-amd64
+  - GOARCH=amd64 GOOS=windows go build -o livelog-windows-amd64
+
+deploy:
+  provider: releases
+  api_key:
+    secure: fwTLVhfs/5ioduZQdj49n6/4rn7AYcAyAeUcRdA/ezhWAj1KsT6qU7snBdhfEwpo+TaVbLq6SwpknLXax9d6mESs7EOL9EmEt73ocw0OG1omfjrBn5mQuuVIiUky5qhIZy+qufiqUq3iVe/V8cyZSGqcPRbazLIhAAKR0r44dys=
+  file:
+    - livelog-linux-amd64
+    - livelog-darwin-amd64
+    - livelog-windows-amd64
+  on:
+    repo: taskcluster/livelog
+    tags: true
+  skip_cleanup: true
