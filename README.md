@@ -60,7 +60,7 @@ livelog
 Terminal 2: Pump data into the PUT interface
 
 ```
-(for ((i=1; i<=500; i++)); do echo "Fake log line $i"; sleep 1; done) | curl -v -T - http://localhost:60022/log
+(for ((i=1; i<=500; i++)); do echo "Log line $i"; sleep 1; done) | curl -v -T - http://localhost:60022/log
 ```
 
 Terminal 3: Read from GET interface
