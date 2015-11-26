@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 25 Nov 2015 at 21:57:00 UTC. The code was generated
+// Thu, 26 Nov 2015 at 14:56:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -1359,7 +1359,7 @@ type (
 		// unless you know the resource exists, if the resource doesn't exist you
 		// should report `malformed-payload`. Example use-case if you contact the
 		// index (a service) on behalf of the task, because of a declaration in
-		// ´task.payload`, and the service (index) is temporarily down. Don't use
+		// `task.payload`, and the service (index) is temporarily down. Don't use
 		// this if a URL returns 404, but if it returns 503 or hits a timeout when
 		// you retry the request, then this _may_ be a valid exception. The queue
 		// assumes that workers have applied retries as needed, and will not retry
