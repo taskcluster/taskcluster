@@ -34,7 +34,7 @@ properties:
       you retry the request, then this _may_ be a valid exception. The queue
       assumes that workers have applied retries as needed, and will not retry
        the task.
-      **Report `internal-error` if the worker experienced an unhandled internal
+      **Report `internal-error`** if the worker experienced an unhandled internal
       error from which it couldn't recover. The queue will not retry runs
       resolved with this reason, but you are clearly signaling that this is a
       bug in the worker code.
