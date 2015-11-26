@@ -10,7 +10,11 @@ env:
 
 # workaround for travis-ci/gimme#25 to pick up latest version of gimme and run again
 before_install:
-  - eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.5 bash)"
+  - curl -o gimme -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
+  - chmod u+x gimme
+  - eval $(./gimme 1.5)
+  - go version
+  - go env
 
 install:
   - go get -d -t ./...
