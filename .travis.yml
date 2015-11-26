@@ -1,21 +1,19 @@
-language: node_js
+language: go
 
-node_js:
-  - "0.12"
+go:
+  - 1.5
 
-# since project contains both node and go, and we can only declare it as one
-# type, i'm declaring as a node project, and then adding the go parts by hand.
-# this requires setting env up, and also creating the repo under the $GOPATH so
-# that go get and go build function correctly. $SRCDIR is the location of the
-# git checkout under the $GOPATH.
 env:
-  - GOPATH=~/go SRCDIR=~/go/src/github.com/${TRAVIS_REPO_SLUG}
+  - "GIMME_OS=linux GIMME_ARCH=amd64"
+  - "GIMME_OS=darwin GIMME_ARCH=amd64"
+  - "GIMME_OS=windows GIMME_ARCH=amd64"
 
-before_install:
-  - mkdir -p "${SRCDIR}/.."
-  - cp -pr . "${SRCDIR}"
-  - cd "${SRCDIR}"
+install:
+  - "if test $GIMME_OS.$GIMME_ARCH = linux.amd64; then npm install; fi"
+
+script:
   - go get ./...
+  - "if test $GIMME_OS.$GIMME_ARCH = linux.amd64; then npm test; fi"
 
 notifications:
   irc:
@@ -32,20 +30,12 @@ notifications:
       - "Build details : %{build_url}"
       - "Commit message : %{commit_message}"
 
-before_deploy:
-  - cd "${SRCDIR}"
-  - GOARCH=amd64 GOOS=linux   go build -o livelog-linux-amd64
-  - GOARCH=amd64 GOOS=darwin  go build -o livelog-darwin-amd64
-  - GOARCH=amd64 GOOS=windows go build -o livelog-windows-amd64
-
 deploy:
   provider: releases
   api_key:
     secure: fwTLVhfs/5ioduZQdj49n6/4rn7AYcAyAeUcRdA/ezhWAj1KsT6qU7snBdhfEwpo+TaVbLq6SwpknLXax9d6mESs7EOL9EmEt73ocw0OG1omfjrBn5mQuuVIiUky5qhIZy+qufiqUq3iVe/V8cyZSGqcPRbazLIhAAKR0r44dys=
   file:
-    - livelog-linux-amd64
-    - livelog-darwin-amd64
-    - livelog-windows-amd64
+    - "${RELEASE_FILE}"
   on:
     repo: taskcluster/livelog
     tags: true
