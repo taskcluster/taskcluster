@@ -13,6 +13,61 @@
   - [x] cross domain headers
   - [x] http api
 
+Livelog is a service that enables both secure and insecure streaming of binary
+content (typically log files) over HTTP(S).
+
+It achieves this by exposing an interface for receiving log data via an HTTP
+PUT request on tcp port 60022, and exposing a separate interface for reading
+the log via HTTP GET on port 60023.
+
+It is written in go, which compiles to a native binary for most conceivable
+platforms, and can therefore be deployed almost anywhere.
+
+Multiple clients can concurrently access the GET interface, also specifying
+HTTP RANGE headers, while only a single client can PUT data. Furthermore, the
+log file content must be served to livelog with a single (long-lived) PUT
+request. The GET url is only available after the connection to the PUT
+interface has been initiated.
+
+## URLs
+
+* PUT: http(s)://localhost:60022/log
+* GET: http(s)://localhost:60023/log/`${ACCESS_TOKEN}`
+
+`ACCESS_TOKEN` is an arbitrary url-safe string that you provide via the
+`ACCESS_TOKEN` environment variable to the livelog process when it starts up.
+The provides obscurity when managed as a secret between client and server.
+
+By default http is used, unless environment variables `SERVER_CRT_FILE` and
+`SERVER_KEY_FILE` environment variables are set, in which case these should
+specify the file location of suitable SSL certificate and key to be used for
+https transport.
+
+## Binary packages
+See the [github releases](https://github.com/taskcluster/livelog/releases) page.
+
+## Example Usage
+
+Terminal 1: Start service
+
+```
+export ACCESS_TOKEN='secretpuppy'
+export DEBUG='*'
+livelog
+```
+
+Terminal 2: Pump data into the PUT interface
+
+```
+(for ((i=1; i<=500; i++)); do echo "Fake log line $i"; sleep 1; done) | curl -v -T - http://localhost:60022/log
+```
+
+Terminal 3: Read from GET interface
+
+```
+curl http://localhost:60023/log/secretpuppy
+```
+
 ## Performance
 
 Under heavy load while memory does not massively explode it does spike
@@ -44,3 +99,4 @@ The following environment variables can be used to configure the server.
  * `ACCESS_TOKEN` secret access token required for access (**required**)
  * `SERVER_CRT_FILE` path to SSL certificate file (optional)
  * `SERVER_KEY_FILE` path to SSL private key file (optional)
+ * `DEBUG` set to '*' to see debug logs (optional)
