@@ -36,7 +36,8 @@ interface has been initiated.
 
 `ACCESS_TOKEN` is an arbitrary url-safe string that you provide via the
 `ACCESS_TOKEN` environment variable to the livelog process when it starts up.
-The provides obscurity when managed as a secret between client and server.
+The provides some level or security via obscurity when managed as a secret
+between client and server, especially when used in combination with https.
 
 By default http is used, unless environment variables `SERVER_CRT_FILE` and
 `SERVER_KEY_FILE` environment variables are set, in which case these should
