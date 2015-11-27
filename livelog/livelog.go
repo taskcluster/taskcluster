@@ -55,12 +55,9 @@ func (l *LiveLog) Terminate() error {
 
 func (l *LiveLog) setRequestURLs() {
 	scheme := "http"
-	if os.Getenv("SERVER_CRT_FILE")+os.Getenv("SERVER_KEY_FILE") != "" {
+	if os.Getenv("SERVER_CRT_FILE") != "" && os.Getenv("SERVER_KEY_FILE") != "" {
 		scheme = "https"
 	}
-	// TODO: the putURL will need to have a hostname created by the package
-	// "github.com/taskcluster/stateless-dns-go/hostname" which I have not
-	// written yet!
 	l.putURL = scheme + "://localhost:60022/log"
 	// BUG(pmoore) Currently the hostname provided in the Get URL is
 	// "localhost", rather than a fully qualified stateless hostname. This will
