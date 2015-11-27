@@ -26,10 +26,16 @@ type LiveLog struct {
 }
 
 // New starts a livelog OS process using the executable specified, and returns
-// a *LiveLog. The *LiveLog provides access to the GetURL which should be used
-// by clients to tail the log, together with an io.WriteCloser where the logs
-// should be written to. It is envisanged that the io.WriteCloser is passed on
-// to the executing process.
+// a *LiveLog. The *LiveLog provides access to the GetURL which can be used to
+// tail the log by multiple consumers in parallel, together with an
+// io.WriteCloser where the logs should be written to. It is envisanged that
+// the io.WriteCloser is passed on to the executing process.
+//
+// Please note the GetURL is for the loopback interface - it is beyond the
+// scope of this library to transform this localhost URL into a URL with a
+// fully qualified hostname using package
+// github.com/taskcluster/stateless-dns-go/hostname since this package can be
+// used independently of the former one.
 func New(liveLogExecutable string) (*LiveLog, error) {
 	l := &LiveLog{
 		secret:  slugid.Nice(),
@@ -59,10 +65,6 @@ func (l *LiveLog) setRequestURLs() {
 		scheme = "https"
 	}
 	l.putURL = scheme + "://localhost:60022/log"
-	// BUG(pmoore) Currently the hostname provided in the Get URL is
-	// "localhost", rather than a fully qualified stateless hostname. This will
-	// be remedied when I write the package
-	// https://github.com/taskcluster/stateless-dns-go/.
 	l.GetURL = scheme + "://localhost:60023/log/" + l.secret
 }
 
