@@ -3,4 +3,3 @@
 --timeout 240s
 --reporter spec
 --compilers js:babel/register
---harmony

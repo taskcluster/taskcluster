@@ -10,15 +10,16 @@ import TestWorker from '../testworker';
 import Promise from 'promise';
 import * as settings from '../settings';
 import slugid from 'slugid';
+import URL from 'url';
 
 suite('use docker exec websocket server', () => {
-  let debug = Debug('docker-worker:test:interactive-test');
+  let debug = Debug('docker-worker:test:interactive');
 
   let worker;
-  // If taskcluster/artifact upload is under high load, this number needs to be adjusted up.
-  // It also causes the test to be slower by 2X that many seconds, so be careful with this.
-  // TODO: add polling to tests so they don't rely as much on this type of timing
-  let minTime = 90;
+  // If taskcluster/artifact upload is under high load, this number needs to
+  // be adjusted up. It also causes the test to be slower by 2X that many
+  // seconds, so be careful with this.
+  let minTime = 30;
   let expTime = 10;
   setup(async () => {
     settings.cleanup();
@@ -48,24 +49,17 @@ suite('use docker exec websocket server', () => {
           resolve(res);
         }).end();
       });
-      if (res.statusCode === 303) {
-        return res.headers.location;
-      } else {
-        throw new Error('Error with code ' + res.statusCode + ' : ' + res.statusMessage);
-      }
+      assert(res.statusCode === 303);
+      return URL.parse(res.headers.location, true).query.socketUrl;
     };
     let signedUrl = queue.buildSignedUrl(
       queue.getLatestArtifact,
       taskId,
-      'private/docker-worker-tests/interactive.sock',
+      'private/docker-worker-tests/shell.html',
       {expiration: 60 * 5});
 
-    let url;
-    await base.testing.poll(async () => {
-      url = await getWithoutRedirect(signedUrl);
-    }, 45, 1000);
-    return url;
-  }
+    return base.testing.poll(() => getWithoutRedirect(signedUrl), 45, 1000);
+  };
 
   test('cat', async () => {
     let taskId = slugid.v4();
@@ -154,21 +148,17 @@ suite('use docker exec websocket server', () => {
     });
 
     await base.testing.sleep(minTime * 1000 + 10000);
-    //should be dead here
-    let dead = true;
     let failClient = new DockerExecClient({
       tty: false,
       command: ['echo'],
       url: url,
       wsopts: {rejectUnauthorized: false}
     });
-    failClient.on('resumed', () => {
-      dead = false;
+    await failClient.execute().then(() => {
+      assert(false, "Expected an error");
+    }, err => {
+      debug("Got error as expected: %s", err);
     });
-    await failClient.execute();
-    await base.testing.sleep(3000);
-
-    assert(dead, 'interactive session still available when it should have expired');
     assert(connected, 'interactive session failed to connect');
   });
 
@@ -259,23 +249,12 @@ suite('use docker exec websocket server', () => {
     let buf = await Promise.denodeify(crypto.pseudoRandomBytes)(TEST_BUF_SIZE);
     let pointer = 0;
     client.stdin.write(buf);
-    client.stdout.on('data', (message) => {
-      //checks each byte then increments the pointer
-      for(let i = 0; i < message.length; i++) {
-        if(message[i] !== buf[pointer++])
-          throw new Error('byte at messages ' + i + ' which is ' + message[i]
-            + ' of message total len ' + message.length +
-            '\ndoes not match bufs ' + pointer - 1);
-      }
-      if (pointer === TEST_BUF_SIZE) {
-        passed = true;
-        debug('test finished!');
-        client.close();
-      }
-    });
-
-    await new Promise(accept => client.socket.once('close', accept));
-    assert(passed,'only ' + pointer + ' bytes recieved');
+    client.stdin.end();
+    let buffers = [];
+    client.stdout.on('data', d => buffers.push(d));
+    await new Promise(accept => client.stdout.on('end', accept));
+    let data = Buffer.concat(buffers);
+    assert(data.compare(buf),'buffer mismatch');
   });
 
   test('started hook fails gracefully on crash', async () => {

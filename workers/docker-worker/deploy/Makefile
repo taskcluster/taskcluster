@@ -1,5 +1,5 @@
 CONFIG_FILE?=./deploy.json
-TARGETS?=$(shell find template -type file | sed 's/template/target/')
+TARGETS?=$(shell find template -type f | sed 's/template/target/')
 DEPLOY_TAR?=deploy.tar.gz
 
 
