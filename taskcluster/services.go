@@ -18,6 +18,10 @@ func NewServices() Services {
 		"scheduler":       "https://scheduler.taskcluster.net/",
 		"index":           "https://index.taskcluster.net/",
 		"aws-provisioner": "https://aws-provisioner.taskcluster.net/",
+		"secrets":         "https://secrets.taskcluster.net/",
+		"auth":            "https://auth.taskcluster.net/",
+		"hooks":           "https://hooks.taskcluster.net/",
+		"purge-cache":     "https://purge-cache.taskcluster.net/",
 	}
 
 	return Services{Endpoints: endpoints}
