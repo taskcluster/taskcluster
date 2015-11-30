@@ -130,8 +130,12 @@ list](/deploy/checklist.md)
   - [packer](www.packer.io)
   - make
   - node 0.12.x
-  - credentials for required services (i.e. AWS)
+  - credentials for required services (i
 
+### Amazon Credentials
+
+docker-worker is currently deployed to AWS EC2.  Using packer to configure and deploy an AMI requires
+Amazon credentials to be specified.  Follow this [document](https://www.packer.io/docs/builders/amazon.html) to configure the environment appropriately.
 
 ### Building AMI's
 
