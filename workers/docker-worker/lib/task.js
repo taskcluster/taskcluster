@@ -710,11 +710,30 @@ export class Task {
 
     this.runtime.log('task run');
     this.stream.write(fmtLog('=== Task Starting ==='));
-    let exitCode = await stats.timeGen('taskRunTime', dockerProc.run({
-      // Do not pull the image as part of the docker run we handle it +
-      // authentication above...
-      pull: false
-    }));
+    let exitCode;
+    try {
+      exitCode = await stats.timeGen('taskRunTime', dockerProc.run({
+        // Do not pull the image as part of the docker run we handle it +
+        // authentication above...
+        pull: false
+      }));
+    } catch(error) {
+      // Catch any errors starting the docker container.  This can be form an invalid
+      // command being specified in the task payload, or a docker related issue.
+      // XXX Look into determining if this was an issue starting the container because
+      // of the command specified or an internal error. Hard part, 500 error can
+      // either mean the command caused the container to not start or docker had
+      // an internal error such as not being able to a directory (aufs issues).
+      this.runtime.log('error starting container', {
+        taskId: this.status.taskId,
+        runId: this.runId,
+        error: error.stack || error
+      });
+      this.stream.write(fmtErrorLog('Failure to properly start execution environment.'));
+      this.stream.write(fmtErrorLog(error.message));
+      exitCode = -1;
+    }
+
     this.stream.write(fmtLog('=== Task Finished ==='));
 
     let success = exitCode === 0;
