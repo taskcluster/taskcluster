@@ -2,8 +2,10 @@ package taskcluster_test
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"testing"
 
@@ -36,12 +38,14 @@ type getScopesResponse struct {
 // Decode a json response from the server..
 func readJson(http *http.Response) (*getScopesResponse, error) {
 	var scopes getScopesResponse
-
-	json := json.NewDecoder(http.Body)
-	err := json.Decode(&scopes)
-
+	resp, err := httputil.DumpResponse(http, true)
 	if err != nil {
 		return nil, err
+	}
+	json := json.NewDecoder(http.Body)
+	err = json.Decode(&scopes)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("HTTP response could not be read into a Scopes Response:\n%s\n\nHTTP Body:\n%s", err, resp))
 	}
 	return &scopes, nil
 }
@@ -70,7 +74,7 @@ func TestBewit(t *testing.T) {
 	json, err := readJson(resp)
 
 	if err != nil {
-		t.Errorf("Failed to decode json of getScopes %s", err)
+		t.Fatalf("Failed to decode json of getScopes %s", err)
 	}
 
 	if json.ClientId != CLIENT_ID {
