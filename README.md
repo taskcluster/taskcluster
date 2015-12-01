@@ -44,8 +44,7 @@ curl localhost:60024/bewit --data 'https://queue.taskcluster.net/v1/task/2szAy1J
 The proxy server can be deployed directly by building `proxy/main.go`
 but the prefered method is via the `./build.sh` script which will
 compile the proxy server for linux/amd64 and deploy the server to a
-docker image. [Godep](https://github.com/tools/godep) is required to run
-this script.
+docker image.
 
 ```sh
 ./build.sh user/taskcluster-proxy-server
