@@ -928,7 +928,8 @@ api.declare({
       'assume:worker-type:<provisionerId>/<workerType>',
       'assume:worker-id:<workerGroup>/<workerId>'
     ], [
-      'queue:claim-task:<provisionerId>/<workerType>'
+      'queue:claim-task:<provisionerId>/<workerType>',
+      'queue:worker-id:<workerGroup>/<workerId>',
     ]
   ],
   deferAuth:  true,
@@ -959,10 +960,10 @@ api.declare({
 
   // Authenticate request by providing parameters
   if(!req.satisfies({
+    workerGroup,
+    workerId,
     provisionerId:  task.provisionerId,
     workerType:     task.workerType,
-    workerGroup:    workerGroup,
-    workerId:       workerId
   })) {
     return;
   }
