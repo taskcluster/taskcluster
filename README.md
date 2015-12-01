@@ -64,7 +64,7 @@ Follow usual go path setup + godeps.
 ```sh
 # inside the project root which will look something like:
 # $GOPATH/src/github.com/taskcluster/taskcluster-proxy
-godep go build
+go build
 ```
 
 ## Tests
