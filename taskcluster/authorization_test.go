@@ -23,8 +23,8 @@ var (
 	)
 	GET_SHARED_ACCESS_SIGNATURE = fmt.Sprintf(
 		"https://auth.taskcluster.net/v1/azure/%s/table/%s/read-write",
-		"FaKe-AcCoUnT",
-		"DuMmY-tAbLe",
+		"fakeaccount",
+		"DuMmYtAbLe",
 	)
 )
 
@@ -134,7 +134,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 	}
 
 	// Scope here is intentionally designed to fail.
-	// Note needed scope is actually auth:azure-table-access:FaKe-AcCoUnT/DuMmY-tAbLe
+	// Note needed scope is actually auth:azure-table-access:fakeaccount/DuMmYtAbLe
 	scopes := make([]string, 1)
 	scopes[0] = "noauth"
 
