@@ -157,7 +157,7 @@ var schema = function(validator, options) {
  * Query-string options not specified in options will not be allowed. But it's
  * optional if a request carries any query-string parameters at all.
  */
-var queryValidator = function(options = {}) {
+let queryValidator = function(options = {}) {
   return function(req, res, next) {
     let errors = [];
     _.forEach(req.query || {}, (value, key) => {
