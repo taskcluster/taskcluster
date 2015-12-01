@@ -7,7 +7,7 @@
   "properties": {
     "version": {
       "description":          "API reference version",
-      "enum":                 [0, "0.2.0"]
+      "enum":                 [0]
     },
     "$schema": {
       "description":          "Link to schema for this reference. That is a link to this very document. Typically used to identify what kind of reference this file is.",
@@ -62,6 +62,14 @@
               "description":  "Argument that appears in `route` warpped in angle brackets. It must be replaced to call the function."
             }
           },
+          "query": {
+            "type":           "array",
+            "description":    "List of accepted query-string parameters, these are always optional.",
+            "items": {
+              "type":         "string",
+              "description":  "Optional query-string parameter"
+            }
+          },
           "name": {
             "type":           "string",
             "description":    "Name of the `function` this is a stable identifier for use in auto-generated client libraries"
@@ -110,7 +118,7 @@
         },
         "additionalProperties":   false,
         "required": [
-          "type", "method", "route", "args",
+          "type", "method", "route", "args", "query",
           "name", "stability", "title", "description"
         ]
       }

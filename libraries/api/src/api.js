@@ -102,6 +102,12 @@ var schema = function(validator, options) {
   return function(req, res, next) {
     // If input schema is defined we need to validate the input
     if (options.input !== undefined && !options.skipInputValidation) {
+      if (req.headers['content-type'] !== 'application/json') {
+        return res.status(400).json({
+          message: "Payload must be JSON with content-type: application/json " +
+                   "got content-type: " + (req.headers['content-type'] || null),
+        });
+      }
       var errors = validator.check(req.body, options.input);
       if (errors) {
         debug("Request payload for %s didn't follow schema %s",
@@ -135,6 +141,54 @@ var schema = function(validator, options) {
 
     // Call next piece of middleware, typically the handler...
     next();
+  };
+};
+
+
+/**
+ * Validate query-string against query.
+ *
+ * options:
+ * {
+ *   param1: /.../,               // Reg-exp pattern
+ *   param2(val) { return "..." } // Function, returns message if invalid
+ * }
+ *
+ * Query-string options not specified in options will not be allowed. But it's
+ * optional if a request carries any query-string parameters at all.
+ */
+var queryValidator = function(options = {}) {
+  return function(req, res, next) {
+    let errors = [];
+    _.forEach(req.query || {}, (value, key) => {
+      let pattern = options[key];
+      if (!pattern) {
+        // Allow the bewit key, it's used in signed strings
+        if (key === 'bewit') {
+          return;
+        }
+        // Unsupported option
+        errors.push('Query-string parameter: ' + key + ' is not supported!');
+      }
+      if (pattern instanceof RegExp) {
+        if (!pattern.test(value)) {
+          errors.push('Query-string parameter: ' + key + '="' + value +
+                      '" does not match expression: ' + pattern.toString());
+        }
+      } else {
+        let msg = pattern(value);
+        if (typeof(msg) === 'string') {
+          errors.push('Query-string parameter: ' + key + '="' + value +
+                      '" is not valid, error: ' + msg);
+        }
+      }
+    });
+    if (errors.length > 0) {
+      return res.status(400).json({
+        message: errors.join('\n'),
+      });
+    }
+    return next();
   };
 };
 
@@ -1254,8 +1308,8 @@ var API = function(options) {
   });
   this._options = _.defaults({}, options, {
     schemaPrefix:   '',
-    paramPatterns:  {},
-    context:        []
+    params:         {},
+    context:        [],
   });
   this._entries = [];
 };
@@ -1310,8 +1364,15 @@ var STABILITY_LEVELS = _.values(stability);
  *   route:    '/object/:id/action/:param',      // URL pattern with parameters
  *   params: {                                   // Patterns for URL params
  *     param: /.../,                             // Reg-exp pattern
- *     id(val) { return "..." }                  // Function, returns message if invalid
+ *     id(val) { return "..." }                  // Function, returns message
+ *                                               // if value is invalid
  *     // The `params` option from new API(), will be used as fall-back
+ *   },
+ *   query: {                                    // Query-string parameters
+ *     offset: /.../,                            // Reg-exp pattern
+ *     limit(n) { return "..." }                 // Function, returns message
+ *                                               // if value is invalid
+ *     // Query-string options are always optional (at-least in this iteration)
  *   },
  *   name:     'identifierForLibraries',         // identifier for client libraries
  *   stability: base.API.stability.experimental, // API stability level
@@ -1349,6 +1410,12 @@ API.prototype.declare = function(options, handler) {
          "options.stability must be a valid stability-level, " +
          "see base.API.stability for valid options");
   options.params = _.defaults({}, options.params || {}, this._options.params);
+  options.query = options.query || {};
+  _.forEach(options.query, (value, key) => {
+    if (!(value instanceof RegExp || value instanceof Function)) {
+      throw new Error('query.' + key + ' must be a RegExp or a function!');
+    }
+  });
   if ('scopes' in options) {
     utils.validateScopeSets(options.scopes);
   }
@@ -1518,6 +1585,7 @@ API.prototype.router = function(options) {
     middleware.push(
       authStrategy(entry),
       parameterValidator(entry.params),
+      queryValidator(entry.query),
       schema(options.validator, entry),
       handle(entry.handler, options.context)
     );
@@ -1565,6 +1633,7 @@ API.prototype.reference = function(options) {
         type:           'function',
         method:         entry.method,
         route:          route,
+        query:          _.keys(entry.query || {}),
         args:           params,
         name:           entry.name,
         stability:      entry.stability,

@@ -10,7 +10,7 @@ suite("api/route", function() {
   var slugid          = require('slugid');
 
   // Create test api
-  var api = new base.API({
+  var api = new subject({
     title:        "Test Api",
     description:  "Another test api",
     params: {
@@ -26,6 +26,19 @@ suite("api/route", function() {
     description:  "Place we can call to test something",
   }, function(req, res) {
     res.status(200).send(req.params.myparam);
+  });
+
+  api.declare({
+    method:   'get',
+    route:    '/query-param/',
+    query: {
+      nextPage: /^[0-9]+$/,
+    },
+    name:     'testQueryParam',
+    title:    "Test End-Point",
+    description:  "Place we can call to test something",
+  }, function(req, res) {
+    res.status(200).send(req.query.nextPage || 'empty');
   });
 
   api.declare({
@@ -143,6 +156,40 @@ suite("api/route", function() {
       });
   });
 
+  test("query parameter", function() {
+    var url = 'http://localhost:23525/query-param/';
+    return request
+      .get(url)
+      .query({nextPage: '352'})
+      .end()
+      .then(function(res) {
+        assert(res.ok, "Request failed");
+        assert(res.text === "352", "Got wrong value");
+      });
+  });
+
+  test("query parameter (is optional)", function() {
+    var url = 'http://localhost:23525/query-param/';
+    return request
+      .get(url)
+      .end()
+      .then(function(res) {
+        assert(res.ok, "Request failed");
+        assert(res.text === "empty", "Got wrong value");
+      });
+  });
+
+  test("query parameter (validation works)", function() {
+    var url = 'http://localhost:23525/query-param/';
+    return request
+      .get(url)
+      .query({nextPage: 'abc'})
+      .end()
+      .then(function(res) {
+        assert(!res.ok, "Expected request failure!");
+        assert(res.status === 400, "Expected a 400 error");
+      });
+  });
 
   test("slash parameter", function() {
     var url = 'http://localhost:23525/slash-param/Hello/World';
