@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"os"
@@ -160,6 +161,10 @@ func TestAuthorizationDelegate(t *testing.T) {
 	if resp.StatusCode != 401 {
 		protectedRequest := regexp.MustCompile(`([a-z]*)="[^"]*"`).ReplaceAllString(string(reqBytes), `$1="***********"`)
 		t.Logf("Expected delgated request to fail with HTTP 401 since it has no scopes - but got HTTP %v", resp.StatusCode)
-		t.Fatalf("Request sent:\n%s", protectedRequest)
+		t.Logf("Request sent:\n%s", protectedRequest)
+		respBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			t.Fatalf("Response received:\n%s", respBody)
+		}
 	}
 }
