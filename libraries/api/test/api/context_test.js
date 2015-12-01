@@ -8,7 +8,7 @@ suite("API (context)", function() {
 
   test("Provides context", function() {
     // Create test api
-    var api = new base.API({
+    var api = new subject({
       title:        "Test Api",
       description:  "Another test api"
     });
@@ -61,7 +61,7 @@ suite("API (context)", function() {
 
   test("Context properties can be required", function() {
     // Create test api
-    var api = new base.API({
+    var api = new subject({
       title:        "Test Api",
       description:  "Another test api",
       context:      ['prop1', 'prop2']
@@ -85,7 +85,7 @@ suite("API (context)", function() {
 
   test("Context properties can provided", function() {
     // Create test api
-    var api = new base.API({
+    var api = new subject({
       title:        "Test Api",
       description:  "Another test api",
       context:      ['prop1', 'prop2']

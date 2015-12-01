@@ -18,7 +18,7 @@ suite("api/validate", function() {
 
   // Declare a method we can test input with
   api.declare({
-    method:   'get',
+    method:   'post',
     route:    '/test-input',
     name:     'testInput',
     input:    'http://localhost:4321/test-schema.json',
@@ -54,7 +54,7 @@ suite("api/validate", function() {
 
   // Declare a method we can test input validation skipping on
   api.declare({
-    method:   'get',
+    method:   'post',
     route:    '/test-skip-input-validation',
     name:     'testInputSkipInputValidation',
     input:    'http://localhost:4321/test-schema.json',
@@ -153,7 +153,7 @@ suite("api/validate", function() {
   test("input (valid)", function() {
     var url = 'http://localhost:61515/test-input';
     return request
-      .get(url)
+      .post(url)
       .send({value: 5})
       .end()
       .then(function(res) {
@@ -166,7 +166,7 @@ suite("api/validate", function() {
   test("input (invalid)", function() {
     var url = 'http://localhost:61515/test-input';
     return request
-      .get(url)
+      .post(url)
       .send({value: 11})
       .end()
       .then(function(res) {
@@ -201,7 +201,7 @@ suite("api/validate", function() {
   test("skip input validation", function() {
     var url = 'http://localhost:61515/test-skip-input-validation';
     return request
-      .get(url)
+      .post(url)
       .send({value: 100})
       .end()
       .then(function(res) {
@@ -219,6 +219,30 @@ suite("api/validate", function() {
       .then(function(res) {
         assert(res.ok, "Request failed");
         assert(res.body.value === 12, "Got wrong value");
+      });
+  });
+
+  test("input (correct content-type)", function() {
+    var url = 'http://localhost:61515/test-input';
+    return request
+      .post(url)
+      .send(JSON.stringify({value: 5}))
+      .set('content-type', 'application/json')
+      .end()
+      .then(function(res) {
+        assert(res.status === 200, "Request rejected");
+      });
+  });
+
+  test("input (wrong content-type)", function() {
+    var url = 'http://localhost:61515/test-input';
+    return request
+      .post(url)
+      .send(JSON.stringify({value: 5}))
+      .set('content-type', 'text/x-json')
+      .end()
+      .then(function(res) {
+        assert(res.status === 400, "Request wasn't rejected");
       });
   });
 });
