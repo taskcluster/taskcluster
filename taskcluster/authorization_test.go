@@ -7,16 +7,24 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"regexp"
 	"testing"
 
 	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
 )
 
-var CLIENT_ID = os.Getenv("TASKCLUSTER_CLIENT_ID")
-var ACCESS_TOKEN = os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
-var GET_SCOPES_URL = fmt.Sprintf(
-	"https://auth.taskcluster.net/v1/client/%s/scopes",
-	CLIENT_ID,
+var (
+	CLIENT_ID      = os.Getenv("TASKCLUSTER_CLIENT_ID")
+	ACCESS_TOKEN   = os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
+	GET_SCOPES_URL = fmt.Sprintf(
+		"https://auth.taskcluster.net/v1/clients/%s",
+		CLIENT_ID,
+	)
+	GET_SHARED_ACCESS_SIGNATURE = fmt.Sprintf(
+		"https://auth.taskcluster.net/v1/azure/%s/table/%s/read-write",
+		"FaKe-AcCoUnT",
+		"DuMmY-tAbLe",
+	)
 )
 
 func checkTest(t *testing.T) {
@@ -29,10 +37,9 @@ func checkTest(t *testing.T) {
 }
 
 type getScopesResponse struct {
-	ClientId    string   `json:"clientId"`
-	AccessToken string   `json:"accessToken"`
-	Scopes      []string `json:"scopes"`
-	Expires     string   `json:"expires"`
+	ClientId       string   `json:"clientId"`
+	ExpandedScopes []string `json:"expandedScopes"`
+	Expires        string   `json:"expires"`
 }
 
 // Decode a json response from the server..
@@ -52,7 +59,7 @@ func readJson(http *http.Response) (*getScopesResponse, error) {
 
 func TestBewit(t *testing.T) {
 	checkTest(t)
-	url := fmt.Sprintf("https://auth.taskcluster.net/v1/client/%s/scopes", CLIENT_ID)
+	url := fmt.Sprintf("https://auth.taskcluster.net/v1/clients/%s", CLIENT_ID)
 
 	bewitUrl, err := tc.Bewit(CLIENT_ID, ACCESS_TOKEN, url)
 	if err != nil {
@@ -120,32 +127,39 @@ func TestAuthorizationDelegate(t *testing.T) {
 
 	httpClient := &http.Client{}
 
-	req, err := http.NewRequest("GET", GET_SCOPES_URL, nil)
+	req, err := http.NewRequest("GET", GET_SHARED_ACCESS_SIGNATURE, nil)
 	if err != nil {
 		t.Errorf("Failed to create request: %s", err)
 	}
 
 	// Scope here is intentionally designed to fail.
+	// Note needed scope is actually auth:azure-table-access:FaKe-AcCoUnT/DuMmY-tAbLe
 	scopes := make([]string, 1)
 	scopes[0] = "noauth"
 
 	header, err := tc.AuthorizationDelegate(CLIENT_ID, ACCESS_TOKEN, scopes, req)
 
 	if err != nil {
-		t.Errorf("Failed to create delegating auth %s", err)
+		t.Fatalf("Failed to create delegating auth %s", err)
 	}
 
 	req.Header.Add("Authorization", header)
+	reqBytes, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		t.Fatalf("Error dumping request:\n%s", err)
+	}
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		t.Errorf("Error issuing request", err)
+		t.Fatalf("Error issuing request:\n%s", err)
 	}
 
 	// Ensure the body is closed after this test.
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 401 {
-		t.Errorf("Expected delgated request to fail since it has no scopes")
+		protectedRequest := regexp.MustCompile(`([a-z]*)="[^"]*"`).ReplaceAllString(string(reqBytes), `$1="***********"`)
+		t.Logf("Expected delgated request to fail with HTTP 401 since it has no scopes - but got HTTP %v", resp.StatusCode)
+		t.Fatalf("Request sent:\n%s", protectedRequest)
 	}
 }
