@@ -29,12 +29,20 @@ defaults:
   #  username: !env PULSE_USERNAME
   #  password: !env PULSE_PASSWORD
   aws:
-    # Credentials with access to references/schemas.taskcluster.net if you wish
-    # to publish meta-data
-    accessKeyId:      !env AWS_ACCESS_KEY_ID
-    secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
-    region:           us-west-2
-    apiVersion:       2014-01-01
+    ses:
+      # Credentials with access to SES to send hook failure emails
+      accessKeyId:      !env AWS_ACCESS_KEY_ID
+      secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
+      region:           us-east-1
+      params:
+        Source:         taskcluster-hooks@mozilla.com
+    validator:
+      # Credentials with access to references/schemas.taskcluster.net if you wish
+      # to publish meta-data
+      accessKeyId:      !env AWS_ACCESS_KEY_ID
+      secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
+      region:           us-west-2
+      apiVersion:       2014-01-01
 production:
   app:
     hookTable:        Hooks
