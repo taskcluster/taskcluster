@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"testing"
@@ -13,6 +14,7 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-client-go/queueevents"
+	D "github.com/tj/go-debug"
 )
 
 var (
@@ -256,7 +258,12 @@ func TestUpload(t *testing.T) {
 		WorkerGroup:                "test-worker-group",
 		WorkerId:                   "test-worker-id",
 		WorkerType:                 workerType,
+		LiveLogExecutable:          "livelog",
+		LiveLogSecret:              "xyz",
+		PublicIP:                   net.ParseIP("127.0.0.1"),
+		SubDomain:                  "taskcluster-worker.net",
 	}
+	D.Enable(config.Debug)
 
 	// get the worker started
 	// killWorkerChan := runWorker()

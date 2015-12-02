@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"time"
 
 	"github.com/taskcluster/httpbackoff"
@@ -23,17 +24,25 @@ func queryUserData() (*UserData, error) {
 	return userData, err
 }
 
-func queryInstanceName() (string, error) {
+func queryMetaData(url, name string) (string, error) {
 	// http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-data-retrieval
 	// call http://169.254.169.254/latest/meta-data/instance-id with httpbackoff
-	resp, _, err := httpbackoff.Get("http://169.254.169.254/latest/meta-data/instance-id")
+	resp, _, err := httpbackoff.Get(url)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
 	content, err := ioutil.ReadAll(resp.Body)
-	fmt.Println("Instance name: " + string(content))
+	fmt.Println(name + ": " + string(content))
 	return string(content), err
+}
+
+func queryInstanceName() (string, error) {
+	return queryMetaData("http://169.254.169.254/latest/meta-data/instance-id", "Instance name")
+}
+
+func queryPublicIP() (string, error) {
+	return queryMetaData("http://169.254.169.254/latest/meta-data/public-ipv4", "Public IP")
 }
 
 type UserData struct {
@@ -58,6 +67,10 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	if err != nil {
 		return err
 	}
+	publicIP, err := queryPublicIP()
+	if err != nil {
+		return err
+	}
 	c.ProvisionerId = userData.ProvisionerId
 	awsprov := awsprovisioner.AwsProvisioner{
 		Authenticate: false,
@@ -72,6 +85,7 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	c.Certificate = secToken.Credentials.Certificate
 	c.WorkerGroup = userData.Region
 	c.WorkerId = instanceName
+	c.PublicIP = net.ParseIP(publicIP)
 	c.WorkerType = userData.WorkerType
 	callSummary = awsprov.RemoveSecret(userData.SecurityToken)
 	if callSummary.Error != nil {

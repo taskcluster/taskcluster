@@ -16,6 +16,7 @@ import (
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
+	"github.com/taskcluster/generic-worker/livelog"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	D "github.com/tj/go-debug"
@@ -128,6 +129,13 @@ and reports back results to the queue.
           worker_id                         A name to uniquely identify your worker.
           worker_type                       This should match a worker_type managed by the
                                             provisioner you have specified.
+          livelog_secret                    This should match the secret used by the
+                                            stateless dns server; see
+                                            https://github.com/taskcluster/stateless-dns-server
+          public_ip                         The IP address for clients to be directed to
+                                            for serving live logs; see
+                                            https://github.com/taskcluster/livelog and
+                                            https://github.com/taskcluster/stateless-dns-server
 
         ** OPTIONAL ** properties
         =========================
@@ -142,6 +150,12 @@ and reports back results to the queue.
                                             [default: 310]
           debug                             Logging filter; see
                                             https://github.com/tj/go-debug [default: *]
+          livelog_executable                Filepath of LiveLog executable to use; see
+                                            https://github.com/taskcluster/livelog
+          subdomain                         Subdomain to use in stateless dns name for live
+                                            logs; see
+                                            https://github.com/taskcluster/stateless-dns-server
+                                            [default: taskcluster-worker.net]
 
     Here is an syntactically valid example configuration file:
 
@@ -202,8 +216,10 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 
 	// first assign defaults
 	c := Config{
-		ProvisionerId: "aws-provisioner-v1",
-		Debug:         "*",
+		Debug:                      "*",
+		SubDomain:                  "taskcluster-worker.net",
+		ProvisionerId:              "aws-provisioner-v1",
+		LiveLogExecutable:          "livelog",
 		RefreshUrlsPrematurelySecs: 310,
 	}
 	// now overlay with values from config file
@@ -238,6 +254,10 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 		c.WorkerGroup:                {name: "worker_group", value: ""},
 		c.WorkerId:                   {name: "worker_id", value: ""},
 		c.WorkerType:                 {name: "worker_type", value: ""},
+		c.LiveLogExecutable:          {name: "livelog_executable", value: ""},
+		c.LiveLogSecret:              {name: "livelog_secret", value: ""},
+		c.PublicIP:                   {name: "public_ip", value: ""},
+		c.SubDomain:                  {name: "subdomain", value: ""},
 	}
 
 	for i, j := range disallowed {
@@ -357,6 +377,14 @@ func FindAndRunTask() bool {
 			debug("%v", err)
 			break
 		}
+		// start the livelogger
+		liveLog, err := livelog.New(config.LiveLogExecutable)
+		if err != nil {
+			debug("FATAL: cannot start livelogger for task " + task.TaskId)
+			debug("%v", err)
+			os.Exit(88)
+		}
+		task.liveLog = liveLog
 		task.setReclaimTimer()
 		task.fetchTaskDefinition()
 		err = task.validatePayload()
@@ -373,6 +401,7 @@ func FindAndRunTask() bool {
 		}
 		err = task.run()
 		reportPossibleError(err)
+		task.liveLog.Terminate()
 		break
 	}
 	return taskFound
@@ -738,6 +767,19 @@ func (task *TaskRun) run() error {
 				finalError = err
 			}
 			break
+		}
+		debug("Posting livelog redirect artifact")
+		err = task.uploadLiveLog(task.Commands[i].logFile)
+		if err != nil {
+			debug("%#v", err)
+			if finalError == nil {
+				debug("TASK EXCEPTION due to problem uploading livelog %v", task.Commands[i].logFile)
+				finalTaskStatus = Errored
+				finalReason = "worker-shutdown" // internal error (log-upload-failure)
+				finalError = err
+				// don't break or abort - log upload failure alone shouldn't stop
+				// other steps from running
+			}
 		}
 		debug("Waiting for command to finish...")
 		// use a different variable for error since we process it later

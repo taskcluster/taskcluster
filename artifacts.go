@@ -8,12 +8,15 @@ import (
 	"mime"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/stateless-dns-go/hostname"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
@@ -55,6 +58,24 @@ type (
 
 func (base BaseArtifact) Base() BaseArtifact {
 	return base
+}
+
+func (artifact RedirectArtifact) ProcessResponse(response interface{}) error {
+	// nothing to do
+	return nil
+}
+
+func (redirectArtifact RedirectArtifact) RequestObject() interface{} {
+	return &queue.RedirectArtifactRequest{
+		ContentType: redirectArtifact.MimeType,
+		Expires:     redirectArtifact.Expires,
+		StorageType: "reference",
+		Url:         redirectArtifact.URL,
+	}
+}
+
+func (redirectArtifact RedirectArtifact) ResponseObject() interface{} {
+	return new(queue.RedirectArtifactResponse)
 }
 
 func (artifact ErrorArtifact) ProcessResponse(response interface{}) error {
@@ -244,6 +265,29 @@ func canonicalPath(path string) string {
 		return path
 	}
 	return strings.Replace(path, string(os.PathSeparator), "/", -1)
+}
+
+func (task *TaskRun) uploadLiveLog(logFile string) error {
+	// deduce stateless DNS name to use
+	maxRunTimeDeadline := time.Now().Add(time.Duration(task.Payload.MaxRunTime) * time.Second)
+	statelessHostname, err := hostname.New(config.PublicIP, config.SubDomain, maxRunTimeDeadline, config.LiveLogSecret)
+	getURL, err := url.Parse(task.liveLog.GetURL)
+	if err != nil {
+		return err
+	}
+	getURL.Scheme = "https"
+	getURL.Host = statelessHostname + ":32774"
+	return task.uploadArtifact(
+		RedirectArtifact{
+			BaseArtifact: BaseArtifact{
+				CanonicalPath: logFile + ".live",
+				// livelog expires when task must have completed
+				Expires: queue.Time(maxRunTimeDeadline),
+			},
+			MimeType: "text/plain; charset=utf-8",
+			URL:      getURL.String(),
+		},
+	)
 }
 
 func (task *TaskRun) uploadLog(logFile string) error {

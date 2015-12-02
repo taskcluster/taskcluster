@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"net"
 	"os/exec"
 	"time"
 
+	"github.com/taskcluster/generic-worker/livelog"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
@@ -22,6 +24,10 @@ type (
 		ProvisionerId              string `json:"provisioner_id"`
 		RefreshUrlsPrematurelySecs int    `json:"refresh_urls_prematurely_secs"`
 		Debug                      string `json:"debug"`
+		LiveLogExecutable          string `json:"livelog_executable"`
+		LiveLogSecret              string `json:"livelog_secret"`
+		PublicIP                   net.IP `json:"public_ip"`
+		SubDomain                  string `json:"subdomain"`
 	}
 
 	// Used for modelling the xml we get back from Azure
@@ -60,6 +66,7 @@ type (
 		Commands            []Command                    `json:"-"`
 		// not exported
 		reclaimTimer *time.Timer
+		liveLog      *livelog.LiveLog
 	}
 
 	// Regardless of platform, we will have to call out to system commands to run tasks,
