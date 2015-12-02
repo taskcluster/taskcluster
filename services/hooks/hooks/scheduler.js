@@ -93,18 +93,25 @@ class Scheduler extends events.EventEmitter {
   /** Handle spawning a new task for a given hook that needs to be scheduled */
   async handleHook(hook) {
     console.log("firing hook %s/%s with taskId %s", hook.hookGroupId, hook.hookId, hook.nextTaskId);
-    // TODO: (when we have hook logging) if this fails due to 401, we should
-    // still consider it scheduled
     try {
       await this.taskcreator.fire(hook, {}, {
         taskId: hook.nextTaskId,
         // use the next scheduled date as task.created, to ensure idempotency
-        created: hook.nextScheduledDate
+        created: hook.nextScheduledDate,
+        // don't retry, as a 5xx error will cause a retry on the next scheduler
+        // polling interval, and we do not want to get behind waiting for each
+        // createTask operation to time out
+        retry: false
       });
     } catch(err) {
-      console.log("Failed to handle hook: %j" +
-                  ", with err: %s, as JSON: %j", hook, err, err, err.stack);
-      return;
+      console.log("Failed to handle hook: %s/%s" +
+                  ", with err: %s", hook.hookGroupId, hook.hookId, err);
+      // in the case of a 4xx error, retrying on the next scheduler loop is a
+      // waste of time, so consider the hook fired; for 500's, pretend nothing
+      // happend and we'll try again on the next go-round.
+      if (err.statusCode >= 500 ) {
+        return;
+      }
     }
 
     try {
@@ -117,8 +124,8 @@ class Scheduler extends events.EventEmitter {
         }
       });
     } catch(err) {
-      console.log("Failed to update hook (will re-fire): %j" +
-                  ", with err: %s, as JSON: %j", hook, err, err, err.stack);
+      console.log("Failed to update hook (will re-fire): %s/%s" +
+                  ", with err: %s", hook.hookGroupId, hook.hookId, err);
       return;
     }
   }

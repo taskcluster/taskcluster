@@ -32,12 +32,15 @@ class TaskCreator {
   * Fire the given hook, using the given payload (interpolating it into the task
   * definition).  If options.taskId is set, it will be used as the taskId;
   * otherwise a new taskId will be created.  If options.created is set, then
-  * it is used as the creation time for the task (to ensure idempotency).
+  * it is used as the creation time for the task (to ensure idempotency).  If
+  * options.retru is false, then the call will not be automatically retried on
+  * 5xx errors.
   */
   async fire(hook, payload, options) {
     options = _.defaults({}, options, {
       taskId: taskcluster.slugid(),
       created: new Date(),
+      retry: true
     });
 
     // create a queue instance with its authorized scopes limited to those
@@ -45,7 +48,8 @@ class TaskCreator {
     let role = 'assume:hook-id:' + hook.hookGroupId + '/' + hook.hookId;
     let queue = new taskcluster.Queue({
       credentials: this.credentials,
-      authorizedScopes: [role]
+      authorizedScopes: [role],
+      retries: options.retry ? 0 : 5
     });
 
     // TODO: payload is ignored right now
