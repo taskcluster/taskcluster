@@ -146,6 +146,7 @@ suite('Scheduler', function() {
           options: {
             taskId: oldTaskId,
             created: new Date(3000, 0, 0, 0, 0, 0, 0),
+            retry: false
           }
         }]);
       assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);
