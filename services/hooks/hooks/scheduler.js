@@ -36,6 +36,7 @@ class Scheduler extends events.EventEmitter {
     // Store options on this for use in event handlers
     this.Hook         = options.Hook;
     this.taskcreator  = options.taskcreator;
+    this.ses          = options.ses;
     this.pollingDelay = options.pollingDelay;
 
     // Promise that the polling is done
@@ -114,6 +115,9 @@ class Scheduler extends events.EventEmitter {
       }
     }
 
+    // inform the user that there was a problem
+    await this.sendFailureEmail(hook, err);
+
     try {
       let oldTaskId = hook.nextTaskId;
       await hook.modify((hook) => {
@@ -128,6 +132,55 @@ class Scheduler extends events.EventEmitter {
                   ", with err: %s", hook.hookGroupId, hook.hookId, err);
       return;
     }
+  }
+
+  async sendFailureEmail(hook, err) {
+    if (!hook.metadata.emailOnError) {
+      return;
+    }
+    var email = hook.metadata.owner;
+
+    var errJson;
+    try {
+      errJson = JSON.stringify(err, null, 2);
+    } catch (e) {
+      errJson = `(error formatting JSON: ${e})`
+    }
+
+    var utf8 = s => unescape(encodeURIComponent(s));
+
+    await this.ses.sendEmail({
+        Destination: {
+          ToAddresses: [email],
+        },
+        Message: {
+          Subject: {
+            Data: utf8(`[Taskcluster Hooks] Scheduled Hook failure: ${hook.hookGroupId}/${hook.hookId}`),
+            Charset: "UTF-8"
+          },
+          Body: {
+            Text: {
+              Data: utf8(`The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId},
+for which you are listed as owner.
+
+The error was:
+  ${err}
+
+Details:
+
+${errJson}
+
+The service will try again to create the task on the next iteration.
+
+Thanks,
+TaskCluster Automation
+
+P.S. If you believe you have received this email in error, please hit reply to let us know.`),
+            Charset: "UTF-8"
+            }
+          }
+        }
+    }).promise();
   }
 }
 

@@ -8,6 +8,7 @@ var taskcreator = require('../hooks/taskcreator');
 var v1          = require('../routes/v1');
 var _           = require('lodash');
 var Scheduler   = require('../hooks/scheduler');
+var AWS         = require('aws-sdk-promise');
 // These will exist in taskcluster-base, when we move to the next version.
 var config      = require('typed-env-config');
 var loader      = require('taskcluster-lib-loader');
@@ -44,7 +45,7 @@ var load = loader({
         constants:     require('../schemas/constants'),
         publish:       cfg.app.publishMetaData,
         schemaPrefix:  'hooks/v1/',
-        aws:           cfg.aws,
+        aws:           cfg.aws.validator,
         preload: [
           'http://schemas.taskcluster.net/queue/v1/create-task-request.json',
           'http://schemas.taskcluster.net/queue/v1/task-status.json'
@@ -56,6 +57,11 @@ var load = loader({
   taskcreator: {
     requires: ['cfg'],
     setup: ({cfg}) => new taskcreator.TaskCreator(cfg.taskcluster),
+  },
+
+  ses: {
+    requires: ['cfg'],
+    setup: ({cfg}) => new AWS.SES(cfg.aws.ses),
   },
 
   router: {
@@ -83,11 +89,12 @@ var load = loader({
   },
 
   schedulerNoStart: {
-    requires: ['cfg', 'Hook', 'taskcreator'],
-    setup: ({cfg, Hook, taskcreator}) => {
+    requires: ['cfg', 'Hook', 'taskcreator', 'ses'],
+    setup: ({cfg, Hook, taskcreator, ses}) => {
       return new Scheduler({
         Hook,
         taskcreator,
+        ses,
         pollingDelay: cfg.app.scheduler.pollingDelay
       });
     },
