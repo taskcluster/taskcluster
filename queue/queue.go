@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 26 Nov 2015 at 14:56:00 UTC. The code was generated
+// Wed, 2 Dec 2015 at 09:56:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -395,7 +395,7 @@ func (myQueue *Queue) PollTaskUrls(provisionerId string, workerType string) (*Po
 //
 // Required scopes:
 //   * (queue:claim-task and assume:worker-type:<provisionerId>/<workerType> and assume:worker-id:<workerGroup>/<workerId>), or
-//   * queue:claim-task:<provisionerId>/<workerType>
+//   * (queue:claim-task:<provisionerId>/<workerType> and queue:worker-id:<workerGroup>/<workerId>)
 //
 // See http://docs.taskcluster.net/queue/api-docs/#claimTask
 func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, *CallSummary) {
@@ -1364,7 +1364,7 @@ type (
 		// you retry the request, then this _may_ be a valid exception. The queue
 		// assumes that workers have applied retries as needed, and will not retry
 		//  the task.
-		// **Report `internal-error` if the worker experienced an unhandled internal
+		// **Report `internal-error`** if the worker experienced an unhandled internal
 		// error from which it couldn't recover. The queue will not retry runs
 		// resolved with this reason, but you are clearly signaling that this is a
 		// bug in the worker code.

@@ -1,4 +1,4 @@
-Generated: 1448549810
+Generated: 1449050207
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4024,7 +4024,7 @@ Entry 8     =
     Entry Args        = '[taskId runId]'
     Entry Name        = 'claimTask'
     Entry Stability   = 'experimental'
-    Entry Scopes      = '[[queue:claim-task assume:worker-type:<provisionerId>/<workerType> assume:worker-id:<workerGroup>/<workerId>] [queue:claim-task:<provisionerId>/<workerType>]]'
+    Entry Scopes      = '[[queue:claim-task assume:worker-type:<provisionerId>/<workerType> assume:worker-id:<workerGroup>/<workerId>] [queue:claim-task:<provisionerId>/<workerType> queue:worker-id:<workerGroup>/<workerId>]]'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
     Entry Title       = 'Claim task'
@@ -5751,7 +5751,7 @@ Properties
     you retry the request, then this _may_ be a valid exception. The queue
     assumes that workers have applied retries as needed, and will not retry
      the task.
-    **Report `internal-error` if the worker experienced an unhandled internal
+    **Report `internal-error`** if the worker experienced an unhandled internal
     error from which it couldn't recover. The queue will not retry runs
     resolved with this reason, but you are clearly signaling that this is a
     bug in the worker code.
