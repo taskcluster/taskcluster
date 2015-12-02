@@ -25,6 +25,7 @@ before_install:
 
 install:
   - "go get -d -t ./..."
+  - "go get github.com/taskcluster/livelog"
 
 script:
   - "go install -v ./..."
