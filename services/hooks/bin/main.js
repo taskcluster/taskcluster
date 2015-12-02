@@ -40,7 +40,6 @@ var load = loader({
   validator: {
     requires: ['cfg'],
     setup: ({cfg}) => {
-      console.log("CONFIG:", cfg.aws.validator);
       return base.validator({
         folder:        path.join(__dirname, '..', 'schemas'),
         constants:     require('../schemas/constants'),
