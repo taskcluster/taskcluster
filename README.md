@@ -7,13 +7,13 @@
 
 A generic worker for task cluster, written in go.
 
-## Install binary
+# Install binary
 
 * Download the latest release for your platform from https://github.com/taskcluster/generic-worker/releases
 * Download the latest release of livelog for your platform from https://github.com/taskcluster/livelog/releases
 * For darwin/linux, make the binaries executable: `chmod a+x {generic-worker,livelog}*`
 
-## Build from source
+# Build from source
 
 If you prefer not to use a prepackaged binary, or want to have the latest unreleased version from the development head:
 
@@ -23,11 +23,11 @@ If you prefer not to use a prepackaged binary, or want to have the latest unrele
 
 All being well, the binaries will be built under `${GOPATH}/bin`.
 
-## Create TaskCluster account
+# Create TaskCluster account
 
 Head over to https://tools.taskcluster.net/auth/clients/ and create yourself a clientId with permanent credentials. Then go to https://tools.taskcluster.net/auth/roles/ and create a role called `client-id:<your-client-id>` and give it the scope `worker-developer`. Keep a note of your clientId and accessToken.
 
-## Set up your env
+# Set up your env
 
 View the generic worker help, to see what config you need to set up:
 
@@ -159,7 +159,7 @@ and reports back results to the queue.
     exit with a failure message.
 ```
 
-## Start the generic worker
+# Start the generic worker
 
 Simply run:
 
@@ -189,7 +189,7 @@ It should look something like this:
 21:22:31.065 1us    1us    generic-worker - No task claimed from any Azure queue...
 ```
 
-## Create a test job
+# Create a test job
 
 Go to https://tools.taskcluster.net/task-creator/ and create a task to run on your generic worker.
 
@@ -201,7 +201,7 @@ Don't forget to submit the task by clicking the *Create Task* icon.
 
 If all is well, your local generic worker should pick up the job you submit, run it, and report back status.
 
-## Run the generic worker test suite
+# Run the generic worker test suite
 
 For this you need to have the source files (you cannot run the tests from the binary package).
 
@@ -211,7 +211,7 @@ Then cd into the source directory, and run:
 go test -v ./...
 ```
 
-## Further information
+# Further information
 
 Please see:
 
