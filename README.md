@@ -7,10 +7,6 @@
 
 A generic worker for task cluster, written in go.
 
-# Getting started with Generic Worker
-
-Although the generic worker is not yet fully implemented, or feature complete, here is some information about how you might use it when it is ready. This might also serve as a useful guide if you interested in contributing to its development.
-
 ## Install binary
 
 * Download the latest release for your platform from https://github.com/taskcluster/generic-worker/releases
