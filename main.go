@@ -746,7 +746,7 @@ func (task *TaskRun) run() error {
 	var err error
 
 	for i, _ := range task.Payload.Command {
-		task.Commands[i], err = task.generateCommand(i) // platform specific
+		task.Commands[i], err = task.generateCommand(i, task.liveLog.LogWriter) // platform specific
 		if err != nil {
 			debug("%#v", err)
 			if finalError == nil {
@@ -784,6 +784,12 @@ func (task *TaskRun) run() error {
 		debug("Waiting for command to finish...")
 		// use a different variable for error since we process it later
 		err := task.Commands[i].osCommand.Wait()
+		// TODO: clean this horrible thing up, and redesign all error handling
+		// in this method. It is stinky and terrible.
+		errX := task.liveLog.LogWriter.Close()
+		if errX != nil {
+			panic(errX)
+		}
 
 		// Reporting Task Result
 		// ---------------------

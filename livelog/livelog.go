@@ -4,10 +4,13 @@
 package livelog
 
 import (
+	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
 )
@@ -43,6 +46,11 @@ func New(liveLogExecutable string) (*LiveLog, error) {
 	}
 	l.command.Env = append(os.Environ(), "ACCESS_TOKEN="+l.secret)
 	err := l.command.Start()
+	// TODO: we need to make sure that it doesn't just exit, which
+	// can happen if the port is already in use!!! Note, this is
+	// really bad, since another livelog will use a different
+	// secret. Also note we get a 0 exit code when process exits
+	// because another process was listening on the port(s).
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +83,22 @@ func (l *LiveLog) connectInputStream() error {
 		return err
 	}
 	client := new(http.Client)
-	// if an error occurs, not much we can do about it - and not serious as
-	// backing log will be served anyway
-	go client.Do(req)
+	go func() {
+		// TODO: this is a HORRENDOUS hack - need to fix this
+		// Basically we need to wait until put port is opened
+		// which is some time after the livelog process has
+		// started...
+		time.Sleep(500 * time.Millisecond)
+		// resp, _, err := httpbackoff.ClientDo(client, req)
+		resp, err := client.Do(req)
+		if err != nil {
+			panic(err)
+		}
+		output, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(string(output))
+	}()
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -229,7 +230,7 @@ func deleteOSUserAccount(line string) {
 	}
 }
 
-func (task *TaskRun) generateCommand(index int) (Command, error) {
+func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, error) {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
 	env := filepath.Join(TaskUser.HomeDir, "env.txt")
@@ -239,7 +240,6 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 	script := filepath.Join(TaskUser.HomeDir, commandName+".bat")
 	log := filepath.Join(TaskUser.HomeDir, "public", "logs", commandName+".log")
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskId + "..." + "\r\n"
-	// contents += "timeout /T 5\r\n"
 
 	// At the end of each command we export all the env vars, and import them
 	// at the start of the next command. Otherwise env variable changes would
@@ -349,8 +349,9 @@ func (task *TaskRun) generateCommand(index int) (Command, error) {
 
 	cmd := exec.Command(command[0], command[1:]...)
 	debug("Running command: '" + strings.Join(command, "' '") + "'")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	multiWriter := io.MultiWriter(writer, log)
+	cmd.Stdout = multiWriter
+	cmd.Stderr = multiWriter
 	// cmd.Stdin = strings.NewReader("blah blah")
 	task.Commands[index] = Command{logFile: "public/logs/" + commandName + ".log", osCommand: cmd}
 	return task.Commands[index], nil
