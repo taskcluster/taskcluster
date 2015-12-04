@@ -238,8 +238,10 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, erro
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(TaskUser.HomeDir, commandName+"_wrapper.bat")
 	script := filepath.Join(TaskUser.HomeDir, commandName+".bat")
-	log := filepath.Join(TaskUser.HomeDir, "public", "logs", commandName+".log")
+	logFile := filepath.Join("public", "logs", commandName+".log")
+	absLogFile := filepath.Join(TaskUser.HomeDir, logFile)
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskId + "..." + "\r\n"
+	contents += "@echo off\r\n"
 
 	// At the end of each command we export all the env vars, and import them
 	// at the start of the next command. Otherwise env variable changes would
@@ -282,18 +284,26 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, erro
 	// need to explicitly unset as we rely on it later
 	contents += "set errorlevel=\r\n"
 
+	// now make sure output is enabled again
+	contents += "echo on\r\n"
+
 	// now call the actual script that runs the command
-	contents += "call " + script + " > " + log + " 2>&1" + "\r\n"
+
+	// ******************************
+	// old version that WROTE TO A FILE:
+	//      contents += "call " + script + " > " + absLogFile + " 2>&1" + "\r\n"
+	// ******************************
+	contents += "call " + script + "\r\n"
 
 	// store exit code
-	contents += "set tcexitcode=%errorlevel%\r\n"
+	contents += "@set tcexitcode=%errorlevel%\r\n"
+	contents += "@echo off\r\n"
 
 	// now store env for next command, unless this is the last command
 	if index != len(task.Payload.Command)-1 {
 		contents += "set > " + env + "\r\n"
 		contents += "cd > " + dir + "\r\n"
 	}
-	// contents += "timeout /T 5\r\n"
 
 	// exit with stored exit code
 	contents += "exit /b %tcexitcode%\r\n"
@@ -349,11 +359,15 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, erro
 
 	cmd := exec.Command(command[0], command[1:]...)
 	debug("Running command: '" + strings.Join(command, "' '") + "'")
+	log, err := os.Create(absLogFile)
+	if err != nil {
+		return Command{}, err
+	}
 	multiWriter := io.MultiWriter(writer, log)
 	cmd.Stdout = multiWriter
 	cmd.Stderr = multiWriter
 	// cmd.Stdin = strings.NewReader("blah blah")
-	task.Commands[index] = Command{logFile: "public/logs/" + commandName + ".log", osCommand: cmd}
+	task.Commands[index] = Command{logFile: logFile, osCommand: cmd}
 	return task.Commands[index], nil
 }
 
