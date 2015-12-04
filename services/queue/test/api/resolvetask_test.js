@@ -281,6 +281,61 @@ suite('Resolve task', function() {
     });
   });
 
+  test("reportException (superseded) is idempotent", async () => {
+    var taskId = slugid.v4();
+    var allowedToFailNow = false;
+    var gotMessage = null;
+
+    await helper.events.listenFor('except', helper.queueEvents.taskException({
+      taskId:   taskId
+    }));
+
+    var gotMessage = helper.events.waitFor('except').then((message) => {
+      assert(allowedToFailNow, "Failed at wrong time");
+      return message;
+    });
+
+    debug("### Creating task");
+    await helper.queue.createTask(taskId, taskDef);
+
+    debug("### Claiming task");
+    // First runId is always 0, so we should be able to claim it here
+    let r1 = await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    debug("### Reporting task exception");
+    allowedToFailNow = true;
+    helper.scopes(
+      'queue:resolve-task',
+      'assume:worker-id:my-worker-group/my-worker'
+    );
+    await helper.queue.reportException(taskId, 0, {
+      reason:     'superseded'
+    });
+
+    var {payload: {status: s1}} = await gotMessage;
+    assume(s1.runs[0].state).equals('exception');
+    assume(s1.runs[0].reasonResolved).equals('superseded');
+
+    debug("### Reporting task exception (again)");
+    await helper.queue.reportException(taskId, 0, {
+      reason:     'superseded'
+    });
+
+    debug("### Check status of task");
+    var {status: s2} = await helper.queue.status(taskId);
+    assume(s2.runs[0].state).equals('exception');
+    assume(s2.runs[0].reasonResolved).equals('superseded');
+
+    debug("### Reporting task exception (using temp creds)");
+    let queue = new helper.Queue({credentials: r1.credentials});
+    await queue.reportException(taskId, 0, {
+      reason:     'superseded'
+    });
+  });
+
   test("reportException can't overwrite reason", async () => {
     var taskId = slugid.v4();
 
