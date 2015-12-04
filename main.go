@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"time"
 
@@ -242,27 +244,28 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 	// TODO: could probably do this with reflection to avoid explicitly listing
 	// all members
 
-	disallowed := map[interface{}]struct {
-		name  string
-		value interface{}
+	fields := []struct {
+		value      interface{}
+		name       string
+		disallowed interface{}
 	}{
-		c.Debug:                      {name: "debug", value: ""},
-		c.ProvisionerId:              {name: "provisioner_id", value: ""},
-		c.RefreshUrlsPrematurelySecs: {name: "refresh_urls_prematurely_secs", value: 0},
-		c.AccessToken:                {name: "access_token", value: ""},
-		c.ClientId:                   {name: "client_id", value: ""},
-		c.WorkerGroup:                {name: "worker_group", value: ""},
-		c.WorkerId:                   {name: "worker_id", value: ""},
-		c.WorkerType:                 {name: "worker_type", value: ""},
-		c.LiveLogExecutable:          {name: "livelog_executable", value: ""},
-		c.LiveLogSecret:              {name: "livelog_secret", value: ""},
-		c.PublicIP:                   {name: "public_ip", value: ""},
-		c.SubDomain:                  {name: "subdomain", value: ""},
+		{value: c.Debug, name: "debug", disallowed: ""},
+		{value: c.ProvisionerId, name: "provisioner_id", disallowed: ""},
+		{value: c.RefreshUrlsPrematurelySecs, name: "refresh_urls_prematurely_secs", disallowed: 0},
+		{value: c.AccessToken, name: "access_token", disallowed: ""},
+		{value: c.ClientId, name: "client_id", disallowed: ""},
+		{value: c.WorkerGroup, name: "worker_group", disallowed: ""},
+		{value: c.WorkerId, name: "worker_id", disallowed: ""},
+		{value: c.WorkerType, name: "worker_type", disallowed: ""},
+		{value: c.LiveLogExecutable, name: "livelog_executable", disallowed: ""},
+		{value: c.LiveLogSecret, name: "livelog_secret", disallowed: ""},
+		{value: c.PublicIP, name: "public_ip", disallowed: net.IP(nil)},
+		{value: c.SubDomain, name: "subdomain", disallowed: ""},
 	}
 
-	for i, j := range disallowed {
-		if i == j.value {
-			return c, fmt.Errorf("Config setting `%v` must be defined in file '%v'.", j.name, filename)
+	for _, f := range fields {
+		if reflect.DeepEqual(f.value, f.disallowed) {
+			return c, fmt.Errorf("Config setting `%v` must be defined in file '%v'.", f.name, filename)
 		}
 	}
 	// all config set!
