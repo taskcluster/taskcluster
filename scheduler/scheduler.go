@@ -39,7 +39,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/scheduler/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 4 Dec 2015 at 08:57:00 UTC. The code was generated
+// Fri, 4 Dec 2015 at 12:57:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package scheduler
 
@@ -261,9 +261,10 @@ func New(clientId string, accessToken string) *Scheduler {
 // task-graph. Thus, if you are submitting tasks to `my-worker-type` under
 // `my-provisioner` it's important that your task-graph has the scope
 // required to define tasks for this `provisionerId` and `workerType`.
-// See the queue for details on permissions required. Note, the task-graph
-// does not require permissions to schedule the tasks. This is done with
-// scopes provided by the task-graph scheduler.
+// (`queue:define-task:..` or `queue:create-task:..`; see the queue for
+// details on scopes required). Note, the task-graph does not require
+// permissions to schedule the tasks (`queue:schedule-task:..`), as this is
+// done with scopes provided by the task-graph scheduler.
 //
 // **Task-graph specific routing-keys**, using the `taskGraph.routes`
 // property you may define task-graph specific routing-keys. If a task-graph
@@ -895,7 +896,7 @@ type (
 	// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#
 	TaskGraphDefinition1 struct {
 
-		// Required task metadata"
+		// Required task metadata
 		//
 		// See http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/metadata
 		Metadata struct {

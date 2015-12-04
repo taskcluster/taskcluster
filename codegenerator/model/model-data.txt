@@ -1,4 +1,4 @@
-Generated: 1449219434
+Generated: 1449233835
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7818,9 +7818,10 @@ on behalf of a task-graph using the set of scopes assigned to the
 task-graph. Thus, if you are submitting tasks to `my-worker-type` under
 `my-provisioner` it's important that your task-graph has the scope
 required to define tasks for this `provisionerId` and `workerType`.
-See the queue for details on permissions required. Note, the task-graph
-does not require permissions to schedule the tasks. This is done with
-scopes provided by the task-graph scheduler.
+(`queue:define-task:..` or `queue:create-task:..`; see the queue for
+details on scopes required). Note, the task-graph does not require
+permissions to schedule the tasks (`queue:schedule-task:..`), as this is
+done with scopes provided by the task-graph scheduler.
 
 **Task-graph specific routing-keys**, using the `taskGraph.routes`
 property you may define task-graph specific routing-keys. If a task-graph
@@ -8830,7 +8831,7 @@ ID                     = 'http://schemas.taskcluster.net/scheduler/v1/task-graph
 Properties
   Property 'metadata' =
     Additional Properties  = 'false'
-    Description            = 'Required task metadata"
+    Description            = 'Required task metadata
     '
     Properties
       Property 'description' =
