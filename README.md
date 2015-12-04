@@ -39,7 +39,129 @@ View the generic worker help, to see what config you need to set up:
 generic-worker --help
 ```
 
-This will explain how to set up an appopriate config file to use.
+This should display something like this:
+
+```
+generic-worker
+generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
+See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
+the taskcluster component that executes tasks. It requests tasks from the taskcluster queue,
+and reports back results to the queue.
+
+  Usage:
+    generic-worker run                     [--config         CONFIG-FILE]
+                                           [--configure-for-aws]
+    generic-worker install                 [--config         CONFIG-FILE]
+                                           [--nssm           NSSM-EXE]
+                                           [--password       PASSWORD]
+                                           [--service-name   SERVICE-NAME]
+                                           [--username       USERNAME]
+    generic-worker show-payload-schema
+    generic-worker --help
+    generic-worker --version
+
+  Targets:
+    run                                     Runs the generic-worker in an infinite loop.
+    show-payload-schema                     Each taskcluster task defines a payload to be
+                                            interpreted by the worker that executes it. This
+                                            payload is validated against a json schema baked
+                                            into the release. This option outputs the json
+                                            schema used in this version of the generic
+                                            worker.
+    install                                 This will install the generic worker as a
+                                            Windows service. If the Windows user USERNAME
+                                            does not already exist on the system, the user
+                                            will be created. This user will be used to run
+                                            the service.
+
+  Options:
+    --configure-for-aws                     This will create the CONFIG-FILE for an AWS
+                                            installation by querying the AWS environment
+                                            and setting appropriate values.
+    --config CONFIG-FILE                    Json configuration file to use. See
+                                            configuration section below to see what this
+                                            file should contain.
+                                            [default: generic-worker.config]
+    --help                                  Display this help text.
+    --nssm NSSM-EXE                         The full path to nssm.exe to use for
+                                            installing the service.
+                                            [default: C:\nssm-2.24\win64\nssm.exe]
+    --password PASSWORD                     The password for the username specified
+                                            with -u|--username option. If not specified
+                                            a random password will be generated.
+    --service-name SERVICE-NAME             The name that the Windows service should be
+                                            installed under. [default: Generic Worker]
+    --username USERNAME                     The Windows user to run the generic worker
+                                            Windows service as. If the user does not
+                                            already exist on the system, it will be
+                                            created. [default: GenericWorker]
+    --version                               The release version of the generic-worker.
+
+
+  Configuring the generic worker:
+
+    The configuration file for the generic worker is specified with -c|--config CONFIG-FILE
+    as described above. Its format is a json dictionary of name/value pairs.
+
+        ** REQUIRED ** properties
+        =========================
+
+          access_token                      Taskcluster access token used by generic worker
+                                            to talk to taskcluster queue.
+          client_id                         Taskcluster client id used by generic worker to
+                                            talk to taskcluster queue.
+          worker_group                      Typically this would be an aws region - an
+                                            identifier to uniquely identify which pool of
+                                            workers this worker logically belongs to.
+          worker_id                         A name to uniquely identify your worker.
+          worker_type                       This should match a worker_type managed by the
+                                            provisioner you have specified.
+          livelog_secret                    This should match the secret used by the
+                                            stateless dns server; see
+                                            https://github.com/taskcluster/stateless-dns-server
+          public_ip                         The IP address for clients to be directed to
+                                            for serving live logs; see
+                                            https://github.com/taskcluster/livelog and
+                                            https://github.com/taskcluster/stateless-dns-server
+
+        ** OPTIONAL ** properties
+        =========================
+
+          certificate                       Taskcluster certificate, when using temporary
+                                            credentials only.
+          provisioner_id                    The taskcluster provisioner which is taking care
+                                            of provisioning environments with generic-worker
+                                            running on them. [default: aws-provisioner-v1]
+          refresh_urls_prematurely_secs     The number of seconds before azure urls expire,
+                                            that the generic worker should refresh them.
+                                            [default: 310]
+          debug                             Logging filter; see
+                                            https://github.com/tj/go-debug [default: *]
+          livelog_executable                Filepath of LiveLog executable to use; see
+                                            https://github.com/taskcluster/livelog
+          subdomain                         Subdomain to use in stateless dns name for live
+                                            logs; see
+                                            https://github.com/taskcluster/stateless-dns-server
+                                            [default: taskcluster-worker.net]
+
+    Here is an syntactically valid example configuration file:
+
+            {
+              "access_token":               "123bn234bjhgdsjhg234",
+              "client_id":                  "hskdjhfasjhdkhdbfoisjd",
+              "worker_group":               "dev-test",
+              "worker_id":                  "IP_10-134-54-89",
+              "worker_type":                "win2008-worker",
+              "provisioner_id":             "my-provisioner"
+            }
+
+
+    If an optional config setting is not provided in the json configuration file, the
+    default will be taken (defaults documented above).
+
+    If no value can be determined for a required config setting, the generic-worker will
+    exit with a failure message.
+```
 
 ## Start the generic worker
 
