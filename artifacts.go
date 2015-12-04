@@ -311,13 +311,13 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 		return err
 	}
 	par := queue.PostArtifactRequest(json.RawMessage(payload))
-	parsp, callSummary := Queue.CreateArtifact(
+	parsp, callSummary, err := Queue.CreateArtifact(
 		task.TaskId,
 		strconv.Itoa(int(task.RunId)),
 		artifact.Base().CanonicalPath,
 		&par,
 	)
-	if callSummary.Error != nil {
+	if err != nil {
 		debug("Could not upload artifact: %v", artifact)
 		debug("%v", callSummary)
 		debug("%v", parsp)
@@ -329,7 +329,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 		callSummary.HttpResponse.Header.Write(os.Stdout)
 		debug("Response Body")
 		debug(callSummary.HttpResponseBody)
-		return callSummary.Error
+		return err
 	}
 	debug("Response body RAW")
 	debug(callSummary.HttpResponseBody)

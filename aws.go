@@ -76,9 +76,9 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 		Authenticate: false,
 		BaseURL:      userData.ProvisionerBaseUrl,
 	}
-	secToken, callSummary := awsprov.GetSecret(userData.SecurityToken)
-	if callSummary.Error != nil {
-		return callSummary.Error
+	secToken, _, err := awsprov.GetSecret(userData.SecurityToken)
+	if err != nil {
+		return err
 	}
 	c.AccessToken = secToken.Credentials.AccessToken
 	c.ClientId = secToken.Credentials.ClientId
@@ -87,9 +87,9 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	c.WorkerId = instanceName
 	c.PublicIP = net.ParseIP(publicIP)
 	c.WorkerType = userData.WorkerType
-	callSummary = awsprov.RemoveSecret(userData.SecurityToken)
-	if callSummary.Error != nil {
-		return callSummary.Error
+	_, err = awsprov.RemoveSecret(userData.SecurityToken)
+	if err != nil {
+		return err
 	}
 	fmt.Printf("\n\nConfig\n\n%#v\n\n", c)
 	return nil

@@ -19,6 +19,7 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 	// signedURLs is the variable where we store the current valid signed urls
 	var signedURLs *queue.PollTaskUrlsResponse
 	var callSummary *queue.CallSummary
+	var err error
 	// updateMe is a channel to send a message to when we need to update signed
 	// urls because either we don't have any yet (i.e. first time) or they are
 	// about to expire...
@@ -28,13 +29,13 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		// When a worker wants to poll for pending tasks it must call
 		// `queue.pollTaskUrls(provisionerId, workerType)` which then returns
 		// an array of objects on the form `{signedPollUrl, signedDeleteUrl}`.
-		signedURLs, callSummary = Queue.PollTaskUrls(config.ProvisionerId, config.WorkerType)
+		signedURLs, callSummary, err = Queue.PollTaskUrls(config.ProvisionerId, config.WorkerType)
 		// TODO: not sure if this is the right thing to do. If Queue has an outage, maybe better to
 		// do expoenential backoff indefinitely?
-		if callSummary.Error != nil {
+		if err != nil {
 			debug("Http response was:")
 			debug(callSummary.HttpResponseBody)
-			panic(callSummary.Error)
+			panic(err)
 		}
 		// Set reminder to update signed urls again when they are
 		// approximately REFRESH_URLS_PREMATURELY_SECS seconds before

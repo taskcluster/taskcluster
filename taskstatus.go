@@ -47,11 +47,11 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 
 	reportException := func(task *TaskRun, reason string) error {
 		ter := queue.TaskExceptionRequest{Reason: reason}
-		tsr, callSummary := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
-		if callSummary.Error != nil {
+		tsr, _, err := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
+		if err != nil {
 			debug("Not able to report exception for task %v:", task.TaskId)
-			debug("%v", callSummary.Error)
-			return callSummary.Error
+			debug("%v", err)
+			return err
 		}
 		task.TaskClaimResponse.Status = tsr.Status
 		debug(task.String())
@@ -59,11 +59,11 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 	}
 
 	reportFailed := func(task *TaskRun) error {
-		tsr, callSummary := Queue.ReportFailed(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
-		if callSummary.Error != nil {
+		tsr, _, err := Queue.ReportFailed(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
+		if err != nil {
 			debug("Not able to report failed completion for task %v:", task.TaskId)
-			debug("%v", callSummary.Error)
-			return callSummary.Error
+			debug("%v", err)
+			return err
 		}
 		task.TaskClaimResponse.Status = tsr.Status
 		debug(task.String())
@@ -72,11 +72,11 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 
 	reportCompleted := func(task *TaskRun) error {
 		debug("Command finished successfully!")
-		tsr, callSummary := Queue.ReportCompleted(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
-		if callSummary.Error != nil {
+		tsr, _, err := Queue.ReportCompleted(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
+		if err != nil {
 			debug("Not able to report successful completion for task %v:", task.TaskId)
-			debug("%v", callSummary.Error)
-			return callSummary.Error
+			debug("%v", err)
+			return err
 		}
 		task.TaskClaimResponse.Status = tsr.Status
 		debug(task.String())
@@ -91,10 +91,10 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 		}
 		// Using the taskId and runId from the <MessageText> tag, the worker
 		// must call queue.claimTask().
-		tcrsp, callSummary := Queue.ClaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId), &task.TaskClaimRequest)
+		tcrsp, callSummary, err := Queue.ClaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId), &task.TaskClaimRequest)
 		task.ClaimCallSummary = *callSummary
 		// check if an error occurred...
-		if callSummary.Error != nil {
+		if err != nil {
 			// If the queue.claimTask() operation fails with a 4xx error, the
 			// worker must delete the messages from the Azure queue (except 401).
 			switch {
@@ -110,8 +110,8 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 				}
 			}
 			debug(task.String())
-			debug("%v", callSummary.Error)
-			return callSummary.Error
+			debug("%v", err)
+			return err
 		}
 		task.TaskClaimResponse = *tcrsp
 		// don't report failure if this fails, as it is already logged and failure =>
@@ -121,11 +121,11 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 
 	reclaim := func(task *TaskRun) error {
 		debug("Reclaiming task %v...", task.TaskId)
-		tcrsp, callSummary := Queue.ReclaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId))
+		tcrsp, callSummary, err := Queue.ReclaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId))
 		task.ClaimCallSummary = *callSummary
 
 		// check if an error occurred...
-		if err := callSummary.Error; err != nil {
+		if err != nil {
 			debug("%v", err)
 			return err
 		}

@@ -367,10 +367,10 @@ func TestUpload(t *testing.T) {
 		WorkerType:    workerType,
 	}
 
-	_, cs := myQueue.CreateTask(taskId, td)
+	_, _, err := myQueue.CreateTask(taskId, td)
 
-	if cs.Error != nil {
-		t.Fatalf("Suffered error when posting task to Queue in test setup:\n%s", cs.Error)
+	if err != nil {
+		t.Fatalf("Suffered error when posting task to Queue in test setup:\n%s", err)
 	}
 
 	expectedArtifacts := map[string]string{
@@ -407,9 +407,9 @@ func TestUpload(t *testing.T) {
 
 	// now check content was uploaded to Amazon, and is correct
 	for artifact, content := range expectedArtifacts {
-		cs = myQueue.GetLatestArtifact(taskId, artifact)
-		if cs.Error != nil {
-			t.Fatalf("Error trying to fetch artifacts from Amazon...")
+		cs, err := myQueue.GetLatestArtifact(taskId, artifact)
+		if err != nil {
+			t.Fatalf("Error trying to fetch artifacts from Amazon...\n%s", err)
 		}
 		if cs.HttpResponseBody != content {
 			t.Errorf("Artifact '%s': Was expecting content '%s' but found '%s'", artifact, content, cs.HttpResponseBody)
