@@ -75,7 +75,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (myHooks *Hooks) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary, error) {
+func (myHooks *Hooks) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	jsonPayload, err := json.Marshal(payload)
@@ -94,9 +94,16 @@ func (myHooks *Hooks) apiCall(payload interface{}, method, route string, result 
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, myHooks.BaseURL+route, ioReader)
+		u, err := url.Parse(myHooks.BaseURL + route)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", myHooks.BaseURL+route, myHooks.BaseURL, err)
+		}
+		if query != nil {
+			u.RawQuery = query.Encode()
+		}
+		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
+		if err != nil {
+			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), myHooks.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
@@ -218,7 +225,7 @@ func New(clientId string, accessToken string) *Hooks {
 //
 // See http://docs.taskcluster.net/services/hooks/#listHookGroups
 func (myHooks *Hooks) ListHookGroups() (*HookGroups, *CallSummary, error) {
-	responseObject, callSummary, err := myHooks.apiCall(nil, "GET", "/hooks", new(HookGroups))
+	responseObject, callSummary, err := myHooks.apiCall(nil, "GET", "/hooks", new(HookGroups), nil)
 	return responseObject.(*HookGroups), callSummary, err
 }
 
@@ -229,7 +236,7 @@ func (myHooks *Hooks) ListHookGroups() (*HookGroups, *CallSummary, error) {
 //
 // See http://docs.taskcluster.net/services/hooks/#listHooks
 func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, *CallSummary, error) {
-	responseObject, callSummary, err := myHooks.apiCall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId), new(HookList))
+	responseObject, callSummary, err := myHooks.apiCall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId), new(HookList), nil)
 	return responseObject.(*HookList), callSummary, err
 }
 
@@ -240,7 +247,7 @@ func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, *CallSummary, er
 //
 // See http://docs.taskcluster.net/services/hooks/#hook
 func (myHooks *Hooks) Hook(hookGroupId string, hookId string) (*HookDefinition, *CallSummary, error) {
-	responseObject, callSummary, err := myHooks.apiCall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition))
+	responseObject, callSummary, err := myHooks.apiCall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), callSummary, err
 }
 
@@ -251,7 +258,7 @@ func (myHooks *Hooks) Hook(hookGroupId string, hookId string) (*HookDefinition, 
 //
 // See http://docs.taskcluster.net/services/hooks/#getHookSchedule
 func (myHooks *Hooks) GetHookSchedule(hookGroupId string, hookId string) (*HookScheduleResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myHooks.apiCall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/schedule", new(HookScheduleResponse))
+	responseObject, callSummary, err := myHooks.apiCall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/schedule", new(HookScheduleResponse), nil)
 	return responseObject.(*HookScheduleResponse), callSummary, err
 }
 
@@ -269,7 +276,7 @@ func (myHooks *Hooks) GetHookSchedule(hookGroupId string, hookId string) (*HookS
 //
 // See http://docs.taskcluster.net/services/hooks/#createHook
 func (myHooks *Hooks) CreateHook(hookGroupId string, hookId string, payload *HookCreationRequest) (*HookDefinition, *CallSummary, error) {
-	responseObject, callSummary, err := myHooks.apiCall(payload, "PUT", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition))
+	responseObject, callSummary, err := myHooks.apiCall(payload, "PUT", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), callSummary, err
 }
 
@@ -284,7 +291,7 @@ func (myHooks *Hooks) CreateHook(hookGroupId string, hookId string, payload *Hoo
 //
 // See http://docs.taskcluster.net/services/hooks/#updateHook
 func (myHooks *Hooks) UpdateHook(hookGroupId string, hookId string, payload *HookCreationRequest) (*HookDefinition, *CallSummary, error) {
-	responseObject, callSummary, err := myHooks.apiCall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition))
+	responseObject, callSummary, err := myHooks.apiCall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), callSummary, err
 }
 
@@ -297,7 +304,7 @@ func (myHooks *Hooks) UpdateHook(hookGroupId string, hookId string, payload *Hoo
 //
 // See http://docs.taskcluster.net/services/hooks/#removeHook
 func (myHooks *Hooks) RemoveHook(hookGroupId string, hookId string) (*CallSummary, error) {
-	_, callSummary, err := myHooks.apiCall(nil, "DELETE", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), nil)
+	_, callSummary, err := myHooks.apiCall(nil, "DELETE", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), nil, nil)
 	return callSummary, err
 }
 

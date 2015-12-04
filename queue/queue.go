@@ -70,7 +70,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (myQueue *Queue) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary, error) {
+func (myQueue *Queue) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	jsonPayload, err := json.Marshal(payload)
@@ -89,9 +89,16 @@ func (myQueue *Queue) apiCall(payload interface{}, method, route string, result 
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, myQueue.BaseURL+route, ioReader)
+		u, err := url.Parse(myQueue.BaseURL + route)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", myQueue.BaseURL+route, myQueue.BaseURL, err)
+		}
+		if query != nil {
+			u.RawQuery = query.Encode()
+		}
+		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
+		if err != nil {
+			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), myQueue.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
@@ -215,7 +222,7 @@ func New(clientId string, accessToken string) *Queue {
 //
 // See http://docs.taskcluster.net/queue/api-docs/#task
 func (myQueue *Queue) Task(taskId string) (*TaskDefinitionResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId), new(TaskDefinitionResponse))
+	responseObject, callSummary, err := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId), new(TaskDefinitionResponse), nil)
 	return responseObject.(*TaskDefinitionResponse), callSummary, err
 }
 
@@ -225,7 +232,7 @@ func (myQueue *Queue) Task(taskId string) (*TaskDefinitionResponse, *CallSummary
 //
 // See http://docs.taskcluster.net/queue/api-docs/#status
 func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/status", new(TaskStatusResponse))
+	responseObject, callSummary, err := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/status", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
@@ -258,7 +265,7 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *CallSummary, 
 //
 // See http://docs.taskcluster.net/queue/api-docs/#createTask
 func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(payload, "PUT", "/task/"+url.QueryEscape(taskId), new(TaskStatusResponse))
+	responseObject, callSummary, err := myQueue.apiCall(payload, "PUT", "/task/"+url.QueryEscape(taskId), new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
@@ -289,7 +296,7 @@ func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) 
 //
 // See http://docs.taskcluster.net/queue/api-docs/#defineTask
 func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/define", new(TaskStatusResponse))
+	responseObject, callSummary, err := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/define", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
@@ -310,7 +317,7 @@ func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) 
 //
 // See http://docs.taskcluster.net/queue/api-docs/#scheduleTask
 func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/schedule", new(TaskStatusResponse))
+	responseObject, callSummary, err := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/schedule", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
@@ -335,7 +342,7 @@ func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *CallSum
 //
 // See http://docs.taskcluster.net/queue/api-docs/#rerunTask
 func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/rerun", new(TaskStatusResponse))
+	responseObject, callSummary, err := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/rerun", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
@@ -360,7 +367,7 @@ func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *CallSummar
 //
 // See http://docs.taskcluster.net/queue/api-docs/#cancelTask
 func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/cancel", new(TaskStatusResponse))
+	responseObject, callSummary, err := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/cancel", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
@@ -376,7 +383,7 @@ func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *CallSumma
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pollTaskUrls
 func (myQueue *Queue) PollTaskUrls(provisionerId string, workerType string) (*PollTaskUrlsResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(nil, "GET", "/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(PollTaskUrlsResponse))
+	responseObject, callSummary, err := myQueue.apiCall(nil, "GET", "/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(PollTaskUrlsResponse), nil)
 	return responseObject.(*PollTaskUrlsResponse), callSummary, err
 }
 
@@ -390,7 +397,7 @@ func (myQueue *Queue) PollTaskUrls(provisionerId string, workerType string) (*Po
 //
 // See http://docs.taskcluster.net/queue/api-docs/#claimTask
 func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/claim", new(TaskClaimResponse))
+	responseObject, callSummary, err := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/claim", new(TaskClaimResponse), nil)
 	return responseObject.(*TaskClaimResponse), callSummary, err
 }
 
@@ -404,7 +411,7 @@ func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimR
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reclaimTask
 func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskReclaimResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskReclaimResponse))
+	responseObject, callSummary, err := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskReclaimResponse), nil)
 	return responseObject.(*TaskReclaimResponse), callSummary, err
 }
 
@@ -418,7 +425,7 @@ func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskReclaimResp
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportCompleted
 func (myQueue *Queue) ReportCompleted(taskId string, runId string) (*TaskStatusResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/completed", new(TaskStatusResponse))
+	responseObject, callSummary, err := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/completed", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
@@ -438,7 +445,7 @@ func (myQueue *Queue) ReportCompleted(taskId string, runId string) (*TaskStatusR
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportFailed
 func (myQueue *Queue) ReportFailed(taskId string, runId string) (*TaskStatusResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/failed", new(TaskStatusResponse))
+	responseObject, callSummary, err := myQueue.apiCall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/failed", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
@@ -463,7 +470,7 @@ func (myQueue *Queue) ReportFailed(taskId string, runId string) (*TaskStatusResp
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportException
 func (myQueue *Queue) ReportException(taskId string, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/exception", new(TaskStatusResponse))
+	responseObject, callSummary, err := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/exception", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
@@ -534,7 +541,7 @@ func (myQueue *Queue) ReportException(taskId string, runId string, payload *Task
 //
 // See http://docs.taskcluster.net/queue/api-docs/#createArtifact
 func (myQueue *Queue) CreateArtifact(taskId string, runId string, name string, payload *PostArtifactRequest) (*PostArtifactResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(PostArtifactResponse))
+	responseObject, callSummary, err := myQueue.apiCall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(PostArtifactResponse), nil)
 	return responseObject.(*PostArtifactResponse), callSummary, err
 }
 
@@ -557,7 +564,7 @@ func (myQueue *Queue) CreateArtifact(taskId string, runId string, name string, p
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getArtifact
 func (myQueue *Queue) GetArtifact(taskId string, runId string, name string) (*CallSummary, error) {
-	_, callSummary, err := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil)
+	_, callSummary, err := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
 
@@ -584,7 +591,7 @@ func (myQueue *Queue) GetArtifact(taskId string, runId string, name string) (*Ca
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getLatestArtifact
 func (myQueue *Queue) GetLatestArtifact(taskId string, name string) (*CallSummary, error) {
-	_, callSummary, err := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil)
+	_, callSummary, err := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
 
@@ -594,7 +601,7 @@ func (myQueue *Queue) GetLatestArtifact(taskId string, name string) (*CallSummar
 //
 // See http://docs.taskcluster.net/queue/api-docs/#listArtifacts
 func (myQueue *Queue) ListArtifacts(taskId string, runId string) (*ListArtifactsResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", new(ListArtifactsResponse))
+	responseObject, callSummary, err := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", new(ListArtifactsResponse), nil)
 	return responseObject.(*ListArtifactsResponse), callSummary, err
 }
 
@@ -605,7 +612,7 @@ func (myQueue *Queue) ListArtifacts(taskId string, runId string) (*ListArtifacts
 //
 // See http://docs.taskcluster.net/queue/api-docs/#listLatestArtifacts
 func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse))
+	responseObject, callSummary, err := myQueue.apiCall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse), nil)
 	return responseObject.(*ListArtifactsResponse), callSummary, err
 }
 
@@ -620,7 +627,7 @@ func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pendingTasks
 func (myQueue *Queue) PendingTasks(provisionerId string, workerType string) (*CountPendingTasksResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myQueue.apiCall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse))
+	responseObject, callSummary, err := myQueue.apiCall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse), nil)
 	return responseObject.(*CountPendingTasksResponse), callSummary, err
 }
 
@@ -632,7 +639,7 @@ func (myQueue *Queue) PendingTasks(provisionerId string, workerType string) (*Co
 //
 // See http://docs.taskcluster.net/queue/api-docs/#ping
 func (myQueue *Queue) Ping() (*CallSummary, error) {
-	_, callSummary, err := myQueue.apiCall(nil, "GET", "/ping", nil)
+	_, callSummary, err := myQueue.apiCall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
 

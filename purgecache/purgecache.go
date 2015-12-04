@@ -67,7 +67,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (purgeCache *PurgeCache) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary, error) {
+func (purgeCache *PurgeCache) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	jsonPayload, err := json.Marshal(payload)
@@ -86,9 +86,16 @@ func (purgeCache *PurgeCache) apiCall(payload interface{}, method, route string,
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, purgeCache.BaseURL+route, ioReader)
+		u, err := url.Parse(purgeCache.BaseURL + route)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", purgeCache.BaseURL+route, purgeCache.BaseURL, err)
+		}
+		if query != nil {
+			u.RawQuery = query.Encode()
+		}
+		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
+		if err != nil {
+			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), purgeCache.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
@@ -215,7 +222,7 @@ func New(clientId string, accessToken string) *PurgeCache {
 //
 // See http://docs.taskcluster.net/services/purge-cache/#purgeCache
 func (purgeCache *PurgeCache) PurgeCache(provisionerId string, workerType string, payload *PurgeCacheRequest) (*CallSummary, error) {
-	_, callSummary, err := purgeCache.apiCall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil)
+	_, callSummary, err := purgeCache.apiCall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, nil)
 	return callSummary, err
 }
 
@@ -227,7 +234,7 @@ func (purgeCache *PurgeCache) PurgeCache(provisionerId string, workerType string
 //
 // See http://docs.taskcluster.net/services/purge-cache/#ping
 func (purgeCache *PurgeCache) Ping() (*CallSummary, error) {
-	_, callSummary, err := purgeCache.apiCall(nil, "GET", "/ping", nil)
+	_, callSummary, err := purgeCache.apiCall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
 

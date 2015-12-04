@@ -64,7 +64,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (mySecrets *Secrets) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary, error) {
+func (mySecrets *Secrets) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	jsonPayload, err := json.Marshal(payload)
@@ -83,9 +83,16 @@ func (mySecrets *Secrets) apiCall(payload interface{}, method, route string, res
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, mySecrets.BaseURL+route, ioReader)
+		u, err := url.Parse(mySecrets.BaseURL + route)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", mySecrets.BaseURL+route, mySecrets.BaseURL, err)
+		}
+		if query != nil {
+			u.RawQuery = query.Encode()
+		}
+		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
+		if err != nil {
+			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), mySecrets.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
@@ -210,7 +217,7 @@ func New(clientId string, accessToken string) *Secrets {
 //
 // See http://docs.taskcluster.net/services/secrets/#set
 func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) (*CallSummary, error) {
-	_, callSummary, err := mySecrets.apiCall(payload, "PUT", "/secrets/"+url.QueryEscape(name), nil)
+	_, callSummary, err := mySecrets.apiCall(payload, "PUT", "/secrets/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
 
@@ -223,7 +230,7 @@ func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) (*CallSu
 //
 // See http://docs.taskcluster.net/services/secrets/#update
 func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) (*CallSummary, error) {
-	_, callSummary, err := mySecrets.apiCall(payload, "POST", "/secrets/"+url.QueryEscape(name), nil)
+	_, callSummary, err := mySecrets.apiCall(payload, "POST", "/secrets/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
 
@@ -236,7 +243,7 @@ func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) (*Cal
 //
 // See http://docs.taskcluster.net/services/secrets/#remove
 func (mySecrets *Secrets) Remove(name string) (*CallSummary, error) {
-	_, callSummary, err := mySecrets.apiCall(nil, "DELETE", "/secrets/"+url.QueryEscape(name), nil)
+	_, callSummary, err := mySecrets.apiCall(nil, "DELETE", "/secrets/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
 
@@ -249,7 +256,7 @@ func (mySecrets *Secrets) Remove(name string) (*CallSummary, error) {
 //
 // See http://docs.taskcluster.net/services/secrets/#get
 func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary, error) {
-	responseObject, callSummary, err := mySecrets.apiCall(nil, "GET", "/secrets/"+url.QueryEscape(name), new(ATaskClusterSecret))
+	responseObject, callSummary, err := mySecrets.apiCall(nil, "GET", "/secrets/"+url.QueryEscape(name), new(ATaskClusterSecret), nil)
 	return responseObject.(*ATaskClusterSecret), callSummary, err
 }
 
@@ -261,7 +268,7 @@ func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary, e
 //
 // See http://docs.taskcluster.net/services/secrets/#ping
 func (mySecrets *Secrets) Ping() (*CallSummary, error) {
-	_, callSummary, err := mySecrets.apiCall(nil, "GET", "/ping", nil)
+	_, callSummary, err := mySecrets.apiCall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
 

@@ -150,7 +150,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (myIndex *Index) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary, error) {
+func (myIndex *Index) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	jsonPayload, err := json.Marshal(payload)
@@ -169,9 +169,16 @@ func (myIndex *Index) apiCall(payload interface{}, method, route string, result 
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, myIndex.BaseURL+route, ioReader)
+		u, err := url.Parse(myIndex.BaseURL + route)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", myIndex.BaseURL+route, myIndex.BaseURL, err)
+		}
+		if query != nil {
+			u.RawQuery = query.Encode()
+		}
+		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
+		if err != nil {
+			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), myIndex.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
@@ -294,7 +301,7 @@ func New(clientId string, accessToken string) *Index {
 //
 // See http://docs.taskcluster.net/services/index/#findTask
 func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myIndex.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse))
+	responseObject, callSummary, err := myIndex.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
 	return responseObject.(*IndexedTaskResponse), callSummary, err
 }
 
@@ -311,7 +318,7 @@ func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *CallSum
 //
 // See http://docs.taskcluster.net/services/index/#listNamespaces
 func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myIndex.apiCall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse))
+	responseObject, callSummary, err := myIndex.apiCall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse), nil)
 	return responseObject.(*ListNamespacesResponse), callSummary, err
 }
 
@@ -328,7 +335,7 @@ func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRe
 //
 // See http://docs.taskcluster.net/services/index/#listTasks
 func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myIndex.apiCall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse))
+	responseObject, callSummary, err := myIndex.apiCall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), nil)
 	return responseObject.(*ListTasksResponse), callSummary, err
 }
 
@@ -342,7 +349,7 @@ func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*L
 //
 // See http://docs.taskcluster.net/services/index/#insertTask
 func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myIndex.apiCall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse))
+	responseObject, callSummary, err := myIndex.apiCall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
 	return responseObject.(*IndexedTaskResponse), callSummary, err
 }
 
@@ -357,7 +364,7 @@ func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (
 //
 // See http://docs.taskcluster.net/services/index/#findArtifactFromTask
 func (myIndex *Index) FindArtifactFromTask(namespace string, name string) (*CallSummary, error) {
-	_, callSummary, err := myIndex.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil)
+	_, callSummary, err := myIndex.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
 
@@ -369,7 +376,7 @@ func (myIndex *Index) FindArtifactFromTask(namespace string, name string) (*Call
 //
 // See http://docs.taskcluster.net/services/index/#ping
 func (myIndex *Index) Ping() (*CallSummary, error) {
-	_, callSummary, err := myIndex.apiCall(nil, "GET", "/ping", nil)
+	_, callSummary, err := myIndex.apiCall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
 

@@ -88,7 +88,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (awsProvisioner *AwsProvisioner) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary, error) {
+func (awsProvisioner *AwsProvisioner) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	jsonPayload, err := json.Marshal(payload)
@@ -107,9 +107,16 @@ func (awsProvisioner *AwsProvisioner) apiCall(payload interface{}, method, route
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, awsProvisioner.BaseURL+route, ioReader)
+		u, err := url.Parse(awsProvisioner.BaseURL + route)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", awsProvisioner.BaseURL+route, awsProvisioner.BaseURL, err)
+		}
+		if query != nil {
+			u.RawQuery = query.Encode()
+		}
+		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
+		if err != nil {
+			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), awsProvisioner.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
@@ -256,7 +263,7 @@ func New(clientId string, accessToken string) *AwsProvisioner {
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createWorkerType
 func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary, error) {
-	responseObject, callSummary, err := awsProvisioner.apiCall(payload, "PUT", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest))
+	responseObject, callSummary, err := awsProvisioner.apiCall(payload, "PUT", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest), nil)
 	return responseObject.(*GetWorkerTypeRequest), callSummary, err
 }
 
@@ -279,7 +286,7 @@ func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payloa
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#updateWorkerType
 func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary, error) {
-	responseObject, callSummary, err := awsProvisioner.apiCall(payload, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(GetWorkerTypeRequest))
+	responseObject, callSummary, err := awsProvisioner.apiCall(payload, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(GetWorkerTypeRequest), nil)
 	return responseObject.(*GetWorkerTypeRequest), callSummary, err
 }
 
@@ -297,7 +304,7 @@ func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payloa
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#workerType
 func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerTypeRequest, *CallSummary, error) {
-	responseObject, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest))
+	responseObject, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest), nil)
 	return responseObject.(*GetWorkerTypeRequest), callSummary, err
 }
 
@@ -319,7 +326,7 @@ func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerT
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeWorkerType
 func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) (*CallSummary, error) {
-	_, callSummary, err := awsProvisioner.apiCall(nil, "DELETE", "/worker-type/"+url.QueryEscape(workerType), nil)
+	_, callSummary, err := awsProvisioner.apiCall(nil, "DELETE", "/worker-type/"+url.QueryEscape(workerType), nil, nil)
 	return callSummary, err
 }
 
@@ -335,7 +342,7 @@ func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) (*Call
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#listWorkerTypes
 func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *CallSummary, error) {
-	responseObject, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/list-worker-types", new(ListWorkerTypes))
+	responseObject, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/list-worker-types", new(ListWorkerTypes), nil)
 	return responseObject.(*ListWorkerTypes), callSummary, err
 }
 
@@ -353,7 +360,7 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *Call
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createSecret
 func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSecretRequest) (*CallSummary, error) {
-	_, callSummary, err := awsProvisioner.apiCall(payload, "PUT", "/secret/"+url.QueryEscape(token), nil)
+	_, callSummary, err := awsProvisioner.apiCall(payload, "PUT", "/secret/"+url.QueryEscape(token), nil, nil)
 	return callSummary, err
 }
 
@@ -369,7 +376,7 @@ func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSec
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#getSecret
 func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretResponse, *CallSummary, error) {
-	responseObject, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/secret/"+url.QueryEscape(token), new(GetSecretResponse))
+	responseObject, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/secret/"+url.QueryEscape(token), new(GetSecretResponse), nil)
 	return responseObject.(*GetSecretResponse), callSummary, err
 }
 
@@ -383,7 +390,7 @@ func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretRespons
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#instanceStarted
 func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId string, token string) (*CallSummary, error) {
-	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/instance-started/"+url.QueryEscape(instanceId)+"/"+url.QueryEscape(token), nil)
+	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/instance-started/"+url.QueryEscape(instanceId)+"/"+url.QueryEscape(token), nil, nil)
 	return callSummary, err
 }
 
@@ -398,7 +405,7 @@ func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId string, token s
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeSecret
 func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) (*CallSummary, error) {
-	_, callSummary, err := awsProvisioner.apiCall(nil, "DELETE", "/secret/"+url.QueryEscape(token), nil)
+	_, callSummary, err := awsProvisioner.apiCall(nil, "DELETE", "/secret/"+url.QueryEscape(token), nil, nil)
 	return callSummary, err
 }
 
@@ -416,7 +423,7 @@ func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) (*CallSummary, 
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#getLaunchSpecs
 func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, *CallSummary, error) {
-	responseObject, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", new(GetAllLaunchSpecsResponse))
+	responseObject, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", new(GetAllLaunchSpecsResponse), nil)
 	return responseObject.(*GetAllLaunchSpecsResponse), callSummary, err
 }
 
@@ -432,7 +439,7 @@ func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAll
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#awsState
 func (awsProvisioner *AwsProvisioner) AwsState() (*CallSummary, error) {
-	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/aws-state", nil)
+	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/aws-state", nil, nil)
 	return callSummary, err
 }
 
@@ -448,7 +455,7 @@ func (awsProvisioner *AwsProvisioner) AwsState() (*CallSummary, error) {
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#state
 func (awsProvisioner *AwsProvisioner) State(workerType string) (*CallSummary, error) {
-	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/state/"+url.QueryEscape(workerType), nil)
+	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/state/"+url.QueryEscape(workerType), nil, nil)
 	return callSummary, err
 }
 
@@ -460,7 +467,7 @@ func (awsProvisioner *AwsProvisioner) State(workerType string) (*CallSummary, er
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#ping
 func (awsProvisioner *AwsProvisioner) Ping() (*CallSummary, error) {
-	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/ping", nil)
+	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
 
@@ -472,7 +479,7 @@ func (awsProvisioner *AwsProvisioner) Ping() (*CallSummary, error) {
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#apiReference
 func (awsProvisioner *AwsProvisioner) ApiReference() (*CallSummary, error) {
-	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/api-reference", nil)
+	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/api-reference", nil, nil)
 	return callSummary, err
 }
 

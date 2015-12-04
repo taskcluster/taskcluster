@@ -71,7 +71,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (myScheduler *Scheduler) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary, error) {
+func (myScheduler *Scheduler) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	jsonPayload, err := json.Marshal(payload)
@@ -90,9 +90,16 @@ func (myScheduler *Scheduler) apiCall(payload interface{}, method, route string,
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, myScheduler.BaseURL+route, ioReader)
+		u, err := url.Parse(myScheduler.BaseURL + route)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", myScheduler.BaseURL+route, myScheduler.BaseURL, err)
+		}
+		if query != nil {
+			u.RawQuery = query.Encode()
+		}
+		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
+		if err != nil {
+			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), myScheduler.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
@@ -279,7 +286,7 @@ func New(clientId string, accessToken string) *Scheduler {
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#createTaskGraph
 func (myScheduler *Scheduler) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1) (*TaskGraphStatusResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myScheduler.apiCall(payload, "PUT", "/task-graph/"+url.QueryEscape(taskGraphId), new(TaskGraphStatusResponse))
+	responseObject, callSummary, err := myScheduler.apiCall(payload, "PUT", "/task-graph/"+url.QueryEscape(taskGraphId), new(TaskGraphStatusResponse), nil)
 	return responseObject.(*TaskGraphStatusResponse), callSummary, err
 }
 
@@ -304,7 +311,7 @@ func (myScheduler *Scheduler) CreateTaskGraph(taskGraphId string, payload *TaskG
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#extendTaskGraph
 func (myScheduler *Scheduler) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition) (*TaskGraphStatusResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myScheduler.apiCall(payload, "POST", "/task-graph/"+url.QueryEscape(taskGraphId)+"/extend", new(TaskGraphStatusResponse))
+	responseObject, callSummary, err := myScheduler.apiCall(payload, "POST", "/task-graph/"+url.QueryEscape(taskGraphId)+"/extend", new(TaskGraphStatusResponse), nil)
 	return responseObject.(*TaskGraphStatusResponse), callSummary, err
 }
 
@@ -318,7 +325,7 @@ func (myScheduler *Scheduler) ExtendTaskGraph(taskGraphId string, payload *TaskG
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#status
 func (myScheduler *Scheduler) Status(taskGraphId string) (*TaskGraphStatusResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/status", new(TaskGraphStatusResponse))
+	responseObject, callSummary, err := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/status", new(TaskGraphStatusResponse), nil)
 	return responseObject.(*TaskGraphStatusResponse), callSummary, err
 }
 
@@ -333,7 +340,7 @@ func (myScheduler *Scheduler) Status(taskGraphId string) (*TaskGraphStatusRespon
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#info
 func (myScheduler *Scheduler) Info(taskGraphId string) (*TaskGraphInfoResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/info", new(TaskGraphInfoResponse))
+	responseObject, callSummary, err := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/info", new(TaskGraphInfoResponse), nil)
 	return responseObject.(*TaskGraphInfoResponse), callSummary, err
 }
 
@@ -354,7 +361,7 @@ func (myScheduler *Scheduler) Info(taskGraphId string) (*TaskGraphInfoResponse, 
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspect
 func (myScheduler *Scheduler) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect", new(InspectTaskGraphResponse))
+	responseObject, callSummary, err := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect", new(InspectTaskGraphResponse), nil)
 	return responseObject.(*InspectTaskGraphResponse), callSummary, err
 }
 
@@ -375,7 +382,7 @@ func (myScheduler *Scheduler) Inspect(taskGraphId string) (*InspectTaskGraphResp
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspectTask
 func (myScheduler *Scheduler) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraphTaskResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect/"+url.QueryEscape(taskId), new(InspectTaskGraphTaskResponse))
+	responseObject, callSummary, err := myScheduler.apiCall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect/"+url.QueryEscape(taskId), new(InspectTaskGraphTaskResponse), nil)
 	return responseObject.(*InspectTaskGraphTaskResponse), callSummary, err
 }
 
@@ -387,7 +394,7 @@ func (myScheduler *Scheduler) InspectTask(taskGraphId string, taskId string) (*I
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#ping
 func (myScheduler *Scheduler) Ping() (*CallSummary, error) {
-	_, callSummary, err := myScheduler.apiCall(nil, "GET", "/ping", nil)
+	_, callSummary, err := myScheduler.apiCall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
 
