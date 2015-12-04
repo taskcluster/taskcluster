@@ -46,9 +46,9 @@
 //
 // and then call one or more of awsProvisioner's methods, e.g.:
 //
-//  data, callSummary := awsProvisioner.CreateWorkerType(.....)
+//  data, callSummary, err := awsProvisioner.CreateWorkerType(.....)
 // handling any errors...
-//  if callSummary.Error != nil {
+//  if err != nil {
 //  	// handle error...
 //  }
 //
@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 2 Dec 2015 at 09:56:00 UTC. The code was generated
+// Fri, 4 Dec 2015 at 08:57:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -88,13 +88,12 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (awsProvisioner *AwsProvisioner) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
+func (awsProvisioner *AwsProvisioner) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
-	var jsonPayload []byte
-	jsonPayload, callSummary.Error = json.Marshal(payload)
-	if callSummary.Error != nil {
-		return result, callSummary
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return result, callSummary, err
 	}
 	callSummary.HttpRequestBody = string(jsonPayload)
 
@@ -134,18 +133,18 @@ func (awsProvisioner *AwsProvisioner) apiCall(payload interface{}, method, route
 	}
 
 	// Make HTTP API calls using an exponential backoff algorithm...
-	callSummary.HttpResponse, callSummary.Attempts, callSummary.Error = httpbackoff.Retry(httpCall)
+	callSummary.HttpResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
 
-	if callSummary.Error != nil {
-		return result, callSummary
+	if err != nil {
+		return result, callSummary, err
 	}
 
 	// now read response into memory, so that we can return the body
 	var body []byte
-	body, callSummary.Error = ioutil.ReadAll(callSummary.HttpResponse.Body)
+	body, err = ioutil.ReadAll(callSummary.HttpResponse.Body)
 
-	if callSummary.Error != nil {
-		return result, callSummary
+	if err != nil {
+		return result, callSummary, err
 	}
 
 	callSummary.HttpResponseBody = string(body)
@@ -153,15 +152,10 @@ func (awsProvisioner *AwsProvisioner) apiCall(payload interface{}, method, route
 	// if result is passed in as nil, it means the API defines no response body
 	// json
 	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
-		callSummary.Error = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
-		if callSummary.Error != nil {
-			// technically not needed since returned outside if, but more comprehensible
-			return result, callSummary
-		}
+		err = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
 	}
 
-	// Return result and callSummary
-	return result, callSummary
+	return result, callSummary, err
 }
 
 // The entry point into all the functionality in this package is to create an
@@ -186,9 +180,7 @@ type AwsProvisioner struct {
 }
 
 // CallSummary provides information about the underlying http request and
-// response issued for a given API call, together with details of any Error
-// which occured. After making an API call, be sure to check the returned
-// CallSummary.Error - if it is nil, no error occurred.
+// response issued for a given API call.
 type CallSummary struct {
 	HttpRequest *http.Request
 	// Keep a copy of request body in addition to the *http.Request, since
@@ -207,7 +199,6 @@ type CallSummary struct {
 	// json into native go types) the data is lost... This way, it is still
 	// available after the api call returns.
 	HttpResponseBody string
-	Error            error
 	// Keep a record of how many http requests were attempted
 	Attempts int
 }
@@ -221,8 +212,8 @@ type CallSummary struct {
 //  awsProvisioner := awsprovisioner.New("123", "456")                       // set clientId and accessToken
 //  awsProvisioner.Authenticate = false                                      // disable authentication (true by default)
 //  awsProvisioner.BaseURL = "http://localhost:1234/api/AwsProvisioner/v1"   // alternative API endpoint (production by default)
-//  data, callSummary := awsProvisioner.CreateWorkerType(.....)              // for example, call the CreateWorkerType(.....) API endpoint (described further down)...
-//  if callSummary.Error != nil {
+//  data, callSummary, err := awsProvisioner.CreateWorkerType(.....)         // for example, call the CreateWorkerType(.....) API endpoint (described further down)...
+//  if err != nil {
 //  	// handle errors...
 //  }
 func New(clientId string, accessToken string) *AwsProvisioner {
@@ -264,9 +255,9 @@ func New(clientId string, accessToken string) *AwsProvisioner {
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createWorkerType
-func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
-	responseObject, callSummary := awsProvisioner.apiCall(payload, "PUT", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest))
-	return responseObject.(*GetWorkerTypeRequest), callSummary
+func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary, error) {
+	responseObject, callSummary, err := awsProvisioner.apiCall(payload, "PUT", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest))
+	return responseObject.(*GetWorkerTypeRequest), callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -287,9 +278,9 @@ func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payloa
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#updateWorkerType
-func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary) {
-	responseObject, callSummary := awsProvisioner.apiCall(payload, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(GetWorkerTypeRequest))
-	return responseObject.(*GetWorkerTypeRequest), callSummary
+func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *CallSummary, error) {
+	responseObject, callSummary, err := awsProvisioner.apiCall(payload, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(GetWorkerTypeRequest))
+	return responseObject.(*GetWorkerTypeRequest), callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -305,9 +296,9 @@ func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payloa
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#workerType
-func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerTypeRequest, *CallSummary) {
-	responseObject, callSummary := awsProvisioner.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest))
-	return responseObject.(*GetWorkerTypeRequest), callSummary
+func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerTypeRequest, *CallSummary, error) {
+	responseObject, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest))
+	return responseObject.(*GetWorkerTypeRequest), callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -327,9 +318,9 @@ func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerT
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeWorkerType
-func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) *CallSummary {
-	_, callSummary := awsProvisioner.apiCall(nil, "DELETE", "/worker-type/"+url.QueryEscape(workerType), nil)
-	return callSummary
+func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) (*CallSummary, error) {
+	_, callSummary, err := awsProvisioner.apiCall(nil, "DELETE", "/worker-type/"+url.QueryEscape(workerType), nil)
+	return callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -343,9 +334,9 @@ func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) *CallS
 //   * aws-provisioner:list-worker-types
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#listWorkerTypes
-func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *CallSummary) {
-	responseObject, callSummary := awsProvisioner.apiCall(nil, "GET", "/list-worker-types", new(ListWorkerTypes))
-	return responseObject.(*ListWorkerTypes), callSummary
+func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *CallSummary, error) {
+	responseObject, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/list-worker-types", new(ListWorkerTypes))
+	return responseObject.(*ListWorkerTypes), callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -361,9 +352,9 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *Call
 //   * aws-provisioner:create-secret
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createSecret
-func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSecretRequest) *CallSummary {
-	_, callSummary := awsProvisioner.apiCall(payload, "PUT", "/secret/"+url.QueryEscape(token), nil)
-	return callSummary
+func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSecretRequest) (*CallSummary, error) {
+	_, callSummary, err := awsProvisioner.apiCall(payload, "PUT", "/secret/"+url.QueryEscape(token), nil)
+	return callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -377,9 +368,9 @@ func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSec
 // user data associated with the instance.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#getSecret
-func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretResponse, *CallSummary) {
-	responseObject, callSummary := awsProvisioner.apiCall(nil, "GET", "/secret/"+url.QueryEscape(token), new(GetSecretResponse))
-	return responseObject.(*GetSecretResponse), callSummary
+func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretResponse, *CallSummary, error) {
+	responseObject, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/secret/"+url.QueryEscape(token), new(GetSecretResponse))
+	return responseObject.(*GetSecretResponse), callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -391,9 +382,9 @@ func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretRespons
 // but that seems like overkill
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#instanceStarted
-func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId string, token string) *CallSummary {
-	_, callSummary := awsProvisioner.apiCall(nil, "GET", "/instance-started/"+url.QueryEscape(instanceId)+"/"+url.QueryEscape(token), nil)
-	return callSummary
+func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId string, token string) (*CallSummary, error) {
+	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/instance-started/"+url.QueryEscape(instanceId)+"/"+url.QueryEscape(token), nil)
+	return callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -406,9 +397,9 @@ func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId string, token s
 // to untrusted processes to prevent credential and/or secret leakage.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeSecret
-func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) *CallSummary {
-	_, callSummary := awsProvisioner.apiCall(nil, "DELETE", "/secret/"+url.QueryEscape(token), nil)
-	return callSummary
+func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) (*CallSummary, error) {
+	_, callSummary, err := awsProvisioner.apiCall(nil, "DELETE", "/secret/"+url.QueryEscape(token), nil)
+	return callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -424,9 +415,9 @@ func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) *CallSummary {
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#getLaunchSpecs
-func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, *CallSummary) {
-	responseObject, callSummary := awsProvisioner.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", new(GetAllLaunchSpecsResponse))
-	return responseObject.(*GetAllLaunchSpecsResponse), callSummary
+func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, *CallSummary, error) {
+	responseObject, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", new(GetAllLaunchSpecsResponse))
+	return responseObject.(*GetAllLaunchSpecsResponse), callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -440,9 +431,9 @@ func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAll
 //   * aws-provisioner:aws-state
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#awsState
-func (awsProvisioner *AwsProvisioner) AwsState() *CallSummary {
-	_, callSummary := awsProvisioner.apiCall(nil, "GET", "/aws-state", nil)
-	return callSummary
+func (awsProvisioner *AwsProvisioner) AwsState() (*CallSummary, error) {
+	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/aws-state", nil)
+	return callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -456,9 +447,9 @@ func (awsProvisioner *AwsProvisioner) AwsState() *CallSummary {
 //   * aws-provisioner:view-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#state
-func (awsProvisioner *AwsProvisioner) State(workerType string) *CallSummary {
-	_, callSummary := awsProvisioner.apiCall(nil, "GET", "/state/"+url.QueryEscape(workerType), nil)
-	return callSummary
+func (awsProvisioner *AwsProvisioner) State(workerType string) (*CallSummary, error) {
+	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/state/"+url.QueryEscape(workerType), nil)
+	return callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -468,9 +459,9 @@ func (awsProvisioner *AwsProvisioner) State(workerType string) *CallSummary {
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#ping
-func (awsProvisioner *AwsProvisioner) Ping() *CallSummary {
-	_, callSummary := awsProvisioner.apiCall(nil, "GET", "/ping", nil)
-	return callSummary
+func (awsProvisioner *AwsProvisioner) Ping() (*CallSummary, error) {
+	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/ping", nil)
+	return callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -480,9 +471,9 @@ func (awsProvisioner *AwsProvisioner) Ping() *CallSummary {
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#apiReference
-func (awsProvisioner *AwsProvisioner) ApiReference() *CallSummary {
-	_, callSummary := awsProvisioner.apiCall(nil, "GET", "/api-reference", nil)
-	return callSummary
+func (awsProvisioner *AwsProvisioner) ApiReference() (*CallSummary, error) {
+	_, callSummary, err := awsProvisioner.apiCall(nil, "GET", "/api-reference", nil)
+	return callSummary, err
 }
 
 type (

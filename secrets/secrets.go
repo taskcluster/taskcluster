@@ -22,9 +22,9 @@
 //
 // and then call one or more of mySecrets's methods, e.g.:
 //
-//  callSummary := mySecrets.Set(.....)
+//  callSummary, err := mySecrets.Set(.....)
 // handling any errors...
-//  if callSummary.Error != nil {
+//  if err != nil {
 //  	// handle error...
 //  }
 //
@@ -32,7 +32,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/secrets/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 2 Dec 2015 at 09:56:00 UTC. The code was generated
+// Fri, 4 Dec 2015 at 08:57:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package secrets
 
@@ -64,13 +64,12 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (mySecrets *Secrets) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
+func (mySecrets *Secrets) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
-	var jsonPayload []byte
-	jsonPayload, callSummary.Error = json.Marshal(payload)
-	if callSummary.Error != nil {
-		return result, callSummary
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return result, callSummary, err
 	}
 	callSummary.HttpRequestBody = string(jsonPayload)
 
@@ -110,18 +109,18 @@ func (mySecrets *Secrets) apiCall(payload interface{}, method, route string, res
 	}
 
 	// Make HTTP API calls using an exponential backoff algorithm...
-	callSummary.HttpResponse, callSummary.Attempts, callSummary.Error = httpbackoff.Retry(httpCall)
+	callSummary.HttpResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
 
-	if callSummary.Error != nil {
-		return result, callSummary
+	if err != nil {
+		return result, callSummary, err
 	}
 
 	// now read response into memory, so that we can return the body
 	var body []byte
-	body, callSummary.Error = ioutil.ReadAll(callSummary.HttpResponse.Body)
+	body, err = ioutil.ReadAll(callSummary.HttpResponse.Body)
 
-	if callSummary.Error != nil {
-		return result, callSummary
+	if err != nil {
+		return result, callSummary, err
 	}
 
 	callSummary.HttpResponseBody = string(body)
@@ -129,15 +128,10 @@ func (mySecrets *Secrets) apiCall(payload interface{}, method, route string, res
 	// if result is passed in as nil, it means the API defines no response body
 	// json
 	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
-		callSummary.Error = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
-		if callSummary.Error != nil {
-			// technically not needed since returned outside if, but more comprehensible
-			return result, callSummary
-		}
+		err = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
 	}
 
-	// Return result and callSummary
-	return result, callSummary
+	return result, callSummary, err
 }
 
 // The entry point into all the functionality in this package is to create a
@@ -162,9 +156,7 @@ type Secrets struct {
 }
 
 // CallSummary provides information about the underlying http request and
-// response issued for a given API call, together with details of any Error
-// which occured. After making an API call, be sure to check the returned
-// CallSummary.Error - if it is nil, no error occurred.
+// response issued for a given API call.
 type CallSummary struct {
 	HttpRequest *http.Request
 	// Keep a copy of request body in addition to the *http.Request, since
@@ -183,7 +175,6 @@ type CallSummary struct {
 	// json into native go types) the data is lost... This way, it is still
 	// available after the api call returns.
 	HttpResponseBody string
-	Error            error
 	// Keep a record of how many http requests were attempted
 	Attempts int
 }
@@ -197,8 +188,8 @@ type CallSummary struct {
 //  mySecrets := secrets.New("123", "456")                       // set clientId and accessToken
 //  mySecrets.Authenticate = false                               // disable authentication (true by default)
 //  mySecrets.BaseURL = "http://localhost:1234/api/Secrets/v1"   // alternative API endpoint (production by default)
-//  callSummary := mySecrets.Set(.....)                          // for example, call the Set(.....) API endpoint (described further down)...
-//  if callSummary.Error != nil {
+//  callSummary, err := mySecrets.Set(.....)                     // for example, call the Set(.....) API endpoint (described further down)...
+//  if err != nil {
 //  	// handle errors...
 //  }
 func New(clientId string, accessToken string) *Secrets {
@@ -218,9 +209,9 @@ func New(clientId string, accessToken string) *Secrets {
 //   * secrets:set:<name>
 //
 // See http://docs.taskcluster.net/services/secrets/#set
-func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) *CallSummary {
-	_, callSummary := mySecrets.apiCall(payload, "PUT", "/secrets/"+url.QueryEscape(name), nil)
-	return callSummary
+func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) (*CallSummary, error) {
+	_, callSummary, err := mySecrets.apiCall(payload, "PUT", "/secrets/"+url.QueryEscape(name), nil)
+	return callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -231,9 +222,9 @@ func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) *CallSum
 //   * secrets:update:<name>
 //
 // See http://docs.taskcluster.net/services/secrets/#update
-func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) *CallSummary {
-	_, callSummary := mySecrets.apiCall(payload, "POST", "/secrets/"+url.QueryEscape(name), nil)
-	return callSummary
+func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) (*CallSummary, error) {
+	_, callSummary, err := mySecrets.apiCall(payload, "POST", "/secrets/"+url.QueryEscape(name), nil)
+	return callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -244,9 +235,9 @@ func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) *Call
 //   * secrets:remove:<name>
 //
 // See http://docs.taskcluster.net/services/secrets/#remove
-func (mySecrets *Secrets) Remove(name string) *CallSummary {
-	_, callSummary := mySecrets.apiCall(nil, "DELETE", "/secrets/"+url.QueryEscape(name), nil)
-	return callSummary
+func (mySecrets *Secrets) Remove(name string) (*CallSummary, error) {
+	_, callSummary, err := mySecrets.apiCall(nil, "DELETE", "/secrets/"+url.QueryEscape(name), nil)
+	return callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -257,9 +248,9 @@ func (mySecrets *Secrets) Remove(name string) *CallSummary {
 //   * secrets:get:<name>
 //
 // See http://docs.taskcluster.net/services/secrets/#get
-func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary) {
-	responseObject, callSummary := mySecrets.apiCall(nil, "GET", "/secrets/"+url.QueryEscape(name), new(ATaskClusterSecret))
-	return responseObject.(*ATaskClusterSecret), callSummary
+func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary, error) {
+	responseObject, callSummary, err := mySecrets.apiCall(nil, "GET", "/secrets/"+url.QueryEscape(name), new(ATaskClusterSecret))
+	return responseObject.(*ATaskClusterSecret), callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -269,9 +260,9 @@ func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary) {
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/services/secrets/#ping
-func (mySecrets *Secrets) Ping() *CallSummary {
-	_, callSummary := mySecrets.apiCall(nil, "GET", "/ping", nil)
-	return callSummary
+func (mySecrets *Secrets) Ping() (*CallSummary, error) {
+	_, callSummary, err := mySecrets.apiCall(nil, "GET", "/ping", nil)
+	return callSummary, err
 }
 
 type (
