@@ -135,7 +135,7 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (` + exampleVarName + ` *` + api.apiDef.Name + `) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary, error) {
+func (` + exampleVarName + ` *` + api.apiDef.Name + `) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	jsonPayload, err := json.Marshal(payload)
@@ -154,9 +154,16 @@ func (` + exampleVarName + ` *` + api.apiDef.Name + `) apiCall(payload interface
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		httpRequest, err := http.NewRequest(method, ` + exampleVarName + `.BaseURL+route, ioReader)
+		u, err := url.Parse(` + exampleVarName + `.BaseURL+route)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", ` + exampleVarName + `.BaseURL+route, ` + exampleVarName + `.BaseURL, err)
+		}
+		if query != nil {
+			u.RawQuery = query.Encode()
+		}
+		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
+		if err != nil {
+				return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), ` + exampleVarName + `.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
@@ -373,10 +380,15 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 	}
 
 	// add optional query parameters
+	queryCode := ""
+	queryExpr := "nil"
 	if len(entry.Query) > 0 {
+		queryExpr = "v"
 		sort.Strings(entry.Query)
+		queryCode = "v := url.Values{}\n"
 		for _, j := range entry.Query {
 			inputParams += ", " + j
+			queryCode += `v.Add("` + j + `", ` + j + `)\n`
 		}
 		inputParams += " string"
 	}
@@ -399,11 +411,12 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 
 	content := comment
 	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
+	content += queryCode
 	if entry.Output != "" {
-		content += "\tresponseObject, callSummary, err := " + entry.Parent.apiDef.ExampleVarName + ".apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "))\n"
+		content += "\tresponseObject, callSummary, err := " + entry.Parent.apiDef.ExampleVarName + ".apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), " + queryExpr + ")\n"
 		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), callSummary, err\n"
 	} else {
-		content += "\t_, callSummary, err := " + entry.Parent.apiDef.ExampleVarName + ".apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil)\n"
+		content += "\t_, callSummary, err := " + entry.Parent.apiDef.ExampleVarName + ".apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil, " + queryExpr + ")\n"
 		content += "\treturn callSummary, err\n"
 	}
 	content += "}\n"
