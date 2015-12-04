@@ -22,14 +22,14 @@ import (
 func TestFindLatestBuildbotTask(t *testing.T) {
 	Index := index.New("", "")
 	Queue := queue.New("", "")
-	itr, cs1 := Index.FindTask("buildbot.branches.mozilla-central.linux64.l10n")
-	if cs1.Error != nil {
-		t.Fatalf("%v\n", cs1.Error)
+	itr, _, err := Index.FindTask("buildbot.branches.mozilla-central.linux64.l10n")
+	if err != nil {
+		t.Fatalf("%v\n", err)
 	}
 	taskId := itr.TaskId
-	td, cs2 := Queue.Task(taskId)
-	if cs2.Error != nil {
-		t.Fatalf("%v\n", cs2.Error)
+	td, _, err := Queue.Task(taskId)
+	if err != nil {
+		t.Fatalf("%v\n", err)
 	}
 	created := time.Time(td.Created).Local()
 
@@ -100,18 +100,18 @@ func TestDefineTask(t *testing.T) {
 		WorkerType:  "win2008-worker",
 	}
 
-	tsr, cs := myQueue.DefineTask(taskId, td)
+	tsr, cs, err := myQueue.DefineTask(taskId, td)
 
 	//////////////////////////////////
 	// And now validate results.... //
 	//////////////////////////////////
 
-	if cs.Error != nil {
+	if err != nil {
 		b := bytes.Buffer{}
 		cs.HttpRequest.Header.Write(&b)
 		headers := regexp.MustCompile(`(mac|nonce)="[^"]*"`).ReplaceAllString(b.String(), `$1="***********"`)
 		t.Logf("\n\nRequest sent:\n\nURL: %s\nMethod: %s\nHeaders:\n%v\nBody: %s", cs.HttpRequest.URL, cs.HttpRequest.Method, headers, cs.HttpRequestBody)
-		t.Fatalf("\n\nResponse received:\n\n%s", cs.Error)
+		t.Fatalf("\n\nResponse received:\n\n%s", err)
 	}
 
 	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskId)

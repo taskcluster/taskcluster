@@ -64,9 +64,9 @@ func (api *API) generateAPICode(apiName string) string {
 	// here we choose an example API method to call, just the first one in the list of api.Entries
 	// We need to first see if it returns one or two variables...
 	if api.Entries[0].Output == "" {
-		exampleCall = "//  callSummary := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
+		exampleCall = "//  callSummary, err := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
 	} else {
-		exampleCall = "//  data, callSummary := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
+		exampleCall = "//  data, callSummary, err := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
 	}
 	comment := ""
 	if api.Description != "" {
@@ -88,7 +88,7 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "//\n"
 	comment += exampleCall + "\n"
 	comment += "// handling any errors...\n"
-	comment += "//  if callSummary.Error != nil {\n"
+	comment += "//  if err != nil {\n"
 	comment += "//  	// handle error...\n"
 	comment += "//  }\n"
 	comment += "//\n"
@@ -134,13 +134,12 @@ var (
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (` + exampleVarName + ` *` + api.apiDef.Name + `) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary) {
+func (` + exampleVarName + ` *` + api.apiDef.Name + `) apiCall(payload interface{}, method, route string, result interface{}) (interface{}, *CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
-	var jsonPayload []byte
-	jsonPayload, callSummary.Error = json.Marshal(payload)
-	if callSummary.Error != nil {
-		return result, callSummary
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return result, callSummary, err
 	}
 	callSummary.HttpRequestBody = string(jsonPayload)
 
@@ -180,18 +179,18 @@ func (` + exampleVarName + ` *` + api.apiDef.Name + `) apiCall(payload interface
 	}
 
 	// Make HTTP API calls using an exponential backoff algorithm...
-	callSummary.HttpResponse, callSummary.Attempts, callSummary.Error = httpbackoff.Retry(httpCall)
+	callSummary.HttpResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
 
-	if callSummary.Error != nil {
-		return result, callSummary
+	if err != nil {
+		return result, callSummary, err
 	}
 
 	// now read response into memory, so that we can return the body
 	var body []byte
-	body, callSummary.Error = ioutil.ReadAll(callSummary.HttpResponse.Body)
+	body, err = ioutil.ReadAll(callSummary.HttpResponse.Body)
 
-	if callSummary.Error != nil {
-		return result, callSummary
+	if err != nil {
+		return result, callSummary, err
 	}
 
 	callSummary.HttpResponseBody = string(body)
@@ -199,15 +198,10 @@ func (` + exampleVarName + ` *` + api.apiDef.Name + `) apiCall(payload interface
 	// if result is passed in as nil, it means the API defines no response body
 	// json
 	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
-		callSummary.Error = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
-		if callSummary.Error != nil {
-			// technically not needed since returned outside if, but more comprehensible
-			return result, callSummary
-		}
+		err = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
 	}
 
-	// Return result and callSummary
-	return result, callSummary
+	return result, callSummary, err
 }
 
 // The entry point into all the functionality in this package is to create ` + utils.IndefiniteArticle(api.apiDef.Name) + `
@@ -232,9 +226,7 @@ type ` + api.apiDef.Name + ` struct {
 }
 
 // CallSummary provides information about the underlying http request and
-// response issued for a given API call, together with details of any Error
-// which occured. After making an API call, be sure to check the returned
-// CallSummary.Error - if it is nil, no error occurred.
+// response issued for a given API call.
 type CallSummary struct {
 	HttpRequest *http.Request
 	// Keep a copy of request body in addition to the *http.Request, since
@@ -253,7 +245,6 @@ type CallSummary struct {
 	// json into native go types) the data is lost... This way, it is still
 	// available after the api call returns.
 	HttpResponseBody string
-	Error            error
 	// Keep a record of how many http requests were attempted
 	Attempts int
 }
@@ -269,7 +260,7 @@ type CallSummary struct {
 	content += "//  " + exampleVarName + ".Authenticate = false             " + strings.Repeat(" ", len(apiName)) + "           // disable authentication (true by default)\n"
 	content += "//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"   // alternative API endpoint (production by default)\n"
 	content += exampleCall + strings.Repeat(" ", 48-len(exampleCall)+len(apiName)+len(exampleVarName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
-	content += "//  if callSummary.Error != nil {\n"
+	content += "//  if err != nil {\n"
 	content += "//  	// handle errors...\n"
 	content += "//  }\n"
 	content += "func New(clientId string, accessToken string) *" + api.apiDef.Name + " {\n"
@@ -389,19 +380,19 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 		}
 	}
 
-	responseType := "*CallSummary"
+	responseType := "(*CallSummary, error)"
 	if entry.Output != "" {
-		responseType = "(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + ", *CallSummary)"
+		responseType = "(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + ", *CallSummary, error)"
 	}
 
 	content := comment
 	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
 	if entry.Output != "" {
-		content += "\tresponseObject, callSummary := " + entry.Parent.apiDef.ExampleVarName + ".apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "))\n"
-		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), callSummary\n"
+		content += "\tresponseObject, callSummary, err := " + entry.Parent.apiDef.ExampleVarName + ".apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "))\n"
+		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), callSummary, err\n"
 	} else {
-		content += "\t_, callSummary := " + entry.Parent.apiDef.ExampleVarName + ".apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil)\n"
-		content += "\treturn callSummary\n"
+		content += "\t_, callSummary, err := " + entry.Parent.apiDef.ExampleVarName + ".apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil)\n"
+		content += "\treturn callSummary, err\n"
 	}
 	content += "}\n"
 	content += "\n"
