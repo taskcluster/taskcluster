@@ -167,7 +167,9 @@ and reports back results to the queue.
               "worker_group":               "dev-test",
               "worker_id":                  "IP_10-134-54-89",
               "worker_type":                "win2008-worker",
-              "provisioner_id":             "my-provisioner"
+              "provisioner_id":             "my-provisioner",
+              "livelog_secret":             "baNaNa-SouP4tEa",
+              "public_ip":                  "12.24.35.46"
             }
 
 
