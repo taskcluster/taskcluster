@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
@@ -287,6 +288,7 @@ type APIEntry struct {
 	Method      string     `json:"method"`
 	Route       string     `json:"route"`
 	Args        []string   `json:"args"`
+	Query       []string   `json:"query"`
 	Name        string     `json:"name"`
 	Stability   string     `json:"stability"`
 	Scopes      [][]string `json:"scopes"`
@@ -316,6 +318,7 @@ func (entry *APIEntry) String() string {
 			"    Entry Method      = '%v'\n"+
 			"    Entry Route       = '%v'\n"+
 			"    Entry Args        = '%v'\n"+
+			"    Entry Query        = '%v'\n"+
 			"    Entry Name        = '%v'\n"+
 			"    Entry Stability   = '%v'\n"+
 			"    Entry Scopes      = '%v'\n"+
@@ -324,8 +327,8 @@ func (entry *APIEntry) String() string {
 			"    Entry Title       = '%v'\n"+
 			"    Entry Description = '%v'\n",
 		entry.Type, entry.Method, entry.Route, entry.Args,
-		entry.Name, entry.Stability, entry.Scopes, entry.Input,
-		entry.Output, entry.Title, entry.Description,
+		entry.Query, entry.Name, entry.Stability, entry.Scopes,
+		entry.Input, entry.Output, entry.Title, entry.Description,
 	)
 }
 
@@ -367,6 +370,15 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 	inputParams := ""
 	if len(entry.Args) > 0 {
 		inputParams += strings.Join(entry.Args, " string, ") + " string"
+	}
+
+	// add optional query parameters
+	if len(entry.Query) > 0 {
+		sort.Strings(entry.Query)
+		for _, j := range entry.Query {
+			inputParams += ", " + j
+		}
+		inputParams += " string"
 	}
 
 	apiArgsPayload := "nil"
