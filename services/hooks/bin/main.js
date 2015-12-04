@@ -74,7 +74,7 @@ var load = loader({
         publish:          cfg.app.publishMetaData,
         baseUrl:          cfg.server.publicUrl + '/v1',
         referencePrefix:  'hooks/v1/api.json',
-        aws:              cfg.aws,
+        aws:              cfg.aws.validator,
       });
     },
   },
