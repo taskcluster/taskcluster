@@ -47,8 +47,8 @@ func New(liveLogExecutable string) (*LiveLog, error) {
 		return nil, err
 	}
 	l.setRequestURLs()
-	l.connectInputStream()
-	return l, nil
+	err = l.connectInputStream()
+	return l, err
 }
 
 // Terminate will close the log writer, and then kill the livelog system

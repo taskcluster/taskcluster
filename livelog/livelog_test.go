@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func GoodPipeTest(t *testing.T) {
+func TestLiveLog(t *testing.T) {
 	ll, err := New("livelog")
 	if err != nil {
 		t.Fatalf("Could not initiate livelog process:\n%s", err)
@@ -26,5 +26,9 @@ func GoodPipeTest(t *testing.T) {
 	}
 	if string(result) != "Test line\n" {
 		t.Fatalf("Live log feed did not match data written")
+	}
+	err = ll.Terminate()
+	if err != nil {
+		t.Fatalf("Could not terminate live log process:\n%s", err)
 	}
 }
