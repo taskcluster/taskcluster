@@ -654,7 +654,7 @@ func (task *TaskRun) fetchTaskDefinition() {
 
 func (task *TaskRun) validatePayload() error {
 	jsonPayload := task.Definition.Payload
-	debug("Json Payload: %v", jsonPayload)
+	debug("Json Payload: %s", jsonPayload)
 	schemaLoader := gojsonschema.NewStringLoader(taskPayloadSchema())
 	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
