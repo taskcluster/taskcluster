@@ -212,6 +212,15 @@ func main() {
 	}
 }
 
+type MissingConfigError struct {
+	Setting string
+	File    string
+}
+
+func (err MissingConfigError) Error() string {
+	return "Config setting \"" + err.Setting + "\" must be defined in file \"" + err.File + "\"."
+}
+
 func loadConfig(filename string, queryUserData bool) (Config, error) {
 	// TODO: would be better to have a json schema, and also define defaults in
 	// only one place if possible (defaults also declared in `usage`)
@@ -265,7 +274,7 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 
 	for _, f := range fields {
 		if reflect.DeepEqual(f.value, f.disallowed) {
-			return c, fmt.Errorf("Config setting `%v` must be defined in file '%v'.", f.name, filename)
+			return c, MissingConfigError{Setting: f.name, File: filename}
 		}
 	}
 	// all config set!
