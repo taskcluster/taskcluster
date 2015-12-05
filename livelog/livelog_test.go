@@ -9,7 +9,7 @@ import (
 )
 
 func TestLiveLog(t *testing.T) {
-	ll, err := New("livelog")
+	ll, err := New("livelog", "", "")
 	// Do defer before checking err since err could be a different error and
 	// process may have already started up.
 	//

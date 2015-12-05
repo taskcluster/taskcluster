@@ -400,7 +400,7 @@ func FindAndRunTask() bool {
 			break
 		}
 		// start the livelogger
-		liveLog, err := livelog.New(config.LiveLogExecutable)
+		liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey)
 		if err != nil {
 			debug("FATAL: cannot start livelogger for task " + task.TaskId)
 			debug("%v", err)
