@@ -1,11 +1,17 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/taskcluster/httpbackoff"
@@ -60,9 +66,111 @@ type UserData struct {
 }
 
 type Secrets struct {
-	LiveLogExecutable string `json:"liveLogExecutable"`
-	LiveLogSecret     string `json:"liveLogSecret"`
-	SubDomain         string `json:"subDomain"`
+	GenericWorker struct {
+		Config Config `json:"config"`
+	} `json:"generic-worker"`
+	Files []File `json:"files"`
+}
+
+type File struct {
+	Description string `json:"description"`
+	Path        string `json:"path"`
+	Content     string `json:"content"`
+	Encoding    string `json:"encoding"`
+	Format      string `json:"format"`
+}
+
+func (f File) Extract() error {
+	switch f.Format {
+	case "file":
+		return f.ExtractFile()
+	case "zip":
+		return f.ExtractZip()
+	default:
+		return errors.New("Unknown file format " + f.Format + " in worker type secret")
+	}
+	return nil
+}
+
+func (f File) ExtractFile() error {
+	switch f.Encoding {
+	case "base64":
+		data, err := base64.StdEncoding.DecodeString(f.Content)
+		if err != nil {
+			return err
+		}
+		return ioutil.WriteFile(f.Path, data, 0777)
+	default:
+		return errors.New("Unsupported encoding " + f.Encoding + " for file secret in worker type definition")
+	}
+}
+
+func (f File) ExtractZip() error {
+	switch f.Encoding {
+	case "base64":
+		data, err := base64.StdEncoding.DecodeString(f.Content)
+		if err != nil {
+			return err
+		}
+		return Unzip(data, f.Path)
+	default:
+		return errors.New("Unsupported encoding " + f.Encoding + " for zip secret in worker type definition")
+	}
+}
+
+// See http://stackoverflow.com/questions/20357223/easy-way-to-unzip-file-with-golang
+func Unzip(b []byte, dest string) error {
+	br := bytes.NewReader(b)
+	r, err := zip.NewReader(br, int64(len(b)))
+	if err != nil {
+		return err
+	}
+
+	os.MkdirAll(dest, 0755)
+
+	// Closure to address file descriptors issue with all the deferred .Close() methods
+	extractAndWriteFile := func(f *zip.File) error {
+		rc, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if err := rc.Close(); err != nil {
+				panic(err)
+			}
+		}()
+
+		path := filepath.Join(dest, f.Name)
+
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(path, f.Mode())
+		} else {
+			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if err != nil {
+				return err
+			}
+			defer func() {
+				if err := f.Close(); err != nil {
+					panic(err)
+				}
+			}()
+
+			_, err = io.Copy(f, rc)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	for _, f := range r.File {
+		err := extractAndWriteFile(f)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *Config) updateConfigWithAmazonSettings() error {
@@ -104,14 +212,33 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	if err != nil {
 		return err
 	}
-	c.LiveLogExecutable = secrets.LiveLogExecutable
-	c.LiveLogSecret = secrets.LiveLogSecret
-	c.SubDomain = secrets.SubDomain
-	for _, i := range [3][2]string{{c.LiveLogExecutable, "liveLogExecutable"}, {c.LiveLogSecret, "liveLogSecret"}, {c.SubDomain, "subDomain"}} {
+
+	// TODO: need to work out a generic way to do this e.g. using reflection and recursion
+	// or some clever byte stream processing of json raw messages directly...
+	// or maybe a third party library already does it...
+	if v := secrets.GenericWorker.Config.LiveLogExecutable; v != "" {
+		c.LiveLogExecutable = v
+	}
+	if v := secrets.GenericWorker.Config.LiveLogSecret; v != "" {
+		c.LiveLogSecret = v
+	}
+	if v := secrets.GenericWorker.Config.Subdomain; v != "" {
+		c.Subdomain = v
+	}
+
+	for _, i := range [3][2]string{{c.LiveLogExecutable, "livelogExecutable"}, {c.LiveLogSecret, "livelogSecret"}, {c.Subdomain, "subdomain"}} {
 		if i[0] == "" {
-			return errors.New(i[1] + " not set as a secret for worker type " + c.WorkerType + " on instance " + instanceName + "(public IP: " + publicIP + ")")
+			return errors.New("secrets.generic-worker.config." + i[1] + " not in worker type " + c.WorkerType + " on instance " + instanceName + "(public IP: " + publicIP + ")")
 		}
 	}
 	fmt.Printf("\n\nConfig\n\n%#v\n\n", c)
+
+	// Now put secret files in place...
+	for _, f := range secrets.Files {
+		err := f.Extract()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

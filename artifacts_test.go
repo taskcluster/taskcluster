@@ -261,7 +261,7 @@ func TestUpload(t *testing.T) {
 		LiveLogExecutable:          "livelog",
 		LiveLogSecret:              "xyz",
 		PublicIP:                   net.ParseIP("127.0.0.1"),
-		SubDomain:                  "taskcluster-worker.net",
+		Subdomain:                  "taskcluster-worker.net",
 	}
 	D.Enable(config.Debug)
 

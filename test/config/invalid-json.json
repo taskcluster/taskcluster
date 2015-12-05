@@ -1,9 +1,9 @@
 {
-  "livelog_secret" : "this-is-a-secret",
-  "client_id" : "test-client",
-  "worker_id" : "THERE IS A MISSING COMMA AT THE END OF THIS LINE!!!"
-  "access_token" : "V0C7dA",
-  "worker_group" : "abcde",
-  "worker_type" : "soe",
-  "public_ip" : "253.1.2.1"
+  "livelogSecret" : "this-is-a-secret",
+  "clientId" : "test-client",
+  "workerId" : "THERE IS A MISSING COMMA AT THE END OF THIS LINE!!!"
+  "accessToken" : "V0C7dA",
+  "workerGroup" : "abcde",
+  "workerType" : "soe",
+  "publicIP" : "253.1.2.1"
 }

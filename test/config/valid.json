@@ -1,9 +1,9 @@
 {
-  "livelog_secret" : "this-is-a-secret",
-  "client_id" : "test-client",
-  "worker_id" : "myworkerid",
-  "access_token" : "V7w5mcc3Q3mQHp3ns0C7dA",
-  "worker_group" : "abcde",
-  "worker_type" : "some-worker-type",
-  "public_ip" : "2.1.2.1"
+  "livelogSecret" : "this-is-a-secret",
+  "clientId" : "test-client",
+  "workerId" : "myworkerid",
+  "accessToken" : "V7w5mcc3Q3mQHp3ns0C7dA",
+  "workerGroup" : "abcde",
+  "workerType" : "some-worker-type",
+  "publicIP" : "2.1.2.1"
 }

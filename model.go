@@ -15,19 +15,19 @@ import (
 type (
 	// Generic Worker config
 	Config struct {
-		AccessToken                string `json:"access_token"`
-		ClientId                   string `json:"client_id"`
-		Certificate                string `json:"certificate"`
-		WorkerGroup                string `json:"worker_group"`
-		WorkerId                   string `json:"worker_id"`
-		WorkerType                 string `json:"worker_type"`
-		ProvisionerId              string `json:"provisioner_id"`
-		RefreshUrlsPrematurelySecs int    `json:"refresh_urls_prematurely_secs"`
+		AccessToken                string `json:"accessToken"`
+		ClientId                   string `json:"clientId"`
 		Debug                      string `json:"debug"`
-		LiveLogExecutable          string `json:"livelog_executable"`
-		LiveLogSecret              string `json:"livelog_secret"`
-		PublicIP                   net.IP `json:"public_ip"`
-		SubDomain                  string `json:"subdomain"`
+		LiveLogExecutable          string `json:"livelogExecutable"`
+		LiveLogSecret              string `json:"livelogSecret"`
+		Certificate                string `json:"certificate"`
+		ProvisionerId              string `json:"provisionerId"`
+		RefreshUrlsPrematurelySecs int    `json:"refreshURLsPrematurelySecs"`
+		PublicIP                   net.IP `json:"publicIP"`
+		Subdomain                  string `json:"subdomain"`
+		WorkerGroup                string `json:"workerGroup"`
+		WorkerId                   string `json:"workerId"`
+		WorkerType                 string `json:"workerType"`
 	}
 
 	// Used for modelling the xml we get back from Azure

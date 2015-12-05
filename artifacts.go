@@ -270,7 +270,7 @@ func canonicalPath(path string) string {
 func (task *TaskRun) uploadLiveLog(logFile string) error {
 	maxRunTimeDeadline := time.Now().Add(time.Duration(task.Payload.MaxRunTime) * time.Second)
 	// deduce stateless DNS name to use
-	statelessHostname, err := hostname.New(config.PublicIP, config.SubDomain, maxRunTimeDeadline, config.LiveLogSecret)
+	statelessHostname, err := hostname.New(config.PublicIP, config.Subdomain, maxRunTimeDeadline, config.LiveLogSecret)
 	getURL, err := url.Parse(task.liveLog.GetURL)
 	if err != nil {
 		return err

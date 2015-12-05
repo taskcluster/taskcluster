@@ -121,20 +121,20 @@ and reports back results to the queue.
         ** REQUIRED ** properties
         =========================
 
-          access_token                      Taskcluster access token used by generic worker
+          accessToken                       Taskcluster access token used by generic worker
                                             to talk to taskcluster queue.
-          client_id                         Taskcluster client id used by generic worker to
+          clientId                          Taskcluster client id used by generic worker to
                                             talk to taskcluster queue.
-          worker_group                      Typically this would be an aws region - an
+          workerGroup                       Typically this would be an aws region - an
                                             identifier to uniquely identify which pool of
                                             workers this worker logically belongs to.
-          worker_id                         A name to uniquely identify your worker.
-          worker_type                       This should match a worker_type managed by the
+          workerId                          A name to uniquely identify your worker.
+          workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
-          livelog_secret                    This should match the secret used by the
+          livelogSecret                     This should match the secret used by the
                                             stateless dns server; see
                                             https://github.com/taskcluster/stateless-dns-server
-          public_ip                         The IP address for clients to be directed to
+          publicIP                          The IP address for clients to be directed to
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
@@ -147,12 +147,12 @@ and reports back results to the queue.
           provisioner_id                    The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: aws-provisioner-v1]
-          refresh_urls_prematurely_secs     The number of seconds before azure urls expire,
+          refreshURLsPrematurelySecs        The number of seconds before azure urls expire,
                                             that the generic worker should refresh them.
                                             [default: 310]
           debug                             Logging filter; see
                                             https://github.com/tj/go-debug [default: *]
-          livelog_executable                Filepath of LiveLog executable to use; see
+          livelogExecutable                 Filepath of LiveLog executable to use; see
                                             https://github.com/taskcluster/livelog
           subdomain                         Subdomain to use in stateless dns name for live
                                             logs; see
@@ -162,14 +162,14 @@ and reports back results to the queue.
     Here is an syntactically valid example configuration file:
 
             {
-              "access_token":               "123bn234bjhgdsjhg234",
-              "client_id":                  "hskdjhfasjhdkhdbfoisjd",
-              "worker_group":               "dev-test",
-              "worker_id":                  "IP_10-134-54-89",
-              "worker_type":                "win2008-worker",
-              "provisioner_id":             "my-provisioner",
-              "livelog_secret":             "baNaNa-SouP4tEa",
-              "public_ip":                  "12.24.35.46"
+              "accessToken":                "123bn234bjhgdsjhg234",
+              "clientId":                   "hskdjhfasjhdkhdbfoisjd",
+              "workerGroup":                "dev-test",
+              "workerId":                   "IP_10-134-54-89",
+              "workerType":                 "win2008-worker",
+              "provisionerId":              "my-provisioner",
+              "livelogSecret":              "baNaNa-SouP4tEa",
+              "publicIP":                   "12.24.35.46"
             }
 
 
@@ -234,7 +234,7 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 	// first assign defaults
 	c := Config{
 		Debug:                      "*",
-		SubDomain:                  "taskcluster-worker.net",
+		Subdomain:                  "taskcluster-worker.net",
 		ProvisionerId:              "aws-provisioner-v1",
 		LiveLogExecutable:          "livelog",
 		RefreshUrlsPrematurelySecs: 310,
@@ -275,7 +275,7 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 		{value: c.LiveLogExecutable, name: "livelog_executable", disallowed: ""},
 		{value: c.LiveLogSecret, name: "livelog_secret", disallowed: ""},
 		{value: c.PublicIP, name: "public_ip", disallowed: net.IP(nil)},
-		{value: c.SubDomain, name: "subdomain", disallowed: ""},
+		{value: c.Subdomain, name: "subdomain", disallowed: ""},
 	}
 
 	for _, f := range fields {
