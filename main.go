@@ -203,6 +203,10 @@ func main() {
 			os.Exit(64)
 		}
 		runWorker()
+		// this returns immediately, as you can runworker in background, so
+		// let's wait for a never-arriving message, to avoid exiting program
+		forever := make(chan bool)
+		<-forever
 	case arguments["install"]:
 		// platform specific...
 		err := install(arguments)
