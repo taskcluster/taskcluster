@@ -1,4 +1,4 @@
-#!/bin/bash -exv
+#!/bin/bash -e
 
 # cd into directory containing script...
 cd "$(dirname "${0}")"
