@@ -238,8 +238,8 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, erro
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(TaskUser.HomeDir, commandName+"_wrapper.bat")
 	script := filepath.Join(TaskUser.HomeDir, commandName+".bat")
-	logFile := filepath.Join("public", "logs", commandName+".log")
-	absLogFile := filepath.Join(TaskUser.HomeDir, logFile)
+	logFile := "public/logs/" + commandName + ".log"
+	absLogFile := filepath.Join(TaskUser.HomeDir, "public", "logs", commandName+".log")
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskId + "..." + "\r\n"
 	contents += "@echo off\r\n"
 
