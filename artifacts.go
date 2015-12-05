@@ -276,7 +276,7 @@ func (task *TaskRun) uploadLiveLog(logFile string) error {
 		return err
 	}
 	getURL.Scheme = "https"
-	getURL.Host = statelessHostname + ":32774"
+	getURL.Host = statelessHostname + ":60023"
 	return task.uploadArtifact(
 		RedirectArtifact{
 			BaseArtifact: BaseArtifact{
