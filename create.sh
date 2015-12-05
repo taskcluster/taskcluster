@@ -23,5 +23,17 @@ sleep 3600
 # now capture the AMI
 IMAGE_ID="$(aws --region us-west-2 ec2 create-image --instance-id "${INSTANCE_ID}" --name "win2012r2 mozillabuild pmoore version ${SLUGID}" --description "firefox desktop builds on windows - taskcluster worker - version ${SLUGID}" | sed -n 's/^ *"ImageId": *"\(.*\)" *$/\1/p')"
 
-# TODO: now update worker type...
-echo "Worker type ami to be used: '${IMAGE_ID}'"
+
+PASSWORD="$(aws ec2 get-password-data --instance-id "${INSTANCE_ID}" --priv-launch-key ~/.ssh/pmoore-oregan-us-west-2.pem --output text --query PasswordData)"
+PUBLIC_IP="$(aws ec2 describe-instances --instance-id "${INSTANCE_ID}" --query 'Reservations[*].Instances[*].NetworkInterfaces[*].Association.PublicIp' --output text)"
+
+echo
+echo "To connect to template instance:"
+echo
+echo "Public IP: ${PUBLIC_IP}"
+echo "Username:  Administrator"
+echo "Password:  ${PASSWORD}"
+echo
+echo "AMI (for Worker Type definition): '${IMAGE_ID}'"
+
+# TODO: update worker type automatically...
