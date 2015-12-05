@@ -102,20 +102,20 @@ and reports back results to the queue.
         ** REQUIRED ** properties
         =========================
 
-          access_token                      Taskcluster access token used by generic worker
+          accessToken                       Taskcluster access token used by generic worker
                                             to talk to taskcluster queue.
-          client_id                         Taskcluster client id used by generic worker to
+          clientId                          Taskcluster client id used by generic worker to
                                             talk to taskcluster queue.
-          worker_group                      Typically this would be an aws region - an
+          workerGroup                       Typically this would be an aws region - an
                                             identifier to uniquely identify which pool of
                                             workers this worker logically belongs to.
-          worker_id                         A name to uniquely identify your worker.
-          worker_type                       This should match a worker_type managed by the
+          workerId                          A name to uniquely identify your worker.
+          workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
-          livelog_secret                    This should match the secret used by the
+          livelogSecret                     This should match the secret used by the
                                             stateless dns server; see
                                             https://github.com/taskcluster/stateless-dns-server
-          public_ip                         The IP address for clients to be directed to
+          publicIP                          The IP address for clients to be directed to
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
@@ -128,29 +128,33 @@ and reports back results to the queue.
           provisioner_id                    The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: aws-provisioner-v1]
-          refresh_urls_prematurely_secs     The number of seconds before azure urls expire,
+          refreshURLsPrematurelySecs        The number of seconds before azure urls expire,
                                             that the generic worker should refresh them.
                                             [default: 310]
           debug                             Logging filter; see
                                             https://github.com/tj/go-debug [default: *]
-          livelog_executable                Filepath of LiveLog executable to use; see
+          livelogExecutable                 Filepath of LiveLog executable to use; see
                                             https://github.com/taskcluster/livelog
           subdomain                         Subdomain to use in stateless dns name for live
                                             logs; see
                                             https://github.com/taskcluster/stateless-dns-server
                                             [default: taskcluster-worker.net]
+          livelogCertificate                SSL certificate to be used by livelog for hosting
+                                            logs over https. If not set, http will be used.
+          livelogKey                        SSL key to be used by livelog for hosting logs
+                                            over https. If not set, http will be used.
 
     Here is an syntactically valid example configuration file:
 
             {
-              "access_token":               "123bn234bjhgdsjhg234",
-              "client_id":                  "hskdjhfasjhdkhdbfoisjd",
-              "worker_group":               "dev-test",
-              "worker_id":                  "IP_10-134-54-89",
-              "worker_type":                "win2008-worker",
-              "provisioner_id":             "my-provisioner",
-              "livelog_secret":             "baNaNa-SouP4tEa",
-              "public_ip":                  "12.24.35.46"
+              "accessToken":                "123bn234bjhgdsjhg234",
+              "clientId":                   "hskdjhfasjhdkhdbfoisjd",
+              "workerGroup":                "dev-test",
+              "workerId":                   "IP_10-134-54-89",
+              "workerType":                 "win2008-worker",
+              "provisionerId":              "my-provisioner",
+              "livelogSecret":              "baNaNa-SouP4tEa",
+              "publicIP":                   "12.24.35.46"
             }
 
 
@@ -174,21 +178,24 @@ and watch logs for a successful startup. If you can see it is polling the Queue,
 It should look something like this:
 
 ```
-21:22:28.016 4ms    4ms    generic-worker - Detected darwin platform
-21:22:28.016 5ms    5ms    queue - Making http request: &{GET https://queue.taskcluster.net/v1/poll-task-url/test-provisioner/IKS0ndoITKKaRfytmhmn7A HTTP/1.1 1 1 map[Content-Type:[application/json] Authorization:[Hawk id="hkhwW8sQRFiau1ie1b29tQ", mac="9fb6kOZFnPPkGlLFFUdkYlVQn2DMVnF+vEZRQXj2tZY=", ts="1449264148", nonce="zn2CRy0e"]] <nil> 0 [] false queue.taskcluster.net map[] map[] <nil> map[]   <nil> <nil>}
-21:22:29.261 1s     1s     generic-worker - Refreshing signed urls in 24m49.966236028s
-21:22:29.261 3us    3us    generic-worker -   Priority (1) Delete URL: https://taskclusterqueuev1.queue.core.windows.net/queue-cnvdrxdarepvm5abnzfwx5ek-cgajs77bixgp6ckx67cditsd-5/messages/{{messageId}}?popreceipt={{popReceipt}}&sv=2015-04-05&se=2015-12-04T21%3A52%3A29Z&sp=p&spr=https&sig=F0pBtAwEU7GKUPVgv9a0ztKTUv%2FEWGGnttQkGaNzHq8%3D&st=2015-12-04T21%3A07%3A29Z
-21:22:29.261 889ns  879ns  generic-worker -   Priority (1) Poll URL:   https://taskclusterqueuev1.queue.core.windows.net/queue-cnvdrxdarepvm5abnzfwx5ek-cgajs77bixgp6ckx67cditsd-5/messages?visibilitytimeout=300&sv=2015-04-05&se=2015-12-04T21%3A52%3A29Z&sp=p&spr=https&sig=F0pBtAwEU7GKUPVgv9a0ztKTUv%2FEWGGnttQkGaNzHq8%3D&st=2015-12-04T21%3A07%3A29Z
-21:22:29.261 791ns  781ns  generic-worker -   Priority (2) Delete URL: https://taskclusterqueuev1.queue.core.windows.net/queue-cnvdrxdarepvm5abnzfwx5ek-cgajs77bixgp6ckx67cditsd-1/messages/{{messageId}}?popreceipt={{popReceipt}}&sv=2015-04-05&se=2015-12-04T21%3A52%3A29Z&sp=p&spr=https&sig=dMIZ6%2FyVhl5FaOxSXthdQV7VIGlr3IA0QrffTr5%2B0vw%3D&st=2015-12-04T21%3A07%3A29Z
-21:22:29.261 722ns  712ns  generic-worker -   Priority (2) Poll URL:   https://taskclusterqueuev1.queue.core.windows.net/queue-cnvdrxdarepvm5abnzfwx5ek-cgajs77bixgp6ckx67cditsd-1/messages?visibilitytimeout=300&sv=2015-04-05&se=2015-12-04T21%3A52%3A29Z&sp=p&spr=https&sig=dMIZ6%2FyVhl5FaOxSXthdQV7VIGlr3IA0QrffTr5%2B0vw%3D&st=2015-12-04T21%3A07%3A29Z
-2015/12/04 22:22:30 Binding queue/pmoore_test1/44889277-c3f6-4f23-936c-c5a338cf0592 to exchange/taskcluster-queue/v1/artifact-created with routing key *.d9vbIkBAS_-9MAEdE9zbJw.*.*.*.test-provisioner.IKS0ndoITKKaRfytmhmn7A.*.*.#
-2015/12/04 22:22:30 Binding queue/pmoore_test1/44889277-c3f6-4f23-936c-c5a338cf0592 to exchange/taskcluster-queue/v1/task-completed with routing key *.d9vbIkBAS_-9MAEdE9zbJw.*.*.*.test-provisioner.IKS0ndoITKKaRfytmhmn7A.*.*.#
-21:22:30.488 1s     1s     generic-worker - Zero tasks returned in Azure XML QueueMessagesList
-21:22:30.678 189ms  189ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
-21:22:30.678 1us    1us    generic-worker - No task claimed from any Azure queue...
-21:22:30.876 197ms  197ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
-21:22:31.065 189ms  189ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
-21:22:31.065 1us    1us    generic-worker - No task claimed from any Azure queue...
+22:29:40.326 2ms    2ms    generic-worker - Detected darwin platform
+22:29:40.327 3ms    3ms    queue - Making http request: &{GET https://queue.taskcluster.net/v1/poll-task-url/aws-provisioner-v1/win2012r2 HTTP/1.1 1 1 map[Content-Type:[application/json] Authorization:[Hawk id="aws-provisioner", mac="MVfkV6dfr36FFDR3434GoOxPRV+Bsdpqnyso9mtejHY=", ts="1449354580", nonce="pKTcnRfr", ext="eyJjZXJgFGHsdfVFTSI6eyJ2ZXJzaW9uFDf9gu3hjdkrh3khykfkj45zdW1lOndvcmtlci10eXBlOmF3cy1wcm92aXNpb25lci12MS93aW4yMDEycjIiLCJhc3N1bWU6d29ya2VyLWlkOioiXSwic3RhcnQiOjE0NDkzMjg0MTc1MDYsImV4cGlyeSI6MTQ0OTY3NDMxNzUwNiwic2VlZCI6ImR2eGdReXVFVFltUzZzeTE3ZFY2TUFmYjdLVWd0WVNTeUs3V2FWajZLR2dBIiwic2lnbmF0dXJlIjoiUjVPL3Jtdk5OR2RPNXNxcEZibWppcitGM3FKZ2RYNS90QU1DQ3ltK2ZIdz0ifX0="]] <nil> 0 [] false queue.taskcluster.net map[] map[] <nil> map[]   <nil> <nil>}
+22:29:41.455 1s     1s     generic-worker - Refreshing signed urls in 24m49.928485914s
+22:29:41.455 20us   20us   generic-worker -   Priority (1) Delete URL: https://taskclusterqueuev1.queue.core.windows.net/queue-b7s5ezzeusysb327h2qdcv4y-sergv56zmysxaedc7n2h5t5a-5/messages/{{messageId}}?popreceipt={{popReceipt}}&sv=2015-04-05&se=2015-12-05T22%3A59%3A41Z&sp=p&spr=https&sig=wPRqqdRtqnIK3n6Qss4rkMiAO0KSE12P8Y3E3S0cLmU%3D&st=2015-12-05T22%3A14%3A41Z
+22:29:41.455 1us    1us    generic-worker -   Priority (1) Poll URL:   https://taskclusterqueuev1.queue.core.windows.net/queue-b7s5ezzeusysb327h2qdcv4y-sergv56zmysxaedc7n2h5t5a-5/messages?visibilitytimeout=300&sv=2015-04-05&se=2015-12-05T22%3A59%3A41Z&sp=p&spr=https&sig=wPRqqdRtqnIK3n6Qss4rkMiAO0KSE12P8Y3E3S0cLmU%3D&st=2015-12-05T22%3A14%3A41Z
+22:29:41.455 1us    1us    generic-worker -   Priority (2) Delete URL: https://taskclusterqueuev1.queue.core.windows.net/queue-b7s5ezzeusysb327h2qdcv4y-sergv56zmysxaedc7n2h5t5a-1/messages/{{messageId}}?popreceipt={{popReceipt}}&sv=2015-04-05&se=2015-12-05T22%3A59%3A41Z&sp=p&spr=https&sig=H%2B5fkdbb8A3FMODzY94k7bmVXur18mbRQA%2FJDxNgUoc%3D&st=2015-12-05T22%3A14%3A41Z
+22:29:41.455 1us    1us    generic-worker -   Priority (2) Poll URL:   https://taskclusterqueuev1.queue.core.windows.net/queue-b7s5ezzeusysb327h2qdcv4y-sergv56zmysxaedc7n2h5t5a-1/messages?visibilitytimeout=300&sv=2015-04-05&se=2015-12-05T22%3A59%3A41Z&sp=p&spr=https&sig=H%2B5fkdbb8A3FMODzY94k7bmVXur18mbRQA%2FJDxNgUoc%3D&st=2015-12-05T22%3A14%3A41Z
+22:29:42.337 881ms  881ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
+22:29:42.564 226ms  226ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
+22:29:42.564 994ns  978ns  generic-worker - No task claimed from any Azure queue...
+22:29:42.767 203ms  203ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
+22:29:42.970 202ms  202ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
+22:29:42.970 1us    1us    generic-worker - No task claimed from any Azure queue...
+22:29:43.767 797ms  797ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
+22:29:43.968 201ms  201ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
+22:29:43.968 928ns  918ns  generic-worker - No task claimed from any Azure queue...
+22:29:44.767 798ms  798ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
+22:29:44.959 192ms  192ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
 ```
 
 # Create a test job
