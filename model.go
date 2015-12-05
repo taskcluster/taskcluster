@@ -18,7 +18,9 @@ type (
 		AccessToken                string `json:"accessToken"`
 		ClientId                   string `json:"clientId"`
 		Debug                      string `json:"debug"`
+		LiveLogCertificate         string `json:"livelogCertificate"`
 		LiveLogExecutable          string `json:"livelogExecutable"`
+		LiveLogKey                 string `json:"livelogKey"`
 		LiveLogSecret              string `json:"livelogSecret"`
 		Certificate                string `json:"certificate"`
 		ProvisionerId              string `json:"provisionerId"`

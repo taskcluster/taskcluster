@@ -67,7 +67,7 @@ type UserData struct {
 
 type Secrets struct {
 	GenericWorker struct {
-		Config Config `json:"config"`
+		Config json.RawMessage `json:"config"`
 	} `json:"generic-worker"`
 	Files []File `json:"files"`
 }
@@ -118,7 +118,9 @@ func (f File) ExtractZip() error {
 	}
 }
 
-// See http://stackoverflow.com/questions/20357223/easy-way-to-unzip-file-with-golang
+// This is a modified version of
+// http://stackoverflow.com/questions/20357223/easy-way-to-unzip-file-with-golang
+// to work with in memory zip, rather than a file
 func Unzip(b []byte, dest string) error {
 	br := bytes.NewReader(b)
 	r, err := zip.NewReader(br, int64(len(b)))
@@ -213,24 +215,12 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 		return err
 	}
 
-	// TODO: need to work out a generic way to do this e.g. using reflection and recursion
-	// or some clever byte stream processing of json raw messages directly...
-	// or maybe a third party library already does it...
-	if v := secrets.GenericWorker.Config.LiveLogExecutable; v != "" {
-		c.LiveLogExecutable = v
-	}
-	if v := secrets.GenericWorker.Config.LiveLogSecret; v != "" {
-		c.LiveLogSecret = v
-	}
-	if v := secrets.GenericWorker.Config.Subdomain; v != "" {
-		c.Subdomain = v
+	// Now overlay existing config with values in secrets
+	json.Unmarshal(secrets.GenericWorker.Config, &config)
+	if err != nil {
+		return err
 	}
 
-	for _, i := range [3][2]string{{c.LiveLogExecutable, "livelogExecutable"}, {c.LiveLogSecret, "livelogSecret"}, {c.Subdomain, "subdomain"}} {
-		if i[0] == "" {
-			return errors.New("secrets.generic-worker.config." + i[1] + " not in worker type " + c.WorkerType + " on instance " + instanceName + "(public IP: " + publicIP + ")")
-		}
-	}
 	fmt.Printf("\n\nConfig\n\n%#v\n\n", c)
 
 	// Now put secret files in place...

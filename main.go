@@ -158,6 +158,10 @@ and reports back results to the queue.
                                             logs; see
                                             https://github.com/taskcluster/stateless-dns-server
                                             [default: taskcluster-worker.net]
+          livelogCertificate                SSL certificate to be used by livelog for hosting
+                                            logs over https. If not set, http will be used.
+          livelogKey                        SSL key to be used by livelog for hosting logs
+                                            over https. If not set, http will be used.
 
     Here is an syntactically valid example configuration file:
 
@@ -255,7 +259,7 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 		c.updateConfigWithAmazonSettings()
 	}
 
-	// now check all values are set
+	// now check all required values are set
 	// TODO: could probably do this with reflection to avoid explicitly listing
 	// all members
 
@@ -283,7 +287,7 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 			return c, MissingConfigError{Setting: f.name, File: filename}
 		}
 	}
-	// all config set!
+	// all required config set!
 	// now set DEBUG environment variable
 	D.Enable(c.Debug)
 	return c, nil

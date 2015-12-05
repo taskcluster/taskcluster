@@ -1,7 +1,7 @@
 {
   "workerType": "win2012r2",
   "minCapacity": 0,
-  "maxCapacity": 4,
+  "maxCapacity": 1,
   "scalingRatio": 0,
   "minPrice": 0.5,
   "maxPrice": 2,
@@ -25,19 +25,53 @@
       "scopes": [],
       "userData": {},
       "launchSpec": {
-        "ImageId": "ami-0c4f5c6d"
+        "ImageId": "ami-dd3d20bc"
       }
     }
   ],
-  "lastModified": "2015-11-24T14:05:27.398Z",
+  "lastModified": "2015-12-05T20:27:04.591Z",
   "userData": {},
   "launchSpec": {
     "SecurityGroups": [
       "rdp-only",
-      "ssh-only"
+      "ssh-only",
+      "livelog-direct"
     ]
   },
-  "secrets": {},
+  "secrets": {
+    "generic-worker": {
+      "config": {
+        "livelogExecutable": "C:\\generic-worker\\livelog.exe",
+        "livelogSecret": "lruBY4NQT3aoqpII4T0Z0w4zXX9utNTja40vu2k446TA",
+        "subdomain": "taskcluster-worker.net",
+        "livelogCertificate": "C:\\generic-worker\\livelog.crt",
+        "livelogKey": "C:\\generic-worker\\livelog.key"
+      }
+    },
+    "files": [
+      {
+        "description": "RelEng secrets",
+        "path": "C:\\builds",
+        "content": "************************************************************",
+        "encoding": "base64",
+        "format": "zip"
+      },
+      {
+        "description": "SSL certificate for livelog",
+        "path": "C:\\generic-worker\\livelog.crt",
+        "content": "************************************************************",
+        "encoding": "base64",
+        "format": "file"
+      },
+      {
+        "description": "SSL key for livelog",
+        "path": "C:\\generic-worker\\livelog.key",
+        "content": "************************************************************",
+        "encoding": "base64",
+        "format": "file"
+      }
+    ]
+  },
   "scopes": [
     "assume:worker-type:aws-provisioner-v1/win2012r2",
     "assume:worker-id:*"

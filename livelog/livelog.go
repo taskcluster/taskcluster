@@ -18,6 +18,8 @@ import (
 // LiveLog provides access to a livelog process running on the OS. Use
 // New(liveLogExecutable string) to start a new livelog instance.
 type LiveLog struct {
+	sslCert string
+	sslKey  string
 	secret  string
 	command *exec.Cmd
 	putURL  string
@@ -34,23 +36,35 @@ type LiveLog struct {
 // io.WriteCloser where the logs should be written to. It is envisanged that
 // the io.WriteCloser is passed on to the executing process.
 //
+// sslCert and sslKey should be used to specify the file location of a
+// suitable certificate and key on the local filesystem that can be used
+// for hosting the livelog service over https. If either is an empty string
+// the livelog will resort to running over http transport instead.
+//
 // Please note the GetURL is for the loopback interface - it is beyond the
 // scope of this library to transform this localhost URL into a URL with a
 // fully qualified hostname using package
 // github.com/taskcluster/stateless-dns-go/hostname since this package can be
 // used independently of the former one.
-func New(liveLogExecutable string) (*LiveLog, error) {
+func New(liveLogExecutable, sslCert, sslKey string) (*LiveLog, error) {
 	l := &LiveLog{
 		secret:  slugid.Nice(),
 		command: exec.Command(liveLogExecutable),
+		sslCert: sslCert,
+		sslKey:  sslKey,
 	}
-	l.command.Env = append(os.Environ(), "ACCESS_TOKEN="+l.secret)
+	l.command.Env = append(
+		os.Environ(),
+		"ACCESS_TOKEN="+l.secret,
+		"SERVER_CRT_FILE="+l.sslCert,
+		"SERVER_KEY_FILE="+l.sslKey,
+	)
 	err := l.command.Start()
-	// TODO: we need to make sure that it doesn't just exit, which
-	// can happen if the port is already in use!!! Note, this is
-	// really bad, since another livelog will use a different
-	// secret. Also note we get a 0 exit code when process exits
-	// because another process was listening on the port(s).
+	// TODO: we need to make sure that this livelog process we just started
+	// doesn't just exit, which can happen if the port is already in use!!!
+	// Note, this is really bad, since another livelog will use a different
+	// secret. Also note we get a 0 exit code when process exits because
+	// another process was listening on the port(s).
 	if err != nil {
 		return nil, err
 	}
