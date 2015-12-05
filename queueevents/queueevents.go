@@ -722,6 +722,7 @@ type (
 			//   * "failed"
 			//   * "deadline-exceeded"
 			//   * "canceled"
+			//   * "superseded"
 			//   * "claim-expired"
 			//   * "worker-shutdown"
 			//   * "malformed-payload"

@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 4 Dec 2015 at 12:57:00 UTC. The code was generated
+// Sat, 5 Dec 2015 at 12:29:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -1366,12 +1366,18 @@ type (
 		// error from which it couldn't recover. The queue will not retry runs
 		// resolved with this reason, but you are clearly signaling that this is a
 		// bug in the worker code.
+		// **Report `superseded`** if the task was determined to have been
+		// superseded by another task, and its results are no longer needed.  It is
+		// convention in this case to create an artifact entitled
+		// `public/superseded-by` containing the taskId of the task that superseded
+		// this one.
 		//
 		// Possible values:
 		//   * "worker-shutdown"
 		//   * "malformed-payload"
 		//   * "resource-unavailable"
 		//   * "internal-error"
+		//   * "superseded"
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-exception-request.json#/properties/reason
 		Reason string `json:"reason"`
@@ -1528,6 +1534,7 @@ type (
 			//   * "failed"
 			//   * "deadline-exceeded"
 			//   * "canceled"
+			//   * "superseded"
 			//   * "claim-expired"
 			//   * "worker-shutdown"
 			//   * "malformed-payload"
