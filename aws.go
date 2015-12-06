@@ -89,7 +89,6 @@ func (f File) Extract() error {
 	default:
 		return errors.New("Unknown file format " + f.Format + " in worker type secret")
 	}
-	return nil
 }
 
 func (f File) ExtractFile() error {

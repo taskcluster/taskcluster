@@ -735,7 +735,7 @@ func WorkerShutdown(err error) *CommandExecutionError {
 }
 
 func (err CommandExecutionError) Error() string {
-	return fmt.Sprintf("TASK NOT SUCCESSFUL: status %v with reason: %q due to %s", err.TaskStatus, err.Reason, err.Error)
+	return fmt.Sprintf("TASK NOT SUCCESSFUL: status %v with reason: %q due to %s", err.TaskStatus, err.Reason, err.Cause)
 }
 
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {

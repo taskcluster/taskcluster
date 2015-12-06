@@ -230,7 +230,7 @@ func deleteOSUserAccount(line string) {
 	}
 }
 
-func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, error) {
+func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
 	env := filepath.Join(TaskUser.HomeDir, "env.txt")
@@ -265,7 +265,7 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, erro
 		for _, x := range [2][2]string{{env, "set "}, {dir, "cd "}} {
 			file, err := os.Open(x[0])
 			if err != nil {
-				return Command{}, err
+				return err
 			}
 			defer file.Close()
 
@@ -275,7 +275,7 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, erro
 			}
 
 			if err := scanner.Err(); err != nil {
-				return Command{}, err
+				return err
 			}
 		}
 	}
@@ -319,7 +319,7 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, erro
 	)
 
 	if err != nil {
-		return Command{}, err
+		return err
 	}
 
 	// Now make the actual task a .bat script
@@ -332,7 +332,7 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, erro
 	)
 
 	if err != nil {
-		return Command{}, err
+		return err
 	}
 
 	// can't use runCommands(...) here because we don't want to execute, only create
@@ -361,14 +361,14 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, erro
 	debug("Running command: '" + strings.Join(command, "' '") + "'")
 	log, err := os.Create(absLogFile)
 	if err != nil {
-		return Command{}, err
+		return err
 	}
 	multiWriter := io.MultiWriter(writer, log)
 	cmd.Stdout = multiWriter
 	cmd.Stderr = multiWriter
 	// cmd.Stdin = strings.NewReader("blah blah")
 	task.Commands[index] = Command{logFile: logFile, osCommand: cmd}
-	return task.Commands[index], nil
+	return nil
 }
 
 func taskCleanup() error {
