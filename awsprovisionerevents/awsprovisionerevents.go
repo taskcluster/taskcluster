@@ -134,7 +134,7 @@ type (
 	WorkerTypeMessage struct {
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#/properties/version
-		Version int `json:"version"`
+		Version float64 `json:"version"`
 
 		// Name of the worker type which was created
 		//

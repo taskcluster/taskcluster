@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Sat, 5 Dec 2015 at 12:29:00 UTC. The code was generated
+// Sun, 6 Dec 2015 at 17:10:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -545,7 +545,7 @@ type (
 			// type by
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/capacity
-			Capacity int `json:"capacity"`
+			Capacity float64 `json:"capacity"`
 
 			// InstanceType name for Amazon.
 			//
@@ -578,7 +578,7 @@ type (
 			// which instance type is the cheapest one
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/utility
-			Utility int `json:"utility"`
+			Utility float64 `json:"utility"`
 		} `json:"instanceTypes"`
 
 		// Launch Specification entries which are used in all regions and all instance types
@@ -589,21 +589,21 @@ type (
 		// Maximum number of capacity units to be provisioned.
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/maxCapacity
-		MaxCapacity int `json:"maxCapacity"`
+		MaxCapacity float64 `json:"maxCapacity"`
 
 		// Maximum price we'll pay.  Like minPrice, this takes into account the
 		// utility factor when figuring out what the actual SpotPrice submitted
 		// to Amazon will be
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/maxPrice
-		MaxPrice int `json:"maxPrice"`
+		MaxPrice float64 `json:"maxPrice"`
 
 		// Minimum number of capacity units to be provisioned.  A capacity unit
 		// is an abstract unit of capacity, where one capacity unit is roughly
 		// one task which should be taken off the queue
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/minCapacity
-		MinCapacity int `json:"minCapacity"`
+		MinCapacity float64 `json:"minCapacity"`
 
 		// Minimum price to pay for an instance.  A Price is considered to be the
 		// Amazon Spot Price multiplied by the utility factor of the InstantType
@@ -612,7 +612,7 @@ type (
 		// used will be $0.25
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/minPrice
-		MinPrice int `json:"minPrice"`
+		MinPrice float64 `json:"minPrice"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions
 		Regions []struct {
@@ -662,7 +662,7 @@ type (
 		// capacity of pending spot requests equal to the number of pending tasks.
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/scalingRatio
-		ScalingRatio int `json:"scalingRatio"`
+		ScalingRatio float64 `json:"scalingRatio"`
 
 		// Scopes to issue credentials to for all regions Scopes must be composed of
 		// printable ASCII characters and spaces.
@@ -738,7 +738,7 @@ type (
 			// type by
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/capacity
-			Capacity int `json:"capacity"`
+			Capacity float64 `json:"capacity"`
 
 			// InstanceType name for Amazon.
 			//
@@ -771,7 +771,7 @@ type (
 			// which instance type is the cheapest one
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/utility
-			Utility int `json:"utility"`
+			Utility float64 `json:"utility"`
 		} `json:"instanceTypes"`
 
 		// ISO Date string (e.g. new Date().toISOString()) which represents the time
@@ -788,21 +788,21 @@ type (
 		// Maximum number of capacity units to be provisioned.
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/maxCapacity
-		MaxCapacity int `json:"maxCapacity"`
+		MaxCapacity float64 `json:"maxCapacity"`
 
 		// Maximum price we'll pay.  Like minPrice, this takes into account the
 		// utility factor when figuring out what the actual SpotPrice submitted
 		// to Amazon will be
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/maxPrice
-		MaxPrice int `json:"maxPrice"`
+		MaxPrice float64 `json:"maxPrice"`
 
 		// Minimum number of capacity units to be provisioned.  A capacity unit
 		// is an abstract unit of capacity, where one capacity unit is roughly
 		// one task which should be taken off the queue
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/minCapacity
-		MinCapacity int `json:"minCapacity"`
+		MinCapacity float64 `json:"minCapacity"`
 
 		// Minimum price to pay for an instance.  A Price is considered to be the
 		// Amazon Spot Price multiplied by the utility factor of the InstantType
@@ -811,7 +811,7 @@ type (
 		// used will be $0.25
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/minPrice
-		MinPrice int `json:"minPrice"`
+		MinPrice float64 `json:"minPrice"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions
 		Regions []struct {
@@ -861,7 +861,7 @@ type (
 		// capacity of pending spot requests equal to the number of pending tasks.
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/scalingRatio
-		ScalingRatio int `json:"scalingRatio"`
+		ScalingRatio float64 `json:"scalingRatio"`
 
 		// Scopes to issue credentials to for all regions.  Scopes must be composed
 		// of printable ASCII characters and spaces.

@@ -118,7 +118,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
-// Sat, 5 Dec 2015 at 12:29:00 UTC. The code was generated
+// Sun, 6 Dec 2015 at 17:10:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package index
 
@@ -409,7 +409,7 @@ type (
 		// has the same `rank` the latest task will be stored.
 		//
 		// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#/properties/rank
-		Rank int `json:"rank"`
+		Rank float64 `json:"rank"`
 
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
@@ -443,7 +443,7 @@ type (
 		// has the same `rank` the latest task will be stored.
 		//
 		// See http://schemas.taskcluster.net/index/v1/insert-task-request.json#/properties/rank
-		Rank int `json:"rank"`
+		Rank float64 `json:"rank"`
 
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
@@ -581,7 +581,7 @@ type (
 			// stored.
 			//
 			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/rank
-			Rank int `json:"rank"`
+			Rank float64 `json:"rank"`
 
 			// Unique task identifier, this is UUID encoded as
 			// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
