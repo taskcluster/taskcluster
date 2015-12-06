@@ -16,16 +16,16 @@ func startup() error {
 	return nil
 }
 
-func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, error) {
+func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	cmd := exec.Command(task.Payload.Command[index][0], task.Payload.Command[index][1:]...)
 	commandName := fmt.Sprintf("command_%06d", index)
 	err := os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0700)
 	if err != nil {
-		return Command{}, err
+		return err
 	}
 	log, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", commandName+".log"))
 	if err != nil {
-		return Command{}, err
+		return err
 	}
 	multiWriter := io.MultiWriter(writer, log)
 	cmd.Stdout = multiWriter
@@ -33,7 +33,8 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) (Command, erro
 	// cmd.Stdout = log
 	// cmd.Stderr = log
 	task.prepEnvVars(cmd)
-	return Command{osCommand: cmd, logFile: "public/logs/" + commandName + ".log"}, nil
+	task.Commands[index] = Command{osCommand: cmd, logFile: "public/logs/" + commandName + ".log"}
+	return nil
 }
 
 func taskCleanup() error {

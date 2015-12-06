@@ -76,7 +76,8 @@ func New(liveLogExecutable, sslCert, sslKey string) (*LiveLog, error) {
 // Terminate will close the log writer, and then kill the livelog system
 // process.
 func (l *LiveLog) Terminate() error {
-	l.logReader.Close()
+	// DON'T close the reader!!! otherwise PUT will fail
+	// i.e DON'T write `l.logReader.Close()`
 	l.LogWriter.Close()
 	return l.command.Process.Kill()
 }

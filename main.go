@@ -399,14 +399,6 @@ func FindAndRunTask() bool {
 			debug("%v", err)
 			break
 		}
-		// start the livelogger
-		liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey)
-		if err != nil {
-			debug("FATAL: cannot start livelogger for task " + task.TaskId)
-			debug("%v", err)
-			os.Exit(88)
-		}
-		task.liveLog = liveLog
 		task.setReclaimTimer()
 		task.fetchTaskDefinition()
 		err = task.validatePayload()
@@ -423,7 +415,6 @@ func FindAndRunTask() bool {
 		}
 		err = task.run()
 		reportPossibleError(err)
-		task.liveLog.Terminate()
 		break
 	}
 	return taskFound
@@ -729,6 +720,80 @@ func (task *TaskRun) validatePayload() error {
 	return json.Unmarshal(jsonPayload, &task.Payload)
 }
 
+type CommandExecutionError struct {
+	TaskStatus TaskStatus
+	Cause      error
+	Reason     string
+}
+
+func WorkerShutdown(err error) *CommandExecutionError {
+	return &CommandExecutionError{
+		Cause:      err,
+		Reason:     "worker-shutdown",
+		TaskStatus: Errored,
+	}
+}
+
+func (err CommandExecutionError) Error() string {
+	return fmt.Sprintf("TASK NOT SUCCESSFUL: status %v with reason: %q due to %s", err.TaskStatus, err.Reason, err.Error)
+}
+
+func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
+
+	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey)
+	defer func(liveLog *livelog.LiveLog) {
+		errClose := liveLog.LogWriter.Close()
+		if errClose != nil {
+			// no need to raise an exception
+			debug("WARN: could not close livelog writer: %s", errClose)
+		}
+		errTerminate := liveLog.Terminate()
+		if errTerminate != nil {
+			// no need to raise an exception
+			debug("WARN: could not close livelog writer: %s", errTerminate)
+		}
+	}(liveLog)
+	if err != nil {
+		return WorkerShutdown(err)
+	}
+	err = task.generateCommand(index, liveLog.LogWriter) // platform specific
+	if err != nil {
+		return WorkerShutdown(err)
+	}
+
+	task.Commands[index].liveLog = liveLog
+
+	err = task.Commands[index].osCommand.Start()
+	if err != nil {
+		return WorkerShutdown(err)
+	}
+
+	debug("Posting livelog redirect artifact")
+	err = task.uploadLiveLog(index)
+	if err != nil {
+		return WorkerShutdown(err)
+	}
+
+	debug("Waiting for command to finish...")
+	errCommand := task.Commands[index].osCommand.Wait()
+	err = task.uploadLog(task.Commands[index].logFile)
+	if errCommand != nil {
+		switch errCommand.(type) {
+		case *exec.ExitError:
+			return &CommandExecutionError{
+				Cause:      errCommand,
+				TaskStatus: Failed,
+			}
+		default:
+			return WorkerShutdown(err)
+		}
+	}
+	if err != nil {
+		return WorkerShutdown(err)
+	}
+	return nil
+}
+
 func (task *TaskRun) run() error {
 
 	debug("Running task!")
@@ -764,98 +829,20 @@ func (task *TaskRun) run() error {
 	var finalTaskStatus TaskStatus = Succeeded
 	var finalReason string
 	var finalError error = nil
-	abort := false
-	var err error
 
 	for i, _ := range task.Payload.Command {
-		task.Commands[i], err = task.generateCommand(i, task.liveLog.LogWriter) // platform specific
+		err := task.ExecuteCommand(i)
 		if err != nil {
-			debug("%#v", err)
-			if finalError == nil {
-				debug("TASK EXCEPTION due to not being able to generate command %v", i)
-				finalTaskStatus = Errored
-				finalReason = "worker-shutdown" // internal error (create-process-error)
-				finalError = err
-			}
-			break
-		}
-		err = task.Commands[i].osCommand.Start()
-		if err != nil {
-			debug("%#v", err)
-			if finalError == nil {
-				debug("TASK EXCEPTION due to not being able to start command %v", i)
-				finalTaskStatus = Errored
-				finalReason = "worker-shutdown" // internal error (start-process-error)
-				finalError = err
-			}
-			break
-		}
-		debug("Posting livelog redirect artifact")
-		err = task.uploadLiveLog(task.Commands[i].logFile)
-		if err != nil {
-			debug("%#v", err)
-			if finalError == nil {
-				debug("TASK EXCEPTION due to problem uploading livelog %v", task.Commands[i].logFile)
-				finalTaskStatus = Errored
-				finalReason = "worker-shutdown" // internal error (log-upload-failure)
-				finalError = err
-				// don't break or abort - log upload failure alone shouldn't stop
-				// other steps from running
-			}
-		}
-		debug("Waiting for command to finish...")
-		// use a different variable for error since we process it later
-		err := task.Commands[i].osCommand.Wait()
-		// TODO: clean this horrible thing up, and redesign all error handling
-		// in this method. It is stinky and terrible.
-		errX := task.liveLog.LogWriter.Close()
-		if errX != nil {
-			panic(errX)
-		}
-
-		// Reporting Task Result
-		// ---------------------
-		// If a task is malformed, the input is invalid, configuration is wrong, or
-		// the worker is told to shutdown by AWS before the the task is completed,
-		// it should be reported to the queue using `queue.reportException`.
-		if err != nil {
-			// make sure we abort loop after uploading log file
-			debug("%#v", err)
-			abort = true
-			if finalError == nil {
-				// If the task is unsuccessful, ie. exits non-zero, the worker should
-				// resolve it using `queue.reportFailed` (this implies test or build
-				// failure).
-				switch err.(type) {
-				case *exec.ExitError:
-					finalTaskStatus = Failed
-					finalError = err
-				default:
-					debug("TASK EXCEPTION due to error of type %T when executing command %v", err, i)
-					finalTaskStatus = Errored
-					finalReason = "worker-shutdown" // internal error (task-crash)
-					finalError = err
-				}
-			}
-		}
-		err = task.uploadLog(task.Commands[i].logFile)
-		if err != nil {
-			debug("%#v", err)
-			if finalError == nil {
-				debug("TASK EXCEPTION due to problem uploading log %v", task.Commands[i].logFile)
-				finalTaskStatus = Errored
-				finalReason = "worker-shutdown" // internal error (log-upload-failure)
-				finalError = err
-				// don't break or abort - log upload failure alone shouldn't stop
-				// other steps from running
-			}
-		}
-		if abort {
+			debug("Error executing command %v: %#v", i, err)
+			finalError = err.Cause
+			finalReason = err.Reason
+			finalTaskStatus = err.TaskStatus
 			break
 		}
 	}
 
-	err = task.postTaskActions()
+	err := task.postTaskActions()
+
 	if err != nil {
 		debug("%#v", err)
 		if finalError == nil {
