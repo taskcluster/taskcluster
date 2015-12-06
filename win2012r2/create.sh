@@ -81,3 +81,10 @@ echo
 echo "$(date): The worker type has been proactively updated("'!'"):"
 echo
 echo "             https://tools.taskcluster.net/aws-provisioner/#win2012r2/edit"
+
+{
+    echo "Instance:  ${INSTANCE_ID}"
+    echo "Public IP: ${PUBLIC_IP}"
+    echo "Password:  ${PASSWORD}"
+    echo "AMI:       ${IMAGE_ID}"
+} > latest.txt

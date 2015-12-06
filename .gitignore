@@ -28,3 +28,6 @@ coverage.report
 
 # test artifacts
 test/public/logs
+
+# other
+win2012r2/latest.txt
