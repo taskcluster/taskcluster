@@ -1,9 +1,10 @@
 #!/bin/bash -e
 
-# TODO: delete old snapshots, AMIs, running workers
+# TODO: delete old snapshots, AMIs
 # TODO: cancel running tasks
 # TODO: submit a task after updating worker type
 # TODO: remove hard coded references to win2012r2
+# TODO: remove hard coded references to us-west-2
 
 echo "$(date): Starting"'!'
 
