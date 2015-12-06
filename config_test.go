@@ -9,7 +9,7 @@ import (
 
 func TestMissingIPConfig(t *testing.T) {
 	const file = "test/config/noip.json"
-	const setting = "public_ip"
+	const setting = "publicIP"
 	_, err := loadConfig(file, false)
 	if err == nil {
 		t.Fatal("Was expecting to get an error back, but didn't get one!")
