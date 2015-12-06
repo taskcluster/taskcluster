@@ -241,7 +241,6 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	logFile := "public/logs/" + commandName + ".log"
 	absLogFile := filepath.Join(TaskUser.HomeDir, "public", "logs", commandName+".log")
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskId + "..." + "\r\n"
-	contents += "@echo off\r\n"
 
 	// At the end of each command we export all the env vars, and import them
 	// at the start of the next command. Otherwise env variable changes would
@@ -293,11 +292,10 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	// old version that WROTE TO A FILE:
 	//      contents += "call " + script + " > " + absLogFile + " 2>&1" + "\r\n"
 	// ******************************
-	contents += "call " + script + "\r\n"
+	contents += "call " + script + " 2>&1" + "\r\n"
 
 	// store exit code
-	contents += "@set tcexitcode=%errorlevel%\r\n"
-	contents += "@echo off\r\n"
+	contents += "set tcexitcode=%errorlevel%\r\n"
 
 	// now store env for next command, unless this is the last command
 	if index != len(task.Payload.Command)-1 {
@@ -330,6 +328,10 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 		fileContents,
 		0755,
 	)
+
+	debug("Script %q:", script)
+	debug("Contents:")
+	debug(string(fileContents))
 
 	if err != nil {
 		return err
