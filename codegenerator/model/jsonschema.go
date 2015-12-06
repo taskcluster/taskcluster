@@ -199,7 +199,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 			typ = "json.RawMessage"
 		}
 	case "number":
-		typ = "int"
+		typ = "float64"
 	case "integer":
 		typ = "int"
 	case "boolean":
