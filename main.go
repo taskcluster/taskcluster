@@ -785,7 +785,7 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 				TaskStatus: Failed,
 			}
 		default:
-			return WorkerShutdown(err)
+			return WorkerShutdown(errCommand)
 		}
 	}
 	if err != nil {
