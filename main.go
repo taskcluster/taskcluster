@@ -269,16 +269,16 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 		disallowed interface{}
 	}{
 		{value: c.Debug, name: "debug", disallowed: ""},
-		{value: c.ProvisionerId, name: "provisioner_id", disallowed: ""},
-		{value: c.RefreshUrlsPrematurelySecs, name: "refresh_urls_prematurely_secs", disallowed: 0},
-		{value: c.AccessToken, name: "access_token", disallowed: ""},
-		{value: c.ClientId, name: "client_id", disallowed: ""},
-		{value: c.WorkerGroup, name: "worker_group", disallowed: ""},
-		{value: c.WorkerId, name: "worker_id", disallowed: ""},
-		{value: c.WorkerType, name: "worker_type", disallowed: ""},
-		{value: c.LiveLogExecutable, name: "livelog_executable", disallowed: ""},
-		{value: c.LiveLogSecret, name: "livelog_secret", disallowed: ""},
-		{value: c.PublicIP, name: "public_ip", disallowed: net.IP(nil)},
+		{value: c.ProvisionerId, name: "provisionerId", disallowed: ""},
+		{value: c.RefreshUrlsPrematurelySecs, name: "refreshURLsPrematurelySecs", disallowed: 0},
+		{value: c.AccessToken, name: "accessToken", disallowed: ""},
+		{value: c.ClientId, name: "clientId", disallowed: ""},
+		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},
+		{value: c.WorkerId, name: "workerId", disallowed: ""},
+		{value: c.WorkerType, name: "workerType", disallowed: ""},
+		{value: c.LiveLogExecutable, name: "livelogExecutable", disallowed: ""},
+		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
+		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
 		{value: c.Subdomain, name: "subdomain", disallowed: ""},
 	}
 
