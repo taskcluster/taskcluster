@@ -833,7 +833,7 @@ func (task *TaskRun) run() error {
 	for i, _ := range task.Payload.Command {
 		err := task.ExecuteCommand(i)
 		if err != nil {
-			debug("Error executing command %v: %#v", i, err)
+			debug("TASK EXCEPTION OR FAILURE: Error executing command %v: %#v", i, err.Error())
 			finalError = err.Cause
 			finalReason = err.Reason
 			finalTaskStatus = err.TaskStatus
