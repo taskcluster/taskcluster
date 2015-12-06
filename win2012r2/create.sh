@@ -1,7 +1,5 @@
 #!/bin/bash -e
 
-# TODO: delete old snapshots, AMIs
-# TODO: cancel running tasks
 # TODO: submit a task after updating worker type
 # TODO: remove hard coded references to win2012r2
 # TODO: remove hard coded references to us-west-2
@@ -31,7 +29,23 @@ OLD_INSTANCES="$(aws ec2 describe-instances --filters Name=tag-key,Values=Worker
 echo "$(date): Now terminating instances" ${OLD_INSTANCES}...
 aws ec2 terminate-instances --instance-ids ${OLD_INSTANCES} >/dev/null 2>&1
 
-# create base ami, and apply user-data
+# find old ami
+echo "$(date): Querying previous AMI..."
+OLD_SNAPSHOT="$(aws ec2 describe-images --owners self amazon --filters "Name=name,Values=win2012r2 mozillabuild pmoore version*" --query 'Images[*].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)"
+
+# find old snapshot
+echo "$(date): Querying snapshot used in this previous AMI..."
+OLD_AMI="$(aws ec2 describe-images --owners self amazon --filters "Name=name,Values=win2012r2 mozillabuild pmoore version*" --query 'Images[*].ImageId' --output text)"
+
+# deregister old AMI
+echo "$(date): Deregistering the old AMI (${OLD_AMI})..."
+aws ec2 deregister-image --image-id "${OLD_AMI}"
+
+# delete old snapshot
+echo "$(date): Deleting the old snapshot (${OLD_SNAPSHOT})..."
+aws ec2 delete-snapshot --snapshot-id "${OLD_SNAPSHOT}"
+
+# create new base ami, and apply user-data
 # filter output, to get INSTANCE_ID
 INSTANCE_ID="$(aws --region us-west-2 ec2 run-instances --image-id "${AMI}" --key-name pmoore-oregan-us-west-2 --security-groups "RDP only" --user-data "$(cat firefox.userdata)" --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=75,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior terminate --client-token "${SLUGID}" | sed -n 's/^ *"InstanceId": "\(.*\)", */\1/p')"
 
