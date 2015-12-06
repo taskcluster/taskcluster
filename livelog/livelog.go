@@ -4,10 +4,8 @@
 package livelog
 
 import (
-	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"os"
 	"os/exec"
 	"time"
@@ -99,21 +97,13 @@ func (l *LiveLog) connectInputStream() error {
 	}
 	client := new(http.Client)
 	go func() {
-		// TODO: this is a HORRENDOUS hack - need to fix this
-		// Basically we need to wait until put port is opened
-		// which is some time after the livelog process has
-		// started...
+		// TODO: this is a HORRENDOUS hack - need to fix this Basically we need
+		// to wait until put port is opened which is some time after the
+		// livelog process has started...
 		time.Sleep(500 * time.Millisecond)
-		// resp, _, err := httpbackoff.ClientDo(client, req)
-		resp, err := client.Do(req)
-		if err != nil {
-			panic(err)
-		}
-		output, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(string(output))
+		// since we waited so long, maybe livelog service isn't running now, so
+		// ignore any error and response we get back...
+		client.Do(req)
 	}()
 	return nil
 }
