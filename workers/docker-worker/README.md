@@ -1,12 +1,10 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
-
 - [Docker Worker](#docker-worker)
   - [Requirements](#requirements)
   - [Usage](#usage)
     - [Configuration](#configuration)
     - [Directory Structure](#directory-structure)
+  - [Environment](#environment)
+    - [Loopback Devices](#loopback-devices)
   - [Running tests](#running-tests)
     - [Common problems](#common-problems)
   - [Deployment](#deployment)
@@ -15,7 +13,6 @@
     - [Block-Device Mapping](#block-device-mapping)
     - [Updating Schema](#updating-schema)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Docker Worker
 
@@ -37,7 +34,7 @@ are for hacking on the worker itself.
 
   - Node 0.12.x
   - Docker
-  - Packer (to build ami)
+  - Packer (to build AMI)
 
 ## Usage
 
@@ -59,7 +56,7 @@ for the docker worker in particular these are important:
 
   - `registries` registry credentials
 
-  - `statsd` credentials for the statsd server.
+  - `influx` connection string and settings for sending metrics to influx.
 
 ### Directory Structure
 
@@ -70,6 +67,24 @@ for the docker worker in particular these are important:
   - [/lib/task_listener.js - primary entrypoint of worker](/lib/task_listener.js)
   - [/lib/task.js - handler for individual tasks](/lib/task_listener.js)
   - [/lib/features/ - individual features for worker](/lib/features/)
+
+### Environment
+
+docker-worker runs in an Ubuntu environment with various packages and kernel modules
+installed.
+
+Within the root of the repo is a Vagrantfile and vagrant.sh script that simplifies
+creating a local environment that mimics the one uses in production.  This environment
+allows one to not only run the worker tests but also to run images used in TaskCluster
+in an environment similar to production without needing to configure special things
+on the host.
+
+#### Loopback Devices
+
+The v4l2loopback and snd-aloop kernel modules are installed to allow loopback audio/video
+devices to be available within tasks that require them.  For information on how to
+configure these modules like production, consult the [vagrant script](https://github.com/taskcluster/docker-worker/blob/master/vagrant.sh)
+used for creating a local environment.
 
 ## Running tests
 
@@ -146,9 +161,9 @@ are important.
 
   1. Building the [base](/deploy/packer/base.json) AMI. Do this when:
       - You need to add new apt packages.
-      
+
       - You need to update docker (see above).
-      
+
       - You need to run some expensive one-off installation.
 
       - You need to update ssl/gpg keys
@@ -167,9 +182,9 @@ are important.
 
   2. Building the [app](/deploy/packer/app.json) AMI. Do this when:
       - You want to deploy new code/features.
-      
+
       - You need to update diamond/statsd/configs (not packages).
-      
+
       Note: That just because you deploy an AMI does not mean anyone is
       using it.. Usually you need to also update a provisioner workerType with
       the new AMI id.
