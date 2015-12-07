@@ -1,8 +1,7 @@
 {
   "name": "docker-worker",
-  "version": "0.0.0",
+  "private": true,
   "description": "Docker task host for linux.",
-  "main": "index.js",
   "bin": {
     "docker-worker": "bin/worker.js"
   },
@@ -14,14 +13,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/lightsofapollo/docker-worker.git"
+    "url": "git://github.com/taskcluster/docker-worker.git"
   },
-  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/lightsofapollo/docker-worker/issues"
-  },
-  "homepage": "https://github.com/lightsofapollo/docker-worker",
+  "bugs": "https://github.com/taskcluster/docker-worker/issues",
+  "homepage": "https://github.com/taskcluster/docker-worker",
   "dependencies": {
     "azure-storage": "^0.3.0",
     "babel": "^4.7",
