@@ -55,7 +55,7 @@ var (
 	taskStatusDoneChan chan<- bool
 	config             Config
 
-	version = "generic-worker 2.0.0alpha10"
+	version = "generic-worker 2.0.0alpha11"
 	usage   = `
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
