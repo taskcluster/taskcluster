@@ -38,12 +38,20 @@ echo "$(date): Querying snapshot used in this previous AMI..."
 OLD_AMI="$(aws ec2 describe-images --owners self amazon --filters "Name=name,Values=win2012r2 mozillabuild pmoore version*" --query 'Images[*].ImageId' --output text)"
 
 # deregister old AMI
-echo "$(date): Deregistering the old AMI (${OLD_AMI})..."
-aws ec2 deregister-image --image-id "${OLD_AMI}"
+if [ -n "${OLD_AMI}" ]; then
+  echo "$(date): Deregistering the old AMI (${OLD_AMI})..."
+  aws ec2 deregister-image --image-id "${OLD_AMI}"
+else
+  echo "$(date): No old AMI to deregister."
+fi
 
 # delete old snapshot
-echo "$(date): Deleting the old snapshot (${OLD_SNAPSHOT})..."
-aws ec2 delete-snapshot --snapshot-id "${OLD_SNAPSHOT}"
+if [ -n "${OLD_SNAPSHOT}" ]; then
+  echo "$(date): Deleting the old snapshot (${OLD_SNAPSHOT})..."
+  aws ec2 delete-snapshot --snapshot-id "${OLD_SNAPSHOT}"
+else
+  echo "$(date): No old snapshot to delete."
+fi
 
 # create new base ami, and apply user-data
 # filter output, to get INSTANCE_ID
