@@ -33,6 +33,7 @@ if (files.length >= totalChunks) {
   files = files.slice(chunk, chunk + chunkLength);
 }
 
+files.unshift('--harmony');
 files.unshift('--grep "@disabled" --invert');
 
 let proc = spawn(binary, files, {

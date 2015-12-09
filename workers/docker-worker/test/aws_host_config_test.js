@@ -8,7 +8,7 @@ import request from 'superagent-promise';
 let server;
 let url;
 
-suite('@disabled configuration/aws', () => {
+suite('configuration/aws', () => {
   setup((done) => {
     server = http.createServer(app.callback());
     server.listen(() => {

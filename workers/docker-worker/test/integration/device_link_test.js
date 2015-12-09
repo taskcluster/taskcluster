@@ -3,8 +3,7 @@ import * as settings from '../settings';
 import TestWorker from '../testworker';
 import DockerWorker from '../dockerworker';
 import cmd from './helper/cmd';
-// Disabled for Koa not playing well with babel
-//import app from '../fixtures/testdroid_cloud';
+import app from '../fixtures/testdroid_cloud';
 import http from 'http';
 import waitForEvent from '../../lib/wait_for_event';
 import { execSync } from 'child_process';
@@ -126,7 +125,7 @@ suite('device linking within containers', () => {
     );
   });
 
-  test('@disabled link testdroid device', async () => {
+  test('link testdroid device', async () => {
     // Currently the test just insures that the testdroid endpoint will be called.
     // When testdroid api can have more atomic operations for creating a session
     // then the device link test can be updated to ensure a session is created

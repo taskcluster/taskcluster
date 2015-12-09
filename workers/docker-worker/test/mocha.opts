@@ -1,3 +1,4 @@
+--harmony
 --ui tdd
 --require test/helper
 --timeout 240s
