@@ -1,15 +1,15 @@
-var assert      = require('assert');
-var http        = require('http');
-var Promise     = require('promise');
-var path        = require('path');
-var fs          = require('fs');
-var _           = require('lodash');
-var base        = require('taskcluster-base');
-var api         = require('../lib/api');
-var taskcluster = require('taskcluster-client');
-var mocha       = require('mocha');
-var exchanges   = require('../lib/exchanges');
-var common      = require('../lib/common');
+import assert from 'assert';
+import http from 'http';
+import Promise from 'promise';
+import path from 'path';
+import fs from 'fs';
+import _ from 'lodash';
+import base from 'taskcluster-base';
+import api from '../lib/api';
+import taskcluster from 'taskcluster-client';
+import mocha from 'mocha';
+import exchanges from '../lib/exchanges';
+import common from '../lib/common';
 var bin = {
   server:         require('../bin/server'),
 };

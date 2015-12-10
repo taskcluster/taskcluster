@@ -1,14 +1,15 @@
 #!/usr/bin/env node
-var debug             = require('debug')('github:server');
-var base              = require('taskcluster-base');
-var api               = require('../lib/api');
-var path              = require('path');
-var common            = require('../lib/common');
-var Promise           = require('promise');
-var exchanges         = require('../lib/exchanges');
-var _                 = require('lodash');
-var Octokat           = require('octokat');
+import Debug from 'debug';
+import base from 'taskcluster-base';
+import api from '../lib/api';
+import path from 'path';
+import common from '../lib/common';
+import Promise from 'promise';
+import exchanges from '../lib/exchanges';
+import _ from 'lodash';
+import Octokat from 'octokat';
 
+let debug = Debug('github:server');
 /** Launch server */
 var launch = async function(profile, publisher) {
   debug("Launching with profile: %s", profile);
@@ -110,3 +111,4 @@ if (!module.parent) {
 
 // Export launch in-case anybody cares
 module.exports = launch;
+

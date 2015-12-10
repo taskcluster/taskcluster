@@ -1,16 +1,17 @@
 #!/usr/bin/env node
-var debug             = require('debug')('github:worker');
-var assert            = require('assert');
-var path              = require('path');
-var base              = require('taskcluster-base');
-var Promise           = require('promise');
-var exchanges         = require('../lib/exchanges');
-var common            = require('../lib/common');
-var worker            = require('../lib/worker');
-var _                 = require('lodash');
-var taskcluster       = require('taskcluster-client');
-var Octokat           = require('octokat');
+import Debug from 'debug';
+import assert from 'assert';
+import path from 'path';
+import base from 'taskcluster-base';
+import Promise from 'promise';
+import exchanges from '../lib/exchanges';
+import common from '../lib/common';
+import worker from '../lib/worker';
+import _ from 'lodash';
+import taskcluster from 'taskcluster-client';
+import Octokat from 'octokat';
 
+let debug = Debug('github:worker');
 /** Launch worker */
 var launch = async function(profile) {
   debug("Launching with profile: %s", profile);
@@ -28,7 +29,7 @@ var launch = async function(profile) {
     var statsDrain = common.stdoutStatsDrain;
   }
 
-  // For use in validation of taskclusterrc files
+  // For use in validation of taskcluster github config files
   let validator = await common.buildValidator(cfg);
 
   // Create a single connection to the GithubAPI to pass around
@@ -118,3 +119,4 @@ if (!module.parent) {
 
 // Export launch in-case anybody cares
 module.exports = launch;
+

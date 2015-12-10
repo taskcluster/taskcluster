@@ -1,0 +1,66 @@
+id:                 http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#
+$schema:            http://json-schema.org/draft-04/schema#
+title:              ".taskcluster.yml format"
+description: |
+ Description of a taskclusterrc.yml file, which may be used to generate a taskgraph
+ and tasks.
+type:               object
+properties:
+  version:
+    description:    ".taskcluster.yml version"
+    enum:           [0]
+    items:
+  metadata:
+    description:   "Required task graph metadata"
+    type:           object
+    properties:
+      name:
+        title:          "Name"
+        description: |
+          Human readable name of task, used to very briefly given an idea about
+          what the task does.
+        type:           string
+        maxLength:      255
+      description:
+        title:          "Description"
+        description: |
+          Human readable description of the task, please **explain** what the
+          task does. A few lines of documentation is not going to hurt you.
+        type:           string
+        maxLength:      32768
+      owner:
+        title:          "Owner"
+        description: |
+          E-mail of person who caused this task, e.g. the person who did
+          `hg push`. The person we should contact to ask why this task is here.
+        type:           string
+        maxLength:      255
+      source:
+        title:          "Source"
+        description: |
+          Link to source of this task, should specify a file, revision and
+          repository. This should be place someone can go an do a git/hg blame
+          to who came up with recipe for this task.
+        type:           string
+        maxLength:      4096
+    additionalProperties: false
+    required:
+      - name
+      - description
+      - owner
+      - source
+  tasks:
+    type:           array
+    default:        []
+    items:
+        title:              "Task Definition"
+        description: |
+          Definition of a task that can be scheduled
+        type:               object
+        properties:
+          created:          {$const: created}
+          deadline:         {$const: deadline}
+        additionalProperties: true
+additionalProperties: false
+required:
+  - version
