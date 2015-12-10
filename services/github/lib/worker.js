@@ -1,64 +1,119 @@
-var debug       = require('debug')('github:worker');
-var tcrc        = require('./taskclusterrc');
-var github      = require('./github');
-var common      = require('./common');
-var taskcluster = require('taskcluster-client')
-var slugid      = require('slugid');
+import Debug from 'debug';
+import tcconfig from './taskcluster-config';
+import github from './github';
+import common from './common';
+import utils from './utils';
+import taskcluster from 'taskcluster-client';
+import slugid from 'slugid';
 
+let debug = Debug('github:worker');
 var worker = module.exports = {};
 
+const INSPECTOR_URL = 'https://tools.taskcluster.net/task-graph-inspector/#';
+
 /**
- * If a .taskclusterrc exists, attempt to turn it into a taskcluster
+ * If a .taskcluster.yml exists, attempt to turn it into a taskcluster
  * graph config, and submit it to the scheduler.
  **/
 worker.webHookHandler = async function(message, context) {
   debug('handling webhook: ', message);
-  let msgPayload = message.payload;
+  let taskclusterConfig = undefined;
+  try {
+    // Try to fetch a .taskcluster.yml file for every request
+    taskclusterConfig = await context.githubAPI.repos(
+      message.payload.organization, message.payload.repository
+    ).contents('.taskcluster.yml').read({
+      ref: message.payload.details['event.base.repo.branch']
+    });
 
-  // Try to fetch a taskclusterrc file for every request
-  let taskclusterrc = await context.githubAPI.repos(
-    msgPayload.organization, msgPayload.repository
-  ).contents('.taskclusterrc').read()
+    // Decide if a user has permissions to run tasks.
+    let login = message.payload.details['event.head.user.login']
+    let isCollaborator = false;
 
-  let schema = common.SCHEMA_PREFIX_CONST + 'taskclusterrc.json#';
-  if (taskclusterrc) {
-    // Attach some info about the user who created a request which
-    // needs to come directly from the GitHub API. This info will be
-    // used to decide which tasks a user has permissions to run.
-    let headUserInfo = {};
-    headUserInfo.orgs = await context.githubAPI.users(
-      msgPayload.details.headUser
-    ).orgs.fetch();
-
-    try {
-      let graphConfig = await tcrc.processConfig({
-        taskclusterrc: taskclusterrc,
-        payload:       msgPayload,
-        userInfo:      headUserInfo,
-        validator:     context.validator,
-        schema:        schema
-      });
-      if (graphConfig.tasks.length) {
-        await context.scheduler.createTaskGraph(slugid.v4(), graphConfig);
-      } else {
-        debug('graphConfig compiled with zero tasks: skipping');
-      }
-    } catch(e) {
-      debug(e);
-      // Let the user know that there was a problem processing their
-      // config file
-      let statusMessage = {
-        state:        'error',
-        description:  e.toString(),
-        context:      'TaskCluster',
-        target_url:   schema
-      };
-      await github.updateStatus(context.githubAPI,
-        msgPayload.organization,
-        msgPayload.repository,
-        msgPayload.details.headSha,
-        statusMessage);
+    if (login == message.payload.organization) {
+      isCollaborator = true;
     }
+
+    if (!isCollaborator) {
+      isCollaborator = await context.githubAPI.orgs(
+        message.payload.organization
+      ).members.contains(login);
+    }
+
+    if (!isCollaborator) {
+      // GithubAPI's collaborator check returns an error if a user isn't
+      // listed as a collaborator.
+      try {
+        await context.githubAPI.repos(
+          message.payload.organization, message.payload.repository
+        ).collaborators(login).fetch();
+        // No error, the user is a collaborator
+        isCollaborator = true;
+      } catch (e) {
+          if (e.status == 404) {
+            // Only a 404 error means the user isn't a collaborator
+            // anything else should just throw like normal
+            debug(e.message);
+          } else {
+            throw(e);
+          }
+      }
+    }
+
+    // If all of the collaborator checks fail, we should post to the commit
+    // and ignore the request
+    if (!isCollaborator) {
+      let msg = `@${login} does not have permission to trigger tasks.`;
+      await github.addCommitComment(
+        context.githubAPI,
+        message.payload.organization,
+        message.payload.repository,
+        message.payload.details['event.head.sha'],
+        'TaskCluster: ' + msg);
+      throw(new Error(msg));
+    }
+  } catch (e) {
+    debug(e);
+    throw(e);
+  }
+
+  // Now we can try processing the config and kicking off a task.
+  try {
+    let graphConfig = await tcconfig.processConfig({
+      taskclusterConfig:  taskclusterConfig,
+      payload:            message.payload,
+      validator:          context.validator,
+      schema:             common.SCHEMA_PREFIX_CONST + 'taskcluster-github-config.json#'
+    });
+    if (graphConfig.tasks.length) {
+      let graph = await context.scheduler.createTaskGraph(slugid.nice(), graphConfig);
+      // On pushes, leave a comment on the commit
+      if (message.payload.details['event.type'] == 'push') {
+        await github.addCommitComment(
+          context.githubAPI,
+          message.payload.organization,
+          message.payload.repository,
+          message.payload.details['event.head.sha'],
+          'TaskCluster-GitHub: ' + INSPECTOR_URL + graph.status.taskGraphId);
+      }
+    } else {
+      debug('graphConfig compiled with zero tasks: skipping');
+    }
+  } catch(e) {
+    debug(e);
+    let errorMessage = e.message;
+    let errorBody = e.errors || e.body.error;
+    // Let's prettify any objects
+    if (typeof(errorBody) == 'object') {
+      errorBody = JSON.stringify(errorBody, null, 4)
+    }
+    // Warn the user know that there was a problem processing their
+    // config file with a comment.
+    await github.addCommitComment(context.githubAPI,
+      message.payload.organization,
+      message.payload.repository,
+      message.payload.details['event.head.sha'],
+      'TaskCluster, ' + errorMessage + ' ```' +  errorBody + '```')
   }
 };
 
@@ -68,10 +123,9 @@ worker.webHookHandler = async function(message, context) {
 worker.graphStateChangeHandler = async function(message, context) {
   try {
     debug('handling state change for message: ', message);
-    let inspectorUrl = 'https://tools.taskcluster.net/task-graph-inspector/#';
     let statusMessage = {
       state:        github.StatusMap[message.payload.status.state],
-      target_url:   inspectorUrl + message.payload.status.taskGraphId,
+      target_url:   INSPECTOR_URL + message.payload.status.taskGraphId,
       description:  'TaskGraph: ' + message.payload.status.state,
       context:      'TaskCluster'
     };
@@ -82,3 +136,4 @@ worker.graphStateChangeHandler = async function(message, context) {
     debug('Failed to update GitHub commit status: ', e);
   }
 };
+

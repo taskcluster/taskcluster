@@ -19,7 +19,7 @@
     "kexec":                 "^1.2.0",
     "octokat":               "0.4.11",
     "yaml-js":               "0.1.1",
-    "slugid":                "1.0.3",
+    "slugid":                "^1.1.0",
     "json-parameterization": "0.1.0"
   },
   "devDependencies": {

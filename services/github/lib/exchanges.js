@@ -1,7 +1,7 @@
-var base      = require('taskcluster-base');
-var assert    = require('assert');
-var common    = require('./common');
-var _         = require('lodash');
+import base from 'taskcluster-base';
+import assert from 'assert';
+import common from './common';
+import _ from 'lodash';
 
 // Common schema prefix
 var SCHEMA_PREFIX_CONST = common.SCHEMA_PREFIX_CONST;
