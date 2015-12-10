@@ -6,23 +6,26 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// http://references.taskcluster.net/secrets/v1/api.json
+// http://references.taskcluster.net/github/v1/api.json
 
-// The secrets service, typically available at
-// `tools.taskcluster.net`, is responsible for managing
-// secure data in TaskCluster.
+// The github service, typically available at
+// `github.taskcluster.net`, is responsible for publishing pulse
+// messages in response to GitHub events.
 //
-// See: http://docs.taskcluster.net/services/secrets
+// This document describes the API end-point for consuming GitHub
+// web hooks
+//
+// See: http://docs.taskcluster.net/services/taskcluster-github
 //
 // How to use this package
 //
-// First create a Secrets object:
+// First create a Github object:
 //
-//  mySecrets := secrets.New("myClientId", "myAccessToken")
+//  myGithub := github.New("myClientId", "myAccessToken")
 //
-// and then call one or more of mySecrets's methods, e.g.:
+// and then call one or more of myGithub's methods, e.g.:
 //
-//  callSummary, err := mySecrets.Set(.....)
+//  callSummary, err := myGithub.GithubWebHookConsumer(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -31,10 +34,10 @@
 // TaskCluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
-// http://references.taskcluster.net/secrets/v1/api.json together with the input and output schemas it references, downloaded on
+// http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
 // Thu, 10 Dec 2015 at 04:02:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
-package secrets
+package github
 
 import (
 	"bytes"
@@ -58,13 +61,13 @@ import (
 var (
 	// Used for logging based on DEBUG environment variable
 	// See github.com/tj/go-debug
-	debug = D.Debug("secrets")
+	debug = D.Debug("github")
 )
 
 // apiCall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (mySecrets *Secrets) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
+func (myGithub *Github) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HttpRequestObject = payload
 	jsonPayload, err := json.Marshal(payload)
@@ -83,30 +86,30 @@ func (mySecrets *Secrets) apiCall(payload interface{}, method, route string, res
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		u, err := url.Parse(mySecrets.BaseURL + route)
+		u, err := url.Parse(myGithub.BaseURL + route)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", mySecrets.BaseURL+route, mySecrets.BaseURL, err)
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", myGithub.BaseURL+route, myGithub.BaseURL, err)
 		}
 		if query != nil {
 			u.RawQuery = query.Encode()
 		}
 		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), mySecrets.BaseURL, err)
+			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), myGithub.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
 		callSummary.HttpRequest = httpRequest
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
-		if mySecrets.Authenticate {
+		if myGithub.Authenticate {
 			credentials := &hawk.Credentials{
-				ID:   mySecrets.ClientId,
-				Key:  mySecrets.AccessToken,
+				ID:   myGithub.ClientId,
+				Key:  myGithub.AccessToken,
 				Hash: sha256.New,
 			}
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if mySecrets.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + mySecrets.Certificate + "}"))
+			if myGithub.Certificate != "" {
+				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + myGithub.Certificate + "}"))
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
@@ -142,21 +145,21 @@ func (mySecrets *Secrets) apiCall(payload interface{}, method, route string, res
 }
 
 // The entry point into all the functionality in this package is to create a
-// Secrets object.  It contains your authentication credentials, which are
+// Github object.  It contains your authentication credentials, which are
 // required for all HTTP operations.
-type Secrets struct {
+type Github struct {
 	// Client ID required by Hawk
 	ClientId string
 	// Access Token required by Hawk
 	AccessToken string
 	// The URL of the API endpoint to hit.
-	// Use "https://secrets.taskcluster.net/v1" for production.
-	// Please note calling secrets.New(clientId string, accessToken string) is an
-	// alternative way to create a Secrets object with BaseURL set to production.
+	// Use "https://taskcluster-github.herokuapp.com/v1" for production.
+	// Please note calling github.New(clientId string, accessToken string) is an
+	// alternative way to create a Github object with BaseURL set to production.
 	BaseURL string
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling secrets.New(clientId string, accessToken string) is an
-	// alternative way to create a Secrets object with Authenticate set to true.
+	// Please note calling github.New(clientId string, accessToken string) is an
+	// alternative way to create a Github object with Authenticate set to true.
 	Authenticate bool
 	// Certificate for temporary credentials
 	Certificate string
@@ -186,116 +189,58 @@ type CallSummary struct {
 	Attempts int
 }
 
-// Returns a pointer to Secrets, configured to run against production.  If you
+// Returns a pointer to Github, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
 // taskcluster-proxy) by setting Authenticate to false.
 //
 // For example:
-//  mySecrets := secrets.New("123", "456")                       // set clientId and accessToken
-//  mySecrets.Authenticate = false                               // disable authentication (true by default)
-//  mySecrets.BaseURL = "http://localhost:1234/api/Secrets/v1"   // alternative API endpoint (production by default)
-//  callSummary, err := mySecrets.Set(.....)                     // for example, call the Set(.....) API endpoint (described further down)...
+//  myGithub := github.New("123", "456")                       // set clientId and accessToken
+//  myGithub.Authenticate = false                              // disable authentication (true by default)
+//  myGithub.BaseURL = "http://localhost:1234/api/Github/v1"   // alternative API endpoint (production by default)
+//  callSummary, err := myGithub.GithubWebHookConsumer(.....)  // for example, call the GithubWebHookConsumer(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Secrets {
-	return &Secrets{
+func New(clientId string, accessToken string) *Github {
+	return &Github{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
-		BaseURL:      "https://secrets.taskcluster.net/v1",
+		BaseURL:      "https://taskcluster-github.herokuapp.com/v1",
 		Authenticate: true,
 	}
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Stability: ***  ***
 //
-// Set a secret associated with some key.
+// Capture a GitHub event and publish it via pulse, if it's a push
+// or pull request.
 //
-// Required scopes:
-//   * secrets:set:<name>
-//
-// See http://docs.taskcluster.net/services/secrets/#set
-func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) (*CallSummary, error) {
-	_, callSummary, err := mySecrets.apiCall(payload, "PUT", "/secrets/"+url.QueryEscape(name), nil, nil)
+// See http://docs.taskcluster.net/services/taskcluster-github/#githubWebHookConsumer
+func (myGithub *Github) GithubWebHookConsumer() (*CallSummary, error) {
+	_, callSummary, err := myGithub.apiCall(nil, "POST", "/github", nil, nil)
 	return callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
-// Update a secret associated with some key.
-//
-// Required scopes:
-//   * secrets:update:<name>
-//
-// See http://docs.taskcluster.net/services/secrets/#update
-func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) (*CallSummary, error) {
-	_, callSummary, err := mySecrets.apiCall(payload, "POST", "/secrets/"+url.QueryEscape(name), nil, nil)
-	return callSummary, err
-}
-
-// Stability: *** EXPERIMENTAL ***
-//
-// Delete the secret attached to some key.
-//
-// Required scopes:
-//   * secrets:remove:<name>
-//
-// See http://docs.taskcluster.net/services/secrets/#remove
-func (mySecrets *Secrets) Remove(name string) (*CallSummary, error) {
-	_, callSummary, err := mySecrets.apiCall(nil, "DELETE", "/secrets/"+url.QueryEscape(name), nil, nil)
-	return callSummary, err
-}
-
-// Stability: *** EXPERIMENTAL ***
-//
-// Read the secret attached to some key.
-//
-// Required scopes:
-//   * secrets:get:<name>
-//
-// See http://docs.taskcluster.net/services/secrets/#get
-func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary, error) {
-	responseObject, callSummary, err := mySecrets.apiCall(nil, "GET", "/secrets/"+url.QueryEscape(name), new(ATaskClusterSecret), nil)
-	return responseObject.(*ATaskClusterSecret), callSummary, err
-}
-
-// Stability: *** EXPERIMENTAL ***
+// Stability: ***  ***
 //
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
 //
-// See http://docs.taskcluster.net/services/secrets/#ping
-func (mySecrets *Secrets) Ping() (*CallSummary, error) {
-	_, callSummary, err := mySecrets.apiCall(nil, "GET", "/ping", nil, nil)
+// See http://docs.taskcluster.net/services/taskcluster-github/#ping
+func (myGithub *Github) Ping() (*CallSummary, error) {
+	_, callSummary, err := myGithub.apiCall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
 
-type (
-
-	// Message containing a TaskCluster Secret
-	//
-	// See http://schemas.taskcluster.net/secrets/v1/secret.json#
-	ATaskClusterSecret struct {
-
-		// An expiration date for this secret.
-		//
-		// See http://schemas.taskcluster.net/secrets/v1/secret.json#/properties/expires
-		Expires Time `json:"expires"`
-
-		// The secret value to be encrypted.
-		//
-		// See http://schemas.taskcluster.net/secrets/v1/secret.json#/properties/secret
-		Secret json.RawMessage `json:"secret"`
-	}
-)
+type ()
 
 // Wraps time.Time in order that json serialisation/deserialisation can be adapted.
 // Marshaling time.Time types results in RFC3339 dates with nanosecond precision
 // in the user's timezone. In order that the json date representation is consistent
 // between what we send in json payloads, and what taskcluster services return,
-// we wrap time.Time into type secrets.Time which marshals instead
+// we wrap time.Time into type github.Time which marshals instead
 // to the same format used by the TaskCluster services; UTC based, with millisecond
 // precision, using 'Z' timezone, e.g. 2015-10-27T20:36:19.255Z.
 type Time time.Time

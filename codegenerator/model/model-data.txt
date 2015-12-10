@@ -1,4 +1,4 @@
-Generated: 1449421824
+Generated: 1449720136
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2354,6 +2354,242 @@ TypeName               = 'WorkerTypeMessage'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'false'
 SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'
+
+
+http://references.taskcluster.net/github/v1/api.json
+====================================================
+Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
+Title       = 'TaskCluster GitHub API Documentation'
+Description = 'The github service, typically available at
+`github.taskcluster.net`, is responsible for publishing pulse
+messages in response to GitHub events.
+
+This document describes the API end-point for consuming GitHub
+web hooks'
+Base URL    = 'https://taskcluster-github.herokuapp.com/v1'
+Entry 0     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/github'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'githubWebHookConsumer'
+    Entry Stability   = ''
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Consume GitHub WebHook'
+    Entry Description = 'Capture a GitHub event and publish it via pulse, if it's a push
+or pull request.'
+Entry 1     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'ping'
+    Entry Stability   = ''
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Documented later...
+
+**Warning** this api end-point is **not stable**.'
+
+
+http://references.taskcluster.net/github/v1/exchanges.json
+==========================================================
+Version         = '0'
+Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
+Title           = 'TaskCluster-Github Exchanges'
+Description     = 'The github service, typically available at
+`github.taskcluster.net`, is responsible for publishing a pulse
+message for supported github events.
+
+This document describes the exchange offered by the taskcluster
+github service'
+Exchange Prefix = 'exchange/taskcluster-github/v1/'
+Entry 0     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'pull-request'
+    Entry Name        = 'pullRequest'
+    Entry Title       = 'GitHub Pull Request Event'
+    Entry Description = 'When a GitHub pull request event is posted it will be broadcast on this
+exchange with the designated `organization` and `repository`
+in the routing-key along with event specific metadata in the payload.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'organization'
+        Element Summary   = 'The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'repository'
+        Element Summary   = 'The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 3     = 
+        Element Name      = 'action'
+        Element Summary   = 'The GitHub `action` which triggered an event. See for possible values see the payload actions property.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Entry Schema      = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#'
+Entry 1     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'push'
+    Entry Name        = 'push'
+    Entry Title       = 'GitHub push Event'
+    Entry Description = 'When a GitHub push event is posted it will be broadcast on this
+exchange with the designated `organization` and `repository`
+in the routing-key along with event specific metadata in the payload.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'organization'
+        Element Summary   = 'The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'repository'
+        Element Summary   = 'The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Entry Schema      = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#'
+
+
+http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#
+==========================================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that a GitHub pull request has occurred
+'
+ID                     = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#'
+Properties
+  Property 'action' =
+    Description            = 'The GitHub `action` which triggered an event.
+    '
+    Enum                   = '[assigned unassigned labeled unlabeled opened closed reopened synchronize]'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = 'Action'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/action'
+  Property 'details' =
+    Description            = 'Metadata describing the pull request.
+    '
+    Type                   = 'object'
+    TypeName               = 'Details'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/details'
+  Property 'organization' =
+    Description            = 'The GitHub `organization` which had an event.
+    '
+    MaxLength              = '100'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_%]*)$'
+    Type                   = 'string'
+    TypeName               = 'Organization'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/organization'
+  Property 'repository' =
+    Description            = 'The GitHub `repository` which had an event.
+    '
+    MaxLength              = '100'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_%]*)$'
+    Type                   = 'string'
+    TypeName               = 'Repository'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/repository'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = 'Version'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/version'
+Required               = '[version organization repository action]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'GitHub Pull Request Message'
+Type                   = 'object'
+TypeName               = 'GitHubPullRequestMessage'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'false'
+SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#'
+
+
+http://schemas.taskcluster.net/github/v1/github-push-message.json#
+==================================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that a GitHub push has occurred
+'
+ID                     = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#'
+Properties
+  Property 'details' =
+    Description            = 'Metadata describing the push.
+    '
+    Type                   = 'object'
+    TypeName               = 'Details'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/details'
+  Property 'organization' =
+    Description            = 'The GitHub `organization` which had an event.
+    '
+    MaxLength              = '100'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_%]*)$'
+    Type                   = 'string'
+    TypeName               = 'Organization'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/organization'
+  Property 'repository' =
+    Description            = 'The GitHub `repository` which had an event.
+    '
+    MaxLength              = '100'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_%]*)$'
+    Type                   = 'string'
+    TypeName               = 'Repository'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/repository'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = 'Version'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/version'
+Required               = '[version organization repository]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'GitHub Push Message'
+Type                   = 'object'
+TypeName               = 'GitHubPushMessage'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'false'
+SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#'
 
 
 http://references.taskcluster.net/hooks/v1/api.json
