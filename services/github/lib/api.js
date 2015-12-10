@@ -1,6 +1,6 @@
-var base      = require('taskcluster-base');
-var github    = require('./github');
-var _         = require('lodash');
+import base from 'taskcluster-base';
+import github from './github';
+import _ from 'lodash';
 
 // Common schema prefix
 var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/github/v1/';
@@ -15,32 +15,34 @@ function sanitizeGitHubField(field) {
 // revision
 function getPullRequestDetails(eventData) {
   return {
-    event: 'pull_request.' + eventData.action,
-    // The base branch is simply referred to as branch, to remove
-    // confusion when dealing with push requests, which only have
-    // a single branch
-    branch: eventData.pull_request.base.label.split(':')[1],
-    pullNumber: eventData.number,
-    baseUser: eventData.pull_request.base.user.login,
-    baseRepoUrl: eventData.pull_request.base.repo.clone_url,
-    baseSha: eventData.pull_request.base.sha,
-    baseRef: eventData.pull_request.base.ref,
-    headUser: eventData.pull_request.head.user.login,
-    headRepoUrl: eventData.pull_request.head.repo.clone_url,
-    headBranch: eventData.pull_request.head.label.split(':')[1],
-    headSha: eventData.pull_request.head.sha,
-    headRef: eventData.pull_request.head.ref
+    'event.type': 'pull_request.' + eventData.action,
+    'event.base.repo.branch': eventData.pull_request.base.label.split(':')[1],
+    'event.pullNumber': eventData.number,
+    'event.base.user.login': eventData.pull_request.base.user.login,
+    'event.base.repo.url': eventData.pull_request.base.repo.clone_url,
+    'event.base.sha': eventData.pull_request.base.sha,
+    'event.base.ref': eventData.pull_request.base.ref,
+    'event.head.user.login': eventData.pull_request.head.user.login,
+    'event.head.repo.url': eventData.pull_request.head.repo.clone_url,
+    'event.head.repo.branch': eventData.pull_request.head.label.split(':')[1],
+    'event.head.sha': eventData.pull_request.head.sha,
+    'event.head.ref': eventData.pull_request.head.ref
   };
 };
 
 function getPushDetails(eventData) {
+  let ref = eventData.ref || eventData.head_commit.ref;
+  // parsing the ref refs/heads/<branch-name> is the most reliable way
+  // to get a branch name
+  let branch = ref.split('/')[2];
   return {
-    event: 'push',
-    branch: eventData.repository.default_branch,
-    headUser: eventData.head_commit.author.username,
-    headRepoUrl: eventData.repository.clone_url,
-    headSha: eventData.head_commit.id,
-    headRef: eventData.head_commit.ref
+    'event.type': 'push',
+    'event.base.repo.branch': branch,
+    'event.head.repo.branch': branch,
+    'event.head.user.login': eventData.head_commit.author.username,
+    'event.head.repo.url': eventData.repository.clone_url,
+    'event.head.sha': eventData.head_commit.id,
+    'event.head.ref': ref
   };
 };
 
@@ -128,10 +130,10 @@ api.declare({
 
   // Not all webhook payloads include an e-mail for the user who triggered
   // an event.
-  let headUser = msg.details.headUser;
+  let headUser = msg.details['event.head.user.login'];
   let userDetails = await this.githubAPI.users(headUser).fetch();
 
-  msg.details.headUserEmail = userDetails.email || headUser + '@noreply.github.com'
+  msg.details['event.head.user.email'] = userDetails.email || headUser + '@noreply.github.com'
   msg.repository = sanitizeGitHubField(body.repository.name);
 
   await this.publisher[publisherKey](msg);
