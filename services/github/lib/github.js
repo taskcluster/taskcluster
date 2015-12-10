@@ -1,4 +1,4 @@
-var crypto = require('crypto');
+import crypto from 'crypto';
 
 var github = module.exports = {};
 
@@ -32,6 +32,15 @@ github.compareSignatures = function(sOne, sTwo) {
 github.updateStatus = function (api, user, repo, sha, params) {
   return api.repos(user, repo).statuses(sha).create(params);
 };
+
+/**
+ * Comment on some commit:
+ * https://developer.github.com/v3/repos/comments/#create-a-commit-comment
+ * Returns a promise.
+ **/
+github.addCommitComment = function (api, user, repo, sha, body) {
+  return api.repos(user, repo).commits(sha).comments.create({body});
+}
 
 /**
  * Map TaskCluster statuses to GitHub statuses.

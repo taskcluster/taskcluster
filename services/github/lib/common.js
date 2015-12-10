@@ -1,7 +1,8 @@
-var debug = require('debug')('github:common');
-var path  = require('path');
-var base  = require('taskcluster-base');
+import Debug from 'debug';
+import path from 'path';
+import base from 'taskcluster-base';
 
+let debug = Debug('github:common');
 var common = module.exports = {};
 
 // Used in schema validation, shared across all config profiles
@@ -53,3 +54,4 @@ common.buildValidator = function(cfg) {
     aws:              cfg.get('aws')
   });
 };
+
