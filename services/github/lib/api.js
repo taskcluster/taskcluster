@@ -73,6 +73,7 @@ api.declare({
   name:       'githubWebHookConsumer',
   scopes:     undefined,
   title:      "Consume GitHub WebHook",
+  stability:  'experimental',
   description: [
     "Capture a GitHub event and publish it via pulse, if it's a push",
     "or pull request."
@@ -140,10 +141,11 @@ api.declare({
 
 /** Check that the server is a alive */
 api.declare({
-  method:   'get',
-  route:    '/ping',
-  name:     'ping',
-  title:    "Ping Server",
+  method:     'get',
+  route:      '/ping',
+  name:       'ping',
+  title:      "Ping Server",
+  stability:  'experimental',
   description: [
     "Documented later...",
     "",
