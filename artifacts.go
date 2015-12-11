@@ -180,7 +180,7 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 					return nil
 				}
 				b := BaseArtifact{
-					CanonicalPath: relativePath,
+					CanonicalPath: canonicalPath(relativePath),
 					Expires:       artifact.Expires,
 				}
 				switch {
