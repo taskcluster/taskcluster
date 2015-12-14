@@ -25,8 +25,7 @@ Invoke-Expression ($client.DownloadString('https://chocolatey.org/install.ps1'))
 $client.DownloadFile("https://api.pub.build.mozilla.org/tooltool/sha512/03b4ca2bebede21a29f739165030bfc7058a461ffe38113452e976193e382d3ba6df8a48ac843b70429e23481e6327f43c86ffd88e4ce16263d072ef7e14e692", "C:\MozillaBuildSetup-2.0.0.exe")
 
 # run mozilla-build installer in silent (/S) mode
-$p = Start-Process "C:\MozillaBuildSetup-2.0.0.exe" -ArgumentList "/S" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\MozillaBuild-2.0.0_install.log" -RedirectStandardError "C:\MozillaBuild-2.0.0_install.err"
-$p.HasExited
+Start-Process "C:\MozillaBuildSetup-2.0.0.exe" -ArgumentList "/S" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\MozillaBuild-2.0.0_install.log" -RedirectStandardError "C:\MozillaBuild-2.0.0_install.err"
 
 # install Windows SDK 8.1
 choco install -y windows-sdk-8.1
@@ -53,12 +52,10 @@ $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v
 $env:DEBUG = "*"
 
 # install generic-worker
-$p = Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install --config C:\\generic-worker\\generic-worker.config" -wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
-$p.HasExited
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install --config C:\\generic-worker\\generic-worker.config" -wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 
 # initial clone of mozilla-central
-$p = Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\python\Scripts\hg clone -u null https://hg.mozilla.org/mozilla-central C:\gecko" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\hg_initial_clone.log" -RedirectStandardError "C:\hg_initial_clone.err"
-$p.HasExited
+Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\python\Scripts\hg clone -u null https://hg.mozilla.org/mozilla-central C:\gecko" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\hg_initial_clone.log" -RedirectStandardError "C:\hg_initial_clone.err"
 
 # open up firewall for livelog (both PUT and GET interfaces)
 New-NetFirewallRule -DisplayName "Allow SSH inbound" -Direction Inbound -LocalPort 60022 -Protocol TCP -Action Allow
@@ -70,16 +67,18 @@ Expand-ZIPFile -File "C:\go1.4.2.windows-amd64.zip" -Destination "C:\" -Url "htt
 
 # install git
 $client.DownloadFile("https://github.com/msysgit/msysgit/releases/download/Git-1.9.5-preview20150319/Git-1.9.5-preview20150319.exe", "C:\git-1.9.5-installer.exe")
-$p = Start-Process "C:\git-1.9.5-installer.exe" -ArgumentList "/SILENT" -Wait -PassThru
-$p.HasExited
+Start-Process "C:\git-1.9.5-installer.exe" -ArgumentList "/SILENT" -Wait -PassThru
 
-# set env vars
+# set permanent env vars
 [Environment]::SetEnvironmentVariable("GOROOT", "C:\go", "Machine")
 [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd", "Machine")
 [Environment]::SetEnvironmentVariable("GOPATH", "C:\gopath", "User")
 
+# set env vars for the currently running process
+$env:GOROOT = "C:\go"
+$env:GOPATH = "C:\gopath"
+
 # get generic-worker source code
-$p = Start-Process "go" -ArgumentList "get github.com/taskcluster/generic-worker github.com/taskcluster/livelog" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\generic-worker\go-get_install.log" -RedirectStandardError "C:\generic-worker\go-get_install.err"
-$p.HasExited
+Start-Process "C:\go\bin\go.exe" -ArgumentList "get github.com/taskcluster/generic-worker github.com/taskcluster/livelog" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\generic-worker\go-get_install.log" -RedirectStandardError "C:\generic-worker\go-get_install.err"
 
 </powershell>
