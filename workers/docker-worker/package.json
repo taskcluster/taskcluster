@@ -1,6 +1,7 @@
 {
   "name": "docker-worker",
   "private": true,
+  "version": "0.0.0",
   "description": "Docker task host for linux.",
   "bin": {
     "docker-worker": "bin/worker.js"
