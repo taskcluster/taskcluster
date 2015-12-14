@@ -18,7 +18,9 @@ import urllib
 
 # For finding apis.json
 from pkg_resources import resource_string
-import hawk
+
+import mohawk
+import mohawk.bewit
 
 from . import exceptions
 from . import utils
@@ -160,7 +162,7 @@ class BaseClient(object):
     else:
       expiration = self.options['signedUrlExpiration']
 
-    expiration = float(expiration)  # Mainly so that we throw if it's not a number
+    expiration = int(time.time() + expiration)  # Mainly so that we throw if it's not a number
 
     requestUrl = self.buildUrl(methodName, *args, **kwargs)
 
@@ -170,16 +172,6 @@ class BaseClient(object):
     clientId = self.options['credentials']['clientId']
     accessToken = self.options['credentials']['accessToken']
 
-    bewitOpts = {
-      'credentials': {
-        'id': clientId,
-        'key': accessToken,
-        'algorithm': 'sha256',
-      },
-      'ttl_sec': expiration,
-      'ext': self.makeHawkExt(),
-    }
-
     def genBewit():
       # We need to fix the output of get_bewit.  It returns a url-safe base64
       # encoded string, which contains a list of tokens separated by '\'.
@@ -187,14 +179,24 @@ class BaseClient(object):
       # url-safe base64 encoded MAC, the fourth is the ext param.
       # The problem is that the nested url-safe base64 encoded MAC must be
       # base64 (i.e. not url safe) or server-side will complain.
-      _bewit = hawk.client.get_bewit(requestUrl, bewitOpts)
-      decoded = _bewit.decode('base64')
-      decodedParts = decoded.split('\\')
-      decodedParts[2] = utils.makeB64UrlUnsafe(decodedParts[2])
-      decoded = '\\'.join(decodedParts)
-      _bewit = utils.makeB64UrlSafe(utils.encodeStringForB64Header(decoded))
-      # Also we must drop the = padding, as done by hoek.base64urlEncode
-      return _bewit.rstrip('=')
+
+      # id + '\\' + exp + '\\' + mac + '\\' + options.ext;
+      resource = mohawk.base.Resource(
+        credentials={
+          'id': clientId,
+          'key': accessToken,
+          'algorithm': 'sha256',
+        },
+        method='GET',
+        ext=self.makeHawkExt(),
+        url=requestUrl,
+        timestamp=expiration,
+        nonce='',
+        # content='',
+        # content_type='',
+      )
+      bewit = mohawk.bewit.get_bewit(resource)
+      return bewit.rstrip('=')
 
     bewit = genBewit()
 
@@ -352,16 +354,20 @@ class BaseClient(object):
         time.sleep(snooze)
       # Construct header
       if self._hasCredentials():
-        hawkOpts = {
-          'credentials': {
+        sender = mohawk.Sender(
+          credentials={
             'id': self.options['credentials']['clientId'],
             'key': self.options['credentials']['accessToken'],
             'algorithm': 'sha256',
           },
-          'ext': hawkExt or {},
-        }
-        header = hawk.client.header(url, method, hawkOpts)
-        headers = {'Authorization': header['field'].strip()}
+          ext=hawkExt if hawkExt else {},
+          url=url,
+          content=payload if payload else '',
+          content_type='application/json' if payload else '',
+          method=method,
+        )
+
+        headers = {'Authorization': sender.request_header}
       else:
         log.info('Not using hawk!')
         headers = {}

@@ -440,6 +440,10 @@ class TestBuildSignedUrl(ClientTest):
                'Viamc2U1U9XGUzMD0'
     expected = 'https://localhost:8555/v1/two_args_no_input/arg0/arg1?bewit=' + expBewit
     actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', 'arg1')
+    print '#' * 80
+    print expected
+    print actual
+    print '#' * 80
     self.assertEqual(expected, actual)
 
   def test_builds_surl_keyword(self):
@@ -588,14 +592,17 @@ if not os.environ.get('NO_TESTS_OVER_WIRE'):
         'maxRetries': 1,
       }
       self.i = subject.Index(opts)
+      self.a = subject.AwsProvisioner(opts)
 
     def test_ping(self):
       result = self.i.ping()
       self.assertEqual(result['alive'], True)
 
-    def test_listnamespace(self):
-      result = self.i.listNamespaces('', {})
-      assert 'namespaces' in result
+    def test_listworkertypes(self):
+      result = self.a.listWorkerTypes()
+      # Note that the specific worker type checked for is not important...
+      # if this breaks, just pick another worker type
+      assert 'test' in result
 
     def test_insert_to_index(self):
       payload = {
@@ -606,3 +613,8 @@ if not os.environ.get('NO_TESTS_OVER_WIRE'):
       }
       result = self.i.insertTask('testing', payload)
       self.assertEqual(payload['expires'], result['expires'])
+
+    def test_listworkertypes_signed_url(self):
+      surl = self.a.buildSignedUrl('listWorkerTypes')
+      response = requests.get(surl)
+      response.raise_for_status()

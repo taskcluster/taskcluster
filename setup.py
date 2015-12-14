@@ -24,8 +24,7 @@ tests_require = [
 # http://docs.python-requests.org/en/latest/community/release-process/
 install_requires = [
   'requests>=2.4.3,<3',
-  'PyHawk_with_a_single_extra_commit==0.1.5',
-  #  'PyHawk==0.1.4',
+  #  'mohawk>0.3.0',
   'slugid',
 ]
 
