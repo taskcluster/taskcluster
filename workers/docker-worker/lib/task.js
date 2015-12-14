@@ -8,6 +8,8 @@ import uuid from 'uuid';
 import { validator } from 'taskcluster-base';
 import { PassThrough } from 'stream';
 import States from './states';
+import fs from "mz/fs"
+import child_process from "mz/child_process"
 
 import features from './features';
 import getHostname from './util/hostname';
@@ -273,7 +275,45 @@ export class Task {
         .concat(oldEntrypoint);
     }
 
+    if(this.task.payload.features && this.task.payload.features.allowPtrace) {
+      // generate and load a new AppArmor profile specialized to this taskId
+      // allowing ptrace within the container
+      let aa_profile = await this.makePtraceAppArmorProfile(this.status.taskId);
+
+      // add the equivalent of --security-opt apparmor:docker-ptrace
+      let hc = procConfig.create.HostConfig
+      hc.SecurityOpt = hc.SecurityOpt || [];
+      hc.SecurityOpt.push("apparmor:" + aa_profile);
+    }
+
     return procConfig;
+  }
+
+  async makePtraceAppArmorProfile(taskId) {
+    // copy and modify the docker-default profile
+    let profile = await fs.readFile("/etc/apparmor.d/docker");
+    let name = "worker-" + taskId;
+
+    // update the name of the profile
+    profile = profile.toString('utf-8');
+    profile = profile.replace("profile docker-default", "profile " + name);
+
+    // add a rule allowing ptrace to other processes with this policy, at
+    // the very end
+    profile = profile.replace("\n}", "\n  ptrace (trace,read) peer=" + name + ",\n}");
+
+    // write out the new profile; note that these are not cleaned up, but since
+    // instances are not long-lived and the profiles are small this is not a
+    // big deal
+    let filename = "/etc/apparmor.d/" + name
+    await fs.writeFile(filename, profile)
+
+    // hand that to the apparmor parser to add the profile to the kernel
+    let stdout, stderr = await child_process.exec("apparmor_parser -a " + filename);
+    console.log("stdout from 'apparmor_parser': " + stdout);
+    console.log("stderr from 'apparmor_parser': " + stderr);
+
+    return name;
   }
 
   logHeader() {

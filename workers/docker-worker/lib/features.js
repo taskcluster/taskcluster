@@ -112,6 +112,14 @@ const features = {
                  'Can be used for SSH-like access to docker containers.',
     defaults: false,
     module: require('./features/interactive.js')
+  },
+
+  allowPtrace: {
+    title: 'Allow ptrace within the container',
+    description: 'This allows you to use the Linux ptrace functionality inside the ' + 
+                 'container; it is otherwise disallowed by Docker\'s security policy. ',
+    defaults: false,
+    module: require('./features/allow_ptrace')
   }
 };
 

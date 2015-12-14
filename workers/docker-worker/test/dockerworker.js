@@ -65,6 +65,12 @@ export default class DockerWorker {
       Cmd: [
         '/bin/bash', '-c',
          [
+          // mount the securityfs in the container so that we can access apparmor
+          'mount',
+          '-tsecurityfs',
+          'securityfs',
+          '/sys/kernel/security',
+          '&&',
           `${babel} /worker/bin/worker.js`,
           '--host test',
           '--worker-group', 'random-local-worker',
@@ -96,7 +102,8 @@ export default class DockerWorker {
 
       Binds: [
         util.format('%s:%s', path.resolve(__dirname, '..'), '/worker'),
-        '/tmp:/tmp'
+        '/tmp:/tmp',
+        '/etc/apparmor.d:/etc/apparmor.d',
       ],
     };
 
