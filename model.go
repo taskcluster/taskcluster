@@ -5,10 +5,10 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net"
-	"os/exec"
 	"time"
 
 	"github.com/taskcluster/generic-worker/livelog"
+	"github.com/taskcluster/generic-worker/os/exec"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 

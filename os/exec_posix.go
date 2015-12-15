@@ -43,3 +43,39 @@ func startProcess(name string, argv []string, attr *os.ProcAttr) (p *Process, er
 	}
 	return newProcess(pid, h), nil
 }
+
+// ProcessState stores information about a process, as reported by Wait.
+type ProcessState struct {
+	pid    int                // The process's id.
+	status syscall.WaitStatus // System-dependent status info.
+	rusage *syscall.Rusage
+}
+
+func (p *ProcessState) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	status := p.Sys().(syscall.WaitStatus)
+	res := ""
+	switch {
+	case status.Exited():
+		res = "exit status " + itoa(status.ExitStatus())
+	case status.Signaled():
+		res = "signal: " + status.Signal().String()
+	case status.Stopped():
+		res = "stop signal: " + status.StopSignal().String()
+		if status.StopSignal() == syscall.SIGTRAP && status.TrapCause() != 0 {
+			res += " (trap " + itoa(status.TrapCause()) + ")"
+		}
+	case status.Continued():
+		res = "continued"
+	}
+	if status.CoreDump() {
+		res += " (core dumped)"
+	}
+	return res
+}
+
+func (p *ProcessState) sys() interface{} {
+	return p.status
+}

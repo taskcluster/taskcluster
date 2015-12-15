@@ -8,6 +8,7 @@
 package exec
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"os"
@@ -82,7 +83,7 @@ type Cmd struct {
 
 	// ProcessState contains information about an exited process,
 	// available after a call to Wait or Run.
-	ProcessState *os.ProcessState
+	ProcessState *myos.ProcessState
 
 	lookPathErr     error // LookPath error, if any.
 	finished        bool  // when Wait was called
@@ -286,3 +287,111 @@ func (c *Cmd) argv() []string {
 // whether the provided the stdin copy error should be ignored.
 // It is non-nil everywhere but Plan 9, which lacks EPIPE. See exec_posix.go.
 var skipStdinCopyError func(error) bool
+
+// Command returns the Cmd struct to execute the named program with
+// the given arguments.
+//
+// It sets only the Path and Args in the returned structure.
+//
+// If name contains no path separators, Command uses LookPath to
+// resolve the path to a complete name if possible. Otherwise it uses
+// name directly.
+//
+// The returned Cmd's Args field is constructed from the command name
+// followed by the elements of arg, so arg should not include the
+// command name itself. For example, Command("echo", "hello")
+func Command(name string, arg ...string) *Cmd {
+	cmd := &Cmd{
+		Path: name,
+		Args: append([]string{name}, arg...),
+	}
+	if filepath.Base(name) == name {
+		if lp, err := exec.LookPath(name); err != nil {
+			cmd.lookPathErr = err
+		} else {
+			cmd.Path = lp
+		}
+	}
+	return cmd
+}
+
+// Output runs the command and returns its standard output.
+func (c *Cmd) Output() ([]byte, error) {
+	if c.Stdout != nil {
+		return nil, errors.New("exec: Stdout already set")
+	}
+	var b bytes.Buffer
+	c.Stdout = &b
+	err := c.Run()
+	return b.Bytes(), err
+}
+
+// Run starts the specified command and waits for it to complete.
+//
+// The returned error is nil if the command runs, has no problems
+// copying stdin, stdout, and stderr, and exits with a zero exit
+// status.
+//
+// If the command fails to run or doesn't complete successfully, the
+// error is of type *ExitError. Other error types may be
+// returned for I/O problems.
+func (c *Cmd) Run() error {
+	if err := c.Start(); err != nil {
+		return err
+	}
+	return c.Wait()
+}
+
+// Wait waits for the command to exit.
+// It must have been started by Start.
+//
+// The returned error is nil if the command runs, has no problems
+// copying stdin, stdout, and stderr, and exits with a zero exit
+// status.
+//
+// If the command fails to run or doesn't complete successfully, the
+// error is of type *ExitError. Other error types may be
+// returned for I/O problems.
+//
+// If c.Stdin is not an *os.File, Wait also waits for the I/O loop
+// copying from c.Stdin into the process's standard input
+// to complete.
+//
+// Wait releases any resources associated with the Cmd.
+func (c *Cmd) Wait() error {
+	if c.Process == nil {
+		return errors.New("exec: not started")
+	}
+	if c.finished {
+		return errors.New("exec: Wait was already called")
+	}
+	c.finished = true
+	state, err := c.Process.Wait()
+	c.ProcessState = state
+
+	var copyError error
+	for range c.goroutine {
+		if err := <-c.errch; err != nil && copyError == nil {
+			copyError = err
+		}
+	}
+
+	c.closeDescriptors(c.closeAfterWait)
+
+	if err != nil {
+		return err
+	} else if !state.Success() {
+		return &ExitError{state}
+	}
+
+	return copyError
+}
+
+// An ExitError reports an unsuccessful exit by a command.
+type ExitError struct {
+	*myos.ProcessState
+}
+
+func (e *ExitError) Error() string {
+	return e.ProcessState.String()
+}

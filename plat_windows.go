@@ -8,13 +8,13 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/dchest/uniuri"
+	"github.com/taskcluster/generic-worker/os/exec"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
