@@ -8,17 +8,18 @@ package os
 
 import (
 	"os"
+	"syscall"
 
-	"github.com/taskcluster/generic-worker/syscall"
+	mysyscall "github.com/taskcluster/generic-worker/syscall"
 )
 
-func startProcess(name string, argv []string, attr *ProcAttr) (p *os.Process, err error) {
+func startProcess(name string, argv []string, attr *os.ProcAttr) (p *Process, err error) {
 	// If there is no SysProcAttr (ie. no Chroot or changed
 	// UID/GID), double-check existence of the directory we want
 	// to chdir into.  We can make the error clearer this way.
 	if attr != nil && attr.Sys == nil && attr.Dir != "" {
-		if _, err := Stat(attr.Dir); err != nil {
-			pe := err.(*PathError)
+		if _, err := os.Stat(attr.Dir); err != nil {
+			pe := err.(*os.PathError)
 			pe.Op = "chdir"
 			return nil, pe
 		}
@@ -30,15 +31,15 @@ func startProcess(name string, argv []string, attr *ProcAttr) (p *os.Process, er
 		Sys: attr.Sys,
 	}
 	if sysattr.Env == nil {
-		sysattr.Env = Environ()
+		sysattr.Env = syscall.Environ()
 	}
 	for _, f := range attr.Files {
 		sysattr.Files = append(sysattr.Files, f.Fd())
 	}
 
-	pid, h, e := syscall.StartProcess(name, argv, sysattr)
+	pid, h, e := mysyscall.StartProcess(name, argv, sysattr)
 	if e != nil {
-		return nil, &PathError{"fork/exec", name, e}
+		return nil, &os.PathError{"fork/exec", name, e}
 	}
 	return newProcess(pid, h), nil
 }

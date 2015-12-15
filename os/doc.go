@@ -9,6 +9,6 @@ import "os"
 // higher-level interfaces.
 //
 // If there is an error, it will be of type *PathError.
-func StartProcess(name string, argv []string, attr *os.ProcAttr) (*os.Process, error) {
+func StartProcess(name string, argv []string, attr *os.ProcAttr) (*Process, error) {
 	return startProcess(name, argv, attr)
 }
