@@ -32,6 +32,37 @@ var Hook = base.Entity.configure({
     // next date at which this task is scheduled to run
     nextScheduledDate:  base.Entity.types.Date,
   }
+}).configure({
+  version:              2,
+  signEntities:         true,
+  properties:           {
+    hookGroupId:        base.Entity.types.String,
+    hookId:             base.Entity.types.String,
+    metadata:           base.Entity.types.JSON,
+    // task template
+    task:               base.Entity.types.JSON,
+    // pulse bindings (TODO; empty for now)
+    bindings:           base.Entity.types.JSON,
+    // timings for the task (in fromNow format, e.g., "1 day")
+    deadline:           base.Entity.types.String,
+    expires:            base.Entity.types.String,
+    // schedule for this task (see schemas/schedule.yml)
+    schedule:           base.Entity.types.JSON,
+    // access token used to trigger this task via webhook
+    triggerToken:       base.Entity.types.EncryptedText,
+    // the taskId that will be used next time this hook is scheduled;
+    // this allows scheduling to be idempotent
+    nextTaskId:         base.Entity.types.EncryptedText,
+    // next date at which this task is scheduled to run
+    nextScheduledDate:  base.Entity.types.Date,
+  },
+  migrate: function(item) {
+    // remove the task timestamps, as they are overwritten when the hook fires
+    // (bug 1225234)
+    delete item.task.created;
+    delete item.task.expires;
+    delete item.task.deadline;
+  }
 });
 
 /** Return promise for hook definition */
