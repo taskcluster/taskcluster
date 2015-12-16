@@ -107,14 +107,14 @@ class Scheduler extends events.EventEmitter {
     } catch(err) {
       console.log("Failed to handle hook: %s/%s" +
                   ", with err: %s", hook.hookGroupId, hook.hookId, err);
-      // in the case of a 4xx error, retrying on the next scheduler loop is a
-      // waste of time, so consider the hook fired; for 500's, pretend nothing
-      // happend and we'll try again on the next go-round.
+
+      // for 500's, pretend nothing happend and we'll try again on the next go-round.
       if (err.statusCode >= 500 ) {
         return;
       }
 
-      // inform the user that there was a problem
+      // In the case of a 4xx error, retrying on the next scheduler loop is a
+      // waste of time, so consider the hook fired (and failed)
       await this.sendFailureEmail(hook, err);
     }
 
