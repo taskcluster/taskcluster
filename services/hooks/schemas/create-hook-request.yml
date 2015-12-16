@@ -29,7 +29,7 @@ properties:
     default: []
   expires:                {$const: expires}
   deadline:               {$const: deadline}
-  task:                   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
+  task:                   {$ref: "http://schemas.taskcluster.net/hooks/v1/task-template.json"}
 additionalProperties:     false
 required:
   - metadata
