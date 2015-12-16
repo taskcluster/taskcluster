@@ -113,10 +113,10 @@ class Scheduler extends events.EventEmitter {
       if (err.statusCode >= 500 ) {
         return;
       }
-    }
 
-    // inform the user that there was a problem
-    await this.sendFailureEmail(hook, err);
+      // inform the user that there was a problem
+      await this.sendFailureEmail(hook, err);
+    }
 
     try {
       let oldTaskId = hook.nextTaskId;
