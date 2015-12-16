@@ -254,6 +254,7 @@ api.declare({
     hook.deadline          = hookDef.deadline;
     hook.expires           = hookDef.expires ? hookDef.expires : '';
     hook.schedule          = schedule;
+    hook.nextTaskId        = taskcluster.slugid();
     hook.nextScheduledDate = nextDate(schedule);
   });
 
