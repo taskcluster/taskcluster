@@ -77,8 +77,9 @@ Start-Process "C:\git-1.9.5-installer.exe" -ArgumentList "/SILENT" -Wait -PassTh
 # set env vars for the currently running process
 $env:GOROOT = "C:\go"
 $env:GOPATH = "C:\gopath"
+$env:PATH   = $env:PATH + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd"
 
 # get generic-worker source code
-Start-Process "C:\go\bin\go.exe" -ArgumentList "get github.com/taskcluster/generic-worker github.com/taskcluster/livelog" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\generic-worker\go-get_install.log" -RedirectStandardError "C:\generic-worker\go-get_install.err"
+Start-Process "go" -ArgumentList "get github.com/taskcluster/generic-worker github.com/taskcluster/livelog" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\generic-worker\go-get_install.log" -RedirectStandardError "C:\generic-worker\go-get_install.err"
 
 </powershell>
