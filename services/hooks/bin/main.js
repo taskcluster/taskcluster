@@ -47,7 +47,6 @@ var load = loader({
         schemaPrefix:  'hooks/v1/',
         aws:           cfg.aws.validator,
         preload: [
-          'http://schemas.taskcluster.net/queue/v1/create-task-request.json',
           'http://schemas.taskcluster.net/queue/v1/task-status.json'
         ]
       });
