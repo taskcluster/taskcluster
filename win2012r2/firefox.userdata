@@ -34,10 +34,6 @@ choco install -y windows-sdk-8.1
 choco install -y visualstudiocommunity2013
 # $client.DownloadFile("https://go.microsoft.com/fwlink/?LinkId=532495&clcid=0x409", "C:\vs_community.exe")
 
-# install PSTools
-md "C:\PSTools"
-Expand-ZIPFile -File "C:\PSTools\PSTools.zip" -Destination "C:\PSTools" -Url "https://download.sysinternals.com/files/PSTools.zip"
-
 # install nssm
 Expand-ZIPFile -File "C:\nssm-2.24.zip" -Destination "C:\" -Url "http://www.nssm.cc/release/nssm-2.24.zip"
 

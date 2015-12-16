@@ -63,12 +63,6 @@ func deleteHomeDir(path string, user string) error {
 	// 	return adminDeleteHomeDir(path)
 	// }
 	err := runCommands(false, []string{
-		// "C:\\PSTools\\PsExec.exe", // hardcoded, but will go with bug 1176072
-		// "-u", user,
-		// "-p", string(password),
-		// "-w", "C:\\",
-		// "-n", "10",
-		// "-accepteula",
 		"del /s /q /f",
 		path,
 	})
