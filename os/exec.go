@@ -1,7 +1,6 @@
 package os
 
 import (
-	"os"
 	"runtime"
 	"sync/atomic"
 )
@@ -15,7 +14,7 @@ type Process struct {
 
 func newProcess(pid int, handle uintptr) *Process {
 	p := &Process{Pid: pid, handle: handle}
-	runtime.SetFinalizer(p, (*os.Process).Release)
+	runtime.SetFinalizer(p, (*Process).Release)
 	return p
 }
 
