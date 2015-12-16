@@ -10,8 +10,6 @@
     {
         "provisionerId": "aws-provisioner-v1",
         "workerType": "b2gtest",
-        "created": "2015-08-21T20:11:18.287Z",
-        "deadline": "2015-08-21T21:11:18.287Z",
         "payload": {},
         "metadata": {
             "name": "Example Task",
