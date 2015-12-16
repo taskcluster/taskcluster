@@ -7,6 +7,7 @@
 package syscall
 
 import (
+	"fmt"
 	"syscall"
 	"unicode/utf16"
 	"unsafe"
@@ -109,7 +110,7 @@ func StartProcess(argv0 string, argv []string, attr *syscall.ProcAttr, username,
 	pi := new(syscall.ProcessInformation)
 
 	flags := sys.CreationFlags | syscall.CREATE_UNICODE_ENVIRONMENT
-	if username+password == "" {
+	if username+password != "" {
 		err = CreateProcessWithLogon(
 			syscall.StringToUTF16Ptr(username),
 			syscall.StringToUTF16Ptr("."),
@@ -138,6 +139,7 @@ func StartProcess(argv0 string, argv []string, attr *syscall.ProcAttr, username,
 		)
 	}
 	if err != nil {
+		fmt.Printf("\n\n\n\nusername: %q\npassword: %q\nLOGON_WITH_PROFILE: %q\nargv0p: %q\nargvp: %q\nflags: %q\nattr.Env: %q\ndirp: %q\nsi: %q\npi: %q\n\n\n\n\n", username, password, LOGON_WITH_PROFILE, argv0p, argvp, flags, attr.Env, dirp, si, pi)
 		return 0, 0, err
 	}
 	defer syscall.CloseHandle(syscall.Handle(pi.Thread))
