@@ -15,7 +15,7 @@ import (
 var zeroProcAttr syscall.ProcAttr
 var zeroSysProcAttr syscall.SysProcAttr
 
-func StartProcess(argv0 string, argv []string, attr *syscall.ProcAttr) (pid int, handle uintptr, err error) {
+func StartProcess(argv0 string, argv []string, attr *syscall.ProcAttr, username, password string) (pid int, handle uintptr, err error) {
 	if len(argv0) == 0 {
 		return 0, 0, syscall.EWINDOWS
 	}
@@ -109,7 +109,34 @@ func StartProcess(argv0 string, argv []string, attr *syscall.ProcAttr) (pid int,
 	pi := new(syscall.ProcessInformation)
 
 	flags := sys.CreationFlags | syscall.CREATE_UNICODE_ENVIRONMENT
-	err = CreateProcess(argv0p, argvp, nil, nil, true, flags, createEnvBlock(attr.Env), dirp, si, pi)
+	if username+password == "" {
+		err = CreateProcessWithLogon(
+			syscall.StringToUTF16Ptr(username),
+			syscall.StringToUTF16Ptr("."),
+			syscall.StringToUTF16Ptr(password),
+			LOGON_WITH_PROFILE,
+			argv0p,
+			argvp,
+			flags,
+			createEnvBlock(attr.Env),
+			dirp,
+			si,
+			pi,
+		)
+	} else {
+		err = CreateProcess(
+			argv0p,
+			argvp,
+			nil,
+			nil,
+			true,
+			flags,
+			createEnvBlock(attr.Env),
+			dirp,
+			si,
+			pi,
+		)
+	}
 	if err != nil {
 		return 0, 0, err
 	}

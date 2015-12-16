@@ -92,6 +92,12 @@ type Cmd struct {
 	closeAfterWait  []io.Closer
 	goroutine       []func() error
 	errch           chan error // one send per goroutine
+
+	// Non-standard entries, added for generic-worker
+	// to enable running process as a different user on windows
+	// if not set (i.e. empty strings), then they are not used
+	Username string
+	Password string
 }
 
 // Start starts the specified command but does not wait for it to complete.
@@ -130,12 +136,18 @@ func (c *Cmd) Start() error {
 	c.childFiles = append(c.childFiles, c.ExtraFiles...)
 
 	var err error
-	c.Process, err = myos.StartProcess(c.Path, c.argv(), &os.ProcAttr{
-		Dir:   c.Dir,
-		Files: c.childFiles,
-		Env:   c.envv(),
-		Sys:   c.SysProcAttr,
-	})
+	c.Process, err = myos.StartProcess(
+		c.Path,
+		c.argv(),
+		&os.ProcAttr{
+			Dir:   c.Dir,
+			Files: c.childFiles,
+			Env:   c.envv(),
+			Sys:   c.SysProcAttr,
+		},
+		c.Username,
+		c.Password,
+	)
 	if err != nil {
 		c.closeDescriptors(c.closeAfterStart)
 		c.closeDescriptors(c.closeAfterWait)

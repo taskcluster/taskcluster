@@ -19,6 +19,8 @@ var (
 	procCreateProcessW          = modkernel32.NewProc("CreateProcessW")
 )
 
+const LOGON_WITH_PROFILE = 0x00000001
+
 func CreateProcessWithLogon(
 	username *uint16,
 	domain *uint16,

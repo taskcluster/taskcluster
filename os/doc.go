@@ -9,8 +9,8 @@ import "os"
 // higher-level interfaces.
 //
 // If there is an error, it will be of type *PathError.
-func StartProcess(name string, argv []string, attr *os.ProcAttr) (*Process, error) {
-	return startProcess(name, argv, attr)
+func StartProcess(name string, argv []string, attr *os.ProcAttr, username, password string) (*Process, error) {
+	return startProcess(name, argv, attr, username, password)
 }
 
 // Wait waits for the Process to exit, and then returns a

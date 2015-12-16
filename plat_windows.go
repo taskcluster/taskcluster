@@ -339,14 +339,6 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 
 	// can't use runCommands(...) here because we don't want to execute, only create
 	command := []string{
-		"C:\\PSTools\\PsExec.exe", // hardcoded, but will go with bug 1176072
-		"-h",
-		"-u", TaskUser.Name,
-		"-p", TaskUser.Password,
-		"-w", TaskUser.HomeDir,
-		"-n", "10",
-		"-accepteula",
-		"-s",
 		wrapper,
 	}
 
@@ -361,6 +353,9 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	// }
 
 	cmd := exec.Command(command[0], command[1:]...)
+	cmd.Username = TaskUser.Name
+	cmd.Password = TaskUser.Password
+	cmd.Dir = TaskUser.HomeDir
 	debug("Running command: '" + strings.Join(command, "' '") + "'")
 	log, err := os.Create(absLogFile)
 	if err != nil {

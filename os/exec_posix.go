@@ -13,7 +13,7 @@ import (
 	mysyscall "github.com/taskcluster/generic-worker/syscall"
 )
 
-func startProcess(name string, argv []string, attr *os.ProcAttr) (p *Process, err error) {
+func startProcess(name string, argv []string, attr *os.ProcAttr, username, password string) (p *Process, err error) {
 	// If there is no SysProcAttr (ie. no Chroot or changed
 	// UID/GID), double-check existence of the directory we want
 	// to chdir into.  We can make the error clearer this way.
@@ -37,7 +37,7 @@ func startProcess(name string, argv []string, attr *os.ProcAttr) (p *Process, er
 		sysattr.Files = append(sysattr.Files, f.Fd())
 	}
 
-	pid, h, e := mysyscall.StartProcess(name, argv, sysattr)
+	pid, h, e := mysyscall.StartProcess(name, argv, sysattr, username, password)
 	if e != nil {
 		return nil, &os.PathError{"fork/exec", name, e}
 	}
