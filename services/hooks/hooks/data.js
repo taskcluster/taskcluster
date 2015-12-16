@@ -62,6 +62,7 @@ var Hook = base.Entity.configure({
     delete item.task.created;
     delete item.task.expires;
     delete item.task.deadline;
+    return item;
   }
 });
 
