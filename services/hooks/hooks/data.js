@@ -68,11 +68,17 @@ var Hook = base.Entity.configure({
 
 /** Return promise for hook definition */
 Hook.prototype.definition = function() {
+  // temporary
+  let task = _.cloneDeep(this.task);
+  delete task.created;
+  delete task.expires;
+  delete task.deadline;
+
   return Promise.resolve({
     hookId:       this.hookId,
     hookGroupId:  this.hookGroupId,
     metadata:     _.cloneDeep(this.metadata),
-    task:         _.cloneDeep(this.task),
+    task:         task,
     schedule:     _.cloneDeep(this.schedule),
     deadline:     this.deadline,
     expires:      this.expires
