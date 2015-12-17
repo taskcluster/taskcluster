@@ -56,7 +56,6 @@ class TaskCreator {
 
     debug('firing hook %s/%s to create taskId: %s',
         hook.hookGroupId, hook.hookId, options.taskId);
-    console.log("TFH", this.taskForHook(hook, options.created));
     return await queue.createTask(options.taskId,
       this.taskForHook(hook, options.created));
   };
