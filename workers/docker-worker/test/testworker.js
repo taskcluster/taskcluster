@@ -21,6 +21,7 @@ var Scheduler = require('taskcluster-client').Scheduler;
 var PulseListener = require('taskcluster-client').PulseListener;
 var Promise = require('promise');
 var EventEmitter = require('events').EventEmitter;
+var getLogsLocationsFromTask = require('../lib/features/logs_location.js');
 
 var queueEvents = new (require('taskcluster-client').QueueEvents);
 var schedulerEvents = new (require('taskcluster-client').SchedulerEvents);
@@ -156,13 +157,16 @@ export default class TestWorker extends EventEmitter {
   /**
   Fetch all the common stats used by the tests.
   */
-  async fetchTaskStats(taskId, runId) {
+  async fetchTaskStats(task, runId) {
+    let taskId = task.taskId;
+    let liveLogsLocation = getLogsLocationsFromTask(task).live;
+
     debug('fetch task stats');
     // Just about every single test needs status of the task...
     var status = await this.queue.status(taskId);
     // Live logging of the task...
     var log = await getArtifact(
-      { taskId: taskId, runId: runId }, 'public/logs/live.log'
+      { taskId: taskId, runId: runId }, liveLogsLocation
     );
 
     // Generally useful for most of the tests...
@@ -231,7 +235,7 @@ export default class TestWorker extends EventEmitter {
     return await Promise.all(graph.tasks.map(async (task) => {
       // Note: that we assume runId 0 here which is fine locally since we know
       // the number of runs but not safe is we wanted to test reruns.
-      return await this.fetchTaskStats(task.taskId, 0);
+      return await this.fetchTaskStats(task, 0);
     }));
   }
 
@@ -254,7 +258,11 @@ export default class TestWorker extends EventEmitter {
   @param {Object} task partial definition to upload.
   */
   async postToQueue(task, specifiedTaskId) {
-    var taskId = specifiedTaskId ? specifiedTaskId : slugid.v4();
+    let taskId = specifiedTaskId ? specifiedTaskId : slugid.v4();
+
+    // You might reuse the same task before posting it to the queue, so it might
+    // have an already existing taskId.
+    delete task['taskId'];
 
     // Create task and listen for worker to report that the task is resolved.
     // Can no longer rely on pulse messages to indicate that a task is resolved.
@@ -273,6 +281,7 @@ export default class TestWorker extends EventEmitter {
     var runId = status.runs.pop().runId;
 
     // Return uniform stats on the worker run (fetching common useful things).
-    return await this.fetchTaskStats(taskId, runId);
+    task.taskId = taskId;
+    return await this.fetchTaskStats(task, runId);
   }
 }

@@ -11,9 +11,9 @@ import URL from 'url';
 
 import BulkLog from './bulk_log';
 import waitForPort from '../wait_for_port';
+import getLogsLocationsFromTask from './logs_location.js';
 
-const ARTIFACT_NAME = 'public/logs/live.log';
-const BACKING_ARTIFACT_NAME = 'public/logs/live_backing.log';
+
 // Maximum time to wait for the put socket to become available.
 const INIT_TIMEOUT = 2000;
 
@@ -28,6 +28,8 @@ export default class TaskclusterLogs {
     */
     this.container = null;
     this.token = slugid.v4();
+
+    this.logsLocations = undefined; // will be overriden in link()
   }
 
   async link(task) {
@@ -35,8 +37,10 @@ export default class TaskclusterLogs {
     let taskId = task.status.taskId;
     let runId = task.runId;
 
+    this.logsLocations = getLogsLocationsFromTask(task.task);
+
     // ensure we have a bulk log backing stuff...
-    this.bulkLog = new BulkLog(BACKING_ARTIFACT_NAME);
+    this.bulkLog = new BulkLog(this.logsLocations.backing);
     await this.bulkLog.created(task);
 
     let docker = task.runtime.docker;
@@ -150,7 +154,7 @@ export default class TaskclusterLogs {
     await queue.createArtifact(
       task.status.taskId,
       task.runId,
-      ARTIFACT_NAME,
+      this.logsLocations.live,
       {
         storageType: 'reference',
         expires: expiration,
@@ -197,7 +201,7 @@ export default class TaskclusterLogs {
     await task.runtime.queue.createArtifact(
       task.status.taskId,
       task.runId,
-      ARTIFACT_NAME,
+      this.logsLocations.live,
       {
         storageType: 'reference',
         expires: expiration,
