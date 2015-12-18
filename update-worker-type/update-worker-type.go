@@ -10,8 +10,9 @@ import (
 
 func main() {
 	newAmi := os.Args[1]
+	workerType := os.Args[2]
 	prov := awsprovisioner.New(os.Getenv("TASKCLUSTER_CLIENT_ID"), os.Getenv("TASKCLUSTER_ACCESS_TOKEN"))
-	wt, _, err := prov.WorkerType("win2012r2")
+	wt, _, err := prov.WorkerType(workerType)
 	if err != nil {
 		panic(err)
 	}
@@ -50,9 +51,9 @@ func main() {
 		Secrets:        wt.Secrets,
 		UserData:       wt.UserData,
 	}
-	_, _, err = prov.UpdateWorkerType("win2012r2", updated)
+	_, _, err = prov.UpdateWorkerType(workerType, updated)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Worker type updated")
+	fmt.Println("Worker type " + workerType + " updated to use " + newAmi)
 }
