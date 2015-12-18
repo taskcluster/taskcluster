@@ -30,4 +30,4 @@ coverage.report
 test/public/logs
 
 # other
-win2012r2/latest.txt
+worker_types/*/latest.txt
