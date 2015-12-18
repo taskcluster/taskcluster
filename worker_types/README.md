@@ -8,7 +8,8 @@ Setting up a new Windows worker type
 5. Run [`create.sh`](https://github.com/taskcluster/generic-worker/blob/master/worker_types/create.sh)` <worker_type>`
 6. Create a task in the Task Creator to check whether everything is working ok.
 
-Updating an existing worker type with a new version of generic worker and/or new userdata
+Updating an existing worker type with a new generic worker and/or new userdata
+==============================================================================
 
 1. Make sure there is a frozen release of the generic worker to use (to make a release, follow release instructions in [README.md](https://github.com/taskcluster/generic-worker/blob/master/README.md)).
 2. Update the userdata for the workertype to use the new release number, if changed.
