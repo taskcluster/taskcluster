@@ -5,7 +5,7 @@ Setting up a new Windows worker type
 2. Inside the directory create a file called `userdata` which contains the userdata for setting up the environment.
 3. Optional: place any other files related to the worker type in this directory, for example you may wish to copy the worker type definition into a file here, or include other information such as an example task.
 4. Create the worker type on the AWS provisioner, making sure to include an AMI for us-west-2 (which can be anything - it will get updated later).
-5. Run [create.sh](https://github.com/taskcluster/generic-worker/blob/master/worker_types/create.sh) <worker_type>
+5. Run [`create.sh`](https://github.com/taskcluster/generic-worker/blob/master/worker_types/create.sh)` <worker_type>`
 6. Create a task in the Task Creator to check whether everything is working ok.
 
 Updating an existing worker type with a new version of generic worker and/or new userdata
