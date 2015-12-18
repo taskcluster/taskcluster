@@ -220,13 +220,17 @@ Then cd into the source directory, and run:
 go test -v ./...
 ```
 
-# Making a new release
+# Making a new generic worker release
 
 1. Bump the version number in `main.go` [here](https://github.com/taskcluster/generic-worker/blob/d1e48692122dd3e295defda1e61acc8509ad7e23/main.go#L58).
 2. Commit the change, e.g. `git add main.go; git commit -m "Bumped version number"`.
 3. Tag the repo, e.g. `git tag v2.0.0alpha15`
 4. Push to github taskcluster repo master branch, e.g. `git push; git push --tags`
 5. Wait for binary releases to magically appear [here](https://github.com/taskcluster/generic-worker/releases) (travis will push them if tests pass).
+
+# Creating and updating worker types
+
+See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/master/worker_types/README.md).
 
 # Further information
 
