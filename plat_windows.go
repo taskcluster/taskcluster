@@ -42,10 +42,6 @@ func startup() error {
 }
 
 func deleteHomeDir(path string, user string) error {
-	return nil
-}
-
-func deleteHomeDir_real(path string, user string) error {
 	debug("Removing home directory '" + path + "'...")
 
 	adminDeleteHomeDir := func(path string) error {
@@ -176,9 +172,6 @@ func generatePassword() string {
 }
 
 func deleteExistingOSUsers() {
-}
-
-func deleteExistingOSUsers_real() {
 	deleteHomeDirs()
 	debug("Looking for existing task users to delete...")
 	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
@@ -189,9 +182,6 @@ func deleteExistingOSUsers_real() {
 }
 
 func deleteHomeDirs() {
-}
-
-func deleteHomeDirs_real() {
 	homeDirsParent, err := os.Open("C:\\Users")
 	if err != nil {
 		debug("WARNING: Could not open C:\\Users directory to find old home directories to delete")
@@ -223,9 +213,6 @@ func deleteHomeDirs_real() {
 }
 
 func deleteOSUserAccount(line string) {
-}
-
-func deleteOSUserAccount_real(line string) {
 	if strings.HasPrefix(line, "Task_") {
 		user := line
 		debug("Attempting to remove Windows user " + user + "...")
