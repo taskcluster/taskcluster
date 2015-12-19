@@ -64,7 +64,6 @@ var launch = async function(profile, publisher) {
     context:          {publisher, cfg, githubAPI},
     validator:        validator,
     authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
-    credentials:      cfg.get('taskcluster:credentials'),
     publish:          cfg.get('taskclusterGithub:publishMetaData') === 'true',
     baseUrl:          cfg.get('server:publicUrl') + '/v1',
     referencePrefix:  'github/v1/api.json',
