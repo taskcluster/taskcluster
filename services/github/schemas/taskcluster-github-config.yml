@@ -9,7 +9,7 @@ properties:
   version:
     description:    ".taskcluster.yml version"
     enum:           [0]
-    items:
+    type:           integer
   metadata:
     description:   "Required task graph metadata"
     type:           object
