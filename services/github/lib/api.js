@@ -73,7 +73,7 @@ api.declare({
   method:     'post',
   route:      '/github',
   name:       'githubWebHookConsumer',
-  scopes:     undefined,
+  scopes:     [[]],
   title:      "Consume GitHub WebHook",
   stability:  'experimental',
   description: [
