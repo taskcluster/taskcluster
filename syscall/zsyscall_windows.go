@@ -20,6 +20,7 @@ var (
 )
 
 const LOGON_WITH_PROFILE = 0x00000001
+const CREATE_NEW_CONSOLE = 0x00000010
 
 func CreateProcessWithLogon(
 	username *uint16,

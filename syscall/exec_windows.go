@@ -109,7 +109,7 @@ func StartProcess(argv0 string, argv []string, attr *syscall.ProcAttr, username,
 
 	pi := new(syscall.ProcessInformation)
 
-	flags := sys.CreationFlags | syscall.CREATE_UNICODE_ENVIRONMENT
+	flags := (sys.CreationFlags | syscall.CREATE_UNICODE_ENVIRONMENT) &^ CREATE_NEW_CONSOLE
 	if username+password != "" {
 		err = CreateProcessWithLogon(
 			syscall.StringToUTF16Ptr(username),
