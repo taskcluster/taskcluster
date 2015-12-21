@@ -259,6 +259,12 @@ def _decrypt(blob, privateKey):
   decrypted = key.decrypt(msg)
   return decrypted.message
 
+def isExpired(certificate):
+  """ Check if certificate is expired """
+  if isinstance(certificate, basestring):
+    certificate = json.loads(certificate)
+  expiry = certificate.get('expiry', 0)
+  return expiry < int(time.time() * 1000 + 20 * 60 * 1000)
 
 def authenticate(description=None):
   """
