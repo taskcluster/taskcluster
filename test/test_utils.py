@@ -324,3 +324,34 @@ class TestScopeMatch(TestCase):
 
   def test_empty_disjunction_in_scopesets(self):
     self.assertScopeMatch(["foo:bar"], [], False)
+
+
+class TestIsExpired(TestCase):
+
+  def test_not_expired(self):
+    isExpired = subject.isExpired("""
+      {
+        "version":1,
+        "scopes":["*"],
+        "start":1450740520182,
+        "expiry":2451000620182,
+        "seed":"90PyTwYxS96-lBPc0f_MqQGV-hHCUsTYWpXZilv6EqDg",
+        "signature":"HocA2IiCoGzjUQZbrbLSwKMXZSYWCu/hfMPCa/ovggQ="
+      }
+    """)
+    self.assertEqual(isExpired, False)
+
+  def test_expired(self):
+    # Warning we have to test with expiry: 0 as magic python spy thing
+    # mess up time.time() so it won't work.
+    isExpired = subject.isExpired("""
+      {
+        "version":1,
+        "scopes":["*"],
+        "start":1450740520182,
+        "expiry":0,
+        "seed":"90PyTwYxS96-lBPc0f_MqQGV-hHCUsTYWpXZilv6EqDg",
+        "signature":"HocA2IiCoGzjUQZbrbLSwKMXZSYWCu/hfMPCa/ovggQ="
+      }
+    """)
+    self.assertEqual(isExpired, True)

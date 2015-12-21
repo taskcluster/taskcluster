@@ -265,7 +265,7 @@ def isExpired(certificate):
   if isinstance(certificate, basestring):
     certificate = json.loads(certificate)
   expiry = certificate.get('expiry', 0)
-  return expiry < int(time.time() * 1000 + 20 * 60 * 1000)
+  return expiry < int(time.time() * 1000) + 20 * 60
 
 
 def authenticate(description=None):
