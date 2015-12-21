@@ -248,6 +248,43 @@ awsProvisionerEvents = taskcluster.AwsProvisionerEvents(options)
 
 
 
+### Methods in `taskcluster.Github`
+```python
+// Create Github client instance
+import taskcluster
+github = taskcluster.Github(options)
+```
+#### Consume GitHub WebHook
+ * `github.githubWebHookConsumer() -> None`
+
+#### Ping Server
+ * `github.ping() -> None`
+
+
+
+
+### Exchanges in `taskcluster.GithubEvents`
+```python
+// Create GithubEvents client instance
+import taskcluster
+githubEvents = taskcluster.GithubEvents(options)
+```
+#### GitHub Pull Request Event
+ * `githubEvents.pullRequest(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * organization is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+   * repository is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+   * action is required  Description: The GitHub `action` which triggered an event. See for possible values see the payload actions property.
+
+#### GitHub push Event
+ * `githubEvents.push(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * organization is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+   * repository is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+
+
+
+
 ### Methods in `taskcluster.Hooks`
 ```python
 // Create Hooks client instance
