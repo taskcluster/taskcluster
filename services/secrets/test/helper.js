@@ -36,8 +36,10 @@ if (!cfg.get('azure:accountName')) {
 // All client shoulds expire within a minute
 const ClientExpiration = new Date((new Date()).getTime() + (60 * 1000));
 
-// Some default clients for the mockAuthServer
-var defaultClients = [
+// Some clients for the tests, with differents scopes.  These are turned
+// into temporary credentials based on the main test credentials, so
+// the clientIds listed here are purely internal to the tests.
+var testClients = [
   {
     clientId:     'captain-write', // can write captain's secrets
     scopes:       [
@@ -74,7 +76,7 @@ var SecretsClient = taskcluster.createClient(
 
 // Set up all of our clients
 helper.clients = {};
-for (let client of defaultClients) {
+for (let client of testClients) {
   helper.clients[client.clientId] = new SecretsClient({
     baseUrl:          baseUrl,
     credentials: taskcluster.createTemporaryCredentials(client),
