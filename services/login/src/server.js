@@ -12,12 +12,17 @@ import saml from 'passport-saml'
 import Mozillians from 'mozillians-client'
 import User from './user'
 import querystring from 'querystring'
+import LDAPService from './ldapservice'
 
 require('source-map-support').install();
 
 let launch = async (profile) =>  {
   // Load configuration
   let cfg = config({profile})
+
+  // Create ldapService
+  let ldapService = new LDAPService(cfg.ldap);
+  await ldapService.setup();
 
   // Create application
   let app = express();
@@ -120,10 +125,18 @@ let launch = async (profile) =>  {
     cert: cfg.sso.certificate,
     skipRequestCompression: true,
     passReqToCallback: true
-  }, (req, profile, done) => {
+  }, async (req, profile, done) => {
     try {
       let user = User.get(req);
       user.ldapUser = profile['ldap-email'];
+
+      let posixGroups = await ldapService.posixGroups(profile['ldap-email']);
+      posixGroups.forEach(group => {
+        if (cfg.sso.allowedGroups.indexOf(group) !== -1) {
+          user.addLDAPGroup(group);
+        }
+      });
+
       profile['ldap-groups'].forEach(group => {
         if (cfg.sso.allowedGroups.indexOf(group) !== -1) {
           user.addLDAPGroup(group);
