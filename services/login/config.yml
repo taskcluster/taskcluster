@@ -22,6 +22,12 @@ Defaults:
   mozillians:
     apiKey:         !env MOZILLIANS_API_KEY
     allowedGroups:  !env:list MOZILLIANS_ALLOWED_GROUPS
+  ldap:
+    url:            !env LDAP_URL
+    cert:           !env LDAP_CERTIFICATE
+    key:            !env LDAP_KEY
+    user:           !env LDAP_USER
+    password:       !env LDAP_PASSWORD
   sso:
     entryPoint:     !env SSO_ENTRYPOINT
     certificate:    !env SSO_CERTIFICATE
