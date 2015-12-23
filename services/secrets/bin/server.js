@@ -48,12 +48,16 @@ let launch = async function(profile) {
   // Create API router and publish reference if needed
   debug("Creating API router");
 
-  let router = await api.setup({ context:          {cfg, entity}, authBaseUrl:
-  cfg.get('taskcluster:authBaseUrl'), validator:        validator, publish:
-  cfg.get('taskclusterSecrets:publishMetaData') === 'true', baseUrl:
-  cfg.get('server:publicUrl') + '/v1', referencePrefix:  'secrets/v1/api.json',
-  aws:              cfg.get('aws'), component:
-  cfg.get('taskclusterSecrets:statsComponent'), drain:            statsDrain
+  let router = await api.setup({
+    context:          {cfg, entity},
+    authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
+    validator:        validator,
+    publish:          cfg.get('taskclusterSecrets:publishMetaData') === 'true',
+    baseUrl:          cfg.get('server:publicUrl') + '/v1',
+    referencePrefix:  'secrets/v1/api.json',
+    aws:              cfg.get('aws'),
+    component:        cfg.get('taskclusterSecrets:statsComponent'),
+    drain:            statsDrain
   });
 
   debug("Configuring app");
