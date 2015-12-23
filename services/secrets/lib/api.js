@@ -23,7 +23,6 @@ var api = new base.API({
 // Export API
 module.exports = api;
 
-/** Define tasks */
 api.declare({
   method:      'put',
   route:       '/secrets/:name(*)',
