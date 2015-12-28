@@ -42,6 +42,7 @@
     "mz": "^2.0.0",
     "openpgp": "1.2.0",
     "promise": "^7.0.3",
+    "promise-retry": "^0.2.9",
     "proxy": "^0.2.3",
     "readdirrsync": "0.0.3",
     "request": "^2.65.0",
@@ -79,6 +80,7 @@
     "mocha": "^2.1.0",
     "split2": "^0.1.2",
     "taskcluster-task-factory": "^0.6.1",
-    "got": "^5.1.0"
+    "got": "^5.1.0",
+    "iptables": "^0.0.4"
   }
 }

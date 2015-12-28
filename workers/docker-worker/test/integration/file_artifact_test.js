@@ -3,8 +3,21 @@ import getArtifact from './helper/get_artifact';
 import cmd from './helper/cmd';
 import expires from './helper/expires';
 import testworker from '../post_task';
+import TestWorker from '../testworker';
+import DockerWorker from '../dockerworker';
+import iptables from 'iptables';
 
 suite('artifact extration tests', () => {
+  teardown(() => {
+    iptables.deleteRule({
+      chain: 'OUTPUT',
+      target: 'REJECT',
+      protocol: 'tcp',
+      dport: 443,
+      sudo: true
+    });
+  });
+
   test('extract artifact', async () => {
     let result = await testworker({
       payload: {
@@ -227,5 +240,73 @@ suite('artifact extration tests', () => {
 
     // Missing artifact should have an error...
     assert.equal(result.artifacts['public/my-missing.txt'].storageType, 'error');
+  });
+
+  test('upload retry', async () => {
+    // Avoid iptables on local environment
+    if (!process.env.WORKER_CI) {
+      return;
+    }
+
+    let worker = new TestWorker(DockerWorker);
+    await worker.launch();
+
+    worker.once('Uploading public/xfoo', function() {
+      iptables.reject({
+        chain: 'OUTPUT',
+        protocol: 'tcp',
+        dport: 443,
+        sudo: true
+      });
+    });
+
+    let retry = false;
+
+    worker.on('retrying artifact upload', function() {
+      iptables.deleteRule({
+        chain: 'OUTPUT',
+        target: 'REJECT',
+        protocol: 'tcp',
+        dport: 443,
+        sudo: true
+      });
+
+      retry = true;
+    });
+
+    let result = await worker.postToQueue({
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd(
+          'mkdir /artifacts/',
+          'echo "xfoo" > /artifacts/xfoo.txt',
+          'ls /artifacts'
+        ),
+        features: {
+          localLiveLog: false
+        },
+        artifacts: {
+          'public/xfoo': {
+            type: 'file',
+            expires: expires(),
+            path: '/artifacts/xfoo.txt'
+          },
+        },
+        maxRunTime: 5 * 60
+      }
+    });
+
+    // Get task specific results
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+
+    assert.deepEqual(
+      Object.keys(result.artifacts).sort(), ['public/xfoo'].sort()
+    );
+
+    let xfoo = await getArtifact(result, 'public/xfoo');
+
+    assert.equal(xfoo.trim(), 'xfoo');
+    assert.ok(retry);
   });
 });
