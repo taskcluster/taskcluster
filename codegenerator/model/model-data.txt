@@ -1,4 +1,4 @@
-Generated: 1450283365
+Generated: 1451330882
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2375,8 +2375,8 @@ Entry 0     =
     Entry Args        = '[]'
     Entry Query        = '[]'
     Entry Name        = 'githubWebHookConsumer'
-    Entry Stability   = ''
-    Entry Scopes      = '[]'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[]]'
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Consume GitHub WebHook'
@@ -2389,7 +2389,7 @@ Entry 1     =
     Entry Args        = '[]'
     Entry Query        = '[]'
     Entry Name        = 'ping'
-    Entry Stability   = ''
+    Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
     Entry Input       = ''
     Entry Output      = ''
