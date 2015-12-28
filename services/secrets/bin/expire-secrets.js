@@ -52,7 +52,7 @@ let launch = async function(profile) {
 
   debug("Expiring secrets");
   let count = await entity.expire(now);
-  debug("Expired %i secrets", count);
+  debug("Expired " + count + " secrets");
 
   // Stop recording statistics and send any stats that we have
   return statsDrain.close();
