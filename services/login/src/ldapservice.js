@@ -40,6 +40,8 @@ class LDAPService {
     this.client = ldap.createClient({
       url: this.options.url,
       tlsOptions,
+      timeout: 10 * 1000,
+      reconnect: true,
     });
 
     await new Promise((accept, reject) => this.client.bind(
@@ -49,11 +51,17 @@ class LDAPService {
   }
 
   async posixGroups(mail) {
+    await new Promise((accept, reject) => this.client.bind(
+      this.options.user, this.options.password, err => {
+      err ? reject(err) : accept();
+    }));
+
     let res = await new Promise((accept, reject) => this.client.search(
       "dc=mozilla", {
       scope: 'sub',
       filter: '(&(objectClass=posixGroup)(memberUid=' + mail + '))',
-      attributes: ['cn']
+      attributes: ['cn'],
+      timeLimit: 10,
     }, (err, res) => {
       err ? reject(err) : accept(res);
     }));
@@ -64,7 +72,12 @@ class LDAPService {
         groups.push(entry.object.cn);
       });
       res.on('error', reject);
-      res.on('end', accept);
+      res.on('end', result => {
+        if (result.status !== 0) {
+          return reject(new Error('LDAP error, got status: ' + result.status));
+        }
+        return accept();
+      });
     });
 
     return groups;
