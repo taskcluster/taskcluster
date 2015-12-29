@@ -2,7 +2,7 @@
 
 # options:
 #   -n  skip code generation
-#   -d  don't change timestamp included in generated docs
+#   -d  update timestamp included in generated docs
 
 cd "$(dirname "${0}")"
 
