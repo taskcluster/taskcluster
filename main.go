@@ -18,14 +18,15 @@ particular task but additional scopes may be added by specifying them after the
 task id.
 
   Usage:
-    ./proxy [options] <taskId> [<scope>...]
-    ./proxy --help
+    taskcluster-proxy [options] <taskId> [<scope>...]
+    taskcluster-proxy --help
 
   Options:
     -h --help                       Show this help screen.
+    --version                       Show the taskcluster-proxy version number.
     -p --port <port>                Port to bind the proxy server to [default: 8080].
-    --client-id <clientId>          Use a specific auth.taskcluster hawk client	id [default: ].
-    --access-token <accessToken>    Use a specific auth.taskcluster hawk access	token. [default: ]
+    --client-id <clientId>          Use a specific auth.taskcluster hawk client id [default: ].
+    --access-token <accessToken>    Use a specific auth.taskcluster hawk access token [default: ].
 `
 
 func main() {
