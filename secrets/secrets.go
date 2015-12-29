@@ -32,7 +32,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/secrets/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 28 Dec 2015 at 19:28:00 UTC. The code was generated
+// Tue, 29 Dec 2015 at 08:26:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package secrets
 
@@ -216,7 +216,7 @@ func New(clientId string, accessToken string) *Secrets {
 //   * secrets:set:<name>
 //
 // See http://docs.taskcluster.net/services/secrets/#set
-func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) (*CallSummary, error) {
+func (mySecrets *Secrets) Set(name string, payload *Secret) (*CallSummary, error) {
 	_, callSummary, err := mySecrets.apiCall(payload, "PUT", "/secrets/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
@@ -229,7 +229,7 @@ func (mySecrets *Secrets) Set(name string, payload *ATaskClusterSecret) (*CallSu
 //   * secrets:update:<name>
 //
 // See http://docs.taskcluster.net/services/secrets/#update
-func (mySecrets *Secrets) Update(name string, payload *ATaskClusterSecret) (*CallSummary, error) {
+func (mySecrets *Secrets) Update(name string, payload *Secret) (*CallSummary, error) {
 	_, callSummary, err := mySecrets.apiCall(payload, "POST", "/secrets/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
@@ -255,9 +255,9 @@ func (mySecrets *Secrets) Remove(name string) (*CallSummary, error) {
 //   * secrets:get:<name>
 //
 // See http://docs.taskcluster.net/services/secrets/#get
-func (mySecrets *Secrets) Get(name string) (*ATaskClusterSecret, *CallSummary, error) {
-	responseObject, callSummary, err := mySecrets.apiCall(nil, "GET", "/secrets/"+url.QueryEscape(name), new(ATaskClusterSecret), nil)
-	return responseObject.(*ATaskClusterSecret), callSummary, err
+func (mySecrets *Secrets) Get(name string) (*Secret, *CallSummary, error) {
+	responseObject, callSummary, err := mySecrets.apiCall(nil, "GET", "/secrets/"+url.QueryEscape(name), new(Secret), nil)
+	return responseObject.(*Secret), callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -277,7 +277,7 @@ type (
 	// Message containing a TaskCluster Secret
 	//
 	// See http://schemas.taskcluster.net/secrets/v1/secret.json#
-	ATaskClusterSecret struct {
+	Secret struct {
 
 		// An expiration date for this secret.
 		//

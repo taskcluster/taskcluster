@@ -1,4 +1,4 @@
-Generated: 1451330882
+Generated: 1451377615
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -9895,9 +9895,9 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/secrets/v1/secret.json#/properties/secret'
 Required               = '[secret expires]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'A TaskCluster Secret'
+Title                  = 'Secret'
 Type                   = 'object'
-TypeName               = 'ATaskClusterSecret'
+TypeName               = 'Secret'
 IsInputSchema          = 'true'
 IsOutputSchema         = 'true'
 SourceURL              = 'http://schemas.taskcluster.net/secrets/v1/secret.json#'
