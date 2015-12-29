@@ -117,6 +117,7 @@ func (self Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	headersToSend.Set("X-Taskcluster-Endpoint", targetPath.String())
+	headersToSend.Set("X-Taskcluster-Version", version)
 
 	// Write the proxyResponse headers and status.
 	res.WriteHeader(proxyResp.StatusCode)
