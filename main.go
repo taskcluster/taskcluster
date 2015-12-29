@@ -27,6 +27,7 @@ task id.
     -p --port <port>                Port to bind the proxy server to [default: 8080].
     --client-id <clientId>          Use a specific auth.taskcluster hawk client id [default: ].
     --access-token <accessToken>    Use a specific auth.taskcluster hawk access token [default: ].
+    --certificate <certificate>     Use a specific auth.taskcluster hawk certificate [default: ].
 `
 
 func main() {
@@ -59,7 +60,12 @@ func main() {
 		accessToken = os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
 	}
 
-	log.Printf("%v - %v", clientId, accessToken)
+	certificate := arguments["--certificate"]
+	if certificate == nil || certificate == "" {
+		certificate = os.Getenv("TASKCLUSTER_CERTIFICATE")
+	}
+
+	log.Printf("clientId: '%v'\naccessToken: '%v'\ncertificate: '%v'\n", clientId, accessToken, certificate)
 
 	// Ensure we have credentials our auth proxy is pretty much useless without
 	// it.
@@ -67,6 +73,10 @@ func main() {
 		log.Fatalf(
 			"Credentials must be passed via environment variables or flags...",
 		)
+	}
+
+	if certificate == "" {
+		log.Println("Warning - no taskcluster certificate set - assuming permanent credentials are being used")
 	}
 
 	// Fetch the task to get the scopes we should be using...
@@ -84,6 +94,7 @@ func main() {
 		Scopes:      scopes,
 		ClientId:    clientId.(string),
 		AccessToken: accessToken.(string),
+		Certificate: certificate.(string),
 	}
 
 	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), routes)

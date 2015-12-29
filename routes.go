@@ -18,6 +18,9 @@ type Routes struct {
 	// Access Token used to authenticate all proxy requests.
 	AccessToken string
 
+	// Certificate used to authenticate proxy requests.
+	Certificate string
+
 	// Scopes to use in the delegating authentication.
 	Scopes []string
 }
@@ -37,7 +40,7 @@ func (self Routes) signUrl(res http.ResponseWriter, req *http.Request) {
 	}
 
 	urlString := strings.TrimSpace(string(body))
-	bewitUrl, err := tc.Bewit(self.ClientId, self.AccessToken, urlString)
+	bewitUrl, err := tc.Bewit(self.ClientId, self.AccessToken, self.Certificate, urlString)
 
 	if err != nil {
 		res.WriteHeader(500)
@@ -92,7 +95,7 @@ func (self Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	// Sign the proxy request with our credentials.
 	auth, err := tc.AuthorizationDelegate(
-		self.ClientId, self.AccessToken, self.Scopes, proxyReq,
+		self.ClientId, self.AccessToken, self.Certificate, self.Scopes, proxyReq,
 	)
 	if err != nil {
 		res.WriteHeader(500)

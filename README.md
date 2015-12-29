@@ -11,7 +11,9 @@ scheduler) without hardcoding credentials into the containers
 themselves.
 
 Credentials are expected to be passed via the `TASKCLUSTER_CLIENT_ID`
-and `TASKCLUSTER_ACCESS_TOKEN` environment variables.
+and `TASKCLUSTER_ACCESS_TOKEN` environment variables, optionally with
+a `TASKCLUSTER_CERITIFICATE` environment variable in the case of using
+temporary credentials.
 
 
 ## Examples
@@ -71,4 +73,6 @@ go build
 To run the full test suites you need a [taskcluster auth](http://auth.taskcluster.net/)
 token with at least scopes to the auth server `"auth:*"`. The
 credentials are expected to be in the `TASKCLUSTER_CLIENT_ID` and
-`TASKCLUSTER_ACCESS_TOKEN` environment variables.
+`TASKCLUSTER_ACCESS_TOKEN` environment variables (and optionally
+the `TASKCLUSTER_CERTIFICATE` environment variable if using
+temporary credentials.

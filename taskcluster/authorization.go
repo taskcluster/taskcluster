@@ -17,17 +17,21 @@ type delegationOptions struct {
 	Scopes []string `json:"authorizedScopes"`
 }
 
-func getAuth(clientId string, accessToken string, http *http.Request) *hawk.Auth {
+func getAuth(clientId, accessToken, certificate string, http *http.Request) *hawk.Auth {
 	// Create the hawk authentication string from the request...
 	credentials := &hawk.Credentials{
 		ID:   clientId,
 		Key:  accessToken,
 		Hash: sha256.New,
 	}
-	return hawk.NewRequestAuth(http, credentials, 0)
+	auth := hawk.NewRequestAuth(http, credentials, 0)
+	if certificate != "" {
+		auth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + certificate + "}"))
+	}
+	return auth
 }
 
-func Bewit(clientId string, accessToken string, uri string) (string, error) {
+func Bewit(clientId, accessToken, certificate, uri string) (string, error) {
 	credentials := &hawk.Credentials{
 		ID:   clientId,
 		Key:  accessToken,
@@ -38,17 +42,20 @@ func Bewit(clientId string, accessToken string, uri string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if certificate != "" {
+		auth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + certificate + "}"))
+	}
 
 	bewit := auth.Bewit()
 	return fmt.Sprintf("%s?bewit=%s", uri, bewit), nil
 }
 
-func Authorization(clientId string, accessToken string, http *http.Request) string {
-	auth := getAuth(clientId, accessToken, http)
+func Authorization(clientId, accessToken, certificate string, http *http.Request) string {
+	auth := getAuth(clientId, accessToken, certificate, http)
 	return auth.RequestHeader()
 }
 
-func AuthorizationDelegate(clientId string, accessToken string, scopes []string, http *http.Request) (string, error) {
+func AuthorizationDelegate(clientId, accessToken, certificate string, scopes []string, http *http.Request) (string, error) {
 	delgating := delegationOptions{scopes}
 	delgatingJson, err := json.Marshal(delgating)
 	if err != nil {
@@ -60,7 +67,7 @@ func AuthorizationDelegate(clientId string, accessToken string, scopes []string,
 		return "", err
 	}
 
-	auth := getAuth(clientId, accessToken, http)
+	auth := getAuth(clientId, accessToken, certificate, http)
 	auth.Ext = delgatingJsonBase64
 	return auth.RequestHeader(), nil
 }
