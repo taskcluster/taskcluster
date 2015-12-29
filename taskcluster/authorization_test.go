@@ -17,6 +17,7 @@ import (
 var (
 	CLIENT_ID      = os.Getenv("TASKCLUSTER_CLIENT_ID")
 	ACCESS_TOKEN   = os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
+	CERTIFICATE    = os.Getenv("TASKCLUSTER_CERTIFICATE")
 	GET_SCOPES_URL = fmt.Sprintf(
 		"https://auth.taskcluster.net/v1/clients/%s",
 		CLIENT_ID,
@@ -62,7 +63,7 @@ func TestBewit(t *testing.T) {
 	checkTest(t)
 	url := fmt.Sprintf("https://auth.taskcluster.net/v1/clients/%s", CLIENT_ID)
 
-	bewitUrl, err := tc.Bewit(CLIENT_ID, ACCESS_TOKEN, url)
+	bewitUrl, err := tc.Bewit(CLIENT_ID, ACCESS_TOKEN, CERTIFICATE, url)
 	if err != nil {
 		t.Errorf("Failed to create bewit %v", err)
 	}
@@ -102,7 +103,7 @@ func TestAuthorization(t *testing.T) {
 
 	req.Header.Add(
 		"Authorization",
-		tc.Authorization(CLIENT_ID, ACCESS_TOKEN, req),
+		tc.Authorization(CLIENT_ID, ACCESS_TOKEN, CERTIFICATE, req),
 	)
 
 	resp, err := httpClient.Do(req)
@@ -138,7 +139,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 	scopes := make([]string, 1)
 	scopes[0] = "noauth"
 
-	header, err := tc.AuthorizationDelegate(CLIENT_ID, ACCESS_TOKEN, scopes, req)
+	header, err := tc.AuthorizationDelegate(CLIENT_ID, ACCESS_TOKEN, CERTIFICATE, scopes, req)
 
 	if err != nil {
 		t.Fatalf("Failed to create delegating auth %s", err)
