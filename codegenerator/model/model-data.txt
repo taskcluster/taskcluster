@@ -1,4 +1,4 @@
-Generated: 1449720136
+Generated: 1451377615
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2375,8 +2375,8 @@ Entry 0     =
     Entry Args        = '[]'
     Entry Query        = '[]'
     Entry Name        = 'githubWebHookConsumer'
-    Entry Stability   = ''
-    Entry Scopes      = '[]'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[]]'
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Consume GitHub WebHook'
@@ -2389,7 +2389,7 @@ Entry 1     =
     Entry Args        = '[]'
     Entry Query        = '[]'
     Entry Name        = 'ping'
-    Entry Stability   = ''
+    Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
     Entry Input       = ''
     Entry Output      = ''
@@ -2811,7 +2811,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/schedule'
   Property 'task' =
-    Ref                    = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+    Ref                    = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#'
     TypeName               = 'Task'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -2927,7 +2927,7 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/schedule'
   Property 'task' =
-    Ref                    = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+    Ref                    = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#'
     TypeName               = 'Task'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
@@ -3065,44 +3065,13 @@ IsOutputSchema         = 'false'
 SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/schedule.json#'
 
 
-http://schemas.taskcluster.net/queue/v1/create-task-request.json#
-=================================================================
+http://schemas.taskcluster.net/hooks/v1/task-template.json#
+===========================================================
 Additional Properties  = 'false'
-Description            = 'Definition of a task that can be scheduled
+Description            = 'Definition of a task embedded in a hook
 '
-ID                     = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+ID                     = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#'
 Properties
-  Property 'created' =
-    Description            = 'Creation time of task'
-    Format                 = 'date-time'
-    Title                  = 'Created'
-    Type                   = 'string'
-    TypeName               = 'Created'
-    IsInputSchema          = 'false'
-    IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/created'
-  Property 'deadline' =
-    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
-    Format                 = 'date-time'
-    Title                  = 'Deadline'
-    Type                   = 'string'
-    TypeName               = 'Deadline'
-    IsInputSchema          = 'false'
-    IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/deadline'
-  Property 'expires' =
-    Description            = 'Task expiration, time at which task definition and status is deleted.
-    Notice that all artifacts for the must have an expiration that is no
-    later than this. If this property isn't it will be set to `deadline`
-    plus one year (this default may subject to change).
-    '
-    Format                 = 'date-time'
-    Title                  = 'Expiration'
-    Type                   = 'string'
-    TypeName               = 'Expires'
-    IsInputSchema          = 'false'
-    IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/expires'
   Property 'extra' =
     Default                = 'map[]'
     Description            = 'Object with properties that can hold any kind of extra data that should be
@@ -3120,7 +3089,7 @@ Properties
     TypeName               = 'Extra'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/extra'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/extra'
   Property 'metadata' =
     Additional Properties  = 'false'
     Description            = 'Required task metadata
@@ -3136,7 +3105,7 @@ Properties
         TypeName               = 'Description'
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/description'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata/properties/description'
       Property 'name' =
         Description            = 'Human readable name of task, used to very briefly given an idea about
         what the task does.
@@ -3147,7 +3116,7 @@ Properties
         TypeName               = 'Name'
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/name'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata/properties/name'
       Property 'owner' =
         Description            = 'E-mail of person who caused this task, e.g. the person who did
         `hg push`. The person we should contact to ask why this task is here.
@@ -3159,7 +3128,7 @@ Properties
         TypeName               = 'Owner'
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/owner'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata/properties/owner'
       Property 'source' =
         Description            = 'Link to source of this task, should specify a file, revision and
         repository. This should be place someone can go an do a git/hg blame
@@ -3172,14 +3141,14 @@ Properties
         TypeName               = 'Source'
         IsInputSchema          = 'false'
         IsOutputSchema         = 'false'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/source'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata/properties/source'
     Required               = '[name description owner source]'
     Title                  = 'Meta-data'
     Type                   = 'object'
     TypeName               = 'Metadata'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata'
   Property 'payload' =
     Description            = 'Task-specific payload following worker-specific format. For example the
     `docker-worker` requires keys like: `image`, `commands` and
@@ -3190,7 +3159,7 @@ Properties
     TypeName               = 'Payload'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/payload'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/payload'
   Property 'priority' =
     Default                = 'normal'
     Description            = 'Priority of task, this defaults to `normal`. Additional levels may be
@@ -3204,7 +3173,7 @@ Properties
     TypeName               = 'Priority'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/priority'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/priority'
   Property 'provisionerId' =
     Description            = 'Unique identifier for a provisioner, that can supply specified
     `workerType`
@@ -3217,7 +3186,7 @@ Properties
     TypeName               = 'ProvisionerId'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/provisionerId'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/provisionerId'
   Property 'retries' =
     Default                = '5'
     Description            = 'Number of times to retry the task in case of infrastructure issues.
@@ -3231,7 +3200,7 @@ Properties
     TypeName               = 'Retries'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/retries'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/retries'
   Property 'routes' =
     Default                = '[]'
     Description            = 'List of task specific routes, AMQP messages will be CC'ed to these routes.
@@ -3252,13 +3221,13 @@ Properties
       TypeName               = ''
       IsInputSchema          = 'false'
       IsOutputSchema         = 'false'
-      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/routes/items'
+      SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/routes/items'
     Title                  = 'Task Specific Routes'
     Type                   = 'array'
     TypeName               = 'Routes'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/routes'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/routes'
   Property 'schedulerId' =
     Default                = '-'
     Description            = 'Identifier for the scheduler that _defined_ this task, this can be an
@@ -3276,7 +3245,7 @@ Properties
     TypeName               = 'SchedulerId'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/schedulerId'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/schedulerId'
   Property 'scopes' =
     Default                = '[]'
     Description            = 'List of scopes (or scope-patterns) that the task is
@@ -3298,13 +3267,13 @@ Properties
       TypeName               = ''
       IsInputSchema          = 'false'
       IsOutputSchema         = 'false'
-      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/scopes/items'
+      SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/scopes/items'
     Title                  = 'Scopes'
     Type                   = 'array'
     TypeName               = 'Scopes'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/scopes'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/scopes'
   Property 'tags' =
     Additional Properties  = 'MaxLength              = '4096'
     Type                   = 'string'
@@ -3325,7 +3294,7 @@ Properties
     TypeName               = 'Tags'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/tags'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/tags'
   Property 'taskGroupId' =
     Description            = 'Identifier for a group of tasks scheduled together with this task, by
     scheduler identified by `schedulerId`. For tasks scheduled by the
@@ -3338,7 +3307,7 @@ Properties
     TypeName               = 'TaskGroupId'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/taskGroupId'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/taskGroupId'
   Property 'workerType' =
     Description            = 'Unique identifier for a worker-type within a specific provisioner
     '
@@ -3350,15 +3319,15 @@ Properties
     TypeName               = 'WorkerType'
     IsInputSchema          = 'false'
     IsOutputSchema         = 'false'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/workerType'
-Required               = '[provisionerId workerType created deadline payload metadata]'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/workerType'
+Required               = '[provisionerId workerType payload metadata]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Task Definition Request'
+Title                  = 'Task Template'
 Type                   = 'object'
-TypeName               = 'TaskDefinitionRequest'
+TypeName               = 'TaskTemplate'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'false'
-SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
+SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#'
 
 
 http://references.taskcluster.net/index/v1/api.json
@@ -9926,9 +9895,9 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/secrets/v1/secret.json#/properties/secret'
 Required               = '[secret expires]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'A TaskCluster Secret'
+Title                  = 'Secret'
 Type                   = 'object'
-TypeName               = 'ATaskClusterSecret'
+TypeName               = 'Secret'
 IsInputSchema          = 'true'
 IsOutputSchema         = 'true'
 SourceURL              = 'http://schemas.taskcluster.net/secrets/v1/secret.json#'

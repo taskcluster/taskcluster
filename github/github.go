@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 10 Dec 2015 at 04:02:00 UTC. The code was generated
+// Tue, 29 Dec 2015 at 08:26:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
@@ -211,10 +211,13 @@ func New(clientId string, accessToken string) *Github {
 	}
 }
 
-// Stability: ***  ***
+// Stability: *** EXPERIMENTAL ***
 //
 // Capture a GitHub event and publish it via pulse, if it's a push
 // or pull request.
+//
+// Required scopes:
+//   *
 //
 // See http://docs.taskcluster.net/services/taskcluster-github/#githubWebHookConsumer
 func (myGithub *Github) GithubWebHookConsumer() (*CallSummary, error) {
@@ -222,7 +225,7 @@ func (myGithub *Github) GithubWebHookConsumer() (*CallSummary, error) {
 	return callSummary, err
 }
 
-// Stability: ***  ***
+// Stability: *** EXPERIMENTAL ***
 //
 // Documented later...
 //
