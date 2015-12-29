@@ -11,7 +11,7 @@ import (
 	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
 )
 
-var version = "Taskcluster proxy 1.0"
+var version = "Taskcluster proxy 1.0.1"
 var usage = `
 Taskcluster authentication proxy. By default this pulls all scopes from a
 particular task but additional scopes may be added by specifying them after the
