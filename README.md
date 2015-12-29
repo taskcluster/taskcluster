@@ -75,4 +75,4 @@ token with at least scopes to the auth server `"auth:*"`. The
 credentials are expected to be in the `TASKCLUSTER_CLIENT_ID` and
 `TASKCLUSTER_ACCESS_TOKEN` environment variables (and optionally
 the `TASKCLUSTER_CERTIFICATE` environment variable if using
-temporary credentials.
+temporary credentials).
