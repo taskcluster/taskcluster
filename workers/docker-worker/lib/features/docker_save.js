@@ -35,8 +35,10 @@ export default class DockerSave {
     let stat = await fs.stat(pathname);
     let uploadStream = fs.createReadStream(pathname);
     let expiration = taskcluster.fromNow(task.runtime.dockerSave.expiration);
+    expiration = new Date(Math.min(expiration, new Date(task.task.expires)));
 
-    await uploadToS3(task, uploadStream, 'public/dockerImage.tar', expiration, {
+    await uploadToS3(task.runtime.queue, task.status.taskId, task.runId,
+      uploadStream, 'public/dockerImage.tar', expiration, {
       'content-type': 'application/x-tar',
       'content-length': stat.size,
       'content-encoding': 'gzip'
@@ -65,9 +67,10 @@ export default class DockerSave {
       zipStream.on('error', reject);
     });
     let expiration = taskcluster.fromNow(task.runtime.dockerSave.expiration);
+    expiration = new Date(Math.min(expiration, new Date(task.task.expires)));
     let stat = await fs.stat(pathname);
 
-    await uploadToS3(task,
+    await uploadToS3(task.runtime.queue, task.status.taskId, task.runId,
       fs.createReadStream(pathname),
       'public/cache/' + cache.cacheName + '.tar',
       expiration, {

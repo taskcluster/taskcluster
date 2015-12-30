@@ -9,10 +9,13 @@ var debug = require('debug')('docker-worker:task-listener');
 var taskcluster = require('taskcluster-client');
 
 var { Task } = require('./task');
+var request = require('superagent-promise');
 var EventEmitter = require('events').EventEmitter;
 var TaskQueue = require('./queueservice');
 var exceedsDiskspaceThreshold = require('./util/capacity').exceedsDiskspaceThreshold;
 var DeviceManager = require('./devices/device_manager.js');
+
+var COALESCER_ROUTE_PREFIX = 'coalescer.v1.';
 
 /**
 @param {Configuration} config for worker.
@@ -27,6 +30,7 @@ export default class TaskListener extends EventEmitter {
     this.taskPollInterval = this.runtime.taskQueue.pollInterval;
     this.lastTaskEvent = Date.now();
     this.host = runtime.hostManager;
+    this.coalescerTimeout = 5000;
 
     this.deviceManager = new DeviceManager(runtime);
   }
@@ -164,7 +168,9 @@ export default class TaskListener extends EventEmitter {
     if (exceedsThreshold) return;
 
     let claims = await this.taskQueue.claimWork(availableCapacity);
-    claims.forEach(this.runTask.bind(this));
+    let tasksets = await Promise.all(claims.map(this.coalesceClaim.bind(this)));
+    // call runTaskset for each taskset, but do not wait for it to complete
+    tasksets.forEach(this.runTaskset.bind(this));
   }
 
   scheduleTaskPoll(nextPoll=this.taskPollInterval) {
@@ -314,11 +320,103 @@ export default class TaskListener extends EventEmitter {
   }
 
   /**
+   * Coalesce the task in the given claim, claiming any additional tasks
+   * directly from the TC queue service, then calling runTask with the
+   * resulting task set.
+   */
+  async coalesceClaim(claim) {
+    let task = claim.task;
+    let taskId = claim.status.taskId;
+
+    try {
+      // if the task is not coalescible, then the taskset is just the one claim
+      if (!task.payload.coalescer || !task.payload.coalescer.url) {
+        return [claim];
+      }
+
+      let routes = task.routes;
+      routes = routes.filter(r => r.startsWith(COALESCER_ROUTE_PREFIX));
+      if  (routes.length != 1) {
+        return [claim];
+      }
+
+      let coalescingKey = routes[0].substr(COALESCER_ROUTE_PREFIX.length);
+      let coalescerUrl = task.payload.coalescer.url + coalescingKey;
+
+      let tasks = await this.fetchCoalescerTasks(coalescerUrl);
+      if (tasks.length == 0) {
+        return [claim];
+      }
+
+      if (!tasks.some(tid => tid == taskId)) {
+        this.runtime.log('bad coalescer response', {
+          taskId: taskId,
+          runId: claim.runId,
+          response: tasks,
+          message: "taskIds do not include " + taskId,
+        });
+        return [claim]
+      }
+
+      // claim runId 0 for each of those tasks; we can consider adding support
+      // for other runIds later.
+      var claims = await Promise.all(tasks.map(async tid => {
+        // for the existing claim, just return it
+        if (tid == taskId) {
+          return claim;
+        }
+
+        try {
+          return await this.runtime.queue.claimTask(tid, 0, {
+            workerId: this.runtime.workerId,
+            workerGroup: this.runtime.workerGroup,
+          });
+        } catch(e) {
+          this.runtime.log("secondary claim failure", {
+            taskId: tid,
+            runId: 0,
+            message: e.toString(),
+            stack: e.stack,
+            err: e
+          });
+          return;
+        }
+      }));
+      return claims.filter(cl => cl);
+    } catch (e) {
+      this.runtime.log('coalescing error', {
+        taskId: claim.status.taskId,
+        runId: claim.runId,
+        message: e.toString(),
+        stack: e.stack,
+        err: e
+      });
+
+      // fail quietly by just returning the primary claim
+      return [claim];
+    }
+  }
+
+  async fetchCoalescerTasks(url) {
+    let jsonData = await request.get(url).timeout(this.coalescerTimeout).buffer().end();
+    if (!jsonData.ok || !jsonData.text) {
+      throw new Error("Failure fetching from coalescer URL " + url);
+    }
+    return JSON.parse(jsonData.text);
+  }
+
+  /**
   * Run task that has been claimed.
   */
-  async runTask(claim) {
+  async runTaskset(claims) {
     let runningState;
+    // the claim we're actually going to execute (the primary claim) is the
+    // first one; the rest will be periodically reclaimed and then resolved,
+    // but will not actually execute.
+    let claim = claims[0];
+
     try {
+
       // Reference to state of this request...
       runningState = {
         devices: {},
@@ -365,7 +463,7 @@ export default class TaskListener extends EventEmitter {
       }
 
       // Create "task" to handle all the task specific details.
-      var taskHandler = new Task(this.runtime, task, claim, options);
+      var taskHandler = new Task(this.runtime, task, claims, options);
       runningState.handler = taskHandler;
 
       this.addRunningTask(runningState)

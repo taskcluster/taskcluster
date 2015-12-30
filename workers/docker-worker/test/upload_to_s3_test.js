@@ -70,13 +70,9 @@ suite('upload to s3 test', function () {
 
     try {
       await uploadToS3(
-        {
-          runtime: console,
-          runId: 0,
-          status: {
-            taskId: 1
-          }
-        },
+        undefined,  // since putUrl is supplied, this is unused
+        1,
+        0,
         await getTemporaryStream(tempFile.path, DATA),
         "public/foo",
         expiry,

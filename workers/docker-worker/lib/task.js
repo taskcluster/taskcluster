@@ -1,6 +1,7 @@
 /**
-Handler of individual tasks beings at claim ends with posting task results.
-*/
+ * Handler of individual tasks beginning after the task is claimed and ending
+ * with posting task results.
+ */
 import Debug from 'debug';
 import DockerProc from 'dockerode-process';
 import util from 'util';
@@ -18,6 +19,7 @@ import { hasPrefixedScopes } from './util/scopes';
 import { IMAGE_ERROR } from './docker/errors';
 import { scopeMatch } from 'taskcluster-base/utils';
 import waitForEvent from './wait_for_event';
+import uploadToS3 from './upload_to_s3';
 import _ from 'lodash';
 
 let debug = new Debug('runTask');
@@ -151,20 +153,133 @@ function buildDeviceBindings(devices, taskScopes) {
   return deviceBindings;
 }
 
+export class Reclaimer {
+  constructor(runtime, task, primaryClaim, claim) {
+    this.runtime = runtime;
+    this.task = task;
+    this.primaryClaim = primaryClaim;
+    this.claim = claim;
+    this.stopped = false;
+
+    // start things off
+    this.scheduleReclaim();
+  }
+
+  /**
+   * Stop reclaiming.  If a reclaim is already in progress, it will complete.
+   */
+  stop() {
+    this.stopped = true;
+    this.clearClaimTimeout();
+  }
+
+  /**
+   * Determine when the right time is to issue another reclaim then schedule it
+   * via setTimeout.
+   */
+  scheduleReclaim() {
+    let claim = this.claim;
+
+    // Figure out when to issue the next claim...
+    let takenFor = (new Date(claim.takenUntil) - new Date());
+    let nextClaim = takenFor / this.runtime.task.reclaimDivisor;
+
+    // This is tricky ensure we have logs...
+    this.log('next claim', {time: nextClaim});
+
+    // Figure out when we need to make the next claim...
+    this.clearClaimTimeout();
+
+    this.claimTimeoutId =
+      setTimeout(function() {
+        async () => {
+          await this.reclaimTask();
+        }()
+      }.bind(this), nextClaim);
+  }
+
+  /**
+   * Clear next reclaim if one is pending...
+   */
+  clearClaimTimeout() {
+    if (this.claimTimeoutId) {
+      clearTimeout(this.claimTimeoutId);
+      this.claimTimeoutId = null;
+    }
+  }
+
+  /**
+   * Reclaim the current task and schedule the next reclaim...
+   */
+  async reclaimTask() {
+    let task = this.claim.task;
+
+    if (this.stopped) {
+      return;
+    }
+
+    this.log('reclaiming task');
+
+    try {
+      this.claim = await this.runtime.queue.reclaimTask(
+                                this.claim.status.taskId, this.claim.runId);
+      // reclaim does not return the task, so carry that forward from the previous
+      // claim
+      this.claim.task = task;
+    } catch (e) {
+      let errorMessage = `Could not reclaim task. ${e.stack || e}`;
+      this.log('error reclaiming task', {error: errorMessage});
+
+      // If this is not the primary claim, just stop trying to reclaim.  The task
+      // will attempt to resolve it as superseded, and fail, but the primary task
+      // and the other superseded tasks will still be resolved correctly.
+      if (this.claim.status.taskId != this.primaryClaim.status.taskId) {
+        this.stop();
+        return;
+      }
+
+      // If status code is 409, assume that the run has already been resolved
+      // and/or the deadline-exceeded.  Task run should be handled as though it were
+      // canceled.
+      if (e.statusCode === 409) {
+        this.task.cancel('canceled', errorMessage);
+      } else {
+        this.task.abort(errorMessage);
+      }
+
+      return;
+    }
+
+    this.log('reclaimed task');
+    await this.scheduleReclaim();
+  }
+
+  log(msg, options) {
+    this.runtime.log(msg, _.defaults({}, options || {}, {
+      primaryTaskId: this.primaryClaim.status.taskId,
+      primaryRunId: this.primaryClaim.runId,
+      taskId: this.claim.status.taskId,
+      runId: this.claim.runId,
+      takenUntil: this.claim.takenUntil,
+    }));
+  }
+}
+
 export class Task {
   /**
   @param {Object} runtime global runtime.
-  @param {Object} task id for this instance.
-  @param {Object} claim details for this instance.
+  @param {Object} task for this instance.
+  @param {Object} claims claim details for this instance (several claims if coalesced)
   @param {Object} options
   @param {Number} [options.cpusetCpus] cpu(s) to use for this container/task.
   */
-  constructor(runtime, task, claim, options) {
+  constructor(runtime, task, claims, options) {
     this.runtime = runtime;
     this.task = task;
-    this.claim = claim;
-    this.status = claim.status;
-    this.runId = claim.runId;
+    this.claims = claims;
+    this.claim = claims[0]; // first claim is primary -- the one actually executed
+    this.status = this.claim.status;
+    this.runId = this.claim.runId;
     this.taskState = 'pending';
     this.options = options;
 
@@ -405,6 +520,12 @@ export class Task {
       let reportDetails = [this.status.taskId, this.runId];
       if (this.taskException) reportDetails.push({ reason: this.taskException });
 
+      // mark any tasks that this one superseded as resolved with
+      // reason 'worker-shutdown', which means they stand to be retried
+      // immediately
+      await this.resolveSuperseded(this.status.taskId, this.runId,
+                                   false, 'worker-shutdown');
+
       await reporter.apply(queue, reportDetails);
     }
 
@@ -430,6 +551,10 @@ export class Task {
     let reporter = success ? queue.reportCompleted : queue.reportFailed;
     let reportDetails = [this.status.taskId, this.runId];
 
+    // mark any tasks that this one superseded as resolved, adding the
+    // necessary artifacts pointing to this build
+    await this.resolveSuperseded(this.status.taskId, this.runId, true, 'superseded');
+
     await reporter.apply(queue, reportDetails);
 
     this.runtime.log('task resolved', {
@@ -440,40 +565,80 @@ export class Task {
   }
 
   /**
-  Determine when the right time is to issue another reclaim then schedule it
-  via set timeout.
-  */
-  scheduleReclaim(claim) {
-    // Figure out when to issue the next claim...
-    let takenUntil = (new Date(claim.takenUntil) - new Date());
-    let nextClaim = takenUntil / this.runtime.task.reclaimDivisor;
+   * Resolves all of the non-primary claims for this task, optionally
+   * adding an artifact to each one named "public/superseded-by"
+   * containing the taskId/runId of the primary claim.
+   *
+   * @param {String} primaryTaskId taskId of the primary task
+   * @param {Integer} primaryRunId runId of the primary task
+   * @param {Boolean} addArtifacts if true, add the superseded-by artifacts
+   * @param {String} reason the exception reason passed to the queue
+   */
 
-    // This is tricky ensure we have logs...
-    this.runtime.log('next claim', {
-      taskId: this.status.taskId,
-      runId: this.runId,
-      time: nextClaim
-    });
+  async resolveSuperseded(primaryTaskId, primaryRunId, addArtifacts, reason) {
+    let queue = this.runtime.queue;
+    let supersedes = [];
 
-    // Figure out when we need to make the next claim...
-    this.clearClaimTimeout();
+    try {
+      await Promise.all(this.claims.map(async function(c){
+        let taskId = c.status.taskId;
+        let runId = c.runId;
+        if (taskId == primaryTaskId && runId == primaryRunId) {
+          return;
+        }
 
-    this.claimTimeoutId =
-      setTimeout(function() {
-        async () => {
-          await this.reclaimTask();
-        }()
-      }.bind(this), nextClaim);
+        await queue.reportException(taskId, runId, {reason});
+
+        if (addArtifacts) {
+          let task = c.task;
+          // set the artifact expiration to match the task
+          let expiration = task.expires || taskcluster.fromNow(task.deadline, "1 year");
+          let content = {'taskId': primaryTaskId, 'runId': primaryRunId};
+          contentJson = JSON.stringify(content);
+          await uploadToS3(queue, taskId, runId, contentJson,
+                           "public/superseded-by.json", expiration, {
+            'content-type': 'application/json',
+            'content-length': contentJson.length,
+          });
+
+          supersedes.push(content);
+        }
+      }));
+    } catch (e) {
+      // failing to resolve a non-primary claim is not a big deal: it will
+      // either time out and go back in the queue, or it was cancelled or
+      // otherwise modified while we were working on it.
+      this.runtime.log("while resolving superseded tasks: " + e, {
+        primaryTaskId,
+        primaryRunId,
+        taskId,
+        runId,
+      });
+    }
+
+    if (addArtifacts && supersedes.length > 0) {
+      let task = this.claim.task;
+      let expiration = task.expires || taskcluster.fromNow(task.deadline, "1 year");
+      let contentJson = JSON.stringify(supersedes)
+      await uploadToS3(queue, primaryTaskId, primaryRunId, contentJson,
+                       "public/supersedes.json", expiration, {
+        'content-type': 'application/json',
+        'content-length': contentJson.length,
+      });
+    }
   }
 
   /**
-  Clear next reclaim if one is pending...
-  */
-  clearClaimTimeout() {
-    if (this.claimTimeoutId) {
-      clearTimeout(this.claimTimeoutId);
-      this.claimTimeoutId = null;
-    }
+   * Schedule reclaims of each claim
+   */
+  scheduleReclaims() {
+    this.reclaimers = this.claims.map(
+        c => new Reclaimer(this.runtime, this, this.claim, c));
+  }
+
+  stopReclaims() {
+    this.reclaimers.forEach(r => r.stop());
+    this.reclaimers = [];
   }
 
   setRuntimeTimeout(maxRuntime) {
@@ -501,47 +666,14 @@ export class Task {
     return runtimeTimeoutId;
   }
 
-  /**
-  Reclaim the current task and schedule the next reclaim...
-  */
-  async reclaimTask() {
-    this.runtime.log('reclaiming task', {claim: this.claim});
-
-    try {
-      this.claim = await this.runtime.queue.reclaimTask(this.status.taskId, this.runId);
-    } catch (e) {
-      let errorMessage = `Could not reclaim task. ${e.stack || e}`;
-      this.runtime.log('error reclaiming task', {
-        claim: this.claim,
-        error: errorMessage
-      });
-
-      // If status code is 409, assume that the run has already been resolved
-      // and/or the deadline-exceeded.  Task run should be handled as though it were
-      // canceled.
-      if (e.statusCode === 409) {
-        this.cancel('canceled', errorMessage);
-      } else {
-        this.abort(errorMessage);
-      }
-
-      return;
-    }
-
-    this.runtime.log('reclaimed task', { claim: this.claim });
-    await this.scheduleReclaim(this.claim);
-  }
-
   async start() {
     this.runtime.log('task start', {
       taskId: this.status.taskId,
       runId: this.runId,
-      takenUntil: this.claim.takenUntil
     });
 
     // Task has already been claimed, schedule reclaiming
-    await this.scheduleReclaim(this.claim);
-
+    await this.scheduleReclaims();
 
     let success;
     try {
@@ -550,7 +682,7 @@ export class Task {
       // TODO: Reconsider if we should mark the task as failed or something else
       //       at this point... I intentionally did not mark the task completed
       //       here as to allow for a retry by another worker, etc...
-      this.clearClaimTimeout();
+      this.stopReclaims();
       // If task ends prematurely, make sure the container and volume caches get
       // flagged to be cleaned up.
       if (this.dockerProcess && this.dockerProcess.container) {
@@ -560,7 +692,7 @@ export class Task {
     }
     // Called again outside so we don't run this twice in the same try/catch
     // segment potentially causing a loop...
-    this.clearClaimTimeout();
+    this.stopReclaims();
 
     if (this.dockerProcess && this.dockerProcess.container) {
       this.runtime.gc.removeContainer(this.dockerProcess.container.id, this.volumeCaches);

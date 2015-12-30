@@ -3,39 +3,51 @@ import url from 'url';
 import fs from 'fs';
 import temporary from 'temporary';
 import promiseRetry from 'promise-retry';
+import { createLogger } from './log';
 import _ from 'lodash';
 
+var log = createLogger({source: "uploadToS3"});
+
+// Upload an S3 artifact to the queue for the given taskId/runId.  Source can be
+// a string or a stream.
 export default async function uploadToS3 (
-  task,
-  sourceStream,
+  queue,
+  taskId,
+  runId,
+  source,
   artifactName,
   expiration,
   httpsHeaders,
   putUrl,
   httpOptions)
 {
-  let queue = task.runtime.queue;
-
   let tmp = new temporary.File();
+  let logDetails = {taskId, runId, artifactName};
 
   try {
-    await new Promise((accept, reject) => {
-      let stream = fs.createWriteStream(tmp.path);
-      stream.on('error', reject);
-      stream.on('finish', accept);
-      sourceStream.pipe(stream);
-    });
+    // write the source out to a temporary file so that it can be
+    // re-read into the request repeatedly
+    if (typeof source === "string") {
+      await tmp.writeFile(source);
+    } else {
+      await new Promise((accept, reject) => {
+        let stream = fs.createWriteStream(tmp.path);
+        stream.on('error', reject);
+        stream.on('finish', accept);
+        source.pipe(stream);
+      });
+    }
 
     if (!putUrl) {
       var artifact = await queue.createArtifact(
-        task.status.taskId,
-        task.runId,
+        taskId,
+        runId,
         artifactName,
         {
           // Why s3? It's currently cheaper to store data in s3 this could easily
           // be used with azure simply by changing s3 -> azure.
           storageType: 's3',
-          expires: new Date(Math.min(expiration, new Date(task.task.expires))),
+          expires: new Date(expiration),
           contentType: httpsHeaders['content-type']
         }
       );
@@ -55,11 +67,9 @@ export default async function uploadToS3 (
     // promiseRetry defaults to 10 attempts before failing
     await promiseRetry((retry, number) => {
       if (number > 1) { // if it's not the first attempt
-        task.runtime.log('retrying artifact upload', {
-          taskId: task.status.taskId,
-          runId: task.runId
-        });
-        task.runtime.log(`Attempt number ${number}`);
+        log('retrying artifact upload', _.defaults({}, logDetails, {
+            attemptNumber: number
+        }));
       }
 
       return new Promise((accept, reject) => {
@@ -79,18 +89,12 @@ export default async function uploadToS3 (
         });
 
         req.on('error', err => {
-          task.runtime.log(`Error uploading ${artifactName}`, {
-            taskId: task.status.taskId,
-            runId: task.runId
-          });
+          log(`Error uploading ${artifactName}`, logDetails);
           reject(err);
         });
 
         req.setTimeout(5 * 60 * 1000, reject);
-        task.runtime.log(`Uploading ${artifactName}`, {
-          taskId: task.status.taskId,
-          runId: task.runId
-        });
+        log(`Uploading ${artifactName}`, logDetails);
         fs.createReadStream(tmp.path).pipe(req);
       }).catch(retry);
     // randomize the timeouts

@@ -11,7 +11,7 @@ import Debug from 'debug';
 import Promise from 'promise';
 
 import {fmtLog, fmtErrorLog} from '../log';
-import uploadArtifact from '../upload_to_s3';
+import uploadToS3 from '../upload_to_s3';
 import waitForEvent from '../wait_for_event';
 
 let debug = Debug('docker-worker:middleware:artifact_extractor');
@@ -133,7 +133,8 @@ export default class Artifacts {
       };
 
       try {
-        await uploadArtifact(taskHandler, stream, entryName, expiry, headers);
+        await uploadToS3(taskHandler.runtime.queue, taskId, runId, stream,
+                         entryName, expiry, headers);
       } catch(err) {
         debug(err);
         // Log each error but don't throw yet.  Try to upload as many artifacts as

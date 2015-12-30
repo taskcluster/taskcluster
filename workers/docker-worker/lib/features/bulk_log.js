@@ -44,9 +44,11 @@ export default class BulkLog {
     // be a huge file).
     let diskStream = fs.createReadStream(this.file.path);
     let expiration = new Date(Date.now() + task.runtime.logging.bulkLogExpires);
+    expiration = new Date(Math.min(expiration, new Date(task.task.expires)));
 
     try {
-      await uploadToS3(task, diskStream, this.artifactName, expiration, {
+      await uploadToS3(task.runtime.queue, task.status.taskId, task.runId,
+                       diskStream, this.artifactName, expiration, {
         'content-type': 'text/plain',
         'content-length': stat.size,
         'content-encoding': 'gzip'

@@ -213,6 +213,22 @@ module.exports = {
         "$ref": "#/definitions/artifact"
       }
     },
+    "coalescer": {
+      "type": "object",
+      "title": "Coalescer information",
+      "description": "Information about the coalescer service that should be used to coalesce multiple tasks into a single run.  The worker determines the task's coalescing keys based on task routes with the given prefix, the suffix being the coalescing key.  Each task key is then appended to the coalescer URL, which is expected to return a JSON list of taskIds which may be coalesced with this one.  The tasks in the list should be sorted so that tasks earlier in the list supersede (\"should be performed instead of\") tasks later in the list.",
+      "properties": {
+        "url": {
+          "title": "URL of the coalescer service; the coalescing key will be appended to this URL",
+          "type": "string",
+          "format": "url"
+        },
+        "routePrefix": {
+          "title": "Prefix of task routes for coalescer keys.",
+          "type": "string"
+        }
+      }
+    },
     "features": featureSchema
   }
 }

@@ -53,8 +53,8 @@ suite('Reclaiming task', function() {
     assert.ok(reclaims.length > 1, 'issued more than one reclaim');
 
     assert.ok(
-      new Date(reclaims[0].claim.takenUntil) <
-      new Date(reclaims[reclaims.length - 1].claim.takenUntil),
+      new Date(reclaims[0].takenUntil) <
+      new Date(reclaims[reclaims.length - 1].takenUntil),
       'Last reclaim occurs after the first reclaim'
     );
 

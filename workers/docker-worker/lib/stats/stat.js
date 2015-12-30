@@ -65,7 +65,10 @@ export default class Stat {
       stat = {'value': value};
     }
 
-    this.reporters[seriesName](stat);
+    let reporter = this.reporters[seriesName];
+    if (reporter) {
+      reporter(stat);
+    }
   }
 
   /**
