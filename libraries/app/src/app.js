@@ -4,7 +4,7 @@ var express         = require('express');
 var _               = require('lodash');
 var debug           = require('debug')("base:app");
 var assert          = require('assert');
-var morgan          = require('morgan');
+var morganDebug     = require('morgan-debug');
 var Promise         = require('promise');
 var http            = require('http');
 var sslify          = require('express-sslify');
@@ -87,7 +87,7 @@ var app = function(options) {
 
   // Middleware for development
   if (app.get('env') == 'development') {
-    app.use(morgan('dev'));
+    app.use(morganDebug('base:app:request', 'dev'));
   }
 
   // Add some auxiliary methods to the app
