@@ -578,9 +578,10 @@ export class Task {
   async resolveSuperseded(primaryTaskId, primaryRunId, addArtifacts, reason) {
     let queue = this.runtime.queue;
     let supersedes = [];
+    let log = this.runtime.log;
 
-    try {
-      await Promise.all(this.claims.map(async function(c){
+    await Promise.all(this.claims.map(async function(c){
+      try {
         let taskId = c.status.taskId;
         let runId = c.runId;
         if (taskId == primaryTaskId && runId == primaryRunId) {
@@ -594,27 +595,27 @@ export class Task {
           // set the artifact expiration to match the task
           let expiration = task.expires || taskcluster.fromNow(task.deadline, "1 year");
           let content = {'taskId': primaryTaskId, 'runId': primaryRunId};
-          contentJson = JSON.stringify(content);
+          let contentJson = JSON.stringify(content);
           await uploadToS3(queue, taskId, runId, contentJson,
                            "public/superseded-by.json", expiration, {
             'content-type': 'application/json',
             'content-length': contentJson.length,
           });
 
-          supersedes.push(content);
+          supersedes.push({taskId, runId});
         }
-      }));
-    } catch (e) {
-      // failing to resolve a non-primary claim is not a big deal: it will
-      // either time out and go back in the queue, or it was cancelled or
-      // otherwise modified while we were working on it.
-      this.runtime.log("while resolving superseded tasks: " + e, {
-        primaryTaskId,
-        primaryRunId,
-        taskId,
-        runId,
-      });
-    }
+      } catch (e) {
+        // failing to resolve a non-primary claim is not a big deal: it will
+        // either time out and go back in the queue, or it was cancelled or
+        // otherwise modified while we were working on it.
+        log("while resolving superseded task: " + e, {
+          primaryTaskId,
+          primaryRunId,
+          taskId,
+          runId,
+        });
+      }
+    }));
 
     if (addArtifacts && supersedes.length > 0) {
       let task = this.claim.task;

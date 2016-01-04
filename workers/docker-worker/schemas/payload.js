@@ -227,7 +227,8 @@ module.exports = {
           "title": "Prefix of task routes for coalescer keys.",
           "type": "string"
         }
-      }
+      },
+      "required": ["url", "routePrefix"]
     },
     "features": featureSchema
   }

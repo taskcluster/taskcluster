@@ -15,8 +15,6 @@ var TaskQueue = require('./queueservice');
 var exceedsDiskspaceThreshold = require('./util/capacity').exceedsDiskspaceThreshold;
 var DeviceManager = require('./devices/device_manager.js');
 
-var COALESCER_ROUTE_PREFIX = 'coalescer.v1.';
-
 /**
 @param {Configuration} config for worker.
 */
@@ -330,40 +328,37 @@ export default class TaskListener extends EventEmitter {
 
     try {
       // if the task is not coalescible, then the taskset is just the one claim
-      if (!task.payload.coalescer || !task.payload.coalescer.url) {
+      if (!task.payload.coalescer) {
+        this.runtime.log('not coalescing', {taskId, message: 'no coalescer in payload'});
         return [claim];
       }
 
       let routes = task.routes;
-      routes = routes.filter(r => r.startsWith(COALESCER_ROUTE_PREFIX));
+      let routePrefix = task.payload.coalescer.routePrefix + ".";
+      routes = routes.filter(r => r.startsWith(routePrefix));
       if  (routes.length != 1) {
+        this.runtime.log('not coalescing', {taskId, message: 'no single coalescer route in payload'});
         return [claim];
       }
 
-      let coalescingKey = routes[0].substr(COALESCER_ROUTE_PREFIX.length);
+      let coalescingKey = routes[0].substr(routePrefix.length);
       let coalescerUrl = task.payload.coalescer.url + coalescingKey;
 
-      let tasks = await this.fetchCoalescerTasks(coalescerUrl);
+      let tasks = (await this.fetchCoalescerTasks(coalescerUrl))[coalescingKey];
       if (tasks.length == 0) {
+        this.runtime.log('not coalescing', {taskId, coalescerUrl,
+                           message: 'no tasks to coalese with'});
         return [claim];
-      }
-
-      if (!tasks.some(tid => tid == taskId)) {
-        this.runtime.log('bad coalescer response', {
-          taskId: taskId,
-          runId: claim.runId,
-          response: tasks,
-          message: "taskIds do not include " + taskId,
-        });
-        return [claim]
       }
 
       // claim runId 0 for each of those tasks; we can consider adding support
       // for other runIds later.
       var claims = await Promise.all(tasks.map(async tid => {
-        // for the existing claim, just return it
+        // for the existing claim, just skip it; depending on whether the coalescer
+        // heard about our primary claim before it got our request, this may or may
+        // not be present.
         if (tid == taskId) {
-          return claim;
+          return;
         }
 
         try {
@@ -372,7 +367,7 @@ export default class TaskListener extends EventEmitter {
             workerGroup: this.runtime.workerGroup,
           });
         } catch(e) {
-          this.runtime.log("secondary claim failure", {
+          this.runtime.log("coalescing - secondary claim failure", {
             taskId: tid,
             runId: 0,
             message: e.toString(),
@@ -382,7 +377,14 @@ export default class TaskListener extends EventEmitter {
           return;
         }
       }));
-      return claims.filter(cl => cl);
+
+      // filter out missed claims
+      claims = claims.filter(cl => cl);
+
+      // add the primary claim at the end
+      claims.push(claim);
+
+      return claims;
     } catch (e) {
       this.runtime.log('coalescing error', {
         taskId: claim.status.taskId,
