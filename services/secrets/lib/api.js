@@ -145,6 +145,26 @@ api.declare({
   }
 });
 
+api.declare({
+  method:      'get',
+  route:       '/secrets',
+  deferAuth:   true,
+  name:        'list',
+  output:      common.SCHEMA_PREFIX_CONST + "secret-list.json#",
+  title:       'List Secrets',
+  description: 'List the names of all visible secrets.'
+}, async function(req, res) {
+  let secrets = [];
+  await this.entity.scan({}, {
+    handler: (item) => {
+      if (req.satisfies([["secrets:get:" + item.name]], true)) {
+        secrets.push(item.name);
+      }
+    }
+  });
+  return res.reply({secrets});
+});
+
 /** Check that the server is a alive */
 api.declare({
   method:   'get',
