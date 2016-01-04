@@ -65,6 +65,13 @@ var testClients = [
     ],
     expiry:       ClientExpiration,
     credentials:  cfg.get('taskcluster:credentials')
+  }, {
+    clientId:     'captain-read-limited',
+    scopes:       [
+      'secrets:get:captain:limited/*'
+    ],
+    expiry:       ClientExpiration,
+    credentials:  cfg.get('taskcluster:credentials')
   }
 ];
 
