@@ -207,4 +207,39 @@ suite("TaskCluster-Secrets", () => {
     }
     assert(false, "Expected an error");
   });
+
+  test("List secrets", async () => {
+    let secrets_rw = helper.clients['captain-read-write'];
+    let secrets_limited = helper.clients['captain-read-limited'];
+
+    // delete any secrets we can see
+    let list = await secrets_rw.list();
+    for (let secret of list.secrets) {
+      await secrets_rw.remove(secret);
+    }
+
+    // assert the list is empty
+    list = await secrets_rw.list();
+    assert.deepEqual(list, {secrets: []})
+
+    // create some
+    await secrets_rw.set('captain:hidden/1', {
+      secret: {'sekrit': 1},
+      expires: taskcluster.fromNowJSON('2 hours')
+    });
+    await secrets_rw.set('captain:limited/1', {
+      secret: {'less-sekrit': 1},
+      expires: taskcluster.fromNowJSON('2 hours')
+    });
+
+    // secrets_rw can see both
+    list = await secrets_rw.list();
+    list.secrets.sort();
+    assert.deepEqual(list, {secrets: ['captain:hidden/1', 'captain:limited/1']})
+
+    // the limited client can only see the limited secret, too
+    list = await secrets_limited.list();
+    list.secrets.sort();
+    assert.deepEqual(list, {secrets: ['captain:limited/1']})
+  });
 });
