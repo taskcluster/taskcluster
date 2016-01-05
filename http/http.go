@@ -23,9 +23,9 @@ var (
 	debug = D.Debug("http")
 )
 
-// The entry point into all the functionality in this package is to create an
-// Auth object.  It contains your authentication credentials, which are
-// required for all HTTP operations.
+// The entry point into all the functionality in this package is to create a
+// ConnectionData object. It contains authentication credentials, and a service
+// endpoint, which are required for all HTTP operations.
 type ConnectionData struct {
 	// Client ID required by Hawk
 	ClientId string
