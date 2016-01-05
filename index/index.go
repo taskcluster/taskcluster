@@ -118,26 +118,16 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 29 Dec 2015 at 08:26:00 UTC. The code was generated
+// Tue, 5 Jan 2016 at 20:29:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package index
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"net/url"
-	"reflect"
-	"time"
 
-	"github.com/taskcluster/httpbackoff"
-	hawk "github.com/tent/hawk-go"
+	"github.com/taskcluster/taskcluster-client-go/http"
+	"github.com/taskcluster/taskcluster-client-go/tctime"
 	D "github.com/tj/go-debug"
 )
 
@@ -147,130 +137,7 @@ var (
 	debug = D.Debug("index")
 )
 
-// apiCall is the generic REST API calling method which performs all REST API
-// calls for this library.  Each auto-generated REST API method simply is a
-// wrapper around this method, calling it with specific specific arguments.
-func (myIndex *Index) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
-	callSummary := new(CallSummary)
-	callSummary.HttpRequestObject = payload
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		return result, callSummary, err
-	}
-	callSummary.HttpRequestBody = string(jsonPayload)
-
-	httpClient := &http.Client{}
-
-	// function to perform http request - we call this using backoff library to
-	// have exponential backoff in case of intermittent failures (e.g. network
-	// blips or HTTP 5xx errors)
-	httpCall := func() (*http.Response, error, error) {
-		var ioReader io.Reader = nil
-		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
-			ioReader = bytes.NewReader(jsonPayload)
-		}
-		u, err := url.Parse(myIndex.BaseURL + route)
-		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", myIndex.BaseURL+route, myIndex.BaseURL, err)
-		}
-		if query != nil {
-			u.RawQuery = query.Encode()
-		}
-		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
-		if err != nil {
-			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), myIndex.BaseURL, err)
-		}
-		httpRequest.Header.Set("Content-Type", "application/json")
-		callSummary.HttpRequest = httpRequest
-		// Refresh Authorization header with each call...
-		// Only authenticate if client library user wishes to.
-		if myIndex.Authenticate {
-			credentials := &hawk.Credentials{
-				ID:   myIndex.ClientId,
-				Key:  myIndex.AccessToken,
-				Hash: sha256.New,
-			}
-			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if myIndex.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + myIndex.Certificate + "}"))
-			}
-			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
-		}
-		debug("Making http request: %v", httpRequest)
-		resp, err := httpClient.Do(httpRequest)
-		return resp, err, nil
-	}
-
-	// Make HTTP API calls using an exponential backoff algorithm...
-	callSummary.HttpResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
-
-	if err != nil {
-		return result, callSummary, err
-	}
-
-	// now read response into memory, so that we can return the body
-	var body []byte
-	body, err = ioutil.ReadAll(callSummary.HttpResponse.Body)
-
-	if err != nil {
-		return result, callSummary, err
-	}
-
-	callSummary.HttpResponseBody = string(body)
-
-	// if result is passed in as nil, it means the API defines no response body
-	// json
-	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
-		err = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
-	}
-
-	return result, callSummary, err
-}
-
-// The entry point into all the functionality in this package is to create an
-// Index object.  It contains your authentication credentials, which are
-// required for all HTTP operations.
-type Index struct {
-	// Client ID required by Hawk
-	ClientId string
-	// Access Token required by Hawk
-	AccessToken string
-	// The URL of the API endpoint to hit.
-	// Use "https://index.taskcluster.net/v1" for production.
-	// Please note calling index.New(clientId string, accessToken string) is an
-	// alternative way to create an Index object with BaseURL set to production.
-	BaseURL string
-	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling index.New(clientId string, accessToken string) is an
-	// alternative way to create an Index object with Authenticate set to true.
-	Authenticate bool
-	// Certificate for temporary credentials
-	Certificate string
-}
-
-// CallSummary provides information about the underlying http request and
-// response issued for a given API call.
-type CallSummary struct {
-	HttpRequest *http.Request
-	// Keep a copy of request body in addition to the *http.Request, since
-	// accessing the Body via the *http.Request object, you get a io.ReadCloser
-	// - and after the request has been made, the body will have been read, and
-	// the data lost... This way, it is still available after the api call
-	// returns.
-	HttpRequestBody string
-	// The Go Type which is marshaled into json and used as the http request
-	// body.
-	HttpRequestObject interface{}
-	HttpResponse      *http.Response
-	// Keep a copy of response body in addition to the *http.Response, since
-	// accessing the Body via the *http.Response object, you get a
-	// io.ReadCloser - and after the response has been read once (to unmarshal
-	// json into native go types) the data is lost... This way, it is still
-	// available after the api call returns.
-	HttpResponseBody string
-	// Keep a record of how many http requests were attempted
-	Attempts int
-}
+type Index http.ConnectionData
 
 // Returns a pointer to Index, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -286,12 +153,13 @@ type CallSummary struct {
 //  	// handle errors...
 //  }
 func New(clientId string, accessToken string) *Index {
-	return &Index{
+	myIndex := Index(http.ConnectionData{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://index.taskcluster.net/v1",
 		Authenticate: true,
-	}
+	})
+	return &myIndex
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -300,8 +168,9 @@ func New(clientId string, accessToken string) *Index {
 // API end-point respond `404`.
 //
 // See http://docs.taskcluster.net/services/index/#findTask
-func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myIndex.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
+func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myIndex)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
 	return responseObject.(*IndexedTaskResponse), callSummary, err
 }
 
@@ -317,8 +186,9 @@ func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *CallSum
 // services, as that makes little sense.
 //
 // See http://docs.taskcluster.net/services/index/#listNamespaces
-func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myIndex.apiCall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse), nil)
+func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myIndex)
+	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse), nil)
 	return responseObject.(*ListNamespacesResponse), callSummary, err
 }
 
@@ -334,8 +204,9 @@ func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRe
 // services, as that makes little sense.
 //
 // See http://docs.taskcluster.net/services/index/#listTasks
-func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myIndex.apiCall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), nil)
+func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myIndex)
+	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), nil)
 	return responseObject.(*ListTasksResponse), callSummary, err
 }
 
@@ -348,8 +219,9 @@ func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*L
 //   * index:insert-task:<namespace>
 //
 // See http://docs.taskcluster.net/services/index/#insertTask
-func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myIndex.apiCall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
+func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myIndex)
+	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
 	return responseObject.(*IndexedTaskResponse), callSummary, err
 }
 
@@ -363,8 +235,9 @@ func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (
 //   * queue:get-artifact:<name>
 //
 // See http://docs.taskcluster.net/services/index/#findArtifactFromTask
-func (myIndex *Index) FindArtifactFromTask(namespace string, name string) (*CallSummary, error) {
-	_, callSummary, err := myIndex.apiCall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil, nil)
+func (myIndex *Index) FindArtifactFromTask(namespace string, name string) (*http.CallSummary, error) {
+	cd := http.ConnectionData(*myIndex)
+	_, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
 
@@ -375,8 +248,9 @@ func (myIndex *Index) FindArtifactFromTask(namespace string, name string) (*Call
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/services/index/#ping
-func (myIndex *Index) Ping() (*CallSummary, error) {
-	_, callSummary, err := myIndex.apiCall(nil, "GET", "/ping", nil, nil)
+func (myIndex *Index) Ping() (*http.CallSummary, error) {
+	cd := http.ConnectionData(*myIndex)
+	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
 
@@ -395,7 +269,7 @@ type (
 		// Date at which this entry expires from the task index.
 		//
 		// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#/properties/expires
-		Expires Time `json:"expires"`
+		Expires tctime.Time `json:"expires"`
 
 		// Namespace of the indexed task, used to find the indexed task in the index.
 		//
@@ -436,7 +310,7 @@ type (
 		// Date at which this entry expires from the task index.
 		//
 		// See http://schemas.taskcluster.net/index/v1/insert-task-request.json#/properties/expires
-		Expires Time `json:"expires"`
+		Expires tctime.Time `json:"expires"`
 
 		// If multiple tasks are indexed with the same `namespace` the task with the
 		// highest `rank` will be stored and returned in later requests. If two tasks
@@ -499,7 +373,7 @@ type (
 			// expires from the task index.
 			//
 			// See http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#/properties/namespaces/items/properties/expires
-			Expires Time `json:"expires"`
+			Expires tctime.Time `json:"expires"`
 
 			// Name of namespace within it's parent namespace.
 			//
@@ -565,7 +439,7 @@ type (
 			// Date at which this entry expires from the task index.
 			//
 			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/expires
-			Expires Time `json:"expires"`
+			Expires tctime.Time `json:"expires"`
 
 			// Namespace of the indexed task, used to find the indexed task in the
 			// index.
@@ -594,39 +468,3 @@ type (
 		} `json:"tasks"`
 	}
 )
-
-// Wraps time.Time in order that json serialisation/deserialisation can be adapted.
-// Marshaling time.Time types results in RFC3339 dates with nanosecond precision
-// in the user's timezone. In order that the json date representation is consistent
-// between what we send in json payloads, and what taskcluster services return,
-// we wrap time.Time into type index.Time which marshals instead
-// to the same format used by the TaskCluster services; UTC based, with millisecond
-// precision, using 'Z' timezone, e.g. 2015-10-27T20:36:19.255Z.
-type Time time.Time
-
-// MarshalJSON implements the json.Marshaler interface.
-// The time is a quoted string in RFC 3339 format, with sub-second precision added if present.
-func (t Time) MarshalJSON() ([]byte, error) {
-	if y := time.Time(t).Year(); y < 0 || y >= 10000 {
-		// RFC 3339 is clear that years are 4 digits exactly.
-		// See golang.org/issue/4556#c15 for more discussion.
-		return nil, errors.New("queue.Time.MarshalJSON: year outside of range [0,9999]")
-	}
-	return []byte(`"` + t.String() + `"`), nil
-}
-
-// UnmarshalJSON implements the json.Unmarshaler interface.
-// The time is expected to be a quoted string in RFC 3339 format.
-func (t *Time) UnmarshalJSON(data []byte) (err error) {
-	// Fractional seconds are handled implicitly by Parse.
-	x := new(time.Time)
-	*x, err = time.Parse(`"`+time.RFC3339+`"`, string(data))
-	*t = Time(*x)
-	return
-}
-
-// Returns the Time in canonical RFC3339 representation, e.g.
-// 2015-10-27T20:36:19.255Z
-func (t Time) String() string {
-	return time.Time(t).UTC().Format("2006-01-02T15:04:05.000Z")
-}
