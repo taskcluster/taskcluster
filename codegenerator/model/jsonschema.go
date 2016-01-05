@@ -209,7 +209,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 	case "string":
 		if f := jsonSubSchema.Format; f != nil {
 			if *f == "date-time" {
-				typ = "Time"
+				typ = "tctime.Time"
 			}
 		}
 	}

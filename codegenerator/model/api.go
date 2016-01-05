@@ -109,19 +109,11 @@ func (api *API) generateAPICode(apiName string) string {
 
 	content += `
 import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
+	"errors"
 	"net/url"
-	"reflect"
-	"time"
-	"github.com/taskcluster/httpbackoff"
-	hawk "github.com/tent/hawk-go"
+	"github.com/taskcluster/taskcluster-client-go/http"
+	"github.com/taskcluster/taskcluster-client-go/tctime"
 	D "github.com/tj/go-debug"
 %%{imports}
 )
@@ -132,130 +124,7 @@ var (
 	debug = D.Debug("` + api.apiDef.PackageName + `")
 )
 
-// apiCall is the generic REST API calling method which performs all REST API
-// calls for this library.  Each auto-generated REST API method simply is a
-// wrapper around this method, calling it with specific specific arguments.
-func (` + exampleVarName + ` *` + api.apiDef.Name + `) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
-	callSummary := new(CallSummary)
-	callSummary.HttpRequestObject = payload
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		return result, callSummary, err
-	}
-	callSummary.HttpRequestBody = string(jsonPayload)
-
-	httpClient := &http.Client{}
-
-	// function to perform http request - we call this using backoff library to
-	// have exponential backoff in case of intermittent failures (e.g. network
-	// blips or HTTP 5xx errors)
-	httpCall := func() (*http.Response, error, error) {
-		var ioReader io.Reader = nil
-		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
-			ioReader = bytes.NewReader(jsonPayload)
-		}
-		u, err := url.Parse(` + exampleVarName + `.BaseURL+route)
-		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", ` + exampleVarName + `.BaseURL+route, ` + exampleVarName + `.BaseURL, err)
-		}
-		if query != nil {
-			u.RawQuery = query.Encode()
-		}
-		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
-		if err != nil {
-				return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), ` + exampleVarName + `.BaseURL, err)
-		}
-		httpRequest.Header.Set("Content-Type", "application/json")
-		callSummary.HttpRequest = httpRequest
-		// Refresh Authorization header with each call...
-		// Only authenticate if client library user wishes to.
-		if ` + exampleVarName + `.Authenticate {
-			credentials := &hawk.Credentials{
-				ID:   ` + exampleVarName + `.ClientId,
-				Key:  ` + exampleVarName + `.AccessToken,
-				Hash: sha256.New,
-			}
-			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if ` + exampleVarName + `.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + ` + exampleVarName + `.Certificate + "}"))
-			}
-			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
-		}
-		debug("Making http request: %v", httpRequest)
-		resp, err := httpClient.Do(httpRequest)
-		return resp, err, nil
-	}
-
-	// Make HTTP API calls using an exponential backoff algorithm...
-	callSummary.HttpResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
-
-	if err != nil {
-		return result, callSummary, err
-	}
-
-	// now read response into memory, so that we can return the body
-	var body []byte
-	body, err = ioutil.ReadAll(callSummary.HttpResponse.Body)
-
-	if err != nil {
-		return result, callSummary, err
-	}
-
-	callSummary.HttpResponseBody = string(body)
-
-	// if result is passed in as nil, it means the API defines no response body
-	// json
-	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
-		err = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
-	}
-
-	return result, callSummary, err
-}
-
-// The entry point into all the functionality in this package is to create ` + utils.IndefiniteArticle(api.apiDef.Name) + `
-// ` + api.apiDef.Name + ` object.  It contains your authentication credentials, which are
-// required for all HTTP operations.
-type ` + api.apiDef.Name + ` struct {
-	// Client ID required by Hawk
-	ClientId string
-	// Access Token required by Hawk
-	AccessToken string
-	// The URL of the API endpoint to hit.
-	// Use ` + "\"" + api.BaseURL + "\"" + ` for production.
-	// Please note calling ` + api.apiDef.PackageName + `.New(clientId string, accessToken string) is an
-	// alternative way to create ` + utils.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + ` object with BaseURL set to production.
-	BaseURL string
-	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling ` + api.apiDef.PackageName + `.New(clientId string, accessToken string) is an
-	// alternative way to create ` + utils.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + ` object with Authenticate set to true.
-	Authenticate bool
-	// Certificate for temporary credentials
-	Certificate string
-}
-
-// CallSummary provides information about the underlying http request and
-// response issued for a given API call.
-type CallSummary struct {
-	HttpRequest *http.Request
-	// Keep a copy of request body in addition to the *http.Request, since
-	// accessing the Body via the *http.Request object, you get a io.ReadCloser
-	// - and after the request has been made, the body will have been read, and
-	// the data lost... This way, it is still available after the api call
-	// returns.
-	HttpRequestBody string
-	// The Go Type which is marshaled into json and used as the http request
-	// body.
-	HttpRequestObject interface{}
-	HttpResponse      *http.Response
-	// Keep a copy of response body in addition to the *http.Response, since
-	// accessing the Body via the *http.Response object, you get a
-	// io.ReadCloser - and after the response has been read once (to unmarshal
-	// json into native go types) the data is lost... This way, it is still
-	// available after the api call returns.
-	HttpResponseBody string
-	// Keep a record of how many http requests were attempted
-	Attempts int
-}
+type ` + api.apiDef.Name + ` http.ConnectionData
 
 // Returns a pointer to ` + api.apiDef.Name + `, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -272,12 +141,13 @@ type CallSummary struct {
 	content += "//  	// handle errors...\n"
 	content += "//  }\n"
 	content += "func New(clientId string, accessToken string) *" + api.apiDef.Name + " {\n"
-	content += "\treturn &" + api.apiDef.Name + "{\n"
+	content += "\t" + exampleVarName + " := " + api.apiDef.Name + "(http.ConnectionData{\n"
 	content += "\t\tClientId: clientId,\n"
 	content += "\t\tAccessToken: accessToken,\n"
 	content += "\t\tBaseURL: \"" + api.BaseURL + "\",\n"
 	content += "\t\tAuthenticate: true,\n"
-	content += "\t}\n"
+	content += "\t})\n"
+	content += "\treturn &" + exampleVarName + "\n"
 	content += "}\n"
 	content += "\n"
 	for _, entry := range api.Entries {
@@ -404,19 +274,20 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 		}
 	}
 
-	responseType := "(*CallSummary, error)"
+	responseType := "(*http.CallSummary, error)"
 	if entry.Output != "" {
-		responseType = "(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + ", *CallSummary, error)"
+		responseType = "(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + ", *http.CallSummary, error)"
 	}
 
 	content := comment
 	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
 	content += queryCode
+	content += "\tcd := http.ConnectionData(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
 	if entry.Output != "" {
-		content += "\tresponseObject, callSummary, err := " + entry.Parent.apiDef.ExampleVarName + ".apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), " + queryExpr + ")\n"
+		content += "\tresponseObject, callSummary, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), " + queryExpr + ")\n"
 		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), callSummary, err\n"
 	} else {
-		content += "\t_, callSummary, err := " + entry.Parent.apiDef.ExampleVarName + ".apiCall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil, " + queryExpr + ")\n"
+		content += "\t_, callSummary, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil, " + queryExpr + ")\n"
 		content += "\treturn callSummary, err\n"
 	}
 	content += "}\n"

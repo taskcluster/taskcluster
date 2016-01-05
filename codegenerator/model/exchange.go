@@ -139,7 +139,7 @@ func (exchange *Exchange) generateAPICode(exchangeName string) string {
 import (
 	"reflect"
 	"strings"
-	"time"
+	"github.com/taskcluster/taskcluster-client-go/tctime"
 %%{imports}
 )
 

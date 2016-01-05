@@ -11,6 +11,7 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go/index"
 	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tctime"
 )
 
 // This is a silly test that looks for the latest mozilla-central buildbot linux64 l10n build
@@ -68,9 +69,9 @@ func TestDefineTask(t *testing.T) {
 	expires := deadline
 
 	td := &queue.TaskDefinitionRequest{
-		Created:  queue.Time(created),
-		Deadline: queue.Time(deadline),
-		Expires:  queue.Time(expires),
+		Created:  tctime.Time(created),
+		Deadline: tctime.Time(deadline),
+		Expires:  tctime.Time(expires),
 		Extra:    json.RawMessage(`{"index":{"rank":12345}}`),
 		Metadata: struct {
 			Description string `json:"description"`
