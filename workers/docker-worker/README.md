@@ -263,4 +263,4 @@ into your environment.  See [Configuring AWS with Node](http://docs.aws.amazon.c
 
 Run the upload-schema.js script to update the schema:
 
-`node --harmony bin/upload-schema.js`
+`babel-node --harmony bin/upload-schema.js`
