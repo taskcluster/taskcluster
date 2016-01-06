@@ -55,17 +55,15 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 
 // Tests whether it is possible to define a task against the production Queue.
 func TestDefineTask(t *testing.T) {
-	clientId := os.Getenv("TASKCLUSTER_CLIENT_ID")
-	accessToken := os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
-	certificate := os.Getenv("TASKCLUSTER_CERTIFICATE")
-	if clientId == "" || accessToken == "" {
+	permaCreds := tcclient.Credentials{
+		ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+	}
+	if permaCreds.ClientId == "" || permaCreds.AccessToken == "" {
 		t.Skip("Skipping test TestDefineTask since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
 	}
-	myQueue := queue.New(tcclient.Credentials{
-		ClientId:    clientId,
-		AccessToken: accessToken,
-		Certificate: certificate,
-	})
+	myQueue := queue.New(permaCreds)
 
 	taskId := slugid.Nice()
 	created := time.Now()
@@ -195,6 +193,18 @@ func TestDefineTask(t *testing.T) {
 		t.Logf("%s", formattedExpected)
 		t.Log("Actual:")
 		t.Errorf("%s", formattedActual)
+	}
+
+	// check it is possible to cancel the unscheduled task using **temporary credentials**
+	tempCreds, err := permaCreds.CreateTemporaryCredentials(30*time.Second, "queue:cancel-task:"+td.SchedulerId+"/"+td.TaskGroupId+"/"+taskId)
+	if err != nil {
+		t.Fatalf("Exception thrown generating temporary credentials!\n\n%s\n\n", err)
+	}
+	myQueue = queue.New(*tempCreds)
+	_, cs, err = myQueue.CancelTask(taskId)
+	if err != nil {
+		t.Logf("Exception thrown cancelling task with temporary credentials!\n\n%s\n\n", err)
+		t.Fatalf("\n\n%s\n", cs.HttpRequest.Header)
 	}
 }
 

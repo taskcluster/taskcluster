@@ -87,6 +87,7 @@ func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration
 	}
 
 	cert.updateSignature(permaCreds.AccessToken)
+
 	jsonCert, err := json.Marshal(cert)
 	if err != nil {
 		return
@@ -105,7 +106,7 @@ func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration
 	return
 }
 
-func (cert Certificate) updateSignature(accessToken string) (err error) {
+func (cert *Certificate) updateSignature(accessToken string) (err error) {
 	lines := []string{
 		"version:" + strconv.Itoa(cert.Version),
 		"seed:" + cert.Seed,
