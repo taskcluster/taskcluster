@@ -18,6 +18,7 @@ import (
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/stateless-dns-go/hostname"
 	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tctime"
 )
 
 type (
@@ -30,7 +31,7 @@ type (
 
 	BaseArtifact struct {
 		CanonicalPath string
-		Expires       queue.Time
+		Expires       tctime.Time
 	}
 
 	S3Artifact struct {
@@ -282,7 +283,7 @@ func (task *TaskRun) uploadLiveLog(index int) error {
 			BaseArtifact: BaseArtifact{
 				CanonicalPath: task.Commands[index].logFile + ".live",
 				// livelog expires when task must have completed
-				Expires: queue.Time(maxRunTimeDeadline),
+				Expires: tctime.Time(maxRunTimeDeadline),
 			},
 			MimeType: "text/plain; charset=utf-8",
 			URL:      getURL.String(),

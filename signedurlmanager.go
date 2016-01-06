@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/taskcluster/taskcluster-client-go/http"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
@@ -18,7 +19,7 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 	prematurity := config.RefreshUrlsPrematurelySecs
 	// signedURLs is the variable where we store the current valid signed urls
 	var signedURLs *queue.PollTaskUrlsResponse
-	var callSummary *queue.CallSummary
+	var callSummary *http.CallSummary
 	var err error
 	// updateMe is a channel to send a message to when we need to update signed
 	// urls because either we don't have any yet (i.e. first time) or they are

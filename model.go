@@ -9,6 +9,7 @@ import (
 
 	"github.com/taskcluster/generic-worker/livelog"
 	"github.com/taskcluster/generic-worker/os/exec"
+	"github.com/taskcluster/taskcluster-client-go/http"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
@@ -57,7 +58,7 @@ type (
 		RunId               uint                         `json:"runId"`
 		QueueMessage        QueueMessage                 `json:"-"`
 		SignedURLPair       SignedURLPair                `json:"-"`
-		ClaimCallSummary    queue.CallSummary            `json:"-"`
+		ClaimCallSummary    http.CallSummary             `json:"-"`
 		TaskClaimRequest    queue.TaskClaimRequest       `json:"-"`
 		TaskClaimResponse   queue.TaskClaimResponse      `json:"-"`
 		TaskReclaimResponse queue.TaskReclaimResponse    `json:"-"`
