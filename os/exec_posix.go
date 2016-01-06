@@ -39,7 +39,7 @@ func startProcess(name string, argv []string, attr *os.ProcAttr, username, passw
 
 	pid, h, e := mysyscall.StartProcess(name, argv, sysattr, username, password)
 	if e != nil {
-		return nil, &os.PathError{"fork/exec", name, e}
+		return nil, &os.PathError{Op: "fork/exec", Path: name, Err: e}
 	}
 	return newProcess(pid, h), nil
 }

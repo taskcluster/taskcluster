@@ -185,8 +185,6 @@ func joinExeDirAndFName(dir, p string) (name string, err error) {
 			return syscall.FullPath(d + "\\" + p)
 		}
 	}
-	// we shouldn't be here
-	return "", syscall.EINVAL
 }
 
 func normalizeDir(dir string) (name string, err error) {
