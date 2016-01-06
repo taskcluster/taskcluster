@@ -196,7 +196,7 @@ func TestDefineTask(t *testing.T) {
 	}
 
 	// check it is possible to cancel the unscheduled task using **temporary credentials**
-	tempCreds, err := permaCreds.CreateTemporaryCredentials(30*time.Second, "queue:cancel-task:"+td.SchedulerId+"/"+td.TaskGroupId+"/"+taskId)
+	tempCreds, err := permaCreds.CreateTemporaryCredentials(30*time.Second, "*")
 	if err != nil {
 		t.Fatalf("Exception thrown generating temporary credentials!\n\n%s\n\n", err)
 	}
