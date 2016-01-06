@@ -38,10 +38,6 @@ type ConnectionData struct {
 	Authenticate bool
 }
 
-type TemporaryCertificate struct {
-	Certificate Certificate `json:"certificate"`
-}
-
 type Certificate struct {
 	Version   int      `json:"version"`
 	Scopes    []string `json:"scopes"`
