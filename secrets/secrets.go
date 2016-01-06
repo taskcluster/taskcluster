@@ -18,7 +18,7 @@
 //
 // First create a Secrets object:
 //
-//  mySecrets := secrets.New("myClientId", "myAccessToken")
+//  mySecrets := secrets.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of mySecrets's methods, e.g.:
 //
@@ -55,11 +55,17 @@ type Secrets tcclient.ConnectionData
 // Returns a pointer to Secrets, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false.
+// taskcluster-proxy) by setting Authenticate to false (in which case creds is
+// ignored).
 //
 // For example:
-//  mySecrets := secrets.New("123", "456")                       // set clientId and accessToken
-//  mySecrets.Authenticate = false                               // disable authentication (true by default)
+//  creds := tcclient.Credentials{
+//  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  }
+//  mySecrets := secrets.New(creds)                              // set credentials
+//  mySecrets.Authenticate = false                               // disable authentication (creds above are now ignored)
 //  mySecrets.BaseURL = "http://localhost:1234/api/Secrets/v1"   // alternative API endpoint (production by default)
 //  callSummary, err := mySecrets.Set(.....)                     // for example, call the Set(.....) API endpoint (described further down)...
 //  if err != nil {

@@ -59,7 +59,7 @@
 //
 // First create an Auth object:
 //
-//  myAuth := auth.New("myClientId", "myAccessToken")
+//  myAuth := auth.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myAuth's methods, e.g.:
 //
@@ -97,11 +97,17 @@ type Auth tcclient.ConnectionData
 // Returns a pointer to Auth, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false.
+// taskcluster-proxy) by setting Authenticate to false (in which case creds is
+// ignored).
 //
 // For example:
-//  myAuth := auth.New("123", "456")                       // set clientId and accessToken
-//  myAuth.Authenticate = false                            // disable authentication (true by default)
+//  creds := tcclient.Credentials{
+//  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  }
+//  myAuth := auth.New(creds)                              // set credentials
+//  myAuth.Authenticate = false                            // disable authentication (creds above are now ignored)
 //  myAuth.BaseURL = "http://localhost:1234/api/Auth/v1"   // alternative API endpoint (production by default)
 //  data, callSummary, err := myAuth.ListClients(.....)    // for example, call the ListClients(.....) API endpoint (described further down)...
 //  if err != nil {

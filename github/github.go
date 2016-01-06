@@ -21,7 +21,7 @@
 //
 // First create a Github object:
 //
-//  myGithub := github.New("myClientId", "myAccessToken")
+//  myGithub := github.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myGithub's methods, e.g.:
 //
@@ -55,11 +55,17 @@ type Github tcclient.ConnectionData
 // Returns a pointer to Github, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false.
+// taskcluster-proxy) by setting Authenticate to false (in which case creds is
+// ignored).
 //
 // For example:
-//  myGithub := github.New("123", "456")                       // set clientId and accessToken
-//  myGithub.Authenticate = false                              // disable authentication (true by default)
+//  creds := tcclient.Credentials{
+//  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  }
+//  myGithub := github.New(creds)                              // set credentials
+//  myGithub.Authenticate = false                              // disable authentication (creds above are now ignored)
 //  myGithub.BaseURL = "http://localhost:1234/api/Github/v1"   // alternative API endpoint (production by default)
 //  callSummary, err := myGithub.GithubWebHookConsumer(.....)  // for example, call the GithubWebHookConsumer(.....) API endpoint (described further down)...
 //  if err != nil {

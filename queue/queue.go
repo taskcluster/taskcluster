@@ -24,7 +24,7 @@
 //
 // First create a Queue object:
 //
-//  myQueue := queue.New("myClientId", "myAccessToken")
+//  myQueue := queue.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myQueue's methods, e.g.:
 //
@@ -62,11 +62,17 @@ type Queue tcclient.ConnectionData
 // Returns a pointer to Queue, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false.
+// taskcluster-proxy) by setting Authenticate to false (in which case creds is
+// ignored).
 //
 // For example:
-//  myQueue := queue.New("123", "456")                       // set clientId and accessToken
-//  myQueue.Authenticate = false                             // disable authentication (true by default)
+//  creds := tcclient.Credentials{
+//  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  }
+//  myQueue := queue.New(creds)                              // set credentials
+//  myQueue.Authenticate = false                             // disable authentication (creds above are now ignored)
 //  myQueue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
 //  data, callSummary, err := myQueue.Task(.....)            // for example, call the Task(.....) API endpoint (described further down)...
 //  if err != nil {

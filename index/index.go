@@ -104,7 +104,7 @@
 //
 // First create an Index object:
 //
-//  myIndex := index.New("myClientId", "myAccessToken")
+//  myIndex := index.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myIndex's methods, e.g.:
 //
@@ -141,11 +141,17 @@ type Index tcclient.ConnectionData
 // Returns a pointer to Index, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false.
+// taskcluster-proxy) by setting Authenticate to false (in which case creds is
+// ignored).
 //
 // For example:
-//  myIndex := index.New("123", "456")                       // set clientId and accessToken
-//  myIndex.Authenticate = false                             // disable authentication (true by default)
+//  creds := tcclient.Credentials{
+//  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  }
+//  myIndex := index.New(creds)                              // set credentials
+//  myIndex.Authenticate = false                             // disable authentication (creds above are now ignored)
 //  myIndex.BaseURL = "http://localhost:1234/api/Index/v1"   // alternative API endpoint (production by default)
 //  data, callSummary, err := myIndex.FindTask(.....)        // for example, call the FindTask(.....) API endpoint (described further down)...
 //  if err != nil {

@@ -29,7 +29,7 @@
 //
 // First create a Hooks object:
 //
-//  myHooks := hooks.New("myClientId", "myAccessToken")
+//  myHooks := hooks.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myHooks's methods, e.g.:
 //
@@ -66,11 +66,17 @@ type Hooks tcclient.ConnectionData
 // Returns a pointer to Hooks, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false.
+// taskcluster-proxy) by setting Authenticate to false (in which case creds is
+// ignored).
 //
 // For example:
-//  myHooks := hooks.New("123", "456")                       // set clientId and accessToken
-//  myHooks.Authenticate = false                             // disable authentication (true by default)
+//  creds := tcclient.Credentials{
+//  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  }
+//  myHooks := hooks.New(creds)                              // set credentials
+//  myHooks.Authenticate = false                             // disable authentication (creds above are now ignored)
 //  myHooks.BaseURL = "http://localhost:1234/api/Hooks/v1"   // alternative API endpoint (production by default)
 //  data, callSummary, err := myHooks.ListHookGroups(.....)  // for example, call the ListHookGroups(.....) API endpoint (described further down)...
 //  if err != nil {

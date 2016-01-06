@@ -21,7 +21,7 @@
 //
 // First create a PurgeCache object:
 //
-//  purgeCache := purgecache.New("myClientId", "myAccessToken")
+//  purgeCache := purgecache.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of purgeCache's methods, e.g.:
 //
@@ -57,11 +57,17 @@ type PurgeCache tcclient.ConnectionData
 // Returns a pointer to PurgeCache, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false.
+// taskcluster-proxy) by setting Authenticate to false (in which case creds is
+// ignored).
 //
 // For example:
-//  purgeCache := purgecache.New("123", "456")                       // set clientId and accessToken
-//  purgeCache.Authenticate = false                                  // disable authentication (true by default)
+//  creds := tcclient.Credentials{
+//  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  }
+//  purgeCache := purgecache.New(creds)                              // set credentials
+//  purgeCache.Authenticate = false                                  // disable authentication (creds above are now ignored)
 //  purgeCache.BaseURL = "http://localhost:1234/api/PurgeCache/v1"   // alternative API endpoint (production by default)
 //  callSummary, err := purgeCache.PurgeCache(.....)                 // for example, call the PurgeCache(.....) API endpoint (described further down)...
 //  if err != nil {

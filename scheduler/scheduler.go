@@ -25,7 +25,7 @@
 //
 // First create a Scheduler object:
 //
-//  myScheduler := scheduler.New("myClientId", "myAccessToken")
+//  myScheduler := scheduler.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myScheduler's methods, e.g.:
 //
@@ -62,11 +62,17 @@ type Scheduler tcclient.ConnectionData
 // Returns a pointer to Scheduler, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false.
+// taskcluster-proxy) by setting Authenticate to false (in which case creds is
+// ignored).
 //
 // For example:
-//  myScheduler := scheduler.New("123", "456")                       // set clientId and accessToken
-//  myScheduler.Authenticate = false                                 // disable authentication (true by default)
+//  creds := tcclient.Credentials{
+//  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  }
+//  myScheduler := scheduler.New(creds)                              // set credentials
+//  myScheduler.Authenticate = false                                 // disable authentication (creds above are now ignored)
 //  myScheduler.BaseURL = "http://localhost:1234/api/Scheduler/v1"   // alternative API endpoint (production by default)
 //  data, callSummary, err := myScheduler.CreateTaskGraph(.....)     // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
 //  if err != nil {
