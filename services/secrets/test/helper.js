@@ -44,8 +44,6 @@ var testClients = [
     clientId:     'captain-write', // can write captain's secrets
     scopes:       [
       'secrets:set:captain:*',
-      'secrets:update:captain:*',
-      'secrets:remove:captain:*'
     ],
     expiry:       ClientExpiration,
     credentials:  cfg.get('taskcluster:credentials')
@@ -59,8 +57,6 @@ var testClients = [
     clientId:     'captain-read-write',
     scopes:       [
       'secrets:set:captain:*',
-      'secrets:update:captain:*',
-      'secrets:remove:captain:*',
       'secrets:get:captain:*'
     ],
     expiry:       ClientExpiration,
