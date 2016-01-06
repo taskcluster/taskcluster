@@ -83,7 +83,7 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "//\n"
 	comment += "// First create " + utils.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + " object:\n"
 	comment += "//\n"
-	comment += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(\"myClientId\", \"myAccessToken\")\n"
+	comment += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(tcclient.Credentials{ClientId: \"myClientId\", AccessToken: \"myAccessToken\"})\n"
 	comment += "//\n"
 	comment += "// and then call one or more of " + exampleVarName + "'s methods, e.g.:\n"
 	comment += "//\n"
@@ -129,12 +129,19 @@ type ` + api.apiDef.Name + ` tcclient.ConnectionData
 // Returns a pointer to ` + api.apiDef.Name + `, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false.
+// taskcluster-proxy) by setting Authenticate to false (in which case creds is
+// ignored.
 //
 `
 	content += "// For example:\n"
-	content += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(\"123\", \"456\") " + strings.Repeat(" ", 20+len(apiName)-len(api.apiDef.PackageName)) + "  // set clientId and accessToken\n"
-	content += "//  " + exampleVarName + ".Authenticate = false             " + strings.Repeat(" ", len(apiName)) + "           // disable authentication (true by default)\n"
+	content += "//  creds := tcclient.Credentials{\n"
+	content += "//  	ClientId:    os.Getenv(\"TASKCLUSTER_CLIENT_ID\"),\n"
+	content += "//  	AccessToken: os.Getenv(\"TASKCLUSTER_ACCESS_TOKEN\"),\n"
+	content += "//  	Certificate: os.Getenv(\"TASKCLUSTER_CERTIFICATE\"),\n"
+	content += "//  }\n"
+
+	content += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(creds) " + strings.Repeat(" ", 27+len(apiName)-len(api.apiDef.PackageName)) + "  // set credentials\n"
+	content += "//  " + exampleVarName + ".Authenticate = false             " + strings.Repeat(" ", len(apiName)) + "           // disable authentication (creds above are now ignored)\n"
 	content += "//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"   // alternative API endpoint (production by default)\n"
 	content += exampleCall + strings.Repeat(" ", 48-len(exampleCall)+len(apiName)+len(exampleVarName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
 	content += "//  if err != nil {\n"
