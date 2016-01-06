@@ -35,14 +35,14 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 5 Jan 2016 at 20:29:00 UTC. The code was generated
+// Wed, 6 Jan 2016 at 10:39:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package purgecache
 
 import (
 	"net/url"
 
-	"github.com/taskcluster/taskcluster-client-go/http"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
 )
 
@@ -52,7 +52,7 @@ var (
 	debug = D.Debug("purgecache")
 )
 
-type PurgeCache http.ConnectionData
+type PurgeCache tcclient.ConnectionData
 
 // Returns a pointer to PurgeCache, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -68,7 +68,7 @@ type PurgeCache http.ConnectionData
 //  	// handle errors...
 //  }
 func New(clientId string, accessToken string) *PurgeCache {
-	purgeCache := PurgeCache(http.ConnectionData{
+	purgeCache := PurgeCache(tcclient.ConnectionData{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://purge-cache.taskcluster.net/v1",
@@ -87,8 +87,8 @@ func New(clientId string, accessToken string) *PurgeCache {
 //   * purge-cache:<provisionerId>/<workerType>:<cacheName>
 //
 // See http://docs.taskcluster.net/services/purge-cache/#purgeCache
-func (purgeCache *PurgeCache) PurgeCache(provisionerId string, workerType string, payload *PurgeCacheRequest) (*http.CallSummary, error) {
-	cd := http.ConnectionData(*purgeCache)
+func (purgeCache *PurgeCache) PurgeCache(provisionerId string, workerType string, payload *PurgeCacheRequest) (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*purgeCache)
 	_, callSummary, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, nil)
 	return callSummary, err
 }
@@ -100,8 +100,8 @@ func (purgeCache *PurgeCache) PurgeCache(provisionerId string, workerType string
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/services/purge-cache/#ping
-func (purgeCache *PurgeCache) Ping() (*http.CallSummary, error) {
-	cd := http.ConnectionData(*purgeCache)
+func (purgeCache *PurgeCache) Ping() (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*purgeCache)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }

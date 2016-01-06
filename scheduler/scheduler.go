@@ -39,7 +39,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/scheduler/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 5 Jan 2016 at 20:29:00 UTC. The code was generated
+// Wed, 6 Jan 2016 at 10:39:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package scheduler
 
@@ -47,8 +47,7 @@ import (
 	"encoding/json"
 	"net/url"
 
-	"github.com/taskcluster/taskcluster-client-go/http"
-	"github.com/taskcluster/taskcluster-client-go/tctime"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
 )
 
@@ -58,7 +57,7 @@ var (
 	debug = D.Debug("scheduler")
 )
 
-type Scheduler http.ConnectionData
+type Scheduler tcclient.ConnectionData
 
 // Returns a pointer to Scheduler, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -74,7 +73,7 @@ type Scheduler http.ConnectionData
 //  	// handle errors...
 //  }
 func New(clientId string, accessToken string) *Scheduler {
-	myScheduler := Scheduler(http.ConnectionData{
+	myScheduler := Scheduler(tcclient.ConnectionData{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://scheduler.taskcluster.net/v1",
@@ -153,8 +152,8 @@ func New(clientId string, accessToken string) *Scheduler {
 //   * scheduler:create-task-graph
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#createTaskGraph
-func (myScheduler *Scheduler) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1) (*TaskGraphStatusResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myScheduler)
+func (myScheduler *Scheduler) CreateTaskGraph(taskGraphId string, payload *TaskGraphDefinition1) (*TaskGraphStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myScheduler)
 	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/task-graph/"+url.QueryEscape(taskGraphId), new(TaskGraphStatusResponse), nil)
 	return responseObject.(*TaskGraphStatusResponse), callSummary, err
 }
@@ -179,8 +178,8 @@ func (myScheduler *Scheduler) CreateTaskGraph(taskGraphId string, payload *TaskG
 //   * scheduler:extend-task-graph:<taskGraphId>
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#extendTaskGraph
-func (myScheduler *Scheduler) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition) (*TaskGraphStatusResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myScheduler)
+func (myScheduler *Scheduler) ExtendTaskGraph(taskGraphId string, payload *TaskGraphDefinition) (*TaskGraphStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myScheduler)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/task-graph/"+url.QueryEscape(taskGraphId)+"/extend", new(TaskGraphStatusResponse), nil)
 	return responseObject.(*TaskGraphStatusResponse), callSummary, err
 }
@@ -194,8 +193,8 @@ func (myScheduler *Scheduler) ExtendTaskGraph(taskGraphId string, payload *TaskG
 // **Note**, that `finished` implies successfully completion.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#status
-func (myScheduler *Scheduler) Status(taskGraphId string) (*TaskGraphStatusResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myScheduler)
+func (myScheduler *Scheduler) Status(taskGraphId string) (*TaskGraphStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myScheduler)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/status", new(TaskGraphStatusResponse), nil)
 	return responseObject.(*TaskGraphStatusResponse), callSummary, err
 }
@@ -210,8 +209,8 @@ func (myScheduler *Scheduler) Status(taskGraphId string) (*TaskGraphStatusRespon
 // end-point instead.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#info
-func (myScheduler *Scheduler) Info(taskGraphId string) (*TaskGraphInfoResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myScheduler)
+func (myScheduler *Scheduler) Info(taskGraphId string) (*TaskGraphInfoResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myScheduler)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/info", new(TaskGraphInfoResponse), nil)
 	return responseObject.(*TaskGraphInfoResponse), callSummary, err
 }
@@ -232,8 +231,8 @@ func (myScheduler *Scheduler) Info(taskGraphId string) (*TaskGraphInfoResponse, 
 // the future.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspect
-func (myScheduler *Scheduler) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myScheduler)
+func (myScheduler *Scheduler) Inspect(taskGraphId string) (*InspectTaskGraphResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myScheduler)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect", new(InspectTaskGraphResponse), nil)
 	return responseObject.(*InspectTaskGraphResponse), callSummary, err
 }
@@ -254,8 +253,8 @@ func (myScheduler *Scheduler) Inspect(taskGraphId string) (*InspectTaskGraphResp
 // the future.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspectTask
-func (myScheduler *Scheduler) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraphTaskResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myScheduler)
+func (myScheduler *Scheduler) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraphTaskResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myScheduler)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect/"+url.QueryEscape(taskId), new(InspectTaskGraphTaskResponse), nil)
 	return responseObject.(*InspectTaskGraphTaskResponse), callSummary, err
 }
@@ -267,8 +266,8 @@ func (myScheduler *Scheduler) InspectTask(taskGraphId string, taskId string) (*I
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#ping
-func (myScheduler *Scheduler) Ping() (*http.CallSummary, error) {
-	cd := http.ConnectionData(*myScheduler)
+func (myScheduler *Scheduler) Ping() (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myScheduler)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
@@ -283,12 +282,12 @@ type (
 		// Creation time of task
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/created
-		Created tctime.Time `json:"created"`
+		Created tcclient.Time `json:"created"`
 
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/deadline
-		Deadline tctime.Time `json:"deadline"`
+		Deadline tcclient.Time `json:"deadline"`
 
 		// Task expiration, time at which task definition and status is deleted.
 		// Notice that all artifacts for the must have an expiration that is no
@@ -296,7 +295,7 @@ type (
 		// plus one year (this default may subject to change).
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't

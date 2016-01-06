@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 5 Jan 2016 at 20:29:00 UTC. The code was generated
+// Wed, 6 Jan 2016 at 10:39:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -47,8 +47,7 @@ import (
 	"errors"
 	"net/url"
 
-	"github.com/taskcluster/taskcluster-client-go/http"
-	"github.com/taskcluster/taskcluster-client-go/tctime"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
 )
 
@@ -58,7 +57,7 @@ var (
 	debug = D.Debug("queue")
 )
 
-type Queue http.ConnectionData
+type Queue tcclient.ConnectionData
 
 // Returns a pointer to Queue, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -74,7 +73,7 @@ type Queue http.ConnectionData
 //  	// handle errors...
 //  }
 func New(clientId string, accessToken string) *Queue {
-	myQueue := Queue(http.ConnectionData{
+	myQueue := Queue(tcclient.ConnectionData{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://queue.taskcluster.net/v1",
@@ -90,8 +89,8 @@ func New(clientId string, accessToken string) *Queue {
 // specified the queue may provide a default value.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#task
-func (myQueue *Queue) Task(taskId string) (*TaskDefinitionResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) Task(taskId string) (*TaskDefinitionResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId), new(TaskDefinitionResponse), nil)
 	return responseObject.(*TaskDefinitionResponse), callSummary, err
 }
@@ -101,8 +100,8 @@ func (myQueue *Queue) Task(taskId string) (*TaskDefinitionResponse, *http.CallSu
 // Get task status structure from `taskId`
 //
 // See http://docs.taskcluster.net/queue/api-docs/#status
-func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/status", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -135,8 +134,8 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *http.CallSumm
 //   * (queue:define-task:<provisionerId>/<workerType> and queue:task-group-id:<schedulerId>/<taskGroupId> and queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>)
 //
 // See http://docs.taskcluster.net/queue/api-docs/#createTask
-func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(taskId), new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -167,8 +166,8 @@ func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) 
 //   * (queue:define-task:<provisionerId>/<workerType> and queue:task-group-id:<schedulerId>/<taskGroupId>)
 //
 // See http://docs.taskcluster.net/queue/api-docs/#defineTask
-func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/define", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -189,8 +188,8 @@ func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) 
 //   * queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#scheduleTask
-func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/schedule", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -215,8 +214,8 @@ func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *http.Ca
 //   * queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#rerunTask
-func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/rerun", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -241,8 +240,8 @@ func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *http.CallS
 //   * queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#cancelTask
-func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/cancel", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -258,8 +257,8 @@ func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *http.Call
 //   * queue:poll-task-urls:<provisionerId>/<workerType>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pollTaskUrls
-func (myQueue *Queue) PollTaskUrls(provisionerId string, workerType string) (*PollTaskUrlsResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) PollTaskUrls(provisionerId string, workerType string) (*PollTaskUrlsResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(PollTaskUrlsResponse), nil)
 	return responseObject.(*PollTaskUrlsResponse), callSummary, err
 }
@@ -273,8 +272,8 @@ func (myQueue *Queue) PollTaskUrls(provisionerId string, workerType string) (*Po
 //   * (queue:claim-task:<provisionerId>/<workerType> and queue:worker-id:<workerGroup>/<workerId>)
 //
 // See http://docs.taskcluster.net/queue/api-docs/#claimTask
-func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/claim", new(TaskClaimResponse), nil)
 	return responseObject.(*TaskClaimResponse), callSummary, err
 }
@@ -288,8 +287,8 @@ func (myQueue *Queue) ClaimTask(taskId string, runId string, payload *TaskClaimR
 //   * queue:reclaim-task:<taskId>/<runId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reclaimTask
-func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskReclaimResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskReclaimResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskReclaimResponse), nil)
 	return responseObject.(*TaskReclaimResponse), callSummary, err
 }
@@ -303,8 +302,8 @@ func (myQueue *Queue) ReclaimTask(taskId string, runId string) (*TaskReclaimResp
 //   * queue:resolve-task:<taskId>/<runId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportCompleted
-func (myQueue *Queue) ReportCompleted(taskId string, runId string) (*TaskStatusResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) ReportCompleted(taskId string, runId string) (*TaskStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/completed", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -324,8 +323,8 @@ func (myQueue *Queue) ReportCompleted(taskId string, runId string) (*TaskStatusR
 //   * queue:resolve-task:<taskId>/<runId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportFailed
-func (myQueue *Queue) ReportFailed(taskId string, runId string) (*TaskStatusResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) ReportFailed(taskId string, runId string) (*TaskStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/failed", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -350,8 +349,8 @@ func (myQueue *Queue) ReportFailed(taskId string, runId string) (*TaskStatusResp
 //   * queue:resolve-task:<taskId>/<runId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportException
-func (myQueue *Queue) ReportException(taskId string, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) ReportException(taskId string, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/exception", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -422,8 +421,8 @@ func (myQueue *Queue) ReportException(taskId string, runId string, payload *Task
 //   * queue:create-artifact:<taskId>/<runId>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#createArtifact
-func (myQueue *Queue) CreateArtifact(taskId string, runId string, name string, payload *PostArtifactRequest) (*PostArtifactResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) CreateArtifact(taskId string, runId string, name string, payload *PostArtifactRequest) (*PostArtifactResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(PostArtifactResponse), nil)
 	return responseObject.(*PostArtifactResponse), callSummary, err
 }
@@ -446,8 +445,8 @@ func (myQueue *Queue) CreateArtifact(taskId string, runId string, name string, p
 //   * queue:get-artifact:<name>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getArtifact
-func (myQueue *Queue) GetArtifact(taskId string, runId string, name string) (*http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) GetArtifact(taskId string, runId string, name string) (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
@@ -474,8 +473,8 @@ func (myQueue *Queue) GetArtifact(taskId string, runId string, name string) (*ht
 //   * queue:get-artifact:<name>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getLatestArtifact
-func (myQueue *Queue) GetLatestArtifact(taskId string, name string) (*http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) GetLatestArtifact(taskId string, name string) (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
@@ -485,8 +484,8 @@ func (myQueue *Queue) GetLatestArtifact(taskId string, name string) (*http.CallS
 // Returns a list of artifacts and associated meta-data for a given run.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#listArtifacts
-func (myQueue *Queue) ListArtifacts(taskId string, runId string) (*ListArtifactsResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) ListArtifacts(taskId string, runId string) (*ListArtifactsResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", new(ListArtifactsResponse), nil)
 	return responseObject.(*ListArtifactsResponse), callSummary, err
 }
@@ -497,8 +496,8 @@ func (myQueue *Queue) ListArtifacts(taskId string, runId string) (*ListArtifacts
 // from the given task.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#listLatestArtifacts
-func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse), nil)
 	return responseObject.(*ListArtifactsResponse), callSummary, err
 }
@@ -513,8 +512,8 @@ func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse
 //   * queue:pending-tasks:<provisionerId>/<workerType>
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pendingTasks
-func (myQueue *Queue) PendingTasks(provisionerId string, workerType string) (*CountPendingTasksResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) PendingTasks(provisionerId string, workerType string) (*CountPendingTasksResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse), nil)
 	return responseObject.(*CountPendingTasksResponse), callSummary, err
 }
@@ -526,8 +525,8 @@ func (myQueue *Queue) PendingTasks(provisionerId string, workerType string) (*Co
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#ping
-func (myQueue *Queue) Ping() (*http.CallSummary, error) {
-	cd := http.ConnectionData(*myQueue)
+func (myQueue *Queue) Ping() (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myQueue)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
@@ -542,12 +541,12 @@ type (
 		// Creation time of task
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/created
-		Created tctime.Time `json:"created"`
+		Created tcclient.Time `json:"created"`
 
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/deadline
-		Deadline tctime.Time `json:"deadline"`
+		Deadline tcclient.Time `json:"deadline"`
 
 		// Task expiration, time at which task definition and status is deleted.
 		// Notice that all artifacts for the must have an expiration that is no
@@ -555,7 +554,7 @@ type (
 		// plus one year (this default may subject to change).
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
@@ -737,7 +736,7 @@ type (
 			// deleted by the queue.
 			//
 			// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items/properties/expires
-			Expires tctime.Time `json:"expires"`
+			Expires tcclient.Time `json:"expires"`
 
 			// Name of the artifact that was created, this is useful if you want to
 			// attempt to fetch the artifact.
@@ -806,7 +805,7 @@ type (
 		// expires and not longer works for authentication.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// List of signed URLs for queues to poll tasks from, they must be called
 		// in the order they are given. As the first entry in this array **may**
@@ -876,7 +875,7 @@ type (
 		// azure table storage and explicitly deleted on S3 after expiration.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// Artifact storage type, in this case `'s3'`
 		//
@@ -911,7 +910,7 @@ type (
 		// azure storage container after expiration.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// Artifact storage type, in this case `azure`
 		//
@@ -948,7 +947,7 @@ type (
 		// references, you are responsible for doing that yourself.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// Artifact storage type, in this case `reference`
 		//
@@ -977,7 +976,7 @@ type (
 		// and forget about the artifact.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// Human readable explanation of why the artifact is missing
 		//
@@ -1028,7 +1027,7 @@ type (
 		// Date-time after which the signed `putUrl` no longer works
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// URL to which a `PUT` request can be made to upload the artifact
 		// requested. Note, the `Content-Length` must be specified correctly,
@@ -1065,7 +1064,7 @@ type (
 		// seize to work.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// Shared Access Signature (SAS) with write permissions, see
 		// [Azure REST API]
@@ -1200,7 +1199,7 @@ type (
 		// with reason `claim-expired` if the run haven't been reclaimed.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/takenUntil
-		TakenUntil tctime.Time `json:"takenUntil"`
+		TakenUntil tcclient.Time `json:"takenUntil"`
 
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/task
 		Task TaskDefinitionResponse `json:"task"`
@@ -1334,7 +1333,7 @@ type (
 		// with reason `claim-expired` if the run haven't been reclaimed.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/takenUntil
-		TakenUntil tctime.Time `json:"takenUntil"`
+		TakenUntil tcclient.Time `json:"takenUntil"`
 
 		// Identifier for the worker-group within which this run started.
 		//
@@ -1372,12 +1371,12 @@ type (
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline
-		Deadline tctime.Time `json:"deadline"`
+		Deadline tcclient.Time `json:"deadline"`
 
 		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// Unique identifier for the provisioner that this task must be scheduled on
 		//
@@ -1438,7 +1437,7 @@ type (
 			// This property is only present after the run as been resolved.
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/resolved
-			Resolved tctime.Time `json:"resolved"`
+			Resolved tcclient.Time `json:"resolved"`
 
 			// Id of this task run, `run-id`s always starts from `0`
 			//
@@ -1452,14 +1451,14 @@ type (
 			// created in state `pending`.
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/scheduled
-			Scheduled tctime.Time `json:"scheduled"`
+			Scheduled tcclient.Time `json:"scheduled"`
 
 			// Date-time at which this run was claimed, ie. when the run changed
 			// state from `pending` to `running`. This property is only present
 			// after the run has been claimed.
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/started
-			Started tctime.Time `json:"started"`
+			Started tcclient.Time `json:"started"`
 
 			// State of this run
 			//
@@ -1478,7 +1477,7 @@ type (
 			// claimed.
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/takenUntil
-			TakenUntil tctime.Time `json:"takenUntil"`
+			TakenUntil tcclient.Time `json:"takenUntil"`
 
 			// Identifier for group that worker who executes this run is a part of,
 			// this identifier is mainly used for efficient routing.
@@ -1562,12 +1561,12 @@ type (
 		// Creation time of task
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/created
-		Created tctime.Time `json:"created"`
+		Created tcclient.Time `json:"created"`
 
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/deadline
-		Deadline tctime.Time `json:"deadline"`
+		Deadline tcclient.Time `json:"deadline"`
 
 		// Task expiration, time at which task definition and status is deleted.
 		// Notice that all artifacts for the must have an expiration that is no
@@ -1575,7 +1574,7 @@ type (
 		// plus one year (this default may subject to change).
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't

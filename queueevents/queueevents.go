@@ -91,7 +91,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/taskcluster/taskcluster-client-go/tctime"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
 // When a task is created or just defined a message is posted to this
@@ -374,7 +374,7 @@ type (
 			// deleted by the queue.
 			//
 			// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/expires
-			Expires tctime.Time `json:"expires"`
+			Expires tcclient.Time `json:"expires"`
 
 			// Name of the artifact that was created, this is useful if you want to
 			// attempt to fetch the artifact. But keep in mind that just because an
@@ -634,7 +634,7 @@ type (
 		// isn't reclaimed.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/takenUntil
-		TakenUntil tctime.Time `json:"takenUntil"`
+		TakenUntil tcclient.Time `json:"takenUntil"`
 
 		// Message version
 		//
@@ -671,12 +671,12 @@ type (
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline
-		Deadline tctime.Time `json:"deadline"`
+		Deadline tcclient.Time `json:"deadline"`
 
 		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// Unique identifier for the provisioner that this task must be scheduled on
 		//
@@ -737,7 +737,7 @@ type (
 			// This property is only present after the run as been resolved.
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/resolved
-			Resolved tctime.Time `json:"resolved"`
+			Resolved tcclient.Time `json:"resolved"`
 
 			// Id of this task run, `run-id`s always starts from `0`
 			//
@@ -751,14 +751,14 @@ type (
 			// created in state `pending`.
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/scheduled
-			Scheduled tctime.Time `json:"scheduled"`
+			Scheduled tcclient.Time `json:"scheduled"`
 
 			// Date-time at which this run was claimed, ie. when the run changed
 			// state from `pending` to `running`. This property is only present
 			// after the run has been claimed.
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/started
-			Started tctime.Time `json:"started"`
+			Started tcclient.Time `json:"started"`
 
 			// State of this run
 			//
@@ -777,7 +777,7 @@ type (
 			// claimed.
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/takenUntil
-			TakenUntil tctime.Time `json:"takenUntil"`
+			TakenUntil tcclient.Time `json:"takenUntil"`
 
 			// Identifier for group that worker who executes this run is a part of,
 			// this identifier is mainly used for efficient routing.

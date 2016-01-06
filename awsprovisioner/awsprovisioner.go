@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 5 Jan 2016 at 20:29:00 UTC. The code was generated
+// Wed, 6 Jan 2016 at 10:39:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -65,8 +65,7 @@ import (
 	"errors"
 	"net/url"
 
-	"github.com/taskcluster/taskcluster-client-go/http"
-	"github.com/taskcluster/taskcluster-client-go/tctime"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
 )
 
@@ -76,7 +75,7 @@ var (
 	debug = D.Debug("awsprovisioner")
 )
 
-type AwsProvisioner http.ConnectionData
+type AwsProvisioner tcclient.ConnectionData
 
 // Returns a pointer to AwsProvisioner, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -92,7 +91,7 @@ type AwsProvisioner http.ConnectionData
 //  	// handle errors...
 //  }
 func New(clientId string, accessToken string) *AwsProvisioner {
-	awsProvisioner := AwsProvisioner(http.ConnectionData{
+	awsProvisioner := AwsProvisioner(tcclient.ConnectionData{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://aws-provisioner.taskcluster.net/v1",
@@ -131,8 +130,8 @@ func New(clientId string, accessToken string) *AwsProvisioner {
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createWorkerType
-func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest), nil)
 	return responseObject.(*GetWorkerTypeRequest), callSummary, err
 }
@@ -155,8 +154,8 @@ func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payloa
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#updateWorkerType
-func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(GetWorkerTypeRequest), nil)
 	return responseObject.(*GetWorkerTypeRequest), callSummary, err
 }
@@ -174,8 +173,8 @@ func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payloa
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#workerType
-func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerTypeRequest, *http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerTypeRequest, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest), nil)
 	return responseObject.(*GetWorkerTypeRequest), callSummary, err
 }
@@ -197,8 +196,8 @@ func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerT
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeWorkerType
-func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) (*http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "DELETE", "/worker-type/"+url.QueryEscape(workerType), nil, nil)
 	return callSummary, err
 }
@@ -214,8 +213,8 @@ func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) (*http
 //   * aws-provisioner:list-worker-types
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#listWorkerTypes
-func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/list-worker-types", new(ListWorkerTypes), nil)
 	return responseObject.(*ListWorkerTypes), callSummary, err
 }
@@ -233,8 +232,8 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *http
 //   * aws-provisioner:create-secret
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createSecret
-func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSecretRequest) (*http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSecretRequest) (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(payload, "PUT", "/secret/"+url.QueryEscape(token), nil, nil)
 	return callSummary, err
 }
@@ -250,8 +249,8 @@ func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSec
 // user data associated with the instance.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#getSecret
-func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/secret/"+url.QueryEscape(token), new(GetSecretResponse), nil)
 	return responseObject.(*GetSecretResponse), callSummary, err
 }
@@ -265,8 +264,8 @@ func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretRespons
 // but that seems like overkill
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#instanceStarted
-func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId string, token string) (*http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId string, token string) (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/instance-started/"+url.QueryEscape(instanceId)+"/"+url.QueryEscape(token), nil, nil)
 	return callSummary, err
 }
@@ -281,8 +280,8 @@ func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId string, token s
 // to untrusted processes to prevent credential and/or secret leakage.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#removeSecret
-func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) (*http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "DELETE", "/secret/"+url.QueryEscape(token), nil, nil)
 	return callSummary, err
 }
@@ -300,8 +299,8 @@ func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) (*http.CallSumm
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#getLaunchSpecs
-func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", new(GetAllLaunchSpecsResponse), nil)
 	return responseObject.(*GetAllLaunchSpecsResponse), callSummary, err
 }
@@ -317,8 +316,8 @@ func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAll
 //   * aws-provisioner:aws-state
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#awsState
-func (awsProvisioner *AwsProvisioner) AwsState() (*http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) AwsState() (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/aws-state", nil, nil)
 	return callSummary, err
 }
@@ -334,8 +333,8 @@ func (awsProvisioner *AwsProvisioner) AwsState() (*http.CallSummary, error) {
 //   * aws-provisioner:view-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#state
-func (awsProvisioner *AwsProvisioner) State(workerType string) (*http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) State(workerType string) (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/state/"+url.QueryEscape(workerType), nil, nil)
 	return callSummary, err
 }
@@ -347,8 +346,8 @@ func (awsProvisioner *AwsProvisioner) State(workerType string) (*http.CallSummar
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#ping
-func (awsProvisioner *AwsProvisioner) Ping() (*http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) Ping() (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
@@ -360,8 +359,8 @@ func (awsProvisioner *AwsProvisioner) Ping() (*http.CallSummary, error) {
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#apiReference
-func (awsProvisioner *AwsProvisioner) ApiReference() (*http.CallSummary, error) {
-	cd := http.ConnectionData(*awsProvisioner)
+func (awsProvisioner *AwsProvisioner) ApiReference() (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/api-reference", nil, nil)
 	return callSummary, err
 }
@@ -376,7 +375,7 @@ type (
 		// The date at which the secret is no longer guarunteed to exist
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#/properties/expiration
-		Expiration tctime.Time `json:"expiration"`
+		Expiration tcclient.Time `json:"expiration"`
 
 		// List of strings which are scopes for temporary credentials to give
 		// to the worker through the secret system.  Scopes must be composed of
@@ -661,7 +660,7 @@ type (
 		// when this worker type definition was last altered (inclusive of creation)
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/lastModified
-		LastModified tctime.Time `json:"lastModified"`
+		LastModified tcclient.Time `json:"lastModified"`
 
 		// Launch Specification entries which are used in all regions and all instance types
 		//

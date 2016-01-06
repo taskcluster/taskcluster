@@ -118,7 +118,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 5 Jan 2016 at 20:29:00 UTC. The code was generated
+// Wed, 6 Jan 2016 at 10:39:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package index
 
@@ -126,8 +126,7 @@ import (
 	"encoding/json"
 	"net/url"
 
-	"github.com/taskcluster/taskcluster-client-go/http"
-	"github.com/taskcluster/taskcluster-client-go/tctime"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
 )
 
@@ -137,7 +136,7 @@ var (
 	debug = D.Debug("index")
 )
 
-type Index http.ConnectionData
+type Index tcclient.ConnectionData
 
 // Returns a pointer to Index, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -153,7 +152,7 @@ type Index http.ConnectionData
 //  	// handle errors...
 //  }
 func New(clientId string, accessToken string) *Index {
-	myIndex := Index(http.ConnectionData{
+	myIndex := Index(tcclient.ConnectionData{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://index.taskcluster.net/v1",
@@ -168,8 +167,8 @@ func New(clientId string, accessToken string) *Index {
 // API end-point respond `404`.
 //
 // See http://docs.taskcluster.net/services/index/#findTask
-func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myIndex)
+func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myIndex)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
 	return responseObject.(*IndexedTaskResponse), callSummary, err
 }
@@ -186,8 +185,8 @@ func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *http.Ca
 // services, as that makes little sense.
 //
 // See http://docs.taskcluster.net/services/index/#listNamespaces
-func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myIndex)
+func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myIndex)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse), nil)
 	return responseObject.(*ListNamespacesResponse), callSummary, err
 }
@@ -204,8 +203,8 @@ func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRe
 // services, as that makes little sense.
 //
 // See http://docs.taskcluster.net/services/index/#listTasks
-func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myIndex)
+func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myIndex)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), nil)
 	return responseObject.(*ListTasksResponse), callSummary, err
 }
@@ -219,8 +218,8 @@ func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*L
 //   * index:insert-task:<namespace>
 //
 // See http://docs.taskcluster.net/services/index/#insertTask
-func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, *http.CallSummary, error) {
-	cd := http.ConnectionData(*myIndex)
+func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myIndex)
 	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
 	return responseObject.(*IndexedTaskResponse), callSummary, err
 }
@@ -235,8 +234,8 @@ func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (
 //   * queue:get-artifact:<name>
 //
 // See http://docs.taskcluster.net/services/index/#findArtifactFromTask
-func (myIndex *Index) FindArtifactFromTask(namespace string, name string) (*http.CallSummary, error) {
-	cd := http.ConnectionData(*myIndex)
+func (myIndex *Index) FindArtifactFromTask(namespace string, name string) (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myIndex)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
@@ -248,8 +247,8 @@ func (myIndex *Index) FindArtifactFromTask(namespace string, name string) (*http
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/services/index/#ping
-func (myIndex *Index) Ping() (*http.CallSummary, error) {
-	cd := http.ConnectionData(*myIndex)
+func (myIndex *Index) Ping() (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myIndex)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
@@ -269,7 +268,7 @@ type (
 		// Date at which this entry expires from the task index.
 		//
 		// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// Namespace of the indexed task, used to find the indexed task in the index.
 		//
@@ -310,7 +309,7 @@ type (
 		// Date at which this entry expires from the task index.
 		//
 		// See http://schemas.taskcluster.net/index/v1/insert-task-request.json#/properties/expires
-		Expires tctime.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires"`
 
 		// If multiple tasks are indexed with the same `namespace` the task with the
 		// highest `rank` will be stored and returned in later requests. If two tasks
@@ -373,7 +372,7 @@ type (
 			// expires from the task index.
 			//
 			// See http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#/properties/namespaces/items/properties/expires
-			Expires tctime.Time `json:"expires"`
+			Expires tcclient.Time `json:"expires"`
 
 			// Name of namespace within it's parent namespace.
 			//
@@ -439,7 +438,7 @@ type (
 			// Date at which this entry expires from the task index.
 			//
 			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/expires
-			Expires tctime.Time `json:"expires"`
+			Expires tcclient.Time `json:"expires"`
 
 			// Namespace of the indexed task, used to find the indexed task in the
 			// index.

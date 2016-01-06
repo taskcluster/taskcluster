@@ -35,12 +35,12 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 5 Jan 2016 at 20:29:00 UTC. The code was generated
+// Wed, 6 Jan 2016 at 10:39:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
 import (
-	"github.com/taskcluster/taskcluster-client-go/http"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
 )
 
@@ -50,7 +50,7 @@ var (
 	debug = D.Debug("github")
 )
 
-type Github http.ConnectionData
+type Github tcclient.ConnectionData
 
 // Returns a pointer to Github, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -66,7 +66,7 @@ type Github http.ConnectionData
 //  	// handle errors...
 //  }
 func New(clientId string, accessToken string) *Github {
-	myGithub := Github(http.ConnectionData{
+	myGithub := Github(tcclient.ConnectionData{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://taskcluster-github.herokuapp.com/v1",
@@ -84,8 +84,8 @@ func New(clientId string, accessToken string) *Github {
 //   *
 //
 // See http://docs.taskcluster.net/services/taskcluster-github/#githubWebHookConsumer
-func (myGithub *Github) GithubWebHookConsumer() (*http.CallSummary, error) {
-	cd := http.ConnectionData(*myGithub)
+func (myGithub *Github) GithubWebHookConsumer() (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myGithub)
 	_, callSummary, err := (&cd).APICall(nil, "POST", "/github", nil, nil)
 	return callSummary, err
 }
@@ -97,8 +97,8 @@ func (myGithub *Github) GithubWebHookConsumer() (*http.CallSummary, error) {
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/services/taskcluster-github/#ping
-func (myGithub *Github) Ping() (*http.CallSummary, error) {
-	cd := http.ConnectionData(*myGithub)
+func (myGithub *Github) Ping() (*tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myGithub)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
