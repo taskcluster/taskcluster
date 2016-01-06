@@ -14,9 +14,9 @@ import _ from 'lodash';
 var api = new base.API({
   title:        "TaskCluster Secrets API Documentation",
   description: [
-    "The secrets service, typically available at",
-    "`tools.taskcluster.net`, is responsible for managing",
-    "secure data in TaskCluster."
+    "The secrets service, is a simple key/value store for secret data",
+    "guarded by TaskCluster scopes.  It is typically available at",
+    "`secrets.taskcluster.net`."
   ].join('\n')
 });
 
@@ -66,7 +66,7 @@ api.declare({
   deferAuth:   true,
   name:        'update',
   input:       common.SCHEMA_PREFIX_CONST + "secret.json#",
-  scopes:      [['secrets:update:<name>']],
+  scopes:      [['secrets:set:<name>']],
   title:       'Update A Secret',
   description: 'Update a secret associated with some key.'
 }, async function(req, res) {
@@ -92,7 +92,7 @@ api.declare({
   route:       '/secrets/:name(*)',
   deferAuth:   true,
   name:        'remove',
-  scopes:      [['secrets:remove:<name>']],
+  scopes:      [['secrets:set:<name>']],
   title:       'Delete Secret',
   description: 'Delete the secret attached to some key.'
 }, async function(req, res) {
