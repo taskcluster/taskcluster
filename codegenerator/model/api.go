@@ -130,7 +130,7 @@ type ` + api.apiDef.Name + ` tcclient.ConnectionData
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
 // taskcluster-proxy) by setting Authenticate to false (in which case creds is
-// ignored.
+// ignored).
 //
 `
 	content += "// For example:\n"
