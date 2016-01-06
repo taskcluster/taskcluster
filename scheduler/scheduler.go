@@ -72,10 +72,9 @@ type Scheduler tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Scheduler {
+func New(credentials tcclient.Credentials) *Scheduler {
 	myScheduler := Scheduler(tcclient.ConnectionData{
-		ClientId:     clientId,
-		AccessToken:  accessToken,
+		Credentials:  credentials,
 		BaseURL:      "https://scheduler.taskcluster.net/v1",
 		Authenticate: true,
 	})

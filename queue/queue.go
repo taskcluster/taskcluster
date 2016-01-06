@@ -72,10 +72,9 @@ type Queue tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Queue {
+func New(credentials tcclient.Credentials) *Queue {
 	myQueue := Queue(tcclient.ConnectionData{
-		ClientId:     clientId,
-		AccessToken:  accessToken,
+		Credentials:  credentials,
 		BaseURL:      "https://queue.taskcluster.net/v1",
 		Authenticate: true,
 	})

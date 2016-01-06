@@ -107,10 +107,9 @@ type Auth tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Auth {
+func New(credentials tcclient.Credentials) *Auth {
 	myAuth := Auth(tcclient.ConnectionData{
-		ClientId:     clientId,
-		AccessToken:  accessToken,
+		Credentials:  credentials,
 		BaseURL:      "https://auth.taskcluster.net/v1",
 		Authenticate: true,
 	})

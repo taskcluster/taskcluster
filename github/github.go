@@ -65,10 +65,9 @@ type Github tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Github {
+func New(credentials tcclient.Credentials) *Github {
 	myGithub := Github(tcclient.ConnectionData{
-		ClientId:     clientId,
-		AccessToken:  accessToken,
+		Credentials:  credentials,
 		BaseURL:      "https://taskcluster-github.herokuapp.com/v1",
 		Authenticate: true,
 	})

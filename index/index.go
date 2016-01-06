@@ -151,10 +151,9 @@ type Index tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Index {
+func New(credentials tcclient.Credentials) *Index {
 	myIndex := Index(tcclient.ConnectionData{
-		ClientId:     clientId,
-		AccessToken:  accessToken,
+		Credentials:  credentials,
 		BaseURL:      "https://index.taskcluster.net/v1",
 		Authenticate: true,
 	})

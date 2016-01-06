@@ -65,10 +65,9 @@ type Secrets tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Secrets {
+func New(credentials tcclient.Credentials) *Secrets {
 	mySecrets := Secrets(tcclient.ConnectionData{
-		ClientId:     clientId,
-		AccessToken:  accessToken,
+		Credentials:  credentials,
 		BaseURL:      "https://secrets.taskcluster.net/v1",
 		Authenticate: true,
 	})

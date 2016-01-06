@@ -90,10 +90,9 @@ type AwsProvisioner tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *AwsProvisioner {
+func New(credentials tcclient.Credentials) *AwsProvisioner {
 	awsProvisioner := AwsProvisioner(tcclient.ConnectionData{
-		ClientId:     clientId,
-		AccessToken:  accessToken,
+		Credentials:  credentials,
 		BaseURL:      "https://aws-provisioner.taskcluster.net/v1",
 		Authenticate: true,
 	})

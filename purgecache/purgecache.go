@@ -67,10 +67,9 @@ type PurgeCache tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *PurgeCache {
+func New(credentials tcclient.Credentials) *PurgeCache {
 	purgeCache := PurgeCache(tcclient.ConnectionData{
-		ClientId:     clientId,
-		AccessToken:  accessToken,
+		Credentials:  credentials,
 		BaseURL:      "https://purge-cache.taskcluster.net/v1",
 		Authenticate: true,
 	})

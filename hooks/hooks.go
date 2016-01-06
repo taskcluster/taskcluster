@@ -76,10 +76,9 @@ type Hooks tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(clientId string, accessToken string) *Hooks {
+func New(credentials tcclient.Credentials) *Hooks {
 	myHooks := Hooks(tcclient.ConnectionData{
-		ClientId:     clientId,
-		AccessToken:  accessToken,
+		Credentials:  credentials,
 		BaseURL:      "https://hooks.taskcluster.net/v1",
 		Authenticate: true,
 	})
