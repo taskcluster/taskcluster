@@ -23,27 +23,6 @@ var (
 	debug = D.Debug("http")
 )
 
-// The entry point into all the functionality in this package is to create a
-// ConnectionData object. It contains authentication credentials, and a service
-// endpoint, which are required for all HTTP operations.
-type ConnectionData struct {
-	// Client ID required by Hawk
-	ClientId string
-	// Access Token required by Hawk
-	AccessToken string
-	// The URL of the API endpoint to hit.
-	// Use "https://auth.taskcluster.net/v1" for production.
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with BaseURL set to production.
-	BaseURL string
-	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with Authenticate set to true.
-	Authenticate bool
-	// Certificate for temporary credentials
-	Certificate string
-}
-
 // CallSummary provides information about the underlying http request and
 // response issued for a given API call.
 type CallSummary struct {
