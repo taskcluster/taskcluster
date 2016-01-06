@@ -6,7 +6,9 @@ type:                     object
 properties:
   hookGroupId:
     type:                 string
-    maxLength:            255
+    minLength:            {$const: identifier-min-length}
+    maxLength:            {$const: identifier-max-length}
+    pattern:              {$const: identifier-pattern}
   hookId:
     type:                 string
     maxLength:            255
