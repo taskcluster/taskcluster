@@ -1,4 +1,4 @@
-package tctime
+package tcclient
 
 import (
 	"errors"

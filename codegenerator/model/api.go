@@ -112,8 +112,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
-	"github.com/taskcluster/taskcluster-client-go/http"
-	"github.com/taskcluster/taskcluster-client-go/tctime"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
 %%{imports}
 )
@@ -124,7 +124,7 @@ var (
 	debug = D.Debug("` + api.apiDef.PackageName + `")
 )
 
-type ` + api.apiDef.Name + ` http.ConnectionData
+type ` + api.apiDef.Name + ` tcclient.ConnectionData
 
 // Returns a pointer to ` + api.apiDef.Name + `, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -141,7 +141,7 @@ type ` + api.apiDef.Name + ` http.ConnectionData
 	content += "//  	// handle errors...\n"
 	content += "//  }\n"
 	content += "func New(clientId string, accessToken string) *" + api.apiDef.Name + " {\n"
-	content += "\t" + exampleVarName + " := " + api.apiDef.Name + "(http.ConnectionData{\n"
+	content += "\t" + exampleVarName + " := " + api.apiDef.Name + "(tcclient.ConnectionData{\n"
 	content += "\t\tClientId: clientId,\n"
 	content += "\t\tAccessToken: accessToken,\n"
 	content += "\t\tBaseURL: \"" + api.BaseURL + "\",\n"
@@ -274,15 +274,15 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 		}
 	}
 
-	responseType := "(*http.CallSummary, error)"
+	responseType := "(*tcclient.CallSummary, error)"
 	if entry.Output != "" {
-		responseType = "(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + ", *http.CallSummary, error)"
+		responseType = "(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + ", *tcclient.CallSummary, error)"
 	}
 
 	content := comment
 	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
 	content += queryCode
-	content += "\tcd := http.ConnectionData(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
+	content += "\tcd := tcclient.ConnectionData(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
 	if entry.Output != "" {
 		content += "\tresponseObject, callSummary, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), " + queryExpr + ")\n"
 		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), callSummary, err\n"
