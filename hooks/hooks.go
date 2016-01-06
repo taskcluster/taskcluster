@@ -43,26 +43,16 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 29 Dec 2015 at 08:26:00 UTC. The code was generated
+// Tue, 5 Jan 2016 at 20:29:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"net/url"
-	"reflect"
-	"time"
 
-	"github.com/taskcluster/httpbackoff"
-	hawk "github.com/tent/hawk-go"
+	"github.com/taskcluster/taskcluster-client-go/http"
+	"github.com/taskcluster/taskcluster-client-go/tctime"
 	D "github.com/tj/go-debug"
 )
 
@@ -72,130 +62,7 @@ var (
 	debug = D.Debug("hooks")
 )
 
-// apiCall is the generic REST API calling method which performs all REST API
-// calls for this library.  Each auto-generated REST API method simply is a
-// wrapper around this method, calling it with specific specific arguments.
-func (myHooks *Hooks) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
-	callSummary := new(CallSummary)
-	callSummary.HttpRequestObject = payload
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		return result, callSummary, err
-	}
-	callSummary.HttpRequestBody = string(jsonPayload)
-
-	httpClient := &http.Client{}
-
-	// function to perform http request - we call this using backoff library to
-	// have exponential backoff in case of intermittent failures (e.g. network
-	// blips or HTTP 5xx errors)
-	httpCall := func() (*http.Response, error, error) {
-		var ioReader io.Reader = nil
-		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
-			ioReader = bytes.NewReader(jsonPayload)
-		}
-		u, err := url.Parse(myHooks.BaseURL + route)
-		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", myHooks.BaseURL+route, myHooks.BaseURL, err)
-		}
-		if query != nil {
-			u.RawQuery = query.Encode()
-		}
-		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
-		if err != nil {
-			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), myHooks.BaseURL, err)
-		}
-		httpRequest.Header.Set("Content-Type", "application/json")
-		callSummary.HttpRequest = httpRequest
-		// Refresh Authorization header with each call...
-		// Only authenticate if client library user wishes to.
-		if myHooks.Authenticate {
-			credentials := &hawk.Credentials{
-				ID:   myHooks.ClientId,
-				Key:  myHooks.AccessToken,
-				Hash: sha256.New,
-			}
-			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if myHooks.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + myHooks.Certificate + "}"))
-			}
-			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
-		}
-		debug("Making http request: %v", httpRequest)
-		resp, err := httpClient.Do(httpRequest)
-		return resp, err, nil
-	}
-
-	// Make HTTP API calls using an exponential backoff algorithm...
-	callSummary.HttpResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
-
-	if err != nil {
-		return result, callSummary, err
-	}
-
-	// now read response into memory, so that we can return the body
-	var body []byte
-	body, err = ioutil.ReadAll(callSummary.HttpResponse.Body)
-
-	if err != nil {
-		return result, callSummary, err
-	}
-
-	callSummary.HttpResponseBody = string(body)
-
-	// if result is passed in as nil, it means the API defines no response body
-	// json
-	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
-		err = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
-	}
-
-	return result, callSummary, err
-}
-
-// The entry point into all the functionality in this package is to create a
-// Hooks object.  It contains your authentication credentials, which are
-// required for all HTTP operations.
-type Hooks struct {
-	// Client ID required by Hawk
-	ClientId string
-	// Access Token required by Hawk
-	AccessToken string
-	// The URL of the API endpoint to hit.
-	// Use "https://hooks.taskcluster.net/v1" for production.
-	// Please note calling hooks.New(clientId string, accessToken string) is an
-	// alternative way to create a Hooks object with BaseURL set to production.
-	BaseURL string
-	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling hooks.New(clientId string, accessToken string) is an
-	// alternative way to create a Hooks object with Authenticate set to true.
-	Authenticate bool
-	// Certificate for temporary credentials
-	Certificate string
-}
-
-// CallSummary provides information about the underlying http request and
-// response issued for a given API call.
-type CallSummary struct {
-	HttpRequest *http.Request
-	// Keep a copy of request body in addition to the *http.Request, since
-	// accessing the Body via the *http.Request object, you get a io.ReadCloser
-	// - and after the request has been made, the body will have been read, and
-	// the data lost... This way, it is still available after the api call
-	// returns.
-	HttpRequestBody string
-	// The Go Type which is marshaled into json and used as the http request
-	// body.
-	HttpRequestObject interface{}
-	HttpResponse      *http.Response
-	// Keep a copy of response body in addition to the *http.Response, since
-	// accessing the Body via the *http.Response object, you get a
-	// io.ReadCloser - and after the response has been read once (to unmarshal
-	// json into native go types) the data is lost... This way, it is still
-	// available after the api call returns.
-	HttpResponseBody string
-	// Keep a record of how many http requests were attempted
-	Attempts int
-}
+type Hooks http.ConnectionData
 
 // Returns a pointer to Hooks, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -211,12 +78,13 @@ type CallSummary struct {
 //  	// handle errors...
 //  }
 func New(clientId string, accessToken string) *Hooks {
-	return &Hooks{
+	myHooks := Hooks(http.ConnectionData{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://hooks.taskcluster.net/v1",
 		Authenticate: true,
-	}
+	})
+	return &myHooks
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -224,8 +92,9 @@ func New(clientId string, accessToken string) *Hooks {
 // This endpoint will return a list of all hook groups with at least one hook.
 //
 // See http://docs.taskcluster.net/services/hooks/#listHookGroups
-func (myHooks *Hooks) ListHookGroups() (*HookGroups, *CallSummary, error) {
-	responseObject, callSummary, err := myHooks.apiCall(nil, "GET", "/hooks", new(HookGroups), nil)
+func (myHooks *Hooks) ListHookGroups() (*HookGroups, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myHooks)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/hooks", new(HookGroups), nil)
 	return responseObject.(*HookGroups), callSummary, err
 }
 
@@ -235,8 +104,9 @@ func (myHooks *Hooks) ListHookGroups() (*HookGroups, *CallSummary, error) {
 // given hook group.
 //
 // See http://docs.taskcluster.net/services/hooks/#listHooks
-func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, *CallSummary, error) {
-	responseObject, callSummary, err := myHooks.apiCall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId), new(HookList), nil)
+func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myHooks)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId), new(HookList), nil)
 	return responseObject.(*HookList), callSummary, err
 }
 
@@ -246,8 +116,9 @@ func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, *CallSummary, er
 // and hookId.
 //
 // See http://docs.taskcluster.net/services/hooks/#hook
-func (myHooks *Hooks) Hook(hookGroupId string, hookId string) (*HookDefinition, *CallSummary, error) {
-	responseObject, callSummary, err := myHooks.apiCall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
+func (myHooks *Hooks) Hook(hookGroupId string, hookId string) (*HookDefinition, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myHooks)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), callSummary, err
 }
 
@@ -257,8 +128,9 @@ func (myHooks *Hooks) Hook(hookGroupId string, hookId string) (*HookDefinition, 
 // for the given hook.
 //
 // See http://docs.taskcluster.net/services/hooks/#getHookSchedule
-func (myHooks *Hooks) GetHookSchedule(hookGroupId string, hookId string) (*HookScheduleResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myHooks.apiCall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/schedule", new(HookScheduleResponse), nil)
+func (myHooks *Hooks) GetHookSchedule(hookGroupId string, hookId string) (*HookScheduleResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myHooks)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/schedule", new(HookScheduleResponse), nil)
 	return responseObject.(*HookScheduleResponse), callSummary, err
 }
 
@@ -275,8 +147,9 @@ func (myHooks *Hooks) GetHookSchedule(hookGroupId string, hookId string) (*HookS
 //   * assume:hook-id:<hookGroupId>/<hookId>
 //
 // See http://docs.taskcluster.net/services/hooks/#createHook
-func (myHooks *Hooks) CreateHook(hookGroupId string, hookId string, payload *HookCreationRequest) (*HookDefinition, *CallSummary, error) {
-	responseObject, callSummary, err := myHooks.apiCall(payload, "PUT", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
+func (myHooks *Hooks) CreateHook(hookGroupId string, hookId string, payload *HookCreationRequest) (*HookDefinition, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myHooks)
+	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), callSummary, err
 }
 
@@ -290,8 +163,9 @@ func (myHooks *Hooks) CreateHook(hookGroupId string, hookId string, payload *Hoo
 //   * assume:hook-id:<hookGroupId>/<hookId>
 //
 // See http://docs.taskcluster.net/services/hooks/#updateHook
-func (myHooks *Hooks) UpdateHook(hookGroupId string, hookId string, payload *HookCreationRequest) (*HookDefinition, *CallSummary, error) {
-	responseObject, callSummary, err := myHooks.apiCall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
+func (myHooks *Hooks) UpdateHook(hookGroupId string, hookId string, payload *HookCreationRequest) (*HookDefinition, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myHooks)
+	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), callSummary, err
 }
 
@@ -303,8 +177,9 @@ func (myHooks *Hooks) UpdateHook(hookGroupId string, hookId string, payload *Hoo
 //   * hooks:modify-hook:<hookGroupId>/<hookId>
 //
 // See http://docs.taskcluster.net/services/hooks/#removeHook
-func (myHooks *Hooks) RemoveHook(hookGroupId string, hookId string) (*CallSummary, error) {
-	_, callSummary, err := myHooks.apiCall(nil, "DELETE", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), nil, nil)
+func (myHooks *Hooks) RemoveHook(hookGroupId string, hookId string) (*http.CallSummary, error) {
+	cd := http.ConnectionData(*myHooks)
+	_, callSummary, err := (&cd).APICall(nil, "DELETE", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), nil, nil)
 	return callSummary, err
 }
 
@@ -466,7 +341,7 @@ type (
 		// any schedules.
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#/properties/nextScheduledDate
-		NextScheduledDate Time `json:"nextScheduledDate"`
+		NextScheduledDate tctime.Time `json:"nextScheduledDate"`
 
 		// See http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#/properties/schedule
 		Schedule Schedule `json:"schedule"`
@@ -664,39 +539,3 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 )
-
-// Wraps time.Time in order that json serialisation/deserialisation can be adapted.
-// Marshaling time.Time types results in RFC3339 dates with nanosecond precision
-// in the user's timezone. In order that the json date representation is consistent
-// between what we send in json payloads, and what taskcluster services return,
-// we wrap time.Time into type hooks.Time which marshals instead
-// to the same format used by the TaskCluster services; UTC based, with millisecond
-// precision, using 'Z' timezone, e.g. 2015-10-27T20:36:19.255Z.
-type Time time.Time
-
-// MarshalJSON implements the json.Marshaler interface.
-// The time is a quoted string in RFC 3339 format, with sub-second precision added if present.
-func (t Time) MarshalJSON() ([]byte, error) {
-	if y := time.Time(t).Year(); y < 0 || y >= 10000 {
-		// RFC 3339 is clear that years are 4 digits exactly.
-		// See golang.org/issue/4556#c15 for more discussion.
-		return nil, errors.New("queue.Time.MarshalJSON: year outside of range [0,9999]")
-	}
-	return []byte(`"` + t.String() + `"`), nil
-}
-
-// UnmarshalJSON implements the json.Unmarshaler interface.
-// The time is expected to be a quoted string in RFC 3339 format.
-func (t *Time) UnmarshalJSON(data []byte) (err error) {
-	// Fractional seconds are handled implicitly by Parse.
-	x := new(time.Time)
-	*x, err = time.Parse(`"`+time.RFC3339+`"`, string(data))
-	*t = Time(*x)
-	return
-}
-
-// Returns the Time in canonical RFC3339 representation, e.g.
-// 2015-10-27T20:36:19.255Z
-func (t Time) String() string {
-	return time.Time(t).UTC().Format("2006-01-02T15:04:05.000Z")
-}

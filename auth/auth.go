@@ -73,26 +73,17 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 29 Dec 2015 at 08:26:00 UTC. The code was generated
+// Tue, 5 Jan 2016 at 20:29:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"net/url"
-	"reflect"
-	"time"
 
-	"github.com/taskcluster/httpbackoff"
-	hawk "github.com/tent/hawk-go"
+	"github.com/taskcluster/taskcluster-client-go/http"
+	"github.com/taskcluster/taskcluster-client-go/tctime"
 	D "github.com/tj/go-debug"
 )
 
@@ -102,130 +93,7 @@ var (
 	debug = D.Debug("auth")
 )
 
-// apiCall is the generic REST API calling method which performs all REST API
-// calls for this library.  Each auto-generated REST API method simply is a
-// wrapper around this method, calling it with specific specific arguments.
-func (myAuth *Auth) apiCall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
-	callSummary := new(CallSummary)
-	callSummary.HttpRequestObject = payload
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		return result, callSummary, err
-	}
-	callSummary.HttpRequestBody = string(jsonPayload)
-
-	httpClient := &http.Client{}
-
-	// function to perform http request - we call this using backoff library to
-	// have exponential backoff in case of intermittent failures (e.g. network
-	// blips or HTTP 5xx errors)
-	httpCall := func() (*http.Response, error, error) {
-		var ioReader io.Reader = nil
-		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
-			ioReader = bytes.NewReader(jsonPayload)
-		}
-		u, err := url.Parse(myAuth.BaseURL + route)
-		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", myAuth.BaseURL+route, myAuth.BaseURL, err)
-		}
-		if query != nil {
-			u.RawQuery = query.Encode()
-		}
-		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
-		if err != nil {
-			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), myAuth.BaseURL, err)
-		}
-		httpRequest.Header.Set("Content-Type", "application/json")
-		callSummary.HttpRequest = httpRequest
-		// Refresh Authorization header with each call...
-		// Only authenticate if client library user wishes to.
-		if myAuth.Authenticate {
-			credentials := &hawk.Credentials{
-				ID:   myAuth.ClientId,
-				Key:  myAuth.AccessToken,
-				Hash: sha256.New,
-			}
-			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if myAuth.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + myAuth.Certificate + "}"))
-			}
-			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
-		}
-		debug("Making http request: %v", httpRequest)
-		resp, err := httpClient.Do(httpRequest)
-		return resp, err, nil
-	}
-
-	// Make HTTP API calls using an exponential backoff algorithm...
-	callSummary.HttpResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
-
-	if err != nil {
-		return result, callSummary, err
-	}
-
-	// now read response into memory, so that we can return the body
-	var body []byte
-	body, err = ioutil.ReadAll(callSummary.HttpResponse.Body)
-
-	if err != nil {
-		return result, callSummary, err
-	}
-
-	callSummary.HttpResponseBody = string(body)
-
-	// if result is passed in as nil, it means the API defines no response body
-	// json
-	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
-		err = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
-	}
-
-	return result, callSummary, err
-}
-
-// The entry point into all the functionality in this package is to create an
-// Auth object.  It contains your authentication credentials, which are
-// required for all HTTP operations.
-type Auth struct {
-	// Client ID required by Hawk
-	ClientId string
-	// Access Token required by Hawk
-	AccessToken string
-	// The URL of the API endpoint to hit.
-	// Use "https://auth.taskcluster.net/v1" for production.
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with BaseURL set to production.
-	BaseURL string
-	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with Authenticate set to true.
-	Authenticate bool
-	// Certificate for temporary credentials
-	Certificate string
-}
-
-// CallSummary provides information about the underlying http request and
-// response issued for a given API call.
-type CallSummary struct {
-	HttpRequest *http.Request
-	// Keep a copy of request body in addition to the *http.Request, since
-	// accessing the Body via the *http.Request object, you get a io.ReadCloser
-	// - and after the request has been made, the body will have been read, and
-	// the data lost... This way, it is still available after the api call
-	// returns.
-	HttpRequestBody string
-	// The Go Type which is marshaled into json and used as the http request
-	// body.
-	HttpRequestObject interface{}
-	HttpResponse      *http.Response
-	// Keep a copy of response body in addition to the *http.Response, since
-	// accessing the Body via the *http.Response object, you get a
-	// io.ReadCloser - and after the response has been read once (to unmarshal
-	// json into native go types) the data is lost... This way, it is still
-	// available after the api call returns.
-	HttpResponseBody string
-	// Keep a record of how many http requests were attempted
-	Attempts int
-}
+type Auth http.ConnectionData
 
 // Returns a pointer to Auth, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -241,27 +109,30 @@ type CallSummary struct {
 //  	// handle errors...
 //  }
 func New(clientId string, accessToken string) *Auth {
-	return &Auth{
+	myAuth := Auth(http.ConnectionData{
 		ClientId:     clientId,
 		AccessToken:  accessToken,
 		BaseURL:      "https://auth.taskcluster.net/v1",
 		Authenticate: true,
-	}
+	})
+	return &myAuth
 }
 
 // Get a list of all clients.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#listClients
-func (myAuth *Auth) ListClients() (*ListClientResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myAuth.apiCall(nil, "GET", "/clients/", new(ListClientResponse), nil)
+func (myAuth *Auth) ListClients() (*ListClientResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/clients/", new(ListClientResponse), nil)
 	return responseObject.(*ListClientResponse), callSummary, err
 }
 
 // Get information about a single client.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#client
-func (myAuth *Auth) Client(clientId string) (*GetClientResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myAuth.apiCall(nil, "GET", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
+func (myAuth *Auth) Client(clientId string) (*GetClientResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), callSummary, err
 }
 
@@ -280,8 +151,9 @@ func (myAuth *Auth) Client(clientId string) (*GetClientResponse, *CallSummary, e
 //   * auth:create-client:<clientId>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#createClient
-func (myAuth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myAuth.apiCall(payload, "PUT", "/clients/"+url.QueryEscape(clientId), new(CreateClientResponse), nil)
+func (myAuth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/clients/"+url.QueryEscape(clientId), new(CreateClientResponse), nil)
 	return responseObject.(*CreateClientResponse), callSummary, err
 }
 
@@ -296,8 +168,9 @@ func (myAuth *Auth) CreateClient(clientId string, payload *CreateClientRequest) 
 //   * auth:reset-access-token:<clientId>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#resetAccessToken
-func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myAuth.apiCall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/reset", new(CreateClientResponse), nil)
+func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/reset", new(CreateClientResponse), nil)
 	return responseObject.(*CreateClientResponse), callSummary, err
 }
 
@@ -309,8 +182,9 @@ func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *C
 //   * auth:update-client:<clientId>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#updateClient
-func (myAuth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myAuth.apiCall(payload, "POST", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
+func (myAuth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), callSummary, err
 }
 
@@ -321,8 +195,9 @@ func (myAuth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) 
 //   * auth:delete-client:<clientId>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#deleteClient
-func (myAuth *Auth) DeleteClient(clientId string) (*CallSummary, error) {
-	_, callSummary, err := myAuth.apiCall(nil, "DELETE", "/clients/"+url.QueryEscape(clientId), nil, nil)
+func (myAuth *Auth) DeleteClient(clientId string) (*http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	_, callSummary, err := (&cd).APICall(nil, "DELETE", "/clients/"+url.QueryEscape(clientId), nil, nil)
 	return callSummary, err
 }
 
@@ -330,8 +205,9 @@ func (myAuth *Auth) DeleteClient(clientId string) (*CallSummary, error) {
 // scopes it expands to.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#listRoles
-func (myAuth *Auth) ListRoles() (*ListRolesResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myAuth.apiCall(nil, "GET", "/roles/", new(ListRolesResponse), nil)
+func (myAuth *Auth) ListRoles() (*ListRolesResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/roles/", new(ListRolesResponse), nil)
 	return responseObject.(*ListRolesResponse), callSummary, err
 }
 
@@ -339,8 +215,9 @@ func (myAuth *Auth) ListRoles() (*ListRolesResponse, *CallSummary, error) {
 // role expands to.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#role
-func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myAuth.apiCall(nil, "GET", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
+func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), callSummary, err
 }
 
@@ -355,8 +232,9 @@ func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, *CallSummary, error) 
 //   * auth:create-role:<roleId>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#createRole
-func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myAuth.apiCall(payload, "PUT", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
+func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), callSummary, err
 }
 
@@ -369,8 +247,9 @@ func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetR
 //   * auth:update-role:<roleId>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#updateRole
-func (myAuth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myAuth.apiCall(payload, "POST", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
+func (myAuth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), callSummary, err
 }
 
@@ -381,8 +260,9 @@ func (myAuth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetR
 //   * auth:delete-role:<roleId>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#deleteRole
-func (myAuth *Auth) DeleteRole(roleId string) (*CallSummary, error) {
-	_, callSummary, err := myAuth.apiCall(nil, "DELETE", "/roles/"+url.QueryEscape(roleId), nil, nil)
+func (myAuth *Auth) DeleteRole(roleId string) (*http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	_, callSummary, err := (&cd).APICall(nil, "DELETE", "/roles/"+url.QueryEscape(roleId), nil, nil)
 	return callSummary, err
 }
 
@@ -412,8 +292,9 @@ func (myAuth *Auth) DeleteRole(roleId string) (*CallSummary, error) {
 //   * auth:aws-s3:<level>:<bucket>/<prefix>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#awsS3Credentials
-func (myAuth *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myAuth.apiCall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse), nil)
+func (myAuth *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse), nil)
 	return responseObject.(*AWSS3CredentialsResponse), callSummary, err
 }
 
@@ -425,8 +306,9 @@ func (myAuth *Auth) AwsS3Credentials(level string, bucket string, prefix string)
 //   * auth:azure-table-access:<account>/<table>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#azureTableSAS
-func (myAuth *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSignatureResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myAuth.apiCall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", new(AzureSharedAccessSignatureResponse), nil)
+func (myAuth *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSignatureResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", new(AzureSharedAccessSignatureResponse), nil)
 	return responseObject.(*AzureSharedAccessSignatureResponse), callSummary, err
 }
 
@@ -438,8 +320,9 @@ func (myAuth *Auth) AzureTableSAS(account string, table string) (*AzureSharedAcc
 // the secret credentials leave this service.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#authenticateHawk
-func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest) (*HawkSignatureAuthenticationResponse, *CallSummary, error) {
-	responseObject, callSummary, err := myAuth.apiCall(payload, "POST", "/authenticate-hawk", new(HawkSignatureAuthenticationResponse), nil)
+func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest) (*HawkSignatureAuthenticationResponse, *http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/authenticate-hawk", new(HawkSignatureAuthenticationResponse), nil)
 	return responseObject.(*HawkSignatureAuthenticationResponse), callSummary, err
 }
 
@@ -454,8 +337,9 @@ func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest
 //   * auth:credentials
 //
 // See http://docs.taskcluster.net/auth/api-docs/#importClients
-func (myAuth *Auth) ImportClients(payload *ExportedClients) (*CallSummary, error) {
-	_, callSummary, err := myAuth.apiCall(payload, "POST", "/import-clients", nil, nil)
+func (myAuth *Auth) ImportClients(payload *ExportedClients) (*http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	_, callSummary, err := (&cd).APICall(payload, "POST", "/import-clients", nil, nil)
 	return callSummary, err
 }
 
@@ -466,8 +350,9 @@ func (myAuth *Auth) ImportClients(payload *ExportedClients) (*CallSummary, error
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#ping
-func (myAuth *Auth) Ping() (*CallSummary, error) {
-	_, callSummary, err := myAuth.apiCall(nil, "GET", "/ping", nil, nil)
+func (myAuth *Auth) Ping() (*http.CallSummary, error) {
+	cd := http.ConnectionData(*myAuth)
+	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
 
@@ -630,7 +515,7 @@ type (
 		// Date and time of when the temporary credentials expires.
 		//
 		// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/expires
-		Expires Time `json:"expires"`
+		Expires tctime.Time `json:"expires"`
 	}
 
 	// Response to a request for an Shared-Access-Signature to access and Azure
@@ -642,7 +527,7 @@ type (
 		// Date and time of when the Shared-Access-Signature expires.
 		//
 		// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/expiry
-		Expiry Time `json:"expiry"`
+		Expiry tctime.Time `json:"expiry"`
 
 		// Shared-Access-Signature string. This is the querystring parameters to
 		// be appened after `?` or `&` depending on whether or not a querystring is
@@ -668,7 +553,7 @@ type (
 		// Date and time where the clients access is set to expire
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/expires
-		Expires Time `json:"expires"`
+		Expires tctime.Time `json:"expires"`
 	}
 
 	// All details about a client including the `accessToken`
@@ -694,7 +579,7 @@ type (
 		// Date and time when this client was created
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/created
-		Created Time `json:"created"`
+		Created tctime.Time `json:"created"`
 
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
@@ -713,24 +598,24 @@ type (
 		// Date and time where the clients access is set to expire
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/expires
-		Expires Time `json:"expires"`
+		Expires tctime.Time `json:"expires"`
 
 		// Date of last time this client was used. Will only be updated every 6 hours
 		// or so this may be off by up-to 6 hours. But it still gives a solid hint
 		// as to whether or not this client is in use.
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/lastDateUsed
-		LastDateUsed Time `json:"lastDateUsed"`
+		LastDateUsed tctime.Time `json:"lastDateUsed"`
 
 		// Date and time of last modification
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/lastModified
-		LastModified Time `json:"lastModified"`
+		LastModified tctime.Time `json:"lastModified"`
 
 		// Date and time of when the `accessToken` was reset last time.
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/lastRotated
-		LastRotated Time `json:"lastRotated"`
+		LastRotated tctime.Time `json:"lastRotated"`
 	}
 
 	// Data to create or update a role.
@@ -784,7 +669,7 @@ type (
 		// Date and time where the clients credentials are set to expire
 		//
 		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/expires
-		Expires Time `json:"expires"`
+		Expires tctime.Time `json:"expires"`
 
 		// Human readable name of this set of credentials, typical
 		// component/server-name or IRC nickname of the user.
@@ -816,7 +701,7 @@ type (
 		// Date and time when this client was created
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/created
-		Created Time `json:"created"`
+		Created tctime.Time `json:"created"`
 
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
@@ -835,24 +720,24 @@ type (
 		// Date and time where the clients access is set to expire
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/expires
-		Expires Time `json:"expires"`
+		Expires tctime.Time `json:"expires"`
 
 		// Date of last time this client was used. Will only be updated every 6 hours
 		// or so this may be off by up-to 6 hours. But it still gives a solid hint
 		// as to whether or not this client is in use.
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastDateUsed
-		LastDateUsed Time `json:"lastDateUsed"`
+		LastDateUsed tctime.Time `json:"lastDateUsed"`
 
 		// Date and time of last modification
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastModified
-		LastModified Time `json:"lastModified"`
+		LastModified tctime.Time `json:"lastModified"`
 
 		// Date and time of when the `accessToken` was reset last time.
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastRotated
-		LastRotated Time `json:"lastRotated"`
+		LastRotated tctime.Time `json:"lastRotated"`
 	}
 
 	// Get all details about a role
@@ -863,7 +748,7 @@ type (
 		// Date and time when this role was created
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/created
-		Created Time `json:"created"`
+		Created tctime.Time `json:"created"`
 
 		// Description of what this role is used for in markdown.
 		// Should include who is the owner, point of contact.
@@ -883,7 +768,7 @@ type (
 		// Date and time of last modification
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/lastModified
-		LastModified Time `json:"lastModified"`
+		LastModified tctime.Time `json:"lastModified"`
 
 		// roleId of the role requested
 		//
@@ -924,40 +809,4 @@ func (this *HawkSignatureAuthenticationResponse) UnmarshalJSON(data []byte) erro
 	}
 	*this = append((*this)[0:0], data...)
 	return nil
-}
-
-// Wraps time.Time in order that json serialisation/deserialisation can be adapted.
-// Marshaling time.Time types results in RFC3339 dates with nanosecond precision
-// in the user's timezone. In order that the json date representation is consistent
-// between what we send in json payloads, and what taskcluster services return,
-// we wrap time.Time into type auth.Time which marshals instead
-// to the same format used by the TaskCluster services; UTC based, with millisecond
-// precision, using 'Z' timezone, e.g. 2015-10-27T20:36:19.255Z.
-type Time time.Time
-
-// MarshalJSON implements the json.Marshaler interface.
-// The time is a quoted string in RFC 3339 format, with sub-second precision added if present.
-func (t Time) MarshalJSON() ([]byte, error) {
-	if y := time.Time(t).Year(); y < 0 || y >= 10000 {
-		// RFC 3339 is clear that years are 4 digits exactly.
-		// See golang.org/issue/4556#c15 for more discussion.
-		return nil, errors.New("queue.Time.MarshalJSON: year outside of range [0,9999]")
-	}
-	return []byte(`"` + t.String() + `"`), nil
-}
-
-// UnmarshalJSON implements the json.Unmarshaler interface.
-// The time is expected to be a quoted string in RFC 3339 format.
-func (t *Time) UnmarshalJSON(data []byte) (err error) {
-	// Fractional seconds are handled implicitly by Parse.
-	x := new(time.Time)
-	*x, err = time.Parse(`"`+time.RFC3339+`"`, string(data))
-	*t = Time(*x)
-	return
-}
-
-// Returns the Time in canonical RFC3339 representation, e.g.
-// 2015-10-27T20:36:19.255Z
-func (t Time) String() string {
-	return time.Time(t).UTC().Format("2006-01-02T15:04:05.000Z")
 }
