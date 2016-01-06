@@ -8,9 +8,9 @@
 // This package was generated from the schema defined at
 // http://references.taskcluster.net/secrets/v1/api.json
 
-// The secrets service, typically available at
-// `tools.taskcluster.net`, is responsible for managing
-// secure data in TaskCluster.
+// The secrets service, is a simple key/value store for secret data
+// guarded by TaskCluster scopes.  It is typically available at
+// `secrets.taskcluster.net`.
 //
 // See: http://docs.taskcluster.net/services/secrets
 //
@@ -32,7 +32,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/secrets/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 6 Jan 2016 at 10:39:00 UTC. The code was generated
+// Wed, 6 Jan 2016 at 20:33:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package secrets
 
@@ -99,7 +99,7 @@ func (mySecrets *Secrets) Set(name string, payload *Secret) (*tcclient.CallSumma
 // Update a secret associated with some key.
 //
 // Required scopes:
-//   * secrets:update:<name>
+//   * secrets:set:<name>
 //
 // See http://docs.taskcluster.net/services/secrets/#update
 func (mySecrets *Secrets) Update(name string, payload *Secret) (*tcclient.CallSummary, error) {
@@ -113,7 +113,7 @@ func (mySecrets *Secrets) Update(name string, payload *Secret) (*tcclient.CallSu
 // Delete the secret attached to some key.
 //
 // Required scopes:
-//   * secrets:remove:<name>
+//   * secrets:set:<name>
 //
 // See http://docs.taskcluster.net/services/secrets/#remove
 func (mySecrets *Secrets) Remove(name string) (*tcclient.CallSummary, error) {
@@ -138,6 +138,17 @@ func (mySecrets *Secrets) Get(name string) (*Secret, *tcclient.CallSummary, erro
 
 // Stability: *** EXPERIMENTAL ***
 //
+// List the names of all visible secrets.
+//
+// See http://docs.taskcluster.net/services/secrets/#list
+func (mySecrets *Secrets) List() (*AListOfTaskClusterSecrets, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*mySecrets)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/secrets", new(AListOfTaskClusterSecrets), nil)
+	return responseObject.(*AListOfTaskClusterSecrets), callSummary, err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
 // Documented later...
 //
 // **Warning** this api end-point is **not stable**.
@@ -150,6 +161,17 @@ func (mySecrets *Secrets) Ping() (*tcclient.CallSummary, error) {
 }
 
 type (
+
+	// Message containing a list of secret names
+	//
+	// See http://schemas.taskcluster.net/secrets/v1/secret-list.json#
+	AListOfTaskClusterSecrets struct {
+
+		// Secret names
+		//
+		// See http://schemas.taskcluster.net/secrets/v1/secret-list.json#/properties/secrets
+		Secrets []string `json:"secrets"`
+	}
 
 	// Message containing a TaskCluster Secret
 	//

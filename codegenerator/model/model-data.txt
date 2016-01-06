@@ -1,4 +1,4 @@
-Generated: 1452076770
+Generated: 1452112408
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2856,7 +2856,9 @@ Properties
     IsOutputSchema         = 'false'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/expires'
   Property 'hookGroupId' =
-    MaxLength              = '255'
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
     Type                   = 'string'
     TypeName               = 'HookGroupId'
     IsInputSchema          = 'false'
@@ -9796,9 +9798,9 @@ http://references.taskcluster.net/secrets/v1/api.json
 Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'TaskCluster Secrets API Documentation'
-Description = 'The secrets service, typically available at
-`tools.taskcluster.net`, is responsible for managing
-secure data in TaskCluster.'
+Description = 'The secrets service, is a simple key/value store for secret data
+guarded by TaskCluster scopes.  It is typically available at
+`secrets.taskcluster.net`.'
 Base URL    = 'https://secrets.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
@@ -9821,7 +9823,7 @@ Entry 1     =
     Entry Query        = '[]'
     Entry Name        = 'update'
     Entry Stability   = 'experimental'
-    Entry Scopes      = '[[secrets:update:<name>]]'
+    Entry Scopes      = '[[secrets:set:<name>]]'
     Entry Input       = 'http://schemas.taskcluster.net/secrets/v1/secret.json#'
     Entry Output      = ''
     Entry Title       = 'Update A Secret'
@@ -9834,7 +9836,7 @@ Entry 2     =
     Entry Query        = '[]'
     Entry Name        = 'remove'
     Entry Stability   = 'experimental'
-    Entry Scopes      = '[[secrets:remove:<name>]]'
+    Entry Scopes      = '[[secrets:set:<name>]]'
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Delete Secret'
@@ -9855,6 +9857,19 @@ Entry 3     =
 Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'get'
+    Entry Route       = '/secrets'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'list'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#'
+    Entry Title       = 'List Secrets'
+    Entry Description = 'List the names of all visible secrets.'
+Entry 5     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
     Entry Route       = '/ping'
     Entry Args        = '[]'
     Entry Query        = '[]'
@@ -9867,6 +9882,38 @@ Entry 4     =
     Entry Description = 'Documented later...
 
 **Warning** this api end-point is **not stable**.'
+
+
+http://schemas.taskcluster.net/secrets/v1/secret-list.json#
+===========================================================
+Additional Properties  = 'false'
+Description            = 'Message containing a list of secret names
+'
+ID                     = 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#'
+Properties
+  Property 'secrets' =
+    Description            = 'Secret names'
+    Items
+      Description            = 'Secret name'
+      Title                  = 'Secret'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#/properties/secrets/items'
+    Type                   = 'array'
+    TypeName               = 'Secrets'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#/properties/secrets'
+Required               = '[secrets]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'A list of TaskCluster Secrets'
+Type                   = 'object'
+TypeName               = 'AListOfTaskClusterSecrets'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#'
 
 
 http://schemas.taskcluster.net/secrets/v1/secret.json#

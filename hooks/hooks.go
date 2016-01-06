@@ -43,7 +43,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 6 Jan 2016 at 10:39:00 UTC. The code was generated
+// Wed, 6 Jan 2016 at 20:33:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -280,7 +280,9 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/expires
 		Expires string `json:"expires"`
 
-		// Max length: 255
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/hookGroupId
 		HookGroupId string `json:"hookGroupId"`
