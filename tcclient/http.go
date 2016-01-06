@@ -86,13 +86,13 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 		// Only authenticate if client library user wishes to.
 		if connectionData.Authenticate {
 			credentials := &hawk.Credentials{
-				ID:   connectionData.ClientId,
-				Key:  connectionData.AccessToken,
+				ID:   connectionData.Credentials.ClientId,
+				Key:  connectionData.Credentials.AccessToken,
 				Hash: sha256.New,
 			}
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if connectionData.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + connectionData.Certificate + "}"))
+			if connectionData.Credentials.Certificate != "" {
+				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + connectionData.Credentials.Certificate + "}"))
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}

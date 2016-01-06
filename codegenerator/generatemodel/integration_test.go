@@ -21,8 +21,9 @@ import (
 //
 // Note, no credentials are needed, so this can be run even on travis-ci.org, for example.
 func TestFindLatestBuildbotTask(t *testing.T) {
-	Index := index.New("", "")
-	Queue := queue.New("", "")
+	creds := tcclient.Credentials{}
+	Index := index.New(creds)
+	Queue := queue.New(creds)
 	itr, _, err := Index.FindTask("buildbot.branches.mozilla-central.linux64.l10n")
 	if err != nil {
 		t.Fatalf("%v\n", err)
@@ -60,8 +61,11 @@ func TestDefineTask(t *testing.T) {
 	if clientId == "" || accessToken == "" {
 		t.Skip("Skipping test TestDefineTask since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
 	}
-	myQueue := queue.New(clientId, accessToken)
-	myQueue.Certificate = certificate
+	myQueue := queue.New(tcclient.Credentials{
+		ClientId:    clientId,
+		AccessToken: accessToken,
+		Certificate: certificate,
+	})
 
 	taskId := slugid.Nice()
 	created := time.Now()

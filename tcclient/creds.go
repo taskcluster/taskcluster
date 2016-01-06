@@ -13,14 +13,20 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 )
 
-// The entry point into all the functionality in this package is to create a
-// ConnectionData object. It contains authentication credentials, and a service
-// endpoint, which are required for all HTTP operations.
-type ConnectionData struct {
+type Credentials struct {
 	// Client ID required by Hawk
 	ClientId string
 	// Access Token required by Hawk
 	AccessToken string
+	// Certificate for temporary credentials
+	Certificate string
+}
+
+// The entry point into all the functionality in this package is to create a
+// ConnectionData object. It contains authentication credentials, and a service
+// endpoint, which are required for all HTTP operations.
+type ConnectionData struct {
+	Credentials Credentials
 	// The URL of the API endpoint to hit.
 	// Use "https://auth.taskcluster.net/v1" for production.
 	// Please note calling auth.New(clientId string, accessToken string) is an
@@ -30,8 +36,6 @@ type ConnectionData struct {
 	// Please note calling auth.New(clientId string, accessToken string) is an
 	// alternative way to create an Auth object with Authenticate set to true.
 	Authenticate bool
-	// Certificate for temporary credentials
-	Certificate string
 }
 
 type TemporaryCertificate struct {
@@ -53,7 +57,7 @@ type Certificate struct {
 // scopes. The duration may not be more than 31 days.
 //
 // See http://docs.taskcluster.net/auth/temporary-credentials/
-func (permaCreds *ConnectionData) CreateTemporaryCredentials(duration time.Duration, scopes []string) (tempCreds *ConnectionData, err error) {
+func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
 
 	if duration > 31*24*time.Hour {
 		return nil, errors.New("Temporary credentials must expire within 31 days; however a duration of " + duration.String() + " was specified to (*tcclient.ConnectionData).CreateTemporaryCredentials(...) method")
@@ -92,12 +96,10 @@ func (permaCreds *ConnectionData) CreateTemporaryCredentials(duration time.Durat
 		return
 	}
 
-	tempCreds = &ConnectionData{
-		ClientId:     permaCreds.ClientId,
-		AccessToken:  tempAccessToken,
-		BaseURL:      permaCreds.BaseURL,
-		Authenticate: permaCreds.Authenticate,
-		Certificate:  string(jsonCert),
+	tempCreds = &Credentials{
+		ClientId:    permaCreds.ClientId,
+		AccessToken: tempAccessToken,
+		Certificate: string(jsonCert),
 	}
 
 	return
