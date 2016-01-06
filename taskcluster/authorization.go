@@ -17,6 +17,12 @@ type delegationOptions struct {
 	Scopes []string `json:"authorizedScopes"`
 }
 
+func setAuthExt(auth *hawk.Auth, certificate string) {
+	if certificate != "" {
+		auth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + certificate + "}"))
+	}
+}
+
 func getAuth(clientId, accessToken, certificate string, http *http.Request) *hawk.Auth {
 	// Create the hawk authentication string from the request...
 	credentials := &hawk.Credentials{
@@ -25,9 +31,7 @@ func getAuth(clientId, accessToken, certificate string, http *http.Request) *haw
 		Hash: sha256.New,
 	}
 	auth := hawk.NewRequestAuth(http, credentials, 0)
-	if certificate != "" {
-		auth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + certificate + "}"))
-	}
+	setAuthExt(auth, certificate)
 	return auth
 }
 
@@ -42,9 +46,7 @@ func Bewit(clientId, accessToken, certificate, uri string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if certificate != "" {
-		auth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + certificate + "}"))
-	}
+	setAuthExt(auth, certificate)
 
 	bewit := auth.Bewit()
 	return fmt.Sprintf("%s?bewit=%s", uri, bewit), nil
