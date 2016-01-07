@@ -59,7 +59,8 @@ suite("TaskCluster-Secrets", () => {
       apiCall:    "set",
       args:       testValueExpires2,
       name:       "captain:" + FOO_KEY,
-      statusCode: 409
+      statusCode: 409,
+      errMessage: "A resource by that name already exists."
     },
     {
       testName:   "Captain (read only), read foo.",
@@ -82,7 +83,8 @@ suite("TaskCluster-Secrets", () => {
       apiCall:    "update",
       name:        "captain:" + FOO_KEY + "Je_n_existe_pas",
       args:       testValueExpires2,
-      statusCode: 404
+      statusCode: 404,
+      errMessage: "Secret not found"
     },
     {
       testName:   "Captain (read only), read updated foo.",
@@ -118,14 +120,16 @@ suite("TaskCluster-Secrets", () => {
       clientName: "captain-read",
       apiCall:    "get",
       name:        "captain:" + FOO_KEY,
-      statusCode: 404
+      statusCode: 404,
+      errMessage: "Secret not found"
     },
     {
       testName:   "Captain (write only), delete already deleted foo.",
       clientName: "captain-write",
       apiCall:    "remove",
       name:        "captain:" + FOO_KEY,
-      statusCode: 404
+      statusCode: 404,
+      errMessage: "Secret not found"
     },
     {
       testName:   "Captain (write only), write bar that is expired.",
@@ -140,7 +144,8 @@ suite("TaskCluster-Secrets", () => {
       clientName: "captain-read",
       apiCall:    "get",
       name:        "captain:" + BAR_KEY,
-      statusCode: 410
+      statusCode: 410,
+      errMessage: "The requested resource has expired."
     },
     {
       testName:   "Captain (write only), delete bar.",
@@ -164,6 +169,9 @@ suite("TaskCluster-Secrets", () => {
       } catch (e) {
         if (e.statusCode) {
           assert.deepEqual(options.statusCode, e.statusCode);
+          if (options.errMessage) {
+            assert.deepEqual(options.errMessage, e.body.message);
+          }
         } else {
           throw e; // if there's no statusCode this isn't an API error
         }
