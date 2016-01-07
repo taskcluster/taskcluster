@@ -1,4 +1,4 @@
-Generated: 1452112408
+Generated: 1452184073
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -9805,7 +9805,7 @@ Base URL    = 'https://secrets.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'put'
-    Entry Route       = '/secrets/<name>'
+    Entry Route       = '/secret/<name>'
     Entry Args        = '[name]'
     Entry Query        = '[]'
     Entry Name        = 'set'
@@ -9818,7 +9818,7 @@ Entry 0     =
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'post'
-    Entry Route       = '/secrets/<name>'
+    Entry Route       = '/secret/<name>'
     Entry Args        = '[name]'
     Entry Query        = '[]'
     Entry Name        = 'update'
@@ -9831,7 +9831,7 @@ Entry 1     =
 Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'delete'
-    Entry Route       = '/secrets/<name>'
+    Entry Route       = '/secret/<name>'
     Entry Args        = '[name]'
     Entry Query        = '[]'
     Entry Name        = 'remove'
@@ -9844,7 +9844,7 @@ Entry 2     =
 Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'get'
-    Entry Route       = '/secrets/<name>'
+    Entry Route       = '/secret/<name>'
     Entry Args        = '[name]'
     Entry Query        = '[]'
     Entry Name        = 'get'
@@ -9908,9 +9908,9 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#/properties/secrets'
 Required               = '[secrets]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'A list of TaskCluster Secrets'
+Title                  = 'Secrets List'
 Type                   = 'object'
-TypeName               = 'AListOfTaskClusterSecrets'
+TypeName               = 'SecretsList'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'true'
 SourceURL              = 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#'

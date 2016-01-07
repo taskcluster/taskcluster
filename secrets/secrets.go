@@ -32,7 +32,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/secrets/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 6 Jan 2016 at 20:33:00 UTC. The code was generated
+// Thu, 7 Jan 2016 at 16:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package secrets
 
@@ -90,7 +90,7 @@ func New(credentials tcclient.Credentials) *Secrets {
 // See http://docs.taskcluster.net/services/secrets/#set
 func (mySecrets *Secrets) Set(name string, payload *Secret) (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
-	_, callSummary, err := (&cd).APICall(payload, "PUT", "/secrets/"+url.QueryEscape(name), nil, nil)
+	_, callSummary, err := (&cd).APICall(payload, "PUT", "/secret/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
 
@@ -104,7 +104,7 @@ func (mySecrets *Secrets) Set(name string, payload *Secret) (*tcclient.CallSumma
 // See http://docs.taskcluster.net/services/secrets/#update
 func (mySecrets *Secrets) Update(name string, payload *Secret) (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
-	_, callSummary, err := (&cd).APICall(payload, "POST", "/secrets/"+url.QueryEscape(name), nil, nil)
+	_, callSummary, err := (&cd).APICall(payload, "POST", "/secret/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
 
@@ -118,7 +118,7 @@ func (mySecrets *Secrets) Update(name string, payload *Secret) (*tcclient.CallSu
 // See http://docs.taskcluster.net/services/secrets/#remove
 func (mySecrets *Secrets) Remove(name string) (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
-	_, callSummary, err := (&cd).APICall(nil, "DELETE", "/secrets/"+url.QueryEscape(name), nil, nil)
+	_, callSummary, err := (&cd).APICall(nil, "DELETE", "/secret/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
 
@@ -132,7 +132,7 @@ func (mySecrets *Secrets) Remove(name string) (*tcclient.CallSummary, error) {
 // See http://docs.taskcluster.net/services/secrets/#get
 func (mySecrets *Secrets) Get(name string) (*Secret, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
-	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/secrets/"+url.QueryEscape(name), new(Secret), nil)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/secret/"+url.QueryEscape(name), new(Secret), nil)
 	return responseObject.(*Secret), callSummary, err
 }
 
@@ -141,10 +141,10 @@ func (mySecrets *Secrets) Get(name string) (*Secret, *tcclient.CallSummary, erro
 // List the names of all visible secrets.
 //
 // See http://docs.taskcluster.net/services/secrets/#list
-func (mySecrets *Secrets) List() (*AListOfTaskClusterSecrets, *tcclient.CallSummary, error) {
+func (mySecrets *Secrets) List() (*SecretsList, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
-	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/secrets", new(AListOfTaskClusterSecrets), nil)
-	return responseObject.(*AListOfTaskClusterSecrets), callSummary, err
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/secrets", new(SecretsList), nil)
+	return responseObject.(*SecretsList), callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -165,7 +165,7 @@ type (
 	// Message containing a list of secret names
 	//
 	// See http://schemas.taskcluster.net/secrets/v1/secret-list.json#
-	AListOfTaskClusterSecrets struct {
+	SecretsList struct {
 
 		// Secret names
 		//
