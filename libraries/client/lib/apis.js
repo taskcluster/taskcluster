@@ -607,6 +607,120 @@ module.exports = {
     },
     "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json"
   },
+  "Github": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "baseUrl": "https://taskcluster-github.herokuapp.com/v1",
+      "description": "The github service, typically available at\n`github.taskcluster.net`, is responsible for publishing pulse\nmessages in response to GitHub events.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks",
+      "entries": [
+        {
+          "args": [
+          ],
+          "description": "Capture a GitHub event and publish it via pulse, if it's a push\nor pull request.",
+          "method": "post",
+          "name": "githubWebHookConsumer",
+          "route": "/github",
+          "scopes": [
+            [
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Consume GitHub WebHook",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "method": "get",
+          "name": "ping",
+          "route": "/ping",
+          "stability": "experimental",
+          "title": "Ping Server",
+          "type": "function"
+        }
+      ],
+      "title": "TaskCluster GitHub API Documentation",
+      "version": 0
+    },
+    "referenceUrl": "http://references.taskcluster.net/github/v1/api.json"
+  },
+  "GithubEvents": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
+      "description": "The github service, typically available at\n`github.taskcluster.net`, is responsible for publishing a pulse\nmessage for supported github events.\n\nThis document describes the exchange offered by the taskcluster\ngithub service",
+      "entries": [
+        {
+          "description": "When a GitHub pull request event is posted it will be broadcast on this\nexchange with the designated `organization` and `repository`\nin the routing-key along with event specific metadata in the payload.",
+          "exchange": "pull-request",
+          "name": "pullRequest",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "organization",
+              "required": true,
+              "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            },
+            {
+              "multipleWords": false,
+              "name": "repository",
+              "required": true,
+              "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            },
+            {
+              "multipleWords": false,
+              "name": "action",
+              "required": true,
+              "summary": "The GitHub `action` which triggered an event. See for possible values see the payload actions property."
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#",
+          "title": "GitHub Pull Request Event",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "When a GitHub push event is posted it will be broadcast on this\nexchange with the designated `organization` and `repository`\nin the routing-key along with event specific metadata in the payload.",
+          "exchange": "push",
+          "name": "push",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "organization",
+              "required": true,
+              "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            },
+            {
+              "multipleWords": false,
+              "name": "repository",
+              "required": true,
+              "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/github/v1/github-push-message.json#",
+          "title": "GitHub push Event",
+          "type": "topic-exchange"
+        }
+      ],
+      "exchangePrefix": "exchange/taskcluster-github/v1/",
+      "title": "TaskCluster-Github Exchanges",
+      "version": 0
+    },
+    "referenceUrl": "http://references.taskcluster.net/github/v1/exchanges.json"
+  },
   "Hooks": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
@@ -952,7 +1066,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
-          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**, the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then the poster will be required to posses the\nscope `queue:route:<route>`. And when the an AMQP message about the task\nis published the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.",
+          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**, the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.\n\n**Important** Any scopes the task requires are also required for creating\nthe task. Please see the Request Payload (Task Definition) for details.",
           "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
           "method": "put",
           "name": "createTask",
@@ -961,6 +1075,11 @@ module.exports = {
           "scopes": [
             [
               "queue:create-task:<provisionerId>/<workerType>"
+            ],
+            [
+              "queue:define-task:<provisionerId>/<workerType>",
+              "queue:task-group-id:<schedulerId>/<taskGroupId>",
+              "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>"
             ]
           ],
           "stability": "experimental",
@@ -971,7 +1090,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
-          "description": "Define a task without scheduling it. This API end-point allows you to\nupload a task definition without having scheduled. The task won't be\nreported as pending until it is scheduled, see the scheduleTask API \nend-point.\n\nThe purpose of this API end-point is allow schedulers to upload task\ndefinitions without the tasks becoming _pending_ immediately. This useful\nif you have a set of dependent tasks. Then you can upload all the tasks\nand when the dependencies of a tasks have been resolved, you can schedule\nthe task by calling `/task/:taskId/schedule`. This eliminates the need to\nstore tasks somewhere else while waiting for dependencies to resolve.\n\n**Note** this operation is **idempotent**, as long as you upload the same\ntask definition as previously defined this operation is safe to retry.",
+          "description": "Define a task without scheduling it. This API end-point allows you to\nupload a task definition without having scheduled. The task won't be\nreported as pending until it is scheduled, see the scheduleTask API \nend-point.\n\nThe purpose of this API end-point is allow schedulers to upload task\ndefinitions without the tasks becoming _pending_ immediately. This useful\nif you have a set of dependent tasks. Then you can upload all the tasks\nand when the dependencies of a tasks have been resolved, you can schedule\nthe task by calling `/task/:taskId/schedule`. This eliminates the need to\nstore tasks somewhere else while waiting for dependencies to resolve.\n\n**Important** Any scopes the task requires are also required for defining\nthe task. Please see the Request Payload (Task Definition) for details.\n\n**Note** this operation is **idempotent**, as long as you upload the same\ntask definition as previously defined this operation is safe to retry.",
           "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
           "method": "post",
           "name": "defineTask",
@@ -983,6 +1102,10 @@ module.exports = {
             ],
             [
               "queue:create-task:<provisionerId>/<workerType>"
+            ],
+            [
+              "queue:define-task:<provisionerId>/<workerType>",
+              "queue:task-group-id:<schedulerId>/<taskGroupId>"
             ]
           ],
           "stability": "experimental",
@@ -1002,6 +1125,9 @@ module.exports = {
             [
               "queue:schedule-task",
               "assume:scheduler-id:<schedulerId>/<taskGroupId>"
+            ],
+            [
+              "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>"
             ]
           ],
           "stability": "experimental",
@@ -1021,6 +1147,9 @@ module.exports = {
             [
               "queue:rerun-task",
               "assume:scheduler-id:<schedulerId>/<taskGroupId>"
+            ],
+            [
+              "queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>"
             ]
           ],
           "stability": "experimental",
@@ -1040,6 +1169,9 @@ module.exports = {
             [
               "queue:cancel-task",
               "assume:scheduler-id:<schedulerId>/<taskGroupId>"
+            ],
+            [
+              "queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>"
             ]
           ],
           "stability": "experimental",
@@ -1060,6 +1192,9 @@ module.exports = {
             [
               "queue:poll-task-urls",
               "assume:worker-type:<provisionerId>/<workerType>"
+            ],
+            [
+              "queue:poll-task-urls:<provisionerId>/<workerType>"
             ]
           ],
           "stability": "experimental",
@@ -1082,6 +1217,10 @@ module.exports = {
               "queue:claim-task",
               "assume:worker-type:<provisionerId>/<workerType>",
               "assume:worker-id:<workerGroup>/<workerId>"
+            ],
+            [
+              "queue:claim-task:<provisionerId>/<workerType>",
+              "queue:worker-id:<workerGroup>/<workerId>"
             ]
           ],
           "stability": "experimental",
@@ -1104,7 +1243,7 @@ module.exports = {
               "assume:worker-id:<workerGroup>/<workerId>"
             ],
             [
-              "queue:claim-task:<taskId>/<runId>"
+              "queue:reclaim-task:<taskId>/<runId>"
             ]
           ],
           "stability": "experimental",
@@ -1127,7 +1266,7 @@ module.exports = {
               "assume:worker-id:<workerGroup>/<workerId>"
             ],
             [
-              "queue:claim-task:<taskId>/<runId>"
+              "queue:resolve-task:<taskId>/<runId>"
             ]
           ],
           "stability": "experimental",
@@ -1150,7 +1289,7 @@ module.exports = {
               "assume:worker-id:<workerGroup>/<workerId>"
             ],
             [
-              "queue:claim-task:<taskId>/<runId>"
+              "queue:resolve-task:<taskId>/<runId>"
             ]
           ],
           "stability": "experimental",
@@ -1174,7 +1313,7 @@ module.exports = {
               "assume:worker-id:<workerGroup>/<workerId>"
             ],
             [
-              "queue:claim-task:<taskId>/<runId>"
+              "queue:resolve-task:<taskId>/<runId>"
             ]
           ],
           "stability": "experimental",
@@ -1199,8 +1338,7 @@ module.exports = {
               "assume:worker-id:<workerGroup>/<workerId>"
             ],
             [
-              "queue:create-artifact:<name>",
-              "queue:claim-task:<taskId>/<runId>"
+              "queue:create-artifact:<taskId>/<runId>"
             ]
           ],
           "stability": "experimental",
@@ -1826,7 +1964,7 @@ module.exports = {
           "args": [
             "taskGraphId"
           ],
-          "description": "Create a new task-graph, the `status` of the resulting JSON is a\ntask-graph status structure, you can find the `taskGraphId` in this\nstructure.\n\n**Referencing required tasks**, it is possible to reference other tasks\nin the task-graph that must be completed successfully before a task is\nscheduled. You just specify the `taskId` in the list of `required` tasks.\nSee the example below, where the second task requires the first task.\n```js\n{\n  ...\n  tasks: [\n    {\n      taskId:     \"XgvL0qtSR92cIWpcwdGKCA\",\n      requires:   [],\n      ...\n    },\n    {\n      taskId:     \"73GsfK62QNKAk2Hg1EEZTQ\",\n      requires:   [\"XgvL0qtSR92cIWpcwdGKCA\"],\n      task: {\n        payload: {\n          env: {\n            DEPENDS_ON:  \"XgvL0qtSR92cIWpcwdGKCA\"\n          }\n          ...\n        }\n        ...\n      },\n      ...\n    }\n  ]\n}\n```\n\n**The `schedulerId` property**, defaults to the `schedulerId` of this\nscheduler in production that is `\"task-graph-scheduler\"`. This\nproperty must be either undefined or set to `\"task-graph-scheduler\"`,\notherwise the task-graph will be rejected.\n\n**The `taskGroupId` property**, defaults to the `taskGraphId` of the\ntask-graph submitted, and if provided much be the `taskGraphId` of\nthe task-graph. Otherwise the task-graph will be rejected.\n\n**Task-graph scopes**, a task-graph is assigned a set of scopes, just\nlike tasks. Tasks within a task-graph cannot have scopes beyond those\nthe task-graph has. The task-graph scheduler will execute all requests\non behalf of a task-graph using the set of scopes assigned to the\ntask-graph. Thus, if you are submitting tasks to `my-worker-type` under\n`my-provisioner` it's important that your task-graph has the scope\nrequired to define tasks for this `provisionerId` and `workerType`.\nSee the queue for details on permissions required. Note, the task-graph\ndoes not require permissions to schedule the tasks. This is done with\nscopes provided by the task-graph scheduler.\n\n**Task-graph specific routing-keys**, using the `taskGraph.routes`\nproperty you may define task-graph specific routing-keys. If a task-graph\nhas a task-graph specific routing-key: `<route>`, then the poster will\nbe required to posses the scope `scheduler:route:<route>`. And when the\nan AMQP message about the task-graph is published the message will be\nCC'ed with the routing-key: `route.<route>`. This is useful if you want\nanother component to listen for completed tasks you have posted.",
+          "description": "Create a new task-graph, the `status` of the resulting JSON is a\ntask-graph status structure, you can find the `taskGraphId` in this\nstructure.\n\n**Referencing required tasks**, it is possible to reference other tasks\nin the task-graph that must be completed successfully before a task is\nscheduled. You just specify the `taskId` in the list of `required` tasks.\nSee the example below, where the second task requires the first task.\n```js\n{\n  ...\n  tasks: [\n    {\n      taskId:     \"XgvL0qtSR92cIWpcwdGKCA\",\n      requires:   [],\n      ...\n    },\n    {\n      taskId:     \"73GsfK62QNKAk2Hg1EEZTQ\",\n      requires:   [\"XgvL0qtSR92cIWpcwdGKCA\"],\n      task: {\n        payload: {\n          env: {\n            DEPENDS_ON:  \"XgvL0qtSR92cIWpcwdGKCA\"\n          }\n          ...\n        }\n        ...\n      },\n      ...\n    }\n  ]\n}\n```\n\n**The `schedulerId` property**, defaults to the `schedulerId` of this\nscheduler in production that is `\"task-graph-scheduler\"`. This\nproperty must be either undefined or set to `\"task-graph-scheduler\"`,\notherwise the task-graph will be rejected.\n\n**The `taskGroupId` property**, defaults to the `taskGraphId` of the\ntask-graph submitted, and if provided much be the `taskGraphId` of\nthe task-graph. Otherwise the task-graph will be rejected.\n\n**Task-graph scopes**, a task-graph is assigned a set of scopes, just\nlike tasks. Tasks within a task-graph cannot have scopes beyond those\nthe task-graph has. The task-graph scheduler will execute all requests\non behalf of a task-graph using the set of scopes assigned to the\ntask-graph. Thus, if you are submitting tasks to `my-worker-type` under\n`my-provisioner` it's important that your task-graph has the scope\nrequired to define tasks for this `provisionerId` and `workerType`.\n(`queue:define-task:..` or `queue:create-task:..`; see the queue for\ndetails on scopes required). Note, the task-graph does not require\npermissions to schedule the tasks (`queue:schedule-task:..`), as this is\ndone with scopes provided by the task-graph scheduler.\n\n**Task-graph specific routing-keys**, using the `taskGraph.routes`\nproperty you may define task-graph specific routing-keys. If a task-graph\nhas a task-graph specific routing-key: `<route>`, then the poster will\nbe required to posses the scope `scheduler:route:<route>`. And when the\nan AMQP message about the task-graph is published the message will be\nCC'ed with the routing-key: `route.<route>`. This is useful if you want\nanother component to listen for completed tasks you have posted.",
           "input": "http://schemas.taskcluster.net/scheduler/v1/task-graph.json#",
           "method": "put",
           "name": "createTaskGraph",
@@ -2230,7 +2368,7 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://secrets.taskcluster.net/v1",
-      "description": "The secrets service, typically available at\n`tools.taskcluster.net`, is responsible for managing\nsecure data in TaskCluster.",
+      "description": "The secrets service, is a simple key/value store for secret data\nguarded by TaskCluster scopes.  It is typically available at\n`secrets.taskcluster.net`.",
       "entries": [
         {
           "args": [
@@ -2240,7 +2378,7 @@ module.exports = {
           "input": "http://schemas.taskcluster.net/secrets/v1/secret.json#",
           "method": "put",
           "name": "set",
-          "route": "/secrets/<name>",
+          "route": "/secret/<name>",
           "scopes": [
             [
               "secrets:set:<name>"
@@ -2258,10 +2396,10 @@ module.exports = {
           "input": "http://schemas.taskcluster.net/secrets/v1/secret.json#",
           "method": "post",
           "name": "update",
-          "route": "/secrets/<name>",
+          "route": "/secret/<name>",
           "scopes": [
             [
-              "secrets:update:<name>"
+              "secrets:set:<name>"
             ]
           ],
           "stability": "experimental",
@@ -2275,10 +2413,10 @@ module.exports = {
           "description": "Delete the secret attached to some key.",
           "method": "delete",
           "name": "remove",
-          "route": "/secrets/<name>",
+          "route": "/secret/<name>",
           "scopes": [
             [
-              "secrets:remove:<name>"
+              "secrets:set:<name>"
             ]
           ],
           "stability": "experimental",
@@ -2293,7 +2431,7 @@ module.exports = {
           "method": "get",
           "name": "get",
           "output": "http://schemas.taskcluster.net/secrets/v1/secret.json#",
-          "route": "/secrets/<name>",
+          "route": "/secret/<name>",
           "scopes": [
             [
               "secrets:get:<name>"
@@ -2301,6 +2439,18 @@ module.exports = {
           ],
           "stability": "experimental",
           "title": "Read Secret",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "List the names of all visible secrets.",
+          "method": "get",
+          "name": "list",
+          "output": "http://schemas.taskcluster.net/secrets/v1/secret-list.json#",
+          "route": "/secrets",
+          "stability": "experimental",
+          "title": "List Secrets",
           "type": "function"
         },
         {
