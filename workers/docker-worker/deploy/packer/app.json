@@ -4,7 +4,8 @@
   "variables": {
     "npmPackage":          "",
     "templateContents":    "",
-    "sourceAMI":           "ami-75fce145",
+    "hvmSourceAMI":        "ami-75fce145",
+    "pvSourceAMI":         "ami-186e7579",
     "fsType":              "",
     "workerRevision":      ""
   },
@@ -38,9 +39,10 @@
   "builders": [
     {
       "type":           "amazon-ebs",
+      "name":           "hvm-builder",
       "region":         "us-west-2",
       "ami_regions":    ["us-west-1", "us-east-1"],
-      "source_ami":     "{{user `sourceAMI`}}",
+      "source_ami":     "{{user `hvmSourceAMI`}}",
       "instance_type":  "m3.large",
       "ssh_username":   "ubuntu",
       "ami_name":       "taskcluster-docker-worker-{{user `fsType`}}-{{timestamp}}",
@@ -48,11 +50,12 @@
         "OS_Version":       "Ubuntu",
         "Release":          "Latest",
         "Revision":         "{{user `workerRevision`}}",
-        "Base_AMI":         "{{user `sourceAMI`}}"
+        "Base_AMI":         "{{user `hvmSourceAMI`}}"
       }
     },
     {
       "type":           "amazon-ebs",
+      "name":           "pv-builder",
       "region":         "us-west-2",
       "ami_regions":    ["us-west-1", "us-east-1"],
       "source_ami":     "{{user `pvSourceAMI`}}",

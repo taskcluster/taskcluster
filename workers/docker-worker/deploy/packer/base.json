@@ -45,6 +45,7 @@
   "builders": [
     {
       "type": "amazon-ebs",
+      "name": "hvm-builder",
       "region": "us-west-2",
       "source_ami": "ami-5189a661",
       "ami_virtualization_type": "hvm",
@@ -59,6 +60,7 @@
     },
     {
       "type": "amazon-ebs",
+      "name": "pv-builder",
       "region": "us-west-2",
       "source_ami": "ami-47465826",
       "ami_virtualization_type": "paravirtual",
