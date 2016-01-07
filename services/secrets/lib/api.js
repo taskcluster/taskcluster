@@ -25,7 +25,7 @@ module.exports = api;
 
 api.declare({
   method:      'put',
-  route:       '/secrets/:name(*)',
+  route:       '/secret/:name(*)',
   deferAuth:   true,
   name:        'set',
   input:       common.SCHEMA_PREFIX_CONST + "secret.json#",
@@ -50,19 +50,21 @@ api.declare({
         let item = await this.entity.load({name});
         if (!_.isEqual(item.secret, secret) ||
             !_.isEqual(new Date(item.expires), new Date(expires))) {
-            res.status(e.statusCode).send(`A resource named ${name} already exists.`);
+            res.status(e.statusCode).json({
+              message: "A resource by that name already exists."
+            });
             return;
         }
       } else {
         throw e;
       }
     }
-    res.status(204).send();
+    res.status(200).json({});
 });
 
 api.declare({
   method:      'post',
-  route:       '/secrets/:name(*)',
+  route:       '/secret/:name(*)',
   deferAuth:   true,
   name:        'update',
   input:       common.SCHEMA_PREFIX_CONST + "secret.json#",
@@ -77,19 +79,21 @@ api.declare({
     }
     let item = await this.entity.load({name}, true);
     if (!item) {
-      res.status(404).send(`Can't update, no resource named ${name} found`);
+      res.status(404).json({
+        message: "Secret not found"
+      });
       return;
     }
     await item.modify(function() {
       this.secret = secret;
       this.expires = new Date(expires);
     });
-    res.status(204).send();
+    res.status(200).json({});
 });
 
 api.declare({
   method:      'delete',
-  route:       '/secrets/:name(*)',
+  route:       '/secret/:name(*)',
   deferAuth:   true,
   name:        'remove',
   scopes:      [['secrets:set:<name>']],
@@ -104,18 +108,20 @@ api.declare({
     await this.entity.remove({name: name});
   } catch(e) {
     if (e.name == 'ResourceNotFoundError') {
-      res.status(404).send(`Can't delete, no resource named ${name} found`);
+      res.status(404).json({
+        message: "Secret not found"
+      });
       return;
     } else {
       throw e;
     }
   }
-  res.status(204).send();
+  res.status(200).json({});
 });
 
 api.declare({
   method:      'get',
-  route:       '/secrets/:name(*)',
+  route:       '/secret/:name(*)',
   deferAuth:   true,
   name:        'get',
   output:      common.SCHEMA_PREFIX_CONST + "secret.json#",
@@ -132,14 +138,18 @@ api.declare({
     item = await this.entity.load({name});
   } catch (e) {
     if (e.name == 'ResourceNotFoundError') {
-      res.status(404).send(`No resource named ${name} found`);
+      res.status(404).json({
+        message: "Secret not found"
+      });
       return;
     } else {
       throw e;
     }
   }
   if (item.isExpired()) {
-    res.status(410).send('The requested resource has expired.');
+    res.status(410).json({
+      message: 'The requested resource has expired.'
+    });
   } else {
     res.status(200).json(item.json());
   }
