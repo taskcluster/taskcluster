@@ -193,6 +193,15 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
  * `awsProvisioner.ping() : void`
  * `awsProvisioner.apiReference() : void`
 
+### Methods in `taskcluster.Github`
+```js
+// Create Github client instance with default baseUrl:
+//  - https://taskcluster-github.herokuapp.com/v1
+var github = new taskcluster.Github(options);
+```
+ * `github.githubWebHookConsumer() : void`
+ * `github.ping() : void`
+
 ### Methods in `taskcluster.Hooks`
 ```js
 // Create Hooks client instance with default baseUrl:
@@ -280,6 +289,7 @@ var secrets = new taskcluster.Secrets(options);
  * `secrets.update(name, payload) : void`
  * `secrets.remove(name) : void`
  * `secrets.get(name) : result`
+ * `secrets.list() : result`
  * `secrets.ping() : void`
 
 ### Exchanges in `taskcluster.AwsProvisionerEvents`
@@ -291,6 +301,15 @@ var awsProvisionerEvents = new taskcluster.AwsProvisionerEvents(options);
  * `awsProvisionerEvents.workerTypeCreated(routingKeyPattern) : binding-info`
  * `awsProvisionerEvents.workerTypeUpdated(routingKeyPattern) : binding-info`
  * `awsProvisionerEvents.workerTypeRemoved(routingKeyPattern) : binding-info`
+
+### Exchanges in `taskcluster.GithubEvents`
+```js
+// Create GithubEvents client instance with default exchangePrefix:
+//  - exchange/taskcluster-github/v1/
+var githubEvents = new taskcluster.GithubEvents(options);
+```
+ * `githubEvents.pullRequest(routingKeyPattern) : binding-info`
+ * `githubEvents.push(routingKeyPattern) : binding-info`
 
 ### Exchanges in `taskcluster.PurgeCacheEvents`
 ```js
