@@ -21,6 +21,7 @@ import (
 	"github.com/taskcluster/generic-worker/livelog"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -305,8 +306,13 @@ func runWorker() chan<- bool {
 	done := make(chan bool)
 	go func() {
 		// Queue is the object we will use for accessing queue api
-		Queue = queue.New(config.ClientId, config.AccessToken)
-		Queue.Certificate = config.Certificate
+		Queue = queue.New(
+			&tcclient.Credentials{
+				ClientId:    config.ClientId,
+				AccessToken: config.AccessToken,
+				Certificate: config.Certificate,
+			},
+		)
 
 		// Start the SignedURLsManager in a dedicated go routine, to take care of
 		// keeping signed urls up-to-date (i.e. refreshing as old urls expire).

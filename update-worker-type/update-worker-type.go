@@ -6,12 +6,18 @@ import (
 	"os"
 
 	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
 func main() {
 	newAmi := os.Args[1]
 	workerType := os.Args[2]
-	prov := awsprovisioner.New(os.Getenv("TASKCLUSTER_CLIENT_ID"), os.Getenv("TASKCLUSTER_ACCESS_TOKEN"))
+	prov := awsprovisioner.New(
+		&tcclient.Credentials{
+			ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		},
+	)
 	wt, _, err := prov.WorkerType(workerType)
 	if err != nil {
 		panic(err)
