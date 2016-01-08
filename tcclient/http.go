@@ -128,6 +128,19 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 	return result, callSummary, err
 }
 
+// getExtHeader generates the hawk ext header based on the authorizedScopes and
+// the certificate used in the case of temporary credentials. The header is a
+// base64 encoded json object with a "certificate" property set to the
+// certificate of the temporary credentials and a "authorizedScopes" property
+// set to the array of authorizedScopes, if provided.  If either "certificate"
+// or "authorizedScopes" is not supplied, they will be omitted from the json
+// result. If neither are provided, an empty string is returned, rather than a
+// base64 encoded representation of "null" or "{}". Hawk interpets the empty
+// string as meaning the ext header is not needed.
+//
+// See:
+//   * http://docs.taskcluster.net/auth/authorized-scopes
+//   * http://docs.taskcluster.net/auth/temporary-credentials
 func getExtHeader(credentials *Credentials) (header string, err error) {
 	ext := &ExtHeader{}
 	if credentials.Certificate != "" {
