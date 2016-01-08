@@ -5,7 +5,7 @@ import "encoding/json"
 // Checks whether two json []byte are equivalent (equal) by formatting/ordering
 // both of them consistently, and then comparing if formatted versions are
 // identical. Returns true/false together with formatted json, and any error.
-func JSONEqual(a []byte, b []byte) (bool, []byte, []byte, error) {
+func JsonEqual(a []byte, b []byte) (bool, []byte, []byte, error) {
 	a_, err := FormatJson(a)
 	if err != nil {
 		return false, nil, nil, err
