@@ -29,7 +29,7 @@
 //
 // First create a Hooks object:
 //
-//  myHooks := hooks.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
+//  myHooks := hooks.New(&tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myHooks's methods, e.g.:
 //
@@ -70,7 +70,7 @@ type Hooks tcclient.ConnectionData
 // ignored).
 //
 // For example:
-//  creds := tcclient.Credentials{
+//  creds := &tcclient.Credentials{
 //  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
@@ -82,7 +82,7 @@ type Hooks tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials tcclient.Credentials) *Hooks {
+func New(credentials *tcclient.Credentials) *Hooks {
 	myHooks := Hooks(tcclient.ConnectionData{
 		Credentials:  credentials,
 		BaseURL:      "https://hooks.taskcluster.net/v1",

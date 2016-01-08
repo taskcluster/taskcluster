@@ -24,7 +24,7 @@
 //
 // First create a Queue object:
 //
-//  myQueue := queue.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
+//  myQueue := queue.New(&tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myQueue's methods, e.g.:
 //
@@ -66,7 +66,7 @@ type Queue tcclient.ConnectionData
 // ignored).
 //
 // For example:
-//  creds := tcclient.Credentials{
+//  creds := &tcclient.Credentials{
 //  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
@@ -78,7 +78,7 @@ type Queue tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials tcclient.Credentials) *Queue {
+func New(credentials *tcclient.Credentials) *Queue {
 	myQueue := Queue(tcclient.ConnectionData{
 		Credentials:  credentials,
 		BaseURL:      "https://queue.taskcluster.net/v1",

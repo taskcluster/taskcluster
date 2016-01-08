@@ -18,7 +18,7 @@
 //
 // First create a Secrets object:
 //
-//  mySecrets := secrets.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
+//  mySecrets := secrets.New(&tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of mySecrets's methods, e.g.:
 //
@@ -59,7 +59,7 @@ type Secrets tcclient.ConnectionData
 // ignored).
 //
 // For example:
-//  creds := tcclient.Credentials{
+//  creds := &tcclient.Credentials{
 //  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
@@ -71,7 +71,7 @@ type Secrets tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials tcclient.Credentials) *Secrets {
+func New(credentials *tcclient.Credentials) *Secrets {
 	mySecrets := Secrets(tcclient.ConnectionData{
 		Credentials:  credentials,
 		BaseURL:      "https://secrets.taskcluster.net/v1",

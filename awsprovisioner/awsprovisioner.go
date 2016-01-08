@@ -42,7 +42,7 @@
 //
 // First create an AwsProvisioner object:
 //
-//  awsProvisioner := awsprovisioner.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
+//  awsProvisioner := awsprovisioner.New(&tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of awsProvisioner's methods, e.g.:
 //
@@ -84,7 +84,7 @@ type AwsProvisioner tcclient.ConnectionData
 // ignored).
 //
 // For example:
-//  creds := tcclient.Credentials{
+//  creds := &tcclient.Credentials{
 //  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
@@ -96,7 +96,7 @@ type AwsProvisioner tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials tcclient.Credentials) *AwsProvisioner {
+func New(credentials *tcclient.Credentials) *AwsProvisioner {
 	awsProvisioner := AwsProvisioner(tcclient.ConnectionData{
 		Credentials:  credentials,
 		BaseURL:      "https://aws-provisioner.taskcluster.net/v1",

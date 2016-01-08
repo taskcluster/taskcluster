@@ -104,7 +104,7 @@
 //
 // First create an Index object:
 //
-//  myIndex := index.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
+//  myIndex := index.New(&tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myIndex's methods, e.g.:
 //
@@ -145,7 +145,7 @@ type Index tcclient.ConnectionData
 // ignored).
 //
 // For example:
-//  creds := tcclient.Credentials{
+//  creds := &tcclient.Credentials{
 //  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
@@ -157,7 +157,7 @@ type Index tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials tcclient.Credentials) *Index {
+func New(credentials *tcclient.Credentials) *Index {
 	myIndex := Index(tcclient.ConnectionData{
 		Credentials:  credentials,
 		BaseURL:      "https://index.taskcluster.net/v1",
