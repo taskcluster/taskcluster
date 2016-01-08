@@ -13,7 +13,7 @@ import (
 	"reflect"
 
 	"github.com/taskcluster/httpbackoff"
-	"github.com/tent/hawk-go"
+	hawk "github.com/tent/hawk-go"
 	D "github.com/tj/go-debug"
 )
 
@@ -91,8 +91,9 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 				Hash: sha256.New,
 			}
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if connectionData.Credentials.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + connectionData.Credentials.Certificate + "}"))
+			reqAuth.Ext, err = getExtHeader(connectionData.Credentials)
+			if err != nil {
+				return nil, nil, fmt.Errorf("Internal error: was not able to generate hawk ext header from provided credentials: %q\n%s", connectionData.Credentials, err)
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
@@ -125,4 +126,34 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 	}
 
 	return result, callSummary, err
+}
+
+func getExtHeader(credentials *Credentials) (header string, err error) {
+	ext := &ExtHeader{}
+	if credentials.Certificate != "" {
+		certObj := new(Certificate)
+		err = json.Unmarshal([]byte(credentials.Certificate), certObj)
+		if err != nil {
+			return "", err
+		}
+		ext.Certificate = certObj
+	}
+
+	if credentials.AuthorizedScopes != nil {
+		ext.AuthorizedScopes = &credentials.AuthorizedScopes
+	}
+	extJson, err := json.Marshal(ext)
+	if err != nil {
+		return "", err
+	}
+	if string(extJson) != "{}" {
+		return base64.StdEncoding.EncodeToString(extJson), nil
+	}
+	return "", nil
+}
+
+type ExtHeader struct {
+	Certificate *Certificate `json:"certificate,omitempty"`
+	// use pointer to slice to distinguish between nil slice and empty slice
+	AuthorizedScopes *[]string `json:"authorizedScopes,omitempty"`
 }

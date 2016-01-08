@@ -20,13 +20,22 @@ type Credentials struct {
 	AccessToken string
 	// Certificate for temporary credentials
 	Certificate string
+	// AuthorizedScopes if set to nil, is ignored. Otherwise, it should be a
+	// subset of the scopes that the ClientId already has, and restricts the
+	// Credentials to only having these scopes. This is useful when performing
+	// actions on behalf of a client which has more restricted scopes. Setting
+	// to nil is not the same as setting to an empty array. If AuthorizedScopes
+	// is set to an empty array rather than nil, this is equivalent to having
+	// no scopes at all.
+	// See http://docs.taskcluster.net/auth/authorized-scopes
+	AuthorizedScopes []string
 }
 
 // The entry point into all the functionality in this package is to create a
 // ConnectionData object. It contains authentication credentials, and a service
 // endpoint, which are required for all HTTP operations.
 type ConnectionData struct {
-	Credentials Credentials
+	Credentials *Credentials
 	// The URL of the API endpoint to hit.
 	// Use "https://auth.taskcluster.net/v1" for production.
 	// Please note calling auth.New(clientId string, accessToken string) is an
@@ -50,7 +59,9 @@ type Certificate struct {
 // CreateTemporaryCredentials generates temporary credentials from permanent
 // credentials, valid for the given duration, starting immediately.  The
 // temporary credentials' scopes must be a subset of the permanent credentials'
-// scopes. The duration may not be more than 31 days.
+// scopes. The duration may not be more than 31 days. Any authorized scopes of
+// the permanent credentials will be passed through as authorized scopes to the
+// temporary credentials, but will not be restricted via the certificate.
 //
 // See http://docs.taskcluster.net/auth/temporary-credentials/
 func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
@@ -73,7 +84,7 @@ func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration
 		return nil, errors.New("Temporary credentials cannot be created from temporary credentials, only from permanent credentials")
 	}
 
-	cert := Certificate{
+	cert := &Certificate{
 		Version:   1,
 		Scopes:    scopes,
 		Start:     start.UnixNano() / 1e6,
@@ -84,19 +95,21 @@ func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration
 
 	cert.updateSignature(permaCreds.AccessToken)
 
-	jsonCert, err := json.Marshal(cert)
+	certBytes, err := json.Marshal(cert)
 	if err != nil {
 		return
 	}
+
 	tempAccessToken, err := generateTemporaryAccessToken(permaCreds.AccessToken, cert.Seed)
 	if err != nil {
 		return
 	}
 
 	tempCreds = &Credentials{
-		ClientId:    permaCreds.ClientId,
-		AccessToken: tempAccessToken,
-		Certificate: string(jsonCert),
+		ClientId:         permaCreds.ClientId,
+		AccessToken:      tempAccessToken,
+		Certificate:      string(certBytes),
+		AuthorizedScopes: permaCreds.AuthorizedScopes,
 	}
 
 	return

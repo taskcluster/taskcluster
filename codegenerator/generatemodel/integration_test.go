@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster-base-go/jsontest"
 	"github.com/taskcluster/taskcluster-client-go/index"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
@@ -21,7 +22,7 @@ import (
 //
 // Note, no credentials are needed, so this can be run even on travis-ci.org, for example.
 func TestFindLatestBuildbotTask(t *testing.T) {
-	creds := tcclient.Credentials{}
+	creds := &tcclient.Credentials{}
 	Index := index.New(creds)
 	Queue := queue.New(creds)
 	itr, _, err := Index.FindTask("buildbot.branches.mozilla-central.linux64.l10n")
@@ -55,7 +56,7 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 
 // Tests whether it is possible to define a task against the production Queue.
 func TestDefineTask(t *testing.T) {
-	permaCreds := tcclient.Credentials{
+	permaCreds := &tcclient.Credentials{
 		ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
@@ -183,7 +184,7 @@ func TestDefineTask(t *testing.T) {
 	}
 	`)
 
-	jsonCorrect, formattedExpected, formattedActual, err := jsonEqual(expectedJson, []byte(submittedPayload))
+	jsonCorrect, formattedExpected, formattedActual, err := jsontest.JsonEqual(expectedJson, []byte(submittedPayload))
 	if err != nil {
 		t.Fatalf("Exception thrown formatting json data!\n%s\n\nStruggled to format either:\n%s\n\nor:\n\n%s", err, string(expectedJson), submittedPayload)
 	}
@@ -200,37 +201,10 @@ func TestDefineTask(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Exception thrown generating temporary credentials!\n\n%s\n\n", err)
 	}
-	myQueue = queue.New(*tempCreds)
+	myQueue = queue.New(tempCreds)
 	_, cs, err = myQueue.CancelTask(taskId)
 	if err != nil {
 		t.Logf("Exception thrown cancelling task with temporary credentials!\n\n%s\n\n", err)
 		t.Fatalf("\n\n%s\n", cs.HttpRequest.Header)
 	}
-}
-
-// Checks whether two json []byte are equivalent (equal) by formatting/ordering
-// both of them consistently, and then comparing if formatted versions are
-// identical. Returns true/false together with formatted json, and any error.
-func jsonEqual(a []byte, b []byte) (bool, []byte, []byte, error) {
-	a_, err := formatJson(a)
-	if err != nil {
-		return false, nil, nil, err
-	}
-	b_, err := formatJson(b)
-	if err != nil {
-		return false, a_, nil, err
-	}
-	return string(a_) == string(b_), a_, b_, nil
-}
-
-// Takes json []byte input, unmarshals and then marshals, in order to get a
-// canonical representation of json (i.e. formatted with objects ordered).
-// Ugly and perhaps inefficient, but effective! :p
-func formatJson(a []byte) ([]byte, error) {
-	tmpObj := new(interface{})
-	err := json.Unmarshal(a, &tmpObj)
-	if err != nil {
-		return a, err
-	}
-	return json.MarshalIndent(&tmpObj, "", "  ")
 }

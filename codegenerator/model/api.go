@@ -83,7 +83,7 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "//\n"
 	comment += "// First create " + utils.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + " object:\n"
 	comment += "//\n"
-	comment += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(tcclient.Credentials{ClientId: \"myClientId\", AccessToken: \"myAccessToken\"})\n"
+	comment += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(&tcclient.Credentials{ClientId: \"myClientId\", AccessToken: \"myAccessToken\"})\n"
 	comment += "//\n"
 	comment += "// and then call one or more of " + exampleVarName + "'s methods, e.g.:\n"
 	comment += "//\n"
@@ -134,7 +134,7 @@ type ` + api.apiDef.Name + ` tcclient.ConnectionData
 //
 `
 	content += "// For example:\n"
-	content += "//  creds := tcclient.Credentials{\n"
+	content += "//  creds := &tcclient.Credentials{\n"
 	content += "//  	ClientId:    os.Getenv(\"TASKCLUSTER_CLIENT_ID\"),\n"
 	content += "//  	AccessToken: os.Getenv(\"TASKCLUSTER_ACCESS_TOKEN\"),\n"
 	content += "//  	Certificate: os.Getenv(\"TASKCLUSTER_CERTIFICATE\"),\n"
@@ -147,7 +147,7 @@ type ` + api.apiDef.Name + ` tcclient.ConnectionData
 	content += "//  if err != nil {\n"
 	content += "//  	// handle errors...\n"
 	content += "//  }\n"
-	content += "func New(credentials tcclient.Credentials) *" + api.apiDef.Name + " {\n"
+	content += "func New(credentials *tcclient.Credentials) *" + api.apiDef.Name + " {\n"
 	content += "\t" + exampleVarName + " := " + api.apiDef.Name + "(tcclient.ConnectionData{\n"
 	content += "\t\tCredentials: credentials,\n"
 	content += "\t\tBaseURL: \"" + api.BaseURL + "\",\n"
