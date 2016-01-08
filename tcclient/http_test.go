@@ -11,6 +11,9 @@ import (
 	"github.com/taskcluster/taskcluster-base-go/jsontest"
 )
 
+// TestExtHeaderPermAuthScopes checks that the generated hawk ext http header
+// for permanent credentials with authorized scopes listed matches what is
+// expected.
 func TestExtHeaderPermAuthScopes(t *testing.T) {
 	checkExtHeader(
 		t,
@@ -24,6 +27,9 @@ func TestExtHeaderPermAuthScopes(t *testing.T) {
 	)
 }
 
+// TestExtHeaderPermNilAuthScopes checks that when permanent credentials are
+// provided and the Authorized Scopes are not set (i.e. are nil) that the hawk
+// ext header is an empty string.
 func TestExtHeaderPermNilAuthScopes(t *testing.T) {
 	checkExtHeader(
 		t,
@@ -35,6 +41,9 @@ func TestExtHeaderPermNilAuthScopes(t *testing.T) {
 	)
 }
 
+// TestExtHeaderPermNoAuthScopes checks that when permanent credentials are
+// provided and an empty list of authorized scopes is used, that the hawk ext
+// http header is explicitly showing an empty list of authorized scopes.
 func TestExtHeaderPermNoAuthScopes(t *testing.T) {
 	checkExtHeader(
 		t,
@@ -48,6 +57,9 @@ func TestExtHeaderPermNoAuthScopes(t *testing.T) {
 	)
 }
 
+// TestExtHeaderTempAuthScopes checks that the hawk ext header is set to the
+// expected value when using temp credentials and an explicit list of
+// authorized scopes.
 func TestExtHeaderTempAuthScopes(t *testing.T) {
 	checkExtHeaderTempCreds(
 		t,
@@ -59,6 +71,9 @@ func TestExtHeaderTempAuthScopes(t *testing.T) {
 	)
 }
 
+// TestExtHeaderTempNilAuthScopes checks that the hawk ext header includes the
+// temporary credentials certificate, but no authorized scopes property when
+// using temp credentials but not restricting the authorized scopes.
 func TestExtHeaderTempNilAuthScopes(t *testing.T) {
 	checkExtHeaderTempCreds(
 		t,
@@ -69,6 +84,9 @@ func TestExtHeaderTempNilAuthScopes(t *testing.T) {
 	)
 }
 
+// TestExtHeaderTempNoAuthScopes checks that the hawk ext header includes an
+// empty list of authorized scopes when an empty list is provided, and that the
+// temp credentials certificate is also included.
 func TestExtHeaderTempNoAuthScopes(t *testing.T) {
 	checkExtHeaderTempCreds(
 		t,
@@ -85,6 +103,14 @@ type ExtHeaderRawCert struct {
 	AuthorizedScopes []string        `json:"authorizedScopes"`
 }
 
+// checkExtHeaderTempCreds generates temporary credentials from the given
+// permanent credentials and then checks what the ext header looks like
+// according to getExtHeader function. It base64 decodes the results, and then
+// checks that the temporary credentials match the ones given, and then
+// evaluates whether authorizedScopes is correct. It checks that if no
+// authorized scopes were set, that the authorizedScopes are not set in the
+// header; if they are set to anything, including an empty array, that this
+// matches what is found in the header.
 func checkExtHeaderTempCreds(t *testing.T, permCreds *Credentials) {
 	tempCredentials, err := permCreds.CreateTemporaryCredentials(time.Second*1, "d", "e", "f")
 	if err != nil {
@@ -130,6 +156,8 @@ func checkExtHeaderTempCreds(t *testing.T, permCreds *Credentials) {
 	}
 }
 
+// checkExtHeader simply checks if getExtHeader returns the same results as the
+// specified expected header.
 func checkExtHeader(t *testing.T, creds *Credentials, expectedHeader string) {
 	actualHeader, err := getExtHeader(creds)
 	if err != nil {
