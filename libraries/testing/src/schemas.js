@@ -73,5 +73,4 @@ var schemas = function(options) {
 };
 
 // Export schemas
-exports.schemas = schemas;
-
+module.exports = schemas;
