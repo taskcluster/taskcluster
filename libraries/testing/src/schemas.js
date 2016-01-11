@@ -3,6 +3,7 @@
 var _             = require('lodash');
 var assert        = require('assert');
 var debug         = require('debug')('taskcluster-lib-testing:schemas');
+var fs            = require('fs');
 var base          = require('taskcluster-base');
 var path          = require('path');
 /**
