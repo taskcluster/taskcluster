@@ -208,5 +208,5 @@ var createMockAuthServer = function(options) {
 createMockAuthServer.mockAuthApi = mockAuthApi;
 
 // Export createMockAuthServer
-exports.createMockAuthServer = createMockAuthServer;
+module.exports = createMockAuthServer;
 

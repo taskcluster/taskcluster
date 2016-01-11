@@ -1,18 +1,6 @@
 "use strict";
 
-var _             = require('lodash');
-var assert        = require('assert');
-var childProcess  = require('child_process');
 var Promise       = require('promise');
-var debug         = require('debug')('taskcluster-lib-testing');
-var events        = require('events');
-var util          = require('util');
-var base          = require('taskcluster-base');
-var fs            = require('fs');
-var path          = require('path');
-var uuid          = require('uuid');
-var taskcluster   = require('taskcluster-client');
-var azureTable    = require('azure-table-node');
 
 exports.PulseTestReceiver    = require('./pulse');
 exports.schemas              = require('./schemas');
