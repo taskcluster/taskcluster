@@ -146,7 +146,4 @@ PulseTestReceiver.prototype.waitFor = function(name) {
 };
 
 // Export PulseTestReceiver
-exports.PulseTestReceiver = PulseTestReceiver;
-
-
-
+module.exports = PulseTestReceiver;
