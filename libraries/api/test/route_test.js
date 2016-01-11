@@ -4,8 +4,8 @@ suite("api/route", function() {
   var assert          = require('assert');
   var Promise         = require('promise');
   var mockAuthServer  = require('taskcluster-lib-testing/.test/mockauthserver');
-  var base            = require('taskcluster-base');
-  var subject         = require('../../');
+  var makeValidator   = require('schema-validator-publisher');
+  var subject         = require('../');
   var express         = require('express');
   var slugid          = require('slugid');
 
@@ -93,7 +93,7 @@ suite("api/route", function() {
       _mockAuthServer = server;
     }).then(function() {
       // Create server for api
-      return base.validator().then(function(validator) {
+      return makeValidator().then(function(validator) {
 
         // Create router
         var router = api.router({
