@@ -1,5 +1,5 @@
 suite("nonceManager test", function() {
-  var subject         = require('../../');
+  var subject         = require('../');
   var assert          = require('assert');
   var Promise         = require('promise');
   var debug           = require('debug')('base:test:nonceManager');

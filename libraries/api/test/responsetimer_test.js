@@ -1,43 +1,54 @@
-suite("api/schemaPrefix", function() {
+suite("api/responsetimer", function() {
   require('superagent-hawk')(require('superagent'));
   var request         = require('superagent-promise');
   var assert          = require('assert');
   var Promise         = require('promise');
   var mockAuthServer  = require('taskcluster-lib-testing/.test/mockauthserver');
-  var base            = require('taskcluster-base');
-  var subject         = require('../../');
+  var subject         = require('../');
+  var stats           = require('taskcluster-lib-stats');
+  var config          = require('taskcluster-lib-config');
+  var makeValidator   = require('schema-validator-publisher');
   var express         = require('express');
   var path            = require('path');
+
+  // Load necessary configuration
+  var cfg = config({
+    envs: [
+      'influxdb_connectionString',
+    ],
+    filename:               'taskcluster-base-test'
+  });
+
+  if (!cfg.get('influxdb:connectionString')) {
+    throw new Error("Skipping 'ResponseTimerTest', missing config file: " +
+                    "taskcluster-base-test.conf.json");
+    return;
+  }
 
   // Create test api
   var api = new subject({
     title:        "Test Api",
-    description:  "Another test api",
-    schemaPrefix: 'http://localhost:4321/'
+    description:  "Another test api"
   });
 
-  // Declare a method we can test input with
   api.declare({
     method:   'get',
-    route:    '/test-input',
-    name:     'testInput',
-    input:    'test-schema.json',
+    route:    '/single-param/:myparam',
+    name:     'testParam',
     title:    "Test End-Point",
     description:  "Place we can call to test something",
   }, function(req, res) {
-    res.status(200).send("Hello World");
+    res.status(200).send(req.params.myparam);
   });
 
-  // Declare a method we can use to test valid output
   api.declare({
     method:   'get',
-    route:    '/test-output',
-    name:     'testInput',
-    output:   'test-schema.json',
+    route:    '/slash-param/:name(*)',
+    name:     'testSlashParam',
     title:    "Test End-Point",
     description:  "Place we can call to test something",
   }, function(req, res) {
-    res.reply({value: 4});
+    res.status(200).send(req.params.name);
   });
 
   // Reference to mock authentication server
@@ -46,22 +57,21 @@ suite("api/schemaPrefix", function() {
   var _apiServer = null;
 
   // Create a mock authentication server
+  var influx = null;
   setup(function(){
     assert(_mockAuthServer === null,  "_mockAuthServer must be null");
     assert(_apiServer === null,       "_apiServer must be null");
     return mockAuthServer({
-      port:         61243
+      port:         23243
     }).then(function(server) {
       _mockAuthServer = server;
     }).then(function() {
-      // Create validator
-      var validatorCreated = base.validator({
-        folder:         path.join(__dirname, 'schemas'),
-        schemaBaseUrl:  'http://localhost:4321/'
-      });
-
       // Create server for api
-      return validatorCreated.then(function(validator) {
+      return makeValidator().then(function(validator) {
+        influx = new stats.Influx({
+          connectionString:   cfg.get('influxdb:connectionString')
+        });
+
         // Create router
         var router = api.router({
           validator:      validator,
@@ -69,7 +79,9 @@ suite("api/schemaPrefix", function() {
             clientId:     'test-client',
             accessToken:  'test-token'
           },
-          authBaseUrl:    'http://localhost:61243'
+          authBaseUrl:    'http://localhost:23243',
+          component:      'ResponseTimerTest',
+          drain:           influx
         });
 
         // Create application
@@ -79,7 +91,7 @@ suite("api/schemaPrefix", function() {
         app.use(router);
 
         return new Promise(function(accept, reject) {
-          var server = app.listen(61515);
+          var server = app.listen(23525);
           server.once('listening', function() {
             accept(server)
           });
@@ -111,40 +123,16 @@ suite("api/schemaPrefix", function() {
     });
   });
 
-  // Test valid input
-  test("input (valid)", function() {
-    var url = 'http://localhost:61515/test-input';
-    return request
-      .get(url)
-      .send({value: 5})
-      .end()
-      .then(function(res) {
-        assert(res.ok, "Request failed");
-        assert(res.text === "Hello World", "Got wrong value");
-      });
-  });
-
-  // Test invalid input
-  test("input (invalid)", function() {
-    var url = 'http://localhost:61515/test-input';
-    return request
-      .get(url)
-      .send({value: 11})
-      .end()
-      .then(function(res) {
-        assert(res.status === 400, "Request wasn't rejected");
-      });
-  });
-
-  // Test valid output
-  test("output (valid)", function() {
-    var url = 'http://localhost:61515/test-output';
+  test("single parameter", function() {
+    var url = 'http://localhost:23525/single-param/Hello';
     return request
       .get(url)
       .end()
       .then(function(res) {
-        assert(res.ok, "Request okay");
-        assert(res.body.value === 4, "Got wrong value");
+        assert(influx.pendingPoints() === 1, "Expected just one point");
+        return influx.flush();
+      }).then(function() {
+        assert(influx.pendingPoints() === 0, "Expected points to be cleared");
       });
   });
 });

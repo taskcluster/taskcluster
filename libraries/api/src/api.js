@@ -24,6 +24,7 @@ var https         = require('https');
 var cryptiles     = require('cryptiles');
 var taskcluster   = require('taskcluster-client');
 var Validator     = require('schema-validator-publisher').Validator;
+var errors        = require('./errors');
 
 // Default baseUrl for authentication server
 var AUTH_BASE_URL = 'https://auth.taskcluster.net/v1';
@@ -72,9 +73,11 @@ var parameterValidator = function(options) {
       }
     });
     if (errors.length > 0) {
-      return res.status(400).json({
-        'message':  "Invalid URL patterns:\n" + errors.join('\n'),
-      });
+      return res.reportError(
+        'InvalidRequestArguments',
+        "Invalid URL patterns:\n" + errors.join('\n'),
+        {errors}
+      );
     }
     return next();
   };
@@ -103,20 +106,25 @@ var schema = function(validator, options) {
     // If input schema is defined we need to validate the input
     if (options.input !== undefined && !options.skipInputValidation) {
       if (req.headers['content-type'] !== 'application/json') {
-        return res.status(400).json({
-          message: "Payload must be JSON with content-type: application/json " +
-                   "got content-type: " + (req.headers['content-type'] || null),
+        return res.reportError(
+          'MalformedPayload',
+          "Payload must be JSON with content-type: application/json " +
+          "got content-type: {{contentType}}", {
+          contentType: (req.headers['content-type'] || null),
         });
       }
       var errors = validator.check(req.body, options.input);
       if (errors) {
         debug("Request payload for %s didn't follow schema %s",
               req.url, options.input);
-        res.status(400).json({
-          'message':  "Request payload must follow the schema: " + options.input,
-          'error':    errors
+        return res.reportError(
+          'InputValidationError',
+          "Request payload must follow the schema: {{schema}}\n" +
+          "Errors: {{errors}}", {
+          errors,
+          schema: options.input,
+          payload: req.body
         });
-        return;
       }
     }
     // Add a reply method sending JSON replies, this will always reply with HTTP
@@ -127,12 +135,14 @@ var schema = function(validator, options) {
       if(options.output !== undefined && !options.skipOutputValidation) {
         var errors = validator.check(json, options.output);
         if (errors) {
-          res.status(500).json({
-            'message':  "Internal Server Error",
-          });
           debug("Reply for %s didn't match schema: %s got errors: %j from output: %j",
                 req.url, options.output, errors, json);
-          return;
+          let err = new Error('Output schema validation of ' + options.output);
+          err.schema = options.output;
+          err.url = req.url;
+          err.errors = errors;
+          err.payload = json;
+          return res.reportInternalError(err);
         }
       }
       // If JSON was valid or validation was skipped then reply with 200 OK
@@ -184,9 +194,11 @@ let queryValidator = function(options = {}) {
       }
     });
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join('\n'),
-      });
+      return res.reportError(
+        'InvalidRequestArguments',
+        errors.join('\n'),
+        {errors}
+      );
     }
     return next();
   };
@@ -537,6 +549,10 @@ var nonceManager = function(options) {
  * Remark `deferAuth` will not perform authorization unless, `req.satisfies({})`
  * is called either without arguments or with an object as first argument.
  *
+ * This method also addeds `req.scopes()` which returns a promise for the set
+ * of scopes that the caller has. Please, use `req.satisfies()` whenever
+ * possible rather than implement custom scope checking logic.
+ *
  * Reports 401 if authentication fails.
  */
 var authenticate = function(nonceManager, clientLoader, options) {
@@ -625,6 +641,11 @@ var authenticate = function(nonceManager, clientLoader, options) {
 
         // Now we're authenticated
         authenticated = true;
+      };
+
+      /** Create method that returns list of scopes the caller have */
+      req.scopes = function() {
+        return Promise.resolve(authorizedScopes);
       };
 
       /**
@@ -1123,12 +1144,18 @@ var createRemoteSignatureValidator = function(options) {
  * Remark `deferAuth` will not perform authorization unless, `req.satisfies({})`
  * is called either without arguments or with an object as first argument.
  *
+ * This method also adds `req.scopes()` which returns a promise for the set of
+ * scopes the caller has. Please, not that `req.scopes()` returns `[]` if there
+ * was an authentication error.
+ *
  * Reports 401 if authentication fails.
  */
 var remoteAuthentication = function(options, entry) {
   assert(options.signatureValidator instanceof Function,
          "Expected options.signatureValidator to be a function!");
-  // Returns promise for object on the form: {error, message, scopes}
+  // Returns promise for object on the form:
+  //   {status, message, scopes, scheme, hash}
+  // scopes, scheme, hash are only present if status isn't auth-failed
   var authenticate = function(req) {
     // Check that we're not using two authentication schemes, we could
     // technically allow two. There are cases where we redirect and it would be
@@ -1138,6 +1165,7 @@ var remoteAuthentication = function(options, entry) {
     if (req.headers && req.headers.authorization &&
         req.query && req.query.bewit) {
       return Promise.resolve({
+        status:   'auth-failed',
         message:  "Cannot use two authentication schemes at once " +
                   "this request has both bewit in querystring and " +
                   "and 'authorization' header"
@@ -1174,6 +1202,16 @@ var remoteAuthentication = function(options, entry) {
 
   return function(req, res, next) {
     return authenticate(req).then(function(result) {
+      /** Create method that returns list of scopes the caller has */
+      req.scopes = function() {
+        // Check that we satisfy [], this ensures that payload hash is checked
+        // first... Just in case...
+        if(req.satisfies([[]], true)) {
+          return Promise.resolve(result.scopes || []);
+        }
+        return Promise.resolve([]);
+      };
+
       /**
        * Create method to check if request satisfies a scope-set from required
        * set of scope-sets.
@@ -1184,9 +1222,7 @@ var remoteAuthentication = function(options, entry) {
         // If authentication failed
         if (result.status === 'auth-failed') {
           if (!noReply) {
-            res.status(401).json({
-              message: result.message
-            });
+            res.reportError('AuthorizationFailed', result.message, result);
           }
           return false;
         }
@@ -1198,11 +1234,17 @@ var remoteAuthentication = function(options, entry) {
             'sha256',
             req.headers['content-type']
           );
-          if (result.hash !== hash) {
+          if (!cryptiles.fixedTimeComparison(result.hash, hash)) {
             if (!noReply) {
-              res.status(401).json({
-                message: "Invalid payload hash"
-              });
+              res.reportError(
+                'AuthorizationFailed',
+                "Invalid payload hash: {{hash}}\n" +
+                "Computed payload hash: {{computedHash}}\n" +
+                "This happens when your request carries a signed hash of the " +
+                "payload and the hash doesn't match the hash we've computed " +
+                "on the server-side.",
+                _.defaults({computedHash: hash}, result)
+              );
             }
             return false;
           }
@@ -1227,14 +1269,22 @@ var remoteAuthentication = function(options, entry) {
         // Test that we have scope intersection, and hence, is authorized
         var retval = utils.scopeMatch(result.scopes, scopesets);
         if (!retval && !noReply) {
-          res.status(401).json({
-            message:  "Authorization Failed",
-            error: {
-              info:       "None of the scope-sets was satisfied",
-              scopesets:  scopesets,
-              scopes:     result.scopes
-            }
-          });
+          res.reportError('InsufficientScopes', [
+            "You do not have sufficient scopes. This request requires you",
+            "to have one of the following sets of scopes:",
+            "{{scopesets}}",
+            "",
+            "You only have the scopes:",
+            "{{scopes}}",
+            "",
+            "In order words you are missing scopes from one of the options:"
+          ].concat(scopesets.map((set, index) => {
+            let missing = set.filter(scope => {
+              return !utils.scopeMatch(result.scopes, [[scope]]);
+            });
+            return ' * Option ' + index + ':\n    - "' +
+                   missing.join('", and\n    - "') + '"';
+          })).join('\n'),  {scopesets, scopes: result.scopes});
         }
         return retval;
       };
@@ -1244,13 +1294,7 @@ var remoteAuthentication = function(options, entry) {
         next();
       }
     }).catch(function(err) {
-      var incidentId = uuid.v4();
-      console.log("Internal error (incidentId: " + incidentId + ") " +
-                  err.stack);
-      return res.status(500).json({
-        message:      "Ask administrator to lookup incidentId in log-file",
-        incidentId:   incidentId
-      });
+      return res.reportInternalError(err);
     });
   };
 };
@@ -1267,18 +1311,7 @@ var handle = function(handler, context) {
     Promise.resolve(null).then(function() {
       return handler.call(context, req, res);
     }).catch(function(err) {
-      var incidentId = uuid.v4();
-      debug(
-        "Error occurred handling: %s, err: %s, as JSON: %j, incidentId: %s",
-        req.url, err, err, incidentId, err.stack
-      );
-      res.status(500).json({
-        message:        "Internal Server Error",
-        error: {
-          info:         "Ask administrator to lookup incidentId in log-file",
-          incidentId:   incidentId
-        }
-      });
+      return res.reportInternalError(err);
     });
   };
 };
@@ -1295,7 +1328,10 @@ var handle = function(handler, context) {
  *     param1:  /.../,                // Reg-exp pattern
  *     param2(val) { return "..." }   // Function, returns message if invalid
  *   },
- *   context:       []                // List of required context properties
+ *   context:       [],               // List of required context properties
+ *   errorCodes: {
+ *     MyError:     400,              // Mapping from error code to HTTP status
+ *   }
  * }
  *
  * The API object will only modified by declarations, when `mount` or `publish`
@@ -1306,10 +1342,17 @@ var API = function(options) {
   ['title', 'description'].forEach(function(key) {
     assert(options[key], "Option '" + key + "' must be provided");
   });
-  this._options = _.defaults({}, options, {
+  this._options = _.defaults({
+    errorCodes: _.defaults({}, options.errorCodes || {}, errors.ERROR_CODES),
+  }, options, {
     schemaPrefix:   '',
     params:         {},
     context:        [],
+    errorCodes:     {},
+  });
+  _.forEach(this._options.errorCodes, (value, key) => {
+    assert(/[A-Z][A-Za-z0-9]*/.test(key), 'Invalid error code: ' + key)
+    assert(typeof(value) === 'number', 'Expected HTTP status code to be int');
   });
   this._entries = [];
 };
@@ -1446,6 +1489,7 @@ API.prototype.declare = function(options, handler) {
  *     accessToken:       '...'   // Access token for clientId
  *     // Client must have the 'auth:credentials' scope.
  *   },
+ *   raven:               null,   // optional raven.Client for error reporting
  *   component:           'queue',      // Name of the component in stats
  *   drain:               new Influx()  // drain for statistics
  * }
@@ -1476,7 +1520,8 @@ API.prototype.router = function(options) {
     nonceManager:         nonceManager(),
     signatureValidator:   createRemoteSignatureValidator({
       authBaseUrl:        options.authBaseUrl || AUTH_BASE_URL
-    })
+    }),
+    raven:                null,
   });
 
   // Validate context
@@ -1518,30 +1563,6 @@ API.prototype.router = function(options) {
   // Create router
   var router = express.Router();
 
-  // Use JSON middleware, and add hack to store text as req.text
-  router.use(bodyParser.text({
-    limit:          options.inputLimit,
-    type:           'application/json'
-  }), function(req, res, next) {
-    if (typeof(req.body) === 'string' && req.body !== '') {
-      req.text = req.body;
-      try {
-        req.body = JSON.parse(req.text);
-        if (!(req.body instanceof Object)) {
-          throw new Error("Must be an object or array");
-        }
-      } catch (err) {
-        return res.status(400).json({
-          message: "Invalid JSON input: " + err.message
-        });
-      }
-    } else {
-      req.text = '';
-      req.body = {};
-    }
-    next();
-  });
-
   // Allow CORS requests to the API
   if (options.allowedCORSOrigin) {
     router.use(function(req, res, next) {
@@ -1569,7 +1590,7 @@ API.prototype.router = function(options) {
   }
 
   // Add entries to router
-  this._entries.forEach(function(entry) {
+  this._entries.forEach(entry => {
     // Route pattern
     var middleware = [entry.route];
 
@@ -1583,6 +1604,33 @@ API.prototype.router = function(options) {
 
     // Add authentication, schema validation and handler
     middleware.push(
+      errors.BuildReportErrorMethod(
+        entry.name, this._options.errorCodes, options.raven
+      ),
+      bodyParser.text({
+        limit:          options.inputLimit,
+        type:           'application/json'
+      }), function(req, res, next) {
+        // Use JSON middleware, and add hack to store text as req.text
+        if (typeof(req.body) === 'string' && req.body !== '') {
+          req.text = req.body;
+          try {
+            req.body = JSON.parse(req.text);
+            if (!(req.body instanceof Object)) {
+              throw new Error("Must be an object or array");
+            }
+          } catch (err) {
+            return res.reportError(
+              'MalformedPayload', "Failed to parse JSON: {{errMsg}}", {
+                errMsg: err.message
+            });
+          }
+        } else {
+          req.text = '';
+          req.body = {};
+        }
+        next();
+      },
       authStrategy(entry),
       parameterValidator(entry.params),
       queryValidator(entry.query),
