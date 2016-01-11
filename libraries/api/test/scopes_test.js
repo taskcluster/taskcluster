@@ -2,7 +2,7 @@ suite("api/route", function() {
   var assert          = require('assert');
   var Promise         = require('promise');
   var mockAuthServer  = require('taskcluster-lib-testing/.test/mockauthserver');
-  var subject         = require('../../');
+  var subject         = require('../');
   var express         = require('express');
   var path            = require('path');
 

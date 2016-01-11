@@ -1,27 +1,27 @@
-suite("api/validate", function() {
+suite("api/schemaPrefix", function() {
   require('superagent-hawk')(require('superagent'));
   var request         = require('superagent-promise');
   var assert          = require('assert');
   var Promise         = require('promise');
   var mockAuthServer  = require('taskcluster-lib-testing/.test/mockauthserver');
-  var base            = require('taskcluster-base');
-  var subject         = require('../../');
+  var makeValidator   = require('schema-validator-publisher');
+  var subject         = require('../');
   var express         = require('express');
   var path            = require('path');
-
 
   // Create test api
   var api = new subject({
     title:        "Test Api",
-    description:  "Another test api"
+    description:  "Another test api",
+    schemaPrefix: 'http://localhost:4321/'
   });
 
   // Declare a method we can test input with
   api.declare({
-    method:   'post',
+    method:   'get',
     route:    '/test-input',
     name:     'testInput',
-    input:    'http://localhost:4321/test-schema.json',
+    input:    'test-schema.json',
     title:    "Test End-Point",
     description:  "Place we can call to test something",
   }, function(req, res) {
@@ -33,49 +33,11 @@ suite("api/validate", function() {
     method:   'get',
     route:    '/test-output',
     name:     'testInput',
-    output:   'http://localhost:4321/test-schema.json',
+    output:   'test-schema.json',
     title:    "Test End-Point",
     description:  "Place we can call to test something",
   }, function(req, res) {
     res.reply({value: 4});
-  });
-
-  // Declare a method we can use to test invalid output
-  api.declare({
-    method:   'get',
-    route:    '/test-invalid-output',
-    name:     'testInput',
-    output:   'http://localhost:4321/test-schema.json',
-    title:    "Test End-Point",
-    description:  "Place we can call to test something",
-  }, function(req, res) {
-    res.reply({value: 12});
-  });
-
-  // Declare a method we can test input validation skipping on
-  api.declare({
-    method:   'post',
-    route:    '/test-skip-input-validation',
-    name:     'testInputSkipInputValidation',
-    input:    'http://localhost:4321/test-schema.json',
-    skipInputValidation: true,
-    title:    "Test End-Point",
-    description:  "Place we can call to test something",
-  }, function(req, res) {
-    res.status(200).send("Hello World");
-  });
-
-  // Declare a method we can test output validation skipping on
-  api.declare({
-    method:   'get',
-    route:    '/test-skip-output-validation',
-    name:     'testOutputSkipInputValidation',
-    output:    'http://localhost:4321/test-schema.json',
-    skipOutputValidation: true,
-    title:    "Test End-Point",
-    description:  "Place we can call to test something",
-  }, function(req, res) {
-    res.reply({value: 12});
   });
 
   // Reference to mock authentication server
@@ -93,7 +55,7 @@ suite("api/validate", function() {
       _mockAuthServer = server;
     }).then(function() {
       // Create validator
-      var validatorCreated = base.validator({
+      var validatorCreated = makeValidator({
         folder:         path.join(__dirname, 'schemas'),
         schemaBaseUrl:  'http://localhost:4321/'
       });
@@ -153,7 +115,7 @@ suite("api/validate", function() {
   test("input (valid)", function() {
     var url = 'http://localhost:61515/test-input';
     return request
-      .post(url)
+      .get(url)
       .send({value: 5})
       .end()
       .then(function(res) {
@@ -166,7 +128,7 @@ suite("api/validate", function() {
   test("input (invalid)", function() {
     var url = 'http://localhost:61515/test-input';
     return request
-      .post(url)
+      .get(url)
       .send({value: 11})
       .end()
       .then(function(res) {
@@ -183,66 +145,6 @@ suite("api/validate", function() {
       .then(function(res) {
         assert(res.ok, "Request okay");
         assert(res.body.value === 4, "Got wrong value");
-      });
-  });
-
-  // test invalid output
-  test("output (invalid)", function() {
-    var url = 'http://localhost:61515/test-invalid-output';
-    return request
-      .get(url)
-      .end()
-      .then(function(res) {
-        assert(res.status === 500, "Request wasn't 500");
-      });
-  });
-
-  // test skipping input validation
-  test("skip input validation", function() {
-    var url = 'http://localhost:61515/test-skip-input-validation';
-    return request
-      .post(url)
-      .send({value: 100})
-      .end()
-      .then(function(res) {
-        assert(res.ok, "Request failed");
-        assert(res.text === "Hello World", "Got wrong value");
-      });
-  });
-
-  // test skipping output validation
-  test("skip output validation", function() {
-    var url = 'http://localhost:61515/test-skip-output-validation';
-    return request
-      .get(url)
-      .end()
-      .then(function(res) {
-        assert(res.ok, "Request failed");
-        assert(res.body.value === 12, "Got wrong value");
-      });
-  });
-
-  test("input (correct content-type)", function() {
-    var url = 'http://localhost:61515/test-input';
-    return request
-      .post(url)
-      .send(JSON.stringify({value: 5}))
-      .set('content-type', 'application/json')
-      .end()
-      .then(function(res) {
-        assert(res.status === 200, "Request rejected");
-      });
-  });
-
-  test("input (wrong content-type)", function() {
-    var url = 'http://localhost:61515/test-input';
-    return request
-      .post(url)
-      .send(JSON.stringify({value: 5}))
-      .set('content-type', 'text/x-json')
-      .end()
-      .then(function(res) {
-        assert(res.status === 400, "Request wasn't rejected");
       });
   });
 });
