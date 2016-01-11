@@ -1,5 +1,5 @@
 suite("api/publish", function() {
-  var subject         = require('../../');
+  var subject         = require('../');
   var config          = require('taskcluster-lib-config');
   var aws             = require('aws-sdk-promise');
   var assert          = require('assert');
