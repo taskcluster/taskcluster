@@ -216,6 +216,39 @@ func (entry *APIEntry) String() string {
 }
 
 func (entry *APIEntry) generateAPICode(apiName string) string {
+	content := entry.generateDirectMethod(apiName)
+	if strings.ToUpper(entry.Method) == "GET" {
+		content += entry.generateSignedURLMethod(apiName)
+	}
+	return content
+}
+
+func (entry *APIEntry) getInputParamsAndQueryStringCode() (inputParams, queryCode, queryExpr string) {
+	inputParams = ""
+	if len(entry.Args) > 0 {
+		inputParams += strings.Join(entry.Args, ", ")
+	}
+
+	// add optional query parameters
+	queryCode = ""
+	queryExpr = "nil"
+	if len(entry.Query) > 0 {
+		queryExpr = "v"
+		sort.Strings(entry.Query)
+		queryCode = "v := url.Values{}\n"
+		for _, j := range entry.Query {
+			inputParams += ", " + j
+			queryCode += `v.Add("` + j + `", ` + j + `)\n`
+		}
+	}
+	// all input parameters are strings, so if there are any, add the type to show it
+	if inputParams != "" {
+		inputParams += " string"
+	}
+	return
+}
+
+func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	comment := ""
 	if entry.Stability != "stable" {
 		comment += "// Stability: *** " + strings.ToUpper(entry.Stability) + " ***\n"
@@ -227,47 +260,11 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 		comment += "\n"
 	}
-	if len(entry.Scopes) > 0 {
-		comment += "//\n"
-		comment += "// Required scopes:\n"
-		switch len(entry.Scopes) {
-		case 0:
-		case 1:
-			comment += "//   * " + strings.Join(entry.Scopes[0], ", and\n//   * ") + "\n"
-		default:
-			lines := make([]string, len(entry.Scopes))
-			for i, j := range entry.Scopes {
-				switch len(j) {
-				case 0:
-				case 1:
-					lines[i] = "//   * " + j[0]
-				default:
-					lines[i] = "//   * (" + strings.Join(j, " and ") + ")"
-				}
-			}
-			comment += strings.Join(lines, ", or\n") + "\n"
-		}
-	}
+	comment += requiredScopesComment(entry.Scopes)
 	comment += "//\n"
 	comment += fmt.Sprintf("// See %v/#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
-	inputParams := ""
-	if len(entry.Args) > 0 {
-		inputParams += strings.Join(entry.Args, " string, ") + " string"
-	}
 
-	// add optional query parameters
-	queryCode := ""
-	queryExpr := "nil"
-	if len(entry.Query) > 0 {
-		queryExpr = "v"
-		sort.Strings(entry.Query)
-		queryCode = "v := url.Values{}\n"
-		for _, j := range entry.Query {
-			inputParams += ", " + j
-			queryCode += `v.Add("` + j + `", ` + j + `)\n`
-		}
-		inputParams += " string"
-	}
+	inputParams, queryCode, queryExpr := entry.getInputParamsAndQueryStringCode()
 
 	apiArgsPayload := "nil"
 	if entry.Input != "" {
@@ -300,4 +297,52 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 	content += "\n"
 	// can remove any code that added an empty string to another string
 	return strings.Replace(content, ` + ""`, "", -1)
+}
+
+func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
+	comment := "// Returns a signed URL for " + entry.MethodName + ". Valid for one hour.\n"
+	comment += requiredScopesComment(entry.Scopes)
+	comment += "//\n"
+	comment += fmt.Sprintf("// See %v for more details.\n", entry.MethodName)
+	inputParams, queryCode, queryExpr := entry.getInputParamsAndQueryStringCode()
+
+	// func (myQueue *Queue) CancelTask_SignedURL(taskId string) (*url.URL, error) {
+	//     cd := tcclient.ConnectionData(*myQueue)
+	//     return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/cancel", nil)
+	// }
+	content := comment
+	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "_SignedURL(" + inputParams + ") (*url.URL, error) {\n"
+	content += queryCode
+	content += "\tcd := tcclient.ConnectionData(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
+	content += "\treturn (&cd).SignedURL(\"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", " + queryExpr + ")\n"
+	content += "}\n"
+	content += "\n"
+	// can remove any code that added an empty string to another string
+	return strings.Replace(content, ` + ""`, "", -1)
+}
+
+func requiredScopesComment(scopes [][]string) string {
+	if len(scopes) == 0 {
+		return ""
+	}
+	comment := "//\n"
+	comment += "// Required scopes:\n"
+	switch len(scopes) {
+	case 0:
+	case 1:
+		comment += "//   * " + strings.Join(scopes[0], ", and\n//   * ") + "\n"
+	default:
+		lines := make([]string, len(scopes))
+		for i, j := range scopes {
+			switch len(j) {
+			case 0:
+			case 1:
+				lines[i] = "//   * " + j[0]
+			default:
+				lines[i] = "//   * (" + strings.Join(j, " and ") + ")"
+			}
+		}
+		comment += strings.Join(lines, ", or\n") + "\n"
+	}
+	return comment
 }
