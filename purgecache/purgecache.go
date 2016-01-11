@@ -92,7 +92,7 @@ func New(credentials *tcclient.Credentials) *PurgeCache {
 //   * purge-cache:<provisionerId>/<workerType>:<cacheName>
 //
 // See http://docs.taskcluster.net/services/purge-cache/#purgeCache
-func (purgeCache *PurgeCache) PurgeCache(provisionerId string, workerType string, payload *PurgeCacheRequest) (*tcclient.CallSummary, error) {
+func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, payload *PurgeCacheRequest) (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*purgeCache)
 	_, callSummary, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, nil)
 	return callSummary, err
@@ -109,6 +109,14 @@ func (purgeCache *PurgeCache) Ping() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*purgeCache)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
+}
+
+// Returns a signed URL for Ping. Valid for one hour.
+//
+// See Ping for more details.
+func (purgeCache *PurgeCache) Ping_SignedURL() (*url.URL, error) {
+	cd := tcclient.ConnectionData(*purgeCache)
+	return (&cd).SignedURL("/ping", nil)
 }
 
 type (

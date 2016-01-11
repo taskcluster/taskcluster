@@ -178,6 +178,14 @@ func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *tcclien
 	return responseObject.(*IndexedTaskResponse), callSummary, err
 }
 
+// Returns a signed URL for FindTask. Valid for one hour.
+//
+// See FindTask for more details.
+func (myIndex *Index) FindTask_SignedURL(namespace string) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myIndex)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(namespace), nil)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // List the namespaces immediately under a given namespace. This end-point
@@ -239,10 +247,21 @@ func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (
 //   * queue:get-artifact:<name>
 //
 // See http://docs.taskcluster.net/services/index/#findArtifactFromTask
-func (myIndex *Index) FindArtifactFromTask(namespace string, name string) (*tcclient.CallSummary, error) {
+func (myIndex *Index) FindArtifactFromTask(namespace, name string) (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myIndex)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
+}
+
+// Returns a signed URL for FindArtifactFromTask. Valid for one hour.
+//
+// Required scopes:
+//   * queue:get-artifact:<name>
+//
+// See FindArtifactFromTask for more details.
+func (myIndex *Index) FindArtifactFromTask_SignedURL(namespace, name string) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myIndex)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -256,6 +275,14 @@ func (myIndex *Index) Ping() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myIndex)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
+}
+
+// Returns a signed URL for Ping. Valid for one hour.
+//
+// See Ping for more details.
+func (myIndex *Index) Ping_SignedURL() (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myIndex)
+	return (&cd).SignedURL("/ping", nil)
 }
 
 type (

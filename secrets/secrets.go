@@ -136,6 +136,17 @@ func (mySecrets *Secrets) Get(name string) (*Secret, *tcclient.CallSummary, erro
 	return responseObject.(*Secret), callSummary, err
 }
 
+// Returns a signed URL for Get. Valid for one hour.
+//
+// Required scopes:
+//   * secrets:get:<name>
+//
+// See Get for more details.
+func (mySecrets *Secrets) Get_SignedURL(name string) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*mySecrets)
+	return (&cd).SignedURL("/secret/"+url.QueryEscape(name), nil)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // List the names of all visible secrets.
@@ -145,6 +156,14 @@ func (mySecrets *Secrets) List() (*SecretsList, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/secrets", new(SecretsList), nil)
 	return responseObject.(*SecretsList), callSummary, err
+}
+
+// Returns a signed URL for List. Valid for one hour.
+//
+// See List for more details.
+func (mySecrets *Secrets) List_SignedURL() (*url.URL, error) {
+	cd := tcclient.ConnectionData(*mySecrets)
+	return (&cd).SignedURL("/secrets", nil)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -158,6 +177,14 @@ func (mySecrets *Secrets) Ping() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
+}
+
+// Returns a signed URL for Ping. Valid for one hour.
+//
+// See Ping for more details.
+func (mySecrets *Secrets) Ping_SignedURL() (*url.URL, error) {
+	cd := tcclient.ConnectionData(*mySecrets)
+	return (&cd).SignedURL("/ping", nil)
 }
 
 type (

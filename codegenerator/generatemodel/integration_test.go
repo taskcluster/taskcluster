@@ -54,8 +54,7 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 
 }
 
-// Tests whether it is possible to define a task against the production Queue.
-func TestDefineTask(t *testing.T) {
+func permaCreds(t *testing.T) *tcclient.Credentials {
 	permaCreds := &tcclient.Credentials{
 		ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
@@ -64,6 +63,12 @@ func TestDefineTask(t *testing.T) {
 	if permaCreds.ClientId == "" || permaCreds.AccessToken == "" {
 		t.Skip("Skipping test TestDefineTask since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
 	}
+	return permaCreds
+}
+
+// Tests whether it is possible to define a task against the production Queue.
+func TestDefineTask(t *testing.T) {
+	permaCreds := permaCreds(t)
 	myQueue := queue.New(permaCreds)
 
 	taskId := slugid.Nice()

@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"time"
 
 	"github.com/taskcluster/httpbackoff"
 	hawk "github.com/tent/hawk-go"
@@ -47,6 +48,18 @@ type CallSummary struct {
 	Attempts int
 }
 
+// utility function to create a URL object based on given data
+func setURL(connectionData *ConnectionData, route string, query url.Values) (u *url.URL, err error) {
+	u, err = url.Parse(connectionData.BaseURL + route)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot parse url: '%v', is BaseURL (%v) set correctly?\n%v\n", connectionData.BaseURL+route, connectionData.BaseURL, err)
+	}
+	if query != nil {
+		u.RawQuery = query.Encode()
+	}
+	return
+}
+
 // APICall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
@@ -69,12 +82,9 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		u, err := url.Parse(connectionData.BaseURL + route)
+		u, err := setURL(connectionData, route, query)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", connectionData.BaseURL+route, connectionData.BaseURL, err)
-		}
-		if query != nil {
-			u.RawQuery = query.Encode()
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
 		}
 		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
 		if err != nil {
@@ -126,6 +136,33 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 	}
 
 	return result, callSummary, err
+}
+
+func (connectionData *ConnectionData) SignedURL(route string, query url.Values) (u *url.URL, err error) {
+	u, err = setURL(connectionData, route, query)
+	if err != nil {
+		return
+	}
+	credentials := &hawk.Credentials{
+		ID:   connectionData.Credentials.ClientId,
+		Key:  connectionData.Credentials.AccessToken,
+		Hash: sha256.New,
+	}
+	reqAuth, err := hawk.NewURLAuth(u.String(), credentials, time.Hour*1)
+	if err != nil {
+		return
+	}
+	reqAuth.Ext, err = getExtHeader(connectionData.Credentials)
+	if err != nil {
+		return
+	}
+	bewitSignature := reqAuth.Bewit()
+	if query == nil {
+		query = url.Values{}
+	}
+	query.Set("bewit", bewitSignature)
+	u.RawQuery = query.Encode()
+	return
 }
 
 // getExtHeader generates the hawk ext header based on the authorizedScopes and

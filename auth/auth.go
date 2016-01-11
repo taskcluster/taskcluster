@@ -131,6 +131,14 @@ func (myAuth *Auth) ListClients() (*ListClientResponse, *tcclient.CallSummary, e
 	return responseObject.(*ListClientResponse), callSummary, err
 }
 
+// Returns a signed URL for ListClients. Valid for one hour.
+//
+// See ListClients for more details.
+func (myAuth *Auth) ListClients_SignedURL() (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	return (&cd).SignedURL("/clients/", nil)
+}
+
 // Get information about a single client.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#client
@@ -138,6 +146,14 @@ func (myAuth *Auth) Client(clientId string) (*GetClientResponse, *tcclient.CallS
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), callSummary, err
+}
+
+// Returns a signed URL for Client. Valid for one hour.
+//
+// See Client for more details.
+func (myAuth *Auth) Client_SignedURL(clientId string) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	return (&cd).SignedURL("/clients/"+url.QueryEscape(clientId), nil)
 }
 
 // Create a new client and get the `accessToken` for this client.
@@ -215,6 +231,14 @@ func (myAuth *Auth) ListRoles() (*ListRolesResponse, *tcclient.CallSummary, erro
 	return responseObject.(*ListRolesResponse), callSummary, err
 }
 
+// Returns a signed URL for ListRoles. Valid for one hour.
+//
+// See ListRoles for more details.
+func (myAuth *Auth) ListRoles_SignedURL() (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	return (&cd).SignedURL("/roles/", nil)
+}
+
 // Get information about a single role, including the set of scopes that the
 // role expands to.
 //
@@ -223,6 +247,14 @@ func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, *tcclient.CallSummary
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), callSummary, err
+}
+
+// Returns a signed URL for Role. Valid for one hour.
+//
+// See Role for more details.
+func (myAuth *Auth) Role_SignedURL(roleId string) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	return (&cd).SignedURL("/roles/"+url.QueryEscape(roleId), nil)
 }
 
 // Create a new role.
@@ -296,10 +328,21 @@ func (myAuth *Auth) DeleteRole(roleId string) (*tcclient.CallSummary, error) {
 //   * auth:aws-s3:<level>:<bucket>/<prefix>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#awsS3Credentials
-func (myAuth *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *tcclient.CallSummary, error) {
+func (myAuth *Auth) AwsS3Credentials(level, bucket, prefix string) (*AWSS3CredentialsResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse), nil)
 	return responseObject.(*AWSS3CredentialsResponse), callSummary, err
+}
+
+// Returns a signed URL for AwsS3Credentials. Valid for one hour.
+//
+// Required scopes:
+//   * auth:aws-s3:<level>:<bucket>/<prefix>
+//
+// See AwsS3Credentials for more details.
+func (myAuth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix string) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	return (&cd).SignedURL("/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), nil)
 }
 
 // Get a shared access signature (SAS) string for use with a specific Azure
@@ -310,10 +353,21 @@ func (myAuth *Auth) AwsS3Credentials(level string, bucket string, prefix string)
 //   * auth:azure-table-access:<account>/<table>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#azureTableSAS
-func (myAuth *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSignatureResponse, *tcclient.CallSummary, error) {
+func (myAuth *Auth) AzureTableSAS(account, table string) (*AzureSharedAccessSignatureResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", new(AzureSharedAccessSignatureResponse), nil)
 	return responseObject.(*AzureSharedAccessSignatureResponse), callSummary, err
+}
+
+// Returns a signed URL for AzureTableSAS. Valid for one hour.
+//
+// Required scopes:
+//   * auth:azure-table-access:<account>/<table>
+//
+// See AzureTableSAS for more details.
+func (myAuth *Auth) AzureTableSAS_SignedURL(account, table string) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", nil)
 }
 
 // Validate the request signature given on input and return list of scopes
@@ -358,6 +412,14 @@ func (myAuth *Auth) Ping() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myAuth)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
+}
+
+// Returns a signed URL for Ping. Valid for one hour.
+//
+// See Ping for more details.
+func (myAuth *Auth) Ping_SignedURL() (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	return (&cd).SignedURL("/ping", nil)
 }
 
 type (

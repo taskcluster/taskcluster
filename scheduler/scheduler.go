@@ -204,6 +204,14 @@ func (myScheduler *Scheduler) Status(taskGraphId string) (*TaskGraphStatusRespon
 	return responseObject.(*TaskGraphStatusResponse), callSummary, err
 }
 
+// Returns a signed URL for Status. Valid for one hour.
+//
+// See Status for more details.
+func (myScheduler *Scheduler) Status_SignedURL(taskGraphId string) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myScheduler)
+	return (&cd).SignedURL("/task-graph/"+url.QueryEscape(taskGraphId)+"/status", nil)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Get task-graph information, this includes the _task-graph status
@@ -218,6 +226,14 @@ func (myScheduler *Scheduler) Info(taskGraphId string) (*TaskGraphInfoResponse, 
 	cd := tcclient.ConnectionData(*myScheduler)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/info", new(TaskGraphInfoResponse), nil)
 	return responseObject.(*TaskGraphInfoResponse), callSummary, err
+}
+
+// Returns a signed URL for Info. Valid for one hour.
+//
+// See Info for more details.
+func (myScheduler *Scheduler) Info_SignedURL(taskGraphId string) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myScheduler)
+	return (&cd).SignedURL("/task-graph/"+url.QueryEscape(taskGraphId)+"/info", nil)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -242,6 +258,14 @@ func (myScheduler *Scheduler) Inspect(taskGraphId string) (*InspectTaskGraphResp
 	return responseObject.(*InspectTaskGraphResponse), callSummary, err
 }
 
+// Returns a signed URL for Inspect. Valid for one hour.
+//
+// See Inspect for more details.
+func (myScheduler *Scheduler) Inspect_SignedURL(taskGraphId string) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myScheduler)
+	return (&cd).SignedURL("/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect", nil)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Inspect a task from a task-graph, this returns all the information the
@@ -258,10 +282,18 @@ func (myScheduler *Scheduler) Inspect(taskGraphId string) (*InspectTaskGraphResp
 // the future.
 //
 // See http://docs.taskcluster.net/scheduler/api-docs/#inspectTask
-func (myScheduler *Scheduler) InspectTask(taskGraphId string, taskId string) (*InspectTaskGraphTaskResponse, *tcclient.CallSummary, error) {
+func (myScheduler *Scheduler) InspectTask(taskGraphId, taskId string) (*InspectTaskGraphTaskResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myScheduler)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect/"+url.QueryEscape(taskId), new(InspectTaskGraphTaskResponse), nil)
 	return responseObject.(*InspectTaskGraphTaskResponse), callSummary, err
+}
+
+// Returns a signed URL for InspectTask. Valid for one hour.
+//
+// See InspectTask for more details.
+func (myScheduler *Scheduler) InspectTask_SignedURL(taskGraphId, taskId string) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myScheduler)
+	return (&cd).SignedURL("/task-graph/"+url.QueryEscape(taskGraphId)+"/inspect/"+url.QueryEscape(taskId), nil)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -275,6 +307,14 @@ func (myScheduler *Scheduler) Ping() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myScheduler)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
+}
+
+// Returns a signed URL for Ping. Valid for one hour.
+//
+// See Ping for more details.
+func (myScheduler *Scheduler) Ping_SignedURL() (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myScheduler)
+	return (&cd).SignedURL("/ping", nil)
 }
 
 type (
