@@ -300,16 +300,17 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 }
 
 func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
+	// if no required scopes, no reason to provide a signed url
+	// method, since no auth is required, so unsigned url already works
+	if len(entry.Scopes) == 0 {
+		return ""
+	}
 	comment := "// Returns a signed URL for " + entry.MethodName + ". Valid for one hour.\n"
 	comment += requiredScopesComment(entry.Scopes)
 	comment += "//\n"
 	comment += fmt.Sprintf("// See %v for more details.\n", entry.MethodName)
 	inputParams, queryCode, queryExpr := entry.getInputParamsAndQueryStringCode()
 
-	// func (myQueue *Queue) CancelTask_SignedURL(taskId string) (*url.URL, error) {
-	//     cd := tcclient.ConnectionData(*myQueue)
-	//     return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/cancel", nil)
-	// }
 	content := comment
 	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "_SignedURL(" + inputParams + ") (*url.URL, error) {\n"
 	content += queryCode
