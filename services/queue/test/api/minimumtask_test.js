@@ -27,7 +27,7 @@ suite('Create task (w. defaults)', () => {
     var taskId = slugid.v4();
 
     helper.scopes(
-      'queue:create-task:no-provisioner/test-worker'
+      'queue:create-task:no-provisioner/test-worker',
     );
     await helper.events.listenFor('is-defined', helper.queueEvents.taskDefined({
       taskId:   taskId
