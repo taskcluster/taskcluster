@@ -549,7 +549,7 @@ var nonceManager = function(options) {
  * Remark `deferAuth` will not perform authorization unless, `req.satisfies({})`
  * is called either without arguments or with an object as first argument.
  *
- * This method also addeds `req.scopes()` which returns a promise for the set
+ * This method also adds `req.scopes()` which returns a promise for the set
  * of scopes that the caller has. Please, use `req.satisfies()` whenever
  * possible rather than implement custom scope checking logic.
  *
@@ -1145,7 +1145,7 @@ var createRemoteSignatureValidator = function(options) {
  * is called either without arguments or with an object as first argument.
  *
  * This method also adds `req.scopes()` which returns a promise for the set of
- * scopes the caller has. Please, not that `req.scopes()` returns `[]` if there
+ * scopes the caller has. Please, note that `req.scopes()` returns `[]` if there
  * was an authentication error.
  *
  * Reports 401 if authentication fails.

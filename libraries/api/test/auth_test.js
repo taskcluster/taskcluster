@@ -597,7 +597,6 @@ suite("api/auth", function() {
       .end()
       .then(function(res) {
         assert(res.ok, "Request failed");
-        console.log(res.body.scopes);
         assert(res.body.scopes.length === 1, "wrong number of scopes");
         assert(res.body.scopes[0] === 'service:magic', "failed scopes");
       });
