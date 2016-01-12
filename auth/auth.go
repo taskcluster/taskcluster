@@ -81,6 +81,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
+	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
@@ -302,15 +303,15 @@ func (myAuth *Auth) AwsS3Credentials(level, bucket, prefix string) (*AWSS3Creden
 	return responseObject.(*AWSS3CredentialsResponse), callSummary, err
 }
 
-// Returns a signed URL for AwsS3Credentials. Valid for one hour.
+// Returns a signed URL for AwsS3Credentials, valid for the specified duration.
 //
 // Required scopes:
 //   * auth:aws-s3:<level>:<bucket>/<prefix>
 //
 // See AwsS3Credentials for more details.
-func (myAuth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix string) (*url.URL, error) {
+func (myAuth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.ConnectionData(*myAuth)
-	return (&cd).SignedURL("/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), nil)
+	return (&cd).SignedURL("/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), nil, duration)
 }
 
 // Get a shared access signature (SAS) string for use with a specific Azure
@@ -327,15 +328,15 @@ func (myAuth *Auth) AzureTableSAS(account, table string) (*AzureSharedAccessSign
 	return responseObject.(*AzureSharedAccessSignatureResponse), callSummary, err
 }
 
-// Returns a signed URL for AzureTableSAS. Valid for one hour.
+// Returns a signed URL for AzureTableSAS, valid for the specified duration.
 //
 // Required scopes:
 //   * auth:azure-table-access:<account>/<table>
 //
 // See AzureTableSAS for more details.
-func (myAuth *Auth) AzureTableSAS_SignedURL(account, table string) (*url.URL, error) {
+func (myAuth *Auth) AzureTableSAS_SignedURL(account, table string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.ConnectionData(*myAuth)
-	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", nil)
+	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", nil, duration)
 }
 
 // Validate the request signature given on input and return list of scopes

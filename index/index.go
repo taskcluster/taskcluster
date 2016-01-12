@@ -125,6 +125,7 @@ package index
 import (
 	"encoding/json"
 	"net/url"
+	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
@@ -245,15 +246,15 @@ func (myIndex *Index) FindArtifactFromTask(namespace, name string) (*tcclient.Ca
 	return callSummary, err
 }
 
-// Returns a signed URL for FindArtifactFromTask. Valid for one hour.
+// Returns a signed URL for FindArtifactFromTask, valid for the specified duration.
 //
 // Required scopes:
 //   * queue:get-artifact:<name>
 //
 // See FindArtifactFromTask for more details.
-func (myIndex *Index) FindArtifactFromTask_SignedURL(namespace, name string) (*url.URL, error) {
+func (myIndex *Index) FindArtifactFromTask_SignedURL(namespace, name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.ConnectionData(*myIndex)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***

@@ -46,6 +46,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
+	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
@@ -268,16 +269,16 @@ func (myQueue *Queue) PollTaskUrls(provisionerId, workerType string) (*PollTaskU
 	return responseObject.(*PollTaskUrlsResponse), callSummary, err
 }
 
-// Returns a signed URL for PollTaskUrls. Valid for one hour.
+// Returns a signed URL for PollTaskUrls, valid for the specified duration.
 //
 // Required scopes:
 //   * (queue:poll-task-urls and assume:worker-type:<provisionerId>/<workerType>), or
 //   * queue:poll-task-urls:<provisionerId>/<workerType>
 //
 // See PollTaskUrls for more details.
-func (myQueue *Queue) PollTaskUrls_SignedURL(provisionerId, workerType string) (*url.URL, error) {
+func (myQueue *Queue) PollTaskUrls_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.ConnectionData(*myQueue)
-	return (&cd).SignedURL("/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil)
+	return (&cd).SignedURL("/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -468,15 +469,15 @@ func (myQueue *Queue) GetArtifact(taskId, runId, name string) (*tcclient.CallSum
 	return callSummary, err
 }
 
-// Returns a signed URL for GetArtifact. Valid for one hour.
+// Returns a signed URL for GetArtifact, valid for the specified duration.
 //
 // Required scopes:
 //   * queue:get-artifact:<name>
 //
 // See GetArtifact for more details.
-func (myQueue *Queue) GetArtifact_SignedURL(taskId, runId, name string) (*url.URL, error) {
+func (myQueue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.ConnectionData(*myQueue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -507,15 +508,15 @@ func (myQueue *Queue) GetLatestArtifact(taskId, name string) (*tcclient.CallSumm
 	return callSummary, err
 }
 
-// Returns a signed URL for GetLatestArtifact. Valid for one hour.
+// Returns a signed URL for GetLatestArtifact, valid for the specified duration.
 //
 // Required scopes:
 //   * queue:get-artifact:<name>
 //
 // See GetLatestArtifact for more details.
-func (myQueue *Queue) GetLatestArtifact_SignedURL(taskId, name string) (*url.URL, error) {
+func (myQueue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.ConnectionData(*myQueue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -557,15 +558,15 @@ func (myQueue *Queue) PendingTasks(provisionerId, workerType string) (*CountPend
 	return responseObject.(*CountPendingTasksResponse), callSummary, err
 }
 
-// Returns a signed URL for PendingTasks. Valid for one hour.
+// Returns a signed URL for PendingTasks, valid for the specified duration.
 //
 // Required scopes:
 //   * queue:pending-tasks:<provisionerId>/<workerType>
 //
 // See PendingTasks for more details.
-func (myQueue *Queue) PendingTasks_SignedURL(provisionerId, workerType string) (*url.URL, error) {
+func (myQueue *Queue) PendingTasks_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.ConnectionData(*myQueue)
-	return (&cd).SignedURL("/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil)
+	return (&cd).SignedURL("/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***

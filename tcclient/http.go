@@ -138,7 +138,11 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 	return result, callSummary, err
 }
 
-func (connectionData *ConnectionData) SignedURL(route string, query url.Values) (u *url.URL, err error) {
+// SignedURL creates a signed URL using the given ConnectionData, where route
+// is the url path relative to the BaseURL stored in the ConnectionData, query
+// is the set of query string parameters, if any, and duration is the amount of
+// time that the signed URL should remain valid for.
+func (connectionData *ConnectionData) SignedURL(route string, query url.Values, duration time.Duration) (u *url.URL, err error) {
 	u, err = setURL(connectionData, route, query)
 	if err != nil {
 		return
@@ -148,7 +152,7 @@ func (connectionData *ConnectionData) SignedURL(route string, query url.Values) 
 		Key:  connectionData.Credentials.AccessToken,
 		Hash: sha256.New,
 	}
-	reqAuth, err := hawk.NewURLAuth(u.String(), credentials, time.Hour*1)
+	reqAuth, err := hawk.NewURLAuth(u.String(), credentials, duration)
 	if err != nil {
 		return
 	}
@@ -202,6 +206,8 @@ func getExtHeader(credentials *Credentials) (header string, err error) {
 	return "", nil
 }
 
+// ExtHeader represents the authentication/authorization data that is encoded
+// in the Ext HTTP header in outgoing Hawk HTTP requests.
 type ExtHeader struct {
 	Certificate *Certificate `json:"certificate,omitempty"`
 	// use pointer to slice to distinguish between nil slice and empty slice

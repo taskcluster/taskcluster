@@ -39,6 +39,7 @@ package secrets
 import (
 	"encoding/json"
 	"net/url"
+	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
@@ -136,15 +137,15 @@ func (mySecrets *Secrets) Get(name string) (*Secret, *tcclient.CallSummary, erro
 	return responseObject.(*Secret), callSummary, err
 }
 
-// Returns a signed URL for Get. Valid for one hour.
+// Returns a signed URL for Get, valid for the specified duration.
 //
 // Required scopes:
 //   * secrets:get:<name>
 //
 // See Get for more details.
-func (mySecrets *Secrets) Get_SignedURL(name string) (*url.URL, error) {
+func (mySecrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
-	return (&cd).SignedURL("/secret/"+url.QueryEscape(name), nil)
+	return (&cd).SignedURL("/secret/"+url.QueryEscape(name), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
