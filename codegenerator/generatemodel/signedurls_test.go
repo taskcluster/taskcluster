@@ -25,6 +25,6 @@ func TestSignedURL(t *testing.T) {
 		t.Fatalf("Exception thrown reading from signed URL %s\n%s", signedUrl, err)
 	}
 	if len(respBody) != 18170 {
-		t.Fatalf("Expected response body from signed URL %s to be 18170 bytes, but was %s bytes", signedUrl, len(respBody))
+		t.Fatalf("Expected response body from signed URL %s to be 18170 bytes, but was %v bytes", signedUrl, len(respBody))
 	}
 }
