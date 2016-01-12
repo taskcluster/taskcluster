@@ -49,7 +49,7 @@ suite('Poll tasks', function() {
     debug("### Create task");
     helper.scopes(
       'queue:create-task:no-provisioner/poll-test-worker',
-      'queue:route:*'
+      'queue:route:*',
     );
     await helper.queue.createTask(taskId, taskDef);
 
