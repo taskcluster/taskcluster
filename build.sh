@@ -26,8 +26,6 @@ done
 
 export UNIX_TIMESTAMP
 echo "UNIX_TIMESTAMP = '${UNIX_TIMESTAMP}'"
-# having GOOS for anything than local system will break running go generate
-unset GOOS
 
 rm -rf "${GOPATH}"/pkg/*/github.com/*/taskcluster-client-go
 go clean -i -x ./...
