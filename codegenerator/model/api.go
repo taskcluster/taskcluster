@@ -112,7 +112,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	"time"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
 %%{imports}
@@ -305,17 +305,22 @@ func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
 	if len(entry.Scopes) == 0 {
 		return ""
 	}
-	comment := "// Returns a signed URL for " + entry.MethodName + ". Valid for one hour.\n"
+	comment := "// Returns a signed URL for " + entry.MethodName + ", valid for the specified duration.\n"
 	comment += requiredScopesComment(entry.Scopes)
 	comment += "//\n"
 	comment += fmt.Sprintf("// See %v for more details.\n", entry.MethodName)
 	inputParams, queryCode, queryExpr := entry.getInputParamsAndQueryStringCode()
+	if inputParams == "" {
+		inputParams = "duration time.Duration"
+	} else {
+		inputParams += ", duration time.Duration"
+	}
 
 	content := comment
 	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "_SignedURL(" + inputParams + ") (*url.URL, error) {\n"
 	content += queryCode
 	content += "\tcd := tcclient.ConnectionData(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
-	content += "\treturn (&cd).SignedURL(\"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", " + queryExpr + ")\n"
+	content += "\treturn (&cd).SignedURL(\"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", " + queryExpr + ", duration)\n"
 	content += "}\n"
 	content += "\n"
 	// can remove any code that added an empty string to another string

@@ -40,7 +40,7 @@ func TestBadAuthScopesSignedURL(t *testing.T) {
 	permaCreds := permaCreds(t)
 	permaCreds.AuthorizedScopes = []string{"queue:task-priority:high"}
 	myQueue := queue.New(permaCreds)
-	signedURL, err := myQueue.GetArtifact_SignedURL("DD1kmgFiRMWTjyiNoEJIMA", "0", "private/build/sources.xml")
+	signedURL, err := myQueue.GetArtifact_SignedURL("DD1kmgFiRMWTjyiNoEJIMA", "0", "private/build/sources.xml", time.Second*30)
 	if err != nil {
 		t.Fatalf("Exception thrown signing URL\n%s", err)
 	}
@@ -80,7 +80,7 @@ func TestSignedURLTempCreds(t *testing.T) {
 // that when queried, the signed URL returns content whose length matches the
 // expected 18170 bytes.
 func createAndTestExampleSignedURL(myQueue *queue.Queue, t *testing.T) {
-	signedURL, err := myQueue.GetArtifact_SignedURL("DD1kmgFiRMWTjyiNoEJIMA", "0", "private/build/sources.xml")
+	signedURL, err := myQueue.GetArtifact_SignedURL("DD1kmgFiRMWTjyiNoEJIMA", "0", "private/build/sources.xml", time.Second*30)
 	if err != nil {
 		t.Fatalf("Exception thrown signing URL\n%s", err)
 	}
