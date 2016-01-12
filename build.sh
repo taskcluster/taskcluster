@@ -33,6 +33,7 @@ rm -rf "${GOPATH}"/pkg/*/github.com/*/taskcluster-client-go
 go clean -i -x ./...
 
 # generate code
+go get github.com/docopt/docopt-go
 "${GENERATE}" && go generate ./...
 
 # fetch deps/build/install taskcluster-client-go
