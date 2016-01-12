@@ -102,14 +102,6 @@ func (myHooks *Hooks) ListHookGroups() (*HookGroups, *tcclient.CallSummary, erro
 	return responseObject.(*HookGroups), callSummary, err
 }
 
-// Returns a signed URL for ListHookGroups. Valid for one hour.
-//
-// See ListHookGroups for more details.
-func (myHooks *Hooks) ListHookGroups_SignedURL() (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myHooks)
-	return (&cd).SignedURL("/hooks", nil)
-}
-
 // Stability: *** EXPERIMENTAL ***
 //
 // This endpoint will return a list of all the hook definitions within a
@@ -120,14 +112,6 @@ func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, *tcclient.CallSu
 	cd := tcclient.ConnectionData(*myHooks)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId), new(HookList), nil)
 	return responseObject.(*HookList), callSummary, err
-}
-
-// Returns a signed URL for ListHooks. Valid for one hour.
-//
-// See ListHooks for more details.
-func (myHooks *Hooks) ListHooks_SignedURL(hookGroupId string) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myHooks)
-	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId), nil)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -142,14 +126,6 @@ func (myHooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, *tcclie
 	return responseObject.(*HookDefinition), callSummary, err
 }
 
-// Returns a signed URL for Hook. Valid for one hour.
-//
-// See Hook for more details.
-func (myHooks *Hooks) Hook_SignedURL(hookGroupId, hookId string) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myHooks)
-	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), nil)
-}
-
 // Stability: *** EXPERIMENTAL ***
 //
 // This endpoint will return the schedule and next scheduled creation time
@@ -160,14 +136,6 @@ func (myHooks *Hooks) GetHookSchedule(hookGroupId, hookId string) (*HookSchedule
 	cd := tcclient.ConnectionData(*myHooks)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/schedule", new(HookScheduleResponse), nil)
 	return responseObject.(*HookScheduleResponse), callSummary, err
-}
-
-// Returns a signed URL for GetHookSchedule. Valid for one hour.
-//
-// See GetHookSchedule for more details.
-func (myHooks *Hooks) GetHookSchedule_SignedURL(hookGroupId, hookId string) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myHooks)
-	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/schedule", nil)
 }
 
 // Stability: *** EXPERIMENTAL ***

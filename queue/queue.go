@@ -100,14 +100,6 @@ func (myQueue *Queue) Task(taskId string) (*TaskDefinitionResponse, *tcclient.Ca
 	return responseObject.(*TaskDefinitionResponse), callSummary, err
 }
 
-// Returns a signed URL for Task. Valid for one hour.
-//
-// See Task for more details.
-func (myQueue *Queue) Task_SignedURL(taskId string) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myQueue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId), nil)
-}
-
 // Stability: *** EXPERIMENTAL ***
 //
 // Get task status structure from `taskId`
@@ -117,14 +109,6 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *tcclient.Call
 	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/status", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
-}
-
-// Returns a signed URL for Status. Valid for one hour.
-//
-// See Status for more details.
-func (myQueue *Queue) Status_SignedURL(taskId string) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myQueue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/status", nil)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -545,14 +529,6 @@ func (myQueue *Queue) ListArtifacts(taskId, runId string) (*ListArtifactsRespons
 	return responseObject.(*ListArtifactsResponse), callSummary, err
 }
 
-// Returns a signed URL for ListArtifacts. Valid for one hour.
-//
-// See ListArtifacts for more details.
-func (myQueue *Queue) ListArtifacts_SignedURL(taskId, runId string) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myQueue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", nil)
-}
-
 // Stability: *** EXPERIMENTAL ***
 //
 // Returns a list of artifacts and associated meta-data for the latest run
@@ -563,14 +539,6 @@ func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse
 	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse), nil)
 	return responseObject.(*ListArtifactsResponse), callSummary, err
-}
-
-// Returns a signed URL for ListLatestArtifacts. Valid for one hour.
-//
-// See ListLatestArtifacts for more details.
-func (myQueue *Queue) ListLatestArtifacts_SignedURL(taskId string) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myQueue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifacts", nil)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -611,14 +579,6 @@ func (myQueue *Queue) Ping() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myQueue)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
-}
-
-// Returns a signed URL for Ping. Valid for one hour.
-//
-// See Ping for more details.
-func (myQueue *Queue) Ping_SignedURL() (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myQueue)
-	return (&cd).SignedURL("/ping", nil)
 }
 
 type (

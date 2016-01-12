@@ -178,14 +178,6 @@ func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *tcclien
 	return responseObject.(*IndexedTaskResponse), callSummary, err
 }
 
-// Returns a signed URL for FindTask. Valid for one hour.
-//
-// See FindTask for more details.
-func (myIndex *Index) FindTask_SignedURL(namespace string) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myIndex)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(namespace), nil)
-}
-
 // Stability: *** EXPERIMENTAL ***
 //
 // List the namespaces immediately under a given namespace. This end-point
@@ -275,14 +267,6 @@ func (myIndex *Index) Ping() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myIndex)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
-}
-
-// Returns a signed URL for Ping. Valid for one hour.
-//
-// See Ping for more details.
-func (myIndex *Index) Ping_SignedURL() (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myIndex)
-	return (&cd).SignedURL("/ping", nil)
 }
 
 type (

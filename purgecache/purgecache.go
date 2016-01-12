@@ -111,14 +111,6 @@ func (purgeCache *PurgeCache) Ping() (*tcclient.CallSummary, error) {
 	return callSummary, err
 }
 
-// Returns a signed URL for Ping. Valid for one hour.
-//
-// See Ping for more details.
-func (purgeCache *PurgeCache) Ping_SignedURL() (*url.URL, error) {
-	cd := tcclient.ConnectionData(*purgeCache)
-	return (&cd).SignedURL("/ping", nil)
-}
-
 type (
 
 	// Request that a message be published to purge a specific cache.

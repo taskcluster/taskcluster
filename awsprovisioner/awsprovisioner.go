@@ -283,14 +283,6 @@ func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretRespons
 	return responseObject.(*GetSecretResponse), callSummary, err
 }
 
-// Returns a signed URL for GetSecret. Valid for one hour.
-//
-// See GetSecret for more details.
-func (awsProvisioner *AwsProvisioner) GetSecret_SignedURL(token string) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*awsProvisioner)
-	return (&cd).SignedURL("/secret/"+url.QueryEscape(token), nil)
-}
-
 // Stability: *** EXPERIMENTAL ***
 //
 // An instance will report in by giving its instance id as well
@@ -304,14 +296,6 @@ func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId, token string) 
 	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/instance-started/"+url.QueryEscape(instanceId)+"/"+url.QueryEscape(token), nil, nil)
 	return callSummary, err
-}
-
-// Returns a signed URL for InstanceStarted. Valid for one hour.
-//
-// See InstanceStarted for more details.
-func (awsProvisioner *AwsProvisioner) InstanceStarted_SignedURL(instanceId, token string) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*awsProvisioner)
-	return (&cd).SignedURL("/instance-started/"+url.QueryEscape(instanceId)+"/"+url.QueryEscape(token), nil)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -430,14 +414,6 @@ func (awsProvisioner *AwsProvisioner) Ping() (*tcclient.CallSummary, error) {
 	return callSummary, err
 }
 
-// Returns a signed URL for Ping. Valid for one hour.
-//
-// See Ping for more details.
-func (awsProvisioner *AwsProvisioner) Ping_SignedURL() (*url.URL, error) {
-	cd := tcclient.ConnectionData(*awsProvisioner)
-	return (&cd).SignedURL("/ping", nil)
-}
-
 // Stability: *** EXPERIMENTAL ***
 //
 // Get an API reference!
@@ -449,14 +425,6 @@ func (awsProvisioner *AwsProvisioner) ApiReference() (*tcclient.CallSummary, err
 	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/api-reference", nil, nil)
 	return callSummary, err
-}
-
-// Returns a signed URL for ApiReference. Valid for one hour.
-//
-// See ApiReference for more details.
-func (awsProvisioner *AwsProvisioner) ApiReference_SignedURL() (*url.URL, error) {
-	cd := tcclient.ConnectionData(*awsProvisioner)
-	return (&cd).SignedURL("/api-reference", nil)
 }
 
 type (

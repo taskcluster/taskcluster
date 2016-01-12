@@ -131,14 +131,6 @@ func (myAuth *Auth) ListClients() (*ListClientResponse, *tcclient.CallSummary, e
 	return responseObject.(*ListClientResponse), callSummary, err
 }
 
-// Returns a signed URL for ListClients. Valid for one hour.
-//
-// See ListClients for more details.
-func (myAuth *Auth) ListClients_SignedURL() (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myAuth)
-	return (&cd).SignedURL("/clients/", nil)
-}
-
 // Get information about a single client.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#client
@@ -146,14 +138,6 @@ func (myAuth *Auth) Client(clientId string) (*GetClientResponse, *tcclient.CallS
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), callSummary, err
-}
-
-// Returns a signed URL for Client. Valid for one hour.
-//
-// See Client for more details.
-func (myAuth *Auth) Client_SignedURL(clientId string) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myAuth)
-	return (&cd).SignedURL("/clients/"+url.QueryEscape(clientId), nil)
 }
 
 // Create a new client and get the `accessToken` for this client.
@@ -231,14 +215,6 @@ func (myAuth *Auth) ListRoles() (*ListRolesResponse, *tcclient.CallSummary, erro
 	return responseObject.(*ListRolesResponse), callSummary, err
 }
 
-// Returns a signed URL for ListRoles. Valid for one hour.
-//
-// See ListRoles for more details.
-func (myAuth *Auth) ListRoles_SignedURL() (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myAuth)
-	return (&cd).SignedURL("/roles/", nil)
-}
-
 // Get information about a single role, including the set of scopes that the
 // role expands to.
 //
@@ -247,14 +223,6 @@ func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, *tcclient.CallSummary
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), callSummary, err
-}
-
-// Returns a signed URL for Role. Valid for one hour.
-//
-// See Role for more details.
-func (myAuth *Auth) Role_SignedURL(roleId string) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myAuth)
-	return (&cd).SignedURL("/roles/"+url.QueryEscape(roleId), nil)
 }
 
 // Create a new role.
@@ -412,14 +380,6 @@ func (myAuth *Auth) Ping() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myAuth)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
-}
-
-// Returns a signed URL for Ping. Valid for one hour.
-//
-// See Ping for more details.
-func (myAuth *Auth) Ping_SignedURL() (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myAuth)
-	return (&cd).SignedURL("/ping", nil)
 }
 
 type (

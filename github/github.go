@@ -40,8 +40,6 @@
 package github
 
 import (
-	"net/url"
-
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
 )
@@ -108,14 +106,6 @@ func (myGithub *Github) Ping() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myGithub)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
-}
-
-// Returns a signed URL for Ping. Valid for one hour.
-//
-// See Ping for more details.
-func (myGithub *Github) Ping_SignedURL() (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myGithub)
-	return (&cd).SignedURL("/ping", nil)
 }
 
 type ()
