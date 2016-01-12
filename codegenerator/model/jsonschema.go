@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
+	"github.com/taskcluster/taskcluster-client-go/text"
 )
 
 type (
@@ -103,7 +103,7 @@ func (subSchema JsonSubSchema) String() string {
 func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages map[string]bool, rawMessageTypes map[string]bool) (string, string, string, map[string]bool, map[string]bool) {
 	comment := "\n"
 	if d := jsonSubSchema.Description; d != nil {
-		comment += utils.Indent(*d, "\t// ")
+		comment += text.Indent(*d, "\t// ")
 	}
 	if comment[len(comment)-1:] != "\n" {
 		comment += "\n"
@@ -187,7 +187,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 			typ = fmt.Sprintf("struct {\n")
 			members := make(map[string]bool, len(s.SortedPropertyNames))
 			for _, j := range s.SortedPropertyNames {
-				s.Properties[j].TypeName = utils.Normalise(j, members)
+				s.Properties[j].TypeName = text.Normalise(j, members)
 				// recursive call to build structs inside structs
 				var subComment, subMember, subType string
 				subComment, subMember, subType, extraPackages, rawMessageTypes = s.Properties[j].TypeDefinition(false, extraPackages, rawMessageTypes)
@@ -232,7 +232,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 func (p Properties) String() string {
 	result := ""
 	for _, i := range p.SortedPropertyNames {
-		result += "Property '" + i + "' =\n" + utils.Indent(p.Properties[i].String(), "  ")
+		result += "Property '" + i + "' =\n" + text.Indent(p.Properties[i].String(), "  ")
 	}
 	return result
 }
@@ -283,7 +283,7 @@ func (aP AdditionalProperties) String() string {
 func (items Items) String() string {
 	result := ""
 	for i, j := range items {
-		result += fmt.Sprintf("Item '%v' =\n", i) + utils.Indent(j.String(), "  ")
+		result += fmt.Sprintf("Item '%v' =\n", i) + text.Indent(j.String(), "  ")
 	}
 	return result
 }
@@ -305,7 +305,7 @@ func (items *Items) setSourceURL(url string) {
 func describeList(name string, value interface{}) string {
 	if reflect.ValueOf(value).IsValid() {
 		if !reflect.ValueOf(value).IsNil() {
-			return fmt.Sprintf("%v\n", name) + utils.Indent(fmt.Sprintf("%v", reflect.Indirect(reflect.ValueOf(value)).Interface()), "  ")
+			return fmt.Sprintf("%v\n", name) + text.Indent(fmt.Sprintf("%v", reflect.Indirect(reflect.ValueOf(value)).Interface()), "  ")
 		}
 	}
 	return ""

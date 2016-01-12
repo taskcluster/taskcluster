@@ -1,4 +1,7 @@
 // generatemodel is the command invoked by go generate in order to generate the go client library.
+
+// +build ignore
+
 package main
 
 import (
@@ -9,7 +12,6 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/taskcluster-client-go/codegenerator/model"
-	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
 )
 
 var (
@@ -53,7 +55,10 @@ this is used by the build process for this taskcluster-client-go go project.
 func main() {
 	// Parse the docopt string and exit on any error or help message.
 	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
-	utils.ExitOnFail(err)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "generatemodel: ERROR: Cannot parse arguments: %s\n", err)
+		os.Exit(64)
+	}
 
 	// allow time to be passed via env var UNIX_TIMESTAMP
 	var downloadedTime time.Time
@@ -64,8 +69,8 @@ func main() {
 		i, err := strconv.ParseInt(t, 10, 0)
 		if err != nil {
 			fmt.Printf("ERROR: Cannot convert UNIX_TIMESTAMP ('%s') to an int\n", t)
+			os.Exit(65)
 		}
-		utils.ExitOnFail(err)
 		downloadedTime = time.Unix(i, 0)
 	}
 

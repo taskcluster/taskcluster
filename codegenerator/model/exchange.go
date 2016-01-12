@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
+	"github.com/taskcluster/taskcluster-client-go/text"
 )
 
 ////////////////////////////////////////////////////////////////////////
@@ -104,7 +104,7 @@ func (re *RouteElement) String() string {
 func (exchange *Exchange) generateAPICode(exchangeName string) string {
 	comment := ""
 	if exchange.Description != "" {
-		comment = utils.Indent(exchange.Description, "// ")
+		comment = text.Indent(exchange.Description, "// ")
 	}
 	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 		comment += "\n"
@@ -146,7 +146,7 @@ import (
 `
 	entryTypeNames := make(map[string]bool, len(exchange.Entries))
 	for _, entry := range exchange.Entries {
-		content += entry.generateAPICode(utils.Normalise(entry.Name, entryTypeNames))
+		content += entry.generateAPICode(text.Normalise(entry.Name, entryTypeNames))
 	}
 
 	content += `
@@ -174,7 +174,7 @@ func generateRoutingKey(x interface{}) string {
 func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
 	content := ""
 	if entry.Description != "" {
-		content = utils.Indent(entry.Description, "// ")
+		content = text.Indent(entry.Description, "// ")
 	}
 	if len(content) >= 1 && content[len(content)-1:] != "\n" {
 		content += "\n"
@@ -188,7 +188,7 @@ func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
 		if rk.MultipleWords {
 			mwch = "#"
 		}
-		content += "\t" + utils.Normalise(rk.Name, keyNames) + " string `mwords:\"" + mwch + "\"`\n"
+		content += "\t" + text.Normalise(rk.Name, keyNames) + " string `mwords:\"" + mwch + "\"`\n"
 	}
 	content += "}\n"
 	content += "func (binding " + exchangeEntry + ") RoutingKey() string {\n"

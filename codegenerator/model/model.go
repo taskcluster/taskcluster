@@ -1,6 +1,6 @@
 package model
 
-//go:generate generatemodel -u http://references.taskcluster.net/manifest.json -f apis.json -o ../.. -m model-data.txt
+//go:generate go run generatemodel.go -u http://references.taskcluster.net/manifest.json -f apis.json -o ../.. -m ../model-data.txt
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"go/format"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
+	"github.com/taskcluster/taskcluster-client-go/text"
 	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/tools/imports"
 )
@@ -56,6 +57,13 @@ type APIDefinition struct {
 	SchemaURL      string
 }
 
+func exitOnFail(err error) {
+	if err != nil {
+		fmt.Printf("%v\n%T\n", err, err)
+		panic(err)
+	}
+}
+
 func (a *APIDefinition) generateAPICode() string {
 	return a.Data.generateAPICode(a.Name)
 }
@@ -63,11 +71,11 @@ func (a *APIDefinition) generateAPICode() string {
 func (apiDef *APIDefinition) loadJson(reader io.Reader) {
 	b := new(bytes.Buffer)
 	_, err := b.ReadFrom(reader)
-	utils.ExitOnFail(err)
+	exitOnFail(err)
 	data := b.Bytes()
 	f := new(interface{})
 	err = json.Unmarshal(data, f)
-	utils.ExitOnFail(err)
+	exitOnFail(err)
 	schema := (*f).(map[string]interface{})["$schema"].(string)
 	apiDef.SchemaURL = schema
 	var m APIModel
@@ -78,7 +86,7 @@ func (apiDef *APIDefinition) loadJson(reader io.Reader) {
 		m = new(Exchange)
 	}
 	err = json.Unmarshal(data, m)
-	utils.ExitOnFail(err)
+	exitOnFail(err)
 	m.setAPIDefinition(apiDef)
 	m.postPopulate(apiDef)
 	apiDef.Data = m
@@ -87,12 +95,12 @@ func (apiDef *APIDefinition) loadJson(reader io.Reader) {
 func (apiDef *APIDefinition) loadJsonSchema(url string) *JsonSubSchema {
 	var resp *http.Response
 	resp, err = http.Get(url)
-	utils.ExitOnFail(err)
+	exitOnFail(err)
 	defer resp.Body.Close()
 	decoder := json.NewDecoder(resp.Body)
 	m := new(JsonSubSchema)
 	err = decoder.Decode(m)
-	utils.ExitOnFail(err)
+	exitOnFail(err)
 	m.SourceURL = url
 	m.postPopulate(apiDef)
 	return m
@@ -129,19 +137,19 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 	if err != nil {
 		fmt.Printf("Could not download api manifest from url: '%v'!\n", apiManifestUrl)
 	}
-	utils.ExitOnFail(err)
+	exitOnFail(err)
 	supDataReader, err := os.Open(supplementaryDataFile)
 	if err != nil {
 		fmt.Printf("Could not load supplementary data json file: '%v'!\n", supplementaryDataFile)
 	}
-	utils.ExitOnFail(err)
+	exitOnFail(err)
 	apiManifestDecoder := json.NewDecoder(resp.Body)
 	apiMan := make(map[string]string)
 	err = apiManifestDecoder.Decode(&apiMan)
-	utils.ExitOnFail(err)
+	exitOnFail(err)
 	supDataDecoder := json.NewDecoder(supDataReader)
 	err = supDataDecoder.Decode(&apiDefs)
-	utils.ExitOnFail(err)
+	exitOnFail(err)
 	sort.Sort(SortedAPIDefs(apiDefs))
 
 	// build up apis based on data in *both* data sources
@@ -173,7 +181,7 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 		apiDefs[i].schemas = make(map[string]*JsonSubSchema)
 		var resp *http.Response
 		resp, err = http.Get(apiDefs[i].URL)
-		utils.ExitOnFail(err)
+		exitOnFail(err)
 		defer resp.Body.Close()
 		apiDefs[i].loadJson(resp.Body)
 
@@ -192,7 +200,7 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 		// map[string]bool acts like a set of strings
 		TypeName := make(map[string]bool)
 		for _, j := range apiDefs[i].schemaURLs {
-			apiDefs[i].schemas[j].TypeName = utils.Normalise(*apiDefs[i].schemas[j].Title, TypeName)
+			apiDefs[i].schemas[j].TypeName = text.Normalise(*apiDefs[i].schemas[j].Title, TypeName)
 		}
 	}
 	return apiDefs
@@ -202,7 +210,7 @@ func validateJson(schemaUrl, docUrl string) {
 	schemaLoader := gojsonschema.NewReferenceLoader(schemaUrl)
 	docLoader := gojsonschema.NewReferenceLoader(docUrl)
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
-	utils.ExitOnFail(err)
+	exitOnFail(err)
 	if result.Valid() {
 		fmt.Printf("Document '%v' is valid against '%v'.\n", docUrl, schemaUrl)
 	} else {
@@ -235,7 +243,7 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 		}
 		apiDefs[i].PackagePath = filepath.Join(goOutputDir, apiDefs[i].PackageName)
 		err = os.MkdirAll(apiDefs[i].PackagePath, 0755)
-		utils.ExitOnFail(err)
+		exitOnFail(err)
 		content := `
 // The following code is AUTO-GENERATED. Please DO NOT edit.
 // To update this generated code, run the following command:
@@ -273,10 +281,11 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 		// steps, let's keep the unformatted version so we can troubleshoot
 		// more easily...
 		if err != nil {
-			utils.WriteStringToFile(content, sourceFile)
+			// no need to handle error as we exit below anyway
+			_ = ioutil.WriteFile(sourceFile, []byte(content), 0644)
 		}
-		utils.ExitOnFail(err)
-		utils.WriteStringToFile(string(formattedContent), sourceFile)
+		exitOnFail(err)
+		exitOnFail(ioutil.WriteFile(sourceFile, formattedContent, 0644))
 	}
 
 	content := "Generated: " + strconv.FormatInt(downloadedTime.Unix(), 10) + "\n"
@@ -284,14 +293,14 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 	content += "It is provided here for reference purposes, but is not used by any code.\n"
 	content += "\n"
 	for i := range apiDefs {
-		content += utils.Underline(apiDefs[i].URL)
+		content += text.Underline(apiDefs[i].URL)
 		content += apiDefs[i].Data.String() + "\n\n"
 		for _, url := range apiDefs[i].schemaURLs {
-			content += (utils.Underline(url))
+			content += (text.Underline(url))
 			content += apiDefs[i].schemas[url].String() + "\n\n"
 		}
 	}
-	utils.WriteStringToFile(content, modelData)
+	exitOnFail(ioutil.WriteFile(modelData, []byte(content), 0644))
 }
 
 func jsonRawMessageImplementors(apiDef *APIDefinition, rawMessageTypes map[string]bool) string {
@@ -342,7 +351,7 @@ func generatePayloadTypes(apiDef *APIDefinition) (string, map[string]bool, map[s
 	for _, i := range apiDef.schemaURLs {
 		var newComment, newMember, newType string
 		newComment, newMember, newType, extraPackages, rawMessageTypes = apiDef.schemas[i].TypeDefinition(true, extraPackages, rawMessageTypes)
-		content += utils.Indent(newComment+newMember+" "+newType, "\t") + "\n"
+		content += text.Indent(newComment+newMember+" "+newType, "\t") + "\n"
 	}
 	return content + ")\n\n", extraPackages, rawMessageTypes
 }

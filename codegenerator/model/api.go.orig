@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/taskcluster-client-go/text"
+	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ func (api *API) postPopulate(apiDef *APIDefinition) {
 
 	for i := range api.Entries {
 		api.Entries[i].Parent = api
-		api.Entries[i].MethodName = text.Normalise(api.Entries[i].Name, methods)
+		api.Entries[i].MethodName = utils.Normalise(api.Entries[i].Name, methods)
 		api.Entries[i].postPopulate(apiDef)
 	}
 }
@@ -71,7 +71,7 @@ func (api *API) generateAPICode(apiName string) string {
 	}
 	comment := ""
 	if api.Description != "" {
-		comment = text.Indent(api.Description, "// ")
+		comment = utils.Indent(api.Description, "// ")
 	}
 	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 		comment += "\n"
@@ -81,7 +81,7 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "//\n"
 	comment += "// How to use this package\n"
 	comment += "//\n"
-	comment += "// First create " + text.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + " object:\n"
+	comment += "// First create " + utils.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + " object:\n"
 	comment += "//\n"
 	comment += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(&tcclient.Credentials{ClientId: \"myClientId\", AccessToken: \"myAccessToken\"})\n"
 	comment += "//\n"
@@ -255,7 +255,7 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 		comment += "//\n"
 	}
 	if entry.Description != "" {
-		comment += text.Indent(entry.Description, "// ")
+		comment += utils.Indent(entry.Description, "// ")
 	}
 	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 		comment += "\n"

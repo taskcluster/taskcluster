@@ -1,10 +1,9 @@
 // Package utils contains utility functions used by the other task-cluster-go
 // packages, such as string manipulation functions and other utility methods.
-package utils
+package text
 
 import (
 	"fmt"
-	"io/ioutil"
 	"strings"
 )
 
@@ -29,19 +28,6 @@ func Indent(text, indent string) string {
 
 func Underline(text string) string {
 	return text + "\n" + strings.Repeat("=", len(text)) + "\n"
-}
-
-func ExitOnFail(err error) {
-	if err != nil {
-		fmt.Printf("%v\n%T\n", err, err)
-		panic(err)
-	}
-}
-
-func WriteStringToFile(content, file string) {
-	bytes := []byte(content)
-	err := ioutil.WriteFile(file, bytes, 0644)
-	ExitOnFail(err)
 }
 
 func Normalise(name string, dict map[string]bool) string {
