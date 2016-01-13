@@ -66,10 +66,17 @@ exports.TaskCreator = TaskCreator;
 class MockTaskCreator extends TaskCreator {
   constructor() {
     super({credentials: {}});
+    this.shouldFail = false;
     this.fireCalls = [];
   }
 
   async fire(hook, payload, options) {
+    if (this.shouldFail) {
+      let err = new Error("uhoh");
+      err.statusCode = 499;
+      err.body = {message: "uhoh"};
+      throw err;
+    }
     options = options || {};
     this.fireCalls.push({
       hookGroupId: hook.hookGroupId,

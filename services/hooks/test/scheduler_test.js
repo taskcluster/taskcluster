@@ -66,6 +66,7 @@ suite('Scheduler', function() {
         deadline:           '1 day',
         expires:            '1 day',
         schedule:           ["0 0 0 * * *"],
+        lastFire:           {result: 'no-fire'},
         triggerToken:       taskcluster.slugid(),
       };
 
@@ -123,12 +124,13 @@ suite('Scheduler', function() {
         expires:            '1 day',
         schedule:           ["0 0 0 * * *"],
         triggerToken:       taskcluster.slugid(),
+        lastFire:           {result: 'no-fire'},
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  new Date(3000, 0, 0, 0, 0, 0, 0),
       });
     });
 
-    test('creates a new task and updates the taskId and nextScheduledDate', async () => {
+    test('creates a new task and updates nextTaskId, lastFire, nextScheduledDate', async () => {
       let oldTaskId = hook.nextTaskId;
       let oldScheduledDate = hook.nextScheduledDate;
 
@@ -150,6 +152,34 @@ suite('Scheduler', function() {
           }
         }]);
       assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);
+      assume(updatedHook.lastFire.result).is.equal('success');
+      assume(updatedHook.lastFire.taskId).is.equal(oldTaskId);
+      assume(new Date(updatedHook.lastFire.time) - new Date()).is.approximately(0, 2000); // 2s slop
+      assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
+    });
+
+    test('on error, sends an email and updates nextTaskId, lastFire, nextScheduledDate', async () => {
+      let oldTaskId = hook.nextTaskId;
+      let oldScheduledDate = hook.nextScheduledDate;
+
+      creator.shouldFail = true;
+
+      let emailSent = false;
+      scheduler.sendFailureEmail = async (hook, err) => { emailSent = true; }
+
+      await scheduler.handleHook(hook);
+
+      assume(emailSent).is.equal(true);
+
+      let updatedHook = await scheduler.Hook.load({
+          hookGroupId: 'tests',
+          hookId:      'test'
+      }, true);
+
+      assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);
+      assume(updatedHook.lastFire.result).is.equal('error');
+      assume(updatedHook.lastFire.error.statusCode).is.equal(499);
+      assume(new Date(updatedHook.lastFire.time) - new Date()).is.approximately(0, 2000); // 2s slop
       assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
     });
   });
