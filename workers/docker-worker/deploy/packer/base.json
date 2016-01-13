@@ -62,7 +62,7 @@
       "type": "amazon-ebs",
       "name": "pv-builder",
       "region": "us-west-2",
-      "source_ami": "ami-47465826",
+      "source_ami": "ami-7f89a64f",
       "ami_virtualization_type": "paravirtual",
       "instance_type": "m1.medium",
       "ssh_username": "ubuntu",

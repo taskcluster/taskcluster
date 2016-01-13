@@ -1,6 +1,6 @@
 #! /bin/bash
 
-set -v -e -x
+set -e -x
 
 lsb_release -a
 
@@ -8,8 +8,9 @@ lsb_release -a
 sudo groupadd docker
 sudo usermod -a -G docker $USER
 
+sudo apt-get update -y
+
 [ -e /usr/lib/apt/methods/https ] || {
-  apt-get update
   apt-get install apt-transport-https
 }
 
