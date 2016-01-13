@@ -111,6 +111,44 @@ api.declare({
   return res.reply(definition);
 });
 
+/** Get hook's current status */
+api.declare({
+  method:       'get',
+  route:        '/hooks/:hookGroupId/:hookId/status',
+  name:         'getHookStatus',
+  output:       'hook-status.json',
+  title:        'Get hook status',
+  description: [
+    "This endpoint will return the current status of the hook.  This represents a",
+    "snapshot in time and may vary from one call to the next."
+  ].join('\n')
+}, async function(req, res) {
+  let hook = await this.Hook.load({
+    hookGroupId: req.params.hookGroupId,
+    hookId:      req.params.hookId
+  }, true);
+
+  // Handle the case where the hook doesn't exist
+  if (!hook) {
+    return res.status(404).json({
+      message: "Hook not found"
+    });
+  }
+
+  let reply = {lastFire: hook.lastFire}
+
+  // Return a schedule only if a schedule is defined
+  if (hook.schedule.length > 0) {
+    reply.nextScheduledDate = hook.nextScheduledDate.toJSON();
+    // Remark: nextTaskId cannot be exposed here, it's a secret.
+    // If someone could predict the taskId they could use it, breaking this
+    // service at best, at worst maybe exploit it to elevate from defineTask
+    // to createTask without scope to schedule a task.
+  }
+  return res.reply(reply);
+});
+
+
 /** Get next scheduled hook date */
 api.declare({
   method:       'get',
@@ -118,6 +156,7 @@ api.declare({
   name:         'getHookSchedule',
   output:       'hook-schedule.json',
   title:        'Get hook schedule',
+  stability:    'deprecated',
   description: [
     "This endpoint will return the schedule and next scheduled creation time",
     "for the given hook."
@@ -189,6 +228,7 @@ api.declare({
       _.defaults({}, hookDef, {
         bindings:           [], // TODO
         triggerToken:       taskcluster.slugid(),
+        lastFire:           {result: 'no-fire'},
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  nextDate(hookDef.schedule)
       }));
