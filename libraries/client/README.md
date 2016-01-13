@@ -211,6 +211,7 @@ var hooks = new taskcluster.Hooks(options);
  * `hooks.listHookGroups() : result`
  * `hooks.listHooks(hookGroupId) : result`
  * `hooks.hook(hookGroupId, hookId) : result`
+ * `hooks.getHookStatus(hookGroupId, hookId) : result`
  * `hooks.getHookSchedule(hookGroupId, hookId) : result`
  * `hooks.createHook(hookGroupId, hookId, payload) : result`
  * `hooks.updateHook(hookGroupId, hookId, payload) : result`
