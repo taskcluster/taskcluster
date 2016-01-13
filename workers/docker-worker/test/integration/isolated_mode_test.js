@@ -6,11 +6,11 @@ suite('Shutdown on idle', function() {
   var DockerWorker = require('../dockerworker');
   var TestWorker = require('../testworker');
 
-  suite('with isolated containers enabled', function() {
+  suite('with retrict CPU enabled', function() {
     var worker;
     setup(async function () {
       settings.configure({
-        isolatedContainers: true
+        restrictCPU: true
       });
 
       worker = new TestWorker(DockerWorker);

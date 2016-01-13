@@ -65,9 +65,9 @@ module.exports = {
   // Run test only teardown and logging events.
   testMode: false,
 
-  // Run each container in as isolated fashion as possible (one core per container)
+  // Run each container in as restrict fashion as possible (one core per container)
   // When this is true the capacity is always overriden to the number of cores.
-  isolatedContainers: false,
+  restrictCPU: false,
 
   // Image used to  create the taskcluster proxy container.
   taskclusterProxyImage: 'taskcluster/taskcluster-proxy:latest',

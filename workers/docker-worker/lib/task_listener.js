@@ -448,7 +448,7 @@ export default class TaskListener extends EventEmitter {
       }
 
       let options = {};
-      if (this.runtime.isolatedContainers) {
+      if (this.runtime.restrictCPU) {
         runningState.devices['cpu'] = this.deviceManager.getDevice('cpu');
         options.cpusetCpus = runningState.devices['cpu'].id;
       }
