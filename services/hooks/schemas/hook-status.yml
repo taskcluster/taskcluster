@@ -1,0 +1,78 @@
+$schema: http://json-schema.org/draft-04/schema#
+title:   "Hook status response"
+description: |
+  A snapshot of the current status of a hook.
+type: object
+properties:
+  lastFire:
+    description: |
+      Information about the last time this hook fired.  This property is only present
+      if the hook has fired at least once.
+    type: object
+    oneOf:
+      - title: Successful Fire
+        description: "Information about a successful firing of the hook"
+        type: object
+        properties:
+          result:
+            type: string
+            enum:
+              - success
+          taskId:
+            description: The task created
+            type: string
+            pattern: {$const: slugid-pattern}
+          time:
+            description: |
+                The time the task was created.  This will not necessarily match `task.created`.
+            type: string
+            format: date-time
+        additionalProperties: false
+        required:
+          - result
+          - taskId
+          - time
+      - title: Failed Fire
+        description: "Information about an unsuccesful firing of the hook"
+        type: object
+        properties:
+          result:
+            type: string
+            enum:
+              - error
+          error:
+            description: |
+              The error that occurred when firing the task.  This is typically,
+              but not always, an API error message.
+            type: object
+          time:
+            description: |
+                The time the task was created.  This will not necessarily match `task.created`.
+            type: string
+            format: date-time
+        additionalProperties: false
+        required:
+          - result
+          - error
+          - time
+      - title: No Fire
+        description: "Information about no firing of the hook (e.g., a new hook)"
+        type: object
+        properties:
+          result:
+            type: string
+            enum:
+                - no-fire
+        additionalProperties: false
+        required:
+          - result
+  nextScheduledDate:
+    description: |
+      The next time this hook's task is scheduled to be created. This property
+      is only present if there is a scheduled next time. Some hooks don't have
+      any schedules.
+    type: string
+    format: date-time
+additionalProperties: false
+required:
+  - lastFire
