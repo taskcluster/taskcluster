@@ -1,5 +1,4 @@
-// Package utils contains utility functions used by the other task-cluster-go
-// packages, such as string manipulation functions and other utility methods.
+// Package text contains utility functions for manipulating raw text strings
 package text
 
 import (
@@ -7,7 +6,10 @@ import (
 	"strings"
 )
 
-// indents a block of text with an indent string, see http://play.golang.org/p/nV1_VLau7C
+// Indent indents a block of text with an indent string. It does this by
+// placing the given indent string at the front of every line, except on the
+// last line, if the last line has no characters. This special treatment
+// simplifies the generation of nested text structures.
 func Indent(text, indent string) string {
 	if text == "" {
 		return text
