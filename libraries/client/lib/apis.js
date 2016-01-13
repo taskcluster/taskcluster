@@ -771,12 +771,26 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
+          "description": "This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next.",
+          "method": "get",
+          "name": "getHookStatus",
+          "output": "http://schemas.taskcluster.net/hooks/v1/hook-status.json",
+          "route": "/hooks/<hookGroupId>/<hookId>/status",
+          "stability": "experimental",
+          "title": "Get hook status",
+          "type": "function"
+        },
+        {
+          "args": [
+            "hookGroupId",
+            "hookId"
+          ],
           "description": "This endpoint will return the schedule and next scheduled creation time\nfor the given hook.",
           "method": "get",
           "name": "getHookSchedule",
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-schedule.json",
           "route": "/hooks/<hookGroupId>/<hookId>/schedule",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get hook schedule",
           "type": "function"
         },
