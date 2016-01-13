@@ -28,11 +28,35 @@ func Indent(text, indent string) string {
 	return result[:len(result)-1]
 }
 
+// Underline returns the provided text together with a new line character and a
+// line of "=" characters whose length is equal to the maximum line length in
+// the provided text, followed by a final newline character.
 func Underline(text string) string {
-	return text + "\n" + strings.Repeat("=", len(text)) + "\n"
+	var maxlen int
+	for _, j := range strings.Split(text, "\n") {
+		if len(j) > maxlen {
+			maxlen = len(j)
+		}
+	}
+	return text + "\n" + strings.Repeat("=", maxlen) + "\n"
 }
 
-func Normalise(name string, dict map[string]bool) string {
+// GoTypeNameFrom provides a mechanism to mutate an arbitrary descriptive
+// string (name) into an exported Go type name that can be used in generated
+// code, taking into account a blacklist of names that have already been used,
+// in order to guarantee that a new name is created which will not conflict
+// with an existing type.  The blacklist is updated to include the newly
+// generated name. Note, the map[string]bool construction is simply a mechanism
+// to implement set semantics; a value of `true` signifies inclusion in the
+// set. Non-existence is equivalent to existence with a value of `false`;
+// therefore it is recommended to only store `true` values.
+//
+// The mutation is performed by capatilising all words (see
+// https://golang.org/pkg/strings/#Title), removing all spaces and hyphens, and
+// then optionally appending an integer if the generated name conflicts with an
+// entry in the blacklist. The appended integer will be the lowest integer
+// possible, >= 1, that results in no blacklist conflict.
+func GoTypeNameFrom(name string, blacklist map[string]bool) string {
 	// Capitalise words, and remove spaces and dashes, to acheive struct names in CamelCase,
 	// but starting with an upper case letter so that the structs are exported...
 	normalisedName := strings.NewReplacer(" ", "", "-", "").Replace(strings.Title(name))
@@ -41,11 +65,11 @@ func Normalise(name string, dict map[string]bool) string {
 	// , the first instance would be called FooBar, then the next would be FooBar1, the next
 	// FooBar2 and the last would be assigned a name of FooBar3. We do this to guarantee we
 	// don't use duplicate names for different logical entities.
-	for k, baseName := 1, normalisedName; dict[normalisedName]; {
+	for k, baseName := 1, normalisedName; blacklist[normalisedName]; {
 		normalisedName = fmt.Sprintf("%v%v", baseName, k)
 		k++
 	}
-	dict[normalisedName] = true
+	blacklist[normalisedName] = true
 	return normalisedName
 }
 

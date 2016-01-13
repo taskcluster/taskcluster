@@ -187,7 +187,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 			typ = fmt.Sprintf("struct {\n")
 			members := make(map[string]bool, len(s.SortedPropertyNames))
 			for _, j := range s.SortedPropertyNames {
-				s.Properties[j].TypeName = text.Normalise(j, members)
+				s.Properties[j].TypeName = text.GoTypeNameFrom(j, members)
 				// recursive call to build structs inside structs
 				var subComment, subMember, subType string
 				subComment, subMember, subType, extraPackages, rawMessageTypes = s.Properties[j].TypeDefinition(false, extraPackages, rawMessageTypes)

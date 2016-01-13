@@ -8,11 +8,11 @@ func ExampleIndent_basic() {
 	fmt.Println("2.")
 	fmt.Println(Indent("\n", "...."))
 	fmt.Println("3.")
-	fmt.Println(Indent("abcd\nefgh", "...."))
+	fmt.Println(Indent("line one\nline two", "...."))
 	fmt.Println("4.")
-	fmt.Println(Indent("abcd\nefgh\n", "...."))
+	fmt.Println(Indent("line one\nline two\n", "...."))
 	fmt.Println("5.")
-	fmt.Println(Indent("abcd\nefgh\n\n", "...."))
+	fmt.Println(Indent("line one\nline two\n\n", "...."))
 	fmt.Println("Done")
 
 	// Output:
@@ -22,15 +22,15 @@ func ExampleIndent_basic() {
 	// ....
 	//
 	// 3.
-	// ....abcd
-	// ....efgh
+	// ....line one
+	// ....line two
 	// 4.
-	// ....abcd
-	// ....efgh
+	// ....line one
+	// ....line two
 	//
 	// 5.
-	// ....abcd
-	// ....efgh
+	// ....line one
+	// ....line two
 	// ....
 	//
 	// Done
@@ -50,4 +50,63 @@ func ExampleIndent_nested() {
 	// => }
 	//
 	// Done
+}
+
+func ExampleUnderline_basic() {
+	fmt.Println(Underline("TaskCluster Client") + "Please see http://docs.taskcluster.net/tools/clients")
+
+	// Output:
+	// TaskCluster Client
+	// ==================
+	// Please see http://docs.taskcluster.net/tools/clients
+}
+
+func ExampleUnderline_multiline() {
+	fmt.Println(Underline("TaskCluster Client\nGo (golang) Implementation\n13 Jan 2016") + "Please see http://taskcluster.github.io/taskcluster-client-go")
+
+	// Output:
+	// TaskCluster Client
+	// Go (golang) Implementation
+	// 13 Jan 2016
+	// ==========================
+	// Please see http://taskcluster.github.io/taskcluster-client-go
+}
+
+func ExampleIndefiniteArticle() {
+	for _, noun := range []string{
+		"ant",
+		"dog",
+		"emu",
+		"fish",
+		"gopher",
+		"hippopotamus",
+		"owl",
+	} {
+		fmt.Println(IndefiniteArticle(noun), noun)
+	}
+
+	// Output:
+	// an ant
+	// a dog
+	// an emu
+	// a fish
+	// a gopher
+	// a hippopotamus
+	// an owl
+}
+
+func ExampleGoTypeNameFrom() {
+	blacklist := make(map[string]bool)
+	fmt.Println(GoTypeNameFrom("Azure Artifact Request", blacklist))
+	fmt.Println(GoTypeNameFrom("AzureArtifactRequest", blacklist))
+	fmt.Println(GoTypeNameFrom("Azure artifact request", blacklist))
+	fmt.Println(GoTypeNameFrom("azure-artifact request", blacklist))
+	fmt.Println(GoTypeNameFrom("List Artifacts Response", blacklist))
+
+	// Output:
+	// AzureArtifactRequest
+	// AzureArtifactRequest1
+	// AzureArtifactRequest2
+	// AzureArtifactRequest3
+	// ListArtifactsResponse
 }

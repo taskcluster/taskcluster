@@ -200,7 +200,7 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 		// map[string]bool acts like a set of strings
 		TypeName := make(map[string]bool)
 		for _, j := range apiDefs[i].schemaURLs {
-			apiDefs[i].schemas[j].TypeName = text.Normalise(*apiDefs[i].schemas[j].Title, TypeName)
+			apiDefs[i].schemas[j].TypeName = text.GoTypeNameFrom(*apiDefs[i].schemas[j].Title, TypeName)
 		}
 	}
 	return apiDefs
