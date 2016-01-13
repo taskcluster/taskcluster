@@ -72,7 +72,7 @@ module.exports = {
   // Image used to  create the taskcluster proxy container.
   taskclusterProxyImage: 'taskcluster/taskcluster-proxy:latest',
   taskclusterLogImage: 'taskcluster/livelog:v3',
-  testdroidProxyImage: 'taskcluster/testdroid-proxy:0.0.6',
+  testdroidProxyImage: 'taskcluster/testdroid-proxy:0.0.7',
   balrogVPNProxyImage: 'taskclusterprivate/taskcluster-vpn-proxy:0.0.2',
   dindImage: 'taskcluster/dind-service:2.0',
 
