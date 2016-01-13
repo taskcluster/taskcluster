@@ -15,6 +15,11 @@ suite('API', function() {
       schedule: ["0 0 3 * * *"],
     }, hookDef);
 
+  let setHookLastFire = async (hookGroupId, hookId, lastFire) => {
+    let hook = await helper.Hook.load({hookGroupId, hookId}, true);
+    await hook.modify((hook) => { hook.lastFire = lastFire; });
+  }
+
   suite("createHook", function() {
     test("creates a hookd", async () => {
         var r1 = await helper.hooks.createHook('foo', 'bar', hookDef);
@@ -172,7 +177,38 @@ suite('API', function() {
     });
 
     test("fails if no hook exists", async () => {
-      await helper.hooks.hook('foo', 'bar').then(
+      await helper.hooks.getHookSchedule('foo', 'bar').then(
+          () => { throw new Error("The resource should not exist"); },
+          (err) => { assume(err.statusCode).equals(404); });
+    });
+  });
+
+  suite("getHookStatus", function() {
+    test("returns 'no-fire' for a non-scheduled, non-fired task", async () => {
+      await helper.hooks.createHook('foo', 'bar', hookDef);
+      var r1 = await helper.hooks.getHookStatus('foo', 'bar');
+      assume(r1).deep.equals({lastFire: {result: 'no-fire'}});
+    });
+
+    test("returns the next date for a scheduled task", async () => {
+      await helper.hooks.createHook('foo', 'bar', dailyHookDef);
+      var r1 = await helper.hooks.getHookStatus('foo', 'bar');
+      assume(r1).contains('nextScheduledDate');
+    });
+
+    test("returns the last run status for a hook that has fired", async () => {
+      await helper.hooks.createHook('foo', 'bar', dailyHookDef);
+      let now = new Date();
+      await setHookLastFire('foo', 'bar', {result: 'success', taskId: 'E5SBRfo-RfOIxh0V4187Qg', time: now});
+      var r1 = await helper.hooks.getHookStatus('foo', 'bar');
+      assume(r1).contains('lastFire');
+      assume(r1.lastFire.result).is.equal('success');
+      assume(r1.lastFire.taskId).is.equal('E5SBRfo-RfOIxh0V4187Qg');
+      assume(r1.lastFire.time).is.equal(now.toJSON());
+    });
+
+    test("fails if no hook exists", async () => {
+      await helper.hooks.getHookStatus('foo', 'bar').then(
           () => { throw new Error("The resource should not exist"); },
           (err) => { assume(err.statusCode).equals(404); });
     });
