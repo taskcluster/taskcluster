@@ -1,18 +1,22 @@
-package text
+package text_test
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/taskcluster/taskcluster-client-go/text"
+)
 
 func ExampleIndent_basic() {
 	fmt.Println("1.")
-	fmt.Println(Indent("", "...."))
+	fmt.Println(text.Indent("", "...."))
 	fmt.Println("2.")
-	fmt.Println(Indent("\n", "...."))
+	fmt.Println(text.Indent("\n", "...."))
 	fmt.Println("3.")
-	fmt.Println(Indent("line one\nline two", "...."))
+	fmt.Println(text.Indent("line one\nline two", "...."))
 	fmt.Println("4.")
-	fmt.Println(Indent("line one\nline two\n", "...."))
+	fmt.Println(text.Indent("line one\nline two\n", "...."))
 	fmt.Println("5.")
-	fmt.Println(Indent("line one\nline two\n\n", "...."))
+	fmt.Println(text.Indent("line one\nline two\n\n", "...."))
 	fmt.Println("Done")
 
 	// Output:
@@ -37,7 +41,7 @@ func ExampleIndent_basic() {
 }
 
 func ExampleIndent_nested() {
-	fmt.Println(Indent("func A(foo string) {\n"+Indent("a := []string{\n"+Indent("\"x\",\n\"y\",\n\"z\",\n", "\t")+"}\n", "\t")+"}\n", "=> "))
+	fmt.Println(text.Indent("func A(foo string) {\n"+text.Indent("a := []string{\n"+text.Indent("\"x\",\n\"y\",\n\"z\",\n", "\t")+"}\n", "\t")+"}\n", "=> "))
 	fmt.Println("Done")
 
 	// Output:
@@ -53,7 +57,7 @@ func ExampleIndent_nested() {
 }
 
 func ExampleUnderline_basic() {
-	fmt.Println(Underline("TaskCluster Client") + "Please see http://docs.taskcluster.net/tools/clients")
+	fmt.Println(text.Underline("TaskCluster Client") + "Please see http://docs.taskcluster.net/tools/clients")
 
 	// Output:
 	// TaskCluster Client
@@ -62,7 +66,7 @@ func ExampleUnderline_basic() {
 }
 
 func ExampleUnderline_multiline() {
-	fmt.Println(Underline("TaskCluster Client\nGo (golang) Implementation\n13 Jan 2016") + "Please see http://taskcluster.github.io/taskcluster-client-go")
+	fmt.Println(text.Underline("TaskCluster Client\nGo (golang) Implementation\n13 Jan 2016") + "Please see http://taskcluster.github.io/taskcluster-client-go")
 
 	// Output:
 	// TaskCluster Client
@@ -82,7 +86,7 @@ func ExampleIndefiniteArticle() {
 		"hippopotamus",
 		"owl",
 	} {
-		fmt.Println(IndefiniteArticle(noun), noun)
+		fmt.Println(text.IndefiniteArticle(noun), noun)
 	}
 
 	// Output:
@@ -97,11 +101,11 @@ func ExampleIndefiniteArticle() {
 
 func ExampleGoTypeNameFrom() {
 	blacklist := make(map[string]bool)
-	fmt.Println(GoTypeNameFrom("Azure Artifact Request", blacklist))
-	fmt.Println(GoTypeNameFrom("AzureArtifactRequest", blacklist))
-	fmt.Println(GoTypeNameFrom("Azure artifact request", blacklist))
-	fmt.Println(GoTypeNameFrom("azure-artifact request", blacklist))
-	fmt.Println(GoTypeNameFrom("List Artifacts Response", blacklist))
+	fmt.Println(text.GoTypeNameFrom("Azure Artifact Request", blacklist))
+	fmt.Println(text.GoTypeNameFrom("AzureArtifactRequest", blacklist))
+	fmt.Println(text.GoTypeNameFrom("Azure artifact request", blacklist))
+	fmt.Println(text.GoTypeNameFrom("azure-artifact request", blacklist))
+	fmt.Println(text.GoTypeNameFrom("List Artifacts Response", blacklist))
 
 	// Output:
 	// AzureArtifactRequest
