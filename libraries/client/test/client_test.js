@@ -73,6 +73,11 @@ suite('client', function() {
     await expectError(wrongKey.param('test'), 'AuthorizationFailed');
   });
 
+  test('GET with number as parameter', async () => {
+    let result = await client.param(1337);
+    assert(result.params.param === '1337');
+  });
+
   test('GET with / in parameter', async () => {
     let result = await client.param('te/st');
     assert(result.params.param === 'te/st');
