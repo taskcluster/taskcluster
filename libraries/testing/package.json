@@ -37,6 +37,7 @@
     "babel-core": "^6.1.21",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.1.20",
     "babel-plugin-transform-runtime": "^6.1.18",
+    "babel-plugin-transform-regenerator": "^6.4.3",
     "babel-preset-stage-1": "^6.1.18",
     "mocha": "2.0.1",
     "nock": "^4.0.0",
