@@ -2,7 +2,7 @@ var base = require('taskcluster-base');
 
 var connectionString = 'amqp://guest:guest@localhost:5672';
 
-exchanges = new base.Exchanges({
+var exchanges = new base.Exchanges({
   title:              "Test Exchanges",
   description:        "Used to generate a test reference"
 });

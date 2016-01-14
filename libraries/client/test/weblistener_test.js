@@ -1,27 +1,65 @@
-suite('event', function() {
+suite('WebListener', function() {
   var Promise     = require('promise');
   var assert      = require('assert');
   var slugid      = require('slugid');
   var taskcluster = require('../');
   var debug       = require('debug')('test:WebListener');
   var base        = require('taskcluster-base');
+  var mockEvents  = require('./mockevents');
 
   // Load configuration
-  var cfg = base.config({
-    defaults:     {},
-    profile:      {},
-    envs:         [
-      'taskcluster_credentials_clientId',     // Only for testing
-      'taskcluster_credentials_accessToken'   // Only for testing
-    ],
-    filename:     'taskcluster-client'
+  var cfg = base.config();
+
+  if(!cfg.pulse.password) {
+    console.log("Skipping PulseListener tests due to missing config");
+    this.pending = true;
+  }
+
+  var connectionString = [
+    'amqps://',         // Ensure that we're using SSL
+    cfg.pulse.username,
+    ':',
+    cfg.pulse.password,
+    '@',
+    'pulse.mozilla.org',
+    ':',
+    5671                // Port for SSL
+  ].join('');
+
+  var exchangePrefix = [
+    'exchange',
+    cfg.pulse.username,
+    'taskcluster-client',
+    'test'
+  ].join('/') + '/';
+
+  mockEvents.configure({
+    connectionString:       connectionString,
+    exchangePrefix:         exchangePrefix
   });
 
-  // Check that we have credentials to run these test
-  if (!cfg.get('taskcluster:credentials:accessToken')) {
-    console.log("Skipping weblistener_test.js due to missing configuration");
-    return;
-  }
+  var _publisher = null;
+  setup(function() {
+    mockEvents.configure({
+      connectionString:       connectionString,
+      exchangePrefix:         exchangePrefix
+    });
+    debug("Connecting");
+    return mockEvents.connect().then(function(publisher) {
+      debug("Connected");
+      _publisher = publisher;
+    });
+  });
+  teardown(function() {
+    return _publisher.close().then(function() {
+      _publisher = null;
+    });
+  });
+  var reference = mockEvents.reference();
+
+  // Create client from reference
+  var MockEventsClient = taskcluster.createClient(reference);
+  var mockEventsClient = new MockEventsClient();
 
   // Test against localhost if you want to
   var baseUrl = undefined; //'http://localhost:60002/v1';
@@ -38,102 +76,197 @@ suite('event', function() {
     });
   });
 
-  test('listen for task', function() {
-    // Decide taskId upfront
-    var taskId = slugid.v4();
-
+  // Bind and listen with listener
+  test('bind and listen', function() {
     // Create listener
     var listener = new taskcluster.WebListener({baseUrl: baseUrl});
+    listener.bind({
+      exchange: exchangePrefix + 'test-exchange',
+      routingKeyPattern: '#'
+    });
 
-    // Listen for message
-    var gotMessage = new Promise(function(accept) {
+    var result = new Promise(function(accept, reject) {
       listener.on('message', function(message) {
-        if (message.payload.status.taskId === taskId) {
-          accept();
-        }
+        assert(message.payload.text == "my message");
+        setTimeout(function() {
+          listener.close().then(accept, reject)
+        }, 500);
+      });
+      listener.on('error', function(err) {
+        reject(err);
       });
     });
 
-    // Connect listener
-    return listener.connect().then(function() {
-      // Bind to queue events
-      var queueEvents = new taskcluster.QueueEvents();
-      return listener.bind(queueEvents.taskDefined({taskId: taskId}));
-    }).then(function() {
-      // Submit a test task
-      var queue = new taskcluster.Queue({
-        credentials:  cfg.get('taskcluster:credentials')
+    var published = listener.resume().then(function() {
+      return _publisher.testExchange({
+        text:           "my message"
+      }, {
+        testId:         'test',
+        taskRoutingKey: 'hello.world'
       });
-      var deadline = new Date();
-      deadline.setHours(deadline.getHours() + 2);
-      return queue.defineTask(taskId, {
-        provisionerId:    "dummy-test-provisioner",
-        workerType:       "dummy-test-worker-type",
-        schedulerId:      "dummy-test-scheduler",
-        created:          (new Date()).toJSON(),
-        deadline:         deadline.toJSON(),
-        payload:          {},
-        metadata: {
-          name:           "Print `'Hello World'` Once",
-          description:    "This task will prìnt `'Hello World'` **once**!",
-          owner:          "jojensen@mozilla.com",
-          source:         "https://github.com/taskcluster/taskcluster-events"
-        }
+    });
+
+    return Promise.all([published, result]);
+  });
+
+  // Bind and listen with listener (for CC)
+  test('bind and listen (for CC)', function() {
+    // Create listener
+    var listener = new taskcluster.WebListener({baseUrl: baseUrl});
+    listener.bind({
+      exchange: exchangePrefix + 'test-exchange',
+      routingKeyPattern: 'route.test'
+    });
+
+    var result = new Promise(function(accept, reject) {
+      listener.on('message', function(message) {
+        assert(message.payload.text == "my message");
+        setTimeout(function() {
+          listener.close().then(accept, reject)
+        }, 500);
       });
-    }).then(function() {
-      return gotMessage;
+      listener.on('error', function(err) {
+        reject(err);
+      });
+    });
+
+    var published = listener.resume().then(function() {
+      return _publisher.testExchange({
+        text:           "my message"
+      }, {
+        testId:         'test',
+        taskRoutingKey: 'hello.world'
+      }, ['route.test']);
+    });
+
+    return Promise.all([published, result]);
+  });
+
+
+  // Bind and listen with listener (for CC using client)
+  test('bind and listen (for CC using client)', function() {
+    // Create listener
+    var listener = new taskcluster.WebListener({baseUrl: baseUrl});
+    listener.bind(mockEventsClient.testExchange('route.test'));
+
+    var result = new Promise(function(accept, reject) {
+      listener.on('message', function(message) {
+        assert(message.payload.text == "my message");
+        assert(message.routes[0] === 'test');
+        setTimeout(function() {
+          listener.close().then(accept, reject)
+        }, 500);
+      });
+      listener.on('error', function(err) {
+        reject(err);
+      });
+    });
+
+    var published = listener.resume().then(function() {
+      return _publisher.testExchange({
+        text:           "my message"
+      }, {
+        testId:         'test',
+        taskRoutingKey: 'hello.world'
+      }, ['route.test']);
+    });
+
+    return Promise.all([published, result]);
+  });
+
+  // Bind and listen with listener (manual routing key)
+  test('bind and listen (manual constant routing key)', function() {
+    // Create listener
+    var listener = new taskcluster.WebListener({baseUrl: baseUrl});
+    listener.bind({
+      exchange: exchangePrefix + 'test-exchange',
+      routingKeyPattern: 'my-constant.#'
+    });
+
+    var result = new Promise(function(accept, reject) {
+      listener.on('message', function(message) {
+        assert(message.payload.text == "my message");
+        setTimeout(function() {
+          listener.close().then(accept, reject)
+        }, 500);
+      });
+      listener.on('error', function(err) {
+        reject(err);
+      });
+    });
+
+    var published = listener.resume().then(function() {
+      return _publisher.testExchange({
+        text:           "my message"
+      }, {
+        testId:         'test',
+        taskRoutingKey: 'hello.world'
+      });
+    });
+
+    return Promise.all([published, result]);
+  });
+
+  // Bind and listen with listener and non-match routing
+  test('bind and listen (without wrong routing key)', function() {
+    // Create listener
+    var listener = new taskcluster.WebListener({baseUrl: baseUrl});
+    listener.bind({
+      exchange: exchangePrefix + 'test-exchange',
+      routingKeyPattern: 'another.routing.key'
+    });
+
+    return new Promise(function(accept, reject) {
+      listener.on('message', function(message) {
+        reject(new Error("Didn't expect message"));
+      });
+      listener.on('error', function(err) {
+        reject(err);
+      });
+      listener.resume().then(function() {
+        setTimeout(accept, 1500);
+        return _publisher.testExchange({
+          text:           "my message"
+        }, {
+          testId:         'test',
+          taskRoutingKey: 'hello.world'
+        }, ['route.test']);
+      });
     }).then(function() {
       return listener.close();
     });
   });
 
-
-  test('listen for task (bind early)', function() {
-    // Decide taskId upfront
-    var taskId = slugid.v4();
-
+  // Test listener.once
+  test('bind and listen (using listener.once)', function() {
     // Create listener
     var listener = new taskcluster.WebListener({baseUrl: baseUrl});
+    listener.bind({
+      exchange: exchangePrefix + 'test-exchange',
+      routingKeyPattern: '#'
+    });
 
-    // Listen for message
-    var gotMessage = new Promise(function(accept) {
-      listener.on('message', function(message) {
-        if (message.payload.status.taskId === taskId) {
-          accept();
-        }
+    var result = new Promise(function(accept, reject) {
+      listener.once('message', function(message) {
+        assert(message.payload.text == "my message");
+        setTimeout(function() {
+          listener.close().then(accept, reject)
+        }, 500);
+      });
+      listener.once('error', function(err) {
+        reject(err);
       });
     });
 
-    // Bind to queue events
-    var queueEvents = new taskcluster.QueueEvents();
-    return listener.bind(queueEvents.taskDefined({taskId: taskId})).then(function() {
-      // Connect listener
-      return listener.connect();
-    }).then(function() {
-      // Submit a test task
-      var queue = new taskcluster.Queue({
-        credentials:  cfg.get('taskcluster:credentials')
+    var published = listener.resume().then(function() {
+      return _publisher.testExchange({
+        text:           "my message"
+      }, {
+        testId:         'test',
+        taskRoutingKey: 'hello.world'
       });
-      var deadline = new Date();
-      deadline.setHours(deadline.getHours() + 2);
-      return queue.defineTask(taskId, {
-        provisionerId:    "dummy-test-provisioner",
-        workerType:       "dummy-test-worker-type",
-        schedulerId:      "dummy-test-scheduler",
-        created:          (new Date()).toJSON(),
-        deadline:         deadline.toJSON(),
-        payload:          {},
-        metadata: {
-          name:           "Print `'Hello World'` Once",
-          description:    "This task will prìnt `'Hello World'` **once**!",
-          owner:          "jojensen@mozilla.com",
-          source:         "https://github.com/taskcluster/taskcluster-events"
-        }
-      });
-    }).then(function() {
-      return gotMessage;
-    }).then(function() {
-      return listener.close();
     });
+
+    return Promise.all([published, result]);
   });
 });
