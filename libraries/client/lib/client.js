@@ -256,7 +256,7 @@ exports.createClient = function(reference, name) {
         var index = entry.args.indexOf(arg);
         if (index !== -1) {
           var param = args[index];
-          if (typeof(param) !== 'string') {
+          if (typeof(param) !== 'string' && typeof(param) !== 'number') {
             throw new Error("URL parameter " + arg + " must be a string, but " +
                             "we received a: " + typeof(param));
           }
@@ -496,7 +496,7 @@ exports.createClient = function(reference, name) {
         var index = entry.args.indexOf(arg);
         if (index !== -1) {
           var param = args[index];
-          if (typeof(param) !== 'string') {
+          if (typeof(param) !== 'string' && typeof(param) !== 'number') {
             throw new Error("URL parameter " + arg + " must be a string, but " +
                             "we received a: " + typeof(param));
           }
