@@ -13,6 +13,7 @@ var slugid      = require('slugid');
 var http        = require('http');
 var https       = require('https');
 var Promise     = require('promise');
+var querystring = require('querystring');
 
 /** Default options for our http/https global agents */
 var AGENT_OPTIONS = {
@@ -59,7 +60,15 @@ var _defaultOptions = {
 };
 
 /** Make a request for a Client instance */
-var makeRequest = function(client, method, url, payload) {
+var makeRequest = function(client, method, url, payload, query) {
+  // Add query to url if present
+  if (query) {
+    query = querystring.stringify(query);
+    if (query.length > 0) {
+      url += '?' + query;
+    }
+  }
+
   // Construct request object
   var req = request(method.toUpperCase(), url);
   // Set the http agent for this request, if supported in the current
@@ -228,22 +237,30 @@ exports.createClient = function(reference, name) {
     if (entry.input) {
       nb_args += 1;
     }
+    // Get the query-string options taken
+    var optKeys = entry.query || [];
 
     // Create method on prototype
     Client.prototype[entry.name] = function() {
       // Convert arguments to actual array
       var args = Array.prototype.slice.call(arguments);
       // Validate number of arguments
-      if (args.length != nb_args) {
+      var N = args.length;
+      if (N != nb_args && (optKeys.length === 0 || N != nb_args + 1)) {
         throw new Error("Function " + entry.name + " takes " + nb_args +
-                        " arguments, but was given " + args.length +
+                        " arguments, but was given " + N +
                         " arguments");
       }
       // Substitute parameters into route
       var endpoint = entry.route.replace(/<([^<>]+)>/g, function(text, arg) {
         var index = entry.args.indexOf(arg);
         if (index !== -1) {
-          return encodeURIComponent(args[index]);
+          var param = args[index];
+          if (typeof(param) !== 'string') {
+            throw new Error("URL parameter " + arg + " must be a string, but " +
+                            "we received a: " + typeof(param));
+          }
+          return encodeURIComponent(param);
         }
         return text; // Preserve original
       });
@@ -252,7 +269,17 @@ exports.createClient = function(reference, name) {
       // Add payload if one is given
       var payload = undefined;
       if (entry.input) {
-        payload = args.pop();
+        payload = args[nb_args - 1];
+      }
+      // Find query string options (if present)
+      var query = args[nb_args] || null;
+      if (query) {
+        _.keys(query).forEach(function(key) {
+          if (!_.includes(optKeys, key)) {
+            throw new Error("Function " + entry.name + " takes options: " +
+                            optKeys.join(', ') + " but was given " + key);
+          }
+        });
       }
 
       // Count request attempts
@@ -286,7 +313,8 @@ exports.createClient = function(reference, name) {
             that,
             entry.method,
             url,
-            payload
+            payload,
+            query
           ).end().then(function(res) {
             // If request was successful, accept the result
             debug("Success calling: %s, (%s retries)",
@@ -319,6 +347,7 @@ exports.createClient = function(reference, name) {
               }
               err = new Error(res.body.message || message);
               err.body = res.body;
+              err.code = res.body.code || 'UnknownError';
               err.statusCode = res.status;
               if (reportStats) {
                 reportStats(false, 'http-' + res.status);
@@ -449,25 +478,50 @@ exports.createClient = function(reference, name) {
                         "an API method from the same object!");
       }
 
+      // Get the query-string options taken
+      var optKeys = entry.query || [];
+      var supportsOpts = (optKeys.length !== 0);
+
       debug("build url for: " + entry.name);
       // Validate number of arguments
-      if (args.length != entry.args.length) {
+      var N = entry.args.length;
+      if (args.length !== N && (!supportsOpts || args.length !== N + 1)) {
         throw new Error("Function " + entry.name + "buildUrl() takes " +
-                        (entry.args.length + 1) + " arguments, but was given " +
+                        (N + 1) + " arguments, but was given " +
                         (args.length + 1) + " arguments");
       }
+
       // Substitute parameters into route
-      var endpoint = entry.route;
-      entry.args.forEach(function(arg) {
-        var value = args.shift();
-        // Replace with empty string in case of undefined or null argument
-        if (value === undefined || value === null) {
-          value = '';
+      var endpoint = entry.route.replace(/<([^<>]+)>/g, function(text, arg) {
+        var index = entry.args.indexOf(arg);
+        if (index !== -1) {
+          var param = args[index];
+          if (typeof(param) !== 'string') {
+            throw new Error("URL parameter " + arg + " must be a string, but " +
+                            "we received a: " + typeof(param));
+          }
+          return encodeURIComponent(param);
         }
-        endpoint = endpoint.replace('<' + arg + '>', value);
+        return text; // Preserve original
       });
 
-      return this._options.baseUrl + endpoint;
+      // Find query string options (if present)
+      var query = args[N] || '';
+      if (query) {
+        _.keys(query).forEach(function(key) {
+          if (!_.includes(optKeys, key)) {
+            throw new Error("Function " + entry.name + " takes options: " +
+                            optKeys.join(', ') + " but was given " + key);
+          }
+        });
+
+        query = querystring.stringify(query);
+        if (query.length > 0) {
+          query = '?' + query;
+        }
+      }
+
+      return this._options.baseUrl + endpoint + query;
     };
 
     // Utility function to construct a bewit URL for GET requests
@@ -489,8 +543,15 @@ exports.createClient = function(reference, name) {
       // Default to 15 minutes before expiration
       var expiration = 15 * 60;
 
+      // Check if method supports query-string options
+      var supportsOpts = ((entry.query || []).length !== 0)
+
       // if longer than method + args, then we have options too
-      if (args.length > entry.args.length + 1) {
+      var N = entry.args.length + 1;
+      if (supportsOpts) {
+        N += 1;
+      }
+      if (args.length > N) {
         // Get request options
         var options = args.pop();
 

@@ -15,32 +15,99 @@
     </script>
     <script src="../taskcluster-client.js"></script>
     <script>
-    suite("client (browserify)", function() {
-      this.timeout(function() {}, 10);(30 * 1000);
-
-      var TestAuth = null;
-      test("createClient", function() {
-        TestAuth = taskcluster.createClient({
-          version: 0,
-          $schema: "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-          title: "Mock Auth Server",
-          description: "Auth server for testing",
-          baseUrl: "http://localhost:62351/v1",
-          entries: [
-            {
-              type: "function",
-              method: "get",
-              route: "/client/<clientId>/credentials",
-              args: [
-                "clientId"
-              ],
-              name: "getCredentials",
-              stability: "experimental",
-              title: "Get Credentials",
-              description: "Mock implementation of getCredentials",
-              scopes: [["auth:credentials"]]
-            }
+    var reference = {
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "title": "Test API",
+      "description": "Test API",
+      "baseUrl": "http://localhost:23526/v1",
+      "entries": [
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/get-test",
+          "query": [],
+          "args": [],
+          "name": "get",
+          "stability": "experimental",
+          "title": "Test Get",
+          "description": "Place we can call to test GET",
+          "scopes": [
+            [
+              "test:get"
+            ]
           ]
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/post-test",
+          "query": [],
+          "args": [],
+          "name": "post",
+          "stability": "experimental",
+          "title": "Test Post",
+          "description": "Place we can call to test POST",
+          "scopes": [
+            [
+              "test:post"
+            ]
+          ],
+          "input": "http://schemas.taskcluster.net/nothing.json"
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/url-param/<param>/list",
+          "query": [],
+          "args": [
+            "param"
+          ],
+          "name": "param",
+          "stability": "experimental",
+          "title": "Test Params",
+          "description": "Place we can call to test url parameters",
+          "scopes": [
+            [
+              "test:param"
+            ]
+          ]
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/param-query/<param>",
+          "query": [
+            "option"
+          ],
+          "args": [
+            "param"
+          ],
+          "name": "paramQuery",
+          "stability": "experimental",
+          "title": "Test Query string options",
+          "description": "Place we can call to test query string",
+          "scopes": [
+            [
+              "test:query"
+            ]
+          ]
+        }
+      ],
+    };
+
+    suite("client (browserify)", function() {
+      this.timeout(function() {}, 30 * 1000);
+
+      var Client = null;
+      var client = null;
+      test("createClient", function() {
+        Client = taskcluster.createClient(reference);
+        client = new Client({
+          credentials: {
+            clientId: 'tester',
+            accessToken: 'secret'
+          }
         });
       });
 
@@ -60,94 +127,72 @@
       });
 
       test("Build signed url (in browser)", function() {
-        var auth = new TestAuth({
-          credentials: {
-            clientId:       'test-client',
-            accessToken:    'test-token',
-          }
-        });
-        var url = auth.buildSignedUrl(auth.getCredentials, 'test-client');
+        var url = client.buildSignedUrl(client.param, 'test');
       });
-
 
       test("Request with authentication", function() {
-        var auth = new TestAuth({
-          baseUrl:      'http://localhost:62351/v1',
-          credentials: {
-            clientId:       'test-client',
-            accessToken:    'test-token'
-          }
-        });
-        return auth.getCredentials('test-client');
+        return client.param('test-client');
       });
 
-      test('getCredentials using authorizedScopes', function() {
-        var auth = new TestAuth({
-          baseUrl:      'http://localhost:62351/v1',
-          credentials: {
-            clientId:       'test-client',
-            accessToken:    'test-token'
-          },
-          authorizedScopes: ['auth:credentials']
-        });
-        // Inspect the credentials
-        return auth.getCredentials('test-client').then(function(client) {
-          assert(client.clientId === 'test-client', "Expected clientId");
-        });
+      test("Request with authentication and querystring", function() {
+        return client.paramQuery('test-client', {option: 32});
       });
 
-      test('getCredentials using authorizedScopes (unauthorized)', function() {
-        var auth = new TestAuth({
-          baseUrl:      'http://localhost:62351/v1',
+      test('get using authorizedScopes', function() {
+        var client = new Client({
           credentials: {
-            clientId:       'test-client',
-            accessToken:    'test-token'
+            clientId:       'tester',
+            accessToken:    'secret'
           },
-          authorizedScopes: ['scope-not-authorized']
+          authorizedScopes: ['test:param']
         });
-        // Inspect the credentials
-        return auth.getCredentials('test-client').then(function(client) {
+        return client.param('test');
+      });
+
+      test('get using authorizedScopes (unauthorized)', function() {
+        var client = new Client({
+          credentials: {
+            clientId:       'tester',
+            accessToken:    'secret'
+          },
+          authorizedScopes: ['test:params']
+        });
+        return client.param('test').then(function() {
           assert(false, "Expected and error");
         }, function(err) {
           assert(err, "Expected an error");
-          assert(err.statusCode === 401, "Wrong status code");
+          assert(err.statusCode === 403, "Wrong status code");
         });
       });
 
-      test('getCredentials using temporary credentials', function() {
+      test('get using temporary credentials', function() {
         var tempCreds = taskcluster.createTemporaryCredentials({
-          scopes: ['auth:credentials'],
+          scopes: ['test:param'],
           expiry: new Date(new Date().getTime() + 60 * 1000),
           credentials: {
-            clientId:       'test-client',
-            accessToken:    'test-token',
+            clientId:       'tester',
+            accessToken:    'secret'
           },
         });
-        var auth = new TestAuth({
-          baseUrl: 'http://localhost:62351/v1',
+        var client = new Client({
           credentials: tempCreds
         });
-        // Inspect the credentials
-        return auth.getCredentials('test-client').then(function(client) {
-          assert(client.clientId === 'test-client', "Expected clientId");
-        });
+        return client.param('test');
       });
 
-      test('getCredentials using temp. creds (unauthorized)', function() {
+      test('get using temp. creds (unauthorized)', function() {
         var tempCreds = taskcluster.createTemporaryCredentials({
-          scopes: ['scope-not-authorized'],
+          scopes: ['test:params'],
           expiry: new Date(new Date().getTime() + 60 * 1000),
           credentials: {
-            clientId:       'test-client',
-            accessToken:    'test-token',
+            clientId:       'tester',
+            accessToken:    'nobody'
           },
         });
-        var auth = new TestAuth({
-          baseUrl: 'http://localhost:62351/v1',
+        var client = new Client({
           credentials: tempCreds
         });
-        // Inspect the credentials
-        return auth.getCredentials('test-client').then(function(client) {
+        return client.param('test').then(function() {
           assert(false, "Expected and error");
         }, function(err) {
           assert(err, "Expected an error");
@@ -156,14 +201,7 @@
       });
 
       test('Build signed url', function(done) {
-        var auth = new TestAuth({
-          baseUrl: 'http://localhost:62351/v1',
-          credentials: {
-            clientId:       'test-client',
-            accessToken:    'test-token',
-          }
-        });
-        var url = auth.buildSignedUrl(auth.getCredentials, 'test-client');
+        var url = client.buildSignedUrl(client.param, 'test-client');
         req = new XMLHttpRequest();
         req.onreadystatechange = function() {
           if (req.readyState == 4) {

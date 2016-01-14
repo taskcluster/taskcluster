@@ -65,6 +65,9 @@ var updateDocs = function() {
       if (entry.input) {
         args.push('payload');
       }
+      if ((entry.query || []).length > 0) {
+        args.push('[options]');
+      }
       var retval = 'void';
       if (entry.output) {
         retval = 'result';

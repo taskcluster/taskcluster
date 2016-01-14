@@ -12,8 +12,8 @@ mocha                         \
 # Build browserify bundle for testing
 ./bin/update-apis.js browserify;
 
-# Start moch auth server for mocha-phantomjs testing
-node test/mockauthserver.js &
+# Start mockserver for mocha-phantomjs testing
+node test/mockserver.js &
 trap "kill $!" EXIT; sleep 0.3;
 
 mocha-phantomjs -R spec       \

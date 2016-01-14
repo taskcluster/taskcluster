@@ -7,35 +7,19 @@ suite('PulseListener', function() {
   var debug           = require('debug')('test:listener');
   var base            = require('taskcluster-base');
 
-  this.timeout(60 * 1000);
-
   // Load configuration
-  var cfg = base.config({
-    defaults:     {},
-    profile:      {},
-    envs: [
-      'pulse_username',
-      'pulse_password'
-    ],
-    filename:     'taskcluster-client'
-  });
+  var cfg = base.config();
 
-  if(!cfg.get('pulse:password')) {
-    console.log("Skipping PulseListener tests due to missing config");
-    return;
+  if(!cfg.pulse.password) {
+    console.error("Skipping PulseListener tests due to missing config");
+    this.pending = true;
   }
-
-  // Pulse credentials
-  var credentials = {
-    username:   cfg.get('pulse:username'),
-    password:   cfg.get('pulse:password')
-  };
 
   var connectionString = [
     'amqps://',         // Ensure that we're using SSL
-    cfg.get('pulse:username'),
+    cfg.pulse.username,
     ':',
-    cfg.get('pulse:password'),
+    cfg.pulse.password,
     '@',
     'pulse.mozilla.org',
     ':',
@@ -44,7 +28,7 @@ suite('PulseListener', function() {
 
   var exchangePrefix = [
     'exchange',
-    cfg.get('pulse:username'),
+    cfg.pulse.username,
     'taskcluster-client',
     'test'
   ].join('/') + '/';
@@ -77,6 +61,8 @@ suite('PulseListener', function() {
   var MockEventsClient = taskcluster.createClient(reference);
   var mockEventsClient = new MockEventsClient();
 
+  // Pulse credentials
+  var credentials = cfg.pulse
 
   // Test that client provides us with binding information
   test('binding info', function() {
@@ -457,7 +443,7 @@ suite('PulseListener', function() {
   });
 
   // Test listener.once
-  test('bind and listen  (using listener.once)', function() {
+  test('bind and listen (using listener.once)', function() {
     // Create listener
     var listener = new taskcluster.PulseListener({
       credentials:          credentials
