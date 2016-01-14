@@ -32,6 +32,8 @@ go clean -i -x ./...
 
 # generate code
 go get github.com/docopt/docopt-go
+go get golang.org/x/tools/imports
+go get github.com/xeipuuv/gojsonschema
 "${GENERATE}" && go generate ./...
 
 # fetch deps/build/install taskcluster-client-go
