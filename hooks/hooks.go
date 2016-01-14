@@ -43,7 +43,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 7 Jan 2016 at 16:27:00 UTC. The code was generated
+// Thu, 14 Jan 2016 at 08:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -127,6 +127,18 @@ func (myHooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, *tcclie
 }
 
 // Stability: *** EXPERIMENTAL ***
+//
+// This endpoint will return the current status of the hook.  This represents a
+// snapshot in time and may vary from one call to the next.
+//
+// See http://docs.taskcluster.net/services/hooks/#getHookStatus
+func (myHooks *Hooks) GetHookStatus(hookGroupId, hookId string) (*HookStatusResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myHooks)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/status", new(HookStatusResponse), nil)
+	return responseObject.(*HookStatusResponse), callSummary, err
+}
+
+// Stability: *** DEPRECATED ***
 //
 // This endpoint will return the schedule and next scheduled creation time
 // for the given hook.
@@ -351,6 +363,84 @@ type (
 
 		// See http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#/properties/schedule
 		Schedule Schedule `json:"schedule"`
+	}
+
+	// A snapshot of the current status of a hook.
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#
+	HookStatusResponse struct {
+
+		// Information about the last time this hook fired.  This property is only present
+		// if the hook has fired at least once.
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire
+		LastFire json.RawMessage `json:"lastFire"`
+
+		// The next time this hook's task is scheduled to be created. This property
+		// is only present if there is a scheduled next time. Some hooks don't have
+		// any schedules.
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/nextScheduledDate
+		NextScheduledDate tcclient.Time `json:"nextScheduledDate"`
+	}
+
+	// Information about a successful firing of the hook
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[0]
+	SuccessfulFire struct {
+
+		// Possible values:
+		//   * "success"
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[0]/properties/result
+		Result string `json:"result"`
+
+		// The task created
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[0]/properties/taskId
+		TaskId string `json:"taskId"`
+
+		// The time the task was created.  This will not necessarily match `task.created`.
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[0]/properties/time
+		Time tcclient.Time `json:"time"`
+	}
+
+	// Information about an unsuccesful firing of the hook
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[1]
+	FailedFire struct {
+
+		// The error that occurred when firing the task.  This is typically,
+		// but not always, an API error message.
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[1]/properties/error
+		Error json.RawMessage `json:"error"`
+
+		// Possible values:
+		//   * "error"
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[1]/properties/result
+		Result string `json:"result"`
+
+		// The time the task was created.  This will not necessarily match `task.created`.
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[1]/properties/time
+		Time tcclient.Time `json:"time"`
+	}
+
+	// Information about no firing of the hook (e.g., a new hook)
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[2]
+	NoFire struct {
+
+		// Possible values:
+		//   * "no-fire"
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[2]/properties/result
+		Result string `json:"result"`
 	}
 
 	// List of `hookGroupIds`.
