@@ -130,7 +130,7 @@ suite('retry-test', function() {
         });
 
         // Create application
-        app = base.app({
+        var app = base.app({
           port:         60526,
           env:          'development',
           forceSSL:     false,
