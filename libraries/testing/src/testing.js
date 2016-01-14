@@ -5,6 +5,7 @@ var Promise       = require('promise');
 exports.PulseTestReceiver    = require('./pulse');
 exports.schemas              = require('./schemas');
 exports.createMockAuthServer = require('./mockauth');
+exports.fakeauth             = require('./fakeauth');
 
 /** Return promise that is resolved in `delay` ms */
 var sleep = function(delay) {
