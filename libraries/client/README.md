@@ -347,6 +347,12 @@ var schedulerEvents = new taskcluster.SchedulerEvents(options);
 
 <!-- END OF GENERATED DOCS -->
 
+## Providing Options
+Some API end-points may take query-string, this is indicated in the signature
+above as `[options]`. These options are always _optional_, commonly used for
+continuation tokens when paging a list. For list of supported options you
+should consult API documentation on `docs.taskcluster.net`.
+
 ## Construct Urls
 You can build a url for any request, but this feature is mostly useful for
 request that doesn't require any authentication. If you need authentication
