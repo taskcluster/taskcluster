@@ -21,7 +21,7 @@
 //
 // First create a Github object:
 //
-//  myGithub := github.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
+//  myGithub := github.New(&tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myGithub's methods, e.g.:
 //
@@ -59,7 +59,7 @@ type Github tcclient.ConnectionData
 // ignored).
 //
 // For example:
-//  creds := tcclient.Credentials{
+//  creds := &tcclient.Credentials{
 //  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
@@ -71,7 +71,7 @@ type Github tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials tcclient.Credentials) *Github {
+func New(credentials *tcclient.Credentials) *Github {
 	myGithub := Github(tcclient.ConnectionData{
 		Credentials:  credentials,
 		BaseURL:      "https://taskcluster-github.herokuapp.com/v1",

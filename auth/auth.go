@@ -59,7 +59,7 @@
 //
 // First create an Auth object:
 //
-//  myAuth := auth.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
+//  myAuth := auth.New(&tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myAuth's methods, e.g.:
 //
@@ -81,6 +81,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
+	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
@@ -101,7 +102,7 @@ type Auth tcclient.ConnectionData
 // ignored).
 //
 // For example:
-//  creds := tcclient.Credentials{
+//  creds := &tcclient.Credentials{
 //  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
@@ -113,7 +114,7 @@ type Auth tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials tcclient.Credentials) *Auth {
+func New(credentials *tcclient.Credentials) *Auth {
 	myAuth := Auth(tcclient.ConnectionData{
 		Credentials:  credentials,
 		BaseURL:      "https://auth.taskcluster.net/v1",
@@ -296,10 +297,21 @@ func (myAuth *Auth) DeleteRole(roleId string) (*tcclient.CallSummary, error) {
 //   * auth:aws-s3:<level>:<bucket>/<prefix>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#awsS3Credentials
-func (myAuth *Auth) AwsS3Credentials(level string, bucket string, prefix string) (*AWSS3CredentialsResponse, *tcclient.CallSummary, error) {
+func (myAuth *Auth) AwsS3Credentials(level, bucket, prefix string) (*AWSS3CredentialsResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse), nil)
 	return responseObject.(*AWSS3CredentialsResponse), callSummary, err
+}
+
+// Returns a signed URL for AwsS3Credentials, valid for the specified duration.
+//
+// Required scopes:
+//   * auth:aws-s3:<level>:<bucket>/<prefix>
+//
+// See AwsS3Credentials for more details.
+func (myAuth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	return (&cd).SignedURL("/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), nil, duration)
 }
 
 // Get a shared access signature (SAS) string for use with a specific Azure
@@ -310,10 +322,21 @@ func (myAuth *Auth) AwsS3Credentials(level string, bucket string, prefix string)
 //   * auth:azure-table-access:<account>/<table>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#azureTableSAS
-func (myAuth *Auth) AzureTableSAS(account string, table string) (*AzureSharedAccessSignatureResponse, *tcclient.CallSummary, error) {
+func (myAuth *Auth) AzureTableSAS(account, table string) (*AzureSharedAccessSignatureResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", new(AzureSharedAccessSignatureResponse), nil)
 	return responseObject.(*AzureSharedAccessSignatureResponse), callSummary, err
+}
+
+// Returns a signed URL for AzureTableSAS, valid for the specified duration.
+//
+// Required scopes:
+//   * auth:azure-table-access:<account>/<table>
+//
+// See AzureTableSAS for more details.
+func (myAuth *Auth) AzureTableSAS_SignedURL(account, table string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", nil, duration)
 }
 
 // Validate the request signature given on input and return list of scopes

@@ -21,7 +21,7 @@
 //
 // First create a PurgeCache object:
 //
-//  purgeCache := purgecache.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
+//  purgeCache := purgecache.New(&tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of purgeCache's methods, e.g.:
 //
@@ -61,7 +61,7 @@ type PurgeCache tcclient.ConnectionData
 // ignored).
 //
 // For example:
-//  creds := tcclient.Credentials{
+//  creds := &tcclient.Credentials{
 //  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
@@ -73,7 +73,7 @@ type PurgeCache tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials tcclient.Credentials) *PurgeCache {
+func New(credentials *tcclient.Credentials) *PurgeCache {
 	purgeCache := PurgeCache(tcclient.ConnectionData{
 		Credentials:  credentials,
 		BaseURL:      "https://purge-cache.taskcluster.net/v1",
@@ -92,7 +92,7 @@ func New(credentials tcclient.Credentials) *PurgeCache {
 //   * purge-cache:<provisionerId>/<workerType>:<cacheName>
 //
 // See http://docs.taskcluster.net/services/purge-cache/#purgeCache
-func (purgeCache *PurgeCache) PurgeCache(provisionerId string, workerType string, payload *PurgeCacheRequest) (*tcclient.CallSummary, error) {
+func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, payload *PurgeCacheRequest) (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*purgeCache)
 	_, callSummary, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, nil)
 	return callSummary, err

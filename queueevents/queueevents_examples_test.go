@@ -3,6 +3,7 @@ package queueevents
 import (
 	"errors"
 	"fmt"
+
 	"github.com/streadway/amqp"
 	"github.com/taskcluster/pulse-go/pulse"
 )

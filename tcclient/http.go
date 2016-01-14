@@ -11,9 +11,10 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"time"
 
 	"github.com/taskcluster/httpbackoff"
-	"github.com/tent/hawk-go"
+	hawk "github.com/tent/hawk-go"
 	D "github.com/tj/go-debug"
 )
 
@@ -47,6 +48,18 @@ type CallSummary struct {
 	Attempts int
 }
 
+// utility function to create a URL object based on given data
+func setURL(connectionData *ConnectionData, route string, query url.Values) (u *url.URL, err error) {
+	u, err = url.Parse(connectionData.BaseURL + route)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot parse url: '%v', is BaseURL (%v) set correctly?\n%v\n", connectionData.BaseURL+route, connectionData.BaseURL, err)
+	}
+	if query != nil {
+		u.RawQuery = query.Encode()
+	}
+	return
+}
+
 // APICall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
@@ -69,12 +82,9 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 			ioReader = bytes.NewReader(jsonPayload)
 		}
-		u, err := url.Parse(connectionData.BaseURL + route)
+		u, err := setURL(connectionData, route, query)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed: '%v', is your BaseURL (%v) set correctly?\n%v\n", connectionData.BaseURL+route, connectionData.BaseURL, err)
-		}
-		if query != nil {
-			u.RawQuery = query.Encode()
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
 		}
 		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
 		if err != nil {
@@ -91,8 +101,9 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 				Hash: sha256.New,
 			}
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			if connectionData.Credentials.Certificate != "" {
-				reqAuth.Ext = base64.StdEncoding.EncodeToString([]byte("{\"certificate\":" + connectionData.Credentials.Certificate + "}"))
+			reqAuth.Ext, err = getExtHeader(connectionData.Credentials)
+			if err != nil {
+				return nil, nil, fmt.Errorf("Internal error: was not able to generate hawk ext header from provided credentials: %q\n%s", connectionData.Credentials, err)
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
@@ -125,4 +136,80 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 	}
 
 	return result, callSummary, err
+}
+
+// SignedURL creates a signed URL using the given ConnectionData, where route
+// is the url path relative to the BaseURL stored in the ConnectionData, query
+// is the set of query string parameters, if any, and duration is the amount of
+// time that the signed URL should remain valid for.
+func (connectionData *ConnectionData) SignedURL(route string, query url.Values, duration time.Duration) (u *url.URL, err error) {
+	u, err = setURL(connectionData, route, query)
+	if err != nil {
+		return
+	}
+	credentials := &hawk.Credentials{
+		ID:   connectionData.Credentials.ClientId,
+		Key:  connectionData.Credentials.AccessToken,
+		Hash: sha256.New,
+	}
+	reqAuth, err := hawk.NewURLAuth(u.String(), credentials, duration)
+	if err != nil {
+		return
+	}
+	reqAuth.Ext, err = getExtHeader(connectionData.Credentials)
+	if err != nil {
+		return
+	}
+	bewitSignature := reqAuth.Bewit()
+	if query == nil {
+		query = url.Values{}
+	}
+	query.Set("bewit", bewitSignature)
+	u.RawQuery = query.Encode()
+	return
+}
+
+// getExtHeader generates the hawk ext header based on the authorizedScopes and
+// the certificate used in the case of temporary credentials. The header is a
+// base64 encoded json object with a "certificate" property set to the
+// certificate of the temporary credentials and a "authorizedScopes" property
+// set to the array of authorizedScopes, if provided.  If either "certificate"
+// or "authorizedScopes" is not supplied, they will be omitted from the json
+// result. If neither are provided, an empty string is returned, rather than a
+// base64 encoded representation of "null" or "{}". Hawk interpets the empty
+// string as meaning the ext header is not needed.
+//
+// See:
+//   * http://docs.taskcluster.net/auth/authorized-scopes
+//   * http://docs.taskcluster.net/auth/temporary-credentials
+func getExtHeader(credentials *Credentials) (header string, err error) {
+	ext := &ExtHeader{}
+	if credentials.Certificate != "" {
+		certObj := new(Certificate)
+		err = json.Unmarshal([]byte(credentials.Certificate), certObj)
+		if err != nil {
+			return "", err
+		}
+		ext.Certificate = certObj
+	}
+
+	if credentials.AuthorizedScopes != nil {
+		ext.AuthorizedScopes = &credentials.AuthorizedScopes
+	}
+	extJson, err := json.Marshal(ext)
+	if err != nil {
+		return "", err
+	}
+	if string(extJson) != "{}" {
+		return base64.StdEncoding.EncodeToString(extJson), nil
+	}
+	return "", nil
+}
+
+// ExtHeader represents the authentication/authorization data that is encoded
+// in the Ext HTTP header in outgoing Hawk HTTP requests.
+type ExtHeader struct {
+	Certificate *Certificate `json:"certificate,omitempty"`
+	// use pointer to slice to distinguish between nil slice and empty slice
+	AuthorizedScopes *[]string `json:"authorizedScopes,omitempty"`
 }

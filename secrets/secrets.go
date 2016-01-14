@@ -18,7 +18,7 @@
 //
 // First create a Secrets object:
 //
-//  mySecrets := secrets.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
+//  mySecrets := secrets.New(&tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of mySecrets's methods, e.g.:
 //
@@ -39,6 +39,7 @@ package secrets
 import (
 	"encoding/json"
 	"net/url"
+	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
@@ -59,7 +60,7 @@ type Secrets tcclient.ConnectionData
 // ignored).
 //
 // For example:
-//  creds := tcclient.Credentials{
+//  creds := &tcclient.Credentials{
 //  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
@@ -71,7 +72,7 @@ type Secrets tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials tcclient.Credentials) *Secrets {
+func New(credentials *tcclient.Credentials) *Secrets {
 	mySecrets := Secrets(tcclient.ConnectionData{
 		Credentials:  credentials,
 		BaseURL:      "https://secrets.taskcluster.net/v1",
@@ -134,6 +135,17 @@ func (mySecrets *Secrets) Get(name string) (*Secret, *tcclient.CallSummary, erro
 	cd := tcclient.ConnectionData(*mySecrets)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/secret/"+url.QueryEscape(name), new(Secret), nil)
 	return responseObject.(*Secret), callSummary, err
+}
+
+// Returns a signed URL for Get, valid for the specified duration.
+//
+// Required scopes:
+//   * secrets:get:<name>
+//
+// See Get for more details.
+func (mySecrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*mySecrets)
+	return (&cd).SignedURL("/secret/"+url.QueryEscape(name), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***

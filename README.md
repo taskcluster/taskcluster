@@ -33,8 +33,8 @@ This library provides the following packages to interface with TaskCluster:
 
 To get you started quickly, I have also included some example programs that use both the http services and the amqp services:
 
-* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth#example-package--Scopes) demonstrates the use of the [auth](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth) package to query the scopes of a given clientId.
-* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth#example-package--ModifyClient) demonstrates the use of the [auth](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth) package to update an existing clientId with new data.
+* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth#example-package--Scopes) demonstrates the use of the [auth](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth) package to query the expiry and expanded scopes of a given clientId.
+* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth#example-package--UpdateClient) demonstrates the use of the [auth](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth) package to update an existing clientId with a new description and expiry.
 * The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents#example-package--TaskClusterSniffer) demonstrates the use of the [queueevents](http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents) package to listen in on Task Cluster tasks being defined and executed.
 
 ## Building

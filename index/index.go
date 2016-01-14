@@ -104,7 +104,7 @@
 //
 // First create an Index object:
 //
-//  myIndex := index.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
+//  myIndex := index.New(&tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myIndex's methods, e.g.:
 //
@@ -125,6 +125,7 @@ package index
 import (
 	"encoding/json"
 	"net/url"
+	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
@@ -145,7 +146,7 @@ type Index tcclient.ConnectionData
 // ignored).
 //
 // For example:
-//  creds := tcclient.Credentials{
+//  creds := &tcclient.Credentials{
 //  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
@@ -157,7 +158,7 @@ type Index tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials tcclient.Credentials) *Index {
+func New(credentials *tcclient.Credentials) *Index {
 	myIndex := Index(tcclient.ConnectionData{
 		Credentials:  credentials,
 		BaseURL:      "https://index.taskcluster.net/v1",
@@ -239,10 +240,21 @@ func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (
 //   * queue:get-artifact:<name>
 //
 // See http://docs.taskcluster.net/services/index/#findArtifactFromTask
-func (myIndex *Index) FindArtifactFromTask(namespace string, name string) (*tcclient.CallSummary, error) {
+func (myIndex *Index) FindArtifactFromTask(namespace, name string) (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myIndex)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
+}
+
+// Returns a signed URL for FindArtifactFromTask, valid for the specified duration.
+//
+// Required scopes:
+//   * queue:get-artifact:<name>
+//
+// See FindArtifactFromTask for more details.
+func (myIndex *Index) FindArtifactFromTask_SignedURL(namespace, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myIndex)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***

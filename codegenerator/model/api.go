@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/taskcluster-client-go/codegenerator/utils"
+	"github.com/taskcluster/taskcluster-client-go/text"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ func (api *API) postPopulate(apiDef *APIDefinition) {
 
 	for i := range api.Entries {
 		api.Entries[i].Parent = api
-		api.Entries[i].MethodName = utils.Normalise(api.Entries[i].Name, methods)
+		api.Entries[i].MethodName = text.GoTypeNameFrom(api.Entries[i].Name, methods)
 		api.Entries[i].postPopulate(apiDef)
 	}
 }
@@ -71,7 +71,7 @@ func (api *API) generateAPICode(apiName string) string {
 	}
 	comment := ""
 	if api.Description != "" {
-		comment = utils.Indent(api.Description, "// ")
+		comment = text.Indent(api.Description, "// ")
 	}
 	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 		comment += "\n"
@@ -81,9 +81,9 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "//\n"
 	comment += "// How to use this package\n"
 	comment += "//\n"
-	comment += "// First create " + utils.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + " object:\n"
+	comment += "// First create " + text.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + " object:\n"
 	comment += "//\n"
-	comment += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(tcclient.Credentials{ClientId: \"myClientId\", AccessToken: \"myAccessToken\"})\n"
+	comment += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(&tcclient.Credentials{ClientId: \"myClientId\", AccessToken: \"myAccessToken\"})\n"
 	comment += "//\n"
 	comment += "// and then call one or more of " + exampleVarName + "'s methods, e.g.:\n"
 	comment += "//\n"
@@ -112,7 +112,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	"time"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
 %%{imports}
@@ -134,7 +134,7 @@ type ` + api.apiDef.Name + ` tcclient.ConnectionData
 //
 `
 	content += "// For example:\n"
-	content += "//  creds := tcclient.Credentials{\n"
+	content += "//  creds := &tcclient.Credentials{\n"
 	content += "//  	ClientId:    os.Getenv(\"TASKCLUSTER_CLIENT_ID\"),\n"
 	content += "//  	AccessToken: os.Getenv(\"TASKCLUSTER_ACCESS_TOKEN\"),\n"
 	content += "//  	Certificate: os.Getenv(\"TASKCLUSTER_CERTIFICATE\"),\n"
@@ -147,7 +147,7 @@ type ` + api.apiDef.Name + ` tcclient.ConnectionData
 	content += "//  if err != nil {\n"
 	content += "//  	// handle errors...\n"
 	content += "//  }\n"
-	content += "func New(credentials tcclient.Credentials) *" + api.apiDef.Name + " {\n"
+	content += "func New(credentials *tcclient.Credentials) *" + api.apiDef.Name + " {\n"
 	content += "\t" + exampleVarName + " := " + api.apiDef.Name + "(tcclient.ConnectionData{\n"
 	content += "\t\tCredentials: credentials,\n"
 	content += "\t\tBaseURL: \"" + api.BaseURL + "\",\n"
@@ -216,48 +216,22 @@ func (entry *APIEntry) String() string {
 }
 
 func (entry *APIEntry) generateAPICode(apiName string) string {
-	comment := ""
-	if entry.Stability != "stable" {
-		comment += "// Stability: *** " + strings.ToUpper(entry.Stability) + " ***\n"
-		comment += "//\n"
+	content := entry.generateDirectMethod(apiName)
+	if strings.ToUpper(entry.Method) == "GET" {
+		content += entry.generateSignedURLMethod(apiName)
 	}
-	if entry.Description != "" {
-		comment += utils.Indent(entry.Description, "// ")
-	}
-	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
-		comment += "\n"
-	}
-	if len(entry.Scopes) > 0 {
-		comment += "//\n"
-		comment += "// Required scopes:\n"
-		switch len(entry.Scopes) {
-		case 0:
-		case 1:
-			comment += "//   * " + strings.Join(entry.Scopes[0], ", and\n//   * ") + "\n"
-		default:
-			lines := make([]string, len(entry.Scopes))
-			for i, j := range entry.Scopes {
-				switch len(j) {
-				case 0:
-				case 1:
-					lines[i] = "//   * " + j[0]
-				default:
-					lines[i] = "//   * (" + strings.Join(j, " and ") + ")"
-				}
-			}
-			comment += strings.Join(lines, ", or\n") + "\n"
-		}
-	}
-	comment += "//\n"
-	comment += fmt.Sprintf("// See %v/#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
-	inputParams := ""
+	return content
+}
+
+func (entry *APIEntry) getInputParamsAndQueryStringCode() (inputParams, queryCode, queryExpr string) {
+	inputParams = ""
 	if len(entry.Args) > 0 {
-		inputParams += strings.Join(entry.Args, " string, ") + " string"
+		inputParams += strings.Join(entry.Args, ", ")
 	}
 
 	// add optional query parameters
-	queryCode := ""
-	queryExpr := "nil"
+	queryCode = ""
+	queryExpr = "nil"
 	if len(entry.Query) > 0 {
 		queryExpr = "v"
 		sort.Strings(entry.Query)
@@ -266,8 +240,31 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 			inputParams += ", " + j
 			queryCode += `v.Add("` + j + `", ` + j + `)\n`
 		}
+	}
+	// all input parameters are strings, so if there are any, add the type to show it
+	if inputParams != "" {
 		inputParams += " string"
 	}
+	return
+}
+
+func (entry *APIEntry) generateDirectMethod(apiName string) string {
+	comment := ""
+	if entry.Stability != "stable" {
+		comment += "// Stability: *** " + strings.ToUpper(entry.Stability) + " ***\n"
+		comment += "//\n"
+	}
+	if entry.Description != "" {
+		comment += text.Indent(entry.Description, "// ")
+	}
+	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
+		comment += "\n"
+	}
+	comment += requiredScopesComment(entry.Scopes)
+	comment += "//\n"
+	comment += fmt.Sprintf("// See %v/#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
+
+	inputParams, queryCode, queryExpr := entry.getInputParamsAndQueryStringCode()
 
 	apiArgsPayload := "nil"
 	if entry.Input != "" {
@@ -300,4 +297,58 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 	content += "\n"
 	// can remove any code that added an empty string to another string
 	return strings.Replace(content, ` + ""`, "", -1)
+}
+
+func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
+	// if no required scopes, no reason to provide a signed url
+	// method, since no auth is required, so unsigned url already works
+	if len(entry.Scopes) == 0 {
+		return ""
+	}
+	comment := "// Returns a signed URL for " + entry.MethodName + ", valid for the specified duration.\n"
+	comment += requiredScopesComment(entry.Scopes)
+	comment += "//\n"
+	comment += fmt.Sprintf("// See %v for more details.\n", entry.MethodName)
+	inputParams, queryCode, queryExpr := entry.getInputParamsAndQueryStringCode()
+	if inputParams == "" {
+		inputParams = "duration time.Duration"
+	} else {
+		inputParams += ", duration time.Duration"
+	}
+
+	content := comment
+	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "_SignedURL(" + inputParams + ") (*url.URL, error) {\n"
+	content += queryCode
+	content += "\tcd := tcclient.ConnectionData(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
+	content += "\treturn (&cd).SignedURL(\"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", " + queryExpr + ", duration)\n"
+	content += "}\n"
+	content += "\n"
+	// can remove any code that added an empty string to another string
+	return strings.Replace(content, ` + ""`, "", -1)
+}
+
+func requiredScopesComment(scopes [][]string) string {
+	if len(scopes) == 0 {
+		return ""
+	}
+	comment := "//\n"
+	comment += "// Required scopes:\n"
+	switch len(scopes) {
+	case 0:
+	case 1:
+		comment += "//   * " + strings.Join(scopes[0], ", and\n//   * ") + "\n"
+	default:
+		lines := make([]string, len(scopes))
+		for i, j := range scopes {
+			switch len(j) {
+			case 0:
+			case 1:
+				lines[i] = "//   * " + j[0]
+			default:
+				lines[i] = "//   * (" + strings.Join(j, " and ") + ")"
+			}
+		}
+		comment += strings.Join(lines, ", or\n") + "\n"
+	}
+	return comment
 }

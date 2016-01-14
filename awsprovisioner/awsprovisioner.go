@@ -42,7 +42,7 @@
 //
 // First create an AwsProvisioner object:
 //
-//  awsProvisioner := awsprovisioner.New(tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
+//  awsProvisioner := awsprovisioner.New(&tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
 //
 // and then call one or more of awsProvisioner's methods, e.g.:
 //
@@ -64,6 +64,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
+	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
@@ -84,7 +85,7 @@ type AwsProvisioner tcclient.ConnectionData
 // ignored).
 //
 // For example:
-//  creds := tcclient.Credentials{
+//  creds := &tcclient.Credentials{
 //  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
@@ -96,7 +97,7 @@ type AwsProvisioner tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials tcclient.Credentials) *AwsProvisioner {
+func New(credentials *tcclient.Credentials) *AwsProvisioner {
 	awsProvisioner := AwsProvisioner(tcclient.ConnectionData{
 		Credentials:  credentials,
 		BaseURL:      "https://aws-provisioner.taskcluster.net/v1",
@@ -184,6 +185,18 @@ func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerT
 	return responseObject.(*GetWorkerTypeRequest), callSummary, err
 }
 
+// Returns a signed URL for WorkerType, valid for the specified duration.
+//
+// Required scopes:
+//   * aws-provisioner:view-worker-type:<workerType>, or
+//   * aws-provisioner:manage-worker-type:<workerType>
+//
+// See WorkerType for more details.
+func (awsProvisioner *AwsProvisioner) WorkerType_SignedURL(workerType string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	return (&cd).SignedURL("/worker-type/"+url.QueryEscape(workerType), nil, duration)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Delete a worker type definition.  This method will only delete
@@ -222,6 +235,17 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *tccl
 	cd := tcclient.ConnectionData(*awsProvisioner)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/list-worker-types", new(ListWorkerTypes), nil)
 	return responseObject.(*ListWorkerTypes), callSummary, err
+}
+
+// Returns a signed URL for ListWorkerTypes, valid for the specified duration.
+//
+// Required scopes:
+//   * aws-provisioner:list-worker-types
+//
+// See ListWorkerTypes for more details.
+func (awsProvisioner *AwsProvisioner) ListWorkerTypes_SignedURL(duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	return (&cd).SignedURL("/list-worker-types", nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -269,7 +293,7 @@ func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretRespons
 // but that seems like overkill
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#instanceStarted
-func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId string, token string) (*tcclient.CallSummary, error) {
+func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId, token string) (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/instance-started/"+url.QueryEscape(instanceId)+"/"+url.QueryEscape(token), nil, nil)
 	return callSummary, err
@@ -310,6 +334,18 @@ func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAll
 	return responseObject.(*GetAllLaunchSpecsResponse), callSummary, err
 }
 
+// Returns a signed URL for GetLaunchSpecs, valid for the specified duration.
+//
+// Required scopes:
+//   * aws-provisioner:view-worker-type:<workerType>, or
+//   * aws-provisioner:manage-worker-type:<workerType>
+//
+// See GetLaunchSpecs for more details.
+func (awsProvisioner *AwsProvisioner) GetLaunchSpecs_SignedURL(workerType string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	return (&cd).SignedURL("/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", nil, duration)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // This method is a left over and will be removed as soon as the
@@ -327,6 +363,17 @@ func (awsProvisioner *AwsProvisioner) AwsState() (*tcclient.CallSummary, error) 
 	return callSummary, err
 }
 
+// Returns a signed URL for AwsState, valid for the specified duration.
+//
+// Required scopes:
+//   * aws-provisioner:aws-state
+//
+// See AwsState for more details.
+func (awsProvisioner *AwsProvisioner) AwsState_SignedURL(duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	return (&cd).SignedURL("/aws-state", nil, duration)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Return the state of a given workertype as stored by the provisioner.
@@ -342,6 +389,17 @@ func (awsProvisioner *AwsProvisioner) State(workerType string) (*tcclient.CallSu
 	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/state/"+url.QueryEscape(workerType), nil, nil)
 	return callSummary, err
+}
+
+// Returns a signed URL for State, valid for the specified duration.
+//
+// Required scopes:
+//   * aws-provisioner:view-worker-type:<workerType>
+//
+// See State for more details.
+func (awsProvisioner *AwsProvisioner) State_SignedURL(workerType string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	return (&cd).SignedURL("/state/"+url.QueryEscape(workerType), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***

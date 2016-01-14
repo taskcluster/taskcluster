@@ -7,8 +7,8 @@
 cd "$(dirname "${0}")"
 
 # in case build.sh was run with -d option since last build
-git checkout -f codegenerator/model/model-data.txt
-UNIX_TIMESTAMP="$(head -1 codegenerator/model/model-data.txt | sed -n 's/^Generated: //p')"
+git checkout -f codegenerator/model-data.txt
+UNIX_TIMESTAMP="$(head -1 codegenerator/model-data.txt | sed -n 's/^Generated: //p')"
 
 GENERATE=true
 NEW_TIMESTAMP=false
@@ -27,15 +27,12 @@ done
 export UNIX_TIMESTAMP
 echo "UNIX_TIMESTAMP = '${UNIX_TIMESTAMP}'"
 
-rm -rf "${GOPATH}/bin/generatemodel"
 rm -rf "${GOPATH}"/pkg/*/github.com/*/taskcluster-client-go
 go clean -i -x ./...
 
-# fetch deps/build/install generatemodel tool
-go get ./codegenerator/generatemodel
-
 # generate code
-"${GENERATE}" && go generate -v ./codegenerator/model
+go get github.com/docopt/docopt-go
+"${GENERATE}" && go generate ./...
 
 # fetch deps/build/install taskcluster-client-go
 go get -t -v -x ./...
