@@ -26,7 +26,7 @@ done
 
 export UNIX_TIMESTAMP
 echo "UNIX_TIMESTAMP = '${UNIX_TIMESTAMP}'"
-# having GOOS for anything than local system will break running go generate
+# having GOOS for anything than local system will break running the tests
 unset GOOS
 
 rm -rf "${GOPATH}"/pkg/*/github.com/*/taskcluster-client-go
@@ -48,7 +48,8 @@ go vet -x ./...
 go get github.com/axw/gocov/gocov
 go get golang.org/x/tools/cmd/cover
 go get github.com/pierrre/gotestcover
-# since gotestcover can have 0 exit code even with failures, also run tests with go test
+# since gotestcover can have 0 exit code even with failures, also run tests
+# with go test
 go test -v ./...
 "${GOPATH}/bin/gotestcover" -v -coverprofile=coverage.report ./...
 go tool cover -func=coverage.report
@@ -57,7 +58,7 @@ go tool cover -func=coverage.report
 # See https://bugzilla.mozilla.org/show_bug.cgi?id=1221239
 grep -q PANIC codegenerator/model/model-data.txt && exit 68
 
-# finally check that generated files have been committed, and that
-# formatting code resulted in no changes...
+# finally check that generated files have been committed, and that formatting
+# code resulted in no changes...
 git status
 "${NEW_TIMESTAMP}" || [ $(git status --porcelain | wc -l) == 0 ]
