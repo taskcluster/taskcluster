@@ -123,6 +123,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId',
   name:       'task',
+  stability:  base.API.stability.stable,
   idempotent: true,
   output:     'task.json#',
   title:      "Get Task Definition",
@@ -153,12 +154,13 @@ api.declare({
 
 /** Get task status */
 api.declare({
-  method:   'get',
-  route:    '/task/:taskId/status',
-  name:     'status',
-  input:    undefined,  // No input is accepted
-  output:   'task-status-response.json#',
-  title:    "Get task status",
+  method:     'get',
+  route:      '/task/:taskId/status',
+  name:       'status',
+  stability:  base.API.stability.stable,
+  input:      undefined,  // No input is accepted
+  output:     'task-status-response.json#',
+  title:      "Get task status",
   description: [
     "Get task status structure from `taskId`"
   ].join('\n')
@@ -184,15 +186,16 @@ api.declare({
 
 /** List taskIds by taskGroupId */
 api.declare({
-  method: 'get',
-  route:  '/task-group/:taskGroupId/list',
+  method:     'get',
+  route:      '/task-group/:taskGroupId/list',
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,
   },
-  name:   'listTaskGroup',
-  output: 'list-task-group-response.json#',
-  title:  "List Task Group",
+  name:       'listTaskGroup',
+  stability:  base.API.stability.stable,
+  output:     'list-task-group-response.json#',
+  title:      "List Task Group",
   description: [
     "List taskIds of all tasks sharing the same `taskGroupId`.",
     "",
@@ -360,6 +363,7 @@ api.declare({
   method:     'put',
   route:      '/task/:taskId',
   name:       'createTask',
+  stability:  base.API.stability.stable,
   idempotent: true,
   scopes:     [
     [
@@ -528,6 +532,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/define',
   name:       'defineTask',
+  stability:  base.API.stability.stable,
   scopes:     [
     // Legacy scopes
     ['queue:define-task:<provisionerId>/<workerType>'],
@@ -674,6 +679,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/schedule',
   name:       'scheduleTask',
+  stability:  base.API.stability.stable,
   scopes:     [
     [
       // Legacy scope
@@ -766,6 +772,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/rerun',
   name:       'rerunTask',
+  stability:  base.API.stability.experimental,
   scopes:     [
     [
       // Legacy scopes
@@ -887,6 +894,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/cancel',
   name:       'cancelTask',
+  stability:  base.API.stability.stable,
   scopes:     [
     [
       // Legacy scopes
@@ -1003,6 +1011,7 @@ api.declare({
   method:     'get',
   route:      '/poll-task-url/:provisionerId/:workerType',
   name:       'pollTaskUrls',
+  stability:  base.API.stability.stable,
   scopes: [
     [
       // Legacy scopes
@@ -1051,6 +1060,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/claim',
   name:       'claimTask',
+  stability:  base.API.stability.stable,
   scopes: [
     [
       // Legacy
@@ -1192,6 +1202,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/reclaim',
   name:       'reclaimTask',
+  stability:  base.API.stability.stable,
   scopes: [
     [
       // Legacy
@@ -1408,6 +1419,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/completed',
   name:       'reportCompleted',
+  stability:  base.API.stability.stable,
   scopes: [
     [
       // Legacy
@@ -1440,6 +1452,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/failed',
   name:       'reportFailed',
+  stability:  base.API.stability.stable,
   scopes: [
     [
       // Legacy
@@ -1474,6 +1487,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/exception',
   name:       'reportException',
+  stability:  base.API.stability.stable,
   scopes: [
     [
       // Legacy
@@ -1616,6 +1630,7 @@ api.declare({
   method:     'get',
   route:      '/pending/:provisionerId/:workerType',
   name:       'pendingTasks',
+  stability:  base.API.stability.stable,
   scopes:     [['queue:pending-tasks:<provisionerId>/<workerType>']],
   deferAuth:  true,
   output:     'pending-tasks-response.json#',

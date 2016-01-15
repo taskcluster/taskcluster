@@ -3,6 +3,7 @@ var debug   = require('debug')('queue:routes:resources');
 var _       = require('lodash');
 var assert  = require('assert');
 var Promise = require('promise');
+var base    = require('taskcluster-base');
 
 // Maximum number of artifacts to list
 const MAX_ARTIFACTS_LISTING = 10 * 1000;
@@ -12,6 +13,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name:       'createArtifact',
+  stability:  base.API.stability.stable,
   scopes: [
     [
       'queue:create-artifact:<name>',
@@ -416,6 +418,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name:       'getArtifact',
+  stability:  base.API.stability.stable,
   scopes: [
     ['queue:get-artifact:<name>']
   ],
@@ -455,6 +458,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId/artifacts/:name(*)',
   name:       'getLatestArtifact',
+  stability:  base.API.stability.stable,
   scopes: [
     ['queue:get-artifact:<name>']
   ],
@@ -519,6 +523,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId/runs/:runId/artifacts',
   name:       'listArtifacts',
+  stability:  base.API.stability.experimental,
   output:     'list-artifacts-response.json#',
   title:      "Get Artifacts from Run",
   description: [
@@ -563,6 +568,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId/artifacts',
   name:       'listLatestArtifacts',
+  stability:  base.API.stability.experimental,
   output:     'list-artifacts-response.json#',
   title:      "Get Artifacts from Latest Run",
   description: [
