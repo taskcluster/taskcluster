@@ -40,13 +40,21 @@ var cfg = base.config({profile});
 helper.events = new base.testing.PulseTestReceiver(cfg.pulse, mocha);
 
 // Allow tests to run expire-artifacts
-helper.expireArtifacts = () => load('expire-artifacts', loadOptions)
+helper.expireArtifacts = () => load('expire-artifacts', loadOptions);
 
 // Allow tests to run expire-tasks
-helper.expireTasks = () => load('expire-tasks', loadOptions)
+helper.expireTasks = () => load('expire-tasks', loadOptions);
+
+// Allow tests to run expire-task-groups
+helper.expireTaskGroups = () => load('expire-task-groups', loadOptions);
+
+// Allow tests to run expire-task-group-members
+helper.expireTaskGroupMembers = () => {
+  return load('expire-task-group-members', loadOptions);
+}
 
 // Allow tests to run expire-queues
-helper.expireQueues = () => load('expire-queues', loadOptions)
+helper.expireQueues = () => load('expire-queues', loadOptions);
 
 // Process to terminate
 var toTerminate = [];
