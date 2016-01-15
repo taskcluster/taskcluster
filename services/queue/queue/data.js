@@ -316,3 +316,80 @@ Artifact.expire = async function(now) {
 // Export Artifact
 exports.Artifact = Artifact;
 
+
+/**
+ * Entity for tracking task-group existence
+ * Ensuring that all tasks in a task-group has the same schedulerId.
+ */
+var TaskGroup = base.Entity.configure({
+  version:          1,
+  partitionKey:     base.Entity.keys.StringKey('taskGroupId'),
+  rowKey:           base.Entity.keys.ConstantKey('task-group'),
+  properties: {
+    taskGroupId:    base.Entity.types.SlugId,
+    schedulerId:    base.Entity.types.String,
+    // Expiration date when this entry can be deleted
+    // When adding a task we will update this to task.expires + 72 hours
+    // if taskGroup.expires < task.expires. This way the taskGroup entity
+    // won't be updated 100 times if we submit 100 tasks sequentially, with
+    // slightly higher expiration.
+    expires:        base.Entity.types.Date,
+  }
+});
+
+/**
+ * Expire task-groups that are past their expiration.
+ *
+ * Returns a promise that all expired task-groups have been deleted
+ */
+TaskGroup.expire = async function(now) {
+  assert(now instanceof Date, "now must be given as option");
+  var count = 0;
+  await base.Entity.scan.call(this, {
+    expires:          base.Entity.op.lessThan(now)
+  }, {
+    limit:            250, // max number of concurrent delete operations
+    handler:          (taskGroup) => { count++; return taskGroup.remove(true); }
+  });
+  return count;
+};
+
+// Export TaskGroup
+exports.TaskGroup = TaskGroup;
+
+/**
+ * Entity registering a task as member of a task-group.
+ *
+ * Existence of this entity only carries value if the task also exists and has
+ * the taskId and taskGroupId given here.
+ */
+var TaskGroupMember = base.Entity.configure({
+  version:          1,
+  partitionKey:     base.Entity.keys.StringKey('taskGroupId'),
+  rowKey:           base.Entity.keys.StringKey('taskId'),
+  properties: {
+    taskGroupId:    base.Entity.types.SlugId,
+    taskId:         base.Entity.types.SlugId,
+    expires:        base.Entity.types.Date,
+  }
+});
+
+/**
+ * Expire task-group memberships that are past their expiration.
+ *
+ * Returns a promise that all expired task-group memberships have been deleted
+ */
+TaskGroupMember.expire = async function(now) {
+  assert(now instanceof Date, "now must be given as option");
+  var count = 0;
+  await base.Entity.scan.call(this, {
+    expires:          base.Entity.op.lessThan(now)
+  }, {
+    limit:            250, // max number of concurrent delete operations
+    handler:          (member) => { count++; return member.remove(true); }
+  });
+  return count;
+};
+
+// Export TaskGroupMember
+exports.TaskGroupMember = TaskGroupMember;

@@ -16,6 +16,8 @@ defaults:
     # Azure table name for tasks, artifact meta-data
     taskTableName:                Tasks
     artifactTableName:            Artifacts
+    taskGroupTableName:           TaskGroups
+    taskGroupMemberTableName:     TaskGroupMembers
 
     # Time delay before expiring artifacts, in readable format, see:
     # taskcluster.fromNow, notice this should be negative!
@@ -24,6 +26,12 @@ defaults:
     # Time delay before expiring tasks, in readable format, see:
     # taskcluster.fromNow, notice this should be negative!
     taskExpirationDelay:          '- 30 minutes'
+
+    # Time extension of the expires property for task-group definitions.
+    # This is entities holding the schedulerId for a task-group, hence, we
+    # expire them later to avoid people creating tasks with a different
+    # schedulerId inside a task-group where all tasks are about to expire.
+    taskGroupExpiresExtension:     6220800 # 3 days as seconds
 
     # Component property in the responseTime and process statistics
     statsComponent:               queue
@@ -108,6 +116,8 @@ production:
     artifactContainer:            'artifacts'
     taskTableName:                'QueueTasks'
     artifactTableName:            'QueueArtifacts'
+    taskGroupTableName:           'QueueTaskGroups'
+    taskGroupMemberTableName:     'QueueTaskGroupMembers'
     publicArtifactBucketProxies:
       'us-east-1':  's3-copy-proxy-us-east-1.taskcluster.svc.tutum.io'
       'us-west-1':  's3-copy-proxy-us-west-1.taskcluster.svc.tutum.io'
@@ -134,6 +144,8 @@ test:
     queuePrefix2:                 'hacks2' # For testing deletion of queues
     taskTableName:                'TestTasks'
     artifactTableName:            'TestArtifacts'
+    taskGroupTableName:           'TestTaskGroups'
+    taskGroupMemberTableName:     'TestTaskGroupMembers'
     claimQueue:                   'test-claim-queue'
     deadlineQueue:                'test-deadline-queue'
     deadlineDelay:                1000
@@ -143,6 +155,7 @@ test:
     # Positive, means that expire tasks 4 days ahead of time, useful for
     # testing. In production this should be "- x hours" or so...
     taskExpirationDelay:          '4 days'
+    taskGroupExpiresExtension:    0 # should always be positive in production
     deadline:
       pollingDelay:               250
       parallelism:                1
