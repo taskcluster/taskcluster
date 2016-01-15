@@ -1,0 +1,37 @@
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "List Task-Group Response"
+description: |
+  Response from a `listTaskGroup` request.
+type:               object
+properties:
+  taskGroupId:
+    title:          "Task-Group Identifier"
+    description: |
+      Identifier for the task-group being listed.
+    type:           string
+    pattern:        {$const: slugid-pattern}
+  members:
+    type:           array
+    title:          "Members of the Task-Group"
+    description: |
+      List of `taskId` for tasks in this task-group.
+    items:
+      title:          "Task Identifier"
+      description: |
+        `TaskId` for a task in the task-group being listed.
+      type:           string
+      pattern:        {$const: slugid-pattern}
+  continuationToken:
+    type:             string
+    title:            "Continuation Token"
+    description: |
+      Opaque `continuationToken` to be given as query-string option if all the
+      tasks in the task-group wasn't included in this result.
+      This property is only present if another request is necessary to fetch all
+      results. In practice the next request with a `continuationToken` may not
+      return additional results, but it can. Thus, you can only be sure to have
+      all the results if you've called `listTaskGroup` with `continuationToken`
+      until you got a result without a `continuationToken`.
+required:
+ - taskGroupId
+ - members

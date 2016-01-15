@@ -1,4 +1,4 @@
-suite('Post artifacts', function() {
+suite('Artifacts', function() {
   var debug         = require('debug')('test:api:claim');
   var assert        = require('assert');
   var slugid        = require('slugid');
@@ -315,6 +315,66 @@ suite('Post artifacts', function() {
     });
   });
 
+  test("Check expire doesn't drop table", async () => {
+    var taskId = slugid.v4();
+    debug("### Creating task");
+    await helper.queue.createTask(taskId, taskDef);
+
+    debug("### Claiming task");
+    // First runId is always 0, so we should be able to claim it here
+    let {credentials} = await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    debug("### Send post artifact request");
+    let queue = new helper.Queue({credentials});
+    var r1 = await queue.createArtifact(taskId, 0, 'public/s3.json', {
+      storageType:  's3',
+      expires:      taskcluster.fromNowJSON('12 day'),
+      contentType:  'application/json'
+    });
+    assume(r1.putUrl).is.ok();
+
+    debug("### Uploading to putUrl");
+    var res = await request.put(r1.putUrl).send({message: "Hello World"}).end();
+    assume(res.ok).is.ok();
+
+    debug("### Download Artifact (runId: 0)");
+    var url = helper.queue.buildUrl(
+      helper.queue.getArtifact,
+      taskId, 0, 'public/s3.json'
+    );
+    debug("Fetching artifact from: %s", url);
+    res = await getWith303Redirect(url);
+    assume(res.ok).is.ok();
+    assume(res.body).to.be.eql({message: "Hello World"});
+
+    debug("### List artifacts");
+    var r2 = await helper.queue.listArtifacts(taskId, 0);
+    assume(r2.artifacts.length).equals(1);
+
+    debug("### Expire artifacts");
+    // config/test.js hardcoded to expire artifact 4 days in the future
+    // in this test we should see that the artifact is still present as we
+    // set expiration to 12 days here
+    await helper.expireArtifacts();
+
+    debug("### Download Artifact (runId: 0)");
+    var url = helper.queue.buildUrl(
+      helper.queue.getArtifact,
+      taskId, 0, 'public/s3.json'
+    );
+    debug("Fetching artifact from: %s", url);
+    res = await getWith303Redirect(url);
+    assume(res.ok).is.ok();
+    assume(res.body).to.be.eql({message: "Hello World"});
+
+    debug("### List artifacts");
+    var r2 = await helper.queue.listArtifacts(taskId, 0);
+    assume(r2.artifacts.length).equals(1);
+  });
+
   test("Post Azure artifact", async () => {
     var taskId = slugid.v4();
 
@@ -487,6 +547,60 @@ suite('Post artifacts', function() {
     await get404(url);
   });
 
+
+  test("Redirect artifact doesn't expire too soon", async () => {
+    var taskId = slugid.v4();
+
+    debug("### Creating task");
+    await helper.queue.createTask(taskId, taskDef);
+
+    debug("### Claiming task");
+    // First runId is always 0, so we should be able to claim it here
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    debug("### Send post artifact request");
+    await helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
+      storageType:  'reference',
+      expires:      taskcluster.fromNowJSON('12 day'),
+      url:          'https://google.com',
+      contentType:  'text/html'
+    });
+
+    debug("### Send post artifact request (again w. new URL)");
+    var pingUrl = helper.queue.buildUrl(helper.queue.ping);
+    await helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
+      storageType:  'reference',
+      expires:      taskcluster.fromNowJSON('12 day'),
+      url:          pingUrl,
+      contentType:  'text/html'
+    });
+
+    debug("### Downloading artifact");
+    var url = helper.queue.buildUrl(
+      helper.queue.getArtifact,
+      taskId, 0, 'public/redirect.json'
+    );
+    debug("Fetching artifact from: %s", url);
+    var res = await getWith303Redirect(url);
+    assume(res.ok).is.ok();
+
+    debug("### Expire artifacts");
+    // config/test.js hardcoded to expire artifact 4 days in the future
+    // In this test, we check that it doesn't expire...
+    await helper.expireArtifacts();
+
+    debug("### Downloading artifact");
+    var url = helper.queue.buildUrl(
+      helper.queue.getArtifact,
+      taskId, 0, 'public/redirect.json'
+    );
+    debug("Fetching artifact from: %s", url);
+    var res = await getWith303Redirect(url);
+    assume(res.ok).is.ok();
+  });
 
   test("Post artifact past resolution for 'exception'", async () => {
     var taskId = slugid.v4();
