@@ -14,11 +14,12 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-client-go/queueevents"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	D "github.com/tj/go-debug"
 )
 
 var (
-	expiry queue.Time
+	expiry tcclient.Time
 	// all tests can share taskGroupId so we can view all test tasks in same
 	// graph later for troubleshooting
 	taskGroupId string = slugid.Nice()
@@ -32,15 +33,15 @@ func setup(t *testing.T) {
 	}
 	TaskUser.HomeDir = filepath.Join(cwd, "test")
 
-	expiry = queue.Time(time.Now().Add(time.Minute * 1))
+	expiry = tcclient.Time(time.Now().Add(time.Minute * 1))
 }
 
 func validateArtifacts(
 	t *testing.T,
 	payloadArtifacts []struct {
-		Expires queue.Time `json:"expires"`
-		Path    string     `json:"path"`
-		Type    string     `json:"type"`
+		Expires tcclient.Time `json:"expires"`
+		Path    string        `json:"path"`
+		Type    string        `json:"type"`
 	},
 	expected []Artifact) {
 
@@ -70,9 +71,9 @@ func TestDirectoryArtifacts(t *testing.T) {
 
 		// what appears in task payload
 		[]struct {
-			Expires queue.Time `json:"expires"`
-			Path    string     `json:"path"`
-			Type    string     `json:"type"`
+			Expires tcclient.Time `json:"expires"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
 		}{{
 			Expires: expiry,
 			Path:    "SampleArtifacts",
@@ -113,9 +114,9 @@ func TestMissingFileArtifact(t *testing.T) {
 
 		// what appears in task payload
 		[]struct {
-			Expires queue.Time `json:"expires"`
-			Path    string     `json:"path"`
-			Type    string     `json:"type"`
+			Expires tcclient.Time `json:"expires"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
 		}{{
 			Expires: expiry,
 			Path:    "TestMissingFileArtifact/no_such_file",
@@ -143,9 +144,9 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 
 		// what appears in task payload
 		[]struct {
-			Expires queue.Time `json:"expires"`
-			Path    string     `json:"path"`
-			Type    string     `json:"type"`
+			Expires tcclient.Time `json:"expires"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
 		}{{
 			Expires: expiry,
 			Path:    "TestMissingDirectoryArtifact/no_such_dir",
@@ -173,9 +174,9 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 
 		// what appears in task payload
 		[]struct {
-			Expires queue.Time `json:"expires"`
-			Path    string     `json:"path"`
-			Type    string     `json:"type"`
+			Expires tcclient.Time `json:"expires"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
 		}{{
 			Expires: expiry,
 			Path:    "SampleArtifacts/b/c",
@@ -203,9 +204,9 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 
 		// what appears in task payload
 		[]struct {
-			Expires queue.Time `json:"expires"`
-			Path    string     `json:"path"`
-			Type    string     `json:"type"`
+			Expires tcclient.Time `json:"expires"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
 		}{{
 			Expires: expiry,
 			Path:    "SampleArtifacts/b/c/d.jpg",
@@ -311,8 +312,13 @@ func TestUpload(t *testing.T) {
 	)
 
 	// create dummy task
-	myQueue := queue.New(clientId, accessToken)
-	myQueue.Certificate = certificate
+	myQueue := queue.New(
+		&tcclient.Credentials{
+			ClientId:    clientId,
+			AccessToken: accessToken,
+			Certificate: certificate,
+		},
+	)
 
 	created := time.Now()
 	// deadline in one days' time
@@ -321,9 +327,9 @@ func TestUpload(t *testing.T) {
 	expires := created.AddDate(0, 1, 0)
 
 	td := &queue.TaskDefinitionRequest{
-		Created:  queue.Time(created),
-		Deadline: queue.Time(deadline),
-		Expires:  queue.Time(expires),
+		Created:  tcclient.Time(created),
+		Deadline: tcclient.Time(deadline),
+		Expires:  tcclient.Time(expires),
 		Extra:    json.RawMessage(`{}`),
 		Metadata: struct {
 			Description string `json:"description"`
@@ -349,7 +355,7 @@ func TestUpload(t *testing.T) {
 			"artifacts": [
 				{
 					"path": "SampleArtifacts/_/X.txt",
-					"expires": "` + queue.Time(expires).String() + `",
+					"expires": "` + tcclient.Time(expires).String() + `",
 					"type": "file"
 				}
 			]
@@ -396,8 +402,8 @@ func TestUpload(t *testing.T) {
 				if a.Artifact.ContentType != "text/plain; charset=utf-8" {
 					t.Errorf("Artifact %s should have mime type 'text/plain; charset=utf-8' but has '%s'", artifact, a.Artifact.ContentType)
 				}
-				if a.Artifact.Expires.String() != queue.Time(expires).String() {
-					t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifact, queue.Time(expires), a.Artifact.Expires)
+				if a.Artifact.Expires.String() != tcclient.Time(expires).String() {
+					t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifact, tcclient.Time(expires), a.Artifact.Expires)
 				}
 			} else {
 				t.Errorf("Artifact '%s' not created", artifact)

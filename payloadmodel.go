@@ -4,7 +4,7 @@
 
 package main
 
-import "github.com/taskcluster/taskcluster-client-go/queue"
+import "github.com/taskcluster/taskcluster-client-go/tcclient"
 
 type (
 	// This schema defines the structure of the `payload` property referred to
@@ -14,7 +14,7 @@ type (
 		// "builds\\firefox.exe", "expires": "2015-08-19T17:30:00.000Z" }`
 		Artifacts []struct {
 			// Date when artifact should expire must be in the future
-			Expires queue.Time `json:"expires"`
+			Expires tcclient.Time `json:"expires"`
 			// Filesystem path of artifact
 			Path string `json:"path"`
 			// Artifacts can be either an individual `file` or a `directory`

@@ -8,10 +8,14 @@ import (
 	"time"
 
 	"github.com/taskcluster/generic-worker/livelog"
-	"github.com/taskcluster/generic-worker/os/exec"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
+
+type ExecCommand interface {
+	Start() error
+	Wait() error
+}
 
 type (
 	// Generic Worker config
@@ -74,7 +78,7 @@ type (
 	// Regardless of platform, we will have to call out to system commands to run tasks,
 	// and each command execution should write to a file.
 	Command struct {
-		osCommand *exec.Cmd
+		osCommand ExecCommand
 		// The canonical name of the log file as reported to the Queue, which
 		// is typically the relative location of the log file to the user home
 		// directory
