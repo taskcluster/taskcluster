@@ -1,13 +1,13 @@
-var Promise     = require('promise');
-var debug       = require('debug')('routes:v1');
-var slugid      = require('slugid');
-var assert      = require('assert');
-var _           = require('lodash');
-var base        = require('taskcluster-base');
-var taskcluster = require('taskcluster-client');
+let Promise     = require('promise');
+let debug       = require('debug')('routes:v1');
+let slugid      = require('slugid');
+let assert      = require('assert');
+let _           = require('lodash');
+let base        = require('taskcluster-base');
+let taskcluster = require('taskcluster-client');
 
 // Maximum number runs allowed
-var MAX_RUNS_ALLOWED    = 50;
+const MAX_RUNS_ALLOWED = 50;
 
 /**
  * **Azure Queue Invariants**
@@ -60,7 +60,7 @@ var RUN_ID_PATTERN      = /^[1-9]*[0-9]+$/;
  * In this API implementation we shall assume the following context:
  * {
  *   Task:           // data.Task instance
- *   Artifacts:      // data.Task instance
+ *   Artifact:       // data.Artifact instance
  *   publicBucket:   // bucket instance for public artifacts
  *   privateBucket:  // bucket instance for private artifacts
  *   blobStore:      // BlobStore for azure artifacts
@@ -89,12 +89,30 @@ var api = new base.API({
   schemaPrefix:       'http://schemas.taskcluster.net/queue/v1/',
   params: {
     taskId:           SLUGID_PATTERN,
+    taskGroupId:      SLUGID_PATTERN,
     provisionerId:    GENERIC_ID_PATTERN,
     workerType:       GENERIC_ID_PATTERN,
     workerGroup:      GENERIC_ID_PATTERN,
     workerId:         GENERIC_ID_PATTERN,
-    runId:            RUN_ID_PATTERN
-  }
+    runId:            RUN_ID_PATTERN,
+  },
+  context: [
+    'Task',
+    'Artifact',
+    'TaskGroup',
+    'taskGroupExpiresExtension',
+    'TaskGroupMember',
+    'publicBucket',
+    'privateBucket',
+    'blobStore',
+    'publisher',
+    'validator',
+    'claimTimeout',
+    'queueService',
+    'regionResolver',
+    'publicProxies',
+    'credentials',
+  ],
 });
 
 // Export api
@@ -163,6 +181,58 @@ api.declare({
   });
 });
 
+
+/** List taskIds by taskGroupId */
+api.declare({
+  method: 'get',
+  route:  '/task-group/:taskGroupId/list',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name:   'listTaskGroup',
+  output: 'list-task-group-response.json#',
+  title:  "List Task Group",
+  description: [
+    "List taskIds of all tasks sharing the same `taskGroupId`.",
+    "",
+    "As a task-group main contain an unbounded number of tasks, this end-point",
+    "may return a `continuationToken`. To continue listing tasks you must",
+    "`listTaskGroup` again with the `continuationToken` as the query-string",
+    "option `continuationToken`.",
+    "",
+    "By default this end-point will try to return up to 1000 members in one",
+    "request. But it **may return less**, even if more tasks are available.",
+    "It may also return a `continuationToken` even though there are no more",
+    "results. However, you can only be sure to have seen all results if you",
+    "keep calling `listTaskGroup` with the last `continationToken` until you",
+    "get a result without a `continuationToken`.",
+    "",
+    "If you're not interested in listing all the members at once, you may",
+    "use the query-string option `limit` to return fewer.",
+  ].join('\n')
+}, async function(req, res) {
+  let taskGroupId   = req.params.taskGroupId;
+  let continuation  = req.query.continuationToken || null;
+  let limit         = parseInt(req.query.limit || 1000);
+
+  let data = await this.TaskGroupMember.query({
+    taskGroupId,
+    expires: base.Entity.op.greaterThanOrEqual(new Date()),
+  }, {continuation, limit});
+
+  let members = data.entries.map(member => member.taskId);
+
+  // Build result
+  let result = {taskGroupId, members};
+  if (data.continuation) {
+    result.continuationToken = data.continuation;
+  }
+
+  return res.reply(result);
+});
+
+
 /** Construct default values and validate dates */
 var patchAndValidateTaskDef = function(taskId, taskDef) {
   // Set taskGroupId to taskId if not provided
@@ -229,6 +299,60 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   taskDef.expires   = new Date(taskDef.expires).toJSON();
 
   return null;
+};
+
+/** Ensure the taskGroup exists and that membership is declared */
+let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
+  let taskGroupId = taskDef.taskGroupId;
+  let taskGroup = await ctx.TaskGroup.load({taskGroupId}, true);
+  let taskGroupExpiration = new Date(
+    new Date(taskDef.expires).getTime() +
+    ctx.taskGroupExpiresExtension * 1000
+  );
+  if (!taskGroup) {
+    taskGroup = await ctx.TaskGroup.create({
+      taskGroupId,
+      schedulerId:  taskDef.schedulerId,
+      expires:      taskGroupExpiration,
+    }).catch(err => {
+      // We only handle cases where the entity already exists
+      if (!err || err.code !== 'EntityAlreadyExists') {
+        throw err;
+      }
+      return ctx.TaskGroup.load({taskGroupId});
+    });
+  }
+  if (taskGroup.schedulerId !== taskDef.schedulerId) {
+    res.status(409).json({
+      message: 'taskGroupId: ' + taskGroupId + ' contains tasks with ' +
+               'schedulerId: ' + taskGroup.schedulerId + ' you cannot ' +
+               'insert tasks into it with schedulerId: ' + taskDef.schedulerId,
+      taskGroupId,
+      existingSchedulerId: taskGroup.schedulerId,
+      givenSchedulerId: taskDef.schedulerId,
+    });
+    return false;
+  }
+  // Update taskGroup.expires if necessary
+  await taskGroup.modify(taskGroup => {
+    if (taskGroup.expires.getTime() < new Date(taskDef.expires).getTime()) {
+      taskGroup.expires = taskGroupExpiration;
+    }
+  });
+
+  // Ensure the group membership relation is constructed too
+  await ctx.TaskGroupMember.create({
+    taskGroupId,
+    taskId,
+    expires: new Date(taskDef.expires),
+  }).catch(err => {
+    // If the entity already exists, then we're happy no need to crash
+    if (!err || err.code !== 'EntityAlreadyExists') {
+      throw err;
+    }
+  });
+
+  return true;
 };
 
 /** Create tasks */
@@ -302,6 +426,11 @@ api.declare({
   // Check scopes for priority
   if (taskDef.priority !== 'normal' &&
       !req.satisfies([['queue:task-priority:' + taskDef.priority]])) {
+    return;
+  }
+
+  // Ensure group membership is declared, and that schedulerId isn't conflicting
+  if (!await ensureTaskGroup(this, taskId, taskDef, res)) {
     return;
   }
 
@@ -460,6 +589,11 @@ api.declare({
   // Check scopes for priority
   if (taskDef.priority !== 'normal' &&
       !req.satisfies([['queue:task-priority:' + taskDef.priority]])) {
+    return;
+  }
+
+  // Ensure group membership is declared, and that schedulerId isn't conflicting
+  if (!await ensureTaskGroup(this, taskId, taskDef, res)) {
     return;
   }
 
