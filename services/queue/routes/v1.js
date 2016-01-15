@@ -772,7 +772,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/rerun',
   name:       'rerunTask',
-  stability:  base.API.stability.experimental,
+  stability:  base.API.stability.deprecated,
   scopes:     [
     [
       // Legacy scopes
