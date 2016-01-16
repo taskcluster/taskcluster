@@ -131,8 +131,6 @@ and reports back results to the queue.
           refreshURLsPrematurelySecs        The number of seconds before azure urls expire,
                                             that the generic worker should refresh them.
                                             [default: 310]
-          debug                             Logging filter; see
-                                            https://github.com/tj/go-debug [default: *]
           livelogExecutable                 Filepath of LiveLog executable to use; see
                                             https://github.com/taskcluster/livelog
           subdomain                         Subdomain to use in stateless dns name for live
