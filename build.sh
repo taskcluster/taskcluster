@@ -34,5 +34,6 @@ install solaris amd64
 find "${GOPATH}/bin" -name 'generic-worker*'
 
 go test -v ./...
+go vet ./...
 
 echo "Build successful!"

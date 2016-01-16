@@ -2,6 +2,7 @@ package main
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,11 +13,11 @@ import (
 )
 
 func deleteHomeDir(path string, user string) error {
-	debug("Removing home directory '" + path + "'...")
+	log.Println("Removing home directory '" + path + "'...")
 	err := os.RemoveAll(path)
 	if err != nil {
-		debug("WARNING: could not delete directory '" + path + "'")
-		debug("%v", err)
+		log.Println("WARNING: could not delete directory '" + path + "'")
+		log.Printf("%v", err)
 		return err
 	}
 	return nil
@@ -69,7 +70,7 @@ func (user *OSUser) createNewOSUser() error {
 	`
 
 	out, err := exec.Command("sudo", "/bin/bash", "-c", createUserScript, user.Name, user.HomeDir, user.Name+" User", user.Password).Output()
-	debug(string(out))
+	log.Println(string(out))
 	return err
 }
 

@@ -15,7 +15,6 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-client-go/queueevents"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
-	D "github.com/tj/go-debug"
 )
 
 var (
@@ -253,7 +252,6 @@ func TestUpload(t *testing.T) {
 		AccessToken:                accessToken,
 		Certificate:                certificate,
 		ClientId:                   clientId,
-		Debug:                      "*",
 		ProvisionerId:              provisionerId,
 		RefreshUrlsPrematurelySecs: 310,
 		WorkerGroup:                "test-worker-group",
@@ -264,7 +262,6 @@ func TestUpload(t *testing.T) {
 		PublicIP:                   net.ParseIP("127.0.0.1"),
 		Subdomain:                  "taskcluster-worker.net",
 	}
-	D.Enable(config.Debug)
 
 	// get the worker started
 	// killWorkerChan := runWorker()

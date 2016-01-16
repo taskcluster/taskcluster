@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -21,7 +22,7 @@ import (
 func processCommandOutput(callback func(line string), prog string, options ...string) error {
 	out, err := exec.Command(prog, options...).Output()
 	if err != nil {
-		debug("%v", err)
+		log.Printf("%v", err)
 		return err
 	}
 	for _, line := range strings.Split(string(out), "\r\n") {
@@ -32,8 +33,8 @@ func processCommandOutput(callback func(line string), prog string, options ...st
 }
 
 func startup() error {
-	debug("Detected Windows platform...")
-	// debug("Creating powershell script...")
+	log.Println("Detected Windows platform...")
+	// log.Println("Creating powershell script...")
 	// err := createRunAsUserScript("C:\\generic-worker\\runasuser.ps1") // hardcoded, but will go with bug 1176072
 	// if err != nil {
 	// 	return err
@@ -42,13 +43,13 @@ func startup() error {
 }
 
 func deleteHomeDir(path string, user string) error {
-	debug("Removing home directory '" + path + "'...")
+	log.Println("Removing home directory '" + path + "'...")
 
 	adminDeleteHomeDir := func(path string) error {
 		err := os.RemoveAll(path)
 		if err != nil {
-			debug("WARNING: could not delete directory '" + path + "'")
-			debug("%v", err)
+			log.Println("WARNING: could not delete directory '" + path + "'")
+			log.Printf("%v", err)
 			return err
 		}
 		return nil
@@ -58,8 +59,8 @@ func deleteHomeDir(path string, user string) error {
 	// passwordFile := filepath.Dir(path) + "\\" + user + "\\_Passw0rd"
 	// password, err := ioutil.ReadFile(passwordFile)
 	// if err != nil || string(password) == "" {
-	// 	debug("%#v", err)
-	// 	debug("Failed to read password file %v, (to delete dir %v) trying to remove with generic worker account...", passwordFile, path)
+	// 	log.Printf("%#v", err)
+	// 	log.Printf("Failed to read password file %v, (to delete dir %v) trying to remove with generic worker account...", passwordFile, path)
 	// 	return adminDeleteHomeDir(path)
 	// }
 	err := runCommands(false, []string{
@@ -67,8 +68,8 @@ func deleteHomeDir(path string, user string) error {
 		path,
 	})
 	if err != nil {
-		debug("%#v", err)
-		debug("Failed to remove %v with user %v, trying to remove with generic worker account instead...")
+		log.Printf("%#v", err)
+		log.Printf("Failed to remove %v with user %v, trying to remove with generic worker account instead...", path, user)
 		return adminDeleteHomeDir(path)
 	}
 	return nil
@@ -101,7 +102,7 @@ func (user *OSUser) createNewOSUser() error {
 }
 
 func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
-	debug("Forcefully creating directory " + filepath.Dir(user.HomeDir) + "...")
+	log.Println("Forcefully creating directory " + filepath.Dir(user.HomeDir) + "...")
 	// MkdirAll doesn't fail if dir already exists, therefore
 	// call MkdirAll on parent dir, and then Mkdir
 	err := os.MkdirAll(filepath.Dir(user.HomeDir), 0755)
@@ -135,7 +136,7 @@ func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
 	if !homeDirExisted && err != nil {
 		return err
 	}
-	debug("Creating Windows User " + user.Name + "...")
+	log.Println("Creating Windows User " + user.Name + "...")
 	userExisted, err := allowError(
 		"The account already exists",
 		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+user.HomeDir, "/y",
@@ -173,26 +174,26 @@ func generatePassword() string {
 
 func deleteExistingOSUsers() {
 	deleteHomeDirs()
-	debug("Looking for existing task users to delete...")
+	log.Println("Looking for existing task users to delete...")
 	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
 	if err != nil {
-		debug("WARNING: could not list existing Windows user accounts")
-		debug("%v", err)
+		log.Println("WARNING: could not list existing Windows user accounts")
+		log.Printf("%v", err)
 	}
 }
 
 func deleteHomeDirs() {
 	homeDirsParent, err := os.Open("C:\\Users")
 	if err != nil {
-		debug("WARNING: Could not open C:\\Users directory to find old home directories to delete")
-		debug("%v", err)
+		log.Println("WARNING: Could not open C:\\Users directory to find old home directories to delete")
+		log.Printf("%v", err)
 		return
 	}
 	defer homeDirsParent.Close()
 	fi, err := homeDirsParent.Readdir(-1)
 	if err != nil {
-		debug("WARNING: Could not read complete directory listing to find old home directories to delete")
-		debug("%v", err)
+		log.Println("WARNING: Could not read complete directory listing to find old home directories to delete")
+		log.Printf("%v", err)
 		// don't return, since we may have partial listings
 	}
 	for _, file := range fi {
@@ -215,11 +216,11 @@ func deleteHomeDirs() {
 func deleteOSUserAccount(line string) {
 	if strings.HasPrefix(line, "Task_") {
 		user := line
-		debug("Attempting to remove Windows user " + user + "...")
+		log.Println("Attempting to remove Windows user " + user + "...")
 		err := runCommands(false, []string{"net", "user", user, "/delete"})
 		if err != nil {
-			debug("WARNING: Could not remove Windows user account " + user)
-			debug("%v", err)
+			log.Println("WARNING: Could not remove Windows user account " + user)
+			log.Printf("%v", err)
 		}
 	}
 }
@@ -249,7 +250,7 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	// directory
 	if index == 0 {
 		for envVar, envValue := range task.Payload.Env {
-			debug("Setting env var: %v=%v", envVar, envValue)
+			log.Printf("Setting env var: %v=%v", envVar, envValue)
 			contents += "set " + envVar + "=" + envValue + "\r\n"
 		}
 		contents += "cd \"" + TaskUser.HomeDir + "\"" + "\r\n"
@@ -300,8 +301,8 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	// exit with stored exit code
 	contents += "exit /b %tcexitcode%\r\n"
 
-	debug("Generating script:")
-	debug(contents)
+	log.Println("Generating script:")
+	log.Println(contents)
 
 	// now generate the .bat script that runs all of this
 	err := ioutil.WriteFile(
@@ -323,9 +324,9 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 		0755,
 	)
 
-	debug("Script %q:", script)
-	debug("Contents:")
-	debug(string(fileContents))
+	log.Printf("Script %q:", script)
+	log.Println("Contents:")
+	log.Println(string(fileContents))
 
 	if err != nil {
 		return err
@@ -350,7 +351,7 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	cmd.Username = TaskUser.Name
 	cmd.Password = TaskUser.Password
 	cmd.Dir = TaskUser.HomeDir
-	debug("Running command: '" + strings.Join(command, "' '") + "'")
+	log.Println("Running command: '" + strings.Join(command, "' '") + "'")
 	log, err := os.Create(absLogFile)
 	if err != nil {
 		return err
@@ -390,7 +391,6 @@ func install(arguments map[string]interface{}) (err error) {
 	}
 	fmt.Println("User: " + user.Name + ", Password: " + user.Password + ", HomeDir: " + user.HomeDir)
 
-	config.Debug = "*"                      // TODO: temporary hack, can maybe drop
 	config.RefreshUrlsPrematurelySecs = 310 // TODO: temporary hack, can maybe drop
 	persistConfig(configFile)               // TODO: probably should load the config before persisting it
 	if err != nil {
@@ -413,7 +413,7 @@ func install(arguments map[string]interface{}) (err error) {
 // includes `errString` then true, is returned with no error. Otherwise false
 // is returned, with or without an error.
 func allowError(errString string, command string, args ...string) (bool, error) {
-	debug("Running command: '" + strings.Join(append([]string{command}, args...), "' '") + "'")
+	log.Println("Running command: '" + strings.Join(append([]string{command}, args...), "' '") + "'")
 	cmd := exec.Command(command, args...)
 	stderrBytes, err := Error(cmd)
 	if err != nil {
@@ -473,14 +473,14 @@ func deployService(user *OSUser, configFile string, nssm string, serviceName str
 func runCommands(allowFail bool, commands ...[]string) error {
 	var err error
 	for _, command := range commands {
-		debug("Running command: '" + strings.Join(command, "' '") + "'")
+		log.Println("Running command: '" + strings.Join(command, "' '") + "'")
 		cmd := exec.Command(command[0], command[1:]...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		err = cmd.Run()
 
 		if err != nil {
-			debug("%v", err)
+			log.Printf("%v", err)
 			if !allowFail {
 				return err
 			}

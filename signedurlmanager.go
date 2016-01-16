@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/queue"
@@ -34,8 +35,8 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		// TODO: not sure if this is the right thing to do. If Queue has an outage, maybe better to
 		// do expoenential backoff indefinitely?
 		if err != nil {
-			debug("Http response was:")
-			debug(callSummary.HttpResponseBody)
+			log.Println("Http response was:")
+			log.Println(callSummary.HttpResponseBody)
 			panic(err)
 		}
 		// Set reminder to update signed urls again when they are
@@ -45,11 +46,11 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		// iterations of this select statement, we read from this new
 		// channel.
 		refreshWait := time.Time(signedURLs.Expires).Sub(time.Now().Add(time.Second * time.Duration(prematurity)))
-		debug("Refreshing signed urls in %v", refreshWait.String())
+		log.Printf("Refreshing signed urls in %v", refreshWait.String())
 		updateMe = time.After(refreshWait)
 		for i, q := range signedURLs.Queues {
-			debug("  Priority (%v) Delete URL: %v", i+1, q.SignedDeleteUrl)
-			debug("  Priority (%v) Poll URL:   %v", i+1, q.SignedPollUrl)
+			log.Println("  Priority (%v) Delete URL: %v", i+1, q.SignedDeleteUrl)
+			log.Println("  Priority (%v) Poll URL:   %v", i+1, q.SignedPollUrl)
 		}
 	}
 	// Get signed urls for the first time...

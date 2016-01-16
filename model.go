@@ -22,7 +22,6 @@ type (
 	Config struct {
 		AccessToken                string `json:"accessToken"`
 		ClientId                   string `json:"clientId"`
-		Debug                      string `json:"debug"`
 		LiveLogCertificate         string `json:"livelogCertificate"`
 		LiveLogExecutable          string `json:"livelogExecutable"`
 		LiveLogKey                 string `json:"livelogKey"`

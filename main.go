@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -22,14 +23,10 @@ import (
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
-	D "github.com/tj/go-debug"
 	"github.com/xeipuuv/gojsonschema"
 )
 
 var (
-	// Used for logging based on DEBUG environment variable
-	// See github.com/tj/go-debug
-	debug = D.Debug("generic-worker")
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
 	TaskUser OSUser
@@ -151,8 +148,6 @@ and reports back results to the queue.
           refreshURLsPrematurelySecs        The number of seconds before azure urls expire,
                                             that the generic worker should refresh them.
                                             [default: 310]
-          debug                             Logging filter; see
-                                            https://github.com/tj/go-debug [default: *]
           livelogExecutable                 Filepath of LiveLog executable to use; see
                                             https://github.com/taskcluster/livelog
           subdomain                         Subdomain to use in stateless dns name for live
@@ -238,7 +233,6 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 
 	// first assign defaults
 	c := Config{
-		Debug:                      "*",
 		Subdomain:                  "taskcluster-worker.net",
 		ProvisionerId:              "aws-provisioner-v1",
 		LiveLogExecutable:          "livelog",
@@ -269,7 +263,6 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 		name       string
 		disallowed interface{}
 	}{
-		{value: c.Debug, name: "debug", disallowed: ""},
 		{value: c.ProvisionerId, name: "provisionerId", disallowed: ""},
 		{value: c.RefreshUrlsPrematurelySecs, name: "refreshURLsPrematurelySecs", disallowed: 0},
 		{value: c.AccessToken, name: "accessToken", disallowed: ""},
@@ -289,8 +282,6 @@ func loadConfig(filename string, queryUserData bool) (Config, error) {
 		}
 	}
 	// all required config set!
-	// now set DEBUG environment variable
-	D.Enable(c.Debug)
 	return c, nil
 }
 
@@ -328,7 +319,7 @@ func runWorker() chan<- bool {
 			waitASec := time.NewTimer(time.Second * 1)
 			taskFound := FindAndRunTask()
 			if !taskFound {
-				debug("No task claimed from any Azure queue...")
+				log.Println("No task claimed from any Azure queue...")
 			} else {
 				taskCleanup()
 			}
@@ -372,7 +363,7 @@ func FindAndRunTask() bool {
 		if err != nil {
 			// This can be any error at all occurs in queryAzureQueue that
 			// prevents us from claiming this task.  Log, and continue.
-			debug("%v", err)
+			log.Printf("%v", err)
 			continue
 		}
 		if task == nil {
@@ -386,7 +377,7 @@ func FindAndRunTask() bool {
 		// remaining urls for lower priority tasks that might still be left to
 		// loop through, since by the time we complete the first task, maybe
 		// higher priority jobs are waiting, so we need to poll afresh.
-		debug("Task found")
+		log.Println("Task found")
 
 		// from this point on we should "break" rather than "continue", since
 		// there could be more tasks on the same queue - we only "continue"
@@ -401,16 +392,16 @@ func FindAndRunTask() bool {
 		}
 		err = <-taskStatusUpdateErr
 		if err != nil {
-			debug("WARN: Not able to claim task %v", task.TaskId)
-			debug("%v", err)
+			log.Printf("WARN: Not able to claim task %v", task.TaskId)
+			log.Printf("%v", err)
 			break
 		}
 		task.setReclaimTimer()
 		task.fetchTaskDefinition()
 		err = task.validatePayload()
 		if err != nil {
-			debug("TASK EXCEPTION: Not able to validate task payload for task %v", task.TaskId)
-			debug("%#v", err)
+			log.Printf("TASK EXCEPTION: Not able to validate task payload for task %v", task.TaskId)
+			log.Printf("%#v", err)
 			taskStatusUpdate <- TaskStatusUpdate{
 				Task:   task,
 				Status: Errored,
@@ -428,7 +419,7 @@ func FindAndRunTask() bool {
 
 func reportPossibleError(err error) {
 	if err != nil {
-		debug("%v", err)
+		log.Printf("%v", err)
 	}
 }
 
@@ -444,7 +435,7 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	// Since we can only process one task at a time, grab only one.
 	resp, _, err := httpbackoff.Get(urlPair.SignedPollUrl + "&numofmessages=1")
 	if err != nil {
-		debug("%v", err)
+		log.Printf("%v", err)
 		return nil, err
 	}
 	// When executing a `GET` request to `signedPollUrl` from an Azure queue object,
@@ -473,12 +464,12 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	dec := xml.NewDecoder(reader)
 	err = dec.Decode(&queueMessagesList)
 	if err != nil {
-		debug("ERROR: not able to xml decode the response from the azure Queue:")
-		debug(string(fullBody))
+		log.Println("ERROR: not able to xml decode the response from the azure Queue:")
+		log.Println(string(fullBody))
 		return nil, err
 	}
 	if len(queueMessagesList.QueueMessages) == 0 {
-		debug("Zero tasks returned in Azure XML QueueMessagesList")
+		log.Println("Zero tasks returned in Azure XML QueueMessagesList")
 		return nil, nil
 	}
 	if size := len(queueMessagesList.QueueMessages); size > 1 {
@@ -518,11 +509,11 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	// that alert the operator if a message has been dequeued a significant
 	// number of times, for example 15 or more.
 	if qm.DequeueCount >= 15 {
-		debug("WARN: Queue Message with message id %v has been dequeued %v times!", qm.MessageId, qm.DequeueCount)
+		log.Printf("WARN: Queue Message with message id %v has been dequeued %v times!", qm.MessageId, qm.DequeueCount)
 		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
 		if deleteErr != nil {
-			debug("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
-			debug("%v", deleteErr)
+			log.Println("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
+			log.Printf("%v", deleteErr)
 		}
 	}
 
@@ -533,12 +524,12 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	if err != nil {
 		// try to delete from Azure, if it fails, nothing we can do about it
 		// not very serious - another worker will try to delete it
-		debug("ERROR: Not able to base64 decode the Message Text '" + qm.MessageText + "' in Azure QueueMessage response.")
-		debug("Deleting from Azure queue as other workers will have the same problem.")
+		log.Println("ERROR: Not able to base64 decode the Message Text '" + qm.MessageText + "' in Azure QueueMessage response.")
+		log.Println("Deleting from Azure queue as other workers will have the same problem.")
 		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
 		if deleteErr != nil {
-			debug("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
-			debug("%v", deleteErr)
+			log.Println("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
+			log.Printf("%v", deleteErr)
 		}
 		return nil, err
 	}
@@ -552,12 +543,12 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	// now populate remaining json fields of TaskRun from json string m
 	err = json.Unmarshal(m, &taskRun)
 	if err != nil {
-		debug("Not able to unmarshal json from base64 decoded MessageText '%v'", m)
-		debug("%v", err)
+		log.Printf("Not able to unmarshal json from base64 decoded MessageText '%v'", m)
+		log.Printf("%v", err)
 		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
 		if deleteErr != nil {
-			debug("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
-			debug("%v", deleteErr)
+			log.Println("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
+			log.Printf("%v", deleteErr)
 		}
 		return nil, err
 	}
@@ -571,7 +562,7 @@ func (task *TaskRun) deleteFromAzure() error {
 	if task == nil {
 		return fmt.Errorf("Cannot delete task from Azure - task is nil")
 	}
-	debug("Deleting task " + task.TaskId + " from Azure queue...")
+	log.Println("Deleting task " + task.TaskId + " from Azure queue...")
 	return deleteFromAzure(task.SignedURLPair.SignedDeleteUrl)
 }
 
@@ -611,11 +602,11 @@ func deleteFromAzure(deleteUrl string) error {
 	// reasons outlined above it's strongly advised that workers logs failures
 	// to delete messages from Azure queues.
 	if err != nil {
-		debug("Not able to delete task from azure queue (delete url: %v)", deleteUrl)
-		debug("%v", err)
+		log.Println("Not able to delete task from azure queue (delete url: %v)", deleteUrl)
+		log.Printf("%v", err)
 		return err
 	} else {
-		debug("Successfully deleted task from azure queue (delete url: %v) with http response code %v.", deleteUrl, resp.StatusCode)
+		log.Println("Successfully deleted task from azure queue (delete url: %v) with http response code %v.", deleteUrl, resp.StatusCode)
 	}
 	// no errors occurred, yay!
 	return nil
@@ -650,8 +641,8 @@ func (task *TaskRun) setReclaimTimer() {
 			}
 			err := <-taskStatusUpdateErr
 			if err != nil {
-				debug("TASK EXCEPTION due to reclaim failure")
-				debug("%v", err)
+				log.Println("TASK EXCEPTION due to reclaim failure")
+				log.Printf("%v", err)
 				taskStatusUpdate <- TaskStatusUpdate{
 					Task:   task,
 					Status: Errored,
@@ -673,7 +664,7 @@ func (task *TaskRun) fetchTaskDefinition() {
 
 func (task *TaskRun) validatePayload() error {
 	jsonPayload := task.Definition.Payload
-	debug("Json Payload: %s", jsonPayload)
+	log.Printf("Json Payload: %s", jsonPayload)
 	schemaLoader := gojsonschema.NewStringLoader(taskPayloadSchema())
 	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
@@ -681,11 +672,11 @@ func (task *TaskRun) validatePayload() error {
 		return err
 	}
 	if result.Valid() {
-		debug("The task payload is valid.")
+		log.Println("The task payload is valid.")
 	} else {
-		debug("TASK FAIL since the task payload is invalid. See errors:")
+		log.Println("TASK FAIL since the task payload is invalid. See errors:")
 		for _, desc := range result.Errors() {
-			debug("- %s", desc)
+			log.Printf("- %s", desc)
 		}
 		// Dealing with Invalid Task Payloads
 		// ----------------------------------
@@ -751,12 +742,12 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 		errClose := liveLog.LogWriter.Close()
 		if errClose != nil {
 			// no need to raise an exception
-			debug("WARN: could not close livelog writer: %s", errClose)
+			log.Printf("WARN: could not close livelog writer: %s", errClose)
 		}
 		errTerminate := liveLog.Terminate()
 		if errTerminate != nil {
 			// no need to raise an exception
-			debug("WARN: could not close livelog writer: %s", errTerminate)
+			log.Printf("WARN: could not close livelog writer: %s", errTerminate)
 		}
 	}(liveLog)
 	if err != nil {
@@ -774,13 +765,13 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 		return WorkerShutdown(err)
 	}
 
-	debug("Posting livelog redirect artifact")
+	log.Println("Posting livelog redirect artifact")
 	err = task.uploadLiveLog(index)
 	if err != nil {
 		return WorkerShutdown(err)
 	}
 
-	debug("Waiting for command to finish...")
+	log.Println("Waiting for command to finish...")
 	errCommand := task.Commands[index].osCommand.Wait()
 	err = task.uploadLog(task.Commands[index].logFile)
 	if errCommand != nil {
@@ -802,8 +793,8 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 
 func (task *TaskRun) run() error {
 
-	debug("Running task!")
-	debug(task.String())
+	log.Println("Running task!")
+	log.Println(task.String())
 
 	// Terminating the Worker Early
 	// ----------------------------
@@ -839,7 +830,7 @@ func (task *TaskRun) run() error {
 	for i, _ := range task.Payload.Command {
 		err := task.ExecuteCommand(i)
 		if err != nil {
-			debug("TASK EXCEPTION OR FAILURE: Error executing command %v: %#v", i, err.Error())
+			log.Printf("TASK EXCEPTION OR FAILURE: Error executing command %v: %#v", i, err.Error())
 			finalError = err.Cause
 			finalReason = err.Reason
 			finalTaskStatus = err.TaskStatus
@@ -850,9 +841,9 @@ func (task *TaskRun) run() error {
 	err := task.postTaskActions()
 
 	if err != nil {
-		debug("%#v", err)
+		log.Printf("%#v", err)
 		if finalError == nil {
-			debug("TASK EXCEPTION when running post-task actions")
+			log.Println("TASK EXCEPTION when running post-task actions")
 			finalTaskStatus = Errored
 			finalReason = "worker-shutdown" // internal error (log-concatenation-failure)
 			finalError = err
@@ -862,7 +853,7 @@ func (task *TaskRun) run() error {
 	for _, artifact := range task.PayloadArtifacts() {
 		err := task.uploadArtifact(artifact)
 		if err != nil {
-			debug("%#v", err)
+			log.Printf("%#v", err)
 			if finalError == nil {
 				switch t := err.(type) {
 				case *os.PathError:
@@ -872,16 +863,16 @@ func (task *TaskRun) run() error {
 				case httpbackoff.BadHttpResponseCode:
 					// if not a 5xx error, then not worth retrying...
 					if t.HttpResponseCode/100 != 5 {
-						debug("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact)
+						log.Printf("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact)
 						finalTaskStatus = Failed
 					} else {
-						debug("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact)
+						log.Printf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact)
 						finalTaskStatus = Errored
 						finalReason = "worker-shutdown" // internal error (upload-failure)
 					}
 					finalError = err
 				default:
-					debug("TASK EXCEPTION due to error of type %T", t)
+					log.Printf("TASK EXCEPTION due to error of type %T", t)
 					// could not upload for another reason
 					finalTaskStatus = Errored
 					finalReason = "worker-shutdown" // internal error (upload-failure)
@@ -900,7 +891,7 @@ func (task *TaskRun) run() error {
 	}
 	err = <-taskStatusUpdateErr
 	if err != nil && finalError == nil {
-		debug("%#v", err)
+		log.Printf("%#v", err)
 		finalError = err
 	}
 	return finalError
@@ -915,19 +906,19 @@ func (task *TaskRun) postTaskActions() error {
 	for _, command := range task.Commands {
 		// unrun commands won't have logFile set...
 		if command.logFile != "" {
-			debug("Looking for %v", command.logFile)
+			log.Printf("Looking for %v", command.logFile)
 			commandLog, err := os.Open(filepath.Join(TaskUser.HomeDir, command.logFile))
 			if err != nil {
-				debug("Not found")
+				log.Println("Not found")
 				continue // file does not exist - maybe command did not run
 			}
-			debug("Found")
+			log.Println("Found")
 			_, err = io.Copy(completeLogFile, commandLog)
 			if err != nil {
-				debug("Copy failed")
+				log.Println("Copy failed")
 				return err
 			}
-			debug("Copy succeeded")
+			log.Println("Copy succeeded")
 			err = commandLog.Close()
 			if err != nil {
 				return err
@@ -943,16 +934,16 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 	taskEnv := make([]string, 0)
 	for _, j := range workerEnv {
 		if !strings.HasPrefix(j, "TASKCLUSTER_ACCESS_TOKEN=") {
-			debug("Setting env var: %v", j)
+			log.Printf("Setting env var: %v", j)
 			taskEnv = append(taskEnv, j)
 		}
 	}
 	for i, j := range task.Payload.Env {
-		debug("Setting env var: %v=%v", i, j)
+		log.Printf("Setting env var: %v=%v", i, j)
 		taskEnv = append(taskEnv, i+"="+j)
 	}
 	cmd.Env = taskEnv
-	debug("Environment: %v", taskEnv)
+	log.Printf("Environment: %v", taskEnv)
 }
 
 // writes to the file configFile with the current generic worker configuration

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"mime"
 	"net/http"
 	"net/http/httputil"
@@ -116,27 +117,27 @@ func (artifact S3Artifact) ProcessResponse(resp interface{}) error {
 		if err != nil {
 			return nil, nil, err
 		}
-		debug("MimeType in put request: %v", artifact.MimeType)
+		log.Printf("MimeType in put request: %v", artifact.MimeType)
 		httpRequest.Header.Set("Content-Type", artifact.MimeType)
 		// request body could be a) binary and b) massive, so don't show it...
 		requestFull, dumpError := httputil.DumpRequestOut(httpRequest, false)
 		if dumpError != nil {
-			debug("Could not dump request, never mind...")
+			log.Println("Could not dump request, never mind...")
 		} else {
-			debug("Request")
-			debug(string(requestFull))
+			log.Println("Request")
+			log.Println(string(requestFull))
 		}
 		putResp, err := httpClient.Do(httpRequest)
 		return putResp, err, nil
 	}
 	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
-	debug("%v put requests issued to %v", putAttempts, response.PutUrl)
+	log.Printf("%v put requests issued to %v", putAttempts, response.PutUrl)
 	respBody, dumpError := httputil.DumpResponse(putResp, true)
 	if dumpError != nil {
-		debug("Could not dump response output, never mind...")
+		log.Println("Could not dump response output, never mind...")
 	} else {
-		debug("Response")
-		debug(string(respBody))
+		log.Println("Response")
+		log.Println(string(respBody))
 	}
 	return err
 }
@@ -157,7 +158,7 @@ func (s3Artifact S3Artifact) ResponseObject() interface{} {
 // not include log files)
 func (task *TaskRun) PayloadArtifacts() []Artifact {
 	artifacts := make([]Artifact, 0)
-	debug("Artifacts:")
+	log.Println("Artifacts:")
 	for _, artifact := range task.Payload.Artifacts {
 		base := BaseArtifact{
 			CanonicalPath: canonicalPath(artifact.Path),
@@ -177,7 +178,7 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 				// raised in incomingErr - *** I GUESS *** !!
 				relativePath, err := filepath.Rel(TaskUser.HomeDir, path)
 				if err != nil {
-					debug("WIERD ERROR - skipping file: %s", err)
+					log.Printf("WIERD ERROR - skipping file: %s", err)
 					return nil
 				}
 				b := BaseArtifact{
@@ -305,7 +306,7 @@ func (task *TaskRun) uploadLog(logFile string) error {
 }
 
 func (task *TaskRun) uploadArtifact(artifact Artifact) error {
-	debug("Uploading artifact: " + artifact.Base().CanonicalPath)
+	log.Println("Uploading artifact: " + artifact.Base().CanonicalPath)
 	task.Artifacts = append(task.Artifacts, artifact)
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {
@@ -319,23 +320,23 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 		&par,
 	)
 	if err != nil {
-		debug("Could not upload artifact: %v", artifact)
-		debug("%v", callSummary)
-		debug("%v", parsp)
-		debug("Request Headers")
+		log.Printf("Could not upload artifact: %v", artifact)
+		log.Printf("%v", callSummary)
+		log.Printf("%v", parsp)
+		log.Println("Request Headers")
 		callSummary.HttpRequest.Header.Write(os.Stdout)
-		debug("Request Body")
-		debug(callSummary.HttpRequestBody)
-		debug("Response Headers")
+		log.Println("Request Body")
+		log.Println(callSummary.HttpRequestBody)
+		log.Println("Response Headers")
 		callSummary.HttpResponse.Header.Write(os.Stdout)
-		debug("Response Body")
-		debug(callSummary.HttpResponseBody)
+		log.Println("Response Body")
+		log.Println(callSummary.HttpResponseBody)
 		return err
 	}
-	debug("Response body RAW")
-	debug(callSummary.HttpResponseBody)
-	debug("Response body INTERPRETED")
-	debug(string(*parsp))
+	log.Println("Response body RAW")
+	log.Println(callSummary.HttpResponseBody)
+	log.Println("Response body INTERPRETED")
+	log.Println(string(*parsp))
 	// unmarshal response into object
 	resp := artifact.ResponseObject()
 	err = json.Unmarshal(json.RawMessage(*parsp), resp)

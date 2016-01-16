@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,7 +13,7 @@ import (
 )
 
 func startup() error {
-	debug("Detected %s platform", runtime.GOOS)
+	log.Printf("Detected %s platform", runtime.GOOS)
 	return nil
 }
 
