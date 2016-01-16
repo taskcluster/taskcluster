@@ -50,8 +50,8 @@ func TestBadAuthScopesSignedURL(t *testing.T) {
 	}
 	switch e := err.(type) {
 	case httpbackoff.BadHttpResponseCode:
-		if statusCode := e.HttpResponseCode; statusCode != 401 {
-			t.Fatalf("Was expecting http status code to be 401, but was %v", statusCode)
+		if statusCode := e.HttpResponseCode; statusCode != 403 {
+			t.Fatalf("Was expecting http status code to be 403, but was %v", statusCode)
 		}
 	default:
 		t.Fatalf("Was expecting an error to be httpbackoff.BadHttpResponseCode, but instead was %T", err)
