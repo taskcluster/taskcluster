@@ -114,14 +114,7 @@ import (
 	"net/url"
 	"time"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
-	D "github.com/tj/go-debug"
 %%{imports}
-)
-
-var (
-	// Used for logging based on DEBUG environment variable
-	// See github.com/tj/go-debug
-	debug = D.Debug("` + api.apiDef.PackageName + `")
 )
 
 type ` + api.apiDef.Name + ` tcclient.ConnectionData
