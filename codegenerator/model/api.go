@@ -231,7 +231,7 @@ func (entry *APIEntry) getInputParamsAndQueryStringCode() (inputParams, queryCod
 		queryCode = "v := url.Values{}\n"
 		for _, j := range entry.Query {
 			inputParams += ", " + j
-			queryCode += `v.Add("` + j + `", ` + j + `)\n`
+			queryCode += "v.Add(\"" + j + "\", " + j + ")\n"
 		}
 	}
 	// all input parameters are strings, so if there are any, add the type to show it
