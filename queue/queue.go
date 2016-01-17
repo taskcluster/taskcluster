@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 14 Jan 2016 at 08:27:00 UTC. The code was generated
+// Sun, 17 Jan 2016 at 19:10:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -49,13 +49,6 @@ import (
 	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
-	D "github.com/tj/go-debug"
-)
-
-var (
-	// Used for logging based on DEBUG environment variable
-	// See github.com/tj/go-debug
-	debug = D.Debug("queue")
 )
 
 type Queue tcclient.ConnectionData
@@ -110,6 +103,35 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *tcclient.Call
 	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/status", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// List taskIds of all tasks sharing the same `taskGroupId`.
+//
+// As a task-group main contain an unbounded number of tasks, this end-point
+// may return a `continuationToken`. To continue listing tasks you must
+// `listTaskGroup` again with the `continuationToken` as the query-string
+// option `continuationToken`.
+//
+// By default this end-point will try to return up to 1000 members in one
+// request. But it **may return less**, even if more tasks are available.
+// It may also return a `continuationToken` even though there are no more
+// results. However, you can only be sure to have seen all results if you
+// keep calling `listTaskGroup` with the last `continationToken` until you
+// get a result without a `continuationToken`.
+//
+// If you're not interested in listing all the members at once, you may
+// use the query-string option `limit` to return fewer.
+//
+// See http://docs.taskcluster.net/queue/api-docs/#listTaskGroup
+func (myQueue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string) (*ListTaskGroupResponse, *tcclient.CallSummary, error) {
+	v := url.Values{}
+	v.Add("continuationToken", continuationToken)
+	v.Add("limit", limit)
+	cd := tcclient.ConnectionData(*myQueue)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task-group/"+url.QueryEscape(taskGroupId)+"/list", new(ListTaskGroupResponse), v)
+	return responseObject.(*ListTaskGroupResponse), callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -809,6 +831,35 @@ type (
 			// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items/properties/storageType
 			StorageType string `json:"storageType"`
 		} `json:"artifacts"`
+	}
+
+	// Response from a `listTaskGroup` request.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#
+	ListTaskGroupResponse struct {
+
+		// Opaque `continuationToken` to be given as query-string option if all the
+		// tasks in the task-group wasn't included in this result.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listTaskGroup` with `continuationToken`
+		// until you got a result without a `continuationToken`.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/continuationToken
+		ContinuationToken string `json:"continuationToken"`
+
+		// List of `taskId` for tasks in this task-group.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/members
+		Members []string `json:"members"`
+
+		// Identifier for the task-group being listed.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/taskGroupId
+		TaskGroupId string `json:"taskGroupId"`
 	}
 
 	// Response to a request for the number of pending tasks for a given

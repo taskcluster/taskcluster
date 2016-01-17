@@ -1,4 +1,4 @@
-Generated: 1452760030
+Generated: 1453057830
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4374,6 +4374,34 @@ Entry 1     =
     Entry Description = 'Get task status structure from `taskId`'
 Entry 2     =
     Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/task-group/<taskGroupId>/list'
+    Entry Args        = '[taskGroupId]'
+    Entry Query        = '[continuationToken limit]'
+    Entry Name        = 'listTaskGroup'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#'
+    Entry Title       = 'List Task Group'
+    Entry Description = 'List taskIds of all tasks sharing the same `taskGroupId`.
+
+As a task-group main contain an unbounded number of tasks, this end-point
+may return a `continuationToken`. To continue listing tasks you must
+`listTaskGroup` again with the `continuationToken` as the query-string
+option `continuationToken`.
+
+By default this end-point will try to return up to 1000 members in one
+request. But it **may return less**, even if more tasks are available.
+It may also return a `continuationToken` even though there are no more
+results. However, you can only be sure to have seen all results if you
+keep calling `listTaskGroup` with the last `continationToken` until you
+get a result without a `continuationToken`.
+
+If you're not interested in listing all the members at once, you may
+use the query-string option `limit` to return fewer.'
+Entry 3     =
+    Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/task/<taskId>'
     Entry Args        = '[taskId]'
@@ -4404,7 +4432,7 @@ for completed tasks you have posted.
 
 **Important** Any scopes the task requires are also required for creating
 the task. Please see the Request Payload (Task Definition) for details.'
-Entry 3     =
+Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/define'
@@ -4433,7 +4461,7 @@ the task. Please see the Request Payload (Task Definition) for details.
 
 **Note** this operation is **idempotent**, as long as you upload the same
 task definition as previously defined this operation is safe to retry.'
-Entry 4     =
+Entry 5     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/schedule'
@@ -4453,7 +4481,7 @@ claim it and resolved the task.
 **Note** this operation is **idempotent** and will not fail or complain
 if called with `taskId` that is already scheduled, or even resolved.
 To reschedule a task previously resolved, use `rerunTask`.'
-Entry 5     =
+Entry 6     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/rerun'
@@ -4477,7 +4505,7 @@ because a spot node died.
 **Remark** this operation is idempotent, if you try to rerun a task that
 isn't either `failed` or `completed`, this operation will just return the
 current task status.'
-Entry 6     =
+Entry 7     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/cancel'
@@ -4501,7 +4529,7 @@ with `queue.scheduleTask`, but a new run can be created with
 **Remark** this operation is idempotent, if you try to cancel a task that
 isn't `unscheduled`, `pending` or `running`, this operation will just
 return the current task status.'
-Entry 7     =
+Entry 8     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/poll-task-url/<provisionerId>/<workerType>'
@@ -4516,7 +4544,7 @@ Entry 7     =
     Entry Description = 'Get a signed URLs to get and delete messages from azure queue.
 Once messages are polled from here, you can claim the referenced task
 with `claimTask`, and afterwards you should always delete the message.'
-Entry 8     =
+Entry 9     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/claim'
@@ -4529,7 +4557,7 @@ Entry 8     =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
     Entry Title       = 'Claim task'
     Entry Description = 'claim a task, more to be added later...'
-Entry 9     =
+Entry 10    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/reclaim'
@@ -4542,7 +4570,7 @@ Entry 9     =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#'
     Entry Title       = 'Reclaim task'
     Entry Description = 'reclaim a task more to be added later...'
-Entry 10    =
+Entry 11    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/completed'
@@ -4555,7 +4583,7 @@ Entry 10    =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Report Run Completed'
     Entry Description = 'Report a task completed, resolving the run as `completed`.'
-Entry 11    =
+Entry 12    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/failed'
@@ -4574,7 +4602,7 @@ For example the task exited non-zero, or didn't produce expected output.
 Don't use this if the task couldn't be run because if malformed payload,
 or other unexpected condition. In these cases we have a task exception,
 which should be reported with `reportException`.'
-Entry 12    =
+Entry 13    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/exception'
@@ -4598,7 +4626,7 @@ failed instead of exception. You should `reportException` if,
 Do not use this to signal that some user-specified code crashed for any
 reason specific to this code. If user-specific code hits a resource that
 is temporarily unavailable worker should report task _failed_.'
-Entry 13    =
+Entry 14    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts/<name>'
@@ -4668,7 +4696,7 @@ Such as worker-host overwriting artifact created by worker-code.
 As a special case the `url` property on _reference artifacts_ can be
 updated. You should only use this to update the `url` property for
 reference artifacts your process has created.'
-Entry 14    =
+Entry 15    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts/<name>'
@@ -4691,7 +4719,7 @@ authorization is not necessary to fetch the artifact.
 stored externally. Either way, the response may not be JSON. So API
 client users might want to generate a signed URL for this end-point and
 use that URL with a normal HTTP client.'
-Entry 15    =
+Entry 16    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/artifacts/<name>'
@@ -4718,7 +4746,7 @@ use that URL with a normal HTTP client.
 **Remark**, this end-point is slightly slower than
 `queue.getArtifact`, so consider that if you already know the `runId` of
 the latest run. Otherwise, just us the most convenient API end-point.'
-Entry 16    =
+Entry 17    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts'
@@ -4731,7 +4759,7 @@ Entry 16    =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#'
     Entry Title       = 'Get Artifacts from Run'
     Entry Description = 'Returns a list of artifacts and associated meta-data for a given run.'
-Entry 17    =
+Entry 18    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/artifacts'
@@ -4745,7 +4773,7 @@ Entry 17    =
     Entry Title       = 'Get Artifacts from Latest Run'
     Entry Description = 'Returns a list of artifacts and associated meta-data for the latest run
 from the given task.'
-Entry 18    =
+Entry 19    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/pending/<provisionerId>/<workerType>'
@@ -4761,7 +4789,7 @@ Entry 18    =
 This probably the end-point that will remain after rewriting to azure
 queue storage...
 '
-Entry 19    =
+Entry 20    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -5153,6 +5181,66 @@ TypeName               = 'ListArtifactsResponse'
 IsInputSchema          = 'false'
 IsOutputSchema         = 'true'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#'
+
+
+http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#
+======================================================================
+Description            = 'Response from a `listTaskGroup` request.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#'
+Properties
+  Property 'continuationToken' =
+    Description            = 'Opaque `continuationToken` to be given as query-string option if all the
+    tasks in the task-group wasn't included in this result.
+    This property is only present if another request is necessary to fetch all
+    results. In practice the next request with a `continuationToken` may not
+    return additional results, but it can. Thus, you can only be sure to have
+    all the results if you've called `listTaskGroup` with `continuationToken`
+    until you got a result without a `continuationToken`.
+    '
+    Title                  = 'Continuation Token'
+    Type                   = 'string'
+    TypeName               = 'ContinuationToken'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/continuationToken'
+  Property 'members' =
+    Description            = 'List of `taskId` for tasks in this task-group.
+    '
+    Items
+      Description            = '`TaskId` for a task in the task-group being listed.
+      '
+      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+      Title                  = 'Task Identifier'
+      Type                   = 'string'
+      TypeName               = ''
+      IsInputSchema          = 'false'
+      IsOutputSchema         = 'false'
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/members/items'
+    Title                  = 'Members of the Task-Group'
+    Type                   = 'array'
+    TypeName               = 'Members'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/members'
+  Property 'taskGroupId' =
+    Description            = 'Identifier for the task-group being listed.
+    '
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+    Title                  = 'Task-Group Identifier'
+    Type                   = 'string'
+    TypeName               = 'TaskGroupId'
+    IsInputSchema          = 'false'
+    IsOutputSchema         = 'false'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/taskGroupId'
+Required               = '[taskGroupId members]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'List Task-Group Response'
+Type                   = 'object'
+TypeName               = 'ListTaskGroupResponse'
+IsInputSchema          = 'false'
+IsOutputSchema         = 'true'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#'
 
 
 http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#

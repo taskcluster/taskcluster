@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 14 Jan 2016 at 08:27:00 UTC. The code was generated
+// Sun, 17 Jan 2016 at 19:10:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package purgecache
 
@@ -43,13 +43,6 @@ import (
 	"net/url"
 
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
-	D "github.com/tj/go-debug"
-)
-
-var (
-	// Used for logging based on DEBUG environment variable
-	// See github.com/tj/go-debug
-	debug = D.Debug("purgecache")
 )
 
 type PurgeCache tcclient.ConnectionData
