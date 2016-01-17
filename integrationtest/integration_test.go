@@ -72,6 +72,7 @@ func TestDefineTask(t *testing.T) {
 	myQueue := queue.New(permaCreds)
 
 	taskId := slugid.Nice()
+	taskGroupId := slugid.Nice()
 	created := time.Now()
 	deadline := created.AddDate(0, 0, 1)
 	expires := deadline
@@ -105,7 +106,7 @@ func TestDefineTask(t *testing.T) {
 		},
 		Tags:        json.RawMessage(`{"createdForUser":"cbook@mozilla.com"}`),
 		Priority:    "high",
-		TaskGroupId: "dtwuF2n9S-i83G37V9eBuQ",
+		TaskGroupId: taskGroupId,
 		WorkerType:  "win2008-worker",
 	}
 
@@ -147,7 +148,7 @@ func TestDefineTask(t *testing.T) {
 	  "deadline": "` + deadline.UTC().Format("2006-01-02T15:04:05.000Z") + `",
 	  "expires":  "` + expires.UTC().Format("2006-01-02T15:04:05.000Z") + `",
 
-	  "taskGroupId": "dtwuF2n9S-i83G37V9eBuQ",
+	  "taskGroupId": "` + taskGroupId + `",
 	  "workerType":  "win2008-worker",
 	  "schedulerId": "go-test-test-scheduler",
 
