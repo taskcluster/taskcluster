@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -15,13 +16,6 @@ import (
 
 	"github.com/taskcluster/httpbackoff"
 	hawk "github.com/tent/hawk-go"
-	D "github.com/tj/go-debug"
-)
-
-var (
-	// Used for logging based on DEBUG environment variable
-	// See github.com/tj/go-debug
-	debug = D.Debug("http")
 )
 
 // CallSummary provides information about the underlying http request and
@@ -107,7 +101,7 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
-		debug("Making http request: %v", httpRequest)
+		log.Printf("Making http request: %v", httpRequest)
 		resp, err := httpClient.Do(httpRequest)
 		return resp, err, nil
 	}
