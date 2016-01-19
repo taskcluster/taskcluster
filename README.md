@@ -63,7 +63,7 @@ Credentials may also be passed using environment variables:
 * `TASKCLUSTER_ACCESS_TOKEN`
 * `TASKCLUSTER_CERITIFICATE` (when using temporary credentials)
 
-As noted above, please do not use these environment variables in production,
+**Please do not use these environment variables in production**,
 instead use command line options as described above.
 
 ## Examples
