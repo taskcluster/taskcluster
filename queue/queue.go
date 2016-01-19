@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Sun, 17 Jan 2016 at 19:10:00 UTC. The code was generated
+// Tue, 19 Jan 2016 at 22:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -81,8 +81,6 @@ func New(credentials *tcclient.Credentials) *Queue {
 	return &myQueue
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This end-point will return the task-definition. Notice that the task
 // definition may have been modified by queue, if an optional property isn't
 // specified the queue may provide a default value.
@@ -94,8 +92,6 @@ func (myQueue *Queue) Task(taskId string) (*TaskDefinitionResponse, *tcclient.Ca
 	return responseObject.(*TaskDefinitionResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Get task status structure from `taskId`
 //
 // See http://docs.taskcluster.net/queue/api-docs/#status
@@ -105,11 +101,9 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *tcclient.Call
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // List taskIds of all tasks sharing the same `taskGroupId`.
 //
-// As a task-group main contain an unbounded number of tasks, this end-point
+// As a task-group may contain an unbounded number of tasks, this end-point
 // may return a `continuationToken`. To continue listing tasks you must
 // `listTaskGroup` again with the `continuationToken` as the query-string
 // option `continuationToken`.
@@ -134,8 +128,6 @@ func (myQueue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string
 	return responseObject.(*ListTaskGroupResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Create a new task, this is an **idempotent** operation, so repeat it if
 // you get an internal server error or network connection is dropped.
 //
@@ -168,8 +160,6 @@ func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) 
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Define a task without scheduling it. This API end-point allows you to
 // upload a task definition without having scheduled. The task won't be
 // reported as pending until it is scheduled, see the scheduleTask API
@@ -200,8 +190,6 @@ func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) 
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // If you have define a task using `defineTask` API end-point, then you
 // can schedule the task to be scheduled using this method.
 // This will announce the task as pending and workers will be allowed, to
@@ -222,7 +210,7 @@ func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *tcclien
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Stability: *** DEPRECATED ***
 //
 // This method _reruns_ a previously resolved task, even if it was
 // _completed_. This is useful if your task completes unsuccessfully, and
@@ -248,8 +236,6 @@ func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *tcclient.C
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This method will cancel a task that is either `unscheduled`, `pending` or
 // `running`. It will resolve the current run as `exception` with
 // `reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.
@@ -274,8 +260,6 @@ func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *tcclient.
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Get a signed URLs to get and delete messages from azure queue.
 // Once messages are polled from here, you can claim the referenced task
 // with `claimTask`, and afterwards you should always delete the message.
@@ -303,8 +287,6 @@ func (myQueue *Queue) PollTaskUrls_SignedURL(provisionerId, workerType string, d
 	return (&cd).SignedURL("/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // claim a task, more to be added later...
 //
 // Required scopes:
@@ -318,8 +300,6 @@ func (myQueue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest)
 	return responseObject.(*TaskClaimResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // reclaim a task more to be added later...
 //
 // Required scopes:
@@ -333,8 +313,6 @@ func (myQueue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, *
 	return responseObject.(*TaskReclaimResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Report a task completed, resolving the run as `completed`.
 //
 // Required scopes:
@@ -348,8 +326,6 @@ func (myQueue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Report a run failed, resolving the run as `failed`. Use this to resolve
 // a run that failed because the task specific code behaved unexpectedly.
 // For example the task exited non-zero, or didn't produce expected output.
@@ -369,8 +345,6 @@ func (myQueue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, *
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Resolve a run as _exception_. Generally, you will want to report tasks as
 // failed instead of exception. You should `reportException` if,
 //
@@ -395,8 +369,6 @@ func (myQueue *Queue) ReportException(taskId, runId string, payload *TaskExcepti
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This API end-point creates an artifact for a specific run of a task. This
 // should **only** be used by a worker currently operating on this task, or
 // from a process running within the task (ie. on the worker).
@@ -467,8 +439,6 @@ func (myQueue *Queue) CreateArtifact(taskId, runId, name string, payload *PostAr
 	return responseObject.(*PostArtifactResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Get artifact by `<name>` from a specific run.
 //
 // **Public Artifacts**, in-order to get an artifact you need the scope
@@ -502,8 +472,6 @@ func (myQueue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration
 	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Get artifact by `<name>` from the last run of a task.
 //
 // **Public Artifacts**, in-order to get an artifact you need the scope
@@ -564,8 +532,6 @@ func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse
 	return responseObject.(*ListArtifactsResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Documented later...
 // This probably the end-point that will remain after rewriting to azure
 // queue storage...
