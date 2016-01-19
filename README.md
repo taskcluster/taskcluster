@@ -81,7 +81,7 @@ taskcluster-proxy 2szAy1JzSr6pyjVCdiTcoQ -p 60024
 #### Fetch a task
 
 ```sh
-curl localhost:60024/v1/task/2szAy1JzSr6pyjVCdiTcoQ
+curl localhost:60024/queue/v1/task/2szAy1JzSr6pyjVCdiTcoQ
 ```
 
 #### Create a signed url for the given task (bewit)
