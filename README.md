@@ -82,27 +82,20 @@ docker image.
 ./build.sh user/taskcluster-proxy-server
 ```
 
-## Download via `go get`
+## Download and install via `go get`
 
 ```sh
 go get github.com/taskcluster/taskcluster-proxy
 ```
 
-## Hacking
-
-Follow usual go path setup + godeps.
-
-```sh
-# inside the project root which will look something like:
-# $GOPATH/src/github.com/taskcluster/taskcluster-proxy
-go build
-```
-
 ## Tests
 
-To run the full test suites you need a [taskcluster auth](http://auth.taskcluster.net/)
-token with at least scopes to the auth server `"auth:*"`. The
-credentials are expected to be in the `TASKCLUSTER_CLIENT_ID` and
-`TASKCLUSTER_ACCESS_TOKEN` environment variables (and optionally
-the `TASKCLUSTER_CERTIFICATE` environment variable if using
-temporary credentials).
+To run the full test suites you need taskcluster credentials with at least the
+following scopes:
+
+  * `auth:azure-table-access:fakeaccount/DuMmYtAbLe`
+  * `queue:get-artifact:private/build/sources.xml`
+
+The credentials are expected to be in the `TASKCLUSTER_CLIENT_ID` and
+`TASKCLUSTER_ACCESS_TOKEN` environment variables (and optionally the
+`TASKCLUSTER_CERTIFICATE` environment variable if using temporary credentials).
