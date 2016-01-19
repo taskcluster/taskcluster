@@ -178,10 +178,16 @@ function loader(componentDirectory, virtualComponents = []) {
 
   return function(target, options = {}) {
     options = _.clone(options);
+    if (typeof target !== 'string') {
+      debug(`Target is type ${typeof target}, not string`);
+    }
     assume(target).is.a('string');
     // Check that all virtual components are defined
     assume(options).is.an('object');
     for (let vComp of virtualComponents) {
+      if (!options[vComp]) {
+        debug(`Requested component ${vComp} does not exist in loader`);
+      }
       assume(options[vComp]).exists();
     }
 
