@@ -2,14 +2,11 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"net/http/httputil"
 	"os"
 	"testing"
 	"time"
@@ -40,21 +37,6 @@ type ScopesResponse struct {
 	ClientId       string   `json:"clientId"`
 	ExpandedScopes []string `json:"expandedScopes"`
 	Expires        string   `json:"expires"`
-}
-
-// Decode a json response from the server..
-func readJson(http *http.Response) (*ScopesResponse, error) {
-	scopesResponse := new(ScopesResponse)
-	resp, err := httputil.DumpResponse(http, true)
-	if err != nil {
-		return nil, err
-	}
-	json := json.NewDecoder(http.Body)
-	err = json.Decode(scopesResponse)
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("HTTP response could not be read into a Scopes Response:\n%s\n\nHTTP Body:\n%s", err, resp))
-	}
-	return scopesResponse, nil
 }
 
 func skipIfNoPermCreds(t *testing.T) {
