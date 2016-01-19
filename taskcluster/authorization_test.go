@@ -199,8 +199,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 			defer resp.Body.Close()
 
 			if resp.StatusCode != statusCode {
-				// protectedRequest := regexp.MustCompile(`([a-z]*)="[^"]*"`).ReplaceAllString(string(reqBytes), `$1="***********"`)
-				protectedRequest := string(reqBytes)
+				protectedRequest := regexp.MustCompile(`([a-z]*)="[^"]*"`).ReplaceAllString(string(reqBytes), `$1="***********"`)
 				t.Logf("Expected delgated request to fail with HTTP %v since it has no scopes - but got HTTP %v", statusCode, resp.StatusCode)
 				t.Logf("Request sent:\n%s", protectedRequest)
 				respBody, err := ioutil.ReadAll(resp.Body)
