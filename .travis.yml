@@ -22,11 +22,11 @@ before_install:
 - go get golang.org/x/tools/cmd/vet
 - go get github.com/pierrre/gotestcover
 script:
-- go test -v ./...
+# need to test without gotestcover since error code is not reliable for gotestcover
+- "test $GIMME_OS.$GIMME_ARCH = linux.amd64 && go test -v ./..."
 after_script:
-- "${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report ./..."
-- go tool cover -func=coverage.report
-- "${HOME}/gopath/bin/goveralls -coverprofile=coverage.report -service=travis-ci"
+# using gotestcover means tests get run again, but need to do this since exit code of gotestcover is unreliable
+- "if test $GIMME_OS.$GIMME_ARCH = linux.amd64; ${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report ./...; go tool cover -func=coverage.report; ${HOME}/gopath/bin/goveralls -coverprofile=coverage.report -service=travis-ci; fi"
 notifications:
   irc:
     channels:
