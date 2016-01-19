@@ -200,8 +200,8 @@ func getExtHeader(credentials *Credentials) (header string, err error) {
 	return "", nil
 }
 
-// ExtHeader represents the authentication/authorization data that is encoded
-// in the ext field inside the base64 decoded Authorization HTTP header in
+// ExtHeader represents the authentication/authorization data that is contained
+// in the ext field inside the base64 decoded `Authorization` HTTP header in
 // outgoing Hawk HTTP requests.
 type ExtHeader struct {
 	Certificate *Certificate `json:"certificate,omitempty"`
