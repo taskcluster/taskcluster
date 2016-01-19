@@ -25,6 +25,7 @@ var cryptiles     = require('cryptiles');
 var taskcluster   = require('taskcluster-client');
 var Validator     = require('schema-validator-publisher').Validator;
 var errors        = require('./errors');
+var typeis        = require('type-is');
 
 // Default baseUrl for authentication server
 var AUTH_BASE_URL = 'https://auth.taskcluster.net/v1';
@@ -105,7 +106,7 @@ var schema = function(validator, options) {
   return function(req, res, next) {
     // If input schema is defined we need to validate the input
     if (options.input !== undefined && !options.skipInputValidation) {
-      if (req.headers['content-type'] !== 'application/json') {
+      if (!typeis(req, 'application/json')) {
         return res.reportError(
           'MalformedPayload',
           "Payload must be JSON with content-type: application/json " +
