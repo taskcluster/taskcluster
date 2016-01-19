@@ -13,13 +13,16 @@ script:
 # test, and only run again with coverage in `after_script` section
 - go test -v ./...
 after_script:
-- "${GOPATH}/bin/gotestcover" -v -coverprofile=coverage.report ./...
+- "${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report ./..."
 - go tool cover -func=coverage.report
 - "${HOME}/gopath/bin/goveralls -coverprofile=coverage.report -service=travis-ci"
 notifications:
   irc:
     channels:
-    - irc.mozilla.org#taskcluster-bots
+    # encrpyt channel name to get around issue
+    # https://github.com/travis-ci/travis-ci/issues/1094
+    # encrpyted string was "irc.mozilla.org#taskcluster-bots"
+    - secure: "aYfRwI+g4L9xkUXXKWFx7TuR4TojGVjnUWEx74TvrrAeNqJd1+9vZdtohncQxvArpx0gRHVfVc6n2AZoBNUgo2dSqTBWVwtUQfGf0JyQddS6MdTJzHS2aoNgGRWUwRznjZzloD0eZZfeW+/nbYsfSS12Edl3YNT4X8/rhlHVtO4="
     on_success: always
     on_failure: always
     template:
@@ -27,7 +30,3 @@ notifications:
     - "Change view : %{compare_url}"
     - "Build details : %{build_url}"
     - "Commit message : %{commit_message}"
-env:
-  global:
-  - secure: "b/KGFHfQ5TxHAb/tJN4X7tbfWhTvDph8QINiC0NbaYd6R1POIKxSo12w5t/ZPZKKB18Dr6k0XZhqNxOx7hUHpj9wEiB82+zkPHsYAtadhCfojYfU3uS7uslopdauW215CcTTVERopDkid+jLVE02k/gd01AlJbB3gIFFjAA1T4k="
-  - secure: "V37WMzSuRWd2U8CgwB+p4IyXJ3jdKlJ7p0K3ITv6gtPUC/2v0WSXTU5ikJc2zjOf0irwZgAzHIvHalwULvpKBXbDSIl6JAR0eB6TO8+Tmf/RxhKPyS0tYpgVHvmO2bbHs6B0ArtwQv92FOoj8dev/mOd3+bLeJ0844wUDA15UMU="
