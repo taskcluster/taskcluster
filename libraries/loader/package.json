@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-loader",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "a component loader for taskcluster",
   "main": "lib/loader.js",
   "directories": {
