@@ -94,18 +94,13 @@ func main() {
 		log.Fatalf("Could not fetch taskcluster task '%s' : %s", taskId, err)
 	}
 
-	scopes := append(additionalScopes, task.Scopes...)
+	creds.AuthorizedScopes = append(additionalScopes, task.Scopes...)
 
-	log.Println("Proxy with scopes: ", scopes)
+	log.Println("Proxy with scopes: ", creds.AuthorizedScopes)
 
 	routes := Routes(tcclient.ConnectionData{
 		Authenticate: true,
-		Credentials: &tcclient.Credentials{
-			ClientId:         clientId.(string),
-			AccessToken:      accessToken.(string),
-			Certificate:      certificate.(string),
-			AuthorizedScopes: scopes,
-		},
+		Credentials:  creds,
 	})
 
 	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), &routes)
