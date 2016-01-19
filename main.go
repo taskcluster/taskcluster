@@ -8,10 +8,11 @@ import (
 	"strconv"
 
 	docopt "github.com/docopt/docopt-go"
-	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
+	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
-var version = "Taskcluster proxy 1.0"
+var version = "Taskcluster proxy 1.1.0"
 var usage = `
 Taskcluster authentication proxy. By default this pulls all scopes from a
 particular task but additional scopes may be added by specifying them after the
@@ -27,6 +28,7 @@ task id.
     -p --port <port>                Port to bind the proxy server to [default: 8080].
     --client-id <clientId>          Use a specific auth.taskcluster hawk client id [default: ].
     --access-token <accessToken>    Use a specific auth.taskcluster hawk access token [default: ].
+    --certificate <certificate>     Use a specific auth.taskcluster hawk certificate [default: ].
 `
 
 func main() {
@@ -59,7 +61,12 @@ func main() {
 		accessToken = os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
 	}
 
-	log.Printf("%v - %v", clientId, accessToken)
+	certificate := arguments["--certificate"]
+	if certificate == nil || certificate == "" {
+		certificate = os.Getenv("TASKCLUSTER_CERTIFICATE")
+	}
+
+	log.Printf("clientId: '%v'\naccessToken: '%v'\ncertificate: '%v'\n", clientId, accessToken, certificate)
 
 	// Ensure we have credentials our auth proxy is pretty much useless without
 	// it.
@@ -69,24 +76,34 @@ func main() {
 		)
 	}
 
-	// Fetch the task to get the scopes we should be using...
-	task, err := tc.GetTask(taskId)
+	if certificate == "" {
+		log.Println("Warning - no taskcluster certificate set - assuming permanent credentials are being used")
+	}
 
+	creds := &tcclient.Credentials{
+		ClientId:    clientId.(string),
+		AccessToken: accessToken.(string),
+		Certificate: certificate.(string),
+	}
+
+	myQueue := queue.New(creds)
+
+	// Fetch the task to get the scopes we should be using...
+	task, _, err := myQueue.Task(taskId)
 	if err != nil {
 		log.Fatalf("Could not fetch taskcluster task '%s' : %s", taskId, err)
 	}
 
-	scopes := append(additionalScopes, task.Scopes...)
+	creds.AuthorizedScopes = append(additionalScopes, task.Scopes...)
 
-	log.Println("Proxy with scopes: ", scopes)
+	log.Println("Proxy with scopes: ", creds.AuthorizedScopes)
 
-	routes := Routes{
-		Scopes:      scopes,
-		ClientId:    clientId.(string),
-		AccessToken: accessToken.(string),
-	}
+	routes := Routes(tcclient.ConnectionData{
+		Authenticate: true,
+		Credentials:  creds,
+	})
 
-	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), routes)
+	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), &routes)
 	if startError != nil {
 		log.Fatal(startError)
 	}
