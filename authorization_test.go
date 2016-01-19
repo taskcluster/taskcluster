@@ -33,12 +33,6 @@ func sharedAccessSignature() string {
 
 type IntegrationTest func(t *testing.T, creds *tcclient.Credentials)
 
-type ScopesResponse struct {
-	ClientId       string   `json:"clientId"`
-	ExpandedScopes []string `json:"expandedScopes"`
-	Expires        string   `json:"expires"`
-}
-
 func skipIfNoPermCreds(t *testing.T) {
 	if permCredentials.ClientId == "" {
 		t.Skip("TASKCLUSTER_CLIENT_ID not set - skipping test")
