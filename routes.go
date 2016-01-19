@@ -1,34 +1,26 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
+	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
 )
 
-type Routes struct {
-	// Client ID used to authenticate all proxy requests.
-	ClientId string
-
-	// Access Token used to authenticate all proxy requests.
-	AccessToken string
-
-	// Certificate used to authenticate proxy requests.
-	Certificate string
-
-	// Scopes to use in the delegating authentication.
-	Scopes []string
-}
+type Routes tcclient.ConnectionData
 
 var tcServices = tc.NewServices()
 var httpClient = &http.Client{}
 
-func (self Routes) signUrl(res http.ResponseWriter, req *http.Request) {
+func (self *Routes) signUrl(res http.ResponseWriter, req *http.Request) {
 	// Using ReadAll could be sketchy here since we are reading unbounded data
 	// into memory...
 	body, err := ioutil.ReadAll(req.Body)
@@ -40,7 +32,8 @@ func (self Routes) signUrl(res http.ResponseWriter, req *http.Request) {
 	}
 
 	urlString := strings.TrimSpace(string(body))
-	bewitUrl, err := tc.Bewit(self.ClientId, self.AccessToken, self.Certificate, urlString)
+	cd := tcclient.ConnectionData(*self)
+	bewitUrl, err := (&cd).SignedURL(urlString, nil, time.Hour*1)
 
 	if err != nil {
 		res.WriteHeader(500)
@@ -49,13 +42,13 @@ func (self Routes) signUrl(res http.ResponseWriter, req *http.Request) {
 	}
 
 	headers := res.Header()
-	headers.Set("Location", bewitUrl)
+	headers.Set("Location", bewitUrl.String())
 	res.WriteHeader(303)
-	fmt.Fprintf(res, bewitUrl)
+	fmt.Fprintf(res, bewitUrl.String())
 }
 
 // Routes implements the `http.Handler` interface
-func (self Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	// A special case for the proxy is returning a bewit signed url.
 	if req.URL.Path[0:6] == "/bewit" {
@@ -73,59 +66,46 @@ func (self Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Copy method and body over to the proxy request.
 	log.Printf("Proxying %s | %s | %s", req.URL, req.Method, targetPath)
-	proxyReq, err := http.NewRequest(req.Method, targetPath.String(), req.Body)
+
+	var body []byte
+	if req.Body != nil {
+		body, err = ioutil.ReadAll(req.Body)
+		// If we fail to create a request notify the client.
+		if err != nil {
+			res.WriteHeader(500)
+			fmt.Fprintf(res, "Failed to generate proxy request (could not read http body) - %s", err)
+			return
+		}
+	}
+
+	cd := tcclient.ConnectionData(*self)
+	_, cs, err := (&cd).APICall(json.RawMessage(body), req.Method, targetPath.String(), new(json.RawMessage), nil)
 	// If we fail to create a request notify the client.
 	if err != nil {
-		res.WriteHeader(500)
-		fmt.Fprintf(res, "Failed to generate proxy request: %s", err)
-		return
-	}
-
-	// Copy all headers over to the proxy request.
-	for key, _ := range req.Header {
-		// Do not forward connection!
-		if key == "Connection" || key == "Host" {
-			continue
+		switch err.(type) {
+		case httpbackoff.BadHttpResponseCode:
+			// nothing extra to do - header and body will be proxied back
+		default:
+			res.WriteHeader(500)
+			fmt.Fprintf(res, "Failed during proxy request: %s", err)
+			return
 		}
-
-		proxyReq.Header.Set(key, req.Header.Get(key))
-	}
-
-	// Sign the proxy request with our credentials.
-	auth, err := tc.AuthorizationDelegate(
-		self.ClientId, self.AccessToken, self.Certificate, self.Scopes, proxyReq,
-	)
-	if err != nil {
-		res.WriteHeader(500)
-		fmt.Fprintf(res, "Failed to sign proxy request")
-		return
-	}
-	proxyReq.Header.Set("Authorization", auth)
-
-	// Issue the proxy request...
-	proxyResp, err := httpClient.Do(proxyReq)
-
-	if err != nil {
-		res.WriteHeader(500)
-		fmt.Fprintf(res, "Failed during proxy request: %s", err)
-		return
 	}
 
 	// Map the headers from the proxy back into our proxyResponse
 	headersToSend := res.Header()
-	for key, _ := range proxyResp.Header {
-		headersToSend.Set(key, proxyResp.Header.Get(key))
+	for key, _ := range cs.HttpResponse.Header {
+		headersToSend.Set(key, cs.HttpResponse.Header.Get(key))
 	}
 
 	headersToSend.Set("X-Taskcluster-Endpoint", targetPath.String())
 	headersToSend.Set("X-Taskcluster-Proxy-Version", version)
 
 	// Write the proxyResponse headers and status.
-	res.WriteHeader(proxyResp.StatusCode)
+	res.WriteHeader(cs.HttpResponse.StatusCode)
 
 	// Proxy the proxyResponse body from the endpoint to our response.
-	io.Copy(res, proxyResp.Body)
-	proxyResp.Body.Close()
+	io.Copy(res, cs.HttpResponse.Body)
+	cs.HttpResponse.Body.Close()
 }

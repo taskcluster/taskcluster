@@ -8,7 +8,8 @@ import (
 	"strconv"
 
 	docopt "github.com/docopt/docopt-go"
-	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
+	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
 var version = "Taskcluster proxy 1.1.0"
@@ -79,9 +80,16 @@ func main() {
 		log.Println("Warning - no taskcluster certificate set - assuming permanent credentials are being used")
 	}
 
-	// Fetch the task to get the scopes we should be using...
-	task, err := tc.GetTask(taskId)
+	creds := &tcclient.Credentials{
+		ClientId:    clientId.(string),
+		AccessToken: accessToken.(string),
+		Certificate: certificate.(string),
+	}
 
+	myQueue := queue.New(creds)
+
+	// Fetch the task to get the scopes we should be using...
+	task, _, err := myQueue.Task(taskId)
 	if err != nil {
 		log.Fatalf("Could not fetch taskcluster task '%s' : %s", taskId, err)
 	}
@@ -90,14 +98,17 @@ func main() {
 
 	log.Println("Proxy with scopes: ", scopes)
 
-	routes := Routes{
-		Scopes:      scopes,
-		ClientId:    clientId.(string),
-		AccessToken: accessToken.(string),
-		Certificate: certificate.(string),
-	}
+	routes := Routes(tcclient.ConnectionData{
+		Authenticate: true,
+		Credentials: &tcclient.Credentials{
+			ClientId:         clientId.(string),
+			AccessToken:      accessToken.(string),
+			Certificate:      certificate.(string),
+			AuthorizedScopes: scopes,
+		},
+	})
 
-	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), routes)
+	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), &routes)
 	if startError != nil {
 		log.Fatal(startError)
 	}
