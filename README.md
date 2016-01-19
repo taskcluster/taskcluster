@@ -99,3 +99,18 @@ following scopes:
 The credentials are expected to be in the `TASKCLUSTER_CLIENT_ID` and
 `TASKCLUSTER_ACCESS_TOKEN` environment variables (and optionally the
 `TASKCLUSTER_CERTIFICATE` environment variable if using temporary credentials).
+
+## Making a release
+
+This process needs to be automated. Just documenting it now as I work it out. =)
+
+1) Choose an appropriate version number, *X.Y.Z*
+2) Update version number in `main.go`, commit it
+3) `git tag vX.Y.Z`
+4) `git push; git push --tags`
+5) Wait for release to magically appear [here](https://github.com/taskcluster/taskcluster-proxy/releases) thanks to travis.
+6) Start docker daemon, if not already running (e.g. `boot2docker start`)
+7) `./build.sh taskcluster/taskcluster-proxy:X.Y.Z`
+8) `./build.sh taskcluster/taskcluster-proxy:latest`
+9) `docker push taskcluster/taskcluster-proxy:X.Y.Z`
+10) `docker push taskcluster/taskcluster-proxy:latest`
