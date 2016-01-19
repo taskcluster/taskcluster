@@ -115,3 +115,4 @@ This process needs to be automated. Just documenting it now as I work it out. =)
 9. `./build.sh taskcluster/taskcluster-proxy:latest`
 10. `docker push taskcluster/taskcluster-proxy:X.Y.Z` (no `v` prefix in version)
 11. `docker push taskcluster/taskcluster-proxy:latest`
+12. Confirm releases appear [here](https://hub.docker.com/r/taskcluster/taskcluster-proxy/tags/)
