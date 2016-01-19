@@ -9,8 +9,6 @@ before_install:
 - go get golang.org/x/tools/cmd/vet
 - go get github.com/pierrre/gotestcover
 script:
-# since gotestcover can have 0 exit code even with failures, run tests with go
-# test, and only run again with coverage in `after_script` section
 - go test -v ./...
 after_script:
 - "${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report ./..."
@@ -19,14 +17,23 @@ after_script:
 notifications:
   irc:
     channels:
-    # encrpyt channel name to get around issue
-    # https://github.com/travis-ci/travis-ci/issues/1094
-    # encrpyted string was "irc.mozilla.org#taskcluster-bots"
-    - secure: "aYfRwI+g4L9xkUXXKWFx7TuR4TojGVjnUWEx74TvrrAeNqJd1+9vZdtohncQxvArpx0gRHVfVc6n2AZoBNUgo2dSqTBWVwtUQfGf0JyQddS6MdTJzHS2aoNgGRWUwRznjZzloD0eZZfeW+/nbYsfSS12Edl3YNT4X8/rhlHVtO4="
+    - secure: aYfRwI+g4L9xkUXXKWFx7TuR4TojGVjnUWEx74TvrrAeNqJd1+9vZdtohncQxvArpx0gRHVfVc6n2AZoBNUgo2dSqTBWVwtUQfGf0JyQddS6MdTJzHS2aoNgGRWUwRznjZzloD0eZZfeW+/nbYsfSS12Edl3YNT4X8/rhlHVtO4=
     on_success: always
     on_failure: always
     template:
     - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
-    - "Change view : %{compare_url}"
-    - "Build details : %{build_url}"
-    - "Commit message : %{commit_message}"
+    - 'Change view : %{compare_url}'
+    - 'Build details : %{build_url}'
+    - 'Commit message : %{commit_message}'
+before_deploy:
+- source .travis_rename_releases.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: F5o1RQ4jvj0DimxDPa+bOzThpzYlsyzs0jh30o9dsXYEJFYBwTWQlAmveP1ImWsRSnVe09qVkrIpICMSTdEgqSBJx9I7nEjDqgu3gzdQVFl8sA40WeHNkb7xYxADUuUdx2ABgt13/LoTLzPhR5L54eQ6FdWjlWeKU/zW54ppS84=
+  file:
+    - "${RELEASE_FILE}"
+  on:
+    repo: taskcluster/taskcluster-proxy
+    tags: true
+  skip_cleanup: true
