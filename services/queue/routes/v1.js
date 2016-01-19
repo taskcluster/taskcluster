@@ -199,7 +199,7 @@ api.declare({
   description: [
     "List taskIds of all tasks sharing the same `taskGroupId`.",
     "",
-    "As a task-group main contain an unbounded number of tasks, this end-point",
+    "As a task-group may contain an unbounded number of tasks, this end-point",
     "may return a `continuationToken`. To continue listing tasks you must",
     "`listTaskGroup` again with the `continuationToken` as the query-string",
     "option `continuationToken`.",
