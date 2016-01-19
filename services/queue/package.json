@@ -22,7 +22,7 @@
     "lodash":               "^3.6.0",
     "promise":              "^7.0.4",
     "slugid":               "^1.1.0",
-    "taskcluster-base":     "^0.10.1",
+    "taskcluster-base":     "^0.10.2",
     "thirty-two":           "^0.0.2",
     "url-join":             "^0.0.1",
     "uuid":                 "^2.0.1",
