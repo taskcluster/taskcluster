@@ -12,7 +12,7 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
-var version = "Taskcluster proxy 1.1.0"
+var version = "Taskcluster proxy 3.0.0"
 var usage = `
 Taskcluster authentication proxy. By default this pulls all scopes from a
 particular task but additional scopes may be added by specifying them after the
