@@ -67,22 +67,44 @@ func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	log.Printf("Proxying %s | %s | %s", req.URL, req.Method, targetPath)
 
-	var body []byte
+	payload := (*json.RawMessage)(nil)
+	// In theory, req.Body should never be nil when running as a server, but
+	// during testing, with a direct call to the method rather than a real http
+	// request coming in from outside, it could be. For example see:
+	// https://github.com/taskcluster/taskcluster-proxy/blob/6744fb1d3eaa791394fe651ff3a3f99f606828d5/authorization_test.go#L111
+	// Furthermore, it is correct to create an http (client) request with a nil
+	// body. See https://golang.org/pkg/net/http/#Request.
+	//
+	// Technically a client request should not be passed to a server method,
+	// but in reality there are not separate types (e.g. HttpClientRequest,
+	// HttpServerRequest) and so it can easily happen and is usually done.  For
+	// this reason, and to avoid confusion around this, let's keep the nil
+	// check in here.
 	if req.Body != nil {
-		body, err = ioutil.ReadAll(req.Body)
+		// Note: we cannot use:
+		// `err := json.NewDecoder(req.Body).Decode(payload)` since the body
+		// might be empty and we'd get a json decoding error. Therefore we read
+		// into memory and test the length upfront.
+		body, err := ioutil.ReadAll(req.Body)
 		// If we fail to create a request notify the client.
 		if err != nil {
 			res.WriteHeader(500)
 			fmt.Fprintf(res, "Failed to generate proxy request (could not read http body) - %s", err)
 			return
 		}
-		if len(body) == 0 {
-		  body = nil
+		if len(body) > 0 {
+			payload = new(json.RawMessage)
+			err = json.Unmarshal(body, payload)
+			if err != nil {
+				res.WriteHeader(400)
+				fmt.Fprintf(res, "Malformed payload - http request body is not valid json - %s", err)
+				return
+			}
 		}
 	}
 
 	cd := tcclient.ConnectionData(*self)
-	_, cs, err := (&cd).APICall(json.RawMessage(body), req.Method, targetPath.String(), new(json.RawMessage), nil)
+	_, cs, err := (&cd).APICall(payload, req.Method, targetPath.String(), new(json.RawMessage), nil)
 	// If we fail to create a request notify the client.
 	if err != nil {
 		switch err.(type) {
@@ -109,6 +131,4 @@ func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	// Proxy the proxyResponse body from the endpoint to our response.
 	res.Write([]byte(cs.HttpResponseBody))
-	//io.Copy(res, []byte(cs.HttpResponseBody))
-	cs.HttpResponse.Body.Close()
 }
