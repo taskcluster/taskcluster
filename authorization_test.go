@@ -242,7 +242,7 @@ func TestNon200HasErrorBody(t *testing.T) {
 			"POST",
 			"https://localhost:60024/queue/v1/task/"+taskId+"/define",
 			bytes.NewBufferString(
-				`<bad!-payL0ad@%% `,
+				`{"comment": "Valid json so that we hit endpoint, but should not result in http 200"}`,
 			),
 		)
 		if err != nil {
@@ -265,9 +265,9 @@ func TestNon200HasErrorBody(t *testing.T) {
 			t.FailNow()
 		}
 		if len(respBody) < 20 {
-			t.Log("Expected a response body (at least 20 bytes) with HTTP 400 error, but get less (or none).")
 			t.Logf("Headers: %s", res.Header())
 			t.Logf("Response received:\n%s", string(respBody))
+			t.Log("Expected a response body (at least 20 bytes) with HTTP 400 error, but get less (or none).")
 			t.FailNow()
 		}
 
