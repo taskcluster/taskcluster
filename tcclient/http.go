@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"reflect"
 	"time"
@@ -101,7 +102,11 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
-		log.Printf("Making http request: %v", httpRequest)
+		reqBytes, err := httputil.DumpRequest(httpRequest, true)
+		// only log if there is no error. if an error, just don't log.
+		if err == nil {
+			log.Printf("Making http request: %v", string(reqBytes))
+		}
 		resp, err := httpClient.Do(httpRequest)
 		return resp, err, nil
 	}
@@ -109,19 +114,15 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 	// Make HTTP API calls using an exponential backoff algorithm...
 	callSummary.HttpResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
 
+	// read response into memory, so that we can return the body
+	body, err2 := ioutil.ReadAll(callSummary.HttpResponse.Body)
+	if err2 == nil {
+		callSummary.HttpResponseBody = string(body)
+	}
+
 	if err != nil {
 		return result, callSummary, err
 	}
-
-	// now read response into memory, so that we can return the body
-	var body []byte
-	body, err = ioutil.ReadAll(callSummary.HttpResponse.Body)
-
-	if err != nil {
-		return result, callSummary, err
-	}
-
-	callSummary.HttpResponseBody = string(body)
 
 	// if result is passed in as nil, it means the API defines no response body
 	// json
