@@ -67,22 +67,26 @@ func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	log.Printf("Proxying %s | %s | %s", req.URL, req.Method, targetPath)
 
-	var body []byte
+	payload := (*json.RawMessage)(nil)
 	if req.Body != nil {
-		body, err = ioutil.ReadAll(req.Body)
+		body, err := ioutil.ReadAll(req.Body)
 		// If we fail to create a request notify the client.
 		if err != nil {
 			res.WriteHeader(500)
 			fmt.Fprintf(res, "Failed to generate proxy request (could not read http body) - %s", err)
 			return
 		}
-		if len(body) == 0 {
-		  body = nil
+		payload = new(json.RawMessage)
+		err = json.Unmarshal(body, payload)
+		if err != nil {
+			res.WriteHeader(400)
+			fmt.Fprintf(res, "Malformed payload - http request body is not valid json - %s", err)
+			return
 		}
 	}
 
 	cd := tcclient.ConnectionData(*self)
-	_, cs, err := (&cd).APICall(json.RawMessage(body), req.Method, targetPath.String(), new(json.RawMessage), nil)
+	_, cs, err := (&cd).APICall(payload, req.Method, targetPath.String(), new(json.RawMessage), nil)
 	// If we fail to create a request notify the client.
 	if err != nil {
 		switch err.(type) {
@@ -109,6 +113,4 @@ func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	// Proxy the proxyResponse body from the endpoint to our response.
 	res.Write([]byte(cs.HttpResponseBody))
-	//io.Copy(res, []byte(cs.HttpResponseBody))
-	cs.HttpResponse.Body.Close()
 }
