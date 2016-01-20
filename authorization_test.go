@@ -72,7 +72,11 @@ func TestBewit(t *testing.T) {
 		routes := Routes(tcclient.ConnectionData{
 			Credentials: creds,
 		})
-		req, err := http.NewRequest("POST", "https://localhost:60024/bewit", bytes.NewBufferString("https://queue.taskcluster.net/v1/task/DD1kmgFiRMWTjyiNoEJIMA/runs/0/artifacts/private%2Fbuild%2Fsources.xml"))
+		req, err := http.NewRequest(
+			"POST",
+			"https://localhost:60024/bewit",
+			bytes.NewBufferString("https://queue.taskcluster.net/v1/task/DD1kmgFiRMWTjyiNoEJIMA/runs/0/artifacts/private%2Fbuild%2Fsources.xml"),
+		)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -117,7 +121,14 @@ func TestAuthorizationDelegate(t *testing.T) {
 				},
 			})
 
-			req, err := http.NewRequest("GET", sharedAccessSignature(), nil)
+			req, err := http.NewRequest(
+				"GET",
+				sharedAccessSignature(),
+				// Note: we don't set body to nil as a server http request
+				// cannot have a nil body. See:
+				// https://golang.org/pkg/net/http/#Request
+				new(bytes.Buffer),
+			)
 			if err != nil {
 				log.Fatal(err)
 			}
