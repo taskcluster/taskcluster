@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -77,6 +76,9 @@ func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 			fmt.Fprintf(res, "Failed to generate proxy request (could not read http body) - %s", err)
 			return
 		}
+		if len(body) == 0 {
+		  body = nil
+		}
 	}
 
 	cd := tcclient.ConnectionData(*self)
@@ -106,6 +108,7 @@ func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(cs.HttpResponse.StatusCode)
 
 	// Proxy the proxyResponse body from the endpoint to our response.
-	io.Copy(res, cs.HttpResponse.Body)
+	res.Write([]byte(cs.HttpResponseBody))
+	//io.Copy(res, []byte(cs.HttpResponseBody))
 	cs.HttpResponse.Body.Close()
 }
