@@ -33,10 +33,16 @@ export default class TaskclusterProxy {
 
     var cmd = [
         '--client-id=' + task.runtime.taskcluster.clientId,
-        '--access-token=' + task.runtime.taskcluster.accessToken,
+        '--access-token=' + task.runtime.taskcluster.accessToken
+    ];
+    // only pass in a certificate if one has been set
+    if (task.runtime.taskcluster.certificate) {
+        cmd.push('--certificate=' + task.runtime.taskcluster.certificate);
+    }
+    cmd.push(
         task.status.taskId,
         assumedScope
-    ];
+    );
 
     // create the container.
     this.container = await docker.createContainer({
