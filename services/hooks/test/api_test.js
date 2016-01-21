@@ -5,9 +5,7 @@ suite('API', function() {
   var debug       = require('debug')('test:api:createhook');
   var helper      = require('./helper');
 
-  if (!helper.setup()) {
-    this.pending = true;
-  }
+  helper.setup();
 
   // Use the same hook definition for everything
   var hookDef = require('./test_definition');
