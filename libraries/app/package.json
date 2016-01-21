@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-app",
-  "version": "0.8.9",
+  "version": "0.8.10",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-app",
   "license": "MPL-2.0",
