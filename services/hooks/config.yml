@@ -62,11 +62,12 @@ test:
     scheduler:
       pollingDelay:   5000
   azureTable:
-    account:          'jungle'
+    # use in-memory fake Azure by default; you can override in user-config.yml
+    # this with a real account together with setting `taskcluster.credentials`
+    # to test against the real Azure Table Storage.
+    account:          'inMemory'
     signingKey:       'not a secret'
     cryptoKey:        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
-  taskcluster:
-    authBaseUrl:      http://localhost:60407/v1
   server:
     port:             60401
     publicUrl:        'http://localhost:60401'

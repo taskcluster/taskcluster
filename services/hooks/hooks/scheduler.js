@@ -1,6 +1,6 @@
 var assert      = require('assert');
 var events      = require('events');
-var base        = require('taskcluster-base');
+var Entity      = require('azure-entities');
 var data        = require('./data');
 var debug       = require('debug')('hooks:scheduler');
 var Promise     = require('promise');
@@ -71,7 +71,7 @@ class Scheduler extends events.EventEmitter {
   async poll() {
     // Get all hooks that have a scheduled date that is earlier than now
     var hooks = await this.Hook.scan({
-      nextScheduledDate:  base.Entity.op.lessThan(new Date())
+      nextScheduledDate:  Entity.op.lessThan(new Date())
     }, {
       limit: 100,
       handler: (hook) => this.handleHook(hook),

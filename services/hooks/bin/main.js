@@ -12,6 +12,7 @@ var AWS         = require('aws-sdk-promise');
 // These will exist in taskcluster-base, when we move to the next version.
 var config      = require('typed-env-config');
 var loader      = require('taskcluster-lib-loader');
+var app         = require('taskcluster-lib-app');
 
 // Create component loader
 var load = loader({
@@ -22,7 +23,14 @@ var load = loader({
 
   influx: {
     requires: ['cfg'],
-    setup: ({cfg}) => new base.stats.Influx(cfg.influx),
+    setup: ({cfg}) => {
+      if (cfg.influx && cfg.influx.connectionString) {
+        return new base.stats.Influx(cfg.influx)
+      } else {
+        debug("Not loading Influx -- no connection string");
+        return new base.stats.NullDrain();
+      }
+    },
   },
 
   Hook: {
@@ -81,9 +89,9 @@ var load = loader({
   server: {
     requires: ['cfg', 'router'],
     setup: ({cfg, router}) => {
-      let app = base.app(cfg.server);
-      app.use('/v1', router);
-      return app.createServer();
+      let hooksApp = app(cfg.server);
+      hooksApp.use('/v1', router);
+      return hooksApp.createServer();
     },
   },
 
