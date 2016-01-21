@@ -9,11 +9,7 @@ suite('Scheduler', function() {
   var taskcluster       = require('taskcluster-client');
 
   this.slow(500);
-
-  // these tests require Azure credentials (for the Hooks table)
-  if (!helper.setup()) {
-    this.pending = true;
-  }
+  helper.setup();
 
   var scheduler = null;
   var creator = null;

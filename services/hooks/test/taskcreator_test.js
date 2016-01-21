@@ -7,10 +7,10 @@ suite('TaskCreator', function() {
   var taskcluster       = require('taskcluster-client');
 
   this.slow(500);
+  helper.setup();
 
-  // these tests require TaskCluster credentials (for the queue insert)
-  // and to do helper setup (which configures Hooks)
-  if (!helper.setup()) {
+  // these tests require real TaskCluster credentials (for the queue insert)
+  if (!helper.haveRealCredentials) {
     this.pending = true;
   }
 
