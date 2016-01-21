@@ -301,7 +301,7 @@ suite('Extend Task Graph', function() {
       'Task graph error not logged'
     );
     assert.ok(
-      log.includes('Authorization Failed') && log.includes('this-is-a-bad-scope'),
+      log.includes('You do not have sufficient scopes') && log.includes('this-is-a-bad-scope'),
       'Error message did not include authorization failed message'
     );
     assert.ok(
