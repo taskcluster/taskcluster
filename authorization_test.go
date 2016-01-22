@@ -26,7 +26,7 @@ var (
 // Requires scope "auth:azure-table-access:fakeaccount/DuMmYtAbLe"
 func sharedAccessSignature() string {
 	return fmt.Sprintf(
-		"https://localhost:60024/auth/v1/azure/%s/table/%s/read-write",
+		"http://localhost:60024/auth/v1/azure/%s/table/%s/read-write",
 		"fakeaccount",
 		"DuMmYtAbLe",
 	)
@@ -74,7 +74,7 @@ func TestBewit(t *testing.T) {
 		})
 		req, err := http.NewRequest(
 			"POST",
-			"https://localhost:60024/bewit",
+			"http://localhost:60024/bewit",
 			bytes.NewBufferString("https://queue.taskcluster.net/v1/task/DD1kmgFiRMWTjyiNoEJIMA/runs/0/artifacts/private%2Fbuild%2Fsources.xml"),
 		)
 		if err != nil {
@@ -172,7 +172,7 @@ func TestAPICallWithPayload(t *testing.T) {
 
 		req, err := http.NewRequest(
 			"POST",
-			"https://localhost:60024/queue/v1/task/"+taskId+"/define",
+			"http://localhost:60024/queue/v1/task/"+taskId+"/define",
 			bytes.NewBufferString(
 				`
 {
@@ -251,7 +251,7 @@ func TestNon200HasErrorBody(t *testing.T) {
 
 		req, err := http.NewRequest(
 			"POST",
-			"https://localhost:60024/queue/v1/task/"+taskId+"/define",
+			"http://localhost:60024/queue/v1/task/"+taskId+"/define",
 			bytes.NewBufferString(
 				`{"comment": "Valid json so that we hit endpoint, but should not result in http 200"}`,
 			),
@@ -284,5 +284,58 @@ func TestNon200HasErrorBody(t *testing.T) {
 
 	}
 	testWithPermCreds(t, test)
+	testWithTempCreds(t, test)
+}
+
+func TestOversteppedScopes(t *testing.T) {
+	test := func(t *testing.T, creds *tcclient.Credentials) {
+
+		// Test setup
+		routes := Routes(tcclient.ConnectionData{
+			Authenticate: true,
+			Credentials:  creds,
+		})
+
+		// This scope is not in the scopes of the temp credentials, which would
+		// happen if a task declares a scope that the provisioner does not
+		// grant.
+		routes.Credentials.AuthorizedScopes = []string{"secrets:get:garbage/pmoore/foo"}
+
+		req, err := http.NewRequest(
+			"GET",
+			"http://localhost:60024/secrets/v1/secret/garbage/pmoore/foo",
+			new(bytes.Buffer),
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		res := httptest.NewRecorder()
+
+		// Function to test
+		routes.ServeHTTP(res, req)
+
+		respBody, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			t.Fatalf("Could not read response body: %v", err)
+		}
+		// Validate results
+		if res.Code != 401 {
+			t.Logf("Expected status code 401 but got %v", res.Code)
+			t.Logf("Headers: %s", res.Header())
+			t.Logf("Response received:\n%s", string(respBody))
+			t.FailNow()
+		}
+		for headerKey, expectedHeaderValue := range map[string]string{
+			"X-Taskcluster-Endpoint":          "https://secrets.taskcluster.net/v1/secret/garbage/pmoore/foo",
+			"X-Taskcluster-Proxy-Version":     version,
+			"X-Taskcluster-Authorized-Scopes": "[secrets:get:garbage/pmoore/foo]",
+			"X-Taskcluster-Proxy-Temp-Scopes": "[auth:azure-table-access:fakeaccount/DuMmYtAbLe queue:define-task:win-provisioner/win2008-worker queue:get-artifact:private/build/sources.xml queue:route:tc-treeherder.mozilla-inbound.* queue:route:tc-treeherder-stage.mozilla-inbound.* queue:task-priority:high test-worker:image:toastposter/pumpkin:0.5.6]",
+		} {
+			actualHeaderValue := res.Header().Get(headerKey)
+			if actualHeaderValue != expectedHeaderValue {
+				t.Fatalf("Expected header %q to be %q but it was %q", headerKey, expectedHeaderValue, actualHeaderValue)
+			}
+		}
+	}
 	testWithTempCreds(t, test)
 }
