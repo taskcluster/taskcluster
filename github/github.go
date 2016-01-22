@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 19 Jan 2016 at 22:27:00 UTC. The code was generated
+// Fri, 22 Jan 2016 at 14:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
@@ -65,7 +65,7 @@ type Github tcclient.ConnectionData
 func New(credentials *tcclient.Credentials) *Github {
 	myGithub := Github(tcclient.ConnectionData{
 		Credentials:  credentials,
-		BaseURL:      "https://taskcluster-github.herokuapp.com/v1",
+		BaseURL:      "https://github.taskcluster.net/v1",
 		Authenticate: true,
 	})
 	return &myGithub

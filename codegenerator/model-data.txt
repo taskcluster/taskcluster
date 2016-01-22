@@ -1,4 +1,4 @@
-Generated: 1453242442
+Generated: 1453472869
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2367,7 +2367,7 @@ messages in response to GitHub events.
 
 This document describes the API end-point for consuming GitHub
 web hooks'
-Base URL    = 'https://taskcluster-github.herokuapp.com/v1'
+Base URL    = 'https://github.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'post'
