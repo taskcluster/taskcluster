@@ -123,7 +123,10 @@ Then run `go test -v ./...` from the top level source directory.
 
 ## Making a release
 
-This process needs to be automated. Just documenting it now as I work it out. =)
+TODO:
+
+- [ ] Provide a script for making releases which takes the bare minimal of input.
+- [ ] `build.sh` should support downloading a clean travis release, rather than building potentially with dirty sources locally.
 
 1. Choose an appropriate version number, *X.Y.Z*
 2. Update version number in `main.go`
@@ -132,8 +135,9 @@ This process needs to be automated. Just documenting it now as I work it out. =)
 5. `git push; git push --tags`
 6. Wait for release to magically appear [here](https://github.com/taskcluster/taskcluster-proxy/releases) thanks to travis.
 7. Start docker daemon, if not already running (e.g. `boot2docker start`)
-8. `./build.sh taskcluster/taskcluster-proxy:X.Y.Z` (no `v` prefix)
-9. `./build.sh taskcluster/taskcluster-proxy:latest`
-10. `docker push taskcluster/taskcluster-proxy:X.Y.Z` (no `v` prefix in version)
-11. `docker push taskcluster/taskcluster-proxy:latest`
-12. Confirm releases appear [here](https://hub.docker.com/r/taskcluster/taskcluster-proxy/tags/)
+8. Refresh your environment in case you have cached dependencies with `go get -u ./...`
+9. `./build.sh taskcluster/taskcluster-proxy:X.Y.Z` (no `v` prefix)
+10. `./build.sh taskcluster/taskcluster-proxy:latest`
+11. `docker push taskcluster/taskcluster-proxy:X.Y.Z` (no `v` prefix in version)
+12. `docker push taskcluster/taskcluster-proxy:latest`
+13. Confirm releases appear [here](https://hub.docker.com/r/taskcluster/taskcluster-proxy/tags/)
