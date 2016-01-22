@@ -14,14 +14,15 @@ func NewServices() Services {
 	// Hardcoded list of services provided by taskcluster.
 	endpoints := map[string]string{
 		// Each service endpoint must end in a '/'.
+		"auth":            "https://auth.taskcluster.net/",
+		"aws-provisioner": "https://aws-provisioner.taskcluster.net/",
+		"github":          "https://github.taskcluster.net/",
+		"hooks":           "https://hooks.taskcluster.net/",
+		"index":           "https://index.taskcluster.net/",
+		"purge-cache":     "https://purge-cache.taskcluster.net/",
 		"queue":           "https://queue.taskcluster.net/",
 		"scheduler":       "https://scheduler.taskcluster.net/",
-		"index":           "https://index.taskcluster.net/",
-		"aws-provisioner": "https://aws-provisioner.taskcluster.net/",
 		"secrets":         "https://secrets.taskcluster.net/",
-		"auth":            "https://auth.taskcluster.net/",
-		"hooks":           "https://hooks.taskcluster.net/",
-		"purge-cache":     "https://purge-cache.taskcluster.net/",
 	}
 
 	return Services{Endpoints: endpoints}
