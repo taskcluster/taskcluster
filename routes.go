@@ -125,6 +125,13 @@ func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	headersToSend.Set("X-Taskcluster-Endpoint", targetPath.String())
 	headersToSend.Set("X-Taskcluster-Proxy-Version", version)
+	cert, err := self.Credentials.Cert()
+	if err == nil && cert != nil {
+		headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", fmt.Sprintf("%s", cert.Scopes))
+	}
+	if authScopes := self.Credentials.AuthorizedScopes; len(authScopes) > 0 {
+		headersToSend.Set("X-Taskcluster-Authorized-Scopes", fmt.Sprintf("%s", authScopes))
+	}
 
 	// Write the proxyResponse headers and status.
 	res.WriteHeader(cs.HttpResponse.StatusCode)
