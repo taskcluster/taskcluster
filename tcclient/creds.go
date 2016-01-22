@@ -142,3 +142,15 @@ func generateTemporaryAccessToken(permAccessToken, seed string) (tempAccessToken
 	tempAccessToken = strings.TrimRight(base64.URLEncoding.EncodeToString(hash.Sum([]byte{})), "=")
 	return
 }
+
+// Attempts to parse the certificate string to return it as an object. If the
+// certificate is an empty string (e.g. in the case of permanent credentials)
+// then a nil pointer is returned for the certificate. If a certificate has
+// been specified but cannot be parsed, an error is returned.
+func (creds *Credentials) Cert() (cert *Certificate, err error) {
+	if creds.Certificate != "" {
+		cert = new(Certificate)
+		err = json.Unmarshal([]byte(creds.Certificate), cert)
+	}
+	return
+}
