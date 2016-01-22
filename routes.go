@@ -129,7 +129,7 @@ func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	if err == nil && cert != nil {
 		headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", fmt.Sprintf("%s", cert.Scopes))
 	}
-	if authScopes := self.Credentials.AuthorizedScopes; len(authScopes) > 0 {
+	if authScopes := self.Credentials.AuthorizedScopes; authScopes != nil {
 		headersToSend.Set("X-Taskcluster-Authorized-Scopes", fmt.Sprintf("%s", authScopes))
 	}
 
