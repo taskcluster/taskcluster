@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/taskcluster/httpbackoff"
@@ -14,7 +15,16 @@ import (
 	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
 )
 
-type Routes tcclient.ConnectionData
+type Routes struct {
+	tcclient.ConnectionData
+	lock sync.RWMutex
+}
+
+type CredentialsUpdate struct {
+	ClientId    string `json:"clientId"`
+	AccessToken string `json:"accessToken"`
+	Certificate string `json:"certificate"`
+}
 
 var tcServices = tc.NewServices()
 var httpClient = &http.Client{}
@@ -31,7 +41,7 @@ func (self *Routes) signUrl(res http.ResponseWriter, req *http.Request) {
 	}
 
 	urlString := strings.TrimSpace(string(body))
-	cd := tcclient.ConnectionData(*self)
+	cd := tcclient.ConnectionData(self.ConnectionData)
 	bewitUrl, err := (&cd).SignedURL(urlString, nil, time.Hour*1)
 
 	if err != nil {
@@ -46,8 +56,44 @@ func (self *Routes) signUrl(res http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(res, bewitUrl.String())
 }
 
+func (self *Routes) updateCredentials(res http.ResponseWriter, req *http.Request) {
+	if req.Method != "PUT" {
+		log.Printf("Invalid method %s\n", req.Method)
+		res.WriteHeader(405)
+		return
+	}
+
+	decoder := json.NewDecoder(req.Body)
+
+	credentials := &CredentialsUpdate{}
+	err := decoder.Decode(credentials)
+
+	if err != nil {
+		log.Printf("Could not decode request: %v\n", err)
+		res.WriteHeader(400)
+		return
+	}
+
+	self.lock.Lock()
+	defer self.lock.Unlock()
+	self.Credentials.ClientId = credentials.ClientId
+	self.Credentials.AccessToken = credentials.AccessToken
+	self.Credentials.Certificate = credentials.Certificate
+
+	res.WriteHeader(200)
+}
+
 // Routes implements the `http.Handler` interface
 func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	if req.URL.Path == "/credentials" {
+		log.Printf("Update credentials request %s\n", req.URL.String())
+		self.updateCredentials(res, req)
+		return
+	}
+
+	self.lock.RLock()
+	defer self.lock.RUnlock()
+
 	headersToSend := res.Header()
 	headersToSend.Set("X-Taskcluster-Proxy-Version", version)
 	cert, err := self.Credentials.Cert()
@@ -122,7 +168,7 @@ func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	cd := tcclient.ConnectionData(*self)
+	cd := tcclient.ConnectionData(self.ConnectionData)
 	_, cs, err := (&cd).APICall(payload, req.Method, targetPath.String(), new(json.RawMessage), nil)
 	// If we fail to create a request notify the client.
 	if err != nil {
