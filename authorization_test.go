@@ -7,10 +7,12 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
@@ -23,16 +25,18 @@ var (
 	}
 )
 
-// Requires scope "auth:azure-table-access:fakeaccount/DuMmYtAbLe"
-func sharedAccessSignature() string {
-	return fmt.Sprintf(
-		"http://localhost:60024/auth/v1/azure/%s/table/%s/read-write",
-		"fakeaccount",
-		"DuMmYtAbLe",
-	)
+func init() {
+	httpbackoff.BackOffSettings = &backoff.ExponentialBackOff{
+		InitialInterval:     1 * time.Millisecond,
+		RandomizationFactor: 0.2,
+		Multiplier:          1.2,
+		MaxInterval:         5 * time.Millisecond,
+		MaxElapsedTime:      20 * time.Millisecond,
+		Clock:               backoff.SystemClock,
+	}
 }
 
-type IntegrationTest func(t *testing.T, creds *tcclient.Credentials)
+type IntegrationTest func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder
 
 func skipIfNoPermCreds(t *testing.T) {
 	if permCredentials.ClientId == "" {
@@ -43,14 +47,30 @@ func skipIfNoPermCreds(t *testing.T) {
 	}
 }
 
-func testWithPermCreds(t *testing.T, test IntegrationTest) {
+func testWithPermCreds(t *testing.T, test IntegrationTest, expectedStatusCode int) {
 	skipIfNoPermCreds(t)
-	test(t, permCredentials)
+	res := test(t, permCredentials)
+	checkStatusCode(
+		t,
+		res,
+		expectedStatusCode,
+	)
+	checkHeaders(
+		t,
+		res,
+		map[string]string{
+			"X-Taskcluster-Proxy-Version":       version,
+			"X-Taskcluster-Proxy-Perm-ClientId": permCredentials.ClientId,
+			// N.B. the http library does not distinguish between header entries
+			// that have an empty "" value, and non-existing entries
+			"X-Taskcluster-Proxy-Temp-Scopes": "",
+		},
+	)
 }
 
-func testWithTempCreds(t *testing.T, test IntegrationTest) {
+func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode int) {
 	skipIfNoPermCreds(t)
-	tempCredentials, err := permCredentials.CreateTemporaryCredentials(1*time.Hour,
+	tempScopes := []string{
 		"auth:azure-table-access:fakeaccount/DuMmYtAbLe",
 		"queue:define-task:win-provisioner/win2008-worker",
 		"queue:get-artifact:private/build/sources.xml",
@@ -58,15 +78,68 @@ func testWithTempCreds(t *testing.T, test IntegrationTest) {
 		"queue:route:tc-treeherder-stage.mozilla-inbound.*",
 		"queue:task-priority:high",
 		"test-worker:image:toastposter/pumpkin:0.5.6",
-	)
+	}
+	tempCredentials, err := permCredentials.CreateTemporaryCredentials(1*time.Hour, tempScopes...)
 	if err != nil {
 		t.Fatalf("Could not generate temp credentials")
 	}
-	test(t, tempCredentials)
+	res := test(t, tempCredentials)
+	checkStatusCode(
+		t,
+		res,
+		expectedStatusCode,
+	)
+	checkHeaders(
+		t,
+		res,
+		map[string]string{
+			"X-Taskcluster-Proxy-Version":     version,
+			"X-Taskcluster-Proxy-Temp-Scopes": fmt.Sprintf("%s", tempScopes),
+			// N.B. the http library does not distinguish between header entries
+			// that have an empty "" value, and non-existing entries
+			"X-Taskcluster-Proxy-Perm-ClientId": "",
+		},
+	)
+}
+
+func checkHeaders(t *testing.T, res *httptest.ResponseRecorder, requiredHeaders map[string]string) {
+	for headerKey, expectedHeaderValue := range requiredHeaders {
+		actualHeaderValue := res.Header().Get(headerKey)
+		if actualHeaderValue != expectedHeaderValue {
+			// N.B. the http library does not distinguish between header
+			// entries that have an empty "" value, and non-existing entries
+			if expectedHeaderValue != "" {
+				t.Errorf("Expected header %q to be %q but it was %q", headerKey, expectedHeaderValue, actualHeaderValue)
+				t.Logf("Full headers: %q", res.Header())
+			} else {
+				t.Errorf("Expected header %q to not be present, or to be an empty string (\"\"), but it was %q", headerKey, actualHeaderValue)
+			}
+		}
+	}
+}
+
+func checkStatusCode(t *testing.T, res *httptest.ResponseRecorder, statusCode int) {
+	respBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatalf("Could not read response body: %v", err)
+	}
+	// make sure we get at least a few bytes of a response body...
+	// even http 303 should have some body, see
+	// https://tools.ietf.org/html/rfc7231#section-6.4.4
+	if len(respBody) < 20 {
+		t.Error("Expected a response body (at least 20 bytes), but get less (or none).")
+		t.Logf("Headers: %s", res.Header())
+		t.Logf("Response received:\n%s", string(respBody))
+	}
+	if res.Code != statusCode {
+		t.Errorf("Expected status code %v but got %v", statusCode, res.Code)
+		t.Logf("Headers: %s", res.Header())
+		t.Logf("Response received:\n%s", string(respBody))
+	}
 }
 
 func TestBewit(t *testing.T) {
-	test := func(t *testing.T, creds *tcclient.Credentials) {
+	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
 		routes := Routes(tcclient.ConnectionData{
@@ -86,10 +159,11 @@ func TestBewit(t *testing.T) {
 		routes.ServeHTTP(res, req)
 
 		// Validate results
-		if res.Code != 303 {
-			t.Fatalf("Expected status code 303 but got %v", res.Code)
-		}
 		bewitUrl := res.Header().Get("Location")
+		_, err = url.Parse(bewitUrl)
+		if err != nil {
+			t.Fatalf("Bewit URL returned is invalid: %q", bewitUrl)
+		}
 		resp, _, err := httpbackoff.Get(bewitUrl)
 		if err != nil {
 			t.Fatalf("Exception thrown:\n%s", err)
@@ -102,14 +176,15 @@ func TestBewit(t *testing.T) {
 			t.Logf("Response received:\n%s", string(respBody))
 			t.Fatalf("Expected response body to be 18170 bytes, but was %v bytes", len(respBody))
 		}
+		return res
 	}
-	testWithPermCreds(t, test)
-	testWithTempCreds(t, test)
+	testWithPermCreds(t, test, 303)
+	testWithTempCreds(t, test, 303)
 }
 
 func TestAuthorizationDelegate(t *testing.T) {
-	test := func(name string, statusCode int, scopes []string) IntegrationTest {
-		return func(t *testing.T, creds *tcclient.Credentials) {
+	test := func(name string, scopes []string) IntegrationTest {
+		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 			// Test setup
 			routes := Routes(tcclient.ConnectionData{
 				Authenticate: true,
@@ -121,9 +196,14 @@ func TestAuthorizationDelegate(t *testing.T) {
 				},
 			})
 
+			// Requires scope "auth:azure-table-access:fakeaccount/DuMmYtAbLe"
 			req, err := http.NewRequest(
 				"GET",
-				sharedAccessSignature(),
+				fmt.Sprintf(
+					"http://localhost:60024/auth/v1/azure/%s/table/%s/read-write",
+					"fakeaccount",
+					"DuMmYtAbLe",
+				),
 				// Note: we don't set body to nil as a server http request
 				// cannot have a nil body. See:
 				// https://golang.org/pkg/net/http/#Request
@@ -136,28 +216,17 @@ func TestAuthorizationDelegate(t *testing.T) {
 
 			// Function to test
 			routes.ServeHTTP(res, req)
-
-			// Validate results
-
-			if res.Code != statusCode {
-				t.Logf("Part %s) Expected delgated request to fail with HTTP %v - but got HTTP %v", name, statusCode, res.Code)
-				respBody, err := ioutil.ReadAll(res.Body)
-				t.Logf("Headers: %s", res.Header())
-				if err == nil {
-					t.Logf("Response received:\n%s", string(respBody))
-				}
-				t.FailNow()
-			}
+			return res
 		}
 	}
-	testWithPermCreds(t, test("A", 404, []string{"auth:azure-table-access:fakeaccount/DuMmYtAbLe"}))
-	testWithTempCreds(t, test("B", 404, []string{"auth:azure-table-access:fakeaccount/DuMmYtAbLe"}))
-	testWithPermCreds(t, test("C", 401, []string{"queue:get-artifact:private/build/sources.xml"}))
-	testWithTempCreds(t, test("D", 401, []string{"queue:get-artifact:private/build/sources.xml"}))
+	testWithPermCreds(t, test("A", []string{"auth:azure-table-access:fakeaccount/DuMmYtAbLe"}), 404)
+	testWithTempCreds(t, test("B", []string{"auth:azure-table-access:fakeaccount/DuMmYtAbLe"}), 404)
+	testWithPermCreds(t, test("C", []string{"queue:get-artifact:private/build/sources.xml"}), 401)
+	testWithTempCreds(t, test("D", []string{"queue:get-artifact:private/build/sources.xml"}), 401)
 }
 
 func TestAPICallWithPayload(t *testing.T) {
-	test := func(t *testing.T, creds *tcclient.Credentials) {
+	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
 		routes := Routes(tcclient.ConnectionData{
@@ -223,24 +292,15 @@ func TestAPICallWithPayload(t *testing.T) {
 		// Function to test
 		routes.ServeHTTP(res, req)
 
-		// Validate results
-		if res.Code != 200 {
-			t.Logf("Expected status code 200 but got %v", res.Code)
-			respBody, err := ioutil.ReadAll(res.Body)
-			t.Logf("Headers: %s", res.Header())
-			if err == nil {
-				t.Logf("Response received:\n%s", string(respBody))
-			}
-			t.FailNow()
-		}
 		t.Logf("Created task https://queue.taskcluster.net/v1/task/%v", taskId)
+		return res
 	}
-	testWithPermCreds(t, test)
-	testWithTempCreds(t, test)
+	testWithPermCreds(t, test, 200)
+	testWithTempCreds(t, test, 200)
 }
 
 func TestNon200HasErrorBody(t *testing.T) {
-	test := func(t *testing.T, creds *tcclient.Credentials) {
+	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
 		routes := Routes(tcclient.ConnectionData{
@@ -264,31 +324,16 @@ func TestNon200HasErrorBody(t *testing.T) {
 		// Function to test
 		routes.ServeHTTP(res, req)
 
-		respBody, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			t.Fatalf("Could not read response body: %v", err)
-		}
 		// Validate results
-		if res.Code != 400 {
-			t.Logf("Expected status code 400 but got %v", res.Code)
-			t.Logf("Headers: %s", res.Header())
-			t.Logf("Response received:\n%s", string(respBody))
-			t.FailNow()
-		}
-		if len(respBody) < 20 {
-			t.Logf("Headers: %s", res.Header())
-			t.Logf("Response received:\n%s", string(respBody))
-			t.Log("Expected a response body (at least 20 bytes) with HTTP 400 error, but get less (or none).")
-			t.FailNow()
-		}
+		return res
 
 	}
-	testWithPermCreds(t, test)
-	testWithTempCreds(t, test)
+	testWithPermCreds(t, test, 400)
+	testWithTempCreds(t, test, 400)
 }
 
 func TestOversteppedScopes(t *testing.T) {
-	test := func(t *testing.T, creds *tcclient.Credentials) {
+	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
 		routes := Routes(tcclient.ConnectionData{
@@ -314,28 +359,41 @@ func TestOversteppedScopes(t *testing.T) {
 		// Function to test
 		routes.ServeHTTP(res, req)
 
-		respBody, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			t.Fatalf("Could not read response body: %v", err)
-		}
 		// Validate results
-		if res.Code != 401 {
-			t.Logf("Expected status code 401 but got %v", res.Code)
-			t.Logf("Headers: %s", res.Header())
-			t.Logf("Response received:\n%s", string(respBody))
-			t.FailNow()
-		}
-		for headerKey, expectedHeaderValue := range map[string]string{
-			"X-Taskcluster-Endpoint":          "https://secrets.taskcluster.net/v1/secret/garbage/pmoore/foo",
-			"X-Taskcluster-Proxy-Version":     version,
-			"X-Taskcluster-Authorized-Scopes": "[secrets:get:garbage/pmoore/foo]",
-			"X-Taskcluster-Proxy-Temp-Scopes": "[auth:azure-table-access:fakeaccount/DuMmYtAbLe queue:define-task:win-provisioner/win2008-worker queue:get-artifact:private/build/sources.xml queue:route:tc-treeherder.mozilla-inbound.* queue:route:tc-treeherder-stage.mozilla-inbound.* queue:task-priority:high test-worker:image:toastposter/pumpkin:0.5.6]",
-		} {
-			actualHeaderValue := res.Header().Get(headerKey)
-			if actualHeaderValue != expectedHeaderValue {
-				t.Fatalf("Expected header %q to be %q but it was %q", headerKey, expectedHeaderValue, actualHeaderValue)
-			}
-		}
+		checkHeaders(
+			t,
+			res,
+			map[string]string{
+				"X-Taskcluster-Endpoint":          "https://secrets.taskcluster.net/v1/secret/garbage/pmoore/foo",
+				"X-Taskcluster-Authorized-Scopes": "[secrets:get:garbage/pmoore/foo]",
+			},
+		)
+		return res
 	}
-	testWithTempCreds(t, test)
+	testWithTempCreds(t, test, 401)
+}
+
+func TestBadCredsReturns500(t *testing.T) {
+	routes := Routes(tcclient.ConnectionData{
+		Authenticate: true,
+		Credentials: &tcclient.Credentials{
+			ClientId:    "abc",
+			AccessToken: "def",
+			Certificate: "ghi", // baaaad certificate
+		},
+	})
+	req, err := http.NewRequest(
+		"GET",
+		"http://localhost:60024/secrets/v1/secret/garbage/pmoore/foo",
+		new(bytes.Buffer),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	res := httptest.NewRecorder()
+
+	// Function to test
+	routes.ServeHTTP(res, req)
+	// Validate results
+	checkStatusCode(t, res, 500)
 }
