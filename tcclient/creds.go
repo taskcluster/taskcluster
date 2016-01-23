@@ -6,11 +6,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster-client-go/text"
 )
 
 type Credentials struct {
@@ -29,6 +31,16 @@ type Credentials struct {
 	// no scopes at all.
 	// See http://docs.taskcluster.net/auth/authorized-scopes
 	AuthorizedScopes []string
+}
+
+func (creds *Credentials) String() string {
+	return fmt.Sprintf(
+		"ClientId: %q\nAccessToken: %q\nCertificate: %q\nAuthorizedScopes: %q",
+		creds.ClientId,
+		text.StarOut(creds.AccessToken),
+		text.StarOut(creds.Certificate),
+		creds.AuthorizedScopes,
+	)
 }
 
 // The entry point into all the functionality in this package is to create a

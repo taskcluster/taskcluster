@@ -41,6 +41,11 @@ func Underline(text string) string {
 	return text + "\n" + strings.Repeat("=", maxlen) + "\n"
 }
 
+// Returns a string of the same length, filled with "*"s.
+func StarOut(test string) string {
+	return strings.Repeat("*", len(test))
+}
+
 // GoTypeNameFrom provides a mechanism to mutate an arbitrary descriptive
 // string (name) into an exported Go type name that can be used in generated
 // code, taking into account a blacklist of names that have already been used,

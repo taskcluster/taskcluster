@@ -98,7 +98,7 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
 			reqAuth.Ext, err = getExtHeader(connectionData.Credentials)
 			if err != nil {
-				return nil, nil, fmt.Errorf("Internal error: was not able to generate hawk ext header from provided credentials: %q\n%s", connectionData.Credentials, err)
+				return nil, nil, fmt.Errorf("Internal error: was not able to generate hawk ext header from provided credentials:\n%s\n%s", connectionData.Credentials, err)
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
@@ -115,9 +115,11 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 	callSummary.HttpResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
 
 	// read response into memory, so that we can return the body
-	body, err2 := ioutil.ReadAll(callSummary.HttpResponse.Body)
-	if err2 == nil {
-		callSummary.HttpResponseBody = string(body)
+	if callSummary.HttpResponse != nil {
+		body, err2 := ioutil.ReadAll(callSummary.HttpResponse.Body)
+		if err2 == nil {
+			callSummary.HttpResponseBody = string(body)
+		}
 	}
 
 	if err != nil {
