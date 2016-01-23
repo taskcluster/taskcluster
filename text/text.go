@@ -42,8 +42,8 @@ func Underline(text string) string {
 }
 
 // Returns a string of the same length, filled with "*"s.
-func StarOut(test string) string {
-	return strings.Repeat("*", len(test))
+func StarOut(text string) string {
+	return strings.Repeat("*", len(text))
 }
 
 // GoTypeNameFrom provides a mechanism to mutate an arbitrary descriptive
