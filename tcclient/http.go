@@ -8,9 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"reflect"
 	"time"
@@ -102,11 +100,11 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 			}
 			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
-		reqBytes, err := httputil.DumpRequest(httpRequest, true)
+		// reqBytes, err := httputil.DumpRequest(httpRequest, true)
 		// only log if there is no error. if an error, just don't log.
-		if err == nil {
-			log.Printf("Making http request: %v", string(reqBytes))
-		}
+		// if err == nil {
+		// 	log.Printf("Making http request: %v", string(reqBytes))
+		// }
 		resp, err := httpClient.Do(httpRequest)
 		return resp, err, nil
 	}
