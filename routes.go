@@ -48,6 +48,24 @@ func (self *Routes) signUrl(res http.ResponseWriter, req *http.Request) {
 
 // Routes implements the `http.Handler` interface
 func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	headersToSend := res.Header()
+	headersToSend.Set("X-Taskcluster-Proxy-Version", version)
+	cert, err := self.Credentials.Cert()
+	if cert != nil {
+		if err != nil {
+			res.WriteHeader(500)
+			// Note, self.Credentials does not expose secrets when rendered as a string
+			fmt.Fprintf(res, "TaskCluster Proxy has invalid certificate: %v\n%v", self.Credentials, err)
+			return
+		} else {
+			headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", fmt.Sprintf("%s", cert.Scopes))
+		}
+	} else {
+		headersToSend.Set("X-Taskcluster-Proxy-Perm-ClientId", fmt.Sprintf("%s", self.Credentials.ClientId))
+	}
+	if authScopes := self.Credentials.AuthorizedScopes; authScopes != nil {
+		headersToSend.Set("X-Taskcluster-Authorized-Scopes", fmt.Sprintf("%s", authScopes))
+	}
 
 	// A special case for the proxy is returning a bewit signed url.
 	if req.URL.Path[0:6] == "/bewit" {
@@ -64,6 +82,7 @@ func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(res, "Unkown taskcluster service: %s", err)
 		return
 	}
+	headersToSend.Set("X-Taskcluster-Endpoint", targetPath.String())
 
 	log.Printf("Proxying %s | %s | %s", req.URL, req.Method, targetPath)
 
@@ -118,19 +137,8 @@ func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Map the headers from the proxy back into our proxyResponse
-	headersToSend := res.Header()
 	for key, _ := range cs.HttpResponse.Header {
 		headersToSend.Set(key, cs.HttpResponse.Header.Get(key))
-	}
-
-	headersToSend.Set("X-Taskcluster-Endpoint", targetPath.String())
-	headersToSend.Set("X-Taskcluster-Proxy-Version", version)
-	cert, err := self.Credentials.Cert()
-	if err == nil && cert != nil {
-		headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", fmt.Sprintf("%s", cert.Scopes))
-	}
-	if authScopes := self.Credentials.AuthorizedScopes; authScopes != nil {
-		headersToSend.Set("X-Taskcluster-Authorized-Scopes", fmt.Sprintf("%s", authScopes))
 	}
 
 	// Write the proxyResponse headers and status.
