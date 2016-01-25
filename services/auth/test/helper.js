@@ -3,12 +3,14 @@ var Promise     = require('promise');
 var path        = require('path');
 var _           = require('lodash');
 var base        = require('taskcluster-base');
+var data        = require('../auth/data');
 var v1          = require('../auth/v1');
 var taskcluster = require('taskcluster-client');
 var mocha       = require('mocha');
-var server      = require('../bin/server');
+var serverLoad  = require('../bin/server');
 var exchanges   = require('../auth/exchanges');
 var testserver  = require('./testserver');
+var slugid      = require('slugid');
 
 // Load configuration
 var cfg = base.config({
@@ -24,12 +26,10 @@ helper.cfg = cfg;
 helper.testaccount = _.keys(JSON.parse(cfg.get('auth:azureAccounts')))[0];
 helper.rootAccessToken = cfg.get('auth:rootAccessToken');
 
-// Skip tests if no AWS credentials is configured
-if (!cfg.get('azure:accountKey') ||
-    !cfg.get('auth:rootAccessToken') ||
-    !cfg.get('influx:connectionString') ||
-    !cfg.get('pulse:password')) {
-  console.log("Skip tests for due to missing credentials!");
+// Skip tests if no pulse credentials are configured
+if (!cfg.get('pulse:password')) {
+  console.log("Skip tests for due to missing pulse credentials; " +
+              "create taskcluster-auth.conf.json");
   process.exit(1);
 }
 
@@ -38,13 +38,36 @@ helper.events = new base.testing.PulseTestReceiver(cfg.get('pulse'), mocha);
 
 var webServer = null, testServer;
 mocha.before(async () => {
-  webServer = await server('test');
+  let overwrites = {};
+  overwrites['profile'] = 'test';
+
+  // if we don't have an azure account/key, use the inmemory version
+  if (!cfg.get('azure:accountName')) {
+    let resolver = await serverLoad('resolver', overwrites);
+    let signingKey = cfg.get('auth:tableSigningKey');
+    let cryptoKey = cfg.get('auth:tableCryptoKey');
+    overwrites['resolver'] = resolver;
+    overwrites['Client'] = data.Client.setup({
+      table: 'Client',
+      account: 'inMemory',
+      cryptoKey,
+      signingKey,
+      context: {resolver},
+    });
+    overwrites['Role'] = data.Role.setup({
+      table: 'Role',
+      account: 'inMemory',
+      signingKey,
+      context: {resolver},
+    });
+  }
+
+  webServer = await serverLoad('server', overwrites);
   webServer.setTimeout(1500);
 
   // Create client for working with API
   helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
   var reference = v1.reference({baseUrl: helper.baseUrl});
-  require('fs').writeFileSync("ref.json", JSON.stringify(reference, null, 2));
   helper.Auth = taskcluster.createClient(reference);
   helper.auth = new helper.Auth({
     baseUrl:          helper.baseUrl,
@@ -83,6 +106,10 @@ mocha.before(async () => {
 // Cleanup after tests
 mocha.after(async () => {
   // Kill servers
-  await testServer.terminate();
-  await webServer.terminate();
+  if (testServer) {
+    await testServer.terminate();
+  }
+  if (webServer) {
+    await webServer.terminate();
+  }
 });

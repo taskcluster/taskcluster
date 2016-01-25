@@ -1,4 +1,5 @@
 let base        = require('taskcluster-base');
+let app         = require('taskcluster-lib-app');
 let taskcluster = require('taskcluster-client');
 
 // Create a simple test server that we can set test requests to, useful for
@@ -26,7 +27,7 @@ myapi.declare({
 
 module.exports = async ({authBaseUrl, rootAccessToken}) => {
   // Create application
-  let app = base.app({
+  let serverApp = app({
     port:           PORT,
     env:            'development',
     forceSSL:       false,
@@ -40,10 +41,10 @@ module.exports = async ({authBaseUrl, rootAccessToken}) => {
   });
 
   // Mount router
-  app.use('/v1', router);
+  serverApp.use('/v1', router);
 
   // Create server
-  let server = await app.createServer();
+  let server = await serverApp.createServer();
   let baseUrl = 'http://localhost:' + server.address().port + '/v1';
 
   let reference = myapi.reference({baseUrl});
