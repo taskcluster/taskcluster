@@ -1,19 +1,19 @@
 var debug       = require('debug')('auth:data');
-var base        = require('taskcluster-base');
+var Entity      = require('azure-entities');
 var assert      = require('assert');
 var _           = require('lodash');
 var taskcluster = require('taskcluster-client');
 
-var Client = base.Entity.configure({
+var Client = Entity.configure({
   version:          1,
-  partitionKey:     base.Entity.keys.StringKey('clientId'),
-  rowKey:           base.Entity.keys.ConstantKey('client'),
+  partitionKey:     Entity.keys.StringKey('clientId'),
+  rowKey:           Entity.keys.ConstantKey('client'),
   signEntities:     true,
   properties: {
-    clientId:       base.Entity.types.String,
-    description:    base.Entity.types.Text,
-    accessToken:    base.Entity.types.EncryptedText,
-    expires:        base.Entity.types.Date,
+    clientId:       Entity.types.String,
+    description:    Entity.types.Text,
+    accessToken:    Entity.types.EncryptedText,
+    expires:        Entity.types.Date,
     /**
      * Details object with properties:
      * - created          // Time when client was created
@@ -22,7 +22,7 @@ var Client = base.Entity.configure({
      * - lastRotated      // Last time accessToken was reset
      * (more properties may be added in the future)
      */
-    details:        base.Entity.types.JSON
+    details:        Entity.types.JSON
   },
   context:          ['resolver']
 });
@@ -76,22 +76,22 @@ Client.ensureRootClient = function(accessToken) {
 // Export Client
 exports.Client = Client;
 
-var Role = base.Entity.configure({
+var Role = Entity.configure({
   version:          1,
-  partitionKey:     base.Entity.keys.StringKey('roleId'),
-  rowKey:           base.Entity.keys.ConstantKey('role'),
+  partitionKey:     Entity.keys.StringKey('roleId'),
+  rowKey:           Entity.keys.ConstantKey('role'),
   signEntities:     true,
   properties: {
-    roleId:         base.Entity.types.String,
-    description:    base.Entity.types.Text,
-    scopes:         base.Entity.types.JSON,
+    roleId:         Entity.types.String,
+    description:    Entity.types.Text,
+    scopes:         Entity.types.JSON,
     /**
      * Details object with properties:
      * - created
      * - lastModified
      * (more properties may be added in the future)
      */
-    details:        base.Entity.types.JSON,
+    details:        Entity.types.JSON,
   },
   context:          ['resolver']
 });
