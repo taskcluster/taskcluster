@@ -133,6 +133,7 @@ class ScopeResolver extends events.EventEmitter {
         this._clients.push({
           clientId:       client.clientId,
           accessToken:    client.accessToken,
+          expires:        client.expires,
           updateLastUsed: lastUsedDate < minLastUsed
         });
       }
@@ -176,6 +177,7 @@ class ScopeResolver extends events.EventEmitter {
             clients.push({
               clientId:       client.clientId,
               accessToken:    client.accessToken,
+              expires:        client.expires,
               // Note that lastUsedDate should be updated, if it's out-dated by
               // more than 6 hours.
               // (cheap way to know if it's been used recently)
@@ -262,6 +264,9 @@ class ScopeResolver extends events.EventEmitter {
         let client = this._clientCache[clientId];
         if (!client) {
           throw new Error("Client with clientId: '" + clientId + "' not found");
+        }
+        if (client.expires < new Date()) {
+          throw new Error("Client with clientId: '" + clientId + "' has expired");
         }
         if (client.updateLastUsed) {
           client.updateLastUsed = false;
