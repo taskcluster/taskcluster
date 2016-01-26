@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 22 Jan 2016 at 14:27:00 UTC. The code was generated
+// Tue, 26 Jan 2016 at 16:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -532,29 +532,19 @@ func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse
 	return responseObject.(*ListArtifactsResponse), callSummary, err
 }
 
-// Documented later...
-// This probably the end-point that will remain after rewriting to azure
-// queue storage...
+// Get an approximate number of pending tasks for the given `provisionerId`
+// and `workerType`.
 //
-// Required scopes:
-//   * queue:pending-tasks:<provisionerId>/<workerType>
+// The underlying Azure Storage Queues only promises to give us an estimate.
+// Furthermore, we cache the result in memory for 20 seconds. So consumers
+// should be no means expect this to be an accurate number.
+// It is, however, a solid estimate of the number of pending tasks.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pendingTasks
 func (myQueue *Queue) PendingTasks(provisionerId, workerType string) (*CountPendingTasksResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse), nil)
 	return responseObject.(*CountPendingTasksResponse), callSummary, err
-}
-
-// Returns a signed URL for PendingTasks, valid for the specified duration.
-//
-// Required scopes:
-//   * queue:pending-tasks:<provisionerId>/<workerType>
-//
-// See PendingTasks for more details.
-func (myQueue *Queue) PendingTasks_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myQueue)
-	return (&cd).SignedURL("/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
