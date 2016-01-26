@@ -43,6 +43,17 @@ properties:
       Date and time of when the `accessToken` was reset last time.
     type:                   string
     format:                 date-time
+  scopes:
+    description: |
+      List of scopes the client has (unexpanded).  Scopes must be composed of
+      printable ASCII characters and spaces.
+    type:                   array
+    default:                []
+    items:
+      description: Scope
+      type:                 string
+      pattern: "^[\x20-\x7e]*$"
+    uniqueItems:            true
   expandedScopes:
     description: |
       List of scopes granted to this client by matching roles.  Scopes must be
@@ -53,6 +64,11 @@ properties:
         Scope that client is granted by a role
       type:                 string
       pattern:              "^[\x20-\x7e]*$"
+  disabled:
+    description: |
+      If true, this client is disabled and cannot be used.  This usually occurs when the
+      scopes avaialble to the user owning the client no longer satisfy the client.
+    type: boolean
 additionalProperties:       false
 required:
   - clientId
@@ -62,4 +78,6 @@ required:
   - lastModified
   - lastDateUsed
   - lastRotated
+  - scopes
   - expandedScopes
+  - disabled

@@ -396,13 +396,17 @@ suite('api (role logic)', function() {
       {
         roleId: 'client-id:test-client-1',
         scopes: ['a*']
+      },
+      {
+        roleId: 'star',
+        scopes: ['*']
       }
     ],
     clients: [
       {
         clientId:   'test-client-1',
         includes: [
-          '*'       // because assume:client-id:root is granted
+          '*'       // because assume:star is granted
         ],
         excludes: [
           'scope-1', 'scope-2'
@@ -416,13 +420,17 @@ suite('api (role logic)', function() {
       {
         roleId: 'client-id:test-client-1',
         scopes: ['assume*']
+      },
+      {
+        roleId: 'star',
+        scopes: ['*']
       }
     ],
     clients: [
       {
         clientId:   'test-client-1',
         includes: [
-          '*'       // because assume:client-id:root is granted
+          '*'       // because assume:star is granted
         ],
         excludes: [
           'scope-1', 'scope-2'
@@ -436,13 +444,17 @@ suite('api (role logic)', function() {
       {
         roleId: 'client-id:test-client-1',
         scopes: ['assume:*']
+      },
+      {
+        roleId: 'star',
+        scopes: ['*']
       }
     ],
     clients: [
       {
         clientId:   'test-client-1',
         includes: [
-          '*'       // because assume:client-id:root is granted
+          '*'       // because assume:star is granted
         ],
         excludes: [
           'scope-1', 'scope-2'
@@ -455,14 +467,18 @@ suite('api (role logic)', function() {
     roles: [
       {
         roleId: 'client-id:test-client-1',
-        scopes: ['assume:client-*']
+        scopes: ['assume:st*']
+      },
+      {
+        roleId: 'star',
+        scopes: ['*']
       }
     ],
     clients: [
       {
         clientId:   'test-client-1',
         includes: [
-          '*'       // because assume:client-id:root is granted
+          '*'       // because assume:star is granted
         ],
         excludes: [
           'scope-1', 'scope-2'

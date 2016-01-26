@@ -192,25 +192,4 @@ suite('api (roles)', function() {
     // At least one of them should trigger this message
     await helper.events.waitFor('e1');
   });
-
-  test('importClients (clean-up w. deleteClient)', async() => {
-    await helper.auth.deleteClient(clientId);
-
-    let accessToken = slugid.v4();
-    await helper.auth.importClients([{
-      clientId,
-      accessToken,
-      scopes: ['dummy-scope-1'],
-      expires: taskcluster.fromNowJSON('4 hours'),
-      name: "Test Client",
-      description: "Client used to test import"
-    }]);
-
-    let client = await helper.auth.client(clientId);
-    assume(client.expandedScopes).contains('dummy-scope-1');
-
-    // clean up
-    await helper.auth.deleteRole('client-id:' + clientId);
-    await helper.auth.deleteClient(clientId);
-  });
 });

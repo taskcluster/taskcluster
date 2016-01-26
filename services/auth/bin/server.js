@@ -139,7 +139,6 @@ let load = loader({
       // set up the root access token if necessary
       if (cfg.get('auth:rootAccessToken')) {
         await Client.ensureRootClient(cfg.get('auth:rootAccessToken'));
-        await Role.ensureRootRole();
       }
 
       // Load everything for resolver

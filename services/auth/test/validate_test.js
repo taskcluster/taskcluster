@@ -53,6 +53,14 @@ var testCases = [
     path:     'authenticate-hawk-request-bad.json',
     schema:   'auth/v1/authenticate-hawk-request.json#',
     success:  false
+  }, {
+    path:     'create-client-request-no-scopes.json',
+    schema:   'auth/v1/create-client-request.json#',
+    success:  true
+  }, {
+    path:     'create-client-request-with-scopes.json',
+    schema:   'auth/v1/create-client-request.json#',
+    success:  true
   }
 ];
 
