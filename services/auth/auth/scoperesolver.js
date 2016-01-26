@@ -260,6 +260,7 @@ class ScopeResolver extends events.EventEmitter {
   createSignatureValidator(options = {}) {
     let validator = base.API.createSignatureValidator({
       nonceManager: options.clientLoader,
+      expandScopes: (scopes) => this.resolve(scopes),
       clientLoader: async (clientId) => {
         let client = this._clientCache[clientId];
         if (!client) {
@@ -275,18 +276,7 @@ class ScopeResolver extends events.EventEmitter {
         return client;
       }
     });
-    return (req) => {
-      return validator(req).then(result => {
-        if (result.status === 'auth-success') {
-          // This is only necessary if authorizedScopes or temporary credentials
-          // was used, otherwise it should already be the fixed-point.
-          // We should refactor base.API.createSignatureValidator to facilitate
-          // this... But for now this is okay...
-          result.scopes = this.resolve(result.scopes);
-        }
-        return result;
-      });
-    };
+    return validator;
   }
 
   /**
