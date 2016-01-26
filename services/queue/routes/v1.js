@@ -1631,27 +1631,20 @@ api.declare({
   route:      '/pending/:provisionerId/:workerType',
   name:       'pendingTasks',
   stability:  base.API.stability.stable,
-  scopes:     [['queue:pending-tasks:<provisionerId>/<workerType>']],
-  deferAuth:  true,
   output:     'pending-tasks-response.json#',
   title:      "Get Number of Pending Tasks",
   description: [
-    "Documented later...",
-    "This probably the end-point that will remain after rewriting to azure",
-    "queue storage...",
+    "Get an approximate number of pending tasks for the given `provisionerId`",
+    "and `workerType`.",
     "",
+    "The underlying Azure Storage Queues only promises to give us an estimate.",
+    "Furthermore, we cache the result in memory for 20 seconds. So consumers",
+    "should be no means expect this to be an accurate number.",
+    "It is, however, a solid estimate of the number of pending tasks.",
   ].join('\n')
 }, async function(req, res) {
   var provisionerId = req.params.provisionerId;
   var workerType    = req.params.workerType;
-
-  // Authenticate request by providing parameters
-  if(!req.satisfies({
-    provisionerId:  provisionerId,
-    workerType:     workerType
-  })) {
-    return;
-  }
 
   // Get number of pending message
   var count = await this.queueService.countPendingMessages(

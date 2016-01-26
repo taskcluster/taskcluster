@@ -117,6 +117,10 @@ class QueueService {
     this.deadlineQueue      = options.deadlineQueue;
     this.deadlineDelay      = options.deadlineDelay;
     this.deadlineQueueReady = null;
+
+    // Keep a cache of pending counts as mapping:
+    //    <provisionerId>/<workerType> -> {lastUpdated, count: promise}
+    this.countPendingCache  = {};
   }
 
   _putMessage(queue, message, {visibility, ttl}) {
@@ -546,16 +550,33 @@ class QueueService {
 
   /** Returns promise for number of messages pending in pending task queue */
   async countPendingMessages(provisionerId, workerType) {
-    // Find name of azure queue
-    var queueNames = await this.ensurePendingQueue(provisionerId, workerType);
+    // Find cache entry
+    let cacheKey = provisionerId + '/' + workerType;
+    let entry = this.countPendingCache[cacheKey] || {
+      count: Promise.resolve(0),
+      lastUpdated: 0,
+    };
+    this.countPendingCache[cacheKey] = entry;
 
-    // Find messages count queues
-    let results = await Promise.all(_.map(queueNames, queueName => {
-      return this.client.getMetadata(queueName);
-    }));
+    // Update count if more than 20 seconds old
+    if (Date.now() - entry.lastUpdated > 20 * 1000) {
+      entry.lastUpdated = Date.now();
+      entry.count = (async () => {
+        // Find name of azure queue
+        let queueNames = await this.ensurePendingQueue(provisionerId, workerType);
 
-    // Sum up the messageCount property
-    return _.sum(results, 'messageCount');
+        // Find messages count queues
+        let results = await Promise.all(_.map(queueNames, queueName => {
+          return this.client.getMetadata(queueName);
+        }));
+
+        // Sum up the messageCount property
+        return _.sum(results, 'messageCount');
+      })();
+    }
+
+    // Wait for result and return it
+    return await entry.count;
   }
 };
 
