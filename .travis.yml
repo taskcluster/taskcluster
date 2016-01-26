@@ -32,7 +32,7 @@ notifications:
       # decrypted version is "irc.mozilla.org#taskcluster-bots"
       # see https://github.com/travis-ci/travis-ci/issues/1094
       - secure: "iWVuoaXyzNFjdDPlo/Jac04n+4yMlcgW0uEMLvF79Z5gqe/K+kbD5iy0lCo9wUIVM9O03/8K+7mNS/SlYMiOpmziyAhEKi3X4CFErNuwy1pyriLJrZZScOqGPKkuP7+m+BBCjVXoyFRYXYQ7SncQsLlE3wtJvA7dNNSLCGUg5ys="
-    on_success: always
+    on_success: change
     on_failure: always
     template:
       - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
