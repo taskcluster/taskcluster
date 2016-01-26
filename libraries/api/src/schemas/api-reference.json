@@ -118,7 +118,7 @@
         },
         "additionalProperties":   false,
         "required": [
-          "type", "method", "route", "args", "query",
+          "type", "method", "route", "args",
           "name", "stability", "title", "description"
         ]
       }
