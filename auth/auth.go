@@ -17,15 +17,15 @@
 //
 // ### Clients
 // The authentication service manages _clients_, at a high-level each client
-// consists of a `clientId`, an `accessToken`, expiration and description.
+// consists of a `clientId`, an `accessToken`, scopes, and some metadata.
 // The `clientId` and `accessToken` can be used for authentication when
 // calling TaskCluster APIs.
 //
-// Each client is assigned a single scope on the form:
-// `assume:client-id:<clientId>`, this scope doesn't really do much on its
-// own. But when you dive into the roles section you'll see that you can
-// create a role: `client-id:<clientId>` that assigns scopes to the client.
-// This way it's easy to audit all scope assignments, by only listing roles.
+// The client's scopes control the client's access to TaskCluster resources.
+// The scopes are *expanded* by substituting roles, as defined below.
+// Every client has an implicit scope named `assume:client-id:<clientId>`,
+// allowing additional access to be granted to the client without directly
+// editing the client's scopes.
 //
 // ### Roles
 // A _role_ consists of a `roleId`, a set of scopes and a description.
@@ -73,7 +73,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 26 Jan 2016 at 17:28:00 UTC. The code was generated
+// Tue, 26 Jan 2016 at 19:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -145,6 +145,8 @@ func (myAuth *Auth) Client(clientId string) (*GetClientResponse, *tcclient.CallS
 // If a client with the same `clientId` already exists this operation will
 // fail. Use `updateClient` if you wish to update an existing client.
 //
+// The caller's scopes must satisfy `scopes`.
+//
 // Required scopes:
 //   * auth:create-client:<clientId>
 //
@@ -172,9 +174,11 @@ func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *t
 	return responseObject.(*CreateClientResponse), callSummary, err
 }
 
-// Update an exisiting client. This is really only useful for changing the
-// description and expiration, as you won't be allowed to the `clientId`
-// or `accessToken`.
+// Update an exisiting client. The `clientId` and `accessToken` cannot be
+// updated, but `scopes` can be modified.  The caller's scopes must
+// satisfy all scopes being added to the client in the update operation.
+// If no scopes are given in the request, the client's scopes remain
+// unchanged
 //
 // Required scopes:
 //   * auth:update-client:<clientId>
@@ -183,6 +187,37 @@ func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, *t
 func (myAuth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
+	return responseObject.(*GetClientResponse), callSummary, err
+}
+
+// Enable a client that was disabled with `disableClient`.  If the client
+// is already enabled, this does nothing.
+//
+// This is typically used by identity providers to re-enable clients that
+// had been disabled when the corresponding identity's scopes changed.
+//
+// Required scopes:
+//   * auth:enable-client:<clientId>
+//
+// See http://docs.taskcluster.net/auth/api-docs/#enableClient
+func (myAuth *Auth) EnableClient(clientId string) (*GetClientResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/enable", new(GetClientResponse), nil)
+	return responseObject.(*GetClientResponse), callSummary, err
+}
+
+// Disable a client.  If the client is already disabled, this does nothing.
+//
+// This is typically used by identity providers to disable clients when the
+// corresponding identity's scopes no longer satisfy the client's scopes.
+//
+// Required scopes:
+//   * auth:disable-client:<clientId>
+//
+// See http://docs.taskcluster.net/auth/api-docs/#disableClient
+func (myAuth *Auth) DisableClient(clientId string) (*GetClientResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/disable", new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), callSummary, err
 }
 
@@ -344,23 +379,6 @@ func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/authenticate-hawk", new(HawkSignatureAuthenticationResponse), nil)
 	return responseObject.(*HawkSignatureAuthenticationResponse), callSummary, err
-}
-
-// Stability: *** DEPRECATED ***
-//
-// Import client from JSON list, overwriting any clients that already
-// exists. Returns a list of all clients imported.
-//
-// Required scopes:
-//   * auth:import-clients, and
-//   * auth:create-client, and
-//   * auth:credentials
-//
-// See http://docs.taskcluster.net/auth/api-docs/#importClients
-func (myAuth *Auth) ImportClients(payload *ExportedClients) (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myAuth)
-	_, callSummary, err := (&cd).APICall(payload, "POST", "/import-clients", nil, nil)
-	return callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -574,6 +592,12 @@ type (
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/expires
 		Expires tcclient.Time `json:"expires"`
+
+		// List of scopes the client has.  Scopes must be composed of
+		// printable ASCII characters and spaces.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/scopes
+		Scopes []string `json:"scopes"`
 	}
 
 	// All details about a client including the `accessToken`
@@ -609,8 +633,14 @@ type (
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/description
 		Description string `json:"description"`
 
-		// List of scopes granted to this client by matching roles.  Scopes must be
-		// composed of printable ASCII characters and spaces.
+		// If true, this client is disabled and cannot be used.  This usually occurs when the
+		// scopes avaialble to the user owning the client no longer satisfy the client.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/disabled
+		Disabled bool `json:"disabled"`
+
+		// List of scopes granted to this client by matching roles, including the
+		// client's scopes and the implicit role `client-id:<clientId>`.
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/expandedScopes
 		ExpandedScopes []string `json:"expandedScopes"`
@@ -636,6 +666,14 @@ type (
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/lastRotated
 		LastRotated tcclient.Time `json:"lastRotated"`
+
+		// List of scopes the client has (unexpanded).  Scopes must be composed of
+		// printable ASCII characters and spaces.
+		//
+		// Default:    []
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/scopes
+		Scopes []string `json:"scopes"`
 	}
 
 	// Data to create or update a role.
@@ -655,54 +693,6 @@ type (
 		// printable ASCII characters and spaces.
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-role-request.json#/properties/scopes
-		Scopes []string `json:"scopes"`
-	}
-
-	// List of clients and all their details as JSON for import/export.
-	//
-	// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#
-	ExportedClients []struct {
-
-		// AccessToken used for authenticating requests
-		//
-		// Syntax:     ^[a-zA-Z0-9_-]{22,66}$
-		//
-		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/accessToken
-		AccessToken string `json:"accessToken"`
-
-		// ClientId of the client scopes is requested about
-		//
-		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		//
-		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/clientId
-		ClientId string `json:"clientId"`
-
-		// Description of what these credentials are used for in markdown.
-		// Should include who is the owner, point of contact.
-		// Why it is scoped as is, think of this as documentation.
-		//
-		// Max length: 4096
-		//
-		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/description
-		Description string `json:"description"`
-
-		// Date and time where the clients credentials are set to expire
-		//
-		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/expires
-		Expires tcclient.Time `json:"expires"`
-
-		// Human readable name of this set of credentials, typical
-		// component/server-name or IRC nickname of the user.
-		//
-		// Max length: 255
-		//
-		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/name
-		Name string `json:"name"`
-
-		// List of scopes the client is authorized to access.  Scopes must be
-		// composed of printable ASCII characters and spaces.
-		//
-		// See http://schemas.taskcluster.net/auth/v1/exported-clients.json#/items/properties/scopes
 		Scopes []string `json:"scopes"`
 	}
 
@@ -731,6 +721,12 @@ type (
 		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/description
 		Description string `json:"description"`
 
+		// If true, this client is disabled and cannot be used.  This usually occurs when the
+		// scopes avaialble to the user owning the client no longer satisfy the client.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/disabled
+		Disabled bool `json:"disabled"`
+
 		// List of scopes granted to this client by matching roles.  Scopes must be
 		// composed of printable ASCII characters and spaces.
 		//
@@ -758,6 +754,14 @@ type (
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastRotated
 		LastRotated tcclient.Time `json:"lastRotated"`
+
+		// List of scopes the client has (unexpanded).  Scopes must be composed of
+		// printable ASCII characters and spaces.
+		//
+		// Default:    []
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/scopes
+		Scopes []string `json:"scopes"`
 	}
 
 	// Get all details about a role
