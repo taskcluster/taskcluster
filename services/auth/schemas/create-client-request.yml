@@ -15,6 +15,16 @@ properties:
       Should include who is the owner, point of contact.
     type:                   string
     maxLength:              10240
+  scopes:
+    description: |
+      List of scopes the client has.  Scopes must be composed of
+      printable ASCII characters and spaces.
+    type:                   array
+    items:
+      description: Scope
+      type:                 string
+      pattern: "^[\x20-\x7e]*$"
+    uniqueItems:            true
 additionalProperties:       false
 required:
   - expires
