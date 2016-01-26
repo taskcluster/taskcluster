@@ -1,3 +1,4 @@
+sudo: false
 env:
   global:
   - DEBUG='* -mocha:* -superagent -express:* -base:validator -base:entity'
