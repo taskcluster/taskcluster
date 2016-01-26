@@ -7,6 +7,7 @@ suite('api (client)', function() {
   var _           = require('lodash');
   var assume      = require('assume');
   var base        = require('taskcluster-base');
+  var taskcluster = require('taskcluster-client');
 
   test('ping', async () => {
     await helper.auth.ping();
@@ -58,7 +59,7 @@ suite('api (client)', function() {
       clientId:  CLIENT_ID
     }));
 
-    var expires = new Date();
+    var expires = taskcluster.fromNow('1 hour');
     var description = "Test client...";
     let client = await helper.auth.createClient(CLIENT_ID, {
       expires, description,
