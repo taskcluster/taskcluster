@@ -816,7 +816,7 @@ authenticate.nonceManager = nonceManager;
  * applies scope restrictions, certificate validation and returns a clone if
  * modified (otherwise it returns the original).
  */
-var limitClientWithExt = function(client, ext) {
+var limitClientWithExt = function(client, ext, expandScopes) {
   // Attempt to parse ext
   try {
     ext = JSON.parse(new Buffer(ext, 'base64').toString('utf-8'));
@@ -906,7 +906,7 @@ var limitClientWithExt = function(client, ext) {
     client = {
       clientId:     client.clientId,
       accessToken:  temporaryKey,
-      scopes:       cert.scopes
+      scopes:       expandScopes(cert.scopes),
     };
   }
 
@@ -929,7 +929,7 @@ var limitClientWithExt = function(client, ext) {
     client = {
       clientId:     client.clientId,
       accessToken:  client.accessToken,
-      scopes:       ext.authorizedScopes
+      scopes:       expandScopes(ext.authorizedScopes),
     };
   }
 
@@ -944,7 +944,8 @@ var limitClientWithExt = function(client, ext) {
  * options:
  * {
  *    clientLoader:   async (clientId) => {clientId, accessToken, scopes},
- *    nonceManager:   nonceManager({size: ...})
+ *    nonceManager:   nonceManager({size: ...}),
+ *    expandScopes:   (scopes) => scopes,
  * }
  *
  * The function returned takes an object:
@@ -954,12 +955,23 @@ var limitClientWithExt = function(client, ext) {
  *     {status: 'auth-success', scheme, scopes}, or,
  *     {status: 'auth-success', scheme, scopes, hash}
  *
+ * The `expandScopes` applies and rules that expands scopes, such as roles.
+ * It is assumed that clients from `clientLoader` are returned with scopes
+ * fully expanded.
+ *
  * The method returned by this function works as `signatureValidator` for
  * `remoteAuthentication`.
  */
 var createSignatureValidator = function(options) {
+  assert(typeof(options) === 'object', "options must be an object");
   assert(options.clientLoader instanceof Function,
          "options.clientLoader must be a function");
+  if (!options.expandScopes) {
+    // Default to the identity function
+    options.expandScopes = function(scopes) { return scopes; };
+  }
+  assert(options.expandScopes instanceof Function,
+         "options.expandScopes must be a function");
   var loadCredentials = function(clientId, ext, callback) {
     Promise.resolve(options.clientLoader(clientId)).then(function(client) {
       if (ext) {
@@ -967,7 +979,7 @@ var createSignatureValidator = function(options) {
         // if we've parsed ext incorrectly it could be a security issue, as
         // scope elevation _might_ be possible. But it's a rather unlikely
         // exploit... Besides we have plenty of obscurity to protect us here :)
-        client = limitClientWithExt(client, ext);
+        client = limitClientWithExt(client, ext, options.expandScopes);
       }
       callback(null, {
         clientToken:  client.clientId,
