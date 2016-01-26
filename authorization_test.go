@@ -142,9 +142,11 @@ func TestBewit(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
-		routes := Routes(tcclient.ConnectionData{
-			Credentials: creds,
-		})
+		routes := Routes{
+			ConnectionData: tcclient.ConnectionData{
+				Credentials: creds,
+			},
+		}
 		req, err := http.NewRequest(
 			"POST",
 			"http://localhost:60024/bewit",
@@ -186,15 +188,17 @@ func TestAuthorizationDelegate(t *testing.T) {
 	test := func(name string, scopes []string) IntegrationTest {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 			// Test setup
-			routes := Routes(tcclient.ConnectionData{
-				Authenticate: true,
-				Credentials: &tcclient.Credentials{
-					ClientId:         creds.ClientId,
-					AccessToken:      creds.AccessToken,
-					Certificate:      creds.Certificate,
-					AuthorizedScopes: scopes,
+			routes := Routes{
+				ConnectionData: tcclient.ConnectionData{
+					Authenticate: true,
+					Credentials: &tcclient.Credentials{
+						ClientId:         creds.ClientId,
+						AccessToken:      creds.AccessToken,
+						Certificate:      creds.Certificate,
+						AuthorizedScopes: scopes,
+					},
 				},
-			})
+			}
 
 			// Requires scope "auth:azure-table-access:fakeaccount/DuMmYtAbLe"
 			req, err := http.NewRequest(
@@ -229,10 +233,12 @@ func TestAPICallWithPayload(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
-		routes := Routes(tcclient.ConnectionData{
-			Authenticate: true,
-			Credentials:  creds,
-		})
+		routes := Routes{
+			ConnectionData: tcclient.ConnectionData{
+				Authenticate: true,
+				Credentials:  creds,
+			},
+		}
 		taskId := slugid.Nice()
 		taskGroupId := slugid.Nice()
 		created := time.Now()
@@ -303,10 +309,12 @@ func TestNon200HasErrorBody(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
-		routes := Routes(tcclient.ConnectionData{
-			Authenticate: true,
-			Credentials:  creds,
-		})
+		routes := Routes{
+			ConnectionData: tcclient.ConnectionData{
+				Authenticate: true,
+				Credentials:  creds,
+			},
+		}
 		taskId := slugid.Nice()
 
 		req, err := http.NewRequest(
@@ -336,10 +344,12 @@ func TestOversteppedScopes(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
-		routes := Routes(tcclient.ConnectionData{
-			Authenticate: true,
-			Credentials:  creds,
-		})
+		routes := Routes{
+			ConnectionData: tcclient.ConnectionData{
+				Authenticate: true,
+				Credentials:  creds,
+			},
+		}
 
 		// This scope is not in the scopes of the temp credentials, which would
 		// happen if a task declares a scope that the provisioner does not
@@ -374,14 +384,16 @@ func TestOversteppedScopes(t *testing.T) {
 }
 
 func TestBadCredsReturns500(t *testing.T) {
-	routes := Routes(tcclient.ConnectionData{
-		Authenticate: true,
-		Credentials: &tcclient.Credentials{
-			ClientId:    "abc",
-			AccessToken: "def",
-			Certificate: "ghi", // baaaad certificate
+	routes := Routes{
+		ConnectionData: tcclient.ConnectionData{
+			Authenticate: true,
+			Credentials: &tcclient.Credentials{
+				ClientId:    "abc",
+				AccessToken: "def",
+				Certificate: "ghi", // baaaad certificate
+			},
 		},
-	})
+	}
 	req, err := http.NewRequest(
 		"GET",
 		"http://localhost:60024/secrets/v1/secret/garbage/pmoore/foo",

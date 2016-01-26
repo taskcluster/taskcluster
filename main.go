@@ -98,10 +98,12 @@ func main() {
 
 	log.Println("Proxy with scopes: ", creds.AuthorizedScopes)
 
-	routes := Routes(tcclient.ConnectionData{
-		Authenticate: true,
-		Credentials:  creds,
-	})
+	routes := Routes{
+		ConnectionData: tcclient.ConnectionData{
+			Authenticate: true,
+			Credentials:  creds,
+		},
+	}
 
 	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), &routes)
 	if startError != nil {

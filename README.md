@@ -101,6 +101,15 @@ The proxy runs fine natively, but if you wish, you can also create a docker imag
 ./build.sh user/taskcluster-proxy
 ```
 
+## Endpoints
+
+#### Credentials Update
+
+The proxy has the endpoint `/credentials` which accepts `PUT` request for
+credentials update. The body is a
+[Credentials](http://docs.taskcluster.net/queue/api-docs/#claimTask)
+object in json format.
+
 
 ## Running tests
 
