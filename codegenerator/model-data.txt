@@ -1,4 +1,4 @@
-Generated: 1453825730
+Generated: 1453829298
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -1474,6 +1474,19 @@ Entry 12    =
 
 **Warning** this api end-point is **not stable**.'
 Entry 13    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/backend-status'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'backendStatus'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Backend Status'
+    Entry Description = '**Warning** this api end-point is **not stable**.'
+Entry 14    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/api-reference'
