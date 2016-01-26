@@ -54,7 +54,7 @@ suite('api (client)', function() {
     });
   });
 
-  test("auth.createClient", async () => {
+  test("auth.createClient (no scopes)", async () => {
     await helper.events.listenFor('e1', helper.authEvents.clientCreated({
       clientId:  CLIENT_ID
     }));
@@ -74,6 +74,43 @@ suite('api (client)', function() {
     assume(client2.description).equals(description);
     assume(client2.expires).equals(expires.toJSON());
     assume(client2).has.not.own('accessToken');
+    assume(client2.expandedScopes).contains('assume:client-id:' + CLIENT_ID);
+
+    await helper.events.waitFor('e1');
+  });
+
+  test("auth.createClient (with scopes)", async () => {
+    await helper.auth.deleteClient(CLIENT_ID);
+
+    await helper.events.listenFor('e1', helper.authEvents.clientCreated({
+      clientId:  CLIENT_ID
+    }));
+
+    var expires = taskcluster.fromNow('1 hour');
+    var description = "Test client...";
+    var scopes = ["scope1", "scope2"];
+    let client = await helper.auth.createClient(CLIENT_ID, {
+      expires, description, scopes,
+    });
+    assume(client.description).equals(description);
+    assume(client.expires).equals(expires.toJSON());
+    assume(client.accessToken).is.a('string');
+    assume(client.scopes).contains('scope1');
+    assume(client.scopes).contains('scope2');
+    assume(client.scopes).not.contains('assume:client-id:' + CLIENT_ID);
+    assume(client.expandedScopes).contains('scope1');
+    assume(client.expandedScopes).contains('scope2');
+    assume(client.expandedScopes).contains('assume:client-id:' + CLIENT_ID);
+
+    let client2 = await helper.auth.client(CLIENT_ID);
+    assume(client2.description).equals(description);
+    assume(client2.expires).equals(expires.toJSON());
+    assume(client2).has.not.own('accessToken');
+    assume(client2.scopes).contains('scope1');
+    assume(client2.scopes).contains('scope2');
+    assume(client2.scopes).not.contains('assume:client-id:' + CLIENT_ID);
+    assume(client2.expandedScopes).contains('scope1');
+    assume(client2.expandedScopes).contains('scope2');
     assume(client2.expandedScopes).contains('assume:client-id:' + CLIENT_ID);
 
     await helper.events.waitFor('e1');
@@ -146,7 +183,7 @@ suite('api (client)', function() {
     await helper.auth.deleteRole('client-id:' + CLIENT_ID);
   });
 
-  test("auth.updateClient", async () => {
+  test("auth.updateClient (no scope changes)", async () => {
     await helper.events.listenFor('e1', helper.authEvents.clientUpdated({
       clientId:  CLIENT_ID
     }));
@@ -161,14 +198,73 @@ suite('api (client)', function() {
     assume(new Date(client.lastModified).getTime())
       .is.greaterThan(new Date(client.lastRotated).getTime());
     assume(client).has.not.own('accessToken');
+    assume(client.scopes).contains('scope1');
+    assume(client.scopes).contains('scope2');
     assume(client.expandedScopes).contains('assume:client-id:' + CLIENT_ID);
     await helper.events.waitFor('e1');
 
     let client2 = await helper.auth.client(CLIENT_ID);
     assume(client2.lastModified).equals(client.lastModified);
     assume(client2).has.not.own('accessToken');
+    assume(client2.scopes).contains('scope1');
+    assume(client2.scopes).contains('scope2');
+    assume(client2.expandedScopes).contains('assume:client-id:' + CLIENT_ID);
   });
 
+  test("auth.updateClient (with scope changes)", async () => {
+    await helper.events.listenFor('e1', helper.authEvents.clientUpdated({
+      clientId:  CLIENT_ID
+    }));
+
+    var expires = new Date();
+    let description = 'Third test description...';
+    let scopes = ['scope2', 'scope3'];
+    let client = await helper.auth.updateClient(CLIENT_ID, {
+      description, expires, scopes
+    });
+    assume(client.description).equals(description);
+    assume(client.expires).equals(expires.toJSON());
+    assume(new Date(client.lastModified).getTime())
+      .is.greaterThan(new Date(client.lastRotated).getTime());
+    assume(client).has.not.own('accessToken');
+    assume(client.scopes).not.contains('scope1');
+    assume(client.scopes).contains('scope2');
+    assume(client.scopes).contains('scope3');
+    assume(client.expandedScopes).not.contains('scope1');
+    assume(client.expandedScopes).contains('scope2');
+    assume(client.expandedScopes).contains('scope3');
+    assume(client.expandedScopes).contains('assume:client-id:' + CLIENT_ID);
+    await helper.events.waitFor('e1');
+
+    let client2 = await helper.auth.client(CLIENT_ID);
+    assume(client2.lastModified).equals(client.lastModified);
+    assume(client2).has.not.own('accessToken');
+    assume(client2.scopes).not.contains('scope1');
+    assume(client2.scopes).contains('scope2');
+    assume(client2.scopes).contains('scope3');
+    assume(client2.expandedScopes).not.contains('scope1');
+    assume(client2.expandedScopes).contains('scope2');
+    assume(client2.expandedScopes).contains('scope3');
+    assume(client2.expandedScopes).contains('assume:client-id:' + CLIENT_ID);
+  });
+
+  test("auth.disableClient", async () => {
+    let client = await helper.auth.disableClient(CLIENT_ID);
+    assume(client.disabled).equals(true);
+    client = await helper.auth.client(CLIENT_ID);
+    assume(client.disabled).equals(true);
+    client = await helper.auth.disableClient(CLIENT_ID);
+    assume(client.disabled).equals(true);
+  });
+
+  test("auth.enableClient", async () => {
+    let client = await helper.auth.enableClient(CLIENT_ID);
+    assume(client.disabled).equals(false);
+    client = await helper.auth.client(CLIENT_ID);
+    assume(client.disabled).equals(false);
+    client = await helper.auth.enableClient(CLIENT_ID);
+    assume(client.disabled).equals(false);
+  });
 
   test("auth.deleteClient", async () => {
     await helper.events.listenFor('e1', helper.authEvents.clientDeleted({

@@ -24,6 +24,8 @@ class ScopeResolver extends events.EventEmitter {
     // List of client objects on the form:
     // {
     //    clientId, accessToken,
+    //    scopes: [...],                // Scopes (as set in the table)
+    //    disabled: true | false,       // If true, client is disabled
     //    expandedScopes: [...],        // Scopes (including indirect scopes)
     //    updateLastUsed: true | false  // true, if lastUsed should be updated
     // }
@@ -125,7 +127,7 @@ class ScopeResolver extends events.EventEmitter {
       let client = await this._Client.load({clientId}, true);
       // Always remove it
       this._clients = this._clients.filter(c => c.clientId !== clientId);
-      // If a client was loaded add it back
+      // If a client was loaded, add it back
       if (client) {
         // For reasoning on structure, see reload()
         let lastUsedDate = new Date(client.details.lastDateUsed);
@@ -134,7 +136,9 @@ class ScopeResolver extends events.EventEmitter {
           clientId:       client.clientId,
           accessToken:    client.accessToken,
           expires:        client.expires,
-          updateLastUsed: lastUsedDate < minLastUsed
+          updateLastUsed: lastUsedDate < minLastUsed,
+          scopes:         client.scopes,
+          disabled:       client.disabled
         });
       }
       this._computeFixedPoint();
@@ -181,7 +185,9 @@ class ScopeResolver extends events.EventEmitter {
               // Note that lastUsedDate should be updated, if it's out-dated by
               // more than 6 hours.
               // (cheap way to know if it's been used recently)
-              updateLastUsed: lastUsedDate < minLastUsed
+              updateLastUsed: lastUsedDate < minLastUsed,
+              scopes:         client.scopes,
+              disabled:       client.disabled
             });
           }
         }),
@@ -223,7 +229,8 @@ class ScopeResolver extends events.EventEmitter {
     // Construct client cache
     this._clientCache = {};
     for (let client of this._clients) {
-      var scopes = this.resolve(['assume:client-id:' + client.clientId]);
+      var scopes = this.resolve(
+          ['assume:client-id:' + client.clientId].concat(client.scopes));
       client.scopes = scopes; // for createSignatureValidator compatibility
       client.expandedScopes = scopes;
       this._clientCache[client.clientId] = client;
@@ -263,11 +270,15 @@ class ScopeResolver extends events.EventEmitter {
       clientLoader: async (clientId) => {
         let client = this._clientCache[clientId];
         if (!client) {
-          throw new Error("Client with clientId: '" + clientId + "' not found");
+          throw new Error("Client with clientId '" + clientId + "' not found");
+        }
+        if (client.disabled) {
+          throw new Error("Client with clientId '" + clientId + "' is disabled");
         }
         if (client.expires < new Date()) {
           throw new Error("Client with clientId: '" + clientId + "' has expired");
         }
+
         if (client.updateLastUsed) {
           client.updateLastUsed = false;
           this._updateLastUsed(clientId).catch(err => this.emit('error', err));
