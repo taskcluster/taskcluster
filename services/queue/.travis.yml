@@ -16,3 +16,18 @@ env:
 before_install:
 - openssl aes-256-cbc -K $encrypted_e05971c47e30_key -iv $encrypted_e05971c47e30_iv
   -in user-config.yml.enc -out user-config.yml -d
+
+# encrpyt channel name to get around issue
+# https://github.com/travis-ci/travis-ci/issues/1094
+notifications:
+  irc:
+    channels:
+      # encrpyted string was "irc.mozilla.org#taskcluster-bots"
+      - secure: "SZP2ezuVGBIPv1mwz8XEmEVddSLpSsEIdbDcYP/+itZi9q6DEp3E6YUFcLtXNQ6SLkKDpzdTmhAbaCI30Xl2YAic7ah8OzjS+S32K+85FjSgltuIvNbfSD14iPkMy3qdvdEw63QBuEDSvrzhszXuNAo7PmO0a9lCProG2sbovBY="
+    on_success: change
+    on_failure: always
+    template:
+      - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
+      - "Change view : %{compare_url}"
+      - "Build details : %{build_url}"
+      - "Commit message : %{commit_message}"
