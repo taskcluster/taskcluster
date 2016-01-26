@@ -33,8 +33,8 @@ suite('api (role logic)', function() {
    */
   let test = (title, t) => {
     mocha.test(title, async function() {
-      // Some of these tests can be a bit slow...
-      this.timeout(5 * 60 * 1000);
+      // Some of these tests can be a bit slow, especially without in-memory entities
+      this.timeout(10 * 60 * 1000);
 
       // Ensure all roles and clients from the test are deleted
       for(let c of t.clients) {
