@@ -1290,7 +1290,7 @@ var remoteAuthentication = function(options, entry) {
             "You only have the scopes:",
             "{{scopes}}",
             "",
-            "In order words you are missing scopes from one of the options:"
+            "In other words you are missing scopes from one of the options:"
           ].concat(scopesets.map((set, index) => {
             let missing = set.filter(scope => {
               return !utils.scopeMatch(result.scopes, [[scope]]);
