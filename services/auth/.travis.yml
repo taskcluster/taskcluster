@@ -4,7 +4,7 @@ env:
   - DEBUG='* -mocha:* -superagent -express:* -base:validator -base:entity'
 language: node_js
 node_js:
-- '0.10'
+- '4'
 script: npm test
 before_install:
 - openssl aes-256-cbc -K $encrypted_c01da2a090bc_key -iv $encrypted_c01da2a090bc_iv

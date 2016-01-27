@@ -57,7 +57,7 @@ suite('azure table (sas)', function() {
     ).then(function(result) {
       assert(false, "Expected an authentication error!");
     }, function(err) {
-      assert(err.statusCode == 401, "Expected authorization error!");
+      assert(err.statusCode == 403, "Expected authorization error!");
     });
   });
 });

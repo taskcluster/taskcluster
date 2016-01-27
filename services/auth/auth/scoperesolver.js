@@ -229,8 +229,9 @@ class ScopeResolver extends events.EventEmitter {
     // Construct client cache
     this._clientCache = {};
     for (let client of this._clients) {
-      var scopes = this.resolve(
-          ['assume:client-id:' + client.clientId].concat(client.scopes));
+      var scopes = this.resolve([
+        'assume:client-id:' + client.clientId
+      ].concat(client._scopes || []));
       client.scopes = scopes; // for createSignatureValidator compatibility
       client.expandedScopes = scopes;
       this._clientCache[client.clientId] = client;
@@ -266,7 +267,7 @@ class ScopeResolver extends events.EventEmitter {
 
   createSignatureValidator(options = {}) {
     let validator = base.API.createSignatureValidator({
-      nonceManager: options.clientLoader,
+      expandScopes: (scopes) => this.resolve(scopes),
       clientLoader: async (clientId) => {
         let client = this._clientCache[clientId];
         if (!client) {

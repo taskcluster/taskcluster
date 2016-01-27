@@ -27,9 +27,6 @@ defaults:
     # Accounts that auth can delegate access to, as JSON
     azureAccounts:            !env:json AZURE_ACCOUNTS
 
-    # ClientId to use when issuing temporary credentials
-    clientIdForTempCreds:     !env TEMP_CREDS_CLIENT_ID
-
     # Maximum before updating lastUsed, MUST be negative
     # A sane value is something like 6 hours as all nodes will race to update
     # this value, and it's really only a best effort service.
@@ -50,9 +47,6 @@ defaults:
 
     # Trust a forwarding proxy
     trustProxy:               !env:bool TRUST_PROXY
-
-    # Secret used to signed cookies
-    cookieSecret:             !env COOKIE_SECRET
 
   azure:
     # Azure table storage account name
@@ -99,9 +93,6 @@ test:
     statsComponent:           auth-tests
     # hardcoded into helper.js
     rootAccessToken:          PKqZk1pIRgKnSLNXC86rKwl5Rp5Ki4SsKlZGEu2_kGNQ
-    azureAccounts:            {}
-    # Hardcoded into helper.js
-    clientIdForTempCreds:     ctVNevJPRbe6ICL5-nhZkw
     # Special value for tests, as we don't want to wait forever
     maxLastUsedDelay:         '- 3 seconds'
   # Test bucket for STS credentials
@@ -112,4 +103,4 @@ test:
     port:                     60551
     env:                      development
     development:              true
-    cookieSecret:             'Warn, if no secret is used on production'
+    trustProxy:               true
