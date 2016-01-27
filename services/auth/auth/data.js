@@ -40,7 +40,7 @@ var Client = Entity.configure({
   context:          ['resolver'],
   migrate(item) {
     item.scopes = [];
-    item.disabled = false;
+    item.disabled = 0;
     return item;
   }
 });
