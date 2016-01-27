@@ -1,0 +1,18 @@
+defaults:
+test:
+  app:
+    azureAccounts:
+      taskclusterdev: "..."
+  test:
+    testBucket: "test-bucket-for-any-garbage"
+  azure:
+    accountName:  "taskclusterdev"
+    accountKey:   "..."
+  aws:
+    accessKeyId:        "..."
+    secretAccessKey:    "..."
+  pulse:
+    username:           "..."
+    password:           "..."
+  influx:
+    connectionString:   "..."
