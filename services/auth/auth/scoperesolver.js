@@ -24,8 +24,9 @@ class ScopeResolver extends events.EventEmitter {
     // List of client objects on the form:
     // {
     //    clientId, accessToken,
-    //    scopes: [...],                // Scopes (as set in the table)
+    //    unexpandedScopes:             // Scopes (as set in the table)
     //    disabled: true | false,       // If true, client is disabled
+    //    scopes: [...],                // Scopes (including indirect scopes)
     //    expandedScopes: [...],        // Scopes (including indirect scopes)
     //    updateLastUsed: true | false  // true, if lastUsed should be updated
     // }
@@ -133,12 +134,12 @@ class ScopeResolver extends events.EventEmitter {
         let lastUsedDate = new Date(client.details.lastDateUsed);
         let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
         this._clients.push({
-          clientId:       client.clientId,
-          accessToken:    client.accessToken,
-          expires:        client.expires,
-          updateLastUsed: lastUsedDate < minLastUsed,
-          scopes:         client.scopes,
-          disabled:       client.disabled
+          clientId:         client.clientId,
+          accessToken:      client.accessToken,
+          expires:          client.expires,
+          updateLastUsed:   lastUsedDate < minLastUsed,
+          unexpandedScopes: client.scopes,
+          disabled:         client.disabled
         });
       }
       this._computeFixedPoint();
@@ -179,15 +180,15 @@ class ScopeResolver extends events.EventEmitter {
             let lastUsedDate = new Date(client.details.lastDateUsed);
             let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
             clients.push({
-              clientId:       client.clientId,
-              accessToken:    client.accessToken,
-              expires:        client.expires,
+              clientId:         client.clientId,
+              accessToken:      client.accessToken,
+              expires:          client.expires,
               // Note that lastUsedDate should be updated, if it's out-dated by
               // more than 6 hours.
               // (cheap way to know if it's been used recently)
-              updateLastUsed: lastUsedDate < minLastUsed,
-              scopes:         client.scopes,
-              disabled:       client.disabled
+              updateLastUsed:   lastUsedDate < minLastUsed,
+              unexpandedScopes: client.scopes,
+              disabled:         client.disabled
             });
           }
         }),
@@ -231,7 +232,7 @@ class ScopeResolver extends events.EventEmitter {
     for (let client of this._clients) {
       var scopes = this.resolve([
         'assume:client-id:' + client.clientId
-      ].concat(client._scopes || []));
+      ].concat(client.unexpandedScopes));
       client.scopes = scopes; // for createSignatureValidator compatibility
       client.expandedScopes = scopes;
       this._clientCache[client.clientId] = client;
