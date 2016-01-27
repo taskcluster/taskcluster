@@ -18,7 +18,7 @@
     "lodash":                           "^3.9.3",
     "debug":                            "^2.2.0",
     "slugid":                           "^1.1.0",
-    "taskcluster-base":                 "0.8.5",
+    "taskcluster-base":                 "^0.10.2",
     "body-parser":                      "^1.12.4",
     "taskcluster-client":               "^0.23.2",
     "taskcluster-lib-loader":           "^0.1.1",
@@ -26,7 +26,7 @@
     "express":                          "^4.12.4",
     "babel":                            "^5.8.23",
     "kexec":                            "^1.2.0",
-    "fast-azure-storage":               "^0.2.0",
+    "fast-azure-storage":               "^0.3.2",
     "hawk":                             "2.3.0"
   },
   "devDependencies": {
