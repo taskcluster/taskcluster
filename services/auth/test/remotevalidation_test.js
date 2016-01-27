@@ -41,7 +41,7 @@ suite("Remote Signature Validation", function() {
     await myClient2.resource().then(() => {
       assert(false, "expected an error!");
     }, err => {
-      assert(err.statusCode === 401, "expected 401");
+      assert(err.statusCode === 403, "expected 403");
     });
   });
 
@@ -100,7 +100,7 @@ suite("Remote Signature Validation", function() {
     await myClient2.resource().then(() => {
       assert(false, "expected an error!");
     }, err => {
-      assert(err.statusCode === 401, "expected 401");
+      assert(err.statusCode === 403, "expected 403");
     });
   });
 
@@ -131,7 +131,7 @@ suite("Remote Signature Validation", function() {
     await myClient2.resource().then(() => {
       assert(false, "expected an error!");
     }, err => {
-      assert(err.statusCode === 401, "expected 401");
+      assert(err.statusCode === 403, "expected 403");
     });
   });
 

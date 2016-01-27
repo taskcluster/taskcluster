@@ -7,7 +7,7 @@ suite('aws S3 (STS)', () => {
   var helper      = require('./helper');
   var debug       = require('debug')('s3_test');
 
-  var bucket = helper.cfg.get('test:testBucket');
+  var bucket = helper.cfg.test.testBucket;
 
   test('awsS3Credentials read-write folder1/folder2/', async () => {
     var id    = slugid.v4();

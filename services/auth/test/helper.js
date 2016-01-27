@@ -13,28 +13,24 @@ var testserver  = require('./testserver');
 var slugid      = require('slugid');
 
 // Load configuration
-var cfg = base.config({
-  defaults:     require('../config/defaults'),
-  profile:      require('../config/test'),
-  filename:     'taskcluster-auth'
-});
+var cfg = base.config({profile: 'test'});
 
 // Create subject to be tested by test
 var helper = module.exports = {};
 
 helper.cfg = cfg;
-helper.testaccount = _.keys(JSON.parse(cfg.get('auth:azureAccounts')))[0];
-helper.rootAccessToken = cfg.get('auth:rootAccessToken');
+helper.testaccount = _.keys(cfg.app.azureAccounts)[0];
+helper.rootAccessToken = cfg.app.rootAccessToken;
 
 // Skip tests if no pulse credentials are configured
-if (!cfg.get('pulse:password')) {
+if (!cfg.pulse.password) {
   console.log("Skip tests for due to missing pulse credentials; " +
-              "create taskcluster-auth.conf.json");
+              "create user-config.yml");
   process.exit(1);
 }
 
 // Configure PulseTestReceiver
-helper.events = new base.testing.PulseTestReceiver(cfg.get('pulse'), mocha);
+helper.events = new base.testing.PulseTestReceiver(cfg.pulse, mocha);
 
 var webServer = null, testServer;
 mocha.before(async () => {
@@ -42,10 +38,10 @@ mocha.before(async () => {
   overwrites['profile'] = 'test';
 
   // if we don't have an azure account/key, use the inmemory version
-  if (!cfg.get('azure:accountName')) {
+  if (!cfg.azure.accountName) {
     let resolver = await serverLoad('resolver', overwrites);
-    let signingKey = cfg.get('auth:tableSigningKey');
-    let cryptoKey = cfg.get('auth:tableCryptoKey');
+    let signingKey = cfg.app.tableSigningKey;
+    let cryptoKey = cfg.app.tableCryptoKey;
     overwrites['resolver'] = resolver;
     overwrites['Client'] = data.Client.setup({
       table: 'Client',
@@ -73,7 +69,7 @@ mocha.before(async () => {
     baseUrl:          helper.baseUrl,
     credentials: {
       clientId:       'root',
-      accessToken:    cfg.get('auth:rootAccessToken')
+      accessToken:    cfg.app.rootAccessToken,
     }
   });
 
@@ -86,7 +82,7 @@ mocha.before(async () => {
     client:     testClient,
   } = await testserver({
     authBaseUrl: helper.baseUrl,
-    rootAccessToken: cfg.get('auth:rootAccessToken'),
+    rootAccessToken: cfg.app.rootAccessToken,
   });
 
   testServer = testServer_;
@@ -96,8 +92,8 @@ mocha.before(async () => {
   helper.testClient     = testClient;
 
   var exchangeReference = exchanges.reference({
-    exchangePrefix:   cfg.get('auth:exchangePrefix'),
-    credentials:      cfg.get('pulse')
+    exchangePrefix:   cfg.app.exchangePrefix,
+    credentials:      cfg.pulse,
   });
   helper.AuthEvents = taskcluster.createClient(exchangeReference);
   helper.authEvents = new helper.AuthEvents();

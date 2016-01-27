@@ -17,27 +17,7 @@ var launch = async function(profile) {
   debug("Launching with profile: %s", profile);
 
   // Load configuration
-  var cfg = base.config({
-    defaults:     require('../config/defaults'),
-    profile:      require('../config/' + profile),
-    envs: [
-      'auth_tableSigningKey',
-      'auth_tableCryptoKey',
-      'server_publicUrl',
-      'server_cookieSecret',
-      'azure_accountName',
-      'azure_accountKey',
-      'pulse_username',
-      'pulse_password',
-      'aws_accessKeyId',
-      'aws_secretAccessKey',
-      'influx_connectionString',
-      'auth_rootAccessToken',
-      'auth_azureAccounts',
-      'auth_clientIdForTempCreds'
-    ],
-    filename:     'taskcluster-auth'
-  });
+  var cfg = base.config({profile: 'load-test'});
 
   var fmt = (n) => {
     return Math.round(n * 100) / 100;
@@ -100,7 +80,7 @@ var launch = async function(profile) {
       ],
       credentials: {
         clientId: 'root',
-        accessToken: cfg.get('auth:rootAccessToken')
+        accessToken: cfg.app.rootAccessToken,
       }
     });
     var reqUrl = 'http://localhost:1207/v1/client/authed-client/credentials';
@@ -129,14 +109,13 @@ var launch = async function(profile) {
     loops += 1;
     (async() => {
       var agent = new https.Agent({keepAlive: true});
-      if (cfg.get('server:publicUrl').substr(0, 5) != 'https') {
+      if (cfg.server.publicUrl.substr(0, 5) != 'https') {
         agent = new http.Agent({keepAlive: true});
       }
       var Auth = taskcluster.createClient(v1.reference({
-        baseUrl:      cfg.get('server:publicUrl') + '/v1',
+        baseUrl:      cfg.server.publicUrl + '/v1',
       }));
       var auth = new Auth({
-        //credentials:  cfg.get('auth:root'), //TODO: Try without this!!!
         retries:      0,
         agent:        agent
       });

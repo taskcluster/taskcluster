@@ -151,7 +151,7 @@ suite('api (roles)', function() {
         'dummy-scope-4'
       ]
     }).then(() => assert(false, "Expected an error"), err => {
-      assert(err.statusCode === 401);
+      assert(err.statusCode === 403);
     });
   });
 
