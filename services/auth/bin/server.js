@@ -17,40 +17,14 @@ var app           = require('taskcluster-lib-app');
 let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => {
-      return base.config({
-        defaults:     require('../config/defaults'),
-        profile:      require('../config/' + profile),
-        envs: [
-          'auth_tableSigningKey',
-          'auth_tableCryptoKey',
-          'auth_publishMetaData',
-          'server_publicUrl',
-          'server_cookieSecret',
-          'azure_accountName',
-          'azure_accountKey',
-          'pulse_username',
-          'pulse_password',
-          'aws_accessKeyId',
-          'aws_secretAccessKey',
-          'influx_connectionString',
-          'auth_rootAccessToken',
-          'auth_azureAccounts'
-        ],
-        filename:     'taskcluster-auth'
-      })
-    },
+    setup: ({profile}) => base.config({profile}),
   },
 
   drain: {
     requires: ['cfg'],
     setup: ({cfg}) => {
-      if (cfg.get('influx:connectionString')) {
-        return new base.stats.Influx({
-          connectionString:   cfg.get('influx:connectionString'),
-          maxDelay:           cfg.get('influx:maxDelay'),
-          maxPendingPoints:   cfg.get('influx:maxPendingPoints')
-        });
+      if (cfg.influx.connectionString) {
+        return new base.stats.Influx(cfg.influx);
       }
       return new base.stats.NullDrain();
     }
@@ -60,7 +34,7 @@ let load = loader({
     requires: ['cfg', 'drain'],
     setup: ({cfg, drain}) => base.stats.startProcessUsageReporting({
       drain:      drain,
-      component:  cfg.get('auth:statsComponent'),
+      component:  cfg.app.statsComponent,
       process:    'server'
     })
   },
@@ -68,7 +42,7 @@ let load = loader({
   resolver: {
     requires: ['cfg'],
     setup: ({cfg}) => new ScopeResolver({
-      maxLastUsedDelay: cfg.get('auth:maxLastUsedDelay'),
+      maxLastUsedDelay: cfg.app.maxLastUsedDelay,
     })
   },
 
@@ -76,12 +50,12 @@ let load = loader({
     requires: ['cfg', 'drain', 'resolver'],
     setup: ({cfg, drain, resolver}) =>
       data.Client.setup({
-        table:        cfg.get('auth:clientTableName'),
-        credentials:  cfg.get('azure'),
-        signingKey:   cfg.get('auth:tableSigningKey'),
-        cryptoKey:    cfg.get('auth:tableCryptoKey'),
+        table:        cfg.app.clientTableName,
+        credentials:  cfg.azure,
+        signingKey:   cfg.app.tableSigningKey,
+        cryptoKey:    cfg.app.tableCryptoKey,
         drain:        drain,
-        component:    cfg.get('auth:statsComponent'),
+        component:    cfg.app.statsComponent,
         process:      'server',
         context:      {resolver}
       })
@@ -91,11 +65,11 @@ let load = loader({
     requires: ['cfg', 'drain', 'resolver'],
     setup: ({cfg, drain, resolver}) => 
       data.Role.setup({
-        table:        cfg.get('auth:rolesTableName'),
-        credentials:  cfg.get('azure'),
-        signingKey:   cfg.get('auth:tableSigningKey'),
+        table:        cfg.app.rolesTableName,
+        credentials:  cfg.azure,
+        signingKey:   cfg.app.tableSigningKey,
         drain:        drain,
-        component:    cfg.get('auth:statsComponent'),
+        component:    cfg.app.statsComponent,
         process:      'server',
         context:      {resolver}
       })
@@ -107,9 +81,9 @@ let load = loader({
       base.validator({
         folder:           path.join(__dirname, '..', 'schemas'),
         constants:        require('../schemas/constants'),
-        publish:          cfg.get('auth:publishMetaData') === 'true',
+        publish:          cfg.app.publishMetaData,
         schemaPrefix:     'auth/v1/',
-        aws:              cfg.get('aws')
+        aws:              cfg.aws
       })
   },
 
@@ -117,14 +91,14 @@ let load = loader({
     requires: ['cfg', 'validator', 'drain'],
     setup: ({cfg, validator, drain, process}) =>
       exchanges.setup({
-        credentials:      cfg.get('pulse'),
-        exchangePrefix:   cfg.get('auth:exchangePrefix'),
+        credentials:      cfg.pulse,
+        exchangePrefix:   cfg.app.exchangePrefix,
         validator:        validator,
         referencePrefix:  'auth/v1/exchanges.json',
-        publish:          cfg.get('auth:publishMetaData') === 'true',
-        aws:              cfg.get('aws'),
+        publish:          cfg.app.publishMetaData,
+        aws:              cfg.aws,
         drain:            drain,
-        component:        cfg.get('auth:statsComponent'),
+        component:        cfg.app.statsComponent,
         process:          'server'
       })
   },
@@ -137,18 +111,18 @@ let load = loader({
       await Client.ensureTable();
 
       // set up the root access token if necessary
-      if (cfg.get('auth:rootAccessToken')) {
-        await Client.ensureRootClient(cfg.get('auth:rootAccessToken'));
+      if (cfg.app.rootAccessToken) {
+        await Client.ensureRootClient(cfg.app.rootAccessToken);
       }
 
       // Load everything for resolver
       await resolver.setup({
         Client, Role,
         exchangeReference: exchanges.reference({
-          credentials:      cfg.get('pulse'),
-          exchangePrefix:   cfg.get('auth:exchangePrefix')
+          credentials:      cfg.pulse,
+          exchangePrefix:   cfg.app.exchangePrefix,
         }),
-        connection: new taskcluster.PulseConnection(cfg.get('pulse'))
+        connection: new taskcluster.PulseConnection(cfg.pulse)
       });
 
       let signatureValidator = resolver.createSignatureValidator()
@@ -158,17 +132,17 @@ let load = loader({
           Client, Role,
           publisher,
           resolver,
-          sts:                new AWS.STS(cfg.get('aws')),
-          azureAccounts:      JSON.parse(cfg.get('auth:azureAccounts')),
+          sts:                new AWS.STS(cfg.aws),
+          azureAccounts:      cfg.app.azureAccounts,
           signatureValidator,
         },
         validator,
         signatureValidator,
-        publish:            cfg.get('auth:publishMetaData') === 'true',
-        baseUrl:            cfg.get('server:publicUrl') + '/v1',
+        publish:            cfg.app.publishMetaData,
+        baseUrl:            cfg.server.publicUrl + '/v1',
         referencePrefix:    'auth/v1/api.json',
-        aws:                cfg.get('aws'),
-        component:          cfg.get('auth:statsComponent'),
+        aws:                cfg.aws,
+        component:          cfg.app.statsComponent,
         drain:              drain
       })
     }
@@ -178,12 +152,7 @@ let load = loader({
     requires: ['cfg', 'api'],
     setup: async ({cfg, api}) => {
       // Create app
-      let serverApp = app({
-        port:           Number(process.env.PORT || cfg.get('server:port')),
-        env:            cfg.get('server:env'),
-        forceSSL:       cfg.get('server:forceSSL'),
-        trustProxy:     cfg.get('server:trustProxy')
-      });
+      let serverApp = app(cfg.server);
 
       serverApp.use('/v1', api);
 
@@ -207,7 +176,7 @@ let load = loader({
 // If server.js is executed start the server
 if (!module.parent) {
   load('server', {
-    profile: process.argv[2]
+    profile: process.env.NODE_ENV,
   }).catch(err => {
     console.log(err.stack);
     process.exit(1);

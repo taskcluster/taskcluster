@@ -1,1 +1,1 @@
-web: babel-node bin/server.js $PROFILE
+web: babel-node bin/server.js
