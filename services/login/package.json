@@ -24,6 +24,7 @@
     "passport": "^0.3.0",
     "passport-persona": "jonasfj/passport-persona",
     "passport-saml": "^0.13.0",
+    "promise": "^7.0.4",
     "source-map-support": "^0.3.2",
     "taskcluster-client": "^0.23.0",
     "taskcluster-lib-config": "^0.9.1",
