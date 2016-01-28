@@ -35,7 +35,7 @@
     "cliff":                            "^0.1.10",
     "browserify":                       "^9.0.3",
     "mocha-phantomjs":                  "3.5.3",
-    "phantomjs":                        "^1.9.16",
+    "phantomjs":                        "1.9.16",
     "babel":                            "^5.5.8",
     "json-stable-stringify":            "^1.0.0"
   }
