@@ -93,14 +93,14 @@ let config = (options) => {
       assert(typeof(val) === 'string');
       return val;
     }),
-    createType('!env:number', 'string', val => {
+    createType('!env:number', 'number', val => {
       assert(typeof(val) === 'string');
       return parseFloat(val);
     }),
-    createType('!env:flag', 'string', val => {
+    createType('!env:flag', 'flag', val => {
       return typeof(val) === 'string';
     }),
-    createType('!env:bool', 'string', val => {
+    createType('!env:bool', 'boolean', val => {
       assert(typeof(val) === 'string');
       if (/^true$/i.test(val)) {
         return true;
@@ -110,11 +110,11 @@ let config = (options) => {
       }
       return undefined;
     }),
-    createType('!env:json', 'string', val => {
+    createType('!env:json', 'json', val => {
       assert(typeof(val) === 'string');
       return JSON.parse(val);
     }),
-    createType('!env:list', 'string', val => {
+    createType('!env:list', 'list', val => {
       assert(typeof(val) === 'string');
       return (val.match(/'[^']*'|"[^"]*"|[^ \t]+/g) || []).map(entry =>{
         let n = entry.length;
