@@ -160,6 +160,8 @@ var auth = new taskcluster.Auth(options);
  * `auth.createClient(clientId, payload) : result`
  * `auth.resetAccessToken(clientId) : result`
  * `auth.updateClient(clientId, payload) : result`
+ * `auth.enableClient(clientId) : result`
+ * `auth.disableClient(clientId) : result`
  * `auth.deleteClient(clientId) : void`
  * `auth.listRoles() : result`
  * `auth.role(roleId) : result`
@@ -169,7 +171,6 @@ var auth = new taskcluster.Auth(options);
  * `auth.awsS3Credentials(level, bucket, prefix) : result`
  * `auth.azureTableSAS(account, table) : result`
  * `auth.authenticateHawk(payload) : result`
- * `auth.importClients(payload) : void`
  * `auth.ping() : void`
 
 ### Methods in `taskcluster.AwsProvisioner`
@@ -191,12 +192,13 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
  * `awsProvisioner.awsState() : void`
  * `awsProvisioner.state(workerType) : void`
  * `awsProvisioner.ping() : void`
+ * `awsProvisioner.backendStatus() : void`
  * `awsProvisioner.apiReference() : void`
 
 ### Methods in `taskcluster.Github`
 ```js
 // Create Github client instance with default baseUrl:
-//  - https://taskcluster-github.herokuapp.com/v1
+//  - https://github.taskcluster.net/v1
 var github = new taskcluster.Github(options);
 ```
  * `github.githubWebHookConsumer() : void`
@@ -247,6 +249,7 @@ var queue = new taskcluster.Queue(options);
 ```
  * `queue.task(taskId) : result`
  * `queue.status(taskId) : result`
+ * `queue.listTaskGroup(taskGroupId, [options]) : result`
  * `queue.createTask(taskId, payload) : result`
  * `queue.defineTask(taskId, payload) : result`
  * `queue.scheduleTask(taskId) : result`
