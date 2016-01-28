@@ -17,7 +17,10 @@ var app           = require('taskcluster-lib-app');
 let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => base.config({profile}),
+    setup: ({profile}) => {
+      console.log("CONFIG: " + process.env.AZURE_ACCOUNTS)
+      return base.config({profile});
+    },
   },
 
   drain: {
