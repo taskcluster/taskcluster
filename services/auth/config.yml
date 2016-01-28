@@ -96,7 +96,8 @@ test:
     # Special value for tests, as we don't want to wait forever
     maxLastUsedDelay:         '- 3 seconds'
   # Test bucket for STS credentials
-  testBucket:                 !env TEST_BUCKET
+  test:
+    Bucket:                  !env TEST_BUCKET
   server:
     publicUrl:                http://localhost:60551
     forceSSL:                 false
