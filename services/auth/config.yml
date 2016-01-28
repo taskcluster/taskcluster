@@ -85,8 +85,8 @@ production:
 
 test:
   app:
-    clientTableName:          TestClients25
-    rolesTableName:           TestRoles25
+    clientTableName:          TestClients26
+    rolesTableName:           TestRoles26
     tableSigningKey:          not-a-secret-so-you-cant-guess-it
     tableCryptoKey:           AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
     publishMetaData:          false
