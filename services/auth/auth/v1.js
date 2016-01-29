@@ -186,7 +186,7 @@ api.declare({
     description:  input.description,
     accessToken:  accessToken,
     expires:      new Date(input.expires),
-    scopes:       scopes || [],
+    scopes:       scopes,
     disabled:     0,
     details: {
       created:      new Date().toJSON(),
@@ -207,9 +207,11 @@ api.declare({
     let created = new Date(client.details.created).getTime();
     if (client.description !== input.description ||
         client.expires.getTime() !== new Date(input.expires).getTime() ||
+        !_.isEqual(client.scopes, scopes) ||
+        client.disabled !== 0 ||
         created > Date.now() - 15 * 60 * 1000) {
       res.status(409).json({
-        message: "client with same clientId already exists, possibly" +
+        message: "client with same clientId already exists, possibly " +
                  "an issue with retry logic or idempotency"
       });
       return null;
