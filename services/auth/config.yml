@@ -82,7 +82,6 @@ production:
     trustProxy:               true
     env:                      'production'
     development:              false
-
 test:
   app:
     clientTableName:          TestClients28
