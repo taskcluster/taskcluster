@@ -23,7 +23,7 @@ let load = loader({
   drain: {
     requires: ['cfg'],
     setup: ({cfg}) => {
-      if (cfg.influx.connectionString) {
+      if (cfg.influx && cfg.influx.connectionString) {
         return new base.stats.Influx(cfg.influx);
       }
       return new base.stats.NullDrain();
@@ -51,7 +51,7 @@ let load = loader({
     setup: ({cfg, drain, resolver}) =>
       data.Client.setup({
         table:        cfg.app.clientTableName,
-        credentials:  cfg.azure,
+        credentials:  cfg.azure || {},
         signingKey:   cfg.app.tableSigningKey,
         cryptoKey:    cfg.app.tableCryptoKey,
         drain:        drain,
@@ -66,7 +66,7 @@ let load = loader({
     setup: ({cfg, drain, resolver}) => 
       data.Role.setup({
         table:        cfg.app.rolesTableName,
-        credentials:  cfg.azure,
+        credentials:  cfg.azure || {},
         signingKey:   cfg.app.tableSigningKey,
         drain:        drain,
         component:    cfg.app.statsComponent,

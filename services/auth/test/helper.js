@@ -38,7 +38,7 @@ mocha.before(async () => {
   overwrites['profile'] = 'test';
 
   // if we don't have an azure account/key, use the inmemory version
-  if (!cfg.azure.accountName) {
+  if (!cfg.azure || !cfg.azure.accountName) {
     let resolver = await serverLoad('resolver', overwrites);
     let signingKey = cfg.app.tableSigningKey;
     let cryptoKey = cfg.app.tableCryptoKey;
