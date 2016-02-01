@@ -99,20 +99,30 @@ module.exports = api;
 api.declare({
   method:     'get',
   route:      '/clients/',
+  query: {
+    prefix: /^[A-Za-z0-9@/:._-]+$/,
+  },
   name:       'listClients',
   input:      undefined,
   output:     'list-clients-response.json#',
   stability:  'stable',
   title:      "List Clients",
   description: [
-    "Get a list of all clients."
+    "Get a list of all clients.  With `prefix`, only clients for which",
+    "it is a prefix of the clientId are returned.",
   ].join('\n')
 }, async function(req, res) {
+  let prefix = req.query.prefix;
 
   // Load all clients
+  // TODO: as we acquire more clients, perform the prefix filtering in Azure
   let clients = [];
   await this.Client.scan({}, {
-    handler: client => clients.push(client.json())
+    handler: client => {
+      if (!prefix || client.clientId.startsWith(prefix)) {
+        clients.push(client.json());
+      }
+    }
   });
 
   res.reply(clients);
@@ -688,6 +698,41 @@ api.declare({
   return res.reply();
 });
 
+/** Expand a scopeset */
+api.declare({
+  method:     'get',
+  route:      '/scopes/expand',
+  name:       'expandScopes',
+  input:      'scopeset.json#',
+  output:     'scopeset.json#',
+  stability:  'stable',
+  title:      "Expand Scopes",
+  description: [
+    "Return an expanded copy of the given scopeset, with scopes implied by any",
+    "roles included."
+  ].join('\n')
+}, async function(req, res) {
+  let input = req.body;
+  return res.reply({scopes: this.resolver.resolve(input.scopes)});
+});
+
+/** Get the request scopes */
+api.declare({
+  method:     'get',
+  route:      '/scopes/current',
+  name:       'currentScopes',
+  output:     'scopeset.json#',
+  stability:  'stable',
+  title:      "Get Current Scopes",
+  description: [
+    "Return the expanded scopes available in the request, taking into account all sources",
+    "of scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,",
+    "and roles)."
+  ].join('\n')
+}, async function(req, res) {
+  let input = req.body;
+  return res.reply({scopes: await req.scopes()})
+});
 
 // Load aws and azure API implementations, these loads API and declares methods
 // on the API object exported from this file

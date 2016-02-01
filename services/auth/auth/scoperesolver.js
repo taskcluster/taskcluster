@@ -252,11 +252,14 @@ class ScopeResolver extends events.EventEmitter {
   }
 
   /**
-   * Return set of scopes that `scopes` can be expanded to when assuming all
-   * authorized roles.
+   * Return a normalized set of scopes that `scopes` can be expanded to when
+   * assuming all authorized roles.
    */
+
   resolve(scopes) {
-    let granted = dfa.sortScopesForMerge(_.clone(scopes));
+    // use mergeScopeSets to eliminate any redundant scopes in the input (which will
+    // cause redundant scopes in the output)
+    let granted = dfa.mergeScopeSets(dfa.sortScopesForMerge(_.clone(scopes)), []);
     for (let scope of scopes) {
       let found = this._resolver(scope);
       if (found.length > 0) {
