@@ -73,7 +73,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 26 Jan 2016 at 19:27:00 UTC. The code was generated
+// Mon, 1 Feb 2016 at 15:52:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -116,12 +116,15 @@ func New(credentials *tcclient.Credentials) *Auth {
 	return &myAuth
 }
 
-// Get a list of all clients.
+// Get a list of all clients.  With `prefix`, only clients for which
+// it is a prefix of the clientId are returned.
 //
 // See http://docs.taskcluster.net/auth/api-docs/#listClients
-func (myAuth *Auth) ListClients() (*ListClientResponse, *tcclient.CallSummary, error) {
+func (myAuth *Auth) ListClients(prefix string) (*ListClientResponse, *tcclient.CallSummary, error) {
+	v := url.Values{}
+	v.Add("prefix", prefix)
 	cd := tcclient.ConnectionData(*myAuth)
-	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/clients/", new(ListClientResponse), nil)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/clients/", new(ListClientResponse), v)
 	return responseObject.(*ListClientResponse), callSummary, err
 }
 
@@ -297,6 +300,27 @@ func (myAuth *Auth) DeleteRole(roleId string) (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myAuth)
 	_, callSummary, err := (&cd).APICall(nil, "DELETE", "/roles/"+url.QueryEscape(roleId), nil, nil)
 	return callSummary, err
+}
+
+// Return an expanded copy of the given scopeset, with scopes implied by any
+// roles included.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#expandScopes
+func (myAuth *Auth) ExpandScopes(payload *SetOfScopes) (*SetOfScopes, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(payload, "GET", "/scopes/expand", new(SetOfScopes), nil)
+	return responseObject.(*SetOfScopes), callSummary, err
+}
+
+// Return the expanded scopes available in the request, taking into account all sources
+// of scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,
+// and roles).
+//
+// See http://docs.taskcluster.net/auth/api-docs/#currentScopes
+func (myAuth *Auth) CurrentScopes() (*SetOfScopes, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/scopes/current", new(SetOfScopes), nil)
+	return responseObject.(*SetOfScopes), callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -817,6 +841,17 @@ type (
 	//
 	// See http://schemas.taskcluster.net/auth/v1/list-roles-response.json#
 	ListRolesResponse []GetRoleResponse
+
+	// A set of scopes
+	//
+	// See http://schemas.taskcluster.net/auth/v1/scopeset.json#
+	SetOfScopes struct {
+
+		// List of scopes.  Scopes must be composed of printable ASCII characters and spaces.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/scopeset.json#/properties/scopes
+		Scopes []string `json:"scopes"`
+	}
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
