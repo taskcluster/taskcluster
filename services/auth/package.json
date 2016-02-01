@@ -20,7 +20,7 @@
     "slugid":                           "^1.1.0",
     "taskcluster-base":                 "^0.10.2",
     "body-parser":                      "^1.12.4",
-    "taskcluster-client":               "^0.23.2",
+    "taskcluster-client":               "^0.23.9",
     "taskcluster-lib-loader":           "^0.1.1",
     "taskcluster-lib-app":              "^0.8.10",
     "express":                          "^4.12.4",
