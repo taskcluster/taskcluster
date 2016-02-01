@@ -1,0 +1,16 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:                      "Set of scopes"
+description: |
+  A set of scopes
+type:                       object
+properties:
+  scopes:
+    description: |
+      List of scopes.  Scopes must be composed of printable ASCII characters and spaces.
+    type:                   array
+    items:
+      description: Scope
+      type:                 string
+      pattern: "^[\x20-\x7e]*$"
+    uniqueItems:            true
+
