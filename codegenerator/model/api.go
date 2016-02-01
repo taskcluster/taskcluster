@@ -217,10 +217,7 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 }
 
 func (entry *APIEntry) getInputParamsAndQueryStringCode() (inputParams, queryCode, queryExpr string) {
-	inputParams = ""
-	if len(entry.Args) > 0 {
-		inputParams += strings.Join(entry.Args, ", ")
-	}
+	inputArgs := append([]string{}, entry.Args...)
 
 	// add optional query parameters
 	queryCode = ""
@@ -230,13 +227,13 @@ func (entry *APIEntry) getInputParamsAndQueryStringCode() (inputParams, queryCod
 		sort.Strings(entry.Query)
 		queryCode = "v := url.Values{}\n"
 		for _, j := range entry.Query {
-			inputParams += ", " + j
+			inputArgs = append(inputArgs, j)
 			queryCode += "v.Add(\"" + j + "\", " + j + ")\n"
 		}
 	}
 	// all input parameters are strings, so if there are any, add the type to show it
-	if inputParams != "" {
-		inputParams += " string"
+	if len(inputArgs) > 0 {
+		inputParams += strings.Join(inputArgs, ", ") + " string"
 	}
 	return
 }
