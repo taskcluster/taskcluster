@@ -3,7 +3,10 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
+	"os"
 	"reflect"
 	"sort"
 	"strconv"
@@ -63,6 +66,8 @@ type (
 		Boolean    *bool
 		Properties *JsonSubSchema
 	}
+
+	StringSet map[string]bool
 )
 
 var itemsMap map[*Items]string = make(map[*Items]string)
@@ -101,7 +106,7 @@ func (subSchema JsonSubSchema) String() string {
 	return result
 }
 
-func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages map[string]bool, rawMessageTypes map[string]bool) (string, string, string, map[string]bool, map[string]bool) {
+func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages StringSet, rawMessageTypes StringSet) (string, string, string, StringSet, StringSet) {
 	comment := "\n"
 	if d := jsonSubSchema.Description; d != nil {
 		comment += text.Indent(*d, "\t// ")
@@ -186,7 +191,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 	case "object":
 		if s := jsonSubSchema.Properties; s != nil {
 			typ = fmt.Sprintf("struct {\n")
-			members := make(map[string]bool, len(s.SortedPropertyNames))
+			members := make(StringSet, len(s.SortedPropertyNames))
 			for _, j := range s.SortedPropertyNames {
 				s.Properties[j].TypeName = text.GoTypeNameFrom(j, members)
 				// recursive call to build structs inside structs
@@ -351,16 +356,26 @@ func (subSchema *JsonSubSchema) setSourceURL(url string) {
 	subSchema.SourceURL = url
 }
 
-func (apiDef *APIDefinition) loadJsonSchema(url string) *JsonSubSchema {
+func (apiDef *APIDefinition) loadJsonSchema(URL string) *JsonSubSchema {
 	var resp *http.Response
-	resp, err = http.Get(url)
+	u, err := url.Parse(URL)
 	exitOnFail(err)
-	defer resp.Body.Close()
-	decoder := json.NewDecoder(resp.Body)
+	var body io.ReadCloser
+	switch u.Scheme {
+	case "http", "https":
+		resp, err = http.Get(URL)
+		exitOnFail(err)
+		body = resp.Body
+	case "file":
+		body, err = os.Open(u.Path)
+		exitOnFail(err)
+	}
+	defer body.Close()
+	decoder := json.NewDecoder(body)
 	m := new(JsonSubSchema)
 	err = decoder.Decode(m)
 	exitOnFail(err)
-	m.SourceURL = url
+	m.SourceURL = URL
 	m.postPopulate(apiDef)
 	return m
 }
