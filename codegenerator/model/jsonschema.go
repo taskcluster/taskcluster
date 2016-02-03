@@ -51,13 +51,12 @@ type (
 		IsOutputSchema bool
 		SourceURL      string
 		RefSubSchema   *JsonSubSchema
-		APIDefinition  *APIDefinition
 	}
 
 	Items []JsonSubSchema
 
 	Properties struct {
-		Properties          map[string]*JsonSubSchema
+		Properties          SchemaSet
 		SortedPropertyNames []string
 		SourceURL           string
 	}
@@ -68,6 +67,7 @@ type (
 	}
 
 	StringSet map[string]bool
+	SchemaSet map[string]*JsonSubSchema
 )
 
 var itemsMap map[*Items]string = make(map[*Items]string)
@@ -243,7 +243,7 @@ func (p Properties) String() string {
 	return result
 }
 
-func (p *Properties) postPopulate(apiDef *APIDefinition) {
+func (p *Properties) postPopulate(schemaSet SchemaSet) {
 	// now all data should be loaded, let's sort the p.Properties
 	if p.Properties != nil {
 		p.SortedPropertyNames = make([]string, 0, len(p.Properties))
@@ -252,7 +252,7 @@ func (p *Properties) postPopulate(apiDef *APIDefinition) {
 			// subscehams need to have SourceURL set
 			p.Properties[propertyName].setSourceURL(p.SourceURL + "/" + propertyName)
 			// subschemas also need to be triggered to postPopulate...
-			p.Properties[propertyName].postPopulate(apiDef)
+			p.Properties[propertyName].postPopulate(schemaSet)
 		}
 		sort.Strings(p.SortedPropertyNames)
 	}
@@ -294,12 +294,12 @@ func (items Items) String() string {
 	return result
 }
 
-func (items *Items) postPopulate(apiDef *APIDefinition) {
+func (items *Items) postPopulate(schemaSet SchemaSet) {
 	for i := range *items {
 		(*items)[i].setSourceURL(itemsMap[items] + "[" + strconv.Itoa(i) + "]")
-		(*items)[i].postPopulate(apiDef)
+		(*items)[i].postPopulate(schemaSet)
 		// add to schemas so we get a type generated for it in source code
-		apiDef.schemas[(*items)[i].SourceURL] = &(*items)[i]
+		schemaSet[(*items)[i].SourceURL] = &(*items)[i]
 	}
 }
 
@@ -328,35 +328,35 @@ func describe(name string, value interface{}) string {
 }
 
 type CanPopulate interface {
-	postPopulate(*APIDefinition)
+	postPopulate(SchemaSet)
 	setSourceURL(string)
 }
 
-func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate CanPopulate, apiDef *APIDefinition, suffix string) {
+func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate CanPopulate, schemaSet SchemaSet, suffix string) {
 	if reflect.ValueOf(canPopulate).IsValid() {
 		if !reflect.ValueOf(canPopulate).IsNil() {
 			canPopulate.setSourceURL(subSchema.SourceURL + suffix)
-			canPopulate.postPopulate(apiDef)
+			canPopulate.postPopulate(schemaSet)
 		}
 	}
 }
 
-func (subSchema *JsonSubSchema) postPopulate(apiDef *APIDefinition) {
-	subSchema.postPopulateIfNotNil(subSchema.AllOf, apiDef, "/allOf")
-	subSchema.postPopulateIfNotNil(subSchema.AnyOf, apiDef, "/anyOf")
-	subSchema.postPopulateIfNotNil(subSchema.OneOf, apiDef, "/oneOf")
-	subSchema.postPopulateIfNotNil(subSchema.Items, apiDef, "/items")
-	subSchema.postPopulateIfNotNil(subSchema.Properties, apiDef, "/properties")
+func (subSchema *JsonSubSchema) postPopulate(schemaSet SchemaSet) {
+	subSchema.postPopulateIfNotNil(subSchema.AllOf, schemaSet, "/allOf")
+	subSchema.postPopulateIfNotNil(subSchema.AnyOf, schemaSet, "/anyOf")
+	subSchema.postPopulateIfNotNil(subSchema.OneOf, schemaSet, "/oneOf")
+	subSchema.postPopulateIfNotNil(subSchema.Items, schemaSet, "/items")
+	subSchema.postPopulateIfNotNil(subSchema.Properties, schemaSet, "/properties")
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
-	subSchema.RefSubSchema = apiDef.cacheJsonSchema(subSchema.Ref)
+	subSchema.RefSubSchema = schemaSet.cacheJsonSchema(subSchema.Ref)
 }
 
 func (subSchema *JsonSubSchema) setSourceURL(url string) {
 	subSchema.SourceURL = url
 }
 
-func (apiDef *APIDefinition) loadJsonSchema(URL string) *JsonSubSchema {
+func (schemaSet SchemaSet) loadJsonSchema(URL string) *JsonSubSchema {
 	var resp *http.Response
 	u, err := url.Parse(URL)
 	exitOnFail(err)
@@ -376,11 +376,11 @@ func (apiDef *APIDefinition) loadJsonSchema(URL string) *JsonSubSchema {
 	err = decoder.Decode(m)
 	exitOnFail(err)
 	m.SourceURL = URL
-	m.postPopulate(apiDef)
+	m.postPopulate(schemaSet)
 	return m
 }
 
-func (apiDef *APIDefinition) cacheJsonSchema(url *string) *JsonSubSchema {
+func (schemaSet SchemaSet) cacheJsonSchema(url *string) *JsonSubSchema {
 	// if url is not provided, there is nothing to download
 	if url == nil || *url == "" {
 		return nil
@@ -390,10 +390,10 @@ func (apiDef *APIDefinition) cacheJsonSchema(url *string) *JsonSubSchema {
 		*url += "#"
 	}
 	// only fetch if we haven't fetched already...
-	if _, ok := apiDef.schemas[*url]; !ok {
-		apiDef.schemas[*url] = apiDef.loadJsonSchema(*url)
+	if _, ok := schemaSet[*url]; !ok {
+		schemaSet[*url] = schemaSet.loadJsonSchema(*url)
 	}
-	return apiDef.schemas[*url]
+	return schemaSet[*url]
 }
 
 // This is where we generate nested and compoound types in go to represent json payloads

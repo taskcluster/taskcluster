@@ -50,7 +50,7 @@ type APIDefinition struct {
 	DocRoot        string `json:"docroot"`
 	Data           APIModel
 	schemaURLs     []string
-	schemas        map[string]*JsonSubSchema
+	schemas        SchemaSet
 	PackageName    string
 	ExampleVarName string
 	PackagePath    string

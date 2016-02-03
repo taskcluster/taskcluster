@@ -64,7 +64,7 @@ type ExchangeEntry struct {
 }
 
 func (entry *ExchangeEntry) postPopulate(apiDef *APIDefinition) {
-	entry.Payload = entry.Parent.apiDef.cacheJsonSchema(&entry.Schema)
+	entry.Payload = entry.Parent.apiDef.schemas.cacheJsonSchema(&entry.Schema)
 }
 
 func (entry *ExchangeEntry) String() string {
