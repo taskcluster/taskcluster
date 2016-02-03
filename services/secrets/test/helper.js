@@ -5,34 +5,14 @@ import taskcluster from 'taskcluster-client';
 import mocha from 'mocha';
 import common from '../lib/common';
 import testing from 'taskcluster-lib-testing';
-var bin = {
-  server: require('../bin/server'),
-  expireSecrets: require('../bin/expire-secrets')
-};
+import load from '../bin/main';
 
 // Create and export helper object
 var helper = module.exports = {};
 
-// Allow tests to run expire-secrets
-helper.expireSecrets = () => {
-  return bin.expireSecrets('test');
-};
-
 // Load configuration
 var cfg = common.loadConfig('test');
 const baseUrl = cfg.get('server:publicUrl') + '/v1';
-
-// Skip tests if no credentials are configured
-if (!cfg.get('taskcluster:credentials:accessToken') ||
-    !cfg.get('taskcluster:credentials:clientId')) {
-  console.log("Skip tests due to missing taskcluster credentials!");
-  process.exit(1);
-}
-
-if (!cfg.get('azure:accountName')) {
-  console.log("Skip tests due to missing azure accountName!");
-  process.exit(1);
-}
 
 // Some clients for the tests, with differents scopes.  These are turned
 // into temporary credentials based on the main test credentials, so
@@ -81,8 +61,12 @@ mocha.before(async () => {
   }
   testing.fakeauth.start(auth);
 
+  // create the Azure table
+  let entity = await load('entity', {profile: 'test', process: 'test'});
+  await entity.ensureTable();
+
   // start up the secrets service so that we can test it live
-  webServer = await bin.server('test')
+  webServer = await load('server', {profile: 'test', process: 'test'});
 });
 
 // Cleanup after tests
