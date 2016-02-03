@@ -1,29 +1,43 @@
 TaskCluster User Login Service
 ==============================
 
-This services provides UI that users can authenticate against and then get
-temporary credentials issued.
+This service provides a very minimal UI that users can authenticate against
+and then get temporary credentials issued.
+
+It is split into two components: authentication (who are you?) and
+authorization (what can you do?).
 
 Supported authentication systems:
- * Mozillians using persona (will lookup group memberships, username and ensure
-   that users are vouched)
- * LDAP using SSO w. SAML API (expects assertions with `taskcluster-email`
-   and `taskcluster-groups` properties)
+ * Persona - A very basic verification that the user owns an email address
+ * SSO - SAML via Okta, Mozilla, Inc.'s single-signon provider.  This service
+   supplies multi-factor auth and a host of other benefits.  This expects a
+   `taskcluster-email` property in the SAML assertion, giving the user's
+   LDAP email.
 
-For both LDAP and Mozillians there is a list of _allowed groups_, for each
-allowed LDAP group a user has the scope `assume:mozilla-group:<group>` will be
-issued. Similarly, the scope `assume:mozillians-group:<group>` will be granted
-with allowed Mozillians groups.
+Supported authorization systems:
+ * LDAP - Translates LDAP groups (including POSIX groups) to TaskCluster roles
+ * Mozillians - Translates curated mozillians groups for vouched Mozillians into
+   TaskCluster roles
+
+For both LDAP and Mozillians there is a list of _allowed groups_.  An LDAP user
+is given a role `mozilla-user:<email>`.  For each allowed LDAP group the user
+is given the role `mozilla-group:<group>`.  Similarly, a Mozillians user will
+get the role `mozillians-user:<username>` and `mozillians-group:<group>` for
+each group.
+
+Authorization systems look at the identity provided by the authentication
+system, so for example the Mozillians authorization trusts identities from SSO,
+and will issue appropriate groups for a user who authenticated via either SSO
+or Persona.
 
 We restrict LDAP and Mozillians groups under consideration to a fixed set of
 groups, configured with environment variables so new ones are easy to add.
-We do this as temporary credentials can't cover an infinite list of scopes,
-additionally this allows us to ensure that groups are indeed intended to be used
+We do this as temporary credentials can't cover an infinite list of scopes.
+Additionally this allows us to ensure that groups are indeed intended to be used
 for issuing taskcluster scopes.
 
 If there is a demand, we can look at making this more dynamic, so it's easier to
 allow new groups. Maybe by issuing scopes for any group that has a role.
-
 
 Access Grant for Tools
 ----------------------
