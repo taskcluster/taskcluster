@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/format"
+	"io"
 	"net/http"
+	"net/url"
+	"os"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -103,8 +106,8 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 				comment += "\n"
 			}
 		}
-		if url := jsonSubSchema.SourceURL; url != "" {
-			comment += "//\n// See " + url + "\n"
+		if URL := jsonSubSchema.SourceURL; URL != "" {
+			comment += "//\n// See " + URL + "\n"
 		}
 		content += comment
 		content += jsonSubSchema.TypeName + " "
@@ -281,12 +284,22 @@ func (subSchema *JsonSubSchema) postPopulate(schemaSet map[string]*JsonSubSchema
 	}
 }
 
-func loadJsonSchema(schemaSet map[string]*JsonSubSchema, url string) *JsonSubSchema {
+func loadJsonSchema(schemaSet map[string]*JsonSubSchema, URL string) *JsonSubSchema {
 	var resp *http.Response
-	resp, err := http.Get(url)
+	u, err := url.Parse(URL)
 	ExitOnFail(err)
-	defer resp.Body.Close()
-	decoder := json.NewDecoder(resp.Body)
+	var body io.ReadCloser
+	switch u.Scheme {
+	case "http", "https":
+		resp, err = http.Get(URL)
+		ExitOnFail(err)
+		body = resp.Body
+	case "file":
+		body, err = os.Open(u.Path)
+		ExitOnFail(err)
+	}
+	defer body.Close()
+	decoder := json.NewDecoder(body)
 	m := new(JsonSubSchema)
 	err = decoder.Decode(m)
 	ExitOnFail(err)
@@ -294,17 +307,17 @@ func loadJsonSchema(schemaSet map[string]*JsonSubSchema, url string) *JsonSubSch
 	return m
 }
 
-func cacheJsonSchema(schemaSet map[string]*JsonSubSchema, url string) *JsonSubSchema {
+func cacheJsonSchema(schemaSet map[string]*JsonSubSchema, URL string) *JsonSubSchema {
 	// workaround for problem where some urls don't end with a #
-	if (url)[len(url)-1:] != "#" {
-		url += "#"
+	if (URL)[len(URL)-1:] != "#" {
+		URL += "#"
 	}
 	// only fetch if we haven't fetched already...
-	if _, ok := schemaSet[url]; !ok {
-		schemaSet[url] = loadJsonSchema(schemaSet, url)
-		schemaSet[url].SourceURL = url
+	if _, ok := schemaSet[URL]; !ok {
+		schemaSet[URL] = loadJsonSchema(schemaSet, URL)
+		schemaSet[URL].SourceURL = URL
 	}
-	return schemaSet[url]
+	return schemaSet[URL]
 }
 
 // This is where we generate nested and compoound types in go to represent json payloads
@@ -344,8 +357,8 @@ func URLsToFile(filename string, urls ...string) (string, error) {
 	TypeName := make(map[string]bool)
 
 	allSchemas := make(map[string]*JsonSubSchema)
-	for _, url := range urls {
-		schema := cacheJsonSchema(allSchemas, url)
+	for _, URL := range urls {
+		schema := cacheJsonSchema(allSchemas, URL)
 		if schema.Title != nil {
 			schema.TypeName = Normalise(*schema.Title, TypeName)
 		} else {
