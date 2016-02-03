@@ -66,7 +66,7 @@ export default class User {
     let user = new User();
     if (data.version === 1) {
       user._identity = data.identity;
-      user.roles = data.roles;
+      user.roles = data.roles || [];
     }
     return user;
   }
