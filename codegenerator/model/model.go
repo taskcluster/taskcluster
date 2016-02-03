@@ -92,36 +92,6 @@ func (apiDef *APIDefinition) loadJson(reader io.Reader) {
 	apiDef.Data = m
 }
 
-func (apiDef *APIDefinition) loadJsonSchema(url string) *JsonSubSchema {
-	var resp *http.Response
-	resp, err = http.Get(url)
-	exitOnFail(err)
-	defer resp.Body.Close()
-	decoder := json.NewDecoder(resp.Body)
-	m := new(JsonSubSchema)
-	err = decoder.Decode(m)
-	exitOnFail(err)
-	m.SourceURL = url
-	m.postPopulate(apiDef)
-	return m
-}
-
-func (apiDef *APIDefinition) cacheJsonSchema(url *string) *JsonSubSchema {
-	// if url is not provided, there is nothing to download
-	if url == nil || *url == "" {
-		return nil
-	}
-	// workaround for problem where some urls don't end with a #
-	if (*url)[len(*url)-1:] != "#" {
-		*url += "#"
-	}
-	// only fetch if we haven't fetched already...
-	if _, ok := apiDef.schemas[*url]; !ok {
-		apiDef.schemas[*url] = apiDef.loadJsonSchema(*url)
-	}
-	return apiDef.schemas[*url]
-}
-
 // LoadAPIs takes care of reading all json files and performing elementary
 // processing of the data, such as assigning unique type names to entities
 // which will be translated to go types.

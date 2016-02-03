@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"reflect"
 	"sort"
 	"strconv"
@@ -348,4 +349,34 @@ func (subSchema *JsonSubSchema) postPopulate(apiDef *APIDefinition) {
 
 func (subSchema *JsonSubSchema) setSourceURL(url string) {
 	subSchema.SourceURL = url
+}
+
+func (apiDef *APIDefinition) loadJsonSchema(url string) *JsonSubSchema {
+	var resp *http.Response
+	resp, err = http.Get(url)
+	exitOnFail(err)
+	defer resp.Body.Close()
+	decoder := json.NewDecoder(resp.Body)
+	m := new(JsonSubSchema)
+	err = decoder.Decode(m)
+	exitOnFail(err)
+	m.SourceURL = url
+	m.postPopulate(apiDef)
+	return m
+}
+
+func (apiDef *APIDefinition) cacheJsonSchema(url *string) *JsonSubSchema {
+	// if url is not provided, there is nothing to download
+	if url == nil || *url == "" {
+		return nil
+	}
+	// workaround for problem where some urls don't end with a #
+	if (*url)[len(*url)-1:] != "#" {
+		*url += "#"
+	}
+	// only fetch if we haven't fetched already...
+	if _, ok := apiDef.schemas[*url]; !ok {
+		apiDef.schemas[*url] = apiDef.loadJsonSchema(*url)
+	}
+	return apiDef.schemas[*url]
 }
