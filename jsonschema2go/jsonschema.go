@@ -54,7 +54,7 @@ type (
 	Items []JsonSubSchema
 
 	Properties struct {
-		Properties          map[string]*JsonSubSchema
+		Properties          SchemaSet
 		SortedPropertyNames []string
 	}
 
@@ -62,6 +62,9 @@ type (
 		Boolean    *bool
 		Properties *JsonSubSchema
 	}
+
+	SchemaSet map[string]*JsonSubSchema
+	Set       map[string]bool
 )
 
 func (subSchema JsonSubSchema) String() string {
@@ -93,7 +96,7 @@ func (subSchema JsonSubSchema) String() string {
 	return result
 }
 
-func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPackages map[string]bool) (string, map[string]bool) {
+func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPackages Set) (string, Set) {
 	content := ""
 	comment := ""
 	if withComments {
@@ -129,7 +132,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(withComments bool, extraPacka
 	case "object":
 		if s := jsonSubSchema.Properties; s != nil {
 			typ = fmt.Sprintf("struct {\n")
-			members := make(map[string]bool, len(s.SortedPropertyNames))
+			members := make(Set, len(s.SortedPropertyNames))
 			for _, j := range s.SortedPropertyNames {
 				memberName := Normalise(j, members)
 				// recursive call to build structs inside structs
@@ -189,7 +192,7 @@ func (p Properties) String() string {
 	return result
 }
 
-func (p *Properties) postPopulate(schemaSet map[string]*JsonSubSchema) {
+func (p *Properties) postPopulate(schemaSet SchemaSet) {
 	// now all data should be loaded, let's sort the p.Properties
 	if p.Properties != nil {
 		p.SortedPropertyNames = make([]string, 0, len(p.Properties))
@@ -234,7 +237,7 @@ func (items Items) String() string {
 	return result
 }
 
-func (items Items) postPopulate(schemaSet map[string]*JsonSubSchema) {
+func (items Items) postPopulate(schemaSet SchemaSet) {
 	for i := range items {
 		items[i].postPopulate(schemaSet)
 	}
@@ -260,10 +263,10 @@ func describe(name string, value interface{}) string {
 }
 
 type CanPopulate interface {
-	postPopulate(map[string]*JsonSubSchema)
+	postPopulate(SchemaSet)
 }
 
-func postPopulateIfNotNil(canPopulate CanPopulate, schemaSet map[string]*JsonSubSchema) {
+func postPopulateIfNotNil(canPopulate CanPopulate, schemaSet SchemaSet) {
 	if reflect.ValueOf(canPopulate).IsValid() {
 		if !reflect.ValueOf(canPopulate).IsNil() {
 			canPopulate.postPopulate(schemaSet)
@@ -271,7 +274,7 @@ func postPopulateIfNotNil(canPopulate CanPopulate, schemaSet map[string]*JsonSub
 	}
 }
 
-func (subSchema *JsonSubSchema) postPopulate(schemaSet map[string]*JsonSubSchema) {
+func (subSchema *JsonSubSchema) postPopulate(schemaSet SchemaSet) {
 	postPopulateIfNotNil(subSchema.AllOf, schemaSet)
 	postPopulateIfNotNil(subSchema.AnyOf, schemaSet)
 	postPopulateIfNotNil(subSchema.OneOf, schemaSet)
@@ -284,7 +287,7 @@ func (subSchema *JsonSubSchema) postPopulate(schemaSet map[string]*JsonSubSchema
 	}
 }
 
-func loadJsonSchema(schemaSet map[string]*JsonSubSchema, URL string) *JsonSubSchema {
+func loadJsonSchema(schemaSet SchemaSet, URL string) *JsonSubSchema {
 	var resp *http.Response
 	u, err := url.Parse(URL)
 	ExitOnFail(err)
@@ -307,7 +310,7 @@ func loadJsonSchema(schemaSet map[string]*JsonSubSchema, URL string) *JsonSubSch
 	return m
 }
 
-func cacheJsonSchema(schemaSet map[string]*JsonSubSchema, URL string) *JsonSubSchema {
+func cacheJsonSchema(schemaSet SchemaSet, URL string) *JsonSubSchema {
 	// workaround for problem where some urls don't end with a #
 	if (URL)[len(URL)-1:] != "#" {
 		URL += "#"
@@ -326,8 +329,8 @@ func cacheJsonSchema(schemaSet map[string]*JsonSubSchema, URL string) *JsonSubSc
 // Returns the generated code content, and a map of keys of extra packages to import, e.g.
 // a generated type might use time.Time, so if not imported, this would have to be added.
 // using a map of strings -> bool to simulate a set - true => include
-func generateGoTypes(schemaSet map[string]*JsonSubSchema) (string, map[string]bool) {
-	extraPackages := make(map[string]bool)
+func generateGoTypes(schemaSet SchemaSet) (string, Set) {
+	extraPackages := make(Set)
 	content := "type (" // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	for _, i := range schemaSet {
@@ -352,11 +355,11 @@ func URLsToFile(filename string, urls ...string) (string, error) {
 	}
 
 	// Generate normalised names for schemas. Keep a record of generated type
-	// names, so that we don't reuse old names. map[string]bool acts like a set
+	// names, so that we don't reuse old names. Set acts like a set
 	// of strings.
-	TypeName := make(map[string]bool)
+	TypeName := make(Set)
 
-	allSchemas := make(map[string]*JsonSubSchema)
+	allSchemas := make(SchemaSet)
 	for _, URL := range urls {
 		schema := cacheJsonSchema(allSchemas, URL)
 		if schema.Title != nil {
