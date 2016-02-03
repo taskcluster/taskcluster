@@ -37,45 +37,48 @@ html(lang='en')
       div.col-md-10.col-md-offset-1#content
         h1 TaskCluster Authentication
         hr
-        p
-          | Login with your accounts, you will be given scopes based on LDAP and
-          | Mozillians groups as you authenticate with each account.
+        div.row
+          div.col-md-4
+            form(action='/sso/login', method='post')
+              button.btn.btn-primary(type='submit')
+                i.glyphicon.glyphicon-log-in
+                | &nbsp;Sign-in with Okta
+          div.col-md-8
+            p
+              | If you are a Mozilla employee, sign in with Okta to maximize your
+              | permissions.  If you also have a Mozillians account, make sure your
+              | Okta email is included in your Mozillians profile.
+        div.row
+          div.col-md-4
+            form#persona-form(action='/persona/login', method='post')
+              input#persona-assertion(type='hidden', name='assertion')
+              button.btn.btn-primary#persona-signin(type='submit')
+                i.glyphicon.glyphicon-log-in
+                | &nbsp;Sign-in with Mozillians
+          div.col-md-8
+            p
+              | If you are a Mozillian but not an employee, sign in with Persona.
+              | Your permissions will depend on the Mozillians groups you belong
+              | to.  If you do not have a Mozillians profile,&nbsp;
+              a(href='https://mozillians.org/en-US/')
+                | set one up
+              | &nbsp;and get vouched before logging into TaskCluster.
         br
-        if !user.hasMozillianUser()
-          form#persona-form(action='/login/persona', method='post')
-            input#persona-assertion(type='hidden', name='assertion')
-            button.btn.btn-primary#persona-signin(type='submit')
-              i.glyphicon.glyphicon-log-in
-              | &nbsp;Sign-in with Mozillians
+        if query.err == 'mozillians-lookup'
+          div.alert.alert-danger(role="alert")
+            b Mozillians Lookup Failed
+            br
+            | We successfully validated your e-mail, but when looking it up
+            | in Mozillians.org we didn't find any user with that email.
+            br
+            | Please ensure that:
+            ul
+            li Your Mozillians profile is vouched, and
+            li Your email is configured to be public (
+              a(href='https://mozillians.org/en-US/user/edit/emails/')
+                | edit here
+              | )
           br
-          if query.err == 'mozillians-lookup'
-            div.alert.alert-danger(role="alert")
-              b Mozillians Lookup Failed
-              br
-              | We successfully validated your e-mail, but when looking it up
-              | in Mozillians.org we didn't find any user with that email.
-              br
-              | Please ensure that:
-              ul
-              li Your Mozillians profile is vouched, and
-              li Your email is configured to be public (
-                a(href='https://mozillians.org/en-US/user/edit/emails/')
-                  | edit here
-                | )
-        else
-          div.alert.alert-info(role="alert")
-            | You are signed in with
-            b  Mozillians!
-        if !user.hasLDAPUser()
-          form(action='/login/sso', method='post')
-            button.btn.btn-primary(type='submit')
-              i.glyphicon.glyphicon-log-in
-              | &nbsp;Sign-in with SSO
-          br
-        else
-          div.alert.alert-info(role="alert")
-            | You are signed in with
-            b  SSO!
         if credentials
           span#grant-area(style='display: none')
             h2 Grant Credentials to&nbsp;
@@ -149,6 +152,10 @@ html(lang='en')
           h2 Authorized Scopes
           hr
           dl.dl-horizontal
+            p You are logged in with the following identity
+            dt Identity
+            dd
+              code #{user.identity}
             p You have been granted the following scopes.
             dt Scopes
             dd

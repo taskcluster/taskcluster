@@ -4,59 +4,38 @@ import assert from 'assert'
 
 export default class User {
   constructor() {
-    this._mozillianUser = null;
-    this.mozillianGroups = [];
-    this._ldapUser = null;
-    this.ldapGroups = [];
+    this._identity = null;
+    this.roles = [];
   }
 
-  get mozillianUser() { return this._mozillianUser; }
-  get ldapUser() { return this._ldapUser; }
+  get identity() {
+    return this._identity;
+  }
 
-  set mozillianUser(user) {
-    if (this._mozillianUser !== user) {
-      this._mozillianUser = user;
-      this.mozillianGroups = [];
+  set identity(identity) {
+    assert(identity.split('/').length == 2,
+        "identity must have exactly one '/' character");
+    this._identity = identity;
+    // always reset roles when changing identity
+    this.roles = [];
+  }
+
+  get identityProviderId() {
+    return this._identity.split('/', 2)[0];
+  }
+
+  get identityId() {
+    return this._identity.split('/', 2)[1];
+  }
+
+  addRole(role) {
+    if (this.roles.indexOf(role) === -1) {
+      this.roles.push(role);
     }
   }
-
-  set ldapUser(user) {
-    if (this._ldapUser !== user) {
-      this._ldapUser = user;
-      this.ldapGroups = [];
-    }
-  }
-
-  addMozillianGroup(group) {
-    if (this.mozillianGroups.indexOf(group) === -1) {
-      this.mozillianGroups.push(group);
-    }
-  }
-
-  addLDAPGroup(group) {
-    if (this.ldapGroups.indexOf(group) === -1) {
-      this.ldapGroups.push(group);
-    }
-  }
-
-  hasMozillianUser() { return this._mozillianUser !== null; }
-  hasLDAPUser() { return this._ldapUser !== null; }
 
   scopes() {
-    let scopes = [];
-    if (this._mozillianUser) {
-      scopes.push('assume:mozillians-user:' + this._mozillianUser);
-      this.mozillianGroups.forEach(group => {
-        scopes.push('assume:mozillians-group:' + group);
-      });
-    }
-    if (this._ldapUser) {
-      scopes.push('assume:mozilla-user:' + this._ldapUser);
-      this.ldapGroups.forEach(group => {
-        scopes.push('assume:mozilla-group:' + group);
-      });
-    }
-    return scopes;
+    return this.roles.map(role => "assume:" + role);
   }
 
   createCredentials(options) {
@@ -76,11 +55,9 @@ export default class User {
   /** Serialize user to JSON */
   serialize() {
     return {
-      version:          1,
-      mozillianUser:    this._mozillianUser,
-      mozillianGroups:  this.mozillianGroups,
-      ldapUser:         this._ldapUser,
-      ldapGroups:       this.ldapGroups,
+      version:  1,
+      identity: this._identity,
+      roles:    this.roles,
     };
   }
 
@@ -88,10 +65,8 @@ export default class User {
   static deserialize(data = {}) {
     let user = new User();
     if (data.version === 1) {
-      user._mozillianUser = data.mozillianUser;
-      user.mozillianGroups = data.mozillianGroups;
-      user._ldapUser = data.ldapUser;
-      user.ldapGroups = data.ldapGroups;
+      user._identity = data.identity;
+      user.roles = data.roles;
     }
     return user;
   }
