@@ -306,22 +306,3 @@ func jsonRawMessageImplementors(apiDef *APIDefinition, rawMessageTypes map[strin
 	}
 	return content
 }
-
-// This is where we generate nested and compoound types in go to represent json payloads
-// which are used as inputs and outputs for the REST API endpoints, and also for Pulse
-// message bodies for the Exchange APIs.
-// Returns the generated code content, and a map of keys of extra packages to import, e.g.
-// a generated type might use time.Time, so if not imported, this would have to be added.
-// using a map of strings -> bool to simulate a set - true => include
-func generatePayloadTypes(apiDef *APIDefinition) (string, map[string]bool, map[string]bool) {
-	extraPackages := make(map[string]bool)
-	rawMessageTypes := make(map[string]bool)
-	content := "type (\n" // intentionally no \n here since each type starts with one already
-	// Loop through all json schemas that were found referenced inside the API json schemas...
-	for _, i := range apiDef.schemaURLs {
-		var newComment, newMember, newType string
-		newComment, newMember, newType, extraPackages, rawMessageTypes = apiDef.schemas[i].TypeDefinition(true, extraPackages, rawMessageTypes)
-		content += text.Indent(newComment+newMember+" "+newType, "\t") + "\n"
-	}
-	return content + ")\n\n", extraPackages, rawMessageTypes
-}
