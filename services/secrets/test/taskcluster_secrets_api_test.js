@@ -3,6 +3,7 @@ suite("TaskCluster-Secrets", () => {
   var assert = require('assert');
   var slugid = require('slugid');
   var taskcluster = require('taskcluster-client');
+  var load = require('../bin/main');
 
   let testValueExpires  = {
     secret: {data: "bar"},
@@ -203,7 +204,7 @@ suite("TaskCluster-Secrets", () => {
 
     // Remember that config/test.js sets the expiration to 4 days into the
     // future so we really expect secrets to be deleted
-    await helper.expireSecrets();
+    await load('expire', {profile: 'test', process: 'test'});
 
     try {
       await secrets.get(key);

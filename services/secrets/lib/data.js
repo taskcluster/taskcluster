@@ -1,16 +1,16 @@
-import base from 'taskcluster-base';
 import _ from 'lodash';
 import assert from 'assert';
+import Entity from 'azure-entities';
 
-let SecretEntity = base.Entity.configure({
+let SecretEntity = Entity.configure({
     version:          1,
     signEntities:     true,
-    partitionKey:     base.Entity.keys.ConstantKey('secrets'),
-    rowKey:           base.Entity.keys.StringKey('name'),
+    partitionKey:     Entity.keys.ConstantKey('secrets'),
+    rowKey:           Entity.keys.StringKey('name'),
     properties: {
-      name:           base.Entity.types.String,
-      secret:         base.Entity.types.EncryptedJSON,
-      expires:        base.Entity.types.Date
+      name:           Entity.types.String,
+      secret:         Entity.types.EncryptedJSON,
+      expires:        Entity.types.Date
     }
 });
 
@@ -38,8 +38,8 @@ SecretEntity.prototype.isExpired = function() {
 SecretEntity.expire = async function(now) {
   assert(now instanceof Date, "now must be given as option");
   var count = 0;
-  await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now)
+  await Entity.scan.call(this, {
+    expires:          Entity.op.lessThan(now)
   }, {
     limit:            250, // max number of concurrent delete operations
     handler:          (secret) => { count++; return secret.remove(true); }

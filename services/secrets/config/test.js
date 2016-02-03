@@ -11,6 +11,7 @@ module.exports = {
   },
 
   azure: {
+    accountName:                  'inMemory',
     tableName:                    'SecretsTestTable',
     cryptoKey:                    'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk=',
     signingKey:                   'REALULTIMATEPOWER.NET'
