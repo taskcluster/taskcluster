@@ -30,8 +30,8 @@ api.declare({
   name:        'set',
   input:       common.SCHEMA_PREFIX_CONST + "secret.json#",
   scopes:      [['secrets:set:<name>']],
-  title:       'Create New Secret',
-  description: 'Set a secret associated with some key.'
+  title:       'Create Secret',
+  description: 'Set a secret associated with some key.  If the secret already exists, it is updated instead.'
 }, async function(req, res) {
     let {name} = req.params;
     let {secret, expires} = req.body;
@@ -45,49 +45,15 @@ api.declare({
         expires:    new Date(expires)
       });
     } catch(e) {
-      // If they're trying to re-apply the same secret just respond with okay
+      // If the entity exists, update it
       if (e.name == 'EntityAlreadyExistsError') {
         let item = await this.entity.load({name});
-        if (!_.isEqual(item.secret, secret) ||
-            !_.isEqual(new Date(item.expires), new Date(expires))) {
-            res.status(e.statusCode).json({
-              message: "A resource by that name already exists."
-            });
-            return;
-        }
-      } else {
-        throw e;
+        await item.modify(function() {
+          this.secret = secret;
+          this.expires = new Date(expires);
+        });
       }
     }
-    res.status(200).json({});
-});
-
-api.declare({
-  method:      'post',
-  route:       '/secret/:name(*)',
-  deferAuth:   true,
-  name:        'update',
-  input:       common.SCHEMA_PREFIX_CONST + "secret.json#",
-  scopes:      [['secrets:set:<name>']],
-  title:       'Update A Secret',
-  description: 'Update a secret associated with some key.'
-}, async function(req, res) {
-    let {secret, expires} = req.body;
-    let {name} = req.params;
-    if (!req.satisfies({name})) {
-      return;
-    }
-    let item = await this.entity.load({name}, true);
-    if (!item) {
-      res.status(404).json({
-        message: "Secret not found"
-      });
-      return;
-    }
-    await item.modify(function() {
-      this.secret = secret;
-      this.expires = new Date(expires);
-    });
     res.status(200).json({});
 });
 
