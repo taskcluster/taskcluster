@@ -410,3 +410,37 @@ func generatePayloadTypes(apiDef *APIDefinition) (string, map[string]bool, map[s
 	}
 	return content + ")\n\n", extraPackages, rawMessageTypes
 }
+
+func jsonRawMessageImplementors(rawMessageTypes map[string]bool) string {
+	// first sort the order of the rawMessageTypes since when we rebuild, we
+	// don't want to generate functions in a different order and introduce
+	// diffs against the previous version
+	sortedRawMessageTypes := make([]string, len(rawMessageTypes))
+	i := 0
+	for goType := range rawMessageTypes {
+		sortedRawMessageTypes[i] = goType
+		i++
+	}
+	sort.Strings(sortedRawMessageTypes)
+	content := ""
+	for _, goType := range sortedRawMessageTypes {
+		content += `
+
+	// MarshalJSON calls json.RawMessage method of the same name. Required since
+	// ` + goType + ` is of type json.RawMessage...
+	func (this *` + goType + `) MarshalJSON() ([]byte, error) {
+		x := json.RawMessage(*this)
+		return (&x).MarshalJSON()
+	}
+
+	// UnmarshalJSON is a copy of the json.RawMessage implementation.
+	func (this *` + goType + `) UnmarshalJSON(data []byte) error {
+		if this == nil {
+			return errors.New("` + goType + `: UnmarshalJSON on nil pointer")
+		}
+		*this = append((*this)[0:0], data...)
+		return nil
+	}`
+	}
+	return content
+}
