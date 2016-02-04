@@ -4,10 +4,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	docopt "github.com/docopt/docopt-go"
-	"github.com/taskcluster/jsonschema2go/jsonschema2go"
 	"io"
 	"os"
+
+	docopt "github.com/docopt/docopt-go"
+	"github.com/taskcluster/jsonschema2go/jsonschema2go"
 )
 
 func readStringStrip(reader *bufio.Reader, delimeter byte) (string, error) {
@@ -30,7 +31,7 @@ func parseStandardIn() []string {
 		if err == io.EOF {
 			break
 		}
-		jsonschema2go.ExitOnFail(err)
+		exitOnFail(err)
 		results = append(results, url)
 	}
 	return results
@@ -67,10 +68,17 @@ names will be taken from the "normalised" json subschema Title element.
 func main() {
 	// Parse the docopt string and exit on any error or help message.
 	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
-	jsonschema2go.ExitOnFail(err)
+	exitOnFail(err)
 	file, err := jsonschema2go.URLsToFile(arguments["-o"].(string), parseStandardIn()...)
-	jsonschema2go.ExitOnFail(err)
+	exitOnFail(err)
 	// simply output the generated file name, in the case of success, for
 	// super-easy parsing
 	fmt.Println(file)
+}
+
+func exitOnFail(err error) {
+	if err != nil {
+		fmt.Printf("%v\n%T\n", err, err)
+		panic(err)
+	}
 }
