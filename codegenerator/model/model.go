@@ -229,7 +229,7 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 		content += apiDefs[i].generateAPICode()
 		newContent, extraPackages, rawMessageTypes := generatePayloadTypes(&apiDefs[i])
 		content += newContent
-		content += jsonRawMessageImplementors(&apiDefs[i], rawMessageTypes)
+		content += jsonRawMessageImplementors(rawMessageTypes)
 		extraPackagesString := ""
 		for j, k := range extraPackages {
 			if k {
@@ -273,7 +273,7 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 	exitOnFail(ioutil.WriteFile(modelData, []byte(content), 0644))
 }
 
-func jsonRawMessageImplementors(apiDef *APIDefinition, rawMessageTypes map[string]bool) string {
+func jsonRawMessageImplementors(rawMessageTypes map[string]bool) string {
 	// first sort the order of the rawMessageTypes since when we rebuild, we
 	// don't want to generate functions in a different order and introduce
 	// diffs against the previous version
