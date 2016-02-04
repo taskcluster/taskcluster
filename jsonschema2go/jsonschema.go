@@ -403,19 +403,6 @@ func (schemaSet SchemaSet) cacheJsonSchema(url *string) *JsonSubSchema {
 // using a map of strings -> bool to simulate a set - true => include
 func generateGoTypes(schemaSet SchemaSet) (string, StringSet, StringSet) {
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	// extraPackages := make(StringSet)
-	// rawMessageTypes := make(StringSet)
-	// content := "type (\n" // intentionally no \n here since each type starts with one already
-	// // Loop through all json schemas that were found referenced inside the API json schemas...
-	// for _, i := range apiDef.schemaURLs {
-	// 	var newComment, newMember, newType string
-	// 	newComment, newMember, newType, extraPackages, rawMessageTypes = apiDef.schemas[i].TypeDefinition(true, extraPackages, rawMessageTypes)
-	// 	content += text.Indent(newComment+newMember+" "+newType, "\t") + "\n"
-	// }
-	// return content + ")\n\n", extraPackages, rawMessageTypes
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-
 	extraPackages := make(StringSet)
 	rawMessageTypes := make(StringSet)
 	content := "type (" // intentionally no \n here since each type starts with one already
