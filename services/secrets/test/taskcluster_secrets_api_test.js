@@ -55,37 +55,18 @@ suite("TaskCluster-Secrets", () => {
       statusCode: 401 // it's not authorized!
     },
     {
-      testName:   "Captain (write only), fail to write existing.",
+      testName:   "Captain (write only), succceed overwriting existing.",
       clientName: "captain-write",
       apiCall:    "set",
       args:       testValueExpires2,
       name:       "captain:" + FOO_KEY,
-      statusCode: 409,
-      errMessage: "A resource by that name already exists."
     },
     {
       testName:   "Captain (read only), read foo.",
       clientName: "captain-read",
       apiCall:    "get",
       name:       "captain:" + FOO_KEY,
-      res:        testValueExpires
-    },
-    {
-      testName:   "Captain, update allowed key",
-      clientName: "captain-write",
-      apiCall:    "update",
-      name:        "captain:" + FOO_KEY,
-      args:       testValueExpires2,
-      res:        {}
-    },
-    {
-      testName:   "Captain, update a secret that doesn't exist",
-      clientName: "captain-write",
-      apiCall:    "update",
-      name:        "captain:" + FOO_KEY + "Je_n_existe_pas",
-      args:       testValueExpires2,
-      statusCode: 404,
-      errMessage: "Secret not found"
+      res:        testValueExpires2
     },
     {
       testName:   "Captain (read only), read updated foo.",
@@ -97,7 +78,7 @@ suite("TaskCluster-Secrets", () => {
     {
       testName:   "Captain, update allowed key again",
       clientName: "captain-write",
-      apiCall:    "update",
+      apiCall:    "set",
       name:        "captain:" + FOO_KEY,
       args:       testValueExpires2,
       res:        {}
@@ -173,10 +154,12 @@ suite("TaskCluster-Secrets", () => {
           if (options.errMessage) {
             assert.deepEqual(options.errMessage, e.body.message);
           }
+          options.statusCode = null; // it's handled now
         } else {
           throw e; // if there's no statusCode this isn't an API error
         }
       }
+      assert(!options.statusCode, "did not get expected error");
       for (let key in options.res) {
         assert.deepEqual(res[key], options.res[key]);
       }
