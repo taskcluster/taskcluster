@@ -46,11 +46,9 @@ type (
 		Type                 *string               `json:"type"`
 
 		// non-json fields used for sorting/tracking
-		TypeName       string
-		IsInputSchema  bool
-		IsOutputSchema bool
-		SourceURL      string
-		RefSubSchema   *JsonSubSchema
+		TypeName     string
+		SourceURL    string
+		RefSubSchema *JsonSubSchema
 	}
 
 	Items []JsonSubSchema
@@ -100,8 +98,6 @@ func (subSchema JsonSubSchema) String() string {
 		result += "Type HAS NOT BEEN SET!!!\n"
 	}
 	result += describe("TypeName", &subSchema.TypeName)
-	result += describe("IsInputSchema", &subSchema.IsInputSchema)
-	result += describe("IsOutputSchema", &subSchema.IsOutputSchema)
 	result += describe("SourceURL", &subSchema.SourceURL)
 	return result
 }

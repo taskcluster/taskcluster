@@ -180,11 +180,9 @@ type APIEntry struct {
 func (entry *APIEntry) postPopulate(apiDef *APIDefinition) {
 	if entry.Input != "" {
 		entry.Parent.apiDef.schemas.cacheJsonSchema(&entry.Input)
-		entry.Parent.apiDef.schemas[entry.Input].IsInputSchema = true
 	}
 	if entry.Output != "" {
 		entry.Parent.apiDef.schemas.cacheJsonSchema(&entry.Output)
-		entry.Parent.apiDef.schemas[entry.Output].IsOutputSchema = true
 	}
 }
 
