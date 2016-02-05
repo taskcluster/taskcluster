@@ -7,7 +7,7 @@ suite("nonceManager test", function() {
   // Create a new nonceManager for each test
   var nonceManager = null;
   setup(function() {
-    nonceManager = subject.authenticate.nonceManager({size: 5});
+    nonceManager = subject.nonceManager({size: 5});
   });
 
   test("accept one", function() {

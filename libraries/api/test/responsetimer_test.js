@@ -75,10 +75,6 @@ suite("api/responsetimer", function() {
         // Create router
         var router = api.router({
           validator:      validator,
-          credentials: {
-            clientId:     'test-client',
-            accessToken:  'test-token'
-          },
           authBaseUrl:    'http://localhost:23243',
           component:      'ResponseTimerTest',
           drain:           influx
