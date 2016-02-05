@@ -1,4 +1,4 @@
-Generated: 1454341942
+Generated: 1454711264
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -8886,22 +8886,9 @@ Entry 0     =
     Entry Scopes      = '[[secrets:set:<name>]]'
     Entry Input       = 'http://schemas.taskcluster.net/secrets/v1/secret.json#'
     Entry Output      = ''
-    Entry Title       = 'Create New Secret'
-    Entry Description = 'Set a secret associated with some key.'
+    Entry Title       = 'Create Secret'
+    Entry Description = 'Set a secret associated with some key.  If the secret already exists, it is updated instead.'
 Entry 1     =
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/secret/<name>'
-    Entry Args        = '[name]'
-    Entry Query        = '[]'
-    Entry Name        = 'update'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = '[[secrets:set:<name>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/secrets/v1/secret.json#'
-    Entry Output      = ''
-    Entry Title       = 'Update A Secret'
-    Entry Description = 'Update a secret associated with some key.'
-Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'delete'
     Entry Route       = '/secret/<name>'
@@ -8914,7 +8901,7 @@ Entry 2     =
     Entry Output      = ''
     Entry Title       = 'Delete Secret'
     Entry Description = 'Delete the secret attached to some key.'
-Entry 3     =
+Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/secret/<name>'
@@ -8927,7 +8914,7 @@ Entry 3     =
     Entry Output      = 'http://schemas.taskcluster.net/secrets/v1/secret.json#'
     Entry Title       = 'Read Secret'
     Entry Description = 'Read the secret attached to some key.'
-Entry 4     =
+Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/secrets'
@@ -8940,7 +8927,7 @@ Entry 4     =
     Entry Output      = 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#'
     Entry Title       = 'List Secrets'
     Entry Description = 'List the names of all visible secrets.'
-Entry 5     =
+Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
