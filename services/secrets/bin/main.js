@@ -24,7 +24,7 @@ var load = loader({
     requires: ['cfg', 'process'],
     setup: ({cfg, process}) => {
       if (cfg.get('influx:connectionString')) {
-        drain = common.buildInfluxStatsDrain(
+        var drain = common.buildInfluxStatsDrain(
           cfg.get('influx:connectionString'),
           cfg.get('influx:maxDelay'),
           cfg.get('influx:maxPendingPoints'));
