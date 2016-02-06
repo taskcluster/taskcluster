@@ -448,7 +448,7 @@ func main() {
     }
     err = ioutil.WriteFile("generatedcode.go", sourceCode, 0644)
     if err != nil {
-        log.Fatalf("ERROR: Could not write source code to file system...", err)
+        log.Fatalf("Could not write source code to file system...", err)
     }
 }
 ```
