@@ -15,12 +15,12 @@ import (
 //////////////////////////////////////////////////////////////////
 
 type API struct {
+	BaseURL     string      `json:"baseUrl"`
+	Description string      `json:"description"`
+	Entries     []APIEntry  `json:"entries"`
+	Title       string      `json:"title"`
 	Version     interface{} `json:"version"`
 	Schema      string      `json:"$schema"`
-	Title       string      `json:"title"`
-	Description string      `json:"description"`
-	BaseURL     string      `json:"baseUrl"`
-	Entries     []APIEntry  `json:"entries"`
 
 	apiDef *APIDefinition
 }
@@ -159,18 +159,18 @@ func (api *API) setAPIDefinition(apiDef *APIDefinition) {
 }
 
 type APIEntry struct {
-	Type        string     `json:"type"`
-	Method      string     `json:"method"`
-	Route       string     `json:"route"`
 	Args        []string   `json:"args"`
-	Query       []string   `json:"query"`
-	Name        string     `json:"name"`
-	Stability   string     `json:"stability"`
-	Scopes      [][]string `json:"scopes"`
+	Description string     `json:"description"`
 	Input       string     `json:"input"`
+	Method      string     `json:"method"`
+	Name        string     `json:"name"`
+	Query       []string   `json:"query"`
+	Route       string     `json:"route"`
+	Scopes      [][]string `json:"scopes"`
+	Stability   string     `json:"stability"`
 	Output      string     `json:"output"`
 	Title       string     `json:"title"`
-	Description string     `json:"description"`
+	Type        string     `json:"type"`
 
 	MethodName string
 	Parent     *API

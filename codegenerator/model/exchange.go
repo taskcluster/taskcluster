@@ -13,12 +13,12 @@ import (
 ////////////////////////////////////////////////////////////////////////
 
 type Exchange struct {
-	Version        interface{}     `json:"version"`
+	Description    string          `json:"description"`
+	Entries        []ExchangeEntry `json:"entries"`
+	ExchangePrefix string          `json:"exchangePrefix"`
 	Schema         string          `json:"$schema"`
 	Title          string          `json:"title"`
-	Description    string          `json:"description"`
-	ExchangePrefix string          `json:"exchangePrefix"`
-	Entries        []ExchangeEntry `json:"entries"`
+	Version        interface{}     `json:"version"`
 
 	apiDef *APIDefinition
 }
@@ -51,13 +51,13 @@ func (exchange *Exchange) setAPIDefinition(apiDef *APIDefinition) {
 }
 
 type ExchangeEntry struct {
-	Type        string         `json:"type"`
+	Description string         `json:"description"`
 	Exchange    string         `json:"exchange"`
 	Name        string         `json:"name"`
-	Title       string         `json:"title"`
-	Description string         `json:"description"`
 	RoutingKey  []RouteElement `json:"routingKey"`
 	Schema      string         `json:"schema"`
+	Title       string         `json:"title"`
+	Type        string         `json:"type"`
 
 	Parent *Exchange
 }
@@ -83,11 +83,11 @@ func (entry *ExchangeEntry) String() string {
 }
 
 type RouteElement struct {
-	Name          string `json:"name"`
-	Summary       string `json:"summary"`
 	Constant      string `json:"constant"`
 	MultipleWords bool   `json:"multipleWords"`
+	Name          string `json:"name"`
 	Required      bool   `json:"required"`
+	Summary       string `json:"summary"`
 }
 
 func (re *RouteElement) String() string {
