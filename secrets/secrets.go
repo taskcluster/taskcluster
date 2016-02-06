@@ -32,12 +32,11 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/secrets/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 5 Feb 2016 at 22:27:00 UTC. The code was generated
+// Sat, 6 Feb 2016 at 14:38:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package secrets
 
 import (
-	"encoding/json"
 	"net/url"
 	"time"
 
@@ -150,33 +149,3 @@ func (mySecrets *Secrets) Ping() (*tcclient.CallSummary, error) {
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
-
-type (
-
-	// Message containing a list of secret names
-	//
-	// See http://schemas.taskcluster.net/secrets/v1/secret-list.json#
-	SecretsList struct {
-
-		// Secret names
-		//
-		// See http://schemas.taskcluster.net/secrets/v1/secret-list.json#/properties/secrets
-		Secrets []string `json:"secrets"`
-	}
-
-	// Message containing a TaskCluster Secret
-	//
-	// See http://schemas.taskcluster.net/secrets/v1/secret.json#
-	Secret struct {
-
-		// An expiration date for this secret.
-		//
-		// See http://schemas.taskcluster.net/secrets/v1/secret.json#/properties/expires
-		Expires tcclient.Time `json:"expires"`
-
-		// The secret value to be encrypted.
-		//
-		// See http://schemas.taskcluster.net/secrets/v1/secret.json#/properties/secret
-		Secret json.RawMessage `json:"secret"`
-	}
-)

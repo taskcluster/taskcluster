@@ -123,20 +123,3 @@ func generateRoutingKey(x interface{}) string {
 	}
 	return strings.Join(p, ".")
 }
-
-type (
-
-	// Message reporting that an action occured to a worker type
-	//
-	// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#
-	WorkerTypeMessage struct {
-
-		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#/properties/version
-		Version float64 `json:"version"`
-
-		// Name of the worker type which was created
-		//
-		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#/properties/workerType
-		WorkerType string `json:"workerType"`
-	}
-)

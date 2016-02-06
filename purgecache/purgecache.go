@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 5 Feb 2016 at 22:27:00 UTC. The code was generated
+// Sat, 6 Feb 2016 at 14:38:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package purgecache
 
@@ -103,19 +103,3 @@ func (purgeCache *PurgeCache) Ping() (*tcclient.CallSummary, error) {
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
-
-type (
-
-	// Request that a message be published to purge a specific cache.
-	//
-	// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#
-	PurgeCacheRequest struct {
-
-		// Name of cache to purge. Notice that if a `workerType` have multiple kinds
-		// of caches (with independent names), it should purge all caches identified
-		// by `cacheName` regardless of cache type.
-		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#/properties/cacheName
-		CacheName string `json:"cacheName"`
-	}
-)
