@@ -53,7 +53,7 @@ will match the parent directory name of the go file you generate. The go type
 names will be taken from the "normalised" json subschema Title element.
 
   Example:
-    cat urls.txt | jsonschema2go -o ../../generatedcode.go
+    cat urls.txt | jsonschema2go -o main
 
   Usage:
     jsonschema2go -o GO-OUTPUT-FILE
@@ -69,11 +69,11 @@ func main() {
 	// Parse the docopt string and exit on any error or help message.
 	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
 	exitOnFail(err)
-	file, err := jsonschema2go.URLsToFile(arguments["-o"].(string), parseStandardIn()...)
+	bytes, _, err := jsonschema2go.Generate(arguments["-o"].(string), parseStandardIn()...)
 	exitOnFail(err)
 	// simply output the generated file name, in the case of success, for
 	// super-easy parsing
-	fmt.Println(file)
+	fmt.Println(string(bytes))
 }
 
 func exitOnFail(err error) {

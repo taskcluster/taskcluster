@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"go/format"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 	"reflect"
 	"sort"
 	"strconv"
@@ -57,7 +55,7 @@ type (
 	Items []JsonSubSchema
 
 	Properties struct {
-		Properties          SchemaSet
+		Properties          map[string]*JsonSubSchema
 		SortedPropertyNames []string
 		SourceURL           string
 	}
@@ -67,9 +65,37 @@ type (
 		Properties *JsonSubSchema
 	}
 
-	StringSet map[string]bool
-	SchemaSet map[string]*JsonSubSchema
+	stringSet map[string]bool
+
+	SchemaSet struct {
+		set       map[string]*JsonSubSchema
+		typeNames stringSet
+	}
 )
+
+// Ensure url contains "#" by adding it to end if needed
+func sanitizeURL(url string) string {
+	if strings.ContainsRune(url, '#') {
+		return url
+	} else {
+		return url + "#"
+	}
+}
+
+func (schemaSet *SchemaSet) SubSchema(url string) *JsonSubSchema {
+	return schemaSet.set[sanitizeURL(url)]
+}
+
+func (schemaSet *SchemaSet) SortedURLs() []string {
+	keys := make([]string, len(schemaSet.set))
+	i := 0
+	for k := range schemaSet.set {
+		keys[i] = k
+		i++
+	}
+	sort.Strings(keys)
+	return keys
+}
 
 var itemsMap map[*Items]string = make(map[*Items]string)
 
@@ -105,10 +131,10 @@ func (subSchema JsonSubSchema) String() string {
 	return result
 }
 
-func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages StringSet, rawMessageTypes StringSet) (string, string, string, StringSet, StringSet) {
+func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages stringSet, rawMessageTypes stringSet) (string, string, string, stringSet, stringSet) {
 	comment := "\n"
 	if d := jsonSubSchema.Description; d != nil {
-		comment += text.Indent(*d, "\t// ")
+		comment += text.Indent(*d, "// ")
 	}
 	if comment[len(comment)-1:] != "\n" {
 		comment += "\n"
@@ -180,7 +206,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 	case "array":
 		if jsonType := jsonSubSchema.Items.Type; jsonType != nil {
 			var arrayType string
-			_, _, arrayType, extraPackages, rawMessageTypes = jsonSubSchema.Items.TypeDefinition(false, extraPackages, rawMessageTypes)
+			_, _, arrayType, extraPackages, rawMessageTypes = jsonSubSchema.Items.typeDefinition(false, extraPackages, rawMessageTypes)
 			typ = "[]" + arrayType
 		} else {
 			if refSubSchema := jsonSubSchema.Items.RefSubSchema; refSubSchema != nil {
@@ -190,12 +216,10 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 	case "object":
 		if s := jsonSubSchema.Properties; s != nil {
 			typ = fmt.Sprintf("struct {\n")
-			members := make(StringSet, len(s.SortedPropertyNames))
 			for _, j := range s.SortedPropertyNames {
-				s.Properties[j].TypeName = text.GoTypeNameFrom(j, members)
 				// recursive call to build structs inside structs
 				var subComment, subMember, subType string
-				subComment, subMember, subType, extraPackages, rawMessageTypes = s.Properties[j].TypeDefinition(false, extraPackages, rawMessageTypes)
+				subComment, subMember, subType, extraPackages, rawMessageTypes = s.Properties[j].typeDefinition(false, extraPackages, rawMessageTypes)
 				// struct member name and type, as part of struct definition
 				typ += fmt.Sprintf("\t%v%v %v `json:\"%v\"`\n", subComment, subMember, subType, j)
 			}
@@ -215,6 +239,7 @@ func (jsonSubSchema *JsonSubSchema) TypeDefinition(topLevel bool, extraPackages 
 		if f := jsonSubSchema.Format; f != nil {
 			if *f == "date-time" {
 				typ = "tcclient.Time"
+				extraPackages["github.com/taskcluster/taskcluster-client-go/tcclient"] = true
 			}
 		}
 	}
@@ -242,7 +267,7 @@ func (p Properties) String() string {
 	return result
 }
 
-func (p *Properties) postPopulate(schemaSet SchemaSet) {
+func (p *Properties) postPopulate(schemaSet *SchemaSet) {
 	// now all data should be loaded, let's sort the p.Properties
 	if p.Properties != nil {
 		p.SortedPropertyNames = make([]string, 0, len(p.Properties))
@@ -254,6 +279,10 @@ func (p *Properties) postPopulate(schemaSet SchemaSet) {
 			p.Properties[propertyName].postPopulate(schemaSet)
 		}
 		sort.Strings(p.SortedPropertyNames)
+		members := make(stringSet, len(p.SortedPropertyNames))
+		for _, j := range p.SortedPropertyNames {
+			p.Properties[j].TypeName = text.GoTypeNameFrom(j, members)
+		}
 	}
 }
 
@@ -262,8 +291,8 @@ func (p *Properties) setSourceURL(url string) {
 }
 
 func (p *Properties) UnmarshalJSON(bytes []byte) (err error) {
-	errX := json.Unmarshal(bytes, &p.Properties)
-	return errX
+	err = json.Unmarshal(bytes, &p.Properties)
+	return
 }
 
 func (aP *AdditionalProperties) UnmarshalJSON(bytes []byte) (err error) {
@@ -293,12 +322,26 @@ func (items Items) String() string {
 	return result
 }
 
-func (items *Items) postPopulate(schemaSet SchemaSet) {
+func (items *Items) postPopulate(schemaSet *SchemaSet) {
 	for i := range *items {
 		(*items)[i].setSourceURL(itemsMap[items] + "[" + strconv.Itoa(i) + "]")
 		(*items)[i].postPopulate(schemaSet)
 		// add to schemas so we get a type generated for it in source code
-		schemaSet[(*items)[i].SourceURL] = &(*items)[i]
+		schemaSet.add((*items)[i].SourceURL, &(*items)[i])
+	}
+}
+
+func (schemaSet *SchemaSet) add(url string, subSchema *JsonSubSchema) {
+	sanitizedURL := sanitizeURL(url)
+	// if we have already included in the schema set, nothing to do...
+	if _, ok := schemaSet.set[sanitizedURL]; ok {
+		return
+	}
+	schemaSet.set[sanitizedURL] = subSchema
+	if subSchema.Title != nil {
+		subSchema.TypeName = text.GoTypeNameFrom(*subSchema.Title, schemaSet.typeNames)
+	} else {
+		subSchema.TypeName = text.GoTypeNameFrom("var", schemaSet.typeNames)
 	}
 }
 
@@ -326,12 +369,12 @@ func describe(name string, value interface{}) string {
 	return ""
 }
 
-type CanPopulate interface {
-	postPopulate(SchemaSet)
+type canPopulate interface {
+	postPopulate(*SchemaSet)
 	setSourceURL(string)
 }
 
-func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate CanPopulate, schemaSet SchemaSet, suffix string) {
+func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate canPopulate, schemaSet *SchemaSet, suffix string) {
 	if reflect.ValueOf(canPopulate).IsValid() {
 		if !reflect.ValueOf(canPopulate).IsNil() {
 			canPopulate.setSourceURL(subSchema.SourceURL + suffix)
@@ -340,7 +383,7 @@ func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate CanPopulate, sc
 	}
 }
 
-func (subSchema *JsonSubSchema) postPopulate(schemaSet SchemaSet) {
+func (subSchema *JsonSubSchema) postPopulate(schemaSet *SchemaSet) {
 	subSchema.postPopulateIfNotNil(subSchema.AllOf, schemaSet, "/allOf")
 	subSchema.postPopulateIfNotNil(subSchema.AnyOf, schemaSet, "/anyOf")
 	subSchema.postPopulateIfNotNil(subSchema.OneOf, schemaSet, "/oneOf")
@@ -355,7 +398,7 @@ func (subSchema *JsonSubSchema) setSourceURL(url string) {
 	subSchema.SourceURL = url
 }
 
-func (schemaSet SchemaSet) loadJsonSchema(URL string) *JsonSubSchema {
+func (schemaSet *SchemaSet) loadJsonSchema(URL string) *JsonSubSchema {
 	var resp *http.Response
 	u, err := url.Parse(URL)
 	exitOnFail(err)
@@ -374,25 +417,21 @@ func (schemaSet SchemaSet) loadJsonSchema(URL string) *JsonSubSchema {
 	m := new(JsonSubSchema)
 	err = decoder.Decode(m)
 	exitOnFail(err)
-	m.SourceURL = URL
+	m.SourceURL = sanitizeURL(URL)
 	m.postPopulate(schemaSet)
 	return m
 }
 
-func (schemaSet SchemaSet) cacheJsonSchema(url *string) *JsonSubSchema {
+func (schemaSet *SchemaSet) cacheJsonSchema(url *string) *JsonSubSchema {
 	// if url is not provided, there is nothing to download
 	if url == nil || *url == "" {
 		return nil
 	}
-	// workaround for problem where some urls don't end with a #
-	if (*url)[len(*url)-1:] != "#" {
-		*url += "#"
-	}
 	// only fetch if we haven't fetched already...
-	if _, ok := schemaSet[*url]; !ok {
-		schemaSet[*url] = schemaSet.loadJsonSchema(*url)
+	if _, ok := schemaSet.set[*url]; !ok {
+		schemaSet.add(*url, schemaSet.loadJsonSchema(*url))
 	}
-	return schemaSet[*url]
+	return schemaSet.SubSchema(*url)
 }
 
 // This is where we generate nested and compoound types in go to represent json payloads
@@ -401,49 +440,41 @@ func (schemaSet SchemaSet) cacheJsonSchema(url *string) *JsonSubSchema {
 // Returns the generated code content, and a map of keys of extra packages to import, e.g.
 // a generated type might use time.Time, so if not imported, this would have to be added.
 // using a map of strings -> bool to simulate a set - true => include
-func generateGoTypes(schemaSet SchemaSet) (string, StringSet, StringSet) {
+func generateGoTypes(schemaSet *SchemaSet) (string, stringSet, stringSet) {
 
-	extraPackages := make(StringSet)
-	rawMessageTypes := make(StringSet)
+	extraPackages := make(stringSet)
+	rawMessageTypes := make(stringSet)
 	content := "type (" // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
-	for _, i := range schemaSet {
+	typeDefinitions := make(map[string]string)
+	typeNames := make([]string, 0, len(schemaSet.set))
+	for _, i := range schemaSet.set {
 		var newComment, newMember, newType string
-		newComment, newMember, newType, extraPackages, rawMessageTypes = i.TypeDefinition(true, extraPackages, rawMessageTypes)
-		content += text.Indent(newComment+newMember+" "+newType, "\t") + "\n"
+		newComment, newMember, newType, extraPackages, rawMessageTypes = i.typeDefinition(true, extraPackages, rawMessageTypes)
+		typeDefinitions[i.TypeName] = text.Indent(newComment+newMember+" "+newType, "\t")
+		typeNames = append(typeNames, i.TypeName)
+	}
+	sort.Strings(typeNames)
+	for _, t := range typeNames {
+		content += typeDefinitions[t] + "\n"
 	}
 	return content + ")\n\n", extraPackages, rawMessageTypes
 }
 
-func URLsToFile(filename string, urls ...string) (string, error) {
-	// calculate parent dir name of target file, since this will be the package
-	// name of the generated code...
-	absPath, err := filepath.Abs(filename)
-	if err != nil {
-		return "", err
-	}
-	parentDirName := filepath.Base(filepath.Dir(absPath))
-	packageName := parentDirName
-	if strings.ContainsRune(packageName, '-') {
-		packageName = "main"
-	}
+func Generate(packageName string, urls ...string) (sourceCode []byte, allSchemas *SchemaSet, err error) {
 
 	// Generate normalised names for schemas. Keep a record of generated type
 	// names, so that we don't reuse old names. Set acts like a set
 	// of strings.
-	TypeName := make(StringSet)
-
-	allSchemas := make(SchemaSet)
+	allSchemas = &SchemaSet{
+		set:       make(map[string]*JsonSubSchema),
+		typeNames: make(stringSet),
+	}
 	for _, URL := range urls {
-		schema := allSchemas.cacheJsonSchema(&URL)
-		if schema.Title != nil {
-			schema.TypeName = text.GoTypeNameFrom(*schema.Title, TypeName)
-		} else {
-			schema.TypeName = text.GoTypeNameFrom("var", TypeName)
-		}
+		allSchemas.cacheJsonSchema(&URL)
 	}
 	types, extraPackages, rawMessageTypes := generateGoTypes(allSchemas)
-	content := `// The following code is AUTO-GENERATED. Please DO NOT edit.
+	content := `// This source code file is AUTO-GENERATED by github.com/taskcluster/jsonschema2go/jsonschema2go
 
 package ` + packageName + `
 
@@ -464,15 +495,13 @@ package ` + packageName + `
 	content += types
 	content += jsonRawMessageImplementors(rawMessageTypes)
 	// format it
-	bytes, err := format.Source([]byte(content))
-	if err != nil {
-		return "", err
-	}
-	exitOnFail(ioutil.WriteFile(filename, bytes, 0644))
-	return absPath, nil
+	sourceCode, err = format.Source([]byte(content))
+	// imports should be good, so no need to run
+	// https://godoc.org/golang.org/x/tools/imports#Process
+	return
 }
 
-func jsonRawMessageImplementors(rawMessageTypes StringSet) string {
+func jsonRawMessageImplementors(rawMessageTypes stringSet) string {
 	// first sort the order of the rawMessageTypes since when we rebuild, we
 	// don't want to generate functions in a different order and introduce
 	// diffs against the previous version
