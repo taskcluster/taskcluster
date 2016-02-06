@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/taskcluster/jsonschema2go"
 	"github.com/taskcluster/taskcluster-client-go/text"
 	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/tools/imports"
@@ -50,7 +51,7 @@ type APIDefinition struct {
 	DocRoot        string `json:"docroot"`
 	Data           APIModel
 	schemaURLs     []string
-	schemas        SchemaSet
+	schemas        *jsonschema2go.SchemaSet
 	PackageName    string
 	ExampleVarName string
 	PackagePath    string
@@ -148,7 +149,6 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 	}
 	for i := range apiDefs {
 
-		apiDefs[i].schemas = make(map[string]*JsonSubSchema)
 		var resp *http.Response
 		resp, err = http.Get(apiDefs[i].URL)
 		exitOnFail(err)
@@ -157,21 +157,6 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 
 		// check that the json schema is valid!
 		validateJson(apiDefs[i].SchemaURL, apiDefs[i].URL)
-
-		// now all data should be loaded, let's sort the schemas
-		apiDefs[i].schemaURLs = make([]string, 0, len(apiDefs[i].schemas))
-		for url := range apiDefs[i].schemas {
-			apiDefs[i].schemaURLs = append(apiDefs[i].schemaURLs, url)
-		}
-		sort.Strings(apiDefs[i].schemaURLs)
-		// finally, now we can generate normalised names
-		// for schemas
-		// keep a record of generated type names, so that we don't reuse old names
-		// map[string]bool acts like a set of strings
-		TypeName := make(map[string]bool)
-		for _, j := range apiDefs[i].schemaURLs {
-			apiDefs[i].schemas[j].TypeName = text.GoTypeNameFrom(*apiDefs[i].schemas[j].Title, TypeName)
-		}
 	}
 	return apiDefs
 }
@@ -191,6 +176,27 @@ func validateJson(schemaUrl, docUrl string) {
 		}
 		// os.Exit(70)
 	}
+}
+
+func formatSourceAndSave(sourceFile string, sourceCode []byte) {
+	fmt.Println("Formatting source code " + sourceFile + "...")
+	// first run goimports to clean up unused imports
+	fixedImports, err := imports.Process(sourceFile, sourceCode, nil)
+	var formattedContent []byte
+	// only perform general format, if that worked...
+	if err == nil {
+		// now run a standard system format
+		formattedContent, err = format.Source(fixedImports)
+	}
+	// in case of formatting failure from either of the above formatting
+	// steps, let's keep the unformatted version so we can troubleshoot
+	// more easily...
+	if err != nil {
+		// no need to handle error as we exit below anyway
+		_ = ioutil.WriteFile(sourceFile, sourceCode, 0644)
+	}
+	exitOnFail(err)
+	exitOnFail(ioutil.WriteFile(sourceFile, formattedContent, 0644))
 }
 
 // GenerateCode takes the objects loaded into memory in LoadAPIs
@@ -214,6 +220,15 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 		apiDefs[i].PackagePath = filepath.Join(goOutputDir, apiDefs[i].PackageName)
 		err = os.MkdirAll(apiDefs[i].PackagePath, 0755)
 		exitOnFail(err)
+
+		// Generate types
+		var typesSourceCode []byte
+		typesSourceCode, apiDefs[i].schemas, err = jsonschema2go.Generate(apiDefs[i].PackageName, apiDefs[i].schemaURLs...)
+		exitOnFail(err)
+		typesSourceFile := filepath.Join(apiDefs[i].PackagePath, "types.go")
+		formatSourceAndSave(typesSourceFile, typesSourceCode)
+
+		// Generate functions and methods
 		content := `
 // The following code is AUTO-GENERATED. Please DO NOT edit.
 // To update this generated code, run the following command:
@@ -227,35 +242,8 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 
 `
 		content += apiDefs[i].generateAPICode()
-		newContent, extraPackages, rawMessageTypes := generatePayloadTypes(&apiDefs[i])
-		content += newContent
-		content += jsonRawMessageImplementors(rawMessageTypes)
-		extraPackagesString := ""
-		for j, k := range extraPackages {
-			if k {
-				extraPackagesString += "\t\"" + j + "\"\n"
-			}
-		}
-		content = strings.Replace(content, "%%{imports}", extraPackagesString, -1)
 		sourceFile := filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go")
-		fmt.Println("Formatting source code " + sourceFile + "...")
-		// first run goimports to clean up unused imports
-		fixedImports, err := imports.Process(sourceFile, []byte(content), nil)
-		// only proceed, if that worked...
-		var formattedContent []byte
-		if err == nil {
-			// now run a standard system format
-			formattedContent, err = format.Source(fixedImports)
-		}
-		// in case of formatting failure from either of the above formatting
-		// steps, let's keep the unformatted version so we can troubleshoot
-		// more easily...
-		if err != nil {
-			// no need to handle error as we exit below anyway
-			_ = ioutil.WriteFile(sourceFile, []byte(content), 0644)
-		}
-		exitOnFail(err)
-		exitOnFail(ioutil.WriteFile(sourceFile, formattedContent, 0644))
+		formatSourceAndSave(sourceFile, []byte(content))
 	}
 
 	content := "Generated: " + strconv.FormatInt(downloadedTime.Unix(), 10) + "\n"
@@ -265,9 +253,9 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 	for i := range apiDefs {
 		content += text.Underline(apiDefs[i].URL)
 		content += apiDefs[i].Data.String() + "\n\n"
-		for _, url := range apiDefs[i].schemaURLs {
+		for _, url := range apiDefs[i].schemas.SortedURLs() {
 			content += (text.Underline(url))
-			content += apiDefs[i].schemas[url].String() + "\n\n"
+			content += apiDefs[i].schemas.SubSchema(url).String() + "\n\n"
 		}
 	}
 	exitOnFail(ioutil.WriteFile(modelData, []byte(content), 0644))

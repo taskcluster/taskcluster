@@ -59,12 +59,11 @@ type ExchangeEntry struct {
 	RoutingKey  []RouteElement `json:"routingKey"`
 	Schema      string         `json:"schema"`
 
-	Parent  *Exchange
-	Payload *JsonSubSchema
+	Parent *Exchange
 }
 
 func (entry *ExchangeEntry) postPopulate(apiDef *APIDefinition) {
-	entry.Payload = entry.Parent.apiDef.schemas.cacheJsonSchema(&entry.Schema)
+	entry.Parent.apiDef.schemaURLs = append(entry.Parent.apiDef.schemaURLs, entry.Schema)
 }
 
 func (entry *ExchangeEntry) String() string {
@@ -140,7 +139,6 @@ import (
 	"reflect"
 	"strings"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
-%%{imports}
 )
 
 `
@@ -200,7 +198,7 @@ func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
 	content += "}\n"
 	content += "\n"
 	content += "func (binding " + exchangeEntry + ") NewPayloadObject() interface{} {\n"
-	content += "\treturn new(" + entry.Payload.TypeName + ")\n"
+	content += "\treturn new(" + entry.Parent.apiDef.schemas.SubSchema(entry.Schema).TypeName + ")\n"
 	content += "}\n"
 	content += "\n"
 	return content

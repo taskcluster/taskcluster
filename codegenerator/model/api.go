@@ -114,7 +114,6 @@ import (
 	"net/url"
 	"time"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
-%%{imports}
 )
 
 type ` + api.apiDef.Name + ` tcclient.ConnectionData
@@ -177,12 +176,15 @@ type APIEntry struct {
 	Parent     *API
 }
 
+// Add entry.Input and entry.Output to schemaURLs, if they are set
 func (entry *APIEntry) postPopulate(apiDef *APIDefinition) {
-	if entry.Input != "" {
-		entry.Parent.apiDef.schemas.cacheJsonSchema(&entry.Input)
-	}
-	if entry.Output != "" {
-		entry.Parent.apiDef.schemas.cacheJsonSchema(&entry.Output)
+	for _, v := range []string{
+		entry.Input,
+		entry.Output,
+	} {
+		if x := &entry.Parent.apiDef.schemaURLs; v != "" {
+			*x = append(*x, v)
+		}
 	}
 }
 
@@ -257,7 +259,7 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	apiArgsPayload := "nil"
 	if entry.Input != "" {
 		apiArgsPayload = "payload"
-		p := "payload *" + entry.Parent.apiDef.schemas[entry.Input].TypeName
+		p := "payload *" + entry.Parent.apiDef.schemas.SubSchema(entry.Input).TypeName
 		if inputParams == "" {
 			inputParams = p
 		} else {
@@ -267,7 +269,7 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 
 	responseType := "(*tcclient.CallSummary, error)"
 	if entry.Output != "" {
-		responseType = "(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + ", *tcclient.CallSummary, error)"
+		responseType = "(*" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + ", *tcclient.CallSummary, error)"
 	}
 
 	content := comment
@@ -275,8 +277,8 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	content += queryCode
 	content += "\tcd := tcclient.ConnectionData(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
 	if entry.Output != "" {
-		content += "\tresponseObject, callSummary, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), " + queryExpr + ")\n"
-		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas[entry.Output].TypeName + "), callSummary, err\n"
+		content += "\tresponseObject, callSummary, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + "), " + queryExpr + ")\n"
+		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + "), callSummary, err\n"
 	} else {
 		content += "\t_, callSummary, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil, " + queryExpr + ")\n"
 		content += "\treturn callSummary, err\n"
