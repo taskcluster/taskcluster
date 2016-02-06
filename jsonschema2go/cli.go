@@ -42,26 +42,26 @@ var (
 	usage   = `
 jsonschema2go
 jsonschema2go generates go source code from json schema inputs. Specifically,
-it creates a single .go file that contains type defintions for all objects
-found in the provided json schemas, plus any schemas that they reference. It
-will automatically download json schema definitions referred to in the provided
-schemas, if there are cross references to external json schemas hosted on an
-available url (i.e. $ref property of json schema). You pass urls via standard
-in (one per line), e.g. by generating a list of schema urls and then piping to
-jsonschema2go -o <some-output-file>. The package name in the generated code
-will match the parent directory name of the go file you generate. The go type
-names will be taken from the "normalised" json subschema Title element.
+it returns a []byte of source code that can be written to a file, for all
+objects found in the provided json schemas, plus any schemas that they
+reference. It will automatically download json schema definitions referred to
+in the provided schemas, if there are cross references to external json schemas
+hosted on an available url (i.e. $ref property of json schema). You pass urls
+via standard in (one per line), e.g. by generating a list of schema urls and
+then piping to jsonschema2go -o <some-package-name>.
+
+The go type names will be "normalised" from the json subschema Title element.
 
   Example:
     cat urls.txt | jsonschema2go -o main
 
   Usage:
-    jsonschema2go -o GO-OUTPUT-FILE
+    jsonschema2go -o GO-PACKAGE-NAME
     jsonschema2go --help
 
   Options:
     -h --help               Display this help text.
-    -o GO-OUTPUT-FILE       The file to create/replace with generated code.
+    -o GO-PACKAGE-NAME      The package name to use in the generated file.
 `
 )
 
