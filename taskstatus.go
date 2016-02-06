@@ -132,7 +132,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 		}
 
 		task.TaskReclaimResponse = *tcrsp
-		log.Println("Reclaimed task %v successfully (http response code %v).", task.TaskId, callSummary.HttpResponse.StatusCode)
+		log.Printf("Reclaimed task %v successfully (http response code %v).", task.TaskId, callSummary.HttpResponse.StatusCode)
 		return nil
 	}
 

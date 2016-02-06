@@ -602,11 +602,11 @@ func deleteFromAzure(deleteUrl string) error {
 	// reasons outlined above it's strongly advised that workers logs failures
 	// to delete messages from Azure queues.
 	if err != nil {
-		log.Println("Not able to delete task from azure queue (delete url: %v)", deleteUrl)
+		log.Printf("Not able to delete task from azure queue (delete url: %v)", deleteUrl)
 		log.Printf("%v", err)
 		return err
 	} else {
-		log.Println("Successfully deleted task from azure queue (delete url: %v) with http response code %v.", deleteUrl, resp.StatusCode)
+		log.Printf("Successfully deleted task from azure queue (delete url: %v) with http response code %v.", deleteUrl, resp.StatusCode)
 	}
 	// no errors occurred, yay!
 	return nil
