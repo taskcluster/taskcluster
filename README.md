@@ -14,17 +14,15 @@ This library auto-generates your go types for you.
 
 # Real-World Example
 
-Here is a real-world example json schema taken from the taskcluster project. Try it out yourself if you like:
+Here is a real-world example json schema taken from the taskcluster project. Try it out yourself if you like.
+
+First, let's see the schema:
 
 ```
-$ echo 'http://schemas.taskcluster.net/queue/v1/create-task-request.json' | jsonschema2go -o example.go
-```
-
-```
+$ curl 'http://schemas.taskcluster.net/queue/v1/create-task-request.json' 2>/dev/null
 {
-    "id": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "Task Definition",
+    "title": "Task Definition Request",
     "description": "Definition of a task that can be scheduled\n",
     "type": "object",
     "properties": {
@@ -46,7 +44,7 @@ $ echo 'http://schemas.taskcluster.net/queue/v1/create-task-request.json' | json
         },
         "schedulerId": {
             "title": "Scheduler Identifier",
-            "description": "Identifier for the scheduler that _defined_ this task, this can be an\nidentifier for a user or a service like the `\"task-graph-scheduler\"`.\nAlong with the `taskGroupId` this is used to form the permission scope\n`queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,\nthis scope is necessary to _schedule_ a defined task, or _rerun_ a task.\n",
+            "description": "Identifier for the scheduler that _defined_ this task, this can be an\nidentifier for a user or a service like the `\"task-graph-scheduler\"`.\n**Task submitter required scopes**\n`queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`.\nThis scope is also necessary to _schedule_ a defined task, or _rerun_ a\ntask.\n",
             "type": "string",
             "minLength": 1,
             "maxLength": 22,
@@ -57,11 +55,11 @@ $ echo 'http://schemas.taskcluster.net/queue/v1/create-task-request.json' | json
             "title": "Task-Group Identifier",
             "description": "Identifier for a group of tasks scheduled together with this task, by\nscheduler identified by `schedulerId`. For tasks scheduled by the\ntask-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if\nproperty isn't specified.\n",
             "type": "string",
-            "pattern": "^[a-zA-Z0-9-_]{22}$"
+            "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$"
         },
         "routes": {
             "title": "Task Specific Routes",
-            "description": "List of task specific routes, AMQP messages will be CC'ed to these routes.\n",
+            "description": "List of task specific routes, AMQP messages will be CC'ed to these routes.\n**Task submitter required scopes** `queue:route:<route>` for\neach route given.\n",
             "type": "array",
             "default": [],
             "items": {
@@ -74,12 +72,22 @@ $ echo 'http://schemas.taskcluster.net/queue/v1/create-task-request.json' | json
             "maxItems": 10,
             "uniqueItems": true
         },
+        "priority": {
+            "title": "Task Priority",
+            "description": "Priority of task, this defaults to `normal`. Additional levels may be\nadded later.\n**Task submitter required scopes** `queue:task-priority:high` for high\npriority tasks.\n",
+            "type": "string",
+            "enum": [
+                "high",
+                "normal"
+            ],
+            "default": "normal"
+        },
         "retries": {
             "title": "Retries",
             "description": "Number of times to retry the task in case of infrastructure issues.\nAn _infrastructure issue_ is a worker node that crashes or is shutdown,\nthese events are to be expected.\n",
             "type": "integer",
             "minimum": 0,
-            "maximum": 50,
+            "maximum": 49,
             "default": 5
         },
         "created": {
@@ -107,8 +115,9 @@ $ echo 'http://schemas.taskcluster.net/queue/v1/create-task-request.json' | json
             "default": [],
             "items": {
                 "title": "Scope",
-                "description": "A scope (or scope-patterns) which the task is\nauthorized to use. This can be a string or a string\nending with `*` which will authorize all scopes for\nwhich the string is a prefix.\n",
-                "type": "string"
+                "description": "A scope (or scope-patterns) which the task is\nauthorized to use. This can be a string or a string\nending with `*` which will authorize all scopes for\nwhich the string is a prefix.  Scopes must be composed of\nprintable ASCII characters and spaces.\n**Task submitter required scopes** The same scope-pattern(s) given\n(otherwise a task could be submitted to perform an action that the\ntask submitter is not authorized to perform).\n",
+                "type": "string",
+                "pattern": "^[\\x20-\\x7e]*$"
             }
         },
         "payload": {
@@ -181,35 +190,48 @@ $ echo 'http://schemas.taskcluster.net/queue/v1/create-task-request.json' | json
         "deadline",
         "payload",
         "metadata"
-    ]
+    ],
+    "id": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#"
 }
 ```
 
-Jsonschema2go generates this code for you, directly from the schema definition:
+And now we run jsonschema2go to generate the go type(s):
 
 ```go
-// The following code is AUTO-GENERATED. Please DO NOT edit.
+$ echo 'http://schemas.taskcluster.net/queue/v1/create-task-request.json' | jsonschema2go -o main
+// This source code file is AUTO-GENERATED by github.com/taskcluster/jsonschema2go/jsonschema2go
 
-package queue
+package main
 
 import (
-	"time"
+	"encoding/json"
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
 type (
 	// Definition of a task that can be scheduled
 	//
 	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
-	TaskDefinition struct {
+	TaskDefinitionRequest struct {
+
 		// Creation time of task
-		Created time.Time `json:"created"`
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/created
+		Created tcclient.Time `json:"created"`
+
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
-		Deadline time.Time `json:"deadline"`
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/deadline
+		Deadline tcclient.Time `json:"deadline"`
+
 		// Task expiration, time at which task definition and status is deleted.
 		// Notice that all artifacts for the must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may subject to change).
-		Expires time.Time `json:"expires"`
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/expires
+		Expires tcclient.Time `json:"expires"`
+
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
 		// fit into `payload`, or it can supplementary data for use in services
@@ -219,60 +241,157 @@ type (
 		// for treeherder reporting and task indexing don't conflict, hence, we have
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
-		Extra interface{} `json:"extra"`
+		//
+		// Default:    map[]
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/extra
+		Extra json.RawMessage `json:"extra"`
+
 		// Required task metadata
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata
 		Metadata struct {
+
 			// Human readable description of the task, please **explain** what the
 			// task does. A few lines of documentation is not going to hurt you.
+			//
+			// Max length: 32768
+			//
+			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/description
 			Description string `json:"description"`
+
 			// Human readable name of task, used to very briefly given an idea about
 			// what the task does.
+			//
+			// Max length: 255
+			//
+			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/name
 			Name string `json:"name"`
+
 			// E-mail of person who caused this task, e.g. the person who did
 			// `hg push`. The person we should contact to ask why this task is here.
+			//
+			// Max length: 255
+			//
+			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
+
 			// Link to source of this task, should specify a file, revision and
 			// repository. This should be place someone can go an do a git/hg blame
 			// to who came up with recipe for this task.
+			//
+			// Max length: 4096
+			//
+			// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/source
 			Source string `json:"source"`
 		} `json:"metadata"`
+
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
-		Payload interface{} `json:"payload"`
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/payload
+		Payload json.RawMessage `json:"payload"`
+
+		// Priority of task, this defaults to `normal`. Additional levels may be
+		// added later.
+		// **Task submitter required scopes** `queue:task-priority:high` for high
+		// priority tasks.
+		//
+		// Possible values:
+		//   * "high"
+		//   * "normal"
+		//
+		// Default:    "normal"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/priority
+		Priority string `json:"priority"`
+
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/provisionerId
 		ProvisionerId string `json:"provisionerId"`
+
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
 		// these events are to be expected.
+		//
+		// Default:    5
+		// Mininum:    0
+		// Maximum:    49
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/retries
 		Retries int `json:"retries"`
+
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
+		// **Task submitter required scopes** `queue:route:<route>` for
+		// each route given.
+		//
+		// Default:    []
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/routes
 		Routes []string `json:"routes"`
+
 		// Identifier for the scheduler that _defined_ this task, this can be an
 		// identifier for a user or a service like the `"task-graph-scheduler"`.
-		// Along with the `taskGroupId` this is used to form the permission scope
-		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
-		// this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+		// **Task submitter required scopes**
+		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`.
+		// This scope is also necessary to _schedule_ a defined task, or _rerun_ a
+		// task.
+		//
+		// Default:    "-"
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/schedulerId
 		SchedulerId string `json:"schedulerId"`
+
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
+		//
+		// Default:    []
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/scopes
 		Scopes []string `json:"scopes"`
+
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
 		// to attach informal meta-data to a task. Use this for informal tags that
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-		Tags interface{} `json:"tags"`
+		//
+		// Default:    map[]
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/tags
+		Tags json.RawMessage `json:"tags"`
+
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
 		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
 		// property isn't specified.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/taskGroupId
 		TaskGroupId string `json:"taskGroupId"`
+
 		// Unique identifier for a worker-type within a specific provisioner
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 )
+
 ```
 
 Now you can unmarshal your json data into &TaskDefinition{} and you are done!
@@ -290,7 +409,7 @@ go get github.com/taskcluster/jsonschema2go
 To use directly with go generate: include a line like this as a comment in one of your source files:
 
 ```go
-//go:generate jsonschema2go -u http://schemas.taskcluster.net/queue/v1/create-task-request.json -o autogeneratedtypes.go
+//go:generate jsonschema2go -u http://schemas.taskcluster.net/queue/v1/create-task-request.json -o main
 ```
 
 Please note there is no space between `//` and `go:generate`.
@@ -307,7 +426,7 @@ go install
 Run with -h to see the full options. Normally you would pipe a list of urls to jsonschema2go, e.g.:
 
 ```
-$ cat urls.txt | jsonschema2go -o mygeneratedcode.go
+$ cat urls.txt | jsonschema2go -p mypackagename
 ```
 
 ## Using from go, as a library
@@ -316,17 +435,21 @@ $ cat urls.txt | jsonschema2go -o mygeneratedcode.go
 package main
 
 import (
-  "fmt"
-  "github.com/taskcluster/jsonschema2go/jsonschema2go"
+    "io/ioutil"
+    "log"
+
+    "github.com/taskcluster/jsonschema2go"
 )
 
 func main() {
-  err := jsonschema2go.URLsToFile("output.go", "http://foo.com/schema1", "http://foo.com/schema2", ...)
-  if err != nil {
-    fmt.Println("Whoops, something went wrong...")
-    panic(err)
-  }
-  fmt.Println("Yay, it worked.")
+    sourceCode, _, err := jsonschema2go.Generate("packageName", "url1", "url2", "url3")
+    if err != nil {
+        log.Fatalf("Could not generate go types from given json schemas...", err)
+    }
+    err = ioutil.WriteFile("generatedcode.go", sourceCode, 0644)
+    if err != nil {
+        log.Fatalf("ERROR: Could not write source code to file system...", err)
+    }
 }
 ```
 
