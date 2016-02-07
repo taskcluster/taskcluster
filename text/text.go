@@ -78,6 +78,8 @@ func StarOut(text string) string {
 // set semantics; a value of `true` signifies inclusion in the set.
 // Non-existence is equivalent to existence with a value of `false`; therefore
 // it is recommended to only store `true` values.
+//
+// TODO: need to check behaviour of non-unicode strings
 func GoIdentifierFrom(name string, blacklist map[string]bool) (identifier string) {
 	for _, word := range strings.FieldsFunc(
 		name,
