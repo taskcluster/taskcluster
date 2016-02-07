@@ -460,6 +460,8 @@ func main() {
 - [ ] Test cases
 - [ ] Coverage reporting
 - [ ] Validate json with json schema, and handle failures gracefully (no panics)
+- [ ] Option to create pointer references in generated types rather than values, or a mechanism to have fine control of this
+- [ ] Option to no create non-embedded structs, i.e. embedded structs get moved to top level types
 
 # Contributing
 
