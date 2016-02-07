@@ -58,14 +58,19 @@ func StarOut(text string) string {
 // Strategy to convert arbitrary unicode string to a valid identifier:
 //
 // 1) Split name into arrays of allowed runes (words), discarding disallowed
-//    unicode points.
+// unicode points.
+//
 // 2) Upper case first rune in each word (see
-//    https://golang.org/pkg/strings/#Title).
+// https://golang.org/pkg/strings/#Title).
+//
 // 3) Rejoin words into a single string.
+//
 // 4) If the string starts with a number, or is the empty string, add a leading
-//    `_`.
+// `_`.
+//
 // 5) If the resulting identifier is in the blacklist, append the lowest
-//    integer possible, >= 1, that results in no blacklist conflict.
+// integer possible, >= 1, that results in no blacklist conflict.
+//
 // 6) Add the new name to the given blacklist.
 //
 // Note, the `map[string]bool` construction is simply a mechanism to implement
