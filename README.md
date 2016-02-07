@@ -453,6 +453,15 @@ func main() {
 }
 ```
 
+# TODO
+
+- [ ] Handle $ref references that start with `#` character
+- [ ] Handle definition sections
+- [ ] Test cases
+- [ ] Coverage reporting
+- [ ] Validate json with json schema, and handle failures gracefully (no panics)
+
 # Contributing
 
 Contributions welcome, feel free to contact me as pmoore on irc.mozilla.org, or send me a pull request.
+

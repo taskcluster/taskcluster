@@ -86,7 +86,7 @@ func (schemaSet *SchemaSet) SubSchema(url string) *JsonSubSchema {
 	return schemaSet.set[sanitizeURL(url)]
 }
 
-func (schemaSet *SchemaSet) SortedURLs() []string {
+func (schemaSet *SchemaSet) SortedSanitizedURLs() []string {
 	keys := make([]string, len(schemaSet.set))
 	i := 0
 	for k := range schemaSet.set {
