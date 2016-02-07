@@ -281,7 +281,7 @@ func (p *Properties) postPopulate(schemaSet *SchemaSet) {
 		sort.Strings(p.SortedPropertyNames)
 		members := make(stringSet, len(p.SortedPropertyNames))
 		for _, j := range p.SortedPropertyNames {
-			p.Properties[j].TypeName = text.GoTypeNameFrom(j, members)
+			p.Properties[j].TypeName = text.GoIdentifierFrom(j, members)
 		}
 	}
 }
@@ -339,9 +339,9 @@ func (schemaSet *SchemaSet) add(url string, subSchema *JsonSubSchema) {
 	}
 	schemaSet.set[sanitizedURL] = subSchema
 	if subSchema.Title != nil {
-		subSchema.TypeName = text.GoTypeNameFrom(*subSchema.Title, schemaSet.typeNames)
+		subSchema.TypeName = text.GoIdentifierFrom(*subSchema.Title, schemaSet.typeNames)
 	} else {
-		subSchema.TypeName = text.GoTypeNameFrom("var", schemaSet.typeNames)
+		subSchema.TypeName = text.GoIdentifierFrom("var", schemaSet.typeNames)
 	}
 }
 
