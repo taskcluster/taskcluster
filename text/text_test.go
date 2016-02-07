@@ -99,13 +99,19 @@ func ExampleIndefiniteArticle() {
 	// an owl
 }
 
-func ExampleGoTypeNameFrom() {
+func ExampleGoIdentifierFrom() {
 	blacklist := make(map[string]bool)
-	fmt.Println(text.GoTypeNameFrom("Azure Artifact Request", blacklist))
-	fmt.Println(text.GoTypeNameFrom("AzureArtifactRequest", blacklist))
-	fmt.Println(text.GoTypeNameFrom("Azure artifact request", blacklist))
-	fmt.Println(text.GoTypeNameFrom("azure-artifact request", blacklist))
-	fmt.Println(text.GoTypeNameFrom("List Artifacts Response", blacklist))
+	fmt.Println(text.GoIdentifierFrom("Azure Artifact Request", blacklist))
+	fmt.Println(text.GoIdentifierFrom("AzureArtifactRequest", blacklist))
+	fmt.Println(text.GoIdentifierFrom("Azure artifact request", blacklist))
+	fmt.Println(text.GoIdentifierFrom("azure-artifact request", blacklist))
+	fmt.Println(text.GoIdentifierFrom("List Artifacts Response", blacklist))
+	fmt.Println(text.GoIdentifierFrom("hello, 世;;;((```[]!@#$界", blacklist))
+	fmt.Println(text.GoIdentifierFrom(".-4$sjdb2##f \n\txxßßß", blacklist))
+	fmt.Println(text.GoIdentifierFrom("", blacklist))
+	fmt.Println(text.GoIdentifierFrom("grüß", blacklist))
+	fmt.Println(text.GoIdentifierFrom("333", blacklist))
+	fmt.Println(text.GoIdentifierFrom("3_33", blacklist))
 
 	// Output:
 	// AzureArtifactRequest
@@ -113,4 +119,10 @@ func ExampleGoTypeNameFrom() {
 	// AzureArtifactRequest2
 	// AzureArtifactRequest3
 	// ListArtifactsResponse
+	// Hello世界
+	// _4Sjdb2FXxßßß
+	// _
+	// Grüß
+	// _333
+	// _3_33
 }
