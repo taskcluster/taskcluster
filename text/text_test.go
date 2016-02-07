@@ -110,6 +110,7 @@ func ExampleGoIdentifierFrom() {
 	fmt.Println(text.GoIdentifierFrom(".-4$sjdb2##f \n\txxßßß", blacklist))
 	fmt.Println(text.GoIdentifierFrom("", blacklist))
 	fmt.Println(text.GoIdentifierFrom("", blacklist))
+	fmt.Println(text.GoIdentifierFrom("_", blacklist))
 	fmt.Println(text.GoIdentifierFrom("grüß", blacklist))
 	fmt.Println(text.GoIdentifierFrom("333", blacklist))
 	fmt.Println(text.GoIdentifierFrom("3_33", blacklist))
@@ -124,6 +125,7 @@ func ExampleGoIdentifierFrom() {
 	// _4Sjdb2FXxßßß
 	// Identifier
 	// Identifier1
+	// Identifier2
 	// Grüß
 	// _333
 	// _3_33

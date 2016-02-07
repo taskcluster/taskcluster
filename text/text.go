@@ -67,7 +67,7 @@ func StarOut(text string) string {
 //
 // 4) If the string starts with a number, add a leading `_`.
 //
-// 5) If the string is the empty string, set as "Identifier"
+// 5) If the string is the empty string or "_", set as "Identifier"
 //
 // 6) If the resulting identifier is in the blacklist, append the lowest
 // integer possible, >= 1, that results in no blacklist conflict.
@@ -97,7 +97,7 @@ func GoIdentifierFrom(name string, blacklist map[string]bool) (identifier string
 		identifier = "_" + identifier
 	}
 
-	if identifier == "" {
+	if identifier == "" || identifier == "_" {
 		identifier = "Identifier"
 	}
 
