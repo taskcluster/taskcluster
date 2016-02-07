@@ -394,7 +394,7 @@ type (
 
 ```
 
-Now you can unmarshal your json data into &TaskDefinitionRequest{} and you are done!
+Now you can unmarshal your json data into `new(TaskDefinitionRequest)` and you are done!
 
 # Installation
 
