@@ -109,6 +109,7 @@ func ExampleGoIdentifierFrom() {
 	fmt.Println(text.GoIdentifierFrom("hello, 世;;;((```[]!@#$界", blacklist))
 	fmt.Println(text.GoIdentifierFrom(".-4$sjdb2##f \n\txxßßß", blacklist))
 	fmt.Println(text.GoIdentifierFrom("", blacklist))
+	fmt.Println(text.GoIdentifierFrom("", blacklist))
 	fmt.Println(text.GoIdentifierFrom("grüß", blacklist))
 	fmt.Println(text.GoIdentifierFrom("333", blacklist))
 	fmt.Println(text.GoIdentifierFrom("3_33", blacklist))
@@ -121,7 +122,8 @@ func ExampleGoIdentifierFrom() {
 	// ListArtifactsResponse
 	// Hello世界
 	// _4Sjdb2FXxßßß
-	// _
+	// Identifier
+	// Identifier1
 	// Grüß
 	// _333
 	// _3_33

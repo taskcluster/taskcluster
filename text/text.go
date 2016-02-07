@@ -65,13 +65,14 @@ func StarOut(text string) string {
 //
 // 3) Rejoin words into a single string.
 //
-// 4) If the string starts with a number, or is the empty string, add a leading
-// `_`.
+// 4) If the string starts with a number, add a leading `_`.
 //
-// 5) If the resulting identifier is in the blacklist, append the lowest
+// 5) If the string is the empty string, set as "Identifier"
+//
+// 6) If the resulting identifier is in the blacklist, append the lowest
 // integer possible, >= 1, that results in no blacklist conflict.
 //
-// 6) Add the new name to the given blacklist.
+// 7) Add the new name to the given blacklist.
 //
 // Note, the `map[string]bool` construction is simply a mechanism to implement
 // set semantics; a value of `true` signifies inclusion in the set.
@@ -87,13 +88,17 @@ func GoIdentifierFrom(name string, blacklist map[string]bool) (identifier string
 		identifier += strings.Title(word)
 	}
 
-	if identifier == "" || strings.IndexFunc(
+	if strings.IndexFunc(
 		identifier,
 		func(c rune) bool {
 			return unicode.IsNumber(c)
 		},
 	) == 0 {
 		identifier = "_" + identifier
+	}
+
+	if identifier == "" {
+		identifier = "Identifier"
 	}
 
 	// If name already exists, add an integer suffix to name. Start with "1" and increment
