@@ -465,6 +465,7 @@ func main() {
 - [ ] Option to no create non-embedded structs, i.e. embedded structs get moved to top level types
 - [ ] Create ability to map given types to custom types (e.g. timestamps -> `tcclient.Time`)
 - [ ] Remove hard references to `tcclient.Time`
+- [ ] Add support for auto-generated validation function(s) that respect the json schema constraints
 
 # Contributing
 
