@@ -455,7 +455,7 @@ func main() {
 
 # TODO
 
-- [ ] Handle $ref references that start with `#` character
+- [ ] Handle `$ref` references that start with `#` character
 - [ ] Handle definition sections
 - [ ] Test cases
 - [ ] Coverage reporting
