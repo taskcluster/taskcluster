@@ -455,6 +455,7 @@ func main() {
 
 # TODO
 
+- [ ] Properly document all exported types for better go docs
 - [ ] Handle `$ref` references that start with `#` character
 - [ ] Handle definition sections
 - [ ] Test cases
