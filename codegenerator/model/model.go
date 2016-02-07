@@ -253,7 +253,7 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 	for i := range apiDefs {
 		content += text.Underline(apiDefs[i].URL)
 		content += apiDefs[i].Data.String() + "\n\n"
-		for _, url := range apiDefs[i].schemas.SortedURLs() {
+		for _, url := range apiDefs[i].schemas.SortedSanitizedURLs() {
 			content += (text.Underline(url))
 			content += apiDefs[i].schemas.SubSchema(url).String() + "\n\n"
 		}
