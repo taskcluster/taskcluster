@@ -121,6 +121,8 @@ suite("signature validation", function() {
       seed:       slugid.v4() + slugid.v4(),
       signature:  null  // generated later
     };
+    debug(options);
+    debug(cert);
 
     // Construct signature
     cert.signature = crypto
