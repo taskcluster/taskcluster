@@ -53,17 +53,9 @@ func setURL(connectionData *ConnectionData, route string, query url.Values) (u *
 	return
 }
 
-// APICall is the generic REST API calling method which performs all REST API
-// calls for this library.  Each auto-generated REST API method simply is a
-// wrapper around this method, calling it with specific specific arguments.
-func (connectionData *ConnectionData) APICall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
+func (connectionData *ConnectionData) Request(rawPayload []byte, method, route string, query url.Values) (*CallSummary, error) {
 	callSummary := new(CallSummary)
-	callSummary.HttpRequestObject = payload
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		return result, callSummary, err
-	}
-	callSummary.HttpRequestBody = string(jsonPayload)
+	callSummary.HttpRequestBody = string(rawPayload)
 
 	httpClient := &http.Client{}
 
@@ -72,9 +64,7 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 	// blips or HTTP 5xx errors)
 	httpCall := func() (*http.Response, error, error) {
 		var ioReader io.Reader = nil
-		if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
-			ioReader = bytes.NewReader(jsonPayload)
-		}
+		ioReader = bytes.NewReader(rawPayload)
 		u, err := setURL(connectionData, route, query)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
@@ -110,6 +100,7 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 	}
 
 	// Make HTTP API calls using an exponential backoff algorithm...
+	var err error
 	callSummary.HttpResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
 
 	// read response into memory, so that we can return the body
@@ -120,10 +111,27 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 		}
 	}
 
+	return callSummary, err
+
+}
+
+// APICall is the generic REST API calling method which performs all REST API
+// calls for this library.  Each auto-generated REST API method simply is a
+// wrapper around this method, calling it with specific specific arguments.
+func (connectionData *ConnectionData) APICall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
+	rawPayload := []byte{}
+	var err error
+	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
+		rawPayload, err = json.Marshal(payload)
+		if err != nil {
+			return result, &CallSummary{HttpRequestObject: payload}, err
+		}
+	}
+	callSummary, err := connectionData.Request(rawPayload, method, route, query)
+	callSummary.HttpRequestObject = payload
 	if err != nil {
 		return result, callSummary, err
 	}
-
 	// if result is passed in as nil, it means the API defines no response body
 	// json
 	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
