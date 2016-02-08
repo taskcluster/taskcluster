@@ -269,28 +269,23 @@ class ScopeResolver extends events.EventEmitter {
     return granted;
   }
 
-  createSignatureValidator(options = {}) {
-    return base.API.createSignatureValidator({
-      expandScopes: (scopes) => this.resolve(scopes),
-      clientLoader: async (clientId) => {
-        let client = this._clientCache[clientId];
-        if (!client) {
-          throw new Error("Client with clientId '" + clientId + "' not found");
-        }
-        if (client.disabled) {
-          throw new Error("Client with clientId '" + clientId + "' is disabled");
-        }
-        if (client.expires < new Date()) {
-          throw new Error("Client with clientId: '" + clientId + "' has expired");
-        }
+  async loadClient(clientId) {
+    let client = this._clientCache[clientId];
+    if (!client) {
+      throw new Error("Client with clientId '" + clientId + "' not found");
+    }
+    if (client.disabled) {
+      throw new Error("Client with clientId '" + clientId + "' is disabled");
+    }
+    if (client.expires < new Date()) {
+      throw new Error("Client with clientId: '" + clientId + "' has expired");
+    }
 
-        if (client.updateLastUsed) {
-          client.updateLastUsed = false;
-          this._updateLastUsed(clientId).catch(err => this.emit('error', err));
-        }
-        return client;
-      }
-    });
+    if (client.updateLastUsed) {
+      client.updateLastUsed = false;
+      this._updateLastUsed(clientId).catch(err => this.emit('error', err));
+    }
+    return client;
   }
 
   /**
