@@ -225,8 +225,8 @@ func TestAuthorizationDelegate(t *testing.T) {
 	}
 	testWithPermCreds(t, test("A", []string{"auth:azure-table-access:fakeaccount/DuMmYtAbLe"}), 404)
 	testWithTempCreds(t, test("B", []string{"auth:azure-table-access:fakeaccount/DuMmYtAbLe"}), 404)
-	testWithPermCreds(t, test("C", []string{"queue:get-artifact:private/build/sources.xml"}), 401)
-	testWithTempCreds(t, test("D", []string{"queue:get-artifact:private/build/sources.xml"}), 401)
+	testWithPermCreds(t, test("C", []string{"queue:get-artifact:private/build/sources.xml"}), 403)
+	testWithTempCreds(t, test("D", []string{"queue:get-artifact:private/build/sources.xml"}), 403)
 }
 
 func TestAPICallWithPayload(t *testing.T) {
@@ -380,7 +380,7 @@ func TestOversteppedScopes(t *testing.T) {
 		)
 		return res
 	}
-	testWithTempCreds(t, test, 401)
+	testWithTempCreds(t, test, 500)
 }
 
 func TestBadCredsReturns500(t *testing.T) {
