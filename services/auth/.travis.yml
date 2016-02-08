@@ -2,7 +2,7 @@ language: node_js
 sudo: false
 env:
   global:
-  - DEBUG='base:app:request auth:* server test:*'
+  - DEBUG='base:app:request,auth:*,server,test:*'
   - CXX=g++-4.8
 node_js:
 - '4'
