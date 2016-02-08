@@ -39,122 +39,131 @@ suite("signature validation", function() {
   });
 
   var test = function(name, input, expected) {
-    input = _.defaults({}, input, {
-      method: 'GET',
-      resource: '/',
-      host: 'test.taskcluster.net',
-      port: 443,
-    });
-
-    if (input.authorization) {
-      let creds = input.authorization.credentials || {};
-      input.authorization.credentials = _.defaults({}, creds, {
-        key: creds.id + '-secret',
-        algorithm: 'sha256',
-      });
-
-      // stringify ext
-      if (typeof input.authorization.ext === 'object') {
-        input.authorization.ext = new Buffer(
-            JSON.stringify(input.authorization.ext))
-          .toString('base64');
-      }
-
-      // create the authorization "header"
-      let url = 'https://' + input.host + input.resource;
-      input['authorization'] = hawk.client.header(
-          url, input.method, input.authorization).field;
-    }
-
-    if (input.bewit) {
-      input.bewit= _.defaults({}, input.bewit, {
-        key: input.bewit.id + '-secret',
-        algorithm: 'sha256',
-      });
-
-      if (typeof input.bewit.ext === 'object') {
-        input.bewit.ext = new Buffer(
-            JSON.stringify(input.bewit.ext))
-          .toString('base64');
-      }
-
-      var bewit = hawk.client.getBewit('https://' + input.host + input.resource, {
-        credentials: {
-          id: input.bewit.id,
-          key: input.bewit.key,
-          algorithm: input.bewit.algorithm,
-        },
-        ttlSec: 15 * 60,
-        ext: input.bewit.ext
-      });
-      input.resource += '?bewit=' + bewit;
-      delete input.bewit;
-    }
-
     mocha.test(name, async function() {
+      // defer creation of input until the test runs, if necessary
+      if (typeof input == "function") {
+        input = input();
+      }
+
+      input = _.defaults({}, input, {
+        method: 'GET',
+        resource: '/',
+        host: 'test.taskcluster.net',
+        port: 443,
+      });
+
+      if (input.authorization) {
+        let creds = input.authorization.credentials || {};
+        input.authorization.credentials = _.defaults({}, creds, {
+          key: creds.id + '-secret',
+          algorithm: 'sha256',
+        });
+
+        // stringify ext
+        if (typeof input.authorization.ext === 'object') {
+          input.authorization.ext = new Buffer(
+              JSON.stringify(input.authorization.ext))
+            .toString('base64');
+        }
+
+        // create the authorization "header"
+        let url = 'https://' + input.host + input.resource;
+        input['authorization'] = hawk.client.header(
+            url, input.method, input.authorization).field;
+      }
+
+      if (input.bewit) {
+        input.bewit= _.defaults({}, input.bewit, {
+          key: input.bewit.id + '-secret',
+          algorithm: 'sha256',
+        });
+
+        if (typeof input.bewit.ext === 'object') {
+          input.bewit.ext = new Buffer(
+              JSON.stringify(input.bewit.ext))
+            .toString('base64');
+        }
+
+        var bewit = hawk.client.getBewit('https://' + input.host + input.resource, {
+          credentials: {
+            id: input.bewit.id,
+            key: input.bewit.key,
+            algorithm: input.bewit.algorithm,
+          },
+          ttlSec: 15 * 60,
+          ext: input.bewit.ext
+        });
+        input.resource += '?bewit=' + bewit;
+        delete input.bewit;
+      }
+
       let got = await validator(input);
       assume(got).to.deeply.equal(expected);
     });
   };
 
   var testWithTemp = function(name, options, inputFn, expected) {
-    // Get now as default value for start
-    var now = new Date();
-    now.setMinutes(now.getMinutes() - 5); // subtract 5 min for clock drift
-    var then = new Date();
-    then.setMinutes(then.getMinutes() + 5);
+    let makeInput = () => {
+      let clientId = options.clientId;
 
-    // Set default options
-    options = _.defaults({}, options, {
-      start: now,
-      expiry: then,
-      scopes: [],
-      accessToken: options.clientId + '-secret',
-    });
+      var start = new Date();
+      start.setMinutes(start.getMinutes() - 5);
+      var expiry = new Date();
+      expiry.setMinutes(expiry.getMinutes() + 5);
 
-    // Construct certificate
-    var cert = {
-      version:    1,
-      scopes:     _.cloneDeep(options.scopes),
-      start:      options.start.getTime(),
-      expiry:     options.expiry.getTime(),
-      seed:       slugid.v4() + slugid.v4(),
-      signature:  null  // generated later
-    };
-    debug(options);
-    debug(cert);
+      // Set default options
+      options = _.defaults({}, options, {
+        start,
+        expiry,
+        scopes: [],
+        accessToken: clientId + '-secret',
+      });
 
-    // Construct signature
-    cert.signature = crypto
-      .createHmac('sha256', options.accessToken)
-      .update(
-        [
-          'version:'  + cert.version,
-          'seed:'     + cert.seed,
-          'start:'    + cert.start,
-          'expiry:'   + cert.expiry,
-          'scopes:'
-        ].concat(cert.scopes).join('\n')
-      )
-      .digest('base64');
+      // Construct certificate
+      var cert = {
+        version:    1,
+        scopes:     _.cloneDeep(options.scopes),
+        start:      options.start.getTime(),
+        expiry:     options.expiry.getTime(),
+        seed:       slugid.v4() + slugid.v4(),
+        signature:  null  // generated later
+      };
 
-    if (options.signature) {
+      // Construct signature
       cert.signature = crypto
-        .createHmac('sha256', options.signature)
+        .createHmac('sha256', options.accessToken)
+        .update(
+          [
+            'version:'  + cert.version,
+            'seed:'     + cert.seed,
+            'start:'    + cert.start,
+            'expiry:'   + cert.expiry,
+            'scopes:'
+          ].concat(cert.scopes).join('\n')
+        )
         .digest('base64');
+
+      if (options.signature) {
+        cert.signature = crypto
+          .createHmac('sha256', options.signature)
+          .digest('base64');
+      }
+
+      // Construct temporary key
+      var accessToken = crypto
+        .createHmac('sha256', options.accessToken)
+        .update(cert.seed)
+        .digest('base64')
+        .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
+        .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
+        .replace(/=/g,  '');  // Drop '==' padding
+
+      return inputFn(clientId, accessToken, cert);
     }
 
-    // Construct temporary key
-    var accessToken = crypto
-      .createHmac('sha256', options.accessToken)
-      .update(cert.seed)
-      .digest('base64')
-      .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
-      .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
-      .replace(/=/g,  '');  // Drop '==' padding
-
-    // Return the generated temporary credentials
-    test(name, inputFn(options.clientId, accessToken, cert), expected);
+    // Only make the certificate at test runtime; then the expiry times
+    // are relevant to when the cert is examined
+    test(name, makeInput, expected);
   };
 
   // shorthands
