@@ -106,7 +106,7 @@ suite('user stories', function() {
         });
         throw new Error("did not get expected error");
       } catch (err) {
-        assume(err.statusCode).to.equal(401);
+        assume(err.statusCode).to.equal(403);
       }
     });
 
