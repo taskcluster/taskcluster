@@ -213,22 +213,10 @@ module.exports = {
         "$ref": "#/definitions/artifact"
       }
     },
-    "coalescer": {
-      "type": "object",
-      "title": "Coalescer information",
-      "description": "Information about the coalescer service that should be used to coalesce multiple tasks into a single run.  The worker determines the task's coalescing keys based on a task route with the given routePrefix, the suffix being the coalescing key.  The coalescing key is appended to the coalescer URL, which is expected to return an object with the key as a property containing a JSON list of taskIds which may be coalesced with this one.  The tasks in the list should be sorted so that tasks earlier in the list supersede (\"should be performed instead of\") tasks later in the list.",
-      "properties": {
-        "url": {
-          "title": "URL of the coalescer service; the coalescing key will be appended to this URL",
-          "type": "string",
-          "format": "url"
-        },
-        "routePrefix": {
-          "title": "Prefix of task routes for coalescer keys.",
-          "type": "string"
-        }
-      },
-      "required": ["url", "routePrefix"]
+    "supersederUrl": {
+      "title": "URL of the a service that can indicate tasks superseding this one; the current taskId will be appended as a query argument `taskId`.  The service should return an object with a `supersedes` key containing a list of taskIds, including the supplied taskId.  The tasks should be ordered such that each task supersedes all tasks appearing earlier in the list.  See the docker-worker documentation for more detail.",
+      "type": "string",
+      "format": "url"
     },
     "features": featureSchema
   }

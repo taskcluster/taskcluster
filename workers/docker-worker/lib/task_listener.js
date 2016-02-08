@@ -28,7 +28,7 @@ export default class TaskListener extends EventEmitter {
     this.taskPollInterval = this.runtime.taskQueue.pollInterval;
     this.lastTaskEvent = Date.now();
     this.host = runtime.hostManager;
-    this.coalescerTimeout = 5000;
+    this.supersedingTimeout = 5000;
 
     this.deviceManager = new DeviceManager(runtime);
   }
@@ -166,7 +166,7 @@ export default class TaskListener extends EventEmitter {
     if (exceedsThreshold) return;
 
     let claims = await this.taskQueue.claimWork(availableCapacity);
-    let tasksets = await Promise.all(claims.map(this.coalesceClaim.bind(this)));
+    let tasksets = await Promise.all(claims.map(this.applySuperseding.bind(this)));
     // call runTaskset for each taskset, but do not wait for it to complete
     tasksets.forEach(this.runTaskset.bind(this));
   }
@@ -318,47 +318,43 @@ export default class TaskListener extends EventEmitter {
   }
 
   /**
-   * Coalesce the task in the given claim, claiming any additional tasks
-   * directly from the TC queue service, then calling runTask with the
-   * resulting task set.
+   * Look for tasks we can supersede, claiming any additional tasks directly
+   * from the TC queue service, then calling runTask with the resulting task
+   * set.
    */
-  async coalesceClaim(claim) {
+  async applySuperseding(claim) {
     let task = claim.task;
     let taskId = claim.status.taskId;
 
     try {
-      // if the task is not coalescible, then the taskset is just the one claim
-      if (!task.payload.coalescer) {
-        this.runtime.log('not coalescing', {taskId, message: 'no coalescer in payload'});
+      // if the task is not set up to supersede anything, then the taskset is just the one claim
+      if (!task.payload.supersederUrl) {
+        this.runtime.log('not superseding', {taskId, message: 'no supersederUrl in payload'});
         return [claim];
       }
 
-      let routes = task.routes;
-      let routePrefix = task.payload.coalescer.routePrefix + ".";
-      routes = routes.filter(r => r.startsWith(routePrefix));
-      if  (routes.length != 1) {
-        this.runtime.log('not coalescing', {taskId, message: 'no single coalescer route in payload'});
+      let supersederUrl = task.payload.supersederUrl;
+
+      let tasks = (await this.fetchSupersedingTasks(supersederUrl, taskId));
+      if (!tasks || tasks.length == 0) {
+        this.runtime.log('not superseding', {taskId, supersederUrl,
+                           message: 'no tasks supersede this one'});
         return [claim];
       }
 
-      let coalescingKey = routes[0].substr(routePrefix.length);
-      let coalescerUrl = task.payload.coalescer.url + coalescingKey;
-
-      let tasks = (await this.fetchCoalescerTasks(coalescerUrl))[coalescingKey];
-      if (tasks.length == 0) {
-        this.runtime.log('not coalescing', {taskId, coalescerUrl,
-                           message: 'no tasks to coalese with'});
+      // if the returned list does not contain the initial taskId, then ignore
+      // the request; this is an invalid response from the superseder
+      if (!tasks.includes(taskId)) {
+        this.runtime.log('not superseding', {taskId, supersederUrl,
+                           message: 'initial taskId not included in result from superseder'});
         return [claim];
       }
 
       // claim runId 0 for each of those tasks; we can consider adding support
       // for other runIds later.
       var claims = await Promise.all(tasks.map(async tid => {
-        // for the existing claim, just skip it; depending on whether the coalescer
-        // heard about our primary claim before it got our request, this may or may
-        // not be present.
         if (tid == taskId) {
-          return;
+          return claim; // already claimed
         }
 
         try {
@@ -367,7 +363,7 @@ export default class TaskListener extends EventEmitter {
             workerGroup: this.runtime.workerGroup,
           });
         } catch(e) {
-          this.runtime.log("coalescing - secondary claim failure", {
+          this.runtime.log("while superseding - secondary claim failure", {
             taskId: tid,
             runId: 0,
             message: e.toString(),
@@ -381,12 +377,9 @@ export default class TaskListener extends EventEmitter {
       // filter out missed claims
       claims = claims.filter(cl => cl);
 
-      // add the primary claim at the end
-      claims.push(claim);
-
       return claims;
     } catch (e) {
-      this.runtime.log('coalescing error', {
+      this.runtime.log('superseding error', {
         taskId: claim.status.taskId,
         runId: claim.runId,
         message: e.toString(),
@@ -399,12 +392,13 @@ export default class TaskListener extends EventEmitter {
     }
   }
 
-  async fetchCoalescerTasks(url) {
-    let jsonData = await request.get(url).timeout(this.coalescerTimeout).buffer().end();
+  async fetchSupersedingTasks(url, taskId) {
+    url = url + "?taskId=" + taskId
+    let jsonData = await request.get(url).timeout(this.supersedingTimeout).buffer().end();
     if (!jsonData.ok || !jsonData.text) {
-      throw new Error("Failure fetching from coalescer URL " + url);
+      throw new Error("Failure fetching from superseding URL " + url);
     }
-    return JSON.parse(jsonData.text);
+    return JSON.parse(jsonData.text)['supersedes'];
   }
 
   /**

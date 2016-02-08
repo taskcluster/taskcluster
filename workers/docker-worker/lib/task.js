@@ -269,7 +269,7 @@ export class Task {
   /**
   @param {Object} runtime global runtime.
   @param {Object} task for this instance.
-  @param {Object} claims claim details for this instance (several claims if coalesced)
+  @param {Object} claims claim details for this instance (several claims if superseding)
   @param {Object} options
   @param {Number} [options.cpusetCpus] cpu(s) to use for this container/task.
   */
