@@ -3,11 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
 type RoutesTest struct {
@@ -38,6 +39,12 @@ func TestCredentialsUpdate(t *testing.T) {
 	response = routes.request("PUT", make([]byte, 0))
 	if response.Code != 400 {
 		t.Errorf("Should return 400, but returned %d", response.Code)
+	}
+
+	response = routes.request("PUT", []byte("{\"badJS0n!"))
+	if response.Code != 400 {
+		content, _ := ioutil.ReadAll(response.Body)
+		t.Fatal("Request error %d: %s", response.Code, string(content))
 	}
 
 	response = routes.request("PUT", body)
