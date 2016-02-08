@@ -1,17 +1,18 @@
 #!/usr/bin/env node
-var base          = require('taskcluster-base');
-var data          = require('../auth/data');
-var v1            = require('../auth/v1');
-var path          = require('path');
-var debug         = require('debug')('server');
-var Promise       = require('promise');
-var AWS           = require('aws-sdk-promise');
-var exchanges     = require('../auth/exchanges');
-var ScopeResolver = require('../auth/scoperesolver');
-var taskcluster   = require('taskcluster-client');
-var url           = require('url');
-var loader        = require('taskcluster-lib-loader');
-var app           = require('taskcluster-lib-app');
+var base               = require('taskcluster-base');
+var data               = require('../auth/data');
+var v1                 = require('../auth/v1');
+var path               = require('path');
+var debug              = require('debug')('server');
+var Promise            = require('promise');
+var AWS                = require('aws-sdk-promise');
+var exchanges          = require('../auth/exchanges');
+var ScopeResolver      = require('../auth/scoperesolver');
+var signaturevalidator = require('../auth/signaturevalidator');
+var taskcluster        = require('taskcluster-client');
+var url                = require('url');
+var loader             = require('taskcluster-lib-loader');
+var app                = require('taskcluster-lib-app');
 
 // Create component loader
 let load = loader({
@@ -125,7 +126,10 @@ let load = loader({
         connection: new taskcluster.PulseConnection(cfg.pulse)
       });
 
-      let signatureValidator = resolver.createSignatureValidator()
+      let signatureValidator = signaturevalidator.createSignatureValidator({
+        expandScopes: (scopes) => resolver.resolve(scopes),
+        clientLoader: (clientId) => resolver.loadClient(clientId),
+      });
 
       return v1.setup({
         context: {
