@@ -380,7 +380,7 @@ func TestOversteppedScopes(t *testing.T) {
 		)
 		return res
 	}
-	testWithTempCreds(t, test, 500)
+	testWithTempCreds(t, test, 401)
 }
 
 func TestBadCredsReturns500(t *testing.T) {
