@@ -4,6 +4,7 @@ package text
 import (
 	"fmt"
 	"strings"
+	"unicode"
 )
 
 // Indent indents a block of text with an indent string. It does this by
@@ -46,36 +47,73 @@ func StarOut(text string) string {
 	return strings.Repeat("*", len(text))
 }
 
-// GoTypeNameFrom provides a mechanism to mutate an arbitrary descriptive
-// string (name) into an exported Go type name that can be used in generated
-// code, taking into account a blacklist of names that have already been used,
-// in order to guarantee that a new name is created which will not conflict
-// with an existing type.  The blacklist is updated to include the newly
-// generated name. Note, the map[string]bool construction is simply a mechanism
-// to implement set semantics; a value of `true` signifies inclusion in the
-// set. Non-existence is equivalent to existence with a value of `false`;
-// therefore it is recommended to only store `true` values.
+// GoIdentifierFrom provides a mechanism to mutate an arbitrary descriptive
+// string (name) into an _exported_ Go identifier (variable name, function
+// name, etc) that e.g. can be used in generated code, taking into account a
+// blacklist of names that have already been used, in order to guarantee that a
+// new name is created which will not conflict with an existing type.
 //
-// The mutation is performed by capatilising all words (see
-// https://golang.org/pkg/strings/#Title), removing all spaces and hyphens, and
-// then optionally appending an integer if the generated name conflicts with an
-// entry in the blacklist. The appended integer will be the lowest integer
-// possible, >= 1, that results in no blacklist conflict.
-func GoTypeNameFrom(name string, blacklist map[string]bool) string {
-	// Capitalise words, and remove spaces and dashes, to acheive struct names in CamelCase,
-	// but starting with an upper case letter so that the structs are exported...
-	normalisedName := strings.NewReplacer(" ", "", "-", "").Replace(strings.Title(name))
+// Identifier syntax: https://golang.org/ref/spec#Identifiers
+//
+// Strategy to convert arbitrary unicode string to a valid identifier:
+//
+// 1) Split name into arrays of allowed runes (words), discarding disallowed
+// unicode points.
+//
+// 2) Upper case first rune in each word (see
+// https://golang.org/pkg/strings/#Title).
+//
+// 3) Rejoin words into a single string.
+//
+// 4) If the string starts with a number, add a leading `_`.
+//
+// 5) If the string is the empty string or "_", set as "Identifier"
+//
+// 6) If the resulting identifier is in the blacklist, append the lowest
+// integer possible, >= 1, that results in no blacklist conflict.
+//
+// 7) Add the new name to the given blacklist.
+//
+// Note, the `map[string]bool` construction is simply a mechanism to implement
+// set semantics; a value of `true` signifies inclusion in the set.
+// Non-existence is equivalent to existence with a value of `false`; therefore
+// it is recommended to only store `true` values.
+//
+// TODO: need to check behaviour of non-unicode strings
+func GoIdentifierFrom(name string, blacklist map[string]bool) (identifier string) {
+	for _, word := range strings.FieldsFunc(
+		name,
+		func(c rune) bool {
+			return !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '_'
+		},
+	) {
+		identifier += strings.Title(word)
+	}
+
+	if strings.IndexFunc(
+		identifier,
+		func(c rune) bool {
+			return unicode.IsNumber(c)
+		},
+	) == 0 {
+		identifier = "_" + identifier
+	}
+
+	if identifier == "" || identifier == "_" {
+		identifier = "Identifier"
+	}
+
 	// If name already exists, add an integer suffix to name. Start with "1" and increment
 	// by 1 until an unused name is found. Example: if name FooBar was generated four times
 	// , the first instance would be called FooBar, then the next would be FooBar1, the next
 	// FooBar2 and the last would be assigned a name of FooBar3. We do this to guarantee we
 	// don't use duplicate names for different logical entities.
-	for k, baseName := 1, normalisedName; blacklist[normalisedName]; {
-		normalisedName = fmt.Sprintf("%v%v", baseName, k)
+	for k, baseName := 1, identifier; blacklist[identifier]; {
+		identifier = fmt.Sprintf("%v%v", baseName, k)
 		k++
 	}
-	blacklist[normalisedName] = true
-	return normalisedName
+	blacklist[identifier] = true
+	return
 }
 
 // Returns the indefinite article (in English) for a the given noun, which is

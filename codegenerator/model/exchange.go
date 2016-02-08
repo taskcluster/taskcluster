@@ -144,7 +144,7 @@ import (
 `
 	entryTypeNames := make(map[string]bool, len(exchange.Entries))
 	for _, entry := range exchange.Entries {
-		content += entry.generateAPICode(text.GoTypeNameFrom(entry.Name, entryTypeNames))
+		content += entry.generateAPICode(text.GoIdentifierFrom(entry.Name, entryTypeNames))
 	}
 
 	content += `
@@ -186,7 +186,7 @@ func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
 		if rk.MultipleWords {
 			mwch = "#"
 		}
-		content += "\t" + text.GoTypeNameFrom(rk.Name, keyNames) + " string `mwords:\"" + mwch + "\"`\n"
+		content += "\t" + text.GoIdentifierFrom(rk.Name, keyNames) + " string `mwords:\"" + mwch + "\"`\n"
 	}
 	content += "}\n"
 	content += "func (binding " + exchangeEntry + ") RoutingKey() string {\n"
