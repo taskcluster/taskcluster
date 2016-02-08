@@ -23,7 +23,7 @@ suite('Rerun task', function() {
     metadata: {
       name:           "Unit testing task",
       description:    "Task created during unit tests",
-      owner:          'jonsafj@mozilla.com',
+      owner:          'jonasfj@mozilla.com',
       source:         'https://github.com/taskcluster/taskcluster-queue'
     },
     tags: {
@@ -32,7 +32,7 @@ suite('Rerun task', function() {
   };
 
   test("create, claim, complete and rerun (is idempotent)", async () => {
-    var taskId = slugid.v4();
+    let taskId = slugid.v4();
 
     await Promise.all([
       helper.events.listenFor('pending', helper.queueEvents.taskPending({
@@ -85,5 +85,13 @@ suite('Rerun task', function() {
 
     debug("### Requesting task rerun (again)");
     await helper.queue.rerunTask(taskId);
+  });
+
+  test("throw error on missing task", async () => {
+    let taskId = slugid.v4();
+    await helper.queue.rerunTask(taskId).catch( (err) => {
+        assert.equal(err.statusCode, 404);
+        assert.equal(err.code, "ResourceNotFound");
+    });
   });
 });
