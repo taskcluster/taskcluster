@@ -8,6 +8,7 @@ var exchanges       = require('../../queue/exchanges');
 var taskcluster     = require('taskcluster-client');
 var mocha           = require('mocha');
 var load            = require('../../src/main');
+var debug           = require('debug')('test:api:helper');
 
 // Some default clients for the mockAuthServer
 var defaultClients = [
@@ -79,6 +80,7 @@ var webServer = null;
 // Setup before tests
 mocha.before(async () => {
   // Create mock authentication server
+  debug("### Creating mock authentication server")
   authServer = await base.testing.createMockAuthServer({
     port:     60407, // This is hardcoded into config/test.js
     clients:  defaultClients
@@ -87,6 +89,7 @@ mocha.before(async () => {
   webServer = await load('server', loadOptions);
 
   // Create client for working with API
+  debug("### Creating client")
   helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
   var reference = v1.reference({baseUrl: helper.baseUrl});
   helper.Queue = taskcluster.createClient(reference);
