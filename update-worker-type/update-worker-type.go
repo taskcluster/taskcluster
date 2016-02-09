@@ -16,6 +16,7 @@ func main() {
 		&tcclient.Credentials{
 			ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 		},
 	)
 	wt, _, err := prov.WorkerType(workerType)
