@@ -42,7 +42,7 @@ exports.start = function(clients) {
     debug("authenticating access to " + body.resource + " by " +
           authorization.id + " with scopes " + scopes.join(", ") +
           " from " + from);
-    return {status: "auth-success", scheme: "hawk", scopes: scopes};
+    return {status: "auth-success", scheme: "hawk", scopes: scopes, clientId: authorization.id};
   });
 };
 
