@@ -25,7 +25,7 @@ exports.ERROR_CODES = ERROR_CODES;
  * allowed error codes to HTTP status codes, and `raven` is an instance of
  * `raven.Client` from the `raven` npm module.
  */
-let BuildReportErrorMethod = (method, errorCodes, ravent = null) => {
+let BuildReportErrorMethod = (method, errorCodes, raven = null) => {
   return (req, res, next) => {
     res.reportError = (code, message, details = {}) => {
       let status = errorCodes[code];
