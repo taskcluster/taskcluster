@@ -7,7 +7,6 @@ test:
   taskcluster:
     # should have the scopes:
     #  - 'auth:azure-table-access:jungle/*'
-    #  - 'queue:create-task:no-provisioner/test-worker'
     #  - 'assume:hook-id:tc-hooks-tests/tc-test-hook'
     #  - 'queue:create-task:no-provisioner/test-worker'
     #  - 'jungle:tc-hooks-tests:scope/required/for/task/1'
