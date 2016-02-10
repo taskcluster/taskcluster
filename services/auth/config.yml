@@ -82,6 +82,17 @@ production:
     trustProxy:               true
     env:                      'production'
     development:              false
+
+staging:
+  app:
+    clientTableName:          ClientStaging
+    rolesTableName:           RolesStaging
+  server:
+    forceSSL:                 true
+    trustProxy:               true
+    env:                      'staging'
+    development:              false
+
 test:
   app:
     clientTableName:          TestClients28
