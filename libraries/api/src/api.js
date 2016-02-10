@@ -298,10 +298,15 @@ var createRemoteSignatureValidator = function(options) {
  * `'superuser'`. If the client has pattern "service:*" this will match any
  * scope that starts with "service:" as is the case in the example above.
  *
- * This also adds a method `req.satisfies(scopes, noReply)` to the `request`
- * object. Calling this method with a set of scopes-sets return `true` if the
- * client satisfies one of the scopes-sets. If the client does not satisfy one
- * of the scopes-sets it returns `false` and sends an error message unless
+ * The request grows the following properties:
+ *
+ *  * `req.satisfies(scopesets, noReply)`
+ *  * `await req.scopes()`
+ *  * `await req.clientId()`
+ *
+ * The `req.satisfies(scopesets, noReply)` method returns `true` if the
+ * client satisfies one of the scopesets. If the client does not satisfy one
+ * of the scopesets, it returns `false` and sends an error message unless
  * `noReply = true`.
  *
  * If `deferAuth` is set to `true`, then authentication will be postponed to
@@ -312,12 +317,16 @@ var createRemoteSignatureValidator = function(options) {
  * the client satisfies `'service:method:action:my-resource'`.
  * (This is useful when working with dynamic scope strings).
  *
- * Remark `deferAuth` will not perform authorization unless, `req.satisfies({})`
+ * Note that `deferAuth` will not perform authorization unless, `req.satisfies({})`
  * is called either without arguments or with an object as first argument.
  *
- * This method also adds `req.scopes()` which returns a promise for the set of
- * scopes the caller has. Please, note that `req.scopes()` returns `[]` if there
- * was an authentication error.
+ * The `req.scopes()` method returns a promise for the set of scopes the caller
+ * has. Please, note that `req.scopes()` returns `[]` if there was an
+ * authentication error.
+ *
+ * The `req.clientId` property contains the requesting clientId, or the reason no
+ * clientId is known (e.g., `(auth-failed)`).  This value can be used for logging
+ * and auditing, but should **never** be used for access control.
  *
  * Reports 401 if authentication fails.
  */
@@ -373,15 +382,44 @@ var remoteAuthentication = function(options, entry) {
 
   return function(req, res, next) {
     return authenticate(req).then(function(result) {
+      // Validate request hash if one is provided
+      if (typeof(result.hash) === 'string' && result.scheme === 'hawk') {
+        var hash = hawk.crypto.calculatePayloadHash(
+          new Buffer(req.text, 'utf-8'),
+          'sha256',
+          req.headers['content-type']
+        );
+        if (!cryptiles.fixedTimeComparison(result.hash, hash)) {
+          // create a fake auth-failed result with the failed hash
+          result = {
+            status: 'auth-failed',
+            message:
+              "Invalid payload hash: {{hash}}\n" +
+              "Computed payload hash: {{computedHash}}\n" +
+              "This happens when your request carries a signed hash of the " +
+              "payload and the hash doesn't match the hash we've computed " +
+              "on the server-side.",
+            computedHash: hash,
+          };
+        }
+      }
+
       /** Create method that returns list of scopes the caller has */
       req.scopes = function() {
-        // Check that we satisfy [], this ensures that payload hash is checked
-        // first... Just in case...
-        if(req.satisfies([[]], true)) {
-          return Promise.resolve(result.scopes || []);
+        if (result.status !== 'auth-success') {
+          return Promise.resolve([]);
         }
-        return Promise.resolve([]);
+        return Promise.resolve(result.scopes || []);
       };
+
+      let clientId;
+      if (result.status === 'auth-success') {
+        clientId = result.clientId || '(unknown)';
+      } else {
+        clientId = '(' + result.status + ')';
+      }
+      // this is a function so we can later make an async request on demand
+      req.clientId = async () => clientId;
 
       /**
        * Create method to check if request satisfies a scope-set from required
@@ -396,31 +434,6 @@ var remoteAuthentication = function(options, entry) {
             res.reportError('AuthorizationFailed', result.message, result);
           }
           return false;
-        }
-
-        // Validate request hash if one is provided
-        if (typeof(result.hash) === 'string' && result.scheme === 'hawk') {
-          var hash = hawk.crypto.calculatePayloadHash(
-            new Buffer(req.text, 'utf-8'),
-            'sha256',
-            req.headers['content-type']
-          );
-          if (!cryptiles.fixedTimeComparison(result.hash, hash)) {
-            if (!noReply) {
-              res.reportError(
-                'AuthorizationFailed',
-                "Invalid payload hash: {{hash}}\n" +
-                "Computed payload hash: {{computedHash}}\n" +
-                "This happens when your request carries a signed hash of the " +
-                "payload and the hash doesn't match the hash we've computed " +
-                "on the server-side.",
-                _.defaults({computedHash: hash}, result)
-              );
-            }
-            return false;
-          }
-          // Don't validate hash on subsequent calls to satisfies
-          result.hash = undefined;
         }
 
         // If we're not given an array, we assume it's a set of parameters that
