@@ -25,7 +25,7 @@ tests_require = [
 # http://docs.python-requests.org/en/latest/community/release-process/
 install_requires = [
     'requests>=2.4.3,<3',
-    # 'mohawk>0.3.0',
+    'mohawk>=0.3.1',
     'slugid',
 ]
 
