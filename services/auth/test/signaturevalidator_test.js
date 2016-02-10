@@ -103,8 +103,22 @@ suite("signature validation", function() {
   };
 
   var testWithTemp = function(name, options, inputFn, expected) {
+    /**
+     * Options is on the form
+     * {
+     *   id: id to return
+     *   accessToken: accessToken for clientId or (if given in ext) issuer
+     *   start, expiry: Date objects included in cert
+     *   scopes: scopes for cert
+     *   credentialName: credentialName to include in sig
+     *   issuer: issuer to include in cert/sig
+     *   omitClientIdFromSig: if true, omit the `clientId` line from the signature
+     *   omitIssuerFromCert: if true, omit the `issuer` property of the cert
+     *   omitIssuerFromSig: if true, omit the `issuer` line from the signature
+     * }
+     */
     let makeInput = () => {
-      let clientId = options.clientId;
+      let id = options.id;
 
       var start = new Date();
       start.setMinutes(start.getMinutes() - 5);
@@ -116,7 +130,7 @@ suite("signature validation", function() {
         start,
         expiry,
         scopes: [],
-        accessToken: clientId + '-secret',
+        accessToken: id + '-secret',
       });
 
       // Construct certificate
@@ -129,24 +143,30 @@ suite("signature validation", function() {
         signature:  null  // generated later
       };
 
-      // Construct signature
-      cert.signature = crypto
-        .createHmac('sha256', options.accessToken)
-        .update(
-          [
-            'version:'  + cert.version,
-            'seed:'     + cert.seed,
-            'start:'    + cert.start,
-            'expiry:'   + cert.expiry,
-            'scopes:'
-          ].concat(cert.scopes).join('\n')
-        )
-        .digest('base64');
+      if (options.issuer && !options.omitIssuerFromCert) {
+        cert.issuer = options.issuer;
+      }
 
+      // Construct signature
       if (options.signature) {
         cert.signature = crypto
           .createHmac('sha256', options.signature)
           .digest('base64');
+      } else {
+        let sig = crypto.createHmac('sha256', options.accessToken);
+        sig.update('version:'    + cert.version + '\n');
+        if (options.credentialName && !options.omitClientIdFromSig) {
+          sig.update('clientId:' + options.credentialName + '\n');
+        }
+        if (options.issuer && !options.omitIssuerFromSig) {
+          sig.update('issuer:'   + options.issuer + '\n');
+        }
+        sig.update('seed:'       + cert.seed + '\n');
+        sig.update('start:'      + cert.start + '\n');
+        sig.update('expiry:'     + cert.expiry + '\n');
+        sig.update('scopes:\n');
+        sig.update(cert.scopes.join('\n'));
+        cert.signature = sig.digest('base64');
       }
 
       // Construct temporary key
@@ -158,7 +178,7 @@ suite("signature validation", function() {
         .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
         .replace(/=/g,  '');  // Drop '==' padding
 
-      return inputFn(clientId, accessToken, cert);
+      return inputFn(id, accessToken, cert);
     }
 
     // Only make the certificate at test runtime; then the expiry times
@@ -167,8 +187,13 @@ suite("signature validation", function() {
   };
 
   // shorthands
-  let success = function(scopes) {
-    return {status: 'auth-success', scheme: 'hawk', scopes};
+  let success = function(scopes, clientId) {
+    return {
+      clientId: clientId || 'root',
+      status: 'auth-success',
+      scheme: 'hawk',
+      scopes,
+    };
   };
 
   let failed = function(message) {
@@ -404,7 +429,7 @@ suite("signature validation", function() {
   }, failed('ext.authorizedScopes must be an array of valid scopes'));
 
   testWithTemp("basic temporary credentials", {
-    clientId: 'root',
+    id: 'root',
     scopes: ['tmpscope'],
   }, (id, key, certificate) => ({
     authorization: {
@@ -416,7 +441,7 @@ suite("signature validation", function() {
   testWithTemp("invalid: expired temporary credentials", {
     start: taskcluster.fromNow('-2 hour'),
     expiry: taskcluster.fromNow('-1 hour'),
-    clientId: 'root',
+    id: 'root',
   }, (id, key, certificate) => ({
     authorization: {
       credentials: {id, key},
@@ -427,7 +452,7 @@ suite("signature validation", function() {
   testWithTemp("invalid: postdated temporary credentials", {
     start: taskcluster.fromNow('1 hour'),
     expiry: taskcluster.fromNow('2 hour'),
-    clientId: 'root',
+    id: 'root',
   }, (id, key, certificate) => ({
     authorization: {
       credentials: {id, key},
@@ -438,7 +463,7 @@ suite("signature validation", function() {
   testWithTemp("invalid: year-long temporary credentials", {
     start: taskcluster.fromNow('-185 days'),
     expiry: taskcluster.fromNow('180 days'),
-    clientId: 'root',
+    id: 'root',
   }, (id, key, certificate) => ({
     authorization: {
       credentials: {id, key},
@@ -447,7 +472,7 @@ suite("signature validation", function() {
   }), failed('ext.certificate cannot last longer than 31 days!'));
 
   testWithTemp("invalid: bad signature for temp creds", {
-    clientId: 'root',
+    id: 'root',
     signature: 'not the right one',
   }, (id, key, certificate) => ({
     authorization: {
@@ -457,7 +482,7 @@ suite("signature validation", function() {
   }), failed('ext.certificate.signature is not valid'));
 
   testWithTemp("invalid: temp scopes not satisfied by issuing client", {
-    clientId: 'unpriv',
+    id: 'unpriv',
     scopes: ['godlike'],
   }, (id, key, certificate) => ({
     authorization: {
@@ -467,7 +492,7 @@ suite("signature validation", function() {
   }), failed("ext.certificate issuer `unpriv` doesn't have sufficient scopes"));
 
   testWithTemp("temporary credentials with authorizedScopes", {
-    clientId: 'root',
+    id: 'root',
     scopes: ['scope1:*', 'scope2:*'],
   }, (id, key, certificate) => ({
     authorization: {
@@ -480,7 +505,7 @@ suite("signature validation", function() {
   }), success(['scope1:a', 'scope2:b']));
 
   testWithTemp("invalid: temporary credentials with authorizedScopes not satisfied", {
-    clientId: 'unpriv',
+    id: 'unpriv',
     scopes: ['scope2'],
   }, (id, key, certificate) => ({
     authorization: {
@@ -493,7 +518,7 @@ suite("signature validation", function() {
   }), failed('ext.authorizedScopes oversteps your scopes'));
 
   testWithTemp("invalid: temporary credentials with authorizedScopes, temp not satisfied", {
-    clientId: 'unpriv',
+    id: 'unpriv',
     scopes: ['scope999'],
   }, (id, key, certificate) => ({
     authorization: {
@@ -504,6 +529,99 @@ suite("signature validation", function() {
       },
     }
   }), failed("ext.certificate issuer `unpriv` doesn't have sufficient scopes"));
+
+  testWithTemp("named temporary credentials", {
+    id: 'my-temp-cred',
+    accessToken: 'root-secret',
+    scopes: ['tmpscope'],
+    credentialName: 'my-temp-cred',
+    issuer: 'root',
+  }, (id, key, certificate) => ({
+    authorization: {
+      credentials: {id, key},
+      ext: {
+        certificate,
+      },
+    }
+  }), success(['tmpscope'], 'my-temp-cred'));
+
+  testWithTemp("named temporary credentials with authorizedScopes", {
+    id: 'my-temp-cred',
+    accessToken: 'root-secret',
+    scopes: ['scopes:*'],
+    credentialName: 'my-temp-cred',
+    issuer: 'root',
+  }, (id, key, certificate) => ({
+    authorization: {
+      credentials: {id, key},
+      ext: {
+        certificate,
+        authorizedScopes: ['scopes:1', 'scopes:2'],
+      },
+    }
+  }), success(['scopes:1', 'scopes:2'], 'my-temp-cred'));
+
+  testWithTemp("invalid: named temporary credentials with issuer == clientId", {
+    id: 'root',
+    accessToken: 'root-secret',
+    scopes: ['tmpscope'],
+    credentialName: 'root',
+    issuer: 'root',
+  }, (id, key, certificate) => ({
+    authorization: {
+      credentials: {id, key},
+      ext: {
+        certificate,
+      },
+    }
+  }), failed('ext.certificate.issuer must differ from the supplied clientId'));
+
+  testWithTemp("invalid: named temporary credentials clientId != name", {
+    id: 'some-temp-cred',
+    accessToken: 'root-secret',
+    scopes: ['tmpscope'],
+    credentialName: 'my-temp-cred',
+    issuer: 'root',
+  }, (id, key, certificate) => ({
+    authorization: {
+      credentials: {id, key},
+      ext: {
+        certificate,
+      },
+    }
+  }), failed('ext.certificate.signature is not valid, or wrong clientId provided'));
+
+  testWithTemp("invalid: named temporary credentials with issuer but no name in signature", {
+    id: 'my-temp-cred',
+    accessToken: 'root-secret',
+    scopes: ['tmpscope'],
+    credentialName: 'my-temp-cred',
+    issuer: 'root',
+    omitClientIdFromSig: true
+  }, (id, key, certificate) => ({
+    authorization: {
+      credentials: {id, key},
+      ext: {
+        certificate,
+      },
+    }
+  }), failed('ext.certificate.signature is not valid, or wrong clientId provided'));
+
+  testWithTemp("invalid: named temporary credentials with name that issuer cannot create", {
+    id: 'cant-create-this',
+    accessToken: 'unpriv-secret',
+    scopes: [],
+    credentialName: 'cant-create-this',
+    issuer: 'unpriv',
+  }, (id, key, certificate) => ({
+    authorization: {
+      credentials: {id, key},
+      ext: {
+        certificate,
+      },
+    }
+  }), failed("ext.certificate issuer `unpriv` doesn't have " +
+             "`auth:create-client:cant-create-this` for supplied clientId."));
 
   test("simple bewit", {
     bewit: {
@@ -543,15 +661,15 @@ suite("signature validation", function() {
     }
   }, failed('no such clientId'));
 
-  testWithTemp("bewit based on temporary scopes", {
-    clientId: 'root',
+  testWithTemp("bewit based on temporary creds", {
+    id: 'root',
     scopes: ['scope3'],
   }, (id, key, certificate) => ({
     bewit: {id, key, ext: {certificate}}
   }), success(['scope3']));
 
-  testWithTemp("bewit based on temporary scopes and authorizedScopes", {
-    clientId: 'root',
+  testWithTemp("bewit based on temporary creds and authorizedScopes", {
+    id: 'root',
     scopes: ['scope*'],
   }, (id, key, certificate) => ({
     bewit: {
@@ -563,4 +681,21 @@ suite("signature validation", function() {
       }
     }
   }), success(['scope3']));
+
+  testWithTemp("bewit based on named temporary creds and authorizedScopes", {
+    id: 'root/temp-url',
+    accessToken: 'root-secret',
+    scopes: ['scope*'],
+    credentialName: 'root/temp-url',
+    issuer: 'root',
+  }, (id, key, certificate) => ({
+    bewit: {
+      id,
+      key,
+      ext: {
+        authorizedScopes: ['scope3'],
+        certificate,
+      }
+    }
+  }), success(['scope3'], 'root/temp-url'));
 });
