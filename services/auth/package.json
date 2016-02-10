@@ -4,7 +4,8 @@
   "private": true,
   "main": "node bin/server.js production",
   "scripts": {
-    "test": "test/runtests.sh"
+    "test": "test/runtests.sh",
+    "checkStaging": "mocha test/check-staging.js"
   },
   "repository": {
     "type": "git",
