@@ -29,18 +29,20 @@ anyOf:
         type:                 string
         enum:
           - hawk
-      hash:
+      clientId:
         description: |
-          Payload as extracted from `Authentication` header. This property is
-          only present if a hash is available. You are not required to validate
-          this hash, but if you do, please check `scheme` to ensure that it's
-          on a scheme you support.
+          The `clientId` that made this request.  This may be the `id` supplied in
+          the Authorization header, or in the case of a named temporary credential
+          may be embedded in the payload.  In any case, this clientId can be used
+          for logging, auditing, and identifying the credential but **must** not be
+          used for access control.  That's what scopes are for.
         type:                 string
     additionalProperties:       false
     required:
       - status
       - scopes
       - scheme
+      - clientId
   - title:                    "Authentication Failed Response"
     type:                     object
     properties:
