@@ -12,6 +12,7 @@ let BlobStore         = require('../queue/blobstore');
 let data              = require('../queue/data');
 let Bucket            = require('../queue/bucket');
 let QueueService      = require('../queue/queueservice');
+let raven             = require('raven');
 let EC2RegionResolver = require('../queue/ec2regionresolver');
 let DeadlineResolver  = require('../queue/deadlineresolver');
 let ClaimResolver     = require('../queue/claimresolver');
@@ -30,6 +31,15 @@ let load = base.loader({
         return new base.stats.Influx(cfg.influx);
       }
       return new base.stats.NullDrain();
+    }
+  },
+  raven: {
+    requires: ['cfg'],
+    setup: ({cfg}) => {
+      if (cfg.raven.sentryDSN) {
+        return new raven.Client(cfg.raven.sentryDSN);
+      }
+      return null;
     }
   },
   monitor: {
@@ -208,7 +218,7 @@ let load = base.loader({
       'cfg', 'publisher', 'validator',
       'Task', 'Artifact', 'TaskGroup', 'TaskGroupMember', 'queueService',
       'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
-      'regionResolver', 'influx'
+      'regionResolver', 'raven', 'influx'
     ],
     setup: (ctx) => v1.setup({
       context: {
@@ -229,6 +239,7 @@ let load = base.loader({
         credentials:      ctx.cfg.taskcluster.credentials,
       },
       validator:        ctx.validator,
+      raven:            ctx.raven,
       authBaseUrl:      ctx.cfg.taskcluster.authBaseUrl,
       publish:          ctx.cfg.app.publishMetaData,
       baseUrl:          ctx.cfg.server.publicUrl + '/v1',

@@ -209,4 +209,16 @@ suite('Create task', function() {
       debug("Expected error: %j", err, err);
     });
   });
+
+  test("createTask with incorrect scheduler -> 409", async () => {
+    var taskId = slugid.v4();
+    var taskDef2 = _.defaults({
+      schedulerId: 'not-my-scheduler',
+    }, taskDef);
+    await helper.queue.createTask(taskId, taskDef2).then(() => {
+      throw new Error("this Operation should have failed!");
+    }, (err) => {
+      assume(err.statusCode).equals(409);
+    });
+  });
 });
