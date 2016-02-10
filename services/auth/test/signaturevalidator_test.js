@@ -187,13 +187,18 @@ suite("signature validation", function() {
   };
 
   // shorthands
-  let success = function(scopes, clientId) {
-    return {
-      clientId: clientId || 'root',
+  let success = function(scopes, options) {
+    options = options || {};
+    let exp = {
+      clientId: options.clientId || 'root',
       status: 'auth-success',
       scheme: 'hawk',
       scopes,
     };
+    if (options.hash) {
+      exp.hash = options.hash;
+    }
+    return exp;
   };
 
   let failed = function(message) {
@@ -205,6 +210,13 @@ suite("signature validation", function() {
       credentials: {id: 'root'}
     }
   }, success(['*']));
+
+  test("simple credentials with payload hash", {
+    authorization: {
+      credentials: {id: 'root'},
+      payload: '{}',
+    }
+  }, success(['*'], {hash: 'XtNvx1FqrUYVOLlne3l2WzcyRfj9QeC6YtmhMKKFMGY='}));
 
   test("simple credentials, empty ext", {
     authorization: {
@@ -543,7 +555,7 @@ suite("signature validation", function() {
         certificate,
       },
     }
-  }), success(['tmpscope'], 'my-temp-cred'));
+  }), success(['tmpscope'], {clientId: 'my-temp-cred'}));
 
   testWithTemp("named temporary credentials with authorizedScopes", {
     id: 'my-temp-cred',
@@ -559,7 +571,7 @@ suite("signature validation", function() {
         authorizedScopes: ['scopes:1', 'scopes:2'],
       },
     }
-  }), success(['scopes:1', 'scopes:2'], 'my-temp-cred'));
+  }), success(['scopes:1', 'scopes:2'], {clientId: 'my-temp-cred'}));
 
   testWithTemp("invalid: named temporary credentials with issuer == clientId", {
     id: 'root',
@@ -697,5 +709,5 @@ suite("signature validation", function() {
         certificate,
       }
     }
-  }), success(['scope3'], 'root/temp-url'));
+  }), success(['scope3'], {clientId: 'root/temp-url'}));
 });
