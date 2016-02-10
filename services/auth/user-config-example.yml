@@ -16,3 +16,9 @@ test:
     password:           "..."
   influx:
     connectionString:   "..."
+  # to enable the test-staging script, set these to valid TC credentials with
+  # `auth:create-client:garbage/*` and `auth:delete-client:garbage/*`.
+  checkStaging:
+    credentials:
+      clientId:         "..."
+      accessToken:       "..."
