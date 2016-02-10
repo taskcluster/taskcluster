@@ -29,6 +29,12 @@ anyOf:
         type:                 string
         enum:
           - hawk
+      hash:
+        description: |
+          Payload as extracted from `Authentication` header. This property is
+          only present if a hash is available. You are not required to validate
+          this hash, but if you do, please check `scheme` to ensure that it's
+          on a scheme you support.
       clientId:
         description: |
           The `clientId` that made this request.  This may be the `id` supplied in
