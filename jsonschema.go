@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/format"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ghodss/yaml"
 	"github.com/taskcluster/taskcluster-client-go/text"
 )
 
@@ -189,8 +191,11 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 		comment += "//\n" + metadata
 	}
 
-	if url := jsonSubSchema.SourceURL; url != "" {
-		comment += "//\n// See " + url + "\n"
+	if URL := jsonSubSchema.SourceURL; URL != "" {
+		u, err := url.Parse(URL)
+		if err != nil && u.Scheme != "file" {
+			comment += "//\n// See " + URL + "\n"
+		}
 	}
 	for strings.Index(comment, "\n//\n") == 0 {
 		comment = "\n" + comment[4:]
@@ -411,11 +416,18 @@ func (schemaSet *SchemaSet) loadJsonSchema(URL string) *JsonSubSchema {
 	case "file":
 		body, err = os.Open(u.Path)
 		exitOnFail(err)
+	default:
+		fmt.Printf("Unknown scheme: '%s'\n", u.Scheme)
+		fmt.Printf("URL: '%s'\n", URL)
 	}
 	defer body.Close()
-	decoder := json.NewDecoder(body)
+	data, err := ioutil.ReadAll(body)
+	exitOnFail(err)
+	// json is valid YAML, so we can safely convert, even if it is already json
+	j, err := yaml.YAMLToJSON(data)
+	exitOnFail(err)
 	m := new(JsonSubSchema)
-	err = decoder.Decode(m)
+	err = json.Unmarshal(j, m)
 	exitOnFail(err)
 	m.SourceURL = sanitizeURL(URL)
 	m.postPopulate(schemaSet)
@@ -441,7 +453,6 @@ func (schemaSet *SchemaSet) cacheJsonSchema(url *string) *JsonSubSchema {
 // a generated type might use time.Time, so if not imported, this would have to be added.
 // using a map of strings -> bool to simulate a set - true => include
 func generateGoTypes(schemaSet *SchemaSet) (string, stringSet, stringSet) {
-
 	extraPackages := make(stringSet)
 	rawMessageTypes := make(stringSet)
 	content := "type (" // intentionally no \n here since each type starts with one already
@@ -462,7 +473,6 @@ func generateGoTypes(schemaSet *SchemaSet) (string, stringSet, stringSet) {
 }
 
 func Generate(packageName string, urls ...string) (sourceCode []byte, allSchemas *SchemaSet, err error) {
-
 	// Generate normalised names for schemas. Keep a record of generated type
 	// names, so that we don't reuse old names. Set acts like a set
 	// of strings.
