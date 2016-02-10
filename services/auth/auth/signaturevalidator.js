@@ -20,7 +20,7 @@ var crypto        = require('crypto');
  * applies scope restrictions, certificate validation and returns a clone if
  * modified (otherwise it returns the original).
  */
-var limitClientWithExt = function(client, ext, expandScopes) {
+var parseExt = function(ext) {
   // Attempt to parse ext
   try {
     ext = JSON.parse(new Buffer(ext, 'base64').toString('utf-8'));
@@ -28,6 +28,20 @@ var limitClientWithExt = function(client, ext, expandScopes) {
   catch(err) {
     throw new Error("Failed to parse ext");
   }
+
+  return ext;
+}
+
+/**
+ * Limit the client scopes and possibly use temporary keys.
+ *
+ * Takes a client object on the form: `{clientId, accessToken, scopes}`,
+ * applies scope restrictions, certificate validation and returns a clone if
+ * modified (otherwise it returns the original).
+ */
+var limitClientWithExt = function(credentialName, issuingClientId, accessToken, scopes, ext, expandScopes) {
+  let issuingScopes = scopes;
+  let res = {scopes, accessToken};
 
   // Handle certificates
   if (ext.certificate) {
@@ -71,33 +85,53 @@ var limitClientWithExt = function(client, ext, expandScopes) {
       throw new Error("ext.certificate cannot last longer than 31 days!");
     }
 
-    // Check scope validity
+    // Check clientId validity
+    if (issuingClientId !== credentialName) {
+      let createScope = 'auth:create-client:' + credentialName;
+      if (!utils.scopeMatch(issuingScopes, [[createScope]])) {
+        throw new Error("ext.certificate issuer `" + issuingClientId +
+                        "` doesn't have `" + createScope + "` for supplied clientId.");
+      }
+    } else {
+      if (cert.hasOwnProperty('clientId')) {
+        throw new Error('ext.certificate.clientId must only be used with ext.certificate.issuer');
+      }
+    }
 
     // Validate certificate scopes are subset of client
-    if (!utils.scopeMatch(client.scopes, [cert.scopes])) {
-      throw new Error("ext.certificate issuer `" + client.clientId +
+    if (!utils.scopeMatch(scopes, [cert.scopes])) {
+      throw new Error("ext.certificate issuer `" + issuingClientId +
                       "` doesn't have sufficient scopes");
     }
 
     // Generate certificate signature
-    var signature = crypto.createHmac('sha256', client.accessToken)
-      .update([
-        'version:'  + '1',
-        'seed:'     + cert.seed,
-        'start:'    + cert.start,
-        'expiry:'   + cert.expiry,
-        'scopes:',
-      ].concat(cert.scopes).join('\n'))
+    var sigContent = []
+    sigContent.push('version:'    + '1');
+    if (cert.issuer) {
+      sigContent.push('clientId:' + credentialName);
+      sigContent.push('issuer:'   + cert.issuer);
+    }
+    sigContent.push('seed:'       + cert.seed);
+    sigContent.push('start:'      + cert.start);
+    sigContent.push('expiry:'     + cert.expiry);
+    sigContent.push('scopes:');
+    sigContent = sigContent.concat(cert.scopes);
+    var signature = crypto.createHmac('sha256', accessToken)
+      .update(sigContent.join('\n'))
       .digest('base64');
 
     // Validate signature
     if (typeof(cert.signature) !== 'string' ||
         !cryptiles.fixedTimeComparison(cert.signature, signature)) {
-      throw new Error("ext.certificate.signature is not valid");
+      if (cert.issuer) {
+        throw new Error("ext.certificate.signature is not valid, or wrong clientId provided");
+      } else {
+        throw new Error("ext.certificate.signature is not valid");
+      }
     }
 
     // Regenerate temporary key
-    var temporaryKey = crypto.createHmac('sha256', client.accessToken)
+    var temporaryKey = crypto.createHmac('sha256', accessToken)
       .update(cert.seed)
       .digest('base64')
       .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
@@ -105,11 +139,8 @@ var limitClientWithExt = function(client, ext, expandScopes) {
       .replace(/=/g,  '');  // Drop '==' padding
 
     // Update scopes and accessToken
-    client = {
-      clientId:     client.clientId,
-      accessToken:  temporaryKey,
-      scopes:       expandScopes(cert.scopes),
-    };
+    res.accessToken = temporaryKey;
+    res.scopes = scopes = expandScopes(cert.scopes);
   }
 
   // Handle scope restriction with authorizedScopes
@@ -122,21 +153,16 @@ var limitClientWithExt = function(client, ext, expandScopes) {
       throw new Error("ext.authorizedScopes must be an array of valid scopes");
     }
 
-    // Validate authorizedScopes scopes are subset of client
-    if (!utils.scopeMatch(client.scopes, [ext.authorizedScopes])) {
+    // Validate authorizedScopes scopes are satisfied by client (or temp) scopes
+    if (!utils.scopeMatch(res.scopes, [ext.authorizedScopes])) {
       throw new Error("ext.authorizedScopes oversteps your scopes");
     }
 
-    // Update scopes on client object
-    client = {
-      clientId:     client.clientId,
-      accessToken:  client.accessToken,
-      scopes:       expandScopes(ext.authorizedScopes),
-    };
+    // Further limit scopes
+    res.scopes = scopes = expandScopes(ext.authorizedScopes);
   }
 
-  // Return modified client
-  return client;
+  return res;
 };
 
 
@@ -154,8 +180,9 @@ var limitClientWithExt = function(client, ext, expandScopes) {
  *     {method, resource, host, port, authorization}
  * And returns promise for an object on one of the forms:
  *     {status: 'auth-failed', message},
- *     {status: 'auth-success', scheme, scopes}, or,
- *     {status: 'auth-success', scheme, scopes, hash}
+ *     {status: 'auth-success', clientId, scheme, scopes}, or
+ *     {status: 'auth-success', clientId, scheme, scopes, hash}
+ * where `hash` is the payload hash.
  *
  * The `expandScopes` applies any rules that expands scopes, such as roles.
  * It is assumed that clients from `clientLoader` are returned with scopes
@@ -175,21 +202,44 @@ var createSignatureValidator = function(options) {
   assert(options.expandScopes instanceof Function,
          "options.expandScopes must be a function");
   var loadCredentials = function(clientId, ext, callback) {
-    Promise.resolve(options.clientLoader(clientId)).then(function(client) {
+    // We may have two clientIds here: the credentialName (the one the caller
+    // sent in the Hawk Authorization header) and the issuingClientId (the one
+    // that signed the temporary credentials).
+    let credentialName = clientId,
+        issuingClientId = clientId;
+
+    (async () => {
+      // extract ext.certificate.issuer, if present
       if (ext) {
-        // We check certificates and apply limitations to authorizedScopes here,
-        // if we've parsed ext incorrectly it could be a security issue, as
-        // scope elevation _might_ be possible. But it's a rather unlikely
-        // exploit... Besides we have plenty of obscurity to protect us here :)
-        client = limitClientWithExt(client, ext, options.expandScopes);
+        ext = parseExt(ext);
+        if (ext.certificate && ext.certificate.issuer) {
+          issuingClientId = ext.certificate.issuer;
+          if (typeof(issuingClientId) !== 'string') {
+            throw new Error('ext.certificate.issuer must be a string');
+          }
+          if (issuingClientId == credentialName) {
+            throw new Error('ext.certificate.issuer must differ from the supplied clientId');
+          }
+        }
       }
+
+      var accessToken, scopes;
+      ({clientId, accessToken, scopes} = await options.clientLoader(issuingClientId));
+
+      // apply restrictions based on the ext field
+      if (ext) {
+        ({scopes, accessToken} = limitClientWithExt(
+            credentialName, issuingClientId, accessToken,
+            scopes, ext, options.expandScopes));
+      }
+
       callback(null, {
-        clientToken:  client.clientId,
-        key:          client.accessToken,
-        algorithm:    'sha256',
-        scopes:       client.scopes
+        key:       accessToken,
+        algorithm: 'sha256',
+        clientId:  credentialName,
+        scopes:    scopes
       });
-    }).catch(callback);
+    })().catch(callback);
   };
   return function(req) {
     return new Promise(function(accept) {
@@ -213,7 +263,8 @@ var createSignatureValidator = function(options) {
           result = {
             status:   'auth-success',
             scheme:   'hawk',
-            scopes:   credentials.scopes
+            scopes:   credentials.scopes,
+            clientId: credentials.clientId
           };
           if (artifacts.hash) {
             result.hash = artifacts.hash;
