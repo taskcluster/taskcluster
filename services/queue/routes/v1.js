@@ -140,9 +140,13 @@ api.declare({
 
   // Handle cases where the task doesn't exist
   if (!task) {
-    return res.status(404).json({
-      message: "Task not found"
-    });
+    return res.reportError(
+      "ResourceNotFound", [
+        "{{taskId}} does not correspond to a task that exists.",
+        "Are you sure this task has already been submitted?"
+      ].join('\n'), {
+        taskId: req.params.taskId
+      });
   }
 
   // Create task definition
@@ -172,9 +176,13 @@ api.declare({
 
   // Handle cases where the task doesn't exist
   if (!task) {
-    return res.status(404).json({
-      message: "Task not found"
-    });
+    return res.reportError(
+      "ResourceNotFound", [
+        "{{taskId}} does not correspond to a task that exists.",
+        "Are you sure this task exists?"
+      ].join('\n'), {
+        taskId: req.params.taskId
+      });
   }
 
   // Reply with task status
@@ -326,14 +334,18 @@ let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
     });
   }
   if (taskGroup.schedulerId !== taskDef.schedulerId) {
-    res.status(409).json({
-      message: 'taskGroupId: ' + taskGroupId + ' contains tasks with ' +
-               'schedulerId: ' + taskGroup.schedulerId + ' you cannot ' +
-               'insert tasks into it with schedulerId: ' + taskDef.schedulerId,
-      taskGroupId,
-      existingSchedulerId: taskGroup.schedulerId,
-      givenSchedulerId: taskDef.schedulerId,
-    });
+    res.reportError(
+      "RequestConflict", [
+        "Task group {{taskGroupId}} contains tasks with",
+        "schedulerId {{taskGroupSchedulerId}}. You are attempting",
+        "to include tasks from schedulerId {{taskSchedulerId}},",
+        "which is not permitted.",
+        "All tasks in the same task-group must have the same schedulerId."
+      ].join('\n'), {
+        taskGroupId,
+        taskGroupSchedulerId: taskGroup.schedulerId,
+        taskSchedulerId: taskDef.schedulerId
+      });
     return false;
   }
   // Update taskGroup.expires if necessary
@@ -808,13 +820,12 @@ api.declare({
   // Report 404, if task entity doesn't exist
   if (!task) {
     return res.reportError(
-            "ResourceNotFound",
-            [
-            "{{taskId}} does not correspond to a task that exists.",
-            "Are you sure this task has been submitted before?"
-            ].join('\n'),
-            {taskId: taskId}
-    );
+      "ResourceNotFound", [
+        "{{taskId}} does not correspond to a task that exists.",
+        "Are you sure this task has been submitted before?"
+      ].join('\n'), {
+        taskId
+      });
   }
 
   // Authenticate request by providing parameters
