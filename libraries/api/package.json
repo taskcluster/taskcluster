@@ -34,7 +34,7 @@
     "taskcluster-client": "0.23.4",
     "taskcluster-lib-scopes": "^0.8.8",
     "taskcluster-lib-stats": "^0.8.7",
-    "taskcluster-lib-testing": "^0.9.2",
+    "taskcluster-lib-testing": "^0.10.1",
     "type-is": "^1.6.10",
     "uuid": "^2.0.1"
   },
