@@ -971,3 +971,4 @@ API.schema        = schema;
 API.handle        = handle;
 API.stability     = stability;
 API.nonceManager  = nonceManager;
+API.remoteAuthentication = remoteAuthentication;
