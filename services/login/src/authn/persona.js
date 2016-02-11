@@ -26,7 +26,7 @@ class PersonaLogin {
     let router = new express.Router();
     router.post('/login', passport.authenticate('persona', {
       successRedirect: '/',
-      failureRedirect: '/?err=mozillians-lookup',
+      failureRedirect: '/',
       failureFlash: true
     }));
     return router;
