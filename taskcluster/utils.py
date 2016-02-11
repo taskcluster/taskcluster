@@ -1,3 +1,4 @@
+from __future__ import absolute_import, division, print_function
 import re
 import json
 import datetime
@@ -7,6 +8,7 @@ import os
 import requests
 import slugid
 import time
+import six
 import sys
 
 MAX_RETRIES = 5
@@ -24,6 +26,14 @@ except ImportError:
 r = re.compile('^(\s*(\d+)\s*d(ays?)?)?' +
                '(\s*(\d+)\s*h(ours?)?)?' +
                '(\s*(\d+)\s*m(in(utes?)?)?)?\s*$')
+
+
+def toStr(obj, encoding='utf-8'):
+    if six.PY3 and isinstance(obj, six.binary_type):
+        obj = obj.decode(encoding)
+    else:
+        obj = str(obj)
+    return obj
 
 
 def fromNow(offset):
@@ -46,12 +56,14 @@ def dumpJson(obj, **kwargs):
     """ Match JS's JSON.stringify.  When using the default seperators,
     base64 encoding JSON results in \n sequences in the output.  Hawk
     barfs in your face if you have that in the text"""
-    def handleDateForJs(x):
+    def handleDateAndBinaryForJs(x):
+        if six.PY3 and isinstance(x, six.binary_type):
+            x = x.decode()
         if isinstance(x, datetime.datetime) or isinstance(x, datetime.date):
             return stringDate(x)
         else:
             return x
-    d = json.dumps(obj, separators=(',', ':'), default=handleDateForJs, **kwargs)
+    d = json.dumps(obj, separators=(',', ':'), default=handleDateAndBinaryForJs, **kwargs)
     assert '\n' not in d
     return d
 
@@ -72,19 +84,25 @@ def stringDate(date):
 
 def makeB64UrlSafe(b64str):
     """ Make a base64 string URL Safe """
+    if isinstance(b64str, six.text_type):
+        b64str = b64str.encode()
     # see RFC 4648, sec. 5
-    return b64str.replace('+', '-').replace('/', '_')
+    return b64str.replace(b'+', b'-').replace(b'/', b'_')
 
 
 def makeB64UrlUnsafe(b64str):
     """ Make a base64 string URL Unsafe """
+    if isinstance(b64str, six.text_type):
+        b64str = b64str.encode()
     # see RFC 4648, sec. 5
-    return b64str.replace('-', '+').replace('_', '/')
+    return b64str.replace(b'-', b'+').replace(b'_', b'/')
 
 
 def encodeStringForB64Header(s):
     """ HTTP Headers can't have new lines in them, let's """
-    return base64.encodestring(s).strip().replace('\n', '')
+    if isinstance(s, six.text_type):
+        s = s.encode()
+    return base64.encodestring(s).strip().replace(b'\n', b'')
 
 
 def slugId():
@@ -189,7 +207,8 @@ def makeSingleHttpRequest(method, url, payload, headers, session=None):
     response = obj.request(method.upper(), url, data=payload, headers=headers)
     log.debug('Received HTTP Status:    %s' % response.status_code)
     log.debug('Received HTTP Headers: %s' % str(response.headers))
-    log.debug('Received HTTP Payload: %s (limit 1024 char)' % str(response.text)[:1024])
+    log.debug('Received HTTP Payload: %s (limit 1024 char)' %
+              six.text_type(response.content)[:1024])
 
     return response
 
@@ -215,7 +234,7 @@ def _messageForEncryptedEnvVar(taskId, startTime, endTime, name, value):
 
 
 def encryptEnvVar(taskId, startTime, endTime, name, value, keyFile):
-    message = str(json.dumps(_messageForEncryptedEnvVar(
+    message = toStr(json.dumps(_messageForEncryptedEnvVar(
         taskId, startTime, endTime, name, value)))
     return base64.b64encode(_encrypt(message, keyFile))
 
@@ -230,9 +249,15 @@ def _encrypt(message, keyFile):
     if not pgpy:
         raise RuntimeError("Install `pgpy' to use encryption")
     key, _ = pgpy.PGPKey.from_file(keyFile)
-    msg = pgpy.PGPMessage.new(message)
+    # force a bytearray here, until the upstream bug is fixed.
+    # https://github.com/SecurityInnovation/PGPy/issues/154
+    msg = pgpy.PGPMessage.new(bytearray(message, encoding="utf-8"))
     encrypted = key.encrypt(msg)
-    return encrypted.__bytes__()
+    if six.PY2:
+        encrypted_bytes = encrypted.__bytes__()
+    else:
+        encrypted_bytes = bytes(encrypted)
+    return encrypted_bytes
 
 
 def decryptMessage(message, privateKey):
@@ -258,12 +283,18 @@ def _decrypt(blob, privateKey):
     msg = pgpy.PGPMessage()
     msg.parse(blob)
     decrypted = key.decrypt(msg)
-    return decrypted.message
+    message = decrypted.message
+    # allow for bytearray until the upstream bug is fixed.
+    # https://github.com/SecurityInnovation/PGPy/issues/154
+    if isinstance(message, bytearray):
+        message = message.decode('utf-8')
+
+    return message
 
 
 def isExpired(certificate):
     """ Check if certificate is expired """
-    if isinstance(certificate, basestring):
+    if isinstance(certificate, six.string_types):
         certificate = json.loads(certificate)
     expiry = certificate.get('expiry', 0)
     return expiry < int(time.time() * 1000) + 20 * 60
@@ -281,7 +312,7 @@ def authenticate(description=None):
     # Most clients won't use this feature, so we don't want issues with these
     # modules to affect the library. Maybe they don't work in some environments
     import webbrowser
-    import urlparse
+    from six.moves.urllib import parse as urlparse
     import BaseHTTPServer
     import urllib
 
@@ -344,13 +375,13 @@ def authenticate(description=None):
     query += "&description=" + urllib.quote(description, '')
 
     webbrowser.open('https://login.taskcluster.net' + query, 1, True)
-    print ""
-    print "-------------------------------------------------------"
-    print "  Opening browser window to login.taskcluster.net"
-    print "  Asking you to grant temporary credentials to:"
-    print "     http://localhost:" + str(port)
-    print "-------------------------------------------------------"
-    print ""
+    print("")
+    print("-------------------------------------------------------")
+    print("  Opening browser window to login.taskcluster.net")
+    print("  Asking you to grant temporary credentials to:")
+    print("     http://localhost:" + str(port))
+    print("-------------------------------------------------------")
+    print("")
 
     while not creds[0]:
         server.handle_request()

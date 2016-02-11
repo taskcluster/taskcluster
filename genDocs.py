@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function, \
+    unicode_literals
 import os
 import json
 
@@ -89,13 +91,13 @@ def genDocs(apiFile):
 
 
 if __name__ == '__main__':
-    print 'Generating documentation'
+    print('Generating documentation')
     docs = genDocs(os.environ.get('APIS_JSON', 'apis.json'))
     outLines = []
     with open(readmeFile) as f:
         lines = [x.rstrip() for x in f.read().split('\n')]
 
-    print 'Inserting/replacing documentation'
+    print('Inserting/replacing documentation')
     foundExisting = False
     for i in range(0, len(lines)):
         if lines[i] == startDocs:
@@ -112,4 +114,4 @@ if __name__ == '__main__':
 
     with open(readmeFile, 'w') as f:
         f.write('\n'.join(outLines).encode('utf-8'))
-    print 'Done!'
+    print('Done!')

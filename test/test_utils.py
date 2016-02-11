@@ -99,16 +99,17 @@ class TestBase64Utils(base.TCTest):
     def test_encode_string_for_b64_header(self):
         # Really long strings trigger newlines every 72 ch
         expected = 'YWJjZGVm' * 500
+        expected = expected.encode('ascii')
         actual = subject.encodeStringForB64Header('abcdef' * 500)
         self.assertEqual(expected, actual)
 
     def test_makeb64urlsafe(self):
-        expected = '-_'
+        expected = b'-_'
         actual = subject.makeB64UrlSafe('+/')
         self.assertEqual(expected, actual)
 
     def test_makeb64urlunsafe(self):
-        expected = '+/'
+        expected = b'+/'
         actual = subject.makeB64UrlUnsafe('-_')
         self.assertEqual(expected, actual)
 
@@ -118,7 +119,7 @@ class TestSlugId(base.TCTest):
         with mock.patch('uuid.uuid4') as p:
             # first bit of uuid set, which should get unset
             p.return_value = uuid.UUID('bed97923-7616-4ec8-85ed-4b695f67ac2e')
-            expected = 'Ptl5I3YWTsiF7UtpX2esLg'
+            expected = b'Ptl5I3YWTsiF7UtpX2esLg'
             actual = subject.slugId()
             self.assertEqual(expected, actual)
 
@@ -126,7 +127,7 @@ class TestSlugId(base.TCTest):
         with mock.patch('uuid.uuid4') as p:
             # first bit of uuid unset, should remain unset
             p.return_value = uuid.UUID('3ed97923-7616-4ec8-85ed-4b695f67ac2e')
-            expected = 'Ptl5I3YWTsiF7UtpX2esLg'
+            expected = b'Ptl5I3YWTsiF7UtpX2esLg'
             actual = subject.slugId()
             self.assertEqual(expected, actual)
 
@@ -216,7 +217,7 @@ class TestEncrypt(TestCase):
         key_file = os.path.join(os.path.dirname(__file__), "public.key")
 
         self.assertTrue(subject.encryptEnvVar(taskId, startTime, endTime, name,
-                                              value, key_file).startswith("wcB"),
+                                              value, key_file).startswith(b"wcB"),
                         "Encrypted string should always start with 'wcB'")
 
 

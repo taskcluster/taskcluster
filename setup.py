@@ -17,7 +17,6 @@ tests_require = [
     'mock==1.0.1',
     'setuptools-lint==0.3',
     'flake8==2.2.5',
-    'subprocess32==3.2.6',
     'psutil==2.1.3',
     'hypothesis',
     'pgpy',
@@ -31,8 +30,8 @@ install_requires = [
     'requests>=2.4.3,<3',
     'mohawk>=0.3.1',
     'slugid',
+    'six',
 ]
-
 
 # from http://testrun.org/tox/latest/example/basic.html
 class Tox(TestCommand):
@@ -57,6 +56,14 @@ class Tox(TestCommand):
         errno = tox.cmdline(args=args)
         sys.exit(errno)
 
+if sys.version_info >= (3, 5):
+    install_requires.extend([
+        'aiohttp',
+    ])
+elif sys.version_info[:2] == (2, 7):
+    tests_require.extend([
+        'subprocess32==3.2.6',
+    ])
 
 if __name__ == '__main__':
     setup(

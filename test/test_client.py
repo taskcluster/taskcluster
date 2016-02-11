@@ -1,7 +1,9 @@
+from __future__ import division, print_function
 import types
 import unittest
+import time
 import datetime
-import urlparse
+from six.moves.urllib import parse as urlparse
 import os
 import re
 import json
@@ -17,6 +19,7 @@ import taskcluster.utils as utils
 
 
 class ClientTest(base.TCTest):
+    realTimeSleep = time.sleep
 
     def setUp(self):
         subject.config['credentials'] = {
@@ -47,6 +50,9 @@ class ClientTest(base.TCTest):
         sleepSleep = sleepPatcher.start()
         sleepSleep.return_value = None
         self.addCleanup(sleepSleep.stop)
+
+    def tearDown(self):
+        time.sleep = self.realTimeSleep
 
 
 class TestSubArgsInRoute(ClientTest):
@@ -232,7 +238,7 @@ class TestMakeHttpRequest(ClientTest):
                 try:
                     self.client._makeHttpRequest('GET', 'http://www.example.com', None)
                 except exc.TaskclusterRestFailure as err:
-                    self.assertEqual('msg', err.message)
+                    self.assertEqual('msg', str(err))
                     self.assertEqual(500, err.status_code)
                     self.assertEqual(msg, err.body)
                     raise err
@@ -539,7 +545,9 @@ class TestAuthentication(base.TCTest):
             self.assertEqual(urlparse.urlunsplit(url),
                              'https://auth.taskcluster.net/v1/clients/abc')
             self.failIf('Authorization' in request.headers)
-            return '{"clientId": "abc"}'
+            headers = {'content-type': 'application/json'}
+            content = {"clientId": "abc"}
+            return httmock.response(200, content, headers, None, 5, request)
 
         with httmock.HTTMock(auth_response):
             client = subject.Auth({"credentials": {}})

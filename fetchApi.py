@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function, \
+    unicode_literals
 import os
 import json
 
@@ -11,25 +13,25 @@ apiManifest = None
 
 try:
     apiManifest = requests.get(manifestUrl).json()
-    print 'Fetched manifest url from "%s"' % manifestUrl
+    print('Fetched manifest url from "%s"' % manifestUrl)
 except:
-    print 'Manifest not found on remote host, falling back to local copy'
-    print 'Local copy is file "%s"' % localManifestFile
+    print('Manifest not found on remote host, falling back to local copy')
+    print('Local copy is file "%s"' % localManifestFile)
     with open(localManifestFile) as f:
         apiManifest = json.load(f)
 
 apiReference = {}
 for apiName, apiRefUrl in apiManifest.items():
-    print 'Fetching %s' % apiName
+    print('Fetching %s' % apiName)
     api = requests.get(apiRefUrl).json()
     apiReference[apiName] = {
         "reference": api,
         "referenceUrl": apiRefUrl,
     }
 
-print 'Writing API reference file "%s"' % outputFile
+print('Writing API reference file "%s"' % outputFile)
 
 with open(outputFile, 'w') as f:
     json.dump(apiReference, f, indent=2, sort_keys=True)
 
-print 'Done!'
+print('Done!')

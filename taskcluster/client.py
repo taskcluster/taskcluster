@@ -1,20 +1,19 @@
 """This module is used to interact with taskcluster rest apis"""
 
+from __future__ import absolute_import, division, print_function
+
 import os
 import json
 import logging
 import copy
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
 import hashlib
 import hmac
 import datetime
 import calendar
 import requests
 import time
-import urllib
+import six
+from six.moves.urllib import parse as urlparse
 
 # For finding apis.json
 from pkg_resources import resource_string
@@ -22,8 +21,8 @@ from pkg_resources import resource_string
 import mohawk
 import mohawk.bewit
 
-from . import exceptions
-from . import utils
+import taskcluster.exceptions as exceptions
+import taskcluster.utils as utils
 
 log = logging.getLogger(__name__)
 
@@ -65,7 +64,7 @@ class BaseClient(object):
         if credentials:
             for x in ('accessToken', 'clientId', 'certificate'):
                 value = credentials.get(x)
-                if value:
+                if value and not isinstance(value, six.binary_type):
                     try:
                         credentials[x] = credentials[x].encode('ascii')
                     except:
@@ -89,7 +88,9 @@ class BaseClient(object):
             ext = {}
             cert = c.get('certificate')
             if cert:
-                if isinstance(cert, basestring):
+                if six.PY3 and isinstance(cert, six.binary_type):
+                    cert = cert.decode()
+                if isinstance(cert, six.string_types):
                     cert = json.loads(cert)
                 ext['certificate'] = cert
 
@@ -119,7 +120,7 @@ class BaseClient(object):
         }
 
         # If we are passed in a string, we can short-circuit this function
-        if isinstance(routingKeyPattern, basestring):
+        if isinstance(routingKeyPattern, six.string_types):
             log.debug('Passing through string for topic exchange key')
             data['routingKeyPattern'] = routingKeyPattern
             return data
@@ -183,8 +184,8 @@ class BaseClient(object):
         if not self._hasCredentials():
             raise exceptions.TaskclusterAuthFailure('Invalid Hawk Credentials')
 
-        clientId = self.options['credentials']['clientId']
-        accessToken = self.options['credentials']['accessToken']
+        clientId = utils.toStr(self.options['credentials']['clientId'])
+        accessToken = utils.toStr(self.options['credentials']['accessToken'])
 
         def genBewit():
             # We need to fix the output of get_bewit.  It returns a url-safe base64
@@ -202,7 +203,7 @@ class BaseClient(object):
                     'algorithm': 'sha256',
                 },
                 method='GET',
-                ext=self.makeHawkExt(),
+                ext=utils.toStr(self.makeHawkExt()),
                 url=requestUrl,
                 timestamp=expiration,
                 nonce='',
@@ -260,7 +261,7 @@ class BaseClient(object):
         # These all need to be rendered down to a string, let's just check that
         # they are up front and fail fast
         for arg in list(args) + [kwargs[x] for x in kwargs]:
-            if not isinstance(arg, basestring) and not isinstance(arg, int):
+            if not isinstance(arg, six.string_types) and not isinstance(arg, int):
                 raise exceptions.TaskclusterFailure(
                     'Arguments "%s" to %s is not a string or int' % (arg, entry['name']))
 
@@ -319,12 +320,12 @@ class BaseClient(object):
 
         route = entry['route']
 
-        for arg, val in args.iteritems():
+        for arg, val in six.iteritems(args):
             toReplace = "<%s>" % arg
             if toReplace not in route:
                 raise exceptions.TaskclusterFailure(
                     'Arg %s not found in route for %s' % (arg, entry['name']))
-            val = urllib.quote(str(val).encode("utf-8"), '')
+            val = urlparse.quote(str(val).encode("utf-8"), '')
             route = route.replace("<%s>" % arg, val)
 
         return route.lstrip('/')
@@ -526,7 +527,7 @@ def createApiClient(name, api):
         # Add whichever function we created
         attributes[entry['name']] = f
 
-    return type(name.encode('utf-8'), (BaseClient,), attributes)
+    return type(utils.toStr(name), (BaseClient,), attributes)
 
 
 def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
@@ -546,7 +547,7 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
     now = now - datetime.timedelta(minutes=10)  # Subtract 5 minutes for clock drift
 
     for scope in scopes:
-        if not isinstance(scope, basestring):
+        if not isinstance(scope, six.string_types):
             raise exceptions.TaskclusterFailure('Scope must be string')
 
     # Credentials can only be valid for 31 days.  I hope that
@@ -566,19 +567,21 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
     )
 
     sigStr = '\n'.join([
-        'version:' + str(cert['version']),
-        'seed:' + cert['seed'],
-        'start:' + str(cert['start']),
-        'expiry:' + str(cert['expiry']),
+        'version:' + utils.toStr(cert['version']),
+        'seed:' + utils.toStr(cert['seed']),
+        'start:' + utils.toStr(cert['start']),
+        'expiry:' + utils.toStr(cert['expiry']),
         'scopes:'
-    ] + scopes)
+    ] + scopes).encode()
 
+    if isinstance(accessToken, six.text_type):
+        accessToken = accessToken.encode()
     sig = hmac.new(accessToken, sigStr, hashlib.sha256).digest()
 
     cert['signature'] = utils.encodeStringForB64Header(sig)
 
     newToken = hmac.new(accessToken, cert['seed'], hashlib.sha256).digest()
-    newToken = utils.makeB64UrlSafe(utils.encodeStringForB64Header(newToken)).replace('=', '')
+    newToken = utils.makeB64UrlSafe(utils.encodeStringForB64Header(newToken)).replace(b'=', b'')
 
     return {
         'clientId': clientId,
