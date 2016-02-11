@@ -10,6 +10,7 @@ import bodyParser from 'body-parser'
 import User from './user'
 import querystring from 'querystring'
 import loader from 'taskcluster-lib-loader'
+import flash from 'connect-flash'
 
 require('source-map-support').install();
 
@@ -82,7 +83,10 @@ let load = loader({
         maxAge: 3 * 24 * 60 * 60 * 1000
       }));
 
-      // Initially passport
+      // Set up message flashing
+      app.use(flash());
+
+      // Initialize passport
       app.use(passport.initialize());
       app.use(passport.session());
 
@@ -110,6 +114,7 @@ let load = loader({
           querystring,
           allowedHosts: cfg.app.allowedRedirectHosts,
           query: req.query,
+          flash: req.flash(),
         });
       });
 
