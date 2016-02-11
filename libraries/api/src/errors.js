@@ -49,8 +49,8 @@ let BuildReportErrorMethod = (method, errorCodes, raven = null) => {
         time:    (new Date()).toJSON(),
       };
       message = message.replace(/{{([a-zA-Z0-9_-]+)}}/g, (text, key) => {
-        let value = details[key] || text;
-        if (typeof(value) === 'string') {
+        let value = details.hasOwnProperty(key) ? details[key] : text;
+        if (typeof(value) !== 'string') {
           return JSON.stringify(value, null, 2);
         }
         return value;
