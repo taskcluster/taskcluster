@@ -1,4 +1,4 @@
-Generated: 1454769494
+Generated: 1455222511
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -431,13 +431,23 @@ http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#
 Any Of                 = 'Item '0' =
   Additional Properties  = 'false'
   Properties
+    Property 'clientId' =
+      Description            = 'The `clientId` that made this request.  This may be the `id` supplied in
+      the Authorization header, or in the case of a named temporary credential
+      may be embedded in the payload.  In any case, this clientId can be used
+      for logging, auditing, and identifying the credential but **must** not be
+      used for access control.  That's what scopes are for.
+      '
+      Type                   = 'string'
+      TypeName               = 'ClientId'
+      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/clientId'
     Property 'hash' =
       Description            = 'Payload as extracted from `Authentication` header. This property is
       only present if a hash is available. You are not required to validate
       this hash, but if you do, please check `scheme` to ensure that it's
       on a scheme you support.
       '
-      Type                   = 'string'
+      Type HAS NOT BEEN SET!!!
       TypeName               = 'Hash'
       SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/hash'
     Property 'scheme' =
@@ -468,7 +478,7 @@ Any Of                 = 'Item '0' =
       Type                   = 'string'
       TypeName               = 'Status'
       SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/status'
-  Required               = '[status scopes scheme]'
+  Required               = '[status scopes scheme clientId]'
   Title                  = 'Authentication Successful Response'
   Type                   = 'object'
   TypeName               = 'AuthenticationSuccessfulResponse'
@@ -509,13 +519,23 @@ http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]
 ================================================================================
 Additional Properties  = 'false'
 Properties
+  Property 'clientId' =
+    Description            = 'The `clientId` that made this request.  This may be the `id` supplied in
+    the Authorization header, or in the case of a named temporary credential
+    may be embedded in the payload.  In any case, this clientId can be used
+    for logging, auditing, and identifying the credential but **must** not be
+    used for access control.  That's what scopes are for.
+    '
+    Type                   = 'string'
+    TypeName               = 'ClientId'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/clientId'
   Property 'hash' =
     Description            = 'Payload as extracted from `Authentication` header. This property is
     only present if a hash is available. You are not required to validate
     this hash, but if you do, please check `scheme` to ensure that it's
     on a scheme you support.
     '
-    Type                   = 'string'
+    Type HAS NOT BEEN SET!!!
     TypeName               = 'Hash'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/hash'
   Property 'scheme' =
@@ -546,7 +566,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'Status'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/status'
-Required               = '[status scopes scheme]'
+Required               = '[status scopes scheme clientId]'
 Title                  = 'Authentication Successful Response'
 Type                   = 'object'
 TypeName               = 'AuthenticationSuccessfulResponse'

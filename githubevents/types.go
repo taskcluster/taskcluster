@@ -8,8 +8,6 @@ import (
 
 type (
 	// Message reporting that a GitHub pull request has occurred
-	//
-	// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#
 	GitHubPullRequestMessage struct {
 
 		// The GitHub `action` which triggered an event.
@@ -23,13 +21,9 @@ type (
 		//   * "closed"
 		//   * "reopened"
 		//   * "synchronize"
-		//
-		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/action
 		Action json.RawMessage `json:"action"`
 
 		// Metadata describing the pull request.
-		//
-		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/details
 		Details json.RawMessage `json:"details"`
 
 		// The GitHub `organization` which had an event.
@@ -37,8 +31,6 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_%]*)$
 		// Min length: 1
 		// Max length: 100
-		//
-		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/organization
 		Organization string `json:"organization"`
 
 		// The GitHub `repository` which had an event.
@@ -46,27 +38,19 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_%]*)$
 		// Min length: 1
 		// Max length: 100
-		//
-		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/repository
 		Repository string `json:"repository"`
 
 		// Message version
 		//
 		// Possible values:
 		//   * 1
-		//
-		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/version
 		Version json.RawMessage `json:"version"`
 	}
 
 	// Message reporting that a GitHub push has occurred
-	//
-	// See http://schemas.taskcluster.net/github/v1/github-push-message.json#
 	GitHubPushMessage struct {
 
 		// Metadata describing the push.
-		//
-		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/details
 		Details json.RawMessage `json:"details"`
 
 		// The GitHub `organization` which had an event.
@@ -74,8 +58,6 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_%]*)$
 		// Min length: 1
 		// Max length: 100
-		//
-		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/organization
 		Organization string `json:"organization"`
 
 		// The GitHub `repository` which had an event.
@@ -83,16 +65,12 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_%]*)$
 		// Min length: 1
 		// Max length: 100
-		//
-		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/repository
 		Repository string `json:"repository"`
 
 		// Message version
 		//
 		// Possible values:
 		//   * 1
-		//
-		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/version
 		Version json.RawMessage `json:"version"`
 	}
 )
