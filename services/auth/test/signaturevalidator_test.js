@@ -420,7 +420,9 @@ suite("signature validation", function() {
         authorizedScopes: ['scope1:*', 'scope2'],
       }
     }
-  }, failed('ext.authorizedScopes oversteps your scopes'));
+  }, failed('Supplied credentials do not satisfy authorizedScopes; '
+    + `credentials have scopes [${clients.unpriv.scopes}]; `
+    + `authorizedScopes are [scope1:*,scope2]`));
 
   test("invalid: authorizedScopes not an array", {
     authorization: {
@@ -527,7 +529,9 @@ suite("signature validation", function() {
         authorizedScopes: ['scope1', 'scope2'],
       },
     }
-  }), failed('ext.authorizedScopes oversteps your scopes'));
+  }), failed('Supplied credentials do not satisfy authorizedScopes; '
+    + `credentials have scopes [${clients.unpriv.scopes}]; `
+    + `authorizedScopes are [scope1,scope2]`));
 
   testWithTemp("invalid: temporary credentials with authorizedScopes, temp not satisfied", {
     id: 'unpriv',

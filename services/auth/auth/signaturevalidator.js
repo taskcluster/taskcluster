@@ -155,7 +155,9 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
 
     // Validate authorizedScopes scopes are satisfied by client (or temp) scopes
     if (!utils.scopeMatch(res.scopes, [ext.authorizedScopes])) {
-      throw new Error("ext.authorizedScopes oversteps your scopes");
+      throw new Error('Supplied credentials do not satisfy authorizedScopes; '
+        + `credentials have scopes [${res.scopes}]; `
+        + `authorizedScopes are [${[ext.authorizedScopes]}]`);
     }
 
     // Further limit scopes
