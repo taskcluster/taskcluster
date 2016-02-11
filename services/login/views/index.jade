@@ -64,21 +64,11 @@ html(lang='en')
                 | set one up
               | &nbsp;and get vouched before logging into TaskCluster.
         br
-        if query.err == 'mozillians-lookup'
+        if flash.error
           div.alert.alert-danger(role="alert")
-            b Mozillians Lookup Failed
-            br
-            | We successfully validated your e-mail, but when looking it up
-            | in Mozillians.org we didn't find any user with that email.
-            br
-            | Please ensure that:
-            ul
-            li Your Mozillians profile is vouched, and
-            li Your email is configured to be public (
-              a(href='https://mozillians.org/en-US/user/edit/emails/')
-                | edit here
-              | )
-          br
+            b Login Failed
+            each val in flash.error
+              p= val
         if credentials
           span#grant-area(style='display: none')
             h2 Grant Credentials to&nbsp;
