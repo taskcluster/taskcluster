@@ -1,3 +1,4 @@
 /node_modules
 /taskcluster-auth.conf.json
 /user-config.yml
+/npm-debug.log*
