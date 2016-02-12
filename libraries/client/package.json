@@ -30,7 +30,6 @@
   "devDependencies": {
     "mocha":                            "^2.2.1",
     "taskcluster-base":                 "^0.10.0",
-    "taskcluster-lib-api":              "^0.10.5",
     "commander":                        "^2.4.0",
     "cliff":                            "^0.1.10",
     "browserify":                       "^9.0.3",
