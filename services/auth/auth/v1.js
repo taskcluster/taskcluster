@@ -4,6 +4,7 @@ var base        = require('taskcluster-base');
 var slugid      = require('slugid');
 var Promise     = require('promise');
 var _           = require('lodash');
+var signaturevalidator = require('./signaturevalidator');
 
 /** API end-point for version v1/ */
 var api = new base.API({
@@ -761,6 +762,59 @@ api.declare({
   return this.signatureValidator(req.body).then(result => res.reply(result));
 });
 
+
+api.declare({
+  method:     'post',
+  route:      '/test-authenticate',
+  name:       'testAuthenticate',
+  input:      'test-authenticate-request.json#',
+  output:     'test-authenticate-response.json#',
+  stability:  'experimental',
+  title:      "Test Authentication",
+  description: [
+    "Utility method to test client implementations of TaskCluster",
+    "authentication.",
+    "",
+    "Rather than using real credentials, this endpoint accepts requests with",
+    "clientId `tester` and accessToken `no-secret`. That client's scopes are",
+    "based on `clientScopes` in the request body.",
+    "",
+    "The request is validated, with any certificate, authorizedScopes, etc.",
+    "applied, and the resulting scopes are checked against `requiredScopes`",
+    "from the request body. On success, the response contains the clientId",
+    "and scopes as seen by the API method.",
+  ].join('\n')
+}, async function(req, res) {
+  base.API.remoteAuthentication({
+    signatureValidator: signaturevalidator.createSignatureValidator({
+      clientLoader: async (clientId) => {
+        if (clientId !== 'tester') {
+          throw new Error("Client with clientId '" + clientId + "' not found");
+        }
+        return {
+          clientId: 'tester',
+          accessToken: 'no-secret',
+          scopes: req.body.clientScopes,
+        };
+      }
+    }),
+  }, {
+    scopes: [],
+    deferAuth: true,
+  })(req, res, () => {
+    if (!req.satisfies([req.body.requiredScopes])) {
+      return;
+    }
+    Promise.all([
+      req.clientId(),
+      req.scopes(),
+    ]).then(([clientId, scopes]) => {
+      res.reply({clientId, scopes});
+    }).catch(err => {
+      return res.reportInternalError(err);
+    });
+  });
+});
 
 /** Check that the server is a alive */
 api.declare({
