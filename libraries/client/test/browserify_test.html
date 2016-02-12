@@ -15,102 +15,10 @@
     </script>
     <script src="../taskcluster-client.js"></script>
     <script>
-    var reference = {
-      "version": 0,
-      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "title": "Test API",
-      "description": "Test API",
-      "baseUrl": "http://localhost:23526/v1",
-      "entries": [
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/get-test",
-          "query": [],
-          "args": [],
-          "name": "get",
-          "stability": "experimental",
-          "title": "Test Get",
-          "description": "Place we can call to test GET",
-          "scopes": [
-            [
-              "test:get"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "post",
-          "route": "/post-test",
-          "query": [],
-          "args": [],
-          "name": "post",
-          "stability": "experimental",
-          "title": "Test Post",
-          "description": "Place we can call to test POST",
-          "scopes": [
-            [
-              "test:post"
-            ]
-          ],
-          "input": "http://schemas.taskcluster.net/nothing.json"
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/url-param/<param>/list",
-          "query": [],
-          "args": [
-            "param"
-          ],
-          "name": "param",
-          "stability": "experimental",
-          "title": "Test Params",
-          "description": "Place we can call to test url parameters",
-          "scopes": [
-            [
-              "test:param"
-            ]
-          ]
-        },
-        {
-          "type": "function",
-          "method": "get",
-          "route": "/param-query/<param>",
-          "query": [
-            "option"
-          ],
-          "args": [
-            "param"
-          ],
-          "name": "paramQuery",
-          "stability": "experimental",
-          "title": "Test Query string options",
-          "description": "Place we can call to test query string",
-          "scopes": [
-            [
-              "test:query"
-            ]
-          ]
-        }
-      ],
-    };
-
     suite("client (browserify)", function() {
       this.timeout(function() {}, 30 * 1000);
 
-      var Client = null;
       var client = null;
-      test("createClient", function() {
-        Client = taskcluster.createClient(reference);
-        client = new Client({
-          credentials: {
-            clientId: 'tester',
-            accessToken: 'secret'
-          }
-        });
-      });
-
       test("loaded", function() {
         if (!window.taskcluster.Queue) {
           throw new Error("Queue is missing!");
@@ -126,39 +34,58 @@
         });
       });
 
+      test("create client", function() {
+        // most tests all authenticate against the auth service's testAuthenticate
+        client = new taskcluster.Auth({
+          credentials: {
+            clientId: 'tester',
+            accessToken: 'no-secret'
+          }
+        });
+      });
+
       test("Build signed url (in browser)", function() {
-        var url = client.buildSignedUrl(client.param, 'test');
+        var url = client.buildSignedUrl(client.client, 'test');
       });
 
       test("Request with authentication", function() {
-        return client.param('test-client');
+        return client.testAuthenticate({
+          clientScopes: [],
+          requiredScopes: [],
+        });
       });
 
       test("Request with authentication and querystring", function() {
-        return client.paramQuery('test-client', {option: 32});
+        return client.listClients({prefix: 'abc'});
       });
 
       test('get using authorizedScopes', function() {
-        var client = new Client({
+        var client = new taskcluster.Auth({
           credentials: {
-            clientId:       'tester',
-            accessToken:    'secret'
+            clientId: 'tester',
+            accessToken: 'no-secret'
           },
           authorizedScopes: ['test:param']
         });
-        return client.param('test');
+        return client.testAuthenticate({
+          clientScopes: ['test:*'],
+          requiredScopes: ['test:param'],
+        });
       });
 
       test('get using authorizedScopes (unauthorized)', function() {
-        var client = new Client({
+        var client = new taskcluster.Auth({
           credentials: {
-            clientId:       'tester',
-            accessToken:    'secret'
+            clientId: 'tester',
+            accessToken: 'no-secret'
           },
           authorizedScopes: ['test:params']
         });
-        return client.param('test').then(function() {
-          assert(false, "Expected and error");
+        return client.testAuthenticate({
+          clientScopes: ['test:*'],
+          requiredScopes: ['test:something-else'],
+        }).then(function() {
+          assert(false, "Expected an error");
         }, function(err) {
           assert(err, "Expected an error");
           assert(err.statusCode === 403, "Wrong status code");
@@ -171,13 +98,16 @@
           expiry: new Date(new Date().getTime() + 60 * 1000),
           credentials: {
             clientId:       'tester',
-            accessToken:    'secret'
+            accessToken:    'no-secret'
           },
         });
-        var client = new Client({
+        var client = new taskcluster.Auth({
           credentials: tempCreds
         });
-        return client.param('test');
+        return client.testAuthenticate({
+          clientScopes: ['test:*'],
+          requiredScopes: ['test:param'],
+        });
       });
 
       test('get using temp. creds (unauthorized)', function() {
@@ -186,13 +116,16 @@
           expiry: new Date(new Date().getTime() + 60 * 1000),
           credentials: {
             clientId:       'tester',
-            accessToken:    'nobody'
+            accessToken:    'wrong-secret'
           },
         });
-        var client = new Client({
+        var client = new taskcluster.Auth({
           credentials: tempCreds
         });
-        return client.param('test').then(function() {
+        return client.testAuthenticate({
+          clientScopes: ['test:*'],
+          requiredScopes: ['test:something-else'],
+        }).then(function() {
           assert(false, "Expected and error");
         }, function(err) {
           assert(err, "Expected an error");
@@ -201,7 +134,7 @@
       });
 
       test('Build signed url', function(done) {
-        var url = client.buildSignedUrl(client.param, 'test-client');
+        var url = client.buildSignedUrl(client.listClients, {prefix: 'nosuch/'});
         req = new XMLHttpRequest();
         req.onreadystatechange = function() {
           if (req.readyState == 4) {
