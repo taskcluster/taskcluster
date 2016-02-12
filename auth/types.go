@@ -321,6 +321,34 @@ type (
 		// List of scopes.  Scopes must be composed of printable ASCII characters and spaces.
 		Scopes []string `json:"scopes"`
 	}
+
+	// Details on how the test request should be authenticated.
+	TestAuthenticateRequest struct {
+
+		// List of scopes that should be client used should be given.
+		//
+		// Default:    []
+		ClientScopes []string `json:"clientScopes"`
+
+		// List of scopes the request should require.
+		//
+		// Default:    []
+		RequiredScopes []string `json:"requiredScopes"`
+	}
+
+	// Details on how the test request was authenticated.
+	TestAuthenticateResponse struct {
+
+		// ClientId from the request as it will be logged
+		//
+		// Syntax:     ^[A-Za-z0-9@/:._-]+$
+		ClientId string `json:"clientId"`
+
+		// List of scopes the request was authorized.
+		//
+		// Default:    []
+		Scopes []string `json:"scopes"`
+	}
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since

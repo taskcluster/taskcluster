@@ -73,7 +73,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 11 Feb 2016 at 20:28:00 UTC. The code was generated
+// Fri, 12 Feb 2016 at 18:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -401,6 +401,27 @@ func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/authenticate-hawk", new(HawkSignatureAuthenticationResponse), nil)
 	return responseObject.(*HawkSignatureAuthenticationResponse), callSummary, err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Utility method to test client implementations of TaskCluster
+// authentication.
+//
+// Rather than using real credentials, this endpoint accepts requests with
+// clientId `tester` and accessToken `no-secret`. That client's scopes are
+// based on `clientScopes` in the request body.
+//
+// The request is validated, with any certificate, authorizedScopes, etc.
+// applied, and the resulting scopes are checked against `requiredScopes`
+// from the request body. On success, the response contains the clientId
+// and scopes as seen by the API method.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#testAuthenticate
+func (myAuth *Auth) TestAuthenticate(payload *TestAuthenticateRequest) (*TestAuthenticateResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/test-authenticate", new(TestAuthenticateResponse), nil)
+	return responseObject.(*TestAuthenticateResponse), callSummary, err
 }
 
 // Stability: *** EXPERIMENTAL ***
