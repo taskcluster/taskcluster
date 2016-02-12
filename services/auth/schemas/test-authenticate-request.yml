@@ -1,0 +1,26 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:                      "Test Authenticate Request"
+description: |
+  Details on how the test request should be authenticated.
+type:                       object
+properties:
+  clientScopes:
+    description: |
+      List of scopes that should be client used should be given.
+    type:                   array
+    default:                []
+    items:
+      description: Scope
+      type:                 string
+      pattern: "^[\x20-\x7e]*$"
+    uniqueItems:            true
+  requiredScopes:
+    description: |
+      List of scopes the request should require.
+    type:                   array
+    default:                []
+    items:
+      description: Scope
+      type:                 string
+      pattern: "^[\x20-\x7e]*$"
+    uniqueItems:            true
