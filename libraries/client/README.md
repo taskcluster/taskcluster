@@ -155,7 +155,7 @@ that either resolves without giving a value or rejects with an error.
 //  - https://auth.taskcluster.net/v1
 var auth = new taskcluster.Auth(options);
 ```
- * `auth.listClients() : result`
+ * `auth.listClients([options]) : result`
  * `auth.client(clientId) : result`
  * `auth.createClient(clientId, payload) : result`
  * `auth.resetAccessToken(clientId) : result`
@@ -168,9 +168,12 @@ var auth = new taskcluster.Auth(options);
  * `auth.createRole(roleId, payload) : result`
  * `auth.updateRole(roleId, payload) : result`
  * `auth.deleteRole(roleId) : void`
+ * `auth.expandScopes(payload) : result`
+ * `auth.currentScopes() : result`
  * `auth.awsS3Credentials(level, bucket, prefix) : result`
  * `auth.azureTableSAS(account, table) : result`
  * `auth.authenticateHawk(payload) : result`
+ * `auth.testAuthenticate(payload) : result`
  * `auth.ping() : void`
 
 ### Methods in `taskcluster.AwsProvisioner`
@@ -290,7 +293,6 @@ var scheduler = new taskcluster.Scheduler(options);
 var secrets = new taskcluster.Secrets(options);
 ```
  * `secrets.set(name, payload) : void`
- * `secrets.update(name, payload) : void`
  * `secrets.remove(name) : void`
  * `secrets.get(name) : result`
  * `secrets.list() : result`
