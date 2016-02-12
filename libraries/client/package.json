@@ -30,13 +30,14 @@
   "devDependencies": {
     "mocha":                            "^2.2.1",
     "taskcluster-base":                 "^0.10.0",
-    "taskcluster-lib-api":              "^0.9.0",
+    "taskcluster-lib-api":              "^0.10.5",
     "commander":                        "^2.4.0",
     "cliff":                            "^0.1.10",
     "browserify":                       "^9.0.3",
     "mocha-phantomjs":                  "3.5.3",
     "phantomjs":                        "1.9.16",
     "babel":                            "^5.5.8",
-    "json-stable-stringify":            "^1.0.0"
+    "json-stable-stringify":            "^1.0.0",
+    "nock":                             "^7.0.2"
   }
 }
