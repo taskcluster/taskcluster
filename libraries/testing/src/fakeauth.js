@@ -2,22 +2,6 @@ var debug = require('debug')('taskcluster-lib-testing:FakeAuth');
 var nock = require('nock');
 var hawk = require('hawk');
 
-/**
- * Intercept requests to the auth service's authenticateHawk method and
- * return a response based on clients, instead.  This is useful when testing
- * other API services.  Note that accessTokens are not checked -- the fake
- * simply controls access based on clientId or the scopes in a temporary
- * credential or supplied with authorizedScopes.
- *
- * Clients is on the form
- * ```js
- * {
- *  "clientId1": ["scope1", "scope2"],
- *  "clientId2": ["scope1", "scope3"],
- * }
- *
- * Call `stop` in your test's `after` method to stop the HTTP interceptor.
- */
 exports.start = function(clients) {
   nock('https://auth.taskcluster.net:443', {encodedQueryParams:true, allowUnmocked: true})
   .persist()
