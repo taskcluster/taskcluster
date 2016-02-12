@@ -20,9 +20,23 @@ fakeauth
 --------
 
 A fake for the auth service to support testing APIs without requiring
-production credentials, using Nock.  In many cases, this is easier to use thatn
-`createMockAuthServer`, as it does not check accessTokens and doesn't require
-customizing the auth URL.
+production credentials, using Nock.
+
+Intercept requests to the auth service's `authenticateHawk` method and
+return a response based on clients, instead.  This is useful when testing
+other API services.  Note that accessTokens are not checked -- the fake
+simply controls access based on clientId or the scopes in a temporary
+credential or supplied with authorizedScopes.
+
+To start the mock, call `testing.fakeauth.start(clients)`.  Clients is on the form
+```js
+{
+ "clientId1": ["scope1", "scope2"],
+ "clientId2": ["scope1", "scope3"],
+}
+```
+
+Call `testing.fakeauth.stop` in your test's `after` method to stop the HTTP interceptor.
 
 Utilities
 ---------
