@@ -1,4 +1,4 @@
-suite("signature validation", function() {
+suite("testAuthenticate", function() {
   var Promise     = require('promise');
   var assert      = require('assert');
   var debug       = require('debug')('test:auth');
@@ -65,7 +65,7 @@ suite("signature validation", function() {
     config: {credentials: badcreds},
     requiredScopes: ['test-scope'],
     clientScopes: ['test-scope'],
-    errorCode: 'AuthorizationFailed',
+    errorCode: 'AuthenticationFailed',
   });
 
   testAuth('insufficientScopes', {
@@ -92,14 +92,14 @@ suite("signature validation", function() {
     config: {credentials, authorizedScopes: ['test-scope:*']},
     requiredScopes: ['test-scope:test2'],
     clientScopes: ['test-scope:test2'],
-    errorCode: 'AuthorizationFailed',
+    errorCode: 'AuthenticationFailed',
   });
 
   testAuth('authorizedScopes badcreds', {
     config: {credentials: badcreds, authorizedScopes: ['test-scope:test']},
     requiredScopes: ['test-scope:test'],
     clientScopes: ['test-scope:*'],
-    errorCode: 'AuthorizationFailed',
+    errorCode: 'AuthenticationFailed',
   });
 
   // TODO: Add more test cases...
