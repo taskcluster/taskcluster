@@ -429,6 +429,8 @@ used to issue them (this takes up to one hour).
 
 ```js
 var credentials = taskcluster.createTemporaryCredentials({
+  // Name of temporary credential (optional)
+  clientId:           '...',
   // Validity of temporary credentials starts here
   start:              new Date(),
   // Expiration of temporary credentials
@@ -442,7 +444,9 @@ var credentials = taskcluster.createTemporaryCredentials({
 });
 ```
 
-You cannot use temporary credentials to issue new temporary credentials.
+You cannot use temporary credentials to issue new temporary credentials.  You
+must have `auth:create-client:<name>` to create a named temporary credential,
+but unnamed temporary credentials can be created regardless of your scopes.
 
 ## Create Client Class Dynamically
 You can create a Client class from a reference JSON object as illustrated

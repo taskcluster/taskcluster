@@ -127,6 +127,28 @@ suite('client credential handling', function() {
     }), 'AuthorizationFailed');
   });
 
+  test('named temporary credentials', async () => {
+    var credentials = taskcluster.createTemporaryCredentials({
+      scopes: ['scopes:specific'],
+      clientId: 'my-temp-cred',
+      expiry: taskcluster.fromNow('1 hour'),
+      credentials: {
+        clientId:       'tester',
+        accessToken:    'no-secret',
+      },
+    });
+    assert.equal(credentials.clientId, 'my-temp-cred',
+                 "temp cred name doesn't appear as clientId");
+    assert.deepEqual(
+      await client({credentials}).testAuthenticate({
+        clientScopes: ['scopes:*', 'auth:create-client:my-temp-cred'],
+        requiredScopes: ['scopes:specific'],
+      }), {
+      clientId: 'my-temp-cred',
+      scopes: ['scopes:specific'],
+    });
+  });
+
   test('temporary credentials, authorizedScopes', async () => {
     var credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:subcategory:*'],
@@ -183,6 +205,31 @@ suite('client credential handling', function() {
         clientScopes: ['scopes:*'],
         requiredScopes: ['scopes:subcategory:specific'],
       }), 'AuthorizationFailed');
+  });
+
+  test('named temporary credentials, authorizedScopes', async () => {
+    var credentials = taskcluster.createTemporaryCredentials({
+      scopes: ['scopes:*'],
+      clientId: 'my-temp-cred',
+      expiry: taskcluster.fromNow('1 hour'),
+      credentials: {
+        clientId:       'tester',
+        accessToken:    'no-secret',
+      },
+    });
+    assert.equal(credentials.clientId, 'my-temp-cred',
+                 "temp cred name doesn't appear as clientId");
+    assert.deepEqual(
+      await client({
+        credentials,
+        authorizedScopes: ['scopes:specific', 'scopes:another'],
+      }).testAuthenticate({
+        clientScopes: ['scopes:*', 'auth:create-client:my-temp-cred'],
+        requiredScopes: ['scopes:specific'],
+      }), {
+      clientId: 'my-temp-cred',
+      scopes: ['scopes:specific', 'scopes:another'],
+    });
   });
 
   // for signed URLs, we must use a 'GET' method; see
