@@ -29,7 +29,7 @@
     "slugid": "^1.1.0",
     "superagent": "^1.1.0",
     "superagent-hawk": "0.0.4",
-    "taskcluster-base": "^0.10.2",
+    "taskcluster-base": "^0.10.4",
     "taskcluster-client": "^0.23.9",
     "taskcluster-lib-app": "^0.8.10",
     "taskcluster-lib-loader": "^0.1.1",
