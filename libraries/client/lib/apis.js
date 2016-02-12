@@ -8,10 +8,13 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Get a list of all clients.",
+          "description": "Get a list of all clients.  With `prefix`, only clients for which\nit is a prefix of the clientId are returned.",
           "method": "get",
           "name": "listClients",
           "output": "http://schemas.taskcluster.net/auth/v1/list-clients-response.json#",
+          "query": [
+            "prefix"
+          ],
           "route": "/clients/",
           "stability": "stable",
           "title": "List Clients",
@@ -25,6 +28,8 @@ module.exports = {
           "method": "get",
           "name": "client",
           "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#",
+          "query": [
+          ],
           "route": "/clients/<clientId>",
           "stability": "stable",
           "title": "Get Client",
@@ -39,6 +44,8 @@ module.exports = {
           "method": "put",
           "name": "createClient",
           "output": "http://schemas.taskcluster.net/auth/v1/create-client-response.json#",
+          "query": [
+          ],
           "route": "/clients/<clientId>",
           "scopes": [
             [
@@ -57,6 +64,8 @@ module.exports = {
           "method": "post",
           "name": "resetAccessToken",
           "output": "http://schemas.taskcluster.net/auth/v1/create-client-response.json#",
+          "query": [
+          ],
           "route": "/clients/<clientId>/reset",
           "scopes": [
             [
@@ -76,6 +85,8 @@ module.exports = {
           "method": "post",
           "name": "updateClient",
           "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#",
+          "query": [
+          ],
           "route": "/clients/<clientId>",
           "scopes": [
             [
@@ -94,6 +105,8 @@ module.exports = {
           "method": "post",
           "name": "enableClient",
           "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#",
+          "query": [
+          ],
           "route": "/clients/<clientId>/enable",
           "scopes": [
             [
@@ -112,6 +125,8 @@ module.exports = {
           "method": "post",
           "name": "disableClient",
           "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#",
+          "query": [
+          ],
           "route": "/clients/<clientId>/disable",
           "scopes": [
             [
@@ -129,6 +144,8 @@ module.exports = {
           "description": "Delete a client, please note that any roles related to this client must\nbe deleted independently.",
           "method": "delete",
           "name": "deleteClient",
+          "query": [
+          ],
           "route": "/clients/<clientId>",
           "scopes": [
             [
@@ -146,6 +163,8 @@ module.exports = {
           "method": "get",
           "name": "listRoles",
           "output": "http://schemas.taskcluster.net/auth/v1/list-roles-response.json#",
+          "query": [
+          ],
           "route": "/roles/",
           "stability": "stable",
           "title": "List Roles",
@@ -159,6 +178,8 @@ module.exports = {
           "method": "get",
           "name": "role",
           "output": "http://schemas.taskcluster.net/auth/v1/get-role-response.json#",
+          "query": [
+          ],
           "route": "/roles/<roleId>",
           "stability": "stable",
           "title": "Get Role",
@@ -173,6 +194,8 @@ module.exports = {
           "method": "put",
           "name": "createRole",
           "output": "http://schemas.taskcluster.net/auth/v1/get-role-response.json#",
+          "query": [
+          ],
           "route": "/roles/<roleId>",
           "scopes": [
             [
@@ -192,6 +215,8 @@ module.exports = {
           "method": "post",
           "name": "updateRole",
           "output": "http://schemas.taskcluster.net/auth/v1/get-role-response.json#",
+          "query": [
+          ],
           "route": "/roles/<roleId>",
           "scopes": [
             [
@@ -209,6 +234,8 @@ module.exports = {
           "description": "Delete a role. This operation will succeed regardless of whether or not\nthe role exists.",
           "method": "delete",
           "name": "deleteRole",
+          "query": [
+          ],
           "route": "/roles/<roleId>",
           "scopes": [
             [
@@ -221,6 +248,35 @@ module.exports = {
         },
         {
           "args": [
+          ],
+          "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included.",
+          "input": "http://schemas.taskcluster.net/auth/v1/scopeset.json#",
+          "method": "get",
+          "name": "expandScopes",
+          "output": "http://schemas.taskcluster.net/auth/v1/scopeset.json#",
+          "query": [
+          ],
+          "route": "/scopes/expand",
+          "stability": "stable",
+          "title": "Expand Scopes",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Return the expanded scopes available in the request, taking into account all sources\nof scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,\nand roles).",
+          "method": "get",
+          "name": "currentScopes",
+          "output": "http://schemas.taskcluster.net/auth/v1/scopeset.json#",
+          "query": [
+          ],
+          "route": "/scopes/current",
+          "stability": "stable",
+          "title": "Get Current Scopes",
+          "type": "function"
+        },
+        {
+          "args": [
             "level",
             "bucket",
             "prefix"
@@ -229,6 +285,8 @@ module.exports = {
           "method": "get",
           "name": "awsS3Credentials",
           "output": "http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#",
+          "query": [
+          ],
           "route": "/aws/s3/<level>/<bucket>/<prefix>",
           "scopes": [
             [
@@ -248,6 +306,8 @@ module.exports = {
           "method": "get",
           "name": "azureTableSAS",
           "output": "http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#",
+          "query": [
+          ],
           "route": "/azure/<account>/table/<table>/read-write",
           "scopes": [
             [
@@ -266,6 +326,8 @@ module.exports = {
           "method": "post",
           "name": "authenticateHawk",
           "output": "http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#",
+          "query": [
+          ],
           "route": "/authenticate-hawk",
           "stability": "stable",
           "title": "Authenticate Hawk Request",
@@ -274,9 +336,26 @@ module.exports = {
         {
           "args": [
           ],
+          "description": "Utility method to test client implementations of TaskCluster\nauthentication.\n\nRather than using real credentials, this endpoint accepts requests with\nclientId `tester` and accessToken `no-secret`. That client's scopes are\nbased on `clientScopes` in the request body.\n\nThe request is validated, with any certificate, authorizedScopes, etc.\napplied, and the resulting scopes are checked against `requiredScopes`\nfrom the request body. On success, the response contains the clientId\nand scopes as seen by the API method.",
+          "input": "http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#",
+          "method": "post",
+          "name": "testAuthenticate",
+          "output": "http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#",
+          "query": [
+          ],
+          "route": "/test-authenticate",
+          "stability": "experimental",
+          "title": "Test Authentication",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
           "method": "get",
           "name": "ping",
+          "query": [
+          ],
           "route": "/ping",
           "stability": "experimental",
           "title": "Ping Server",
@@ -2468,7 +2547,7 @@ module.exports = {
           "args": [
             "name"
           ],
-          "description": "Set a secret associated with some key.",
+          "description": "Set a secret associated with some key.  If the secret already exists, it is updated instead.",
           "input": "http://schemas.taskcluster.net/secrets/v1/secret.json#",
           "method": "put",
           "name": "set",
@@ -2479,25 +2558,7 @@ module.exports = {
             ]
           ],
           "stability": "experimental",
-          "title": "Create New Secret",
-          "type": "function"
-        },
-        {
-          "args": [
-            "name"
-          ],
-          "description": "Update a secret associated with some key.",
-          "input": "http://schemas.taskcluster.net/secrets/v1/secret.json#",
-          "method": "post",
-          "name": "update",
-          "route": "/secret/<name>",
-          "scopes": [
-            [
-              "secrets:set:<name>"
-            ]
-          ],
-          "stability": "experimental",
-          "title": "Update A Secret",
+          "title": "Create Secret",
           "type": "function"
         },
         {
