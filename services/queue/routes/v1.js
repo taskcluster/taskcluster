@@ -255,37 +255,42 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   var created   = new Date(taskDef.created);
   var deadline  = new Date(taskDef.deadline);
   if (created.getTime() < new Date().getTime() - 15 * 60 * 1000) {
-    return {code: 400, json: {
+    return {
+      code:       "RequestConflict",
       message:    "Created timestamp cannot be in the past (max 15min drift)",
-      error:      {created: taskDef.created}
-    }};
+      details:    {created: taskDef.created}
+    };
   }
   if (created.getTime() > new Date().getTime() + 15 * 60 * 1000) {
-    return {code: 400, json: {
+    return {
+      code:       "RequestConflict",
       message:    "Created timestamp cannot be in the future (max 15min drift)",
-      error:      {created: taskDef.created}
-    }};
+      details:    {created: taskDef.created}
+    };
   }
   if (created.getTime() > deadline.getTime()) {
-    return {code: 400, json: {
+    return {
+      code:       "RequestConflict",
       message:    "Deadline cannot be past created",
-      error:      {created: taskDef.created, deadline: taskDef.deadline}
-    }};
+      details:      {created: taskDef.created, deadline: taskDef.deadline}
+    };
   }
   if (deadline.getTime() < new Date().getTime()) {
-    return {code: 400, json: {
+    return {
+      code:       "RequestConflict",
       message:    "Deadline cannot be in the past",
-      error:      {deadline: taskDef.deadline}
-    }};
+      details:    {deadline: taskDef.deadline}
+    };
   }
 
   var msToDeadline = (deadline.getTime() - new Date().getTime());
   // Validate that deadline is less than 5 days from now, allow 15 min drift
   if (msToDeadline > 5 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
-    return {code: 400, json: {
+    return {
+      code:       "RequestConflict",
       message:    "Deadline cannot be more than 5 days into the future",
-      error:      {deadline: taskDef.deadline}
-    }};
+      details:    {deadline: taskDef.deadline}
+    };
   }
 
   // Set expires, if not defined
@@ -297,10 +302,11 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
 
   // Validate that expires is past deadline
   if (deadline.getTime() > new Date(taskDef.deadline).getTime()) {
-    return {code: 400, json: {
+    return {
+      code:       "RequestConflict",
       message:    "Expires cannot be before the deadline",
-      error:      {deadline: taskDef.deadline, expires: taskDef.expires}
-    }};
+      details:    {deadline: taskDef.deadline, expires: taskDef.expires}
+    };
   }
 
   // Ensure that date formats are encoded as we store them for idempotent
@@ -420,7 +426,7 @@ api.declare({
   // Patch default values and validate timestamps
   var detail = patchAndValidateTaskDef(taskId, taskDef);
   if (detail) {
-    return res.status(detail.code).json(detail.json);
+    return res.reportError(detail.code, detail.message, detail.details);
   }
 
   // Find scopes required for task specific routes
@@ -496,9 +502,14 @@ api.declare({
     // otherwise the task would have been created with defineTask, and we don't
     // offer an idempotent operation in that case
     if (!_.isEqual(taskDef, def) || task.runs.length === 0) {
-      return res.status(409).json({
-        message:      "taskId: " + taskId + " already used by another task"
-      });
+      return res.reportError(
+        "RequestConflict", [
+          "taskId {{taskId}} already used by another task.",
+          "This could be the result of faulty idempotency!"
+        ].join('\n'),
+        {
+          taskId,
+        });
     }
   }
 
@@ -585,7 +596,7 @@ api.declare({
   // Patch default values and validate timestamps
   var detail = patchAndValidateTaskDef(taskId, taskDef);
   if (detail) {
-    return res.status(detail.code).json(detail.json);
+    return res.reportError(detail.code, detail.message, detail.details);
   }
 
   // Find scopes required for task-specific routes
@@ -656,9 +667,12 @@ api.declare({
     // (ignore runs as this method don't create them)
     if (!_.isEqual(taskDef, def)) {
       debug("DEFINE-FAILED: input -> %j !== %j <- existing", taskDef, def);
-      return res.status(409).json({
-        message:      "taskId: " + taskId + " already used by another task"
-      });
+      return res.reportError(
+        "RequestConflict",
+        "taskId {{taskId}} already used by another task.",
+        {
+          taskId,
+        });
     }
   }
 
@@ -720,11 +734,14 @@ api.declare({
   var taskId = req.params.taskId;
   var task = await this.Task.load({taskId: taskId}, true);
 
-  // If task entity doesn't exists, we return 404
+  // If task entity doesn't exists, we return ResourceNotFound
   if (!task) {
-    return res.status(404).json({
-      message:    "Task not found"
-    });
+    return res.reportError(
+      "ResourceNotFound",
+      "taskId {{taskId}} not found. Are you sure it exists?",
+      {
+        taskId,
+      });
   }
 
   // Authenticate request by providing parameters
@@ -738,10 +755,13 @@ api.declare({
 
   // Validate deadline
   if (task.deadline.getTime() < new Date().getTime()) {
-    return res.status(409).json({
-      message:    "Task can't be scheduled past it's deadline",
-      error:      {deadline: task.deadline.toJSON()}
-    });
+    return res.reportError(
+      "RequestConflict",
+      "Task {{taskId}} Can't be scheduled past it's deadline of {{deadline}}.",
+      {
+        taskId,
+        deadline: task.deadline.toJSON()
+      });
   }
 
   // Ensure that we have an initial run
@@ -817,7 +837,7 @@ api.declare({
   var taskId  = req.params.taskId;
   var task    = await this.Task.load({taskId: taskId}, true);
 
-  // Report 404, if task entity doesn't exist
+  // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
     return res.reportError(
       "ResourceNotFound", [
@@ -839,10 +859,13 @@ api.declare({
 
   // Validate deadline
   if (task.deadline.getTime() < new Date().getTime()) {
-    return res.status(409).json({
-      message:    "Task can't be scheduled past it's deadline",
-      error:      {deadline: task.deadline.toJSON()}
-    });
+    return res.reportError(
+      "RequestConflict",
+      "Task {{taskId}} Can't be rescheduled past it's deadline of {{deadline}}.",
+      {
+        taskId,
+        deadline: task.deadline.toJSON()
+      });
   }
 
   // Ensure that we have a pending or running run
@@ -880,9 +903,12 @@ api.declare({
   // a conflict
   if (state !== 'pending' && state !== 'running' &&
       task.runs.length >= MAX_RUNS_ALLOWED) {
-    return res.status(409).json({
-      message:    "Maximum number of runs reached"
-    });
+    return res.reportError(
+      "RequestConflict",
+      "Maximum number of runs reached. ({{max_runs_allowed}})",
+      {
+        max_runs_allowed: MAX_RUNS_ALLOWED
+      });
   }
 
   // Put message in appropriate azure queue, and publish message to pulse,
@@ -943,11 +969,14 @@ api.declare({
   var taskId  = req.params.taskId;
   var task    = await this.Task.load({taskId: taskId}, true);
 
-  // Report 404, if task entity doesn't exist
+  // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
-    return res.status(404).json({
-      message:  "Task not found"
-    });
+    return res.reportError(
+      "ResourceNotFound",
+      "Task {{taskId}} not found. Are you sure it was created?",
+      {
+        taskId
+      });
   }
 
   // Authenticate request by providing parameters
@@ -961,10 +990,13 @@ api.declare({
 
   // Validate deadline
   if (task.deadline.getTime() < new Date().getTime()) {
-    return res.status(409).json({
-      message:    "Task can't be cancel task past it's deadline",
-      error:      {deadline: task.deadline.toJSON()}
-    });
+    return res.reportError(
+      "RequestConflict",
+      "Task {{taskId}} Can't be cancelled past it's deadline of {{deadline}}.",
+      {
+        taskId,
+        deadline: task.deadline.toJSON()
+      });
   }
 
   // Modify the task
@@ -1109,9 +1141,12 @@ api.declare({
 
   // Handle cases where the task doesn't exist
   if (!task) {
-    return res.status(404).json({
-      message: "Task not found"
-    });
+    return res.reportError(
+      "ResourceNotFound",
+      "Task {{taskId}} not found. Are you sure it was created?",
+      {
+        taskId
+      });
   }
 
   // Authenticate request by providing parameters
@@ -1158,21 +1193,28 @@ api.declare({
   // Find run that we (may) have modified
   var run = task.runs[runId];
 
-  // If the run doesn't exist return 404
+  // If the run doesn't exist return ResourceNotFound
   if (!run) {
-    return res.status(404).json({
-      message: "Run not found"
-    });
+    return res.reportError(
+      "ResourceNotFound",
+      "Run {{runId}} not found on task {{taskId}}.",
+      {
+        taskId,
+        runId
+      });
   }
   // If the run wasn't claimed by this workerGroup/workerId, then we return
-  // 409 as it must have claimed by someone else
+  // RequestConflict as it must have claimed by someone else
   if (task.runs.length - 1  !== runId ||
       run.state             !== 'running' ||
       run.workerGroup       !== workerGroup ||
       run.workerId          !== workerId) {
-    return res.status(409).json({
-      message:  "Run claimed by another worker"
-    });
+    return res.reportError(
+      "RequestConflict",
+      "Run {{runId}} was already claimed by another worker.",
+      {
+        runId,
+      });
   }
 
   // Construct status object
@@ -1245,17 +1287,24 @@ api.declare({
 
   // Handle cases where the task doesn't exist
   if (!task) {
-    return res.status(404).json({
-      message: "Task not found"
-    });
+    return res.reportError(
+      "ResourceNotFound",
+      "Task {{taskId}} not found. Are you sure it was created?",
+      {
+        taskId
+      });
   }
 
   // Handle cases where the run doesn't exist
   var run = task.runs[runId];
   if (!run) {
-    return res.status(404).json({
-      message: "Run not found"
-    });
+    return res.reportError(
+      "ResourceNotFound",
+      "Run {{runId}} not found on task {{taskId}}.",
+      {
+        taskId,
+        runId
+      });
   }
 
   // Authenticate request by providing parameters
@@ -1270,9 +1319,13 @@ api.declare({
 
   // Check if task is past deadline
   if (task.deadline.getTime() <= Date.now()) {
-    return res.status(409).json({
-      message: "Task deadline exceeded"
-    });
+    return res.reportError(
+      "RequestConflict",
+      "Task {{taskId}} Can't be cancelled past it's deadline of {{deadline}}.",
+      {
+        taskId,
+        deadline: task.deadline.toJSON()
+      });
   }
 
   // Set takenUntil to now + claimTimeout
@@ -1311,9 +1364,13 @@ api.declare({
 
   // If run isn't running we had a conflict
   if (task.runs.length - 1 !== runId || run.state !== 'running') {
-    return res.status(409).json({
-      message: "Run is resolved, or not running"
-    });
+    return res.reportError(
+      "RequestConflict",
+      "Run {{runId}} on task {{taskId}} is resolved or not running.",
+      {
+        taskId,
+        runId
+      });
   }
 
   // Create temporary credentials for the task
@@ -1353,17 +1410,24 @@ var resolveTask = async function(req, res, taskId, runId, target) {
 
   // Handle cases where the task doesn't exist
   if (!task) {
-    return res.status(404).json({
-      message: "Task not found"
-    });
+    return res.reportError(
+      "ResourceNotFound",
+      "Task {{taskId}} not found. Are you sure it was created?",
+      {
+        taskId
+      });
   }
 
   // Handle cases where the run doesn't exist
   var run = task.runs[runId];
   if (!run) {
-    return res.status(404).json({
-      message: "Run not found"
-    });
+    return res.reportError(
+      "ResourceNotFound",
+      "Run {{runId}} not found on task {{taskId}}.",
+      {
+        taskId,
+        runId
+      });
   }
 
   // Authenticate request by providing parameters
@@ -1399,9 +1463,13 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   if (task.runs.length - 1  !== runId ||
       run.state             !== target ||
       run.reasonResolved    !== target) {
-    return res.status(409).json({
-      message: "Run is resolved, or not running"
-    });
+    return res.reportError(
+      "RequestConflict",
+      "Run {{runId}} on task {{taskId}} is resolved or not running.",
+      {
+        taskId,
+        runId
+      });
   }
 
   // Construct status object
@@ -1541,17 +1609,24 @@ api.declare({
 
   // Handle cases where the task doesn't exist
   if (!task) {
-    return res.status(404).json({
-      message: "Task not found"
-    });
+    return res.reportError(
+      "ResourceNotFound",
+      "Task {{taskId}} not found. Are you sure it exists?",
+      {
+        taskId,
+      });
   }
 
   // Handle cases where the run doesn't exist
   var run = task.runs[runId];
   if (!run) {
-    return res.status(404).json({
-      message: "Run not found"
-    });
+    return res.reportError(
+      "ResourceNotFound",
+      "Run {{runId}} not found on task {{taskId}}.",
+      {
+        taskId,
+        runId
+      });
   }
 
   // Authenticate request by providing parameters
@@ -1599,9 +1674,13 @@ api.declare({
       task.runs.length - 1  > runId + 1 ||
       run.state             !== 'exception' ||
       run.reasonResolved    !== reason) {
-    return res.status(409).json({
-      message: "Run is resolved, or not running"
-    });
+    return res.reportError(
+      "RequestConflict",
+      "Run {{runId}} on task {{taskId}} is resolved or not running.",
+      {
+        taskId,
+        runId
+      });
   }
 
   var status = task.status();
