@@ -1,0 +1,21 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:                      "Test Authenticate Response"
+description: |
+  Details on how the test request was authenticated.
+type:                       object
+properties:
+  clientId:
+    description: |
+      ClientId from the request as it will be logged
+    type:                 string
+    pattern:              {$const: clientId}
+  scopes:
+    description: |
+      List of scopes the request was authorized.
+    type:                   array
+    default:                []
+    items:
+      description: Scope
+      type:                 string
+      pattern: "^[\x20-\x7e]*$"
+    uniqueItems:            true
