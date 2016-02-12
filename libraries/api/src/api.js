@@ -431,7 +431,8 @@ var remoteAuthentication = function(options, entry) {
         // If authentication failed
         if (result.status === 'auth-failed') {
           if (!noReply) {
-            res.reportError('AuthorizationFailed', result.message, result);
+            res.set('www-authenticate', 'hawk');
+            res.reportError('AuthenticationFailed', result.message, result);
           }
           return false;
         }
