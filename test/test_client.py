@@ -65,18 +65,24 @@ class TestSubArgsInRoute(ClientTest):
 
     def test_invalid_one_sub(self):
         with self.assertRaises(exc.TaskclusterFailure):
-            self.client._subArgsInRoute(
-                {'route': '/one/<argToSub>/here', 'name': 'test'}, {'unused': 'value'})
+            self.client._subArgsInRoute({
+                'route': '/one/<argToSub>/here',
+                'name': 'test'
+            }, {'unused': 'value'})
 
     def test_invalid_route_no_sub(self):
         with self.assertRaises(exc.TaskclusterFailure):
-            self.client._subArgsInRoute(
-                {'route': 'askldjflkasdf', 'name': 'test'}, {'should': 'fail'})
+            self.client._subArgsInRoute({
+                'route': 'askldjflkasdf',
+                'name': 'test'
+            }, {'should': 'fail'})
 
     def test_invalid_route_no_arg(self):
         with self.assertRaises(exc.TaskclusterFailure):
-            self.client._subArgsInRoute(
-                {'route': 'askldjflkasdf', 'name': 'test'}, {'should': 'fail'})
+            self.client._subArgsInRoute({
+                'route': 'askldjflkasdf',
+                'name': 'test'
+            }, {'should': 'fail'})
 
 
 class TestProcessArgs(ClientTest):
@@ -116,8 +122,10 @@ class TestProcessArgs(ClientTest):
 
     def test_invalid_too_many_keyword_args(self):
         with self.assertRaises(exc.TaskclusterFailure):
-            self.client._processArgs(
-                {'args': ['test'], 'name': 'test'}, test='enough', test2='one too many')
+            self.client._processArgs({
+                'args': ['test'],
+                'name': 'test'
+            }, test='enough', test2='one too many')
 
     def test_invalid_missing_arg_positional(self):
         with self.assertRaises(exc.TaskclusterFailure):
@@ -125,8 +133,10 @@ class TestProcessArgs(ClientTest):
 
     def test_invalid_not_enough_args_because_of_overwriting(self):
         with self.assertRaises(exc.TaskclusterFailure):
-            self.client._processArgs(
-                {'args': ['test', 'test2'], 'name': 'test'}, 'enough', test='enough')
+            self.client._processArgs({
+                'args': ['test', 'test2'],
+                'name': 'test'
+            }, 'enough', test='enough')
 
     def test_invalid_positional_not_string_empty_dict(self):
         with self.assertRaises(exc.TaskclusterFailure):
