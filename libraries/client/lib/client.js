@@ -628,11 +628,16 @@ exports.config = function(options) {
  *  start:        new Date(),   // Start time of credentials (defaults to now)
  *  expiry:       new Date(),   // Credentials expiration time
  *  scopes:       ['scope'...], // Scopes granted (defaults to empty-set)
+ *  clientId:     '...',  // *optional* name to create named temporary credential
  *  credentials: {        // (defaults to use global config, if available)
  *    clientId:    '...', // ClientId
  *    accessToken: '...', // AccessToken for clientId
  *  },
  * }
+ *
+ * Note that a named temporary credential is only valid if the issuing credentials
+ * have the scope 'auth:create-client:<name>'.  This function does not check for
+ * this scope, but it will be checked when the credentials are used.
  *
  * Returns an object on the form: {clientId, accessToken, certificate}
  */
@@ -667,7 +672,14 @@ exports.createTemporaryCredentials = function(options) {
            "options.scopes must be an array of strings");
   });
   assert(options.expiry.getTime() - options.start.getTime() <=
-         31 * 24 * 60 * 60 * 1000, "Credentials can span more than 31 days");
+         31 * 24 * 60 * 60 * 1000, "Credentials cannot span more than 31 days");
+
+  let isNamed = !!options.clientId;
+
+  if (isNamed) {
+    assert(options.clientId !== options.credentials.clientId,
+          "Credential issuer must be different from the name");
+  }
 
   // Construct certificate
   var cert = {
@@ -678,20 +690,23 @@ exports.createTemporaryCredentials = function(options) {
     seed:       slugid.v4() + slugid.v4(),
     signature:  null  // generated later
   };
+  if (isNamed) {
+    cert.issuer = options.credentials.clientId;
+  }
 
   // Construct signature
-  cert.signature = crypto
-    .createHmac('sha256', options.credentials.accessToken)
-    .update(
-      [
-        'version:'  + cert.version,
-        'seed:'     + cert.seed,
-        'start:'    + cert.start,
-        'expiry:'   + cert.expiry,
-        'scopes:'
-      ].concat(cert.scopes).join('\n')
-    )
-    .digest('base64');
+  let sig = crypto.createHmac('sha256', options.credentials.accessToken);
+  sig.update('version:'    + cert.version + '\n');
+  if (isNamed) {
+    sig.update('clientId:' + options.clientId + '\n');
+    sig.update('issuer:'   + options.credentials.clientId + '\n');
+  }
+  sig.update('seed:'       + cert.seed + '\n');
+  sig.update('start:'      + cert.start + '\n');
+  sig.update('expiry:'     + cert.expiry + '\n');
+  sig.update('scopes:\n');
+  sig.update(cert.scopes.join('\n'));
+  cert.signature = sig.digest('base64');
 
   // Construct temporary key
   var accessToken = crypto
@@ -704,7 +719,7 @@ exports.createTemporaryCredentials = function(options) {
 
   // Return the generated temporary credentials
   return {
-    clientId:     options.credentials.clientId,
+    clientId:     isNamed ? options.clientId : options.credentials.clientId,
     accessToken:  accessToken,
     certificate:  JSON.stringify(cert)
   };
