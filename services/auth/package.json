@@ -26,6 +26,7 @@
     "kexec": "^1.2.0",
     "lodash": "^3.9.3",
     "promise": "^7.0.4",
+    "raven": "^0.10.0",
     "slugid": "^1.1.0",
     "superagent": "^1.1.0",
     "superagent-hawk": "0.0.4",

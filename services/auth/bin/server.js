@@ -6,6 +6,7 @@ var path               = require('path');
 var debug              = require('debug')('server');
 var Promise            = require('promise');
 var AWS                = require('aws-sdk-promise');
+var raven              = require('raven');
 var exchanges          = require('../auth/exchanges');
 var ScopeResolver      = require('../auth/scoperesolver');
 var signaturevalidator = require('../auth/signaturevalidator');
@@ -38,6 +39,16 @@ let load = loader({
       component:  cfg.app.statsComponent,
       process:    'server'
     })
+  },
+
+  raven: {
+    requires: ['cfg'],
+    setup: ({cfg}) => {
+      if (cfg.raven.sentryDSN) {
+        return new raven.Client(cfg.raven.sentryDSN);
+      }
+      return null;
+    }
   },
 
   resolver: {
@@ -105,8 +116,8 @@ let load = loader({
   },
 
   api: {
-    requires: ['cfg', 'Client', 'Role', 'validator', 'publisher', 'resolver', 'drain'],
-    setup: async ({cfg, Client, Role, validator, publisher, resolver, drain}) => {
+    requires: ['cfg', 'Client', 'Role', 'validator', 'publisher', 'resolver', 'drain', 'raven'],
+    setup: async ({cfg, Client, Role, validator, publisher, resolver, drain, raven}) => {
       // Set up the Azure tables
       await Role.ensureTable();
       await Client.ensureTable();
@@ -147,7 +158,8 @@ let load = loader({
         referencePrefix:    'auth/v1/api.json',
         aws:                cfg.aws,
         component:          cfg.app.statsComponent,
-        drain:              drain
+        drain:              drain,
+        raven:              raven
       })
     }
   },
