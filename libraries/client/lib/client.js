@@ -674,7 +674,7 @@ exports.createTemporaryCredentials = function(options) {
   assert(options.expiry.getTime() - options.start.getTime() <=
          31 * 24 * 60 * 60 * 1000, "Credentials cannot span more than 31 days");
 
-  let isNamed = !!options.clientId;
+  var isNamed = !!options.clientId;
 
   if (isNamed) {
     assert(options.clientId !== options.credentials.clientId,
@@ -695,7 +695,7 @@ exports.createTemporaryCredentials = function(options) {
   }
 
   // Construct signature
-  let sig = crypto.createHmac('sha256', options.credentials.accessToken);
+  var sig = crypto.createHmac('sha256', options.credentials.accessToken);
   sig.update('version:'    + cert.version + '\n');
   if (isNamed) {
     sig.update('clientId:' + options.clientId + '\n');
