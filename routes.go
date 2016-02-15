@@ -40,13 +40,19 @@ func (self *Routes) setHeaders(res http.ResponseWriter) {
 			fmt.Fprintf(res, "TaskCluster Proxy has invalid certificate: %v\n%v", self.Credentials, err)
 			return
 		} else {
-			headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", fmt.Sprintf("%s", cert.Scopes))
+			jsonTempScopes, err := json.Marshal(cert.Scopes)
+			if err == nil {
+				headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", string(jsonTempScopes))
+			}
 		}
 	} else {
 		headersToSend.Set("X-Taskcluster-Proxy-Perm-ClientId", fmt.Sprintf("%s", self.Credentials.ClientId))
 	}
 	if authScopes := self.Credentials.AuthorizedScopes; authScopes != nil {
-		headersToSend.Set("X-Taskcluster-Authorized-Scopes", fmt.Sprintf("%s", authScopes))
+		jsonAuthScopes, err := json.Marshal(authScopes)
+		if err == nil {
+			headersToSend.Set("X-Taskcluster-Authorized-Scopes", string(jsonAuthScopes))
+		}
 	}
 }
 
