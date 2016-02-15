@@ -79,6 +79,9 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 		"queue:task-priority:high",
 		"test-worker:image:toastposter/pumpkin:0.5.6",
 	}
+
+	tempScopesJSON := `["auth:azure-table-access:fakeaccount/DuMmYtAbLe","queue:define-task:win-provisioner/win2008-worker","queue:get-artifact:private/build/sources.xml","queue:route:tc-treeherder.mozilla-inbound.*","queue:route:tc-treeherder-stage.mozilla-inbound.*","queue:task-priority:high","test-worker:image:toastposter/pumpkin:0.5.6"]`
+
 	tempCredentials, err := permCredentials.CreateTemporaryCredentials(1*time.Hour, tempScopes...)
 	if err != nil {
 		t.Fatalf("Could not generate temp credentials")
@@ -94,7 +97,7 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 		res,
 		map[string]string{
 			"X-Taskcluster-Proxy-Version":     version,
-			"X-Taskcluster-Proxy-Temp-Scopes": fmt.Sprintf("%s", tempScopes),
+			"X-Taskcluster-Proxy-Temp-Scopes": tempScopesJSON,
 			// N.B. the http library does not distinguish between header entries
 			// that have an empty "" value, and non-existing entries
 			"X-Taskcluster-Proxy-Perm-ClientId": "",
@@ -375,7 +378,7 @@ func TestOversteppedScopes(t *testing.T) {
 			res,
 			map[string]string{
 				"X-Taskcluster-Endpoint":          "https://secrets.taskcluster.net/v1/secret/garbage/pmoore/foo",
-				"X-Taskcluster-Authorized-Scopes": "[secrets:get:garbage/pmoore/foo]",
+				"X-Taskcluster-Authorized-Scopes": `["secrets:get:garbage/pmoore/foo"]`,
 			},
 		)
 		return res
