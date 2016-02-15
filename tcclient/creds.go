@@ -66,9 +66,10 @@ type Certificate struct {
 	Expiry    int64    `json:"expiry"`
 	Seed      string   `json:"seed"`
 	Signature string   `json:"signature"`
+	Issuer    string   `json:"issuer,omitempty"`
 }
 
-// CreateTemporaryCredentials generates temporary credentials from permanent
+// CreateNamedTemporaryCredentials generates temporary credentials from permanent
 // credentials, valid for the given duration, starting immediately.  The
 // temporary credentials' scopes must be a subset of the permanent credentials'
 // scopes. The duration may not be more than 31 days. Any authorized scopes of
@@ -76,8 +77,7 @@ type Certificate struct {
 // temporary credentials, but will not be restricted via the certificate.
 //
 // See http://docs.taskcluster.net/auth/temporary-credentials/
-func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
-
+func (permaCreds *Credentials) CreateNamedTemporaryCredentials(name string, duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
 	if duration > 31*24*time.Hour {
 		return nil, errors.New("Temporary credentials must expire within 31 days; however a duration of " + duration.String() + " was specified to (*tcclient.ConnectionData).CreateTemporaryCredentials(...) method")
 	}
@@ -104,8 +104,12 @@ func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration
 		Seed:      slugid.V4() + slugid.V4(),
 		Signature: "", // gets set in updateSignature() method below
 	}
+	// include the issuer iff this is a named credential
+	if name != "" {
+		cert.Issuer = permaCreds.ClientId
+	}
 
-	cert.updateSignature(permaCreds.AccessToken)
+	cert.updateSignature(permaCreds.AccessToken, permaCreds.ClientId, name)
 
 	certBytes, err := json.Marshal(cert)
 	if err != nil {
@@ -123,18 +127,33 @@ func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration
 		Certificate:      string(certBytes),
 		AuthorizedScopes: permaCreds.AuthorizedScopes,
 	}
+	if name != "" {
+		tempCreds.ClientId = name
+	}
 
 	return
 }
 
-func (cert *Certificate) updateSignature(accessToken string) (err error) {
-	lines := []string{
-		"version:" + strconv.Itoa(cert.Version),
-		"seed:" + cert.Seed,
-		"start:" + strconv.FormatInt(cert.Start, 10),
-		"expiry:" + strconv.FormatInt(cert.Expiry, 10),
-		"scopes:",
+// CreateTemporaryCredentials is an alias for CreateNamedTemporaryCredentials
+// with an empty name.
+func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
+	return permaCreds.CreateNamedTemporaryCredentials("", duration, scopes...)
+}
+
+func (cert *Certificate) updateSignature(accessToken string, issuer string, name string) (err error) {
+	lines := []string{"version:" + strconv.Itoa(cert.Version)}
+	// iff this is a named credential, include clientId and issuer
+	if name != "" {
+		lines = append(lines,
+			"clientId:"+name,
+			"issuer:"+issuer)
 	}
+	lines = append(lines,
+		"seed:"+cert.Seed,
+		"start:"+strconv.FormatInt(cert.Start, 10),
+		"expiry:"+strconv.FormatInt(cert.Expiry, 10),
+		"scopes:",
+	)
 	lines = append(lines, cert.Scopes...)
 	hash := hmac.New(sha256.New, []byte(accessToken))
 	_, err = hash.Write([]byte(strings.Join(lines, "\n")))

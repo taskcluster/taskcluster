@@ -94,6 +94,22 @@ func Test_TempCred(t *testing.T) {
 		"tester", []string{"scope:1", "scope:2"})
 }
 
+func Test_NamedTempCred(t *testing.T) {
+	tempCreds, err := testCreds.CreateNamedTemporaryCredentials("jimmy", 1*time.Hour,
+		"scope:1", "scope:2")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	client := auth.New(tempCreds)
+	response, _, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
+		ClientScopes:   []string{"scope:*", "auth:create-client:jimmy"},
+		RequiredScopes: []string{"scope:1"},
+	})
+	checkAuthenticate(t, response, err,
+		"jimmy", []string{"scope:1", "scope:2"})
+}
+
 func Test_TempCred_NoClientId(t *testing.T) {
 	baseCreds := tcclient.Credentials{AccessToken: "no-secret"}
 	_, err := baseCreds.CreateTemporaryCredentials(1*time.Hour, "s")
@@ -155,4 +171,21 @@ func Test_TempCredWithAuthorizedScopes(t *testing.T) {
 	})
 	checkAuthenticate(t, response, err,
 		"tester", []string{"scope:1"})
+}
+
+func Test_NamedTempCredWithAuthorizedScopes(t *testing.T) {
+	tempCreds, err := testCreds.CreateNamedTemporaryCredentials("julie", 1*time.Hour,
+		"scope:1", "scope:2")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	tempCreds.AuthorizedScopes = []string{"scope:1"} // note: no create-client
+	client := auth.New(tempCreds)
+	response, _, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
+		ClientScopes:   []string{"scope:*", "auth:create-client:j*"},
+		RequiredScopes: []string{"scope:1"},
+	})
+	checkAuthenticate(t, response, err,
+		"julie", []string{"scope:1"})
 }
