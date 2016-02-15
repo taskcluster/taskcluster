@@ -46,7 +46,7 @@ suite('client credential handling', function() {
     }).testAuthenticate({
       clientScopes: [],
       requiredScopes: [],
-    }), 'AuthorizationFailed');
+    }), 'AuthenticationFailed');
   });
 
   test('bad scopes', async () => {
@@ -124,7 +124,7 @@ suite('client credential handling', function() {
     await expectError(client({credentials}).testAuthenticate({
         clientScopes: ['scopes:*'],
         requiredScopes: ['scopes:specific'],
-    }), 'AuthorizationFailed');
+    }), 'AuthenticationFailed');
   });
 
   test('named temporary credentials', async () => {
@@ -204,7 +204,7 @@ suite('client credential handling', function() {
       }).testAuthenticate({
         clientScopes: ['scopes:*'],
         requiredScopes: ['scopes:subcategory:specific'],
-      }), 'AuthorizationFailed');
+      }), 'AuthenticationFailed');
   });
 
   test('named temporary credentials, authorizedScopes', async () => {
