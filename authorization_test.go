@@ -158,7 +158,7 @@ func TestBewit(t *testing.T) {
 		res := httptest.NewRecorder()
 
 		// Function to test
-		routes.ServeHTTP(res, req)
+		routes.BewitHandler(res, req)
 
 		// Validate results
 		bewitUrl := res.Header().Get("Location")
@@ -219,7 +219,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 			res := httptest.NewRecorder()
 
 			// Function to test
-			routes.ServeHTTP(res, req)
+			routes.RootHandler(res, req)
 			return res
 		}
 	}
@@ -296,7 +296,7 @@ func TestAPICallWithPayload(t *testing.T) {
 		res := httptest.NewRecorder()
 
 		// Function to test
-		routes.ServeHTTP(res, req)
+		routes.RootHandler(res, req)
 
 		t.Logf("Created task https://queue.taskcluster.net/v1/task/%v", taskId)
 		return res
@@ -330,7 +330,7 @@ func TestNon200HasErrorBody(t *testing.T) {
 		res := httptest.NewRecorder()
 
 		// Function to test
-		routes.ServeHTTP(res, req)
+		routes.RootHandler(res, req)
 
 		// Validate results
 		return res
@@ -367,7 +367,7 @@ func TestOversteppedScopes(t *testing.T) {
 		res := httptest.NewRecorder()
 
 		// Function to test
-		routes.ServeHTTP(res, req)
+		routes.RootHandler(res, req)
 
 		// Validate results
 		checkHeaders(
@@ -405,7 +405,7 @@ func TestBadCredsReturns500(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	// Function to test
-	routes.ServeHTTP(res, req)
+	routes.RootHandler(res, req)
 	// Validate results
 	checkStatusCode(t, res, 500)
 }

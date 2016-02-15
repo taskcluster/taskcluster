@@ -29,9 +29,32 @@ type CredentialsUpdate struct {
 var tcServices = tc.NewServices()
 var httpClient = &http.Client{}
 
-func (self *Routes) signUrl(res http.ResponseWriter, req *http.Request) {
+func (self *Routes) setHeaders(res http.ResponseWriter) {
+	headersToSend := res.Header()
+	headersToSend.Set("X-Taskcluster-Proxy-Version", version)
+	cert, err := self.Credentials.Cert()
+	if cert != nil {
+		if err != nil {
+			res.WriteHeader(500)
+			// Note, self.Credentials does not expose secrets when rendered as a string
+			fmt.Fprintf(res, "TaskCluster Proxy has invalid certificate: %v\n%v", self.Credentials, err)
+			return
+		} else {
+			headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", fmt.Sprintf("%s", cert.Scopes))
+		}
+	} else {
+		headersToSend.Set("X-Taskcluster-Proxy-Perm-ClientId", fmt.Sprintf("%s", self.Credentials.ClientId))
+	}
+	if authScopes := self.Credentials.AuthorizedScopes; authScopes != nil {
+		headersToSend.Set("X-Taskcluster-Authorized-Scopes", fmt.Sprintf("%s", authScopes))
+	}
+}
+
+// HTTP Handling for /bewit
+func (self *Routes) BewitHandler(res http.ResponseWriter, req *http.Request) {
 	// Using ReadAll could be sketchy here since we are reading unbounded data
 	// into memory...
+	self.setHeaders(res)
 	body, err := ioutil.ReadAll(req.Body)
 
 	if err != nil {
@@ -41,6 +64,7 @@ func (self *Routes) signUrl(res http.ResponseWriter, req *http.Request) {
 	}
 
 	urlString := strings.TrimSpace(string(body))
+
 	cd := tcclient.ConnectionData(self.ConnectionData)
 	bewitUrl, err := (&cd).SignedURL(urlString, nil, time.Hour*1)
 
@@ -56,7 +80,9 @@ func (self *Routes) signUrl(res http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(res, bewitUrl.String())
 }
 
-func (self *Routes) updateCredentials(res http.ResponseWriter, req *http.Request) {
+// HTTP Handling for /credentials
+func (self *Routes) CredentialsHandler(res http.ResponseWriter, req *http.Request) {
+	self.setHeaders(res)
 	if req.Method != "PUT" {
 		log.Printf("Invalid method %s\n", req.Method)
 		res.WriteHeader(405)
@@ -83,52 +109,22 @@ func (self *Routes) updateCredentials(res http.ResponseWriter, req *http.Request
 	res.WriteHeader(200)
 }
 
-// Routes implements the `http.Handler` interface
-func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	if req.URL.Path == "/credentials" {
-		log.Printf("Update credentials request %s\n", req.URL.String())
-		self.updateCredentials(res, req)
-		return
-	}
-
+// HTTP Handling for /
+func (self *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
+	self.setHeaders(res)
 	self.lock.RLock()
 	defer self.lock.RUnlock()
-
-	headersToSend := res.Header()
-	headersToSend.Set("X-Taskcluster-Proxy-Version", version)
-	cert, err := self.Credentials.Cert()
-	if cert != nil {
-		if err != nil {
-			res.WriteHeader(500)
-			// Note, self.Credentials does not expose secrets when rendered as a string
-			fmt.Fprintf(res, "TaskCluster Proxy has invalid certificate: %v\n%v", self.Credentials, err)
-			return
-		} else {
-			headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", fmt.Sprintf("%s", cert.Scopes))
-		}
-	} else {
-		headersToSend.Set("X-Taskcluster-Proxy-Perm-ClientId", fmt.Sprintf("%s", self.Credentials.ClientId))
-	}
-	if authScopes := self.Credentials.AuthorizedScopes; authScopes != nil {
-		headersToSend.Set("X-Taskcluster-Authorized-Scopes", fmt.Sprintf("%s", authScopes))
-	}
-
-	// A special case for the proxy is returning a bewit signed url.
-	if req.URL.Path[0:6] == "/bewit" {
-		self.signUrl(res, req)
-		return
-	}
 
 	targetPath, err := tcServices.ConvertPath(req.URL)
 
 	// Unkown service which we are trying to hit...
 	if err != nil {
 		res.WriteHeader(404)
-		log.Printf("Attempting to use unkown service %s", req.URL.String())
+		log.Printf("Attempting to use unknown service %s", req.URL.String())
 		fmt.Fprintf(res, "Unkown taskcluster service: %s", err)
 		return
 	}
-	headersToSend.Set("X-Taskcluster-Endpoint", targetPath.String())
+	res.Header().Set("X-Taskcluster-Endpoint", targetPath.String())
 
 	log.Printf("Proxying %s | %s | %s", req.URL, req.Method, targetPath)
 
@@ -171,7 +167,7 @@ func (self *Routes) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	// Map the headers from the proxy back into our proxyResponse
 	for key, _ := range cs.HttpResponse.Header {
-		headersToSend.Set(key, cs.HttpResponse.Header.Get(key))
+		res.Header().Set(key, cs.HttpResponse.Header.Get(key))
 	}
 
 	// Write the proxyResponse headers and status.
