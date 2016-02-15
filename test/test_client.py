@@ -628,6 +628,12 @@ if not os.environ.get('NO_TESTS_OVER_WIRE'):
             }
             result = self.i.insertTask('testing', payload)
             self.assertEqual(payload['expires'], result['expires'])
+            payload['rank'] += 1
+            result = self.i.insertTask('testing', payload)
+            self.assertEqual(payload['expires'], result['expires'])
+            payload['rank'] += 1
+            result = self.i.insertTask('testing', payload)
+            self.assertEqual(payload['expires'], result['expires'])
 
         def test_listworkertypes_signed_url(self):
             surl = self.a.buildSignedUrl('listWorkerTypes')

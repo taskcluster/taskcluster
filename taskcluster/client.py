@@ -68,6 +68,10 @@ class BaseClient(object):
         if 'credentials' in o:
             log.debug('credentials key scrubbed from logging output')
         log.debug(dict((k, v) for k, v in o.items() if k != 'credentials'))
+        self.session = requests.Session()
+
+    def resetSession(self):
+        self.session = requests.Session()
 
     def makeHawkExt(self):
         """ Make an 'ext' for Hawk authentication """
