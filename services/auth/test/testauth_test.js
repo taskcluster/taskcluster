@@ -1,24 +1,24 @@
+var Promise     = require('promise');
+var assert      = require('assert');
+var debug       = require('debug')('test:auth');
+var helper      = require('./helper');
+var slugid      = require('slugid');
+var _           = require('lodash');
+var assume      = require('assume');
+var base        = require('taskcluster-base');
+var taskcluster = require('taskcluster-client');
+
+let credentials = {
+  clientId: 'tester',
+  accessToken: 'no-secret',
+};
+
+let badcreds = {
+  clientId: 'tester',
+  accessToken: 'wrong',
+};
+
 suite("testAuthenticate", function() {
-  var Promise     = require('promise');
-  var assert      = require('assert');
-  var debug       = require('debug')('test:auth');
-  var helper      = require('./helper');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var assume      = require('assume');
-  var base        = require('taskcluster-base');
-  var taskcluster = require('taskcluster-client');
-
-  let credentials = {
-    clientId: 'tester',
-    accessToken: 'no-secret',
-  };
-
-  let badcreds = {
-    clientId: 'tester',
-    accessToken: 'wrong',
-  };
-
   let testAuth = (name, {config, requiredScopes, clientScopes, errorCode}) => {
     test(name, async () => {
       let auth = new helper.Auth(config);
@@ -33,14 +33,11 @@ suite("testAuthenticate", function() {
     });
   };
 
-
   testAuth('valid creds', {
     config: {credentials},
     requiredScopes: ['test-scope:test'],
     clientScopes: ['test-scope:test'],
   });
-
-
 
   testAuth('valid creds (star scope)', {
     config: {credentials},
@@ -101,6 +98,37 @@ suite("testAuthenticate", function() {
     clientScopes: ['test-scope:*'],
     errorCode: 'AuthenticationFailed',
   });
+});
 
-  // TODO: Add more test cases...
+suite("testAuthenticateGet", function() {
+  let testAuthGet = (name, {config, errorCode}) => {
+    test(name, async () => {
+      let auth = new helper.Auth(config);
+      await auth.testAuthenticateGet().then(() => {
+        assert(!errorCode, "Request was successful, but expected an error " +
+                           "with code: " + errorCode);
+      }, err => {
+        assert(errorCode, "Request failed!");
+        assert(err.code === errorCode, "Expected error with code: " +
+                                       errorCode + " but got: " + err.code);
+      });
+    });
+  };
+
+  testAuthGet('valid creds', {
+    config: {credentials},
+  });
+
+  testAuthGet('invalid creds', {
+    config: {credentials: badcreds},
+    errorCode: 'AuthenticationFailed',
+  });
+
+  testAuthGet('authorizedScopes', {
+    config: {
+      credentials,
+      authorizedScopes: ['test:scopes-abc'],
+    },
+    errorCode: 'InsufficientScopes',
+  });
 });
