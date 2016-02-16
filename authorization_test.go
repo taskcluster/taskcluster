@@ -412,3 +412,41 @@ func TestBadCredsReturns500(t *testing.T) {
 	// Validate results
 	checkStatusCode(t, res, 500)
 }
+
+func TestInvalidEndpoint(t *testing.T) {
+	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+
+		// Test setup
+		routes := Routes{
+			ConnectionData: tcclient.ConnectionData{
+				Authenticate: true,
+				Credentials:  creds,
+			},
+		}
+
+		req, err := http.NewRequest(
+			"GET",
+			"http://localhost:60024/x", // invalid endpoint
+			new(bytes.Buffer),
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		res := httptest.NewRecorder()
+
+		// Function to test
+		routes.RootHandler(res, req)
+
+		// Validate results
+		checkHeaders(
+			t,
+			res,
+			map[string]string{
+				"X-Taskcluster-Endpoint": "",
+			},
+		)
+		return res
+	}
+	testWithTempCreds(t, test, 404)
+	testWithPermCreds(t, test, 404)
+}
