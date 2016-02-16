@@ -73,7 +73,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 12 Feb 2016 at 18:28:00 UTC. The code was generated
+// Tue, 16 Feb 2016 at 16:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -421,6 +421,31 @@ func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest
 func (myAuth *Auth) TestAuthenticate(payload *TestAuthenticateRequest) (*TestAuthenticateResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/test-authenticate", new(TestAuthenticateResponse), nil)
+	return responseObject.(*TestAuthenticateResponse), callSummary, err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Utility method similar to `testAuthenticate`, but with the GET method,
+// so it can be used with signed URLs (bewits).
+//
+// Rather than using real credentials, this endpoint accepts requests with
+// clientId `tester` and accessToken `no-secret`. That client's scopes are
+// `['test:*', 'auth:create-client:test:*']`.  The call fails if the
+// `test:authenticate-get` scope is not available.
+//
+// The request is validated, with any certificate, authorizedScopes, etc.
+// applied, and the resulting scopes are checked, just like any API call.
+// On success, the response contains the clientId and scopes as seen by
+// the API method.
+//
+// This method may later be extended to allow specification of client and
+// required scopes via query arguments.
+//
+// See http://docs.taskcluster.net/auth/api-docs/#testAuthenticateGet
+func (myAuth *Auth) TestAuthenticateGet() (*TestAuthenticateResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/test-authenticate-get/", new(TestAuthenticateResponse), nil)
 	return responseObject.(*TestAuthenticateResponse), callSummary, err
 }
 
