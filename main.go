@@ -105,7 +105,11 @@ func main() {
 		},
 	}
 
-	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), &routes)
+	http.HandleFunc("/", routes.RootHandler)
+	http.HandleFunc("/bewit", routes.BewitHandler)
+	http.HandleFunc("/credentials", routes.CredentialsHandler)
+
+	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	if startError != nil {
 		log.Fatal(startError)
 	}

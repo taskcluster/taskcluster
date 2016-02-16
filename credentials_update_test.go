@@ -20,7 +20,7 @@ func TestCredentialsUpdate(t *testing.T) {
 	newCreds := CredentialsUpdate{
 		ClientId:    "newClientId",
 		AccessToken: "newAccessToken",
-		Certificate: "newCertificate",
+		Certificate: `{"version":1,"scopes":["scope1"]}`,
 	}
 
 	body, err := json.Marshal(&newCreds)
@@ -91,7 +91,7 @@ func (self *RoutesTest) request(method string, content []byte) (res *httptest.Re
 
 	req.ContentLength = int64(len(content))
 	res = httptest.NewRecorder()
-	self.ServeHTTP(res, req)
+	self.CredentialsHandler(res, req)
 	return
 }
 
@@ -103,7 +103,7 @@ func NewRoutesTest(t *testing.T) *RoutesTest {
 				Credentials: &tcclient.Credentials{
 					ClientId:    "clientId",
 					AccessToken: "accessToken",
-					Certificate: "certificate",
+					Certificate: `{"version":1,"scopes":["scope2"]}`,
 				},
 			},
 		},

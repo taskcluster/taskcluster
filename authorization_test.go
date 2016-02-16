@@ -79,6 +79,9 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 		"queue:task-priority:high",
 		"test-worker:image:toastposter/pumpkin:0.5.6",
 	}
+
+	tempScopesJSON := `["auth:azure-table-access:fakeaccount/DuMmYtAbLe","queue:define-task:win-provisioner/win2008-worker","queue:get-artifact:private/build/sources.xml","queue:route:tc-treeherder.mozilla-inbound.*","queue:route:tc-treeherder-stage.mozilla-inbound.*","queue:task-priority:high","test-worker:image:toastposter/pumpkin:0.5.6"]`
+
 	tempCredentials, err := permCredentials.CreateTemporaryCredentials(1*time.Hour, tempScopes...)
 	if err != nil {
 		t.Fatalf("Could not generate temp credentials")
@@ -94,7 +97,7 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 		res,
 		map[string]string{
 			"X-Taskcluster-Proxy-Version":     version,
-			"X-Taskcluster-Proxy-Temp-Scopes": fmt.Sprintf("%s", tempScopes),
+			"X-Taskcluster-Proxy-Temp-Scopes": tempScopesJSON,
 			// N.B. the http library does not distinguish between header entries
 			// that have an empty "" value, and non-existing entries
 			"X-Taskcluster-Proxy-Perm-ClientId": "",
@@ -158,7 +161,7 @@ func TestBewit(t *testing.T) {
 		res := httptest.NewRecorder()
 
 		// Function to test
-		routes.ServeHTTP(res, req)
+		routes.BewitHandler(res, req)
 
 		// Validate results
 		bewitUrl := res.Header().Get("Location")
@@ -219,7 +222,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 			res := httptest.NewRecorder()
 
 			// Function to test
-			routes.ServeHTTP(res, req)
+			routes.RootHandler(res, req)
 			return res
 		}
 	}
@@ -296,7 +299,7 @@ func TestAPICallWithPayload(t *testing.T) {
 		res := httptest.NewRecorder()
 
 		// Function to test
-		routes.ServeHTTP(res, req)
+		routes.RootHandler(res, req)
 
 		t.Logf("Created task https://queue.taskcluster.net/v1/task/%v", taskId)
 		return res
@@ -330,7 +333,7 @@ func TestNon200HasErrorBody(t *testing.T) {
 		res := httptest.NewRecorder()
 
 		// Function to test
-		routes.ServeHTTP(res, req)
+		routes.RootHandler(res, req)
 
 		// Validate results
 		return res
@@ -367,7 +370,7 @@ func TestOversteppedScopes(t *testing.T) {
 		res := httptest.NewRecorder()
 
 		// Function to test
-		routes.ServeHTTP(res, req)
+		routes.RootHandler(res, req)
 
 		// Validate results
 		checkHeaders(
@@ -375,7 +378,7 @@ func TestOversteppedScopes(t *testing.T) {
 			res,
 			map[string]string{
 				"X-Taskcluster-Endpoint":          "https://secrets.taskcluster.net/v1/secret/garbage/pmoore/foo",
-				"X-Taskcluster-Authorized-Scopes": "[secrets:get:garbage/pmoore/foo]",
+				"X-Taskcluster-Authorized-Scopes": `["secrets:get:garbage/pmoore/foo"]`,
 			},
 		)
 		return res
@@ -405,7 +408,45 @@ func TestBadCredsReturns500(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	// Function to test
-	routes.ServeHTTP(res, req)
+	routes.RootHandler(res, req)
 	// Validate results
 	checkStatusCode(t, res, 500)
+}
+
+func TestInvalidEndpoint(t *testing.T) {
+	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+
+		// Test setup
+		routes := Routes{
+			ConnectionData: tcclient.ConnectionData{
+				Authenticate: true,
+				Credentials:  creds,
+			},
+		}
+
+		req, err := http.NewRequest(
+			"GET",
+			"http://localhost:60024/x", // invalid endpoint
+			new(bytes.Buffer),
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		res := httptest.NewRecorder()
+
+		// Function to test
+		routes.RootHandler(res, req)
+
+		// Validate results
+		checkHeaders(
+			t,
+			res,
+			map[string]string{
+				"X-Taskcluster-Endpoint": "",
+			},
+		)
+		return res
+	}
+	testWithTempCreds(t, test, 404)
+	testWithPermCreds(t, test, 404)
 }
