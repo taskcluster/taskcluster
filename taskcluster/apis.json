@@ -3,14 +3,17 @@
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#", 
       "baseUrl": "https://auth.taskcluster.net/v1", 
-      "description": "Authentication related API end-points for TaskCluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authenticate request signed with TaskCluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, expiration and description.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling TaskCluster APIs.\n\nEach client is assigned a single scope on the form:\n`assume:client-id:<clientId>`, this scope doesn't really do much on its\nown. But when you dive into the roles section you'll see that you can\ncreate a role: `client-id:<clientId>` that assigns scopes to the client.\nThis way it's easy to audit all scope assignments, by only listing roles.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\nAs previously mentioned each client gets the scope:\n`assume:client-id:<clientId>`, it trivially follows that you can create a\nrole with the `roleId`: `client-id:<clientId>` to assign additional\nscopes to a client. You can also create a role `client-id:user-*`\nif you wish to assign a set of scopes to all clients whose `clientId`\nstarts with `user-`.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskCluster credentials to grant access to a third-party service used\nby many TaskCluster components.", 
+      "description": "Authentication related API end-points for TaskCluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authenticate request signed with TaskCluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, scopes, and some metadata.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling TaskCluster APIs.\n\nThe client's scopes control the client's access to TaskCluster resources.\nThe scopes are *expanded* by substituting roles, as defined below.\nEvery client has an implicit scope named `assume:client-id:<clientId>`,\nallowing additional access to be granted to the client without directly\nediting the client's scopes.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\nAs previously mentioned each client gets the scope:\n`assume:client-id:<clientId>`, it trivially follows that you can create a\nrole with the `roleId`: `client-id:<clientId>` to assign additional\nscopes to a client. You can also create a role `client-id:user-*`\nif you wish to assign a set of scopes to all clients whose `clientId`\nstarts with `user-`.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskCluster credentials to grant access to a third-party service used\nby many TaskCluster components.", 
       "entries": [
         {
           "args": [], 
-          "description": "Get a list of all clients.", 
+          "description": "Get a list of all clients.  With `prefix`, only clients for which\nit is a prefix of the clientId are returned.", 
           "method": "get", 
           "name": "listClients", 
           "output": "http://schemas.taskcluster.net/auth/v1/list-clients-response.json#", 
+          "query": [
+            "prefix"
+          ], 
           "route": "/clients/", 
           "stability": "stable", 
           "title": "List Clients", 
@@ -24,6 +27,7 @@
           "method": "get", 
           "name": "client", 
           "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#", 
+          "query": [], 
           "route": "/clients/<clientId>", 
           "stability": "stable", 
           "title": "Get Client", 
@@ -33,11 +37,12 @@
           "args": [
             "clientId"
           ], 
-          "description": "Create a new client and get the `accessToken` for this client.\nYou should store the `accessToken` from this API call as there is no\nother way to retrieve it.\n\nIf you loose the `accessToken` you can call `resetAccessToken` to reset\nit, and a new `accessToken` will be returned, but you cannot retrieve the\ncurrent `accessToken`.\n\nIf a client with the same `clientId` already exists this operation will\nfail. Use `updateClient` if you wish to update an existing client.", 
+          "description": "Create a new client and get the `accessToken` for this client.\nYou should store the `accessToken` from this API call as there is no\nother way to retrieve it.\n\nIf you loose the `accessToken` you can call `resetAccessToken` to reset\nit, and a new `accessToken` will be returned, but you cannot retrieve the\ncurrent `accessToken`.\n\nIf a client with the same `clientId` already exists this operation will\nfail. Use `updateClient` if you wish to update an existing client.\n\nThe caller's scopes must satisfy `scopes`.", 
           "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#", 
           "method": "put", 
           "name": "createClient", 
           "output": "http://schemas.taskcluster.net/auth/v1/create-client-response.json#", 
+          "query": [], 
           "route": "/clients/<clientId>", 
           "scopes": [
             [
@@ -56,6 +61,7 @@
           "method": "post", 
           "name": "resetAccessToken", 
           "output": "http://schemas.taskcluster.net/auth/v1/create-client-response.json#", 
+          "query": [], 
           "route": "/clients/<clientId>/reset", 
           "scopes": [
             [
@@ -70,11 +76,12 @@
           "args": [
             "clientId"
           ], 
-          "description": "Update an exisiting client. This is really only useful for changing the\ndescription and expiration, as you won't be allowed to the `clientId`\nor `accessToken`.", 
+          "description": "Update an exisiting client. The `clientId` and `accessToken` cannot be\nupdated, but `scopes` can be modified.  The caller's scopes must\nsatisfy all scopes being added to the client in the update operation.\nIf no scopes are given in the request, the client's scopes remain\nunchanged", 
           "input": "http://schemas.taskcluster.net/auth/v1/create-client-request.json#", 
           "method": "post", 
           "name": "updateClient", 
           "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#", 
+          "query": [], 
           "route": "/clients/<clientId>", 
           "scopes": [
             [
@@ -89,9 +96,48 @@
           "args": [
             "clientId"
           ], 
+          "description": "Enable a client that was disabled with `disableClient`.  If the client\nis already enabled, this does nothing.\n\nThis is typically used by identity providers to re-enable clients that\nhad been disabled when the corresponding identity's scopes changed.", 
+          "method": "post", 
+          "name": "enableClient", 
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#", 
+          "query": [], 
+          "route": "/clients/<clientId>/enable", 
+          "scopes": [
+            [
+              "auth:enable-client:<clientId>"
+            ]
+          ], 
+          "stability": "stable", 
+          "title": "Enable Client", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "clientId"
+          ], 
+          "description": "Disable a client.  If the client is already disabled, this does nothing.\n\nThis is typically used by identity providers to disable clients when the\ncorresponding identity's scopes no longer satisfy the client's scopes.", 
+          "method": "post", 
+          "name": "disableClient", 
+          "output": "http://schemas.taskcluster.net/auth/v1/get-client-response.json#", 
+          "query": [], 
+          "route": "/clients/<clientId>/disable", 
+          "scopes": [
+            [
+              "auth:disable-client:<clientId>"
+            ]
+          ], 
+          "stability": "stable", 
+          "title": "Disable Client", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "clientId"
+          ], 
           "description": "Delete a client, please note that any roles related to this client must\nbe deleted independently.", 
           "method": "delete", 
           "name": "deleteClient", 
+          "query": [], 
           "route": "/clients/<clientId>", 
           "scopes": [
             [
@@ -108,6 +154,7 @@
           "method": "get", 
           "name": "listRoles", 
           "output": "http://schemas.taskcluster.net/auth/v1/list-roles-response.json#", 
+          "query": [], 
           "route": "/roles/", 
           "stability": "stable", 
           "title": "List Roles", 
@@ -121,6 +168,7 @@
           "method": "get", 
           "name": "role", 
           "output": "http://schemas.taskcluster.net/auth/v1/get-role-response.json#", 
+          "query": [], 
           "route": "/roles/<roleId>", 
           "stability": "stable", 
           "title": "Get Role", 
@@ -135,6 +183,7 @@
           "method": "put", 
           "name": "createRole", 
           "output": "http://schemas.taskcluster.net/auth/v1/get-role-response.json#", 
+          "query": [], 
           "route": "/roles/<roleId>", 
           "scopes": [
             [
@@ -154,6 +203,7 @@
           "method": "post", 
           "name": "updateRole", 
           "output": "http://schemas.taskcluster.net/auth/v1/get-role-response.json#", 
+          "query": [], 
           "route": "/roles/<roleId>", 
           "scopes": [
             [
@@ -171,6 +221,7 @@
           "description": "Delete a role. This operation will succeed regardless of whether or not\nthe role exists.", 
           "method": "delete", 
           "name": "deleteRole", 
+          "query": [], 
           "route": "/roles/<roleId>", 
           "scopes": [
             [
@@ -179,6 +230,31 @@
           ], 
           "stability": "stable", 
           "title": "Delete Role", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
+          "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included.", 
+          "input": "http://schemas.taskcluster.net/auth/v1/scopeset.json#", 
+          "method": "get", 
+          "name": "expandScopes", 
+          "output": "http://schemas.taskcluster.net/auth/v1/scopeset.json#", 
+          "query": [], 
+          "route": "/scopes/expand", 
+          "stability": "stable", 
+          "title": "Expand Scopes", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
+          "description": "Return the expanded scopes available in the request, taking into account all sources\nof scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,\nand roles).", 
+          "method": "get", 
+          "name": "currentScopes", 
+          "output": "http://schemas.taskcluster.net/auth/v1/scopeset.json#", 
+          "query": [], 
+          "route": "/scopes/current", 
+          "stability": "stable", 
+          "title": "Get Current Scopes", 
           "type": "function"
         }, 
         {
@@ -191,6 +267,7 @@
           "method": "get", 
           "name": "awsS3Credentials", 
           "output": "http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#", 
+          "query": [], 
           "route": "/aws/s3/<level>/<bucket>/<prefix>", 
           "scopes": [
             [
@@ -210,6 +287,7 @@
           "method": "get", 
           "name": "azureTableSAS", 
           "output": "http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#", 
+          "query": [], 
           "route": "/azure/<account>/table/<table>/read-write", 
           "scopes": [
             [
@@ -227,6 +305,7 @@
           "method": "post", 
           "name": "authenticateHawk", 
           "output": "http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#", 
+          "query": [], 
           "route": "/authenticate-hawk", 
           "stability": "stable", 
           "title": "Authenticate Hawk Request", 
@@ -234,20 +313,27 @@
         }, 
         {
           "args": [], 
-          "description": "Import client from JSON list, overwriting any clients that already\nexists. Returns a list of all clients imported.", 
-          "input": "http://schemas.taskcluster.net/auth/v1/exported-clients.json#", 
+          "description": "Utility method to test client implementations of TaskCluster\nauthentication.\n\nRather than using real credentials, this endpoint accepts requests with\nclientId `tester` and accessToken `no-secret`. That client's scopes are\nbased on `clientScopes` in the request body.\n\nThe request is validated, with any certificate, authorizedScopes, etc.\napplied, and the resulting scopes are checked against `requiredScopes`\nfrom the request body. On success, the response contains the clientId\nand scopes as seen by the API method.", 
+          "input": "http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#", 
           "method": "post", 
-          "name": "importClients", 
-          "route": "/import-clients", 
-          "scopes": [
-            [
-              "auth:import-clients", 
-              "auth:create-client", 
-              "auth:credentials"
-            ]
-          ], 
-          "stability": "deprecated", 
-          "title": "Import Legacy Clients", 
+          "name": "testAuthenticate", 
+          "output": "http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#", 
+          "query": [], 
+          "route": "/test-authenticate", 
+          "stability": "experimental", 
+          "title": "Test Authentication", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
+          "description": "Utility method similar to `testAuthenticate`, but with the GET method,\nso it can be used with signed URLs (bewits).\n\nRather than using real credentials, this endpoint accepts requests with\nclientId `tester` and accessToken `no-secret`. That client's scopes are\n`['test:*', 'auth:create-client:test:*']`.  The call fails if the \n`test:authenticate-get` scope is not available.\n\nThe request is validated, with any certificate, authorizedScopes, etc.\napplied, and the resulting scopes are checked, just like any API call.\nOn success, the response contains the clientId and scopes as seen by\nthe API method.\n\nThis method may later be extended to allow specification of client and\nrequired scopes via query arguments.", 
+          "method": "get", 
+          "name": "testAuthenticateGet", 
+          "output": "http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#", 
+          "query": [], 
+          "route": "/test-authenticate-get/", 
+          "stability": "experimental", 
+          "title": "Test Authentication (GET)", 
           "type": "function"
         }, 
         {
@@ -255,6 +341,7 @@
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.", 
           "method": "get", 
           "name": "ping", 
+          "query": [], 
           "route": "/ping", 
           "stability": "experimental", 
           "title": "Ping Server", 
@@ -485,6 +572,16 @@
         }, 
         {
           "args": [], 
+          "description": "**Warning** this api end-point is **not stable**.", 
+          "method": "get", 
+          "name": "backendStatus", 
+          "route": "/backend-status", 
+          "stability": "experimental", 
+          "title": "Backend Status", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
           "description": "Get an API reference!\n\n**Warning** this api end-point is **not stable**.", 
           "method": "get", 
           "name": "apiReference", 
@@ -601,7 +698,7 @@
   "Github": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#", 
-      "baseUrl": "https://taskcluster-github.herokuapp.com/v1", 
+      "baseUrl": "https://github.taskcluster.net/v1", 
       "description": "The github service, typically available at\n`github.taskcluster.net`, is responsible for publishing pulse\nmessages in response to GitHub events.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks", 
       "entries": [
         {
@@ -610,6 +707,10 @@
           "method": "post", 
           "name": "githubWebHookConsumer", 
           "route": "/github", 
+          "scopes": [
+            []
+          ], 
+          "stability": "experimental", 
           "title": "Consume GitHub WebHook", 
           "type": "function"
         }, 
@@ -619,6 +720,7 @@
           "method": "get", 
           "name": "ping", 
           "route": "/ping", 
+          "stability": "experimental", 
           "title": "Ping Server", 
           "type": "function"
         }
@@ -753,12 +855,26 @@
             "hookGroupId", 
             "hookId"
           ], 
+          "description": "This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next.", 
+          "method": "get", 
+          "name": "getHookStatus", 
+          "output": "http://schemas.taskcluster.net/hooks/v1/hook-status.json", 
+          "route": "/hooks/<hookGroupId>/<hookId>/status", 
+          "stability": "experimental", 
+          "title": "Get hook status", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "hookGroupId", 
+            "hookId"
+          ], 
           "description": "This endpoint will return the schedule and next scheduled creation time\nfor the given hook.", 
           "method": "get", 
           "name": "getHookSchedule", 
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-schedule.json", 
           "route": "/hooks/<hookGroupId>/<hookId>/schedule", 
-          "stability": "experimental", 
+          "stability": "deprecated", 
           "title": "Get hook schedule", 
           "type": "function"
         }, 
@@ -1024,8 +1140,9 @@
           "method": "get", 
           "name": "task", 
           "output": "http://schemas.taskcluster.net/queue/v1/task.json#", 
+          "query": [], 
           "route": "/task/<taskId>", 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Get Task Definition", 
           "type": "function"
         }, 
@@ -1037,9 +1154,27 @@
           "method": "get", 
           "name": "status", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/status", 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Get task status", 
+          "type": "function"
+        }, 
+        {
+          "args": [
+            "taskGroupId"
+          ], 
+          "description": "List taskIds of all tasks sharing the same `taskGroupId`.\n\nAs a task-group may contain an unbounded number of tasks, this end-point\nmay return a `continuationToken`. To continue listing tasks you must\n`listTaskGroup` again with the `continuationToken` as the query-string\noption `continuationToken`.\n\nBy default this end-point will try to return up to 1000 members in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continationToken` until you\nget a result without a `continuationToken`.\n\nIf you're not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.", 
+          "method": "get", 
+          "name": "listTaskGroup", 
+          "output": "http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#", 
+          "query": [
+            "continuationToken", 
+            "limit"
+          ], 
+          "route": "/task-group/<taskGroupId>/list", 
+          "stability": "stable", 
+          "title": "List Task Group", 
           "type": "function"
         }, 
         {
@@ -1051,6 +1186,7 @@
           "method": "put", 
           "name": "createTask", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>", 
           "scopes": [
             [
@@ -1062,7 +1198,7 @@
               "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Create New Task", 
           "type": "function"
         }, 
@@ -1075,6 +1211,7 @@
           "method": "post", 
           "name": "defineTask", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/define", 
           "scopes": [
             [
@@ -1088,7 +1225,7 @@
               "queue:task-group-id:<schedulerId>/<taskGroupId>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Define Task", 
           "type": "function"
         }, 
@@ -1100,6 +1237,7 @@
           "method": "post", 
           "name": "scheduleTask", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/schedule", 
           "scopes": [
             [
@@ -1110,7 +1248,7 @@
               "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Schedule Defined Task", 
           "type": "function"
         }, 
@@ -1122,6 +1260,7 @@
           "method": "post", 
           "name": "rerunTask", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/rerun", 
           "scopes": [
             [
@@ -1132,7 +1271,7 @@
               "queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "deprecated", 
           "title": "Rerun a Resolved Task", 
           "type": "function"
         }, 
@@ -1144,6 +1283,7 @@
           "method": "post", 
           "name": "cancelTask", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/cancel", 
           "scopes": [
             [
@@ -1154,7 +1294,7 @@
               "queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Cancel Task", 
           "type": "function"
         }, 
@@ -1167,6 +1307,7 @@
           "method": "get", 
           "name": "pollTaskUrls", 
           "output": "http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#", 
+          "query": [], 
           "route": "/poll-task-url/<provisionerId>/<workerType>", 
           "scopes": [
             [
@@ -1177,7 +1318,7 @@
               "queue:poll-task-urls:<provisionerId>/<workerType>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Get Urls to Poll Pending Tasks", 
           "type": "function"
         }, 
@@ -1191,6 +1332,7 @@
           "method": "post", 
           "name": "claimTask", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-claim-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/runs/<runId>/claim", 
           "scopes": [
             [
@@ -1203,7 +1345,7 @@
               "queue:worker-id:<workerGroup>/<workerId>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Claim task", 
           "type": "function"
         }, 
@@ -1216,6 +1358,7 @@
           "method": "post", 
           "name": "reclaimTask", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/runs/<runId>/reclaim", 
           "scopes": [
             [
@@ -1226,7 +1369,7 @@
               "queue:reclaim-task:<taskId>/<runId>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Reclaim task", 
           "type": "function"
         }, 
@@ -1239,6 +1382,7 @@
           "method": "post", 
           "name": "reportCompleted", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/runs/<runId>/completed", 
           "scopes": [
             [
@@ -1249,7 +1393,7 @@
               "queue:resolve-task:<taskId>/<runId>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Report Run Completed", 
           "type": "function"
         }, 
@@ -1262,6 +1406,7 @@
           "method": "post", 
           "name": "reportFailed", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/runs/<runId>/failed", 
           "scopes": [
             [
@@ -1272,7 +1417,7 @@
               "queue:resolve-task:<taskId>/<runId>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Report Run Failed", 
           "type": "function"
         }, 
@@ -1286,6 +1431,7 @@
           "method": "post", 
           "name": "reportException", 
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/runs/<runId>/exception", 
           "scopes": [
             [
@@ -1296,7 +1442,7 @@
               "queue:resolve-task:<taskId>/<runId>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Report Task Exception", 
           "type": "function"
         }, 
@@ -1311,6 +1457,7 @@
           "method": "post", 
           "name": "createArtifact", 
           "output": "http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>", 
           "scopes": [
             [
@@ -1321,7 +1468,7 @@
               "queue:create-artifact:<taskId>/<runId>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Create Artifact", 
           "type": "function"
         }, 
@@ -1334,13 +1481,14 @@
           "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.", 
           "method": "get", 
           "name": "getArtifact", 
+          "query": [], 
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>", 
           "scopes": [
             [
               "queue:get-artifact:<name>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Get Artifact from Run", 
           "type": "function"
         }, 
@@ -1352,13 +1500,14 @@
           "description": "Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.", 
           "method": "get", 
           "name": "getLatestArtifact", 
+          "query": [], 
           "route": "/task/<taskId>/artifacts/<name>", 
           "scopes": [
             [
               "queue:get-artifact:<name>"
             ]
           ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Get Artifact from Latest Run", 
           "type": "function"
         }, 
@@ -1371,6 +1520,7 @@
           "method": "get", 
           "name": "listArtifacts", 
           "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/runs/<runId>/artifacts", 
           "stability": "experimental", 
           "title": "Get Artifacts from Run", 
@@ -1384,6 +1534,7 @@
           "method": "get", 
           "name": "listLatestArtifacts", 
           "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#", 
+          "query": [], 
           "route": "/task/<taskId>/artifacts", 
           "stability": "experimental", 
           "title": "Get Artifacts from Latest Run", 
@@ -1394,17 +1545,13 @@
             "provisionerId", 
             "workerType"
           ], 
-          "description": "Documented later...\nThis probably the end-point that will remain after rewriting to azure\nqueue storage...\n", 
+          "description": "Get an approximate number of pending tasks for the given `provisionerId`\nand `workerType`.\n\nThe underlying Azure Storage Queues only promises to give us an estimate.\nFurthermore, we cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.\nIt is, however, a solid estimate of the number of pending tasks.", 
           "method": "get", 
           "name": "pendingTasks", 
           "output": "http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#", 
+          "query": [], 
           "route": "/pending/<provisionerId>/<workerType>", 
-          "scopes": [
-            [
-              "queue:pending-tasks:<provisionerId>/<workerType>"
-            ]
-          ], 
-          "stability": "experimental", 
+          "stability": "stable", 
           "title": "Get Number of Pending Tasks", 
           "type": "function"
         }, 
@@ -1413,6 +1560,7 @@
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.", 
           "method": "get", 
           "name": "ping", 
+          "query": [], 
           "route": "/ping", 
           "stability": "experimental", 
           "title": "Ping Server", 
@@ -2346,42 +2494,24 @@
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#", 
       "baseUrl": "https://secrets.taskcluster.net/v1", 
-      "description": "The secrets service, typically available at\n`tools.taskcluster.net`, is responsible for managing\nsecure data in TaskCluster.", 
+      "description": "The secrets service, is a simple key/value store for secret data\nguarded by TaskCluster scopes.  It is typically available at\n`secrets.taskcluster.net`.", 
       "entries": [
         {
           "args": [
             "name"
           ], 
-          "description": "Set a secret associated with some key.", 
+          "description": "Set a secret associated with some key.  If the secret already exists, it is updated instead.", 
           "input": "http://schemas.taskcluster.net/secrets/v1/secret.json#", 
           "method": "put", 
           "name": "set", 
-          "route": "/secrets/<name>", 
+          "route": "/secret/<name>", 
           "scopes": [
             [
               "secrets:set:<name>"
             ]
           ], 
           "stability": "experimental", 
-          "title": "Create New Secret", 
-          "type": "function"
-        }, 
-        {
-          "args": [
-            "name"
-          ], 
-          "description": "Update a secret associated with some key.", 
-          "input": "http://schemas.taskcluster.net/secrets/v1/secret.json#", 
-          "method": "post", 
-          "name": "update", 
-          "route": "/secrets/<name>", 
-          "scopes": [
-            [
-              "secrets:update:<name>"
-            ]
-          ], 
-          "stability": "experimental", 
-          "title": "Update A Secret", 
+          "title": "Create Secret", 
           "type": "function"
         }, 
         {
@@ -2391,10 +2521,10 @@
           "description": "Delete the secret attached to some key.", 
           "method": "delete", 
           "name": "remove", 
-          "route": "/secrets/<name>", 
+          "route": "/secret/<name>", 
           "scopes": [
             [
-              "secrets:remove:<name>"
+              "secrets:set:<name>"
             ]
           ], 
           "stability": "experimental", 
@@ -2409,7 +2539,7 @@
           "method": "get", 
           "name": "get", 
           "output": "http://schemas.taskcluster.net/secrets/v1/secret.json#", 
-          "route": "/secrets/<name>", 
+          "route": "/secret/<name>", 
           "scopes": [
             [
               "secrets:get:<name>"
@@ -2417,6 +2547,17 @@
           ], 
           "stability": "experimental", 
           "title": "Read Secret", 
+          "type": "function"
+        }, 
+        {
+          "args": [], 
+          "description": "List the names of all visible secrets.", 
+          "method": "get", 
+          "name": "list", 
+          "output": "http://schemas.taskcluster.net/secrets/v1/secret-list.json#", 
+          "route": "/secrets", 
+          "stability": "experimental", 
+          "title": "List Secrets", 
           "type": "function"
         }, 
         {
