@@ -816,6 +816,58 @@ api.declare({
   });
 });
 
+api.declare({
+  method:     'get',
+  route:      '/test-authenticate-get/',
+  name:       'testAuthenticateGet',
+  output:     'test-authenticate-response.json#',
+  stability:  'experimental',
+  title:      "Test Authentication (GET)",
+  description: [
+    "Utility method similar to `testAuthenticate`, but with the GET method,",
+    "so it can be used with signed URLs (bewits).",
+    "",
+    "Rather than using real credentials, this endpoint accepts requests with",
+    "clientId `tester` and accessToken `no-secret`. That client's scopes are",
+    "`['test:*', 'auth:create-client:test:*']`.  The call fails if the ",
+    "`test:authenticate-get` scope is not available.",
+    "",
+    "The request is validated, with any certificate, authorizedScopes, etc.",
+    "applied, and the resulting scopes are checked, just like any API call.",
+    "On success, the response contains the clientId and scopes as seen by",
+    "the API method.",
+    "",
+    "This method may later be extended to allow specification of client and",
+    "required scopes via query arguments.",
+  ].join('\n')
+}, async function(req, res) {
+  base.API.remoteAuthentication({
+    signatureValidator: signaturevalidator.createSignatureValidator({
+      clientLoader: async (clientId) => {
+        if (clientId !== 'tester') {
+          throw new Error("Client with clientId '" + clientId + "' not found");
+        }
+        return {
+          clientId: 'tester',
+          accessToken: 'no-secret',
+          scopes: ['test:*', 'auth:create-client:test:*'],
+        };
+      }
+    }),
+  }, {
+    scopes: [['test:authenticate-get']],
+  })(req, res, () => {
+    Promise.all([
+      req.clientId(),
+      req.scopes(),
+    ]).then(([clientId, scopes]) => {
+      res.reply({clientId, scopes});
+    }).catch(err => {
+      return res.reportInternalError(err);
+    });
+  });
+});
+
 /** Check that the server is a alive */
 api.declare({
   method:   'get',
