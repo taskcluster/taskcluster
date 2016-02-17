@@ -138,7 +138,7 @@ def scope_match(assumed_scopes, required_scope_sets):
     return False           # none of the required_scope_sets were satisfied
 
 
-def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
+def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES, session=None):
     """ Make an HTTP request and retry it until success, return request """
     retry = -1
     response = None
@@ -156,7 +156,7 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
 
         log.debug('Making attempt %d', retry)
         try:
-            response = makeSingleHttpRequest(method, url, payload, headers)
+            response = makeSingleHttpRequest(method, url, payload, headers, session)
         except requests.exceptions.RequestException as rerr:
             if retry < retries:
                 log.warn('Retrying because of: %s' % rerr)
@@ -180,12 +180,13 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES):
     assert False, "Error from last retry should have been raised!"
 
 
-def makeSingleHttpRequest(method, url, payload, headers):
+def makeSingleHttpRequest(method, url, payload, headers, session=None):
     method = method.upper()
     log.debug('Making a %s request to %s', method, url)
     log.debug('HTTP Headers: %s' % str(headers))
     log.debug('HTTP Payload: %s (limit 100 char)' % str(payload)[:100])
-    response = requests.request(method.upper(), url, data=payload, headers=headers)
+    obj = session if session else requests
+    response = obj.request(method.upper(), url, data=payload, headers=headers)
     log.debug('Received HTTP Status:    %s' % response.status_code)
     log.debug('Received HTTP Headers: %s' % str(response.headers))
     log.debug('Received HTTP Payload: %s (limit 1024 char)' % str(response.text)[:1024])

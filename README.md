@@ -13,12 +13,7 @@ format](http://docs.taskcluster.net/tools/references/index.html) as the
 Javascript client library.
 
 ## Notes on using Temporary Credentials
-Generating temporary credentials are implemented, but they don't work from this
-library right now.  The issue is related to the difference between how Node
-serializes Objects and how Python's json module does.
-
-Using temporary credentials without specifying the Certificate will
-result in a 'Bad mac' error.
+Generating temporary credentials didn't work for a long time but does now
 
 ## API Documentation
 

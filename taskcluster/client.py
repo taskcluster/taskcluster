@@ -41,6 +41,13 @@ _defaultConfig = config = {
 }
 
 
+def createSession(*args, **kwargs):
+    """ Create a new requests session.  This passes through all positional and
+    keyword arguments to the requests.Session() constructor
+    """
+    return requests.Session(*args, **kwargs)
+
+
 class BaseClient(object):
     """ Base Class for API Client Classes. Each individual Client class
     needs to set up its own methods for REST endpoints and Topic Exchange
@@ -48,7 +55,7 @@ class BaseClient(object):
     help with this.
     """
 
-    def __init__(self, options=None):
+    def __init__(self, options=None, session=None):
         o = copy.deepcopy(self.classOptions)
         o.update(_defaultConfig)
         if options:
@@ -68,6 +75,11 @@ class BaseClient(object):
         if 'credentials' in o:
             log.debug('credentials key scrubbed from logging output')
         log.debug(dict((k, v) for k, v in o.items() if k != 'credentials'))
+
+        if session:
+            self.session = options.session
+        else:
+            self.session = createSession()
 
     def makeHawkExt(self):
         """ Make an 'ext' for Hawk authentication """
@@ -544,11 +556,13 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
     if expiry - start > datetime.timedelta(days=31):
         raise exceptions.TaskclusterFailure('Only 31 days allowed')
 
+    # We multiply times by 1000 because the auth service is JS and as a result
+    # uses milliseconds instead of seconds
     cert = dict(
         version=1,
         scopes=scopes,
-        start=calendar.timegm(start.utctimetuple()),
-        expiry=calendar.timegm(expiry.utctimetuple()),
+        start=calendar.timegm(start.utctimetuple()) * 1000,
+        expiry=calendar.timegm(expiry.utctimetuple()) * 1000,
         seed=utils.slugId() + utils.slugId(),
     )
 

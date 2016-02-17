@@ -5,7 +5,7 @@ import socket
 # import unittest
 # import time
 # realTimeTime = time.time
-# import datetime
+import datetime
 import os
 
 import mock
@@ -547,23 +547,26 @@ class TestAuthenticationMockServer(base.TCTest):
         with self.assertRaises(exc.TaskclusterAuthFailure):
             client.getCredentials('admin')
 
-    # Nose doesn't like this decorator, so I'm commenting out the test instead
-    #    @unittest.expectedFailure
-    #    def test_temporary_credentials(self):
-    #        self.assertEqual(False, True)
-    #        return
-    #        tempCred = subject.createTemporaryCredentials(
-    #            'admin',
-    #            'adminToken',
-    #            datetime.datetime.utcnow() - datetime.timedelta(hours=10),
-    #            datetime.datetime.utcnow() + datetime.timedelta(hours=10),
-    #            ['auth:credentials'],
-    #        )
-    #        self.client.options['credentials']['clientId'] = tempCred['clientId']
-    #        self.client.options['credentials']['accessToken'] = tempCred['accessToken']
-    #        self.client.options['credentials']['certificate'] = tempCred['certificate']
-    #        result = self.client.getCredentials('admin')
-    #        self.assertEqual(result['accessToken'], 'adminToken')
+    def test_temporary_credentials(self):
+        client = self.clientClass({
+            'baseUrl': self.baseUrl,
+            'credentials': {
+                'clientId': 'admin',
+                'accessToken': 'adminToken',
+            }
+        })
+        tempCred = subject.createTemporaryCredentials(
+            'admin',
+            'adminToken',
+            datetime.datetime.utcnow() - datetime.timedelta(hours=10),
+            datetime.datetime.utcnow() + datetime.timedelta(hours=10),
+            ['auth:credentials'],
+        )
+        client.options['credentials']['clientId'] = tempCred['clientId']
+        client.options['credentials']['accessToken'] = tempCred['accessToken']
+        client.options['credentials']['certificate'] = tempCred['certificate']
+        result = client.getCredentials('admin')
+        self.assertEqual(result['accessToken'], 'adminToken')
 
     def test_mock_auth_signed_url(self):
         client = self.clientClass({
@@ -627,6 +630,41 @@ if not os.environ.get('NO_TESTS_OVER_WIRE'):
                 'expires': '2015-09-09T19:19:15.879Z'
             }
             result = self.i.insertTask('testing', payload)
+            self.assertEqual(payload['expires'], result['expires'])
+            payload['rank'] += 1
+            result = self.i.insertTask('testing', payload)
+            self.assertEqual(payload['expires'], result['expires'])
+            payload['rank'] += 1
+            result = self.i.insertTask('testing', payload)
+            self.assertEqual(payload['expires'], result['expires'])
+
+        def test_temporary_credentials(self):
+            tempCred = subject.createTemporaryCredentials(
+                clientId=os.environ.get('TASKCLUSTER_CLIENT_ID', '').encode('utf-8'),
+                accessToken=os.environ.get('TASKCLUSTER_ACCESS_TOKEN', '').encode('utf-8'),
+                start=datetime.datetime.utcnow() - datetime.timedelta(hours=10),
+                expiry=datetime.datetime.utcnow() + datetime.timedelta(hours=10),
+                scopes=['index:*']
+            )
+
+            index = subject.Index({
+                'credentials': tempCred,
+                'maxRetries': 1,
+            })
+
+            payload = {
+                'taskId': utils.slugId(),
+                'rank': 1,
+                'data': {'test': 'data'},
+                'expires': '2015-09-09T19:19:15.879Z'
+            }
+            result = index.insertTask('testing', payload)
+            self.assertEqual(payload['expires'], result['expires'])
+            payload['rank'] += 1
+            result = index.insertTask('testing', payload)
+            self.assertEqual(payload['expires'], result['expires'])
+            payload['rank'] += 1
+            result = index.insertTask('testing', payload)
             self.assertEqual(payload['expires'], result['expires'])
 
         def test_listworkertypes_signed_url(self):
