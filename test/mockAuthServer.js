@@ -55,7 +55,7 @@ function bail() {
 		process.exit(0);
 	}, function(err) {
     console.error(err, 'Error stopping server, exiting uncleanly');
-		process.exit(-1);	
+		process.exit(-1);
 	});
 }
 

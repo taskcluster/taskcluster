@@ -12,7 +12,7 @@ NPM_INST := env PATH=$(PATH):$(PWD)/$(NODE_NAME)/bin $(PWD)/$(NODE_NAME)/bin/npm
 .PHONY: test
 test: $(VENV)/bin/python $(NODE_BIN)
 	FLAKE8=$(VENV)/bin/flake8 PYTHON=$(VENV)/bin/python \
-	NODE_BIN=$(NODE_BIN) NOSE=$(VENV)/bin/nosetests ./test.sh
+	NODE_BIN=$(NODE_BIN) TOX=$(VENV)/bin/tox COVERAGE=$(VENV)/bin/coverage ./test.sh
 
 JS_CLIENT_BRANCH=master
 APIS_JSON=$(PWD)/taskcluster/apis.json
@@ -44,6 +44,7 @@ clean:
 	rm -rf node-$(NODE_VER)-$(NODE_PLAT) node_modules
 	rm -rf *.egg *.egg-info dist/
 	find . -name "*.py?" -exec rm {} +
+	rm -rf .tox htmlcov .coverage
 	rm -rf env-*
 
 .PHONY: docs

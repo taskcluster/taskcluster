@@ -1,8 +1,8 @@
 import types
 import socket
+import unittest
 # These dependencies are commented out because the temp credentials
 # tests which are the only ones which use them are now commented out
-# import unittest
 # import time
 # realTimeTime = time.time
 import datetime
@@ -597,77 +597,32 @@ class TestAuthenticationMockServer(base.TCTest):
         self.assertEqual(401, r.status_code)
 
 
-if not os.environ.get('NO_TESTS_OVER_WIRE'):
-    class ProductionTest(base.TCTest):
+@unittest.skipIf(os.environ.get('NO_TESTS_OVER_WIRE'), "Skipping tests over wire")
+class TestTestAuthenticate(base.TCTest):
+    def setUp(self):
+        self.credentials = {
+            "clientId": u"tester",
+            "accessToken": u"no-secret",
+        }
+        self.auth = subject.Auth({"credentials": self.credentials})
 
-        def setUp(self):
-            opts = {
-                'credentials': {
-                    'clientId': os.environ.get('TASKCLUSTER_CLIENT_ID', '').encode('utf-8'),
-                    'accessToken': os.environ.get('TASKCLUSTER_ACCESS_TOKEN', '').encode('utf-8'),
-                    'certificate': os.environ.get('TASKCLUSTER_CERTIFICATE', '').encode('utf-8'),
-                },
-                'maxRetries': 1,
-            }
-            self.i = subject.Index(opts)
-            self.a = subject.AwsProvisioner(opts)
+        opts = {
+            'credentials': self.credentials,
+            'maxRetries': 1,
+        }
+        self.i = subject.Index(opts)
+        self.a = subject.AwsProvisioner(opts)
 
-        def test_ping(self):
-            result = self.i.ping()
-            self.assertEqual(result['alive'], True)
+    def test_testAuthenticate(self):
+        payload = self.auth.testAuthenticate({
+            "clientScopes": ["a"],
+            "requiredScopes": ["a"],
+        })
+        self.assertEqual(payload, {
+            'clientId': 'tester',
+            'scopes': ['a']
+        })
 
-        def test_listworkertypes(self):
-            result = self.a.listWorkerTypes()
-            # Note that the specific worker type checked for is not important...
-            # if this breaks, just pick another worker type
-            assert 'test' in result
-
-        def test_insert_to_index(self):
-            payload = {
-                'taskId': utils.slugId(),
-                'rank': 1,
-                'data': {'test': 'data'},
-                'expires': '2015-09-09T19:19:15.879Z'
-            }
-            result = self.i.insertTask('testing', payload)
-            self.assertEqual(payload['expires'], result['expires'])
-            payload['rank'] += 1
-            result = self.i.insertTask('testing', payload)
-            self.assertEqual(payload['expires'], result['expires'])
-            payload['rank'] += 1
-            result = self.i.insertTask('testing', payload)
-            self.assertEqual(payload['expires'], result['expires'])
-
-        def test_temporary_credentials(self):
-            tempCred = subject.createTemporaryCredentials(
-                clientId=os.environ.get('TASKCLUSTER_CLIENT_ID', '').encode('utf-8'),
-                accessToken=os.environ.get('TASKCLUSTER_ACCESS_TOKEN', '').encode('utf-8'),
-                start=datetime.datetime.utcnow() - datetime.timedelta(hours=10),
-                expiry=datetime.datetime.utcnow() + datetime.timedelta(hours=10),
-                scopes=['index:*']
-            )
-
-            index = subject.Index({
-                'credentials': tempCred,
-                'maxRetries': 1,
-            })
-
-            payload = {
-                'taskId': utils.slugId(),
-                'rank': 1,
-                'data': {'test': 'data'},
-                'expires': '2015-09-09T19:19:15.879Z'
-            }
-            result = index.insertTask('testing', payload)
-            self.assertEqual(payload['expires'], result['expires'])
-            payload['rank'] += 1
-            result = index.insertTask('testing', payload)
-            self.assertEqual(payload['expires'], result['expires'])
-            payload['rank'] += 1
-            result = index.insertTask('testing', payload)
-            self.assertEqual(payload['expires'], result['expires'])
-
-        def test_listworkertypes_signed_url(self):
-            surl = self.a.buildSignedUrl('listWorkerTypes')
-            response = requests.get(surl)
-            response.raise_for_status()
+    def test_testAuthenticateGet(self):
+        payload = self.auth.testAuthenticateGet()
+        self.assertEqual(payload['clientId'], 'tester')

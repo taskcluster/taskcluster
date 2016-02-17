@@ -4,6 +4,8 @@ NODE_BIN=${NODE_BIN-node}
 NPM=${NPM-npm}
 FLAKE8=${FLAKE8-flake8}
 NOSE=${NOSE-nosetests}
+TOX=${TOX-tox}
+COVERAGE=${COVERAGE-coverage}
 export PORT=${PORT-5555}
 
 echo | nc localhost $PORT -w 1 &> /dev/null
@@ -28,6 +30,16 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
+echo setup.py tests
+$PYTHON setup.py test
+setuptests=$?
+if [ $setuptests -ne 0 ] ; then
+  echo "setup.py test does not run properly"
+  killServer
+  exit 1
+fi
+$COVERAGE html
+
 echo Linting
 $FLAKE8 --max-line-length=100 \
 	taskcluster test
@@ -39,25 +51,7 @@ if [ $lint -ne 0 ] ; then
 fi
 echo Done linting
 
-echo setup.py tests
-$PYTHON setup.py test
-setuptests=$?
-if [ $setuptests -ne 0 ] ; then
-  echo "setup.py test does not run properly"
-  killServer
-  exit 1
-fi
-
-echo nosetests
-$NOSE -v
-nose=$?
-if [ $nose -ne 0 ] ; then
-  echo "Nose tests do not run"
-  killServer
-  exit 1
-fi
-
 echo Done testing!
 
 killServer
-exit $(( nose + lint + setuptests ))
+exit $(( lint + setuptests ))
