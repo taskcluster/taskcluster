@@ -177,7 +177,8 @@ func generateTemporaryAccessToken(permAccessToken, seed string) (tempAccessToken
 // Attempts to parse the certificate string to return it as an object. If the
 // certificate is an empty string (e.g. in the case of permanent credentials)
 // then a nil pointer is returned for the certificate. If a certificate has
-// been specified but cannot be parsed, an error is returned.
+// been specified but cannot be parsed, an error is returned, and cert is an
+// empty certificate (rather than nil).
 func (creds *Credentials) Cert() (cert *Certificate, err error) {
 	if creds.Certificate != "" {
 		cert = new(Certificate)
