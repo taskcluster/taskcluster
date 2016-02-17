@@ -556,11 +556,13 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
     if expiry - start > datetime.timedelta(days=31):
         raise exceptions.TaskclusterFailure('Only 31 days allowed')
 
+    # We multiply times by 1000 because the auth service is JS and as a result
+    # uses milliseconds instead of seconds
     cert = dict(
         version=1,
         scopes=scopes,
-        start=calendar.timegm(start.utctimetuple()),
-        expiry=calendar.timegm(expiry.utctimetuple()),
+        start=calendar.timegm(start.utctimetuple()) * 1000,
+        expiry=calendar.timegm(expiry.utctimetuple()) * 1000,
         seed=utils.slugId() + utils.slugId(),
     )
 
