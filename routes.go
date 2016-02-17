@@ -33,20 +33,20 @@ func (self *Routes) setHeaders(res http.ResponseWriter) {
 	headersToSend := res.Header()
 	headersToSend.Set("X-Taskcluster-Proxy-Version", version)
 	cert, err := self.Credentials.Cert()
-	if cert != nil {
-		if err != nil {
-			res.WriteHeader(500)
-			// Note, self.Credentials does not expose secrets when rendered as a string
-			fmt.Fprintf(res, "TaskCluster Proxy has invalid certificate: %v\n%v", self.Credentials, err)
-			return
-		} else {
-			jsonTempScopes, err := json.Marshal(cert.Scopes)
-			if err == nil {
-				headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", string(jsonTempScopes))
-			}
-		}
-	} else {
+	if err != nil {
+		res.WriteHeader(500)
+		// Note, self.Credentials does not expose secrets when rendered as a string
+		fmt.Fprintf(res, "TaskCluster Proxy has invalid certificate: %v\n%v", self.Credentials, err)
+		return
+	}
+	if cert == nil {
 		headersToSend.Set("X-Taskcluster-Proxy-Perm-ClientId", fmt.Sprintf("%s", self.Credentials.ClientId))
+	} else {
+		headersToSend.Set("X-Taskcluster-Proxy-Temp-ClientId", fmt.Sprintf("%s", self.Credentials.ClientId))
+		jsonTempScopes, err := json.Marshal(cert.Scopes)
+		if err == nil {
+			headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", string(jsonTempScopes))
+		}
 	}
 	if authScopes := self.Credentials.AuthorizedScopes; authScopes != nil {
 		jsonAuthScopes, err := json.Marshal(authScopes)
