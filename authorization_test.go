@@ -83,7 +83,7 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 
 	tempScopesJSON := `["auth:azure-table-access:fakeaccount/DuMmYtAbLe","queue:define-task:win-provisioner/win2008-worker","queue:get-artifact:private/build/sources.xml","queue:route:tc-treeherder.mozilla-inbound.*","queue:route:tc-treeherder-stage.mozilla-inbound.*","queue:task-priority:high","test-worker:image:toastposter/pumpkin:0.5.6"]`
 
-	tempCredsClientId := "dummy-test-clientId/" + slugid.Nice()
+	tempCredsClientId := "garbage/" + slugid.Nice()
 	tempCredentials, err := permCredentials.CreateNamedTemporaryCredentials(tempCredsClientId, 1*time.Hour, tempScopes...)
 	if err != nil {
 		t.Fatalf("Could not generate temp credentials")
