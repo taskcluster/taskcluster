@@ -90,7 +90,7 @@ make
 tmpFile="$(mktemp -t setup.py.XXXXXXXXXX)"
 # copy rather than move, so file permissions are retained in original file
 cp setup.py "${tmpFile}"
-cat "${tmpFile}" | sed "s,^VERSION=.*$,VERSION='$VERSION',g" > setup.py
+cat "${tmpFile}" | sed "s,^VERSION.*=.*$,VERSION='$VERSION',g" > setup.py
 rm "${tmpFile}"
 
 # Update the readme file
