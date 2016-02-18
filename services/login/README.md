@@ -8,11 +8,15 @@ It is split into two components: authentication (who are you?) and
 authorization (what can you do?).
 
 Supported authentication systems:
- * Persona - A very basic verification that the user owns an email address
  * SSO - SAML via Okta, Mozilla, Inc.'s single-signon provider.  This service
    supplies multi-factor auth and a host of other benefits.  This expects a
    `taskcluster-email` property in the SAML assertion, giving the user's
-   LDAP email.
+   LDAP email.  User identities are of the form `mozilla-ldap/<email>`.
+ * LDAP - For users who cannot use Okta, this allows authentication using a
+   boring old username/password form, authenticated against Mozilla's LDAP.
+   User identities are of the form `mozilla-ldap/<email>`.
+ * Persona - A very basic verification that the user owns an email address.
+   User identities are of the form `persona/<email`.
 
 Supported authorization systems:
  * LDAP - Translates LDAP groups (including POSIX groups) to TaskCluster roles

@@ -1,7 +1,6 @@
 var Promise = require('promise');
-var url = require('url');
 var assert = require('assert');
-var ldap = require('ldapjs');
+var LDAPClient = require('./../ldap');
 var debug = require('debug')('LDAPAuthorizer');
 
 /* Determine appropriate roles based on Mozilla LDAP group membership */
@@ -28,115 +27,64 @@ class LDAPAuthorizer {
     assert(options.cfg.ldap.password, 'options.cfg.ldap.password is required');
     assert(options.cfg.ldap.allowedGroups, 'options.cfg.ldap.allowedGroups is required');
 
+    this.user = options.cfg.ldap.user;
+    this.password = options.cfg.ldap.password;
+    this.client = new LDAPClient(options.cfg.ldap);
     this.allowedGroups = options.cfg.ldap.allowedGroups;
-    this.ldap_cfg = options.cfg.ldap;
   }
 
   async setup() {
-    let tlsOptions = {
-      cert:   this.ldap_cfg.cert,
-      key:    this.ldap_cfg.key,
-    };
-    let port = url.parse(this.ldap_cfg.url).port;
-    if (port) {
-      tlsOptions.port = port;
-    }
-
-    this.client = ldap.createClient({
-      url: this.ldap_cfg.url,
-      tlsOptions,
-      timeout: 10 * 1000,
-      reconnect: true,
-    });
-
-    await new Promise((accept, reject) => this.client.bind(
-      this.ldap_cfg.user, this.ldap_cfg.password, err => {
-      err ? reject(err) : accept();
-    }));
   }
 
   async authorize(user) {
-    // only trust sso-authenticated identities
-    if (user.identityProviderId !== "sso") {
+    // only trust ldap-authenticated identities
+    if (user.identityProviderId !== "mozilla-ldap") {
       return;
     }
     let email = user.identityId;
 
     debug(`ldap authorizing ${user.identity}`);
 
-    await new Promise((accept, reject) => this.client.bind(
-      this.ldap_cfg.user, this.ldap_cfg.password, err => {
-      err ? reject(err) : accept();
-    }));
-
-    let addRolesForQuery = (res) => {
-      return new Promise((accept, reject) => {
-        res.on('searchEntry', entry => {
-          let group = entry.object.cn;
-          debug("..found", group);
-          if (this.allowedGroups.indexOf(group) !== -1) {
-            user.addRole('mozilla-group:' + group);
-          }
-        });
-        res.on('error', reject);
-        res.on('end', result => {
-          if (result.status !== 0) {
-            return reject(new Error('LDAP error, got status: ' + result.status));
-          }
-          return accept();
-        });
+    let addRolesForEntries = (entries) => {
+      entries.forEach((entry) => {
+        let group = entry.object.cn;
+        debug("..found", group);
+        if (this.allowedGroups.indexOf(group) !== -1) {
+          user.addRole('mozilla-group:' + group);
+        }
       });
     };
 
-    debug(`enumerating posix groups for ${email}`);
-    await addRolesForQuery(await new Promise((accept, reject) => this.client.search(
-      "dc=mozilla", {
-      scope: 'sub',
-      filter: '(&(objectClass=posixGroup)(memberUid=' + email + '))',
-      attributes: ['cn'],
-      timeLimit: 10,
-    }, (err, res) => {
-      err ? reject(err) : accept(res);
-    })));
+    // always perform a bind, in case the client has disconnected
+    // since this connection was last used.
+    await this.client.bind(this.user, this.password, async (client) => {
+      debug(`enumerating scm groups for ${email}`);
+      // SCM groups are posixGroup objects with the email in the memberUid
+      // field.  This code does not capture other POSIX groups (which have the
+      // user's uid field in the memberUid field).
+      addRolesForEntries(await client.search(
+        "dc=mozilla", {
+        scope: 'sub',
+        filter: '(&(objectClass=posixGroup)(memberUid=' + email + '))',
+        attributes: ['cn'],
+        timeLimit: 10,
+      }));
 
-    // convert mail to a DN to search for LDAP groups
-    let res = await new Promise((accept, reject) => this.client.search(
-      "dc=mozilla", {
-      scope: 'sub',
-      filter: '(&(objectClass=inetOrgPerson)(mail=' + email + '))',
-      attributes: [],
-      timeLimit: 10,
-    }, (err, res) => {
-      err ? reject(err) : accept(res);
-    }));
-    let userDn;
-    await new Promise((accept, reject) => {
-      res.on('searchEntry', entry => {
-        userDn = entry.object.dn;
-      });
-      res.on('error', reject);
-      res.on('end', result => {
-        if (result.status !== 0) {
-          return reject(new Error('LDAP error, got status: ' + result.status));
-        }
-        return accept();
-      });
+      let userDn = await client.dnForEmail(email);
+      if (!userDn) {
+        debug(`no user found for ${email}; skipping LDAP groups`);
+        return;
+      }
+
+      debug(`enumerating LDAP groups for ${userDn}`);
+      addRolesForEntries(await client.search(
+        "dc=mozilla", {
+        scope: 'sub',
+        filter: '(&(objectClass=groupOfNames)(member=' + userDn + '))',
+        attributes: ['cn'],
+        timeLimit: 10,
+      }));
     });
-    if (!userDn) {
-      debug(`no user found for ${email}; skipping LDAP groups`);
-      return;
-    }
-
-    debug(`enumerating LDAP groups for ${userDn}`);
-    await addRolesForQuery(await new Promise((accept, reject) => this.client.search(
-      "dc=mozilla", {
-      scope: 'sub',
-      filter: '(&(objectClass=groupOfNames)(member=' + userDn + '))',
-      attributes: ['cn'],
-      timeLimit: 10,
-    }, (err, res) => {
-      err ? reject(err) : accept(res);
-    })));
   }
 };
 

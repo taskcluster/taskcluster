@@ -2,10 +2,7 @@ doctype html
 html(lang='en')
   head
     meta(charset='utf-8')
-    if title
-      title TaskCluster - Authentication
-    else
-      title TaskCluster - Authentication
+    title TaskCluster Login
     meta(name='viewport', content='width=device-width, initial-scale=1.0')
 
     // Bootstrap
@@ -33,14 +30,35 @@ html(lang='en')
     // Script with various hacks for this page
     script(src='/assets/script.js')
   body.container
+    div.modal#ldap-modal(tabindex="-1", role="dialog")
+      div.modal-dialog.modal-open
+        div.modal-content
+          form(action='/ldap/login', method='post')
+            div.modal-header
+              button.close(type="button", data-dismiss="modal" aria-label="Close")
+                span(aria-hidden="true") &times
+              h4.modal-title Mozilla LDAP Sign-In
+            div.modal-body#ldap-form
+              label.sr-only(for="username") LDAP Email
+              input.form-control#username(name="username", type="email",
+                                          placeholder="LDAP Email", required)
+              label.sr-only(for="password") Password
+              input.form-control#password(name="password", type="password",
+                                          placeholder="Password", required)
+            div.modal-footer
+              button.btn.btn-default(data-dismiss="modal", type="button") Close
+              button.btn.btn-primary(type='submit')
+                i.glyphicon.glyphicon-circle-arrow-right
+                | &nbsp;Sign-in
+
     div.row
       div.col-md-10.col-md-offset-1#content
-        h1 TaskCluster Authentication
+        h1 TaskCluster Login
         hr
-        div.row
+        div.row.login-option
           div.col-md-4
             form(action='/sso/login', method='post')
-              button.btn.btn-primary(type='submit')
+              button.btn.btn-block.btn-primary(type='submit')
                 i.glyphicon.glyphicon-log-in
                 | &nbsp;Sign-in with Okta
           div.col-md-8
@@ -48,16 +66,25 @@ html(lang='en')
               | If you are a Mozilla employee, sign in with Okta to maximize your
               | permissions.  If you also have a Mozillians account, make sure your
               | Okta email is included in your Mozillians profile.
-        div.row
+        div.row.login-option
+          div.col-md-4
+            button.btn.btn-block.btn-primary(data-toggle="modal", data-target="#ldap-modal")
+              i.glyphicon.glyphicon-circle-arrow-right
+              | &nbsp;Sign-in with LDAP
+          div.col-md-8
+            p
+              | If you are not a Mozilla employee, but have an LDAP account granting
+              | you commit access, sign in with your LDAP username and password.
+        div.row.login-option
           div.col-md-4
             form#persona-form(action='/persona/login', method='post')
               input#persona-assertion(type='hidden', name='assertion')
-              button.btn.btn-primary#persona-signin(type='submit')
-                i.glyphicon.glyphicon-log-in
-                | &nbsp;Sign-in with Mozillians
+              button.btn.btn-block.btn-primary#persona-signin(type='submit')
+                i.glyphicon.glyphicon-user
+                | &nbsp;Sign-in with Persona
           div.col-md-8
             p
-              | If you are a Mozillian but not an employee, sign in with Persona.
+              | If you are a Mozillian but do not have an LDAP account, sign in with Persona.
               | Your permissions will depend on the Mozillians groups you belong
               | to.  If you do not have a Mozillians profile,&nbsp;
               a(href='https://mozillians.org/en-US/')
