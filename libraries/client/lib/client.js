@@ -724,3 +724,78 @@ exports.createTemporaryCredentials = function(options) {
     certificate:  JSON.stringify(cert)
   };
 };
+
+/**
+ * Get information about a set of credentials.
+ *
+ * credentials: {
+ *   clientId,
+ *   accessToken,
+ *   certificate,           // optional
+ * }
+ *
+ * result: Promise for
+ * {
+ *    clientId: ..,         // name of the credential
+ *    type: ..,             // type of credential, e.g., "temporary"
+ *    active: ..,           // active (valid, not disabled, etc.)
+ *    start: ..,            // validity start time (if applicable)
+ *    expiry: ..,           // validity end time (if applicable)
+ *    scopes: [...],        // associated scopes (if available)
+ * }
+ */
+exports.credentialInformation = function(credentials) {
+  var result = {};
+  var issuer = credentials.clientId; 
+
+  result.clientId = issuer;
+  result.active = true;
+
+  // distinguish permacreds from temporary creds
+  if (credentials.certificate) {
+    result.type = "temporary";
+    var cert;
+    try {
+      cert = JSON.parse(credentials.certificate);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+    result.scopes = cert.scopes;
+    result.start = new Date(cert.start);
+    result.expiry = new Date(cert.expiry);
+
+    if (cert.issuer) {
+      issuer = cert.issuer;
+    }
+  } else {
+    result.type = "permanent";
+  }
+
+  var anonClient = new exports.Auth();
+  var clientLookup = anonClient.client(issuer).then(function(client) {
+    var expires = new Date(client.expires);
+    if (!result.expiry || result.expiry > expires) {
+      result.expiry = expires;
+    }
+    if (client.disabled) {
+      result.active = false;
+    }
+  });
+
+  var credClient = new exports.Auth({credentials});
+  var scopeLookup = credClient.currentScopes().then(function(response) {
+    result.scopes = response.scopes;
+  });
+
+  return Promise.all([clientLookup, scopeLookup]).then(function() {
+    // re-calculate "active" based on updated start/expiration
+    var now = new Date();
+    if (result.start && result.start > now) {
+      result.active = false;
+    } else if (result.expiry && now > result.expiry) {
+      result.active = false;
+    }
+
+    return result;
+  });
+};
