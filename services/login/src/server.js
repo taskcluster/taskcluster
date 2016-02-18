@@ -38,10 +38,19 @@ let load = loader({
     requires: ['cfg', 'authorizers'],
     setup: ({cfg, authorizers}) => {
       let authenticators = {};
+
+      // carry out the authorization process, either with a done callback
+      // or returning a promise
       let authorize = (user, done) => {
-        Promise.all(authorizers.map(authz => authz.authorize(user)))
-        .then(() => done(null, user), (err) => done(err, null));
+        let promise = Promise.all(
+            authorizers.map(authz => authz.authorize(user)));
+        if (done) {
+          promise.then(() => done(null, user), (err) => done(err, null));
+        } else {
+          return promise;
+        }
       }
+
       cfg.app.authenticators.forEach((name) => {
         let Authn = require('./authn/' + name);
         authenticators[name] = new Authn({cfg, authorize});
@@ -115,6 +124,7 @@ let load = loader({
           allowedHosts: cfg.app.allowedRedirectHosts,
           query: req.query,
           flash: req.flash(),
+          session: req.session,
         });
       });
 

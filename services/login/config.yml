@@ -3,6 +3,7 @@ Defaults:
     authenticators:
       - persona
       - sso
+      - ldap
     authorizers:
       - ldap
       - mozillians

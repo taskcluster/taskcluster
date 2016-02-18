@@ -33,7 +33,6 @@ class PersonaLogin {
   }
 
   async personaCallback(req, email, done) {
-    console.log("personalCallback", this);
     try {
       let user = User.get(req);
       user.identity = 'persona/' + email;

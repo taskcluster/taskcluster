@@ -36,11 +36,12 @@ class SSOLogin {
     return router;
   };
 
-  async samlCallback(req, profile, done) {
-    console.log(this.authorize);
+  samlCallback(req, profile, done) {
     try {
       let user = User.get(req);
-      user.identity = 'sso/' + profile['ldap-email'];
+      // note that we use the same identity prefix as the ldap authz as these
+      // currently have the same backend (Mozilla LDAP).
+      user.identity = 'mozilla-ldap/' + profile['ldap-email'];
       this.authorize(user, done);
     } catch (err) {
       done(err, null);

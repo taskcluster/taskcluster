@@ -27,6 +27,7 @@
     "lodash": "^3.10.1",
     "mozillians-client": "^0.1.1",
     "passport": "^0.3.0",
+    "passport-local": "^1.0.0",
     "passport-persona": "jonasfj/passport-persona",
     "passport-saml": "^0.13.0",
     "promise": "^7.0.4",
