@@ -8,6 +8,10 @@ suite('taskcluster.credentialInfo', function() {
     assert.deepEqual(pending, []);
   });
 
+  suiteTeardown(function() {
+    nock.restore();
+  });
+
   var setupNocks = function(options) {
     options = options || {};
     var client = {
