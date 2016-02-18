@@ -782,7 +782,7 @@ exports.credentialInformation = function(credentials) {
     }
   });
 
-  var credClient = new exports.Auth({credentials});
+  var credClient = new exports.Auth({credentials: credentials});
   var scopeLookup = credClient.currentScopes().then(function(response) {
     result.scopes = response.scopes;
   });
