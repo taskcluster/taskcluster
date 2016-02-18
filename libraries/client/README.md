@@ -661,6 +661,32 @@ var dateObject2 = taskcluster.fromNow("1 year", dateObject1);
 // dateObject2  = now() + 1 year, 2 days and 3 hours
 ```
 
+## Handling Credentials
+
+Your users may find the options for TaskCluster credentials overwhelming.  You
+can help by interpreting the credentials for them.
+
+The `credentialInformation(credentials, options)` function returns a promise
+with information about the given credentials:
+
+```js
+{
+   clientId: "..",      // name of the credential
+   type: "..",          // type of credential, e.g., "temporary"
+   active: "..",        // active (valid, not disabled, etc.)
+   start: "..",         // validity start time (if applicable)
+   expiry: "..",        // validity end time (if applicable)
+   scopes: ["..."],     // associated scopes (if available)
+}
+```
+
+The resulting information should *only* be used for presentation purposes, and
+never for access control.  This function may fail unexpectedly with invalid
+credentials, and performs no cryptographic checks.  It is acceptable to use the
+scopes result to determine whether to display UI elements associated with a
+particular scope, as long as the underlying API performs more reliable
+authorization checks.
+
 ## Generating slugids
 In node you can rely on the `slugid` module to generate slugids, but we already
 need it in `taskcluster-client` and expose the preferred slugid generation
