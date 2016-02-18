@@ -4,8 +4,8 @@
   "variables": {
     "npmPackage":          "",
     "templateContents":    "",
-    "hvmSourceAMI":        "ami-b63822d7",
-    "pvSourceAMI":         "ami-ed051f8c",
+    "hvmSourceAMI":        "ami-9d00e3fd",
+    "pvSourceAMI":         "ami-460ae926",
     "fsType":              "",
     "workerRevision":      ""
   },
@@ -34,6 +34,10 @@
       "inline": [
         "/tmp/deploy.sh /tmp/deploy.tar.gz /tmp/docker-worker.tgz"
       ]
+    },
+    {
+      "type":           "shell",
+      "inline":         ["sudo unattended-upgrade"]
     }
   ],
   "builders": [

@@ -40,6 +40,10 @@
         "deploy/packer/base/scripts/node.sh",
         "deploy/packer/base/scripts/diamond.sh"
       ]
+    },
+    {
+      "type":           "shell",
+      "inline":         ["sudo unattended-upgrade"]
     }
   ],
   "builders": [
