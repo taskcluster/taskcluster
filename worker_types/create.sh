@@ -1,7 +1,8 @@
 #!/bin/bash -e
 
-# TODO: submit a task after updating worker type
-# TODO: remove hard coded references to us-west-2
+# TODO: [pmoore] submit a task after updating worker type
+# TODO: [pmoore] remove hard coded references to us-west-2
+# TODO: [pmoore] remove references to pmoore, pmoore's aws key, and anything pmoore-ish
 
 echo "$(date): Checking inputs..."
 
