@@ -69,11 +69,16 @@ func main() {
 	// Parse the docopt string and exit on any error or help message.
 	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
 	exitOnFail(err)
-	bytes, _, err := jsonschema2go.Generate(arguments["-o"].(string), parseStandardIn()...)
+	job := &jsonschema2go.Job{
+		Package:     arguments["-o"].(string),
+		ExportTypes: true,
+		URLs:        parseStandardIn(),
+	}
+	result, err := job.Execute()
 	exitOnFail(err)
 	// simply output the generated file name, in the case of success, for
 	// super-easy parsing
-	fmt.Println(string(bytes))
+	fmt.Println(string(result.SourceCode))
 }
 
 func exitOnFail(err error) {

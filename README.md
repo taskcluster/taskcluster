@@ -396,6 +396,19 @@ type (
 
 Now you can unmarshal your json data into `new(TaskDefinitionRequest)` and you are done!
 
+# Supported URL schemes
+
+Currently we support `http`, `https` and `file` URL schemes. It is recommended
+when using `file` scheme, that the URL is of the form
+`file://<absolute_path_to_json_schema_file>`.
+
+# Supported schema formats
+
+Currently we support json schema documents in the following formats:
+
+* json
+* yaml
+
 # Installation
 
 ```
@@ -442,11 +455,20 @@ import (
 )
 
 func main() {
-    sourceCode, _, err := jsonschema2go.Generate("packageName", "url1", "url2", "url3")
+    job := &jsonschema2go.Job{
+        Package: "packageName",
+        URLs:    []string{
+            "url1",
+            "url2",
+            "url3",
+        },
+        ExportTypes: true
+    }
+    result, err := job.Execute()
     if err != nil {
         log.Fatalf("Could not generate go types from given json schemas...", err)
     }
-    err = ioutil.WriteFile("generatedcode.go", sourceCode, 0644)
+    err = ioutil.WriteFile("generatedcode.go", result.SourceCode, 0644)
     if err != nil {
         log.Fatalf("Could not write source code to file system...", err)
     }
@@ -469,5 +491,4 @@ func main() {
 
 # Contributing
 
-Contributions welcome, feel free to contact me as pmoore on irc.mozilla.org, or send me a pull request.
-
+Contributions welcome, feel free to contact #taskcluster on irc.mozilla.org, or send a pull request.
