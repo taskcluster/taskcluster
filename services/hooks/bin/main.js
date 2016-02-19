@@ -5,6 +5,7 @@ var debug       = require('debug')('hooks:bin:server');
 var path        = require('path');
 var Promise     = require('promise');
 var taskcreator = require('../hooks/taskcreator');
+var raven       = require('raven');
 var v1          = require('../routes/v1');
 var _           = require('lodash');
 var Scheduler   = require('../hooks/scheduler');
@@ -31,6 +32,16 @@ var load = loader({
         return new base.stats.NullDrain();
       }
     },
+  },
+
+  raven: {
+    requires: ['cfg'],
+    setup: ({cfg}) => {
+      if (cfg.raven.sentryDSN) {
+        return new raven.Client(cfg.raven.sentryDSN);
+      }
+      return null;
+    }
   },
 
   Hook: {
@@ -72,8 +83,8 @@ var load = loader({
   },
 
   router: {
-    requires: ['cfg', 'validator', 'Hook', 'taskcreator'],
-    setup: ({cfg, validator, Hook, taskcreator}) => {
+    requires: ['cfg', 'validator', 'Hook', 'taskcreator', 'raven'],
+    setup: ({cfg, validator, Hook, taskcreator, raven}) => {
       return v1.setup({
         context: {Hook, taskcreator},
         validator,
@@ -82,6 +93,7 @@ var load = loader({
         baseUrl:          cfg.server.publicUrl + '/v1',
         referencePrefix:  'hooks/v1/api.json',
         aws:              cfg.aws.validator,
+        raven:            raven,
       });
     },
   },
