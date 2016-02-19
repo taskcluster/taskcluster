@@ -21,15 +21,16 @@
     "lodash": "^3.10.1",
     "mocha": "^2.2.5",
     "promise": "^7.0.4",
-    "taskcluster-base": "^0.8.4",
+    "raven": "^0.10.0",
+    "taskcluster-base": "^0.10.6",
     "taskcluster-client": "^0.22.4",
-    "typed-env-config": "^0.10.0",
     "taskcluster-lib-app": "^0.8.10",
     "taskcluster-lib-loader": "0.0.8",
-    "taskcluster-lib-testing": "^0.9.2"
+    "taskcluster-lib-testing": "^0.9.2",
+    "typed-env-config": "^0.10.0"
   },
   "engines": {
-    "node":                 "0.12.x",
-    "npm":                  "2.7.x"
+    "node": "0.12.x",
+    "npm": "2.7.x"
   }
 }

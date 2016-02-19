@@ -19,6 +19,11 @@ defaults:
     credentials:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
+  raven:
+    # This can be grabbed from the settings of the sentry project
+    # and is a string that looks like:
+    # https://<pubkey>:<privkey>@app.getsentry.com/<port>
+    sentryDSN:                 !env SENTRY_DSN
   server:
     port:             !env:number PORT
     publicUrl:        !env PUBLIC_URL
