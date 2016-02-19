@@ -47,7 +47,7 @@ func (api *API) postPopulate(apiDef *APIDefinition) {
 
 	for i := range api.Entries {
 		api.Entries[i].Parent = api
-		api.Entries[i].MethodName = text.GoIdentifierFrom(api.Entries[i].Name, methods)
+		api.Entries[i].MethodName = text.GoIdentifierFrom(api.Entries[i].Name, true, methods)
 		api.Entries[i].postPopulate(apiDef)
 	}
 }

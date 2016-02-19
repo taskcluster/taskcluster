@@ -101,27 +101,34 @@ func ExampleIndefiniteArticle() {
 
 func ExampleGoIdentifierFrom() {
 	blacklist := make(map[string]bool)
-	fmt.Println(text.GoIdentifierFrom("Azure Artifact Request", blacklist))
-	fmt.Println(text.GoIdentifierFrom("AzureArtifactRequest", blacklist))
-	fmt.Println(text.GoIdentifierFrom("Azure artifact request", blacklist))
-	fmt.Println(text.GoIdentifierFrom("azure-artifact request", blacklist))
-	fmt.Println(text.GoIdentifierFrom("List Artifacts Response", blacklist))
-	fmt.Println(text.GoIdentifierFrom("hello, 世;;;((```[]!@#$界", blacklist))
-	fmt.Println(text.GoIdentifierFrom(".-4$sjdb2##f \n\txxßßß", blacklist))
-	fmt.Println(text.GoIdentifierFrom("", blacklist))
-	fmt.Println(text.GoIdentifierFrom("", blacklist))
-	fmt.Println(text.GoIdentifierFrom("_", blacklist))
-	fmt.Println(text.GoIdentifierFrom("grüß", blacklist))
-	fmt.Println(text.GoIdentifierFrom("333", blacklist))
-	fmt.Println(text.GoIdentifierFrom("3_33", blacklist))
+	fmt.Println(text.GoIdentifierFrom("Azure Artifact Request", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("AzureArtifactRequest", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("Azure artifact request", false, blacklist))
+	fmt.Println(text.GoIdentifierFrom("azure-artifact request", false, blacklist))
+	fmt.Println(text.GoIdentifierFrom("azure-artifact request", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("List Artifacts Response", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("hello, 世;;;((```[]!@#$界", false, blacklist))
+	fmt.Println(text.GoIdentifierFrom(".-4$sjdb2##f \n\txxßßß", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("", false, blacklist))
+	fmt.Println(text.GoIdentifierFrom("", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("_", false, blacklist))
+	fmt.Println(text.GoIdentifierFrom("grüß", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("333", false, blacklist))
+	fmt.Println(text.GoIdentifierFrom("3_33", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("ü", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("üö33", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("Üö33", false, blacklist))
+	fmt.Println(text.GoIdentifierFrom("Üö33", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("\xe2\x28\xa1", true, blacklist))
 
 	// Output:
 	// AzureArtifactRequest
 	// AzureArtifactRequest1
+	// azureArtifactRequest
+	// azureArtifactRequest1
 	// AzureArtifactRequest2
-	// AzureArtifactRequest3
 	// ListArtifactsResponse
-	// Hello世界
+	// hello世界
 	// _4Sjdb2FXxßßß
 	// Identifier
 	// Identifier1
@@ -129,4 +136,9 @@ func ExampleGoIdentifierFrom() {
 	// Grüß
 	// _333
 	// _3_33
+	// Ü
+	// Üö33
+	// üö33
+	// Üö331
+	// Identifier3
 }

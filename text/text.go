@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 // Indent indents a block of text with an indent string. It does this by
@@ -57,30 +58,35 @@ func StarOut(text string) string {
 //
 // Strategy to convert arbitrary unicode string to a valid identifier:
 //
-// 1) Split name into arrays of allowed runes (words), discarding disallowed
+// 1) Ensure name is valid UTF-8; if not, replace it with empty string
+//
+// 2) Split name into arrays of allowed runes (words), discarding disallowed
 // unicode points.
 //
-// 2) Upper case first rune in each word (see
+// 3) Upper case first rune in each word (see
 // https://golang.org/pkg/strings/#Title).
 //
-// 3) Rejoin words into a single string.
+// 4) Rejoin words into a single string.
 //
-// 4) If the string starts with a number, add a leading `_`.
+// 5) Set appropriate case (upper/lower) of first char
 //
-// 5) If the string is the empty string or "_", set as "Identifier"
+// 6) If the string starts with a number, add a leading `_`.
 //
-// 6) If the resulting identifier is in the blacklist, append the lowest
+// 7) If the string is the empty string or "_", set as "Identifier"
+//
+// 8) If the resulting identifier is in the blacklist, append the lowest
 // integer possible, >= 1, that results in no blacklist conflict.
 //
-// 7) Add the new name to the given blacklist.
+// 9) Add the new name to the given blacklist.
 //
 // Note, the `map[string]bool` construction is simply a mechanism to implement
 // set semantics; a value of `true` signifies inclusion in the set.
 // Non-existence is equivalent to existence with a value of `false`; therefore
 // it is recommended to only store `true` values.
-//
-// TODO: need to check behaviour of non-unicode strings
-func GoIdentifierFrom(name string, blacklist map[string]bool) (identifier string) {
+func GoIdentifierFrom(name string, exported bool, blacklist map[string]bool) (identifier string) {
+	if !utf8.ValidString(name) {
+		name = ""
+	}
 	for _, word := range strings.FieldsFunc(
 		name,
 		func(c rune) bool {
@@ -88,6 +94,15 @@ func GoIdentifierFrom(name string, blacklist map[string]bool) (identifier string
 		},
 	) {
 		identifier += strings.Title(word)
+	}
+	if len(identifier) > 0 {
+		firstRune, size := utf8.DecodeRuneInString(identifier)
+		remainingString := identifier[size:]
+		if exported {
+			identifier = string(unicode.ToUpper(firstRune)) + remainingString
+		} else {
+			identifier = string(unicode.ToLower(firstRune)) + remainingString
+		}
 	}
 
 	if strings.IndexFunc(

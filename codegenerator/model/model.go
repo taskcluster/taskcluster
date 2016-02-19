@@ -222,11 +222,17 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 		exitOnFail(err)
 
 		// Generate types
-		var typesSourceCode []byte
-		typesSourceCode, apiDefs[i].schemas, err = jsonschema2go.Generate(apiDefs[i].PackageName, apiDefs[i].schemaURLs...)
+		job := &jsonschema2go.Job{
+			Package:     apiDefs[i].PackageName,
+			URLs:        apiDefs[i].schemaURLs,
+			ExportTypes: true,
+		}
+		result, err := job.Execute()
+		apiDefs[i].schemas = result.SchemaSet
+
 		exitOnFail(err)
 		typesSourceFile := filepath.Join(apiDefs[i].PackagePath, "types.go")
-		formatSourceAndSave(typesSourceFile, typesSourceCode)
+		formatSourceAndSave(typesSourceFile, result.SourceCode)
 
 		// Generate functions and methods
 		content := `
