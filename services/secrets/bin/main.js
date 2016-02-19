@@ -8,6 +8,7 @@ import path from 'path';
 import common from '../lib/common';
 import Promise from 'promise';
 import _ from 'lodash';
+import raven from 'raven';
 import loader from 'taskcluster-lib-loader';
 import app from 'taskcluster-lib-app';
 import taskcluster from 'taskcluster-client';
@@ -41,6 +42,16 @@ var load = loader({
     },
   },
 
+  raven: {
+    requires: ['cfg'],
+    setup: ({cfg}) => {
+      if (cfg.raven.sentryDSN) {
+        return new raven.Client(cfg.raven.sentryDSN);
+      }
+      return null;
+    }
+  },
+
   validator: {
     requires: ['cfg'],
     setup: ({cfg}) => common.buildValidator(cfg)
@@ -61,8 +72,8 @@ var load = loader({
   },
 
   router: {
-    requires: ['cfg', 'entity', 'validator', 'drain'],
-    setup: ({cfg, entity, validator, drain}) => api.setup({
+    requires: ['cfg', 'entity', 'validator', 'drain', 'raven'],
+    setup: ({cfg, entity, validator, drain, raven}) => api.setup({
       context:          {cfg, entity},
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
       publish:          cfg.taskclusterSecrets.publishMetaData === 'true',
@@ -72,6 +83,7 @@ var load = loader({
       component:        cfg.taskclusterSecrets.statsComponent,
       drain,
       validator,
+      raven,
     })
   },
 
