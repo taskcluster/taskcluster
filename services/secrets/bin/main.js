@@ -3,6 +3,7 @@ import Debug from 'debug';
 import api from '../lib/api';
 import data from '../lib/data';
 import assert from 'assert';
+import base from 'taskcluster-base';
 import path from 'path';
 import common from '../lib/common';
 import Promise from 'promise';
@@ -17,20 +18,20 @@ let debug = Debug('secrets:server');
 var load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => common.loadConfig(profile)
+    setup: ({profile}) => base.config({profile})
   },
 
   drain: {
     requires: ['cfg', 'process'],
     setup: ({cfg, process}) => {
-      if (cfg.get('influx:connectionString')) {
+      if (cfg.influx.connectionString) {
         var drain = common.buildInfluxStatsDrain(
-          cfg.get('influx:connectionString'),
-          cfg.get('influx:maxDelay'),
-          cfg.get('influx:maxPendingPoints'));
+          cfg.influx.connectionString,
+          cfg.influx.maxDelay,
+          cfg.influx.maxPendingPoints);
         // Start monitoring the process
         stats.startProcessUsageReporting({
-          component:  cfg.get('taskclusterSecrets:statsComponent'),
+          component:  cfg.taskclusterSecrets.statsComponent,
           drain, process,
         });
       } else {
@@ -48,12 +49,12 @@ var load = loader({
   entity: {
     requires: ['cfg', 'drain', 'process'],
     setup: ({cfg, drain, process}) => data.SecretEntity.setup({
-      account:          cfg.get('azure:accountName'),
-      credentials:      cfg.get('taskcluster:credentials'),
-      table:            cfg.get('azure:tableName'),
-      cryptoKey:        cfg.get('azure:cryptoKey'),
-      signingKey:       cfg.get('azure:signingKey'),
-      component:        cfg.get('taskclusterSecrets:statsComponent'),
+      account:          cfg.azure.accountName,
+      credentials:      cfg.taskcluster.credentials,
+      table:            cfg.azure.tableName,
+      cryptoKey:        cfg.azure.cryptoKey,
+      signingKey:       cfg.azure.signingKey,
+      component:        cfg.taskclusterSecrets.statsComponent,
       drain,
       process,
     })
@@ -63,12 +64,12 @@ var load = loader({
     requires: ['cfg', 'entity', 'validator', 'drain'],
     setup: ({cfg, entity, validator, drain}) => api.setup({
       context:          {cfg, entity},
-      authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
-      publish:          cfg.get('taskclusterSecrets:publishMetaData') === 'true',
-      baseUrl:          cfg.get('server:publicUrl') + '/v1',
+      authBaseUrl:      cfg.taskcluster.authBaseUrl,
+      publish:          cfg.taskclusterSecrets.publishMetaData === 'true',
+      baseUrl:          cfg.server.publicUrl + '/v1',
       referencePrefix:  'secrets/v1/api.json',
-      aws:              cfg.get('aws'),
-      component:        cfg.get('taskclusterSecrets:statsComponent'),
+      aws:              cfg.aws,
+      component:        cfg.taskclusterSecrets.statsComponent,
       drain,
       validator,
     })
@@ -78,10 +79,10 @@ var load = loader({
     requires: ['cfg', 'router'],
     setup: ({cfg, router}) => {
       let secretsApp = app({
-        port:           Number(process.env.PORT || cfg.get('server:port')),
-        env:            cfg.get('server:env'),
-        forceSSL:       cfg.get('server:forceSSL'),
-        trustProxy:     cfg.get('server:trustProxy')
+        port:           Number(process.env.PORT || cfg.server.port),
+        env:            cfg.server.env,
+        forceSSL:       cfg.server.forceSSL,
+        trustProxy:     cfg.server.trustProxy
       });
 
       // Mount API router
@@ -96,7 +97,7 @@ var load = loader({
     requires: ['cfg', 'entity'],
     setup: async ({cfg, entity}) => {
       // Find an secret expiration delay
-      var delay = cfg.get('taskclusterSecrets:secretExpirationDelay');
+      var delay = cfg.taskclusterSecrets.secretExpirationDelay;
       var now   = taskcluster.fromNow(delay);
       assert(!_.isNaN(now), "Can't have NaN as now");
 
