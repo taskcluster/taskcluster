@@ -462,7 +462,7 @@ func main() {
             "url2",
             "url3",
         },
-        ExportTypes: true
+        ExportTypes: true,
     }
     result, err := job.Execute()
     if err != nil {
