@@ -19,6 +19,7 @@
     "debug": "^2.2.0",
     "express": "4.9.0",
     "express-sslify": "0.1.0",
+    "hsts": "^1.0.0",
     "lodash": "2.4.1",
     "morgan-debug": "^1.0.0",
     "promise": "^7.0.4",
