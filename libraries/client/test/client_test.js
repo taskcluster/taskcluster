@@ -361,9 +361,21 @@ suite('client requests/responses', function() {
     assert(record.baseUrl, "Error in record.baseUrl");
   });
 
+  let assertBewitUrl = function(url, expected) {
+    url = url.replace(/bewit=[^&]*/, "bewit=XXX");
+    assert.equal(url, expected);
+  };
+
+  // note that the signatures for buildSignedUrl are checked in creds_test.js
+
   test('BuildUrl', async () => {
     let url = client.buildUrl(client.get);
     assert.equal(url, 'https://fake.taskcluster.net/v1/get-test');
+  });
+
+  test('BuildSignedUrl', async () => {
+    let url = client.buildSignedUrl(client.get);
+    assertBewitUrl(url, "https://fake.taskcluster.net/v1/get-test?bewit=XXX");
   });
 
   test('BuildUrl with parameter', async () => {
@@ -371,9 +383,20 @@ suite('client requests/responses', function() {
     assert.equal(url, 'https://fake.taskcluster.net/v1/url-param/test/list');
   });
 
+  test('BuildSignedUrl with parameter', async () => {
+    let url = client.buildSignedUrl(client.param, 'test');
+    assertBewitUrl(url, "https://fake.taskcluster.net/v1/url-param/test/list?bewit=XXX");
+  });
+
   test('BuildUrl with two parameters', async () => {
     let url = client.buildUrl(client.param2, 'test', 'te/st');
     assert.equal(url, 'https://fake.taskcluster.net/v1/url-param2/test/te%2Fst/list');
+  });
+
+  test('BuildSignedUrl with two parameters', async () => {
+    let url = client.buildSignedUrl(client.param2, 'test', 'te/st');
+    assertBewitUrl(url,
+      'https://fake.taskcluster.net/v1/url-param2/test/te%2Fst/list?bewit=XXX');
   });
 
   test('BuildUrl with missing parameter', async () => {
@@ -385,14 +408,33 @@ suite('client requests/responses', function() {
     assert(false);
   });
 
+  test('BuildSignedUrl with missing parameter', async () => {
+    try {
+      client.buildSignedUrl(client.param2, 'te/st');
+    } catch (err) {
+      return;
+    }
+    assert(false);
+  });
+
   test('BuildUrl with query-string', async () => {
     let url = client.buildUrl(client.query, {option: 2});
     assert.equal(url, 'https://fake.taskcluster.net/v1/query/test?option=2');
   });
 
+  test('BuildSignedUrl with query-string', async () => {
+    let url = client.buildSignedUrl(client.query, {option: 2});
+    assertBewitUrl(url, 'https://fake.taskcluster.net/v1/query/test?option=2&bewit=XXX');
+  });
+
   test('BuildUrl with empty query-string', async () => {
     let url = client.buildUrl(client.query, {});
     assert.equal(url, 'https://fake.taskcluster.net/v1/query/test');
+  });
+
+  test('BuildSignedUrl with query-string', async () => {
+    let url = client.buildSignedUrl(client.query, {});
+    assertBewitUrl(url, 'https://fake.taskcluster.net/v1/query/test?bewit=XXX');
   });
 
   test('BuildUrl with query-string (wrong key)', async () => {
@@ -404,9 +446,24 @@ suite('client requests/responses', function() {
     assert(false);
   });
 
+  test('BuildSignedUrl with query-string (wrong key)', async () => {
+    try {
+      client.buildSignedUrl(client.query, {wrongKey: 2});
+    } catch (err) {
+      return;
+    }
+    assert(false);
+  });
+
   test('BuildUrl with param and query-string', async () => {
     let url = client.buildUrl(client.paramQuery, 'test', {option: 2});
     assert.equal(url, 'https://fake.taskcluster.net/v1/param-query/test?option=2');
+  });
+
+  test('BuildSignedUrl with param and query-string', async () => {
+    let url = client.buildSignedUrl(client.paramQuery, 'test', {option: 2});
+    assertBewitUrl(url,
+      'https://fake.taskcluster.net/v1/param-query/test?option=2&bewit=XXX');
   });
 
   test('BuildUrl with param and no query (when supported)', async () => {
@@ -414,9 +471,29 @@ suite('client requests/responses', function() {
     assert.equal(url, 'https://fake.taskcluster.net/v1/param-query/test?option=34');
   });
 
+  test('BuildSignedUrl with param and no query (when supported)', async () => {
+    let url = client.buildSignedUrl(client.paramQuery, 'test', {option: 34});
+    assertBewitUrl(url,
+      'https://fake.taskcluster.net/v1/param-query/test?option=34&bewit=XXX');
+  });
+
   test('BuildUrl with param and empty query', async () => {
     let url = client.buildUrl(client.paramQuery, 'test', {});
     assert.equal(url, 'https://fake.taskcluster.net/v1/param-query/test');
+  });
+
+  test('BuildSignedUrl with param and empty query', async () => {
+    let url = client.buildSignedUrl(client.paramQuery, 'test', {});
+    assertBewitUrl(url, 'https://fake.taskcluster.net/v1/param-query/test?bewit=XXX');
+  });
+
+  test('BuildUrl with missing parameter, but query options', async () => {
+    try {
+      client.buildUrl(client.paramQuery, {option: 2});
+    } catch (err) {
+      return;
+    }
+    assert(false);
   });
 
   test('BuildUrl with missing parameter, but query options', async () => {
@@ -436,4 +513,14 @@ suite('client requests/responses', function() {
     }
     assert(false);
   });
+
+  test('buildSignedUrl for missing method', async () => {
+    try {
+      client.buildSignedUrl('test');
+    } catch (err) {
+      return;
+    }
+    assert(false);
+  });
+
 });

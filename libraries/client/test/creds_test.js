@@ -232,177 +232,93 @@ suite('client credential handling', function() {
     });
   });
 
-  // for signed URLs, we must use a 'GET' method; see
-  // https://github.com/taskcluster/taskcluster-auth/pull/47
+  let getJson = async function(url) {
+    let res = await request.get(url).end();
+    return res.body;
+  };
 
-  test.skip('buildSignedUrl', async () => {
-    let url = client({}).buildSignedUrl(client.currentScopes);
+  test('buildSignedUrl', async () => {
+    let cl = client();
+    let url = cl.buildSignedUrl(cl.testAuthenticateGet);
     assert((await request.get(url).end()).ok);
   });
 
 
-  test.skip('buildSignedUrl with parameter', async () => {
-    let url = client.buildSignedUrl(client.param, 'test');
-    assert((await request.get(url).end()).ok);
-  });
-
-  test.skip('buildSignedUrl with two parameters', async () => {
-    let url = client.buildSignedUrl(client.param2, 'test', 'te/st');
-    assert((await request.get(url).end()).ok);
-  });
-
-  test.skip('buildSignedUrl with missing parameter', async () => {
-    try {
-      client.buildSignedUrl(client.param2, 'te/st');
-    } catch (err) {
-      return;
-    }
-    assert(false);
-  });
-
-  test.skip('buildSignedUrl with query-string', async () => {
-    let url = client.buildSignedUrl(client.query, {option: 2});
-    assert((await request.get(url).end()).ok);
-  });
-
-  test.skip('buildSignedUrl with empty query-string', async () => {
-    let url = client.buildSignedUrl(client.query, {});
-    assert((await request.get(url).end()).ok);
-  });
-
-  test.skip('buildSignedUrl with query-string (wrong key)', async () => {
-    try {
-      client.buildSignedUrl(client.query, {wrongKey: 2});
-    } catch (err) {
-      return;
-    }
-    assert(false);
-  });
-
-  test.skip('buildSignedUrl with param and query-string', async () => {
-    let url = client.buildSignedUrl(client.paramQuery, 'test', {option: 2});
-    assert((await request.get(url).end()).ok);
-  });
-
-  test.skip('buildSignedUrl with param and no query (when supported)', async () => {
-    let url = client.buildSignedUrl(client.paramQuery, 'test', {option: 34});
-    assert((await request.get(url).end()).ok);
-  });
-
-  test.skip('buildSignedUrl with param and empty query', async () => {
-    let url = client.buildSignedUrl(client.paramQuery, 'test', {});
-    assert((await request.get(url).end()).ok);
-  });
-
-  test.skip('buildSignedUrl with missing parameter, but query options', async () => {
-    try {
-      client.buildSignedUrl(client.paramQuery, {option: 2});
-    } catch (err) {
-      return;
-    }
-    assert(false);
-  });
-
-  test.skip('buildSignedUrl for missing method', async () => {
-    try {
-      client.buildSignedUrl('test');
-    } catch (err) {
-      return;
-    }
-    assert(false);
-  });
-
-  test.skip('buildSignedUrl authorizedScopes', async () => {
-    let client = new Client({
+  test('buildSignedUrl authorizedScopes', async () => {
+    let cl = client({
       credentials: {
         clientId:     'tester',
-        accessToken:  'secret',
+        accessToken:  'no-secret',
       },
-      authorizedScopes: ['test:query'],
+      authorizedScopes: ['test:authenticate-get', 'test:foo'],
     })
-    let url = client.buildSignedUrl(client.query, {option: 2});
-    assert((await request.get(url).end()).ok);
+    let url = cl.buildSignedUrl(cl.testAuthenticateGet);
+    assert.deepEqual((await getJson(url)).scopes,
+                     ['test:authenticate-get', 'test:foo']);
   });
 
-  test.skip('buildSignedUrl authorizedScopes (unauthorized)', async () => {
-    let client = new Client({
+  test('buildSignedUrl authorizedScopes (unauthorized)', async () => {
+    let cl = client({
       credentials: {
         clientId:     'tester',
-        accessToken:  'secret',
+        accessToken:  'no-secret',
       },
-      authorizedScopes: ['test:get'],
+      authorizedScopes: ['test:get'],  // no test:authenticate-get
     })
-    let url = client.buildSignedUrl(client.query, {option: 2});
+    let url = cl.buildSignedUrl(cl.testAuthenticateGet);
     await request.get(url).end().then(() => assert(false), err => {
       assert(err.response.statusCode === 403);
     });
   });
 
-  test.skip('buildSignedUrl with temporary credentials', async () => {
+  test('buildSignedUrl with temporary credentials', async () => {
     var tempCreds = taskcluster.createTemporaryCredentials({
-      scopes: ['test:query'],
+      scopes: ['test:authenticate-get', 'test:bar'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
         clientId:       'tester',
-        accessToken:    'secret',
+        accessToken:    'no-secret',
       },
     });
-    let client = new Client({
+    let cl = client({
       credentials: tempCreds
     });
-    let url = client.buildSignedUrl(client.query, {option: 2});
-    assert((await request.get(url).end()).ok);
+    let url = cl.buildSignedUrl(cl.testAuthenticateGet);
+    assert.deepEqual((await getJson(url)).scopes,
+                     ['test:authenticate-get', 'test:bar']);
   });
 
-  test.skip('buildSignedUrl with temporary credentials (unauthorized)', async () => {
-        var tempCreds = taskcluster.createTemporaryCredentials({
-      scopes: ['test:get'],
-      expiry: new Date(new Date().getTime() + 60 * 1000),
-      credentials: {
-        clientId:       'tester',
-        accessToken:    'secret',
-      },
-    });
-    let client = new Client({
-      credentials: tempCreds
-    });
-    let url = client.buildSignedUrl(client.query, {option: 2});
-    await request.get(url).end().then(() => assert(false), err => {
-      assert(err.response.statusCode === 403);
-    });
-  });
-
-  test.skip('buildSignedUrl with temporary credentials and expiration', async () => {
+  test('buildSignedUrl with temporary credentials and expiration', async () => {
     var tempCreds = taskcluster.createTemporaryCredentials({
-      scopes: ['test:query'],
+      scopes: ['test:authenticate-get'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
         clientId:       'tester',
-        accessToken:    'secret',
+        accessToken:    'no-secret',
       },
     });
-    let client = new Client({
+    let cl = client({
       credentials: tempCreds
     });
-    let url = client.buildSignedUrl(client.query, {option: 2}, {
+    let url = cl.buildSignedUrl(cl.testAuthenticateGet, {
       expiration: 600,
     });
     assert((await request.get(url).end()).ok);
   });
 
-  test.skip('buildSignedUrl with temporary credentials (expired)', async () => {
+  test('buildSignedUrl with temporary credentials (expired)', async () => {
     var tempCreds = taskcluster.createTemporaryCredentials({
-      scopes: ['test:query'],
+      scopes: ['test:query', 'test:authenticate-get'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
         clientId:       'tester',
-        accessToken:    'secret',
+        accessToken:    'no-secret',
       },
     });
-    let client = new Client({
+    let cl = client({
       credentials: tempCreds
     });
-    let url = client.buildSignedUrl(client.query, {option: 2}, {
+    let url = cl.buildSignedUrl(cl.testAuthenticateGet, {
       expiration: -600, // This seems to work, not sure how long it will work...
     });
     await request.get(url).end().then(() => assert(false), err => {
@@ -410,40 +326,21 @@ suite('client credential handling', function() {
     });
   });
 
-  test.skip('buildSignedUrl, temp creds + authedScopes ', async () => {
+  test('buildSignedUrl, temp creds + authedScopes ', async () => {
     var tempCreds = taskcluster.createTemporaryCredentials({
-      scopes: ['test:que*'],
+      scopes: ['test:auth*'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
         clientId:       'tester',
-        accessToken:    'secret',
+        accessToken:    'no-secret',
       },
     });
-    let client = new Client({
+    let cl = client({
       credentials: tempCreds,
-      authorizedScopes: ['test:query'],
+      authorizedScopes: ['test:authenticate-get'],
     });
-    let url = client.buildSignedUrl(client.query, {option: 2});
-    assert((await request.get(url).end()).ok);
-  });
-
-  test.skip('buildSignedUrl, temp creds + authedScopes (unauthorized)', async () => {
-    var tempCreds = taskcluster.createTemporaryCredentials({
-      scopes: ['test:quer*'],
-      expiry: new Date(new Date().getTime() + 60 * 1000),
-      credentials: {
-        clientId:       'tester',
-        accessToken:    'secret',
-      },
-    });
-    let client = new Client({
-      credentials: tempCreds,
-      authorizedScopes: ['test:querying'],
-    });
-    let url = client.buildSignedUrl(client.query, {option: 2});
-    await request.get(url).end().then(() => assert(false), err => {
-      assert(err.response.statusCode === 403);
-    });
+    let url = cl.buildSignedUrl(cl.testAuthenticateGet);
+    assert.deepEqual((await getJson(url)).scopes, ['test:authenticate-get']);
   });
 
   suite('Get with credentials from environment variables', async () => {

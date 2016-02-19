@@ -174,6 +174,7 @@ var auth = new taskcluster.Auth(options);
  * `auth.azureTableSAS(account, table) : result`
  * `auth.authenticateHawk(payload) : result`
  * `auth.testAuthenticate(payload) : result`
+ * `auth.testAuthenticateGet() : result`
  * `auth.ping() : void`
 
 ### Methods in `taskcluster.AwsProvisioner`
