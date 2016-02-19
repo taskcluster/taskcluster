@@ -30,6 +30,7 @@ sudo apt-get install -y \
     curl \
     build-essential \
     linux-image-extra-`uname -r` \
+    linux-image-extra-virtual \
     git-core \
     pbuilder \
     python-mock \
