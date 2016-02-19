@@ -8,6 +8,7 @@ var morganDebug     = require('morgan-debug');
 var Promise         = require('promise');
 var http            = require('http');
 var sslify          = require('express-sslify');
+var hsts            = require('hsts');
 
 /** Notify LocalApp if running under this */
 var notifyLocalAppInParentProcess = function(port) {
@@ -83,6 +84,17 @@ var app = function(options) {
   // ForceSSL if required suggested
   if (options.forceSSL) {
     app.use(sslify.HTTPS(options.trustProxy));
+  }
+
+  // When we force SSL, we also want to set the HSTS header file correctly.  We
+  // also want to allow testing code to check for the HSTS header being
+  // generated correctly without having to generate an SSL cert and key and
+  // have express listen on ssl
+  if (options.forceSSL || options.forceHSTS) {
+    app.use(hsts({
+      maxAge: 1000 * 60 * 60 * 24 * 90,
+      force:true,
+    }));
   }
 
   // Middleware for development

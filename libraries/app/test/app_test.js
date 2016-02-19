@@ -11,6 +11,7 @@ suite("app", function() {
       port:       1459,
       env:        'development',
       forceSSL:   false,
+      forceHSTS:  true,
       trustProxy: false
     });
     assert(app, "Should have an app");
@@ -28,6 +29,7 @@ suite("app", function() {
     }).then(function(res) {
       assert(res.ok, "Got response");
       assert(res.text == "Okay this works", "Got the right text");
+      assert(res.headers['strict-transport-security'] === 'max-age=7776000');
       return server.terminate();
     });
   });
