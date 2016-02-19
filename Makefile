@@ -1,18 +1,10 @@
 PYTHON := python
 VENV := env-$(basename $(PYTHON))
-NODE_VER := v0.12.9
-NODE_PLAT := $(shell uname | tr A-Z a-z)-x64
-NODE_NAME := node-$(NODE_VER)-$(NODE_PLAT)
-export NODE_BIN := $(PWD)/$(NODE_NAME)/bin/node
-NODE_URL := http://nodejs.org/dist/$(NODE_VER)/$(NODE_NAME).tar.gz
-NODE_SRC := $(PWD)/node_sources
-export NODE_PATH := $(PWD)/$(NODE_NAME)/lib/node_modules
-NPM_INST := env PATH=$(PATH):$(PWD)/$(NODE_NAME)/bin $(PWD)/$(NODE_NAME)/bin/npm install --prefix $(PWD)/$(NODE_NAME) -g
 
 .PHONY: test
-test: $(VENV)/bin/python $(NODE_BIN)
+test: $(VENV)/bin/python
 	FLAKE8=$(VENV)/bin/flake8 PYTHON=$(VENV)/bin/python \
-	NODE_BIN=$(NODE_BIN) TOX=$(VENV)/bin/tox COVERAGE=$(VENV)/bin/coverage ./test.sh
+	TOX=$(VENV)/bin/tox COVERAGE=$(VENV)/bin/coverage ./test.sh
 
 JS_CLIENT_BRANCH=master
 APIS_JSON=$(PWD)/taskcluster/apis.json
@@ -53,20 +45,6 @@ docs:
 	$(VENV)/bin/python -mpip install sphinx
 	$(VENV)/bin/python makeRst.py > docs/client.rst
 	LC_CTYPE= make -C docs html SPHINXBUILD=$(abspath $(VENV)/bin/sphinx-build)
-
-$(NODE_BIN):
-	curl -LO $(NODE_URL)
-	tar zxf node-$(NODE_VER)-$(NODE_PLAT).tar.gz
-	$(NPM_INST) debug
-	$(NPM_INST) taskcluster-base@0.8.6
-
-# For convenience
-node: $(NODE_BIN)
-	rm -f $@
-	ln -s $(NODE_NAME) $@
-
-run_node: $(NODE_BIN)
-	$(NODE_BIN)
 
 run_python: $(VENV)/bin/python
 	$(VENV)/bin/python testscript.py
