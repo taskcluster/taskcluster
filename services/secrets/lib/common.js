@@ -8,35 +8,13 @@ var common = module.exports = {};
 // Used in schema validation, shared across all config profiles
 common.SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/secrets/v1/';
 
-// import a config file from ../config and merge it
-// with sensible defaults and environment variables
-common.loadConfig = function(profile) {
-  return base.config({
-    defaults:     require('../config/defaults'),
-    profile:      require('../config/' + profile),
-    envs: [
-      'taskcluster_credentials_clientId',
-      'taskcluster_credentials_accessToken',
-      'azure_accountName',
-      'azure_tableName',
-      'azure_cryptoKey',
-      'azure_signingKey',
-      'aws_accessKeyId',
-      'aws_secretAccessKey',
-      'influx_connectionString',
-      'taskclusterSecrets_publishMetaData'
-    ],
-    filename:     'taskcluster-secrets'
-  });
-};
-
 // Create a validator
 common.buildValidator = function(cfg) {
   return base.validator({
-    publish:          cfg.get('taskclusterSecrets:publishMetaData') === 'true',
+    publish:          cfg.taskclusterSecrets.publishMetaData === 'true',
     folder:           path.join(__dirname, '..', 'schemas'),
     schemaPrefix:     'secrets/v1/',
-    aws:              cfg.get('aws')
+    aws:              cfg.aws
   });
 };
 

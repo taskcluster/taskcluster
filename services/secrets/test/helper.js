@@ -11,8 +11,8 @@ import load from '../bin/main';
 var helper = module.exports = {};
 
 // Load configuration
-var cfg = common.loadConfig('test');
-const baseUrl = cfg.get('server:publicUrl') + '/v1';
+var cfg = base.config({profile: 'test'});
+const baseUrl = cfg.server.publicUrl + '/v1';
 
 // Some clients for the tests, with differents scopes.  These are turned
 // into temporary credentials based on the main test credentials, so
