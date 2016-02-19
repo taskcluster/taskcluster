@@ -636,6 +636,25 @@ class TestAuthentication(base.TCTest):
         })
         self.assertEqual(result, {'scopes': ['test:xyz'], 'clientId': 'tester'})
 
+    def test_named_temporary_credentials(self):
+        tempCred = subject.createTemporaryCredentials(
+            'tester',
+            'no-secret',
+            datetime.datetime.utcnow() - datetime.timedelta(hours=10),
+            datetime.datetime.utcnow() + datetime.timedelta(hours=10),
+            ['test:xyz'],
+            name='credName'
+        )
+        client = subject.Auth({
+            'credentials': tempCred,
+        })
+
+        result = client.testAuthenticate({
+            'clientScopes': ['test:*', 'auth:create-client:credName'],
+            'requiredScopes': ['test:xyz'],
+        })
+        self.assertEqual(result, {'scopes': ['test:xyz'], 'clientId': 'credName'})
+
     def test_temporary_credentials_authorizedScopes(self):
         tempCred = subject.createTemporaryCredentials(
             'tester',
@@ -655,6 +674,27 @@ class TestAuthentication(base.TCTest):
         })
         self.assertEqual(result, {'scopes': ['test:xyz:abc'],
                                   'clientId': 'tester'})
+
+    def test_named_temporary_credentials_authorizedScopes(self):
+        tempCred = subject.createTemporaryCredentials(
+            'tester',
+            'no-secret',
+            datetime.datetime.utcnow() - datetime.timedelta(hours=10),
+            datetime.datetime.utcnow() + datetime.timedelta(hours=10),
+            ['test:xyz:*'],
+            name='credName'
+        )
+        client = subject.Auth({
+            'credentials': tempCred,
+            'authorizedScopes': ['test:xyz:abc'],
+        })
+
+        result = client.testAuthenticate({
+            'clientScopes': ['test:*', 'auth:create-client:credName'],
+            'requiredScopes': ['test:xyz:abc'],
+        })
+        self.assertEqual(result, {'scopes': ['test:xyz:abc'],
+                                  'clientId': 'credName'})
 
     def test_signed_url(self):
         """we can use a signed url built with the python client"""

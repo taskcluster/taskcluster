@@ -529,14 +529,15 @@ def createApiClient(name, api):
     return type(name.encode('utf-8'), (BaseClient,), attributes)
 
 
-def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
+def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes, name=None):
     """ Create a set of temporary credentials
 
+    clientId: the issuing clientId
+    accessToken: the issuer's accessToken
     start: start time of credentials, seconds since epoch
     expiry: expiration time of credentials, seconds since epoch
     scopes: list of scopes granted
-    credentials: { 'clientId': None, 'accessToken': None }
-         credentials to use to generate temporary credentials
+    name: credential name (optional)
 
     Returns a dictionary in the form:
         { 'clientId': str, 'accessToken: str, 'certificate': str}
@@ -565,13 +566,23 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
         seed=utils.slugId() + utils.slugId(),
     )
 
-    sigStr = '\n'.join([
-        'version:' + str(cert['version']),
+    # if this is a named temporary credential, include the issuer in the certificate
+    if name:
+        cert['issuer'] = clientId
+
+    sig = ['version:' + str(cert['version'])]
+    if name:
+        sig.extend([
+            'clientId:' + name,
+            'issuer:' + clientId,
+        ])
+    sig.extend([
         'seed:' + cert['seed'],
         'start:' + str(cert['start']),
         'expiry:' + str(cert['expiry']),
         'scopes:'
     ] + scopes)
+    sigStr = '\n'.join(sig)
 
     sig = hmac.new(accessToken, sigStr, hashlib.sha256).digest()
 
@@ -581,7 +592,7 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
     newToken = utils.makeB64UrlSafe(utils.encodeStringForB64Header(newToken)).replace('=', '')
 
     return {
-        'clientId': clientId,
+        'clientId': name if name else clientId,
         'accessToken': newToken,
         'certificate': utils.dumpJson(cert),
     }
