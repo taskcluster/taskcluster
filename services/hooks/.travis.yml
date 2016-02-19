@@ -9,7 +9,7 @@ services:
 script: npm test
 before_install:
 # unpack the secrets, but only if this is not a pull request; otherwise, the tests will run with no credentials
-- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && openssl aes-256-cbc -K $encrypted_c76f7cd53afb_key -iv $encrypted_c76f7cd53afb_iv -in user-config.yml.enc -out user-config.yml -d
+- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && openssl aes-256-cbc -K $encrypted_c76f7cd53afb_key -iv $encrypted_c76f7cd53afb_iv -in user-config.yml.enc -out user-config.yml -d'
 
 # encrpyt channel name to get around issue
 # https://github.com/travis-ci/travis-ci/issues/1094
