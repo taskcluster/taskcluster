@@ -286,7 +286,7 @@ func (p *Properties) postPopulate(job *Job) {
 		sort.Strings(p.SortedPropertyNames)
 		members := make(stringSet, len(p.SortedPropertyNames))
 		for _, j := range p.SortedPropertyNames {
-			p.Properties[j].TypeName = text.GoIdentifierFrom(j, job.ExportTypes, members)
+			p.Properties[j].TypeName = text.GoIdentifierFrom(j, true, members)
 		}
 	}
 }
