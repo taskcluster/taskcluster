@@ -351,6 +351,20 @@ module.exports = {
         {
           "args": [
           ],
+          "description": "Utility method similar to `testAuthenticate`, but with the GET method,\nso it can be used with signed URLs (bewits).\n\nRather than using real credentials, this endpoint accepts requests with\nclientId `tester` and accessToken `no-secret`. That client's scopes are\n`['test:*', 'auth:create-client:test:*']`.  The call fails if the \n`test:authenticate-get` scope is not available.\n\nThe request is validated, with any certificate, authorizedScopes, etc.\napplied, and the resulting scopes are checked, just like any API call.\nOn success, the response contains the clientId and scopes as seen by\nthe API method.\n\nThis method may later be extended to allow specification of client and\nrequired scopes via query arguments.",
+          "method": "get",
+          "name": "testAuthenticateGet",
+          "output": "http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#",
+          "query": [
+          ],
+          "route": "/test-authenticate-get/",
+          "stability": "experimental",
+          "title": "Test Authentication (GET)",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
           "method": "get",
           "name": "ping",
@@ -841,6 +855,8 @@ module.exports = {
           "method": "get",
           "name": "listHookGroups",
           "output": "http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json",
+          "query": [
+          ],
           "route": "/hooks",
           "stability": "experimental",
           "title": "List hook groups",
@@ -854,6 +870,8 @@ module.exports = {
           "method": "get",
           "name": "listHooks",
           "output": "http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json",
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>",
           "stability": "experimental",
           "title": "List hooks in a given group",
@@ -868,6 +886,8 @@ module.exports = {
           "method": "get",
           "name": "hook",
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-definition.json",
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>",
           "stability": "experimental",
           "title": "Get hook definition",
@@ -882,6 +902,8 @@ module.exports = {
           "method": "get",
           "name": "getHookStatus",
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-status.json",
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>/status",
           "stability": "experimental",
           "title": "Get hook status",
@@ -896,6 +918,8 @@ module.exports = {
           "method": "get",
           "name": "getHookSchedule",
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-schedule.json",
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>/schedule",
           "stability": "deprecated",
           "title": "Get hook schedule",
@@ -911,6 +935,8 @@ module.exports = {
           "method": "put",
           "name": "createHook",
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-definition.json",
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>",
           "scopes": [
             [
@@ -932,6 +958,8 @@ module.exports = {
           "method": "post",
           "name": "updateHook",
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-definition.json",
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>",
           "scopes": [
             [
@@ -951,6 +979,8 @@ module.exports = {
           "description": "This endpoint will remove a hook definition.",
           "method": "delete",
           "name": "removeHook",
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>",
           "scopes": [
             [
