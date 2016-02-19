@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 16 Feb 2016 at 16:27:00 UTC. The code was generated
+// Fri, 19 Feb 2016 at 18:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -218,25 +218,11 @@ func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) (*tccl
 // not include worker types which are left overs from a deleted worker
 // type definition but are still running in AWS.
 //
-// Required scopes:
-//   * aws-provisioner:list-worker-types
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#listWorkerTypes
 func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*awsProvisioner)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/list-worker-types", new(ListWorkerTypes), nil)
 	return responseObject.(*ListWorkerTypes), callSummary, err
-}
-
-// Returns a signed URL for ListWorkerTypes, valid for the specified duration.
-//
-// Required scopes:
-//   * aws-provisioner:list-worker-types
-//
-// See ListWorkerTypes for more details.
-func (awsProvisioner *AwsProvisioner) ListWorkerTypes_SignedURL(duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*awsProvisioner)
-	return (&cd).SignedURL("/list-worker-types", nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
