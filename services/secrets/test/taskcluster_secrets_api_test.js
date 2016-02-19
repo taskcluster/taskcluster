@@ -45,14 +45,14 @@ suite("TaskCluster-Secrets", () => {
       apiCall:    "set",
       name:       "tennille:" + FOO_KEY,
       args:       testValueExpires,
-      statusCode: 401 // It's not authorized!
+      statusCode: 403 // It's not authorized!
     },
     {
       testName:   "Captain (write only), fail to read.",
       clientName: "captain-write",
       apiCall:    "get",
       name:        "captain:" + FOO_KEY,
-      statusCode: 401 // it's not authorized!
+      statusCode: 403 // it's not authorized!
     },
     {
       testName:   "Captain (write only), succceed overwriting existing.",
