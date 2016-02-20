@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster-client-go/text"
+	"github.com/taskcluster/jsonschema2go/text"
 )
 
 ////////////////////////////////////////////////////////////////////////

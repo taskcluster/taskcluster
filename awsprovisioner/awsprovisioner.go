@@ -218,25 +218,11 @@ func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) (*tccl
 // not include worker types which are left overs from a deleted worker
 // type definition but are still running in AWS.
 //
-// Required scopes:
-//   * aws-provisioner:list-worker-types
-//
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#listWorkerTypes
 func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*awsProvisioner)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/list-worker-types", new(ListWorkerTypes), nil)
 	return responseObject.(*ListWorkerTypes), callSummary, err
-}
-
-// Returns a signed URL for ListWorkerTypes, valid for the specified duration.
-//
-// Required scopes:
-//   * aws-provisioner:list-worker-types
-//
-// See ListWorkerTypes for more details.
-func (awsProvisioner *AwsProvisioner) ListWorkerTypes_SignedURL(duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*awsProvisioner)
-	return (&cd).SignedURL("/list-worker-types", nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***

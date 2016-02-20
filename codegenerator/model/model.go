@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/jsonschema2go"
-	"github.com/taskcluster/taskcluster-client-go/text"
+	"github.com/taskcluster/jsonschema2go/text"
 	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/tools/imports"
 )

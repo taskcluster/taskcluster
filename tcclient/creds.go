@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/taskcluster/jsonschema2go/text"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster-client-go/text"
 )
 
 type Credentials struct {
