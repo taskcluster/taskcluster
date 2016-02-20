@@ -25,7 +25,7 @@ def createApiRef(**kwargs):
         'version': '0.0.1',
         'title': 'API Title',
         'description': 'API Description',
-        'baseUrl': 'https://localhost:8555/v1',
+        'baseUrl': 'https://fake.taskcluster.net/v1',
         'exchangePrefix': 'test/v1',
         'entries': []
     }
