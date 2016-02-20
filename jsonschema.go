@@ -15,7 +15,7 @@ import (
 	"strings"
 
 	"github.com/ghodss/yaml"
-	"github.com/taskcluster/taskcluster-client-go/text"
+	"github.com/taskcluster/jsonschema2go/text"
 )
 
 type (
