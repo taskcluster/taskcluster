@@ -77,7 +77,7 @@ class BaseClient(object):
         log.debug(dict((k, v) for k, v in o.items() if k != 'credentials'))
 
         if session:
-            self.session = options.session
+            self.session = session
         else:
             self.session = createSession()
 
