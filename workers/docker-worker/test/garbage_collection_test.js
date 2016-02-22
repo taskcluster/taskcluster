@@ -12,6 +12,7 @@ suite('garbage collection tests', function () {
   var waitForEvent = require('../lib/wait_for_event');
   var path = require('path');
   var rmrf = require('rimraf');
+  var removeImage = require('../lib/util/remove_image').removeImage;
 
   var IMAGE = 'taskcluster/test-ubuntu';
 
@@ -342,7 +343,7 @@ suite('garbage collection tests', function () {
     gc.markImage(imageId);
 
     var image = docker.getImage(imageId);
-    yield image.remove();
+    yield removeImage(docker, imageId);
 
     gc.sweep();
 

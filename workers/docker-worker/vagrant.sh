@@ -2,18 +2,29 @@
 
 sudo ln -s /vagrant /worker
 
+NODE_VERSION=v0.12.4
+DOCKER_VERSION=1.6.1
+
 # Install node
-export NODE_VERSION=v0.12.4
 cd /usr/local/ && \
   curl https://nodejs.org/dist/$NODE_VERSION/node-$NODE_VERSION-linux-x64.tar.gz | tar -xz --strip-components 1 && \
   node -v
 
+sudo apt-get install apt-transport-https
 
-sudo apt-get update
-sudo apt-get install -y lxc build-essential jq
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+sudo sh -c "echo deb https://get.docker.io/ubuntu docker main\
+> /etc/apt/sources.list.d/docker.list"
 
-# Install nice-to-haves
-sudo apt-get install -y jq
+sudo apt-get update -y
+sudo apt-get install -y \
+    lxc \
+    lxc-docker-$DOCKER_VERSION \
+    build-essential \
+    jq
+
+# Add vagrant user to the docker group
+sudo usermod -a -G docker vagrant
 
 # Install Video loopback devices
 sudo apt-get install -y \

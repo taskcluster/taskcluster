@@ -11,6 +11,7 @@ import tar from 'tar-fs';
 import TestWorker from '../testworker';
 import waitForEvent from '../../lib/wait_for_event';
 import Debug from 'debug';
+import {removeImage} from '../../lib/util/remove_image';
 
 let debug = Debug('docker-worker:test:docker-save-test');
 
@@ -86,7 +87,7 @@ suite('use docker-save', () => {
     });
     await base.testing.sleep(100);
     await Promise.all([container.remove(), fs.unlink('/tmp/dockerload.tar')]);
-    await docker.getImage(imageName).remove();
+    await removeImage(docker, imageName);
   });
 
   test('run cacheSave, then check contents', async () => {

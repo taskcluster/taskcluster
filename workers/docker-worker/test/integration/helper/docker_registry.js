@@ -5,6 +5,7 @@ import slugid from 'slugid';
 
 import waitForEvent from '../../../lib/wait_for_event';
 import sleep from '../../../lib/util/sleep';
+import {removeImage} from '../../../lib/util/remove_image';
 
 // Registry proxy image...
 const DOCKER_IMAGE = 'registry:2';
@@ -138,8 +139,8 @@ export default class Registry {
     // yet.  This is a safeguard (read: hack)
     await sleep(20000);
 
-    await newImage.remove();
-    await image.remove();
+    await removeImage(docker, newImageName);
+    await removeImage(docker, imageName);
 
     return newImageName + ':' + tag;
   }

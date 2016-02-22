@@ -7,6 +7,7 @@ import DockerWorker from '../dockerworker';
 import Registry from './helper/docker_registry';
 import * as settings from '../settings';
 import TestWorker from '../testworker';
+import {removeImage} from '../../lib/util/remove_image';
 
 const CREDENTIALS = {
   username: 'testuser',
@@ -44,8 +45,7 @@ suite('Docker custom private registry', () => {
     await worker.terminate();
     settings.cleanup();
     try {
-      let image = await docker.getImage(registryImageName);
-      await image.remove({force: true});
+      await removeImage(docker, registryImageName);
     } catch(e) {
       // 404's are ok if the test failed to pull the image
       if (e.statusCode !== 404) {
