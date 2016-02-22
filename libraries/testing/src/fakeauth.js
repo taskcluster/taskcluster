@@ -1,6 +1,7 @@
 var debug = require('debug')('taskcluster-lib-testing:FakeAuth');
 var nock = require('nock');
 var hawk = require('hawk');
+var url  = require('url');
 
 exports.start = function(clients) {
   nock('https://auth.taskcluster.net:443', {encodedQueryParams:true, allowUnmocked: true})
@@ -8,13 +9,31 @@ exports.start = function(clients) {
   .filteringRequestBody(/.*/, '*')
   .post('/v1/authenticate-hawk', '*')
   .reply(200, function(uri, requestBody) {
-    var body = JSON.parse(requestBody);
-    var authorization = hawk.utils.parseAuthorizationHeader(body.authorization);
-    var scopes = clients[authorization.id] || [];
-    var from = 'client config';
-    if (authorization.ext) {
-      var ext = JSON.parse(new Buffer(authorization.ext, 'base64')
-                           .toString('utf-8'));
+    let body = JSON.parse(requestBody);
+    let scopes = [];
+    let from = 'client config';
+    let ext = null;
+    let clientId = null;
+    if (body.authorization) {
+      let authorization = hawk.utils.parseAuthorizationHeader(body.authorization);
+      clientId = authorization.id;
+      scopes = clients[clientId] || [];
+      ext = authorization.ext;
+    }
+    else {
+      // The following is a hacky reproduction of the bewit logic in
+      // https://github.com/hueniverse/hawk/blob/0833f99ba64558525995a7e21d4093da1f3e15fa/lib/server.js#L366-L383
+      let bewitString = url.parse(body.resource, true).query.bewit;
+      if (bewitString) {
+        let bewit = new Buffer(bewitString, 'base64').toString('utf-8');
+        let bewitParts = bewit.split('\\');
+        clientId = bewitParts[0];
+        scopes = clients[clientId];
+        ext = bewitParts[3] || '';
+      }
+    }
+    if (ext) {
+      ext = JSON.parse(new Buffer(ext, 'base64').toString('utf-8'));
       if (ext.authorizedScopes) {
         scopes = ext.authorizedScopes;
         from = 'ext.authorizedScopes';
@@ -23,10 +42,11 @@ exports.start = function(clients) {
         from = 'ext.certificate.scopes';
       }
     }
-    debug("authenticating access to " + body.resource + " by " +
-          authorization.id + " with scopes " + scopes.join(", ") +
+    debug("authenticating access to " + body.resource +
+          " by " + clientId +
+          " with scopes " + scopes.join(", ") +
           " from " + from);
-    return {status: "auth-success", scheme: "hawk", scopes: scopes, clientId: authorization.id};
+    return {status: "auth-success", scheme: "hawk", scopes, clientId};
   });
 };
 

@@ -5,6 +5,7 @@ var request      = require('superagent-promise');
 var base         = require('taskcluster-base');
 var assert       = require('assert');
 var taskcluster  = require('taskcluster-client');
+var Promise      = require('promise');
 
 var testApi = new base.API({
   title:        "Test Server",
@@ -27,7 +28,7 @@ testApi.declare({
 
 
 suite('fakeauth', function() {
-  var fakeauth = require('../../src/fakeauth');
+  var fakeauth = require('../../lib/fakeauth');
   var server;
 
   suiteSetup(function() {
@@ -39,15 +40,15 @@ suite('fakeauth', function() {
         forceSSL:       false,
         trustProxy:     false,
       });
-  
+
       // Create router for the API
       var router =  testApi.router({
         validator:          validator,
       });
-  
+
       // Mount router
       app.use('/v1', router);
-  
+
       // Create server
       return app.createServer().then(function(svr) {
         server = svr;
@@ -57,7 +58,7 @@ suite('fakeauth', function() {
       });
     });
   });
-  
+
   suiteTeardown(function() {
     return server.terminate();
   });
@@ -66,9 +67,11 @@ suite('fakeauth', function() {
     fakeauth.stop();
   });
 
-  var callApi = function(clientId, extContent) {
+  var callApi = (clientId, extContent) => {
+    // We'll call both with auth headers and bewit
     var reqUrl = 'http://localhost:1208/v1/test';
-    var headerContent = {
+    var content = {
+      ttlSec: 60 * 5,
       credentials: {
         id:         clientId,
         key:        'unused',
@@ -76,23 +79,36 @@ suite('fakeauth', function() {
       }
     };
     if (extContent) {
-      headerContent['ext'] = new Buffer(JSON.stringify(extContent)).toString('base64')
+      content['ext'] = new Buffer(JSON.stringify(extContent)).toString('base64')
     }
 
-    var header = hawk.client.header(reqUrl, 'GET', headerContent);
-    return request
-      .get(reqUrl)
-      .set('Authorization', header.field)
-      .end().then(function(res) {
-        console.log(res.body);
-        return res;
-      });
+    var header = hawk.client.header(reqUrl, 'GET', content);
+
+    var bewit = hawk.uri.getBewit(reqUrl, content);
+    var bewitUrl = reqUrl + '?bewit=' + bewit;
+    return Promise.all([
+      request
+        .get(reqUrl)
+        .set('Authorization', header.field)
+        .end().then(function(res) {
+          console.log(res.body);
+          return res;
+        }),
+      request
+        .get(bewitUrl)
+        .end().then(function(res) {
+          console.log(res.body);
+          return res;
+        })
+    ]);
   };
 
   test('using a rawClientId', function() {
     fakeauth.start({'client1': ['test.scope']});
-    return callApi('client1').then(function(res) {
-      assert(res.ok && res.body.hasTestScope, "Request failed");
+    return callApi('client1').then(function(responses) {
+      for (var res of responses) {
+        assert(res.ok && res.body.hasTestScope, "Request failed");
+      }
     });
   });
 
@@ -100,8 +116,10 @@ suite('fakeauth', function() {
     fakeauth.start({'client1': ['some.other.scope']});
     return callApi('client1', {
         authorizedScopes: ['test.scope'],
-      }).then(function(res) {
-      assert(res.ok && res.body.hasTestScope, "Request failed");
+      }).then(function(responses) {
+      for (var res of responses) {
+        assert(res.ok && res.body.hasTestScope, "Request failed");
+      }
     });
   });
 
@@ -117,8 +135,10 @@ suite('fakeauth', function() {
     });
     return callApi('client1', {
         certificate: JSON.parse(tempCreds.certificate)
-      }).then(function(res) {
-      assert(res.ok && res.body.hasTestScope, "Request failed");
+      }).then(function(responses) {
+      for (var res of responses) {
+        assert(res.ok && res.body.hasTestScope, "Request failed");
+      }
     });
   });
 });
