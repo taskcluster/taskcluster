@@ -4,29 +4,18 @@ NODE_BIN=${NODE_BIN-node}
 NPM=${NPM-npm}
 FLAKE8=${FLAKE8-flake8}
 NOSE=${NOSE-nosetests}
-export PORT=${PORT-5555}
+TOX=${TOX-tox}
+COVERAGE=${COVERAGE-coverage}
 
-echo | nc localhost $PORT -w 1 &> /dev/null
-if [ $? -eq 0 ] ; then
-	echo Server already running
-	exit 1
+echo setup.py tests
+$PYTHON setup.py test
+setuptests=$?
+if [ $setuptests -ne 0 ] ; then
+  echo "setup.py test does not run properly"
+  killServer
+  exit 1
 fi
-
-$NODE_BIN test/mockAuthServer.js &> server.log &
-server=$!
-
-killServer () {
-  kill $server
-  if [ $? -ne 0 ] ; then
-	  echo "Failed to kill server"
-  fi
-}
-
-ps -p $server &> /dev/null
-if [ $? -ne 0 ] ; then
-	echo "Server did not start cleanly"
-	exit 1
-fi
+$COVERAGE html
 
 echo Linting
 $FLAKE8 --max-line-length=100 \
@@ -39,25 +28,6 @@ if [ $lint -ne 0 ] ; then
 fi
 echo Done linting
 
-echo setup.py tests
-$PYTHON setup.py test
-setuptests=$?
-if [ $setuptests -ne 0 ] ; then
-  echo "setup.py test does not run properly"
-  killServer
-  exit 1
-fi
-
-echo nosetests
-$NOSE -v
-nose=$?
-if [ $nose -ne 0 ] ; then
-  echo "Nose tests do not run"
-  killServer
-  exit 1
-fi
-
 echo Done testing!
 
-killServer
-exit $(( nose + lint + setuptests ))
+exit $(( lint + setuptests ))

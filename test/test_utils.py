@@ -1,10 +1,10 @@
 import datetime
 import uuid
-import os
 
 import taskcluster.utils as subject
 import httmock
 import mock
+import os
 import requests
 
 import base
@@ -60,9 +60,12 @@ class StringDateTests(base.TCTest):
 
 class DumpJsonTests(base.TCTest):
     def test_has_no_spaces(self):
-        expected = '{"test":"works","doesit":"yes"}'
+        expected = [
+            '{"test":"works","doesit":"yes"}',
+            '{"doesit":"yes","test":"works"}'
+        ]
         actual = subject.dumpJson({'test': 'works', 'doesit': 'yes'})
-        self.assertEqual(expected, actual)
+        self.assertTrue(actual in expected)
 
     def test_serializes_naive_date(self):
         dateObj = datetime.datetime(
@@ -219,7 +222,7 @@ class TestEncrypt(TestCase):
 
 class TestDecrypt(TestCase):
 
-    def test_encypt_text(self):
+    def test_encrypt_text(self):
         privateKey = os.path.join(os.path.dirname(__file__), "secret.key")
         publicKey = os.path.join(os.path.dirname(__file__), "public.key")
         text = "Hello \U0001F4A9!"

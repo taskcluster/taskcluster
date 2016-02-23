@@ -240,7 +240,6 @@ class BaseClient(object):
                 payload = _args.pop()
             else:
                 raise exceptions.TaskclusterFailure('Payload is required as last positional arg')
-
         apiArgs = self._processArgs(entry, *_args, **_kwargs)
         route = self._subArgsInRoute(entry, apiArgs)
         log.debug('Route is: %s', route)
@@ -358,7 +357,7 @@ class BaseClient(object):
         hawkExt = self.makeHawkExt()
 
         # Serialize payload if given
-        if payload:
+        if payload is not None:
             payload = utils.dumpJson(payload)
 
         # Do a loop of retries
