@@ -388,7 +388,7 @@ class BaseClient(object):
 
                 headers = {'Authorization': sender.request_header}
             else:
-                log.info('Not using hawk!')
+                log.debug('Not using hawk!')
                 headers = {}
             if payload:
                 # Set header for JSON if payload is given, note that we serialize
