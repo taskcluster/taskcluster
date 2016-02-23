@@ -40,7 +40,7 @@ module.exports = {
           "format": "date-time"
         }
       },
-      "required": ["type", "path", "expires"]
+      "required": ["type", "path"]
     }
   },
   "title": "Docker worker payload",

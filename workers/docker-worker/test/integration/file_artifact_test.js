@@ -19,6 +19,7 @@ suite('artifact extration tests', () => {
   });
 
   test('extract artifact', async () => {
+    let expiration = expires();
     let result = await testworker({
       payload: {
         image: 'taskcluster/test-ubuntu',
@@ -34,13 +35,13 @@ suite('artifact extration tests', () => {
         artifacts: {
           'public/xfoo': {
             type: 'file',
-            expires: expires(),
+            expires: expiration,
             path: '/artifacts/xfoo.txt'
           },
 
           'public/bar': {
             type: 'file',
-            expires: expires(),
+            expires: expiration,
             path: '/artifacts/bar.txt'
           }
         },
@@ -56,11 +57,45 @@ suite('artifact extration tests', () => {
       Object.keys(result.artifacts).sort(), ['public/xfoo', 'public/bar'].sort()
     );
 
+    for (let artifact in result.artifacts) {
+      assert.equal(new Date(result.artifacts[artifact].expires).getTime(), expiration.getTime());
+    }
+
     let xfoo = await getArtifact(result, 'public/xfoo');
     let bar = await getArtifact(result, 'public/bar');
 
     assert.equal(xfoo.trim(), 'xfoo');
     assert.equal(bar.trim(), 'bar');
+  });
+
+  test('artifact expiration defaulted to task.expires', async () => {
+    let result = await testworker({
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd(
+          'mkdir /artifacts/',
+          'echo "xfoo" > /artifacts/xfoo.txt',
+          'echo "bar" > /artifacts/bar.txt',
+          'ls /artifacts'
+        ),
+        features: {
+          localLiveLog: false
+        },
+        artifacts: {
+          'public/xfoo': {
+            type: 'file',
+            path: '/artifacts/xfoo.txt'
+          }
+        },
+        maxRunTime: 5 * 60
+      }
+    });
+
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+
+    assert.ok(Object.keys(result.artifacts).includes('public/xfoo'));
+    assert.equal(result.status.expires, result.artifacts['public/xfoo'].expires);
   });
 
   test('upload 1mb artifact', async () => {

@@ -9,8 +9,8 @@ import uuid from 'uuid';
 import { validator } from 'taskcluster-base';
 import { PassThrough } from 'stream';
 import States from './states';
-import fs from "mz/fs"
-import child_process from "mz/child_process"
+import fs from "mz/fs";
+import child_process from "mz/child_process";
 
 import features from './features';
 import getHostname from './util/hostname';
@@ -18,6 +18,7 @@ import { fmtLog, fmtErrorLog } from './log';
 import { hasPrefixedScopes } from './util/scopes';
 import { IMAGE_ERROR } from './docker/errors';
 import { scopeMatch } from 'taskcluster-base/utils';
+import { validatePayload } from './util/validate_schema';
 import waitForEvent from './wait_for_event';
 import uploadToS3 from './upload_to_s3';
 import _ from 'lodash';
@@ -797,11 +798,10 @@ export class Task {
     if (this.isCanceled() || this.isAborted()) {
       return await this.abortRun(this.taskState);
     }
-    // Validate the schema!
-    let payloadErrors = this.runtime.validator.check(this.task.payload,
-                                                     PAYLOAD_SCHEMA);
 
-    if (payloadErrors) {
+    let payloadErrors = validatePayload(this.runtime.validator, this.task.payload, this.status, PAYLOAD_SCHEMA);
+
+    if (payloadErrors.length) {
       // Inform the user that this task has failed due to some configuration
       // error on their part.
       this.taskException = 'malformed-payload';

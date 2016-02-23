@@ -26,7 +26,13 @@ export default class Artifacts {
     let container = taskHandler.dockerProcess.container;
     let queue = taskHandler.runtime.queue;
     let path = artifact.path;
-    let expiry = new Date(artifact.expires);
+    let expiry;
+
+    if (artifact.expires) {
+      expiry = new Date(artifact.expires);
+    } else {
+      expiry = new Date(taskHandler.status.expires);
+    }
 
     // Task specific information needed to generated signed put requests.
     let taskId = taskHandler.status.taskId;
