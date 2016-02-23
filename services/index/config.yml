@@ -52,6 +52,12 @@ defaults:
     username:                     !env PULSE_USERNAME
     password:                     !env PULSE_PASSWORD
 
+  raven:
+    # This can be grabbed from the settings of the sentry project
+    # and is a string that looks like:
+    # https://<pubkey>:<privkey>@app.getsentry.com/<port>
+    sentryDSN:                    !env SENTRY_DSN
+
   # InfluxDB configuration
   influx:
     # Usually provided as environment variables, must be on the form:

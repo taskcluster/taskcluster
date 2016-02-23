@@ -2,6 +2,7 @@
 var path        = require('path');
 var Promise     = require('promise');
 var debug       = require('debug')('index:bin:server');
+var raven       = require('raven');
 var base        = require('taskcluster-base');
 var taskcluster = require('taskcluster-client');
 var data        = require('../index/data');
@@ -82,23 +83,34 @@ var load = loader({
     })
   },
 
+  raven: {
+    requires: ['cfg'],
+    setup: ({cfg}) => {
+      if (cfg.raven.sentryDSN) {
+        return new raven.Client(cfg.raven.sentryDSN);
+      }
+      return null;
+    }
+  },
+
   api: {
-    requires: ['cfg', 'validator', 'IndexedTask', 'Namespace', 'drain', 'queue'],
-    setup: async ({cfg, validator, IndexedTask, Namespace, drain, queue}) => v1.setup({
+    requires: ['cfg', 'validator', 'IndexedTask', 'Namespace', 'drain', 'queue', 'raven'],
+    setup: async ({cfg, validator, IndexedTask, Namespace, drain, queue, raven}) => v1.setup({
       context: {
-        queue:          queue,
-        validator:      validator,
-        IndexedTask:    IndexedTask,
-        Namespace:      Namespace
+        queue,
+        validator,
+        IndexedTask,
+        Namespace
       },
-      validator:        validator,
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
       publish:          cfg.app.publishMetaData,
       baseUrl:          cfg.server.publicUrl + '/v1',
       referencePrefix:  'index/v1/api.json',
       aws:              cfg.aws,
       component:        cfg.app.statsComponent,
-      drain:            drain
+      validator,
+      drain,
+      raven
     })
   },
 
