@@ -1,2 +1,2 @@
-web:      node bin/server.js production
-handlers: node bin/handlers.js production
+web:      babel-node bin/server server
+handlers: babel-node bin/server handler

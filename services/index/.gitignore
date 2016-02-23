@@ -1,2 +1,3 @@
-/taskcluster-index.conf.json
 /node_modules/
+/npm-debug.log
+/user-config.yml

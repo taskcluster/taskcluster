@@ -1,30 +1,32 @@
 {
-  "name":     "taskcluster-index",
-  "version":  "0.1.0",
-  "private":  true,
-  "main":     "bin/server.js",
+  "name": "taskcluster-index",
+  "version": "0.1.0",
+  "private": true,
+  "main": "babel-node bin/server server",
   "scripts": {
-    "test":   "test/runtests.sh"
+    "test": "test/runtests.sh"
   },
   "repository": {
-    "type":   "git",
-    "url":    "https://github.com/taskcluster/taskcluster-index.git"
+    "type": "git",
+    "url": "https://github.com/taskcluster/taskcluster-index.git"
   },
   "dependencies": {
-    "promise":                          "6.0.1",
-    "lodash":                           "2.4.1",
-    "debug":                            "2.1.1",
-    "taskcluster-client":               "^0.22.6",
-    "taskcluster-base":                 "0.8.6",
-    "superagent":                       "^1.2.0",
-    "superagent-promise":               "^0.2.0"
+    "babel": "^5.8.23",
+    "debug": "2.1.1",
+    "lodash": "2.4.1",
+    "promise": "6.0.1",
+    "superagent": "^1.2.0",
+    "superagent-promise": "^0.2.0",
+    "taskcluster-base": "^0.10.7",
+    "taskcluster-client": "^0.22.6",
+    "taskcluster-lib-loader": "^0.1.1"
   },
   "devDependencies": {
-    "mocha":                            "2.1.0",
-    "slugid":                           "1.0.3"
+    "mocha": "2.1.0",
+    "slugid": "1.0.3"
   },
   "engines": {
-    "node":                             "^0.12.0",
-    "npm":                              "^2.0.0"
+    "node": "^4.2.2",
+    "npm": "^2.0.0"
   }
 }
