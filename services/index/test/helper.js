@@ -3,159 +3,95 @@ var Promise     = require('promise');
 var path        = require('path');
 var _           = require('lodash');
 var base        = require('taskcluster-base');
+var mocha       = require('mocha');
 var v1          = require('../routes/api/v1');
 var taskcluster = require('taskcluster-client');
+var load        = require('../bin/server');
 
 // Load configuration
-var cfg = base.config({
-  defaults:     require('../config/defaults'),
-  profile:      require('../config/test'),
-  envs: [
-    'aws_accessKeyId',
-    'aws_secretAccessKey',
-    'taskcluster_authBaseUrl',
-    'taskcluster_credentials_clientId',
-    'taskcluster_credentials_accessToken',
-    'pulse_username',
-    'pulse_password'
-  ],
-  filename:     'taskcluster-index'
+const profile = 'test';
+let loadOptions = {profile, process: 'test'};
+var cfg = base.config({profile});
+
+// Create helper to be tested by test
+var helper = module.exports = {};
+
+// Skip tests if no AWS credentials is configured
+if (!cfg.app.azureAccount ||
+    !cfg.taskcluster.credentials.accessToken ||
+    !cfg.pulse.password) {
+  console.log("Skip tests due to missing credentials!");
+  process.exit(1);
+}
+
+// Hold reference to all listeners created with `helper.listenFor`
+var listeners = [];
+
+// Hold reference to servers
+var server = null;
+var handlers = null;
+
+var testclients = {
+  'test-client': ['*'],
+};
+
+// Setup server
+mocha.before(async () => {
+  await base.testing.fakeauth.start(testclients);
+  server = await load('server', loadOptions);
+  handlers = await load('handlers', loadOptions);
+
+  // Utility function to listen for a message
+  helper.listenFor = function(binding) {
+    // Create listener
+    var listener = new taskcluster.PulseListener({
+      credentials:        cfg.pulse
+    });
+    // Track it, so we can close it in teardown()
+    listeners.push(listener);
+    // Bind to binding
+    listener.bind(binding);
+    // Wait for a message
+    var gotMessage = new Promise(function(accept, reject) {
+      listener.on('message', accept);
+      listener.on('error', reject);
+    });
+    // Connect to AMQP server
+    return listener.connect().then(function() {
+      // Resume immediately
+      return listener.resume().then(function() {
+        return gotMessage;
+      });
+    });
+  };
+  // Expose routePrefix to tests
+  helper.routePrefix = cfg.app.routePrefix;
+  // Create client for working with API
+  let baseUrl = 'http://localhost:' + server.address().port + '/v1';
+  helper.baseUrl = baseUrl;
+  var reference = v1.reference({baseUrl: baseUrl});
+  helper.Index = taskcluster.createClient(reference);
+  helper.index = new helper.Index({
+    baseUrl:          baseUrl,
+    credentials:      {
+      clientId: 'test-client',
+      accessToken: 'none'
+    }
+  });
+
+  // Create queueEvents and Queue client
+  helper.queue = new taskcluster.Queue({
+    credentials: cfg.taskcluster.credentials
+  });
+  helper.queueEvents = new taskcluster.QueueEvents();
 });
 
-// Some default clients for the mockAuthServer
-var defaultClients = [
-  {
-    // Loaded from config so we can authenticate against the real queue
-    // Note, we still use a mock auth server to avoid having the scope
-    // auth:credentials assigned to our test client
-    clientId:     cfg.get('taskcluster:credentials:clientId'),
-    accessToken:  cfg.get('taskcluster:credentials:accessToken'),
-    scopes:       ['auth:azure-table-access:*'],
-    expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
-  }, {
-    clientId:     'test-client',  // Used in default Index creation
-    accessToken:  'none',
-    scopes:       ['*'],
-    expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
+mocha.after(async () => {
+  if (server) {
+    await server.terminate();
   }
-];
-
-/** Setup testing */
-exports.setup = function(options) {
-  // Provide default configuration
-  options = _.defaults(options || {}, {
-    title:      'untitled test'
-  });
-
-  // Create subject to be tested by test
-  var subject = {};
-
-  // Skip tests if no AWS credentials is configured
-  if (!cfg.get('index:azureAccount') ||
-      !cfg.get('taskcluster:credentials:accessToken') ||
-      !cfg.get('pulse:password')) {
-    console.log("Skip tests for " + options.title +
-                " due to missing credentials!");
-    return;
+  if (handlers) {
+    await handlers.terminate();
   }
-
-  // Configure server
-  var server = new base.testing.LocalApp({
-    command:      path.join(__dirname, '..', 'bin', 'server.js'),
-    args:         ['test'],
-    name:         'server.js',
-    baseUrlPath:  '/v1'
-  });
-
-  // Configure handlers
-  var handlers = new base.testing.LocalApp({
-    command:      path.join(__dirname, '..', 'bin', 'handlers.js'),
-    args:         ['test'],
-    name:         'handlers.js'
-  });
-
-  // Hold reference to mockAuthServer
-  var mockAuthServer = null;
-
-  // Hold reference to all listeners created with `subject.listenFor`
-  var listeners = [];
-
-  // Setup server
-  setup(function() {
-    // Utility function to listen for a message
-    subject.listenFor = function(binding) {
-      // Create listener
-      var listener = new taskcluster.PulseListener({
-        credentials:        cfg.get('pulse')
-      });
-      // Track it, so we can close it in teardown()
-      listeners.push(listener);
-      // Bind to binding
-      listener.bind(binding);
-      // Wait for a message
-      var gotMessage = new Promise(function(accept, reject) {
-        listener.on('message', accept);
-        listener.on('error', reject);
-      });
-      // Connect to AMQP server
-      return listener.connect().then(function() {
-        // Resume immediately
-        return listener.resume().then(function() {
-          return gotMessage;
-        });
-      });
-    };
-    // Expose routePrefix to tests
-    subject.routePrefix = cfg.get('index:routePrefix');
-    // Create mock authentication server
-    return base.testing.createMockAuthServer({
-      port:         60021, // This is hardcoded into config/test.js
-      clients:      defaultClients,
-      credentials:  cfg.get('taskcluster:credentials')
-    }).then(function(mockAuthServer_) {
-      mockAuthServer = mockAuthServer_;
-    }).then(function() {
-      // Launch server
-      var serverLaunched = server.launch().then(function(baseUrl) {
-        // Create client for working with API
-        subject.baseUrl = baseUrl;
-        var reference = v1.reference({baseUrl: baseUrl});
-        subject.Index = taskcluster.createClient(reference);
-        subject.index = new subject.Index({
-          baseUrl:          baseUrl,
-          credentials: {
-            clientId:       'test-client',
-            accessToken:    'none'
-          }
-        });
-
-        // Create queueEvents and Queue client
-        subject.queue = new taskcluster.Queue({
-          credentials: cfg.get('taskcluster:credentials')
-        });
-        subject.queueEvents = new taskcluster.QueueEvents();
-      });
-
-      return Promise.all([serverLaunched, handlers.launch()]);
-    });
-  });
-
-  // Shutdown server
-  teardown(function() {
-    // Kill server and handlers
-    return Promise.all([
-      handlers.terminate(),
-      server.terminate()
-    ]).then(function() {
-      return mockAuthServer.terminate();
-    }).then(function() {
-      return Promise.all(listeners.map(function(listener) {
-        return listener.close();
-      })).then(function() {
-        listeners = [];
-      });
-    });
-  });
-
-  return subject;
-};
+  base.testing.fakeauth.stop();
+});

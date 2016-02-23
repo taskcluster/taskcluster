@@ -1,11 +1,10 @@
-suite("API", function() {
+suite("API", () => {
   var Promise     = require('promise');
   var assert      = require('assert');
   var debug       = require('debug')('index:test:api_test');
   var helper      = require('./helper');
   var slugid      = require('slugid');
   var _           = require('lodash');
-  var subject     = helper.setup({title: "api test"});
   var taskcluster = require('taskcluster-client');
   var request     = require('superagent-promise');
 
@@ -21,24 +20,24 @@ suite("API", function() {
     var myns    = slugid.v4();
     var taskId  = slugid.v4();
     var taskId2  = slugid.v4();
-    return subject.index.insertTask(myns + '.my-task', {
+    return helper.index.insertTask(myns + '.my-task', {
       taskId:     taskId,
       rank:       41,
       data:       {hello: "world"},
       expires:    expiry.toJSON()
     }).then(function() {
-      return subject.index.findTask(myns + '.my-task').then(function(result) {
+      return helper.index.findTask(myns + '.my-task').then(function(result) {
         assert(result.taskId === taskId, "Wrong taskId");
       });
     }).then(function() {
-      return subject.index.insertTask(myns + '.my-task', {
+      return helper.index.insertTask(myns + '.my-task', {
         taskId:     taskId2,
         rank:       42,
         data:       {hello: "world - again"},
         expires:    expiry.toJSON()
       });
     }).then(function() {
-      return subject.index.findTask(myns + '.my-task').then(function(result) {
+      return helper.index.findTask(myns + '.my-task').then(function(result) {
         assert(result.taskId === taskId2, "Wrong taskId");
       });
     });
@@ -46,7 +45,7 @@ suite("API", function() {
 
   test('find (non-existing)', function() {
     var ns = slugid.v4() + '.' + slugid.v4();
-    return subject.index.findTask(ns).then(function() {
+    return helper.index.findTask(ns).then(function() {
       assert(false, "This shouldn't have worked");
     }, function(err) {
       assert(err.statusCode === 404, "Should have returned 404");
@@ -54,7 +53,7 @@ suite("API", function() {
   });
 
   test('list top-level namespaces', function() {
-    return subject.index.listNamespaces('', {}).then(function(result) {
+    return helper.index.listNamespaces('', {}).then(function(result) {
       result.namespaces.forEach(function(ns) {
         assert(ns.namespace.indexOf('.') === -1, "shouldn't have any dots");
       });
@@ -62,7 +61,7 @@ suite("API", function() {
   });
 
   test('list top-level namespaces (without auth)', function() {
-    var index = new subject.Index();
+    var index = new helper.Index();
     return index.listNamespaces('', {}).then(function(result) {
       result.namespaces.forEach(function(ns) {
         assert(ns.namespace.indexOf('.') === -1, "shouldn't have any dots");
@@ -71,7 +70,7 @@ suite("API", function() {
   });
 
   test('list top-level tasks', function() {
-    return subject.index.listTasks('', {}).then(function(result) {
+    return helper.index.listTasks('', {}).then(function(result) {
       result.tasks.forEach(function(task) {
         assert(task.namespace.indexOf('.') === -1, "shouldn't have any dots");
       });
@@ -79,7 +78,7 @@ suite("API", function() {
   });
 
   test('list top-level tasks (without auth)', function() {
-    var index = new subject.Index();
+    var index = new helper.Index();
     return index.listTasks('', {}).then(function(result) {
       result.tasks.forEach(function(task) {
         assert(task.namespace.indexOf('.') === -1, "shouldn't have any dots");
@@ -89,7 +88,7 @@ suite("API", function() {
 
   test('access public and private artifact', function() {
     var taskId = slugid.v4();
-    return subject.queue.createTask(taskId, {
+    return helper.queue.createTask(taskId, {
       provisionerId:    "dummy-test-provisioner",
       workerType:       "dummy-test-worker-type",
       retries:          3,
@@ -109,13 +108,13 @@ suite("API", function() {
       }
     }).then(function() {
       debug("### Claim task");
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:  'dummy-test-workergroup',
         workerId:     'dummy-test-worker-id'
       });
     }).then(function() {
       debug("### Create public artifact");
-      return subject.queue.createArtifact(taskId, 0, publicArtifactName, {
+      return helper.queue.createArtifact(taskId, 0, publicArtifactName, {
         storageType:  'error',
         expires:      taskcluster.fromNowJSON('24 hours'),
         reason:       'invalid-resource-on-worker',
@@ -123,7 +122,7 @@ suite("API", function() {
       });
     }).then(function() {
       debug("### Create private artifact");
-      return subject.queue.createArtifact(taskId, 0, privateArtifactName, {
+      return helper.queue.createArtifact(taskId, 0, privateArtifactName, {
         storageType:  'error',
         expires:      taskcluster.fromNowJSON('24 hours'),
         reason:       'file-missing-on-worker',
@@ -131,10 +130,10 @@ suite("API", function() {
       });
     }).then(function() {
       debug("### Report task completed");
-      return subject.queue.reportCompleted(taskId, 0);
+      return helper.queue.reportCompleted(taskId, 0);
     }).then(function() {
       debug("### Insert task into index");
-      return subject.index.insertTask(taskId + '.my-task', {
+      return helper.index.insertTask(taskId + '.my-task', {
         taskId:     taskId,
         rank:       41,
         data:       {hello: "world"},
@@ -142,8 +141,8 @@ suite("API", function() {
       });
     }).then(function() {
       debug("### Download public artifact using index");
-      var url = subject.index.buildUrl(
-        subject.index.findArtifactFromTask,
+      var url = helper.index.buildUrl(
+        helper.index.findArtifactFromTask,
         taskId + '.my-task',
         publicArtifactName
       );
@@ -160,8 +159,8 @@ suite("API", function() {
       });
     }).then(function() {
       debug("### Download private artifact using index (no auth)");
-      var url = subject.index.buildUrl(
-        subject.index.findArtifactFromTask,
+      var url = helper.index.buildUrl(
+        helper.index.findArtifactFromTask,
         taskId + '.my-task',
         privateArtifactName
       );
@@ -169,11 +168,11 @@ suite("API", function() {
         return err.response;
       });
     }).then(function(res) {
-      assert(res.statusCode === 401, "Expected 401 access denied");
+      assert(res.statusCode === 403, "Expected 403 access denied");
     }).then(function() {
       debug("### Download private artifact using index (with auth)");
-      var url = subject.index.buildSignedUrl(
-        subject.index.findArtifactFromTask,
+      var url = helper.index.buildSignedUrl(
+        helper.index.findArtifactFromTask,
         taskId + '.my-task',
         privateArtifactName, {
         expiration:     15 * 60

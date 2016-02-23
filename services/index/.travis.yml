@@ -1,13 +1,18 @@
+language: node_js
+sudo: false
+node_js:
+- '4'
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
+script: npm test
 env:
   global:
-  - DEBUG='* -mocha:* -superagent -express:* -base:validator -base:entity'
-language: node_js
-node_js:
-- '0.10'
-script: npm test
-before_install:
-- openssl aes-256-cbc -K $encrypted_beb0c80d0d86_key -iv $encrypted_beb0c80d0d86_iv
-  -in taskcluster-index.conf.json.enc -out taskcluster-index.conf.json -d
+    - DEBUG='index:* routes:*'
+    - CXX=g++-4.8
 
 # encrpyt channel name to get around issue
 # https://github.com/travis-ci/travis-ci/issues/1094

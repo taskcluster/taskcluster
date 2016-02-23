@@ -1,11 +1,10 @@
-suite('Indexing', function() {
+suite('Indexing', () => {
   var Promise     = require('promise');
   var assert      = require('assert');
   var debug       = require('debug')('index:test:index_test');
   var helper      = require('./helper');
   var slugid      = require('slugid');
   var _           = require('lodash');
-  var subject     = helper.setup({title: "indexing test"});
   var base        = require('taskcluster-base');
 
   // Create datetime for created and deadline as 25 minutes later
@@ -25,13 +24,13 @@ suite('Indexing', function() {
       "workerType":       "dummy-test-worker-type",
       "scopes":           [],
       "routes": [
-        subject.routePrefix + ".",
-        subject.routePrefix + "." + myns,
-        subject.routePrefix + "." + myns + ".my-indexed-thing",
-        subject.routePrefix + "." + myns + ".my-indexed-thing-again",
-        subject.routePrefix + "." + myns + ".one-ns.my-indexed-thing",
-        subject.routePrefix + "." + myns + ".another-ns.my-indexed-thing-again",
-        subject.routePrefix + "." + myns + ".slash/things-are-ignored"
+        helper.routePrefix + ".",
+        helper.routePrefix + "." + myns,
+        helper.routePrefix + "." + myns + ".my-indexed-thing",
+        helper.routePrefix + "." + myns + ".my-indexed-thing-again",
+        helper.routePrefix + "." + myns + ".one-ns.my-indexed-thing",
+        helper.routePrefix + "." + myns + ".another-ns.my-indexed-thing-again",
+        helper.routePrefix + "." + myns + ".slash/things-are-ignored"
       ],
       "retries":          3,
       "created":          created.toJSON(),
@@ -57,13 +56,13 @@ suite('Indexing', function() {
 
     // Submit task to queue
     debug("### Posting task");
-    return subject.queue.createTask(
+    return helper.queue.createTask(
       taskId,
       task
     ).then(function(result) {
       // Claim task
       debug("### Claim task");
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:  'dummy-test-workergroup',
         workerId:     'dummy-test-worker-id'
       });
@@ -71,27 +70,27 @@ suite('Indexing', function() {
       return base.testing.sleep(100);
     }).then(function() {
       debug("### Report task completed");
-      return subject.queue.reportCompleted(taskId, 0);
+      return helper.queue.reportCompleted(taskId, 0);
     }).then(function() {
       debug("### Find task in index");
       return base.testing.poll(function() {
-        return subject.index.findTask(myns + '.my-indexed-thing');
+        return helper.index.findTask(myns + '.my-indexed-thing');
       });
     }).then(function(result) {
       assert(result.taskId === taskId, "Wrong taskId");
     }).then(function() {
       debug("### Find task in index (again)");
-      return subject.index.findTask(myns);
+      return helper.index.findTask(myns);
     }).then(function(result) {
       assert(result.taskId === taskId, "Wrong taskId");
     }).then(function() {
       debug("### Find task in index (again)");
-      return subject.index.findTask(myns + '.my-indexed-thing-again');
+      return helper.index.findTask(myns + '.my-indexed-thing-again');
     }).then(function(result) {
       assert(result.taskId === taskId, "Wrong taskId");
     }).then(function() {
       debug("### List task in namespace");
-      return subject.index.listTasks(myns, {});
+      return helper.index.listTasks(myns, {});
     }).then(function(result) {
       assert(result.tasks.length === 2, "Expected 2 tasks");
       result.tasks.forEach(function(task) {
@@ -99,7 +98,7 @@ suite('Indexing', function() {
       });
     }).then(function() {
       debug("### List namespaces in namespace");
-      return subject.index.listNamespaces(myns, {});
+      return helper.index.listNamespaces(myns, {});
     }).then(function(result) {
       assert(result.namespaces.length === 2, "Expected 2 namespaces");
       assert(result.namespaces.some(function(ns) {
@@ -110,7 +109,7 @@ suite('Indexing', function() {
       }), "Expected to find another-ns");
     }).then(function() {
       debug("### Find task in index");
-      return subject.index.findTask(
+      return helper.index.findTask(
         myns + '.slash/things-are-ignored'
       ).then(function() {
         assert(false, "Expected ill formated namespaces to be ignored!");
@@ -135,13 +134,13 @@ suite('Indexing', function() {
 
     // Submit task to queue
     debug("### Posting task");
-    return subject.queue.createTask(
+    return helper.queue.createTask(
       taskId,
       task
     ).then(function(result) {
       // Claim task
       debug("### Claim task");
-      return subject.queue.claimTask(taskId, 0, {
+      return helper.queue.claimTask(taskId, 0, {
         workerGroup:  'dummy-test-workergroup',
         workerId:     'dummy-test-worker-id'
       });
@@ -149,11 +148,11 @@ suite('Indexing', function() {
       return base.testing.sleep(100);
     }).then(function() {
       debug("### Report task completed");
-      return subject.queue.reportCompleted(taskId, 0);
+      return helper.queue.reportCompleted(taskId, 0);
     }).then(function() {
       debug("### Find task in index");
       return base.testing.poll(function() {
-        return subject.index.findTask(myns + '.my-indexed-thing');
+        return helper.index.findTask(myns + '.my-indexed-thing');
       });
     }).then(function(result) {
       assert(result.taskId === taskId, "Wrong taskId");
@@ -161,7 +160,7 @@ suite('Indexing', function() {
       assert(result.data.hello === 'world', "Expected data");
     }).then(function() {
       debug("### Find task in index (again)");
-      return subject.index.findTask(myns + '.my-indexed-thing-again');
+      return helper.index.findTask(myns + '.my-indexed-thing-again');
     }).then(function(result) {
       assert(result.taskId === taskId, "Wrong taskId");
     });
