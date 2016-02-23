@@ -1,0 +1,111 @@
+defaults:
+  app:
+    # Route prefix used to form custom routes on the form
+    #  'route.<routePrefix>.<namespace>'
+    routePrefix:                  'index'
+
+    # Name of task-graph table in azure table storage
+    indexedTaskTableName:         'IndexedTasks'
+    namespaceTableName:           'Namespaces'
+
+    # Azure account
+    azureAccount:                 !env AZURE_ACCOUNT
+
+    # Publish references and schemas
+    publishMetaData:              !env:bool PUBLISH_METADATA
+
+    # Name of pulse queue, if a non-exclusive queue is to be used.
+    listenerQueueName:            null
+
+    # Component name in statistics
+    statsComponent:               'index'
+
+  # Server configuration
+  server:
+    # Public URL from which the server can be accessed (used for persona)
+    publicUrl:                      'https://index.taskcluster.net'
+
+    # Port to listen for requests on
+    port:                           !env:number PORT
+
+    # Environment 'development' or 'production'
+    env:                            'development'
+
+    # Force SSL, not useful when runnning locally
+    forceSSL:                       false
+
+    # Trust a forwarding proxy
+    trustProxy:                     false
+
+  # Configuration of access to other taskcluster components
+  taskcluster:
+    # TaskCluster credentials for this server, these must have scopes:
+    # auth:credentials, queue:*
+    # (typically configured using environment variables)
+    authBaseUrl:                  'https://auth.taskcluster.net/v1'
+    credentials:
+      clientId:                   !env TASKCLUSTER_CLIENT_ID
+      accessToken:                !env TASKCLUSTER_ACCESS_TOKEN
+
+  # Pulse credentials
+  pulse:
+    username:                     !env PULSE_USERNAME
+    password:                     !env PULSE_PASSWORD
+
+  # InfluxDB configuration
+  influx:
+    # Usually provided as environment variables, must be on the form:
+    # https://<user>:<pwd>@<host>:<port>/db/<database>
+    connectionString:               !env INFLUX_CONNECTION_STRING
+
+    # Maximum delay before submitting pending points
+    maxDelay:                       5 * 60
+
+    # Maximum pending points in memory
+    maxPendingPoints:               250
+
+  # AWS SDK configuration for publication of schemas and references
+  aws:
+    # Access key id (typically configured using environment variables)
+    accessKeyId:                    !env AWS_ACCESS_KEY_ID
+
+    # Secret access key (typically configured using environment variables)
+    secretAccessKey:                !env AWS_SECRET_ACCESS_KEY
+
+    # Default AWS region, this is where the S3 bucket lives
+    region:                         'us-west-2'
+
+    # Lock API version to use the latest API from 2013, this is fuzzy locking
+    # but it does the trick...
+    apiVersion:                     '2014-01-01'
+
+production:
+  app:
+    routePrefix:                  'index'
+    indexedTaskTableName:         'IndexedTasks'
+    namespaceTableName:           'Namespaces'
+    listenerQueueName:            'index/incoming-tasks'
+
+  server:
+    publicUrl:                      'https://index.taskcluster.net'
+    port:                           80
+    env:                            'production'
+    forceSSL:                       true
+    # We trust the proxy on heroku, as the SSL end-point provided by heroku
+    # is a proxy, so we have to trust it.
+    trustProxy:                     true
+
+test:
+  app:
+    routePrefix:                  'dummy-routes.index-testing'
+    indexedTaskTableName:         'DummyTestIndexedTasks'
+    namespaceTableName:           'DummyTestNamespaces'
+    statsComponent:               'test-index'
+    azureAccount:                 'jungle'
+
+  server:
+    publicUrl:                    'http://localhost:60020'
+    port:                         60020
+
+  aws:
+    region:                       'us-west-2'
