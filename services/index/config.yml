@@ -88,7 +88,6 @@ production:
 
   server:
     publicUrl:                      'https://index.taskcluster.net'
-    port:                           80
     env:                            'production'
     forceSSL:                       true
     # We trust the proxy on heroku, as the SSL end-point provided by heroku
