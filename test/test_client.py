@@ -459,14 +459,6 @@ class TestBuildUrl(ClientTest):
 
 class TestBuildSignedUrl(ClientTest):
 
-    def setUp(self):
-        ClientTest.setUp(self)
-        # Patch time.time so that we get constant bewits for
-        timePatcher = mock.patch('time.time')
-        timePatch = timePatcher.start()
-        timePatch.return_value = 1
-        self.addCleanup(timePatch.stop)
-
     def test_builds_surl_positional(self):
         expected = 'https://fake.taskcluster.net/v1/two_args_no_input/arg0/arg1?bewit=X'
         actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', 'arg1')
