@@ -151,7 +151,8 @@ var load = loader({
 
 // If server.js is executed start the server
 if (!module.parent) {
-  load('server', {
+  load(process.argv[2], {
+    process: process.argv[2],
     profile: process.env.NODE_ENV,
   }).catch(err => {
     console.log(err.stack);
