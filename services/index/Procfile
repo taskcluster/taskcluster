@@ -1,2 +1,2 @@
 web:      babel-node bin/server server
-handlers: babel-node bin/server handler
+handlers: babel-node bin/server handlers
