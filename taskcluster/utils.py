@@ -312,9 +312,8 @@ def authenticate(description=None):
     # Most clients won't use this feature, so we don't want issues with these
     # modules to affect the library. Maybe they don't work in some environments
     import webbrowser
-    from six.moves.urllib import parse as urlparse
+    from six.moves import urllib
     import BaseHTTPServer
-    import urllib
 
     if not description:
         script = '[interpreter/unknown]'
@@ -333,8 +332,8 @@ def authenticate(description=None):
             pass
 
         def do_GET(self):
-            url = urlparse.urlparse(self.path)
-            query = urlparse.parse_qs(url.query)
+            url = urllib.parse.urlparse(self.path)
+            query = urllib.parse.parse_qs(url.query)
             clientId = query.get('clientId', [None])[0]
             accessToken = query.get('accessToken', [None])[0]
             certificate = query.get('certificate', [None])[0]

@@ -3,7 +3,7 @@ import types
 import unittest
 import time
 import datetime
-from six.moves.urllib import parse as urlparse
+from six.moves import urllib
 import os
 import re
 import json
@@ -490,7 +490,7 @@ class TestMockHttpCalls(ClientTest):
         self.fakeResponse = ''
 
         def fakeSite(url, request):
-            self.gotUrl = urlparse.urlunsplit(url)
+            self.gotUrl = urllib.parse.urlunsplit(url)
             self.gotRequest = request
             return self.fakeResponse
         self.fakeSite = fakeSite
@@ -542,7 +542,7 @@ class TestAuthentication(base.TCTest):
         # mock this request so we don't depend on the existence of a client
         @httmock.all_requests
         def auth_response(url, request):
-            self.assertEqual(urlparse.urlunsplit(url),
+            self.assertEqual(urllib.parse.urlunsplit(url),
                              'https://auth.taskcluster.net/v1/clients/abc')
             self.failIf('Authorization' in request.headers)
             headers = {'content-type': 'application/json'}

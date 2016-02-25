@@ -56,11 +56,7 @@ class Tox(TestCommand):
         errno = tox.cmdline(args=args)
         sys.exit(errno)
 
-if sys.version_info >= (3, 5):
-    install_requires.extend([
-        'aiohttp',
-    ])
-elif sys.version_info[:2] == (2, 7):
+if sys.version_info[:2] == (2, 7):
     tests_require.extend([
         'subprocess32==3.2.6',
     ])

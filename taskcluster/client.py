@@ -13,7 +13,7 @@ import calendar
 import requests
 import time
 import six
-from six.moves.urllib import parse as urlparse
+from six.moves import urllib
 
 # For finding apis.json
 from pkg_resources import resource_string
@@ -218,8 +218,8 @@ class BaseClient(object):
         if not bewit:
             raise exceptions.TaskclusterFailure('Did not receive a bewit')
 
-        u = urlparse.urlparse(requestUrl)
-        return urlparse.urlunparse((
+        u = urllib.parse.urlparse(requestUrl)
+        return urllib.parse.urlunparse((
             u.scheme,
             u.netloc,
             u.path,
@@ -325,7 +325,7 @@ class BaseClient(object):
             if toReplace not in route:
                 raise exceptions.TaskclusterFailure(
                     'Arg %s not found in route for %s' % (arg, entry['name']))
-            val = urlparse.quote(str(val).encode("utf-8"), '')
+            val = urllib.parse.quote(str(val).encode("utf-8"), '')
             route = route.replace("<%s>" % arg, val)
 
         return route.lstrip('/')
@@ -352,7 +352,7 @@ class BaseClient(object):
         # route instead
         if not baseUrl.endswith('/'):
             baseUrl += '/'
-        url = urlparse.urljoin(baseUrl, route.lstrip('/'))
+        url = urllib.parse.urljoin(baseUrl, route.lstrip('/'))
         log.debug('Full URL used is: %s', url)
 
         hawkExt = self.makeHawkExt()
