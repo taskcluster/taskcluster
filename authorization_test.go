@@ -23,18 +23,17 @@ var (
 		ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 	}
-)
-
-func init() {
-	httpbackoff.BackOffSettings = &backoff.ExponentialBackOff{
-		InitialInterval:     1 * time.Millisecond,
-		RandomizationFactor: 0.2,
-		Multiplier:          1.2,
-		MaxInterval:         5 * time.Millisecond,
-		MaxElapsedTime:      20 * time.Millisecond,
-		Clock:               backoff.SystemClock,
+	httpRetryClient = httpbackoff.Client{
+		BackOffSettings: &backoff.ExponentialBackOff{
+			InitialInterval:     1 * time.Millisecond,
+			RandomizationFactor: 0.2,
+			Multiplier:          1.2,
+			MaxInterval:         5 * time.Millisecond,
+			MaxElapsedTime:      20 * time.Millisecond,
+			Clock:               backoff.SystemClock,
+		},
 	}
-}
+)
 
 type IntegrationTest func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder
 
@@ -169,7 +168,7 @@ func TestBewit(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Bewit URL returned is invalid: %q", bewitUrl)
 		}
-		resp, _, err := httpbackoff.Get(bewitUrl)
+		resp, _, err := httpRetryClient.Get(bewitUrl)
 		if err != nil {
 			t.Fatalf("Exception thrown:\n%s", err)
 		}
