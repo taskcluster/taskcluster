@@ -408,6 +408,7 @@ func (job *Job) loadJsonSchema(URL string) *JsonSubSchema {
 	u, err := url.Parse(URL)
 	exitOnFail(err)
 	var body io.ReadCloser
+	// TODO: may be better to use https://golang.org/pkg/net/http/#NewFileTransport here??
 	switch u.Scheme {
 	case "http", "https":
 		resp, err = http.Get(URL)
