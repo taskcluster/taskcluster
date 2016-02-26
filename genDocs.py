@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function, \
     unicode_literals
 import os
 import json
+import six
 
 readmeFile = os.environ.get('README_FILE', 'README.md')
 startDocs = '<!-- START OF GENERATED DOCS -->'
@@ -113,5 +114,8 @@ if __name__ == '__main__':
         outLines.extend(docs)
 
     with open(readmeFile, 'w') as f:
-        f.write('\n'.join(outLines).encode('utf-8'))
+        if six.PY2:
+            f.write('\n'.join(outLines).encode('utf-8'))
+        else:
+            f.write(u'\n'.join(outLines))
     print('Done!')
