@@ -595,7 +595,7 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes, nam
     newToken = utils.makeB64UrlSafe(utils.encodeStringForB64Header(newToken)).replace(b'=', b'')
 
     return {
-        'clientId': name if name else clientId,
+        'clientId': name or clientId,
         'accessToken': newToken,
         'certificate': utils.dumpJson(cert),
     }
