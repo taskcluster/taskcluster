@@ -25,14 +25,16 @@ var (
 	}
 )
 
-func init() {
-	httpbackoff.BackOffSettings = &backoff.ExponentialBackOff{
-		InitialInterval:     1 * time.Millisecond,
-		RandomizationFactor: 0.2,
-		Multiplier:          1.2,
-		MaxInterval:         5 * time.Millisecond,
-		MaxElapsedTime:      20 * time.Millisecond,
-		Clock:               backoff.SystemClock,
+func newTestClient() *httpbackoff.Client {
+	return &httpbackoff.Client{
+		BackOffSettings: &backoff.ExponentialBackOff{
+			InitialInterval:     1 * time.Millisecond,
+			RandomizationFactor: 0.2,
+			Multiplier:          1.2,
+			MaxInterval:         5 * time.Millisecond,
+			MaxElapsedTime:      20 * time.Millisecond,
+			Clock:               backoff.SystemClock,
+		},
 	}
 }
 
@@ -169,7 +171,7 @@ func TestBewit(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Bewit URL returned is invalid: %q", bewitUrl)
 		}
-		resp, _, err := httpbackoff.Get(bewitUrl)
+		resp, _, err := newTestClient().Get(bewitUrl)
 		if err != nil {
 			t.Fatalf("Exception thrown:\n%s", err)
 		}
