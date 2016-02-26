@@ -530,14 +530,15 @@ def createApiClient(name, api):
     return type(utils.toStr(name), (BaseClient,), attributes)
 
 
-def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
+def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes, name=None):
     """ Create a set of temporary credentials
 
+    clientId: the issuing clientId
+    accessToken: the issuer's accessToken
     start: start time of credentials, seconds since epoch
     expiry: expiration time of credentials, seconds since epoch
     scopes: list of scopes granted
-    credentials: { 'clientId': None, 'accessToken': None }
-         credentials to use to generate temporary credentials
+    name: credential name (optional)
 
     Returns a dictionary in the form:
         { 'clientId': str, 'accessToken: str, 'certificate': str}
@@ -566,13 +567,23 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
         seed=utils.slugId() + utils.slugId(),
     )
 
-    sigStr = '\n'.join([
-        'version:' + utils.toStr(cert['version']),
+    # if this is a named temporary credential, include the issuer in the certificate
+    if name:
+        cert['issuer'] = utils.toStr(clientId)
+
+    sig = ['version:' + utils.toStr(cert['version'])]
+    if name:
+        sig.extend([
+            'clientId:' + utils.toStr(name),
+            'issuer:' + utils.toStr(clientId),
+        ])
+    sig.extend([
         'seed:' + utils.toStr(cert['seed']),
         'start:' + utils.toStr(cert['start']),
         'expiry:' + utils.toStr(cert['expiry']),
         'scopes:'
-    ] + scopes).encode()
+    ] + scopes)
+    sigStr = '\n'.join(sig).encode()
 
     if isinstance(accessToken, six.text_type):
         accessToken = accessToken.encode()
@@ -584,7 +595,7 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes):
     newToken = utils.makeB64UrlSafe(utils.encodeStringForB64Header(newToken)).replace(b'=', b'')
 
     return {
-        'clientId': clientId,
+        'clientId': name if name else clientId,
         'accessToken': newToken,
         'certificate': utils.dumpJson(cert),
     }
