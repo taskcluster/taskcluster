@@ -32,7 +32,7 @@
     "passport-saml": "^0.13.0",
     "promise": "^7.0.4",
     "source-map-support": "^0.3.2",
-    "taskcluster-client": "^0.23.0",
+    "taskcluster-client": "^0.23.12",
     "taskcluster-lib-config": "^0.9.1",
     "taskcluster-lib-loader": "^0.1.1",
     "taskcluster-lib-rules": "^1.0.3"
