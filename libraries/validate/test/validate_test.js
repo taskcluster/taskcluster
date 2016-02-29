@@ -1,4 +1,4 @@
-suite("Validate Correctly Tests", () => {
+suite("Valid Schema Tests", () => {
   let assert = require('assert');
   let validator = require('../');
   let debug = require('debug')('test');
