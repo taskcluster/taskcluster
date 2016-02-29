@@ -4,3 +4,83 @@ TaskCluster Validation Library
 A single purpose library to wrap up all of the logic for ensuring that
 content matches established schemas. This is a replacement for
 [taskcluster/schema-validator-publisher](https://github.com/taskcluster/schema-validator-publisher/blob/master/package.json).
+
+
+Requirements
+============
+This is tested on and should run on any of node {0.12, 4, 5}.
+
+Usage
+=====
+You can view the tests to see more in-detail usage of most features of this library, but the general idea is as follows
+
+```javascript
+let document = {'what-is-this': 'it-is-the-json-you-wish-to-validate'};
+
+// This creates a validator for you to use
+validate = await validator({ constants: {'my-constant': 42} });
+
+// This checks whatever document you wish against whichever schema you wish
+let errors = validate(
+    document,
+    'http://schemas.taskcluster.net/a-schema-you-wish-to-validate-against');
+
+// Finally, ensure that there are no errors and continue however you see fit
+if (!errors) {
+  doSomethingWith(document);
+} else {
+  yellAboutErrors();
+}
+```
+
+It is possible to specify constants that will be substituted into all of your schemas.
+For examples of this behavior, you can view the tests.
+
+This library will automatically publish schemas to s3 in production if you so desire.
+
+All other functionality should be the same as [ajv itself](https://www.npmjs.com/package/ajv).
+
+Options and Defaults
+====================
+
+This section explores some of the options a bit further. In general, your schemas should be
+stored in the top-level of your project in `./schemas` and the constants in a yaml file in
+that directory called `constants.yaml`. You may override these if desired.
+
+```
+    // These constants can be subsituted into all of your schemas
+    // and can be passed as a path to a yaml file or an object.
+    constants: './schemas/contants.yml' || { myDefault: 42 }
+
+    // This folder should contain all of your schemas defined in either json or yaml.
+    folder: './schemas'
+
+    // Whether or not to push your generated schemas out to the world at large.
+    publish: process.env.NODE_ENV == 'production'
+
+    // What the root of all of your schemas is. This will make up the first part of
+    // the key of your schemas. The default should be correct.
+    baseUrl: 'http://schema.taskcluster.net/'
+
+    // Which s3 bucket to push schemas to. The default should be correct.
+    bucket: 'schemas.taskcluster.net'
+
+    // Keys to upload to s3 if publishing. Unimportant otherwise.
+    aws: null
+
+    // This will be the middle part of any schema key you end up constructing. You must
+    // set this for publishing to occur.
+    prefix: null
+
+    // This is probably only used for testing. It allows using different libraries for s3.
+    s3Provider: AWS.S3
+```
+
+Testing
+=======
+Just `npm install` and `npm test`. You can set `DEBUG=taskcluster-lib-validate,test` if you want to see what's going on.
+There are no keys needed to test this library.
+
+License
+=======
+[Mozilla Public License Version 2.0](https://github.com/taskcluster/taskcluster-lib-validate/blob/master/LICENSE)
