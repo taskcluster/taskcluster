@@ -112,6 +112,14 @@ auth = taskcluster.Auth(options)
  * `auth.updateClient(clientId, payload) -> result`
  * `auth.updateClient(payload, clientId='value') -> result`
 
+#### Enable Client
+ * `auth.enableClient(clientId) -> result`
+ * `auth.enableClient(clientId='value') -> result`
+
+#### Disable Client
+ * `auth.disableClient(clientId) -> result`
+ * `auth.disableClient(clientId='value') -> result`
+
 #### Delete Client
  * `auth.deleteClient(clientId) -> None`
  * `auth.deleteClient(clientId='value') -> None`
@@ -135,6 +143,12 @@ auth = taskcluster.Auth(options)
  * `auth.deleteRole(roleId) -> None`
  * `auth.deleteRole(roleId='value') -> None`
 
+#### Expand Scopes
+ * `auth.expandScopes(payload) -> result`
+
+#### Get Current Scopes
+ * `auth.currentScopes() -> result`
+
 #### Get Temporary Read/Write Credentials S3
  * `auth.awsS3Credentials(level, bucket, prefix) -> result`
  * `auth.awsS3Credentials(level='value', bucket='value', prefix='value') -> result`
@@ -146,8 +160,11 @@ auth = taskcluster.Auth(options)
 #### Authenticate Hawk Request
  * `auth.authenticateHawk(payload) -> result`
 
-#### Import Legacy Clients
- * `auth.importClients(payload) -> None`
+#### Test Authentication
+ * `auth.testAuthenticate(payload) -> result`
+
+#### Test Authentication (GET)
+ * `auth.testAuthenticateGet() -> result`
 
 #### Ping Server
  * `auth.ping() -> None`
@@ -209,6 +226,9 @@ awsProvisioner = taskcluster.AwsProvisioner(options)
 
 #### Ping Server
  * `awsProvisioner.ping() -> None`
+
+#### Backend Status
+ * `awsProvisioner.backendStatus() -> None`
 
 #### api reference
  * `awsProvisioner.apiReference() -> None`
@@ -296,6 +316,10 @@ hooks = taskcluster.Hooks(options)
 #### Get hook definition
  * `hooks.hook(hookGroupId, hookId) -> result`
  * `hooks.hook(hookGroupId='value', hookId='value') -> result`
+
+#### Get hook status
+ * `hooks.getHookStatus(hookGroupId, hookId) -> result`
+ * `hooks.getHookStatus(hookGroupId='value', hookId='value') -> result`
 
 #### Get hook schedule
  * `hooks.getHookSchedule(hookGroupId, hookId) -> result`
@@ -392,6 +416,10 @@ queue = taskcluster.Queue(options)
 #### Get task status
  * `queue.status(taskId) -> result`
  * `queue.status(taskId='value') -> result`
+
+#### List Task Group
+ * `queue.listTaskGroup(taskGroupId) -> result`
+ * `queue.listTaskGroup(taskGroupId='value') -> result`
 
 #### Create New Task
  * `queue.createTask(taskId, payload) -> result`
@@ -670,13 +698,9 @@ schedulerEvents = taskcluster.SchedulerEvents(options)
 import taskcluster
 secrets = taskcluster.Secrets(options)
 ```
-#### Create New Secret
+#### Create Secret
  * `secrets.set(name, payload) -> None`
  * `secrets.set(payload, name='value') -> None`
-
-#### Update A Secret
- * `secrets.update(name, payload) -> None`
- * `secrets.update(payload, name='value') -> None`
 
 #### Delete Secret
  * `secrets.remove(name) -> None`
@@ -685,6 +709,9 @@ secrets = taskcluster.Secrets(options)
 #### Read Secret
  * `secrets.get(name) -> result`
  * `secrets.get(name='value') -> result`
+
+#### List Secrets
+ * `secrets.list() -> result`
 
 #### Ping Server
  * `secrets.ping() -> None`
