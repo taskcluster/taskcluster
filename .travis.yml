@@ -4,7 +4,7 @@ python:
 
 # command to install dependencies
 install:
-  - pip install virtualenv
+  - pip install virtualenv tox
   - make dev-env
 
 # command to run tests
