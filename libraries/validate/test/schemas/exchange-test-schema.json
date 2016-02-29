@@ -1,5 +1,5 @@
 {
-  "id":           "http://localhost:1203/test/v1/exchange-test-schema.json#",
+  "id":           "http://localhost:1203/exchange-test-schema.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "type":         "object",
   "description":  "Used in publisher_test.js",

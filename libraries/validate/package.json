@@ -34,6 +34,7 @@
     "babel-preset-stage-1": "^6.1.18",
     "mocha": "2.4.5",
     "mock-aws-s3": "^2.1.0",
+    "rimraf": "^2.5.2",
     "tc-rules": "2.0.0"
   },
   "main": "./lib/validate.js"
