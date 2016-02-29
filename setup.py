@@ -7,7 +7,7 @@ import sys
 # The VERSION variable is automagically changed
 # by release.sh.  Make sure you understand how
 # that script works if you want to change this
-VERSION = '0.1.0'
+VERSION = '0.2.0'
 
 
 tests_require = [
