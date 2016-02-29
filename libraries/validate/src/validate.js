@@ -92,7 +92,7 @@ async function validator(options) {
 
   let promises = [];
   let schemas = [];
-  let ajv = Ajv();
+  let ajv = Ajv({useDefaults: true});
 
   function addSchema (root, name) {
     let json = null;
@@ -166,6 +166,7 @@ async function validator(options) {
 
   let walker = walk.walkSync(path.resolve(cfg.folder), walkOptions);
   await Promise.all(promises);
+
   return (obj, id) => {
     id = id.replace(/\.ya?ml$/, '.json');
     if (!_.endsWith(id, '.json')) {
