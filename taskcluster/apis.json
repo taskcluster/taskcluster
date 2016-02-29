@@ -442,11 +442,6 @@
           "name": "listWorkerTypes", 
           "output": "http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#", 
           "route": "/list-worker-types", 
-          "scopes": [
-            [
-              "aws-provisioner:list-worker-types"
-            ]
-          ], 
           "stability": "experimental", 
           "title": "List Worker Types", 
           "type": "function"
@@ -818,6 +813,7 @@
           "method": "get", 
           "name": "listHookGroups", 
           "output": "http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json", 
+          "query": [], 
           "route": "/hooks", 
           "stability": "experimental", 
           "title": "List hook groups", 
@@ -831,6 +827,7 @@
           "method": "get", 
           "name": "listHooks", 
           "output": "http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json", 
+          "query": [], 
           "route": "/hooks/<hookGroupId>", 
           "stability": "experimental", 
           "title": "List hooks in a given group", 
@@ -845,6 +842,7 @@
           "method": "get", 
           "name": "hook", 
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-definition.json", 
+          "query": [], 
           "route": "/hooks/<hookGroupId>/<hookId>", 
           "stability": "experimental", 
           "title": "Get hook definition", 
@@ -859,6 +857,7 @@
           "method": "get", 
           "name": "getHookStatus", 
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-status.json", 
+          "query": [], 
           "route": "/hooks/<hookGroupId>/<hookId>/status", 
           "stability": "experimental", 
           "title": "Get hook status", 
@@ -873,6 +872,7 @@
           "method": "get", 
           "name": "getHookSchedule", 
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-schedule.json", 
+          "query": [], 
           "route": "/hooks/<hookGroupId>/<hookId>/schedule", 
           "stability": "deprecated", 
           "title": "Get hook schedule", 
@@ -888,6 +888,7 @@
           "method": "put", 
           "name": "createHook", 
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-definition.json", 
+          "query": [], 
           "route": "/hooks/<hookGroupId>/<hookId>", 
           "scopes": [
             [
@@ -909,6 +910,7 @@
           "method": "post", 
           "name": "updateHook", 
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-definition.json", 
+          "query": [], 
           "route": "/hooks/<hookGroupId>/<hookId>", 
           "scopes": [
             [
@@ -928,6 +930,7 @@
           "description": "This endpoint will remove a hook definition.", 
           "method": "delete", 
           "name": "removeHook", 
+          "query": [], 
           "route": "/hooks/<hookGroupId>/<hookId>", 
           "scopes": [
             [
@@ -958,6 +961,7 @@
           "method": "get", 
           "name": "findTask", 
           "output": "http://schemas.taskcluster.net/index/v1/indexed-task-response.json#", 
+          "query": [], 
           "route": "/task/<namespace>", 
           "stability": "experimental", 
           "title": "Find Indexed Task", 
@@ -972,6 +976,7 @@
           "method": "post", 
           "name": "listNamespaces", 
           "output": "http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#", 
+          "query": [], 
           "route": "/namespaces/<namespace>", 
           "stability": "experimental", 
           "title": "List Namespaces", 
@@ -986,6 +991,7 @@
           "method": "post", 
           "name": "listTasks", 
           "output": "http://schemas.taskcluster.net/index/v1/list-tasks-response.json#", 
+          "query": [], 
           "route": "/tasks/<namespace>", 
           "stability": "experimental", 
           "title": "List Tasks", 
@@ -1000,6 +1006,7 @@
           "method": "put", 
           "name": "insertTask", 
           "output": "http://schemas.taskcluster.net/index/v1/indexed-task-response.json#", 
+          "query": [], 
           "route": "/task/<namespace>", 
           "scopes": [
             [
@@ -1018,6 +1025,7 @@
           "description": "Find task by namespace and redirect to artifact with given `name`,\nif no task existing for the given namespace, this API end-point respond\n`404`.", 
           "method": "get", 
           "name": "findArtifactFromTask", 
+          "query": [], 
           "route": "/task/<namespace>/artifacts/<name>", 
           "scopes": [
             [
@@ -1033,6 +1041,7 @@
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.", 
           "method": "get", 
           "name": "ping", 
+          "query": [], 
           "route": "/ping", 
           "stability": "experimental", 
           "title": "Ping Server", 
