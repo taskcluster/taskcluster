@@ -1,5 +1,5 @@
 {
-  "id":           "http://localhost:1203/test/v1/default-array-obj-schema.json#",
+  "id":           "http://localhost:1203/default-array-obj-schema.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "test json schema",
   "type":         "object",

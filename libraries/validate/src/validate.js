@@ -121,7 +121,6 @@ async function validator(options) {
       debug('Loaded schema with id of "%s"', schema.id);
       schemas.push({name: name, schema: schema});
     } catch(err) {
-      console.log(err);
       debug('failed to load schema at %s', path.resolve(root,name));
       throw err;
     }
@@ -167,7 +166,17 @@ async function validator(options) {
 
   let walker = walk.walkSync(path.resolve(cfg.folder), walkOptions);
   await Promise.all(promises);
-  return ajv.validate;
+  return (obj, id) => {
+    id = id.replace(/\.ya?ml$/, '.json');
+    if (!_.endsWith(id, '.json')) {
+      id = id + '.json';
+    }
+    ajv.validate(id, obj);
+    if (ajv.errors) {
+      debug(ajv.errorsText());
+    }
+    return ajv.errors;
+  }
 };
 
 module.exports = validator;
