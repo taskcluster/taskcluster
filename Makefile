@@ -1,5 +1,6 @@
 PYTHON := python
-VENV := env-$(basename $(PYTHON))
+TOX_ENV ?= py35
+VENV := .tox/$(TOX_ENV)
 
 .PHONY: test
 test: $(VENV)/bin/python
@@ -23,7 +24,7 @@ update-readme: $(VENV)/bin/python
 	README_FILE=README.md APIS_JSON=$(APIS_JSON) $(VENV)/bin/python genDocs.py
 
 $(VENV)/bin/python:
-	[ -d $(VENV) ] || $(PYTHON) -m virtualenv $(VENV) || virtualenv $(VENV)
+	tox --notest
 	$(VENV)/bin/pip install --upgrade setuptools
 	$(VENV)/bin/python devDep.py
 	$(VENV)/bin/python setup.py develop
