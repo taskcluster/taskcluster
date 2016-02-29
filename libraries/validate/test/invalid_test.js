@@ -3,7 +3,7 @@ suite("Invalid Schema Tests", () => {
   let validator = require('../');
   let debug = require('debug')('test')
 
-  test("load from invalid folder", async (done) => {
+  test("invalid schema throws error", async (done) => {
     try {
       let validate = await validator({
         folder: 'test/invalid-schemas',
