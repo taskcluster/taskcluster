@@ -755,10 +755,14 @@ exports.credentialInformation = function(credentials) {
   if (credentials.certificate) {
     result.type = "temporary";
     var cert;
-    try {
-      cert = JSON.parse(credentials.certificate);
-    } catch (err) {
-      return Promise.reject(err);
+    if (typeof credentials.certificate === "string") {
+      try {
+        cert = JSON.parse(credentials.certificate);
+      } catch (err) {
+        return Promise.reject(err);
+      }
+    } else {
+      cert = credentials.certificate;
     }
     result.scopes = cert.scopes;
     result.start = new Date(cert.start);
