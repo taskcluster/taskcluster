@@ -10,60 +10,6 @@ let Ajv = require('ajv');
 let AWS = require('aws-sdk');
 let Promise = require('promise');
 
-function publishSchema(s3, bucket, prefix, name, content) {
-  return new Promise((accept, reject) => {
-    debug('Publishing schema %s', name);
-    content = JSON.stringify(content, undefined, 4);
-    if (!content) {
-      debug("Schema %s has invalid content!", name);
-      reject();
-    }
-    s3.putObject({
-      Bucket: bucket,
-      Key: prefix + name,
-      Body: content,
-      ContentType: 'application/json'
-    }, (err, data) => {
-      if (err) {
-        debug('Publishing failed for schema %s', name);
-        reject(err);
-      }
-      else {
-        debug('Publishing succeeded for schema %s', name);
-        accept(data)
-      }
-    });
-  });
-}
-
-/** Render {$const: <key>} into JSON schema */
-function render (schema, constants) {
-  // Replace val with constant, if it is an {$const: <key>} schema
-  var substitute = function(val) {
-    // Primitives and arrays shouldn't event be considered
-    if (!(val instanceof Object) || val instanceof Array) {
-      return undefined;
-    }
-
-    // Check if there is a key and only one key
-    var key = val['$const'];
-    if (key === undefined || typeof(key) != 'string' || _.keys(val).length != 1) {
-      return undefined;
-    }
-
-    // Check that there's a constant for the key
-    var constant = constants[key];
-    if (constant === undefined) {
-      return undefined;
-    }
-
-    // Clone constant
-    return _.cloneDeepWith(constants[key], substitute);
-  };
-  // Do a deep clone with substitute
-  return _.cloneDeepWith(schema, substitute);
-};
-
 async function validator(options) {
 
   let cfg = _.defaults(options, {
@@ -178,6 +124,60 @@ async function validator(options) {
     }
     return ajv.errors;
   }
+};
+
+function publishSchema(s3, bucket, prefix, name, content) {
+  return new Promise((accept, reject) => {
+    debug('Publishing schema %s', name);
+    content = JSON.stringify(content, undefined, 4);
+    if (!content) {
+      debug("Schema %s has invalid content!", name);
+      reject();
+    }
+    s3.putObject({
+      Bucket: bucket,
+      Key: prefix + name,
+      Body: content,
+      ContentType: 'application/json'
+    }, (err, data) => {
+      if (err) {
+        debug('Publishing failed for schema %s', name);
+        reject(err);
+      }
+      else {
+        debug('Publishing succeeded for schema %s', name);
+        accept(data)
+      }
+    });
+  });
+}
+
+/** Render {$const: <key>} into JSON schema */
+function render (schema, constants) {
+  // Replace val with constant, if it is an {$const: <key>} schema
+  var substitute = function(val) {
+    // Primitives and arrays shouldn't event be considered
+    if (!(val instanceof Object) || val instanceof Array) {
+      return undefined;
+    }
+
+    // Check if there is a key and only one key
+    var key = val['$const'];
+    if (key === undefined || typeof(key) != 'string' || _.keys(val).length != 1) {
+      return undefined;
+    }
+
+    // Check that there's a constant for the key
+    var constant = constants[key];
+    if (constant === undefined) {
+      return undefined;
+    }
+
+    // Clone constant
+    return _.cloneDeepWith(constants[key], substitute);
+  };
+  // Do a deep clone with substitute
+  return _.cloneDeepWith(schema, substitute);
 };
 
 module.exports = validator;
