@@ -1,11 +1,15 @@
 suite('encrypted private env variables', function() {
-  var co         = require('co');
-  var fs         = require('fs');
-  var _          = require('lodash');
-  var openpgp    = require('openpgp');
-  var testworker = require('../post_task');
-  var settings   = require('../settings');
-  var slugid     = require('slugid');
+  var co            = require('co');
+  var devnull       = require('dev-null');
+  var docker        = require('../../lib/docker')();
+  var dockerUtils   = require('dockerode-process/utils');
+  var fs            = require('fs');
+  var _             = require('lodash');
+  var openpgp       = require('openpgp');
+  var testworker    = require('../post_task');
+  var settings      = require('../settings');
+  var slugid        = require('slugid');
+  var waitForEvent  = require('../../lib/wait_for_event');
 
   var defaultMessageVersion = '1';
   var secretDataContent1 = 'this is secret data 1';
@@ -21,6 +25,12 @@ suite('encrypted private env variables', function() {
 
     var pubKeyArmored = fs.readFileSync('test\/docker-worker.pem', 'ascii');
     pubKey = openpgp.key.readArmored(pubKeyArmored);
+
+    // ensure that the image already exists because encrypted payload is time sensitive
+    var stream = dockerUtils.pullImageIfMissing(docker, 'taskcluster/test-ubuntu');
+    // Ensure the test proxy actually exists...
+    stream.pipe(devnull());
+    yield waitForEvent(stream, 'end');
   }));
 
   function getEncryptedEnvPayload(payloadData) {

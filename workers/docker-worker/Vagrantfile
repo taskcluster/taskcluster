@@ -15,4 +15,6 @@ Vagrant.configure("2") do |config|
 SCRIPT
 
   config.vm.provision "shell", path: 'vagrant.sh'
+  # Requires vagrant-reload plugin
+  config.vm.provision :reload
 end

@@ -96,7 +96,8 @@ an environment very similar to the one docker-worker runs in production.
 
 1. Install [VirtualBox](https://www.virtualbox.org/)
 2. Install [Vagrant](https://www.vagrantup.com/)
-2. Within the root of the repo, run `vagrant up`
+3. Install vagrant-reload by running `vagrant plugin install vagrant-reload`
+4. Within the root of the repo, run `vagrant up`
 
 *** Note: If TASKCLUSTER_ACCESS_TOKEN, TASKCLUSTER_CLIENT_ID, PULSE_USERNAME, PULSE_PASSWORD are configured within the virtual environment if available locally when building ***
 

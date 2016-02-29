@@ -37,7 +37,6 @@ suite('allowPtrace feature', () => {
       }
     });
 
-    debug(result.run);
     assert(result.run.state === 'failed', 'task should fail');
     assert(result.run.reasonResolved === 'failed', 'task should fail');
   });

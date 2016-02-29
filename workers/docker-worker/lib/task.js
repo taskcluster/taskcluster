@@ -334,7 +334,8 @@ export class Task {
         StdinOnce: false,
         Env: taskEnvToDockerEnv(env),
         HostConfig: {
-          Privileged: privilegedTask
+          Privileged: privilegedTask,
+          ShmSize: 1800000000
         }
       }
     };

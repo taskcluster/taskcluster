@@ -4,8 +4,7 @@
 /.env
 /worker_config
 /node_modules
-/test/settings/configure
-/test/settings/billingCycleRemaining
+/test/settings/
 /deploy.json
 docker-worker.conf.json
 *.box

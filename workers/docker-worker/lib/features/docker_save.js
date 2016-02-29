@@ -11,19 +11,25 @@ import zlib from 'zlib';
 
 let debug = Debug('docker-worker:features:docker-save');
 
+function createImageName(taskId, runId) {
+  return `${taskId.toLowerCase().replace('_', '-')}-${runId}`;
+}
+
 export default class DockerSave {
   constructor() {
     this.featureName = 'dockerSave';
   }
   //commits and uploads the docker image as an artifact
   async uploadContainer(task) {
+    let imageName = createImageName(task.status.taskId, task.runId);
     //temporary path for saved file
     let pathname = path.join(task.runtime.dockerVolume, slugid.v4() + '.tar');
 
     let {Id: imageId} = await task.dockerProcess.container.commit({
-      repo: 'task-' + task.status.taskId + '-' + task.runId
+      // repo name must be lower case and not contain underscores
+      repo: imageName
     });
-    let image = task.runtime.docker.getImage('task-' + task.status.taskId + '-' + task.runId + ':latest');
+    let image = task.runtime.docker.getImage(`${imageName}:latest`);
     let imgStream = await image.get();
     let zipStream = zlib.createGzip();
     imgStream.pipe(zipStream).pipe(fs.createWriteStream(pathname));

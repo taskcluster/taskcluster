@@ -30,6 +30,8 @@ npm install --production
 npm rebuild
 sudo npm install -g babel@4.7.16
 
-sudo sh -c 'echo "v4l2loopback" >> /etc/modules'
-sudo sh -c 'echo "snd-aloop" >> /etc/modules'
+# Initialize video and sound loopback modules
+sudo modprobe v4l2loopback
+sudo modprobe snd-aloop
+# Create dependency file
 sudo depmod

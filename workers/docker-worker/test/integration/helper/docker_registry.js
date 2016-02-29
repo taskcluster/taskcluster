@@ -103,7 +103,6 @@ export default class Registry {
   }
 
   async close() {
-    await this.container.stop();
     await this.container.kill();
   }
 

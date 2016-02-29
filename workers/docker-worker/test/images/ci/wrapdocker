@@ -83,8 +83,8 @@ popd >/dev/null
 # delete it so that docker can start.
 rm -rf /var/run/docker.pid
 
-docker -d $DOCKER_DAEMON_ARGS &>/var/log/docker.log &
-(( timeout = 60 + SECONDS ))
+docker daemon $DOCKER_DAEMON_ARGS &>/var/log/docker.log &
+(( timeout = 20 + SECONDS ))
 until docker info >/dev/null 2>&1
 do
     if (( SECONDS >= timeout )); then

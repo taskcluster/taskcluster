@@ -15,13 +15,16 @@ import {removeImage} from '../../lib/util/remove_image';
 
 let debug = Debug('docker-worker:test:docker-save-test');
 
+function createImageName(taskId, runId) {
+  return `${taskId.toLowerCase().replace('_', '-')}-${runId}`;
+}
+
 suite('use docker-save', () => {
   let worker;
   setup(async () => {
     worker = new TestWorker(DockerWorker);
     await worker.launch();
   });
-
   teardown(async () => {
     if (worker) {
       await worker.terminate();
@@ -58,7 +61,7 @@ suite('use docker-save', () => {
     await base.testing.sleep(2000);
 
     let docker = new Docker(dockerOpts());
-    let imageName = 'task-' + taskId + '-' + runId + ':latest';
+    let imageName = createImageName(taskId, runId);
     await docker.loadImage('/tmp/dockerload.tar');
     let opts = {
       AttachStdin: true,

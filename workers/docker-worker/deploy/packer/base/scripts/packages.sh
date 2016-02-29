@@ -1,6 +1,12 @@
 #! /bin/bash
 
-set -e -x
+set -e -v
+
+DOCKER_VERSION=1.10.1-0~trusty
+# Kernels < 3.13.0.77 and > 3.13.0.71 have an AUFS bug which can cause docker
+# containers to not exit properly because of zombie processes that can't be reaped.
+KERNEL_VER=3.13.0-79-generic
+V4L2LOOPBACK_VERSION=0.8.0
 
 lsb_release -a
 
@@ -14,24 +20,56 @@ sudo apt-get update -y
   apt-get install apt-transport-https
 }
 
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
-sudo sh -c "echo deb https://get.docker.io/ubuntu docker main\
+# Add docker gpg key and update sources
+sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+sudo sh -c "echo deb https://apt.dockerproject.org/repo ubuntu-trusty main\
 > /etc/apt/sources.list.d/docker.list"
 
 ## Update to pick up new registries
 sudo apt-get update -y
 
+## Update kernel
+sudo apt-get install -y \
+    linux-image-$KERNEL_VER \
+    linux-headers-$KERNEL_VER \
+    linux-image-extra-$KERNEL_VER \
+    linux-image-extra-virtual \
+    dkms
+
+# On paravirtualized instances, PV-GRUB looks at /boot/grub/menu.lst, which is different from the
+# /boot/grub/grub.cfg that dpkg just updated.  So we have to update menu.list manually.
+cat <<EOF | sudo tee /boot/grub/menu.lst >&2
+default         0
+timeout         0
+hiddenmenu
+
+title           Ubuntu 14.04.2 LTS, kernel ${KERNEL_VER}
+root            (hd0)
+kernel          /boot/vmlinuz-${KERNEL_VER} root=LABEL=cloudimg-rootfs ro console=hvc0
+initrd          /boot/initrd.img-${KERNEL_VER}
+
+title           Ubuntu 14.04.2 LTS, kernel ${KERNEL_VER} (recovery mode)
+root            (hd0)
+kernel          /boot/vmlinuz-${KERNEL_VER} root=LABEL=cloudimg-rootfs ro  single
+initrd          /boot/initrd.img-${KERNEL_VER}
+EOF
+
+
 ## Install all the packages
 sudo apt-get install -y \
     unattended-upgrades \
-    lxc-docker-1.6.1 \
+    docker-engine=$DOCKER_VERSION \
     btrfs-tools \
     lvm2 \
     curl \
     build-essential \
-    linux-image-extra-`uname -r` \
-    linux-image-extra-virtual \
     git-core \
+    gstreamer0.10-alsa \
+    gstreamer0.10-plugins-bad \
+    gstreamer0.10-plugins-base \
+    gstreamer0.10-plugins-good \
+    gstreamer0.10-plugins-ugly \
+    gstreamer0.10-tools \
     pbuilder \
     python-mock \
     python-configobj \
@@ -41,8 +79,30 @@ sudo apt-get install -y \
     jq \
     rsyslog-gnutls \
     openvpn \
-    v4l2loopback-utils \
     lxc
 
 ## Clear mounts created in base image so fstab is empty in other builds...
 sudo sh -c 'echo "" > /etc/fstab'
+
+
+## Install v4l2loopback
+cd /usr/src
+rm -rf v4l2loopback-$V4L2LOOPBACK_VERSION
+sudo git clone --branch v$V4L2LOOPBACK_VERSION https://github.com/umlaeute/v4l2loopback.git v4l2loopback-$V4L2LOOPBACK_VERSION
+cd v4l2loopback-$V4L2LOOPBACK_VERSION
+sudo dkms install -m v4l2loopback -v $V4L2LOOPBACK_VERSION -k ${KERNEL_VER}
+sudo dkms build -m v4l2loopback -v $V4L2LOOPBACK_VERSION -k ${KERNEL_VER}
+
+echo "v4l2loopback" | sudo tee --append /etc/modules
+
+cat <<EOF | sudo tee --append /etc/modprobe.d/test-modules.conf >&2
+options v4l2loopback devices=100
+EOF
+
+
+# Install Audio loopback devices
+echo "snd-aloop" | sudo tee --append /etc/modules
+
+cat <<EOF | sudo tee --append /etc/modprobe.d/test-modules.conf >&2
+options snd-aloop enable=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 index=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29
+EOF

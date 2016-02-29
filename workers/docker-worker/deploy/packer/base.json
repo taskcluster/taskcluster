@@ -77,13 +77,5 @@
         "Revision":   "{{user `workerRevision`}}"
       }
     }
-  ],
-
-  "post-processors": [
-    {
-      "type": "vagrant",
-      "output": "deploy/packer/base.box",
-      "keep_input_artifact": true
-    }
   ]
 }

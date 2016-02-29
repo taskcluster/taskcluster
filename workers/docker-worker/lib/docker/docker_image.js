@@ -66,7 +66,10 @@ export default class DockerImage {
     }
 
     // Validate scopes on the image if we have credentials for it...
-    return scopeMatch(this.scopes, [[IMAGE_SCOPE_PREFIX + this.fullName]]);
+    let expectedScopes = [IMAGE_SCOPE_PREFIX + this.fullName];
+    debug(`scopes: ${this.scopes} expected: ${expectedScopes}`);
+
+    return scopeMatch(this.scopes, [expectedScopes]);
   }
 
   async download() {

@@ -45,7 +45,7 @@ export default class BalrogVPNProxy {
     let featureScope = FEATURE_SCOPE_PREFIX + this.featureName;
     if (!scopeMatch(task.task.scopes, [[featureScope]])) {
       throw new Error(
-        `Insufficient scopes to use '${this.featureName}' feature.  ` +
+        `Insufficient scopes to use '${this.featureName}' feature. ` +
         `Try adding ${featureScope} to the .scopes array.`
       );
     }
@@ -60,7 +60,7 @@ export default class BalrogVPNProxy {
     let imageScopes = [`${IMAGE_SCOPE_PREFIX+image}`];
 
     debug('ensuring image');
-    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout);
+    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, imageScopes);
     debug('image verified %s', imageId);
 
     // create the container.

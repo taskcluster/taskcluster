@@ -23,8 +23,16 @@ suite('Shutdown on idle', function() {
 
   // Ensure we don't leave behind our test configurations.
   teardown(co(function* () {
-    yield worker.terminate();
-    settings.cleanup();
+    try {
+      // If the worker did not setup, terminate() will throw an exception.  Ignore
+      // for tests.
+      yield worker.terminate();
+      settings.cleanup();
+    } catch(e) {
+      // If the worker did not setup, terminate() will throw an exception.  Ignore
+      // for tests.
+      settings.cleanup();
+    }
   }));
 
   test('shutdown without ever working a task', co(function* () {
