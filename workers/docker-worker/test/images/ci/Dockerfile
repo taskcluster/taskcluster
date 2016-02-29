@@ -10,7 +10,6 @@ RUN apt-get install -y apt-transport-https
 RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D && \
     echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" > /etc/apt/sources.list.d/docker.list
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    apparmor \
     build-essential \
     curl \
     ca-certificates \
@@ -18,8 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     iptables \
     lxc \
-    python \
-    seccomp
+    python
 
 RUN curl -SL "http://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" | \
     tar xz -C /usr/local --strip-components=1 && \
