@@ -45,6 +45,7 @@ export default class User {
       return null;
     }
     return taskcluster.createTemporaryCredentials({
+      clientId: this.identity,
       start: taskcluster.fromNow(options.startOffset),
       expiry: taskcluster.fromNow(options.expiry),
       scopes,
