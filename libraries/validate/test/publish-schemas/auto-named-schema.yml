@@ -1,6 +1,5 @@
-id:             http://localhost:1203/yml-test-schema.json#
 $schema:        http://json-schema.org/draft-04/schema#
-title:          "test json schema"
+title:          "Automatically named schema, based on filename"
 type:           object
 properties:
   value:
