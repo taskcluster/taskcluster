@@ -44,7 +44,7 @@ class DependencyTracker {
 
     // Create TaskRequirement entries, each entry implies that taskId is blocked
     // by requiredTaskId. This relation is used to track if a taskId is blocked.
-    await Promise.all(task.dependencies.map(requiredTaskId. => {
+    await Promise.all(task.dependencies.map(requiredTaskId => {
       return this.TaskRequirement.create({
         taskId,
         requiredTaskId,
@@ -55,7 +55,7 @@ class DependencyTracker {
     // Create TaskDependency entries, each entry implies that taskId is required
     // by dependentTaskId. This relation is used so taskId can find dependent
     // tasks when it is resolved.
-    await Promise.all(task.dependencies.map(requiredTaskId. => {
+    await Promise.all(task.dependencies.map(requiredTaskId => {
       return this.TaskDependency.create({
         taskId:           requiredTaskId,
         dependentTaskId:  task.taskId,

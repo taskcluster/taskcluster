@@ -13,7 +13,7 @@ suite('validate', function() {
     schemaPrefix:   'http://schemas.taskcluster.net/',
     cases: [
       {
-        schema:   'queue/v1/task.json#',
+        schema:   'queue/v1/create-task-request.json#',
         path:     'task.json',
         success:  true,
       }
