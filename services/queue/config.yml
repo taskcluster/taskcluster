@@ -18,6 +18,8 @@ defaults:
     artifactTableName:            Artifacts
     taskGroupTableName:           TaskGroups
     taskGroupMemberTableName:     TaskGroupMembers
+    taskRequirementTableName:     TaskRequirement
+    taskDependencyTableName:      TaskDependency
 
     # Time delay before expiring artifacts, in readable format, see:
     # taskcluster.fromNow, notice this should be negative!
@@ -124,6 +126,8 @@ production:
     artifactTableName:            'QueueArtifacts'
     taskGroupTableName:           'QueueTaskGroups'
     taskGroupMemberTableName:     'QueueTaskGroupMembers'
+    taskRequirementTableName:     'QueueTaskRequirement'
+    taskDependencyTableName:      'QueueTaskDependency'
     publicArtifactBucketProxies:
       'us-east-1':  's3-copy-proxy-us-east-1.taskcluster.svc.tutum.io'
       'us-west-1':  's3-copy-proxy-us-west-1.taskcluster.svc.tutum.io'
@@ -152,6 +156,8 @@ test:
     artifactTableName:            'TestArtifacts'
     taskGroupTableName:           'TestTaskGroups'
     taskGroupMemberTableName:     'TestTaskGroupMembers'
+    taskRequirementTableName:     'TestTaskRequirement'
+    taskDependencyTableName:      'TestTaskDependency'
     claimQueue:                   'test-claim-queue'
     deadlineQueue:                'test-deadline-queue'
     deadlineDelay:                1000

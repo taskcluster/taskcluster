@@ -30,12 +30,13 @@ class DeadlineResolver {
    *
    * options:
    * {
-   *   Task:           // instance of data.Task
-   *   queueService:   // instance of QueueService
-   *   publisher:      // publisher from base.Exchanges
-   *   pollingDelay:   // Number of ms to sleep between polling
-   *   parallelism:    // Number of polling loops to run in parallel
-   *                   // Each handles up to 32 messages in parallel
+   *   Task:              // instance of data.Task
+   *   queueService:      // instance of QueueService
+   *   dependencyTracker: // instance of DependencyTracker
+   *   publisher:         // publisher from base.Exchanges
+   *   pollingDelay:      // Number of ms to sleep between polling
+   *   parallelism:       // Number of polling loops to run in parallel
+   *                      // Each handles up to 32 messages in parallel
    * }
    */
   constructor(options) {
@@ -44,21 +45,23 @@ class DeadlineResolver {
            "Expected data.Task instance");
     assert(options.queueService instanceof QueueService,
            "Expected instance of QueueService");
+    assert(options.dependencyTracker, "Expected a DependencyTracker instance");
     assert(options.publisher, "Expected a publisher");
     assert(typeof(options.pollingDelay) === 'number',
            "Expected pollingDelay to be a number");
     assert(typeof(options.parallelism) === 'number',
            "Expected parallelism to be a number");
-    this.Task         = options.Task;
-    this.queueService = options.queueService;
-    this.publisher    = options.publisher;
-    this.pollingDelay = options.pollingDelay;
-    this.parallelism  = options.parallelism;
+    this.Task               = options.Task;
+    this.queueService       = options.queueService;
+    this.dependencyTracker  = options.dependencyTracker;
+    this.publisher          = options.publisher;
+    this.pollingDelay       = options.pollingDelay;
+    this.parallelism        = options.parallelism;
 
     // Promise that polling is done
-    this.done         = null;
+    this.done               = null;
     // Boolean that polling should stop
-    this.stopping     = false;
+    this.stopping           = false;
   }
 
   /** Start polling */
@@ -184,11 +187,16 @@ class DeadlineResolver {
       task.takenUntil       = new Date(0);
     });
 
-    // Publish messages about the last run if it was resolved here
+    // Check if the last run was resolved here
     var run = _.last(task.runs);
     if (run.reasonResolved  === 'deadline-exceeded' &&
         run.state           === 'exception') {
       debug("Resolved taskId: %s, by deadline", taskId);
+
+      // Update dependency tracker
+      await this.dependencyTracker.resolveTask(taskId, 'exception');
+
+      // Publish messages about the last run
       await this.publisher.taskException({
         status:   task.status(),
         runId:    task.runs.length - 1
