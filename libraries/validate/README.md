@@ -1,5 +1,6 @@
 TaskCluster Validation Library
-------------------------------
+==============================
+
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-lib-validate.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-lib-validate)
 
 A single purpose library to wrap up all of the logic for ensuring that
@@ -8,11 +9,13 @@ content matches established schemas. This is a replacement for
 
 
 Requirements
-============
+------------
+
 This is tested on and should run on any of node {0.12, 4, 5}.
 
 Usage
-=====
+-----
+
 You can view the tests to see more in-detail usage of most features of this library, but the general idea is as follows
 
 ```javascript
@@ -42,7 +45,7 @@ This library will automatically publish schemas to s3 in production if you so de
 All other functionality should be the same as [ajv itself](https://www.npmjs.com/package/ajv).
 
 Options and Defaults
-====================
+--------------------
 
 This section explores some of the options a bit further. In general, your schemas should be
 stored in the top-level of your project in `./schemas` and the constants in a yaml file in
@@ -78,10 +81,12 @@ that directory called `constants.yaml`. You may override these if desired.
 ```
 
 Testing
-=======
+-------
+
 Just `npm install` and `npm test`. You can set `DEBUG=taskcluster-lib-validate,test` if you want to see what's going on.
 There are no keys needed to test this library.
 
 License
-=======
+-------
+
 [Mozilla Public License Version 2.0](https://github.com/taskcluster/taskcluster-lib-validate/blob/master/LICENSE)
