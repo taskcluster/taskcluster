@@ -1,10 +1,10 @@
-suite("Valid Schema Tests", () => {
+suite('Valid Schema Tests', () => {
   let assert = require('assert');
   let validator = require('../');
   let debug = require('debug')('test');
   let validate = null;
 
-  suiteSetup( async () => {
+  suiteSetup(async () => {
     validate = await validator({
       folder: 'test/schemas',
       baseurl: 'http://localhost:1203/',
@@ -12,37 +12,37 @@ suite("Valid Schema Tests", () => {
     });
   });
 
-  test("load json", () => {
+  test('load json', () => {
     let errors = validate(
         {value: 42},
         'http://localhost:1203/test-schema.json');
     assert.equal(errors, null);
   });
 
-  test("load yml", () => {
+  test('load yml', () => {
     let errors = validate(
         {value: 42},
         'http://localhost:1203/yml-test-schema');
     assert.equal(errors, null);
   });
 
-  test("load yaml", () => {
+  test('load yaml', () => {
     let errors = validate(
         {value: 42},
         'http://localhost:1203/yaml-test-schema');
     assert.equal(errors, null);
   });
 
-  test("$ref", () => {
+  test('$ref', () => {
     let errors = validate({
-        reference: { value: 42 },
-        tid: new Date().toJSON(),
-      }, 'http://localhost:1203/ref-test-schema');
+      reference: {value: 42},
+      tid: new Date().toJSON(),
+    }, 'http://localhost:1203/ref-test-schema');
     assert.equal(errors, null);
   });
 
-  test("default values are inserted", () => {
-    let json = { value: 42 };
+  test('default values are inserted', () => {
+    let json = {value: 42};
     let errors = validate(
         json,
         'http://localhost:1203/default-schema');
@@ -51,8 +51,8 @@ suite("Valid Schema Tests", () => {
     assert.equal(json.optionalValue, 'my-default-value');
   });
 
-  test("default values aren't overridden", () => {
-    let json = { value: 42, optionalValue: 'already-here' };
+  test('default values aren\'t overridden', () => {
+    let json = {value: 42, optionalValue: 'already-here'};
     let errors = validate(
         json,
         'http://localhost:1203/default-schema');
@@ -61,7 +61,7 @@ suite("Valid Schema Tests", () => {
     assert.equal(json.optionalValue, 'already-here');
   });
 
-  test("default values with array and objects", () => {
+  test('default values with array and objects', () => {
     let json = {};
     let errors = validate(
         json,
@@ -73,23 +73,23 @@ suite("Valid Schema Tests", () => {
     assert.equal(json.optEmpty.length, 0);
   });
 
-  test("no opts", async (done) => {
+  test('no opts', async (done) => {
     let v = await validator();
     assert(v);
     done();
   });
 
-  test("rejects errors", () => {
+  test('rejects errors', () => {
     let errors = validate(
-        { value: 43 },
+        {value: 43},
         'http://localhost:1203/test-schema');
     debug(errors);
     assert.notEqual(errors, null);
   });
 
-  test("automatic id", () => {
+  test('automatic id', () => {
     let errors = validate(
-        { value: 42 },
+        {value: 42},
         'http://localhost:1203/auto-named-schema');
     assert.equal(errors, null);
   });
