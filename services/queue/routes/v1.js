@@ -477,7 +477,7 @@ api.declare({
   try {
     let runs = [];
     // Add run if there is no dependencies
-    if (task.dependencies.length === 0) {
+    if (taskDef.dependencies.length === 0) {
       runs.push({
         state:            'pending',
         reasonCreated:    'scheduled',
@@ -524,8 +524,8 @@ api.declare({
       return res.reportError('RequestConflict', [
         "taskId {{taskId}} already used by another task.",
         "This could be the result of faulty idempotency!",
-        "Existing task definition was: {existingTask}",
-        "This request tried to define: {taskDefinition}",
+        "Existing task definition was: {{existingTask}}",
+        "This request tried to define: {{taskDefinition}}",
       ].join('\n'), {
         taskId,
         existingTask: def,
@@ -653,6 +653,11 @@ api.declare({
     return;
   }
 
+  // Ensure we have a self-dependency, this is how defineTask works now
+  if (!_.includes(taskDef.dependencies, taskId)) {
+    taskDef.dependencies.push(taskId);
+  }
+
   // Ensure group membership is declared, and that schedulerId isn't conflicting
   if (!await ensureTaskGroup(this, taskId, taskDef, res)) {
     return;
@@ -665,11 +670,6 @@ api.declare({
 
   // Insert entry in deadline queue (garbage entries are acceptable)
   await this.queueService.putDeadlineMessage(taskId, deadline);
-
-  // Ensure we have a self-dependency, this is how defineTask works now
-  if (!_.includes(taskDef.dependencies, taskId)) {
-    taskDef.dependencies.push(taskId);
-  }
 
   // Try to create Task entity
   try {
@@ -712,8 +712,8 @@ api.declare({
       return res.reportError('RequestConflict', [
         "taskId {{taskId}} already used by another task.",
         "This could be the result of faulty idempotency!",
-        "Existing task definition was: {existingTask}",
-        "This request tried to define: {taskDefinition}",
+        "Existing task definition was: {{existingTask}}",
+        "This request tried to define: {{taskDefinition}}",
       ].join('\n'), {
         taskId,
         existingTask: def,
@@ -821,7 +821,7 @@ api.declare({
     });
   }
 
-  return res.reply(status);
+  return res.reply({status});
 });
 
 /** Rerun a previously resolved task */
