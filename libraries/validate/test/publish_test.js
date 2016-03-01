@@ -2,13 +2,17 @@ suite("Publish Tests", () => {
   let assert = require('assert');
   let validator = require('../');
   let AWSMock = require('mock-aws-s3');
+  let os = require('os');
+  let path = require('path');
   let rimraf = require('rimraf');
+  let debug = require('debug')('test');
 
-  let mockdir = '/tmp/tc-lib-validate/buckets';
   let s3 = null;
   let validate = null;
+  let mockdir = path.join(os.tmpdir(), 'tc-lib-validate', 'buckets');
 
   suiteSetup( async () => {
+    debug('Using tmpdir: ' + mockdir);
     AWSMock.config.basePath = mockdir;
     rimraf.sync(mockdir);
 
