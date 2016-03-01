@@ -135,4 +135,13 @@ module.exports = {
 
   // Pattern for scope names, for when-ever that is useful
   "scope-pattern":   "^[\\x20-\\x7e]*$",
+
+  // Maximum number of dependencies a single task can have
+  "max-task-dependencies": 100,
+
+  // Possible dependencies relations
+  "dependency-relation": [
+    "on-completed",
+    "on-resolved",
+  ],
 };
