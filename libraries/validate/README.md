@@ -1,5 +1,6 @@
 TaskCluster Validation Library
 ------------------------------
+[![Build Status](https://travis-ci.org/taskcluster/taskcluster-lib-validate.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-lib-validate)
 
 A single purpose library to wrap up all of the logic for ensuring that
 content matches established schemas. This is a replacement for
