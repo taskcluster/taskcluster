@@ -16,6 +16,7 @@ let raven             = require('raven');
 let EC2RegionResolver = require('../queue/ec2regionresolver');
 let DeadlineResolver  = require('../queue/deadlineresolver');
 let ClaimResolver     = require('../queue/claimresolver');
+let DependencyTracker = require('../queue/dependencytracker');
 
 // Create component loader
 let load = base.loader({
@@ -188,6 +189,38 @@ let load = base.loader({
     }
   },
 
+  // Create TaskRequirement table
+  TaskRequirement: {
+    requires: ['cfg', 'influx', 'process'],
+    setup: async ({cfg, influx, process}) => {
+      let TaskRequirement = data.TaskRequirement.setup({
+        table:            cfg.app.taskRequirementTableName,
+        credentials:      cfg.azure,
+        drain:            influx,
+        component:        cfg.app.statsComponent,
+        process:          process
+      });
+      await TaskRequirement.ensureTable();
+      return TaskRequirement;
+    }
+  },
+
+  // Create TaskDependency table
+  TaskDependency: {
+    requires: ['cfg', 'influx', 'process'],
+    setup: async ({cfg, influx, process}) => {
+      let TaskDependency = data.TaskDependency.setup({
+        table:            cfg.app.taskDependencyTableName,
+        credentials:      cfg.azure,
+        drain:            influx,
+        component:        cfg.app.statsComponent,
+        process:          process
+      });
+      await TaskDependency.ensureTable();
+      return TaskDependency;
+    }
+  },
+
   // Create QueueService to manage azure queues
   queueService: {
     requires: ['cfg'],
@@ -198,6 +231,14 @@ let load = base.loader({
       deadlineQueue:    cfg.app.deadlineQueue,
       deadlineDelay:    cfg.app.deadlineDelay
     })
+  },
+
+  // Create dependencyTracker
+  dependencyTracker: {
+    requires: [
+      'Task', 'publisher', 'queueService', 'TaskDependency', 'TaskRequirement',
+    ],
+    setup: (ctx) => new DependencyTracker(ctx),
   },
 
   // Create EC2RegionResolver for regions we have artifact proxies in
@@ -218,7 +259,7 @@ let load = base.loader({
       'cfg', 'publisher', 'validator',
       'Task', 'Artifact', 'TaskGroup', 'TaskGroupMember', 'queueService',
       'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
-      'regionResolver', 'raven', 'influx'
+      'regionResolver', 'raven', 'influx', 'dependencyTracker'
     ],
     setup: (ctx) => v1.setup({
       context: {
@@ -227,6 +268,7 @@ let load = base.loader({
         TaskGroup:        ctx.TaskGroup,
         TaskGroupMember:  ctx.TaskGroupMember,
         taskGroupExpiresExtension: ctx.cfg.app.taskGroupExpiresExtension,
+        dependencyTracker: ctx.dependencyTracker,
         publisher:        ctx.publisher,
         validator:        ctx.validator,
         claimTimeout:     ctx.cfg.app.claimTimeout,
@@ -262,10 +304,13 @@ let load = base.loader({
 
   // Create the claim-reaper process
   'claim-reaper': {
-    requires: ['cfg', 'Task', 'queueService', 'publisher', 'monitor'],
-    setup: ({cfg, Task, queueService, publisher}) => {
+    requires: [
+      'cfg', 'Task', 'queueService', 'publisher', 'monitor',
+      'dependencyTracker',
+    ],
+    setup: ({cfg, Task, queueService, publisher, dependencyTracker}) => {
       let resolver = new ClaimResolver({
-        Task, queueService, publisher,
+        Task, queueService, publisher, dependencyTracker,
         pollingDelay:   cfg.app.claim.pollingDelay,
         parallelism:    cfg.app.claim.parallelism
       });
@@ -276,10 +321,13 @@ let load = base.loader({
 
   // Create the deadline reaper process
   'deadline-reaper': {
-    requires: ['cfg', 'Task', 'queueService', 'publisher', 'monitor'],
-    setup: ({cfg, Task, queueService, publisher}) => {
+    requires: [
+      'cfg', 'Task', 'queueService', 'publisher', 'monitor',
+      'dependencyTracker',
+    ],
+    setup: ({cfg, Task, queueService, publisher, dependencyTracker}) => {
       let resolver = new DeadlineResolver({
-        Task, queueService, publisher,
+        Task, queueService, publisher, dependencyTracker,
         pollingDelay:   cfg.app.deadline.pollingDelay,
         parallelism:    cfg.app.deadline.parallelism
       });

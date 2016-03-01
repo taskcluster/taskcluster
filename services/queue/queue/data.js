@@ -1,5 +1,5 @@
 var base    = require('taskcluster-base');
-var debug   = require('debug')('queue:data');
+var debug   = require('debug')('app');
 var assert  = require('assert');
 var Promise = require('promise');
 var _       = require('lodash');
@@ -53,8 +53,8 @@ var Task = base.Entity.configure({
      */
     runs:           base.Entity.types.JSON,
     /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil:     base.Entity.types.Date
-  }
+    takenUntil:     base.Entity.types.Date,
+  },
 }).configure({
   version:          2,
   properties: {
@@ -102,12 +102,68 @@ var Task = base.Entity.configure({
      */
     runs:           base.Entity.types.JSON,
     /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil:     base.Entity.types.Date
+    takenUntil:     base.Entity.types.Date,
   },
   migrate(item) {
     item.priority = 'normal';
     return item;
-  }
+  },
+}).configure({
+  version:              3,
+  properties: {
+    taskId:             base.Entity.types.SlugId,
+    provisionerId:      base.Entity.types.String,
+    workerType:         base.Entity.types.String,
+    schedulerId:        base.Entity.types.String,
+    taskGroupId:        base.Entity.types.SlugId,
+    dependencies:       base.Entity.types.JSON,
+    dependencyRelation: base.Entity.types.String,
+    /** List of custom routes as strings */
+    routes:             base.Entity.types.JSON,
+    priority:           base.Entity.types.String,
+    retries:            base.Entity.types.Number,
+    retriesLeft:        base.Entity.types.Number,
+    created:            base.Entity.types.Date,
+    deadline:           base.Entity.types.Date,
+    expires:            base.Entity.types.Date,
+    /** List of scopes as strings */
+    scopes:             base.Entity.types.JSON,
+    payload:            base.Entity.types.JSON,
+    /**
+     * Meta-data object with properties:
+     * - name
+     * - description
+     * - owner
+     * - source
+     * See JSON schema for documentation.
+     */
+    metadata:           base.Entity.types.JSON,
+    /** Tags as mapping from tag-key to tag-value as string */
+    tags:               base.Entity.types.JSON,
+    extra:              base.Entity.types.JSON,
+    /**
+     * List of run objects with the following keys:
+     * - state          (required)
+     * - reasonCreated  (required)
+     * - reasonResolved (required)
+     * - workerGroup
+     * - workerId
+     * - takenUntil
+     * - scheduled
+     * - started
+     * - resolved
+     * See schema for task status structure for details.
+     * Remark that `runId` always match the index in the array.
+     */
+    runs:               base.Entity.types.JSON,
+    /** Time at which claim to latest run expires, new Date(0) if none */
+    takenUntil:         base.Entity.types.Date,
+  },
+  migrate(item) {
+    item.dependencies = [];
+    item.dependencyRelation = 'on-completed';
+    return item;
+  },
 });
 
 
@@ -393,3 +449,57 @@ TaskGroupMember.expire = async function(now) {
 
 // Export TaskGroupMember
 exports.TaskGroupMember = TaskGroupMember;
+
+/**
+ * TaskRequirement is relation from tasks to dependencies.
+ *
+ * An entry {taskId, requiredTaskId} implies that taskId is blocked on
+ * requiredTaskId.
+ *
+ * Hence, dependencies from taskId contains requiredTaskId.
+ *
+ * This is the same relation as TaskRequirement, except it is in the other
+ * direction. This relation is used to track if dependencies have been
+ * satisfied. This is tracked by deleting satisfied entries, when no entries
+ * remains for taskId, the task must be scheduled.
+ */
+var TaskRequirement = base.Entity.configure({
+  version: 1,
+  partitionKey:       base.Entity.keys.StringKey('taskId'),
+  rowKey:             base.Entity.keys.StringKey('requiredTaskId'),
+  properties: {
+    taskId:           base.Entity.types.SlugId,
+    requiredTaskId:   base.Entity.types.SlugId,
+    expires:          base.Entity.types.Date,
+  },
+});
+
+// Export TaskRequirement
+exports.TaskRequirement = TaskRequirement;
+
+/**
+ * TaskDependency is a relation from tasks to task dependents.
+ *
+ * An entry {taskId, dependentTaskId} implies that dependentTaskId depends on
+ * taskId.
+ *
+ * Hence, dependencies from dependentTaskId contains taskId.
+ *
+ * This is the same relation as TaskRequirement, except it is in the other
+ * direction. This relation is used to find tasks to consider for scheduling
+ * when taskId is resolved.
+ */
+var TaskDependency = base.Entity.configure({
+  version: 1,
+  partitionKey:       base.Entity.keys.StringKey('taskId'),
+  rowKey:             base.Entity.keys.StringKey('dependentTaskId'),
+  properties: {
+    taskId:           base.Entity.types.SlugId,
+    dependentTaskId:  base.Entity.types.SlugId,
+    relation:         base.Entity.types.String,
+    expires:          base.Entity.types.Date,
+  },
+});
+
+// Export TaskDependency
+exports.TaskDependency = TaskDependency
