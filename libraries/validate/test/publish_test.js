@@ -1,7 +1,7 @@
-suite("Publish Tests", () => {
+suite('Publish Tests', () => {
   let assert = require('assert');
   let validator = require('../');
-  let AWSMock = require('mock-aws-s3');
+  let awsMock = require('mock-aws-s3');
   let os = require('os');
   let path = require('path');
   let rimraf = require('rimraf');
@@ -11,12 +11,12 @@ suite("Publish Tests", () => {
   let validate = null;
   let mockdir = path.join(os.tmpdir(), 'tc-lib-validate', 'buckets');
 
-  suiteSetup( async () => {
+  suiteSetup(async () => {
     debug('Using tmpdir: ' + mockdir);
-    AWSMock.config.basePath = mockdir;
+    awsMock.config.basePath = mockdir;
     rimraf.sync(mockdir);
 
-    s3 = AWSMock.S3();
+    s3 = awsMock.S3();
 
     validate = await validator({
       prefix: 'test/v1/',
@@ -32,11 +32,11 @@ suite("Publish Tests", () => {
     });
   });
 
-  suiteTeardown( () => {
+  suiteTeardown(() => {
     rimraf.sync(mockdir);
   });
 
-  test("Schemas are uploaded", (done) => {
+  test('schemas are uploaded', (done) => {
     let shoulds = [
       'auto-named-schema',
       'yaml-test-schema',
@@ -47,7 +47,7 @@ suite("Publish Tests", () => {
     for (let key of shoulds) {
       s3.getObject({
         Bucket: 'schemas.taskcluster.net',
-        Key: 'test/v1/' + key + '.json'
+        Key: 'test/v1/' + key + '.json',
       }, (err, data) => {
         if (err) {
           done(err);

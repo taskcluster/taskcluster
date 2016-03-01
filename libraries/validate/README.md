@@ -77,7 +77,7 @@ that directory called `constants.yaml`. You may override these if desired.
     prefix: null
 
     // This is probably only used for testing. It allows using different libraries for s3.
-    s3Provider: AWS.S3
+    s3Provider: require('aws-sdk').S3
 ```
 
 Testing
