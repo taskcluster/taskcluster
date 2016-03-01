@@ -2,6 +2,7 @@ let debug   = require('debug')('app');
 let assert  = require('assert');
 let Promise = require('promise');
 let _       = require('lodash');
+let base    = require('taskcluster-base');
 
 /**
  * DependencyTracker tracks dependencies between tasks and ensure that dependent
@@ -46,7 +47,7 @@ class DependencyTracker {
     // by requiredTaskId. This relation is used to track if a taskId is blocked.
     await Promise.all(task.dependencies.map(requiredTaskId => {
       return this.TaskRequirement.create({
-        taskId,
+        taskId:           task.taskId,
         requiredTaskId,
         expires:          task.expires,
       }, true);
@@ -78,14 +79,14 @@ class DependencyTracker {
       }
 
       // Check if requiredTask expires before the deadline
-      if (deadline.getTime() > requiredTask.expires.getTime()) {
+      if (task.deadline.getTime() > requiredTask.expires.getTime()) {
         return expiring.push(requiredTaskId);
       }
 
       // Check if requiredTask is satisfied
       let state = requiredTask.state();
-      if (state !== 'completed' && (task.dependencyRelation !== 'on-resolved' ||
-          (state !== 'exception' && state !== 'failed'))) {
+      if (state === 'completed' || (task.dependencyRelation === 'on-resolved' &&
+          (state === 'exception' || state === 'failed'))) {
         // If a dependency is satisfied we delete the TaskRequirement entry
         await this.TaskRequirement.remove({
           taskId:         task.taskId,
@@ -133,6 +134,7 @@ class DependencyTracker {
     // dependencies we ensure that the first run is pending (if not already).
     if ((anySatisfied && !await this.isBlocked(task.taskId)) ||
         task.dependencies.length === 0) {
+
       await task.modify(task => {
         // Don't modify if there already is a run
         if (task.runs.length > 0) {
@@ -161,12 +163,12 @@ class DependencyTracker {
 
     // Create query condition
     let condition = {
-      taskId: base.Entity.op.equals(taskId),
+      taskId: base.Entity.op.equal(taskId),
     };
     if (resolution !== 'completed') {
       // If the resolution wasn't 'completed', we can only remove TaskRequirement
       // entries if the relation is 'on-resolved'.
-      condition.relation = base.Entity.op.equals('on-resolved');
+      condition.relation = base.Entity.op.equal('on-resolved');
     }
 
     await this.TaskDependency.query(condition, {

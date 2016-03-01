@@ -174,6 +174,8 @@ Task.prototype.definition = function() {
     workerType:     this.workerType,
     schedulerId:    this.schedulerId,
     taskGroupId:    this.taskGroupId,
+    dependencies:   _.cloneDeep(this.dependencies),
+    dependencyRelation: this.dependencyRelation,
     routes:         _.cloneDeep(this.routes),
     priority:       this.priority,
     retries:        this.retries,
