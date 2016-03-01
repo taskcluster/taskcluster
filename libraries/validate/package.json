@@ -20,9 +20,9 @@
     "babel-runtime": "^6.0.0",
     "debug": "^2.2.0",
     "js-yaml": "^3.5.3",
-    "lodash": "4.5.1",
+    "lodash": "^4.5.1",
     "promise": "^7.0.4",
-    "url-join": "0.0.1",
+    "url-join": "^0.0.1",
     "walk": "^2.3.9"
   },
   "devDependencies": {
@@ -35,7 +35,8 @@
     "mocha": "2.4.5",
     "mock-aws-s3": "^2.1.0",
     "rimraf": "^2.5.2",
-    "tc-rules": "2.0.0"
+    "source-map-support": "^0.4.0",
+    "tc-rules": "^2.0.0"
   },
   "main": "./lib/validate.js"
 }
