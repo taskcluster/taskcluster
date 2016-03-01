@@ -71,6 +71,7 @@ var RUN_ID_PATTERN      = /^[1-9]*[0-9]+$/;
  *   regionResolver: // Instance of EC2RegionResolver,
  *   publicProxies:  // Mapping from EC2 region to proxy host for publicBucket
  *   credentials:    // TaskCluster credentials for issuing temp creds on claim
+ *   dependencyTracker: // Instance of DependencyTracker
  * }
  */
 var api = new base.API({
@@ -112,6 +113,7 @@ var api = new base.API({
     'regionResolver',
     'publicProxies',
     'credentials',
+    'dependencyTracker',
   ],
 });
 
@@ -256,28 +258,28 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   var deadline  = new Date(taskDef.deadline);
   if (created.getTime() < new Date().getTime() - 15 * 60 * 1000) {
     return {
-      code:       "RequestConflict",
+      code:       "InputError",
       message:    "Created timestamp cannot be in the past (max 15min drift)",
       details:    {created: taskDef.created}
     };
   }
   if (created.getTime() > new Date().getTime() + 15 * 60 * 1000) {
     return {
-      code:       "RequestConflict",
+      code:       "InputError",
       message:    "Created timestamp cannot be in the future (max 15min drift)",
       details:    {created: taskDef.created}
     };
   }
   if (created.getTime() > deadline.getTime()) {
     return {
-      code:       "RequestConflict",
+      code:       "InputError",
       message:    "Deadline cannot be past created",
       details:      {created: taskDef.created, deadline: taskDef.deadline}
     };
   }
   if (deadline.getTime() < new Date().getTime()) {
     return {
-      code:       "RequestConflict",
+      code:       "InputError",
       message:    "Deadline cannot be in the past",
       details:    {deadline: taskDef.deadline}
     };
@@ -287,7 +289,7 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   // Validate that deadline is less than 5 days from now, allow 15 min drift
   if (msToDeadline > 5 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
     return {
-      code:       "RequestConflict",
+      code:       "InputError",
       message:    "Deadline cannot be more than 5 days into the future",
       details:    {deadline: taskDef.deadline}
     };
@@ -303,7 +305,7 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   // Validate that expires is past deadline
   if (deadline.getTime() > new Date(taskDef.deadline).getTime()) {
     return {
-      code:       "RequestConflict",
+      code:       "InputError",
       message:    "Expires cannot be before the deadline",
       details:    {deadline: taskDef.deadline, expires: taskDef.expires}
     };
@@ -376,6 +378,7 @@ let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
   return true;
 };
 
+
 /** Create tasks */
 api.declare({
   method:     'put',
@@ -429,8 +432,21 @@ api.declare({
     return res.reportError(detail.code, detail.message, detail.details);
   }
 
-  // Find scopes required for task specific routes
-  var routeScopes = taskDef.routes.map(route => 'queue:route:' + route);
+  // Extra scopes required
+  let scopes = _.flatten([
+    // task.scopes
+    taskDef.scopes,
+
+    // Find scopes required for task specific routes
+    taskDef.routes.map(route => 'queue:route:' + route),
+
+    // Add scope for priority if any
+    (
+      taskDef.priority !== 'normal' ? [
+        'queue:task-priority:' + taskDef.priority
+      ] : []
+    ),
+  ]);
 
   // Authenticate request by providing parameters, and then validate that the
   // requester satisfies all the scopes assigned to the task
@@ -440,14 +456,7 @@ api.declare({
     workerType:     taskDef.workerType,
     schedulerId:    taskDef.schedulerId,
     taskGroupId:    taskDef.taskGroupId,
-  }) || !req.satisfies([taskDef.scopes])
-     || !req.satisfies([routeScopes])) {
-    return;
-  }
-
-  // Check scopes for priority
-  if (taskDef.priority !== 'normal' &&
-      !req.satisfies([['queue:task-priority:' + taskDef.priority]])) {
+  }) || !req.satisfies([scopes])) {
     return;
   }
 
@@ -456,39 +465,49 @@ api.declare({
     return;
   }
 
+  // Parse timestamps
+  let created = new Date(taskDef.created);
+  let deadline = new Date(taskDef.deadline);
+  let expires = new Date(taskDef.expires);
+
   // Insert entry in deadline queue
-  var deadline = new Date(taskDef.deadline);
   await this.queueService.putDeadlineMessage(taskId, deadline);
 
   // Try to create Task entity
   try {
+    let runs = [];
+    // Add run if there is no dependencies
+    if (task.dependencies.length === 0) {
+      runs.push({
+        state:            'pending',
+        reasonCreated:    'scheduled',
+        scheduled:        new Date().toJSON(),
+      });
+    }
     var task = await this.Task.create({
-      taskId:           taskId,
-      provisionerId:    taskDef.provisionerId,
-      workerType:       taskDef.workerType,
-      schedulerId:      taskDef.schedulerId,
-      taskGroupId:      taskDef.taskGroupId,
-      routes:           taskDef.routes,
-      priority:         taskDef.priority,
-      retries:          taskDef.retries,
-      retriesLeft:      taskDef.retries,
-      created:          new Date(taskDef.created),
-      deadline:         deadline,
-      expires:          new Date(taskDef.expires),
-      scopes:           taskDef.scopes,
-      payload:          taskDef.payload,
-      metadata:         taskDef.metadata,
-      tags:             taskDef.tags,
-      extra:            taskDef.extra,
-      runs:             [{
-        state:          'pending',
-        reasonCreated:  'scheduled',
-        scheduled:      new Date().toJSON()
-      }],
-      takenUntil:       new Date(0)
+      taskId:             taskId,
+      provisionerId:      taskDef.provisionerId,
+      workerType:         taskDef.workerType,
+      schedulerId:        taskDef.schedulerId,
+      taskGroupId:        taskDef.taskGroupId,
+      dependencies:       taskDef.dependencies,
+      dependencyRelation: taskDef.dependencyRelation,
+      routes:             taskDef.routes,
+      priority:           taskDef.priority,
+      retries:            taskDef.retries,
+      retriesLeft:        taskDef.retries,
+      created:            created,
+      deadline:           deadline,
+      expires:            expires,
+      scopes:             taskDef.scopes,
+      payload:            taskDef.payload,
+      metadata:           taskDef.metadata,
+      tags:               taskDef.tags,
+      extra:              taskDef.extra,
+      runs:               runs,
+      takenUntil:         new Date(0),
     });
-  }
-  catch (err) {
+  } catch (err) {
     // We can handle cases where entity already exists, not that, we re-throw
     if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;
@@ -502,52 +521,60 @@ api.declare({
     // otherwise the task would have been created with defineTask, and we don't
     // offer an idempotent operation in that case
     if (!_.isEqual(taskDef, def) || task.runs.length === 0) {
-      return res.reportError(
-        "RequestConflict", [
-          "taskId {{taskId}} already used by another task.",
-          "This could be the result of faulty idempotency!"
-        ].join('\n'),
-        {
-          taskId,
-        });
+      return res.reportError('RequestConflict', [
+        "taskId {{taskId}} already used by another task.",
+        "This could be the result of faulty idempotency!",
+        "Existing task definition was: {existingTask}",
+        "This request tried to define: {taskDefinition}",
+      ].join('\n'), {
+        taskId,
+        existingTask: def,
+        taskDefinition: taskDef,
+      });
+    }
+  }
+
+  // Track dependencies, if not already scheduled
+  if (task.state() === 'unscheduled') {
+    // Track dependencies, adds a pending run if ready to run
+    let err = await this.dependencyTracker.trackDependencies(task);
+    // We get an error here the task will be left in state = 'unscheduled',
+    // any attempt to use the same taskId will fail. And eventually the task
+    // will be resolved deadline-expired. But since createTask never returned
+    // successfully...
+    if (err) {
+      return res.reply('InputError', err.message, err.details);
     }
   }
 
   // Construct task status, as we'll return this many times
-  var status = task.status();
+  let status = task.status();
 
-  // If first run isn't pending, all message must have been published before,
-  // this can happen if we came from the catch-branch (it's unlikely to happen)
-  if (task.runs[0].state !== 'pending') {
-    return res.reply({
-      status:   status
-    });
+  // If first run isn't unscheduled or pending, all message must have been
+  // published before, this can happen if we came from the catch-branch
+  // (it's unlikely to happen). But no need to publish messages again
+  let runZeroState = task.runs[0].state;
+  if (runZeroState !== 'unscheduled' && runZeroState !== 'pending') {
+    return res.reply({status});
   }
 
-  await Promise.all([
-    // Put message into the task pending queue
-    this.queueService.putPendingMessage(task, 0),
+  // Publish task-defined message, we want this arriving before the
+  // task-pending message, so we have to await publication here
+  await this.publisher.taskDefined({status}, task.routes);
 
-    // Publish pulse messages
-    (async () => {
-      // Publish task-defined message, we want this arriving before the
-      // task-pending message, so we have to await publication here
-      await this.publisher.taskDefined({
-        status:         status
-      }, task.routes);
+  // If first run is pending we publish messages about this
+  if (runZeroState === 'pending') {
+    await Promise.all([
+      // Put message into the task pending queue
+      this.queueService.putPendingMessage(task, 0),
 
       // Put message in appropriate azure queue, and publish message to pulse
-      await this.publisher.taskPending({
-        status:         status,
-        runId:          0
-      }, task.routes);
-    })()
-  ]);
+      this.publisher.taskPending({status, runId: 0}, task.routes),
+    ]);
+  }
 
   // Reply
-  return res.reply({
-    status:         status
-  });
+  return res.reply({status});
 });
 
 /** Define tasks */
@@ -555,7 +582,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/define',
   name:       'defineTask',
-  stability:  base.API.stability.stable,
+  stability:  base.API.stability.deprecated,
   scopes:     [
     // Legacy scopes
     ['queue:define-task:<provisionerId>/<workerType>'],
@@ -599,8 +626,21 @@ api.declare({
     return res.reportError(detail.code, detail.message, detail.details);
   }
 
-  // Find scopes required for task-specific routes
-  var routeScopes = taskDef.routes.map(route => 'queue:route:' + route);
+  // Extra scopes required
+  let scopes = _.flatten([
+    // task.scopes
+    taskDef.scopes,
+
+    // Find scopes required for task specific routes
+    taskDef.routes.map(route => 'queue:route:' + route),
+
+    // Add scope for priority if any
+    (
+      taskDef.priority !== 'normal' ? [
+        'queue:task-priority:' + taskDef.priority
+      ] : []
+    ),
+  ]);
 
   // Authenticate request by providing parameters, and then validate that the
   // requester satisfies all the scopes assigned to the task
@@ -609,14 +649,7 @@ api.declare({
     workerType:     taskDef.workerType,
     schedulerId:    taskDef.schedulerId,
     taskGroupId:    taskDef.taskGroupId,
-  }) || !req.satisfies([taskDef.scopes])
-     || !req.satisfies([routeScopes])) {
-    return;
-  }
-
-  // Check scopes for priority
-  if (taskDef.priority !== 'normal' &&
-      !req.satisfies([['queue:task-priority:' + taskDef.priority]])) {
+  }) || !req.satisfies([scopes])) {
     return;
   }
 
@@ -625,35 +658,45 @@ api.declare({
     return;
   }
 
+  // Parse timestamps
+  let created = new Date(taskDef.created);
+  let deadline = new Date(taskDef.deadline);
+  let expires = new Date(taskDef.expires);
+
   // Insert entry in deadline queue (garbage entries are acceptable)
-  var deadline = new Date(taskDef.deadline);
   await this.queueService.putDeadlineMessage(taskId, deadline);
+
+  // Ensure we have a self-dependency, this is how defineTask works now
+  if (!_.includes(taskDef.dependencies, taskId)) {
+    taskDef.dependencies.push(taskId);
+  }
 
   // Try to create Task entity
   try {
     var task = await this.Task.create({
-      taskId:           taskId,
-      provisionerId:    taskDef.provisionerId,
-      workerType:       taskDef.workerType,
-      schedulerId:      taskDef.schedulerId,
-      taskGroupId:      taskDef.taskGroupId,
-      routes:           taskDef.routes,
-      priority:         taskDef.priority,
-      retries:          taskDef.retries,
-      retriesLeft:      taskDef.retries,
-      created:          new Date(taskDef.created),
-      deadline:         deadline,
-      expires:          new Date(taskDef.expires),
-      scopes:           taskDef.scopes,
-      payload:          taskDef.payload,
-      metadata:         taskDef.metadata,
-      tags:             taskDef.tags,
-      extra:            taskDef.extra,
-      runs:             [],
-      takenUntil:       new Date(0)
+      taskId:             taskId,
+      provisionerId:      taskDef.provisionerId,
+      workerType:         taskDef.workerType,
+      schedulerId:        taskDef.schedulerId,
+      taskGroupId:        taskDef.taskGroupId,
+      dependencies:       taskDef.dependencies,
+      dependencyRelation: taskDef.dependencyRelation,
+      routes:             taskDef.routes,
+      priority:           taskDef.priority,
+      retries:            taskDef.retries,
+      retriesLeft:        taskDef.retries,
+      created:            created,
+      deadline:           deadline,
+      expires:            expires,
+      scopes:             taskDef.scopes,
+      payload:            taskDef.payload,
+      metadata:           taskDef.metadata,
+      tags:               taskDef.tags,
+      extra:              taskDef.extra,
+      runs:               [],
+      takenUntil:         new Date(0)
     });
-  }
-  catch (err) {
+  } catch (err) {
     // We can handle cases where entity already exists, not that, we re-throw
     if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;
@@ -666,37 +709,50 @@ api.declare({
     // Compare the two task definitions
     // (ignore runs as this method don't create them)
     if (!_.isEqual(taskDef, def)) {
-      debug("DEFINE-FAILED: input -> %j !== %j <- existing", taskDef, def);
-      return res.reportError(
-        "RequestConflict",
+      return res.reportError('RequestConflict', [
         "taskId {{taskId}} already used by another task.",
-        {
-          taskId,
-        });
+        "This could be the result of faulty idempotency!",
+        "Existing task definition was: {existingTask}",
+        "This request tried to define: {taskDefinition}",
+      ].join('\n'), {
+        taskId,
+        existingTask: def,
+        taskDefinition: taskDef,
+      });
     }
   }
 
+  // Track dependencies, if not already scheduled
+  if (task.state() === 'unscheduled') {
+    // Track dependencies, adds a pending run if ready to run
+    let err = await this.dependencyTracker.trackDependencies(task);
+    // We get an error here the task will be left in state = 'unscheduled',
+    // any attempt to use the same taskId will fail. And eventually the task
+    // will be resolved deadline-expired. But since createTask never returned
+    // successfully...
+    if (err) {
+      return res.reply('InputError', err.message, err.details);
+    }
+
+    // Validate sanity...
+    assert(task.state() === 'unscheduled', 'task should be unscheduled here!');
+  }
+
   // Construct task status
-  var status = task.status();
+  let status = task.status();
 
   // If runs are present, then we don't need to publish messages as this must
   // have happened already...
   // this can happen if we came from the catch-branch (it's unlikely to happen)
   if (task.runs.length > 0) {
-    return res.reply({
-      status:       status
-    });
+    return res.reply({status});
   }
 
   // Publish task-defined message
-  await this.publisher.taskDefined({
-    status:         status
-  }, task.routes);
+  await this.publisher.taskDefined({status}, task.routes);
 
   // Reply
-  return res.reply({
-    status:         status
-  });
+  return res.reply({status});
 });
 
 
@@ -753,50 +809,19 @@ api.declare({
     return;
   }
 
-  // Validate deadline
-  if (task.deadline.getTime() < new Date().getTime()) {
-    return res.reportError(
-      "RequestConflict",
-      "Task {{taskId}} Can't be scheduled past it's deadline of {{deadline}}.",
-      {
+  // Attempt to schedule task
+  let status = await this.dependencyTracker.scheduleTask(task);
+
+  // If null it must because deadline is exceeded
+  if (status === null) {
+    return res.reportError("RequestConflict",
+      "Task {{taskId}} Can't be scheduled past its deadline at {{deadline}}.", {
         taskId,
         deadline: task.deadline.toJSON()
-      });
-  }
-
-  // Ensure that we have an initial run
-  await task.modify((task) => {
-    // Don't modify if there already is a run
-    if (task.runs.length > 0) {
-      return;
-    }
-
-    // Add initial run (runId = 0)
-    task.runs.push({
-      state:          'pending',
-      reasonCreated:  'scheduled',
-      scheduled:      new Date().toJSON()
     });
-  });
-
-  // Construct status object
-  var status = task.status();
-
-  // Put message in appropriate azure queue, and publish message to pulse,
-  // if the initial run is pending
-  if (task.runs[0].state === 'pending') {
-    await Promise.all([
-      this.queueService.putPendingMessage(task, 0),
-      this.publisher.taskPending({
-        status:         status,
-        runId:          0
-      }, task.routes)
-    ]);
   }
 
-  return res.reply({
-    status:     status
-  });
+  return res.reply(status);
 });
 
 /** Rerun a previously resolved task */
@@ -967,16 +992,14 @@ api.declare({
 }, async function(req, res) {
   // Load Task entity
   var taskId  = req.params.taskId;
-  var task    = await this.Task.load({taskId: taskId}, true);
+  var task    = await this.Task.load({taskId}, true);
 
   // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
-    return res.reportError(
-      "ResourceNotFound",
-      "Task {{taskId}} not found. Are you sure it was created?",
-      {
-        taskId
-      });
+    return res.reportError('ResourceNotFound',
+      "Task {{taskId}} not found. Are you sure it was created?", {
+      taskId
+    });
   }
 
   // Authenticate request by providing parameters
@@ -990,13 +1013,11 @@ api.declare({
 
   // Validate deadline
   if (task.deadline.getTime() < new Date().getTime()) {
-    return res.reportError(
-      "RequestConflict",
-      "Task {{taskId}} Can't be cancelled past it's deadline of {{deadline}}.",
-      {
-        taskId,
-        deadline: task.deadline.toJSON()
-      });
+    return res.reportError('RequestConflict',
+      "Task {{taskId}} Can't be canceled past it's deadline of {{deadline}}.", {
+      taskId,
+      deadline: task.deadline.toJSON()
+    });
   }
 
   // Modify the task
@@ -1040,18 +1061,19 @@ api.declare({
   // Construct status object
   var status = task.status();
 
-  // Publish message about last run, if it was canceled
+  // If the last run was canceled, resolve dependencies and publish message
   if (run.state === 'exception' && run.reasonResolved === 'canceled') {
-    var runId = task.runs.length - 1;
+    // Update dependency tracker
+    await this.dependencyTracker.resolveTask(taskId, 'exception');
+
+    // Publish message about the exception
     await this.publisher.taskException(_.defaults({
-      status:     status,
-      runId:      runId
+      status,
+      runId: task.runs.length - 1,
     }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
   }
 
-  return res.reply({
-    status:     status
-  });
+  return res.reply({status});
 });
 
 /** Poll for a task */
@@ -1410,24 +1432,20 @@ var resolveTask = async function(req, res, taskId, runId, target) {
 
   // Handle cases where the task doesn't exist
   if (!task) {
-    return res.reportError(
-      "ResourceNotFound",
-      "Task {{taskId}} not found. Are you sure it was created?",
-      {
-        taskId
-      });
+    return res.reportError('ResourceNotFound',
+      "Task {{taskId}} not found. Are you sure it was created?", {
+      taskId,
+    });
   }
 
   // Handle cases where the run doesn't exist
   var run = task.runs[runId];
   if (!run) {
-    return res.reportError(
-      "ResourceNotFound",
-      "Run {{runId}} not found on task {{taskId}}.",
-      {
-        taskId,
-        runId
-      });
+    return res.reportError('ResourceNotFound',
+      "Run {{runId}} not found on task {{taskId}}.", {
+      taskId,
+      runId,
+    });
   }
 
   // Authenticate request by providing parameters
@@ -1443,7 +1461,7 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   await task.modify((task) => {
     var run = task.runs[runId];
 
-    // No modification is, run isn't running or the run isn't last
+    // No modification if run isn't running or the run isn't last
     if (task.runs.length - 1 !== runId || run.state !== 'running') {
       return;
     }
@@ -1463,14 +1481,15 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   if (task.runs.length - 1  !== runId ||
       run.state             !== target ||
       run.reasonResolved    !== target) {
-    return res.reportError(
-      "RequestConflict",
-      "Run {{runId}} on task {{taskId}} is resolved or not running.",
-      {
-        taskId,
-        runId
-      });
+    return res.reportError('RequestConflict',
+      "Run {{runId}} on task {{taskId}} is resolved or not running.", {
+      taskId,
+      runId
+    });
   }
+
+  // Update dependency tracker
+  await this.dependencyTracker.resolveTask(taskId, target);
 
   // Construct status object
   var status = task.status();
@@ -1478,23 +1497,21 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   // Post message about task resolution
   if (target === 'completed') {
     await this.publisher.taskCompleted({
-      status:       status,
-      runId:        runId,
+      status,
+      runId,
       workerGroup:  run.workerGroup,
       workerId:     run.workerId
     }, task.routes);
   } else {
     await this.publisher.taskFailed({
-      status:       status,
-      runId:        runId,
+      status,
+      runId,
       workerGroup:  run.workerGroup,
       workerId:     run.workerId
     }, task.routes);
   }
 
-  return res.reply({
-    status:   status
-  });
+  return res.reply({status});
 };
 
 
@@ -1609,24 +1626,20 @@ api.declare({
 
   // Handle cases where the task doesn't exist
   if (!task) {
-    return res.reportError(
-      "ResourceNotFound",
-      "Task {{taskId}} not found. Are you sure it exists?",
-      {
-        taskId,
-      });
+    return res.reportError('ResourceNotFound',
+      "Task {{taskId}} not found. Are you sure it exists?", {
+      taskId,
+    });
   }
 
   // Handle cases where the run doesn't exist
   var run = task.runs[runId];
   if (!run) {
-    return res.reportError(
-      "ResourceNotFound",
-      "Run {{runId}} not found on task {{taskId}}.",
-      {
-        taskId,
-        runId
-      });
+    return res.reportError('ResourceNotFound',
+      "Run {{runId}} not found on task {{taskId}}.", {
+      taskId,
+      runId,
+    });
   }
 
   // Authenticate request by providing parameters
@@ -1642,7 +1655,7 @@ api.declare({
   await task.modify((task) => {
     var run = task.runs[runId];
 
-    // No modification is, run isn't running or the run isn't last
+    // No modification if run isn't running or the run isn't last
     if (task.runs.length - 1 !== runId || run.state !== 'running') {
       return;
     }
@@ -1674,13 +1687,11 @@ api.declare({
       task.runs.length - 1  > runId + 1 ||
       run.state             !== 'exception' ||
       run.reasonResolved    !== reason) {
-    return res.reportError(
-      "RequestConflict",
-      "Run {{runId}} on task {{taskId}} is resolved or not running.",
-      {
-        taskId,
-        runId
-      });
+    return res.reportError('RequestConflict',
+      "Run {{runId}} on task {{taskId}} is resolved or not running.", {
+      taskId,
+      runId
+    });
   }
 
   var status = task.status();
@@ -1702,6 +1713,9 @@ api.declare({
       }, task.routes)
     ]);
   } else {
+    // Update dependency tracker, as the task is resolved (no new run)
+    await this.dependencyTracker.resolveTask(taskId, 'exception');
+
     // Publish message about taskException
     await this.publisher.taskException({
       status,
