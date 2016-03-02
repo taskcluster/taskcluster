@@ -11,7 +11,7 @@ content matches established schemas. This is a replacement for
 Requirements
 ------------
 
-This is tested on and should run on any of node {0.12, 4, 5}.
+This is tested on and should run on any of node `{0.12, 4, 5}`.
 
 Usage
 -----
@@ -19,19 +19,19 @@ Usage
 You can view the tests to see more in-detail usage of most features of this library, but the general idea is as follows
 
 ```javascript
-let document = {'what-is-this': 'it-is-the-json-you-wish-to-validate'};
+let doc = {'what-is-this': 'it-is-the-json-you-wish-to-validate'};
 
 // This creates a validator for you to use
 validate = await validator({ constants: {'my-constant': 42} });
 
-// This checks whatever document you wish against whichever schema you wish
+// This checks whatever object you wish against whichever schema you wish
 let error = validate(
-    document,
+    doc,
     'http://schemas.taskcluster.net/a-schema-you-wish-to-validate-against');
 
 // Finally, ensure that there are no errors and continue however you see fit
 if (!error) {
-  doSomethingWith(document);
+  doSomethingWith(doc);
 } else {
   yellAboutErrors();
 }
