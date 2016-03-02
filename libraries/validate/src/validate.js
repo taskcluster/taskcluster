@@ -9,8 +9,13 @@ let assert = require('assert');
 let Ajv = require('ajv');
 let aws = require('aws-sdk');
 let Promise = require('promise');
+let publish = require('./publish');
+let render = require('./render');
 
 async function validator (options) {
+
+  let schemas = [];
+  let ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
 
   let cfg = _.defaults(options, {
     constants: './schemas/contants.yml',
@@ -34,9 +39,6 @@ async function validator (options) {
       }
     }
   }
-
-  let schemas = [];
-  let ajv = Ajv({useDefaults: true});
 
   walk.walkSync(path.resolve(cfg.folder), {listeners: {name: (root, name) => {
     let json = null;
@@ -83,7 +85,7 @@ async function validator (options) {
       s3Provider = new aws.S3(cfg.aws);
     }
     await Promise.all(schemas.map((entry) => {
-      return publishSchema(
+      return publish(
         s3Provider,
         cfg.bucket,
         cfg.prefix,
@@ -100,62 +102,17 @@ async function validator (options) {
     }
     ajv.validate(id, obj);
     if (ajv.errors) {
-      debug(ajv.errorsText());
+      let emsg = [
+        '\nSchema Validation Failed:',
+        '\n  Rejecting Schema: ',
+        id,
+        '\n  Errors:\n    * ',
+        ajv.errorsText(ajv.errors, {separator: '\n    * '}),
+      ].join('');
+      return emsg;
     }
-    return ajv.errors;
+    return null;
   };
-};
-
-function publishSchema (s3, bucket, prefix, name, content) {
-  return new Promise((accept, reject) => {
-    debug('Publishing schema %s', name);
-    content = JSON.stringify(content, undefined, 4);
-    if (!content) {
-      debug('Schema %s has invalid content!', name);
-      return reject();
-    }
-    s3.putObject({
-      Bucket: bucket,
-      Key: prefix + name,
-      Body: content,
-      ContentType: 'application/json',
-    }, (err, data) => {
-      if (err) {
-        debug('Publishing failed for schema %s', name);
-        return reject(err);
-      }
-      debug('Publishing succeeded for schema %s', name);
-      return accept(data);
-    });
-  });
-}
-
-/** Render {$const: <key>} into JSON schema */
-function render (schema, constants) {
-  // Replace val with constant, if it is an {$const: <key>} schema
-  var substitute = (val) => {
-    // Primitives and arrays shouldn't event be considered
-    if (!(val instanceof Object) || val instanceof Array) {
-      return undefined;
-    }
-
-    // Check if there is a key and only one key
-    var key = val['$const'];
-    if (key === undefined || typeof key != 'string' || _.keys(val).length != 1) {
-      return undefined;
-    }
-
-    // Check that there's a constant for the key
-    var constant = constants[key];
-    if (constant === undefined) {
-      return undefined;
-    }
-
-    // Clone constant
-    return _.cloneDeepWith(constants[key], substitute);
-  };
-  // Do a deep clone with substitute
-  return _.cloneDeepWith(schema, substitute);
 };
 
 module.exports = validator;

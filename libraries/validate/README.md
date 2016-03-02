@@ -25,17 +25,20 @@ let document = {'what-is-this': 'it-is-the-json-you-wish-to-validate'};
 validate = await validator({ constants: {'my-constant': 42} });
 
 // This checks whatever document you wish against whichever schema you wish
-let errors = validate(
+let error = validate(
     document,
     'http://schemas.taskcluster.net/a-schema-you-wish-to-validate-against');
 
 // Finally, ensure that there are no errors and continue however you see fit
-if (!errors) {
+if (!error) {
   doSomethingWith(document);
 } else {
   yellAboutErrors();
 }
 ```
+
+The return value is either `null` if nothing is wrong, or an error message that tries to
+do a decent job of explaining what went wrong in plain, understandable language.
 
 It is possible to specify constants that will be substituted into all of your schemas.
 For examples of this behavior, you can view the tests.
