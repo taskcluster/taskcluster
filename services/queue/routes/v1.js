@@ -655,7 +655,9 @@ api.declare({
 
   // Ensure we have a self-dependency, this is how defineTask works now
   if (!_.includes(taskDef.dependencies, taskId)) {
-    taskDef.dependencies.push(taskId);
+    // Trick as taskDef.dependencies may be a default from schema validation
+    // HACK: Yes, schema validator really should clone its default values!
+    taskDef.dependencies = _.flatten([taskId, taskDef.dependencies]);
   }
 
   // Ensure group membership is declared, and that schedulerId isn't conflicting
