@@ -102,14 +102,13 @@ async function validator (options) {
     }
     ajv.validate(id, obj);
     if (ajv.errors) {
-      let emsg = [
-        '\nSchema Validation Failed:',
-        '\n  Rejecting Schema: ',
+      return [
+        '\nSchema Validation Failed!',
+        '\nRejecting Schema: ',
         id,
-        '\n  Errors:\n    * ',
-        ajv.errorsText(ajv.errors, {separator: '\n    * '}),
+        '\nErrors:\n  * ',
+        ajv.errorsText(ajv.errors, {separator: '\n  * '}),
       ].join('');
-      return emsg;
     }
     return null;
   };
