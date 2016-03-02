@@ -13,6 +13,8 @@ suite('Get task', function() {
     workerType:       'test-worker',
     schedulerId:      'my-scheduler',
     taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
+    dependencies:     [],
+    dependencyRelation: 'on-completed',
     routes:           [],
     priority:         'normal',
     retries:          5,
