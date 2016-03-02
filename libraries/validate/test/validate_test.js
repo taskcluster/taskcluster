@@ -13,60 +13,60 @@ suite('Valid Schema Tests', () => {
   });
 
   test('load json', () => {
-    let errors = validate(
+    let error = validate(
         {value: 42},
         'http://localhost:1203/test-schema.json');
-    assert.equal(errors, null);
+    assert.equal(error, null);
   });
 
   test('load yml', () => {
-    let errors = validate(
+    let error = validate(
         {value: 42},
         'http://localhost:1203/yml-test-schema');
-    assert.equal(errors, null);
+    assert.equal(error, null);
   });
 
   test('load yaml', () => {
-    let errors = validate(
+    let error = validate(
         {value: 42},
         'http://localhost:1203/yaml-test-schema');
-    assert.equal(errors, null);
+    assert.equal(error, null);
   });
 
   test('$ref', () => {
-    let errors = validate({
+    let error = validate({
       reference: {value: 42},
       tid: new Date().toJSON(),
     }, 'http://localhost:1203/ref-test-schema');
-    assert.equal(errors, null);
+    assert.equal(error, null);
   });
 
   test('default values are inserted', () => {
     let json = {value: 42};
-    let errors = validate(
+    let error = validate(
         json,
         'http://localhost:1203/default-schema');
-    assert.equal(errors, null);
+    assert.equal(error, null);
     assert.equal(json.value, 42);
     assert.equal(json.optionalValue, 'my-default-value');
   });
 
   test('default values aren\'t overridden', () => {
     let json = {value: 42, optionalValue: 'already-here'};
-    let errors = validate(
+    let error = validate(
         json,
         'http://localhost:1203/default-schema');
-    assert.equal(errors, null);
+    assert.equal(error, null);
     assert.equal(json.value, 42);
     assert.equal(json.optionalValue, 'already-here');
   });
 
   test('default values with array and objects', () => {
     let json = {};
-    let errors = validate(
+    let error = validate(
         json,
         'http://localhost:1203/default-array-obj-schema');
-    assert.equal(errors, null);
+    assert.equal(error, null);
     assert.equal(json.optObj.hello, 'world');
     assert.equal(json.optArray.length, 1);
     assert.equal(json.optArray[0], 'my-default-value');
@@ -79,19 +79,27 @@ suite('Valid Schema Tests', () => {
     done();
   });
 
-  test('rejects errors', () => {
-    let errors = validate(
+  test('rejects poorly formed object', () => {
+    let error = validate(
         {value: 43},
         'http://localhost:1203/test-schema');
-    debug(errors);
-    assert.notEqual(errors, null);
+    debug(error);
+    assert.notEqual(error, null);
+  });
+
+  test('messages for large schema are nice', () => {
+    let error = validate(
+        {},
+        'http://localhost:1203/big-schema');
+    debug(error);
+    assert.notEqual(error, null);
   });
 
   test('automatic id', () => {
-    let errors = validate(
+    let error = validate(
         {value: 42},
         'http://localhost:1203/auto-named-schema');
-    assert.equal(errors, null);
+    assert.equal(error, null);
   });
 
 });
