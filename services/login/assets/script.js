@@ -12,7 +12,26 @@ $(function() {
       });
     }
   });
+
+  $('#ldap-modal').on('shown.bs.modal', function() {
+    $('#ldap-modal input[name="username"]').focus();
+  });
+
+  $('#manual-form').submit(function(e) {
+    e.preventDefault();
+    showCredentials({
+      clientId: $('#manual-modal input[name="clientId"]').val().trim(),
+      accessToken: $('#manual-modal input[name="accessToken"]').val().trim(),
+      certificate: $('#manual-modal textarea[name="certificate"]').val().trim(),
+    });
+    $('#manual-modal').modal('hide');
+  });
+
+  $('#manual-modal').on('shown.bs.modal', function() {
+    $('#manual-modal input[name="clientId"]').focus();
+  });
 });
+
 
 jQuery.extend({
   getQueryString: function() {
@@ -82,8 +101,9 @@ function setAllowedHost(host) {
   }
 }
 
-
-function load(credentials) {
+// Show the grant section, given a querystring-stringified version
+// of the credentials to display
+function showGrant(credentials) {
   // Get query from localStorage
   var query = null;
   try {
@@ -110,9 +130,21 @@ function load(credentials) {
   }));
 
   // Create url for redirecting to target
-  var redirectTarget = query.target + '?' + credentials;
+  var querystring = [];
+  querystring.push('clientId=' + encodeURIComponent(credentials.clientId));
+  querystring.push('accessToken=' + encodeURIComponent(credentials.accessToken));
+  if (credentials.certificate) {
+    var cert = credentials.certificate;
+    if (typeof cert !== 'string') {
+      cert = JSON.stringify(cert);
+    }
+    querystring.push('certificate=' + encodeURIComponent(cert));
+  }
+  querystring = querystring.join('&');
+  var redirectTarget = query.target + '?' + querystring;
   // Use the grant-button as cheap url parser
   $('#grant-button').attr('href', redirectTarget);
+  $('.grant-target').text(query.target);
   var hostname = $('#grant-button')[0].hostname;
   // Do the actual redirect
   var gotoRedirectTarget = function() {
@@ -165,7 +197,24 @@ function load(credentials) {
       gotoRedirectTarget();
     }
   });
-  // Set target url... and show the grant area...
-  $('.grant-target').text(query.target);
+
   $('#grant-area').show();
+  $('#confirm-grant-button').focus();
+};
+
+// Show the credentials section
+function showCredentials(credentials) {
+  if (localStorage.getItem('grant-request')) {
+    showGrant(credentials);
+  }
+
+  // Set target url and credentials... and show the grant area...
+  $('#credentials-clientId').text(credentials.clientId);
+  $('#credentials-accessToken').text(credentials.accessToken);
+  if (credentials.certificate) {
+    $('#credentials-certificate').text(credentials.certificate);
+  } else {
+    $('#credentials-certificate').text('');
+  }
+  $('#credentials-display').show();
 };
