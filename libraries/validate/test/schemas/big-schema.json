@@ -1,0 +1,174 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Task Definition Response",
+    "description": "Definition of a task that can be scheduled\n",
+    "type": "object",
+    "properties": {
+        "provisionerId": {
+            "title": "Provisioner Id",
+            "description": "Unique identifier for a provisioner, that can supply specified\n`workerType`\n",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 22,
+            "pattern": "^([a-zA-Z0-9-_]*)$"
+        },
+        "workerType": {
+            "title": "Worker Type",
+            "description": "Unique identifier for a worker-type within a specific provisioner\n",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 22,
+            "pattern": "^([a-zA-Z0-9-_]*)$"
+        },
+        "schedulerId": {
+            "title": "Scheduler Identifier",
+            "description": "Identifier for the scheduler that _defined_ this task, this can be an\nidentifier for a user or a service like the `\"task-graph-scheduler\"`.\nAlong with the `taskGroupId` this is used to form the permission scope\n`queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,\nthis scope is necessary to _schedule_ a defined task, or _rerun_ a task.\n",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 22,
+            "pattern": "^([a-zA-Z0-9-_]*)$"
+        },
+        "taskGroupId": {
+            "title": "Task-Group Identifier",
+            "description": "Identifier for a group of tasks scheduled together with this task, by\nscheduler identified by `schedulerId`. For tasks scheduled by the\ntask-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if\nproperty isn't specified.\n",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$"
+        },
+        "routes": {
+            "title": "Task Specific Routes",
+            "description": "List of task specific routes, AMQP messages will be CC'ed to these routes.\n",
+            "type": "array",
+            "items": {
+                "title": "Task Specific Route",
+                "description": "A task specific route, AMQP messages will be CC'ed with a routing key\nmatching `route.<task-specific route>`. It's possible to dot (`.`) in\nthe task specific route to make sub-keys, etc. See the RabbitMQ\n[tutorial](http://www.rabbitmq.com/tutorials/tutorial-five-python.html)\nfor examples on how to use routing-keys.\n",
+                "type": "string",
+                "maxLength": 249,
+                "minLength": 1
+            },
+            "maxItems": 10,
+            "uniqueItems": true
+        },
+        "priority": {
+            "title": "Task Priority",
+            "description": "Priority of task, this defaults to `normal` and the scope\n`queue:task-priority:high` is required to define a task with `priority`\nset to `high`. Additional priority levels may be added later.\n",
+            "type": "string",
+            "enum": [
+                "high",
+                "normal"
+            ]
+        },
+        "retries": {
+            "title": "Retries",
+            "description": "Number of times to retry the task in case of infrastructure issues.\nAn _infrastructure issue_ is a worker node that crashes or is shutdown,\nthese events are to be expected.\n",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 49
+        },
+        "created": {
+            "title": "Created",
+            "description": "Creation time of task",
+            "type": "string",
+            "format": "date-time"
+        },
+        "deadline": {
+            "title": "Deadline",
+            "description": "Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future",
+            "type": "string",
+            "format": "date-time"
+        },
+        "expires": {
+            "title": "Expiration",
+            "description": "Task expiration, time at which task definition and status is deleted.\nNotice that all artifacts for the must have an expiration that is no\nlater than this. If this property isn't it will be set to `deadline`\nplus one year (this default may subject to change).\n",
+            "type": "string",
+            "format": "date-time"
+        },
+        "scopes": {
+            "title": "Scopes",
+            "description": "List of scopes (or scope-patterns) that the task is\nauthorized to use.\n",
+            "type": "array",
+            "items": {
+                "title": "Scope",
+                "description": "A scope (or scope-patterns) which the task is\nauthorized to use. This can be a string or a string\nending with `*` which will authorize all scopes for\nwhich the string is a prefix.  Scopes must be composed of\nprintable ASCII characters and spaces.\n",
+                "type": "string",
+                "pattern": "^[\\x20-\\x7e]*$"
+            }
+        },
+        "payload": {
+            "title": "Task Payload",
+            "description": "Task-specific payload following worker-specific format. For example the\n`docker-worker` requires keys like: `image`, `commands` and\n`features`. Refer to the documentation of `docker-worker` for details.\n",
+            "type": "object"
+        },
+        "metadata": {
+            "title": "Meta-data",
+            "description": "Required task metadata\n",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "title": "Name",
+                    "description": "Human readable name of task, used to very briefly given an idea about\nwhat the task does.\n",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "description": {
+                    "title": "Description",
+                    "description": "Human readable description of the task, please **explain** what the\ntask does. A few lines of documentation is not going to hurt you.\n",
+                    "type": "string",
+                    "maxLength": 32768
+                },
+                "owner": {
+                    "title": "Owner",
+                    "description": "E-mail of person who caused this task, e.g. the person who did\n`hg push`. The person we should contact to ask why this task is here.\n",
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 255
+                },
+                "source": {
+                    "title": "Source",
+                    "description": "Link to source of this task, should specify a file, revision and\nrepository. This should be place someone can go an do a git/hg blame\nto who came up with recipe for this task.\n",
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 4096
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "description",
+                "owner",
+                "source"
+            ]
+        },
+        "tags": {
+            "title": "Tags",
+            "description": "Arbitrary key-value tags (only strings limited to 4k). These can be used\nto attach informal meta-data to a task. Use this for informal tags that\ntasks can be classified by. You can also think of strings here as\ncandidates for formal meta-data. Something like\n`purpose: 'build' || 'test'` is a good example.\n",
+            "type": "object",
+            "additionalProperties": {
+                "type": "string",
+                "maxLength": 4096
+            }
+        },
+        "extra": {
+            "title": "Extra Data",
+            "description": "Object with properties that can hold any kind of extra data that should be\nassociated with the task. This can be data for the task which doesn't\nfit into `payload`, or it can supplementary data for use in services\nlistening for events from this task. For example this could be details to\ndisplay on _treeherder_, or information for indexing the task. Please, try\nto put all related information under one property, so `extra` data keys\nfor treeherder reporting and task indexing don't conflict, hence, we have\nreusable services. **Warning**, do not stuff large data-sets in here,\ntask definitions should not take-up multiple MiBs.\n",
+            "type": "object",
+            "default": {}
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "provisionerId",
+        "workerType",
+        "schedulerId",
+        "taskGroupId",
+        "routes",
+        "priority",
+        "retries",
+        "created",
+        "deadline",
+        "scopes",
+        "payload",
+        "metadata",
+        "tags",
+        "extra"
+    ]
+}
