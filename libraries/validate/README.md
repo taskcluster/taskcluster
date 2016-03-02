@@ -38,7 +38,27 @@ if (!error) {
 ```
 
 The return value is either `null` if nothing is wrong, or an error message that tries to
-do a decent job of explaining what went wrong in plain, understandable language.
+do a decent job of explaining what went wrong in plain, understandable language. An
+error message may look as follows:
+
+```
+Schema Validation Failed:
+  Rejecting Schema: http://localhost:1203/big-schema.json
+  Errors:
+    * data should have required property 'provisionerId'
+    * data should have required property 'workerType'
+    * data should have required property 'schedulerId'
+    * data should have required property 'taskGroupId'
+    * data should have required property 'routes'
+    * data should have required property 'priority'
+    * data should have required property 'retries'
+    * data should have required property 'created'
+    * data should have required property 'deadline'
+    * data should have required property 'scopes'
+    * data should have required property 'payload'
+    * data should have required property 'metadata'
+    * data should have required property 'tags' +9ms
+```
 
 It is possible to specify constants that will be substituted into all of your schemas.
 For examples of this behavior, you can view the tests.
