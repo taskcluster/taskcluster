@@ -38,13 +38,39 @@ html(lang='en')
               button.close(type="button", data-dismiss="modal" aria-label="Close")
                 span(aria-hidden="true") &times
               h4.modal-title Mozilla LDAP Sign-In
-            div.modal-body#ldap-form
+            div.login-form.modal-body#ldap-form
               label.sr-only(for="username") LDAP Email
-              input.form-control#username(name="username", type="email",
+              input.form-control.top-element#username(name="username", type="email",
                                           placeholder="LDAP Email", required)
               label.sr-only(for="password") Password
-              input.form-control#password(name="password", type="password",
+              input.form-control.bottom-element#password(name="password", type="password",
                                           placeholder="Password", required)
+            div.modal-footer
+              button.btn.btn-default(data-dismiss="modal", type="button") Close
+              button.btn.btn-primary(type='submit')
+                i.glyphicon.glyphicon-circle-arrow-right
+                | &nbsp;Sign-in
+
+    div.modal#manual-modal(tabindex="-1", role="dialog")
+      div.modal-dialog.modal-open
+        div.modal-content
+          form#manual-form
+            div.modal-header
+              button.close(type="button", data-dismiss="modal" aria-label="Close")
+                span(aria-hidden="true") &times
+              h4.modal-title Manual Sign-In
+            div.login-form.modal-body#manual-form
+              label.sr-only(for="clientId") Client ID
+              input.form-control.top-element#clientId(name="clientId", type="text",
+                                          placeholder="clientId", required)
+              label.sr-only(for="accessToken") Access Token
+              input.form-control.mid-element#accessToken(name="accessToken", type="password",
+                                          placeholder="accessToken", required)
+              label.sr-only(for="certificate") Certificate
+              textarea.form-control.bottom-element#certificate(name="certificate", rows=8,
+                                          placeholder="certificate (if required)")
+              p.text-muted
+                | Note that the credentials are not checked for validity
             div.modal-footer
               button.btn.btn-default(data-dismiss="modal", type="button") Close
               button.btn.btn-primary(type='submit')
@@ -55,6 +81,8 @@ html(lang='en')
       div.col-md-10.col-md-offset-1#content
         h1 TaskCluster Login
         hr
+        p
+          | Choose the best sign-in option for you from the options below.
         div.row.login-option
           div.col-md-4
             form(action='/sso/login', method='post')
@@ -63,7 +91,9 @@ html(lang='en')
                 | &nbsp;Sign-in with Okta
           div.col-md-8
             p
-              | If you are a Mozilla employee, sign in with Okta to maximize your
+              | If you are a&nbsp;
+              b Mozilla employee
+              | , sign in with Okta to maximize your
               | permissions.  If you also have a Mozillians account, make sure your
               | Okta email is included in your Mozillians profile.
         div.row.login-option
@@ -73,8 +103,9 @@ html(lang='en')
               | &nbsp;Sign-in with LDAP
           div.col-md-8
             p
-              | If you are not a Mozilla employee, but have an LDAP account granting
-              | you commit access, sign in with your LDAP username and password.
+              | If you are not a Mozilla employee, but&nbsp;
+              b have an LDAP account
+              | &nbsp;granting you commit access, sign in with your LDAP username and password.
         div.row.login-option
           div.col-md-4
             form#persona-form(action='/persona/login', method='post')
@@ -84,26 +115,38 @@ html(lang='en')
                 | &nbsp;Sign-in with Persona
           div.col-md-8
             p
-              | If you are a Mozillian but do not have an LDAP account, sign in with Persona.
+              | If you are a&nbsp;
+              b Mozillian
+              | , but do not have an LDAP account, sign in with Persona.
               | Your permissions will depend on the Mozillians groups you belong
               | to.  If you do not have a Mozillians profile,&nbsp;
               a(href='https://mozillians.org/en-US/')
                 | set one up
               | &nbsp;and get vouched before logging into TaskCluster.
+        div.row.login-option
+          div.col-md-4
+            button.btn.btn-block.btn-primary(data-toggle="modal", data-target="#manual-modal")
+              i.glyphicon.glyphicon-paste
+              | &nbsp;Sign-in Manually
+          div.col-md-8
+            p
+              | If you have a&nbsp;
+              b clientId, accessToken, and certificate
+              | , sign in manually by
+              | pasting them into the appropriate fields.
         br
         if flash.error
           div.alert.alert-danger(role="alert")
             b Login Failed
             each val in flash.error
               p= val
-        if credentials
-          span#grant-area(style='display: none')
+        div#credentials-display(style='display: none')
+          span#grant-area(style='display; none')
             h2 Grant Credentials to&nbsp;
               code.grant-target
             hr
             p
-              | The following tool have requested access to your temporary
-              | credentials.
+              | The following tool has requested access to your credentials.
             dl.dl-horizontal
               dt Target
               dd
@@ -133,9 +176,9 @@ html(lang='en')
                     div(style='padding-left: 30px;')
                       code.grant-target
                     br
-                    | Confirm trust by typing the hostname
+                    | Confirm trust by typing the hostname&nbsp;
                     code.grant-hostname
-                    | in the textbox.
+                    | &nbsp;in the textbox.
                     input.form-control#hostname-input(
                       type='text',
                       placeholder='host...',
@@ -147,46 +190,19 @@ html(lang='en')
                     button.btn.btn-primary.disabled#confirm-grant-button
                       i.glyphicon.glyphicon-lock
                       | &nbsp;Confirm Access Grant
-          script.
-            load("!{querystring.stringify(credentials)}");
-          h2 Temporary Credentials
+          h2 Credentials
           hr
-          p
-            | Below you'll find temporary credentials with the scopes you have
-            | been granted.
           dl.dl-horizontal#credentials
             dt ClientId
             dd
-              code #{credentials.clientId}
+              code#credentials-clientId
             dt AccessToken
             dd
-              code #{credentials.accessToken}
+              code#credentials-accessToken
             dt Certificate
             dd
-              pre(style="white-space: pre-line;")
-                | #{credentials.certificate}
+              pre(style="white-space: pre-line;")#credentials-certificate
           br
-          h2 Authorized Scopes
-          hr
-          dl.dl-horizontal
-            p You are logged in with the following identity
-            dt Identity
-            dd
-              code #{user.identity}
-            p You have been granted the following scopes.
-            dt Scopes
-            dd
-              ul
-                each scope in user.scopes()
-                  li
-                    code #{scope}
-              | (These may indirectly assign you additional scopes)
-            dt
-            dd
-              br
-              form(action='/logout', method='post')
-                button.btn.btn-danger(type='submit')
-                  i.glyphicon.glyphicon-log-out
-                  | &nbsp;Sign-out
-                br
-            br
+    if credentials
+      script.
+        showCredentials(!{JSON.stringify(credentials)});
