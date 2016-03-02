@@ -85,6 +85,8 @@ func (apiDef *APIDefinition) loadJson(reader io.Reader) {
 		m = new(API)
 	case "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#":
 		m = new(Exchange)
+	default:
+		panic(fmt.Errorf("Do not know how to handle API with schema %q", schema))
 	}
 	err = json.Unmarshal(data, m)
 	exitOnFail(err)
