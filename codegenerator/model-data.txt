@@ -1,4 +1,4 @@
-Generated: 1455906466
+Generated: 1457021704
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4051,7 +4051,8 @@ define task specific routing-keys. If a task has a task specific
 routing-key: `<route>`, then when the AMQP message about the task is
 published, the message will be CC'ed with the routing-key: 
 `route.<route>`. This is useful if you want another component to listen
-for completed tasks you have posted.
+for completed tasks you have posted.  The caller must have scope
+`queue:route:<route>` for each route.
 
 **Important** Any scopes the task requires are also required for creating
 the task. Please see the Request Payload (Task Definition) for details.'

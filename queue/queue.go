@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 19 Feb 2016 at 18:27:00 UTC. The code was generated
+// Thu, 3 Mar 2016 at 16:15:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -142,7 +142,8 @@ func (myQueue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string
 // routing-key: `<route>`, then when the AMQP message about the task is
 // published, the message will be CC'ed with the routing-key:
 // `route.<route>`. This is useful if you want another component to listen
-// for completed tasks you have posted.
+// for completed tasks you have posted.  The caller must have scope
+// `queue:route:<route>` for each route.
 //
 // **Important** Any scopes the task requires are also required for creating
 // the task. Please see the Request Payload (Task Definition) for details.
