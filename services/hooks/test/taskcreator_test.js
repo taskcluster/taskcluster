@@ -15,11 +15,12 @@ suite('TaskCreator', function() {
   }
 
   /* Note that this requires the following set up in production TC:
-   *  - TC credentials given in cfg.get('taskcluster:credentials')
-   *    - with scope `assume:hook-id:tc-hooks-tests/tc-test-hook`
+   *  - TC credentials given in cfg.get('taskcluster:credentials') with
+   *    - assume:hook-id:tc-hooks-tests/tc-test-hook
+   *    - auth:azure-table-access:jungle/*
    *  - a role `hook-id:tc-hooks-tests/tc-test-hook` with scopes
    *    - queue:create-task:no-provisioner/test-worker
-   *    - jungle:tc-hooks-tests:scope/required/for/task/1
+   *    - project:taskcluster:tests:tc-hooks:scope/required/for/task/1
    */
 
   var creator = null;
@@ -63,7 +64,7 @@ suite('TaskCreator', function() {
   };
 
   test("firing a real task succeeds", async function() {
-    let hook = await createHook(['jungle:tc-hooks-tests:scope/required/for/task/1']);
+    let hook = await createHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1']);
     let taskId = taskcluster.slugid();
     let resp = await creator.fire(hook, {payload: true}, {taskId});
     assume(resp.status.taskId).equals(taskId);
@@ -71,13 +72,13 @@ suite('TaskCreator', function() {
   });
 
   test("adds a taskId if one is not specified", async function() {
-    let hook = await createHook(['jungle:tc-hooks-tests:scope/required/for/task/1']);
+    let hook = await createHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1']);
     let resp = await creator.fire(hook, {payload: true})
     assume(resp.status.workerType).equals(hook.task.workerType);
   });
 
   test("fails if task.scopes includes scopes not granted to the role", async function() {
-    let hook = await createHook(['jungle:tc-hooks-tests:scope/not/in/the/role']);
+    let hook = await createHook(['project:taskcluster:tests:tc-hooks:scope/not/in/the/role']);
     await creator.fire(hook, {payload: true}).then(
         () => { throw new Error("Expected an error"); },
         (err) => { debug("Got expected error: %s", err); });
