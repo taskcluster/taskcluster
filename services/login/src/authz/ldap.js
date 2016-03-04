@@ -43,7 +43,7 @@ class LDAPAuthorizer {
     }
     let email = user.identityId;
 
-    user.addRole('mozilla-user': email);
+    user.addRole('mozilla-user:' + email);
 
     debug(`ldap authorizing ${user.identity}`);
 
