@@ -44,6 +44,12 @@ export default class User {
     if (scopes.length === 0) {
       return null;
     }
+
+    // add permission to manage scopes prefixed by the identity
+    ['create-client', 'delete-client', 'update-client', 'reset-access-token'].forEach(v => {
+      scopes.push("auth:" + v + ":" + this.identity + "/*");
+    });
+
     return taskcluster.createTemporaryCredentials({
       clientId: this.identity,
       start: taskcluster.fromNow(options.startOffset),
