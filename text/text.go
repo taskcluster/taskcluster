@@ -6,7 +6,49 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/fatih/camelcase"
 )
+
+// taken from https://github.com/golang/lint/blob/32a87160691b3c96046c0c678fe57c5bef761456/lint.go#L702
+var commonInitialisms = map[string]bool{
+	"API":   true,
+	"ASCII": true,
+	"CPU":   true,
+	"CSS":   true,
+	"DNS":   true,
+	"EOF":   true,
+	"GUID":  true,
+	"HTML":  true,
+	"HTTP":  true,
+	"HTTPS": true,
+	"ID":    true,
+	"IP":    true,
+	"JSON":  true,
+	"LHS":   true,
+	"QPS":   true,
+	"RAM":   true,
+	"RHS":   true,
+	"RPC":   true,
+	"SLA":   true,
+	"SMTP":  true,
+	"SQL":   true,
+	"SSH":   true,
+	"TCP":   true,
+	"TLS":   true,
+	"TTL":   true,
+	"UDP":   true,
+	"UI":    true,
+	"UID":   true,
+	"UUID":  true,
+	"URI":   true,
+	"URL":   true,
+	"UTF8":  true,
+	"VM":    true,
+	"XML":   true,
+	"XSRF":  true,
+	"XSS":   true,
+}
 
 // Indent indents a block of text with an indent string. It does this by
 // placing the given indent string at the front of every line, except on the
@@ -61,23 +103,32 @@ func StarOut(text string) string {
 // 1) Ensure name is valid UTF-8; if not, replace it with empty string
 //
 // 2) Split name into arrays of allowed runes (words), discarding disallowed
-// unicode points.
+// unicode points
 //
 // 3) Upper case first rune in each word (see
-// https://golang.org/pkg/strings/#Title).
+// https://golang.org/pkg/strings/#Title)
 //
-// 4) Rejoin words into a single string.
+// 4) Set appropriate case (upper/lower) of first char
 //
-// 5) Set appropriate case (upper/lower) of first char
+// 5) Split words further into sub words, by decomposing camel case words
 //
-// 6) If the string starts with a number, add a leading `_`.
+// 6) Replace subwords that when uppercase'd are a common "initialism" as per
+// https://github.com/golang/lint/blob/32a87160691b3c96046c0c678fe57c5bef761456/lint.go#L702
+// such that the case of each character in the subword has the same case as the
+// initial character (e.g. Url -> URL)
 //
-// 7) If the string is the empty string or "_", set as "Identifier"
+// 7) Rejoin subwords to form a single word
 //
-// 8) If the resulting identifier is in the blacklist, append the lowest
-// integer possible, >= 1, that results in no blacklist conflict.
+// 8) Rejoin words into a single string
 //
-// 9) Add the new name to the given blacklist.
+// 9) If the string starts with a number, add a leading `_`
+//
+// 10) If the string is the empty string or "_", set as "Identifier"
+//
+// 11) If the resulting identifier is in the blacklist, append the lowest
+// integer possible, >= 1, that results in no blacklist conflict
+//
+// 12) Add the new name to the given blacklist
 //
 // Note, the `map[string]bool` construction is simply a mechanism to implement
 // set semantics; a value of `true` signifies inclusion in the set.
@@ -87,22 +138,37 @@ func GoIdentifierFrom(name string, exported bool, blacklist map[string]bool) (id
 	if !utf8.ValidString(name) {
 		name = ""
 	}
-	for _, word := range strings.FieldsFunc(
+	for i, word := range strings.FieldsFunc(
 		name,
 		func(c rune) bool {
 			return !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '_'
 		},
 	) {
-		identifier += strings.Title(word)
-	}
-	if len(identifier) > 0 {
-		firstRune, size := utf8.DecodeRuneInString(identifier)
-		remainingString := identifier[size:]
-		if exported {
-			identifier = string(unicode.ToUpper(firstRune)) + remainingString
+		if i == 0 {
+			if len(word) > 0 {
+				firstRune, size := utf8.DecodeRuneInString(word)
+				remainingString := word[size:]
+				if exported {
+					word = string(unicode.ToUpper(firstRune)) + remainingString
+				} else {
+					word = string(unicode.ToLower(firstRune)) + remainingString
+				}
+			}
 		} else {
-			identifier = string(unicode.ToLower(firstRune)) + remainingString
+			word = strings.Title(word)
 		}
+		caseAdaptedWord := ""
+		for _, subWord := range camelcase.Split(word) {
+			if u, l := strings.ToUpper(subWord), strings.ToLower(subWord); commonInitialisms[u] {
+				if subWord[0] >= 'a' && subWord[0] <= 'z' {
+					subWord = l
+				} else {
+					subWord = u
+				}
+			}
+			caseAdaptedWord += subWord
+		}
+		identifier += caseAdaptedWord
 	}
 
 	if strings.IndexFunc(

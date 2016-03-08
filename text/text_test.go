@@ -120,6 +120,11 @@ func ExampleGoIdentifierFrom() {
 	fmt.Println(text.GoIdentifierFrom("Üö33", false, blacklist))
 	fmt.Println(text.GoIdentifierFrom("Üö33", true, blacklist))
 	fmt.Println(text.GoIdentifierFrom("\xe2\x28\xa1", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("provisioner id", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("provisioner ide", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("provisionerId", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("provisionerId parent", true, blacklist))
+	fmt.Println(text.GoIdentifierFrom("provisionerId parent  ", true, blacklist))
 
 	// Output:
 	// AzureArtifactRequest
@@ -141,4 +146,9 @@ func ExampleGoIdentifierFrom() {
 	// üö33
 	// Üö331
 	// Identifier3
+	// ProvisionerID
+	// ProvisionerIde
+	// ProvisionerID1
+	// ProvisionerIDParent
+	// ProvisionerIDParent1
 }
