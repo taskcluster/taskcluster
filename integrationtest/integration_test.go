@@ -148,9 +148,9 @@ func TestDefineTask(t *testing.T) {
 	  "deadline": "` + deadline.UTC().Format("2006-01-02T15:04:05.000Z") + `",
 	  "expires":  "` + expires.UTC().Format("2006-01-02T15:04:05.000Z") + `",
 
-	  "taskGroupID": "` + taskGroupID + `",
+	  "taskGroupId": "` + taskGroupID + `",
 	  "workerType":  "win2008-worker",
-	  "schedulerID": "go-test-test-scheduler",
+	  "schedulerId": "go-test-test-scheduler",
 
 	  "payload": {
 	    "features": {
@@ -159,7 +159,7 @@ func TestDefineTask(t *testing.T) {
 	  },
 
 	  "priority":      "high",
-	  "provisionerID": "win-provisioner",
+	  "provisionerId": "win-provisioner",
 	  "retries":       5,
 
 	  "routes": [
