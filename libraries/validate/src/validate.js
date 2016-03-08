@@ -15,7 +15,7 @@ let render = require('./render');
 async function validator (options) {
 
   let schemas = [];
-  let ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
+  let ajv = Ajv({useDefaults: 'clone', format: 'full', verbose: true, allErrors: true});
 
   let cfg = _.defaults(options, {
     constants: './schemas/contants.yml',
