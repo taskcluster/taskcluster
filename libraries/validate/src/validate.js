@@ -52,7 +52,7 @@ async function validator (options) {
     let schema = render(json, cfg.constants);
 
     name = name.replace(/\.ya?ml$/, '.json');
-    let id = urljoin(cfg.baseurl, cfg.prefix, name) + '#';
+    let id = urljoin(cfg.baseUrl, cfg.prefix, name) + '#';
     if (!schema.id) {
       schema.id = id;
     }
