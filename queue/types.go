@@ -56,7 +56,7 @@ type (
 		// [Azure REST API]
 		// (http://msdn.microsoft.com/en-US/library/azure/dn140256.aspx)
 		// reference for details on how to use this.
-		PutUrl string `json:"putUrl"`
+		PutURL string `json:"putUrl"`
 
 		// Artifact storage type, in this case `azure`
 		//
@@ -83,7 +83,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		ProvisionerId string `json:"provisionerId"`
+		ProvisionerID string `json:"provisionerId"`
 
 		// Identifier for worker type within the specified provisioner
 		//
@@ -185,7 +185,7 @@ type (
 		// Identifier for the task-group being listed.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskGroupId string `json:"taskGroupId"`
+		TaskGroupID string `json:"taskGroupId"`
 	}
 
 	// Response to request for poll task urls.
@@ -209,7 +209,7 @@ type (
 			// `encodeURIComponent` both `MessageId` and `PopReceipt` prior to
 			// substitution, otherwise you will experience intermittent failures!
 			// Note this URL only works with `DELETE` request.
-			SignedDeleteUrl string `json:"signedDeleteUrl"`
+			SignedDeleteURL string `json:"signedDeleteUrl"`
 
 			// Signed URL to get message from the Azure Queue Storage queue,
 			// that holds messages for the given `provisionerId` and `workerType`.
@@ -225,7 +225,7 @@ type (
 			// **Remark**, you are allowed to append `&numofmessages=N`,
 			// where N < 32, to the URLs if you wish to obtain more than one
 			// message at the time.
-			SignedPollUrl string `json:"signedPollUrl"`
+			SignedPollURL string `json:"signedPollUrl"`
 		} `json:"queues"`
 	}
 
@@ -266,7 +266,7 @@ type (
 
 		// URL to which the queue should redirect using a `303` (See other)
 		// redirect.
-		Url string `json:"url"`
+		URL string `json:"url"`
 	}
 
 	// Response to a request for the queue to redirect to a URL for a given
@@ -322,7 +322,7 @@ type (
 		// URL to which a `PUT` request can be made to upload the artifact
 		// requested. Note, the `Content-Length` must be specified correctly,
 		// and the `ContentType` header must be set the value specified below.
-		PutUrl string `json:"putUrl"`
+		PutURL string `json:"putUrl"`
 
 		// Artifact storage type, in this case `'s3'`
 		//
@@ -346,7 +346,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		WorkerId string `json:"workerId"`
+		WorkerID string `json:"workerId"`
 	}
 
 	// Response to a successful task claim
@@ -383,14 +383,14 @@ type (
 			// The `clientId` for the temporary credentials.
 			//
 			// Min length: 1
-			ClientId string `json:"clientId"`
+			ClientID string `json:"clientId"`
 		} `json:"credentials"`
 
 		// `run-id` assigned to this run of the task
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		RunId int `json:"runId"`
+		RunID int `json:"runId"`
 
 		Status TaskStatusStructure `json:"status"`
 
@@ -412,7 +412,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		WorkerId string `json:"workerId"`
+		WorkerID string `json:"workerId"`
 	}
 
 	// Definition of a task that can be scheduled
@@ -495,7 +495,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		ProvisionerId string `json:"provisionerId"`
+		ProvisionerID string `json:"provisionerId"`
 
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
@@ -524,7 +524,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		SchedulerId string `json:"schedulerId"`
+		SchedulerID string `json:"schedulerId"`
 
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
@@ -547,7 +547,7 @@ type (
 		// property isn't specified.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskGroupId string `json:"taskGroupId"`
+		TaskGroupID string `json:"taskGroupId"`
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//
@@ -634,7 +634,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		ProvisionerId string `json:"provisionerId"`
+		ProvisionerID string `json:"provisionerId"`
 
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
@@ -656,7 +656,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		SchedulerId string `json:"schedulerId"`
+		SchedulerID string `json:"schedulerId"`
 
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
@@ -675,7 +675,7 @@ type (
 		// property isn't specified.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskGroupId string `json:"taskGroupId"`
+		TaskGroupID string `json:"taskGroupId"`
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//
@@ -763,14 +763,14 @@ type (
 			// The `clientId` for the temporary credentials.
 			//
 			// Min length: 1
-			ClientId string `json:"clientId"`
+			ClientID string `json:"clientId"`
 		} `json:"credentials"`
 
 		// `run-id` assigned to this run of the task
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		RunId int `json:"runId"`
+		RunID int `json:"runId"`
 
 		Status TaskStatusStructure `json:"status"`
 
@@ -790,7 +790,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		WorkerId string `json:"workerId"`
+		WorkerID string `json:"workerId"`
 	}
 
 	// Response to a task status request
@@ -812,7 +812,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		ProvisionerId string `json:"provisionerId"`
+		ProvisionerID string `json:"provisionerId"`
 
 		// Number of retries left for the task in case of infrastructure issues
 		//
@@ -860,7 +860,7 @@ type (
 			//
 			// Mininum:    0
 			// Maximum:    1000
-			RunId int `json:"runId"`
+			RunID int `json:"runId"`
 
 			// Date-time at which this run was scheduled, ie. when the run was
 			// created in state `pending`.
@@ -902,7 +902,7 @@ type (
 			// Syntax:     ^([a-zA-Z0-9-_]*)$
 			// Min length: 1
 			// Max length: 22
-			WorkerId string `json:"workerId"`
+			WorkerID string `json:"workerId"`
 		} `json:"runs"`
 
 		// Identifier for the scheduler that _defined_ this task.
@@ -910,7 +910,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		SchedulerId string `json:"schedulerId"`
+		SchedulerID string `json:"schedulerId"`
 
 		// State of this task. This is just an auxiliary property derived from state
 		// of latests run, or `unscheduled` if none.
@@ -929,14 +929,14 @@ type (
 		// task-graph scheduler, this is the `taskGraphId`.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskGroupId string `json:"taskGroupId"`
+		TaskGroupID string `json:"taskGroupId"`
 
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskId string `json:"taskId"`
+		TaskID string `json:"taskId"`
 
 		// Identifier for worker type within the specified provisioner
 		//
