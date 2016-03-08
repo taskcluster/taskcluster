@@ -10,6 +10,35 @@ import (
 	"github.com/fatih/camelcase"
 )
 
+// See https://golang.org/ref/spec#Keywords
+var reservedKeyWords = map[string]bool{
+	"break":       true,
+	"case":        true,
+	"chan":        true,
+	"const":       true,
+	"continue":    true,
+	"default":     true,
+	"defer":       true,
+	"else":        true,
+	"fallthrough": true,
+	"for":         true,
+	"func":        true,
+	"go":          true,
+	"goto":        true,
+	"if":          true,
+	"import":      true,
+	"interface":   true,
+	"map":         true,
+	"package":     true,
+	"range":       true,
+	"return":      true,
+	"select":      true,
+	"struct":      true,
+	"switch":      true,
+	"type":        true,
+	"var":         true,
+}
+
 // taken from https://github.com/golang/lint/blob/32a87160691b3c96046c0c678fe57c5bef761456/lint.go#L702
 var commonInitialisms = map[string]bool{
 	"API":   true,
@@ -93,8 +122,10 @@ func StarOut(text string) string {
 // GoIdentifierFrom provides a mechanism to mutate an arbitrary descriptive
 // string (name) into an _exported_ Go identifier (variable name, function
 // name, etc) that e.g. can be used in generated code, taking into account a
-// blacklist of names that have already been used, in order to guarantee that a
-// new name is created which will not conflict with an existing type.
+// blacklist of names that have already been used, plus the blacklist of the go
+// language reserved key words (https://golang.org/ref/spec#Keywords), in order
+// to guarantee that a new name is created which will not conflict with an
+// existing type.
 //
 // Identifier syntax: https://golang.org/ref/spec#Identifiers
 //
@@ -102,33 +133,38 @@ func StarOut(text string) string {
 //
 // 1) Ensure name is valid UTF-8; if not, replace it with empty string
 //
-// 2) Split name into arrays of allowed runes (words), discarding disallowed
-// unicode points
+// 2) Split name into arrays of allowed runes (words), by considering a run of
+// disallowed unicode characters to act as a separator, where allowed runes
+// include unicode letters, unicode numbers, and '_' character (disallowed
+// runes are discarded)
 //
-// 3) Upper case first rune in each word (see
-// https://golang.org/pkg/strings/#Title)
+// 3) Split words further into sub words, by decomposing camel case words as
+// per https://github.com/fatih/camelcase#usage-and-examples
 //
-// 4) Set appropriate case (upper/lower) of first char
+// 4) Designate the case of all subwords of all words to be uppercase, with the
+// exception of the first subword of the first word, which should be lowercase
+// if exported is false, otherwise uppercase
 //
-// 5) Split words further into sub words, by decomposing camel case words
-//
-// 6) Replace subwords that when uppercase'd are a common "initialism" as per
+// 5) For each subword of each word, adjust as follows: if designated as
+// lowercase, lowercase all characters of the subword; if designated as
+// uppercase, then if recognised as a common "initialism", then uppercase all
+// the characters of the subword, otherwise uppercase only the first character
+// of the subword. Common "Initialisms" are defined as per:
 // https://github.com/golang/lint/blob/32a87160691b3c96046c0c678fe57c5bef761456/lint.go#L702
-// such that the case of each character in the subword has the same case as the
-// initial character (e.g. Url -> URL)
 //
-// 7) Rejoin subwords to form a single word
+// 6) Rejoin subwords to form a single word
 //
-// 8) Rejoin words into a single string
+// 7) Rejoin words into a single string
 //
-// 9) If the string starts with a number, add a leading `_`
+// 8) If the string starts with a number, add a leading `_`
 //
-// 10) If the string is the empty string or "_", set as "Identifier"
+// 9) If the string is the empty string or "_", set as "Identifier"
 //
-// 11) If the resulting identifier is in the blacklist, append the lowest
+// 10) If the resulting identifier is in the given blacklist, or the list of
+// reserved key words (https://golang.org/ref/spec#Keywords), append the lowest
 // integer possible, >= 1, that results in no blacklist conflict
 //
-// 12) Add the new name to the given blacklist
+// 11) Add the new name to the given blacklist
 //
 // Note, the `map[string]bool` construction is simply a mechanism to implement
 // set semantics; a value of `true` signifies inclusion in the set.
@@ -144,30 +180,9 @@ func GoIdentifierFrom(name string, exported bool, blacklist map[string]bool) (id
 			return !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '_'
 		},
 	) {
-		if i == 0 {
-			if len(word) > 0 {
-				firstRune, size := utf8.DecodeRuneInString(word)
-				remainingString := word[size:]
-				if exported {
-					word = string(unicode.ToUpper(firstRune)) + remainingString
-				} else {
-					word = string(unicode.ToLower(firstRune)) + remainingString
-				}
-			}
-		} else {
-			word = strings.Title(word)
-		}
 		caseAdaptedWord := ""
-		for _, subWord := range camelcase.Split(word) {
-			u, l := strings.ToUpper(subWord), strings.ToLower(subWord)
-			if commonInitialisms[u] {
-				if subWord[0] >= 'a' && subWord[0] <= 'z' {
-					subWord = l
-				} else {
-					subWord = u
-				}
-			}
-			caseAdaptedWord += subWord
+		for j, subWord := range camelcase.Split(word) {
+			caseAdaptedWord += fixCase(subWord, i == 0 && j == 0 && !exported)
 		}
 		identifier += caseAdaptedWord
 	}
@@ -190,12 +205,29 @@ func GoIdentifierFrom(name string, exported bool, blacklist map[string]bool) (id
 	// , the first instance would be called FooBar, then the next would be FooBar1, the next
 	// FooBar2 and the last would be assigned a name of FooBar3. We do this to guarantee we
 	// don't use duplicate names for different logical entities.
-	for k, baseName := 1, identifier; blacklist[identifier]; {
+	for k, baseName := 1, identifier; blacklist[identifier] || reservedKeyWords[identifier]; {
 		identifier = fmt.Sprintf("%v%v", baseName, k)
 		k++
 	}
 	blacklist[identifier] = true
 	return
+}
+
+func fixCase(word string, makeLower bool) string {
+	if word == "" {
+		return ""
+	}
+	if makeLower {
+		return strings.ToLower(word)
+	}
+	upper := strings.ToUpper(word)
+	if commonInitialisms[upper] {
+		return upper
+	} else {
+		firstRune, size := utf8.DecodeRuneInString(word)
+		remainingString := word[size:]
+		return string(unicode.ToUpper(firstRune)) + remainingString
+	}
 }
 
 // Returns the indefinite article (in English) for a the given noun, which is
