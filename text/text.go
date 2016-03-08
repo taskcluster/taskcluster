@@ -159,7 +159,8 @@ func GoIdentifierFrom(name string, exported bool, blacklist map[string]bool) (id
 		}
 		caseAdaptedWord := ""
 		for _, subWord := range camelcase.Split(word) {
-			if u, l := strings.ToUpper(subWord), strings.ToLower(subWord); commonInitialisms[u] {
+			u, l := strings.ToUpper(subWord), strings.ToLower(subWord)
+			if commonInitialisms[u] {
 				if subWord[0] >= 'a' && subWord[0] <= 'z' {
 					subWord = l
 				} else {
