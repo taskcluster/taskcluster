@@ -7,7 +7,7 @@ suite('Valid Schema Tests', () => {
   suiteSetup(async () => {
     validate = await validator({
       folder: 'test/schemas',
-      baseurl: 'http://localhost:1203/',
+      baseUrl: 'http://localhost:1203/',
       constants: {'my-constant': 42},
     });
   });
