@@ -18,7 +18,7 @@ type (
 
 			// Access key identifier that identifies the temporary security
 			// credentials.
-			AccessKeyId string `json:"accessKeyId"`
+			AccessKeyID string `json:"accessKeyId"`
 
 			// Secret access key used to sign requests
 			SecretAccessKey string `json:"secretAccessKey"`
@@ -51,7 +51,7 @@ type (
 		// may be embedded in the payload.  In any case, this clientId can be used
 		// for logging, auditing, and identifying the credential but **must** not be
 		// used for access control.  That's what scopes are for.
-		ClientId string `json:"clientId"`
+		ClientID string `json:"clientId"`
 
 		// Payload as extracted from `Authentication` header. This property is
 		// only present if a hash is available. You are not required to validate
@@ -120,7 +120,7 @@ type (
 		// ClientId of the client
 		//
 		// Syntax:     ^[A-Za-z0-9@/:._-]+$
-		ClientId string `json:"clientId"`
+		ClientID string `json:"clientId"`
 
 		// Date and time when this client was created
 		Created tcclient.Time `json:"created"`
@@ -180,7 +180,7 @@ type (
 		// ClientId of the client scopes is requested about
 		//
 		// Syntax:     ^[A-Za-z0-9@/:._-]+$
-		ClientId string `json:"clientId"`
+		ClientID string `json:"clientId"`
 
 		// Date and time when this client was created
 		Created tcclient.Time `json:"created"`
@@ -243,7 +243,7 @@ type (
 		// roleId of the role requested
 		//
 		// Syntax:     ^[\x20-\x7e]+$
-		RoleId string `json:"roleId"`
+		RoleID string `json:"roleId"`
 
 		// List of scopes the role grants access to.  Scopes must be composed of
 		// printable ASCII characters and spaces.
@@ -342,7 +342,7 @@ type (
 		// ClientId from the request as it will be logged
 		//
 		// Syntax:     ^[A-Za-z0-9@/:._-]+$
-		ClientId string `json:"clientId"`
+		ClientID string `json:"clientId"`
 
 		// List of scopes the request was authorized.
 		//

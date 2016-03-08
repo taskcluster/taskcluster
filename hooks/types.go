@@ -94,10 +94,10 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		HookGroupId string `json:"hookGroupId"`
+		HookGroupID string `json:"hookGroupId"`
 
 		// Max length: 255
-		HookId string `json:"hookId"`
+		HookID string `json:"hookId"`
 
 		Metadata struct {
 
@@ -192,7 +192,7 @@ type (
 		// The task created
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskId string `json:"taskId"`
+		TaskID string `json:"taskId"`
 
 		// The time the task was created.  This will not necessarily match `task.created`.
 		Time tcclient.Time `json:"time"`
@@ -266,7 +266,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		ProvisionerId string `json:"provisionerId"`
+		ProvisionerID string `json:"provisionerId"`
 
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
@@ -295,7 +295,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		SchedulerId string `json:"schedulerId"`
+		SchedulerID string `json:"schedulerId"`
 
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
@@ -318,7 +318,7 @@ type (
 		// property isn't specified.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskGroupId string `json:"taskGroupId"`
+		TaskGroupID string `json:"taskGroupId"`
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//

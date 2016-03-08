@@ -44,7 +44,7 @@ type (
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		RunId int `json:"runId"`
+		RunID int `json:"runId"`
 
 		Status TaskStatusStructure `json:"status"`
 
@@ -68,7 +68,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		WorkerId string `json:"workerId"`
+		WorkerID string `json:"workerId"`
 	}
 
 	// Message reporting that a task has complete successfully.
@@ -78,7 +78,7 @@ type (
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		RunId int `json:"runId"`
+		RunID int `json:"runId"`
 
 		Status TaskStatusStructure `json:"status"`
 
@@ -100,7 +100,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		WorkerId string `json:"workerId"`
+		WorkerID string `json:"workerId"`
 	}
 
 	// Message reporting that a task has been defined. The task may or may not be
@@ -123,7 +123,7 @@ type (
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		RunId int `json:"runId"`
+		RunID int `json:"runId"`
 
 		Status TaskStatusStructure `json:"status"`
 
@@ -148,7 +148,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		WorkerId string `json:"workerId"`
+		WorkerID string `json:"workerId"`
 	}
 
 	// Message reporting that a task failed to complete successfully.
@@ -158,7 +158,7 @@ type (
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		RunId int `json:"runId"`
+		RunID int `json:"runId"`
 
 		Status TaskStatusStructure `json:"status"`
 
@@ -180,7 +180,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		WorkerId string `json:"workerId"`
+		WorkerID string `json:"workerId"`
 	}
 
 	// Message reporting that a task is now pending
@@ -190,7 +190,7 @@ type (
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		RunId int `json:"runId"`
+		RunID int `json:"runId"`
 
 		Status TaskStatusStructure `json:"status"`
 
@@ -208,7 +208,7 @@ type (
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		RunId int `json:"runId"`
+		RunID int `json:"runId"`
 
 		Status TaskStatusStructure `json:"status"`
 
@@ -234,7 +234,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		WorkerId string `json:"workerId"`
+		WorkerID string `json:"workerId"`
 	}
 
 	// A representation of **task status** as known by the queue
@@ -251,7 +251,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		ProvisionerId string `json:"provisionerId"`
+		ProvisionerID string `json:"provisionerId"`
 
 		// Number of retries left for the task in case of infrastructure issues
 		//
@@ -299,7 +299,7 @@ type (
 			//
 			// Mininum:    0
 			// Maximum:    1000
-			RunId int `json:"runId"`
+			RunID int `json:"runId"`
 
 			// Date-time at which this run was scheduled, ie. when the run was
 			// created in state `pending`.
@@ -341,7 +341,7 @@ type (
 			// Syntax:     ^([a-zA-Z0-9-_]*)$
 			// Min length: 1
 			// Max length: 22
-			WorkerId string `json:"workerId"`
+			WorkerID string `json:"workerId"`
 		} `json:"runs"`
 
 		// Identifier for the scheduler that _defined_ this task.
@@ -349,7 +349,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		SchedulerId string `json:"schedulerId"`
+		SchedulerID string `json:"schedulerId"`
 
 		// State of this task. This is just an auxiliary property derived from state
 		// of latests run, or `unscheduled` if none.
@@ -368,14 +368,14 @@ type (
 		// task-graph scheduler, this is the `taskGraphId`.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskGroupId string `json:"taskGroupId"`
+		TaskGroupID string `json:"taskGroupId"`
 
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
 		// stripped of `=` padding.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskId string `json:"taskId"`
+		TaskID string `json:"taskId"`
 
 		// Identifier for worker type within the specified provisioner
 		//

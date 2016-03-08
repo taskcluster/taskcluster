@@ -33,7 +33,7 @@ type (
 		// stripped of `=` padding.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskId string `json:"taskId"`
+		TaskID string `json:"taskId"`
 	}
 
 	// Representation of an a task to be indexed.
@@ -57,7 +57,7 @@ type (
 		// stripped of `=` padding.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskId string `json:"taskId"`
+		TaskID string `json:"taskId"`
 	}
 
 	// Request to list namespaces within a given namespace.
@@ -155,7 +155,7 @@ type (
 			// stripped of `=` padding.
 			//
 			// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-			TaskId string `json:"taskId"`
+			TaskID string `json:"taskId"`
 		} `json:"tasks"`
 	}
 )

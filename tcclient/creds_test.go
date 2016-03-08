@@ -53,15 +53,15 @@ var testCreds = &tcclient.Credentials{
 	AccessToken: "no-secret",
 }
 
-func checkAuthenticate(t *testing.T, response *auth.TestAuthenticateResponse, err error, expectedClientId string, expectedScopes []string) {
+func checkAuthenticate(t *testing.T, response *auth.TestAuthenticateResponse, err error, expectedClientID string, expectedScopes []string) {
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if response.ClientId != expectedClientId {
-		t.Errorf("got unexpected clientId %s", response.ClientId)
+	if response.ClientID != expectedClientID {
+		t.Errorf("got unexpected clientId %s", response.ClientID)
 	}
 
 	if !reflect.DeepEqual(response.Scopes, expectedScopes) {

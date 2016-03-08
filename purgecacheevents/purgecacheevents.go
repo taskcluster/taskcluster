@@ -52,7 +52,7 @@ import (
 // See http://docs.taskcluster.net/services/purge-cache/#purgeCache
 type PurgeCache struct {
 	RoutingKeyKind string `mwords:"*"`
-	ProvisionerId  string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
 }
 

@@ -410,7 +410,7 @@ func (awsProvisioner *AwsProvisioner) BackendStatus() (*tcclient.CallSummary, er
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#apiReference
-func (awsProvisioner *AwsProvisioner) ApiReference() (*tcclient.CallSummary, error) {
+func (awsProvisioner *AwsProvisioner) APIReference() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/api-reference", nil, nil)
 	return callSummary, err
