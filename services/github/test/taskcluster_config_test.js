@@ -120,4 +120,26 @@ suite('TaskCluster-Github Config', () => {
       'tasks[0].task.payload.command': ['test'],
       'tasks[0].task.extra.github.events': ['pull_request.opened', 'pull_request.synchronize', 'pull_request.reopened'],
     });
+
+  buildConfigTest(
+    'Pull Event, Single Task Config, Branch Limited (on branch)',
+    configPath + 'taskcluster.branchlimited.yml',
+    {
+      payload:    buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'master'}}),
+    },
+    {
+      'tasks[0].task.extra.github.events': ['push'],
+      'tasks[0].task.extra.github.branches': ['master'],
+      'metadata.owner': 'test@test.com'
+    });
+
+  buildConfigTest(
+    'Pull Event, Single Task Config, Branch Limited (off branch)',
+    configPath + 'taskcluster.branchlimited.yml',
+    {
+      payload:    buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'foobar'}}),
+    },
+    {
+      'tasks': []
+    });
 });
