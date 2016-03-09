@@ -26,6 +26,9 @@ disjunctive normal form.
 
 
 **Usage**
+
+Validation:
+
 ```js
 let scopeUtils = require('taskcluster-lib-scopes');
 
@@ -50,4 +53,23 @@ assert(scopeUtils.validateScopeSets([['a', 'b'], ['c']], ['a*', 'b']));
 
 // Checks if ['b'] satisfies [['a', 'b'], ['c']] (spoiler alert it doesn't)
 assert(!scopeUtils.validateScopeSets([['a', 'b'], ['c']], ['b']));
+```
+
+Satisfaction:
+
+The first argument to `scopeMatch` is the set of scopes being tested.  The
+second is an array of arrays of scopes, in disjunctive normal form, meaning
+that one set of scopes must be completely satisfied.
+
+```js
+let myScopes = [
+    'queue:create-task:aws-provisioner-v1/*',
+    'secrets:get:garbage/my-secrets/*',
+]
+assert(scopeUtils.scopeMatch(myScopes, [
+    // either both of these scopes must be satisfied
+    ['queue:create-task:aws-provisioner-v1/my-worker', 'secrets:get:garbage/my-secrets/xx'],
+    // or this scope
+    ['some-other-scope'],
+])
 ```
