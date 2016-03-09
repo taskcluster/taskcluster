@@ -73,3 +73,5 @@ assert(scopeUtils.scopeMatch(myScopes, [
     ['some-other-scope'],
 ])
 ```
+**NOTE:** this function is entirely local and does no expansion of `assume:` scopes.
+Call the authentication service's `expandScopes` endpoint to perform such expansion first, if necessary.
