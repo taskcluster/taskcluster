@@ -80,10 +80,9 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 		"queue:route:tc-treeherder.mozilla-inbound.*",
 		"queue:route:tc-treeherder-stage.mozilla-inbound.*",
 		"queue:task-priority:high",
-		"test-worker:image:toastposter/pumpkin:0.5.6",
 	}
 
-	tempScopesJSON := `["auth:azure-table-access:fakeaccount/DuMmYtAbLe","queue:define-task:win-provisioner/win2008-worker","queue:get-artifact:private/build/sources.xml","queue:route:tc-treeherder.mozilla-inbound.*","queue:route:tc-treeherder-stage.mozilla-inbound.*","queue:task-priority:high","test-worker:image:toastposter/pumpkin:0.5.6"]`
+	tempScopesJSON := `["auth:azure-table-access:fakeaccount/DuMmYtAbLe","queue:define-task:win-provisioner/win2008-worker","queue:get-artifact:private/build/sources.xml","queue:route:tc-treeherder.mozilla-inbound.*","queue:route:tc-treeherder-stage.mozilla-inbound.*","queue:task-priority:high"]`
 
 	tempCredsClientId := "garbage/" + slugid.Nice()
 	tempCredentials, err := permCredentials.CreateNamedTemporaryCredentials(tempCredsClientId, 1*time.Hour, tempScopes...)
@@ -273,7 +272,6 @@ func TestAPICallWithPayload(t *testing.T) {
   "deadline": "`+tcclient.Time(deadline).String()+`",
   "expires": "`+tcclient.Time(expires).String()+`",
   "scopes": [
-    "test-worker:image:toastposter/pumpkin:0.5.6"
   ],
   "payload": {
     "features": {
