@@ -113,7 +113,9 @@ taskclusterConfig.processConfig = function(params) {
         // Filter out tasks that aren't associated with the current event
         // being handled
         let events = taskConfig.task.extra.github.events;
+        let branches = taskConfig.task.extra.github.branches;
         if (!utils.listContainsExpressions(events, [payload.details['event.type']])) return false;
+        if (branches && !utils.listContainsExpressions(branches, [payload.details['event.base.repo.branch']])) return false;
         return true;
       });
       accept(completeTaskGraphConfig(taskclusterConfig, payload));
