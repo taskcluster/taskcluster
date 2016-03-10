@@ -23,5 +23,7 @@ export function fmtLog() {
 
 export function fmtErrorLog() {
   let args = Array.prototype.slice.call(arguments);
-  return '[taskcluster:error] ' + util.format.apply(this, args) + '\r\n';
+  // always include a newline before this string, so that it is at the beginning of the line
+  // where treeherder expects it, even if the last output was not newline-terminated
+  return '\r\n[taskcluster:error] ' + util.format.apply(this, args) + '\r\n';
 }
