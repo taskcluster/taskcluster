@@ -113,7 +113,8 @@ worker.webHookHandler = async function(message, context) {
       message.payload.organization,
       message.payload.repository,
       message.payload.details['event.head.sha'],
-      'TaskCluster, ' + errorMessage + ' ```' +  errorBody + '```')
+      'Submitting the task to TaskCluster failed. ' + errorMessage
+      + 'Details:\n\n```js\n' +  errorBody + '\n```')
   }
 };
 
