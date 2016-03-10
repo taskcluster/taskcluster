@@ -7,6 +7,7 @@ var mocha       = require('mocha');
 var v1          = require('../routes/api/v1');
 var taskcluster = require('taskcluster-client');
 var load        = require('../bin/server');
+var testing     = require('taskcluster-lib-testing');
 
 // Load configuration
 const profile = 'test';
@@ -37,7 +38,7 @@ var testclients = {
 
 // Setup server
 mocha.before(async () => {
-  await base.testing.fakeauth.start(testclients);
+  await testing.fakeauth.start(testclients);
   server = await load('server', loadOptions);
   handlers = await load('handlers', loadOptions);
 
@@ -93,5 +94,5 @@ mocha.after(async () => {
   if (handlers) {
     await handlers.terminate();
   }
-  base.testing.fakeauth.stop();
+  testing.fakeauth.stop();
 });
