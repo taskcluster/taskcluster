@@ -8,11 +8,13 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - g++-4.8
-script: npm test
+script:
+- env | openssl aes-256-cpc -a -salt -pass env:DUSTIN
 env:
   global:
     - DEBUG='index:* routes:*'
     - CXX=g++-4.8
+    - secure: "PtWscbF1sISkJNA4JjiiP7vyZCYF9XHMBR7vYL8OPQLcJkst/Sc8eKd5H7RVeddfghT83x2oyICrjtk0zO/064h1BN13TaVQtI6Kh6LjItzIDFa9Ttskpetyw/czGzBEIdifAoTaKU3etzfmru5IqYtSP2pd74pO5liSkPLoJTs="
 
 # encrpyt channel name to get around issue
 # https://github.com/travis-ci/travis-ci/issues/1094
