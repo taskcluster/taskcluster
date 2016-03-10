@@ -102,7 +102,7 @@ func TestDefineTask(t *testing.T) {
 		},
 		SchedulerID: "go-test-test-scheduler",
 		Scopes: []string{
-			"test-worker:image:toastposter/pumpkin:0.5.6",
+			"queue:task-priority:high",
 		},
 		Tags:        json.RawMessage(`{"createdForUser":"cbook@mozilla.com"}`),
 		Priority:    "high",
@@ -168,7 +168,7 @@ func TestDefineTask(t *testing.T) {
 	  ],
 
 	  "scopes": [
-	    "test-worker:image:toastposter/pumpkin:0.5.6"
+	  	"queue:task-priority:high"
 	  ],
 
 	  "tags": {
