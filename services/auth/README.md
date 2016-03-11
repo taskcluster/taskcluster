@@ -27,7 +27,8 @@ This app auto-deploys from Github to the staging environment, which uses a
 different Azure backend.
 
 Happily, there's a nice, automated way of testing that staging environment
-before promoting it to production.  First, if you haven't already, run `npm
+before promoting it to production.  First, if you haven't already, run `npm run
 checkStagingSetup` and copy-paste the results into your `user-config.yml`.
 Note that you will need Heroku app access to do this!  Once your config is set
-up, just run `npm checkStaging` to check the staging site for functionality.
+up, just run `npm run checkStaging` to check the staging site for
+functionality.
