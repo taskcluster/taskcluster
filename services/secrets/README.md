@@ -10,3 +10,8 @@ The service expects the following to run periodically (daily?) to flush expired 
 
 ###Run Tests
 From the project's base run ``npm test``
+
+# Post-Deployment Verification
+
+After deploying a new version of this service, open up the tools site and sign in.
+Using the "secrets" tool, make sure you can read some secret that you have access to (that is, one listed in the UI).
