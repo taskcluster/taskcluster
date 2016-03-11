@@ -5,6 +5,7 @@
   "main": "node bin/server.js production",
   "scripts": {
     "test": "test/runtests.sh",
+    "checkStagingSetup": "heroku run -a taskcluster-auth-staging node bin/make-check-client.js",
     "checkStaging": "mocha test/check-staging.js"
   },
   "repository": {
