@@ -13,7 +13,8 @@ var hawk = require('hawk');
 // with `npm run checkStaging`.
 suite('taskcluster-auth-staging check', function() {
   if (!helper.cfg.checkStaging.credentials) {
-    console.log("set checkStaging.credentials in user-config.yml");
+    console.log("run `heroku run -a taskcluster-auth-staging node bin/make-check-client.js` and " +
+                "set checkStaging.credentials in user-config.yml");
     process.exit(1);
   }
 

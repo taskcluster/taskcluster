@@ -17,3 +17,17 @@ On the client side, an authorized client must have a `CLIENT_ID` and an
 On the server side, `CLIENT_ID`s will resolve to `ACCESS_TOKEN` for HMAC
 validation and a set of scopes, which will be used to determine what resources
 the client is authorized to access.
+
+## Post-Deployment Verification
+
+If you deploy a copy of this application that fails to start, all of
+TaskCluster will come to a screeching halt immediately.  Don't do that.
+
+This app auto-deploys from Github to the staging environment, which uses a
+different Azure backend.
+
+Happily, there's a nice, automated way of testing that staging environment
+before promoting it to production.  First, if you haven't already, run `npm
+checkStagingSetup` and copy-paste the results into your `user-config.yml`.
+Note that you will need Heroku app access to do this!  Once your config is set
+up, just run `npm checkStaging` to check the staging site for functionality.
