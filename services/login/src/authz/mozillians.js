@@ -30,20 +30,24 @@ class MozilliansAuthorizer {
 
     // Find the user
     let userLookup = await this.mozillians.users({email});
-    let mozilliansUser;
+    let mozilliansUser, vouched;
     if (userLookup.results.length === 1) {
       let u = userLookup.results[0];
-      if (u.is_vouched) {
-        debug(`found vouched username ${u.username} for ${email}`);
-        mozilliansUser = u.username;
-      }
-    }
-
-    if (!mozilliansUser) {
-      // If lookup failed we want to print a special error message
+      vouched = u.is_vouched;
+      mozilliansUser = u.username;
+    } else {
+      // If there is no associated mozillians user at all, do nothing.
       return;
     }
+
     user.addRole('mozillians-user:' + mozilliansUser);
+
+    // unvouched users just get the "mozillians-unvouched" role, and no
+    // group-based roles.  This allows them to complete the tutorial.
+    if (!vouched) {
+      user.addRole('mozillians-unvouched');
+      return
+    }
 
     // For each group to be considered we check if the user is a member
     let groupLookups = await Promise.all(
