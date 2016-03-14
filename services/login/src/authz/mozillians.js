@@ -14,16 +14,15 @@ class MozilliansAuthorizer {
 
     this.mozillians = new Mozillians(options.cfg.mozillians.apiKey);
     this.allowedGroups = options.cfg.mozillians.allowedGroups;
+
+    // trust both persona and ldap-authenticated users
+    this.identityProviders = ['mozilla-ldap', 'persona'];
   }
 
   async setup() {
   }
 
   async authorize(user) {
-    // only trust persona- and sso-authenticated identities
-    if (user.identityProviderId !== "sso" && user.identityProviderId !== "persona") {
-      return;
-    }
     let email = user.identityId;
 
     debug(`mozilians authorizing ${user.identity}`);

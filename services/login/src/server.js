@@ -10,7 +10,9 @@ import bodyParser from 'body-parser'
 import User from './user'
 import querystring from 'querystring'
 import loader from 'taskcluster-lib-loader'
+import taskcluster from 'taskcluster-client'
 import flash from 'connect-flash'
+import scanner from './scanner'
 
 require('source-map-support').install();
 
@@ -42,8 +44,12 @@ let load = loader({
       // carry out the authorization process, either with a done callback
       // or returning a promise
       let authorize = (user, done) => {
-        let promise = Promise.all(
-            authorizers.map(authz => authz.authorize(user)));
+        let identityProviderId = user.identityProviderId;
+        let promise = Promise.all(authorizers.map(authz => {
+          if (authz.identityProviders.indexOf(identityProviderId) !== -1) {
+            return authz.authorize(user)
+          }
+        }));
         if (done) {
           promise.then(() => done(null, user), (err) => done(err, null));
         } else {
@@ -138,20 +144,34 @@ let load = loader({
       // Create server and start listening
       let server = http.createServer(app);
       await new Promise((accept, reject) => {
-        server.listen(cfg.server.port, accept);
+        server.listen(cfg.server.port);
+        server.once('listening', () => {
+          console.log("Listening on port: " + cfg.server.port);
+        });
         server.once('error', reject);
+        server.once('listening', accept);
       });
-      console.log("Listening on port: " + cfg.server.port);
+    },
+  },
+
+  scanner: {
+    requires: ['cfg', 'authorizers'],
+    setup: async ({cfg, authorizers}) => {
+      await scanner(cfg, authorizers);
+      // the LDAP connection is still open, so we must exit
+      // explicitly or node will wait forever for it to die.
+      process.exit(0);
     },
   },
 }, ['profile']);
 
 if (!module.parent) {
-  load('server', {
-    profile: process.argv[2]
+  load(process.argv[2], {
+    profile: process.env.NODE_ENV
   }).catch(err => {
     console.log("Server crashed: " + err.stack);
-  }).catch(() => process.exit(1));
+    process.exit(1);
+  });
 }
 
 module.exports = load;
