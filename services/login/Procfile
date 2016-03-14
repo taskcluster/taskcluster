@@ -1,2 +1,2 @@
-web: node lib/server.js $PROFILE server
-scanner: node lib/server.js $PROFILE scanner
+web: node lib/server.js server
+scanner: node lib/server.js scanner
