@@ -31,9 +31,14 @@ class LDAPAuthorizer {
     this.password = options.cfg.ldap.password;
     this.client = new LDAPClient(options.cfg.ldap);
     this.allowedGroups = options.cfg.ldap.allowedGroups;
+
+    this.identityProviders = ['mozilla-ldap'];
   }
 
   async setup() {
+  }
+
+  async rolesForUser(email) {
   }
 
   async authorize(user) {
