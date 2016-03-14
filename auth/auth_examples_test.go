@@ -23,7 +23,7 @@ func Example_scopes() {
 		},
 	)
 
-	// Look up client details for client id "travis_tc-client-go"...
+	// Look up client details for client id "project/taskcluster/tc-client-go/tests"...
 	resp, _, err := myAuth.Client("project/taskcluster/tc-client-go/tests")
 
 	// Handle any errors...
@@ -39,8 +39,8 @@ func Example_scopes() {
 	//   fmt.Printf("Expanded Scopes:  %v\n", resp.ExpandedScopes)
 
 	// Output:
-	// Client ID:  travis_tc-client-go
-	// Expires:    3017-01-31T23:00:00.000Z
+	// Client ID:  project/taskcluster/tc-client-go/tests
+	// Expires:    3017-02-01T05:00:00.000Z
 }
 
 func Example_updateClient() {
