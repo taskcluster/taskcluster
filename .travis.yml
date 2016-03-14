@@ -1,7 +1,7 @@
 language: go
 sudo: false
 go:
-- 1.4
+- 1.5
 env:
   - "GIMME_OS=linux GIMME_ARCH=amd64"
   - "GIMME_OS=darwin GIMME_ARCH=amd64"
@@ -12,7 +12,7 @@ before_install:
 - curl -o gimme -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
 - chmod u+x gimme
 - unset GOROOT GOTOOLDIR
-- eval "$(./gimme 1.4)"
+- eval "$(./gimme 1.5)"
 - go version
 - go env
 # end of workaround ###
