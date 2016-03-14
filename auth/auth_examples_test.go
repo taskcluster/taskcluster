@@ -24,7 +24,7 @@ func Example_scopes() {
 	)
 
 	// Look up client details for client id "travis_tc-client-go"...
-	resp, _, err := myAuth.Client("travis_tc-client-go")
+	resp, _, err := myAuth.Client("project/taskcluster/tc-client-go/tests")
 
 	// Handle any errors...
 	if err != nil {

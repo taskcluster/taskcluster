@@ -179,7 +179,7 @@ func (connectionData *ConnectionData) SignedURL(route string, query url.Values, 
 // set to the array of authorizedScopes, if provided.  If either "certificate"
 // or "authorizedScopes" is not supplied, they will be omitted from the json
 // result. If neither are provided, an empty string is returned, rather than a
-// base64 encoded representation of "null" or "{}". Hawk interpets the empty
+// base64 encoded representation of "null" or "{}". Hawk interprets the empty
 // string as meaning the ext header is not needed.
 //
 // See:
