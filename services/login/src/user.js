@@ -41,9 +41,6 @@ export default class User {
   createCredentials(options) {
     assert(options);
     let scopes = this.scopes();
-    if (scopes.length === 0) {
-      return null;
-    }
 
     // add permission to manage scopes prefixed by the identity
     ['create-client', 'delete-client', 'update-client', 'reset-access-token'].forEach(v => {
