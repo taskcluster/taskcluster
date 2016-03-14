@@ -35,6 +35,7 @@
     "taskcluster-client": "^0.23.12",
     "taskcluster-lib-config": "^0.9.1",
     "taskcluster-lib-loader": "^0.1.1",
-    "taskcluster-lib-rules": "^1.0.3"
+    "taskcluster-lib-rules": "^1.0.3",
+    "taskcluster-lib-scopes": "^0.8.8"
   }
 }
