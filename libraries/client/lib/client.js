@@ -322,6 +322,10 @@ exports.createClient = function(reference, name) {
             if (reportStats) {
               reportStats(true, 'http-' + res.status);
             }
+            if(res.headers['content-type'].indexOf('application/json') === -1 || !res.body){
+              debug("Empty response from server: call: %s, method: %s",entry.name,entry.method);
+              return undefined;
+            }
             return res.body;
           }, function(err) {
             // If we got a response we read the error code from the response
@@ -746,7 +750,7 @@ exports.createTemporaryCredentials = function(options) {
  */
 exports.credentialInformation = function(credentials) {
   var result = {};
-  var issuer = credentials.clientId; 
+  var issuer = credentials.clientId;
 
   result.clientId = issuer;
   result.active = true;
