@@ -104,14 +104,14 @@ import (
 // See http://docs.taskcluster.net/queue/exchanges/#taskDefined
 type TaskDefined struct {
 	RoutingKeyKind string `mwords:"*"`
-	TaskId         string `mwords:"*"`
-	RunId          string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
-	WorkerId       string `mwords:"*"`
-	ProvisionerId  string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
-	SchedulerId    string `mwords:"*"`
-	TaskGroupId    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -138,14 +138,14 @@ func (binding TaskDefined) NewPayloadObject() interface{} {
 // See http://docs.taskcluster.net/queue/exchanges/#taskPending
 type TaskPending struct {
 	RoutingKeyKind string `mwords:"*"`
-	TaskId         string `mwords:"*"`
-	RunId          string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
-	WorkerId       string `mwords:"*"`
-	ProvisionerId  string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
-	SchedulerId    string `mwords:"*"`
-	TaskGroupId    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -167,14 +167,14 @@ func (binding TaskPending) NewPayloadObject() interface{} {
 // See http://docs.taskcluster.net/queue/exchanges/#taskRunning
 type TaskRunning struct {
 	RoutingKeyKind string `mwords:"*"`
-	TaskId         string `mwords:"*"`
-	RunId          string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
-	WorkerId       string `mwords:"*"`
-	ProvisionerId  string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
-	SchedulerId    string `mwords:"*"`
-	TaskGroupId    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -212,14 +212,14 @@ func (binding TaskRunning) NewPayloadObject() interface{} {
 // See http://docs.taskcluster.net/queue/exchanges/#artifactCreated
 type ArtifactCreated struct {
 	RoutingKeyKind string `mwords:"*"`
-	TaskId         string `mwords:"*"`
-	RunId          string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
-	WorkerId       string `mwords:"*"`
-	ProvisionerId  string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
-	SchedulerId    string `mwords:"*"`
-	TaskGroupId    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -244,14 +244,14 @@ func (binding ArtifactCreated) NewPayloadObject() interface{} {
 // See http://docs.taskcluster.net/queue/exchanges/#taskCompleted
 type TaskCompleted struct {
 	RoutingKeyKind string `mwords:"*"`
-	TaskId         string `mwords:"*"`
-	RunId          string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
-	WorkerId       string `mwords:"*"`
-	ProvisionerId  string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
-	SchedulerId    string `mwords:"*"`
-	TaskGroupId    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -274,14 +274,14 @@ func (binding TaskCompleted) NewPayloadObject() interface{} {
 // See http://docs.taskcluster.net/queue/exchanges/#taskFailed
 type TaskFailed struct {
 	RoutingKeyKind string `mwords:"*"`
-	TaskId         string `mwords:"*"`
-	RunId          string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
-	WorkerId       string `mwords:"*"`
-	ProvisionerId  string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
-	SchedulerId    string `mwords:"*"`
-	TaskGroupId    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -308,14 +308,14 @@ func (binding TaskFailed) NewPayloadObject() interface{} {
 // See http://docs.taskcluster.net/queue/exchanges/#taskException
 type TaskException struct {
 	RoutingKeyKind string `mwords:"*"`
-	TaskId         string `mwords:"*"`
-	RunId          string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
-	WorkerId       string `mwords:"*"`
-	ProvisionerId  string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
-	SchedulerId    string `mwords:"*"`
-	TaskGroupId    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 

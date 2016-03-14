@@ -10,7 +10,7 @@ type (
 		// Unique `taskId` that is blocking this task-graph from completion.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskId string `json:"taskId"`
+		TaskID string `json:"taskId"`
 
 		// Message version
 		//
@@ -60,7 +60,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		SchedulerId string `json:"schedulerId"`
+		SchedulerID string `json:"schedulerId"`
 
 		// Task-graph state, this enum is **frozen** new values will **not** be added.
 		//
@@ -73,6 +73,6 @@ type (
 		// Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskGraphId string `json:"taskGraphId"`
+		TaskGraphID string `json:"taskGraphId"`
 	}
 )

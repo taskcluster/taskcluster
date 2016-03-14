@@ -80,7 +80,7 @@ type (
 			LaunchSpec struct {
 
 				// Per-region AMI ImageId
-				ImageId string `json:"ImageId"`
+				ImageID string `json:"ImageId"`
 			} `json:"launchSpec"`
 
 			// The Amazon AWS Region being configured.  Example: us-west-1
@@ -154,7 +154,7 @@ type (
 
 			Certificate string `json:"certificate"`
 
-			ClientId string `json:"clientId"`
+			ClientID string `json:"clientId"`
 		} `json:"credentials"`
 
 		// Free-form object which contains secrets from the worker type definition
@@ -235,7 +235,7 @@ type (
 			LaunchSpec struct {
 
 				// Per-region AMI ImageId
-				ImageId string `json:"ImageId"`
+				ImageID string `json:"ImageId"`
 			} `json:"launchSpec"`
 
 			// The Amazon AWS Region being configured.  Example: us-west-1

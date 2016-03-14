@@ -16,7 +16,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		ProvisionerId string `json:"provisionerId"`
+		ProvisionerID string `json:"provisionerId"`
 
 		// Message version
 		//

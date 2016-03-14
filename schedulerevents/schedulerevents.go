@@ -71,14 +71,14 @@ import (
 // See http://docs.taskcluster.net/scheduler/events/#taskGraphRunning
 type TaskGraphRunning struct {
 	RoutingKeyKind string `mwords:"*"`
-	TaskId         string `mwords:"*"`
-	RunId          string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
-	WorkerId       string `mwords:"*"`
-	ProvisionerId  string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
-	SchedulerId    string `mwords:"*"`
-	TaskGraphId    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGraphID    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -102,14 +102,14 @@ func (binding TaskGraphRunning) NewPayloadObject() interface{} {
 // See http://docs.taskcluster.net/scheduler/events/#taskGraphExtended
 type TaskGraphExtended struct {
 	RoutingKeyKind string `mwords:"*"`
-	TaskId         string `mwords:"*"`
-	RunId          string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
-	WorkerId       string `mwords:"*"`
-	ProvisionerId  string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
-	SchedulerId    string `mwords:"*"`
-	TaskGraphId    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGraphID    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -137,14 +137,14 @@ func (binding TaskGraphExtended) NewPayloadObject() interface{} {
 // See http://docs.taskcluster.net/scheduler/events/#taskGraphBlocked
 type TaskGraphBlocked struct {
 	RoutingKeyKind string `mwords:"*"`
-	TaskId         string `mwords:"*"`
-	RunId          string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
-	WorkerId       string `mwords:"*"`
-	ProvisionerId  string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
-	SchedulerId    string `mwords:"*"`
-	TaskGraphId    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGraphID    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -167,14 +167,14 @@ func (binding TaskGraphBlocked) NewPayloadObject() interface{} {
 // See http://docs.taskcluster.net/scheduler/events/#taskGraphFinished
 type TaskGraphFinished struct {
 	RoutingKeyKind string `mwords:"*"`
-	TaskId         string `mwords:"*"`
-	RunId          string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
-	WorkerId       string `mwords:"*"`
-	ProvisionerId  string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
-	SchedulerId    string `mwords:"*"`
-	TaskGraphId    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGraphID    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 

@@ -33,7 +33,7 @@ func Example_scopes() {
 	}
 
 	// Report results...
-	fmt.Printf("Client ID:  %v\n", resp.ClientId)
+	fmt.Printf("Client ID:  %v\n", resp.ClientID)
 	fmt.Printf("Expires:    %v\n", resp.Expires)
 	// Could also print expanded scopes, for example:
 	//   fmt.Printf("Expanded Scopes:  %v\n", resp.ExpandedScopes)
@@ -72,7 +72,7 @@ func Example_updateClient() {
 	}
 
 	// Report results...
-	fmt.Printf("Client Id:        %v\n", client.ClientId)
+	fmt.Printf("Client Id:        %v\n", client.ClientID)
 	fmt.Printf("Created:          %v\n", client.Created)
 	fmt.Printf("Description:      %v\n", client.Description)
 	fmt.Printf("Expanded Scopes:  %v\n", client.ExpandedScopes)

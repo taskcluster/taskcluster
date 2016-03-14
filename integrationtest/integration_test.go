@@ -29,8 +29,8 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
-	taskId := itr.TaskId
-	td, _, err := Queue.Task(taskId)
+	taskID := itr.TaskID
+	td, _, err := Queue.Task(taskID)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -41,15 +41,15 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 	inAnHour := now.Add(time.Hour * 1)
 	aYearAgo := now.AddDate(-1, 0, 0)
 	t.Log("")
-	t.Log("  => Task " + taskId + " was created on " + created.Format("Mon, 2 Jan 2006 at 15:04:00 -0700"))
+	t.Log("  => Task " + taskID + " was created on " + created.Format("Mon, 2 Jan 2006 at 15:04:00 -0700"))
 	t.Log("")
 	if created.After(inAnHour) {
 		t.Log("Current time: " + now.Format("Mon, 2 Jan 2006 at 15:04:00 -0700"))
-		t.Error("Task " + taskId + " has a creation date that is over an hour in the future")
+		t.Error("Task " + taskID + " has a creation date that is over an hour in the future")
 	}
 	if created.Before(aYearAgo) {
 		t.Log("Current time: " + now.Format("Mon, 2 Jan 2006 at 15:04:00 -0700"))
-		t.Error("Task " + taskId + " has a creation date that is over a year old")
+		t.Error("Task " + taskID + " has a creation date that is over a year old")
 	}
 
 }
@@ -71,8 +71,8 @@ func TestDefineTask(t *testing.T) {
 	permaCreds := permaCreds(t)
 	myQueue := queue.New(permaCreds)
 
-	taskId := slugid.Nice()
-	taskGroupId := slugid.Nice()
+	taskID := slugid.Nice()
+	taskGroupID := slugid.Nice()
 	created := time.Now()
 	deadline := created.AddDate(0, 0, 1)
 	expires := deadline
@@ -94,23 +94,23 @@ func TestDefineTask(t *testing.T) {
 			Source:      "http://everywhere.com/",
 		},
 		Payload:       json.RawMessage(`{"features":{"relengApiProxy":true}}`),
-		ProvisionerId: "win-provisioner",
+		ProvisionerID: "win-provisioner",
 		Retries:       5,
 		Routes: []string{
 			"tc-treeherder.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163",
 			"tc-treeherder-stage.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163",
 		},
-		SchedulerId: "go-test-test-scheduler",
+		SchedulerID: "go-test-test-scheduler",
 		Scopes: []string{
-			"test-worker:image:toastposter/pumpkin:0.5.6",
+			"queue:task-priority:high",
 		},
 		Tags:        json.RawMessage(`{"createdForUser":"cbook@mozilla.com"}`),
 		Priority:    "high",
-		TaskGroupId: taskGroupId,
+		TaskGroupID: taskGroupID,
 		WorkerType:  "win2008-worker",
 	}
 
-	tsr, cs, err := myQueue.DefineTask(taskId, td)
+	tsr, cs, err := myQueue.DefineTask(taskID, td)
 
 	//////////////////////////////////
 	// And now validate results.... //
@@ -124,13 +124,13 @@ func TestDefineTask(t *testing.T) {
 		t.Fatalf("\n\nResponse received:\n\n%s", err)
 	}
 
-	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskId)
+	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskID)
 
-	if provisionerId := cs.HttpRequestObject.(*queue.TaskDefinitionRequest).ProvisionerId; provisionerId != "win-provisioner" {
-		t.Errorf("provisionerId 'win-provisioner' expected but got %s", provisionerId)
+	if provisionerID := cs.HttpRequestObject.(*queue.TaskDefinitionRequest).ProvisionerID; provisionerID != "win-provisioner" {
+		t.Errorf("provisionerId 'win-provisioner' expected but got %s", provisionerID)
 	}
-	if schedulerId := tsr.Status.SchedulerId; schedulerId != "go-test-test-scheduler" {
-		t.Errorf("schedulerId 'go-test-test-scheduler' expected but got %s", schedulerId)
+	if schedulerID := tsr.Status.SchedulerID; schedulerID != "go-test-test-scheduler" {
+		t.Errorf("schedulerId 'go-test-test-scheduler' expected but got %s", schedulerID)
 	}
 	if retriesLeft := tsr.Status.RetriesLeft; retriesLeft != 5 {
 		t.Errorf("Expected 'retriesLeft' to be 5, but got %v", retriesLeft)
@@ -148,7 +148,7 @@ func TestDefineTask(t *testing.T) {
 	  "deadline": "` + deadline.UTC().Format("2006-01-02T15:04:05.000Z") + `",
 	  "expires":  "` + expires.UTC().Format("2006-01-02T15:04:05.000Z") + `",
 
-	  "taskGroupId": "` + taskGroupId + `",
+	  "taskGroupId": "` + taskGroupID + `",
 	  "workerType":  "win2008-worker",
 	  "schedulerId": "go-test-test-scheduler",
 
@@ -168,7 +168,7 @@ func TestDefineTask(t *testing.T) {
 	  ],
 
 	  "scopes": [
-	    "test-worker:image:toastposter/pumpkin:0.5.6"
+	  	"queue:task-priority:high"
 	  ],
 
 	  "tags": {
@@ -203,12 +203,12 @@ func TestDefineTask(t *testing.T) {
 	}
 
 	// check it is possible to cancel the unscheduled task using **temporary credentials**
-	tempCreds, err := permaCreds.CreateTemporaryCredentials(30*time.Second, "queue:cancel-task:"+td.SchedulerId+"/"+td.TaskGroupId+"/"+taskId)
+	tempCreds, err := permaCreds.CreateTemporaryCredentials(30*time.Second, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/"+taskID)
 	if err != nil {
 		t.Fatalf("Exception thrown generating temporary credentials!\n\n%s\n\n", err)
 	}
 	myQueue = queue.New(tempCreds)
-	_, cs, err = myQueue.CancelTask(taskId)
+	_, cs, err = myQueue.CancelTask(taskID)
 	if err != nil {
 		t.Logf("Exception thrown cancelling task with temporary credentials!\n\n%s\n\n", err)
 		t.Fatalf("\n\n%s\n", cs.HttpRequest.Header)
