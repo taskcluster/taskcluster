@@ -12,6 +12,9 @@ Defaults:
       - localhost
       - tools.taskcluster.net
       - docs.taskcluster.net
+    credentials:
+      clientId:     !env TASKCLUSTER_CLIENT_ID
+      accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
     temporaryCredentials:
       # Set the credentials to be valid 15 min before creation
       # (allowing for a bit of clock skew)
@@ -92,10 +95,26 @@ Profiles:
         credentials:
           clientId:     'dummy'
           accessToken:  'lol no secret here'
+      credentials:
+        clientId:     !env TASKCLUSTER_CLIENT_ID
+        accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
     mozillians:
       allowedGroups: ['taskcluster-users']
     ldap:
-      allowedGroups: ['releng', 'shipit', 'Everyone', 'team_moco', 'shipitdev', 'scm_level_1', 'scm_level_2', 'scm_level_3']
+      allowedGroups: 
+      - 'releng'
+      - 'shipit'
+      - 'Everyone'
+      - 'team_moco'
+      - 'shipitdev'
+      - 'scm_level_1'
+      - 'scm_level_2'
+      - 'scm_level_3'
+      - 'vpn_tooltooleditor'
+      - 'team_relops'
+      - 'releng'
+      - 'team_taskcluster'
+      - 'ateam'
     sso:
       issuer: taskcluster-login.ngrok.io
       entryPoint: "https://mozilla.oktapreview.com/app/mozilla_taskcluster_1/exk58q0ytqJycvEJ10h7/sso/saml"
