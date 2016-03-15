@@ -16,12 +16,10 @@ import (
 )
 
 type Credentials struct {
-	// Client ID required by Hawk
-	ClientId string
-	// Access Token required by Hawk
-	AccessToken string
-	// Certificate for temporary credentials
-	Certificate string
+	ClientId    string `json:"clientId"`
+	AccessToken string `json:"accessToken"`
+	// Certificate used only for temporary credentials
+	Certificate string `json:"certificate"`
 	// AuthorizedScopes if set to nil, is ignored. Otherwise, it should be a
 	// subset of the scopes that the ClientId already has, and restricts the
 	// Credentials to only having these scopes. This is useful when performing
@@ -30,7 +28,7 @@ type Credentials struct {
 	// is set to an empty array rather than nil, this is equivalent to having
 	// no scopes at all.
 	// See http://docs.taskcluster.net/auth/authorized-scopes
-	AuthorizedScopes []string
+	AuthorizedScopes []string `json:"authorizedScopes"`
 }
 
 func (creds *Credentials) String() string {
@@ -157,7 +155,8 @@ func (cert *Certificate) updateSignature(accessToken string, tempClientId string
 	)
 	lines = append(lines, cert.Scopes...)
 	hash := hmac.New(sha256.New, []byte(accessToken))
-	_, err = hash.Write([]byte(strings.Join(lines, "\n")))
+	text := strings.Join(lines, "\n")
+	_, err = hash.Write([]byte(text))
 	if err != nil {
 		return err
 	}
