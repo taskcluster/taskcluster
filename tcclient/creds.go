@@ -77,7 +77,7 @@ type Certificate struct {
 // temporary credentials, but will not be restricted via the certificate.
 //
 // See http://docs.taskcluster.net/auth/temporary-credentials/
-func (permaCreds *Credentials) CreateNamedTemporaryCredentials(name string, duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
+func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientId string, duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
 	if duration > 31*24*time.Hour {
 		return nil, errors.New("Temporary credentials must expire within 31 days; however a duration of " + duration.String() + " was specified to (*tcclient.ConnectionData).CreateTemporaryCredentials(...) method")
 	}
@@ -105,11 +105,11 @@ func (permaCreds *Credentials) CreateNamedTemporaryCredentials(name string, dura
 		Signature: "", // gets set in updateSignature() method below
 	}
 	// include the issuer iff this is a named credential
-	if name != "" {
+	if tempClientId != "" {
 		cert.Issuer = permaCreds.ClientId
 	}
 
-	cert.updateSignature(permaCreds.AccessToken, permaCreds.ClientId, name)
+	cert.updateSignature(permaCreds.AccessToken, tempClientId)
 
 	certBytes, err := json.Marshal(cert)
 	if err != nil {
@@ -127,8 +127,8 @@ func (permaCreds *Credentials) CreateNamedTemporaryCredentials(name string, dura
 		Certificate:      string(certBytes),
 		AuthorizedScopes: permaCreds.AuthorizedScopes,
 	}
-	if name != "" {
-		tempCreds.ClientId = name
+	if tempClientId != "" {
+		tempCreds.ClientId = tempClientId
 	}
 
 	return
@@ -140,13 +140,14 @@ func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration
 	return permaCreds.CreateNamedTemporaryCredentials("", duration, scopes...)
 }
 
-func (cert *Certificate) updateSignature(accessToken string, issuer string, name string) (err error) {
+func (cert *Certificate) updateSignature(accessToken string, tempClientId string) (err error) {
 	lines := []string{"version:" + strconv.Itoa(cert.Version)}
 	// iff this is a named credential, include clientId and issuer
-	if name != "" {
+	if cert.Issuer != "" {
 		lines = append(lines,
-			"clientId:"+name,
-			"issuer:"+issuer)
+			"clientId:"+tempClientId,
+			"issuer:"+cert.Issuer,
+		)
 	}
 	lines = append(lines,
 		"seed:"+cert.Seed,
