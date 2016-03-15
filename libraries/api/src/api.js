@@ -413,10 +413,11 @@ var remoteAuthentication = function(options, entry) {
       };
 
       let clientId;
+      // generate valid clientIds for exceptional cases
       if (result.status === 'auth-success') {
-        clientId = result.clientId || '(unknown)';
+        clientId = result.clientId || 'unknown-clientId';
       } else {
-        clientId = '(' + result.status + ')';
+        clientId = 'auth-failed:' + result.status;
       }
       // this is a function so we can later make an async request on demand
       req.clientId = async () => clientId;
