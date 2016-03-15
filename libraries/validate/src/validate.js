@@ -96,10 +96,12 @@ async function validator (options) {
   }
 
   return (obj, id) => {
+    id = id.replace(/#$/, '');
     id = id.replace(/\.ya?ml$/, '.json');
     if (!_.endsWith(id, '.json')) {
       id += '.json';
     }
+    id += '#';
     ajv.validate(id, obj);
     if (ajv.errors) {
       return [

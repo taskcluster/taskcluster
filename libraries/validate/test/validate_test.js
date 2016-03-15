@@ -15,21 +15,21 @@ suite('Valid Schema Tests', () => {
   test('load json', () => {
     let error = validate(
         {value: 42},
-        'http://localhost:1203/test-schema.json');
+        'http://localhost:1203/test-schema.json#');
     assert.equal(error, null);
   });
 
   test('load yml', () => {
     let error = validate(
         {value: 42},
-        'http://localhost:1203/yml-test-schema');
+        'http://localhost:1203/yml-test-schema#');
     assert.equal(error, null);
   });
 
   test('load yaml', () => {
     let error = validate(
         {value: 42},
-        'http://localhost:1203/yaml-test-schema');
+        'http://localhost:1203/yaml-test-schema#');
     assert.equal(error, null);
   });
 
@@ -37,7 +37,7 @@ suite('Valid Schema Tests', () => {
     let error = validate({
       reference: {value: 42},
       tid: new Date().toJSON(),
-    }, 'http://localhost:1203/ref-test-schema');
+    }, 'http://localhost:1203/ref-test-schema#');
     assert.equal(error, null);
   });
 
@@ -82,7 +82,7 @@ suite('Valid Schema Tests', () => {
   test('rejects poorly formed object', () => {
     let error = validate(
         {value: 43},
-        'http://localhost:1203/test-schema');
+        'http://localhost:1203/test-schema#');
     debug(error);
     assert.notEqual(error, null);
   });
@@ -90,7 +90,7 @@ suite('Valid Schema Tests', () => {
   test('messages for large schema are nice', () => {
     let error = validate(
         {},
-        'http://localhost:1203/big-schema');
+        'http://localhost:1203/big-schema#');
     debug(error);
     assert.notEqual(error, null);
   });
@@ -98,7 +98,7 @@ suite('Valid Schema Tests', () => {
   test('automatic id', () => {
     let error = validate(
         {value: 42},
-        'http://localhost:1203/auto-named-schema');
+        'http://localhost:1203/auto-named-schema#');
     assert.equal(error, null);
   });
 
