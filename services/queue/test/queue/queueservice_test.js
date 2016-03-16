@@ -23,6 +23,7 @@ suite('queue/QueueService', function() {
       prefix:             cfg.app.queuePrefix2,
       credentials:        cfg.azure,
       claimQueue:         cfg.app.claimQueue,
+      resolvedQueue:      cfg.app.resolvedQueue,
       deadlineQueue:      cfg.app.deadlineQueue,
       pendingPollTimeout: 30 * 1000,
       deadlineDelay:      1000
@@ -83,6 +84,31 @@ suite('queue/QueueService', function() {
       var foundTaskId = messages.some((message) => {
         return message.taskId === taskId &&
                message.takenUntil.getTime() === takenUntil.getTime();
+      });
+      assert(foundTaskId, "Expected to see taskId at some point");
+    });
+  });
+
+  test("putResolvedMessage, pollResolvedQueue", async () => {
+    var taskId      = slugid.v4();
+    debug("Putting message with taskId: %s", taskId);
+    // Put message
+    await queueService.putResolvedMessage(taskId, 'completed');
+
+    // Poll for message
+    return base.testing.poll(async () => {
+      var messages = await queueService.pollResolvedQueue();
+      debug("Received messages: %j", messages);
+
+      // delete all the messages
+      await Promise.all(messages.map((message) => {
+        return message.remove();
+      }));
+
+      // Check if we got the message
+      var foundTaskId = messages.some((message) => {
+        return message.taskId === taskId &&
+               message.resolution === 'completed';
       });
       assert(foundTaskId, "Expected to see taskId at some point");
     });

@@ -47,6 +47,9 @@ defaults:
     # Name of azure queue for tracking deadlines
     deadlineQueue:                deadline-queue
 
+    # Name of azure queue for tracking resolved tasks (dependency tracker)
+    resolvedQueue:                resolved-queue
+
     # Number of ms before deadline expiration message arrives, past deadline
     deadlineDelay:                60000
 
@@ -65,6 +68,14 @@ defaults:
       # Number of event loops to run in parallel, each taking up to 32 message
       # in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
       parallelism:                1
+
+    # Configuration for dependency-resolver
+    dependencyResolver:
+      # Number of ms to sleep after polling from an empty queue
+      pollingDelay:               5000
+      # Number of event loops to run in parallel, each taking up to 32 message
+      # in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
+      parallelism:                4
 
     # Mapping from EC2 region to public artifact bucket proxy
     # (Must not end with a slash!)
@@ -152,12 +163,12 @@ test:
     statsComponent:               'test-queue'
     queuePrefix:                  'hacks'
     queuePrefix2:                 'hacks2' # For testing deletion of queues
-    taskTableName:                'TestTasks'
-    artifactTableName:            'TestArtifacts'
-    taskGroupTableName:           'TestTaskGroups'
-    taskGroupMemberTableName:     'TestTaskGroupMembers'
-    taskRequirementTableName:     'TestTaskRequirement'
-    taskDependencyTableName:      'TestTaskDependency'
+    taskTableName:                'TestTasks2'
+    artifactTableName:            'TestArtifacts2'
+    taskGroupTableName:           'TestTaskGroups2'
+    taskGroupMemberTableName:     'TestTaskGroupMembers2'
+    taskRequirementTableName:     'TestTaskRequirement2'
+    taskDependencyTableName:      'TestTaskDependency2'
     claimQueue:                   'test-claim-queue'
     deadlineQueue:                'test-deadline-queue'
     deadlineDelay:                1000
