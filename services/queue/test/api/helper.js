@@ -66,6 +66,12 @@ helper.claimReaper = async () => {
   toTerminate.push(reaper);
   return reaper;
 };
+// Allow tests to start dependency-resolver
+helper.dependencyResolver = async () => {
+  var resolver = await load('dependency-resolver', loadOptions);
+  toTerminate.push(resolver);
+  return resolver;
+};
 // Allow tests to start deadline-reaper
 helper.deadlineReaper = async () => {
   var reaper = await load('deadline-reaper', loadOptions)

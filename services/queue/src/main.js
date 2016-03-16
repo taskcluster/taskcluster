@@ -228,6 +228,7 @@ let load = base.loader({
       prefix:           cfg.app.queuePrefix,
       credentials:      cfg.azure,
       claimQueue:       cfg.app.claimQueue,
+      resolvedQueue:    cfg.app.resolvedQueue,
       deadlineQueue:    cfg.app.deadlineQueue,
       deadlineDelay:    cfg.app.deadlineDelay
     })
@@ -334,6 +335,20 @@ let load = base.loader({
       resolver.start();
       return resolver;
     }
+  },
+
+  // Create the dependency-resolver process
+  'dependency-resolver': {
+    requires: ['cfg', 'queueService', 'dependencyTracker'],
+    setup: ({cfg, queueService, dependencyTracker}) => {
+      let resolver = new DependencyResolver({
+        queueService, dependencyTracker,
+        pollingDelay:   cfg.app.dependencyResolver.pollingDelay,
+        parallelism:    cfg.app.dependencyResolver.parallelism
+      });
+      resolver.start();
+      return resolver;
+    },
   },
 
   // Create the artifact expiration process (periodic job)

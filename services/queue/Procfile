@@ -1,6 +1,7 @@
 web:                    babel-node src/main server
 claimReaper:            babel-node src/main claim-reaper
 deadlineReaper:         babel-node src/main deadline-reaper
+dependencyResolver:     babel-node src/main dependency-resolver
 expireArtifacts:        babel-node src/main expire-artifacts
 expireTask:             babel-node src/main expire-tasks
 expireTaskGroups:       babel-node src/main expire-task-groups
