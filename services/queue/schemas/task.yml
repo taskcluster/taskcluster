@@ -46,7 +46,7 @@ properties:
     title:          "Task Dependencies"
     description: |
       List of dependent tasks. These must either be _completed_ or _resolved_
-      before this task is scheduled. See `dependencyRelation` for semantics.
+      before this task is scheduled. See `requires` for semantics.
     type:           array
     items:
       title:        "Task Dependency"
@@ -57,14 +57,14 @@ properties:
       pattern:      {$const: slugid-pattern}
     maxItems:       {$const: max-task-dependencies}
     uniqueItems:    true
-  dependencyRelation:
-    title:          "Dependency Relation"
+  requires:
+    title:          "Dependency Requirement Semantics"
     description: |
       The tasks relation to its dependencies. This property specifies the
       semantics of the `task.dependencies` property.
-      If `on-completed` is given the task will be scheduled when all
+      If `all-completed` is given the task will be scheduled when all
       dependencies are resolved _completed_ (successful resolution).
-      If `on-resolved` is given the task will be scheduled when all dependencies
+      If `all-resolved` is given the task will be scheduled when all dependencies
       have been resolved, regardless of what their resolution is.
     type:           string
     enum:           {$const: dependency-relation}
@@ -215,7 +215,7 @@ required:
   - schedulerId
   - taskGroupId
   - dependencies
-  - dependencyRelation
+  - requires
   - routes
   - priority
   - retries
