@@ -71,16 +71,16 @@ Options and Defaults
 --------------------
 
 This section explores some of the options a bit further. In general, your schemas should be
-stored in the top-level of your project in `./schemas` and the constants in a yaml file in
+stored in the top-level of your project in `<root of app>/schemas/` and the constants in a yaml file in
 that directory called `constants.yaml`. You may override these if desired.
 
 ```
     // These constants can be subsituted into all of your schemas
     // and can be passed as a path to a yaml file or an object.
-    constants: './schemas/contants.yml' || { myDefault: 42 }
+    constants: '<root of app>/schemas/contants.yml' || { myDefault: 42 }
 
     // This folder should contain all of your schemas defined in either json or yaml.
-    folder: './schemas'
+    folder: '<root of app>/schemas'
 
     // Whether or not to push your generated schemas out to the world at large.
     publish: process.env.NODE_ENV == 'production'

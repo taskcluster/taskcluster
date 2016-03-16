@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-validate",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "author": "Brian Stack <bstack@mozilla.com>",
   "description": "Validate schemas for TaskCluster projects",
   "license": "MPL-2.0",
@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "ajv": "^3.8.3",
+    "app-root-dir": "^1.0.2",
     "aws-sdk": "^2.2.38",
     "babel-runtime": "^6.0.0",
     "debug": "^2.2.0",
