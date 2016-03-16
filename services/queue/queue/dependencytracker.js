@@ -56,12 +56,16 @@ class DependencyTracker {
     // Create TaskDependency entries, each entry implies that taskId is required
     // by dependentTaskId. This relation is used so taskId can find dependent
     // tasks when it is resolved.
+    let require = 'completed';
+    if (task.requires === 'all-resolved') {
+      require = 'resolved';
+    }
     await Promise.all(task.dependencies.map(requiredTaskId => {
       return this.TaskDependency.create({
         taskId:           requiredTaskId,
         dependentTaskId:  task.taskId,
         expires:          task.expires,
-        relation:         task.dependencyRelation,
+        require,
       }, true);
     }));
 
@@ -85,7 +89,7 @@ class DependencyTracker {
 
       // Check if requiredTask is satisfied
       let state = requiredTask.state();
-      if (state === 'completed' || (task.dependencyRelation === 'on-resolved' &&
+      if (state === 'completed' || (task.requires === 'all-resolved' &&
           (state === 'exception' || state === 'failed'))) {
         // If a dependency is satisfied we delete the TaskRequirement entry
         await this.TaskRequirement.remove({
@@ -166,9 +170,9 @@ class DependencyTracker {
       taskId: base.Entity.op.equal(taskId),
     };
     if (resolution !== 'completed') {
-      // If the resolution wasn't 'completed', we can only remove TaskRequirement
-      // entries if the relation is 'on-resolved'.
-      condition.relation = base.Entity.op.equal('on-resolved');
+      // If the resolution wasn't 'completed', we can only remove
+      // TaskRequirement entries if the 'require' relation is 'resolved'.
+      condition.require = base.Entity.op.equal('resolved');
     }
 
     await this.TaskDependency.query(condition, {

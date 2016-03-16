@@ -117,7 +117,7 @@ var Task = base.Entity.configure({
     schedulerId:        base.Entity.types.String,
     taskGroupId:        base.Entity.types.SlugId,
     dependencies:       base.Entity.types.JSON,
-    dependencyRelation: base.Entity.types.String,
+    requires:           base.Entity.types.String,
     /** List of custom routes as strings */
     routes:             base.Entity.types.JSON,
     priority:           base.Entity.types.String,
@@ -161,7 +161,7 @@ var Task = base.Entity.configure({
   },
   migrate(item) {
     item.dependencies = [];
-    item.dependencyRelation = 'on-completed';
+    item.requires = 'all-completed';
     return item;
   },
 });
@@ -175,7 +175,7 @@ Task.prototype.definition = function() {
     schedulerId:    this.schedulerId,
     taskGroupId:    this.taskGroupId,
     dependencies:   _.cloneDeep(this.dependencies),
-    dependencyRelation: this.dependencyRelation,
+    requires:       this.requires,
     routes:         _.cloneDeep(this.routes),
     priority:       this.priority,
     retries:        this.retries,
@@ -498,7 +498,8 @@ var TaskDependency = base.Entity.configure({
   properties: {
     taskId:           base.Entity.types.SlugId,
     dependentTaskId:  base.Entity.types.SlugId,
-    relation:         base.Entity.types.String,
+    // require is 'completed' or 'resolved' from task.requires
+    require:          base.Entity.types.String,
     expires:          base.Entity.types.Date,
   },
 });
