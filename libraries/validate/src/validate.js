@@ -11,6 +11,7 @@ let aws = require('aws-sdk');
 let Promise = require('promise');
 let publish = require('./publish');
 let render = require('./render');
+let rootdir = require('app-root-dir');
 
 async function validator (options) {
 
@@ -18,8 +19,8 @@ async function validator (options) {
   let ajv = Ajv({useDefaults: 'clone', format: 'full', verbose: true, allErrors: true});
 
   let cfg = _.defaults(options, {
-    constants: './schemas/contants.yml',
-    folder: './schemas',
+    constants: rootdir.get() + '/schemas/contants.yml',
+    folder: rootdir.get() + '/schemas',
     publish: process.env.NODE_ENV == 'production',
     baseUrl: 'http://schemas.taskcluster.net/',
     bucket: 'schemas.taskcluster.net',
