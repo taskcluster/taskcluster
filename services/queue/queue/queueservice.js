@@ -74,6 +74,7 @@ class QueueService {
    *     accountKey:         // Azure storage account key
    *   },
    *   claimQueue:           // Queue name for the claim expiration queue
+   *   resolvedQueue:        // Queue name for the resolved task queue
    *   deadlineQueue:        // Queue name for the deadline queue
    *   deadlineDelay:        // ms before deadline expired messages arrive
    * }
@@ -82,6 +83,7 @@ class QueueService {
     assert(options, "options is required");
     assert(/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(options.prefix), "Invalid prefix");
     assert(options.prefix.length <= 6,  "Prefix is too long");
+    assert(options.resolvedQueue,       "A resolvedQueue name must be given");
     assert(options.claimQueue,          "A claimQueue name must be given");
     assert(options.deadlineQueue,       "A deadlineQueue name must be given");
     options = _.defaults({}, options, {
@@ -109,9 +111,13 @@ class QueueService {
     // up-to-date with a last_used field no more than 48 hours behind
     setInterval(() => {this.queues = {};}, 25 * 60 * 60 * 1000);
 
-    // Store claimQueue  name, and remember if we've created it
+    // Store claimQueue name, and remember if we've created it
     this.claimQueue         = options.claimQueue;
     this.claimQueueReady    = null;
+
+    // Store resolvedQueue name, and remember if we've created it
+    this.resolvedQueue      = options.resolvedQueue;
+    this.resolvedQueueReady = null;
 
     // Store deadlineQueue name, and remember if we've created it
     this.deadlineQueue      = options.deadlineQueue;
@@ -162,6 +168,19 @@ class QueueService {
     return this.claimQueueReady = ready;
   }
 
+  /** Ensure existence of the resolved task queue */
+  ensureResolvedQueue() {
+    if (this.resolvedQueueReady) {
+      return this.resolvedQueueReady;
+    }
+    var ready = this.client.createQueue(this.resolvedQueue).catch(err => {
+      // Don't cache negative results
+      this.resolvedQueueReady = null;
+      throw err;
+    })
+    return this.resolvedQueueReady = ready;
+  }
+
   /** Ensure existence of the deadline queue */
   ensureDeadlineQueue() {
     if (this.deadlineQueueReady) {
@@ -190,6 +209,22 @@ class QueueService {
     }, {
       ttl:                7 * 24 * 60 * 60,
       visibility:         secondsTo(takenUntil)
+    });
+  }
+
+  /** Enqueue message ensure the dependency resolver handles the resolution */
+  async putResolvedMessage(taskId, resolution) {
+    assert(taskId, "taskId must be given");
+    assert(resolution === 'completed' || resolution === 'failed' ||
+           resolution === 'exception',
+           'resolution must be completed, failed or exception');
+
+    await this.ensureResolvedQueue();
+    return this._putMessage(this.resolvedQueue, {
+      taskId, resolution,
+    }, {
+      ttl:                7 * 24 * 60 * 60,
+      visibility:         0,
     });
   }
 
@@ -247,6 +282,43 @@ class QueueService {
         runId:        m.payload.runId,
         takenUntil:   new Date(m.payload.takenUntil),
         remove:       m.remove
+      };
+    });
+  }
+
+  /**
+   * Poll resolved queue, returns promise for list of message objects
+   * on the form:
+   *
+   * ```js
+   * [
+   *   {
+   *     taskId:      '<taskId>',     // taskId that was resolved
+   *     resolution:  ...,            // resolution of the task
+   *     remove:      function() {},  // Delete message call when handled
+   *   },
+   *   ... // up-to to 32 objects in one list
+   * ]
+   * ```
+   *
+   * Note, messages must be handled within 10 minutes.
+   */
+  async pollResolvedQueue() {
+    // Ensure the claim queue exists
+    await this.ensureResolvedQueue();
+
+    // Get messages
+    var messages = await this._getMessages(this.resolvedQueue, {
+      visibility:             10 * 60,
+      count:                  32,
+    });
+
+    // Convert to neatly consumable format
+    return messages.map(m => {
+      return {
+        taskId:       m.payload.taskId,
+        resolution:   m.payload.resolution,
+        remove:       m.remove,
       };
     });
   }

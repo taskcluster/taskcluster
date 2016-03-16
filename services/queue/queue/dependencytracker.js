@@ -21,6 +21,7 @@ let base    = require('taskcluster-base');
 class DependencyTracker {
   constructor(options = {}) {
     // Validate options
+    assert(options,                 'options are required');
     assert(options.Task,            'Expected options.Task');
     assert(options.publisher,       'Expected options.publisher');
     assert(options.queueService,    'Expected options.queueService');
@@ -158,7 +159,6 @@ class DependencyTracker {
     return null;
   }
 
-
   /** Track resolution of a task, scheduling any dependent tasks */
   async resolveTask(taskId, resolution) {
     assert(resolution === 'completed' || resolution === 'failed' ||
@@ -276,7 +276,6 @@ class DependencyTracker {
     return status;
   }
 };
-
 
 
 // Export DependencyTracker
