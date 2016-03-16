@@ -75,7 +75,7 @@ suite("api/auth", function() {
     title:        "Test End-Point",
     description:  "Place we can call to test something",
   }, async function(req, res) {
-    assert((await req.clientId()) === '(no-auth)');
+    assert.equal((await req.clientId()), 'auth-failed:no-auth');
     res.status(200).json("OK");
   });
 
