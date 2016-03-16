@@ -1,11 +1,12 @@
 suite("API (context)", function() {
-  var makeValidator   = require('schema-validator-publisher');
+  var validator       = require('taskcluster-lib-validate');
   var makeApp         = require('taskcluster-lib-app');
   var subject         = require('../');
   var assert          = require('assert');
   var Promise         = require('promise');
   var request         = require('superagent-promise');
   var slugid          = require('slugid');
+  var path            = require('path');
 
   test("Provides context", async () => {
     // Create test api
@@ -25,9 +26,12 @@ suite("API (context)", function() {
     });
 
     var value = slugid.v4();
-    let validator = await makeValidator();
+    let validate = await validator({
+      folder:         path.join(__dirname, 'schemas'),
+      baseUrl:        'http://localhost:4321/'
+    });
     var router = api.router({
-      validator:  validator,
+      validator:  validate,
       context: {
         myProp: value
       }
@@ -67,10 +71,13 @@ suite("API (context)", function() {
     });
 
     var value = slugid.v4();
-    let validator = await makeValidator()
+    let validate = await validator({
+      folder:         path.join(__dirname, 'schemas'),
+      baseUrl:        'http://localhost:4321/'
+    });
     try {
       api.router({
-        validator:  validator,
+        validator:  validate,
         context: {
           prop1: "value1"
         }
@@ -90,9 +97,12 @@ suite("API (context)", function() {
     });
 
     var value = slugid.v4();
-    let validator = await makeValidator();
+    let validate = await validator({
+      folder:         path.join(__dirname, 'schemas'),
+      baseUrl:        'http://localhost:4321/'
+    });
     api.router({
-      validator:  validator,
+      validator:  validate,
       context: {
         prop1: "value1",
         prop2: "value2"

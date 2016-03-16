@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-api",
-  "version": "0.10.5",
+  "version": "0.11.0",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-api",
   "license": "MPL-2.0",
@@ -15,6 +15,7 @@
     "url": "https://github.com/taskcluster/taskcluster-lib-api.git"
   },
   "dependencies": {
+    "ajv": "^3.8.5",
     "aws-sdk": "^2.1.21",
     "aws-sdk-promise": "0.0.2",
     "babel-runtime": "^6.3.19",
@@ -25,7 +26,6 @@
     "hawk": "2.3.0",
     "lodash": "2.4.1",
     "promise": "^7.0.4",
-    "schema-validator-publisher": "^0.8.8",
     "slugid": "^1.1.0",
     "source-map-support": "^0.3.3",
     "superagent": "0.18.2",
@@ -34,7 +34,6 @@
     "taskcluster-client": "0.23.4",
     "taskcluster-lib-scopes": "^0.8.8",
     "taskcluster-lib-stats": "^0.8.7",
-    "taskcluster-lib-testing": "^0.10.1",
     "type-is": "^1.6.10",
     "uuid": "^2.0.1"
   },
@@ -52,8 +51,9 @@
     "eslint": "^1.9.0",
     "mocha": "2.0.1",
     "taskcluster-lib-config": "^0.8.8",
-    "taskcluster-lib-testing": "^0.8.10",
+    "taskcluster-lib-testing": "^0.10.1",
     "taskcluster-lib-app": "^0.8.9",
+    "taskcluster-lib-validate": "^0.4.2",
     "tc-rules": "^2.0.0"
   },
   "main": "./lib/api.js"
