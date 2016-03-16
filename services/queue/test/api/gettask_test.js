@@ -14,7 +14,7 @@ suite('Get task', function() {
     schedulerId:      'my-scheduler',
     taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
     dependencies:     [],
-    dependencyRelation: 'on-completed',
+    requires:         'all-completed',
     routes:           [],
     priority:         'normal',
     retries:          5,

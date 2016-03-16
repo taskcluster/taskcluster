@@ -139,9 +139,9 @@ module.exports = {
   // Maximum number of dependencies a single task can have
   "max-task-dependencies": 100,
 
-  // Possible dependencies relations
+  // Possible dependencies relations for task.requires
   "dependency-relation": [
-    "on-completed",
-    "on-resolved",
+    "all-completed",
+    "all-resolved",
   ],
 };
