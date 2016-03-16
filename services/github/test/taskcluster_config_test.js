@@ -19,7 +19,7 @@ suite('TaskCluster-Github Config', () => {
         'event.type': 'pull_request.opened',
         'event.base.user.login': 'eventData.pull_request.base.user.login',
         'event.base.repo.url': 'eventData.pull_request.base.repo.clone_url',
-        'event.base.repo.branch': 'eventData.pull_request.base.default_branch',
+        'event.base.repo.branch': 'default_branch',
         'event.base.sha': 'eventData.pull_request.base.sha',
         'event.base.ref': 'eventData.pull_request.base.ref',
         'event.head.user.login': 'eventData.pull_request.head.user.login',
@@ -94,7 +94,8 @@ suite('TaskCluster-Github Config', () => {
     },
     {
       'tasks[0].task.extra.github.events': ['push'],
-      'metadata.owner': 'test@test.com'
+      'metadata.owner': 'test@test.com',
+      'scopes': ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
     });
 
   buildConfigTest(
@@ -106,7 +107,8 @@ suite('TaskCluster-Github Config', () => {
     {
       'metadata.owner': 'test@test.com',
       'tasks[0].task.payload.command': ['test'],
-      'tasks[0].task.extra.github.events': ['push']
+      'tasks[0].task.extra.github.events': ['push'],
+      'scopes': ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
     });
 
   buildConfigTest(
@@ -119,6 +121,7 @@ suite('TaskCluster-Github Config', () => {
       'metadata.owner': 'test@test.com',
       'tasks[0].task.payload.command': ['test'],
       'tasks[0].task.extra.github.events': ['pull_request.opened', 'pull_request.synchronize', 'pull_request.reopened'],
+      'scopes': ['assume:repo:github.com/testorg/testrepo:pull-request'],
     });
 
   buildConfigTest(
@@ -130,7 +133,8 @@ suite('TaskCluster-Github Config', () => {
     {
       'tasks[0].task.extra.github.events': ['push'],
       'tasks[0].task.extra.github.branches': ['master'],
-      'metadata.owner': 'test@test.com'
+      'metadata.owner': 'test@test.com',
+      'scopes': ['assume:repo:github.com/testorg/testrepo:branch:master'],
     });
 
   buildConfigTest(
