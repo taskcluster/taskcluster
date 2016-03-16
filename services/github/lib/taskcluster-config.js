@@ -34,9 +34,16 @@ function genGitHubEnvs(payload) {
  * it becomes a complete task graph config.
  **/
 function completeTaskGraphConfig(taskclusterConfig, payload) {
-  taskclusterConfig.scopes = [
-    `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`
-  ];
+  if (payload.details['event.type'].startsWith('pull_request')) {
+    taskclusterConfig.scopes = [
+      `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`
+    ];
+  }
+  else if (payload.details['event.type'] == 'push') {
+    taskclusterConfig.scopes = [
+      `assume:repo:github.com/${ payload.organization }/${ payload.repository }:branch:` + payload.details['event.base.repo.branch']
+    ];
+  }
 
   taskclusterConfig.routes = [
     `taskcluster-github.${ payload.organization }.${ payload.repository }.` + payload.details['event.head.sha']
