@@ -5,7 +5,7 @@ suite("api/auth", function() {
   var Promise         = require('promise');
   var testing         = require('taskcluster-lib-testing');
   var mockAuthServer  = require('taskcluster-lib-testing/.test/mockauthserver');
-  var makeValidator   = require('schema-validator-publisher');
+  var validator       = require('taskcluster-lib-validate');
   var makeApp         = require('taskcluster-lib-app');
   var subject         = require('../');
   var express         = require('express');
@@ -13,6 +13,7 @@ suite("api/auth", function() {
   var slugid          = require('slugid');
   var crypto          = require('crypto');
   var testing         = require('taskcluster-lib-testing');
+  var path            = require('path');
 
   // Reference for test api server
   var _apiServer = null;
@@ -102,7 +103,10 @@ suite("api/auth", function() {
 
     // Create router
     var router = api.router({
-      validator:      await makeValidator(),
+      validator:      await validator({
+        folder:         path.join(__dirname, 'schemas'),
+        baseUrl:        'http://localhost:4321/'
+      }),
     });
 
     // Create application
