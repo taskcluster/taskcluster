@@ -46,3 +46,8 @@ indexing.
 When a task is indexed you can browse the namespaces, list tasks within a
 namespace. Or get the latest task from a fully qualified namespace.
 See [API documentation](http://docs.taskcluster.net) for further details.
+
+Deployment
+----------
+1) Supply configuration, see environment variables in `config.yml`
+2) Create a task with route `index.garbage.my-irc-nick.index-works` and see if it works.
