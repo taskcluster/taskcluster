@@ -125,8 +125,65 @@ class DependencyTracker {
         msg += 'All taskIds in `task.dependencies` **must** have\n';
         msg += '`task.expires` greater than the `deadline` for this task.\n';
       }
+
+      // We send errors if dependencies aren't defined, because undefined
+      // dependencies could be defined by an attacker who that way tricks the
+      // system into scheduling a task that someone else defined.
+      // This is a low risk security issue, because attacker can't define the
+      // task he is triggering, attacker still needs basic credentials to create
+      // tasks (on any workerType).
+      //
+      // Effectively, if we didn't force dependencies to be defined upfront,
+      // consumers could create tasks before the dependencies, allowing an
+      // attacker to race. Most likely this wouldn't change what the dependent
+      // tasks do, as that is part of their task.payload.
+      //
+      // We wish to forbid this pattern. So if dependencies aren't defined
+      // upfront, we return an error. However, we can't reliably delete the task
+      // definition after it has been created, because the process could crash
+      // at random and client could be at the very last retry. Further more, we
+      // could be racing against an attacker, trying to create and resolve the
+      // dependencies.
+      //
+      // Our options are:
+      //   A) Check if dependencies are defined before creating the task,
+      //   B) Return an error after creation and attempt to delete the task.
+      //
+      // (A) would double the number of requests, and in 99% of the cases we
+      // wouldn't find an error. (B) would mean that if there is a crash
+      // server-side, we could potentially leave the task in a state where
+      // dependencies can be defined and used to trigger the task.
+      //
+      // However, the deletion in (B) will be successful 99% of the time, so
+      // legitimate consumers doing automation will be forced to defined
+      // dependencies upfront. Eliminating the attack vector. Consumers will
+      // only see this error while developing their automation, so the fact
+      // there is a small risk the task won't be deleted isn't an attack vector.
+
+      // First remove task and TaskDependency entries
+      await Promise.all([
+        task.remove(true),
+        Promise.all(task.dependencies.map(requiredTaskId => {
+          return this.TaskDependency.remove({
+            taskId:           requiredTaskId,
+            dependentTaskId:  task.taskId,
+          }, true);
+        })),
+      ]);
+
+      // Then remove TaskRequirement entries, because removing these makes it
+      // easier to trigger the task. So we remove them after removing the task.
+      await Promise.all([
+        Promise.all(task.dependencies.map(requiredTaskId => {
+          return this.TaskRequirement.remove({
+            taskId: task.taskId,
+            requiredTaskId,
+          }, true);
+        })),
+      ]);
+
       return {
-        error:  msg,
+        message:  msg,
         details: {
           dependencies: task.dependencies,
           missingTaskDependencies: missing,

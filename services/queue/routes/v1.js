@@ -97,6 +97,10 @@ var api = new base.API({
     workerId:         GENERIC_ID_PATTERN,
     runId:            RUN_ID_PATTERN,
   },
+  errorCodes: {
+    // TODO: Remove this when upgrading to new taskcluster-lib-api
+    InputError:       400,  // Any hand coded validation errors
+  },
   context: [
     'Task',
     'Artifact',
@@ -258,28 +262,28 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   var deadline  = new Date(taskDef.deadline);
   if (created.getTime() < new Date().getTime() - 15 * 60 * 1000) {
     return {
-      code:       "InputError",
+      code:       'InputError',
       message:    "Created timestamp cannot be in the past (max 15min drift)",
       details:    {created: taskDef.created}
     };
   }
   if (created.getTime() > new Date().getTime() + 15 * 60 * 1000) {
     return {
-      code:       "InputError",
+      code:       'InputError',
       message:    "Created timestamp cannot be in the future (max 15min drift)",
       details:    {created: taskDef.created}
     };
   }
   if (created.getTime() > deadline.getTime()) {
     return {
-      code:       "InputError",
+      code:       'InputError',
       message:    "Deadline cannot be past created",
       details:      {created: taskDef.created, deadline: taskDef.deadline}
     };
   }
   if (deadline.getTime() < new Date().getTime()) {
     return {
-      code:       "InputError",
+      code:       'InputError',
       message:    "Deadline cannot be in the past",
       details:    {deadline: taskDef.deadline}
     };
@@ -289,7 +293,7 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   // Validate that deadline is less than 5 days from now, allow 15 min drift
   if (msToDeadline > 5 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
     return {
-      code:       "InputError",
+      code:       'InputError',
       message:    "Deadline cannot be more than 5 days into the future",
       details:    {deadline: taskDef.deadline}
     };
@@ -305,7 +309,7 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   // Validate that expires is past deadline
   if (deadline.getTime() > new Date(taskDef.deadline).getTime()) {
     return {
-      code:       "InputError",
+      code:       'InputError',
       message:    "Expires cannot be before the deadline",
       details:    {deadline: taskDef.deadline, expires: taskDef.expires}
     };
@@ -543,7 +547,7 @@ api.declare({
     // will be resolved deadline-expired. But since createTask never returned
     // successfully...
     if (err) {
-      return res.reply('InputError', err.message, err.details);
+      return res.reportError('InputError', err.message, err.details);
     }
   }
 
@@ -553,7 +557,7 @@ api.declare({
   // If first run isn't unscheduled or pending, all message must have been
   // published before, this can happen if we came from the catch-branch
   // (it's unlikely to happen). But no need to publish messages again
-  let runZeroState = task.runs[0].state;
+  let runZeroState = (task.runs[0] || {state: 'unscheduled'}).state;
   if (runZeroState !== 'unscheduled' && runZeroState !== 'pending') {
     return res.reply({status});
   }
@@ -733,7 +737,7 @@ api.declare({
     // will be resolved deadline-expired. But since createTask never returned
     // successfully...
     if (err) {
-      return res.reply('InputError', err.message, err.details);
+      return res.reportError('InputError', err.message, err.details);
     }
 
     // Validate sanity...
