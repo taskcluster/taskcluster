@@ -33,6 +33,10 @@ class DependencyResolver {
     assert(typeof(options.parallelism) === 'number',
            "Expected parallelism to be a number");
 
+    // Remember options
+    this.dependencyTracker = options.dependencyTracker;
+    this.queueService = options.queueService;
+
     // Set polling delay and parallelism
     this._pollingDelay  = options.pollingDelay;
     this._parallelism   = options.parallelism;
