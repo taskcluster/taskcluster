@@ -528,8 +528,8 @@ api.declare({
       return res.reportError('RequestConflict', [
         "taskId {{taskId}} already used by another task.",
         "This could be the result of faulty idempotency!",
-        "Existing task definition was: {{existingTask}}",
-        "This request tried to define: {{taskDefinition}}",
+        "Existing task definition was:\n ```js\n{{existingTask}}\n```",
+        "This request tried to define:\n ```js\n{{taskDefinition}}\n```",
       ].join('\n'), {
         taskId,
         existingTask: def,
@@ -718,8 +718,8 @@ api.declare({
       return res.reportError('RequestConflict', [
         "taskId {{taskId}} already used by another task.",
         "This could be the result of faulty idempotency!",
-        "Existing task definition was: {{existingTask}}",
-        "This request tried to define: {{taskDefinition}}",
+        "Existing task definition was:\n ```js\n{{existingTask}}\n```",
+        "This request tried to define:\n ```js\n{{taskDefinition}}\n```",
       ].join('\n'), {
         taskId,
         existingTask: def,
