@@ -16,7 +16,7 @@ NEW_TIMESTAMP=false
 while getopts ":nd" opt; do
     case "${opt}" in
         n)  GENERATE=false
-            ;;  
+            ;;
         d)  UNIX_TIMESTAMP=$(date +%s)
             echo "GENERATING NEW TIMESTAMP IN DOCS"
             NEW_TIMESTAMP=true
@@ -51,7 +51,7 @@ go get golang.org/x/tools/cmd/cover
 go get github.com/pierrre/gotestcover
 # since gotestcover can have 0 exit code even with failures, also run tests
 # with go test
-go test -v ./...
+go test -v -race ./...
 "${GOPATH}/bin/gotestcover" -v -coverprofile=coverage.report ./...
 go tool cover -func=coverage.report
 
