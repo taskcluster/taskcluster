@@ -85,6 +85,9 @@ defaults:
     # CDN for public artifact bucket
     publicArtifactBucketCDN:      !env PUBLIC_ARTIFACT_BUCKET_CDN
 
+    # Cloud mirror configuration
+    cloudMirrorHost:              'cloud-mirror.taskcluster.net'
+
 
   taskcluster:
     authBaseUrl:      https://auth.taskcluster.net/v1

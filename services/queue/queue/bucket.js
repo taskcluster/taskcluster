@@ -75,9 +75,9 @@ Bucket.prototype.createPutUrl = function(prefix, options) {
 /**
  * Create an unsigned GET URL
  */
-Bucket.prototype.createGetUrl = function(prefix) {
+Bucket.prototype.createGetUrl = function(prefix, forceS3 = false) {
   assert(prefix, "prefix must be given");
-  if (this.bucketCDN) {
+  if (this.bucketCDN && !forceS3) {
     return `${this.bucketCDN}/${prefix}`;
   }
   return `${this.s3.endpoint.href}${this.bucket}/${prefix}`;

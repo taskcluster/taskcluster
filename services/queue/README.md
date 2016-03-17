@@ -57,7 +57,6 @@ well as the credentials.
 Same thing applies for azure, though it's not as nicely scoped, and doesn't
 clean up on its own.
 
-
 Deployment
 ----------
 Code is deployed from master to heroku whenever code hits master (and it passes

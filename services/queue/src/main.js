@@ -281,6 +281,8 @@ let load = base.loader({
         regionResolver:   ctx.regionResolver,
         publicProxies:    ctx.cfg.app.publicArtifactBucketProxies,
         credentials:      ctx.cfg.taskcluster.credentials,
+        cloudMirrorHost:  ctx.cfg.app.cloudMirrorHost,
+        artifactRegion:   ctx.cfg.aws.region,
       },
       validator:        ctx.validator,
       raven:            ctx.raven,
