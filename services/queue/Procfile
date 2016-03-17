@@ -6,4 +6,6 @@ expireArtifacts:        babel-node src/main expire-artifacts
 expireTask:             babel-node src/main expire-tasks
 expireTaskGroups:       babel-node src/main expire-task-groups
 expireTaskGroupMembers: babel-node src/main expire-task-group-members
+expireTaskDependency    babel-node src/main expire-task-dependency
+expireTaskRequirement   babel-node src/main expire-task-requirement
 expireQueues:           babel-node src/main expire-queues
