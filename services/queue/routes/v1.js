@@ -421,7 +421,8 @@ api.declare({
     "routing-key: `<route>`, then when the AMQP message about the task is",
     "published, the message will be CC'ed with the routing-key: ",
     "`route.<route>`. This is useful if you want another component to listen",
-    "for completed tasks you have posted.",
+    "for completed tasks you have posted.  The caller must have scope",
+    "`queue:route:<route>` for each route.",
     "",
     "**Important** Any scopes the task requires are also required for creating",
     "the task. Please see the Request Payload (Task Definition) for details."
