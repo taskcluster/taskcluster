@@ -185,6 +185,9 @@ test:
     claim:
       pollingDelay:               250
       parallelism:                1
+    dependencyResolver:
+      pollingDelay:               250
+      parallelism:                1
     publicArtifactBucketProxies:
       'us-east-1':    'proxy-for-us-east-1'
   taskcluster:
