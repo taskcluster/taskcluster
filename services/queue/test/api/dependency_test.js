@@ -12,7 +12,8 @@ suite('task.dependencies', function() {
     provisionerId:    'no-provisioner',
     workerType:       'test-worker',
     created:          taskcluster.fromNowJSON(),
-    deadline:         taskcluster.fromNowJSON('3 days'),
+    deadline:         taskcluster.fromNowJSON('1 days'),
+    expires:          taskcluster.fromNowJSON('2 days'),
     payload:          {},
     metadata: {
       name:           "Unit testing task",
@@ -255,7 +256,6 @@ suite('task.dependencies', function() {
     );
   });
 
-
   test('taskA <- taskB (reportFailed)', async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
@@ -286,7 +286,6 @@ suite('task.dependencies', function() {
     let r3 = await helper.queue.status(taskIdB);
     assume(r3.status.state).equals('unscheduled');
   });
-
 
   test('taskA <- taskB (cancelTask)', async () => {
     let taskIdA = slugid.v4();
@@ -355,4 +354,62 @@ suite('task.dependencies', function() {
     debug('### Wait for taskB to be pending');
     await taskBPending;
   });
+
+  test('expiration of relationships', async () => {
+    let taskId = slugid.v4();
+    let task = _.defaults({
+      dependencies: [taskId],
+    }, _.cloneDeep(taskDef));
+
+    // make an old task that doesn't expire to ensure the expiration doesn't
+    // just drop the entire table..
+    let taskId2 = slugid.v4();
+    let task2 = _.defaults({
+      dependencies: [taskId2],
+      // test config is set to expire 4 days early so we set expiration long
+      expires:      taskcluster.fromNowJSON('30 days'),
+    }, _.cloneDeep(taskDef));
+
+    debug('### Create tasks');
+    let r1 = await helper.queue.createTask(taskId, task);
+    let r2 = await helper.queue.createTask(taskId2, task2);
+    assume(r1.status.state).equals('unscheduled');
+    assume(r2.status.state).equals('unscheduled');
+
+    debug('### Get new data wrappers');
+    let TaskDependency = await helper.load('TaskDependency', helper.loadOptions);
+    let TaskRequirement = await helper.load('TaskRequirement', helper.loadOptions);
+
+    debug('### Load relations to ensure they are present');
+    let r3 = await TaskDependency.load({taskId, dependentTaskId: taskId}, true);
+    let r4 = await TaskRequirement.load({taskId, requiredTaskId: taskId}, true);
+    assert(r3, 'Expected TaskDependency');
+    assert(r4, 'Expected TaskRequirement');
+
+    debug('### expire task-requirement');
+    await helper.expireTaskRequirement();
+    let r5 = await TaskDependency.load({taskId, dependentTaskId: taskId}, true);
+    let r6 = await TaskRequirement.load({taskId, requiredTaskId: taskId}, true);
+    assert(r5, 'Expected TaskDependency');
+    assert(!r6, 'Did not expect TaskRequirement');
+
+    debug('### expire task-dependency');
+    await helper.expireTaskDependency();
+    let r7 = await TaskDependency.load({taskId, dependentTaskId: taskId}, true);
+    let r8 = await TaskRequirement.load({taskId, requiredTaskId: taskId}, true);
+    assert(!r7, 'Did not expect TaskDependency');
+    assert(!r8, 'Did not expect TaskRequirement');
+
+    let r9 = await TaskDependency.load({
+      taskId:           taskId2,
+      dependentTaskId:  taskId2,
+    }, true);
+    let r10 = await TaskRequirement.load({
+      taskId:           taskId2,
+      requiredTaskId:   taskId2,
+    }, true);
+    assert(r9, 'Expected TaskDependency');
+    assert(r10, 'Expected TaskRequirement');
+  });
+
 });
