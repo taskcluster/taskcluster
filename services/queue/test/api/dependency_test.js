@@ -21,7 +21,7 @@ suite('task.dependencies', function() {
       source:         'https://github.com/taskcluster/taskcluster-queue'
     }
   };
-/*
+
   test('taskA <- taskB', async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
@@ -235,7 +235,6 @@ suite('task.dependencies', function() {
     let r3 = await helper.queue.status(taskIdB);
     assume(r3.status.state).equals('unscheduled');
   });
-//*/
 
   test('taskX <- taskA (missing dependency)', async () => {
     let taskIdA = slugid.v4();

@@ -439,6 +439,42 @@ let load = base.loader({
     }
   },
 
+  // Create the task-dependency expiration process (periodic job)
+  'expire-task-dependency': {
+    requires: ['cfg', 'TaskDependency', 'monitor', 'influx'],
+    setup: async ({cfg, TaskDependency, influx}) => {
+      var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
+      assert(!_.isNaN(now), "Can't have NaN as now");
+
+      // Expire task-dependency using delay
+      debug("Expiring task-dependency at: %s, from before %s", new Date(), now);
+      let count = await TaskDependency.expire(now);
+      debug("Expired %s task-dependency", count);
+
+      // Stop recording statistics and send any stats that we have
+      base.stats.stopProcessUsageReporting();
+      return influx.close();
+    }
+  },
+
+   // Create the task-requirement expiration process (periodic job)
+  'expire-task-requirement': {
+    requires: ['cfg', 'TaskRequirement', 'monitor', 'influx'],
+    setup: async ({cfg, TaskRequirement, influx}) => {
+      var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
+      assert(!_.isNaN(now), "Can't have NaN as now");
+
+      // Expire task-requirement using delay
+      debug("Expiring task-requirement at: %s, from before %s", new Date(), now);
+      let count = await TaskRequirement.expire(now);
+      debug("Expired %s task-requirement", count);
+
+      // Stop recording statistics and send any stats that we have
+      base.stats.stopProcessUsageReporting();
+      return influx.close();
+    }
+  },
+
   // Create the load-test process (run as one-off job)
   'load-test': {
     requires: ['cfg'],
