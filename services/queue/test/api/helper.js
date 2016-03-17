@@ -32,7 +32,7 @@ const profile = 'test';
 let loadOptions = {profile, process: 'test'};
 
 // Create and export helper object
-var helper = module.exports = {};
+var helper = module.exports = {load, loadOptions};
 
 // Load configuration
 var cfg = base.config({profile});
@@ -52,7 +52,17 @@ helper.expireTaskGroups = () => load('expire-task-groups', loadOptions);
 // Allow tests to run expire-task-group-members
 helper.expireTaskGroupMembers = () => {
   return load('expire-task-group-members', loadOptions);
-}
+};
+
+// Allow tests to run expire-task-requirement
+helper.expireTaskRequirement = () => {
+  return load('expire-task-requirement', loadOptions);
+};
+
+// Allow tests to run expire-task-dependency
+helper.expireTaskDependency = () => {
+  return load('expire-task-dependency', loadOptions);
+};
 
 // Allow tests to run expire-queues
 helper.expireQueues = () => load('expire-queues', loadOptions);
