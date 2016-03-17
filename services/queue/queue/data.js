@@ -476,6 +476,23 @@ var TaskRequirement = base.Entity.configure({
   },
 });
 
+/**
+ * Expire TaskRequirement entries.
+ *
+ * Returns a promise that all expired TaskRequirement entries have been deleted
+ */
+TaskRequirement.expire = async function(now) {
+  assert(now instanceof Date, "now must be given as option");
+  var count = 0;
+  await base.Entity.scan.call(this, {
+    expires:          base.Entity.op.lessThan(now)
+  }, {
+    limit:            250, // max number of concurrent delete operations
+    handler:          entry => { count++; return entry.remove(true); }
+  });
+  return count;
+};
+
 // Export TaskRequirement
 exports.TaskRequirement = TaskRequirement;
 
@@ -503,6 +520,23 @@ var TaskDependency = base.Entity.configure({
     expires:          base.Entity.types.Date,
   },
 });
+
+/**
+ * Expire TaskDependency entries.
+ *
+ * Returns a promise that all expired TaskDependency entries have been deleted
+ */
+TaskDependency.expire = async function(now) {
+  assert(now instanceof Date, "now must be given as option");
+  var count = 0;
+  await base.Entity.scan.call(this, {
+    expires:          base.Entity.op.lessThan(now)
+  }, {
+    limit:            250, // max number of concurrent delete operations
+    handler:          entry => { count++; return entry.remove(true); }
+  });
+  return count;
+};
 
 // Export TaskDependency
 exports.TaskDependency = TaskDependency
