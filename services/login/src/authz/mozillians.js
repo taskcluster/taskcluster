@@ -58,7 +58,6 @@ class MozilliansAuthorizer {
       })
     );
     groupLookups.forEach(g => {
-      debug("got mozillians result", g);
       if (g.results.length === 1) {
         let u = g.results[0];
         if (u.is_vouched && u.username === mozilliansUser) {
