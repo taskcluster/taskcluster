@@ -70,31 +70,36 @@ export default class ArtifactImage {
 
     let originalTarball = path.join(downloadDir, 'image.tar');
 
-    let newTarball;
     try {
-      await downloadArtifact(
-        this.queue,
-        this.stream,
-        this.taskId,
-        this.artifactPath,
-        originalTarball,
-        this.runtime.dockerConfig
+      await this.runtime.stats.timeGen('taskImageDownloadTime',
+        downloadArtifact(
+          this.queue,
+          this.stream,
+          this.taskId,
+          this.artifactPath,
+          originalTarball,
+          this.runtime.dockerConfig
+        )
       );
-
     } catch(e) {
       await removeDir(downloadDir);
       debug(`Error loading docker image. ${e.stack}`);
       throw new Error(`Error loading docker image. ${e.message}`);
     }
 
+    await this.runtime.stats.timeGen('taskImageLoadTime',
+        this.renameAndLoad(this.imageName, originalTarball)
+    );
+  }
+
+  async renameAndLoad(imageName, originalTarball) {
     this.stream.write(fmtLog('Loading docker image from downloaded archive.'));
     debug('Renaming image and creating new archive');
-    newTarball = await this.renameImageInTarball(this.imageName, originalTarball);
+    let newTarball = await this.renameImageInTarball(imageName, originalTarball);
 
     debug('Loading docker image');
     let readStream = fs.createReadStream(newTarball);
     await this.runtime.docker.loadImage(readStream);
-
 
     for (let i = 0; i <= 5; i++) {
       let pulledImage = await this.imageExists();

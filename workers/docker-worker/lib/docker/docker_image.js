@@ -2,9 +2,7 @@ import Debug from 'debug';
 import dockerUtils from 'dockerode-process/utils';
 import parseImage from 'docker-image-parser';
 import { scopeMatch } from 'taskcluster-base/utils';
-
 import sleep from '../util/sleep';
-import waitForEvent from '../wait_for_event';
 
 let debug = Debug('docker-worker:dockerImage');
 
@@ -87,10 +85,13 @@ export default class DockerImage {
       pullOptions.authconfig = this.credentials;
     }
 
-    return await this.pullImageStreamTo(this.runtime.docker,
-                                        dockerImageName,
-                                        this.stream,
-                                        pullOptions);
+    return await this.runtime.stats.timeGen(
+        'dockerImageDownloadTime',
+        this.pullImageStreamTo(this.runtime.docker,
+                               dockerImageName,
+                               this.stream,
+                               pullOptions)
+    );
   }
 
   async pullImageStreamTo(docker, image, stream, options={}) {

@@ -124,6 +124,34 @@ export const taskImage = new base.stats.Series({
   })
 });
 
+export const taskImageDownloadTime = new base.stats.Series({
+  name: 'task_image_download_time',
+  columns: Object.assign({}, BASE_WORKER_SCHEMA, {
+    duration: base.stats.types.Number
+  })
+});
+
+export const taskImageLoadTime = new base.stats.Series({
+  name: 'task_image_load_time',
+  columns: Object.assign({}, BASE_WORKER_SCHEMA, {
+    duration: base.stats.types.Number
+  })
+});
+
+export const dockerImageDownloadTime = new base.stats.Series({
+  name: 'docker_image_download_time',
+  columns: Object.assign({}, BASE_WORKER_SCHEMA, {
+    duration: base.stats.types.Number
+  })
+});
+
+export const imageLoadTimeTotal = new base.stats.Series({
+  name: 'image_load_time_total',
+  columns: Object.assign({}, BASE_WORKER_SCHEMA, {
+    duration: base.stats.types.Number
+  })
+});
+
 export const devicePhone = new base.stats.Series({
   name: 'task_device_phone',
   columns: Object.assign({}, BASE_WORKER_SCHEMA, {

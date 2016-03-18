@@ -17,6 +17,11 @@ const DOCKER_CONFIG = {
   randomizationFactor: 0.25
 };
 
+async function timeGen(series, fn) {
+  assert(typeof fn.then === 'function', 'Function does not appear to be a promise');
+  return await fn;
+}
+
 suite('Image Manager', () => {
   test('download docker image from registry', async () => {
     let image = 'gliderlabs/alpine:latest';
@@ -24,7 +29,10 @@ suite('Image Manager', () => {
     let runtime = {
       docker: docker,
       dockerConfig: DOCKER_CONFIG,
-      log: createLogger()
+      log: createLogger(),
+      stats: {
+        timeGen: timeGen
+      }
     };
 
     let im = new ImageManager(runtime);
@@ -51,7 +59,10 @@ suite('Image Manager', () => {
       docker: docker,
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
-      log: createLogger()
+      log: createLogger(),
+      stats: {
+        timeGen: timeGen
+      }
     };
 
     let im = new ImageManager(runtime);
@@ -81,7 +92,10 @@ suite('Image Manager', () => {
       docker: docker,
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
-      log: createLogger()
+      log: createLogger(),
+      stats: {
+        timeGen: timeGen
+      }
     };
 
     let im = new ImageManager(runtime);
@@ -109,7 +123,10 @@ suite('Image Manager', () => {
       docker: docker,
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
-      log: createLogger()
+      log: createLogger(),
+      stats: {
+        timeGen: timeGen
+      }
     };
 
     let im = new ImageManager(runtime);
@@ -142,7 +159,10 @@ suite('Image Manager', () => {
       docker: docker,
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
-      log: createLogger()
+      log: createLogger(),
+      stats: {
+        timeGen: timeGen
+      }
     };
 
     let im = new ImageManager(runtime);
@@ -169,7 +189,10 @@ suite('Image Manager', () => {
       docker: docker,
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
-      log: createLogger()
+      log: createLogger(),
+      stats: {
+        timeGen: timeGen
+      }
     };
 
     let im = new ImageManager(runtime);
@@ -189,7 +212,10 @@ suite('Image Manager', () => {
       docker: docker,
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
-      log: createLogger()
+      log: createLogger(),
+      stats: {
+        timeGen: timeGen
+      }
     };
 
     let im = new ImageManager(runtime);
@@ -215,7 +241,10 @@ suite('Image Manager', () => {
       docker: docker,
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
-      log: createLogger()
+      log: createLogger(),
+      stats: {
+        timeGen: timeGen
+      }
     };
 
     let im = new ImageManager(runtime);
@@ -240,7 +269,10 @@ suite('Image Manager', () => {
       docker: docker,
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
-      log: createLogger()
+      log: createLogger(),
+      stats: {
+        timeGen: timeGen
+      }
     };
 
     let im = new ImageManager(runtime);

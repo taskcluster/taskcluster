@@ -26,7 +26,13 @@ suite('garbage collection tests', function () {
       delayFactor: 15 * 1000,
       randomizationFactor: 0.25
     },
-    log: logger()
+    log: logger(),
+    stats: {
+      timeGen: async function (series, fn) {
+        assert(typeof fn.then === 'function', 'Function does not appear to be a promise');
+        return await fn;
+      }
+    }
   });
 
   function* getImageId(docker, imageName) {
@@ -375,7 +381,10 @@ suite('garbage collection tests', function () {
 
     var stats = {
       record: function(stat) { return; },
-      timeGen: async (stat, fn) => { await fn; }
+      timeGen: async (stat, fn) => {
+        assert(typeof fn.then === 'function', 'Function does not appear to be a promise');
+        await fn;
+      }
     };
 
     var cache = new VolumeCache({

@@ -78,7 +78,7 @@ export default class ImageManager {
         let exists = await imageHandler.imageExists();
 
         if (!exists) {
-          await imageHandler.download();
+          await this.runtime.stats.timeGen('imageLoadTimeTotal', imageHandler.download());
         }
 
         return imageHandler.imageId;
