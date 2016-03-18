@@ -25,7 +25,7 @@ class MozilliansAuthorizer {
   async authorize(user) {
     let email = user.identityId;
 
-    debug(`mozilians authorizing ${user.identity}`);
+    debug(`mozillians authorizing ${user.identity}`);
 
     // Find the user
     let userLookup = await this.mozillians.users({email});
@@ -58,6 +58,7 @@ class MozilliansAuthorizer {
       })
     );
     groupLookups.forEach(g => {
+      debug("got mozillians result", g);
       if (g.results.length === 1) {
         let u = g.results[0];
         if (u.is_vouched && u.username === mozilliansUser) {
