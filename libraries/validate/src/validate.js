@@ -14,12 +14,11 @@ let render = require('./render');
 let rootdir = require('app-root-dir');
 
 async function validator (options) {
-
   let schemas = [];
   let ajv = Ajv({useDefaults: 'clone', format: 'full', verbose: true, allErrors: true});
 
   let cfg = _.defaults(options, {
-    constants: rootdir.get() + '/schemas/contants.yml',
+    constants: rootdir.get() + '/schemas/constants.yml',
     folder: rootdir.get() + '/schemas',
     publish: process.env.NODE_ENV == 'production',
     baseUrl: 'http://schemas.taskcluster.net/',
@@ -44,10 +43,12 @@ async function validator (options) {
   walk.walkSync(path.resolve(cfg.folder), {listeners: {name: (root, name) => {
     let json = null;
     let data = fs.readFileSync(path.resolve(root, name), 'utf-8');
-    if (/\.ya?ml$/.test(name)) {
+    if (/\.ya?ml$/.test(name) && name !== 'constants.yml') {
       json = yaml.safeLoad(data);
-    } else {
+    } else if (/\.json$/.test(name)) {
       json = JSON.parse(data);
+    } else {
+      return;
     }
 
     let schema = render(json, cfg.constants);

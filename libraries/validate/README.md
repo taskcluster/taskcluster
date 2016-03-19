@@ -74,10 +74,10 @@ This section explores some of the options a bit further. In general, your schema
 stored in the top-level of your project in `<root of app>/schemas/` and the constants in a yaml file in
 that directory called `constants.yaml`. You may override these if desired.
 
-```
+```js
     // These constants can be subsituted into all of your schemas
     // and can be passed as a path to a yaml file or an object.
-    constants: '<root of app>/schemas/contants.yml' || { myDefault: 42 }
+    constants: '<root of app>/schemas/constants.yml' || { myDefault: 42 }
 
     // This folder should contain all of your schemas defined in either json or yaml.
     folder: '<root of app>/schemas'
