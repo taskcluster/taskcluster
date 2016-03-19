@@ -75,8 +75,23 @@ suite('Valid Schema Tests', () => {
 
   test('no opts', async (done) => {
     let v = await validator();
-    assert(v);
-    done();
+    done(assert(v));
+  });
+
+  test('using constants.yml', async (done) => {
+    try {
+      let v = await validator({
+        folder: 'test/schemas',
+        constants: 'test/schemas/constants.yml',
+        baseUrl: 'http://localhost:1203/',
+      });
+      let error = v(
+          {value: 43},
+          'http://localhost:1203/yml-test-schema#');
+      done(assert.equal(error, null));
+    } catch (err) {
+      done(err);
+    }
   });
 
   test('rejects poorly formed object', () => {
