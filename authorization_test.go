@@ -25,14 +25,16 @@ var (
 	}
 )
 
-func init() {
-	httpbackoff.BackOffSettings = &backoff.ExponentialBackOff{
-		InitialInterval:     1 * time.Millisecond,
-		RandomizationFactor: 0.2,
-		Multiplier:          1.2,
-		MaxInterval:         5 * time.Millisecond,
-		MaxElapsedTime:      20 * time.Millisecond,
-		Clock:               backoff.SystemClock,
+func newTestClient() *httpbackoff.Client {
+	return &httpbackoff.Client{
+		BackOffSettings: &backoff.ExponentialBackOff{
+			InitialInterval:     1 * time.Millisecond,
+			RandomizationFactor: 0.2,
+			Multiplier:          1.2,
+			MaxInterval:         5 * time.Millisecond,
+			MaxElapsedTime:      20 * time.Millisecond,
+			Clock:               backoff.SystemClock,
+		},
 	}
 }
 
@@ -63,7 +65,8 @@ func testWithPermCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 			"X-Taskcluster-Proxy-Perm-ClientId": permCredentials.ClientId,
 			// N.B. the http library does not distinguish between header entries
 			// that have an empty "" value, and non-existing entries
-			"X-Taskcluster-Proxy-Temp-Scopes": "",
+			"X-Taskcluster-Proxy-Temp-ClientId": "",
+			"X-Taskcluster-Proxy-Temp-Scopes":   "",
 		},
 	)
 }
@@ -77,12 +80,12 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 		"queue:route:tc-treeherder.mozilla-inbound.*",
 		"queue:route:tc-treeherder-stage.mozilla-inbound.*",
 		"queue:task-priority:high",
-		"test-worker:image:toastposter/pumpkin:0.5.6",
 	}
 
-	tempScopesJSON := `["auth:azure-table-access:fakeaccount/DuMmYtAbLe","queue:define-task:win-provisioner/win2008-worker","queue:get-artifact:private/build/sources.xml","queue:route:tc-treeherder.mozilla-inbound.*","queue:route:tc-treeherder-stage.mozilla-inbound.*","queue:task-priority:high","test-worker:image:toastposter/pumpkin:0.5.6"]`
+	tempScopesJSON := `["auth:azure-table-access:fakeaccount/DuMmYtAbLe","queue:define-task:win-provisioner/win2008-worker","queue:get-artifact:private/build/sources.xml","queue:route:tc-treeherder.mozilla-inbound.*","queue:route:tc-treeherder-stage.mozilla-inbound.*","queue:task-priority:high"]`
 
-	tempCredentials, err := permCredentials.CreateTemporaryCredentials(1*time.Hour, tempScopes...)
+	tempCredsClientId := "garbage/" + slugid.Nice()
+	tempCredentials, err := permCredentials.CreateNamedTemporaryCredentials(tempCredsClientId, 1*time.Hour, tempScopes...)
 	if err != nil {
 		t.Fatalf("Could not generate temp credentials")
 	}
@@ -96,8 +99,9 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 		t,
 		res,
 		map[string]string{
-			"X-Taskcluster-Proxy-Version":     version,
-			"X-Taskcluster-Proxy-Temp-Scopes": tempScopesJSON,
+			"X-Taskcluster-Proxy-Version":       version,
+			"X-Taskcluster-Proxy-Temp-ClientId": tempCredsClientId,
+			"X-Taskcluster-Proxy-Temp-Scopes":   tempScopesJSON,
 			// N.B. the http library does not distinguish between header entries
 			// that have an empty "" value, and non-existing entries
 			"X-Taskcluster-Proxy-Perm-ClientId": "",
@@ -169,7 +173,7 @@ func TestBewit(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Bewit URL returned is invalid: %q", bewitUrl)
 		}
-		resp, _, err := httpbackoff.Get(bewitUrl)
+		resp, _, err := newTestClient().Get(bewitUrl)
 		if err != nil {
 			t.Fatalf("Exception thrown:\n%s", err)
 		}
@@ -268,7 +272,6 @@ func TestAPICallWithPayload(t *testing.T) {
   "deadline": "`+tcclient.Time(deadline).String()+`",
   "expires": "`+tcclient.Time(expires).String()+`",
   "scopes": [
-    "test-worker:image:toastposter/pumpkin:0.5.6"
   ],
   "payload": {
     "features": {
