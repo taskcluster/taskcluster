@@ -85,8 +85,7 @@ export default async function(queue, stream, taskId, artifactPath, destination, 
 
       stream.write(fmtLog('Downloaded artifact successfully.'));
       stream.write(fmtLog(
-        `Downloaded ${(expectedSize / 1024 / 1024).toFixed(3)} mb ` +
-        `in ${((Date.now() - startTime) / 1000).toFixed(2)} seconds.`
+        `Downloaded ${(expectedSize / 1024 / 1024).toFixed(3)} mb`
       ));
       return;
     } catch(e) {

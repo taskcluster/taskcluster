@@ -136,7 +136,7 @@ export default class ArtifactImage {
 
       this.stream.write(fmtLog(
         `Image '${this.artifactPath}' from task '${this.taskId}' ` +
-        `downloaded.  Using image ID ${this.imageId}.`
+        `loaded.  Using image ID ${this.imageId}.`
       ));
 
       return imageDetails;
