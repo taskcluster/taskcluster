@@ -18,7 +18,7 @@
     "raven": "^0.10.0",
     "superagent": "^1.2.0",
     "superagent-promise": "^0.2.0",
-    "taskcluster-base": "^0.10.7",
+    "taskcluster-base": "^0.12.1",
     "taskcluster-client": "^0.22.6",
     "taskcluster-lib-loader": "^0.1.1",
     "taskcluster-lib-testing": "^0.10.2"
