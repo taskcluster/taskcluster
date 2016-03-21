@@ -59,6 +59,9 @@ go tool cover -func=coverage.report
 # See https://bugzilla.mozilla.org/show_bug.cgi?id=1221239
 grep -q PANIC codegenerator/model-data.txt && exit 68
 
+go get github.com/golang/lint/golint
+golint codegenerator/...; golint integrationtest/...; golint tcclient/...
+
 # finally check that generated files have been committed, and that formatting
 # code resulted in no changes...
 git status
