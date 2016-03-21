@@ -7,7 +7,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/taskcluster/camelcase"
+	"github.com/fatih/camelcase"
 )
 
 // See https://golang.org/ref/spec#Keywords
@@ -139,7 +139,7 @@ func StarOut(text string) string {
 // runes are discarded)
 //
 // 3) Split words further into sub words, by decomposing camel case words as
-// per https://github.com/taskcluster/camelcase#usage-and-examples
+// per https://github.com/fatih/camelcase#usage-and-examples
 //
 // 4) Designate the case of all subwords of all words to be uppercase, with the
 // exception of the first subword of the first word, which should be lowercase
