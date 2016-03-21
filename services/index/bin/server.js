@@ -41,11 +41,8 @@ var load = loader({
   validator: {
     requires: ['cfg'],
     setup: ({cfg}) => base.validator({
-      folder:           path.join(__dirname, '..', 'schemas'),
-      constants:        require('../schemas/constants'),
-      publish:          cfg.app.publishMetaData,
-      schemaPrefix:     'index/v1/',
-      aws:              cfg.aws
+      prefix: 'index/v1/',
+      aws:    cfg.aws
     })
   },
 
