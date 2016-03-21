@@ -18,7 +18,8 @@ export function createLogger(details) {
 
 export function fmtLog() {
   let args = Array.prototype.slice.call(arguments);
-  return '[taskcluster] ' + util.format.apply(this, args) + '\r\n';
+  let ts = new Date().toISOString().replace('T', ' ');
+  return '[taskcluster ' + ts + '] ' + util.format.apply(this, args) + '\r\n';
 }
 
 export function fmtErrorLog() {

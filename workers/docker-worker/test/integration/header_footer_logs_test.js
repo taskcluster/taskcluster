@@ -17,7 +17,7 @@ suite('Header/Footer logs', function() {
       }
     });
 
-    var tcLogs = result.log.match(/\[taskcluster\](.*)/g);
+    var tcLogs = result.log.match(/\[taskcluster (.*)\](.*)/g);
     var start = tcLogs[0];
     var end = tcLogs[tcLogs.length-1];
 
