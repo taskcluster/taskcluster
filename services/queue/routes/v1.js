@@ -1350,7 +1350,7 @@ api.declare({
   if (task.deadline.getTime() <= Date.now()) {
     return res.reportError(
       "RequestConflict",
-      "Task {{taskId}} Can't be cancelled past it's deadline of {{deadline}}.",
+      "Task {{taskId}} Can't be reclaimed past it's deadline of {{deadline}}.",
       {
         taskId,
         deadline: task.deadline.toJSON()
