@@ -162,3 +162,8 @@ artifact bucket:
   ]
 }
 ```
+
+Deployment Testing
+------------------
+To test a deployment create a simple task with the [task-creator](https://tools.taskcluster.net/task-creator/).
+Monitoring logs and sentry is also a good idea.
