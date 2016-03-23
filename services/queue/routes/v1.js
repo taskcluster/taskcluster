@@ -1,5 +1,5 @@
 let Promise     = require('promise');
-let debug       = require('debug')('routes:v1');
+let debug       = require('debug')('app');
 let slugid      = require('slugid');
 let assert      = require('assert');
 let _           = require('lodash');
@@ -211,7 +211,7 @@ api.declare({
   output:     'list-task-group-response.json#',
   title:      "List Task Group",
   description: [
-    "List taskIds of all tasks sharing the same `taskGroupId`.",
+    "List tasks sharing the same `taskGroupId`.",
     "",
     "As a task-group may contain an unbounded number of tasks, this end-point",
     "may return a `continuationToken`. To continue listing tasks you must",
@@ -233,17 +233,49 @@ api.declare({
   let continuation  = req.query.continuationToken || null;
   let limit         = parseInt(req.query.limit || 1000);
 
-  let data = await this.TaskGroupMember.query({
-    taskGroupId,
-    expires: base.Entity.op.greaterThanOrEqual(new Date()),
-  }, {continuation, limit});
+  // Find taskGroup and list of members
+  let [
+    taskGroup,
+    members,
+  ] = await Promise.all([
+    this.TaskGroup.load({taskGroupId}, true),
+    this.TaskGroupMember.query({
+      taskGroupId,
+      expires: base.Entity.op.greaterThanOrEqual(new Date()),
+    }, {continuation, limit}),
+  ]);
 
-  let members = data.entries.map(member => member.taskId);
+  // If no taskGroup was found
+  if (!taskGroup) {
+    return res.reportError(
+      'ResourceNotFound',
+      "No task-group with taskGroupId: {{taskGroupId}}",
+      {taskGroupId}
+    );
+  }
+
+  // Load tasks
+  let tasks = (await Promise.all(members.entries.map(member => {
+    return this.Task.load({taskId: member.taskId}, true);
+  }))).filter(task => {
+    // Remove tasks that don't exist, this happens on creation errors
+    // Remove tasks with wrong schedulerId, this shouldn't happen unless of some
+    // creation errors (probably something that involves dependency errors).
+    return task != null && task.schedulerId === taskGroup.schedulerId;
+  });
 
   // Build result
-  let result = {taskGroupId, members};
-  if (data.continuation) {
-    result.continuationToken = data.continuation;
+  let result = {
+    taskGroupId,
+    tasks: await Promise.all(tasks.map(async (task) => {
+      return {
+        status: task.status(),
+        task:   await task.definition(),
+      };
+    })),
+  };
+  if (members.continuation) {
+    result.continuationToken = members.continuation;
   }
 
   return res.reply(result);
