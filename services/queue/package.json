@@ -35,12 +35,12 @@
     "xml2js":               "^0.4.6",
     "request-ip":           "^1.1.4",
     "netmask":              "^1.0.5",
-    "fast-azure-storage":   "^0.3.0"
-  },
-  "devDependencies": {
-    "mocha":                "^2.2.1",
+    "fast-azure-storage":   "^0.3.0",
     "xmlbuilder":           "^2.6.2",
     "assume":               "^1.2.4"
+  },
+  "devDependencies": {
+    "mocha":                "^2.2.1"
   },
   "engines": {
     "node":                 "^4.2.2",
