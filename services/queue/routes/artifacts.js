@@ -6,9 +6,6 @@ var Promise = require('promise');
 var base    = require('taskcluster-base');
 var urllib  = require('url');
 
-// Maximum number of artifacts to list
-const MAX_ARTIFACTS_LISTING = 10 * 1000;
-
 /** Post artifact */
 api.declare({
   method:     'post',
@@ -571,44 +568,69 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/task/:taskId/runs/:runId/artifacts',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
   name:       'listArtifacts',
   stability:  base.API.stability.experimental,
   output:     'list-artifacts-response.json#',
   title:      "Get Artifacts from Run",
   description: [
-    "Returns a list of artifacts and associated meta-data for a given run."
+    "Returns a list of artifacts and associated meta-data for a given run.",
+    "",
+    "As a task may have many artifacts paging may be necessary. If this",
+    "end-point returns a `continuationToken`, you should call the end-point",
+    "again with the `continuationToken` as the query-string option:",
+    "`continuationToken`.",
+    "",
+    "By default this end-point will list up-to 1000 artifacts in a single page",
+    "you may limit this with the query-string parameter `limit`.",
   ].join('\n')
 }, async function(req ,res) {
-  var taskId = req.params.taskId;
-  var runId  = parseInt(req.params.runId);
+  let taskId        = req.params.taskId;
+  let runId         = parseInt(req.params.runId);
+  let continuation  = req.query.continuationToken || null;
+  let limit         = parseInt(req.query.limit || 1000);
   // TODO: Add support querying using prefix
 
-  // Warning: this doesn't employ continuation token and may take a while if
-  // someone uploads more than MAX_ARTIFACTS_LISTING artifacts. We'll cut it
-  // short at MAX_ARTIFACTS_LISTING tasks and return an error
-  var artifacts = [];
-  await this.Artifact.query({
-    taskId: taskId,
-    runId:  runId
-  }, {
-    handler:    (artifact) => {
-      assert(artifacts.length <= MAX_ARTIFACTS_LISTING,
-             "Won't list more than MAX_ARTIFACTS_LISTING artifacts");
-      artifacts.push(artifact.json());
-    }
-  });
+  let [
+    task,
+    artifacts,
+  ] = await Promise.all([
+    this.Task.load({taskId}, true),
+    this.Artifact.query({taskId, runId}, {continuation, limit})
+  ]);
 
-  // Refuse to list artifacts if there is more than MAX_ARTIFACTS_LISTING
-  if (artifacts.length > MAX_ARTIFACTS_LISTING) {
-    return res.status(412).json({
-      message:    "Won't list artifacts for task with " +
-                  MAX_ARTIFACTS_LISTING + " artifacts!"
+  // Give a 404 if not found
+  if (!task) {
+    return res.reportError(
+      'ResourceNotFound',
+      "No task with taskId: {{taskId}} found",
+      {taskId}
+    );
+  }
+
+  // Check that we have the run
+  if (!task.runs[runId]) {
+    return res.reportError(
+      'ResourceNotFound',
+      "Task with taskId: {{taskId}} run with runId: {{runId}}\n" +
+      "task status: {{status}}", {
+      taskId, runId,
+      status: task.status(),
     });
   }
 
-  return res.reply({
-    artifacts:      artifacts
-  });
+
+  let result = {
+    artifacts: artifacts.entries.map(artifact => artifact.json()),
+  };
+  if (artifacts.continuation) {
+    result.continuationToken = artifacts.continuation;
+  }
+
+  return res.reply(result);
 });
 
 
@@ -617,61 +639,65 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId/artifacts',
   name:       'listLatestArtifacts',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
   stability:  base.API.stability.experimental,
   output:     'list-artifacts-response.json#',
   title:      "Get Artifacts from Latest Run",
   description: [
     "Returns a list of artifacts and associated meta-data for the latest run",
-    "from the given task."
+    "from the given task.",
+    "",
+    "As a task may have many artifacts paging may be necessary. If this",
+    "end-point returns a `continuationToken`, you should call the end-point",
+    "again with the `continuationToken` as the query-string option:",
+    "`continuationToken`.",
+    "",
+    "By default this end-point will list up-to 1000 artifacts in a single page",
+    "you may limit this with the query-string parameter `limit`.",
   ].join('\n')
 }, async function(req ,res) {
-  var taskId = req.params.taskId;
+  let taskId        = req.params.taskId;
+  let continuation  = req.query.continuationToken || null;
+  let limit         = parseInt(req.query.limit || 1000);
   // TODO: Add support querying using prefix
 
   // Load task status structure from table
-  var task = await this.Task.load({taskId: taskId}, true);
+  let task = await this.Task.load({taskId}, true);
 
   // Give a 404 if not found
   if (!task) {
-    return res.status(404).json({
-      message:  "Task not found"
-    });
+    return res.reportError(
+      'ResourceNotFound',
+      "No task with taskId: {{taskId}} found",
+      {taskId}
+    );
   }
 
   // Check that we have runs
   if (task.runs.length === 0) {
-    return res.status(404).json({
-      message:  "Task doesn't have any runs"
-    });
+    return res.reportError(
+      'ResourceNotFound',
+      "Task with taskId: {{taskId}} does not have any runs",
+      {taskId}
+    );
   }
 
   // Find highest runId
-  var runId = task.runs.length - 1;
+  let runId = task.runs.length - 1;
 
-  // Warning: this doesn't employ continuation token and may take a while if
-  // someone uploads more than MAX_ARTIFACTS_LISTING artifacts. We'll cut it
-  // short at MAX_ARTIFACTS_LISTING tasks and return an error
-  var artifacts = [];
-  await this.Artifact.query({
-    taskId: taskId,
-    runId:  runId
-  }, {
-    handler:    (artifact) => {
-      assert(artifacts.length <= MAX_ARTIFACTS_LISTING,
-             "Won't list more than MAX_ARTIFACTS_LISTING artifacts");
-      artifacts.push(artifact.json());
-    }
-  });
+  let artifacts = await this.Artifact.query({
+    taskId, runId,
+  }, {continuation, limit});
 
-  // Refuse to list artifacts if there is more than MAX_ARTIFACTS_LISTING
-  if (artifacts.length > MAX_ARTIFACTS_LISTING) {
-    return res.status(412).json({
-      message:    "Won't list artifacts for task with " +
-                  MAX_ARTIFACTS_LISTING + " artifacts!"
-    });
+  let result = {
+    artifacts: artifacts.entries.map(artifact => artifact.json()),
+  };
+  if (artifacts.continuation) {
+    result.continuationToken = artifacts.continuation;
   }
 
-  return res.reply({
-    artifacts:      artifacts
-  });
+  return res.reply(result);
 });
