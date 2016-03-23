@@ -36,9 +36,11 @@ class MozilliansAuthorizer {
       mozilliansUser = u.username;
     } else {
       // If there is no associated mozillians user at all, do nothing.
+      debug(`no mozillian user found with email ${email} - is the record public?`);
       return;
     }
 
+    debug(`found mozillians username ${mozilliansUser}; vouched: ${vouched}`);
     user.addRole('mozillians-user:' + mozilliansUser);
 
     // unvouched users just get the "mozillians-unvouched" role, and no
