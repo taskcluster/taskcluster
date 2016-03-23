@@ -96,6 +96,7 @@ suite('TaskGroup features', () => {
     });
   });
 
+  let members = (result) => result.tasks.map(t => t.status.taskId);
   test("list task-group", async () => {
     let taskIdA = slugid.v4();
     let taskGroupId = slugid.v4();
@@ -113,9 +114,9 @@ suite('TaskGroup features', () => {
 
     let result = await helper.queue.listTaskGroup(taskGroupId);
     assert(!result.continuationToken);
-    assert(_.includes(result.members, taskIdA));
-    assert(_.includes(result.members, taskIdB));
-    assert(result.members.length === 2);
+    assert(_.includes(members(result), taskIdA));
+    assert(_.includes(members(result), taskIdB));
+    assert(members(result).length === 2);
     assert(result.taskGroupId === taskGroupId);
   });
 
@@ -138,28 +139,28 @@ suite('TaskGroup features', () => {
       limit: 1,
     });
     assert(result.continuationToken);
-    assert(_.includes(result.members, taskIdA) ||
-           _.includes(result.members, taskIdB));
+    assert(_.includes(members(result), taskIdA) ||
+           _.includes(members(result), taskIdB));
     assert(result.taskGroupId === taskGroupId);
-    assert(result.members.length === 1);
+    assert(members(result).length === 1);
 
     result = await helper.queue.listTaskGroup(taskGroupId, {
       limit: 1,
       continuationToken: result.continuationToken,
     });
     assert(!result.continuationToken);
-    assert(_.includes(result.members, taskIdA) ||
-           _.includes(result.members, taskIdB));
+    assert(_.includes(members(result), taskIdA) ||
+           _.includes(members(result), taskIdB));
     assert(result.taskGroupId === taskGroupId);
-    assert(result.members.length === 1);
+    assert(members(result).length === 1);
   });
 
-  test("list task-group -- that is empty / doesn't exist", async () => {
+  test("list task-group -- doesn't exist", async () => {
     let taskGroupId = slugid.v4();
-    let result = await helper.queue.listTaskGroup(taskGroupId);
-    assert(!result.continuationToken);
-    assert(result.members.length === 0);
-    assert(result.taskGroupId === taskGroupId);
+    await helper.queue.listTaskGroup(taskGroupId).then(
+      ()  => assert(false, "Expected and error"),
+      err => assert(err.code === 'ResourceNotFound', "err != ResourceNotFound"),
+    );
   });
 
   test("task-group expiration", async () => {
@@ -219,8 +220,8 @@ suite('TaskGroup features', () => {
 
     let result = await helper.queue.listTaskGroup(taskGroupId);
     assert(!result.continuationToken);
-    assert(result.members.length === 1);
-    assert(_.includes(result.members, taskIdA));
+    assert(members(result).length === 1);
+    assert(_.includes(members(result), taskIdA));
     assert(result.taskGroupId === taskGroupId);
 
     debug("### Expire task-group memberships");
@@ -228,7 +229,7 @@ suite('TaskGroup features', () => {
 
     result = await helper.queue.listTaskGroup(taskGroupId);
     assert(!result.continuationToken);
-    assert(result.members.length === 0);
+    assert(members(result).length === 0);
     assert(result.taskGroupId === taskGroupId);
   });
 
@@ -244,8 +245,8 @@ suite('TaskGroup features', () => {
 
     let result = await helper.queue.listTaskGroup(taskGroupId);
     assert(!result.continuationToken);
-    assert(result.members.length === 1);
-    assert(_.includes(result.members, taskIdA));
+    assert(members(result).length === 1);
+    assert(_.includes(members(result), taskIdA));
     assert(result.taskGroupId === taskGroupId);
 
     debug("### Expire task-group memberships");
@@ -253,8 +254,8 @@ suite('TaskGroup features', () => {
 
     result = await helper.queue.listTaskGroup(taskGroupId);
     assert(!result.continuationToken);
-    assert(result.members.length === 1);
-    assert(_.includes(result.members, taskIdA));
+    assert(members(result).length === 1);
+    assert(_.includes(members(result), taskIdA));
     assert(result.taskGroupId === taskGroupId);
   });
 });
