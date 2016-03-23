@@ -10,17 +10,23 @@ properties:
       Identifier for the task-group being listed.
     type:           string
     pattern:        {$const: slugid-pattern}
-  members:
+  tasks:
     type:           array
-    title:          "Members of the Task-Group"
+    title:          "Tasks from the Task-Group"
     description: |
-      List of `taskId` for tasks in this task-group.
+      List of tasks in this task-group.
     items:
-      title:          "Task Identifier"
+      type:         object
+      title:        "Task definition and status"
       description: |
-        `TaskId` for a task in the task-group being listed.
-      type:           string
-      pattern:        {$const: slugid-pattern}
+        Task Definition and task status structure.
+      properties:
+        task:   {$ref: "http://schemas.taskcluster.net/queue/v1/task.json#"}
+        status: {$ref: "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
+      additionalProperties: false
+      required:
+        - task
+        - status
   continuationToken:
     type:             string
     title:            "Continuation Token"
@@ -32,6 +38,7 @@ properties:
       return additional results, but it can. Thus, you can only be sure to have
       all the results if you've called `listTaskGroup` with `continuationToken`
       until you got a result without a `continuationToken`.
+additionalProperties: false
 required:
  - taskGroupId
- - members
+ - tasks
