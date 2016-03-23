@@ -1,5 +1,5 @@
 suite('Artifacts', function() {
-  var debug         = require('debug')('test:api:claim');
+  var debug         = require('debug')('test:artifacts');
   var assert        = require('assert');
   var slugid        = require('slugid');
   var _             = require('lodash');
@@ -762,5 +762,125 @@ suite('Artifacts', function() {
 
     // Ensure content type was not updated
     assume(artifact.contentType).equals('application/json');
+  });
+
+  test("listArtifacts (missing task)", async () => {
+    await helper.queue.listArtifacts(slugid.v4(), 0).then(
+      ()  => assert(false, "Expected error"),
+      err => assume(err.code).equals('ResourceNotFound'),
+    );
+  });
+
+  test("listLatestArtifacts (missing task)", async () => {
+    await helper.queue.listLatestArtifacts(slugid.v4(), 0).then(
+      ()  => assert(false, "Expected error"),
+      err => assume(err.code).equals('ResourceNotFound'),
+    );
+  });
+
+  test("listArtifacts, listLatestArtifacts (missing run)", async () => {
+    debug("### Creating task");
+    let taskId = slugid.v4();
+    await helper.queue.defineTask(taskId, taskDef);
+
+    debug("### listArtifacts (runId: 0, is missing)");
+    await helper.queue.listArtifacts(taskId, 0).then(
+      ()  => assert(false, "Expected error"),
+      err => assume(err.code).equals('ResourceNotFound'),
+    );
+
+    debug("### listLatestArtifacts (task has no runs)");
+    await helper.queue.listLatestArtifacts(taskId).then(
+      ()  => assert(false, "Expected error"),
+      err => assume(err.code).equals('ResourceNotFound'),
+    );
+
+    debug("### scheduleTask");
+    await helper.queue.scheduleTask(taskId);
+
+    debug("### listArtifacts (runId: 0, is present)");
+    await helper.queue.listArtifacts(taskId, 0);
+
+    debug("### listLatestArtifacts (works)");
+    await helper.queue.listLatestArtifacts(taskId);
+
+    debug("### listArtifacts (runId: 1, is missing)");
+    await helper.queue.listArtifacts(taskId, 1).then(
+      ()  => assert(false, "Expected error"),
+      err => assume(err.code).equals('ResourceNotFound'),
+    );
+  });
+
+  test("listArtifacts, listLatestArtifacts (continuationToken)", async () => {
+    debug("### Creating task");
+    let taskId = slugid.v4();
+    await helper.queue.createTask(taskId, taskDef);
+
+    debug("### Claiming task");
+    // First runId is always 0, so we should be able to claim it here
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker'
+    });
+
+    debug("### Create two artifacts (don't upload anything to S3)");
+    await Promise.all([
+      helper.queue.createArtifact(taskId, 0, 'public/s3-A.json', {
+        storageType:  's3',
+        expires:      taskcluster.fromNowJSON('1 day'),
+        contentType:  'application/json'
+      }),
+      helper.queue.createArtifact(taskId, 0, 'public/s3-B.json', {
+        storageType:  's3',
+        expires:      taskcluster.fromNowJSON('1 day'),
+        contentType:  'application/json'
+      })
+    ]);
+
+    debug("### reportCompleted");
+    await helper.queue.reportCompleted(taskId, 0);
+
+    debug("### listArtifacts");
+    let r1 = await helper.queue.listArtifacts(taskId, 0);
+    assume(r1.artifacts.length).equals(2);
+    assume(r1.artifacts[0].contentType).equals('application/json');
+    assume(r1.artifacts[1].contentType).equals('application/json');
+
+    debug("### listArtifacts, limit = 1");
+    let r2 = await helper.queue.listArtifacts(taskId, 0, {limit: 1});
+    assume(r2.artifacts.length).equals(1);
+    assume(r2.artifacts[0].contentType).equals('application/json');
+    assert(r2.continuationToken, "missing continuationToken");
+
+    debug("### listArtifacts, w. continuationToken");
+    let r3 = await helper.queue.listArtifacts(taskId, 0, {
+      continuationToken: r2.continuationToken,
+    });
+    assume(r3.artifacts.length).equals(1);
+    assume(r3.artifacts[0].contentType).equals('application/json');
+    assert(!r3.continuationToken, "unexpected continuationToken");
+    assume(r3.artifacts[0].name).not.equals(r2.artifacts[0].name);
+
+
+    debug("### listLatestArtifacts");
+    let r4 = await helper.queue.listLatestArtifacts(taskId);
+    assume(r4.artifacts.length).equals(2);
+    assume(r4.artifacts[0].contentType).equals('application/json');
+    assume(r4.artifacts[1].contentType).equals('application/json');
+
+    debug("### listLatestArtifacts, limit = 1");
+    let r5 = await helper.queue.listLatestArtifacts(taskId, {limit: 1});
+    assume(r5.artifacts.length).equals(1);
+    assume(r5.artifacts[0].contentType).equals('application/json');
+    assert(r5.continuationToken, "missing continuationToken");
+
+    debug("### listLatestArtifacts, w. continuationToken");
+    let r6 = await helper.queue.listLatestArtifacts(taskId, {
+      continuationToken: r5.continuationToken,
+    });
+    assume(r6.artifacts.length).equals(1);
+    assume(r6.artifacts[0].contentType).equals('application/json');
+    assert(!r6.continuationToken, "unexpected continuationToken");
+    assume(r6.artifacts[0].name).not.equals(r5.artifacts[0].name);
   });
 });
