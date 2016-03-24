@@ -4,9 +4,9 @@ var path        = require('path');
 var _           = require('lodash');
 var base        = require('taskcluster-base');
 var mocha       = require('mocha');
-var v1          = require('../routes/api/v1');
+var api          = require('../lib/api');
 var taskcluster = require('taskcluster-client');
-var load        = require('../bin/server');
+var load        = require('../lib/main');
 var testing     = require('taskcluster-lib-testing');
 
 // Load configuration
@@ -70,7 +70,7 @@ mocha.before(async () => {
   // Create client for working with API
   let baseUrl = 'http://localhost:' + server.address().port + '/v1';
   helper.baseUrl = baseUrl;
-  var reference = v1.reference({baseUrl: baseUrl});
+  var reference = api.reference({baseUrl: baseUrl});
   helper.Index = taskcluster.createClient(reference);
   helper.index = new helper.Index({
     baseUrl:          baseUrl,
