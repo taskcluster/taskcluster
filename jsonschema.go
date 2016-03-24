@@ -49,9 +49,10 @@ type (
 		Type                 *string               `json:"type"`
 
 		// non-json fields used for sorting/tracking
-		TypeName     string
-		SourceURL    string
-		RefSubSchema *JsonSubSchema
+		TypeName     string         `json:"-"`
+		SourceURL    string         `json:"-"`
+		RefSubSchema *JsonSubSchema `json:"-"`
+		IsRequired   bool           `json:"-"`
 	}
 
 	Items []JsonSubSchema
@@ -225,8 +226,12 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 				// recursive call to build structs inside structs
 				var subComment, subMember, subType string
 				subComment, subMember, subType, extraPackages, rawMessageTypes = s.Properties[j].typeDefinition(false, extraPackages, rawMessageTypes)
+				jsonStructTagOptions := ""
+				if !s.Properties[j].IsRequired {
+					jsonStructTagOptions = ",omitempty"
+				}
 				// struct member name and type, as part of struct definition
-				typ += fmt.Sprintf("\t%v%v %v `json:\"%v\"`\n", subComment, subMember, subType, j)
+				typ += fmt.Sprintf("\t%v%v %v `json:\"%v%v\"`\n", subComment, subMember, subType, j, jsonStructTagOptions)
 			}
 			typ += "}"
 		} else {
@@ -397,6 +402,14 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) {
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
 	subSchema.RefSubSchema = job.cacheJsonSchema(subSchema.Ref)
+	// Find and tag subschema properties that are in required list
+	for _, req := range subSchema.Required {
+		if subSubSchema, ok := subSchema.Properties.Properties[req]; ok {
+			subSubSchema.IsRequired = true
+		} else {
+			panic(fmt.Sprintf("Schema %v has a required property %v but this property definition cannot be found", subSchema.SourceURL, req))
+		}
+	}
 }
 
 func (subSchema *JsonSubSchema) setSourceURL(url string) {
