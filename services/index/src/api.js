@@ -3,7 +3,7 @@ var _           = require('lodash');
 var debug       = require('debug')('routes:api:v1');
 var assert      = require('assert');
 var base        = require('taskcluster-base');
-var helpers     = require('../../index/helpers');
+var helpers     = require('./helpers');
 
 
 /**
