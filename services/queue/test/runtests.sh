@@ -2,27 +2,27 @@
 # USAGE: Run this file using `npm test` (must run from repository root)
 
 
-mocha                                 \
-  test/validate_test.js               \
-  test/queue/bucket_test.js           \
-  test/queue/blobstore_test.js        \
-  test/queue/queueservice_test.js     \
-  test/api/ping_test.js               \
-  test/api/createtask_test.js         \
-  test/api/minimumtask_test.js        \
-  test/api/gettask_test.js            \
-  test/api/claimtask_test.js          \
-  test/api/resolvetask_test.js        \
-  test/api/polltask_test.js           \
-  test/api/priority_test.js           \
-  test/api/querytasks_test.js         \
-  test/api/taskgroup_test.js          \
-  test/api/canceltask_test.js         \
-  test/api/reruntask_test.js          \
-  test/api/artifact_test.js           \
-  test/api/retry_test.js              \
-  test/api/deadline_test.js           \
-  test/api/expiretask_test.js         \
-  test/api/expirequeues_test.js       \
-  test/api/dependency_test.js         \
+mocha                             \
+  .test/validate_test.js          \
+  .test/bucket_test.js            \
+  .test/blobstore_test.js         \
+  .test/queueservice_test.js      \
+  .test/ping_test.js              \
+  .test/createtask_test.js        \
+  .test/minimumtask_test.js       \
+  .test/gettask_test.js           \
+  .test/claimtask_test.js         \
+  .test/resolvetask_test.js       \
+  .test/polltask_test.js          \
+  .test/priority_test.js          \
+  .test/querytasks_test.js        \
+  .test/taskgroup_test.js         \
+  .test/canceltask_test.js        \
+  .test/reruntask_test.js         \
+  .test/artifact_test.js          \
+  .test/retry_test.js             \
+  .test/deadline_test.js          \
+  .test/expiretask_test.js        \
+  .test/expirequeues_test.js      \
+  .test/dependency_test.js        \
   ;
