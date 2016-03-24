@@ -1,13 +1,14 @@
 var debug       = require('debug')('auth:v1');
 var assert      = require('assert');
 var base        = require('taskcluster-base');
+var API         = require('taskcluster-lib-api');
 var slugid      = require('slugid');
 var Promise     = require('promise');
 var _           = require('lodash');
 var signaturevalidator = require('./signaturevalidator');
 
 /** API end-point for version v1/ */
-var api = new base.API({
+var api = new API({
   title:      "Authentication API",
   description: [
     "Authentication related API end-points for TaskCluster and related",
@@ -775,7 +776,7 @@ api.declare({
     "and scopes as seen by the API method.",
   ].join('\n')
 }, async function(req, res) {
-  base.API.remoteAuthentication({
+  API.remoteAuthentication({
     signatureValidator: signaturevalidator.createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
@@ -831,7 +832,7 @@ api.declare({
     "required scopes via query arguments.",
   ].join('\n')
 }, async function(req, res) {
-  base.API.remoteAuthentication({
+  API.remoteAuthentication({
     signatureValidator: signaturevalidator.createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
