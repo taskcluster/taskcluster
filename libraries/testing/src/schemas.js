@@ -59,7 +59,7 @@ var schemas = function(options) {
       // Test errors
       if(testCase.success) {
         if (error !== null) {
-          debug("Errors: %j", errors);
+          debug("Errors: %j", error);
         }
         assert(error === null,
                "Schema doesn't match test for " + testCase.path);
