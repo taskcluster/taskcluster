@@ -150,11 +150,17 @@ type (
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
 		Deadline tcclient.Time `json:"deadline"`
 
+		// List of dependent tasks. These must either be _completed_ or _resolved_
+		// before this task is scheduled. See `requires` for semantics.
+		//
+		// Default:    []
+		Dependencies []string `json:"dependencies,omitempty"`
+
 		// Task expiration, time at which task definition and status is deleted.
 		// Notice that all artifacts for the must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may subject to change).
-		Expires tcclient.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires,omitempty"`
 
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
@@ -167,7 +173,7 @@ type (
 		// task definitions should not take-up multiple MiBs.
 		//
 		// Default:    map[]
-		Extra json.RawMessage `json:"extra"`
+		Extra json.RawMessage `json:"extra,omitempty"`
 
 		// Required task metadata
 		Metadata struct {
@@ -213,7 +219,7 @@ type (
 		//   * "normal"
 		//
 		// Default:    "normal"
-		Priority string `json:"priority"`
+		Priority string `json:"priority,omitempty"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
@@ -223,6 +229,20 @@ type (
 		// Max length: 22
 		ProvisionerID string `json:"provisionerId"`
 
+		// The tasks relation to its dependencies. This property specifies the
+		// semantics of the `task.dependencies` property.
+		// If `all-completed` is given the task will be scheduled when all
+		// dependencies are resolved _completed_ (successful resolution).
+		// If `all-resolved` is given the task will be scheduled when all dependencies
+		// have been resolved, regardless of what their resolution is.
+		//
+		// Possible values:
+		//   * "all-completed"
+		//   * "all-resolved"
+		//
+		// Default:    "all-completed"
+		Requires string `json:"requires,omitempty"`
+
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
 		// these events are to be expected.
@@ -230,14 +250,14 @@ type (
 		// Default:    5
 		// Mininum:    0
 		// Maximum:    49
-		Retries int `json:"retries"`
+		Retries int `json:"retries,omitempty"`
 
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		// **Task submitter required scopes** `queue:route:<route>` for
 		// each route given.
 		//
 		// Default:    []
-		Routes []string `json:"routes"`
+		Routes []string `json:"routes,omitempty"`
 
 		// Identifier for the scheduler that _defined_ this task, this can be an
 		// identifier for a user or a service like the `"task-graph-scheduler"`.
@@ -250,13 +270,13 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		SchedulerID string `json:"schedulerId"`
+		SchedulerID string `json:"schedulerId,omitempty"`
 
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
 		//
 		// Default:    []
-		Scopes []string `json:"scopes"`
+		Scopes []string `json:"scopes,omitempty"`
 
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
 		// to attach informal meta-data to a task. Use this for informal tags that
@@ -265,7 +285,7 @@ type (
 		// `purpose: 'build' || 'test'` is a good example.
 		//
 		// Default:    map[]
-		Tags json.RawMessage `json:"tags"`
+		Tags json.RawMessage `json:"tags,omitempty"`
 
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
@@ -273,7 +293,7 @@ type (
 		// property isn't specified.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskGroupID string `json:"taskGroupId"`
+		TaskGroupID string `json:"taskGroupId,omitempty"`
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//
@@ -317,18 +337,18 @@ type (
 		// routes prefixed by `'route.'`.
 		//
 		// Default:    []
-		Routes []string `json:"routes"`
+		Routes []string `json:"routes,omitempty"`
 
 		// List of scopes (or scope-patterns) that tasks of the task-graph is
 		// authorized to use.
 		//
 		// Default:    []
-		Scopes []string `json:"scopes"`
+		Scopes []string `json:"scopes,omitempty"`
 
 		// Arbitrary key-value tags (only strings limited to 4k)
 		//
 		// Default:    map[]
-		Tags json.RawMessage `json:"tags"`
+		Tags json.RawMessage `json:"tags,omitempty"`
 
 		// List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.
 		Tasks []struct {
@@ -336,14 +356,14 @@ type (
 			// List of required `taskId`s
 			//
 			// Default:    []
-			Requires []string `json:"requires"`
+			Requires []string `json:"requires,omitempty"`
 
 			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
 			//
 			// Default:    0
 			// Mininum:    0
 			// Maximum:    100
-			Reruns int `json:"reruns"`
+			Reruns int `json:"reruns,omitempty"`
 
 			Task TaskDefinitionRequest `json:"task"`
 
@@ -363,14 +383,14 @@ type (
 			// List of required `taskId`s
 			//
 			// Default:    []
-			Requires []string `json:"requires"`
+			Requires []string `json:"requires,omitempty"`
 
 			// Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.
 			//
 			// Default:    0
 			// Mininum:    0
 			// Maximum:    100
-			Reruns int `json:"reruns"`
+			Reruns int `json:"reruns,omitempty"`
 
 			Task TaskDefinitionRequest `json:"task"`
 

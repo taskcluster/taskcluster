@@ -39,7 +39,7 @@ type (
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "3 months"
-		Expires string `json:"expires"`
+		Expires string `json:"expires,omitempty"`
 
 		Metadata struct {
 
@@ -51,7 +51,7 @@ type (
 			// Whether to email the owner on an error creating the task.
 			//
 			// Default:    true
-			EmailOnError bool `json:"emailOnError"`
+			EmailOnError bool `json:"emailOnError,omitempty"`
 
 			// Human readable name of the hook
 			//
@@ -69,7 +69,7 @@ type (
 		// specified by one or more patterns.
 		//
 		// Default:    []
-		Schedule []string `json:"schedule"`
+		Schedule []string `json:"schedule,omitempty"`
 
 		Task TaskTemplate `json:"task"`
 	}
@@ -109,7 +109,7 @@ type (
 			// Whether to email the owner on an error creating the task.
 			//
 			// Default:    true
-			EmailOnError bool `json:"emailOnError"`
+			EmailOnError bool `json:"emailOnError,omitempty"`
 
 			// Human readable name of the hook
 			//
@@ -148,7 +148,7 @@ type (
 		// The next time this hook's task is scheduled to be created. This property
 		// is only present if there is a scheduled next time. Some hooks don't have
 		// any schedules.
-		NextScheduledDate tcclient.Time `json:"nextScheduledDate"`
+		NextScheduledDate tcclient.Time `json:"nextScheduledDate,omitempty"`
 
 		Schedule Schedule `json:"schedule"`
 	}
@@ -163,7 +163,7 @@ type (
 		// The next time this hook's task is scheduled to be created. This property
 		// is only present if there is a scheduled next time. Some hooks don't have
 		// any schedules.
-		NextScheduledDate tcclient.Time `json:"nextScheduledDate"`
+		NextScheduledDate tcclient.Time `json:"nextScheduledDate,omitempty"`
 	}
 
 	// Information about no firing of the hook (e.g., a new hook)
@@ -212,7 +212,7 @@ type (
 		// task definitions should not take-up multiple MiBs.
 		//
 		// Default:    map[]
-		Extra json.RawMessage `json:"extra"`
+		Extra json.RawMessage `json:"extra,omitempty"`
 
 		// Required task metadata
 		Metadata struct {
@@ -258,7 +258,7 @@ type (
 		//   * "normal"
 		//
 		// Default:    "normal"
-		Priority string `json:"priority"`
+		Priority string `json:"priority,omitempty"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
@@ -275,14 +275,14 @@ type (
 		// Default:    5
 		// Mininum:    0
 		// Maximum:    49
-		Retries int `json:"retries"`
+		Retries int `json:"retries,omitempty"`
 
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		// **Task submitter required scopes** `queue:route:<route>` for
 		// each route given.
 		//
 		// Default:    []
-		Routes []string `json:"routes"`
+		Routes []string `json:"routes,omitempty"`
 
 		// Identifier for the scheduler that _defined_ this task, this can be an
 		// identifier for a user or a service like the `"task-graph-scheduler"`.
@@ -295,13 +295,13 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		SchedulerID string `json:"schedulerId"`
+		SchedulerID string `json:"schedulerId,omitempty"`
 
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
 		//
 		// Default:    []
-		Scopes []string `json:"scopes"`
+		Scopes []string `json:"scopes,omitempty"`
 
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
 		// to attach informal meta-data to a task. Use this for informal tags that
@@ -310,7 +310,7 @@ type (
 		// `purpose: 'build' || 'test'` is a good example.
 		//
 		// Default:    map[]
-		Tags json.RawMessage `json:"tags"`
+		Tags json.RawMessage `json:"tags,omitempty"`
 
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
@@ -318,7 +318,7 @@ type (
 		// property isn't specified.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskGroupID string `json:"taskGroupId"`
+		TaskGroupID string `json:"taskGroupId,omitempty"`
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//

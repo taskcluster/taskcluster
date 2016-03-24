@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 3 Mar 2016 at 16:15:00 UTC. The code was generated
+// Thu, 24 Mar 2016 at 09:41:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -99,7 +99,7 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *tcclient.Call
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
-// List taskIds of all tasks sharing the same `taskGroupId`.
+// List tasks sharing the same `taskGroupId`.
 //
 // As a task-group may contain an unbounded number of tasks, this end-point
 // may return a `continuationToken`. To continue listing tasks you must
@@ -159,6 +159,8 @@ func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) 
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
 
+// Stability: *** DEPRECATED ***
+//
 // Define a task without scheduling it. This API end-point allows you to
 // upload a task definition without having scheduled. The task won't be
 // reported as pending until it is scheduled, see the scheduleTask API
@@ -512,10 +514,21 @@ func (myQueue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration 
 //
 // Returns a list of artifacts and associated meta-data for a given run.
 //
+// As a task may have many artifacts paging may be necessary. If this
+// end-point returns a `continuationToken`, you should call the end-point
+// again with the `continuationToken` as the query-string option:
+// `continuationToken`.
+//
+// By default this end-point will list up-to 1000 artifacts in a single page
+// you may limit this with the query-string parameter `limit`.
+//
 // See http://docs.taskcluster.net/queue/api-docs/#listArtifacts
-func (myQueue *Queue) ListArtifacts(taskId, runId string) (*ListArtifactsResponse, *tcclient.CallSummary, error) {
+func (myQueue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string) (*ListArtifactsResponse, *tcclient.CallSummary, error) {
+	v := url.Values{}
+	v.Add("continuationToken", continuationToken)
+	v.Add("limit", limit)
 	cd := tcclient.ConnectionData(*myQueue)
-	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", new(ListArtifactsResponse), nil)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", new(ListArtifactsResponse), v)
 	return responseObject.(*ListArtifactsResponse), callSummary, err
 }
 
@@ -524,10 +537,21 @@ func (myQueue *Queue) ListArtifacts(taskId, runId string) (*ListArtifactsRespons
 // Returns a list of artifacts and associated meta-data for the latest run
 // from the given task.
 //
+// As a task may have many artifacts paging may be necessary. If this
+// end-point returns a `continuationToken`, you should call the end-point
+// again with the `continuationToken` as the query-string option:
+// `continuationToken`.
+//
+// By default this end-point will list up-to 1000 artifacts in a single page
+// you may limit this with the query-string parameter `limit`.
+//
 // See http://docs.taskcluster.net/queue/api-docs/#listLatestArtifacts
-func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse, *tcclient.CallSummary, error) {
+func (myQueue *Queue) ListLatestArtifacts(taskId, continuationToken, limit string) (*ListArtifactsResponse, *tcclient.CallSummary, error) {
+	v := url.Values{}
+	v.Add("continuationToken", continuationToken)
+	v.Add("limit", limit)
 	cd := tcclient.ConnectionData(*myQueue)
-	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse), nil)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse), v)
 	return responseObject.(*ListArtifactsResponse), callSummary, err
 }
 

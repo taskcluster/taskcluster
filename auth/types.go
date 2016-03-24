@@ -57,7 +57,7 @@ type (
 		// only present if a hash is available. You are not required to validate
 		// this hash, but if you do, please check `scheme` to ensure that it's
 		// on a scheme you support.
-		Hash json.RawMessage `json:"hash"`
+		Hash json.RawMessage `json:"hash,omitempty"`
 
 		// Authentication scheme the client used. Generally, you don't need to
 		// read this property unless `hash` is provided and you want to validate
@@ -105,7 +105,7 @@ type (
 
 		// List of scopes the client has.  Scopes must be composed of
 		// printable ASCII characters and spaces.
-		Scopes []string `json:"scopes"`
+		Scopes []string `json:"scopes,omitempty"`
 	}
 
 	// All details about a client including the `accessToken`
@@ -255,7 +255,7 @@ type (
 
 		// Authorization header, **must** only be specified if request being
 		// authenticated has a `Authorization` header.
-		Authorization string `json:"authorization"`
+		Authorization string `json:"authorization,omitempty"`
 
 		// Host for which the request came in, this is typically the `Host` header
 		// excluding the port if any.
@@ -319,7 +319,7 @@ type (
 	SetOfScopes struct {
 
 		// List of scopes.  Scopes must be composed of printable ASCII characters and spaces.
-		Scopes []string `json:"scopes"`
+		Scopes []string `json:"scopes,omitempty"`
 	}
 
 	// Details on how the test request should be authenticated.
@@ -328,12 +328,12 @@ type (
 		// List of scopes that should be client used should be given.
 		//
 		// Default:    []
-		ClientScopes []string `json:"clientScopes"`
+		ClientScopes []string `json:"clientScopes,omitempty"`
 
 		// List of scopes the request should require.
 		//
 		// Default:    []
-		RequiredScopes []string `json:"requiredScopes"`
+		RequiredScopes []string `json:"requiredScopes,omitempty"`
 	}
 
 	// Details on how the test request was authenticated.
@@ -342,12 +342,12 @@ type (
 		// ClientId from the request as it will be logged
 		//
 		// Syntax:     ^[A-Za-z0-9@/:._-]+$
-		ClientID string `json:"clientId"`
+		ClientID string `json:"clientId,omitempty"`
 
 		// List of scopes the request was authorized.
 		//
 		// Default:    []
-		Scopes []string `json:"scopes"`
+		Scopes []string `json:"scopes,omitempty"`
 	}
 )
 

@@ -1,4 +1,4 @@
-Generated: 1457021704
+Generated: 1458812467
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4007,7 +4007,7 @@ Entry 2     =
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#'
     Entry Title       = 'List Task Group'
-    Entry Description = 'List taskIds of all tasks sharing the same `taskGroupId`.
+    Entry Description = 'List tasks sharing the same `taskGroupId`.
 
 As a task-group may contain an unbounded number of tasks, this end-point
 may return a `continuationToken`. To continue listing tasks you must
@@ -4063,7 +4063,7 @@ Entry 4     =
     Entry Args        = '[taskId]'
     Entry Query        = '[]'
     Entry Name        = 'defineTask'
-    Entry Stability   = 'stable'
+    Entry Stability   = 'deprecated'
     Entry Scopes      = '[[queue:define-task:<provisionerId>/<workerType>] [queue:create-task:<provisionerId>/<workerType>] [queue:define-task:<provisionerId>/<workerType> queue:task-group-id:<schedulerId>/<taskGroupId>]]'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
@@ -4375,20 +4375,28 @@ Entry 17    =
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts'
     Entry Args        = '[taskId runId]'
-    Entry Query        = '[]'
+    Entry Query        = '[continuationToken limit]'
     Entry Name        = 'listArtifacts'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#'
     Entry Title       = 'Get Artifacts from Run'
-    Entry Description = 'Returns a list of artifacts and associated meta-data for a given run.'
+    Entry Description = 'Returns a list of artifacts and associated meta-data for a given run.
+
+As a task may have many artifacts paging may be necessary. If this
+end-point returns a `continuationToken`, you should call the end-point
+again with the `continuationToken` as the query-string option:
+`continuationToken`.
+
+By default this end-point will list up-to 1000 artifacts in a single page
+you may limit this with the query-string parameter `limit`.'
 Entry 18    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/artifacts'
     Entry Args        = '[taskId]'
-    Entry Query        = '[]'
+    Entry Query        = '[continuationToken limit]'
     Entry Name        = 'listLatestArtifacts'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
@@ -4396,7 +4404,15 @@ Entry 18    =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#'
     Entry Title       = 'Get Artifacts from Latest Run'
     Entry Description = 'Returns a list of artifacts and associated meta-data for the latest run
-from the given task.'
+from the given task.
+
+As a task may have many artifacts paging may be necessary. If this
+end-point returns a `continuationToken`, you should call the end-point
+again with the `continuationToken` as the query-string option:
+`continuationToken`.
+
+By default this end-point will list up-to 1000 artifacts in a single page
+you may limit this with the query-string parameter `limit`.'
 Entry 19    =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -4454,6 +4470,24 @@ Properties
     Type                   = 'string'
     TypeName               = 'Deadline'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/deadline'
+  Property 'dependencies' =
+    Default                = '[]'
+    Description            = 'List of dependent tasks. These must either be _completed_ or _resolved_
+    before this task is scheduled. See `requires` for semantics.
+    '
+    Items
+      Description            = 'The `taskId` of a task that must be resolved before this task is
+      scheduled.
+      '
+      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+      Title                  = 'Task Dependency'
+      Type                   = 'string'
+      TypeName               = ''
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/dependencies/items'
+    Title                  = 'Task Dependencies'
+    Type                   = 'array'
+    TypeName               = 'Dependencies'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/dependencies'
   Property 'expires' =
     Description            = 'Task expiration, time at which task definition and status is deleted.
     Notice that all artifacts for the must have an expiration that is no
@@ -4562,6 +4596,20 @@ Properties
     Type                   = 'string'
     TypeName               = 'ProvisionerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/provisionerId'
+  Property 'requires' =
+    Default                = 'all-completed'
+    Description            = 'The tasks relation to its dependencies. This property specifies the
+    semantics of the `task.dependencies` property.
+    If `all-completed` is given the task will be scheduled when all
+    dependencies are resolved _completed_ (successful resolution).
+    If `all-resolved` is given the task will be scheduled when all dependencies
+    have been resolved, regardless of what their resolution is.
+    '
+    Enum                   = '[all-completed all-resolved]'
+    Title                  = 'Dependency Requirement Semantics'
+    Type                   = 'string'
+    TypeName               = 'Requires'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/requires'
   Property 'retries' =
     Default                = '5'
     Description            = 'Number of times to retry the task in case of infrastructure issues.
@@ -4742,6 +4790,19 @@ Properties
     Type                   = 'array'
     TypeName               = 'Artifacts'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts'
+  Property 'continuationToken' =
+    Description            = 'Opaque `continuationToken` to be given as query-string option to get the
+    next set of artifacts.
+    This property is only present if another request is necessary to fetch all
+    results. In practice the next request with a `continuationToken` may not
+    return additional results, but it can. Thus, you can only be sure to have
+    all the results if you've called with `continuationToken` until you get a
+    result without a `continuationToken`.
+    '
+    Title                  = 'Continuation Token'
+    Type                   = 'string'
+    TypeName               = 'ContinuationToken'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/continuationToken'
 Required               = '[artifacts]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Artifacts Response'
@@ -4757,33 +4818,18 @@ Description            = 'Response from a `listTaskGroup` request.
 ID                     = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#'
 Properties
   Property 'continuationToken' =
-    Description            = 'Opaque `continuationToken` to be given as query-string option if all the
-    tasks in the task-group wasn't included in this result.
+    Description            = 'Opaque `continuationToken` to be given as query-string option to get the
+    next set of tasks in the task-group.
     This property is only present if another request is necessary to fetch all
     results. In practice the next request with a `continuationToken` may not
     return additional results, but it can. Thus, you can only be sure to have
     all the results if you've called `listTaskGroup` with `continuationToken`
-    until you got a result without a `continuationToken`.
+    until you get a result without a `continuationToken`.
     '
     Title                  = 'Continuation Token'
     Type                   = 'string'
     TypeName               = 'ContinuationToken'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/continuationToken'
-  Property 'members' =
-    Description            = 'List of `taskId` for tasks in this task-group.
-    '
-    Items
-      Description            = '`TaskId` for a task in the task-group being listed.
-      '
-      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
-      Title                  = 'Task Identifier'
-      Type                   = 'string'
-      TypeName               = ''
-      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/members/items'
-    Title                  = 'Members of the Task-Group'
-    Type                   = 'array'
-    TypeName               = 'Members'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/members'
   Property 'taskGroupId' =
     Description            = 'Identifier for the task-group being listed.
     '
@@ -4792,7 +4838,32 @@ Properties
     Type                   = 'string'
     TypeName               = 'TaskGroupID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/taskGroupId'
-Required               = '[taskGroupId members]'
+  Property 'tasks' =
+    Description            = 'List of tasks in this task-group.
+    '
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Task Definition and task status structure.
+      '
+      Properties
+        Property 'status' =
+          Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
+          TypeName               = 'Status'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/tasks/items/properties/status'
+        Property 'task' =
+          Ref                    = 'http://schemas.taskcluster.net/queue/v1/task.json#'
+          TypeName               = 'Task'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/tasks/items/properties/task'
+      Required               = '[task status]'
+      Title                  = 'Task definition and status'
+      Type                   = 'object'
+      TypeName               = ''
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/tasks/items'
+    Title                  = 'Tasks from the Task-Group'
+    Type                   = 'array'
+    TypeName               = 'Tasks'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/tasks'
+Required               = '[taskGroupId tasks]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Task-Group Response'
 Type                   = 'object'
@@ -6096,6 +6167,23 @@ Properties
     Type                   = 'string'
     TypeName               = 'Deadline'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#/properties/deadline'
+  Property 'dependencies' =
+    Description            = 'List of dependent tasks. These must either be _completed_ or _resolved_
+    before this task is scheduled. See `requires` for semantics.
+    '
+    Items
+      Description            = 'The `taskId` of a task that must be resolved before this task is
+      scheduled.
+      '
+      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+      Title                  = 'Task Dependency'
+      Type                   = 'string'
+      TypeName               = ''
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#/properties/dependencies/items'
+    Title                  = 'Task Dependencies'
+    Type                   = 'array'
+    TypeName               = 'Dependencies'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#/properties/dependencies'
   Property 'expires' =
     Description            = 'Task expiration, time at which task definition and status is deleted.
     Notice that all artifacts for the must have an expiration that is no
@@ -6202,6 +6290,19 @@ Properties
     Type                   = 'string'
     TypeName               = 'ProvisionerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#/properties/provisionerId'
+  Property 'requires' =
+    Description            = 'The tasks relation to its dependencies. This property specifies the
+    semantics of the `task.dependencies` property.
+    If `all-completed` is given the task will be scheduled when all
+    dependencies are resolved _completed_ (successful resolution).
+    If `all-resolved` is given the task will be scheduled when all dependencies
+    have been resolved, regardless of what their resolution is.
+    '
+    Enum                   = '[all-completed all-resolved]'
+    Title                  = 'Dependency Requirement Semantics'
+    Type                   = 'string'
+    TypeName               = 'Requires'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#/properties/requires'
   Property 'retries' =
     Description            = 'Number of times to retry the task in case of infrastructure issues.
     An _infrastructure issue_ is a worker node that crashes or is shutdown,
@@ -6304,7 +6405,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'WorkerType'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#/properties/workerType'
-Required               = '[provisionerId workerType schedulerId taskGroupId routes priority retries created deadline scopes payload metadata tags extra]'
+Required               = '[provisionerId workerType schedulerId taskGroupId dependencies requires routes priority retries created deadline scopes payload metadata tags extra]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Definition Response'
 Type                   = 'object'
@@ -7710,6 +7811,24 @@ Properties
     Type                   = 'string'
     TypeName               = 'Deadline'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/deadline'
+  Property 'dependencies' =
+    Default                = '[]'
+    Description            = 'List of dependent tasks. These must either be _completed_ or _resolved_
+    before this task is scheduled. See `requires` for semantics.
+    '
+    Items
+      Description            = 'The `taskId` of a task that must be resolved before this task is
+      scheduled.
+      '
+      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+      Title                  = 'Task Dependency'
+      Type                   = 'string'
+      TypeName               = ''
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/dependencies/items'
+    Title                  = 'Task Dependencies'
+    Type                   = 'array'
+    TypeName               = 'Dependencies'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/dependencies'
   Property 'expires' =
     Description            = 'Task expiration, time at which task definition and status is deleted.
     Notice that all artifacts for the must have an expiration that is no
@@ -7818,6 +7937,20 @@ Properties
     Type                   = 'string'
     TypeName               = 'ProvisionerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/provisionerId'
+  Property 'requires' =
+    Default                = 'all-completed'
+    Description            = 'The tasks relation to its dependencies. This property specifies the
+    semantics of the `task.dependencies` property.
+    If `all-completed` is given the task will be scheduled when all
+    dependencies are resolved _completed_ (successful resolution).
+    If `all-resolved` is given the task will be scheduled when all dependencies
+    have been resolved, regardless of what their resolution is.
+    '
+    Enum                   = '[all-completed all-resolved]'
+    Title                  = 'Dependency Requirement Semantics'
+    Type                   = 'string'
+    TypeName               = 'Requires'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/requires'
   Property 'retries' =
     Default                = '5'
     Description            = 'Number of times to retry the task in case of infrastructure issues.

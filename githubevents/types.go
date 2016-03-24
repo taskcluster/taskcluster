@@ -24,7 +24,7 @@ type (
 		Action json.RawMessage `json:"action"`
 
 		// Metadata describing the pull request.
-		Details json.RawMessage `json:"details"`
+		Details json.RawMessage `json:"details,omitempty"`
 
 		// The GitHub `organization` which had an event.
 		//
@@ -51,7 +51,7 @@ type (
 	GitHubPushMessage struct {
 
 		// Metadata describing the push.
-		Details json.RawMessage `json:"details"`
+		Details json.RawMessage `json:"details,omitempty"`
 
 		// The GitHub `organization` which had an event.
 		//

@@ -66,7 +66,7 @@ type (
 		// A continuation token previously returned in a response to this list
 		// request. This property is optional and should not be provided for first
 		// requests.
-		ContinuationToken string `json:"continuationToken"`
+		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// Maximum number of results per page. If there are more results than this
 		// a continuation token will be return.
@@ -74,7 +74,7 @@ type (
 		// Default:    1000
 		// Mininum:    1
 		// Maximum:    1000
-		Limit int `json:"limit"`
+		Limit int `json:"limit,omitempty"`
 	}
 
 	// Response from a request to list namespaces within a given namespace.
@@ -83,7 +83,7 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string `json:"continuationToken"`
+		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// List of namespaces.
 		Namespaces []struct {
@@ -109,7 +109,7 @@ type (
 		// A continuation token previously returned in a response to this list
 		// request. This property is optional and should not be provided for first
 		// requests.
-		ContinuationToken string `json:"continuationToken"`
+		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// Maximum number of results per page. If there are more results than this
 		// a continuation token will be return.
@@ -117,7 +117,7 @@ type (
 		// Default:    1000
 		// Mininum:    1
 		// Maximum:    1000
-		Limit int `json:"limit"`
+		Limit int `json:"limit,omitempty"`
 	}
 
 	// Representation of an indexed task.
@@ -126,7 +126,7 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string `json:"continuationToken"`
+		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// List of tasks.
 		Tasks []struct {

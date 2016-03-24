@@ -123,7 +123,7 @@ type (
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		RunID int `json:"runId"`
+		RunID int `json:"runId,omitempty"`
 
 		Status TaskStatusStructure `json:"status"`
 
@@ -139,7 +139,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		WorkerGroup string `json:"workerGroup"`
+		WorkerGroup string `json:"workerGroup,omitempty"`
 
 		// Identifier for the last worker that failed to report, causing the task
 		// to fail. Not provided, if `deadline` was exceeded before a run
@@ -148,7 +148,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
-		WorkerID string `json:"workerId"`
+		WorkerID string `json:"workerId,omitempty"`
 	}
 
 	// Message reporting that a task failed to complete successfully.
@@ -288,12 +288,12 @@ type (
 			//   * "malformed-payload"
 			//   * "resource-unavailable"
 			//   * "internal-error"
-			ReasonResolved string `json:"reasonResolved"`
+			ReasonResolved string `json:"reasonResolved,omitempty"`
 
 			// Date-time at which this run was resolved, ie. when the run changed
 			// state from `running` to either `completed`, `failed` or `exception`.
 			// This property is only present after the run as been resolved.
-			Resolved tcclient.Time `json:"resolved"`
+			Resolved tcclient.Time `json:"resolved,omitempty"`
 
 			// Id of this task run, `run-id`s always starts from `0`
 			//
@@ -308,7 +308,7 @@ type (
 			// Date-time at which this run was claimed, ie. when the run changed
 			// state from `pending` to `running`. This property is only present
 			// after the run has been claimed.
-			Started tcclient.Time `json:"started"`
+			Started tcclient.Time `json:"started,omitempty"`
 
 			// State of this run
 			//
@@ -323,7 +323,7 @@ type (
 			// Time at which the run expires and is resolved as `failed`, if the
 			// run isn't reclaimed. Note, only present after the run has been
 			// claimed.
-			TakenUntil tcclient.Time `json:"takenUntil"`
+			TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
 
 			// Identifier for group that worker who executes this run is a part of,
 			// this identifier is mainly used for efficient routing.
@@ -332,7 +332,7 @@ type (
 			// Syntax:     ^([a-zA-Z0-9-_]*)$
 			// Min length: 1
 			// Max length: 22
-			WorkerGroup string `json:"workerGroup"`
+			WorkerGroup string `json:"workerGroup,omitempty"`
 
 			// Identifier for worker evaluating this run within given
 			// `workerGroup`. Note, this property is only available after the run
@@ -341,7 +341,7 @@ type (
 			// Syntax:     ^([a-zA-Z0-9-_]*)$
 			// Min length: 1
 			// Max length: 22
-			WorkerID string `json:"workerId"`
+			WorkerID string `json:"workerId,omitempty"`
 		} `json:"runs"`
 
 		// Identifier for the scheduler that _defined_ this task.

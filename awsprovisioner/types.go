@@ -15,11 +15,11 @@ type (
 
 		// True if this worker type is allowed on demand instances.  Currently
 		// ignored
-		CanUseOndemand bool `json:"canUseOndemand"`
+		CanUseOndemand bool `json:"canUseOndemand,omitempty"`
 
 		// True if this worker type is allowed spot instances.  Currently ignored
 		// as all instances are Spot
-		CanUseSpot bool `json:"canUseSpot"`
+		CanUseSpot bool `json:"canUseSpot,omitempty"`
 
 		InstanceTypes []struct {
 
@@ -65,7 +65,7 @@ type (
 		// Minimum number of capacity units to be provisioned.  A capacity unit
 		// is an abstract unit of capacity, where one capacity unit is roughly
 		// one task which should be taken off the queue
-		MinCapacity float64 `json:"minCapacity"`
+		MinCapacity float64 `json:"minCapacity,omitempty"`
 
 		// Minimum price to pay for an instance.  A Price is considered to be the
 		// Amazon Spot Price multiplied by the utility factor of the InstantType
@@ -84,7 +84,7 @@ type (
 			} `json:"launchSpec"`
 
 			// The Amazon AWS Region being configured.  Example: us-west-1
-			Region string `json:"region"`
+			Region string `json:"region,omitempty"`
 
 			// Scopes which should be included for this Region.  Scopes must be
 			// composed of printable ASCII characters and spaces.
@@ -155,10 +155,10 @@ type (
 			Certificate string `json:"certificate"`
 
 			ClientID string `json:"clientId"`
-		} `json:"credentials"`
+		} `json:"credentials,omitempty"`
 
 		// Free-form object which contains secrets from the worker type definition
-		Data json.RawMessage `json:"data"`
+		Data json.RawMessage `json:"data,omitempty"`
 	}
 
 	// A worker launchSpecification and required metadata
@@ -166,11 +166,11 @@ type (
 
 		// True if this worker type is allowed on demand instances.  Currently
 		// ignored
-		CanUseOndemand bool `json:"canUseOndemand"`
+		CanUseOndemand bool `json:"canUseOndemand,omitempty"`
 
 		// True if this worker type is allowed spot instances.  Currently ignored
 		// as all instances are Spot
-		CanUseSpot bool `json:"canUseSpot"`
+		CanUseSpot bool `json:"canUseSpot,omitempty"`
 
 		InstanceTypes []struct {
 
