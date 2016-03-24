@@ -65,15 +65,15 @@ var testCases = [
 ];
 
 var path        = require('path');
-var base        = require('taskcluster-base');
+var testing     = require('taskcluster-lib-testing');
 
 suite('validate', function() {
-  // Run test cases using schemas testing utility from taskcluster-base
-  base.testing.schemas({
+  // Run test cases using schemas testing utility from taskcluster-lib-testing
+  testing.schemas({
     validator: {
-      folder:         path.join(__dirname, '..', 'schemas'),
-      constants:      require('../schemas/constants'),
-      schemaPrefix:   'auth/v1/'
+      folder:     path.join(__dirname, '..', 'schemas'),
+      constants:  path.join(__dirname, '..', 'schemas', 'constants.yml'),
+      prefix:     'auth/v1/'
     },
     basePath:       path.join(__dirname, 'schemas'),
     schemaPrefix:   'http://schemas.taskcluster.net/',
