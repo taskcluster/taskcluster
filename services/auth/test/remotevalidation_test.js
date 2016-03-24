@@ -154,14 +154,11 @@ suite("Remote Signature Validation", function() {
 
   test("auth with non-root user", async () => {
     var clientId = slugid.v4();
-    await helper.auth.createRole('client-id:' + clientId, {
-      description: "test role",
-      scopes:      ['myapi:*'],
-    });
     var result = await helper.auth.createClient(clientId, {
       expires:      new Date(3000, 1, 1), // far out in the future
       description:  "Client used by automatic tests, file a bug and delete if" +
-                    " you ever see this client!"
+                    " you ever see this client!",
+      scopes:       ['myapi:*'],
     });
 
     var myClient = new helper.TestClient({
@@ -176,14 +173,11 @@ suite("Remote Signature Validation", function() {
 
   test("auth with non-root user (expired)", async () => {
     var clientId = slugid.v4();
-    await helper.auth.createRole('client-id:' + clientId, {
-      description: "test role",
-      scopes:      ['myapi:*'],
-    });
     var result = await helper.auth.createClient(clientId, {
       expires:      new Date(1998, 1, 1), // far back in the past
       description:  "Client used by automatic tests, file a bug and delete if" +
-                    " you ever see this client!"
+                    " you ever see this client!",
+      scopes:       ['myapi:*'],
     });
 
     var myClient = new helper.TestClient({

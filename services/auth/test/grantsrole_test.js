@@ -49,8 +49,8 @@ suite("ScopeResolver (grantsRole)", () => {
       result:   true
     }, {
       // cases with assume:<prefix>*
-      scope:    'assume:client-id:*',
-      role:     'client-id:queue',
+      scope:    'assume:thing-id:*',
+      role:     'thing-id:queue',
       result:   true
     }, {
       scope:    'assume:task-run-id:*',
@@ -74,8 +74,8 @@ suite("ScopeResolver (grantsRole)", () => {
       result:   false
     }, {
       // cases with assume:roleId
-      scope:    'assume:client-id:queue',
-      role:     'client-id:queue',
+      scope:    'assume:thing-id:queue',
+      role:     'thing-id:queue',
       result:   true
     }, {
       scope:    'assume:task-run-id:12345',

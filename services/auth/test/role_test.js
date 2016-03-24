@@ -16,18 +16,19 @@ suite('api (roles)', function() {
   // Setup a clientId we can play with
   let clientId, accessToken;
   test('createClient', async() => {
-    let client = await helper.auth.createClient(slugid.v4(), {
+    clientId = slugid.v4();
+    let client = await helper.auth.createClient(clientId, {
       expires: taskcluster.fromNowJSON('1 day'),
-      description: "test client..."
+      description: "test client...",
+      scopes: ['assume:thing-id:' + clientId],
     });
-    clientId = client.clientId;
     accessToken = client.accessToken;
   });
 
   test('createRole (normal)', async() => {
     await helper.events.listenFor('e1', helper.authEvents.roleCreated());
 
-    let role = await helper.auth.createRole('client-id:' + clientId, {
+    let role = await helper.auth.createRole('thing-id:' + clientId, {
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
@@ -40,7 +41,7 @@ suite('api (roles)', function() {
     assume(role.expandedScopes).contains('auth:create-role:*');
 
     // Check that it's idempotent
-    let role2 = await helper.auth.createRole('client-id:' + clientId, {
+    let role2 = await helper.auth.createRole('thing-id:' + clientId, {
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
@@ -62,7 +63,7 @@ suite('api (roles)', function() {
       credentials: {clientId, accessToken}
     });
 
-    let roleId = 'client-id:' + clientId.slice(0, 11) + '*';
+    let roleId = 'thing-id:' + clientId.slice(0, 11) + '*';
     let role = await auth.createRole(roleId, {
       description: 'test prefix role',
       scopes: ['dummy-scope-2']
@@ -91,9 +92,9 @@ suite('api (roles)', function() {
   });
 
   test('getRole', async() => {
-    let role = await helper.auth.role('client-id:' + clientId);
+    let role = await helper.auth.role('thing-id:' + clientId);
     assume(role.expandedScopes.sort()).deep.equals([
-      'assume:client-id:' + clientId,
+      'assume:thing-id:' + clientId,
       'dummy-scope-1',
       'auth:create-role:*',
       'dummy-scope-2'
@@ -102,17 +103,17 @@ suite('api (roles)', function() {
 
   test('listRoles', async() => {
     let roles = await helper.auth.listRoles();
-    assert(roles.some(role => role.roleId === 'client-id:' + clientId));
+    assert(roles.some(role => role.roleId === 'thing-id:' + clientId));
   });
 
   test('updateRole (add scope)', async() => {
     await helper.events.listenFor('e1', helper.authEvents.roleUpdated());
 
-    let r1 = await helper.auth.role('client-id:' + clientId);
+    let r1 = await helper.auth.role('thing-id:' + clientId);
 
     await base.testing.sleep(100);
 
-    let r2 = await helper.auth.updateRole('client-id:' + clientId, {
+    let r2 = await helper.auth.updateRole('thing-id:' + clientId, {
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-3']
     });
@@ -120,9 +121,9 @@ suite('api (roles)', function() {
       new Date(r1.lastModified).getTime()
     );
 
-    let role = await helper.auth.role('client-id:' + clientId);
+    let role = await helper.auth.role('thing-id:' + clientId);
     assume(role.expandedScopes.sort()).deep.equals([
-      'assume:client-id:' + clientId,
+      'assume:thing-id:' + clientId,
       'dummy-scope-1',
       'auth:create-role:*',
       'dummy-scope-2',
@@ -138,13 +139,13 @@ suite('api (roles)', function() {
     });
 
     // Can update without adding new scopes
-    await auth.updateRole('client-id:' + clientId, {
+    await auth.updateRole('thing-id:' + clientId, {
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-3']
     });
 
     // Can't add scope without scope
-    await auth.updateRole('client-id:' + clientId, {
+    await auth.updateRole('thing-id:' + clientId, {
       description: 'test role',
       scopes: [
         'dummy-scope-1', 'auth:create-role:*', 'dummy-scope-3',
@@ -163,14 +164,14 @@ suite('api (roles)', function() {
     });
 
     // Can remove scope without scope
-    await auth.updateRole('client-id:' + clientId, {
+    await auth.updateRole('thing-id:' + clientId, {
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*']
     });
 
-    let role = await auth.role('client-id:' + clientId);
+    let role = await auth.role('thing-id:' + clientId);
     assume(role.expandedScopes.sort()).deep.equals([
-      'assume:client-id:' + clientId,
+      'assume:thing-id:' + clientId,
       'dummy-scope-1',
       'auth:create-role:*',
       'dummy-scope-2'
@@ -180,12 +181,12 @@ suite('api (roles)', function() {
   test('deleteRole', async() => {
     await helper.events.listenFor('e1', helper.authEvents.roleDeleted());
 
-    await helper.auth.deleteRole('client-id:' + clientId);
-    await helper.auth.deleteRole('client-id:' + clientId);
-    let roleId = 'client-id:' + clientId.slice(0, 11) + '*';
+    await helper.auth.deleteRole('thing-id:' + clientId);
+    await helper.auth.deleteRole('thing-id:' + clientId);
+    let roleId = 'thing-id:' + clientId.slice(0, 11) + '*';
     await helper.auth.deleteRole(roleId);
 
-    await helper.auth.role('client-id:' + clientId).then(() => {
+    await helper.auth.role('thing-id:' + clientId).then(() => {
       assert(false, "Expected error");
     }, err => assert(err.statusCode === 404, "Expected 404"));
 

@@ -47,10 +47,7 @@ var Client = Entity.configure({
 
 /** Get scopes granted to this client */
 Client.prototype.expandedScopes = function() {
-  return this.resolver.resolve(
-      // resolve the client's scopes plus the client-id role
-      this.scopes.concat(['assume:client-id:' + this.clientId])
-    );
+  return this.resolver.resolve(this.scopes);
 };
 
 /** Get JSON representation of client */
