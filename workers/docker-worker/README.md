@@ -12,6 +12,7 @@
     - [Building AMI's](#building-amis)
     - [Block-Device Mapping](#block-device-mapping)
     - [Updating Schema](#updating-schema)
+    - [Post-Deployment Verification](#post-deployment-verification)
 
 
 # Docker Worker
@@ -265,3 +266,11 @@ into your environment.  See [Configuring AWS with Node](http://docs.aws.amazon.c
 Run the upload-schema.js script to update the schema:
 
 `babel-node --harmony bin/upload-schema.js`
+
+### Post-Deployment Verification
+
+After creating a new AMI, operation can be verified by updating a test worker type in the AWS Provisioner and submitting tasks to it.  Ensure that the tasks were claimed and completed with the successful outcome.  Also add in features/capabilities to the tasks based on code changes made in this release.
+
+Further verification should be done if underlying packages, such as docker, change.  Stress tests should be used (submit a graph with a 1000 tasks) to ensure that all tasks have the expected outcome and complete in an expected amount of time.
+
+Errors from docker-worker are reported into papertrail and should be monitored during roll out of new AMIs.  Searching for the AMI Id along with ("task resolved" OR "claim task") should give a rough idea if work is being done using these new AMIs.
