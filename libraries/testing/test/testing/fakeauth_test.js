@@ -6,6 +6,7 @@ var base         = require('taskcluster-base');
 var assert       = require('assert');
 var taskcluster  = require('taskcluster-client');
 var Promise      = require('promise');
+var path         = require('path');
 
 var testApi = new base.API({
   title:        "Test Server",
@@ -32,7 +33,10 @@ suite('fakeauth', function() {
   var server;
 
   suiteSetup(function() {
-    return base.validator().then(function(validator) {
+    return base.validator({
+      folder:  path.join(__dirname, 'schemas'),
+      baseUrl: "http://localhost:1234",
+    }).then(function(validator) {
       // Create application
       var app = base.app({
         port:           1208,
