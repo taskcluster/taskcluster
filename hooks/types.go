@@ -10,21 +10,31 @@ import (
 
 type (
 	// Information about an unsuccesful firing of the hook
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[1]
 	FailedFire struct {
 
 		// The error that occurred when firing the task.  This is typically,
 		// but not always, an API error message.
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[1]/properties/error
 		Error json.RawMessage `json:"error"`
 
 		// Possible values:
 		//   * "error"
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[1]/properties/result
 		Result string `json:"result"`
 
 		// The time the task was created.  This will not necessarily match `task.created`.
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[1]/properties/time
 		Time tcclient.Time `json:"time"`
 	}
 
 	// Definition of a hook that can create tasks at defined times.
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#
 	HookCreationRequest struct {
 
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future.
@@ -32,6 +42,8 @@ type (
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "1 day"
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/deadline
 		Deadline string `json:"deadline"`
 
 		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
@@ -39,28 +51,39 @@ type (
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "3 months"
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/expires
 		Expires string `json:"expires,omitempty"`
 
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata
 		Metadata struct {
 
 			// Long-form of the hook's purpose and behavior
 			//
 			// Max length: 32768
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/description
 			Description string `json:"description"`
 
 			// Whether to email the owner on an error creating the task.
 			//
 			// Default:    true
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/emailOnError
 			EmailOnError bool `json:"emailOnError,omitempty"`
 
 			// Human readable name of the hook
 			//
 			// Max length: 255
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/name
 			Name string `json:"name"`
 
 			// Email of the person or group responsible for this hook.
 			//
 			// Max length: 255
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 		} `json:"metadata"`
 
@@ -69,12 +92,17 @@ type (
 		// specified by one or more patterns.
 		//
 		// Default:    []
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/schedule
 		Schedule []string `json:"schedule,omitempty"`
 
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/task
 		Task TaskTemplate `json:"task"`
 	}
 
 	// Definition of a hook that will create tasks when defined events occur.
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#
 	HookDefinition struct {
 
 		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future.
@@ -82,6 +110,8 @@ type (
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "1 day"
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/deadline
 		Deadline string `json:"deadline"`
 
 		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
@@ -89,36 +119,51 @@ type (
 		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "3 months"
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/expires
 		Expires string `json:"expires"`
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/hookGroupId
 		HookGroupID string `json:"hookGroupId"`
 
 		// Max length: 255
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/hookId
 		HookID string `json:"hookId"`
 
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata
 		Metadata struct {
 
 			// Long-form of the hook's purpose and behavior
 			//
 			// Max length: 32768
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/description
 			Description string `json:"description"`
 
 			// Whether to email the owner on an error creating the task.
 			//
 			// Default:    true
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/emailOnError
 			EmailOnError bool `json:"emailOnError,omitempty"`
 
 			// Human readable name of the hook
 			//
 			// Max length: 255
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/name
 			Name string `json:"name"`
 
 			// Email of the person or group responsible for this hook.
 			//
 			// Max length: 255
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 		} `json:"metadata"`
 
@@ -127,50 +172,76 @@ type (
 		// specified by one or more patterns.  Note that tasks may not be created
 		// at exactly the time specified.
 		//                     {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/schedule
 		Schedule json.RawMessage `json:"schedule"`
 
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/task
 		Task TaskTemplate `json:"task"`
 	}
 
 	// List of `hookGroupIds`.
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json#
 	HookGroups struct {
+
+		// See http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json#/properties/groups
 		Groups []string `json:"groups"`
 	}
 
 	// List of hooks
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json#
 	HookList struct {
+
+		// See http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json#/properties/hooks
 		Hooks []HookDefinition `json:"hooks"`
 	}
 
 	// A description of when a hook's task will be created, and the next scheduled time
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#
 	HookScheduleResponse struct {
 
 		// The next time this hook's task is scheduled to be created. This property
 		// is only present if there is a scheduled next time. Some hooks don't have
 		// any schedules.
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#/properties/nextScheduledDate
 		NextScheduledDate tcclient.Time `json:"nextScheduledDate,omitempty"`
 
+		// See http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#/properties/schedule
 		Schedule Schedule `json:"schedule"`
 	}
 
 	// A snapshot of the current status of a hook.
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#
 	HookStatusResponse struct {
 
 		// Information about the last time this hook fired.  This property is only present
 		// if the hook has fired at least once.
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire
 		LastFire json.RawMessage `json:"lastFire"`
 
 		// The next time this hook's task is scheduled to be created. This property
 		// is only present if there is a scheduled next time. Some hooks don't have
 		// any schedules.
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/nextScheduledDate
 		NextScheduledDate tcclient.Time `json:"nextScheduledDate,omitempty"`
 	}
 
 	// Information about no firing of the hook (e.g., a new hook)
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[2]
 	NoFire struct {
 
 		// Possible values:
 		//   * "no-fire"
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[2]/properties/result
 		Result string `json:"result"`
 	}
 
@@ -180,25 +251,37 @@ type (
 	// it is allowed for the cron patterns to overlap; duplicates are redundant.
 	//
 	// Default:    []
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/schedule.json#
 	Schedule []string
 
 	// Information about a successful firing of the hook
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[0]
 	SuccessfulFire struct {
 
 		// Possible values:
 		//   * "success"
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[0]/properties/result
 		Result string `json:"result"`
 
 		// The task created
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[0]/properties/taskId
 		TaskID string `json:"taskId"`
 
 		// The time the task was created.  This will not necessarily match `task.created`.
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[0]/properties/time
 		Time tcclient.Time `json:"time"`
 	}
 
 	// Definition of a task embedded in a hook
+	//
+	// See http://schemas.taskcluster.net/hooks/v1/task-template.json#
 	TaskTemplate struct {
 
 		// Object with properties that can hold any kind of extra data that should be
@@ -212,27 +295,37 @@ type (
 		// task definitions should not take-up multiple MiBs.
 		//
 		// Default:    map[]
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/extra
 		Extra json.RawMessage `json:"extra,omitempty"`
 
 		// Required task metadata
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata
 		Metadata struct {
 
 			// Human readable description of the task, please **explain** what the
 			// task does. A few lines of documentation is not going to hurt you.
 			//
 			// Max length: 32768
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata/properties/description
 			Description string `json:"description"`
 
 			// Human readable name of task, used to very briefly given an idea about
 			// what the task does.
 			//
 			// Max length: 255
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata/properties/name
 			Name string `json:"name"`
 
 			// E-mail of person who caused this task, e.g. the person who did
 			// `hg push`. The person we should contact to ask why this task is here.
 			//
 			// Max length: 255
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 
 			// Link to source of this task, should specify a file, revision and
@@ -240,12 +333,16 @@ type (
 			// to who came up with recipe for this task.
 			//
 			// Max length: 4096
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata/properties/source
 			Source string `json:"source"`
 		} `json:"metadata"`
 
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/payload
 		Payload json.RawMessage `json:"payload"`
 
 		// Priority of task, this defaults to `normal`. Additional levels may be
@@ -258,6 +355,8 @@ type (
 		//   * "normal"
 		//
 		// Default:    "normal"
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/priority
 		Priority string `json:"priority,omitempty"`
 
 		// Unique identifier for a provisioner, that can supply specified
@@ -266,6 +365,8 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// Number of times to retry the task in case of infrastructure issues.
@@ -275,6 +376,8 @@ type (
 		// Default:    5
 		// Mininum:    0
 		// Maximum:    49
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/retries
 		Retries int `json:"retries,omitempty"`
 
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
@@ -282,6 +385,8 @@ type (
 		// each route given.
 		//
 		// Default:    []
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/routes
 		Routes []string `json:"routes,omitempty"`
 
 		// Identifier for the scheduler that _defined_ this task, this can be an
@@ -295,12 +400,16 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/schedulerId
 		SchedulerID string `json:"schedulerId,omitempty"`
 
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
 		//
 		// Default:    []
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/scopes
 		Scopes []string `json:"scopes,omitempty"`
 
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
@@ -310,6 +419,8 @@ type (
 		// `purpose: 'build' || 'test'` is a good example.
 		//
 		// Default:    map[]
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/tags
 		Tags json.RawMessage `json:"tags,omitempty"`
 
 		// Identifier for a group of tasks scheduled together with this task, by
@@ -318,6 +429,8 @@ type (
 		// property isn't specified.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/taskGroupId
 		TaskGroupID string `json:"taskGroupId,omitempty"`
 
 		// Unique identifier for a worker-type within a specific provisioner
@@ -325,6 +438,8 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 )
