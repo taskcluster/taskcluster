@@ -1,23 +1,23 @@
 #!/usr/bin/env node
-let debug               = require('debug')('queue:main');
+let debug               = require('debug')('app:main');
 let base                = require('taskcluster-base');
-let v1                  = require('../routes/v1');
-let path                = require('path');
-let Promise             = require('promise');
-let exchanges           = require('../queue/exchanges');
 let _                   = require('lodash');
 let assert              = require('assert');
-let taskcluster         = require('taskcluster-client');
-let BlobStore           = require('../queue/blobstore');
-let data                = require('../queue/data');
-let Bucket              = require('../queue/bucket');
-let QueueService        = require('../queue/queueservice');
 let raven               = require('raven');
-let EC2RegionResolver   = require('../queue/ec2regionresolver');
-let DeadlineResolver    = require('../queue/deadlineresolver');
-let ClaimResolver       = require('../queue/claimresolver');
-let DependencyTracker   = require('../queue/dependencytracker');
-let DependencyResolver  = require('../queue/dependencyresolver')
+let path                = require('path');
+let Promise             = require('promise');
+let taskcluster         = require('taskcluster-client');
+let v1                  = require('./api');
+let exchanges           = require('./exchanges');
+let BlobStore           = require('./blobstore');
+let data                = require('./data');
+let Bucket              = require('./bucket');
+let QueueService        = require('./queueservice');
+let EC2RegionResolver   = require('./ec2regionresolver');
+let DeadlineResolver    = require('./deadlineresolver');
+let ClaimResolver       = require('./claimresolver');
+let DependencyTracker   = require('./dependencytracker');
+let DependencyResolver  = require('./dependencyresolver')
 
 // Create component loader
 let load = base.loader({
@@ -57,10 +57,7 @@ let load = base.loader({
   validator: {
     requires: ['cfg'],
     setup: ({cfg}) => base.validator({
-      folder:        path.join(__dirname, '..', 'schemas'),
-      constants:     require('../schemas/constants'),
-      publish:       cfg.app.publishMetaData,
-      schemaPrefix:  'queue/v1/',
+      prefix:       'queue/v1/',
       aws:           cfg.aws
     })
   },

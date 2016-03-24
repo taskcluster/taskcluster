@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-04/schema#"
+$schema:  http://json-schema.org/draft-04/schema#
 title:          "Poll Task Urls Response"
 description: |
   Response to request for poll task urls.
@@ -42,7 +42,7 @@ properties:
             message at the time.
         signedDeleteUrl:
           type:     string
-          format:   uri
+          pattern:  ^https://
           title:    "Signed Delete Message URL"
           description: |
             Signed URL to delete messages that have been received using the

@@ -1,4 +1,4 @@
-var debug         = require('debug')('queue:load-test');
+var debug         = require('debug')('app:load-test');
 var base          = require('taskcluster-base');
 var path          = require('path');
 var Promise       = require('promise');
