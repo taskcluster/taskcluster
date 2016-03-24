@@ -498,8 +498,8 @@ suite("DFA", () => {
       result:   true
     }, {
       // cases with assume:<prefix>*
-      scope:    'assume:client-id:*',
-      role:     'client-id:queue',
+      scope:    'assume:thing-id:*',
+      role:     'thing-id:queue',
       result:   true
     }, {
       scope:    'assume:task-run-id:*',
@@ -523,8 +523,8 @@ suite("DFA", () => {
       result:   false
     }, {
       // cases with assume:roleId
-      scope:    'assume:client-id:queue',
-      role:     'client-id:queue',
+      scope:    'assume:thing-id:queue',
+      role:     'thing-id:queue',
       result:   true
     }, {
       scope:    'assume:task-run-id:12345',
@@ -599,25 +599,25 @@ suite("DFA", () => {
     expected: ['*']
   });
 
-  testFixedPointComputation('client-id:* get all', {
+  testFixedPointComputation('thing-id:* get all things', {
     roles: [
       {
-        roleId: 'client-id:root',
+        roleId: 'thing-id:star',
         scopes: ['*']
       }
     ],
-    scope: 'assume:client-id:*',
+    scope: 'assume:thing-id:*',
     expected: ['*']
   });
 
-  testFixedPointComputation('client-id:root get all', {
+  testFixedPointComputation('star-scope-role get all', {
     roles: [
       {
-        roleId: 'client-id:root',
+        roleId: 'star-scope-role',
         scopes: ['*']
       }
     ],
-    scope: 'assume:client-id:root',
+    scope: 'assume:star-scope-role',
     expected: ['*']
   });
 
@@ -625,7 +625,7 @@ suite("DFA", () => {
   testFixedPointComputation('test with stupid', {
     roles: [
       {
-        roleId: 'client-id:big-test-client',
+        roleId: 'thing-id:big-test',
         scopes: ['assume:test-role-0']
       }, {
         roleId: 'test-role-10',
@@ -638,7 +638,7 @@ suite("DFA", () => {
         scopes: ['assume:test-role-10']
       },
     ],
-    scope: 'assume:client-id:big-test-client',
+    scope: 'assume:thing-id:big-test',
     expected: [
       'special-scope',
       'assume:test-role-0',
@@ -652,7 +652,7 @@ suite("DFA", () => {
   testFixedPointComputation('test with N = ' + N, {
     roles: [
       {
-        roleId: 'client-id:c',
+        roleId: 'thing-id:c',
         scopes: ['assume:tr-0']
       }, {
         roleId: 'tr-' + N,
@@ -664,7 +664,7 @@ suite("DFA", () => {
         scopes: ['assume:tr-' + (i + 1)]
       };
     })),
-    scope: 'assume:client-id:c',
+    scope: 'assume:thing-id:c',
     expected: [
       'special-scope'
     ].concat(_.range(N + 1).map(i => 'assume:tr-' + i))
@@ -689,11 +689,11 @@ suite("DFA", () => {
         };
       }),
       [{
-        roleId: 'client-id:c',
+        roleId: 'thing-id:c',
         scopes: ['assume:k-2-0']
       }]
     ]),
-    scope: 'assume:client-id:c',
+    scope: 'assume:thing-id:c',
     expected: [
       'special-scope'
     ].concat(_.range(M + 1).map(i => 'assume:k-2-' + i))
@@ -720,11 +720,11 @@ suite("DFA", () => {
           };
         }),
         [{
-          roleId: 'client-id:c',
+          roleId: 'thing-id:c',
           scopes: ['assume:k-2-0']
         }]
       ])),
-      scope: 'assume:client-id:c',
+      scope: 'assume:thing-id:c',
       expected: _.shuffle([
         'special-scope'
       ].concat(_.range(M + 1).map(i => 'assume:k-2-' + i)))

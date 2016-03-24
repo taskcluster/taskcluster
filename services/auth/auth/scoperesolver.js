@@ -230,9 +230,7 @@ class ScopeResolver extends events.EventEmitter {
     // Construct client cache
     this._clientCache = {};
     for (let client of this._clients) {
-      var scopes = this.resolve([
-        'assume:client-id:' + client.clientId
-      ].concat(client.unexpandedScopes));
+      var scopes = this.resolve(client.unexpandedScopes);
       client.scopes = scopes; // for createSignatureValidator compatibility
       client.expandedScopes = scopes;
       this._clientCache[client.clientId] = client;
