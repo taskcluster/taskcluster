@@ -19,7 +19,7 @@ Here is a real-world example json schema taken from the taskcluster project. Try
 First, let's see the schema:
 
 ```
-$ curl 'http://schemas.taskcluster.net/queue/v1/create-task-request.json' 2>/dev/null
+$ curl 'http://schemas.taskcluster.net/queue/v1/create-task-request.json'
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "Task Definition Request",
@@ -56,6 +56,30 @@ $ curl 'http://schemas.taskcluster.net/queue/v1/create-task-request.json' 2>/dev
             "description": "Identifier for a group of tasks scheduled together with this task, by\nscheduler identified by `schedulerId`. For tasks scheduled by the\ntask-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if\nproperty isn't specified.\n",
             "type": "string",
             "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$"
+        },
+        "dependencies": {
+            "title": "Task Dependencies",
+            "description": "List of dependent tasks. These must either be _completed_ or _resolved_\nbefore this task is scheduled. See `requires` for semantics.\n",
+            "type": "array",
+            "default": [],
+            "items": {
+                "title": "Task Dependency",
+                "description": "The `taskId` of a task that must be resolved before this task is\nscheduled.\n",
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$"
+            },
+            "maxItems": 100,
+            "uniqueItems": true
+        },
+        "requires": {
+            "title": "Dependency Requirement Semantics",
+            "description": "The tasks relation to its dependencies. This property specifies the\nsemantics of the `task.dependencies` property.\nIf `all-completed` is given the task will be scheduled when all\ndependencies are resolved _completed_ (successful resolution).\nIf `all-resolved` is given the task will be scheduled when all dependencies\nhave been resolved, regardless of what their resolution is.\n",
+            "type": "string",
+            "enum": [
+                "all-completed",
+                "all-resolved"
+            ],
+            "default": "all-completed"
         },
         "routes": {
             "title": "Task Specific Routes",
@@ -224,13 +248,21 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/deadline
 		Deadline tcclient.Time `json:"deadline"`
 
+		// List of dependent tasks. These must either be _completed_ or _resolved_
+		// before this task is scheduled. See `requires` for semantics.
+		//
+		// Default:    []
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/dependencies
+		Dependencies []string `json:"dependencies,omitempty"`
+
 		// Task expiration, time at which task definition and status is deleted.
 		// Notice that all artifacts for the must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may subject to change).
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/expires
-		Expires tcclient.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires,omitempty"`
 
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
@@ -245,7 +277,7 @@ type (
 		// Default:    map[]
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/extra
-		Extra json.RawMessage `json:"extra"`
+		Extra json.RawMessage `json:"extra,omitempty"`
 
 		// Required task metadata
 		//
@@ -305,7 +337,7 @@ type (
 		// Default:    "normal"
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/priority
-		Priority string `json:"priority"`
+		Priority string `json:"priority,omitempty"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
@@ -315,7 +347,23 @@ type (
 		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/provisionerId
-		ProvisionerId string `json:"provisionerId"`
+		ProvisionerID string `json:"provisionerId"`
+
+		// The tasks relation to its dependencies. This property specifies the
+		// semantics of the `task.dependencies` property.
+		// If `all-completed` is given the task will be scheduled when all
+		// dependencies are resolved _completed_ (successful resolution).
+		// If `all-resolved` is given the task will be scheduled when all dependencies
+		// have been resolved, regardless of what their resolution is.
+		//
+		// Possible values:
+		//   * "all-completed"
+		//   * "all-resolved"
+		//
+		// Default:    "all-completed"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/requires
+		Requires string `json:"requires,omitempty"`
 
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
@@ -326,7 +374,7 @@ type (
 		// Maximum:    49
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/retries
-		Retries int `json:"retries"`
+		Retries int `json:"retries,omitempty"`
 
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		// **Task submitter required scopes** `queue:route:<route>` for
@@ -335,7 +383,7 @@ type (
 		// Default:    []
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/routes
-		Routes []string `json:"routes"`
+		Routes []string `json:"routes,omitempty"`
 
 		// Identifier for the scheduler that _defined_ this task, this can be an
 		// identifier for a user or a service like the `"task-graph-scheduler"`.
@@ -350,7 +398,7 @@ type (
 		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/schedulerId
-		SchedulerId string `json:"schedulerId"`
+		SchedulerID string `json:"schedulerId,omitempty"`
 
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
@@ -358,7 +406,7 @@ type (
 		// Default:    []
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/scopes
-		Scopes []string `json:"scopes"`
+		Scopes []string `json:"scopes,omitempty"`
 
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
 		// to attach informal meta-data to a task. Use this for informal tags that
@@ -369,7 +417,7 @@ type (
 		// Default:    map[]
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/tags
-		Tags json.RawMessage `json:"tags"`
+		Tags json.RawMessage `json:"tags,omitempty"`
 
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
@@ -379,7 +427,7 @@ type (
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/taskGroupId
-		TaskGroupId string `json:"taskGroupId"`
+		TaskGroupID string `json:"taskGroupId,omitempty"`
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//
