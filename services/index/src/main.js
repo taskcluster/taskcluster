@@ -5,9 +5,9 @@ var debug       = require('debug')('index:bin:server');
 var raven       = require('raven');
 var base        = require('taskcluster-base');
 var taskcluster = require('taskcluster-client');
-var data        = require('../index/data');
-var Handlers    = require('../index/handlers');
-var v1          = require('../routes/api/v1');
+var data        = require('./data');
+var Handlers    = require('./handlers');
+var v1          = require('./api');
 var loader      = require('taskcluster-lib-loader');
 
 // Create component loader
