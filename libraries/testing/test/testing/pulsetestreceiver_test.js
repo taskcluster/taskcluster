@@ -1,6 +1,6 @@
 "use strict";
 
-suite('testing.PulseTestReceiver', function() {
+suite('testing.PulseTestReceiver', async function() {
   var base          = require('taskcluster-base');
   var config        = require('taskcluster-lib-config');
   var assert        = require('assert');
@@ -50,11 +50,10 @@ suite('testing.PulseTestReceiver', function() {
 
   // Create validator to validate schema, and load exchange-test-schema.json
   // from disk
-  var validator = new base.validator.Validator();
-  var schemaPath = path.join(__dirname, '..', 'schemas',
-                             'exchange-test-schema.json');
-  var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
-  validator.register(JSON.parse(schema));
+  var validator = await base.validator({
+    folder: path.join(__dirname, 'schemas'),
+    baseUrl: "http://localhost:1203",
+  });
 
   // Set options on exchanges
   exchanges.configure({
