@@ -194,7 +194,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 
 	if URL := jsonSubSchema.SourceURL; URL != "" {
 		u, err := url.Parse(URL)
-		if err != nil && u.Scheme != "file" {
+		if err == nil && u.Scheme != "file" {
 			comment += "//\n// See " + URL + "\n"
 		}
 	}
