@@ -23,9 +23,6 @@
 //
 // The client's scopes control the client's access to TaskCluster resources.
 // The scopes are *expanded* by substituting roles, as defined below.
-// Every client has an implicit scope named `assume:client-id:<clientId>`,
-// allowing additional access to be granted to the client without directly
-// editing the client's scopes.
 //
 // ### Roles
 // A _role_ consists of a `roleId`, a set of scopes and a description.
@@ -38,13 +35,6 @@
 // located at the end of a `roleId`. If you have a role with the following
 // `roleId`: `my-prefix*`, then any client which has a scope staring with
 // `assume:my-prefix` will be allowed to assume the role.
-//
-// As previously mentioned each client gets the scope:
-// `assume:client-id:<clientId>`, it trivially follows that you can create a
-// role with the `roleId`: `client-id:<clientId>` to assign additional
-// scopes to a client. You can also create a role `client-id:user-*`
-// if you wish to assign a set of scopes to all clients whose `clientId`
-// starts with `user-`.
 //
 // ### Guarded Services
 // The authentication service also has API end-points for delegating access
@@ -73,7 +63,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 24 Mar 2016 at 10:01:00 UTC. The code was generated
+// Thu, 24 Mar 2016 at 15:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
