@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-testing",
-  "version": "0.10.2",
+  "version": "0.11.0",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-testing",
   "license": "MPL-2.0",
@@ -28,8 +28,8 @@
     "superagent": "0.18.2",
     "superagent-hawk": "0.0.4",
     "superagent-promise": "0.1.2",
-    "taskcluster-base": "^0.8.10",
     "taskcluster-client": "0.23.4",
+    "taskcluster-lib-validate": "0.4.3",
     "uuid": "^2.0.1",
     "nock": "^4.0.0"
   },
@@ -42,6 +42,7 @@
     "babel-preset-stage-1": "^6.1.18",
     "mocha": "2.0.1",
     "taskcluster-lib-config": "^0.8.8",
+    "taskcluster-base": "^0.12.1",
     "tc-rules": "^2.0.0"
   },
   "main": "./lib/testing.js"
