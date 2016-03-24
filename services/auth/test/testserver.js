@@ -1,4 +1,5 @@
-let base        = require('taskcluster-base');
+let API         = require('taskcluster-lib-api');
+let validator   = require('taskcluster-lib-validate');
 let app         = require('taskcluster-lib-app');
 let taskcluster = require('taskcluster-client');
 
@@ -7,7 +8,7 @@ let taskcluster = require('taskcluster-client');
 
 const PORT = 60321;
 
-let myapi = new base.API({
+let myapi = new API({
   title:        "Test API Server",
   description:  "API server for testing"
 });
@@ -37,7 +38,9 @@ module.exports = async ({authBaseUrl, rootAccessToken}) => {
   // Create router for the API
   let router = myapi.router({
     authBaseUrl,
-    validator: await base.validator(),
+    validator: await validator({
+      prefix: 'auth/v1',
+    }),
   });
 
   // Mount router

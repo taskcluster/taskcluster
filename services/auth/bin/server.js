@@ -12,6 +12,7 @@ var ScopeResolver      = require('../auth/scoperesolver');
 var signaturevalidator = require('../auth/signaturevalidator');
 var taskcluster        = require('taskcluster-client');
 var url                = require('url');
+var validate           = require('taskcluster-lib-validate');
 var loader             = require('taskcluster-lib-loader');
 var app                = require('taskcluster-lib-app');
 
@@ -75,7 +76,7 @@ let load = loader({
 
   Role: {
     requires: ['cfg', 'drain', 'resolver'],
-    setup: ({cfg, drain, resolver}) => 
+    setup: ({cfg, drain, resolver}) =>
       data.Role.setup({
         table:        cfg.app.rolesTableName,
         credentials:  cfg.azure || {},
@@ -89,14 +90,10 @@ let load = loader({
 
   validator: {
     requires: ['cfg'],
-    setup: ({cfg}) =>
-      base.validator({
-        folder:           path.join(__dirname, '..', 'schemas'),
-        constants:        require('../schemas/constants'),
-        publish:          cfg.app.publishMetaData,
-        schemaPrefix:     'auth/v1/',
-        aws:              cfg.aws
-      })
+    setup: ({cfg}) => validate({
+      prefix:  'auth/v1/',
+      aws:      cfg.aws
+    })
   },
 
   publisher: {
