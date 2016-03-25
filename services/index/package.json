@@ -6,7 +6,8 @@
   "scripts": {
     "compile": "babel-compile -c tc-rules/babel src:lib test:.test",
     "test":    "mocha .test/*_test.js",
-    "pretest": "npm run compile"
+    "pretest": "npm run compile",
+    "install": "npm run compile"
   },
   "repository": {
     "type": "git",
