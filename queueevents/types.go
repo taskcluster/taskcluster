@@ -322,12 +322,17 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 	TaskStatusStructure struct {
 
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
+		// Deadline of the task, `pending` and `running` runs are
+		// resolved as **failed** if not resolved by other means
+		// before the deadline. Note, deadline cannot be more than
+		// 5 days into the future
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline
 		Deadline tcclient.Time `json:"deadline"`
 
-		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
+		// Task expiration, time at which task definition and
+		// status is deleted. Notice that all artifacts for the
+		// must have an expiration that is no later than this.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/expires
 		Expires tcclient.Time `json:"expires"`

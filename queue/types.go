@@ -294,6 +294,8 @@ type (
 			// substitution, otherwise you will experience intermittent failures!
 			// Note this URL only works with `DELETE` request.
 			//
+			// Syntax:     ^https://
+			//
 			// See http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#/properties/queues/items/properties/signedDeleteUrl
 			SignedDeleteURL string `json:"signedDeleteUrl"`
 
@@ -575,7 +577,10 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/created
 		Created tcclient.Time `json:"created"`
 
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
+		// Deadline of the task, `pending` and `running` runs are
+		// resolved as **failed** if not resolved by other means
+		// before the deadline. Note, deadline cannot be more than
+		// 5 days into the future
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/deadline
 		Deadline tcclient.Time `json:"deadline"`
@@ -781,7 +786,10 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/created
 		Created tcclient.Time `json:"created"`
 
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
+		// Deadline of the task, `pending` and `running` runs are
+		// resolved as **failed** if not resolved by other means
+		// before the deadline. Note, deadline cannot be more than
+		// 5 days into the future
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/deadline
 		Deadline tcclient.Time `json:"deadline"`
@@ -1104,12 +1112,17 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 	TaskStatusStructure struct {
 
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future
+		// Deadline of the task, `pending` and `running` runs are
+		// resolved as **failed** if not resolved by other means
+		// before the deadline. Note, deadline cannot be more than
+		// 5 days into the future
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline
 		Deadline tcclient.Time `json:"deadline"`
 
-		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
+		// Task expiration, time at which task definition and
+		// status is deleted. Notice that all artifacts for the
+		// must have an expiration that is no later than this.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/expires
 		Expires tcclient.Time `json:"expires"`

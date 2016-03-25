@@ -1,4 +1,4 @@
-Generated: 1458833296
+Generated: 1458916216
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -429,7 +429,17 @@ Properties
     Description            = 'Host for which the request came in, this is typically the `Host` header
     excluding the port if any.
     '
-    Format                 = 'hostname'
+    OneOf
+      Item '0' =
+        Format                 = 'hostname'
+        Type HAS NOT BEEN SET!!!
+        TypeName               = 'Var'
+        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[0]'
+      Item '1' =
+        Format                 = 'ipv4'
+        Type HAS NOT BEEN SET!!!
+        TypeName               = 'Var1'
+        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[1]'
     Type                   = 'string'
     TypeName               = 'Host'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host'
@@ -464,6 +474,22 @@ Title                  = 'Hawk Signature Authentication Request'
 Type                   = 'object'
 TypeName               = 'HawkSignatureAuthenticationRequest'
 SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#'
+
+
+http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[0]
+===============================================================================================
+Format                 = 'hostname'
+Type HAS NOT BEEN SET!!!
+TypeName               = 'Var'
+SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[0]'
+
+
+http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[1]
+===============================================================================================
+Format                 = 'ipv4'
+Type HAS NOT BEEN SET!!!
+TypeName               = 'Var1'
+SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[1]'
 
 
 http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#
@@ -4454,7 +4480,11 @@ Properties
     TypeName               = 'Created'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/created'
   Property 'deadline' =
-    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
+    Description            = 'Deadline of the task, `pending` and `running` runs are
+    resolved as **failed** if not resolved by other means
+    before the deadline. Note, deadline cannot be more than
+    5 days into the future
+    '
     Format                 = 'date-time'
     Title                  = 'Deadline'
     Type                   = 'string'
@@ -4947,7 +4977,7 @@ Properties
           substitution, otherwise you will experience intermittent failures!
           Note this URL only works with `DELETE` request.
           '
-          Format                 = 'uri'
+          Pattern                = '^https://'
           Title                  = 'Signed Delete Message URL'
           Type                   = 'string'
           TypeName               = 'SignedDeleteURL'
@@ -4983,7 +5013,7 @@ Properties
     TypeName               = 'Queues'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#/properties/queues'
 Required               = '[queues expires]'
-Schema                 = 'http://json-schema.org/draft-04/schema#"'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Poll Task Urls Response'
 Type                   = 'object'
 TypeName               = 'PollTaskUrlsResponse'
@@ -5683,23 +5713,27 @@ Properties
     reporting the task `completed`, `failed` or `exception`.
     
     Note, a new set of temporary credentials is issued when the worker
-    reclaims the task.'
+    reclaims the task.
+    '
     Properties
       Property 'accessToken' =
-        Description            = 'The `accessToken` for the temporary credentials.'
+        Description            = 'The `accessToken` for the temporary credentials.
+        '
         MinLength              = '1'
         Type                   = 'string'
         TypeName               = 'AccessToken'
         SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/accessToken'
       Property 'certificate' =
         Description            = 'The `certificate` for the temporary credentials, these are required
-        for the temporary credentials to work.'
+        for the temporary credentials to work.
+        '
         MinLength              = '1'
         Type                   = 'string'
         TypeName               = 'Certificate'
         SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/certificate'
       Property 'clientId' =
-        Description            = 'The `clientId` for the temporary credentials.'
+        Description            = 'The `clientId` for the temporary credentials.
+        '
         MinLength              = '1'
         Type                   = 'string'
         TypeName               = 'ClientID'
@@ -5832,23 +5866,27 @@ Properties
     reporting the task `completed`, `failed` or `exception`.
     
     Note, a new set of temporary credentials is issued when the worker
-    reclaims the task.'
+    reclaims the task.
+    '
     Properties
       Property 'accessToken' =
-        Description            = 'The `accessToken` for the temporary credentials.'
+        Description            = 'The `accessToken` for the temporary credentials.
+        '
         MinLength              = '1'
         Type                   = 'string'
         TypeName               = 'AccessToken'
         SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/accessToken'
       Property 'certificate' =
         Description            = 'The `certificate` for the temporary credentials, these are required
-        for the temporary credentials to work.'
+        for the temporary credentials to work.
+        '
         MinLength              = '1'
         Type                   = 'string'
         TypeName               = 'Certificate'
         SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/certificate'
       Property 'clientId' =
-        Description            = 'The `clientId` for the temporary credentials.'
+        Description            = 'The `clientId` for the temporary credentials.
+        '
         MinLength              = '1'
         Type                   = 'string'
         TypeName               = 'ClientID'
@@ -5930,14 +5968,21 @@ Description            = 'A representation of **task status** as known by the qu
 ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
 Properties
   Property 'deadline' =
-    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
+    Description            = 'Deadline of the task, `pending` and `running` runs are
+    resolved as **failed** if not resolved by other means
+    before the deadline. Note, deadline cannot be more than
+    5 days into the future
+    '
     Format                 = 'date-time'
     Title                  = 'Deadline'
     Type                   = 'string'
     TypeName               = 'Deadline'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline'
   Property 'expires' =
-    Description            = 'Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.'
+    Description            = 'Task expiration, time at which task definition and
+    status is deleted. Notice that all artifacts for the
+    must have an expiration that is no later than this.
+    '
     Format                 = 'date-time'
     Title                  = 'Expiration'
     Type                   = 'string'
@@ -6151,7 +6196,11 @@ Properties
     TypeName               = 'Created'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#/properties/created'
   Property 'deadline' =
-    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
+    Description            = 'Deadline of the task, `pending` and `running` runs are
+    resolved as **failed** if not resolved by other means
+    before the deadline. Note, deadline cannot be more than
+    5 days into the future
+    '
     Format                 = 'date-time'
     Title                  = 'Deadline'
     Type                   = 'string'
@@ -7068,7 +7117,7 @@ Properties
     TypeName               = 'WorkerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/workerId'
 Required               = '[version status runId workerGroup workerId artifact]'
-Schema                 = 'http://json-schema.org/draft-04/schema#"'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Artifact Created Message'
 Type                   = 'object'
 TypeName               = 'ArtifactCreatedMessage'
@@ -7358,14 +7407,21 @@ Description            = 'A representation of **task status** as known by the qu
 ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
 Properties
   Property 'deadline' =
-    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
+    Description            = 'Deadline of the task, `pending` and `running` runs are
+    resolved as **failed** if not resolved by other means
+    before the deadline. Note, deadline cannot be more than
+    5 days into the future
+    '
     Format                 = 'date-time'
     Title                  = 'Deadline'
     Type                   = 'string'
     TypeName               = 'Deadline'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline'
   Property 'expires' =
-    Description            = 'Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.'
+    Description            = 'Task expiration, time at which task definition and
+    status is deleted. Notice that all artifacts for the
+    must have an expiration that is no later than this.
+    '
     Format                 = 'date-time'
     Title                  = 'Expiration'
     Type                   = 'string'
@@ -7795,7 +7851,11 @@ Properties
     TypeName               = 'Created'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/created'
   Property 'deadline' =
-    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future'
+    Description            = 'Deadline of the task, `pending` and `running` runs are
+    resolved as **failed** if not resolved by other means
+    before the deadline. Note, deadline cannot be more than
+    5 days into the future
+    '
     Format                 = 'date-time'
     Title                  = 'Deadline'
     Type                   = 'string'

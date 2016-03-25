@@ -491,6 +491,12 @@ type (
 		// See http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#/properties/scopes
 		Scopes []string `json:"scopes,omitempty"`
 	}
+
+	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[0]
+	Var json.RawMessage
+
+	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[1]
+	Var1 json.RawMessage
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
@@ -504,6 +510,38 @@ func (this *HawkSignatureAuthenticationResponse) MarshalJSON() ([]byte, error) {
 func (this *HawkSignatureAuthenticationResponse) UnmarshalJSON(data []byte) error {
 	if this == nil {
 		return errors.New("HawkSignatureAuthenticationResponse: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var is of type json.RawMessage...
+func (this *Var) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *Var) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("Var: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var1 is of type json.RawMessage...
+func (this *Var1) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *Var1) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("Var1: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil
