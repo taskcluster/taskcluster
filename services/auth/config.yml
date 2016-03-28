@@ -32,6 +32,16 @@ defaults:
     # this value, and it's really only a best effort service.
     maxLastUsedDelay:         '- 6 hours'
 
+    # Sentry configuration
+    sentry:
+      organization:             taskcluster
+      hostname:                 app.getsentry.com
+      apiKey:                   !env SENRTY_API_KEY
+      initialTeam:              mozilla
+      keyPrefix:                taskcluster-auth
+
+    # Delay before expiring sentry keys, this should be negative!
+    sentryExpirationDelay:      '- 15 minutes'
   server:
     # Public URL from which the server can be accessed (used for persona)
     publicUrl:                https://auth.taskcluster.net
@@ -100,6 +110,12 @@ test:
     rootAccessToken:          PKqZk1pIRgKnSLNXC86rKwl5Rp5Ki4SsKlZGEu2_kGNQ
     # Special value for tests, as we don't want to wait forever
     maxLastUsedDelay:         '- 3 seconds'
+    sentry:
+      organization:             taskcluster
+      hostname:                 app.getsentry.com
+      apiKey:                   "no-key" # no-key skips tests
+      initialTeam:              mozilla
+      keyPrefix:                auth-test
   # Test bucket for STS credentials
   test:
     testBucket:               !env TEST_BUCKET

@@ -57,10 +57,12 @@ var api = new API({
     table:      /^[A-Za-z][A-Za-z0-9]{2,62}$/,
 
     // Patterns for AWS
-    bucket:     /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/
+    bucket:     /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/,
                 // we could allow "." too, but S3 buckets with dot in the name
                 // doesn't work well with HTTPS and virtual-style hosting.
                 // Hence, we shouldn't encourage people to use them
+    // Project for sentry (and other per project resources)
+    project:    /^[a-zA-Z0-9_-]{1,22}$/,
   },
   context: [
     // Instances of data.Client and data.Role
@@ -79,7 +81,10 @@ var api = new API({
     'azureAccounts',
 
     // Signature validator
-    'signatureValidator'
+    'signatureValidator',
+
+    // SentryManager from sentrymanager.js
+    'sentryManager',
   ]
 });
 
@@ -730,7 +735,7 @@ api.declare({
 // on the API object exported from this file
 require('./aws');
 require('./azure');
-
+require('./sentry');
 
 /** Get all client information */
 api.declare({
