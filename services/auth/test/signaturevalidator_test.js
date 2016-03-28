@@ -503,7 +503,8 @@ suite("signature validation", function() {
       credentials: {id, key},
       ext: {certificate},
     }
-  }), failed("ext.certificate issuer `unpriv` doesn't have sufficient scopes"));
+  }), failed('ext.certificate issuer `unpriv` doesn\'t satisfiy all certificate ' +
+             'scopes godlike.  The temporary credentials were not generated correctly.'))
 
   testWithTemp("temporary credentials with authorizedScopes", {
     id: 'root',
@@ -544,7 +545,8 @@ suite("signature validation", function() {
         authorizedScopes: ['scope999'],
       },
     }
-  }), failed("ext.certificate issuer `unpriv` doesn't have sufficient scopes"));
+  }), failed('ext.certificate issuer `unpriv` doesn\'t satisfiy all certificate scopes ' +
+             'scope999.  The temporary credentials were not generated correctly.'))
 
   testWithTemp("named temporary credentials", {
     id: 'my-temp-cred',
