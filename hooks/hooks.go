@@ -43,7 +43,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 25 Mar 2016 at 14:30:00 UTC. The code was generated
+// Mon, 28 Mar 2016 at 23:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 

@@ -1,4 +1,4 @@
-Generated: 1458916216
+Generated: 1459207672
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -328,6 +328,25 @@ Table Storage table.  Note, this will create the table, if it doesn't
 already exist.'
 Entry 17    =
     Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/sentry/<project>/dsn'
+    Entry Args        = '[project]'
+    Entry Query        = '[]'
+    Entry Name        = 'sentryDSN'
+    Entry Stability   = 'stable'
+    Entry Scopes      = '[[auth:sentry-dsn:<project>]]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#'
+    Entry Title       = 'Get DSN for Sentry Project'
+    Entry Description = 'Get temporary DSN (access credentials) for a sentry project.
+The credentials returned can be used with any Sentry client for up to
+24 hours, after which the credentials will be automatically disabled.
+
+If the project doesn't exist it will be created, and assigned to the
+initial team configured for this component. Contact a Sentry admin
+to have the project transferred to a team you have access to if needed'
+Entry 18    =
+    Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/authenticate-hawk'
     Entry Args        = '[]'
@@ -344,7 +363,7 @@ that the authenticating client has.
 This method is used by other services that wish rely on TaskCluster
 credentials for authentication. This way we can use Hawk without having
 the secret credentials leave this service.'
-Entry 18    =
+Entry 19    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/test-authenticate'
@@ -367,7 +386,7 @@ The request is validated, with any certificate, authorizedScopes, etc.
 applied, and the resulting scopes are checked against `requiredScopes`
 from the request body. On success, the response contains the clientId
 and scopes as seen by the API method.'
-Entry 19    =
+Entry 20    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/test-authenticate-get/'
@@ -394,7 +413,7 @@ the API method.
 
 This method may later be extended to allow specification of client and
 required scopes via query arguments.'
-Entry 20    =
+Entry 21    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -1168,6 +1187,67 @@ Title                  = 'Set of scopes'
 Type                   = 'object'
 TypeName               = 'SetOfScopes'
 SourceURL              = 'http://schemas.taskcluster.net/auth/v1/scopeset.json#'
+
+
+http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#
+================================================================
+Additional Properties  = 'false'
+Description            = 'Sentry DSN for submitting errors.
+'
+ID                     = 'http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#'
+Properties
+  Property 'dsn' =
+    Additional Properties  = 'false'
+    Description            = 'Access credentials and urls for the Sentry project.
+    Credentials will expire in 24-48 hours, you should refresh them within
+    24 hours.
+    '
+    Properties
+      Property 'public' =
+        Description            = 'Access credential and URL for public error reports.
+        These credentials can be used for up-to 24 hours.
+        This is for use in client-side applications only.
+        '
+        Format                 = 'uri'
+        Type                   = 'string'
+        TypeName               = 'Public'
+        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn/properties/public'
+      Property 'secret' =
+        Description            = 'Access credential and URL for private error reports.
+        These credentials can be used for up-to 24 hours.
+        This is for use in serser-side applications and should **not** be
+        leaked.
+        '
+        Format                 = 'uri'
+        Type                   = 'string'
+        TypeName               = 'Secret'
+        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn/properties/secret'
+    Required               = '[secret public]'
+    Type                   = 'object'
+    TypeName               = 'Dsn'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn'
+  Property 'expires' =
+    Description            = 'Expiration time for the credentials. The credentials should not be used
+    after this time. They might not be revoked immediately, but will be at
+    some arbitrary point after this date-time.
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = 'Expires'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/expires'
+  Property 'project' =
+    Description            = 'Project name that the DSN grants access to.
+    '
+    Title                  = 'Project'
+    Type                   = 'string'
+    TypeName               = 'Project'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/project'
+Required               = '[project dsn expires]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Sentry DSN Response'
+Type                   = 'object'
+TypeName               = 'SentryDSNResponse'
+SourceURL              = 'http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#'
 
 
 http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#

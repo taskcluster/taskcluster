@@ -441,6 +441,47 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/list-roles-response.json#
 	ListRolesResponse []GetRoleResponse
 
+	// Sentry DSN for submitting errors.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#
+	SentryDSNResponse struct {
+
+		// Access credentials and urls for the Sentry project.
+		// Credentials will expire in 24-48 hours, you should refresh them within
+		// 24 hours.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn
+		Dsn struct {
+
+			// Access credential and URL for public error reports.
+			// These credentials can be used for up-to 24 hours.
+			// This is for use in client-side applications only.
+			//
+			// See http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn/properties/public
+			Public string `json:"public"`
+
+			// Access credential and URL for private error reports.
+			// These credentials can be used for up-to 24 hours.
+			// This is for use in serser-side applications and should **not** be
+			// leaked.
+			//
+			// See http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn/properties/secret
+			Secret string `json:"secret"`
+		} `json:"dsn"`
+
+		// Expiration time for the credentials. The credentials should not be used
+		// after this time. They might not be revoked immediately, but will be at
+		// some arbitrary point after this date-time.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/expires
+		Expires tcclient.Time `json:"expires"`
+
+		// Project name that the DSN grants access to.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/project
+		Project string `json:"project"`
+	}
+
 	// A set of scopes
 	//
 	// See http://schemas.taskcluster.net/auth/v1/scopeset.json#

@@ -63,7 +63,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 25 Mar 2016 at 14:30:00 UTC. The code was generated
+// Mon, 28 Mar 2016 at 23:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -377,6 +377,35 @@ func (myAuth *Auth) AzureTableSAS(account, table string) (*AzureSharedAccessSign
 func (myAuth *Auth) AzureTableSAS_SignedURL(account, table string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.ConnectionData(*myAuth)
 	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", nil, duration)
+}
+
+// Get temporary DSN (access credentials) for a sentry project.
+// The credentials returned can be used with any Sentry client for up to
+// 24 hours, after which the credentials will be automatically disabled.
+//
+// If the project doesn't exist it will be created, and assigned to the
+// initial team configured for this component. Contact a Sentry admin
+// to have the project transferred to a team you have access to if needed
+//
+// Required scopes:
+//   * auth:sentry-dsn:<project>
+//
+// See http://docs.taskcluster.net/auth/api-docs/#sentryDSN
+func (myAuth *Auth) SentryDSN(project string) (*SentryDSNResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/sentry/"+url.QueryEscape(project)+"/dsn", new(SentryDSNResponse), nil)
+	return responseObject.(*SentryDSNResponse), callSummary, err
+}
+
+// Returns a signed URL for SentryDSN, valid for the specified duration.
+//
+// Required scopes:
+//   * auth:sentry-dsn:<project>
+//
+// See SentryDSN for more details.
+func (myAuth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	return (&cd).SignedURL("/sentry/"+url.QueryEscape(project)+"/dsn", nil, duration)
 }
 
 // Validate the request signature given on input and return list of scopes
