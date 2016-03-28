@@ -3,7 +3,7 @@ title:                      "Sentry DSN Response"
 description: |
   Sentry DSN for submitting errors.
 type:                       object
-properites:
+properties:
   project:
     type:           string
     title:          Project
@@ -15,7 +15,7 @@ properites:
       Access credentials and urls for the Sentry project.
       Credentials will expire in 24-48 hours, you should refresh them within
       24 hours.
-    properites:
+    properties:
       secret:
         type:       string
         format:     uri
@@ -31,6 +31,7 @@ properites:
           Access credential and URL for public error reports.
           These credentials can be used for up-to 24 hours.
           This is for use in client-side applications only.
+    additionalProperties: false
     required:
       - secret
       - public
@@ -41,6 +42,7 @@ properites:
       Expiration time for the credentials. The credentials should not be used
       after this time. They might not be revoked immediately, but will be at
       some arbitrary point after this date-time.
+additionalProperties: false
 required:
   - project
   - dsn

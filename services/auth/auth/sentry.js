@@ -32,6 +32,6 @@ api.declare({
   return res.reply({
     project,
     dsn: key.dsn,
-    expires: key.expires,
+    expires: key.expires.toJSON(),
   });
 });
