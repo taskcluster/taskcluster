@@ -29,6 +29,7 @@
     "promise": "^7.0.4",
     "pulse-publisher": "^0.9.1",
     "raven": "^0.10.0",
+    "sentry-api": "jonasfj/node-sentry-api#create-project",
     "slugid": "^1.1.0",
     "superagent": "^1.1.0",
     "superagent-hawk": "0.0.4",
