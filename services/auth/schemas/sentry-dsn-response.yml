@@ -1,0 +1,47 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:                      "Sentry DSN Response"
+description: |
+  Sentry DSN for submitting errors.
+type:                       object
+properites:
+  project:
+    type:           string
+    title:          Project
+    description: |
+      Project name that the DSN grants access to.
+  dsn:
+    type:           object
+    description: |
+      Access credentials and urls for the Sentry project.
+      Credentials will expire in 24-48 hours, you should refresh them within
+      24 hours.
+    properites:
+      secret:
+        type:       string
+        format:     uri
+        description: |
+          Access credential and URL for private error reports.
+          These credentials can be used for up-to 24 hours.
+          This is for use in serser-side applications and should **not** be
+          leaked.
+      public:
+        type:       string
+        format:     uri
+        description: |
+          Access credential and URL for public error reports.
+          These credentials can be used for up-to 24 hours.
+          This is for use in client-side applications only.
+    required:
+      - secret
+      - public
+  expires:
+    type:           string
+    format:         date-time
+    description: |
+      Expiration time for the credentials. The credentials should not be used
+      after this time. They might not be revoked immediately, but will be at
+      some arbitrary point after this date-time.
+required:
+  - project
+  - dsn
+  - expires

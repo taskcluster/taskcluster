@@ -36,6 +36,9 @@ var webServer = null, testServer;
 mocha.before(async () => {
   let overwrites = {};
   overwrites['profile'] = 'test';
+  overwrites['process'] = 'test';
+  helper.overwrites = overwrites;
+  helper.load = serverLoad;
 
   // if we don't have an azure account/key, use the inmemory version
   if (!cfg.azure || !cfg.azure.accountName) {
