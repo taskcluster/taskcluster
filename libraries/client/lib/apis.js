@@ -322,7 +322,7 @@ module.exports = {
           "args": [
             "project"
           ],
-          "description": "Get temporary DSN (access credentials) for a sentry project.\nThe credentials returned can be used with any Sentry client for up to\n24 hours, after which the credentials will be automatically disabled.\n\nIf the project doesn't exist it will be created, and assigned to the\ninitial team configured for this component. Contact a Sentry admin\nto have the project transferred to a team you have access to if needed",
+          "description": "Get temporary DSN (access credentials) for a sentry project.\nThe credentials returned can be used with any Sentry client for up to\n24 hours, after which the credentials will be automatically disabled.\n\nIf the project doesn't exist it will be created, and assigned to the\ninitial team configured for this component. Contact a Sentry admin\nto have the project transferred to a team you have access to if needed.",
           "method": "get",
           "name": "sentryDSN",
           "output": "http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#",
@@ -331,11 +331,31 @@ module.exports = {
           "route": "/sentry/<project>/dsn",
           "scopes": [
             [
-              "auth:sentry-dsn:<project>"
+              "auth:sentry:<project>"
             ]
           ],
           "stability": "stable",
           "title": "Get DSN for Sentry Project",
+          "type": "function"
+        },
+        {
+          "args": [
+            "project"
+          ],
+          "description": "Get temporary token for writing stats to statsum.\nThe token returned is valid for up to 24 hours, after\nwhich the token will be automatically disabled.",
+          "method": "get",
+          "name": "statsumToken",
+          "output": "http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#",
+          "query": [
+          ],
+          "route": "/statsum/<project>/token",
+          "scopes": [
+            [
+              "auth:statsum:<project>"
+            ]
+          ],
+          "stability": "stable",
+          "title": "Get token for writing stats to statsum",
           "type": "function"
         },
         {

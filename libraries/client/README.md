@@ -173,6 +173,7 @@ var auth = new taskcluster.Auth(options);
  * `auth.awsS3Credentials(level, bucket, prefix) : result`
  * `auth.azureTableSAS(account, table) : result`
  * `auth.sentryDSN(project) : result`
+ * `auth.statsumToken(project) : result`
  * `auth.authenticateHawk(payload) : result`
  * `auth.testAuthenticate(payload) : result`
  * `auth.testAuthenticateGet() : result`
