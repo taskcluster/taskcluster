@@ -172,6 +172,7 @@ var auth = new taskcluster.Auth(options);
  * `auth.currentScopes() : result`
  * `auth.awsS3Credentials(level, bucket, prefix) : result`
  * `auth.azureTableSAS(account, table) : result`
+ * `auth.sentryDSN(project) : result`
  * `auth.authenticateHawk(payload) : result`
  * `auth.testAuthenticate(payload) : result`
  * `auth.testAuthenticateGet() : result`
@@ -268,8 +269,8 @@ var queue = new taskcluster.Queue(options);
  * `queue.createArtifact(taskId, runId, name, payload) : result`
  * `queue.getArtifact(taskId, runId, name) : void`
  * `queue.getLatestArtifact(taskId, name) : void`
- * `queue.listArtifacts(taskId, runId) : result`
- * `queue.listLatestArtifacts(taskId) : result`
+ * `queue.listArtifacts(taskId, runId, [options]) : result`
+ * `queue.listLatestArtifacts(taskId, [options]) : result`
  * `queue.pendingTasks(provisionerId, workerType) : result`
  * `queue.ping() : void`
 

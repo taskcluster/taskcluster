@@ -3,7 +3,7 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://auth.taskcluster.net/v1",
-      "description": "Authentication related API end-points for TaskCluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authenticate request signed with TaskCluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, scopes, and some metadata.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling TaskCluster APIs.\n\nThe client's scopes control the client's access to TaskCluster resources.\nThe scopes are *expanded* by substituting roles, as defined below.\nEvery client has an implicit scope named `assume:client-id:<clientId>`,\nallowing additional access to be granted to the client without directly\nediting the client's scopes.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\nAs previously mentioned each client gets the scope:\n`assume:client-id:<clientId>`, it trivially follows that you can create a\nrole with the `roleId`: `client-id:<clientId>` to assign additional\nscopes to a client. You can also create a role `client-id:user-*`\nif you wish to assign a set of scopes to all clients whose `clientId`\nstarts with `user-`.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskCluster credentials to grant access to a third-party service used\nby many TaskCluster components.",
+      "description": "Authentication related API end-points for TaskCluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authenticate request signed with TaskCluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, scopes, and some metadata.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling TaskCluster APIs.\n\nThe client's scopes control the client's access to TaskCluster resources.\nThe scopes are *expanded* by substituting roles, as defined below.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskCluster credentials to grant access to a third-party service used\nby many TaskCluster components.",
       "entries": [
         {
           "args": [
@@ -320,6 +320,26 @@ module.exports = {
         },
         {
           "args": [
+            "project"
+          ],
+          "description": "Get temporary DSN (access credentials) for a sentry project.\nThe credentials returned can be used with any Sentry client for up to\n24 hours, after which the credentials will be automatically disabled.\n\nIf the project doesn't exist it will be created, and assigned to the\ninitial team configured for this component. Contact a Sentry admin\nto have the project transferred to a team you have access to if needed",
+          "method": "get",
+          "name": "sentryDSN",
+          "output": "http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#",
+          "query": [
+          ],
+          "route": "/sentry/<project>/dsn",
+          "scopes": [
+            [
+              "auth:sentry-dsn:<project>"
+            ]
+          ],
+          "stability": "stable",
+          "title": "Get DSN for Sentry Project",
+          "type": "function"
+        },
+        {
+          "args": [
           ],
           "description": "Validate the request signature given on input and return list of scopes\nthat the authenticating client has.\n\nThis method is used by other services that wish rely on TaskCluster\ncredentials for authentication. This way we can use Hawk without having\nthe secret credentials leave this service.",
           "input": "http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#",
@@ -396,6 +416,8 @@ module.exports = {
           "method": "put",
           "name": "createWorkerType",
           "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#",
+          "query": [
+          ],
           "route": "/worker-type/<workerType>",
           "scopes": [
             [
@@ -415,6 +437,8 @@ module.exports = {
           "method": "post",
           "name": "updateWorkerType",
           "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#",
+          "query": [
+          ],
           "route": "/worker-type/<workerType>/update",
           "scopes": [
             [
@@ -433,6 +457,8 @@ module.exports = {
           "method": "get",
           "name": "workerType",
           "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#",
+          "query": [
+          ],
           "route": "/worker-type/<workerType>",
           "scopes": [
             [
@@ -453,6 +479,8 @@ module.exports = {
           "description": "Delete a worker type definition.  This method will only delete\nthe worker type definition from the storage table.  The actual\ndeletion will be handled by a background worker.  As soon as this\nmethod is called for a worker type, the background worker will\nimmediately submit requests to cancel all spot requests for this\nworker type as well as killing all instances regardless of their\nstate.  If you want to gracefully remove a worker type, you must\neither ensure that no tasks are created with that worker type name\nor you could theoretically set maxCapacity to 0, though, this is\nnot a supported or tested action",
           "method": "delete",
           "name": "removeWorkerType",
+          "query": [
+          ],
           "route": "/worker-type/<workerType>",
           "scopes": [
             [
@@ -470,12 +498,9 @@ module.exports = {
           "method": "get",
           "name": "listWorkerTypes",
           "output": "http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#",
-          "route": "/list-worker-types",
-          "scopes": [
-            [
-              "aws-provisioner:list-worker-types"
-            ]
+          "query": [
           ],
+          "route": "/list-worker-types",
           "stability": "experimental",
           "title": "List Worker Types",
           "type": "function"
@@ -488,6 +513,8 @@ module.exports = {
           "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#",
           "method": "put",
           "name": "createSecret",
+          "query": [
+          ],
           "route": "/secret/<token>",
           "scopes": [
             [
@@ -506,6 +533,8 @@ module.exports = {
           "method": "get",
           "name": "getSecret",
           "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#",
+          "query": [
+          ],
           "route": "/secret/<token>",
           "stability": "experimental",
           "title": "Get a Secret",
@@ -519,6 +548,8 @@ module.exports = {
           "description": "An instance will report in by giving its instance id as well\nas its security token.  The token is given and checked to ensure\nthat it matches a real token that exists to ensure that random\nmachines do not check in.  We could generate a different token\nbut that seems like overkill",
           "method": "get",
           "name": "instanceStarted",
+          "query": [
+          ],
           "route": "/instance-started/<instanceId>/<token>",
           "stability": "experimental",
           "title": "Report an instance starting",
@@ -531,6 +562,8 @@ module.exports = {
           "description": "Remove a secret.  After this call, a call to `getSecret` with the given\ntoken will return no information.\n\nIt is very important that the consumer of a \nsecret delete the secret from storage before handing over control\nto untrusted processes to prevent credential and/or secret leakage.",
           "method": "delete",
           "name": "removeSecret",
+          "query": [
+          ],
           "route": "/secret/<token>",
           "stability": "experimental",
           "title": "Remove a Secret",
@@ -544,6 +577,8 @@ module.exports = {
           "method": "get",
           "name": "getLaunchSpecs",
           "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#",
+          "query": [
+          ],
           "route": "/worker-type/<workerType>/launch-specifications",
           "scopes": [
             [
@@ -563,6 +598,8 @@ module.exports = {
           "description": "This method is a left over and will be removed as soon as the\ntools.tc.net UI is updated to use the per-worker state\n\n**DEPRECATED.**",
           "method": "get",
           "name": "awsState",
+          "query": [
+          ],
           "route": "/aws-state",
           "scopes": [
             [
@@ -580,6 +617,8 @@ module.exports = {
           "description": "Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for all instances, 1 for requests\nwhich show in the ec2 api and 1 list for those only tracked internally\nin the provisioner.",
           "method": "get",
           "name": "state",
+          "query": [
+          ],
           "route": "/state/<workerType>",
           "scopes": [
             [
@@ -596,6 +635,8 @@ module.exports = {
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
           "method": "get",
           "name": "ping",
+          "query": [
+          ],
           "route": "/ping",
           "stability": "experimental",
           "title": "Ping Server",
@@ -607,6 +648,8 @@ module.exports = {
           "description": "**Warning** this api end-point is **not stable**.",
           "method": "get",
           "name": "backendStatus",
+          "query": [
+          ],
           "route": "/backend-status",
           "stability": "experimental",
           "title": "Backend Status",
@@ -618,6 +661,8 @@ module.exports = {
           "description": "Get an API reference!\n\n**Warning** this api end-point is **not stable**.",
           "method": "get",
           "name": "apiReference",
+          "query": [
+          ],
           "route": "/api-reference",
           "stability": "experimental",
           "title": "api reference",
@@ -1011,6 +1056,8 @@ module.exports = {
           "method": "get",
           "name": "findTask",
           "output": "http://schemas.taskcluster.net/index/v1/indexed-task-response.json#",
+          "query": [
+          ],
           "route": "/task/<namespace>",
           "stability": "experimental",
           "title": "Find Indexed Task",
@@ -1025,6 +1072,8 @@ module.exports = {
           "method": "post",
           "name": "listNamespaces",
           "output": "http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#",
+          "query": [
+          ],
           "route": "/namespaces/<namespace>",
           "stability": "experimental",
           "title": "List Namespaces",
@@ -1039,6 +1088,8 @@ module.exports = {
           "method": "post",
           "name": "listTasks",
           "output": "http://schemas.taskcluster.net/index/v1/list-tasks-response.json#",
+          "query": [
+          ],
           "route": "/tasks/<namespace>",
           "stability": "experimental",
           "title": "List Tasks",
@@ -1053,6 +1104,8 @@ module.exports = {
           "method": "put",
           "name": "insertTask",
           "output": "http://schemas.taskcluster.net/index/v1/indexed-task-response.json#",
+          "query": [
+          ],
           "route": "/task/<namespace>",
           "scopes": [
             [
@@ -1071,6 +1124,8 @@ module.exports = {
           "description": "Find task by namespace and redirect to artifact with given `name`,\nif no task existing for the given namespace, this API end-point respond\n`404`.",
           "method": "get",
           "name": "findArtifactFromTask",
+          "query": [
+          ],
           "route": "/task/<namespace>/artifacts/<name>",
           "scopes": [
             [
@@ -1087,6 +1142,8 @@ module.exports = {
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
           "method": "get",
           "name": "ping",
+          "query": [
+          ],
           "route": "/ping",
           "stability": "experimental",
           "title": "Ping Server",
@@ -1221,7 +1278,7 @@ module.exports = {
           "args": [
             "taskGroupId"
           ],
-          "description": "List taskIds of all tasks sharing the same `taskGroupId`.\n\nAs a task-group may contain an unbounded number of tasks, this end-point\nmay return a `continuationToken`. To continue listing tasks you must\n`listTaskGroup` again with the `continuationToken` as the query-string\noption `continuationToken`.\n\nBy default this end-point will try to return up to 1000 members in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continationToken` until you\nget a result without a `continuationToken`.\n\nIf you're not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
+          "description": "List tasks sharing the same `taskGroupId`.\n\nAs a task-group may contain an unbounded number of tasks, this end-point\nmay return a `continuationToken`. To continue listing tasks you must\n`listTaskGroup` again with the `continuationToken` as the query-string\noption `continuationToken`.\n\nBy default this end-point will try to return up to 1000 members in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continationToken` until you\nget a result without a `continuationToken`.\n\nIf you're not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
           "name": "listTaskGroup",
           "output": "http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#",
@@ -1238,7 +1295,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
-          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**, the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.\n\n**Important** Any scopes the task requires are also required for creating\nthe task. Please see the Request Payload (Task Definition) for details.",
+          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**, the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Important** Any scopes the task requires are also required for creating\nthe task. Please see the Request Payload (Task Definition) for details.",
           "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
           "method": "put",
           "name": "createTask",
@@ -1284,7 +1341,7 @@ module.exports = {
               "queue:task-group-id:<schedulerId>/<taskGroupId>"
             ]
           ],
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "Define Task",
           "type": "function"
         },
@@ -1587,11 +1644,13 @@ module.exports = {
             "taskId",
             "runId"
           ],
-          "description": "Returns a list of artifacts and associated meta-data for a given run.",
+          "description": "Returns a list of artifacts and associated meta-data for a given run.\n\nAs a task may have many artifacts paging may be necessary. If this\nend-point returns a `continuationToken`, you should call the end-point\nagain with the `continuationToken` as the query-string option:\n`continuationToken`.\n\nBy default this end-point will list up-to 1000 artifacts in a single page\nyou may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listArtifacts",
           "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#",
           "query": [
+            "continuationToken",
+            "limit"
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts",
           "stability": "experimental",
@@ -1602,11 +1661,13 @@ module.exports = {
           "args": [
             "taskId"
           ],
-          "description": "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.",
+          "description": "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.\n\nAs a task may have many artifacts paging may be necessary. If this\nend-point returns a `continuationToken`, you should call the end-point\nagain with the `continuationToken` as the query-string option:\n`continuationToken`.\n\nBy default this end-point will list up-to 1000 artifacts in a single page\nyou may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listLatestArtifacts",
           "output": "http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#",
           "query": [
+            "continuationToken",
+            "limit"
           ],
           "route": "/task/<taskId>/artifacts",
           "stability": "experimental",
