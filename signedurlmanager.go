@@ -49,8 +49,8 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		log.Printf("Refreshing signed urls in %v", refreshWait.String())
 		updateMe = time.After(refreshWait)
 		for i, q := range signedURLs.Queues {
-			log.Printf("  Priority (%v) Delete URL: %v", i+1, q.SignedDeleteUrl)
-			log.Printf("  Priority (%v) Poll URL:   %v", i+1, q.SignedPollUrl)
+			log.Printf("  Priority (%v) Delete URL: %v", i+1, q.SignedDeleteURL)
+			log.Printf("  Priority (%v) Poll URL:   %v", i+1, q.SignedPollURL)
 		}
 	}
 	// Get signed urls for the first time...

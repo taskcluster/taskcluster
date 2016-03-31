@@ -27,8 +27,8 @@ func main() {
 	oldAmi := ""
 	for i, _ := range wt.Regions {
 		if wt.Regions[i].Region == "us-west-2" {
-			oldAmi = wt.Regions[i].LaunchSpec.ImageId
-			wt.Regions[i].LaunchSpec.ImageId = newAmi
+			oldAmi = wt.Regions[i].LaunchSpec.ImageID
+			wt.Regions[i].LaunchSpec.ImageID = newAmi
 			found = true
 		}
 	}

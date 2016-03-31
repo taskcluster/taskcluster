@@ -433,7 +433,7 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	// may be appended to `signedPollUrl`. The parameter `N` is the
 	// maximum number of messages desired, `N` can be up to 32.
 	// Since we can only process one task at a time, grab only one.
-	resp, _, err := httpbackoff.Get(urlPair.SignedPollUrl + "&numofmessages=1")
+	resp, _, err := httpbackoff.Get(urlPair.SignedPollURL + "&numofmessages=1")
 	if err != nil {
 		log.Printf("%v", err)
 		return nil, err
@@ -495,9 +495,9 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 
 	// Since urlPair is a value, not a pointer, we can update this copy which
 	// is associated only with this particular task
-	urlPair.SignedDeleteUrl = detokeniseUri(
+	urlPair.SignedDeleteURL = detokeniseUri(
 		detokeniseUri(
-			urlPair.SignedDeleteUrl,
+			urlPair.SignedDeleteURL,
 			"{{messageId}}",
 			qm.MessageId,
 		),
@@ -510,9 +510,9 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	// number of times, for example 15 or more.
 	if qm.DequeueCount >= 15 {
 		log.Printf("WARN: Queue Message with message id %v has been dequeued %v times!", qm.MessageId, qm.DequeueCount)
-		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
+		deleteErr := deleteFromAzure(urlPair.SignedDeleteURL)
 		if deleteErr != nil {
-			log.Println("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
+			log.Println("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteURL)
 			log.Printf("%v", deleteErr)
 		}
 	}
@@ -526,9 +526,9 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 		// not very serious - another worker will try to delete it
 		log.Println("ERROR: Not able to base64 decode the Message Text '" + qm.MessageText + "' in Azure QueueMessage response.")
 		log.Println("Deleting from Azure queue as other workers will have the same problem.")
-		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
+		deleteErr := deleteFromAzure(urlPair.SignedDeleteURL)
 		if deleteErr != nil {
-			log.Println("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
+			log.Println("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteURL)
 			log.Printf("%v", deleteErr)
 		}
 		return nil, err
@@ -545,9 +545,9 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	if err != nil {
 		log.Printf("Not able to unmarshal json from base64 decoded MessageText '%v'", m)
 		log.Printf("%v", err)
-		deleteErr := deleteFromAzure(urlPair.SignedDeleteUrl)
+		deleteErr := deleteFromAzure(urlPair.SignedDeleteURL)
 		if deleteErr != nil {
-			log.Println("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteUrl)
+			log.Println("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteURL)
 			log.Printf("%v", deleteErr)
 		}
 		return nil, err
@@ -563,7 +563,7 @@ func (task *TaskRun) deleteFromAzure() error {
 		return fmt.Errorf("Cannot delete task from Azure - task is nil")
 	}
 	log.Println("Deleting task " + task.TaskId + " from Azure queue...")
-	return deleteFromAzure(task.SignedURLPair.SignedDeleteUrl)
+	return deleteFromAzure(task.SignedURLPair.SignedDeleteURL)
 }
 
 // deleteFromAzure is a wrapper around calling an Azure delete URL with error

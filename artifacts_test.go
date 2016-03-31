@@ -297,14 +297,14 @@ func TestUpload(t *testing.T) {
 		1,    // prefetch
 		true, // auto-ack
 		queueevents.ArtifactCreated{
-			TaskId:        taskId,
+			TaskID:        taskId,
 			WorkerType:    workerType,
-			ProvisionerId: provisionerId,
+			ProvisionerID: provisionerId,
 		},
 		queueevents.TaskCompleted{
-			TaskId:        taskId,
+			TaskID:        taskId,
 			WorkerType:    workerType,
-			ProvisionerId: provisionerId,
+			ProvisionerID: provisionerId,
 		},
 	)
 
@@ -359,14 +359,14 @@ func TestUpload(t *testing.T) {
 		}
 		
 		`),
-		ProvisionerId: provisionerId,
+		ProvisionerID: provisionerId,
 		Retries:       1,
 		Routes:        []string{},
-		SchedulerId:   "test-scheduler",
+		SchedulerID:   "test-scheduler",
 		Scopes:        []string{},
 		Tags:          json.RawMessage(`{"createdForUser":"pmoore@mozilla.com"}`),
 		Priority:      "normal",
-		TaskGroupId:   taskGroupId,
+		TaskGroupID:   taskGroupId,
 		WorkerType:    workerType,
 	}
 

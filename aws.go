@@ -202,7 +202,7 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 		return removeErr
 	}
 	c.AccessToken = secToken.Credentials.AccessToken
-	c.ClientId = secToken.Credentials.ClientId
+	c.ClientId = secToken.Credentials.ClientID
 	c.Certificate = secToken.Credentials.Certificate
 	c.WorkerGroup = userData.Region
 	c.WorkerId = instanceName

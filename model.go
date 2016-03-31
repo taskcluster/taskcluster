@@ -92,8 +92,8 @@ type (
 	}
 
 	SignedURLPair struct {
-		SignedDeleteUrl string `json:"signedDeleteUrl"`
-		SignedPollUrl   string `json:"signedPollUrl"`
+		SignedDeleteURL string `json:"signedDeleteUrl"`
+		SignedPollURL   string `json:"signedPollUrl"`
 	}
 
 	S3ArtifactResponse struct {
@@ -142,7 +142,7 @@ func (task *TaskRun) String() string {
 	response += fmt.Sprintf("Claim Response Body:     %v\n", task.ClaimCallSummary.HttpResponseBody)
 	response += fmt.Sprintf("Claim Response Code:     %v\n", task.ClaimCallSummary.HttpResponse.StatusCode)
 	response += fmt.Sprintf("==========================================\n")
-	response += fmt.Sprintf("Run Id (Task Claim):     %v\n", task.TaskClaimResponse.RunId)
+	response += fmt.Sprintf("Run Id (Task Claim):     %v\n", task.TaskClaimResponse.RunID)
 	response += fmt.Sprintf("Message Id:              %v\n", task.QueueMessage.MessageId)
 	response += fmt.Sprintf("Insertion Time:          %v\n", task.QueueMessage.InsertionTime)
 	response += fmt.Sprintf("Expiration Time:         %v\n", task.QueueMessage.ExpirationTime)
@@ -155,29 +155,29 @@ func (task *TaskRun) String() string {
 		response += fmt.Sprintf("  Reason Created:        %v\n", string(run.ReasonCreated))
 		response += fmt.Sprintf("  Reason Resolved:       %v\n", string(run.ReasonResolved))
 		response += fmt.Sprintf("  Resolved:              %v\n", run.Resolved)
-		response += fmt.Sprintf("  Run Id:                %v\n", run.RunId)
+		response += fmt.Sprintf("  Run Id:                %v\n", run.RunID)
 		response += fmt.Sprintf("  Scheduled:             %v\n", run.Scheduled)
 		response += fmt.Sprintf("  Started:               %v\n", run.Started)
 		response += fmt.Sprintf("  State:                 %v\n", string(run.State))
 		response += fmt.Sprintf("  Taken Until:           %v\n", run.TakenUntil)
 		response += fmt.Sprintf("  Worker Group:          %v\n", run.WorkerGroup)
-		response += fmt.Sprintf("  Worker Id:             %v\n", run.WorkerId)
+		response += fmt.Sprintf("  Worker Id:             %v\n", run.WorkerID)
 	}
 	response += fmt.Sprintf("==========================================\n")
 	response += fmt.Sprintf("Status Deadline:         %v\n", task.TaskClaimResponse.Status.Deadline)
-	response += fmt.Sprintf("Status Provisioner Id:   %v\n", task.TaskClaimResponse.Status.ProvisionerId)
+	response += fmt.Sprintf("Status Provisioner Id:   %v\n", task.TaskClaimResponse.Status.ProvisionerID)
 	response += fmt.Sprintf("Status Retries Left:     %v\n", task.TaskClaimResponse.Status.RetriesLeft)
-	response += fmt.Sprintf("Status Scheduler Id:     %v\n", task.TaskClaimResponse.Status.SchedulerId)
+	response += fmt.Sprintf("Status Scheduler Id:     %v\n", task.TaskClaimResponse.Status.SchedulerID)
 	response += fmt.Sprintf("Status State:            %v\n", string(task.TaskClaimResponse.Status.State))
-	response += fmt.Sprintf("Status Task Group Id:    %v\n", task.TaskClaimResponse.Status.TaskGroupId)
-	response += fmt.Sprintf("Status Task Id:          %v\n", task.TaskClaimResponse.Status.TaskId)
+	response += fmt.Sprintf("Status Task Group Id:    %v\n", task.TaskClaimResponse.Status.TaskGroupID)
+	response += fmt.Sprintf("Status Task Id:          %v\n", task.TaskClaimResponse.Status.TaskID)
 	response += fmt.Sprintf("Status Worker Type:      %v\n", task.TaskClaimResponse.Status.WorkerType)
 	response += fmt.Sprintf("Taken Until:             %v\n", task.TaskClaimResponse.TakenUntil)
 	response += fmt.Sprintf("Worker Group:            %v\n", task.TaskClaimResponse.WorkerGroup)
-	response += fmt.Sprintf("Worker Id:               %v\n", task.TaskClaimResponse.WorkerId)
+	response += fmt.Sprintf("Worker Id:               %v\n", task.TaskClaimResponse.WorkerID)
 	response += fmt.Sprintf("==========================================\n")
-	response += fmt.Sprintf("Signed Poll URL:         %v\n", task.SignedURLPair.SignedPollUrl)
-	response += fmt.Sprintf("Signed Delete URL:       %v\n", task.SignedURLPair.SignedDeleteUrl)
+	response += fmt.Sprintf("Signed Poll URL:         %v\n", task.SignedURLPair.SignedPollURL)
+	response += fmt.Sprintf("Signed Delete URL:       %v\n", task.SignedURLPair.SignedDeleteURL)
 	response += fmt.Sprintf("==========================================\n")
 	response += fmt.Sprintf("Created:                 %v\n", task.Definition.Created)
 	response += fmt.Sprintf("Deadline:                %v\n", task.Definition.Deadline)
@@ -185,13 +185,13 @@ func (task *TaskRun) String() string {
 	response += fmt.Sprintf("Extra:                   %s\n", task.Definition.Extra)
 	response += fmt.Sprintf("Metadata:                %v\n", task.Definition.Metadata)
 	response += fmt.Sprintf("Payload:                 %s\n", task.Definition.Payload)
-	response += fmt.Sprintf("Provisioner Id:          %v\n", task.Definition.ProvisionerId)
+	response += fmt.Sprintf("Provisioner Id:          %v\n", task.Definition.ProvisionerID)
 	response += fmt.Sprintf("Retries:                 %v\n", task.Definition.Retries)
 	response += fmt.Sprintf("Routes:                  %#v\n", task.Definition.Routes)
-	response += fmt.Sprintf("SchedulerId:             %v\n", task.Definition.SchedulerId)
+	response += fmt.Sprintf("SchedulerId:             %v\n", task.Definition.SchedulerID)
 	response += fmt.Sprintf("Scopes:                  %#v\n", task.Definition.Scopes)
 	response += fmt.Sprintf("Tags:                    %s\n", task.Definition.Tags)
-	response += fmt.Sprintf("Task Group Id:           %v\n", task.Definition.TaskGroupId)
+	response += fmt.Sprintf("Task Group Id:           %v\n", task.Definition.TaskGroupID)
 	response += fmt.Sprintf("Worker Type:             %v\n", task.Definition.WorkerType)
 	response += fmt.Sprintf("==========================================\n")
 	response += fmt.Sprintf("Artifacts:               %v\n", task.Payload.Artifacts)

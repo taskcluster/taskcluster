@@ -72,7 +72,7 @@ func (redirectArtifact RedirectArtifact) RequestObject() interface{} {
 		ContentType: redirectArtifact.MimeType,
 		Expires:     redirectArtifact.Expires,
 		StorageType: "reference",
-		Url:         redirectArtifact.URL,
+		URL:         redirectArtifact.URL,
 	}
 }
 
@@ -113,7 +113,7 @@ func (artifact S3Artifact) ProcessResponse(resp interface{}) error {
 		defer fileReader.Close()
 		bytesReader := bytes.NewReader(requestPayload)
 		// http.NewRequest automatically sets Content-Length correctly for bytes.Reader
-		httpRequest, err := http.NewRequest("PUT", response.PutUrl, bytesReader)
+		httpRequest, err := http.NewRequest("PUT", response.PutURL, bytesReader)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -131,7 +131,7 @@ func (artifact S3Artifact) ProcessResponse(resp interface{}) error {
 		return putResp, err, nil
 	}
 	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
-	log.Printf("%v put requests issued to %v", putAttempts, response.PutUrl)
+	log.Printf("%v put requests issued to %v", putAttempts, response.PutURL)
 	respBody, dumpError := httputil.DumpResponse(putResp, true)
 	if dumpError != nil {
 		log.Println("Could not dump response output, never mind...")

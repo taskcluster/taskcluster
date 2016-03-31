@@ -30,4 +30,4 @@ coverage.report
 test/public/logs
 
 # other
-worker_types/*/latest.txt
+latest.txt

@@ -88,7 +88,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 		log.Printf("Claiming task %v...", task.TaskId)
 		task.TaskClaimRequest = queue.TaskClaimRequest{
 			WorkerGroup: config.WorkerGroup,
-			WorkerId:    config.WorkerId,
+			WorkerID:    config.WorkerId,
 		}
 		// Using the taskId and runId from the <MessageText> tag, the worker
 		// must call queue.claimTask().
