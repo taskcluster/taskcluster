@@ -40,8 +40,12 @@ echo "$(date): Querying old instances of ${WORKER_TYPE}..."
 OLD_INSTANCES="$(aws ec2 describe-instances --filters Name=tag-key,Values=WorkerType "Name=tag-value,Values=${WORKER_TYPE}" --query 'Reservations[*].Instances[*].InstanceId' --output text)"
 
 # now terminate them
-echo "$(date): Now terminating instances" ${OLD_INSTANCES}...
-aws ec2 terminate-instances --instance-ids ${OLD_INSTANCES} >/dev/null 2>&1
+if [ -n "${OLD_INSTANCES}" ]; then
+  echo "$(date): Now terminating instances" ${OLD_INSTANCES}...
+  aws ec2 terminate-instances --instance-ids ${OLD_INSTANCES} >/dev/null 2>&1
+else
+  echo "$(date): No previous instances to terminate."
+fi
 
 # find old ami
 echo "$(date): Querying previous AMI..."
