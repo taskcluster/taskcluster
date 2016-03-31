@@ -19,7 +19,7 @@ suite('API', function() {
   }
 
   suite("createHook", function() {
-    test("creates a hookd", async () => {
+    test("creates a hook", async () => {
         var r1 = await helper.hooks.createHook('foo', 'bar', hookDef);
         var r2 = await helper.hooks.hook('foo', 'bar');
         assume(r1).deep.equals(r2);
