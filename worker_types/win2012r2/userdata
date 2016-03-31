@@ -89,7 +89,9 @@ Start-Process "C:\cygwin-setup-x86_64.exe" -ArgumentList "--quiet-mode --wait --
 New-NetFirewallRule -DisplayName "Allow SSH inbound" -Direction Inbound -LocalPort 22 -Protocol TCP -Action Allow
 
 # workaround for https://www.cygwin.com/ml/cygwin/2015-10/msg00036.html
-# see https://cygwin.com/git/gitweb.cgi?p=cygwin-csih.git;a=blob;f=cygwin-service-installation-helper.sh;h=10ab4fb6d47803c9ffabdde51923fc2c3f0496bb;hb=7ca191bebb52ae414bb2a2e37ef22d94f2658dc7#l2884
+# see:
+#   1) https://www.cygwin.com/ml/cygwin/2015-10/msg00038.html
+#   2) https://cygwin.com/git/gitweb.cgi?p=cygwin-csih.git;a=blob;f=cygwin-service-installation-helper.sh;h=10ab4fb6d47803c9ffabdde51923fc2c3f0496bb;hb=7ca191bebb52ae414bb2a2e37ef22d94f2658dc7#l2884
 $env:LOGONSERVER = "\\" + $env:COMPUTERNAME
 
 # configure sshd
