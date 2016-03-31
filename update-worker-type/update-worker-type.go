@@ -3,32 +3,39 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 
-	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
 func main() {
 	newAmi := os.Args[1]
 	workerType := os.Args[2]
-	prov := awsprovisioner.New(
-		&tcclient.Credentials{
+
+	cd := &tcclient.ConnectionData{
+		Credentials: &tcclient.Credentials{
 			ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 		},
-	)
-	wt, _, err := prov.WorkerType(workerType)
+		BaseURL:      "https://aws-provisioner.taskcluster.net/v1",
+		Authenticate: true,
+	}
+	var wt map[string]interface{}
+	_, _, err := cd.APICall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), &wt, nil)
 	if err != nil {
 		panic(err)
 	}
 	found := false
 	oldAmi := ""
-	for i, _ := range wt.Regions {
-		if wt.Regions[i].Region == "us-west-2" {
-			oldAmi = wt.Regions[i].LaunchSpec.ImageID
-			wt.Regions[i].LaunchSpec.ImageID = newAmi
+	regions := wt["regions"].([]interface{})
+	for i, _ := range regions {
+		region := regions[i].(map[string]interface{})
+		if region["region"] == "us-west-2" {
+			launchSpec := region["launchSpec"].(map[string]interface{})
+			oldAmi = launchSpec["ImageId"].(string)
+			launchSpec["ImageId"] = newAmi
 			found = true
 		}
 	}
@@ -42,23 +49,9 @@ func main() {
 		return
 	}
 
-	// Pretty ugly, but no easier way that I see to do this
-	updated := &awsprovisioner.CreateWorkerTypeRequest{
-		CanUseOndemand: wt.CanUseOndemand,
-		CanUseSpot:     wt.CanUseSpot,
-		InstanceTypes:  wt.InstanceTypes,
-		LaunchSpec:     wt.LaunchSpec,
-		MaxCapacity:    wt.MaxCapacity,
-		MaxPrice:       wt.MaxPrice,
-		MinCapacity:    wt.MinCapacity,
-		MinPrice:       wt.MinPrice,
-		Regions:        wt.Regions,
-		ScalingRatio:   wt.ScalingRatio,
-		Scopes:         wt.Scopes,
-		Secrets:        wt.Secrets,
-		UserData:       wt.UserData,
-	}
-	_, _, err = prov.UpdateWorkerType(workerType, updated)
+	delete(wt, "lastModified")
+	delete(wt, "workerType")
+	_, _, err = cd.APICall(wt, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(interface{}), nil)
 	if err != nil {
 		panic(err)
 	}
