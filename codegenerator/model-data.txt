@@ -1,4 +1,4 @@
-Generated: 1459207672
+Generated: 1459531685
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2351,7 +2351,7 @@ Entry 0     =
     Entry Query        = '[]'
     Entry Name        = 'githubWebHookConsumer'
     Entry Stability   = 'experimental'
-    Entry Scopes      = '[[]]'
+    Entry Scopes      = '[]'
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Consume GitHub WebHook'
