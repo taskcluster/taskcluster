@@ -8,7 +8,7 @@ api.declare({
   output:     'sentry-dsn-response.json#',
   deferAuth:  true,
   stability:  'stable',
-  scopes:     [['auth:sentry-dsn:<project>']],
+  scopes:     [['auth:sentry:<project>']],
   title:      "Get DSN for Sentry Project",
   description: [
     "Get temporary DSN (access credentials) for a sentry project.",
