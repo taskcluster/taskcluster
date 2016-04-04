@@ -11,6 +11,7 @@ suite('Statsum', () => {
     monitor = await monitoring({
       project: 'tc-lib-monitor',
       credentials: cfg.taskcluster.credentials,
+      patchGlobal: false,
     });
   });
 
