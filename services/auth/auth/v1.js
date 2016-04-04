@@ -769,7 +769,7 @@ api.declare({
   name:       'testAuthenticate',
   input:      'test-authenticate-request.json#',
   output:     'test-authenticate-response.json#',
-  stability:  'experimental',
+  stability:  'stable',
   title:      "Test Authentication",
   description: [
     "Utility method to test client implementations of TaskCluster",
@@ -821,7 +821,7 @@ api.declare({
   route:      '/test-authenticate-get/',
   name:       'testAuthenticateGet',
   output:     'test-authenticate-response.json#',
-  stability:  'experimental',
+  stability:  'stable',
   title:      "Test Authentication (GET)",
   description: [
     "Utility method similar to `testAuthenticate`, but with the GET method,",
@@ -873,6 +873,7 @@ api.declare({
   method:   'get',
   route:    '/ping',
   name:     'ping',
+  stability:  'experimental',
   title:    "Ping Server",
   description: [
     "Documented later...",
@@ -885,5 +886,3 @@ api.declare({
     uptime:   process.uptime()
   });
 });
-
-
