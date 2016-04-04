@@ -7,7 +7,7 @@ api.declare({
   input:      undefined,
   output:     'aws-s3-credentials-response.json#',
   deferAuth:  true,
-  stability:  'experimental',
+  stability:  'stable',
   scopes:     [['auth:aws-s3:<level>:<bucket>/<prefix>']],
   title:      "Get Temporary Read/Write Credentials S3",
   description: [
