@@ -322,7 +322,7 @@ exports.createClient = function(reference, name) {
             if (reportStats) {
               reportStats(true, 'http-' + res.status);
             }
-            if(res.headers['content-type'].indexOf('application/json') === -1 || !res.body){
+            if(!_.includes(res.headers['content-type'], 'application/json') || !res.body) {
               debug("Empty response from server: call: %s, method: %s",entry.name,entry.method);
               return undefined;
             }
