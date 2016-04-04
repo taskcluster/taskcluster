@@ -50,15 +50,20 @@ class LDAPLogin {
 
   async localCallback(req, email, password) {
     // bind as the bind user to convert email to DN
-    let userDn = await this.client.bind(this.user, this.password,
-        (client) => client.dnForEmail(email));
+    let userDn;
+    await this.client.operate(async (client) => {
+      await client.bind(this.user, this.password);
+      userDn = await client.dnForEmail(email);
+    });
     if (!userDn) {
       return this.authFail();
     }
 
     // re-bind as the DN, to validate the password
     try {
-      await this.client.bind(userDn, password);
+      await this.client.operate(async (client) => {
+        await client.bind(userDn, password);
+      }, 2); // only try twice, since failure is expected
     } catch(e) {
       return this.authFail();
     }
