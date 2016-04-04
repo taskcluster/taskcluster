@@ -11,6 +11,7 @@ suite('Sentry', () => {
     monitor = await monitoring({
       project: 'tc-lib-monitor',
       credentials: cfg.taskcluster.credentials,
+      patchGlobal: false,
     });
 
     monitor.sentry.client.on('logged', () => done);

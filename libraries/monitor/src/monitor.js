@@ -15,21 +15,21 @@ class Monitor {
     this.statsum = statsumClient;
   }
 
-  async reportError (err) {
+  async reportError (err, level='error') {
     this.sentry = await setupSentry(
         this.auth,
         this.opts.project,
         this.opts.patchGlobal,
         this.sentry);
-    this.sentry.client.captureException(err);
+    this.sentry.client.captureException(err, {level});
   }
 
-  count (name, val) {
-    this.statsum.count(name, val);
+  count (key, val) {
+    this.statsum.count(key, val);
   }
 
-  measure (name, val) {
-    this.statsum.measure(name, val);
+  measure (key, val) {
+    this.statsum.measure(key, val);
   }
 
   prefix (prefix) {
