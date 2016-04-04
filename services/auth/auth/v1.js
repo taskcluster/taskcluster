@@ -85,6 +85,9 @@ var api = new API({
 
     // SentryManager from sentrymanager.js
     'sentryManager',
+
+    // Statsum configuration {secret, baseUrl}
+    'statsum',
   ]
 });
 
@@ -736,6 +739,7 @@ api.declare({
 require('./aws');
 require('./azure');
 require('./sentry');
+require('./statsum');
 
 /** Get all client information */
 api.declare({
