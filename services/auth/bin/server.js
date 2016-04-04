@@ -160,6 +160,7 @@ let load = loader({
           azureAccounts:      cfg.app.azureAccounts,
           signatureValidator,
           sentryManager,
+          statsum:            cfg.app.statsum,
         },
         validator,
         signatureValidator,
