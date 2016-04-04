@@ -62,10 +62,12 @@ class LDAPAuthorizer {
       });
     };
 
-    // always perform a bind, in case the client has disconnected
-    // since this connection was last used.
-    await this.client.bind(this.user, this.password, async (client) => {
+    await this.client.operate(async (client) => {
       debug(`enumerating scm groups for ${email}`);
+      // always perform a bind, in case the client has disconnected
+      // since this connection was last used.
+      await client.bind(this.user, this.password);
+
       // SCM groups are posixGroup objects with the email in the memberUid
       // field.  This code does not capture other POSIX groups (which have the
       // user's uid field in the memberUid field).

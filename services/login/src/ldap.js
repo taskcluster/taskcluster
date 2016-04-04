@@ -21,33 +21,49 @@ class LDAPClient {
       reconnect: true,
     });
 
+    /* This promise acts as a lock; pending = locked, fulfilled = unlocked.  It
+     * is never rejected. */
     this.lock = Promise.resolve();
   }
 
-  /**
-   * To perform a set of operations bound as a particular user, call this
-   * method with the operations as the third argument.  No other use of the
-   * connection will be permitted while those operations are in progress, so
-   * the connection cannot be re-bound.  The client is passed to the operations
-   * function.  You can call other methods of this client from there.
+  /** To perform a set of operations bound as a particular user, retrying in
+   * the face of failure, call this method with a function that begins by
+   * calling this.bind.  No other use of the connection will be permitted while
+   * those operations are in progress, so the connection cannot be re-bound.
+   * The client is passed to the operations function.  You can call other
+   * methods of this client from there.
    */
-  bind(user, password, operations) {
-    return new Promise((accept, reject) => {
-      this.lock = this.lock.then(async() => {
-        // perform the bind
-        debug(`bind(${user}, <password>)`);
-        await new Promise((accept, reject) => this.client.bind(
-          user, password, err => {
-          err ? reject(err) : accept();
-        }));
-
-        if (operations) {
-          return await operations(this);
+  async operate(operations, tries) {
+    let attempts = 0;
+    tries = tries || 5;
+    while (true) {
+      attempts++;
+      try {
+        /* do a little dance here to make sure that we see exceptions inside
+         * this promise, but the lock promise is not rejected */
+        await new Promise((accept, reject) => {
+          this.lock = this.lock
+            .then(() => operations(this))
+            .then(accept, reject);
+        });
+        break;
+      } catch (err) {
+        if (attempts >= tries) {
+          debug("error performing LDAP operation; failing", err);
+          throw err;
+        } else {
+          debug("error performing LDAP operation; retrying", err);
         }
-      // carefully send errors to the caller while leaving the lock
-      // Promise resolved
-      }).then(accept, reject)
-    })
+      }
+    }
+  }
+
+  bind(user, password) {
+    debug(`bind(${user}, <password>)`);
+    return new Promise((accept, reject) => this.client.bind(
+      user, password, err => {
+      err ? reject(err) : accept();
+    }));
   }
 
   search(base, options) {
