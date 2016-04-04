@@ -1,0 +1,34 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:                      "Statsum Token Response"
+description: |
+  Token for submitting statistics to statsum.
+type:                       object
+properties:
+  project:
+    type:           string
+    title:          Project
+    description: |
+      Project name that the token grants access to.
+  token:
+    type:           string
+    title:          Access Token
+    description: |
+      JWT token to be used as `Bearer <token>` when submitting data to statsum.
+  expires:
+    type:           string
+    format:         date-time
+    title:          Token Expiration
+    description: |
+      Time at which the token expires and should not be used anymore.
+  baseUrl:
+    type:           string
+    format:         uri
+    title:          BaseUrl
+    description: |
+      Base URL for the statsum server this project is allocated on.
+additionalProperties: false
+required:
+  - project
+  - token
+  - expires
+  - baseUrl

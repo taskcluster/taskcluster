@@ -42,6 +42,10 @@ defaults:
 
     # Delay before expiring sentry keys, this should be negative!
     sentryExpirationDelay:      '- 15 minutes'
+
+    statsum:
+      secret:                   !env STATSUM_API_SECRET
+      baseUrl:                  !env STATSUM_BASE_URL
   server:
     # Public URL from which the server can be accessed (used for persona)
     publicUrl:                https://auth.taskcluster.net
@@ -116,6 +120,9 @@ test:
       apiKey:                   "no-key" # no-key skips tests
       initialTeam:              mozilla
       keyPrefix:                auth-test
+    statsum:
+      secret:                   'secret'
+      baseUrl:                  'http://localhost.com'
   # Test bucket for STS credentials
   test:
     testBucket:               !env TEST_BUCKET
