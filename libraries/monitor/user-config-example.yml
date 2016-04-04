@@ -1,0 +1,5 @@
+defaults:
+  taskcluster:
+    credentials:
+      clientId:       '...'
+      accessToken:    '...'
