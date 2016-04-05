@@ -8,11 +8,11 @@ let Statsum = require('statsum');
 
 class Monitor {
 
-  constructor (opts, authClient, sentryClient, statsumClient) {
+  constructor (opts) {
     this.opts = opts;
-    this.auth = authClient;
-    this.sentry = sentryClient;
-    this.statsum = statsumClient;
+    this.auth = opts.authClient;
+    this.sentry = opts.sentryClient;
+    this.statsum = opts.statsumClient;
   }
 
   async reportError (err, level='error') {
@@ -36,7 +36,8 @@ class Monitor {
     assert(isinstance(prefix, basestring), 'New prefix must be a string');
     assert(prefix != '', 'New prefix must be non-empty!');
     newopts = _.cloneDeep(this.opts);
-    return new Monitor(newopts, this.auth, this.sentry, this.statsum.prefix(prefix));
+    newopts.statsum = newopts.statsum.prefix(prefix);
+    return new Monitor(newopts);
   }
 }
 
@@ -63,19 +64,25 @@ async function monitor (options) {
     patchGlobal: true,
   });
 
-  let authClient = new taskcluster.Auth({
-    credentials: options.credentials,
-  });
+  if (!opts.authClient) {
+    opts.authClient = new taskcluster.Auth({
+      credentials: options.credentials,
+    });
+  }
 
-  let statsumClient = new Statsum({
-    project: opts.project,
-    getToken: authClient.statsumToken,
-    baseUrl: opts.statsumUrl,
-  });
+  if (!opts.statsumClient) {
+    opts.statsumClient = new Statsum({
+      project: opts.project,
+      getToken: opts.authClient.statsumToken,
+      baseUrl: opts.statsumUrl,
+    });
+  }
 
-  let sentryClient = await setupSentry(authClient, opts.project, opts.patchGlobal);
+  if (!opts.sentryClient) {
+    opts.sentryClient = await setupSentry(opts.authClient, opts.project, opts.patchGlobal);
+  }
 
-  return new Monitor(opts, authClient, sentryClient, statsumClient);
+  return new Monitor(opts);
 };
 
 module.exports = monitor;
