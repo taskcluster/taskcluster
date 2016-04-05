@@ -18,7 +18,7 @@ Options and Defaults
 Testing
 -------
 
-To run the integration tests for this library, you'll need a taskcluster client with the `auth:sentry:tc-lib-monitor` scope available.
+To run the integration tests for this library, you'll need a taskcluster client with the `auth:sentry:tc-lib-monitor` and `auth:statsum:tc-lib-monitor` scopes available.
 You can create this client with the [Taskcluster tools](https://tools.taskcluster.net/auth/clients). Once it's been created, you can copy
 the `user-config-example.yml` file into `user-config.yml` and replace the proper fields with your new creds.
 
