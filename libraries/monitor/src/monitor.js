@@ -32,6 +32,10 @@ class Monitor {
     this.statsum.measure(key, val);
   }
 
+  async flush () {
+    this.statsum.flush();
+  }
+
   prefix (prefix) {
     assert(isinstance(prefix, basestring), 'New prefix must be a string');
     assert(prefix != '', 'New prefix must be non-empty!');
