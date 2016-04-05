@@ -19,8 +19,8 @@ env:
 notifications:
   irc:
     channels:
-      # encrpyted string was "irc.mozilla.org#taskcluster-bots
-      - secure: "CszUdF4z8i+1dKdVyiPyDe+dGxBKCwJkDnhCPuNk9jSmRga8VFiBaBeUWbwksCUxBjLE4S2bRTEJ7bE+X3JHfOhJitKSle0Jjyv/fLKdaxNjTXaG0+zis5nvRQOMroMqkEKJHVeipPiv9pAvSNMaYLA9vF1CW/KGOfFOQUGthbiX9y4JZguSnCLcfpAm3hr1u7dAr8X0gPXVKUO+P4gEisWXw9XetI/ae1AeZ5pJ1V0N/Dbi+XcR5o4iH78OnoTT/jQh0V2lTNm1auNte+V68dOvJmrvNMHbCbch4fI6OEtGyrmoe501QO1vSHRXzIJP2Vm0Yn9zKZx+ofd4cFOjjr3wJi2FP9Ei0tM0N+XDiYMBCP70qOMpLm9et4a/dzWEwiO8ussS4jTRt23fvtl1Lm9n7tUm1r/A/bWHj99ORGMdPrIE7eFYRlN0yuYFsx/8B7917WFw5lAfIsVV0fq5YOa6Q3Dm85OCZTkJUZyirsNQS+XuRHPLcn0QCAgIIlfSqNWQfDrKrXl8UnxreQb7X2N8GgiWuWb2gQpl//rFoRlpEjQnNjxJ9cuukBLSObWBwjY8+dWJFoLZzVaZLNyLpwiPV1lFIZfffgO63d+5/koavKrO0V4/UuEyhv1qOuQsyiY2nqtXwRogXqxuFQknOC/LzZZBp9V5JaRcjdyzEAo="
+      # encrpyted string was "irc.mozilla.org#taskcluster-bots"
+      - secure: "Jr+3ft8ZZknJ0Zr1xKwCNEgqMyrFwkMkfJEJo7q8cHvGvRK3iw+GDGj10wjSk8Juf19MkFsICkldHdQEZfCrjAuOhINmqe4mLfkn+RJo/UgVk8K1BcniJdegnZn7laYTpj9Sjs0MySqUJps+UWVIe6kq4dB4Yjrl/2zyLbcwUkQPaYpnfWAm6KoQXuim7Qrsn0isQRj577TzSj2x5IUJ66F8ZbubP8CDIo1RBkfB9ZIeAjrJf5FL7U+/+rZketOVjqDOptrriTJ/eytd14LI5Iw9oZKdX3SXXsPmz3+alG5xb2Jy7lzU96mV6OYD723VQkSnpLQJ+UORfJJhYkXNupfLveFhMiIMWeybGghxUd2s5vZ7prXlC/ldx4fDMkCuEVcXkr7icqvzhEFOYqn+khsrDiQmFNLmOxocyxhG7KtzhUEr+m1XRTqZ+kE5YRG/DGJJNN4kt6+z3+ytLhyXNX0wwV035dUN8UhrKk8+2pE6OvlpaaaD+pb46Q+GT2prloC6j4w5A4I5wQwBByerihb4clO5vOlBtZamgsn5dqSW74ERuZi44hguFQUGBE3wWYdtHYqJo/gX0z+F1wXXWKlozQdkmaVT9z2oiRMgtN/vs8qG4/13M1LVqkmogzNZKBfMuh5BoQkhKOtzeA6+ioHNUfer6DrLxJzT3AALCCs="
     on_success: change
     on_failure: always
     template:
