@@ -493,6 +493,32 @@ type (
 		Scopes []string `json:"scopes,omitempty"`
 	}
 
+	// Token for submitting statistics to statsum.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#
+	StatsumTokenResponse struct {
+
+		// Base URL for the statsum server this project is allocated on.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#/properties/baseUrl
+		BaseURL string `json:"baseUrl"`
+
+		// Time at which the token expires and should not be used anymore.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#/properties/expires
+		Expires tcclient.Time `json:"expires"`
+
+		// Project name that the token grants access to.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#/properties/project
+		Project string `json:"project"`
+
+		// JWT token to be used as `Bearer <token>` when submitting data to statsum.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#/properties/token
+		Token string `json:"token"`
+	}
+
 	// Details on how the test request should be authenticated.
 	//
 	// See http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#

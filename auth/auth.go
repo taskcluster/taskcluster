@@ -63,7 +63,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 1 Apr 2016 at 17:28:00 UTC. The code was generated
+// Tue, 5 Apr 2016 at 06:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -311,8 +311,6 @@ func (myAuth *Auth) CurrentScopes() (*SetOfScopes, *tcclient.CallSummary, error)
 	return responseObject.(*SetOfScopes), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Get temporary AWS credentials for `read-write` or `read-only` access to
 // a given `bucket` and `prefix` within that bucket.
 // The `level` parameter can be `read-write` or `read-only` and determines
@@ -388,7 +386,7 @@ func (myAuth *Auth) AzureTableSAS_SignedURL(account, table string, duration time
 // to have the project transferred to a team you have access to if needed
 //
 // Required scopes:
-//   * auth:sentry-dsn:<project>
+//   * auth:sentry:<project>
 //
 // See http://docs.taskcluster.net/auth/api-docs/#sentryDSN
 func (myAuth *Auth) SentryDSN(project string) (*SentryDSNResponse, *tcclient.CallSummary, error) {
@@ -400,12 +398,37 @@ func (myAuth *Auth) SentryDSN(project string) (*SentryDSNResponse, *tcclient.Cal
 // Returns a signed URL for SentryDSN, valid for the specified duration.
 //
 // Required scopes:
-//   * auth:sentry-dsn:<project>
+//   * auth:sentry:<project>
 //
 // See SentryDSN for more details.
 func (myAuth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.ConnectionData(*myAuth)
 	return (&cd).SignedURL("/sentry/"+url.QueryEscape(project)+"/dsn", nil, duration)
+}
+
+// Get temporary `token` and `baseUrl` for sending metrics to statsum.
+//
+// The token is valid for 24 hours, clients should refresh after expiration.
+//
+// Required scopes:
+//   * auth:statsum:<project>
+//
+// See http://docs.taskcluster.net/auth/api-docs/#statsumToken
+func (myAuth *Auth) StatsumToken(project string) (*StatsumTokenResponse, *tcclient.CallSummary, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/statsum/"+url.QueryEscape(project)+"/token", new(StatsumTokenResponse), nil)
+	return responseObject.(*StatsumTokenResponse), callSummary, err
+}
+
+// Returns a signed URL for StatsumToken, valid for the specified duration.
+//
+// Required scopes:
+//   * auth:statsum:<project>
+//
+// See StatsumToken for more details.
+func (myAuth *Auth) StatsumToken_SignedURL(project string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myAuth)
+	return (&cd).SignedURL("/statsum/"+url.QueryEscape(project)+"/token", nil, duration)
 }
 
 // Validate the request signature given on input and return list of scopes
@@ -422,8 +445,6 @@ func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest
 	return responseObject.(*HawkSignatureAuthenticationResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Utility method to test client implementations of TaskCluster
 // authentication.
 //
@@ -443,8 +464,6 @@ func (myAuth *Auth) TestAuthenticate(payload *TestAuthenticateRequest) (*TestAut
 	return responseObject.(*TestAuthenticateResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Utility method similar to `testAuthenticate`, but with the GET method,
 // so it can be used with signed URLs (bewits).
 //
