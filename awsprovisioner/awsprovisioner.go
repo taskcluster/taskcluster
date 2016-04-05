@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 5 Apr 2016 at 06:27:00 UTC. The code was generated
+// Tue, 5 Apr 2016 at 16:41:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -97,8 +97,6 @@ func New(credentials *tcclient.Credentials) *AwsProvisioner {
 	return &awsProvisioner
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Create a worker type.  A worker type contains all the configuration
 // needed for the provisioner to manage the instances.  Each worker type
 // knows which regions and which instance types are allowed for that
@@ -127,14 +125,12 @@ func New(credentials *tcclient.Credentials) *AwsProvisioner {
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#createWorkerType
-func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *tcclient.CallSummary, error) {
+func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*awsProvisioner)
-	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest), nil)
-	return responseObject.(*GetWorkerTypeRequest), callSummary, err
+	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeResponse), nil)
+	return responseObject.(*GetWorkerTypeResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Provide a new copy of a worker type to replace the existing one.
 // This will overwrite the existing worker type definition if there
 // is already a worker type of that name.  This method will return a
@@ -151,14 +147,12 @@ func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payloa
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#updateWorkerType
-func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeRequest, *tcclient.CallSummary, error) {
+func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*awsProvisioner)
-	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(GetWorkerTypeRequest), nil)
-	return responseObject.(*GetWorkerTypeRequest), callSummary, err
+	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(GetWorkerTypeResponse), nil)
+	return responseObject.(*GetWorkerTypeResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Retreive a copy of the requested worker type definition.
 // This copy contains a lastModified field as well as the worker
 // type name.  As such, it will require manipulation to be able to
@@ -170,10 +164,10 @@ func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payloa
 //   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#workerType
-func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerTypeRequest, *tcclient.CallSummary, error) {
+func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerTypeResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*awsProvisioner)
-	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeRequest), nil)
-	return responseObject.(*GetWorkerTypeRequest), callSummary, err
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeResponse), nil)
+	return responseObject.(*GetWorkerTypeResponse), callSummary, err
 }
 
 // Returns a signed URL for WorkerType, valid for the specified duration.
@@ -188,8 +182,6 @@ func (awsProvisioner *AwsProvisioner) WorkerType_SignedURL(workerType string, du
 	return (&cd).SignedURL("/worker-type/"+url.QueryEscape(workerType), nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Delete a worker type definition.  This method will only delete
 // the worker type definition from the storage table.  The actual
 // deletion will be handled by a background worker.  As soon as this
@@ -211,8 +203,6 @@ func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) (*tccl
 	return callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Return a list of string worker type names.  These are the names
 // of all managed worker types known to the provisioner.  This does
 // not include worker types which are left overs from a deleted worker
@@ -225,8 +215,6 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, *tccl
 	return responseObject.(*ListWorkerTypes), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Insert a secret into the secret storage.  The supplied secrets will
 // be provided verbatime via `getSecret`, while the supplied scopes will
 // be converted into credentials by `getSecret`.
@@ -244,8 +232,6 @@ func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSec
 	return callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Retrieve a secret from storage.  The result contains any passwords or
 // other restricted information verbatim as well as a temporary credential
 // based on the scopes specified when the secret was created.
@@ -261,8 +247,6 @@ func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretRespons
 	return responseObject.(*GetSecretResponse), callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // An instance will report in by giving its instance id as well
 // as its security token.  The token is given and checked to ensure
 // that it matches a real token that exists to ensure that random
@@ -276,8 +260,6 @@ func (awsProvisioner *AwsProvisioner) InstanceStarted(instanceId, token string) 
 	return callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Remove a secret.  After this call, a call to `getSecret` with the given
 // token will return no information.
 //
@@ -323,7 +305,7 @@ func (awsProvisioner *AwsProvisioner) GetLaunchSpecs_SignedURL(workerType string
 	return (&cd).SignedURL("/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Stability: *** DEPRECATED ***
 //
 // This method is a left over and will be removed as soon as the
 // tools.tc.net UI is updated to use the per-worker state
@@ -351,8 +333,6 @@ func (awsProvisioner *AwsProvisioner) AwsState_SignedURL(duration time.Duration)
 	return (&cd).SignedURL("/aws-state", nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Return the state of a given workertype as stored by the provisioner.
 // This state is stored as three lists: 1 for all instances, 1 for requests
 // which show in the ec2 api and 1 list for those only tracked internally
@@ -403,7 +383,7 @@ func (awsProvisioner *AwsProvisioner) BackendStatus() (*tcclient.CallSummary, er
 	return callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Stability: *** DEPRECATED ***
 //
 // Get an API reference!
 //

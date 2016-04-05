@@ -122,7 +122,7 @@ type (
 			// The Amazon AWS Region being configured.  Example: us-west-1
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/region
-			Region string `json:"region,omitempty"`
+			Region string `json:"region"`
 
 			// Scopes which should be included for this Region.  Scopes must be
 			// composed of printable ASCII characters and spaces.
@@ -240,7 +240,7 @@ type (
 	// A worker launchSpecification and required metadata
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#
-	GetWorkerTypeRequest struct {
+	GetWorkerTypeResponse struct {
 
 		// True if this worker type is allowed on demand instances.  Currently
 		// ignored
