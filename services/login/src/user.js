@@ -45,6 +45,9 @@ export default class User {
 
   createCredentials(options) {
     assert(options);
+    if (!this.identity) {
+      return null;
+    }
     let scopes = this.scopes();
 
     return taskcluster.createTemporaryCredentials({
