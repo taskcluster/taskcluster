@@ -30,6 +30,8 @@ Defaults:
         clientId:     !env TASKCLUSTER_CLIENT_ID
         accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
   mozillians:
+    # NOTE: this API key needs to have the "Mozillians" level in order to access
+    # non-public profiles; see https://bugzilla.mozilla.org/show_bug.cgi?id=1259059
     apiKey:         !env MOZILLIANS_API_KEY
     allowedGroups:  !env:list MOZILLIANS_ALLOWED_GROUPS
   ldap:
