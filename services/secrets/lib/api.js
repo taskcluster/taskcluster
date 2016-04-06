@@ -14,9 +14,13 @@ import _ from 'lodash';
 var api = new base.API({
   title:        "TaskCluster Secrets API Documentation",
   description: [
-    "The secrets service, is a simple key/value store for secret data",
-    "guarded by TaskCluster scopes.  It is typically available at",
-    "`secrets.taskcluster.net`."
+    "The secrets service provides a simple key/value store for small bits of secret",
+    "data.  Access is limited by scopes, so values can be considered secret from",
+    "those who do not have the relevant scopes.",
+    "",
+    "Secrets also have an expiration date, and once a secret has expired it can no",
+    "longer be read.  This is useful for short-term secrets such as a temporary",
+    "service credential or a one-time signing key.",
   ].join('\n')
 });
 
@@ -30,8 +34,12 @@ api.declare({
   name:        'set',
   input:       common.SCHEMA_PREFIX_CONST + "secret.json#",
   scopes:      [['secrets:set:<name>']],
-  title:       'Create Secret',
-  description: 'Set a secret associated with some key.  If the secret already exists, it is updated instead.'
+  title:       'Set Secret',
+  stability:    'stable',
+  description: [
+    "Set the secret associated with some key.  If the secret already exists, it is",
+    "updated instead."
+  ].join('\n')
 }, async function(req, res) {
     let {name} = req.params;
     let {secret, expires} = req.body;
@@ -64,7 +72,10 @@ api.declare({
   name:        'remove',
   scopes:      [['secrets:set:<name>']],
   title:       'Delete Secret',
-  description: 'Delete the secret attached to some key.'
+  stability:    'stable',
+  description: [
+    "Delete the secret associated with some key.",
+  ].join('\n')
 }, async function(req, res) {
   let {name} = req.params;
   if (!req.satisfies({name})) {
@@ -93,7 +104,13 @@ api.declare({
   output:      common.SCHEMA_PREFIX_CONST + "secret.json#",
   scopes:      [['secrets:get:<name>']],
   title:       'Read Secret',
-  description: 'Read the secret attached to some key.'
+  stability:    'stable',
+  description: [
+    "Read the secret associated with some key.  If the secret has recently",
+    "expired, the response code 410 is returned.  If the caller lacks the",
+    "scope necessary to get the secret, the call will fail with a 403 code",
+    "regardless of whether the secret exists."
+  ].join('\n')
 }, async function(req, res) {
   let {name} = req.params;
   if (!req.satisfies({name})) {
@@ -128,7 +145,10 @@ api.declare({
   name:        'list',
   output:      common.SCHEMA_PREFIX_CONST + "secret-list.json#",
   title:       'List Secrets',
-  description: 'List the names of all visible secrets.'
+  stability:    'stable',
+  description: [
+    "List the names of all visible secrets."
+  ].join('\n')
 }, async function(req, res) {
   let secrets = [];
   await this.entity.scan({}, {
@@ -148,9 +168,8 @@ api.declare({
   name:     'ping',
   title:    "Ping Server",
   description: [
-    "Documented later...",
-    "",
-    "**Warning** this api end-point is **not stable**."
+    "Respond without doing anything.  This endpoint is used to check that",
+    "the service is up.",
   ].join('\n')
 }, function(req, res) {
 
