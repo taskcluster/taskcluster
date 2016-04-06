@@ -8,8 +8,15 @@ The service expects the following to run periodically (daily?) to flush expired 
 
     NODE_ENV=production babel-node bin/main.js expire
 
-###Run Tests
-From the project's base run ``npm test``
+# Running Tests
+
+From the project's base run ``npm test``.
+No special configuration is required.
+
+# Deploying
+
+This service is deployed as a typical Heroku application.
+The scheduler add-on is used to run the expiration process (described above).
 
 # Post-Deployment Verification
 
