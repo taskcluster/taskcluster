@@ -1,4 +1,5 @@
 var api         = require('./v1');
+let _           = require('lodash');
 
 api.declare({
   method:     'get',
@@ -31,7 +32,7 @@ api.declare({
 
   return res.reply({
     project,
-    dsn: key.dsn,
+    dsn: _.pick(key.dsn, ['secret', 'public']),
     expires: key.expires.toJSON(),
   });
 });
