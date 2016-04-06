@@ -95,7 +95,7 @@ class SentryManager {
       });
       key = {
         id:   k.id,
-        dsn:  k.dsn,
+        dsn:  _.pick(k.dsn, ['secret', 'public']),
         expires,
       };
     }

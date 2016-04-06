@@ -36,7 +36,7 @@ defaults:
     sentry:
       organization:             taskcluster
       hostname:                 app.getsentry.com
-      apiKey:                   !env SENRTY_API_KEY
+      apiKey:                   !env SENTRY_API_KEY
       initialTeam:              mozilla
       keyPrefix:                taskcluster-auth
 
