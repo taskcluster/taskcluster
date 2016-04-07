@@ -2,26 +2,38 @@ suite('Sentry', () => {
   let assert = require('assert');
   let monitoring = require('../');
   let debug = require('debug')('test');
+  let nock = require('nock');
   let config = require('typed-env-config');
+  let authmock = require('./authmock');
 
   let monitor = null;
-  let cfg = config();
 
-  test('should create sentry error', async function (done) {
+  suiteSetup(async () => {
+    authmock.setup();
+
     monitor = await monitoring({
       project: 'tc-lib-monitor',
-      credentials: cfg.taskcluster.credentials,
+      credentials: {clientId: 'test-client', accessToken: 'test'},
       patchGlobal: false,
     });
+  });
 
-    monitor.sentry.client.on('logged', () => done);
+  suiteTeardown(() => {
+    authmock.teardown();
+  });
+
+  test('should create sentry error', async function (done) {
+
+    nock('https://app.getsentry.com')
+      .filteringRequestBody(/.*/, '*')
+      .post('/api/12345/store/', '*')
+      .reply(200, () => {
+        done();
+      });
+
     monitor.sentry.client.on('error', done);
 
-    await monitor.reportError(new Error('create sentry error test'));
-
-    // Give this time to write. This will exit earlier if the error was
-    // succesfully logged or an error occured.
-    setTimeout(done, 2500);
+    await monitor.reportError('create sentry error test');
   });
 
 });
