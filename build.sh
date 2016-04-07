@@ -52,7 +52,6 @@ go clean -i ./...
 
 # generate code
 go get github.com/docopt/docopt-go
-go get golang.org/x/tools/imports
 go get github.com/xeipuuv/gojsonschema
 go get github.com/taskcluster/jsonschema2go
 "${GENERATE}" && go generate ./...
@@ -76,7 +75,7 @@ go tool cover -func=coverage.report
 grep -q PANIC codegenerator/model-data.txt && exit 68
 
 go get github.com/golang/lint/golint
-golint codegenerator/...; golint integrationtest/...; golint tcclient/...
+"${GOPATH}/bin/golint" codegenerator/...; "${GOPATH}/bin/golint" integrationtest/...; "${GOPATH}/bin/golint" tcclient/...
 
 # finally check that generated files have been committed, and that formatting
 # code resulted in no changes...
