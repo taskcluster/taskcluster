@@ -8,9 +8,13 @@
 // This package was generated from the schema defined at
 // http://references.taskcluster.net/secrets/v1/api.json
 
-// The secrets service, is a simple key/value store for secret data
-// guarded by TaskCluster scopes.  It is typically available at
-// `secrets.taskcluster.net`.
+// The secrets service provides a simple key/value store for small bits of secret
+// data.  Access is limited by scopes, so values can be considered secret from
+// those who do not have the relevant scopes.
+//
+// Secrets also have an expiration date, and once a secret has expired it can no
+// longer be read.  This is useful for short-term secrets such as a temporary
+// service credential or a one-time signing key.
 //
 // See: http://docs.taskcluster.net/services/secrets
 //
@@ -32,7 +36,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/secrets/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 5 Apr 2016 at 16:41:00 UTC. The code was generated
+// Thu, 7 Apr 2016 at 13:07:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package secrets
 
@@ -73,9 +77,8 @@ func New(credentials *tcclient.Credentials) *Secrets {
 	return &mySecrets
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
-// Set a secret associated with some key.  If the secret already exists, it is updated instead.
+// Set the secret associated with some key.  If the secret already exists, it is
+// updated instead.
 //
 // Required scopes:
 //   * secrets:set:<name>
@@ -87,9 +90,7 @@ func (mySecrets *Secrets) Set(name string, payload *Secret) (*tcclient.CallSumma
 	return callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
-// Delete the secret attached to some key.
+// Delete the secret associated with some key.
 //
 // Required scopes:
 //   * secrets:set:<name>
@@ -101,9 +102,10 @@ func (mySecrets *Secrets) Remove(name string) (*tcclient.CallSummary, error) {
 	return callSummary, err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
-// Read the secret attached to some key.
+// Read the secret associated with some key.  If the secret has recently
+// expired, the response code 410 is returned.  If the caller lacks the
+// scope necessary to get the secret, the call will fail with a 403 code
+// regardless of whether the secret exists.
 //
 // Required scopes:
 //   * secrets:get:<name>
@@ -126,8 +128,6 @@ func (mySecrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*u
 	return (&cd).SignedURL("/secret/"+url.QueryEscape(name), nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // List the names of all visible secrets.
 //
 // See http://docs.taskcluster.net/services/secrets/#list
@@ -139,9 +139,8 @@ func (mySecrets *Secrets) List() (*SecretsList, *tcclient.CallSummary, error) {
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Documented later...
-//
-// **Warning** this api end-point is **not stable**.
+// Respond without doing anything.  This endpoint is used to check that
+// the service is up.
 //
 // See http://docs.taskcluster.net/services/secrets/#ping
 func (mySecrets *Secrets) Ping() (*tcclient.CallSummary, error) {

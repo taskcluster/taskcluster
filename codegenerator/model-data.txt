@@ -1,4 +1,4 @@
-Generated: 1459874505
+Generated: 1460034429
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -9337,9 +9337,13 @@ http://references.taskcluster.net/secrets/v1/api.json
 Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'TaskCluster Secrets API Documentation'
-Description = 'The secrets service, is a simple key/value store for secret data
-guarded by TaskCluster scopes.  It is typically available at
-`secrets.taskcluster.net`.'
+Description = 'The secrets service provides a simple key/value store for small bits of secret
+data.  Access is limited by scopes, so values can be considered secret from
+those who do not have the relevant scopes.
+
+Secrets also have an expiration date, and once a secret has expired it can no
+longer be read.  This is useful for short-term secrets such as a temporary
+service credential or a one-time signing key.'
 Base URL    = 'https://secrets.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
@@ -9348,12 +9352,13 @@ Entry 0     =
     Entry Args        = '[name]'
     Entry Query        = '[]'
     Entry Name        = 'set'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = '[[secrets:set:<name>]]'
     Entry Input       = 'http://schemas.taskcluster.net/secrets/v1/secret.json#'
     Entry Output      = ''
-    Entry Title       = 'Create Secret'
-    Entry Description = 'Set a secret associated with some key.  If the secret already exists, it is updated instead.'
+    Entry Title       = 'Set Secret'
+    Entry Description = 'Set the secret associated with some key.  If the secret already exists, it is
+updated instead.'
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'delete'
@@ -9361,12 +9366,12 @@ Entry 1     =
     Entry Args        = '[name]'
     Entry Query        = '[]'
     Entry Name        = 'remove'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = '[[secrets:set:<name>]]'
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Delete Secret'
-    Entry Description = 'Delete the secret attached to some key.'
+    Entry Description = 'Delete the secret associated with some key.'
 Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -9374,12 +9379,15 @@ Entry 2     =
     Entry Args        = '[name]'
     Entry Query        = '[]'
     Entry Name        = 'get'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = '[[secrets:get:<name>]]'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/secrets/v1/secret.json#'
     Entry Title       = 'Read Secret'
-    Entry Description = 'Read the secret attached to some key.'
+    Entry Description = 'Read the secret associated with some key.  If the secret has recently
+expired, the response code 410 is returned.  If the caller lacks the
+scope necessary to get the secret, the call will fail with a 403 code
+regardless of whether the secret exists.'
 Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -9387,7 +9395,7 @@ Entry 3     =
     Entry Args        = '[]'
     Entry Query        = '[]'
     Entry Name        = 'list'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = '[]'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#'
@@ -9405,9 +9413,8 @@ Entry 4     =
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Ping Server'
-    Entry Description = 'Documented later...
-
-**Warning** this api end-point is **not stable**.'
+    Entry Description = 'Respond without doing anything.  This endpoint is used to check that
+the service is up.'
 
 
 http://schemas.taskcluster.net/secrets/v1/secret-list.json#
