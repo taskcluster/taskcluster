@@ -33,7 +33,7 @@ class Monitor {
   }
 
   async flush () {
-    this.statsum.flush();
+    await this.statsum.flush();
   }
 
   prefix (prefix) {
@@ -64,8 +64,8 @@ async function monitor (options) {
   assert(options.credentials, 'Must provide taskcluster credentials!');
   let opts = _.defaults(options, {
     project: require(require('app-root-dir').get() + '/package.json').name,
-    statsumUrl: 'https://statsum.taskcluster.net',
     patchGlobal: true,
+    reportStatsumErrors: true,
   });
 
   if (!opts.authClient) {
@@ -75,15 +75,22 @@ async function monitor (options) {
   }
 
   if (!opts.statsumClient) {
-    opts.statsumClient = new Statsum({
-      project: opts.project,
-      getToken: opts.authClient.statsumToken,
-      baseUrl: opts.statsumUrl,
-    });
+    opts.statsumClient = new Statsum(
+      async (project) => { return await opts.authClient.statsumToken(project); },
+      {
+        project: opts.project,
+        emitErrors: true,
+      });
   }
 
   if (!opts.sentryClient) {
     opts.sentryClient = await setupSentry(opts.authClient, opts.project, opts.patchGlobal);
+  }
+
+  if (opts.reportStatsumErrors) {
+    opts.statsumClient.on('error', (err) => {
+      opts.sentryClient.client.captureException(err, {level: 'warning'});
+    });
   }
 
   return new Monitor(opts);
