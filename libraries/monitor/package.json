@@ -38,9 +38,10 @@
     "mocha": "2.4.5",
     "mocha-eslint": "^2.0.1",
     "mock-aws-s3": "^2.1.0",
+    "nock": "^8.0.0",
     "source-map-support": "^0.4.0",
-    "tc-rules": "^3.0.1",
-    "typed-env-config": "^0.10.1"
+    "taskcluster-lib-testing": "^0.11.1",
+    "tc-rules": "^3.0.1"
   },
   "main": "./lib/monitor.js"
 }
