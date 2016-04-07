@@ -1,7 +1,0 @@
----
-# This config exists only for testing purposes
-defaults:
-  taskcluster:
-    credentials:
-      clientId:       !env TASKCLUSTER_CLIENT_ID
-      accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
