@@ -1,6 +1,6 @@
 suite("DFA", () => {
-  let ScopeResolver = require('../auth/scoperesolver');
-  let dfa = require('../auth/dfa');
+  let ScopeResolver = require('../lib/scoperesolver');
+  let dfa = require('../lib/dfa');
   let assert = require('assert');
   let _ = require('lodash');
 
