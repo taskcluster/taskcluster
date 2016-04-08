@@ -3,7 +3,6 @@ suite('Sentry', () => {
   let monitoring = require('../');
   let debug = require('debug')('test');
   let nock = require('nock');
-  let config = require('typed-env-config');
   let authmock = require('./authmock');
 
   let monitor = null;
