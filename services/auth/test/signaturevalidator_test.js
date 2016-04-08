@@ -10,7 +10,7 @@ suite("signature validation", function() {
   var slugid       = require('slugid');
   var crypto       = require('crypto');
   var taskcluster  = require('taskcluster-client');
-  var sigvalidator = require('../auth/signaturevalidator');
+  var sigvalidator = require('../lib/signaturevalidator');
 
   var validator;
   var clients = {

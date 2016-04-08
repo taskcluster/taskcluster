@@ -5,7 +5,10 @@ env:
   - DEBUG='base:app:request,auth:*,server,test:*'
   - CXX=g++-4.8
 node_js:
-- '4'
+- '5'
+cache:
+  directories:
+    - node_modules
 addons:
   apt:
     sources:

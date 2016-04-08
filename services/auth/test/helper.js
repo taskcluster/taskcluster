@@ -3,12 +3,12 @@ var Promise     = require('promise');
 var path        = require('path');
 var _           = require('lodash');
 var base        = require('taskcluster-base');
-var data        = require('../auth/data');
-var v1          = require('../auth/v1');
+var data        = require('../lib/data');
+var v1          = require('../lib/v1');
 var taskcluster = require('taskcluster-client');
 var mocha       = require('mocha');
-var serverLoad  = require('../bin/server');
-var exchanges   = require('../auth/exchanges');
+var serverLoad  = require('../lib/main');
+var exchanges   = require('../lib/exchanges');
 var testserver  = require('./testserver');
 var slugid      = require('slugid');
 
