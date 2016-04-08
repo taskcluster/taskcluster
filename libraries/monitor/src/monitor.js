@@ -8,11 +8,11 @@ let Statsum = require('statsum');
 
 class Monitor {
 
-  constructor (opts) {
+  constructor (authClient, sentryClient, statsumClient, opts) {
     this.opts = opts;
-    this.auth = opts.authClient;
-    this.sentry = opts.sentryClient;
-    this.statsum = opts.statsumClient;
+    this.auth = authClient;
+    this.sentry = sentryClient;
+    this.statsum = statsumClient;
   }
 
   async reportError (err, level='error') {
@@ -37,11 +37,12 @@ class Monitor {
   }
 
   prefix (prefix) {
-    assert(isinstance(prefix, basestring), 'New prefix must be a string');
-    assert(prefix != '', 'New prefix must be non-empty!');
-    newopts = _.cloneDeep(this.opts);
-    newopts.statsum = newopts.statsum.prefix(prefix);
-    return new Monitor(newopts);
+    return new Monitor(
+      this.auth,
+      this.sentry,
+      this.statsum.prefix(prefix),
+      this.opts
+    );
   }
 }
 
@@ -68,32 +69,27 @@ async function monitor (options) {
     reportStatsumErrors: true,
   });
 
-  if (!opts.authClient) {
-    opts.authClient = new taskcluster.Auth({
-      credentials: options.credentials,
-    });
-  }
+  let authClient = new taskcluster.Auth({
+    credentials: options.credentials,
+  });
 
-  if (!opts.statsumClient) {
-    opts.statsumClient = new Statsum(
-      async (project) => { return await opts.authClient.statsumToken(project); },
-      {
-        project: opts.project,
-        emitErrors: true,
-      });
-  }
+  let statsumClient = new Statsum(
+    async (project) => { return await authClient.statsumToken(project); },
+    {
+      project: opts.project,
+      emitErrors: true,
+    }
+  );
 
-  if (!opts.sentryClient) {
-    opts.sentryClient = await setupSentry(opts.authClient, opts.project, opts.patchGlobal);
-  }
+  let sentryClient = await setupSentry(authClient, opts.project, opts.patchGlobal);
 
   if (opts.reportStatsumErrors) {
-    opts.statsumClient.on('error', (err) => {
-      opts.sentryClient.client.captureException(err, {level: 'warning'});
+    statsumClient.on('error', (err) => {
+      sentryClient.client.captureException(err, {level: 'warning'});
     });
   }
 
-  return new Monitor(opts);
+  return new Monitor(authClient, sentryClient, statsumClient, opts);
 };
 
 module.exports = monitor;

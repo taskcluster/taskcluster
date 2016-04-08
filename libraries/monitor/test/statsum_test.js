@@ -12,6 +12,7 @@ suite('Statsum', () => {
     authmock.setup();
 
     statsumScope = nock('https://statsum.taskcluster.net')
+      .persist()
       .filteringRequestBody(/.*/, '*')
       .post(/v1\/project\/tc-lib-monitor/, '*')
       .reply(200, 'OK');
@@ -28,13 +29,17 @@ suite('Statsum', () => {
     authmock.teardown();
   });
 
-  test('should have written to something', async function (done) {
+  test('should have written', async function (done) {
     monitor.count('testing', 10);
     await monitor.flush();
+
+    let pre = monitor.prefix('sub');
+    pre.count('testing2', 100);
+    await pre.flush();
+
     if (!statsumScope.isDone()) {
       done(new Error('Error! Did not call' + statsumScope.pendingMocks()));
     }
     done();
   });
-
 });
