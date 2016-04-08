@@ -1,5 +1,5 @@
 var taskcluster = require('taskcluster-client');
-var helper = require('../test/helper');
+var helper = require('./helper');
 var assume = require('assume');
 var slugid = require('slugid');
 var hawk = require('hawk');

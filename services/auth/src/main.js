@@ -1,21 +1,20 @@
-#!/usr/bin/env node
 let base               = require('taskcluster-base');
-let data               = require('../auth/data');
-let v1                 = require('../auth/v1');
+let data               = require('./data');
+let v1                 = require('./v1');
 let path               = require('path');
 let debug              = require('debug')('server');
 let Promise            = require('promise');
 let AWS                = require('aws-sdk-promise');
 let raven              = require('raven');
-let exchanges          = require('../auth/exchanges');
-let ScopeResolver      = require('../auth/scoperesolver');
-let signaturevalidator = require('../auth/signaturevalidator');
+let exchanges          = require('./exchanges');
+let ScopeResolver      = require('./scoperesolver');
+let signaturevalidator = require('./signaturevalidator');
 let taskcluster        = require('taskcluster-client');
 let url                = require('url');
 let validate           = require('taskcluster-lib-validate');
 let loader             = require('taskcluster-lib-loader');
 let app                = require('taskcluster-lib-app');
-let SentryManager      = require('../auth/sentrymanager');
+let SentryManager      = require('./sentrymanager');
 
 // Create component loader
 let load = loader({

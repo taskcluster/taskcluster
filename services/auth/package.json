@@ -2,11 +2,14 @@
   "name": "taskcluster-auth",
   "version": "0.1.0",
   "private": true,
-  "main": "node bin/server.js production",
+  "main": "node lib/server production",
   "scripts": {
-    "test": "test/runtests.sh",
+    "compile": "babel-compile -c tc-rules/babel src:lib test:.test",
+    "test": "mocha .test/*_test.js",
+    "pretest": "npm run compile",
+    "install": "npm run compile",
     "checkStagingSetup": "heroku run -a taskcluster-auth-staging node bin/make-check-client.js",
-    "checkStaging": "mocha test/check-staging.js"
+    "checkStaging": "mocha .test/check-staging.js"
   },
   "repository": {
     "type": "git",
@@ -16,40 +19,43 @@
     "aws-sdk": "^2.2.0",
     "aws-sdk-promise": "^0.0.2",
     "azure-entities": "^0.9.0",
-    "babel": "^5.8.23",
-    "body-parser": "^1.12.4",
+    "babel-compile": "^1.0.2",
+    "babel-plugin-syntax-async-functions": "^6.5.0",
+    "babel-plugin-syntax-trailing-function-commas": "^6.5.0",
+    "babel-plugin-transform-async-to-generator": "^6.5.0",
+    "babel-plugin-transform-runtime": "^6.6.0",
+    "babel-plugin-transform-strict-mode": "^6.5.2",
+    "babel-preset-es2015": "^6.6.0",
+    "babel-runtime": "^6.6.1",
     "cryptiles": "^2.0.4",
     "debug": "^2.2.0",
-    "express": "^4.12.4",
     "fast-azure-storage": "^0.3.2",
     "hawk": "2.3.0",
     "hoek": "^2.16.3",
-    "kexec": "^1.2.0",
     "lodash": "^3.9.3",
     "promise": "^7.0.4",
     "pulse-publisher": "^0.9.1",
     "raven": "^0.10.0",
-    "statsum": "^0.3.0",
     "sentry-api": "jonasfj/node-sentry-api#create-project",
     "slugid": "^1.1.0",
+    "statsum": "^0.3.0",
     "superagent": "^1.1.0",
     "superagent-hawk": "0.0.4",
-    "taskcluster-base": "^0.10.5",
+    "taskcluster-base": "^0.12.2",
     "taskcluster-client": "^0.23.9",
     "taskcluster-lib-api": "^0.11.0",
     "taskcluster-lib-app": "^0.8.10",
     "taskcluster-lib-loader": "^0.1.1",
     "taskcluster-lib-scopes": "^0.8.8",
-    "taskcluster-lib-validate": "^0.4.3"
-  },
-  "devDependencies": {
+    "taskcluster-lib-validate": "^0.4.3",
+    "tc-rules": "^5.0.0",
     "mocha": "^2.2.5",
     "assume": "^1.3.1",
     "superagent-promise": "^0.2.0",
     "taskcluster-lib-testing": "^0.11.1"
   },
   "engines": {
-    "node": "^4.2.2",
-    "npm": "^2.0.0"
+    "node": "^5.8.0",
+    "npm": "^3.7.3"
   }
 }
