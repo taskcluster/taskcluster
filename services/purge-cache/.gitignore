@@ -1,2 +1,5 @@
 node_modules/
 taskcluster-purge-cache.conf.json
+user-config.yml
+/lib/
+/.test/
