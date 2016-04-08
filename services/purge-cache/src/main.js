@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 var debug             = require('debug')('purge-cache:server');
 var base              = require('taskcluster-base');
-var api               = require('../lib/api');
+var api               = require('./api');
 var path              = require('path');
 var Promise           = require('promise');
-var exchanges         = require('../lib/exchanges');
+var exchanges         = require('./exchanges');
 var _                 = require('lodash');
 
 /** Launch server */
@@ -12,52 +12,37 @@ var launch = async function(profile) {
   debug("Launching with profile: %s", profile);
 
   // Load configuration
-  var cfg = base.config({
-    defaults:     require('../config/defaults'),
-    profile:      require('../config/' + profile),
-    envs: [
-      'pulse_username',
-      'pulse_password',
-      'purgeCache_publishMetaData',
-      'aws_accessKeyId',
-      'aws_secretAccessKey',
-      'influx_connectionString'
-    ],
-    filename:     'taskcluster-purge-cache'
-  });
+  var cfg = base.config({profile});
 
   // Create InfluxDB connection for submitting statistics
   var influx = new base.stats.Influx({
-    connectionString:   cfg.get('influx:connectionString'),
-    maxDelay:           cfg.get('influx:maxDelay'),
-    maxPendingPoints:   cfg.get('influx:maxPendingPoints')
+    connectionString:   cfg.influx.connectionString,
+    maxDelay:           cfg.influx.maxDelay,
+    maxPendingPoints:   cfg.influx.maxPendingPoints,
   });
 
   // Start monitoring the process
   base.stats.startProcessUsageReporting({
     drain:      influx,
-    component:  cfg.get('purgeCache:statsComponent'),
-    process:    'server'
+    component:  cfg.purgeCache.statsComponent,
+    process:    'server',
   });
 
   let validator = await base.validator({
-    folder:           path.join(__dirname, '..', 'schemas'),
-    constants:        require('../schemas/constants'),
-    publish:          cfg.get('purgeCache:publishMetaData') === 'true',
-    schemaPrefix:     'purge-cache/v1/',
-    aws:              cfg.get('aws')
+    prefix: 'purge-cache/v1/',
+    aws:     cfg.aws,
   });
 
   let publisher = await exchanges.setup({
-    credentials:        cfg.get('pulse'),
-    exchangePrefix:     cfg.get('purgeCache:exchangePrefix'),
+    credentials:        cfg.pulse,
+    exchangePrefix:     cfg.purgeCache.exchangePrefix,
     validator:          validator,
     referencePrefix:    'purge-cache/v1/exchanges.json',
-    publish:            cfg.get('purgeCache:publishMetaData') === 'true',
-    aws:                cfg.get('aws'),
+    publish:            cfg.purgeCache.publishMetaData,
+    aws:                cfg.aws,
     drain:              influx,
-    component:          cfg.get('purgeCache:statsComponent'),
-    process:            'server'
+    component:          cfg.purgeCache.statsComponent,
+    process:            'server',
   });
 
   // Create API router and publish reference if needed
@@ -66,12 +51,11 @@ var launch = async function(profile) {
   let router = await api.setup({
     context:          {publisher},
     validator:        validator,
-    authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
-    publish:          cfg.get('purgeCache:publishMetaData') === 'true',
-    baseUrl:          cfg.get('server:publicUrl') + '/v1',
+    publish:          cfg.purgeCache.publishMetaData,
+    baseUrl:          cfg.server.publicUrl + '/v1',
     referencePrefix:  'purge-cache/v1/api.json',
-    aws:              cfg.get('aws'),
-    component:        cfg.get('purgeCache:statsComponent'),
+    aws:              cfg.aws,
+    component:        cfg.purgeCache.statsComponent,
     drain:            influx
   });
 
@@ -79,10 +63,10 @@ var launch = async function(profile) {
 
   // Create app
   var app = base.app({
-    port:           Number(process.env.PORT || cfg.get('server:port')),
-    env:            cfg.get('server:env'),
-    forceSSL:       cfg.get('server:forceSSL'),
-    trustProxy:     cfg.get('server:trustProxy')
+    port:           cfg.server.port,
+    env:            cfg.server.env,
+    forceSSL:       cfg.server.forceSSL,
+    trustProxy:     cfg.server.trustProxy,
   });
 
   // Mount API router

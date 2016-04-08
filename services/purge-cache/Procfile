@@ -1,1 +1,1 @@
-web: babel-node bin/server.js production
+web: node lib/main production
