@@ -1,0 +1,7 @@
+---
+defaults:
+  pulse:
+    username: "..."
+    password: "..."
+  influx:
+    connectionString: "https://<user>:<pwd>@<host>:<port>/db/<database>"

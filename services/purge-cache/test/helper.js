@@ -8,52 +8,28 @@ var taskcluster = require('taskcluster-client');
 var mocha       = require('mocha');
 var exchanges   = require('../lib/exchanges');
 var bin = {
-  server:         require('../bin/server'),
+  server:         require('../lib/main'),
 };
 
 // Load configuration
-var cfg = base.config({
-  defaults:     require('../config/defaults'),
-  profile:      require('../config/test'),
-  envs: [
-    'pulse_username',
-    'pulse_password',
-    'purgeCache_publishMetaData',
-    'taskcluster_credentials_clientId',
-    'taskcluster_credentials_accessToken',
-    'aws_accessKeyId',
-    'aws_secretAccessKey',
-    'influx_connectionString'
-  ],
-  filename:     'taskcluster-purge-cache'
-});
+var cfg = base.config({profile: 'test'});
 
-// Some default clients for the mockAuthServer
-var defaultClients = [
-  {
-    clientId:     'test-server',  // Hardcoded into config/test.js
-    accessToken:  'none',
-    scopes:       [],
-    expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
-  }, {
-    clientId:     'test-client',
-    accessToken:  'none',
-    scopes:       ['*'],
-    expires:      new Date(3000, 0, 0, 0, 0, 0, 0)
-  }
-];
+var testclients = {
+  'test-client': ['*'],
+  'test-server': ['*'],
+};
 
 // Create and export helper object
 var helper = module.exports = {};
 
 // Skip tests if no credentials is configured
-if (!cfg.get('pulse:password')) {
+if (!cfg.pulse.password) {
   console.log("Skip tests due to missing credentials!");
   process.exit(1);
 }
 
 // Configure PulseTestReceiver
-helper.events = new base.testing.PulseTestReceiver(cfg.get('pulse'), mocha);
+helper.events = new base.testing.PulseTestReceiver(cfg.pulse, mocha);
 
 // Hold reference to authServer
 var authServer = null;
@@ -62,10 +38,7 @@ var webServer = null;
 // Setup before tests
 mocha.before(async () => {
   // Create mock authentication server
-  authServer = await base.testing.createMockAuthServer({
-    port:     60414, // This is hardcoded into config/test.js
-    clients:  defaultClients
-  });
+  base.testing.fakeauth.start(testclients);
 
   webServer = await bin.server('test');
 
@@ -93,22 +66,18 @@ mocha.before(async () => {
 
   // Create client for binding to reference
   var exchangeReference = exchanges.reference({
-    exchangePrefix:   cfg.get('purgeCache:exchangePrefix'),
-    credentials:      cfg.get('pulse')
+    exchangePrefix:   cfg.purgeCache.exchangePrefix,
+    credentials:      cfg.pulse
   });
   helper.PurgeCacheEvents = taskcluster.createClient(exchangeReference);
   helper.purgeCacheEvents = new helper.PurgeCacheEvents();
 });
 
-// Setup before each test
 mocha.beforeEach(() => {
-  // Setup client with all scopes
   helper.scopes();
 });
 
-// Cleanup after tests
 mocha.after(async () => {
-  // Kill webServer
   await webServer.terminate();
-  await authServer.terminate();
+  base.testing.fakeauth.stop();
 });
