@@ -1,2 +1,2 @@
-web:            babel-node bin/server.js server
-expireSentry:   babel-node bin/server.js expire-sentry
+web:            node lib/main server
+expireSentry:   node lib/main expire-sentry
