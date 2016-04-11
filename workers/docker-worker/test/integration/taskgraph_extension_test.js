@@ -38,6 +38,9 @@ suite('Extend Task Graph', function() {
         source: 'http://mytest/',
         owner: 'test@localhost.local'
       },
+      scopes: [
+        'scheduler:extend-task-graph:' + graphId
+      ],
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd('echo "wooot custom!"'),
@@ -63,7 +66,8 @@ suite('Extend Task Graph', function() {
         source: 'http://xfoobar.com'
       },
       scopes: [
-        'queue:define-task:' + worker.provisionerId + '/' + worker.workerType
+        'queue:define-task:' + worker.provisionerId + '/' + worker.workerType,
+        'scheduler:extend-task-graph:' + graphId
       ],
       tasks: [{
         taskId: primaryTaskId,
@@ -72,6 +76,10 @@ suite('Extend Task Graph', function() {
           metadata: {
             owner: 'tests@local.localhost'
           },
+          scopes: [
+            'queue:define-task:' + worker.provisionerId + '/' + worker.workerType,
+            'scheduler:extend-task-graph:' + graphId
+          ],
           payload: {
             image: 'taskcluster/test-ubuntu',
             command: cmd(
@@ -119,7 +127,8 @@ suite('Extend Task Graph', function() {
         source: 'http://xfoobar.com'
       },
       scopes: [
-        'queue:define-task:' + worker.provisionerId + '/' + worker.workerType
+        'queue:define-task:' + worker.provisionerId + '/' + worker.workerType,
+        'scheduler:extend-task-graph:' + graphId
       ],
       tasks: [{
         taskId: primaryTaskId,
@@ -128,6 +137,10 @@ suite('Extend Task Graph', function() {
           metadata: {
             owner: 'tests@local.localhost'
           },
+          scopes: [
+            'queue:define-task:' + worker.provisionerId + '/' + worker.workerType,
+            'scheduler:extend-task-graph:' + graphId
+          ],
           payload: {
             image: 'taskcluster/test-ubuntu',
             command: cmd(
@@ -197,7 +210,8 @@ suite('Extend Task Graph', function() {
         source: 'http://xfoobar.com'
       },
       scopes: [
-        'queue:define-task:' + worker.provisionerId + '/' + worker.workerType
+        'queue:define-task:' + worker.provisionerId + '/' + worker.workerType,
+        'scheduler:extend-task-graph:' + graphId
       ],
       tasks: [{
         taskId: primaryTaskId,
@@ -206,6 +220,10 @@ suite('Extend Task Graph', function() {
           metadata: {
             owner: 'tests@local.localhost'
           },
+          scopes: [
+            'queue:define-task:' + worker.provisionerId + '/' + worker.workerType,
+            'scheduler:extend-task-graph:' + graphId
+          ],
           payload: {
             image: 'taskcluster/test-ubuntu',
             command: cmd(
@@ -241,7 +259,11 @@ suite('Extend Task Graph', function() {
       provisionerId: worker.provisionerId,
       // Because this scope is not included in the scopes the graph has, extending
       // the task graph will fail
-      scopes: ['this-is-a-bad-scope'],
+      scopes: [
+        'this-is-a-bad-scope',
+        'queue:define-task:' + worker.provisionerId + '/' + worker.workerType,
+        'scheduler:extend-task-graph:' + graphId
+      ],
       metadata: {
         description: 'testing',
         source: 'http://mytest/',
@@ -272,7 +294,8 @@ suite('Extend Task Graph', function() {
         source: 'http://xfoobar.com'
       },
       scopes: [
-        'queue:define-task:' + worker.provisionerId + '/' + worker.workerType
+        'queue:define-task:' + worker.provisionerId + '/' + worker.workerType,
+        'scheduler:extend-task-graph:' + graphId
       ],
       tasks: [{
         taskId: primaryTaskId,
@@ -281,6 +304,10 @@ suite('Extend Task Graph', function() {
           metadata: {
             owner: 'tests@local.localhost'
           },
+          scopes: [
+            'queue:define-task:' + worker.provisionerId + '/' + worker.workerType,
+            'scheduler:extend-task-graph:' + graphId
+          ],
           payload: {
             image: 'taskcluster/test-ubuntu',
             command: cmd(

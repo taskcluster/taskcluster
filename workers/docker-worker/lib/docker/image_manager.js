@@ -52,7 +52,7 @@ export default class ImageManager {
    *                             or will be once image is downloaded.  Ensures
    *                             pulls/downloads are done serially.
    */
-  async ensureImage(imageDetails, stream, scopes = []) {
+  async ensureImage(imageDetails, stream, task, scopes = []) {
     if (typeof imageDetails === 'string') {
       imageDetails = {
         name: imageDetails,
@@ -66,7 +66,7 @@ export default class ImageManager {
          image: imageDetails
         });
 
-        let imageHandler = this.getImageHandler(imageDetails, stream, scopes);
+        let imageHandler = this.getImageHandler(imageDetails, stream, task, scopes);
 
         if (!imageHandler.isAuthorized()) {
           throw new Error(
@@ -92,11 +92,11 @@ export default class ImageManager {
    * @param {Object} stream - Stream object used for piping messages to the task log
    * @param {Array}  scopes - Array of task scopes
    */
-  getImageHandler(image, stream, scopes) {
+  getImageHandler(image, stream, task, scopes) {
     if (!Object.keys(IMAGE_HANDLERS).includes(image.type)) {
       throw new Error(`Unrecognized image type. Image Type: ${image.type}`);
     }
 
-    return new IMAGE_HANDLERS[image.type](this.runtime, image, stream, scopes);
+    return new IMAGE_HANDLERS[image.type](this.runtime, image, stream, task, scopes);
   }
 }

@@ -7,6 +7,7 @@ import {createHash} from 'crypto';
 import slugid from 'slugid';
 import {createLogger} from '../lib/log';
 import {NAMESPACE, TASK_ID} from './fixtures/image_artifacts';
+import taskcluster from 'taskcluster-client';
 
 let docker = Docker();
 
@@ -65,9 +66,16 @@ suite('Image Manager', () => {
       }
     };
 
+    let task = {
+      queue: new taskcluster.Queue({
+        credentials: undefined,
+        scopes: [],
+      }),
+    };
+
     let im = new ImageManager(runtime);
-    let imageId1 = await im.ensureImage(image, process.stdout, []);
-    let imageId2 = await im.ensureImage(image, process.stdout);
+    let imageId1 = await im.ensureImage(image, process.stdout, task, []);
+    let imageId2 = await im.ensureImage(image, process.stdout, task);
 
     assert.ok(imageId1, 'No image id was returned');
     assert.equal(imageId1, imageId2, 'Image IDs for the same image should be the same');
@@ -98,8 +106,15 @@ suite('Image Manager', () => {
       }
     };
 
+    let task = {
+      queue: new taskcluster.Queue({
+        credentials: undefined,
+        scopes: [],
+      }),
+    };
+
     let im = new ImageManager(runtime);
-    let imageId = await im.ensureImage(image, process.stdout, []);
+    let imageId = await im.ensureImage(image, process.stdout, task, []);
 
     assert.ok(imageId, 'No image id was returned');
   });
@@ -129,9 +144,16 @@ suite('Image Manager', () => {
       }
     };
 
+    let task = {
+      queue: new taskcluster.Queue({
+        credentials: undefined,
+        scopes: [],
+      }),
+    };
+
     let im = new ImageManager(runtime);
     try {
-      await im.ensureImage(image, process.stdout, []);
+      await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Images should not be used when proper scopes are not provided');
     } catch(e) {
       return;
@@ -165,8 +187,15 @@ suite('Image Manager', () => {
       }
     };
 
+    let task = {
+      queue: new taskcluster.Queue({
+        credentials: undefined,
+        scopes: [],
+      }),
+    };
+
     let im = new ImageManager(runtime);
-    let imageId = await im.ensureImage(image, process.stdout, scopes);
+    let imageId = await im.ensureImage(image, process.stdout, task, scopes);
 
     assert.ok(imageId, 'Image should have been loaded');
   });
@@ -195,8 +224,15 @@ suite('Image Manager', () => {
       }
     };
 
+    let task = {
+      queue: new taskcluster.Queue({
+        credentials: undefined,
+        scopes: [],
+      }),
+    };
+
     let im = new ImageManager(runtime);
-    let imageId = await im.ensureImage(image, process.stdout, []);
+    let imageId = await im.ensureImage(image, process.stdout, task, []);
 
     assert.ok(imageId, 'No image id was returned');
   });
@@ -218,9 +254,16 @@ suite('Image Manager', () => {
       }
     };
 
+    let task = {
+      queue: new taskcluster.Queue({
+        credentials: undefined,
+        scopes: [],
+      }),
+    };
+
     let im = new ImageManager(runtime);
     try {
-      let imageId = await im.ensureImage(image, process.stdout, []);
+      let imageId = await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Exception should have been thrown');
     } catch(e) {
       assert.ok(
@@ -247,9 +290,16 @@ suite('Image Manager', () => {
       }
     };
 
+    let task = {
+      queue: new taskcluster.Queue({
+        credentials: undefined,
+        scopes: [],
+      }),
+    };
+
     let im = new ImageManager(runtime);
     try {
-      let imageId = await im.ensureImage(image, process.stdout, []);
+      let imageId = await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Exception should have been thrown');
     } catch(e) {
       assert.ok(
@@ -275,9 +325,16 @@ suite('Image Manager', () => {
       }
     };
 
+    let task = {
+      queue: new taskcluster.Queue({
+        credentials: undefined,
+        scopes: [],
+      }),
+    };
+
     let im = new ImageManager(runtime);
     try {
-      await im.ensureImage(image, process.stdout, []);
+      await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Exception should have been thrown');
     } catch(e) {
       assert.ok(

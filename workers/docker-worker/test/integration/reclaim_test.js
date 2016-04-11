@@ -8,6 +8,7 @@ suite('Reclaiming task', function() {
   var DockerWorker = require('../dockerworker');
   var TestWorker = require('../testworker');
   var taskcluster = require('taskcluster-client');
+  var expires = require('./helper/expires')
 
   // Ensure we don't leave behind our test configurations.
   teardown(settings.cleanup);
@@ -86,6 +87,40 @@ suite('Reclaiming task', function() {
       !results[2].log,
       'Log file was present when there should not have been one'
     );
+  });
+
+  test('test taskcluster-proxy credentials update', async function() {
+    let payload = {
+      storageType: 'reference',
+      expires: expires().toJSON(),
+      contentType: 'text/html',
+      url: 'https://mozilla.com'
+    };
+
+    let updated = false;
+    worker.on('Credentials updated', function() {
+      updated = true;
+    });
+
+    let result = await worker.postToQueue({
+      scopes: ['queue:create-artifact:custom'],
+      payload: {
+        image: 'centos:latest',
+        features: { taskclusterProxy: true },
+        artifacts: {},
+        command: cmd(
+          'curl --retry 5 -X POST ' +
+          '-H "Content-Type: application/json" ' +
+          '--data \'' + JSON.stringify(payload) + '\' ' +
+          'taskcluster/queue/v1/task/$TASK_ID/runs/$RUN_ID/artifacts/custom'
+        ),
+        maxRunTime: 5 * 60
+      }
+    });
+
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+    assert.ok(updated);
   });
 });
 

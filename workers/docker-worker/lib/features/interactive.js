@@ -328,7 +328,7 @@ export default class WebsocketServer {
     let expiration = new Date(
       Math.min(Date.now() + task.task.payload.maxRunTime,
       new Date(task.task.expires)));
-    let queue = task.runtime.queue;
+    let queue = task.queue;
 
     let toolsShellArtifact = queue.createArtifact(
       task.status.taskId,

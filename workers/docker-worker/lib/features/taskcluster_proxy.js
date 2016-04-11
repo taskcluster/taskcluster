@@ -4,6 +4,7 @@ allows tasks to talk directly to taskcluster services over a http proxy which
 grants a particular permission level based on the task scopes.
 */
 import waitForPort from '../wait_for_port';
+import http from 'http';
 
 // Alias used to link the proxy.
 const ALIAS = 'taskcluster';
@@ -26,23 +27,19 @@ export default class TaskclusterProxy {
 
     // Image name for the proxy container.
     var image = task.runtime.taskclusterProxyImage;
-    var imageId = await task.runtime.imageManager.ensureImage(image, process.stdout);
-
-    var assumedScope = 'assume:worker-id:' + task.runtime.workerGroup +
-                       '/' + task.runtime.workerId;
+    var imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task);
 
     var cmd = [
-        '--client-id=' + task.runtime.taskcluster.clientId,
-        '--access-token=' + task.runtime.taskcluster.accessToken
+        '--client-id=' + task.claim.credentials.clientId,
+        '--access-token=' + task.claim.credentials.accessToken
     ];
     // only pass in a certificate if one has been set
-    if (task.runtime.taskcluster.certificate) {
-        cmd.push('--certificate=' + task.runtime.taskcluster.certificate);
+    if (task.claim.credentials.certificate) {
+        cmd.push('--certificate=' + task.claim.credentials.certificate);
     }
-    cmd.push(
-        task.status.taskId,
-        assumedScope
-    );
+    const cert = JSON.parse(task.claim.credentials.certificate);
+    cmd.push(task.status.taskId);
+    cmd = cmd.concat(cert.scopes);
 
     // create the container.
     this.container = await docker.createContainer({
@@ -83,6 +80,42 @@ export default class TaskclusterProxy {
     } catch (e) {
       throw new Error('Failed to initialize taskcluster proxy service.');
     }
+
+    // Update credentials in proxy
+    task.on('credentials', async (credentials) => {
+      let credentials = JSON.stringify(task.claim.credentials);
+
+      await new Promise((accept, reject) => {
+        let req = http.request({
+          hostname: inspect.NetworkSettings.IPAddress,
+          method: 'PUT',
+          path: '/credentials',
+          headers: {
+            'Content-Type': 'text/json',
+            'Content-Length': credentials.length
+          }
+        }, res => {
+          if (res.statusCode == 200) {
+            task.runtime.log('Credentials updated', {
+              taskId: task.status.taskId,
+              runId: task.runId
+            });
+            accept();
+          } else {
+            let err = new Error(`Credentials update failed ${res.statusCode}`);
+            task.runtime.log(err, {
+              taskId: task.status.taskId,
+              runId: task.runId
+            });
+            reject(err);
+          }
+        });
+
+        req.on('error', err => reject(err));
+        req.write(credentials);
+        req.end();
+      });
+    });
 
     return {
       links: [{name, alias: ALIAS}],

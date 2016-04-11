@@ -60,7 +60,7 @@ export default class BalrogVPNProxy {
     let imageScopes = [`${IMAGE_SCOPE_PREFIX+image}`];
 
     debug('ensuring image');
-    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, imageScopes);
+    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task, imageScopes);
     debug('image verified %s', imageId);
 
     // create the container.

@@ -43,7 +43,7 @@ export default class DockerSave {
     let expiration = taskcluster.fromNow(task.runtime.dockerSave.expiration);
     expiration = new Date(Math.min(expiration, new Date(task.task.expires)));
 
-    await uploadToS3(task.runtime.queue, task.status.taskId, task.runId,
+    await uploadToS3(task.queue, task.status.taskId, task.runId,
       uploadStream, 'public/dockerImage.tar', expiration, {
       'content-type': 'application/x-tar',
       'content-length': stat.size,
@@ -76,7 +76,7 @@ export default class DockerSave {
     expiration = new Date(Math.min(expiration, new Date(task.task.expires)));
     let stat = await fs.stat(pathname);
 
-    await uploadToS3(task.runtime.queue, task.status.taskId, task.runId,
+    await uploadToS3(task.queue, task.status.taskId, task.runId,
       fs.createReadStream(pathname),
       'public/cache/' + cache.cacheName + '.tar',
       expiration, {

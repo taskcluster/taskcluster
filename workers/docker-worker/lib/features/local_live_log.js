@@ -48,7 +48,7 @@ export default class TaskclusterLogs {
     // Image name for the proxy container.
     let image = task.runtime.taskclusterLogImage;
     debug('ensuring image');
-    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout);
+    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task);
     debug('image verified %s', imageId);
 
     let envs = [];
@@ -142,7 +142,7 @@ export default class TaskclusterLogs {
     debug('live log running: putUrl', putUrl)
     debug('live log running: publicUrl', this.publicUrl);
 
-    let queue = task.runtime.queue;
+    let queue = task.queue;
 
     // Intentionally used the same expiration as the bulkLog
     let expiration = new Date(
@@ -198,7 +198,7 @@ export default class TaskclusterLogs {
       Math.min(Date.now() + task.runtime.logging.bulkLogExpires,
       new Date(task.task.expires)));
 
-    await task.runtime.queue.createArtifact(
+    await task.queue.createArtifact(
       task.status.taskId,
       task.runId,
       this.logsLocations.live,

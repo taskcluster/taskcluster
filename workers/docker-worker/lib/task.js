@@ -11,6 +11,8 @@ import { PassThrough } from 'stream';
 import States from './states';
 import fs from "mz/fs";
 import child_process from "mz/child_process";
+import taskcluster from 'taskcluster-client';
+import base from 'taskcluster-base';
 
 import features from './features';
 import getHostname from './util/hostname';
@@ -22,6 +24,7 @@ import { validatePayload } from './util/validate_schema';
 import waitForEvent from './wait_for_event';
 import uploadToS3 from './upload_to_s3';
 import _ from 'lodash';
+import EventEmitter from 'events';
 
 let debug = new Debug('runTask');
 
@@ -222,8 +225,9 @@ export class Reclaimer {
     this.log('reclaiming task');
 
     try {
-      this.claim = await this.runtime.queue.reclaimTask(
-                                this.claim.status.taskId, this.claim.runId);
+      let queue = this.task.createQueue(this.claim.credentials, this.runtime);
+      this.claim = await queue.reclaimTask(
+                    this.claim.status.taskId, this.claim.runId);
       // reclaim does not return the task, so carry that forward from the previous
       // claim
       this.claim.task = task;
@@ -251,6 +255,11 @@ export class Reclaimer {
       return;
     }
 
+    if (this.claim.status.taskId == this.primaryClaim.status.taskId) {
+      this.task.queue = this.task.createQueue(this.claim.credentials, this.runtime);
+      this.task.emit('credentials', this.claim.credentials);
+    }
+
     this.log('reclaimed task');
     await this.scheduleReclaim();
   }
@@ -266,7 +275,7 @@ export class Reclaimer {
   }
 }
 
-export class Task {
+export class Task extends EventEmitter {
   /**
   @param {Object} runtime global runtime.
   @param {Object} task for this instance.
@@ -283,6 +292,8 @@ export class Task {
     this.runId = this.claim.runId;
     this.taskState = 'pending';
     this.options = options;
+
+    this.queue = this.createQueue(this.claim.credentials, runtime);
 
     // Primarly log of all actions for the task.
     this.stream = new PassThrough();
@@ -517,7 +528,7 @@ export class Task {
     }
 
     if (this.isAborted()) {
-      let queue = this.runtime.queue;
+      let queue = this.queue;
       let reporter = this.taskException ? queue.reportException : queue.reportFailed;
       let reportDetails = [this.status.taskId, this.runId];
       if (this.taskException) reportDetails.push({ reason: this.taskException });
@@ -549,7 +560,7 @@ export class Task {
    * @param {Boolean} success
    */
   async completeRun(success) {
-    let queue = this.runtime.queue;
+    let queue = this.queue;
     let reporter = success ? queue.reportCompleted : queue.reportFailed;
     let reportDetails = [this.status.taskId, this.runId];
 
@@ -578,7 +589,7 @@ export class Task {
    */
 
   async resolveSuperseded(primaryTaskId, primaryRunId, addArtifacts, reason) {
-    let queue = this.runtime.queue;
+    let queue = this.queue;
     let supersedes = [];
     let log = this.runtime.log;
 
@@ -825,6 +836,7 @@ export class Task {
       let im = this.runtime.imageManager;
       imageId = await im.ensureImage(this.task.payload.image,
                                      this.stream,
+                                     this,
                                      this.task.scopes);
       this.runtime.gc.markImage(imageId);
     } catch (e) {
@@ -967,5 +979,30 @@ export class Task {
       return await this.abortRun(this.taskState);
     }
     return success;
+  }
+
+  /**
+  Create a new queue using temp credentials.
+
+  @param {credentials} Temporary credentials.
+  @param {runtime} Runtime config.
+
+  @return New queue.
+  */
+  createQueue(credentials, runtime) {
+    return new taskcluster.Queue({
+      credentials: credentials,
+      stats: base.stats.createAPIClientStatsHandler({
+        drain: runtime.stats.influx,
+        tags: {
+          component: 'docker-worker',
+          workerId: runtime.workerId,
+          workerGroup: runtime.workerGroup,
+          workerType: runtime.workerType,
+          instanceType: runtime.workerNodeType,
+          provisionerId: runtime.provisionerId
+        }
+      })
+    });
   }
 }

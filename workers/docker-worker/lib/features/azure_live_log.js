@@ -49,7 +49,7 @@ export default class LiveLog {
   constructor () {}
 
   async created(task) {
-    var queue = task.runtime.queue;
+    var queue = task.queue;
 
     // Create date when this artifact should expire (see config).
     var expiration = new Date(

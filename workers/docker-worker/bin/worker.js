@@ -196,9 +196,6 @@ async function main () {
     })
   });
 
-  config.scheduler =
-    new taskcluster.Scheduler({ credentials: config.taskcluster });
-
   config.validator = await base.validator();
   config.validator.register(require('../schemas/payload'));
 

@@ -27,7 +27,7 @@ export default class RelengAPIProxy {
 
     // Image name for the proxy container.
     var image = task.runtime.features.relengAPIProxy.image;
-    var imageId = await task.runtime.imageManager.ensureImage(image, process.stdout);
+    var imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task);
 
     var cmd = [
         `--relengapi-token=${task.runtime.features.relengAPIProxy.token}`,

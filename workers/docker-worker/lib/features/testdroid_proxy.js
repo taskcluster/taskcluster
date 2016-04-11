@@ -39,7 +39,7 @@ export default class TestdroidProxy {
     let image = task.runtime.testdroidProxyImage;
 
     debug('ensuring image');
-    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout);
+    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task);
     debug('image verified %s', imageId);
 
     let cmd = [

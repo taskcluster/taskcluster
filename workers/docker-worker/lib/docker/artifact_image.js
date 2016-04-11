@@ -25,16 +25,13 @@ export default class ArtifactImage {
    * @param {Object}  stream        - task stream object
    * @param {Array}   taskScopes        - Array of task scopes
    */
-  constructor(runtime, imageDetails, stream, taskScopes=[]) {
+  constructor(runtime, imageDetails, stream, task, taskScopes=[]) {
     this.runtime = runtime;
     this.taskScopes = taskScopes;
     this.stream = stream;
     this.taskId = imageDetails.taskId;
     this.artifactPath = imageDetails.path;
-    this.queue = new taskcluster.Queue({
-      credentials: this.runtime.taskcluster,
-      authorizedScopes: this.taskScopes
-    });
+    this.task = task;
   }
 
   /*
@@ -73,7 +70,7 @@ export default class ArtifactImage {
     try {
       await this.runtime.stats.timeGen('taskImageDownloadTime',
         downloadArtifact(
-          this.queue,
+          this.task.queue,
           this.stream,
           this.taskId,
           this.artifactPath,

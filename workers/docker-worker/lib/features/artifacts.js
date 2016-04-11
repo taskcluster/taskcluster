@@ -24,7 +24,7 @@ export default class Artifacts {
   async uploadArtifact(taskHandler, name, artifact) {
     let errors = [];
     let container = taskHandler.dockerProcess.container;
-    let queue = taskHandler.runtime.queue;
+    let queue = taskHandler.queue;
     let path = artifact.path;
     let expiry;
 
@@ -139,7 +139,7 @@ export default class Artifacts {
       };
 
       try {
-        await uploadToS3(taskHandler.runtime.queue, taskId, runId, stream,
+        await uploadToS3(taskHandler.queue, taskId, runId, stream,
                          entryName, expiry, headers);
       } catch(err) {
         debug(err);

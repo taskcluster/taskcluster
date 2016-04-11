@@ -19,11 +19,12 @@ const RETRY_CONFIG = {
 };
 
 export default class DockerImage {
-  constructor(runtime, imageDetails, stream, scopes=[]) {
+  constructor(runtime, imageDetails, stream, task, scopes=[]) {
     this.runtime = runtime;
     this.imageName = imageDetails.name;
     this.stream = stream;
     this.scopes = scopes;
+    this.task = task;
 
     var parsed = parseImage(this.imageName);
     this.name = parsed.repository;

@@ -5,6 +5,7 @@ var debug = require('debug')('docker-worker:middleware:extendTaskGraph');
 var waitForEvent = require('../wait_for_event');
 var tarStream = require('tar-stream');
 var log = require('../log');
+var taskcluster = require('taskcluster-client');
 
 
 async function drain (listener) {
@@ -28,7 +29,9 @@ export default class ExtendTaskGraph {
     var graphId = task.taskGroupId;
 
     var container = taskHandler.dockerProcess.container;
-    var scheduler = taskHandler.runtime.scheduler;
+    var scheduler = new taskcluster.Scheduler({
+      credentials: taskHandler.claim.credentials
+    });
 
     // Raw tar stream for the content.
     var contentStream;
@@ -84,7 +87,6 @@ export default class ExtendTaskGraph {
         'Dumping file. ' + JSON.stringify(entryJSON, null, 2)
       );
     }
-
     // Extend the graph!
     try {
       var result = await scheduler.extendTaskGraph(graphId, extension);

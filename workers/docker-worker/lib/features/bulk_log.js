@@ -47,7 +47,7 @@ export default class BulkLog {
     expiration = new Date(Math.min(expiration, new Date(task.task.expires)));
 
     try {
-      await uploadToS3(task.runtime.queue, task.status.taskId, task.runId,
+      await uploadToS3(task.queue, task.status.taskId, task.runId,
                        diskStream, this.artifactName, expiration, {
         'content-type': 'text/plain',
         'content-length': stat.size,
@@ -62,7 +62,7 @@ export default class BulkLog {
     // Unlink the temp file.
     await fs.unlink(this.file.path);
 
-    var queue = task.runtime.queue;
+    var queue = task.queue;
 
     return queue.buildUrl(
       queue.getArtifact,

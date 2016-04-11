@@ -32,7 +32,7 @@ export default class DockerInDocker {
     debug('ensuring image');
     let imageManager = task.runtime.imageManager;
     let image = task.runtime.dindImage;
-    let imageId = await imageManager.ensureImage(image, process.stdout);
+    let imageId = await imageManager.ensureImage(image, process.stdout, task);
     debug('image verified %s', imageId);
 
     // Create temporary directory

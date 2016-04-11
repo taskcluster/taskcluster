@@ -15,7 +15,7 @@ export default class IndexedImage extends ArtifactImage {
    * @param {Object}  stream        - task stream object
    * @param {Array}   taskScopes        - Array of task scopes
    */
-  constructor(runtime, imageDetails, stream, taskScopes=[]) {
+  constructor(runtime, imageDetails, stream, task, taskScopes=[]) {
     this.runtime = runtime;
     this.taskScopes = taskScopes;
     this.stream = stream;
@@ -25,10 +25,7 @@ export default class IndexedImage extends ArtifactImage {
       credentials: this.runtime.taskcluster,
       authorizedScopes: this.taskScopes
     });
-    this.queue = new taskcluster.Queue({
-      credentials: this.runtime.taskcluster,
-      authorizedScopes: this.taskScopes
-    });
+    this.task = task;
   }
 
   /* Downloads an image that is indexed at the given namespace and path.
