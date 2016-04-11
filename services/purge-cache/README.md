@@ -18,3 +18,10 @@ Then workers should listen for this message and purge caches of all kinds
 matching the given `<cacheName>`.
 
 This makes it easy to blow away poisoned caches should this ever be necessary.
+
+Deployment
+----------
+1) Supply configuration needed to run post-deploy verification tests. Example is in `user-config-example.yml`.
+2) Merge branch with master and push to origin. Heroku will automatically deploy.
+3) Once the new branch is deployed to Heroku, open [the pulse inspector](https://tools.taskcluster.net/pulse-inspector/#!((exchange:exchange/taskcluster-purge-cache/v1/purge-cache,routingKeyPattern:%23))) and start listening.
+4) Run `npm run verify` and ensure that a message shows up in the pulse inspector.
