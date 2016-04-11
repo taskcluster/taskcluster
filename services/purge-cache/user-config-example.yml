@@ -5,3 +5,10 @@ defaults:
     password: "..."
   influx:
     connectionString: "https://<user>:<pwd>@<host>:<port>/db/<database>"
+verify:
+  taskcluster:
+    # These credentials must have the scopes:
+    # * 'purge-cache:verifyprovisioner/verifyworker:verifycache'
+    credentials:
+      clientId: "..."
+      accessToken: "..."
