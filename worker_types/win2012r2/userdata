@@ -57,9 +57,13 @@ Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-bui
 New-NetFirewallRule -DisplayName "Allow SSH inbound" -Direction Inbound -LocalPort 60022 -Protocol TCP -Action Allow
 New-NetFirewallRule -DisplayName "Allow SSH inbound" -Direction Inbound -LocalPort 60023 -Protocol TCP -Action Allow
 
-# install go
+# install go (not required, but useful)
 md "C:\gopath"
-Expand-ZIPFile -File "C:\go1.4.2.windows-amd64.zip" -Destination "C:\" -Url "https://storage.googleapis.com/golang/go1.4.2.windows-amd64.zip"
+Expand-ZIPFile -File "C:\go1.6.windows-amd64.zip" -Destination "C:\" -Url "https://storage.googleapis.com/golang/go1.6.windows-amd64.zip"
+
+# install PSTools (not required, but useful)
+md "C:\PSTools"
+Expand-ZIPFile -File "C:\PSTools\PSTools.zip" -Destination "C:\PSTools" -Url "https://download.sysinternals.com/files/PSTools.zip"
 
 # install git
 $client.DownloadFile("https://github.com/msysgit/msysgit/releases/download/Git-1.9.5-preview20150319/Git-1.9.5-preview20150319.exe", "C:\git-1.9.5-installer.exe")
@@ -78,7 +82,7 @@ $env:PATH   = $env:PATH + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\m
 # get generic-worker source code
 Start-Process "go" -ArgumentList "get -t github.com/taskcluster/generic-worker github.com/taskcluster/livelog" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\generic-worker\go-get_install.log" -RedirectStandardError "C:\generic-worker\go-get_install.err"
 
-# download cygwin
+# download cygwin (not required, but useful)
 $client.DownloadFile("https://www.cygwin.com/setup-x86_64.exe", "C:\cygwin-setup-x86_64.exe")
 
 # install cygwin
@@ -94,7 +98,7 @@ New-NetFirewallRule -DisplayName "Allow SSH inbound" -Direction Inbound -LocalPo
 #   2) https://cygwin.com/git/gitweb.cgi?p=cygwin-csih.git;a=blob;f=cygwin-service-installation-helper.sh;h=10ab4fb6d47803c9ffabdde51923fc2c3f0496bb;hb=7ca191bebb52ae414bb2a2e37ef22d94f2658dc7#l2884
 $env:LOGONSERVER = "\\" + $env:COMPUTERNAME
 
-# configure sshd
+# configure sshd (not required, but useful)
 Start-Process "C:\cygwin\bin\bash.exe" -ArgumentList "--login -c `"ssh-host-config -y -c 'ntsec mintty' -u 'cygwinsshd' -w 'qwe123QWE!@#'`"" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\cygrunsrv.log" -RedirectStandardError "C:\cygrunsrv.err"
 
 # start sshd
