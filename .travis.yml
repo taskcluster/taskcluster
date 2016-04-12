@@ -20,8 +20,6 @@ before_install:
 # end of workaround ###
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
-  - go get golang.org/x/tools/cmd/cover
-  - go get golang.org/x/tools/cmd/vet
   - go get github.com/pierrre/gotestcover
 
 install:
