@@ -50,7 +50,7 @@ class Monitor {
   }
 
   count (key, val) {
-    this._statsum.count(key, val);
+    this._statsum.count(key, val || 1);
   }
 
   measure (key, val) {
@@ -66,8 +66,37 @@ class Monitor {
       this._auth,
       this._sentry,
       this._statsum.prefix(prefix),
-      this._opts
+      _.cloneDeep(this._opts)
     );
+  }
+}
+
+class MockMonitor {
+  constructor (opts) {
+    this._opts = opts;
+    this.counts = {};
+    this.measures = {};
+    this.errors = [];
+  }
+
+  async reportError (err, level='error') {
+    this.errors.push(err);
+  }
+
+  count (key, val) {
+    this.counts[key] = (this.counts[key] || 0) + (val || 1);
+  }
+
+  measure (key, val) {
+    this.measures[key] = (this.measures[key] || []).concat(val);
+  }
+
+  async flush () {
+    // Do nothing.
+  }
+
+  prefix (prefix) {
+    return new MockMonitor(_.cloneDeep(this._opts));
   }
 }
 
@@ -78,6 +107,10 @@ async function monitor (options) {
     patchGlobal: true,
     reportStatsumErrors: true,
   });
+
+  if (options.mock) {
+    return new MockMonitor(opts);
+  }
 
   let authClient = new taskcluster.Auth({
     credentials: options.credentials,

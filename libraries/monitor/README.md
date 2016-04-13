@@ -24,7 +24,8 @@ let monitor = await monitoring({
 });
 
 monitor.measure('foo', 10);
-monitor.count('bar', 1);
+monitor.count('bar', 4);
+monitor.count('bar'); // only passing in a key defaults the value to 1
 await monitor.flush();
 
 monitor.reportError('Something went wrong!');
@@ -48,6 +49,9 @@ patchGlobal: true
 
 // If true, any errors reporting to Statsum will be reported to Sentry.
 reportStatsumErrors: true
+
+// If true, the monitoring object will be a fake that stores data for testing
+mock: false
 ```
 
 Testing
