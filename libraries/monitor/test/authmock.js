@@ -8,6 +8,7 @@ let testclients = {
 
 exports.setup = () => {
   testing.fakeauth.start(testclients);
+  let date = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
   nock('https://auth.taskcluster.net')
     .persist()
     .get(/v1\/sentry\/tc-lib-monitor\/dsn/)
@@ -19,7 +20,7 @@ exports.setup = () => {
           secret: 'https://abc:abc@app.getsentry.com/12345',
           public: 'unused',
         },
-        expires: new Date().toJSON(),
+        expires: date,
       };
     })
     .get(/v1\/statsum\/tc-lib-monitor\/token/)
@@ -28,7 +29,7 @@ exports.setup = () => {
       return {
         project: 'tc-lib-monitor',
         token: 'abc123',
-        expires: new Date().toJSON(),
+        expires: date,
         baseUrl: 'https://statsum.taskcluster.net',
       };
     });
