@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-monitor",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Brian Stack <bstack@mozilla.com>",
   "description": "Make it easy to hook up monitoring and metrics for taskcluster services.",
   "license": "MPL-2.0",
@@ -21,7 +21,7 @@
     "lodash": "^4.5.1",
     "promise": "^7.0.4",
     "raven": "^0.10.0",
-    "statsum": "0.4.1",
+    "statsum": "^0.4.1",
     "taskcluster-client": "^0.23.16"
   },
   "devDependencies": {
