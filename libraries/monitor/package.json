@@ -15,7 +15,6 @@
     "url": "https://github.com/taskcluster/taskcluster-lib-monitor.git"
   },
   "dependencies": {
-    "app-root-dir": "^1.0.2",
     "assert": "^1.3.0",
     "babel-runtime": "^6.0.0",
     "debug": "^2.2.0",

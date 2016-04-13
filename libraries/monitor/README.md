@@ -19,6 +19,7 @@ This library must be provided with Taskcluster credentials that have the followi
 
 ```js
 let monitor = await monitoring({
+  project: 'tc-stats-collector',
   credentials: {clientId: 'test-client', accessToken: 'test'},
 });
 
@@ -39,7 +40,6 @@ Options and Defaults
 credentials: {clientId: '...', accessToken: '...'}
 
 // The project that will be written under to Statsum and Sentry.
-// This defaults to the name of the service this library is included in.
 // Must not be longer than 22 characters.
 project: '<service-name>'
 
