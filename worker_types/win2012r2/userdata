@@ -79,7 +79,7 @@ $env:GOROOT = "C:\go"
 $env:GOPATH = "C:\gopath"
 $env:PATH   = $env:PATH + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd"
 
-# get generic-worker source code
+# get generic-worker and livelog source code (note required, but useful)
 Start-Process "go" -ArgumentList "get -t github.com/taskcluster/generic-worker github.com/taskcluster/livelog" -wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\generic-worker\go-get_install.log" -RedirectStandardError "C:\generic-worker\go-get_install.err"
 
 # download cygwin (not required, but useful)
