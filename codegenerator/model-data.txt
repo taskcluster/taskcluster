@@ -1,4 +1,4 @@
-Generated: 1460034429
+Generated: 1460647702
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -1678,21 +1678,6 @@ Entry 13    =
     Entry Output      = ''
     Entry Title       = 'Backend Status'
     Entry Description = '**Warning** this api end-point is **not stable**.'
-Entry 14    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/api-reference'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'apiReference'
-    Entry Stability   = 'deprecated'
-    Entry Scopes      = '[]'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'api reference'
-    Entry Description = 'Get an API reference!
-
-**Warning** this api end-point is **not stable**.'
 
 
 http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#

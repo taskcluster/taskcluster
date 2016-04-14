@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 7 Apr 2016 at 13:07:00 UTC. The code was generated
+// Thu, 14 Apr 2016 at 15:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -380,18 +380,5 @@ func (awsProvisioner *AwsProvisioner) Ping() (*tcclient.CallSummary, error) {
 func (awsProvisioner *AwsProvisioner) BackendStatus() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*awsProvisioner)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/backend-status", nil, nil)
-	return callSummary, err
-}
-
-// Stability: *** DEPRECATED ***
-//
-// Get an API reference!
-//
-// **Warning** this api end-point is **not stable**.
-//
-// See http://docs.taskcluster.net/aws-provisioner/api-docs/#apiReference
-func (awsProvisioner *AwsProvisioner) APIReference() (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*awsProvisioner)
-	_, callSummary, err := (&cd).APICall(nil, "GET", "/api-reference", nil, nil)
 	return callSummary, err
 }
