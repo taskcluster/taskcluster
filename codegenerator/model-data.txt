@@ -1,4 +1,4 @@
-Generated: 1460647702
+Generated: 1460726880
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -1755,6 +1755,12 @@ Properties
     Type                   = 'boolean'
     TypeName               = 'CanUseSpot'
     SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/canUseSpot'
+  Property 'description' =
+    Description            = 'A string which describes what this image is for and hints on using it
+    '
+    Type                   = 'string'
+    TypeName               = 'Description'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/description'
   Property 'instanceTypes' =
     Items
       Additional Properties  = 'false'
@@ -1858,6 +1864,12 @@ Properties
     Type                   = 'number'
     TypeName               = 'MinPrice'
     SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/minPrice'
+  Property 'owner' =
+    Description            = 'A string which identifies the owner of this worker type
+    '
+    Type                   = 'string'
+    TypeName               = 'Owner'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/owner'
   Property 'regions' =
     Items
       Additional Properties  = 'false'
@@ -1952,7 +1964,7 @@ Properties
     Type                   = 'object'
     TypeName               = 'UserData'
     SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/userData'
-Required               = '[launchSpec userData secrets scopes maxCapacity scalingRatio minPrice maxPrice instanceTypes regions]'
+Required               = '[launchSpec userData secrets scopes maxCapacity scalingRatio minPrice maxPrice instanceTypes regions description owner]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Create Worker Type Request'
 Type                   = 'object'
@@ -2032,6 +2044,12 @@ Properties
     Type                   = 'boolean'
     TypeName               = 'CanUseSpot'
     SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/canUseSpot'
+  Property 'description' =
+    Description            = 'A string which describes what this image is for and hints on using it
+    '
+    Type                   = 'string'
+    TypeName               = 'Description'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/description'
   Property 'instanceTypes' =
     Items
       Additional Properties  = 'false'
@@ -2143,6 +2161,12 @@ Properties
     Type                   = 'number'
     TypeName               = 'MinPrice'
     SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/minPrice'
+  Property 'owner' =
+    Description            = 'A string which identifies the owner of this worker type
+    '
+    Type                   = 'string'
+    TypeName               = 'Owner'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/owner'
   Property 'regions' =
     Items
       Additional Properties  = 'false'
@@ -2244,7 +2268,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'WorkerType'
     SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/workerType'
-Required               = '[workerType launchSpec userData secrets scopes minCapacity maxCapacity scalingRatio minPrice maxPrice lastModified instanceTypes regions]'
+Required               = '[workerType launchSpec userData secrets scopes minCapacity maxCapacity scalingRatio minPrice maxPrice lastModified instanceTypes regions description owner]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Get Worker Type Response'
 Type                   = 'object'

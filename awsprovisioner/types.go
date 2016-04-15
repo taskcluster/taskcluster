@@ -27,6 +27,11 @@ type (
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/canUseSpot
 		CanUseSpot bool `json:"canUseSpot,omitempty"`
 
+		// A string which describes what this image is for and hints on using it
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/description
+		Description string `json:"description"`
+
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes
 		InstanceTypes []struct {
 
@@ -104,6 +109,11 @@ type (
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/minPrice
 		MinPrice float64 `json:"minPrice"`
+
+		// A string which identifies the owner of this worker type
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/owner
+		Owner string `json:"owner"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions
 		Regions []struct {
@@ -254,6 +264,11 @@ type (
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/canUseSpot
 		CanUseSpot bool `json:"canUseSpot,omitempty"`
 
+		// A string which describes what this image is for and hints on using it
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/description
+		Description string `json:"description"`
+
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes
 		InstanceTypes []struct {
 
@@ -337,6 +352,11 @@ type (
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/minPrice
 		MinPrice float64 `json:"minPrice"`
+
+		// A string which identifies the owner of this worker type
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/owner
+		Owner string `json:"owner"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions
 		Regions []struct {
