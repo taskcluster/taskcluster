@@ -335,6 +335,7 @@ def authenticate(description=None):
     # modules to affect the library. Maybe they don't work in some environments
     import webbrowser
     from six.moves import urllib
+    from six.moves.urllib.parse import quote
     import BaseHTTPServer
 
     if not description:
@@ -392,8 +393,8 @@ def authenticate(description=None):
         break
     port = server.server_address[1]
 
-    query = "?target=" + urllib.quote('http://localhost:' + str(port), '')
-    query += "&description=" + urllib.quote(description, '')
+    query = "?target=" + quote('http://localhost:' + str(port), '')
+    query += "&description=" + quote(description, '')
 
     webbrowser.open('https://login.taskcluster.net' + query, 1, True)
     print("")
