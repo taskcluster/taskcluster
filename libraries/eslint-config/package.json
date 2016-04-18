@@ -1,0 +1,21 @@
+{
+  "name": "eslint-config-taskcluster",
+  "version": "1.0.0",
+  "author": "Brian Stack <bstack@mozilla.com>",
+  "description": "Shared eslint config for Taskcluster projects",
+  "license": "MPL-2.0",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/taskcluster/eslint-config-taskcluster.git"
+  },
+  "keywords": [
+    "eslint",
+    "eslintconfig",
+    "taskcluster"
+  ],
+  "devDependencies": {
+    "babel-eslint": "^6.0.2",
+    "eslint": "^2.8.0"
+  }
+}
