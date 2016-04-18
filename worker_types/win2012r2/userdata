@@ -84,7 +84,7 @@ Start-Process "go" -ArgumentList "get -t github.com/taskcluster/generic-worker g
 
 # install rust
 $client.DownloadFile("https://static.rust-lang.org/dist/rust-1.8.0-x86_64-pc-windows-msvc.msi", "C:\rust-1.8.0-x86_64-pc-windows-msvc.msi")
-Start-Process "msiexec" -ArgumentList "/fa C:\rust-1.8.0-x86_64-pc-windows-msvc.msi /passive" -Wait -PassThru -RedirectStandardOutput "C:\generic-worker\rust_install.log" -RedirectStandardError "C:\generic-worker\rust_install.err"
+Start-Process "msiexec" -ArgumentList "/i C:\rust-1.8.0-x86_64-pc-windows-msvc.msi /passive" -Wait -PassThru -RedirectStandardOutput "C:\generic-worker\rust_install.log" -RedirectStandardError "C:\generic-worker\rust_install.err"
 
 # download cygwin (not required, but useful)
 $client.DownloadFile("https://www.cygwin.com/setup-x86_64.exe", "C:\cygwin-setup-x86_64.exe")
