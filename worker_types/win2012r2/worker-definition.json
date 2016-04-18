@@ -42,7 +42,7 @@
     "generic-worker": {
       "config": {
         "livelogExecutable": "C:\\generic-worker\\livelog.exe",
-        "livelogSecret": "lruBY4NQT3aoqpII4T0Z0w4zXX9utNTja40vu2k446TA",
+        "livelogSecret": "*************************************************",
         "subdomain": "taskcluster-worker.net",
         "livelogCertificate": "C:\\generic-worker\\livelog.crt",
         "livelogKey": "C:\\generic-worker\\livelog.key"
