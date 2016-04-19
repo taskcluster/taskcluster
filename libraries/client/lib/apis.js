@@ -293,7 +293,7 @@ module.exports = {
               "auth:aws-s3:<level>:<bucket>/<prefix>"
             ]
           ],
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get Temporary Read/Write Credentials S3",
           "type": "function"
         },
@@ -322,7 +322,7 @@ module.exports = {
           "args": [
             "project"
           ],
-          "description": "Get temporary DSN (access credentials) for a sentry project.\nThe credentials returned can be used with any Sentry client for up to\n24 hours, after which the credentials will be automatically disabled.\n\nIf the project doesn't exist it will be created, and assigned to the\ninitial team configured for this component. Contact a Sentry admin\nto have the project transferred to a team you have access to if needed.",
+          "description": "Get temporary DSN (access credentials) for a sentry project.\nThe credentials returned can be used with any Sentry client for up to\n24 hours, after which the credentials will be automatically disabled.\n\nIf the project doesn't exist it will be created, and assigned to the\ninitial team configured for this component. Contact a Sentry admin\nto have the project transferred to a team you have access to if needed",
           "method": "get",
           "name": "sentryDSN",
           "output": "http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#",
@@ -342,7 +342,7 @@ module.exports = {
           "args": [
             "project"
           ],
-          "description": "Get temporary token for writing stats to statsum.\nThe token returned is valid for up to 24 hours, after\nwhich the token will be automatically disabled.",
+          "description": "Get temporary `token` and `baseUrl` for sending metrics to statsum.\n\nThe token is valid for 24 hours, clients should refresh after expiration.",
           "method": "get",
           "name": "statsumToken",
           "output": "http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#",
@@ -355,7 +355,7 @@ module.exports = {
             ]
           ],
           "stability": "stable",
-          "title": "Get token for writing stats to statsum",
+          "title": "Get Token for Statsum Project",
           "type": "function"
         },
         {
@@ -384,7 +384,7 @@ module.exports = {
           "query": [
           ],
           "route": "/test-authenticate",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Test Authentication",
           "type": "function"
         },
@@ -398,7 +398,7 @@ module.exports = {
           "query": [
           ],
           "route": "/test-authenticate-get/",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Test Authentication (GET)",
           "type": "function"
         },
@@ -429,6 +429,20 @@ module.exports = {
       "entries": [
         {
           "args": [
+          ],
+          "description": "Return a list of worker types, including some summary information about\ncurrent capacity for each.  While this list includes all defined worker types,\nthere may be running EC2 instances for deleted worker types that are not\nincluded here.  The list is unordered.",
+          "method": "get",
+          "name": "listWorkerTypeSummaries",
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#",
+          "query": [
+          ],
+          "route": "/list-worker-type-summaries",
+          "stability": "stable",
+          "title": "List worker types with details",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerType"
           ],
           "description": "Create a worker type.  A worker type contains all the configuration\nneeded for the provisioner to manage the instances.  Each worker type\nknows which regions and which instance types are allowed for that\nworker type.  Remember that Capacity is the number of concurrent tasks\nthat can be run on a given EC2 resource and that Utility is the relative\nperformance rate between different instance types.  There is no way to\nconfigure different regions to have different sets of instance types\nso ensure that all instance types are available in all regions.\nThis function is idempotent.\n\nOnce a worker type is in the provisioner, a back ground process will\nbegin creating instances for it based on its capacity bounds and its\npending task count from the Queue.  It is the worker's responsibility\nto shut itself down.  The provisioner has a limit (currently 96hours)\nfor all instances to prevent zombie instances from running indefinitely.\n\nThe provisioner will ensure that all instances created are tagged with\naws resource tags containing the provisioner id and the worker type.\n\nIf provided, the secrets in the global, region and instance type sections\nare available using the secrets api.  If specified, the scopes provided\nwill be used to generate a set of temporary credentials available with\nthe other secrets.",
@@ -444,7 +458,7 @@ module.exports = {
               "aws-provisioner:manage-worker-type:<workerType>"
             ]
           ],
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Create new Worker Type",
           "type": "function"
         },
@@ -465,7 +479,7 @@ module.exports = {
               "aws-provisioner:manage-worker-type:<workerType>"
             ]
           ],
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Update Worker Type",
           "type": "function"
         },
@@ -488,7 +502,7 @@ module.exports = {
               "aws-provisioner:manage-worker-type:<workerType>"
             ]
           ],
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get Worker Type",
           "type": "function"
         },
@@ -507,7 +521,7 @@ module.exports = {
               "aws-provisioner:manage-worker-type:<workerType>"
             ]
           ],
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Delete Worker Type",
           "type": "function"
         },
@@ -521,7 +535,7 @@ module.exports = {
           "query": [
           ],
           "route": "/list-worker-types",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "List Worker Types",
           "type": "function"
         },
@@ -541,7 +555,7 @@ module.exports = {
               "aws-provisioner:create-secret"
             ]
           ],
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Create new Secret",
           "type": "function"
         },
@@ -556,7 +570,7 @@ module.exports = {
           "query": [
           ],
           "route": "/secret/<token>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get a Secret",
           "type": "function"
         },
@@ -571,7 +585,7 @@ module.exports = {
           "query": [
           ],
           "route": "/instance-started/<instanceId>/<token>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Report an instance starting",
           "type": "function"
         },
@@ -585,7 +599,7 @@ module.exports = {
           "query": [
           ],
           "route": "/secret/<token>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Remove a Secret",
           "type": "function"
         },
@@ -626,7 +640,7 @@ module.exports = {
               "aws-provisioner:aws-state"
             ]
           ],
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get AWS State for all worker types",
           "type": "function"
         },
@@ -645,7 +659,7 @@ module.exports = {
               "aws-provisioner:view-worker-type:<workerType>"
             ]
           ],
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get AWS State for a worker type",
           "type": "function"
         },
@@ -673,19 +687,6 @@ module.exports = {
           "route": "/backend-status",
           "stability": "experimental",
           "title": "Backend Status",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "description": "Get an API reference!\n\n**Warning** this api end-point is **not stable**.",
-          "method": "get",
-          "name": "apiReference",
-          "query": [
-          ],
-          "route": "/api-reference",
-          "stability": "experimental",
-          "title": "api reference",
           "type": "function"
         }
       ],
@@ -806,10 +807,6 @@ module.exports = {
           "method": "post",
           "name": "githubWebHookConsumer",
           "route": "/github",
-          "scopes": [
-            [
-            ]
-          ],
           "stability": "experimental",
           "title": "Consume GitHub WebHook",
           "type": "function"
@@ -2652,40 +2649,44 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://secrets.taskcluster.net/v1",
-      "description": "The secrets service, is a simple key/value store for secret data\nguarded by TaskCluster scopes.  It is typically available at\n`secrets.taskcluster.net`.",
+      "description": "The secrets service provides a simple key/value store for small bits of secret\ndata.  Access is limited by scopes, so values can be considered secret from\nthose who do not have the relevant scopes.\n\nSecrets also have an expiration date, and once a secret has expired it can no\nlonger be read.  This is useful for short-term secrets such as a temporary\nservice credential or a one-time signing key.",
       "entries": [
         {
           "args": [
             "name"
           ],
-          "description": "Set a secret associated with some key.  If the secret already exists, it is updated instead.",
+          "description": "Set the secret associated with some key.  If the secret already exists, it is\nupdated instead.",
           "input": "http://schemas.taskcluster.net/secrets/v1/secret.json#",
           "method": "put",
           "name": "set",
+          "query": [
+          ],
           "route": "/secret/<name>",
           "scopes": [
             [
               "secrets:set:<name>"
             ]
           ],
-          "stability": "experimental",
-          "title": "Create Secret",
+          "stability": "stable",
+          "title": "Set Secret",
           "type": "function"
         },
         {
           "args": [
             "name"
           ],
-          "description": "Delete the secret attached to some key.",
+          "description": "Delete the secret associated with some key.",
           "method": "delete",
           "name": "remove",
+          "query": [
+          ],
           "route": "/secret/<name>",
           "scopes": [
             [
               "secrets:set:<name>"
             ]
           ],
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Delete Secret",
           "type": "function"
         },
@@ -2693,17 +2694,19 @@ module.exports = {
           "args": [
             "name"
           ],
-          "description": "Read the secret attached to some key.",
+          "description": "Read the secret associated with some key.  If the secret has recently\nexpired, the response code 410 is returned.  If the caller lacks the\nscope necessary to get the secret, the call will fail with a 403 code\nregardless of whether the secret exists.",
           "method": "get",
           "name": "get",
           "output": "http://schemas.taskcluster.net/secrets/v1/secret.json#",
+          "query": [
+          ],
           "route": "/secret/<name>",
           "scopes": [
             [
               "secrets:get:<name>"
             ]
           ],
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Read Secret",
           "type": "function"
         },
@@ -2714,17 +2717,21 @@ module.exports = {
           "method": "get",
           "name": "list",
           "output": "http://schemas.taskcluster.net/secrets/v1/secret-list.json#",
+          "query": [
+          ],
           "route": "/secrets",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "List Secrets",
           "type": "function"
         },
         {
           "args": [
           ],
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "description": "Respond without doing anything.  This endpoint is used to check that\nthe service is up.",
           "method": "get",
           "name": "ping",
+          "query": [
+          ],
           "route": "/ping",
           "stability": "experimental",
           "title": "Ping Server",

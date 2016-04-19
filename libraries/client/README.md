@@ -185,6 +185,7 @@ var auth = new taskcluster.Auth(options);
 //  - https://aws-provisioner.taskcluster.net/v1
 var awsProvisioner = new taskcluster.AwsProvisioner(options);
 ```
+ * `awsProvisioner.listWorkerTypeSummaries() : result`
  * `awsProvisioner.createWorkerType(workerType, payload) : result`
  * `awsProvisioner.updateWorkerType(workerType, payload) : result`
  * `awsProvisioner.workerType(workerType) : result`
@@ -199,7 +200,6 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
  * `awsProvisioner.state(workerType) : void`
  * `awsProvisioner.ping() : void`
  * `awsProvisioner.backendStatus() : void`
- * `awsProvisioner.apiReference() : void`
 
 ### Methods in `taskcluster.Github`
 ```js
