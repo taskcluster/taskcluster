@@ -33,7 +33,7 @@ choco install -y windows-sdk-8.1
 # install Visual Studio community edition 2015
 # choco install -y visualstudio2015community
 $client.DownloadFile("http://go.microsoft.com/fwlink/?LinkID=626924&clcid=0x409", "C:\vs_community.exe")
-Start-Process "C:\vs_community.exe" -ArgumentList "/Quiet /Full" -Wait -PassThru -RedirectStandardOutput "C:\vs2015_install.log" -RedirectStandardError "C:\vs2015_install.err"
+Start-Process "C:\vs_community.exe" -ArgumentList "/Quiet" -Wait -PassThru -RedirectStandardOutput "C:\vs2015_install.log" -RedirectStandardError "C:\vs2015_install.err"
 
 # download tooltool
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py", "C:\tooltool.py")
