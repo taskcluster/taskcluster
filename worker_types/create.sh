@@ -101,7 +101,7 @@ echo "$(date): To monitor the AMI creation process, see:"
 echo
 echo "             https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#Images:visibility=owned-by-me;search=${IMAGE_ID};sort=desc:platform"
 
-echo "$(date): I've triggered the snapshot of instance ${INSTANCE_ID} as ${IMAGE_ID} - but now we will need to wait 45 minutes("'!'") for it to be created..."
+echo "$(date): I've triggered the snapshot of instance ${INSTANCE_ID} as ${IMAGE_ID} - but now we will need to wait 50 minutes("'!'") for it to be created..."
 
 # sleep 50 mins, the AMI snapshot takes forever
 sleep 3000
