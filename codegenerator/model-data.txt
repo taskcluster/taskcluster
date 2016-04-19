@@ -1,4 +1,4 @@
-Generated: 1460726880
+Generated: 1461083329
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -1418,6 +1418,22 @@ which can read the instance user data.
 Base URL    = 'https://aws-provisioner.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/list-worker-type-summaries'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'listWorkerTypeSummaries'
+    Entry Stability   = 'stable'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#'
+    Entry Title       = 'List worker types with details'
+    Entry Description = 'Return a list of worker types, including some summary information about
+current capacity for each.  While this list includes all defined worker types,
+there may be running EC2 instances for deleted worker types that are not
+included here.  The list is unordered.'
+Entry 1     =
+    Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/worker-type/<workerType>'
     Entry Args        = '[workerType]'
@@ -1451,7 +1467,7 @@ If provided, the secrets in the global, region and instance type sections
 are available using the secrets api.  If specified, the scopes provided
 will be used to generate a set of temporary credentials available with
 the other secrets.'
-Entry 1     =
+Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/worker-type/<workerType>/update'
@@ -1474,7 +1490,7 @@ the request body for this method
 
 Otherwise, all input requirements and actions are the same as the
 create method.'
-Entry 2     =
+Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/worker-type/<workerType>'
@@ -1491,7 +1507,7 @@ This copy contains a lastModified field as well as the worker
 type name.  As such, it will require manipulation to be able to
 use the results of this method to submit date to the update
 method.'
-Entry 3     =
+Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'delete'
     Entry Route       = '/worker-type/<workerType>'
@@ -1513,7 +1529,7 @@ state.  If you want to gracefully remove a worker type, you must
 either ensure that no tasks are created with that worker type name
 or you could theoretically set maxCapacity to 0, though, this is
 not a supported or tested action'
-Entry 4     =
+Entry 5     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/list-worker-types'
@@ -1529,7 +1545,7 @@ Entry 4     =
 of all managed worker types known to the provisioner.  This does
 not include worker types which are left overs from a deleted worker
 type definition but are still running in AWS.'
-Entry 5     =
+Entry 6     =
     Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/secret/<token>'
@@ -1547,7 +1563,7 @@ be converted into credentials by `getSecret`.
 
 This method is not ordinarily used in production; instead, the provisioner
 creates a new secret directly for each spot bid.'
-Entry 6     =
+Entry 7     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/secret/<token>'
@@ -1566,7 +1582,7 @@ based on the scopes specified when the secret was created.
 It is important that this secret is deleted by the consumer (`removeSecret`),
 or else the secrets will be visible to any process which can access the
 user data associated with the instance.'
-Entry 7     =
+Entry 8     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/instance-started/<instanceId>/<token>'
@@ -1583,7 +1599,7 @@ as its security token.  The token is given and checked to ensure
 that it matches a real token that exists to ensure that random
 machines do not check in.  We could generate a different token
 but that seems like overkill'
-Entry 8     =
+Entry 9     =
     Entry Type        = 'function'
     Entry Method      = 'delete'
     Entry Route       = '/secret/<token>'
@@ -1601,7 +1617,7 @@ token will return no information.
 It is very important that the consumer of a 
 secret delete the secret from storage before handing over control
 to untrusted processes to prevent credential and/or secret leakage.'
-Entry 9     =
+Entry 10    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/worker-type/<workerType>/launch-specifications'
@@ -1618,7 +1634,7 @@ that this worker type definition could submit to EC2.  It is used to
 test worker types, nothing more
 
 **This API end-point is experimental and may be subject to change without warning.**'
-Entry 10    =
+Entry 11    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/aws-state'
@@ -1634,7 +1650,7 @@ Entry 10    =
 tools.tc.net UI is updated to use the per-worker state
 
 **DEPRECATED.**'
-Entry 11    =
+Entry 12    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/state/<workerType>'
@@ -1650,7 +1666,7 @@ Entry 11    =
 This state is stored as three lists: 1 for all instances, 1 for requests
 which show in the ec2 api and 1 list for those only tracked internally
 in the provisioner.'
-Entry 12    =
+Entry 13    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -1665,7 +1681,7 @@ Entry 12    =
     Entry Description = 'Documented later...
 
 **Warning** this api end-point is **not stable**.'
-Entry 13    =
+Entry 14    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/backend-status'
@@ -2287,6 +2303,65 @@ Title                  = 'List Worker Types'
 Type                   = 'array'
 TypeName               = 'ListWorkerTypes'
 SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#'
+
+
+http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#
+============================================================================================
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#'
+Items
+  Ref                    = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#'
+  TypeName               = ''
+  SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#/items'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'List Worker Type Summaries Response'
+Type                   = 'array'
+TypeName               = 'ListWorkerTypeSummariesResponse'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#'
+
+
+http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#
+===========================================================================
+Additional Properties  = 'false'
+Description            = 'A summary of a worker type's current state, expresed in terms of capacity.
+'
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#'
+Properties
+  Property 'maxCapacity' =
+    Title                  = 'Maximum capacity of the workerType'
+    Type                   = 'integer'
+    TypeName               = 'MaxCapacity'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/maxCapacity'
+  Property 'minCapacity' =
+    Title                  = 'Minimum capacity of the workerType'
+    Type                   = 'integer'
+    TypeName               = 'MinCapacity'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/minCapacity'
+  Property 'pendingCapacity' =
+    Title                  = 'Total pending capacity'
+    Type                   = 'integer'
+    TypeName               = 'PendingCapacity'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/pendingCapacity'
+  Property 'requestedCapacity' =
+    Title                  = 'Total requested capacity'
+    Type                   = 'integer'
+    TypeName               = 'RequestedCapacity'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/requestedCapacity'
+  Property 'runningCapacity' =
+    Title                  = 'Total running capacity'
+    Type                   = 'integer'
+    TypeName               = 'RunningCapacity'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/runningCapacity'
+  Property 'workerType' =
+    Title                  = 'Worker type name'
+    Type                   = 'string'
+    TypeName               = 'WorkerType'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/workerType'
+Required               = '[workerType minCapacity maxCapacity requestedCapacity pendingCapacity runningCapacity]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Worker Type Summary'
+Type                   = 'object'
+TypeName               = 'WorkerTypeSummary'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#'
 
 
 http://references.taskcluster.net/aws-provisioner/v1/exchanges.json
