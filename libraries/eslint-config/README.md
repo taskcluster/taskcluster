@@ -3,8 +3,10 @@
 ## Install
 
 ```sh
-npm install --save-dev eslint-config-taskcluster
+npm install --save-dev eslint-config-taskcluster eslint-plugin-taskcluster
 ```
+
+Both the plugin and config need to be installed in the project as explained in [this discussion](https://github.com/eslint/eslint/pull/4735).
 
 ## Use
 
