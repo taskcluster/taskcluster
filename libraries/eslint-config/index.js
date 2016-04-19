@@ -8,6 +8,10 @@ module.exports = {
     "es6": true,
   },
 
+  "plugins": [
+    "taskcluster"
+  ],
+
   "rules": {
     "max-len": [2, 120, 2],
     "quotes": [2, "single"],
@@ -42,7 +46,8 @@ module.exports = {
     "strict": [2, "global"],
     "new-cap": 0,
     "comma-spacing": [2, {"before": false, "after": true}],
-    "comma-dangle": [2, "always-multiline"]
+    "comma-dangle": [2, "always-multiline"],
+    "taskcluster/no-for-in": 2
   }
 }
 
