@@ -114,9 +114,9 @@ $client.DownloadFile("https://raw.githubusercontent.com/petemoore/myscrapbook/ma
 Start-Process "C:\cygwin\bin\bash.exe" -ArgumentList "--login -c 'chmod a+x setup.sh; ./setup.sh'" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\Administrator_cygwin_setup.log" -RedirectStandardError "C:\Administrator_cygwin_setup.err"
 
 # install Visual Studio community edition 2015
-# do this last as a) it takes forever, b) it messes up cygwin sshd service if installed first, bizarrely, for an unknown reason
 # choco install -y visualstudio2015community <=== doesn't work - crappy buggy package
 # install old-school way; download and execute installer
+# note, this takes AGES to install
 $client.DownloadFile("http://go.microsoft.com/fwlink/?LinkID=626924&clcid=0x409", "C:\vs_community_2015_installer.exe")
-Start-Process "C:\vs_community_2015_installer.exe" -ArgumentList "/Quiet" -Wait -PassThru -RedirectStandardOutput "C:\vs2015community_install.log" -RedirectStandardError "C:\vs2015community_install.err"
+Start-Process "C:\vs_community_2015_installer.exe" -ArgumentList "/Quiet /Full" -Wait -PassThru -RedirectStandardOutput "C:\vs2015community_install.log" -RedirectStandardError "C:\vs2015community_install.err"
 </powershell>
