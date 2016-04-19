@@ -103,8 +103,8 @@ echo "             https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=u
 
 echo "$(date): I've triggered the snapshot of instance ${INSTANCE_ID} as ${IMAGE_ID} - but now we will need to wait 45 minutes("'!'") for it to be created..."
 
-# sleep 45 mins, the AMI snapshot takes forever
-sleep 2700
+# sleep 50 mins, the AMI snapshot takes forever
+sleep 3000
 
 "${GOPATH}/bin/update-worker-type" "${IMAGE_ID}" "${WORKER_TYPE}"
 
