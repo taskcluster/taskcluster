@@ -73,7 +73,7 @@ fi
 
 # create new base ami, and apply user-data
 # filter output, to get INSTANCE_ID
-INSTANCE_ID="$(aws --region us-west-2 ec2 run-instances --image-id "${AMI}" --key-name pmoore-oregan-us-west-2 --security-groups "rdp-only" "ssh-only" --user-data "$(cat userdata)" --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=100,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior terminate --client-token "${SLUGID}" | sed -n 's/^ *"InstanceId": "\(.*\)", */\1/p')"
+INSTANCE_ID="$(aws --region us-west-2 ec2 run-instances --image-id "${AMI}" --key-name pmoore-oregan-us-west-2 --security-groups "rdp-only" "ssh-only" --user-data "$(cat userdata)" --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=100,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior stop --client-token "${SLUGID}" | sed -n 's/^ *"InstanceId": "\(.*\)", */\1/p')"
 
 echo "$(date): I've triggered the creation of instance ${INSTANCE_ID} - but now we will need to wait ~90 mins("'!'") for it to be created and bootstrapped..."
 aws ec2 create-tags --resources "${INSTANCE_ID}" --tags "Key=WorkerType,Value=${WORKER_TYPE}"
