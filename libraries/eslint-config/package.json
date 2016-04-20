@@ -1,6 +1,6 @@
 {
   "name": "eslint-config-taskcluster",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Brian Stack <bstack@mozilla.com>",
   "description": "Shared eslint config for Taskcluster projects",
   "license": "MPL-2.0",
@@ -14,7 +14,7 @@
     "eslintconfig",
     "taskcluster"
   ],
-  "dependencies": {
+  "devDependencies": {
     "babel-eslint": "^6.0.2",
     "eslint": "^2.8.0"
   }
