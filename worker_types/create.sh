@@ -80,7 +80,7 @@ aws ec2 create-tags --resources "${INSTANCE_ID}" --tags "Key=WorkerType,Value=${
 echo "$(date): I've tagged it with \"WorkerType\": \"${WORKER_TYPE}\""
 
 # poll for a stopped state
-until "$(aws ec2 wait instance-stopped --instance-ids "${INSTANCE_ID}" >/dev/null 2>&1)"; do
+until aws ec2 wait instance-stopped --instance-ids "${INSTANCE_ID}" >/dev/null 2>&1; do
   echo "$(date):   Waiting for instance ${INSTANCE_ID} to shut down..."
   sleep 30
 done
@@ -106,7 +106,7 @@ echo "             https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=u
 
 echo "$(date): I've triggered the snapshot of instance ${INSTANCE_ID} as ${IMAGE_ID} - but now we will need to wait ~ an hour("'!'") for it to be created..."
 
-until "$(aws ec2 wait image-available --image-ids "${IMAGE_ID}" >/dev/null 2>&1)"; do
+until aws ec2 wait image-available --image-ids "${IMAGE_ID}" >/dev/null 2>&1; do
   echo "$(date):   Waiting for ${IMAGE_ID} availability..."
   sleep 30
 done
