@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 19 Apr 2016 at 16:28:00 UTC. The code was generated
+// Wed, 20 Apr 2016 at 12:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -348,7 +348,8 @@ func (awsProvisioner *AwsProvisioner) AwsState_SignedURL(duration time.Duration)
 // Return the state of a given workertype as stored by the provisioner.
 // This state is stored as three lists: 1 for all instances, 1 for requests
 // which show in the ec2 api and 1 list for those only tracked internally
-// in the provisioner.
+// in the provisioner.  The `summary` property contains an updated summary
+// similar to that returned from `listWorkerTypeSummaries`.
 //
 // Required scopes:
 //   * aws-provisioner:view-worker-type:<workerType>
