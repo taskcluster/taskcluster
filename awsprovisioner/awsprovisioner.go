@@ -46,7 +46,7 @@
 //
 // and then call one or more of awsProvisioner's methods, e.g.:
 //
-//  data, callSummary, err := awsProvisioner.ListWorkerTypeSummaries(.....)
+//  data, callSummary, err := awsProvisioner.CreateWorkerType(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 20 Apr 2016 at 12:27:00 UTC. The code was generated
+// Wed, 20 Apr 2016 at 13:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -84,7 +84,7 @@ type AwsProvisioner tcclient.ConnectionData
 //  awsProvisioner := awsprovisioner.New(creds)                              // set credentials
 //  awsProvisioner.Authenticate = false                                      // disable authentication (creds above are now ignored)
 //  awsProvisioner.BaseURL = "http://localhost:1234/api/AwsProvisioner/v1"   // alternative API endpoint (production by default)
-//  data, callSummary, err := awsProvisioner.ListWorkerTypeSummaries(.....)  // for example, call the ListWorkerTypeSummaries(.....) API endpoint (described further down)...
+//  data, callSummary, err := awsProvisioner.CreateWorkerType(.....)         // for example, call the CreateWorkerType(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -95,18 +95,6 @@ func New(credentials *tcclient.Credentials) *AwsProvisioner {
 		Authenticate: true,
 	})
 	return &awsProvisioner
-}
-
-// Return a list of worker types, including some summary information about
-// current capacity for each.  While this list includes all defined worker types,
-// there may be running EC2 instances for deleted worker types that are not
-// included here.  The list is unordered.
-//
-// See http://docs.taskcluster.net/aws-provisioner/api-docs/#listWorkerTypeSummaries
-func (awsProvisioner *AwsProvisioner) ListWorkerTypeSummaries() (*ListWorkerTypeSummariesResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*awsProvisioner)
-	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/list-worker-type-summaries", new(ListWorkerTypeSummariesResponse), nil)
-	return responseObject.(*ListWorkerTypeSummariesResponse), callSummary, err
 }
 
 // Create a worker type.  A worker type contains all the configuration
@@ -348,8 +336,7 @@ func (awsProvisioner *AwsProvisioner) AwsState_SignedURL(duration time.Duration)
 // Return the state of a given workertype as stored by the provisioner.
 // This state is stored as three lists: 1 for all instances, 1 for requests
 // which show in the ec2 api and 1 list for those only tracked internally
-// in the provisioner.  The `summary` property contains an updated summary
-// similar to that returned from `listWorkerTypeSummaries`.
+// in the provisioner.
 //
 // Required scopes:
 //   * aws-provisioner:view-worker-type:<workerType>

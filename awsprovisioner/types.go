@@ -432,35 +432,8 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 
-	// See http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#
-	ListWorkerTypeSummariesResponse []WorkerTypeSummary
-
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#
 	ListWorkerTypes []string
-
-	// A summary of a worker type's current state, expresed in terms of capacity.
-	//
-	// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#
-	WorkerTypeSummary struct {
-
-		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/maxCapacity
-		MaxCapacity int `json:"maxCapacity"`
-
-		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/minCapacity
-		MinCapacity int `json:"minCapacity"`
-
-		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/pendingCapacity
-		PendingCapacity int `json:"pendingCapacity"`
-
-		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/requestedCapacity
-		RequestedCapacity int `json:"requestedCapacity"`
-
-		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/runningCapacity
-		RunningCapacity int `json:"runningCapacity"`
-
-		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/workerType
-		WorkerType string `json:"workerType"`
-	}
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
