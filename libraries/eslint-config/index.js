@@ -21,7 +21,6 @@ module.exports = {
     "no-multiple-empty-lines": [2, { "max": 1} ],
     "no-nested-ternary": 2,
     "quote-props": [2, "as-needed"],
-    "guard-for-in": 2,
     "keyword-spacing": [2, {"before": true, "after": true, "overrides": {}}],
     "space-before-blocks": 2,
     "space-before-function-paren": [2, "always"],
