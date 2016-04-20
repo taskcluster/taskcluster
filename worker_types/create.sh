@@ -82,6 +82,7 @@ echo "$(date): I've tagged it with \"WorkerType\": \"${WORKER_TYPE}\""
 # poll for a stopped state
 until "$(aws ec2 wait instance-stopped --instance-ids "${INSTANCE_ID}" >/dev/null 2>&1)"; do
   echo "$(date):   Waiting for instance ${INSTANCE_ID} to shut down..."
+  sleep 30
 done
 
 echo "$(date): Now snapshotting the instance to create an AMI..."
@@ -107,6 +108,7 @@ echo "$(date): I've triggered the snapshot of instance ${INSTANCE_ID} as ${IMAGE
 
 until "$(aws ec2 wait image-available --image-ids "${IMAGE_ID}" >/dev/null 2>&1)"; do
   echo "$(date):   Waiting for ${IMAGE_ID} availability..."
+  sleep 30
 done
 
 "${GOPATH}/bin/update-worker-type" "${IMAGE_ID}" "${WORKER_TYPE}"
