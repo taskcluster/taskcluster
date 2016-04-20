@@ -75,12 +75,14 @@ fi
 # filter output, to get INSTANCE_ID
 INSTANCE_ID="$(aws --region us-west-2 ec2 run-instances --image-id "${AMI}" --key-name pmoore-oregan-us-west-2 --security-groups "rdp-only" "ssh-only" --user-data "$(cat userdata)" --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=100,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior terminate --client-token "${SLUGID}" | sed -n 's/^ *"InstanceId": "\(.*\)", */\1/p')"
 
-echo "$(date): I've triggered the creation of instance ${INSTANCE_ID} - but now we will need to wait 90 mins("'!'") for it to be created and bootstrapped..."
+echo "$(date): I've triggered the creation of instance ${INSTANCE_ID} - but now we will need to wait ~90 mins("'!'") for it to be created and bootstrapped..."
 aws ec2 create-tags --resources "${INSTANCE_ID}" --tags "Key=WorkerType,Value=${WORKER_TYPE}"
 echo "$(date): I've tagged it with \"WorkerType\": \"${WORKER_TYPE}\""
 
-# sleep 90 minutes, the installs take forever...
-sleep 5400
+# poll for a stopped state
+until "$(aws ec2 wait instance-stopped --instance-ids "${INSTANCE_ID}" >/dev/null 2>&1)"; do
+  echo "$(date):   Waiting for instance ${INSTANCE_ID} to shut down..."
+done
 
 echo "$(date): Now snapshotting the instance to create an AMI..."
 # now capture the AMI
@@ -101,10 +103,11 @@ echo "$(date): To monitor the AMI creation process, see:"
 echo
 echo "             https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#Images:visibility=owned-by-me;search=${IMAGE_ID};sort=desc:platform"
 
-echo "$(date): I've triggered the snapshot of instance ${INSTANCE_ID} as ${IMAGE_ID} - but now we will need to wait an hour("'!'") for it to be created..."
+echo "$(date): I've triggered the snapshot of instance ${INSTANCE_ID} as ${IMAGE_ID} - but now we will need to wait ~ an hour("'!'") for it to be created..."
 
-# sleep an hour, the AMI snapshot takes forever
-sleep 3600
+until "$(aws ec2 wait image-available --image-ids "${IMAGE_ID}" >/dev/null 2>&1)"; do
+  echo "$(date):   Waiting for ${IMAGE_ID} availability..."
+done
 
 "${GOPATH}/bin/update-worker-type" "${IMAGE_ID}" "${WORKER_TYPE}"
 

@@ -119,4 +119,7 @@ Start-Process "C:\cygwin\bin\bash.exe" -ArgumentList "--login -c 'chmod a+x setu
 # note, this takes AGES to install
 $client.DownloadFile("http://go.microsoft.com/fwlink/?LinkID=626924&clcid=0x409", "C:\vs_community_2015_installer.exe")
 Start-Process "C:\vs_community_2015_installer.exe" -ArgumentList "/Full /Passive /NoRestart" -Wait -PassThru -RedirectStandardOutput "C:\vs2015community_install.log" -RedirectStandardError "C:\vs2015community_install.err"
+
+# now shutdown, in preparation for creating an image
+Stop-Computer
 </powershell>
