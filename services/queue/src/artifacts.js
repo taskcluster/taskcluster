@@ -367,40 +367,59 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
     // Find url
     var url = null;
 
-    // First, let's figure out which region the request is coming from
-    var region = this.regionResolver.getRegion(req);
-    var prefix = artifact.details.prefix;
-    var bucket = artifact.details.bucket;
+    if (task.extra.useCloudMirror) {
+      // First, let's figure out which region the request is coming from
+      var region = this.regionResolver.getRegion(req);
+      var prefix = artifact.details.prefix;
+      var bucket = artifact.details.bucket;
+      console.log('CLOUDMIRROR region: ' + region + ' prefix: ' + prefix);
 
-    if (bucket === this.publicBucket.bucket) {
-      if (!region) {
-        url = this.publicBucket.createGetUrl(prefix);
-      } else if (this.artifactRegion === region) {
-        url = this.publicBucket.createGetUrl(prefix, true);
-      } else {
-        var canonicalArtifactUrl = this.publicBucket.createGetUrl(prefix, true);
-        // We need to build our url path appropriately.  Note that we URL
-        // encode the artifact URL as required by the cloud-mirror api
-        var cloudMirrorPath = [
-          'v1',
-          'redirect',
-          's3',
-          region,
-          encodeURIComponent(canonicalArtifactUrl),
-        ].join('/');
+      if (bucket === this.publicBucket.bucket) {
+        if (!region) {
+          url = this.publicBucket.createGetUrl(prefix);
+        } else if (this.artifactRegion === region) {
+          url = this.publicBucket.createGetUrl(prefix, true);
+        } else {
+          var canonicalArtifactUrl = this.publicBucket.createGetUrl(prefix, true);
+          // We need to build our url path appropriately.  Note that we URL
+          // encode the artifact URL as required by the cloud-mirror api
+          var cloudMirrorPath = [
+            'v1',
+            'redirect',
+            's3',
+            region,
+            encodeURIComponent(canonicalArtifactUrl),
+          ].join('/');
 
-        // Now generate the cloud-mirror redirect
-        url = urllib.format({
-          protocol: 'https:',
-          host: this.cloudMirrorHost,
-          pathname: cloudMirrorPath,
+          // Now generate the cloud-mirror redirect
+          url = urllib.format({
+            protocol: 'https:',
+            host: this.cloudMirrorHost,
+            pathname: cloudMirrorPath,
+          });
+
+          console.log('CLOUDMIRROR constructed url: ' + url);
+        }
+      } else if (bucket === this.privateBucket.bucket) {
+        url = await this.privateBucket.createSignedGetUrl(prefix, {
+          expires: 30 * 60
         });
-
       }
-    } else if (bucket === this.privateBucket.bucket) {
-      url = await this.privateBucket.createSignedGetUrl(prefix, {
-        expires: 30 * 60
-      });
+    } else {
+      var prefix = artifact.details.prefix;
+      if (artifact.details.bucket === this.publicBucket.bucket) {
+        var region = this.regionResolver.getRegion(req);
+        if (region) {
+          url = 'http://' + this.publicProxies[region] + '/' + prefix;
+        } else {
+          url = this.publicBucket.createGetUrl(prefix);
+        }
+      }
+      if (artifact.details.bucket === this.privateBucket.bucket) {
+        url = await this.privateBucket.createSignedGetUrl(prefix, {
+          expires:    30 * 60
+        });
+      }
     }
     assert(url, "Url should have been constructed!");
     return res.redirect(303, url);
