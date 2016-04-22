@@ -120,6 +120,9 @@ Start-Process "C:\cygwin\bin\bash.exe" -ArgumentList "--login -c 'chmod a+x setu
 $client.DownloadFile("http://go.microsoft.com/fwlink/?LinkID=626924&clcid=0x409", "C:\vs_community_2015_installer.exe")
 Start-Process "C:\vs_community_2015_installer.exe" -ArgumentList "/Full /Passive /NoRestart" -Wait -PassThru -RedirectStandardOutput "C:\vs2015community_install.log" -RedirectStandardError "C:\vs2015community_install.err"
 
+# upgrade python libraries
+Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install --upgrade pip==8.1.1 setuptools==20.7.0 virtualenv==15.0.1 wheel==0.29.0 pypiwin32==219 requests==2.9.1 psutil==4.1.0" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\python_package_upgrades.log" -RedirectStandardError "C:\python_package_upgrades.err"
+
 # now shutdown, in preparation for creating an image
 Stop-Computer
 </powershell>
