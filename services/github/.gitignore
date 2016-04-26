@@ -1,6 +1,8 @@
 node_modules/
 config/development.js
-*.swp
-*.swo
+*.sw[a-z]
 taskcluster-github.conf.json
 npm-debug.log
+.test/
+lib/
+user-config.yml
