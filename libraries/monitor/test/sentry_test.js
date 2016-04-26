@@ -23,15 +23,26 @@ suite('Sentry', () => {
 
   test('should create sentry error', async function (done) {
 
-    nock('https://app.getsentry.com')
+    let sentryScope = nock('https://app.getsentry.com')
       .filteringRequestBody(/.*/, '*')
       .post('/api/12345/store/', '*')
+      .twice()
       .reply(200, () => {
+        debug('called Sentry.');
+      })
+      .post('/api/12345/store/', '*')
+      .reply(200, () => {
+        debug('called Sentry the correct amount of times.');
         done();
       });
 
+    setTimeout(function () {
+      sentryScope.done();
+    }, 2000);
+
     await monitor.reportError('create sentry error test');
     await monitor.reportError('another time');
+    await monitor.captureError('this is the same as reportError');
   });
 
 });

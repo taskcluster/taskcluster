@@ -49,6 +49,12 @@ class Monitor {
     });
   }
 
+  // captureError is an alias for reportError to match up
+  // with the raven api better.
+  async captureError (err, level='error') {
+    this.reportError(err, level);
+  }
+
   count (key, val) {
     this._statsum.count(key, val || 1);
   }
@@ -81,6 +87,10 @@ class MockMonitor {
 
   async reportError (err, level='error') {
     this.errors.push(err);
+  }
+
+  async captureError (err, level='error') {
+    this.reportError(err, level);
   }
 
   count (key, val) {
