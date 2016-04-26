@@ -1,4 +1,4 @@
-Generated: 1461158872
+Generated: 1461709667
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2465,7 +2465,7 @@ exchange with the designated `organization` and `repository`
 in the routing-key along with event specific metadata in the payload.'
     Routing Key Element 0     = 
         Element Name      = 'routingKeyKind'
-        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.'
         Element Constant  = 'primary'
         Element M Words   = 'false'
         Element Required  = 'true'
@@ -2498,7 +2498,7 @@ exchange with the designated `organization` and `repository`
 in the routing-key along with event specific metadata in the payload.'
     Routing Key Element 0     = 
         Element Name      = 'routingKeyKind'
-        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.'
         Element Constant  = 'primary'
         Element M Words   = 'false'
         Element Required  = 'true'
