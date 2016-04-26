@@ -72,11 +72,11 @@ class Monitor {
 }
 
 class MockMonitor {
-  constructor (opts) {
+  constructor (opts, counts = {}, measures = {}, errors = []) {
     this._opts = opts;
-    this.counts = {};
-    this.measures = {};
-    this.errors = [];
+    this.counts = counts;
+    this.measures = measures;
+    this.errors = errors;
   }
 
   async reportError (err, level='error') {
@@ -84,11 +84,22 @@ class MockMonitor {
   }
 
   count (key, val) {
-    this.counts[key] = (this.counts[key] || 0) + (val || 1);
+    let k = this._key(key);
+    this.counts[k] = (this.counts[k] || 0) + (val || 1);
   }
 
   measure (key, val) {
-    this.measures[key] = (this.measures[key] || []).concat(val);
+    let k = this._key(key);
+    assert(typeof val === 'number', 'Measurement value must be a number');
+    this.measures[k] = (this.measures[k] || []).concat(val);
+  }
+
+  _key (key) {
+    let p = '.';
+    if (this._opts.prefix) {
+      p = this._opts.prefix + '.';
+    }
+    return this._opts.project + p + key;
   }
 
   async flush () {
@@ -96,7 +107,14 @@ class MockMonitor {
   }
 
   prefix (prefix) {
-    return new MockMonitor(_.cloneDeep(this._opts));
+    let newopts = _.cloneDeep(this._opts);
+    newopts.prefix = (this._opts.prefix || '')  + '.' + prefix;
+    return new MockMonitor(
+      newopts,
+      this.counts,
+      this.measures,
+      this.errors
+    );
   }
 }
 
