@@ -1,2 +1,2 @@
-web: babel-node bin/server.js production
-worker: babel-node bin/worker.js production
+web: node lib/main server
+worker: node lib/main worker
