@@ -44,17 +44,17 @@ func startup() error {
 }
 
 func deleteHomeDir(path string, user string) error {
-	log.Println("Removing home directory '" + path + "'...")
+	log.Println("*NOT* Removing home directory '" + path + "'...")
 
-	adminDeleteHomeDir := func(path string) error {
-		err := os.RemoveAll(path)
-		if err != nil {
-			log.Println("WARNING: could not delete directory '" + path + "'")
-			log.Printf("%v", err)
-			return err
-		}
-		return nil
-	}
+	// adminDeleteHomeDir := func(path string) error {
+	// 	err := os.RemoveAll(path)
+	// 	if err != nil {
+	// 		log.Println("WARNING: could not delete directory '" + path + "'")
+	// 		log.Printf("%v", err)
+	// 		return err
+	// 	}
+	// 	return nil
+	// }
 
 	// first try using task user
 	// passwordFile := filepath.Dir(path) + "\\" + user + "\\_Passw0rd"
@@ -64,15 +64,15 @@ func deleteHomeDir(path string, user string) error {
 	// 	log.Printf("Failed to read password file %v, (to delete dir %v) trying to remove with generic worker account...", passwordFile, path)
 	// 	return adminDeleteHomeDir(path)
 	// }
-	err := runCommands(false, []string{
-		"del /s /q /f",
-		path,
-	})
-	if err != nil {
-		log.Printf("%#v", err)
-		log.Printf("Failed to remove %v with user %v, trying to remove with generic worker account instead...", path, user)
-		return adminDeleteHomeDir(path)
-	}
+	// err := runCommands(false, []string{
+	// 	"del /s /q /f",
+	// 	path,
+	// })
+	// if err != nil {
+	// 	log.Printf("%#v", err)
+	// 	log.Printf("Failed to remove %v with user %v, trying to remove with generic worker account instead...", path, user)
+	// 	return adminDeleteHomeDir(path)
+	// }
 	return nil
 }
 
