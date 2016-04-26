@@ -1,16 +1,15 @@
 suite('TaskCluster-Github Config', () => {
-  var fs         = require('fs');
-  var tcconfig   = require('../lib/taskcluster-config');
-  var assert     = require('assert');
-  var _          = require('lodash');
-  var common     = require('../lib/common');
-  var helper     = require('./helper');
+  let  fs         = require('fs');
+  let  tcconfig   = require('../lib/taskcluster-config');
+  let  assert     = require('assert');
+  let  _          = require('lodash');
+  let  helper     = require('./helper');
 
   /**
    * Test github data, like one would see in a pulse message
    * after a pull request
    **/
-  function buildMessage(params) {
+  function buildMessage (params) {
     let defaultMessage = {
       organization: 'testorg',
       repository:   'testrepo',
@@ -27,25 +26,25 @@ suite('TaskCluster-Github Config', () => {
         'event.head.repo.branch': 'eventData.pull_request.head.default_branch',
         'event.head.sha': 'eventData.pull_request.head.sha',
         'event.head.ref': 'eventData.pull_request.head.ref',
-        'event.head.user.email': 'test@test.com'
-      }
-    }
+        'event.head.user.email': 'test@test.com',
+      },
+    };
     return _.merge(defaultMessage, params);
   };
 
   /**
    * Retrieve values from deeply nested objects.
    **/
-  function getNestedValue(keys, obj) {
+  function getNestedValue (keys, obj) {
     let arrayExp = RegExp('\\[([0-9]+)\\]');
     keys = keys.split('.');
-    for (let i in keys) {
-      let arrayMatch = arrayExp.exec(keys[i]);
+    for (let key of keys) {
+      let arrayMatch = arrayExp.exec(key);
       if (arrayMatch) {
         // Here we handle array accesses of the form a.b[2]
-        obj = obj[keys[i].split('[')[0]][arrayMatch[1]];
+        obj = obj[key.split('[')[0]][arrayMatch[1]];
       } else {
-        obj = obj[keys[i]];
+        obj = obj[key];
       }
     }
     return obj;
@@ -61,19 +60,19 @@ suite('TaskCluster-Github Config', () => {
    *              }
    * expected:    {}, keys=>values expected to exist in the compiled config
    **/
-  var buildConfigTest = function(testName, configPath, params, expected) {
+  let buildConfigTest = function (testName, configPath, params, expected) {
     test(testName, async () => {
       params.taskclusterConfig = fs.readFileSync(configPath);
-      params.schema = common.SCHEMA_PREFIX_CONST + 'taskcluster-github-config.json#';
+      params.schema = 'http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#';
       params.validator = helper.validator;
       let config = await tcconfig.processConfig(params);
-      for (let key in expected) {
+      for (let key of Object.keys(expected)) {
         assert.deepEqual(getNestedValue(key, config), expected[key]);
       }
     });
   };
 
-  var configPath = 'test/data/configs/';
+  let configPath = 'test/data/configs/';
 
   buildConfigTest(
     'Single Task Config',
@@ -82,8 +81,8 @@ suite('TaskCluster-Github Config', () => {
       payload:    buildMessage(),
     },
     {
-      'tasks': [], // The github event doesn't match, so no tasks are created
-      'metadata.owner': 'test@test.com'
+      tasks: [], // The github event doesn't match, so no tasks are created
+      'metadata.owner': 'test@test.com',
     });
 
   buildConfigTest(
@@ -95,7 +94,7 @@ suite('TaskCluster-Github Config', () => {
     {
       'tasks[0].task.extra.github.events': ['push'],
       'metadata.owner': 'test@test.com',
-      'scopes': ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
+      scopes: ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
     });
 
   buildConfigTest(
@@ -108,7 +107,7 @@ suite('TaskCluster-Github Config', () => {
       'metadata.owner': 'test@test.com',
       'tasks[0].task.payload.command': ['test'],
       'tasks[0].task.extra.github.events': ['push'],
-      'scopes': ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
+      scopes: ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
     });
 
   buildConfigTest(
@@ -121,7 +120,7 @@ suite('TaskCluster-Github Config', () => {
       'metadata.owner': 'test@test.com',
       'tasks[0].task.payload.command': ['test'],
       'tasks[0].task.extra.github.events': ['pull_request.opened', 'pull_request.synchronize', 'pull_request.reopened'],
-      'scopes': ['assume:repo:github.com/testorg/testrepo:pull-request'],
+      scopes: ['assume:repo:github.com/testorg/testrepo:pull-request'],
     });
 
   buildConfigTest(
@@ -134,7 +133,7 @@ suite('TaskCluster-Github Config', () => {
       'tasks[0].task.extra.github.events': ['push'],
       'tasks[0].task.extra.github.branches': ['master'],
       'metadata.owner': 'test@test.com',
-      'scopes': ['assume:repo:github.com/testorg/testrepo:branch:master'],
+      scopes: ['assume:repo:github.com/testorg/testrepo:branch:master'],
     });
 
   buildConfigTest(
@@ -144,6 +143,6 @@ suite('TaskCluster-Github Config', () => {
       payload:    buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'foobar'}}),
     },
     {
-      'tasks': []
+      tasks: [],
     });
 });

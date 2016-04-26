@@ -1,0 +1,5 @@
+---
+defaults:
+  pulse:
+   username: '...'
+   password: '...'

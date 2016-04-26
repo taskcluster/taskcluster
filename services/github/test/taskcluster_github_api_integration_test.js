@@ -1,6 +1,6 @@
-suite("TaskCluster-GitHub-Integration", () => {
-  var helper = require('./helper');
-  var assert = require('assert');
+suite('TaskCluster-GitHub-Integration', () => {
+  let helper = require('./helper');
+  let assert = require('assert');
 
   /**
    * Run a test which verifies that pulse messages are being produced
@@ -13,7 +13,7 @@ suite("TaskCluster-GitHub-Integration", () => {
    *  details:      {...}, a dict of details we expect to seein the msg payload
    *  jsonFile:     'data file'
    **/
-  function pulseTest(params) {
+  function pulseTest (params) {
     test(params.testName, async () => {
       // Start listening for message
       await helper.events.listenFor(params.listenFor,
@@ -21,13 +21,13 @@ suite("TaskCluster-GitHub-Integration", () => {
       );
 
       // Trigger a pull-request message
-      let res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile)
-      res.connection.destroy()
+      let res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
+      res.connection.destroy();
       // Wait for message and validate details
-      var m = await helper.events.waitFor(params.listenFor);
+      let m = await helper.events.waitFor(params.listenFor);
       assert.equal(m.payload.organization, params.routingKey.organization);
       assert.equal(m.payload.repository, params.routingKey.repository);
-      for (var key in params.details) {
+      for (let key of Object.keys(params.details)) {
         assert.equal(m.payload.details[key], params.details[key]);
       }
     });
@@ -41,10 +41,10 @@ suite("TaskCluster-GitHub-Integration", () => {
       routingKey:   {
         organization: 'ninethings',
         repository:   'website',
-        action:       'opened'
+        action:       'opened',
       },
       details:      {},
-      jsonFile:     'webhook.pull_request.open.json'
+      jsonFile:     'webhook.pull_request.open.json',
     });
 
     pulseTest({
@@ -58,9 +58,9 @@ suite("TaskCluster-GitHub-Integration", () => {
       details:      {
         'event.head.ref': 'refs/heads/master',
         'event.head.repo.branch': 'master',
-        'event.base.repo.branch': 'master'
+        'event.base.repo.branch': 'master',
       },
-      jsonFile:     'webhook.push.json'
+      jsonFile:     'webhook.push.json',
     });
 
     pulseTest({
@@ -72,7 +72,7 @@ suite("TaskCluster-GitHub-Integration", () => {
         repository:   'website%test',
       },
       details:      {},
-      jsonFile:     'webhook.push.dots_in_name.json'
+      jsonFile:     'webhook.push.dots_in_name.json',
     });
   };
 });
