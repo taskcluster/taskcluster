@@ -9,13 +9,14 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/dchest/uniuri"
-	"github.com/taskcluster/generic-worker/os/exec"
+	// "github.com/taskcluster/generic-worker/os/exec"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
@@ -348,8 +349,8 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	// }
 
 	cmd := exec.Command(command[0], command[1:]...)
-	cmd.Username = TaskUser.Name
-	cmd.Password = TaskUser.Password
+	// cmd.Username = TaskUser.Name
+	// cmd.Password = TaskUser.Password
 	cmd.Dir = TaskUser.HomeDir
 	log.Println("Running command: '" + strings.Join(command, "' '") + "'")
 	log, err := os.Create(absLogFile)

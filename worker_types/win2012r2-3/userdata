@@ -1,0 +1,111 @@
+<powershell>
+
+# needed for making http requests
+$client = New-Object system.net.WebClient
+$shell = new-object -com shell.application
+
+# utility function to download a zip file and extract it
+function Expand-ZIPFile($file, $destination, $url)
+{
+    $client.DownloadFile($url, $file)
+    $zip = $shell.NameSpace($file)
+    foreach($item in $zip.items())
+    {
+        $shell.Namespace($destination).copyhere($item)
+    }
+}
+
+# allow powershell scripts to run
+Set-ExecutionPolicy Unrestricted -Force -Scope Process
+
+# download mozilla-build installer
+$client.DownloadFile("https://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe", "C:\MozillaBuildSetup.exe")
+
+# run mozilla-build installer in silent (/S) mode
+Start-Process "C:\MozillaBuildSetup.exe" -ArgumentList "/S" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\MozillaBuild_install.log" -RedirectStandardError "C:\MozillaBuild_install.err"
+
+# download tooltool
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py", "C:\mozilla-build\tooltool.py")
+
+# install nssm
+Expand-ZIPFile -File "C:\nssm-2.24.zip" -Destination "C:\" -Url "http://www.nssm.cc/release/nssm-2.24.zip"
+
+# download generic-worker
+md C:\generic-worker
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v1.0.12/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+
+# download livelog
+$client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v0.0.6/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
+
+# enable DEBUG logs for generic-worker install
+$env:DEBUG = "*"
+
+# install generic-worker
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install --config C:\\generic-worker\\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+
+# initial clone of mozilla-central
+Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\python\Scripts\hg clone -u null https://hg.mozilla.org/mozilla-central C:\gecko" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\hg_initial_clone.log" -RedirectStandardError "C:\hg_initial_clone.err"
+
+# open up firewall for livelog (both PUT and GET interfaces)
+New-NetFirewallRule -DisplayName "Allow SSH inbound" -Direction Inbound -LocalPort 60022 -Protocol TCP -Action Allow
+New-NetFirewallRule -DisplayName "Allow SSH inbound" -Direction Inbound -LocalPort 60023 -Protocol TCP -Action Allow
+
+# install go (not required, but useful)
+md "C:\gopath"
+Expand-ZIPFile -File "C:\go1.6.windows-amd64.zip" -Destination "C:\" -Url "https://storage.googleapis.com/golang/go1.6.windows-amd64.zip"
+
+# install PSTools
+md "C:\PSTools"
+Expand-ZIPFile -File "C:\PSTools\PSTools.zip" -Destination "C:\PSTools" -Url "https://download.sysinternals.com/files/PSTools.zip"
+
+# install git
+$client.DownloadFile("https://github.com/msysgit/msysgit/releases/download/Git-1.9.5-preview20150319/Git-1.9.5-preview20150319.exe", "C:\git-1.9.5-installer.exe")
+Start-Process "C:\git-1.9.5-installer.exe" -ArgumentList "/SILENT" -Wait -PassThru
+
+# set permanent env vars
+[Environment]::SetEnvironmentVariable("GOROOT", "C:\go", "Machine")
+[System.Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd", "Machine")
+[Environment]::SetEnvironmentVariable("GOPATH", "C:\gopath", "User")
+
+# set env vars for the currently running process
+$env:GOROOT = "C:\go"
+$env:GOPATH = "C:\gopath"
+$env:PATH   = $env:PATH + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd"
+
+# get generic-worker and livelog source code (note required, but useful)
+Start-Process "go" -ArgumentList "get -t github.com/taskcluster/generic-worker github.com/taskcluster/livelog" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\generic-worker\go-get_install.log" -RedirectStandardError "C:\generic-worker\go-get_install.err"
+
+# download cygwin (not required, but useful)
+$client.DownloadFile("https://www.cygwin.com/setup-x86_64.exe", "C:\cygwin-setup-x86_64.exe")
+
+# install cygwin
+# complete package list: https://cygwin.com/packages/package_list.html
+Start-Process "C:\cygwin-setup-x86_64.exe" -ArgumentList "--quiet-mode --wait --root C:\cygwin --site http://cygwin.mirror.constant.com --packages openssh,vim,curl,tar,wget,zip,unzip,diffutils,bzr" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\cygwin_install.log" -RedirectStandardError "C:\cygwin_install.err"
+
+# open up firewall for ssh daemon
+New-NetFirewallRule -DisplayName "Allow SSH inbound" -Direction Inbound -LocalPort 22 -Protocol TCP -Action Allow
+
+# workaround for https://www.cygwin.com/ml/cygwin/2015-10/msg00036.html
+# see:
+#   1) https://www.cygwin.com/ml/cygwin/2015-10/msg00038.html
+#   2) https://cygwin.com/git/gitweb.cgi?p=cygwin-csih.git;a=blob;f=cygwin-service-installation-helper.sh;h=10ab4fb6d47803c9ffabdde51923fc2c3f0496bb;hb=7ca191bebb52ae414bb2a2e37ef22d94f2658dc7#l2884
+$env:LOGONSERVER = "\\" + $env:COMPUTERNAME
+
+# configure sshd (not required, but useful)
+Start-Process "C:\cygwin\bin\bash.exe" -ArgumentList "--login -c `"ssh-host-config -y -c 'ntsec mintty' -u 'cygwinsshd' -w 'qwe123QWE!@#'`"" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\cygrunsrv.log" -RedirectStandardError "C:\cygrunsrv.err"
+
+# start sshd
+Start-Process "net" -ArgumentList "start sshd" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\net_start_sshd.log" -RedirectStandardError "C:\net_start_sshd.err"
+
+# download bash setup script
+$client.DownloadFile("https://raw.githubusercontent.com/petemoore/myscrapbook/master/setup.sh", "C:\cygwin\home\Administrator\setup.sh")
+
+# run bash setup script
+Start-Process "C:\cygwin\bin\bash.exe" -ArgumentList "--login -c 'chmod a+x setup.sh; ./setup.sh'" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\Administrator_cygwin_setup.log" -RedirectStandardError "C:\Administrator_cygwin_setup.err"
+
+# upgrade python libraries
+Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install --upgrade pip==8.1.1 setuptools==20.7.0 virtualenv==15.0.1 wheel==0.29.0 pypiwin32==219 requests==2.9.1 psutil==4.1.0" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\python_package_upgrades.log" -RedirectStandardError "C:\python_package_upgrades.err"
+
+# now shutdown, in preparation for creating an image
+Stop-Computer
+</powershell>
