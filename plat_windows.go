@@ -317,7 +317,11 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	}
 
 	// Now make the actual task a .bat script
-	fileContents := []byte(task.Payload.Command[index] + "\r\n")
+	fileContents := []byte(strings.Join([]string{
+		"@echo on",
+		task.Payload.Command[index],
+		"@echo off",
+	}, "\r\n"))
 
 	err = ioutil.WriteFile(
 		script,
