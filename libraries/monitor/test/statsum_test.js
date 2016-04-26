@@ -8,7 +8,7 @@ suite('Statsum', () => {
   let statsumScope = null;
   let monitor = null;
 
-  suiteSetup(async () => {
+  setup(async () => {
     authmock.setup();
 
     statsumScope = nock('https://statsum.taskcluster.net')
@@ -17,15 +17,22 @@ suite('Statsum', () => {
       .post(/v1\/project\/tc-lib-monitor/, '*')
       .reply(200, 'OK');
 
+    setTimeout(function () {
+      statsumScope.done();
+    }, 2000);
+
     monitor = await monitoring({
       project: 'tc-lib-monitor',
       credentials: {clientId: 'test-client', accessToken: 'test'},
       patchGlobal: false,
       reportStatsumErrors: false,
     });
+    setTimeout(function () {
+      sentryNock.done();
+    }, 2000);
   });
 
-  suiteTeardown(async () => {
+  teardown(async () => {
     authmock.teardown();
   });
 
