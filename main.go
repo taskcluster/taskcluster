@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
@@ -52,6 +53,7 @@ var (
 	// write to this to close task status update manager
 	taskStatusDoneChan chan<- bool
 	config             Config
+	configFile         string
 
 	version = "generic-worker 2.0.0alpha21"
 	usage   = `
@@ -195,7 +197,7 @@ func main() {
 		fmt.Println(taskPayloadSchema())
 	case arguments["run"]:
 		configureForAws := arguments["--configure-for-aws"].(bool)
-		configFile := arguments["--config"].(string)
+		configFile = arguments["--config"].(string)
 		config, err = loadConfig(configFile, configureForAws)
 		if err != nil {
 			fmt.Printf("Error loading configuration from file '%v':\n", configFile)
@@ -955,7 +957,10 @@ func persistConfig(configFile string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(configFile, jsonBytes, 0644)
+	var out bytes.Buffer
+	json.Indent(&out, jsonBytes, "", "    ")
+	out.WriteRune('\n')
+	return ioutil.WriteFile(configFile, out.Bytes(), 0644)
 }
 
 func convertNilToEmptyString(val interface{}) string {
