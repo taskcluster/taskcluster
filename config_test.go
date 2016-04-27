@@ -53,7 +53,7 @@ func TestInvalidIPConfig(t *testing.T) {
 	case *net.ParseError:
 		// all ok
 	default:
-		t.Fatalf("Was expecting an error of type MissingConfigError but received error of type %T", err)
+		t.Fatalf("Was expecting an error of type *net.ParseError but received error of type %T", err)
 	}
 }
 
@@ -67,7 +67,7 @@ func TestInvalidJsonConfig(t *testing.T) {
 	case *json.SyntaxError:
 		// all ok
 	default:
-		t.Fatalf("Was expecting an error of type MissingConfigError but received error of type %T", err)
+		t.Fatalf("Was expecting an error of type *json.SyntaxError but received error of type %T", err)
 	}
 }
 
@@ -81,6 +81,6 @@ func TestMissingConfigFile(t *testing.T) {
 	case *os.PathError:
 		// all ok
 	default:
-		t.Fatalf("Was expecting an error of type MissingConfigError but received error of type %T", err)
+		t.Fatalf("Was expecting an error of type *os.PathError but received error of type %T", err)
 	}
 }

@@ -243,13 +243,13 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	}
 	// now overlay with values from config file
 	configFile, err := os.Open(filename)
-	// if no file, nothing to overlay
-	if err == nil {
-		err = json.NewDecoder(configFile).Decode(&c)
-		defer configFile.Close()
-		if err != nil {
-			return c, err
-		}
+	if err != nil {
+		return c, err
+	}
+	err = json.NewDecoder(configFile).Decode(&c)
+	defer configFile.Close()
+	if err != nil {
+		return c, err
 	}
 
 	// now overlay with data from amazon, if applicable
