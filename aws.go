@@ -223,7 +223,7 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	fmt.Printf("\n\nConfig\n\n%#v\n\n", c)
 
 	if configFile != "" {
-		persistConfig(configFile)
+		c.persist(configFile)
 	}
 
 	// Now put secret files in place...

@@ -52,7 +52,7 @@ var (
 	taskStatusUpdateErr <-chan error
 	// write to this to close task status update manager
 	taskStatusDoneChan chan<- bool
-	config             Config
+	config             *Config
 	configFile         string
 
 	version = "generic-worker 2.0.0alpha22"
@@ -229,12 +229,12 @@ func (err MissingConfigError) Error() string {
 	return "Config setting \"" + err.Setting + "\" must be defined in file \"" + err.File + "\"."
 }
 
-func loadConfig(filename string, queryUserData bool) (Config, error) {
+func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	// TODO: would be better to have a json schema, and also define defaults in
 	// only one place if possible (defaults also declared in `usage`)
 
 	// first assign defaults
-	c := Config{
+	c := &Config{
 		Subdomain:                  "taskcluster-worker.net",
 		ProvisionerId:              "aws-provisioner-v1",
 		LiveLogExecutable:          "livelog",
@@ -950,17 +950,17 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 
 // writes to the file configFile with the current generic worker configuration
 // (stored in the package variable `config`)
-func persistConfig(configFile string) error {
+func (c *Config) persist(file string) error {
 	fmt.Println("Worker ID: " + config.WorkerId)
-	fmt.Println("Creating file " + configFile + "...")
-	jsonBytes, err := json.Marshal(config)
+	fmt.Println("Creating file " + file + "...")
+	jsonBytes, err := json.Marshal(c)
 	if err != nil {
 		return err
 	}
 	var out bytes.Buffer
 	json.Indent(&out, jsonBytes, "", "    ")
 	out.WriteRune('\n')
-	return ioutil.WriteFile(configFile, out.Bytes(), 0644)
+	return ioutil.WriteFile(file, out.Bytes(), 0644)
 }
 
 func convertNilToEmptyString(val interface{}) string {

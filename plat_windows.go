@@ -397,7 +397,7 @@ func install(arguments map[string]interface{}) (err error) {
 	fmt.Println("User: " + user.Name + ", Password: " + user.Password + ", HomeDir: " + user.HomeDir)
 
 	config.RefreshUrlsPrematurelySecs = 310 // TODO: temporary hack, can maybe drop
-	persistConfig(configFile)               // TODO: probably should load the config before persisting it
+	config.persist(configFile)              // TODO: probably should load the config before persisting it
 	if err != nil {
 		return err
 	}

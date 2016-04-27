@@ -248,7 +248,7 @@ func TestUpload(t *testing.T) {
 	taskId := slugid.Nice()
 
 	// configure the worker
-	config = Config{
+	config = &Config{
 		AccessToken:                accessToken,
 		Certificate:                certificate,
 		ClientId:                   clientId,
