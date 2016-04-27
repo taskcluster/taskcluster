@@ -18,6 +18,14 @@ function Expand-ZIPFile($file, $destination, $url)
 # allow powershell scripts to run
 Set-ExecutionPolicy Unrestricted -Force -Scope Process
 
+# install mozilla-build yasm dependencies (32 bit)
+$client.DownloadFile("http://download.microsoft.com/download/C/6/D/C6D0FD4E-9E53-4897-9B91-836EBA2AACD3/vcredist_x86.exe", "C:\vcredist_x86.exe")
+Start-Process "C:\vcredist_x86.exe" -ArgumentList "/install /passive /norestart /log C:\vcredist_vs2010_x86-install.log" -Wait -PassThru
+
+# install mozilla-build yasm dependencies (64 bit)
+$client.DownloadFile("http://download.microsoft.com/download/A/8/0/A80747C3-41BD-45DF-B505-E9710D2744E0/vcredist_x64.exe", "C:\vcredist_x64.exe")
+Start-Process "C:\vcredist_x64.exe" -ArgumentList "/install /passive /norestart /log C:\vcredist_vs2010_x64-install.log" -Wait -PassThru
+
 # download mozilla-build installer
 $client.DownloadFile("https://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe", "C:\MozillaBuildSetup.exe")
 
