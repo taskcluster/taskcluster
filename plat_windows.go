@@ -396,11 +396,6 @@ func install(arguments map[string]interface{}) (err error) {
 	}
 	fmt.Println("User: " + user.Name + ", Password: " + user.Password + ", HomeDir: " + user.HomeDir)
 
-	config.RefreshUrlsPrematurelySecs = 310 // TODO: temporary hack, can maybe drop
-	config.persist(configFile)              // TODO: probably should load the config before persisting it
-	if err != nil {
-		return err
-	}
 	user.HomeDir = "C:\\genworkerhome" // TODO: temporary hack!!
 	err = user.ensureUserAccount()
 	user.HomeDir = "C:\\generic-worker" // TODO: temporary hack!!

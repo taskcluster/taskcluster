@@ -204,6 +204,7 @@ func main() {
 			fmt.Printf("%v\n", err)
 			os.Exit(64)
 		}
+		config.persist(configFile)
 		runWorker()
 		// this returns immediately, as you can runworker in background, so
 		// let's wait for a never-arriving message, to avoid exiting program
@@ -242,13 +243,13 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	}
 	// now overlay with values from config file
 	configFile, err := os.Open(filename)
-	if err != nil {
-		return c, err
-	}
-	defer configFile.Close()
-	err = json.NewDecoder(configFile).Decode(&c)
-	if err != nil {
-		return c, err
+	// if no file, nothing to overlay
+	if err == nil {
+		err = json.NewDecoder(configFile).Decode(&c)
+		defer configFile.Close()
+		if err != nil {
+			return c, err
+		}
 	}
 
 	// now overlay with data from amazon, if applicable
@@ -948,8 +949,7 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 	log.Printf("Environment: %v", taskEnv)
 }
 
-// writes to the file configFile with the current generic worker configuration
-// (stored in the package variable `config`)
+// writes config to json file
 func (c *Config) persist(file string) error {
 	fmt.Println("Worker ID: " + config.WorkerId)
 	fmt.Println("Creating file " + file + "...")
