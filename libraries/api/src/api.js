@@ -13,15 +13,13 @@ var path          = require('path');
 var fs            = require('fs');
 require('superagent-hawk')(require('superagent'));
 var request       = require('superagent-promise');
-// Someone should rename utils to scopes... 
-var utils         = require('taskcluster-lib-scopes');
-var stats         = require('taskcluster-lib-stats');
+var scopes        = require('taskcluster-lib-scopes');
 var crypto        = require('crypto');
-var series        = require('taskcluster-lib-stats/lib/series');
 var cryptiles     = require('cryptiles');
 var taskcluster   = require('taskcluster-client');
 var Ajv           = require('ajv');
 var errors        = require('./errors');
+var monitoring    = require('./monitoring');
 var typeis        = require('type-is');
 
 // Default baseUrl for authentication server
@@ -449,7 +447,7 @@ var remoteAuthentication = function(options, entry) {
         }
 
         // Test that we have scope intersection, and hence, is authorized
-        var retval = utils.scopeMatch(result.scopes, scopesets);
+        var retval = scopes.scopeMatch(result.scopes, scopesets);
         if (!retval && !noReply) {
           res.reportError('InsufficientScopes', [
             "You do not have sufficient scopes. This request requires you",
@@ -462,7 +460,7 @@ var remoteAuthentication = function(options, entry) {
             "In other words you are missing scopes from one of the options:"
           ].concat(scopesets.map((set, index) => {
             let missing = set.filter(scope => {
-              return !utils.scopeMatch(result.scopes, [[scope]]);
+              return !scopes.scopeMatch(result.scopes, [[scope]]);
             });
             return ' * Option ' + index + ':\n    - "' +
                    missing.join('", and\n    - "') + '"';
@@ -642,7 +640,7 @@ API.prototype.declare = function(options, handler) {
     }
   });
   if ('scopes' in options) {
-    utils.validateScopeSets(options.scopes);
+    scopes.validateScopeSets(options.scopes);
   }
   options.handler = handler;
   if (options.input) {
@@ -666,8 +664,7 @@ API.prototype.declare = function(options, handler) {
  *   nonceManager:        function(nonce, ts, cb) { // Check for replay attack
  *   authBaseUrl:         'http://auth.example.net' // BaseUrl for auth server
  *   raven:               null,   // optional raven.Client for error reporting
- *   component:           'queue',      // Name of the component in stats
- *   drain:               new Influx()  // drain for statistics
+ *   monitor:             await require('taskcluster-lib-monitor')({...}),
  * }
  *
  * The option `validator` must provided.
@@ -708,11 +705,17 @@ API.prototype.router = function(options) {
                     "supported; use remote signature validation");
   }
 
-  // Create statistics reporter
-  var reporter = null;
-  if (options.drain) {
-    assert(options.component, "The component must be named in statistics!");
-    reporter = series.ResponseTimes.reporter(options.drain);
+  if (options.drain || options.component || options.raven) {
+    console.log('taskcluster-lib-stats is now deprecated!\n' +
+                'Use the `monitor` option rather than `drain`.\n' +
+                '`monitor` should be an instance of taskcluster-lib-monitor.\n' +
+                '`component` is no longer needed. Prefix your `monitor` before use.\n' +
+                '`raven` is deprecated. An instance of `monitor` will work instead.');
+  }
+
+  var monitor = null;
+  if (options.monitor) {
+    monitor = options.monitor.prefix('api');
   }
 
   // Create router
@@ -749,18 +752,14 @@ API.prototype.router = function(options) {
     // Route pattern
     var middleware = [entry.route];
 
-    // Statistics, if reporter is defined
-    if (reporter) {
-      middleware.push(stats.createResponseTimer(reporter, {
-        method:     entry.name,
-        component:  options.component
-      }));
+    if (monitor) {
+      middleware.push(monitoring.createReporter(entry.name, monitor));
     }
 
     // Add authentication, schema validation and handler
     middleware.push(
       errors.BuildReportErrorMethod(
-        entry.name, this._options.errorCodes, options.raven
+        entry.name, this._options.errorCodes, (monitor || options.raven)
       ),
       bodyParser.text({
         limit:          options.inputLimit,

@@ -23,10 +23,10 @@ exports.ERROR_CODES = ERROR_CODES;
  * `res.reportInternalError(error)`.
  *
  * The `method` is the name of the API method, `errorCodes` is a mapping from
- * allowed error codes to HTTP status codes, and `raven` is an instance of
- * `raven.Client` from the `raven` npm module.
+ * allowed error codes to HTTP status codes, and `monitor` is an instance of
+ * `raven.Client` from the `raven` npm module or an instance of taskcluster-lib-monitor.
  */
-let BuildReportErrorMethod = (method, errorCodes, raven = null) => {
+let BuildReportErrorMethod = (method, errorCodes, monitor = null) => {
   return (req, res, next) => {
     res.reportError = (code, message, details = {}) => {
       let status = errorCodes[code];
@@ -35,12 +35,12 @@ let BuildReportErrorMethod = (method, errorCodes, raven = null) => {
                   (message || 'Missing message!');
         code = 'InternalServerError';
         status = 500;
-        if (raven) {
+        if (monitor) {
           let err = new Error(message)
           err.badMessage = message;
           err.badCode = code;
           err.details = details;
-          raven.captureError(err, {level: 'error'});
+          monitor.captureError(err, {level: 'error'});
         }
       }
       let requestInfo = {
@@ -80,9 +80,9 @@ let BuildReportErrorMethod = (method, errorCodes, raven = null) => {
         "Error occurred handling: %s, err: %s, as JSON: %j, incidentId: %s",
         req.url, err, err, incidentId, err.stack
       );
-      if (raven) {
+      if (monitor) {
         err.incidentId = incidentId;
-        raven.captureError(err, {level: 'error'});
+        monitor.captureError(err, {level: 'error'});
       }
     };
     next();
