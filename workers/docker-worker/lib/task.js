@@ -308,7 +308,6 @@ export class Task extends EventEmitter {
   @param {Array[dockerode.Container]} [links] list of dockerode containers.
   @param {object} [baseEnv] Environment variables that can be overwritten.
   */
-
   async dockerConfig(imageId, linkInfo) {
 
     let config = this.task.payload;
@@ -325,6 +324,10 @@ export class Task extends EventEmitter {
     //       rely on these for self-validating tasks.
     env.TASK_ID = this.status.taskId;
     env.RUN_ID = this.runId;
+    env.TASKCLUSTER_WORKER_TYPE = this.runtime.workerType;
+    env.TASKCLUSTER_INSTANCE_TYPE = this.runtime.workerNodeType;
+    env.TASKCLUSTER_WORKER_GROUP = this.runtime.workerGroup;
+    env.TASKCLUSTER_PUBLIC_IP = this.runtime.publicIp;
 
     let privilegedTask = runAsPrivileged(
       this.task, this.runtime.dockerConfig.allowPrivileged
@@ -444,23 +447,28 @@ export class Task extends EventEmitter {
     return name;
   }
 
-  logHeader() {
-    let header = fmtLog(
-      'taskId: %s, workerId: %s',
-      this.status.taskId, this.runtime.workerId
-    );
-
+  writeLogHeader() {
+    let header = [
+      `Task ID: ${this.status.taskId}`,
+      `Worker ID: ${this.runtime.workerId}`,
+      `Worker Group: ${this.runtime.workerGroup}`,
+      `Worker Type: ${this.runtime.workerType}`,
+      `Public IP: ${this.runtime.publicIp}`
+    ];
+    //
     // List caches if used...
     if (this.task.payload.cache) {
       for (let key in this.task.payload.cache) {
         let path = this.task.payload.cache[key];
-        header += fmtLog(
-          'using cache "%s" -> %s', key, path
-        );
+        header.push(`using cache "${key}" -> ${path}`);
       }
     }
 
-    return header + '\r\n';
+    for (let line of header) {
+      this.stream.write(fmtLog(line));
+    }
+
+    this.stream.write('\r\n');
   }
 
   logFooter(success, exitCode, start, finish) {
@@ -785,7 +793,7 @@ export class Task extends EventEmitter {
     this.stream.cork();
 
     // Task log header.
-    this.stream.write(this.logHeader());
+    this.writeLogHeader()
     let linkInfo = {};
     try {
       // Build the list of container links... and base environment variables
