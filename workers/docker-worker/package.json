@@ -67,9 +67,7 @@
     "ws": "^0.8.0",
     "memory-streams": "^0.1.0",
     "dev-null": "^0.1.1",
-    "express": "^4.9.0"
-  },
-  "devDependencies": {
+    "express": "^4.9.0",
     "aws-sdk": "^2.1.5",
     "aws-sdk-promise": "0.0.2",
     "cli-color": "^0.3.2",
