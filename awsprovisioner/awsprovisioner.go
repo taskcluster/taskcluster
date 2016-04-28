@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 27 Apr 2016 at 15:28:00 UTC. The code was generated
+// Thu, 28 Apr 2016 at 10:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -315,34 +315,6 @@ func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAll
 func (awsProvisioner *AwsProvisioner) GetLaunchSpecs_SignedURL(workerType string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.ConnectionData(*awsProvisioner)
 	return (&cd).SignedURL("/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", nil, duration)
-}
-
-// Stability: *** DEPRECATED ***
-//
-// This method is a left over and will be removed as soon as the
-// tools.tc.net UI is updated to use the per-worker state
-//
-// **DEPRECATED.**
-//
-// Required scopes:
-//   * aws-provisioner:aws-state
-//
-// See http://docs.taskcluster.net/aws-provisioner/api-docs/#awsState
-func (awsProvisioner *AwsProvisioner) AwsState() (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*awsProvisioner)
-	_, callSummary, err := (&cd).APICall(nil, "GET", "/aws-state", nil, nil)
-	return callSummary, err
-}
-
-// Returns a signed URL for AwsState, valid for the specified duration.
-//
-// Required scopes:
-//   * aws-provisioner:aws-state
-//
-// See AwsState for more details.
-func (awsProvisioner *AwsProvisioner) AwsState_SignedURL(duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*awsProvisioner)
-	return (&cd).SignedURL("/aws-state", nil, duration)
 }
 
 // Return the state of a given workertype as stored by the provisioner.
