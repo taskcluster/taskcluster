@@ -14,11 +14,11 @@ class Monitor {
     this._sentry = sentry; // This must be a Promise that resolves to {client, expires}
     this._statsum = statsumClient;
 
-    if (opts.reportStatsumErrors) {
+    if (!opts.isPrefixed && opts.reportStatsumErrors) {
       this._statsum.on('error', err => this.reportError(err, 'warning'));
     }
 
-    if (opts.patchGlobal) {
+    if (!opts.isPrefixed && opts.patchGlobal) {
       process.on('uncaughtException', (err) => {
         console.log(err.stack);
         this.reportError(err);
@@ -68,11 +68,13 @@ class Monitor {
   }
 
   prefix (prefix) {
+    let newopts = _.cloneDeep(this._opts);
+    newopts.isPrefixed = true;
     return new Monitor(
       this._auth,
       this._sentry,
       this._statsum.prefix(prefix),
-      _.cloneDeep(this._opts)
+      newopts
     );
   }
 }
@@ -134,6 +136,7 @@ async function monitor (options) {
   let opts = _.defaults(options, {
     patchGlobal: true,
     reportStatsumErrors: true,
+    isPrefixed: false,
   });
 
   if (options.mock) {
