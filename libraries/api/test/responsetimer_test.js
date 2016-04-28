@@ -5,25 +5,10 @@ suite("api/responsetimer", function() {
   var Promise         = require('promise');
   var mockAuthServer  = require('taskcluster-lib-testing/.test/mockauthserver');
   var subject         = require('../');
-  var stats           = require('taskcluster-lib-stats');
-  var config          = require('taskcluster-lib-config');
+  var monitoring      = require('taskcluster-lib-monitor');
   var validator       = require('taskcluster-lib-validate');
   var express         = require('express');
   var path            = require('path');
-
-  // Load necessary configuration
-  var cfg = config({
-    envs: [
-      'influxdb_connectionString',
-    ],
-    filename:               'taskcluster-base-test'
-  });
-
-  if (!cfg.get('influxdb:connectionString')) {
-    throw new Error("Skipping 'ResponseTimerTest', missing config file: " +
-                    "taskcluster-base-test.conf.json");
-    return;
-  }
 
   // Create test api
   var api = new subject({
@@ -48,7 +33,17 @@ suite("api/responsetimer", function() {
     title:    "Test End-Point",
     description:  "Place we can call to test something",
   }, function(req, res) {
-    res.status(200).send(req.params.name);
+    res.status(404).send(req.params.name);
+  });
+
+  api.declare({
+    method:   'get',
+    route:    '/another-param/:name(*)',
+    name:     'testAnotherParam',
+    title:    "Test End-Point",
+    description:  "Place we can call to test something",
+  }, function(req, res) {
+    res.status(500).send(req.params.name);
   });
 
   // Reference to mock authentication server
@@ -56,8 +51,8 @@ suite("api/responsetimer", function() {
   // Reference for test api server
   var _apiServer = null;
 
-  // Create a mock authentication server
-  var influx = null;
+  var monitor = null;
+
   setup(function(){
     assert(_mockAuthServer === null,  "_mockAuthServer must be null");
     assert(_apiServer === null,       "_apiServer must be null");
@@ -70,17 +65,18 @@ suite("api/responsetimer", function() {
       return validator({
         folder:         path.join(__dirname, 'schemas'),
         baseUrl:        'http://localhost:4321/'
-      }).then(function(validator) {
-        influx = new stats.Influx({
-          connectionString:   cfg.get('influxdb:connectionString')
+      }).then(async function(validator) {
+        monitor = await monitoring({
+          project: 'tc-lib-api-test',
+          credentials: {clientId: 'fake', accessToken: 'fake'},
+          mock: true,
         });
 
         // Create router
         var router = api.router({
           validator:      validator,
           authBaseUrl:    'http://localhost:23243',
-          component:      'ResponseTimerTest',
-          drain:           influx
+          monitor,
         });
 
         // Create application
@@ -123,15 +119,27 @@ suite("api/responsetimer", function() {
   });
 
   test("single parameter", function() {
-    var url = 'http://localhost:23525/single-param/Hello';
-    return request
-      .get(url)
-      .end()
-      .then(function(res) {
-        assert(influx.pendingPoints() === 1, "Expected just one point");
-        return influx.flush();
-      }).then(function() {
-        assert(influx.pendingPoints() === 0, "Expected points to be cleared");
+    return Promise.all([
+        request.get('http://localhost:23525/single-param/Hello').end(),
+        request.get('http://localhost:23525/single-param/Goodbye').end(),
+        request.get('http://localhost:23525/slash-param/Slash').end(),
+        request.get('http://localhost:23525/another-param/Another').end(),
+      ]).then(function() {
+        assert.equal(Object.keys(monitor.counts).length, 6);
+        assert.equal(monitor.counts['tc-lib-api-test.api.testParam.success'], 2);
+        assert.equal(monitor.counts['tc-lib-api-test.api.testParam.all'], 2);
+        assert.equal(monitor.counts['tc-lib-api-test.api.testSlashParam.client-error'], 1);
+        assert.equal(monitor.counts['tc-lib-api-test.api.testSlashParam.all'], 1);
+        assert.equal(monitor.counts['tc-lib-api-test.api.testAnotherParam.server-error'], 1);
+        assert.equal(monitor.counts['tc-lib-api-test.api.testAnotherParam.all'], 1);
+
+        assert.equal(Object.keys(monitor.measures).length, 6);
+        assert.equal(monitor.measures['tc-lib-api-test.api.testParam.success'].length, 2);
+        assert.equal(monitor.measures['tc-lib-api-test.api.testParam.all'].length, 2);
+        assert.equal(monitor.measures['tc-lib-api-test.api.testSlashParam.client-error'].length, 1);
+        assert.equal(monitor.measures['tc-lib-api-test.api.testSlashParam.all'].length, 1);
+        assert.equal(monitor.measures['tc-lib-api-test.api.testAnotherParam.server-error'].length, 1);
+        assert.equal(monitor.measures['tc-lib-api-test.api.testAnotherParam.all'].length, 1);
       });
   });
 });
