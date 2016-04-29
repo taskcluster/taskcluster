@@ -2,16 +2,14 @@
 var path        = require('path');
 var Promise     = require('promise');
 var debug       = require('debug')('index:bin:server');
-var raven       = require('raven');
 var base        = require('taskcluster-base');
 var taskcluster = require('taskcluster-client');
 var data        = require('./data');
 var Handlers    = require('./handlers');
 var v1          = require('./api');
-var loader      = require('taskcluster-lib-loader');
 
 // Create component loader
-var load = loader({
+var load = base.loader({
   cfg: {
     requires: ['profile'],
     setup: ({profile}) => base.config({profile}),
@@ -46,18 +44,6 @@ var load = loader({
     })
   },
 
-  // Create InfluxDB connection for submitting statistics
-  drain: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      if (cfg.influx && cfg.influx.connectionString) {
-        return new base.stats.Influx(cfg.influx)
-      }
-      return new base.stats.NullDrain();
-    }
-  },
-
-  // Configure queue and queueEvents
   queue: {
     requires: ['cfg'],
     setup: ({cfg}) => new taskcluster.Queue({
@@ -70,29 +56,18 @@ var load = loader({
     setup: () => new taskcluster.QueueEvents()
   },
 
-  // Start monitoring the process
   monitor: {
-    requires: ['cfg', 'drain'],
-    setup: ({cfg, drain}) => base.stats.startProcessUsageReporting({
-      drain:      drain,
-      component:  cfg.app.statsComponent,
-      process:    'server'
+    requires: ['profile', 'cfg'],
+    setup: ({profile, cfg}) => base.monitor({
+      project: 'taskcluster-index',
+      credentials: cfg.taskcluster.credentials,
+      mock: profile === 'test',
     })
   },
 
-  raven: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      if (cfg.raven.sentryDSN) {
-        return new raven.Client(cfg.raven.sentryDSN);
-      }
-      return null;
-    }
-  },
-
   api: {
-    requires: ['cfg', 'validator', 'IndexedTask', 'Namespace', 'drain', 'queue', 'raven'],
-    setup: async ({cfg, validator, IndexedTask, Namespace, drain, queue, raven}) => v1.setup({
+    requires: ['cfg', 'validator', 'IndexedTask', 'Namespace', 'monitor', 'queue'],
+    setup: async ({cfg, validator, IndexedTask, Namespace, monitor, queue}) => v1.setup({
       context: {
         queue,
         validator,
@@ -104,10 +79,8 @@ var load = loader({
       baseUrl:          cfg.server.publicUrl + '/v1',
       referencePrefix:  'index/v1/api.json',
       aws:              cfg.aws,
-      component:        cfg.app.statsComponent,
       validator,
-      drain,
-      raven
+      monitor,
     })
   },
 
@@ -126,8 +99,8 @@ var load = loader({
   },
 
   handlers: {
-    requires: ['IndexedTask', 'Namespace', 'queue', 'queueEvents', 'cfg', 'drain'],
-    setup: async ({IndexedTask, Namespace, queue, queueEvents, cfg, drain}) => {
+    requires: ['IndexedTask', 'Namespace', 'queue', 'queueEvents', 'cfg', 'monitor'],
+    setup: async ({IndexedTask, Namespace, queue, queueEvents, cfg, monitor}) => {
       var handlers = new Handlers({
         IndexedTask:        IndexedTask,
         Namespace:          Namespace,
@@ -136,8 +109,7 @@ var load = loader({
         credentials:        cfg.pulse,
         queueName:          cfg.app.listenerQueueName,
         routePrefix:        cfg.app.routePrefix,
-        drain:              drain,
-        component:          cfg.app.statsComponent
+        monitor:            monitor.prefix('handlers'),
       });
 
       // Start listening for events and handle them

@@ -17,9 +17,6 @@ defaults:
     # Name of pulse queue, if a non-exclusive queue is to be used.
     listenerQueueName:            null
 
-    # Component name in statistics
-    statsComponent:               'index'
-
   # Server configuration
   server:
     # Public URL from which the server can be accessed (used for persona)
@@ -51,24 +48,6 @@ defaults:
   pulse:
     username:                     !env PULSE_USERNAME
     password:                     !env PULSE_PASSWORD
-
-  raven:
-    # This can be grabbed from the settings of the sentry project
-    # and is a string that looks like:
-    # https://<pubkey>:<privkey>@app.getsentry.com/<port>
-    sentryDSN:                    !env SENTRY_DSN
-
-  # InfluxDB configuration
-  influx:
-    # Usually provided as environment variables, must be on the form:
-    # https://<user>:<pwd>@<host>:<port>/db/<database>
-    connectionString:               !env INFLUX_CONNECTION_STRING
-
-    # Maximum delay before submitting pending points
-    maxDelay:                       5 * 60
-
-    # Maximum pending points in memory
-    maxPendingPoints:               250
 
   # AWS SDK configuration for publication of schemas and references
   aws:
@@ -105,7 +84,6 @@ test:
     routePrefix:                  'dummy-routes.index-testing'
     indexedTaskTableName:         'DummyTestIndexedTasks'
     namespaceTableName:           'DummyTestNamespaces'
-    statsComponent:               'test-index'
     azureAccount:                 'jungle'
 
   server:

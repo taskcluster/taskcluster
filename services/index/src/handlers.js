@@ -18,8 +18,7 @@ var helpers     = require('./helpers');
  *   credentials:        // Pulse credentials
  *   queueName:          // Queue name (optional)
  *   routePrefix:        // Routing-key prefix for "route.<routePrefix>.#"
- *   drain:              // new base.Influx(...)
- *   component:          // Component name in statistics
+ *   monitor:            // base.monitor({...})
  * }
  */
 var Handlers = function(options) {
@@ -34,8 +33,7 @@ var Handlers = function(options) {
   assert(options.credentials.username, "credentials.username must be provided");
   assert(options.credentials.password, "credentials.password must be provided");
   assert(options.routePrefix,       "routePrefix is required");
-  assert(options.drain,             "statistics drains is required");
-  assert(options.component,         "component name is needed for statistics");
+  assert(options.monitor,           "monitor is required for statistics");
   // Store options on this for use in event handlers
   this.IndexedTask      = options.IndexedTask;
   this.Namespace        = options.Namespace;
@@ -44,8 +42,7 @@ var Handlers = function(options) {
   this.credentials      = options.credentials;
   this.routePrefix      = options.routePrefix;
   this.queueName        = options.queueName;  // Optional
-  this.drain            = options.drain;
-  this.component        = options.component;
+  this.monitor          = options.monitor;
   this.listener         = null;
 };
 
@@ -80,14 +77,8 @@ Handlers.prototype.setup = function() {
                     message.exchange);
   };
 
-  // Create timed handler for statistics
-  var timedHandler = base.stats.createHandlerTimer(handler, {
-    drain:      this.drain,
-    component:  this.component
-  });
-
   // Listen for messages and handle them
-  this.listener.on('message', timedHandler);
+  this.listener.on('message', this.monitor.timedHandler('listener', handler));
 
   // Start listening
   return this.listener.connect().then(function() {
