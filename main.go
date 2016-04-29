@@ -256,6 +256,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 
 	// now overlay with data from amazon, if applicable
 	if queryUserData {
+		// don't check errors, since maybe secrets are gone, but maybe we had them already from first run...
 		c.updateConfigWithAmazonSettings()
 	}
 
