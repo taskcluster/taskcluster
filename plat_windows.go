@@ -472,6 +472,20 @@ func deployStartup(user *OSUser, configFile string, exePath string) error {
 		return err
 	}
 	err = k.SetStringValue("DefaultPassword", user.Password)
+	if err != nil {
+		return err
+	}
+
+	batScriptFilePath := path.Join(path.Dir(exePath), "run-generic-worker.bat")
+	batScriptContents := []byte(strings.Join([]string{
+		`:: run the generic worker`,
+		``,
+		`:: cd to folder containing this script`,
+		`pushd %~dp0`,
+		``,
+		`.\generic-worker.exe run > .\generic-worker.log 2>&1`,
+	}, "\r\n"))
+	err = ioutil.WriteFile(batScriptFilePath, batScriptContents, 0755)
 	return err
 }
 
