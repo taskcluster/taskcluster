@@ -1,4 +1,4 @@
-Generated: 1461839260
+Generated: 1461925655
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -1676,9 +1676,47 @@ Entry 13    =
     Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
     Entry Input       = ''
-    Entry Output      = ''
+    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#'
     Entry Title       = 'Backend Status'
-    Entry Description = '**Warning** this api end-point is **not stable**.'
+    Entry Description = 'This endpoint is used to show when the last time the provisioner
+has checked in.  A check in is done through the deadman's snitch
+api.  It is done at the conclusion of a provisioning iteration
+and used to tell if the background provisioning process is still
+running.
+
+**Warning** this api end-point is **not stable**.'
+
+
+http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#
+===============================================================================
+Additional Properties  = 'false'
+Description            = 'Backend Status Response
+'
+ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#'
+Properties
+  Property 'lastCheckedIn' =
+    Description            = 'A date when the provisioner backend process last completed an iteration.
+    This does not imply success, rather it is to make sure that the process
+    is alive
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = 'LastCheckedIn'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#/properties/lastCheckedIn'
+  Property 'status' =
+    Description            = 'A string from Deadman's Snitch which describes the status.  See
+    https://deadmanssnitch.com/docs/api/v1#listing-your-snitches for an
+    explanation of this value
+    '
+    Type                   = 'string'
+    TypeName               = 'Status'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#/properties/status'
+Required               = '[status lastCheckedIn]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Backend Status Response'
+Type                   = 'object'
+TypeName               = 'BackendStatusResponse'
+SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#'
 
 
 http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#

@@ -10,6 +10,26 @@ import (
 )
 
 type (
+	// Backend Status Response
+	//
+	// See http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#
+	BackendStatusResponse struct {
+
+		// A date when the provisioner backend process last completed an iteration.
+		// This does not imply success, rather it is to make sure that the process
+		// is alive
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#/properties/lastCheckedIn
+		LastCheckedIn tcclient.Time `json:"lastCheckedIn"`
+
+		// A string from Deadman's Snitch which describes the status.  See
+		// https://deadmanssnitch.com/docs/api/v1#listing-your-snitches for an
+		// explanation of this value
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#/properties/status
+		Status string `json:"status"`
+	}
+
 	// A worker launchSpecification and required metadata
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#

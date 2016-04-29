@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 28 Apr 2016 at 10:27:00 UTC. The code was generated
+// Fri, 29 Apr 2016 at 10:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -359,11 +359,17 @@ func (awsProvisioner *AwsProvisioner) Ping() (*tcclient.CallSummary, error) {
 
 // Stability: *** EXPERIMENTAL ***
 //
+// This endpoint is used to show when the last time the provisioner
+// has checked in.  A check in is done through the deadman's snitch
+// api.  It is done at the conclusion of a provisioning iteration
+// and used to tell if the background provisioning process is still
+// running.
+//
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/aws-provisioner/api-docs/#backendStatus
-func (awsProvisioner *AwsProvisioner) BackendStatus() (*tcclient.CallSummary, error) {
+func (awsProvisioner *AwsProvisioner) BackendStatus() (*BackendStatusResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*awsProvisioner)
-	_, callSummary, err := (&cd).APICall(nil, "GET", "/backend-status", nil, nil)
-	return callSummary, err
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/backend-status", new(BackendStatusResponse), nil)
+	return responseObject.(*BackendStatusResponse), callSummary, err
 }
