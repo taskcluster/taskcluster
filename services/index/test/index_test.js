@@ -114,7 +114,7 @@ suite('Indexing', () => {
       ).then(function() {
         assert(false, "Expected ill formated namespaces to be ignored!");
       }, function(err) {
-        assert(err.statusCode === 404, "Expected 404");
+        assert(err.statusCode === 400, "Expected 400");
       });
     });
   });

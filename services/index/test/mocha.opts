@@ -1,3 +1,4 @@
 --ui tdd
 --timeout 30s
 --reporter spec
+--require source-map-support/register
