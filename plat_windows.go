@@ -3,12 +3,14 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -17,6 +19,7 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/os/exec"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	"golang.org/x/sys/windows/registry"
 )
 
 func processCommandOutput(callback func(line string), prog string, options ...string) error {
@@ -381,8 +384,6 @@ func install(arguments map[string]interface{}) (err error) {
 		return err
 	}
 	configFile := convertNilToEmptyString(arguments["--config"])
-	nssm := convertNilToEmptyString(arguments["--nssm"])
-	serviceName := convertNilToEmptyString(arguments["--service-name"])
 	username := convertNilToEmptyString(arguments["--username"])
 	password := convertNilToEmptyString(arguments["--password"])
 	if password == "" {
@@ -405,7 +406,16 @@ func install(arguments map[string]interface{}) (err error) {
 	if err != nil {
 		return err
 	}
-	return deployService(&user, configFile, nssm, serviceName, exePath)
+	switch {
+	case arguments["service"]:
+		nssm := convertNilToEmptyString(arguments["--nssm"])
+		serviceName := convertNilToEmptyString(arguments["--service-name"])
+		return deployService(&user, configFile, nssm, serviceName, exePath)
+	case arguments["startup"]:
+		return deployStartup(&user, configFile, exePath)
+	}
+	log.Fatal("Unknown install target - neither 'service' nor 'startup' have been specified")
+	return nil
 }
 
 // Runs command `command` with arguments `args`. If standard error from command
@@ -430,6 +440,39 @@ func (user *OSUser) makeAdmin() error {
 
 func (user *OSUser) ensureUserAccount() error {
 	return user.createOSUserAccountForce(true)
+}
+
+func deployStartup(user *OSUser, configFile string, exePath string) error {
+	// text is UTF-16, let's just treat as binary...
+	encodedScheduledTask := "//48AD8AeABtAGwAIAB2AGUAcgBzAGkAbwBuAD0AIgAxAC4AMAAiACAAZQBuAGMAbwBkAGkAbgBnAD0AIgBVAFQARgAtADEANgAiAD8APgANAAoAPABUAGEAcwBrACAAdgBlAHIAcwBpAG8AbgA9ACIAMQAuADIAIgAgAHgAbQBsAG4AcwA9ACIAaAB0AHQAcAA6AC8ALwBzAGMAaABlAG0AYQBzAC4AbQBpAGMAcgBvAHMAbwBmAHQALgBjAG8AbQAvAHcAaQBuAGQAbwB3AHMALwAyADAAMAA0AC8AMAAyAC8AbQBpAHQALwB0AGEAcwBrACIAPgANAAoAIAAgADwAUgBlAGcAaQBzAHQAcgBhAHQAaQBvAG4ASQBuAGYAbwA+AA0ACgAgACAAIAAgADwARABhAHQAZQA+ADIAMAAxADYALQAwADQALQAyADgAVAAxADcAOgAyADUAOgAwADgALgA0ADYANQA0ADQAMgAyADwALwBEAGEAdABlAD4ADQAKACAAIAAgACAAPABBAHUAdABoAG8AcgA+AC4AXABHAGUAbgBlAHIAaQBjAFcAbwByAGsAZQByADwALwBBAHUAdABoAG8AcgA+AA0ACgAgACAAIAAgADwARABlAHMAYwByAGkAcAB0AGkAbwBuAD4AUgB1AG4AcwAgAHQAaABlACAAZwBlAG4AZQByAGkAYwAgAHcAbwByAGsAZQByAC4APAAvAEQAZQBzAGMAcgBpAHAAdABpAG8AbgA+AA0ACgAgACAAPAAvAFIAZQBnAGkAcwB0AHIAYQB0AGkAbwBuAEkAbgBmAG8APgANAAoAIAAgADwAVAByAGkAZwBnAGUAcgBzAD4ADQAKACAAIAAgACAAPABMAG8AZwBvAG4AVAByAGkAZwBnAGUAcgA+AA0ACgAgACAAIAAgACAAIAA8AEUAbgBhAGIAbABlAGQAPgB0AHIAdQBlADwALwBFAG4AYQBiAGwAZQBkAD4ADQAKACAAIAAgACAAIAAgADwAVQBzAGUAcgBJAGQAPgAuAFwARwBlAG4AZQByAGkAYwBXAG8AcgBrAGUAcgA8AC8AVQBzAGUAcgBJAGQAPgANAAoAIAAgACAAIAA8AC8ATABvAGcAbwBuAFQAcgBpAGcAZwBlAHIAPgANAAoAIAAgADwALwBUAHIAaQBnAGcAZQByAHMAPgANAAoAIAAgADwAUAByAGkAbgBjAGkAcABhAGwAcwA+AA0ACgAgACAAIAAgADwAUAByAGkAbgBjAGkAcABhAGwAIABpAGQAPQAiAEEAdQB0AGgAbwByACIAPgANAAoAIAAgACAAIAAgACAAPABVAHMAZQByAEkAZAA+AC4AXABHAGUAbgBlAHIAaQBjAFcAbwByAGsAZQByADwALwBVAHMAZQByAEkAZAA+AA0ACgAgACAAIAAgACAAIAA8AEwAbwBnAG8AbgBUAHkAcABlAD4ASQBuAHQAZQByAGEAYwB0AGkAdgBlAFQAbwBrAGUAbgA8AC8ATABvAGcAbwBuAFQAeQBwAGUAPgANAAoAIAAgACAAIAAgACAAPABSAHUAbgBMAGUAdgBlAGwAPgBIAGkAZwBoAGUAcwB0AEEAdgBhAGkAbABhAGIAbABlADwALwBSAHUAbgBMAGUAdgBlAGwAPgANAAoAIAAgACAAIAA8AC8AUAByAGkAbgBjAGkAcABhAGwAPgANAAoAIAAgADwALwBQAHIAaQBuAGMAaQBwAGEAbABzAD4ADQAKACAAIAA8AFMAZQB0AHQAaQBuAGcAcwA+AA0ACgAgACAAIAAgADwATQB1AGwAdABpAHAAbABlAEkAbgBzAHQAYQBuAGMAZQBzAFAAbwBsAGkAYwB5AD4ASQBnAG4AbwByAGUATgBlAHcAPAAvAE0AdQBsAHQAaQBwAGwAZQBJAG4AcwB0AGEAbgBjAGUAcwBQAG8AbABpAGMAeQA+AA0ACgAgACAAIAAgADwARABpAHMAYQBsAGwAbwB3AFMAdABhAHIAdABJAGYATwBuAEIAYQB0AHQAZQByAGkAZQBzAD4AdAByAHUAZQA8AC8ARABpAHMAYQBsAGwAbwB3AFMAdABhAHIAdABJAGYATwBuAEIAYQB0AHQAZQByAGkAZQBzAD4ADQAKACAAIAAgACAAPABTAHQAbwBwAEkAZgBHAG8AaQBuAGcATwBuAEIAYQB0AHQAZQByAGkAZQBzAD4AdAByAHUAZQA8AC8AUwB0AG8AcABJAGYARwBvAGkAbgBnAE8AbgBCAGEAdAB0AGUAcgBpAGUAcwA+AA0ACgAgACAAIAAgADwAQQBsAGwAbwB3AEgAYQByAGQAVABlAHIAbQBpAG4AYQB0AGUAPgB0AHIAdQBlADwALwBBAGwAbABvAHcASABhAHIAZABUAGUAcgBtAGkAbgBhAHQAZQA+AA0ACgAgACAAIAAgADwAUwB0AGEAcgB0AFcAaABlAG4AQQB2AGEAaQBsAGEAYgBsAGUAPgBmAGEAbABzAGUAPAAvAFMAdABhAHIAdABXAGgAZQBuAEEAdgBhAGkAbABhAGIAbABlAD4ADQAKACAAIAAgACAAPABSAHUAbgBPAG4AbAB5AEkAZgBOAGUAdAB3AG8AcgBrAEEAdgBhAGkAbABhAGIAbABlAD4AZgBhAGwAcwBlADwALwBSAHUAbgBPAG4AbAB5AEkAZgBOAGUAdAB3AG8AcgBrAEEAdgBhAGkAbABhAGIAbABlAD4ADQAKACAAIAAgACAAPABJAGQAbABlAFMAZQB0AHQAaQBuAGcAcwA+AA0ACgAgACAAIAAgACAAIAA8AFMAdABvAHAATwBuAEkAZABsAGUARQBuAGQAPgB0AHIAdQBlADwALwBTAHQAbwBwAE8AbgBJAGQAbABlAEUAbgBkAD4ADQAKACAAIAAgACAAIAAgADwAUgBlAHMAdABhAHIAdABPAG4ASQBkAGwAZQA+AGYAYQBsAHMAZQA8AC8AUgBlAHMAdABhAHIAdABPAG4ASQBkAGwAZQA+AA0ACgAgACAAIAAgADwALwBJAGQAbABlAFMAZQB0AHQAaQBuAGcAcwA+AA0ACgAgACAAIAAgADwAQQBsAGwAbwB3AFMAdABhAHIAdABPAG4ARABlAG0AYQBuAGQAPgB0AHIAdQBlADwALwBBAGwAbABvAHcAUwB0AGEAcgB0AE8AbgBEAGUAbQBhAG4AZAA+AA0ACgAgACAAIAAgADwARQBuAGEAYgBsAGUAZAA+AHQAcgB1AGUAPAAvAEUAbgBhAGIAbABlAGQAPgANAAoAIAAgACAAIAA8AEgAaQBkAGQAZQBuAD4AZgBhAGwAcwBlADwALwBIAGkAZABkAGUAbgA+AA0ACgAgACAAIAAgADwAUgB1AG4ATwBuAGwAeQBJAGYASQBkAGwAZQA+AGYAYQBsAHMAZQA8AC8AUgB1AG4ATwBuAGwAeQBJAGYASQBkAGwAZQA+AA0ACgAgACAAIAAgADwAVwBhAGsAZQBUAG8AUgB1AG4APgBmAGEAbABzAGUAPAAvAFcAYQBrAGUAVABvAFIAdQBuAD4ADQAKACAAIAAgACAAPABFAHgAZQBjAHUAdABpAG8AbgBUAGkAbQBlAEwAaQBtAGkAdAA+AFAAVAAwAFMAPAAvAEUAeABlAGMAdQB0AGkAbwBuAFQAaQBtAGUATABpAG0AaQB0AD4ADQAKACAAIAAgACAAPABQAHIAaQBvAHIAaQB0AHkAPgA3ADwALwBQAHIAaQBvAHIAaQB0AHkAPgANAAoAIAAgADwALwBTAGUAdAB0AGkAbgBnAHMAPgANAAoAIAAgADwAQQBjAHQAaQBvAG4AcwAgAEMAbwBuAHQAZQB4AHQAPQAiAEEAdQB0AGgAbwByACIAPgANAAoAIAAgACAAIAA8AEUAeABlAGMAPgANAAoAIAAgACAAIAAgACAAPABDAG8AbQBtAGEAbgBkAD4AQwA6AFwAZwBlAG4AZQByAGkAYwAtAHcAbwByAGsAZQByAFwAcgB1AG4ALQBnAGUAbgBlAHIAaQBjAC0AdwBvAHIAawBlAHIALgBiAGEAdAA8AC8AQwBvAG0AbQBhAG4AZAA+AA0ACgAgACAAIAAgADwALwBFAHgAZQBjAD4ADQAKACAAIAA8AC8AQQBjAHQAaQBvAG4AcwA+AA0ACgA8AC8AVABhAHMAawA+AA0ACgA="
+	data, err := base64.StdEncoding.DecodeString(encodedScheduledTask)
+	xmlFilePath := path.Join(path.Dir(exePath), "Run Generic Worker.xml")
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(xmlFilePath, data, 0644)
+	if err != nil {
+		return err
+	}
+	err = runCommands(false, []string{"schtasks", "/create", "/tn", "Run Generic Worker on login", "/xml", xmlFilePath})
+	if err != nil {
+		return err
+	}
+	k, _, err := registry.CreateKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.WRITE)
+	if err != nil {
+		return err
+	}
+	defer k.Close()
+	err = k.SetDWordValue("AutoAdminLogon", 1)
+	if err != nil {
+		return err
+	}
+	err = k.SetStringValue("DefaultUserName", user.Name)
+	if err != nil {
+		return err
+	}
+	err = k.SetStringValue("DefaultPassword", user.Password)
+	return err
 }
 
 // deploys the generic worker as a windows service, running under the windows

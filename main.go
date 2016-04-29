@@ -64,13 +64,14 @@ the taskcluster component that executes tasks. It requests tasks from the taskcl
 and reports back results to the queue.
 
   Usage:
-    generic-worker run                     [--config         CONFIG-FILE]
-                                           [--configure-for-aws]
-    generic-worker install                 [--config         CONFIG-FILE]
-                                           [--nssm           NSSM-EXE]
-                                           [--password       PASSWORD]
-                                           [--service-name   SERVICE-NAME]
-                                           [--username       USERNAME]
+    generic-worker run                      [--config         CONFIG-FILE]
+                                            [--configure-for-aws]
+    generic-worker install (startup|service [--nssm           NSSM-EXE]
+                                            [--service-name   SERVICE-NAME])
+                                            [--config         CONFIG-FILE]
+                                            [--username       USERNAME]
+                                            [--password       PASSWORD]
+    generic-worker
     generic-worker show-payload-schema
     generic-worker --help
     generic-worker --version
