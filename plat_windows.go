@@ -546,6 +546,7 @@ func runCommands(allowFail bool, commands ...[]string) error {
 }
 
 func ExePath() (string, error) {
+	log.Printf("Command args: %#v", os.Args)
 	prog := os.Args[0]
 	p, err := filepath.Abs(prog)
 	if err != nil {

@@ -200,12 +200,13 @@ func main() {
 		configureForAws := arguments["--configure-for-aws"].(bool)
 		configFile = arguments["--config"].(string)
 		config, err = loadConfig(configFile, configureForAws)
+		// persist before checking for error, so we can see what the problem was...
+		config.persist(configFile)
 		if err != nil {
 			fmt.Printf("Error loading configuration from file '%v':\n", configFile)
 			fmt.Printf("%v\n", err)
 			os.Exit(64)
 		}
-		config.persist(configFile)
 		runWorker()
 		// this returns immediately, as you can runworker in background, so
 		// let's wait for a never-arriving message, to avoid exiting program
