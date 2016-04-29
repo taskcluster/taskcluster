@@ -242,15 +242,15 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		LiveLogExecutable:          "livelog",
 		RefreshUrlsPrematurelySecs: 310,
 	}
-	// now overlay with values from config file
+	// try to open config file...
 	configFile, err := os.Open(filename)
-	if err != nil {
-		return c, err
-	}
-	err = json.NewDecoder(configFile).Decode(&c)
-	defer configFile.Close()
-	if err != nil {
-		return c, err
+	// only overlay values if config file exists
+	if err == nil {
+		defer configFile.Close()
+		err = json.NewDecoder(configFile).Decode(&c)
+		if err != nil {
+			return c, err
+		}
 	}
 
 	// now overlay with data from amazon, if applicable
