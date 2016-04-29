@@ -4,6 +4,7 @@ let assert = require('assert');
 let Promise = require('promise');
 let taskcluster = require('taskcluster-client');
 let raven = require('raven');
+let usage = require('usage');
 let Statsum = require('statsum');
 
 class Monitor {
@@ -29,6 +30,19 @@ class Monitor {
         console.log(err);
         this.reportError(err, 'warning');
       });
+    }
+
+    if (!opts.isPrefixed && opts.reportUsage) {
+      setInterval(() => {
+        usage.lookup(process.pid, {keepHistory: true}, (err, result) => {
+          if (err) {
+            debug('Failed to get usage statistics, err: %s, %j',  err, err, err.stack);
+            return;
+          }
+          this.measure('cpu', result.cpu);
+          this.measure('mem', result.memory);
+        });
+      }, 60 * 1000);
     }
   }
 
@@ -77,6 +91,67 @@ class Monitor {
       newopts
     );
   }
+
+  // Given a function that operates on a
+  // single message, this will time it and
+  // report to statsum.
+  timedHandler (name, handler) {
+    return async (message) => {
+      let start = process.hrtime();
+      let success = 'success';
+      try {
+        await handler(message);
+      } catch (e) {
+        success = 'error';
+        throw e;
+      } finally {
+        let d = process.hrtime(start);
+        for (let stat of [success, 'all']) {
+          let k = [name, stat].join('.');
+          this.measure(k, d[0] * 1000 + d[1] / 1000000);
+          this.count(k);
+        }
+      }
+    };
+  }
+
+  // Given an express api method, this will time it
+  // and report to statsum.
+  expressMiddleware (name) {
+    return (req, res, next) => {
+      let sent = false;
+      let start = process.hrtime();
+      let send = () => {
+        try {
+          // Avoid sending twice
+          if (sent) {
+            return;
+          }
+          sent = true;
+
+          let d = process.hrtime(start);
+
+          let success = 'success';
+          if (res.statusCode >= 500) {
+            success = 'server-error';
+          } else if (res.statusCode >= 400) {
+            success = 'client-error';
+          }
+
+          for (let stat of [success, 'all']) {
+            let k = [name, stat].join('.');
+            this.measure(k, d[0] * 1000 + d[1] / 1000000);
+            this.count(k);
+          }
+        } catch (e) {
+          debug('Error while compiling response times: %s, %j', err, err, err.stack);
+        }
+      };
+      res.once('finish', send);
+      res.once('close', send);
+      next();
+    };
+  }
 }
 
 class MockMonitor {
@@ -104,6 +179,16 @@ class MockMonitor {
     let k = this._key(key);
     assert(typeof val === 'number', 'Measurement value must be a number');
     this.measures[k] = (this.measures[k] || []).concat(val);
+  }
+
+  timedHandler (name, handler) {
+    return async (message) => { await handler(message); };
+  }
+
+  expressMiddleware (name) {
+    return (req, res, next) => {
+      next();
+    };
   }
 
   _key (key) {
@@ -136,6 +221,7 @@ async function monitor (options) {
   let opts = _.defaults(options, {
     patchGlobal: true,
     reportStatsumErrors: true,
+    reportUsage: true,
     isPrefixed: false,
   });
 
