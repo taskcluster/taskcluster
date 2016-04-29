@@ -1,6 +1,8 @@
 TaskCluster - Task Index
 ========================
 
+[![Build Status](https://travis-ci.org/taskcluster/taskcluster-index.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-index)
+
 The task _index_ provides a service that indexes successfully completed tasks.
 To get a task indexed you must add routes on the form `index.<namespace>`, where
 `<namespace>` is a dot separated hierarchy **without any slashes**.
