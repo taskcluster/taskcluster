@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"net"
-	"os"
 	"testing"
 )
 
@@ -78,9 +77,9 @@ func TestMissingConfigFile(t *testing.T) {
 		t.Fatal("Was expecting to get an error back due to an invalid IP address, but didn't get one!")
 	}
 	switch err.(type) {
-	case *os.PathError:
+	case MissingConfigError:
 		// all ok
 	default:
-		t.Fatalf("Was expecting an error of type *os.PathError but received error of type %T", err)
+		t.Fatalf("Was expecting an error of type MissingConfigError but received error of type %T", err)
 	}
 }
