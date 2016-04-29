@@ -79,6 +79,9 @@ echo "$(date): I've triggered the creation of instance ${INSTANCE_ID} - but now 
 aws ec2 create-tags --resources "${INSTANCE_ID}" --tags "Key=WorkerType,Value=${WORKER_TYPE}"
 echo "$(date): I've tagged it with \"WorkerType\": \"${WORKER_TYPE}\""
 
+# grab public IP before it shuts down and loses it!
+PUBLIC_IP="$(aws ec2 describe-instances --instance-id "${INSTANCE_ID}" --query 'Reservations[*].Instances[*].NetworkInterfaces[*].Association.PublicIp' --output text)"
+
 # poll for a stopped state
 until aws ec2 wait instance-stopped --instance-ids "${INSTANCE_ID}" >/dev/null 2>&1; do
   echo "$(date):   Waiting for instance ${INSTANCE_ID} to shut down..."
@@ -92,7 +95,6 @@ IMAGE_ID="$(aws --region us-west-2 ec2 create-image --instance-id "${INSTANCE_ID
 echo "$(date): The AMI is currently being created: ${IMAGE_ID}"
 
 PASSWORD="$(aws ec2 get-password-data --instance-id "${INSTANCE_ID}" --priv-launch-key ~/.ssh/pmoore-oregan-us-west-2.pem --output text --query PasswordData)"
-PUBLIC_IP="$(aws ec2 describe-instances --instance-id "${INSTANCE_ID}" --query 'Reservations[*].Instances[*].NetworkInterfaces[*].Association.PublicIp' --output text)"
 
 echo "$(date): To connect to the template instance (please don't do so until AMI creation process is completed"'!'"):"
 echo
