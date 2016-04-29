@@ -4,8 +4,8 @@
   "private": true,
   "main": "babel-node bin/server server",
   "scripts": {
-    "compile": "babel-compile -c tc-rules/babel src:lib test:.test",
-    "test":    "mocha .test/*_test.js",
+    "compile": "babel-compile -p taskcluster src:lib test:.test",
+    "test": "mocha .test/*_test.js",
     "pretest": "npm run compile",
     "install": "npm run compile"
   },
@@ -14,31 +14,19 @@
     "url": "https://github.com/taskcluster/taskcluster-index.git"
   },
   "dependencies": {
-    "aws-sdk": "^2.1.5",
-    "babel": "^5.8.23",
-    "debug": "2.1.1",
-    "lodash": "2.4.1",
-    "promise": "6.0.1",
-    "raven": "^0.10.0",
-    "slugid": "^1.0.3",
-    "superagent": "^1.2.0",
-    "superagent-promise": "^0.2.0",
-    "taskcluster-base": "^0.12.1",
-    "taskcluster-client": "^0.22.6",
-    "taskcluster-lib-loader": "^0.1.1",
-    "taskcluster-lib-testing": "^0.11.1",
-    "babel-runtime":        "^6.6.1",
-    "babel-compile":        "^1.0.2",
-    "tc-rules":             "^5.0.0",
-    "babel-preset-es2015":  "^6.6.0",
-    "babel-plugin-syntax-async-functions":          "^6.5.0",
-    "babel-plugin-transform-async-to-generator":    "^6.5.0",
-    "babel-plugin-transform-runtime":               "^6.6.0",
-    "babel-plugin-transform-strict-mode":           "^6.5.2",
-    "babel-plugin-syntax-trailing-function-commas": "^6.5.0"
-  },
-  "devDependencies": {
-    "mocha": "2.1.0"
+    "babel-compile": "^2.0.0",
+    "babel-preset-taskcluster": "^2.0.1",
+    "babel-runtime": "^6.6.1",
+    "debug": "^2.2.0",
+    "lodash": "^4.11.1",
+    "promise": "^7.1.1",
+    "slugid": "^1.1.0",
+    "superagent": "^1.8.3",
+    "superagent-promise": "^1.1.0",
+    "taskcluster-base": "^0.13.0",
+    "taskcluster-client": "^0.23.17",
+    "mocha": "^2.4.5",
+    "source-map-support": "^0.3.3"
   },
   "engines": {
     "node": "^5.8.0",

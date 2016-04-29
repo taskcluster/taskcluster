@@ -6,7 +6,7 @@ suite("API", () => {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var taskcluster = require('taskcluster-client');
-  var request     = require('superagent-promise');
+  var request     = require('superagent-promise')(require('superagent'), Promise);
 
   // Artifact names that we have assigned scopes to testing credentials for.
   var publicArtifactName = 'public/dummy-test-provisioner.log';
