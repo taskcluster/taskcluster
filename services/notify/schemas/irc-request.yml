@@ -1,0 +1,29 @@
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "Post IRC Message Request"
+description: |
+  Request to post a message on IRC.
+type:               object
+properties:
+  channel:
+    type:           string
+    pattern:        "^[#&][^ ,\\u0007]{1,199}$"
+    description: |
+      Channel to post the message in. Please note that you **must** supply
+      either `user` or `channel`, you cannot supply both.
+  user:
+    type:           string
+    maxLength:      255
+    minLength:      1
+    description: |
+      User to post the message to. Please note that you **must** supply
+      either `user` or `channel`, you cannot supply both.
+  message:
+    type:           string
+    minLength:      1
+    maxLength:      510
+    description: |
+      IRC message to send as plain text.
+maxProperties: 2
+additionalProperties: false
+required:
+  - message
