@@ -1,0 +1,19 @@
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "Post Pulse Message Request"
+description: |
+  Request to post a message on pulse.
+type:               object
+properties:
+  routingKey:
+    type:           string
+    maxLength:      255
+    description: |
+      Routing-key to use when posting the message.
+  message:
+    type:           object
+    description: |
+      IRC message to send as plain text.
+additionalProperties: false
+required:
+  - routingKey
+  - message
