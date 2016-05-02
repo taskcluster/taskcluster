@@ -18,13 +18,41 @@ function Expand-ZIPFile($file, $destination, $url)
 # allow powershell scripts to run
 Set-ExecutionPolicy Unrestricted -Force -Scope Process
 
+# install chocolatey package manager
+Invoke-Expression ($client.DownloadString('https://chocolatey.org/install.ps1'))
+
+# install June 2010 DirectX SDK for compatibility with Win XP
+$client.DownloadFile("http://download.microsoft.com/download/A/E/7/AE743F1F-632B-4809-87A9-AA1BB3458E31/DXSDK_Jun10.exe", "C:\DXSDK_Jun10.exe")
+
+# prerequisite for June 2010 DirectX SDK is to install ".NET Framework 3.5 (includes .NET 2.0 and 3.0)"
+Install-WindowsFeature NET-Framework-Core
+
+# now run DirectX SDK installer
+Start-Process C:\DXSDK_Jun10.exe -ArgumentList "/U" -wait -NoNewWindow -PassThru -RedirectStandardOutput C:\directx_sdk_install.log -RedirectStandardError C:\directx_sdk_install.err
+
+# install rustc dependencies (32 bit)
+$client.DownloadFile("http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe", "C:\vcredist_x86-vs2013.exe")
+Start-Process "C:\vcredist_x86-120.exe" -ArgumentList "/install /passive /norestart /log C:\vcredist_vs2010_x86-vs2013-install.log" -Wait -PassThru
+
+# install rustc dependencies (64 bit)
+$client.DownloadFile("http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe", "C:\vcredist_x64-vs2013.exe")
+Start-Process "C:\vcredist_x64-120.exe" -ArgumentList "/install /passive /norestart /log C:\vcredist_vs2010_x64-vs2013-install.log" -Wait -PassThru
+
+# install more rustc dependencies (32 bit)
+$client.DownloadFile("http://download.microsoft.com/download/f/3/9/f39b30ec-f8ef-4ba3-8cb4-e301fcf0e0aa/vc_redist.x86.exe", "C:\vcredist_x86-vs2015.exe")
+Start-Process "C:\vcredist_x86-vs2015.exe" -ArgumentList "/install /passive /norestart /log C:\vcredist_vs2010_x86-vs2015-install.log" -Wait -PassThru
+
+# install more rustc dependencies (64 bit)
+$client.DownloadFile("http://download.microsoft.com/download/4/c/b/4cbd5757-0dd4-43a7-bac0-2a492cedbacb/vc_redist.x64.exe", "C:\vcredist_x64-vs2015.exe")
+Start-Process "C:\vcredist_x64-vs2015.exe" -ArgumentList "/install /passive /norestart /log C:\vcredist_vs2010_x64-vs2015-install.log" -Wait -PassThru
+
 # install mozilla-build yasm dependencies (32 bit)
-$client.DownloadFile("http://download.microsoft.com/download/C/6/D/C6D0FD4E-9E53-4897-9B91-836EBA2AACD3/vcredist_x86.exe", "C:\vcredist_x86.exe")
-Start-Process "C:\vcredist_x86.exe" -ArgumentList "/install /passive /norestart /log C:\vcredist_vs2010_x86-install.log" -Wait -PassThru
+$client.DownloadFile("http://download.microsoft.com/download/C/6/D/C6D0FD4E-9E53-4897-9B91-836EBA2AACD3/vcredist_x86.exe", "C:\vcredist_x86-vs2010.exe")
+Start-Process "C:\vcredist_x86-vs2010.exe" -ArgumentList "/install /passive /norestart /log C:\vcredist_vs2010_x86-vs2010-install.log" -Wait -PassThru
 
 # install mozilla-build yasm dependencies (64 bit)
-$client.DownloadFile("http://download.microsoft.com/download/A/8/0/A80747C3-41BD-45DF-B505-E9710D2744E0/vcredist_x64.exe", "C:\vcredist_x64.exe")
-Start-Process "C:\vcredist_x64.exe" -ArgumentList "/install /passive /norestart /log C:\vcredist_vs2010_x64-install.log" -Wait -PassThru
+$client.DownloadFile("http://download.microsoft.com/download/A/8/0/A80747C3-41BD-45DF-B505-E9710D2744E0/vcredist_x64.exe", "C:\vcredist_x64-vs2010.exe")
+Start-Process "C:\vcredist_x64-vs2010.exe" -ArgumentList "/install /passive /norestart /log C:\vcredist_vs2010_x64-vs2010-install.log" -Wait -PassThru
 
 # download mozilla-build installer
 $client.DownloadFile("https://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe", "C:\MozillaBuildSetup.exe")
