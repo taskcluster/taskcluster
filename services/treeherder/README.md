@@ -1,20 +1,39 @@
 TaskCluster - Treeherder Integration
 ====================================
 
-This component reports task progress to Treeherder. For a task to be reported
-it must have the custom route `treeherder.<project>.<revisionHash>`, where
-`<project>` is the Treeherder project name and `<revisionHash>` identifies the
-Treeherder result-set that tasks should be reported to.
 
-In addition to the custom route the task must also have an extra section
-called `treeherder` with the keys: `symbol`, `groupName`, `groupSymbol` and
-`productName`. A task that should be reported to treeherder must take a form
-as follows:
+taskcluster-treeherder is a service that will respond to TaskCluster task events
+(e.g. task completed, task failed, etc) and compose a Treeherder job pulse message
+to report task status to Treeherder.
+
+# Task Configuration
+
+## Task Route
+
+For a task to be reported to treeherder, it must have the custom route in the form of:
+`<treeherder destination>.<project>.<revision>.<push/pullrequest ID>`
+
+For job messages to appear on Treeherder production, the destination of `treeherder` should
+be used.  Also, `treeherder-staging` could be used for reporting jobs to the Treeherder
+staging environment.
+
+Note: Github repos should use the `project` form of `<user>/<project>` to be recognized
+as a github source.
+
+## Treeherder job configuration
+
+All jobs that are reproted to Treeherder must have some basic information about the job
+itself, such as job symbol, job name, platform, etc.
+
+This configuration needs to be declared in the task definition under `task.extra.treeherder`
+and is validated against a [published schema](https://schemas.taskcluster.net/taskcluster-treeherder/v1/task-treeherder-config.json#).
+
+## Example  Task
 
 ```js
 {
   routes: [
-    'treeherder.<project>.<revisionHash>'
+    'treeherder.mozilla-inbound.8faa67ad6d0fda3ccf884c90acfd061d37e8558d.1246'
   ],
   ...,
   metadata: {
@@ -36,26 +55,44 @@ as follows:
 }
 ```
 
-For this to work, taskcluster-treeherder must be configured oauth credentials
-for the Treeherder projects it should report to. See `config/defaults.json` for
-details.
 
+# Job Pulse Messages
 
-Development
-===========
+Pulse messages are published to the exchange `exchange/taskcluster-treeherder/v1/jobs`.
 
-To run tests against localhost you must run a local instance of treeherder under
-vagrant, this is unfortunately non-trivial, see Treeherder documentation for
-details of how to configure your host environment.
+Consumers, such as Treeherder, can subscribe to this exchange and receive job messages
+as events occur.
 
-When Treeherder is running on `local.treeherder.mozilla.org` locally you must
-generate oauth credentials (see Treeherder documentation), and
-copy the contents of `treeherder-services/treeherder/etl/data/credentials.json`
-into the `treeherder.projects` property of `taskcluster-treeherder.conf.json`
-as a JSON string.
+## Routing Key
 
-To provide taskcluster credentials, influxdb connection string and AMQP
-connection string, you also add provide these in
-`taskcluster-treeherder.conf.json`, see `config/defaults.js` for details on
-these values. You might also want to use a different route prefix, like
-`treeherder-local`.
+Routing keys for these job messages are in the form of `<destination>.<project>.<reserved>`.
+
+Reserved is a space in the routing key that could be used later on for more information
+to be included.  This could include revision, owner identifier, etc.
+
+As an example, a job message destined for the Treeherder staging instance and for the project
+mozilla-inbound might look like:
+
+`treeherder-staging.mozilla-inbound._`
+
+Consumers can subscribe to all messages by using a routing key pattern of `#`
+when binding to the exchange.  Optionally, consumers could also narrow down the
+messages that are concerned about, such as only a particular destination
+(`<destination>.#`) or a project (`*.<project>`).
+
+## Schema
+
+All jobs messages must validate against a [published schema](https://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#).
+Any jobs that do not match this schema will be reported in the application logs and
+an administrator of the application can review the logs if a job is not appearing
+on the pulse exchange.
+
+In the future, these errors might be reported to Treeherder for end users to get
+clearer feedback.
+
+# Post-deployment Verification
+
+Upon deploying a new version of this service, investigate heroku and/or papertrail
+logs for any errors.  Also, the [pulse inspector](https://tools.taskcluster.net/pulse-inspector)
+can be used to subsribe to the exchange and inspect the pulse messages that are being
+produced.

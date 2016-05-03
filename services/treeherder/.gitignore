@@ -1,2 +1,4 @@
 /taskcluster-treeherder.conf.json
 /node_modules/
+/lib
+/.test
