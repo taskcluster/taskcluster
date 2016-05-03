@@ -1,0 +1,128 @@
+$schema: "http://json-schema.org/draft-04/schema#"
+title: "Treeherder Configuration"
+description: |
+  Definition of the Treeherder configuration data that can be contained within
+  a task definition under task.extra.treeherder.  This information is useful for
+  determining job properties to report to Treeherder.
+properties:
+  reason:
+    description: |
+      Examples include:
+      - scheduled
+      - scheduler
+      - Self-serve: Rebuilt by foo@example.com
+      - Self-serve: Requested by foo@example.com
+      - The Nightly scheduler named 'b2g_mozilla-inbound periodic' triggered this build
+      - unknown
+    type: "string"
+    minLength: 1
+    maxLength: 125
+  tier:
+    type: "integer"
+    description: |
+      Tiers are used for classifying jobs according to the Sheriffing policy.
+      These jobs can be hidden based on exclusion profiles within Treeherder and
+      display of these jobs toggled by UI settings.
+
+      By default jobs which do not specify a tier will be classified as Tier 1.
+    minimum: 1
+    maximum: 3
+  jobKind:
+    type: "string"
+    default: "other"
+    enum:
+      - build
+      - test
+      - other
+  machine:
+    type: "object"
+    properties:
+      platform:
+        type: "string"
+        description: |
+          The platform specified here maps to platforms that Treeherder recognizes.
+          Jobs with the same platform will be displayed within the same row on
+          Treeherder and obey any ordering that is defined'.
+
+          If no build platform is specified, the workerType specified for the job
+          will be used.
+        pattern: "^[A-Za-z0-9_-]+$"
+        minLength: 1
+        maxLength: 50
+      os:
+        type: "string"
+        pattern: "^[A-Za-z0-9_-]+$"
+        minLength: 1
+        maxLength: 25
+      architecture:
+        type: "string"
+        pattern: "^[A-Za-z0-9_-]+$"
+        minLength: 1
+        maxLength: 25
+    required: [platform]
+  labels:
+    title: "labels"
+    description: |
+      Labels are a dimension of a platform.  The values here can vary wildly,
+      so most strings are valid for this.  The list of labels that are used
+      is malleable going forward.
+
+      These were formerly known as "Collection" calling labels now so they
+      can be understood to be just strings that denotes a characteristic of the job.
+
+      These labels will be used for grouping jobs with a particular job platform.
+      For instance, a job with the label "debug" will be put into the debug platform
+      on Treeherder.  By default, if no label is specified, the job will be classified
+      as "opt"
+
+      Some examples of labels that have been used:
+        opt    Optimize Compiler GCC optimize flags
+        debug  Debug flags passed in
+        pgo    Profile Guided Optimization - Like opt, but runs with profiling, then builds again using that profiling
+        asan   Address Sanitizer
+        tsan   Thread Sanitizer Build
+    type: "array"
+    items:
+      type: "string"
+      minLength: 1
+      maxLength: 50
+      pattern: "^[A-Za-z0-9_-]+$"
+  jobSymbol:
+    title: "jobSymbol"
+    description: |
+      Job Symbol is the symbol that will appear in a Treeherder resultset for a
+      given push.  This symbol could be something such as "B" or a number representing
+      the current chunk.
+    type: "string"
+    # spaces and "?" are not valid for job symbols
+    pattern: "^[A-Za-z0-9._-]+$"
+    minLength: 0
+    maxLength: 25
+  groupName:
+    title: "group name"
+    type: "string"
+    minLength: 1
+    maxLength: 100
+  groupSymbol:
+    title: "group symbol"
+    description: |
+      Group Symbol is the symbol that job symbols will be grouped under.  This
+      is useful if there is a particular group of jobs that should be displayed
+      together.  For example, a test suite named "Media Tests" with the group symbol
+      of "ME" would have all jobs with that group symbol appear as
+      ME(symbol 1, symbol 2, ...).
+    type: "string"
+    minLength: 1
+    maxLength: 25
+  productName:
+    description: |
+      Examples include:
+      -  'b2g'
+      -  'firefox'
+      -  'taskcluster'
+      -  'xulrunner'
+    type: "string"
+    minLength: 1
+    maxLength: 125
+required: [symbol]
+additionalProperties: true
