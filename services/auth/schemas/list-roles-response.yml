@@ -4,4 +4,4 @@ description: |
   List of roles
 type:                       array
 items:
-  $ref: 'http://schemas.taskcluster.net/auth/v1/get-role-response.json#'
+  $ref: 'https://schemas.taskcluster.net/auth/v1/get-role-response.json#'
