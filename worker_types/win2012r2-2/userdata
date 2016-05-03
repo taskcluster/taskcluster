@@ -83,8 +83,8 @@ Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startu
 Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\python\Scripts\hg clone -u null https://hg.mozilla.org/mozilla-central C:\gecko" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\hg_initial_clone.log" -RedirectStandardError "C:\hg_initial_clone.err"
 
 # open up firewall for livelog (both PUT and GET interfaces)
-New-NetFirewallRule -DisplayName "Allow livelog GET requests" -Direction Inbound -LocalPort 60022 -Protocol TCP -Action Allow
-New-NetFirewallRule -DisplayName "Allow livelog PUT requests" -Direction Inbound -LocalPort 60023 -Protocol TCP -Action Allow
+New-NetFirewallRule -DisplayName "Allow livelog PUT requests" -Direction Inbound -LocalPort 60022 -Protocol TCP -Action Allow
+New-NetFirewallRule -DisplayName "Allow livelog GET requests" -Direction Inbound -LocalPort 60023 -Protocol TCP -Action Allow
 
 # install go (not required, but useful)
 md "C:\gopath"
