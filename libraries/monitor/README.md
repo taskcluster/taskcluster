@@ -3,7 +3,12 @@ TaskCluster Metrics and Monitoring Library
 
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-lib-monitor.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-lib-monitor)
 
-A convenient library to wrap up all of the pieces needed for a taskcluster service to record metrics with Statsum and report errors with Sentry.
+A convenient library to wrap up all of the pieces needed for a Taskcluster service to record metrics with Statsum and report errors with Sentry.
+By default it will report cpu and memory usage of a running process once a minute, report any errors that cause the process to exit, and report
+as warnings any errors that cause stats writing to not work. To disable any of these, you can see the Options and Defaults section below.
+
+Taskcluster has some generic concepts that are able to be monitored easily using utility functions in this package. The Usage section lists these
+cases and shows how to use this package to measure them.
 
 Requirements
 ------------
@@ -31,7 +36,46 @@ await monitor.flush();
 monitor.reportError('Something went wrong!');
 ```
 
-More details on the usage of measure and count can be found at [the statsum client](https://github.com/taskcluster/node-statsum#statsum-client-for-nodejs).
+More details on the usage of measure and count can be found at [the Statsum client](https://github.com/taskcluster/node-statsum#statsum-client-for-nodejs).
+
+### Timing Handlers
+
+A common pattern in Taskcluster projects is to have handler functions in a worker that take a message as an argument and perform some action. These
+can be timed by wrapping them with `taskcluster-lib-monitor`:
+
+```js
+let monitor = await monitoring({
+  project: 'tc-stats-collector',
+  credentials: {clientId: 'test-client', accessToken: 'test'},
+});
+
+let listener = new taskcluster.PulseListener({
+  credentials: {clientId: 'test-client', accessToken: 'test'},
+  queueName: 'a-queue-name',
+});
+
+let handler = function(message) {
+  console.log(message);
+};
+
+listener.on('message', monitor.timedHandler('logging-listener', handler));
+```
+
+### Express Timing Middleware
+Most Taskcluster services are Express services. We can easily time how long endpoints take to respond to requests by inserting `taskcluster-lib-monitor`
+as middleware:
+
+```js
+let monitor = await monitoring({
+  project: 'tc-stats-collector',
+  credentials: {clientId: 'test-client', accessToken: 'test'},
+});
+
+// Express setup, etc.
+
+middleware.push(monitor.expressMiddleware('name_of_function'));
+```
+This is already integrated in `taskcluster-lib-api` and probably doesn't need to be implemented in your service on its own.
 
 Options and Defaults
 --------------------
@@ -49,6 +93,9 @@ patchGlobal: true
 
 // If true, any errors reporting to Statsum will be reported to Sentry.
 reportStatsumErrors: true
+
+// If true, cpu and memory usage of the process will be reported on an interval.
+reportUsage: true
 
 // If true, the monitoring object will be a fake that stores data for testing
 mock: false
