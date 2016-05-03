@@ -1,1 +1,1 @@
-handlers:         node bin/handlers.js          production
+handlers: node lib/main.js production
