@@ -1,0 +1,401 @@
+$schema: "http://json-schema.org/draft-04/schema#"
+title: "Job Definition"
+description: |
+  Definition of a single job that can be added to Treeherder
+  Project is determined by the routing key, so we don't need to specify it here.
+type: "object"
+properties:
+  taskId:
+    title: "taskId"
+    description: |
+      This could just be what was formerly submitted as a job_guid in the
+      REST API.
+    type: "string"
+    pattern: "^[A-Za-z0-9_/+-]+$"
+    minLength: 1
+    maxLength: 50
+  retryId:
+    title: "retryId"
+    description: |
+      The infrastructure retry iteration on this job.  The number of times this
+      job has been retried by the infrastructure.
+      If it's the 1st time running, then it should be 0. If this is the first
+      retry, it will be 1, etc.
+    type: "integer"
+    default: 0
+    minimum: 0
+
+  isRetried:
+    description: True indicates this job has been retried.
+    type: "boolean"
+
+  origin:
+    oneOf:
+      - type: "object"
+        properties:
+          kind:
+            type: "string"
+            enum: ['hg.mozilla.org']
+          project:
+            type: "string"
+            pattern: "^[A-Za-z0-9_-]+$"
+            minLength: 1
+            maxLength: 50
+          revision:
+            type: "string"
+            pattern: "^[0-9a-f]+$"
+            minLength: 40
+            maxLength: 40
+          pushLogID:
+            type: "integer"
+        required: [kind, project, revision]
+
+      - type: "object"
+        properties:
+          kind:
+            type: "string"
+            enum: ['github.com']
+          owner:
+            description: |
+              This could be the organization or the individual git username
+              depending on who owns the repo.
+            type: "string"
+            pattern: "^[A-Za-z0-9_-]+$"
+            minLength: 1
+            maxLength: 50
+          # NOTE: changes projectName to project
+          project:
+            type: "string"
+            # Note, changed pattern to match hg.m.o project name
+            pattern: "^[A-Za-z0-9_-]+$"
+            minLength: 1
+            maxLength: 50
+          revision:
+            type: "string"
+            minLength: 40
+            maxLength: 40
+          pullRequestID:
+            type: "integer"
+        required: [kind, project, revision]
+
+  display:
+    type: "object"
+    properties:
+      jobSymbol:
+        title: "jobSymbol"
+        type: "string"
+        # spaces and "?" are not valid for job symbols
+        pattern: "^[A-Za-z0-9._-]+$"
+        minLength: 0
+        maxLength: 25
+      chunkId:
+        title: "chunkId"
+        type: "integer"
+        minimum: 1
+      chunkCount:
+        title: "chunkCount"
+        type: "integer"
+        minimum: 1
+      groupSymbol:
+        title: "group symbol"
+        type: "string"
+        minLength: 1
+        maxLength: 25
+      # could do without these if we require job type and group to exist prior
+      jobName:
+        title: "job name"
+        type: "string"
+        minLength: 1
+        maxLength: 100
+      groupName:
+        title: "group name"
+        type: "string"
+        minLength: 1
+        maxLength: 100
+    required:
+      - jobName
+      - jobSymbol
+      - groupSymbol
+
+
+  state:
+    title: "state"
+    description: |
+      unscheduled: not yet scheduled
+      pending: not yet started
+      running: currently in progress
+      completed: Job ran through to completion
+    type: "string"
+    enum:
+      - unscheduled
+      - pending
+      - running
+      - completed
+  result:
+    title: "result"
+    description: |
+      fail: A failure
+      exception: An infrastructure error/exception
+      success: Build/Test executed without error or failure
+      canceled: The job was cancelled by a user
+      unknown: When the job is not yet completed
+    type: "string"
+    enum:
+      - success
+      - fail
+      - exception
+      - canceled
+      - retry
+      - unknown
+  jobKind:
+    type: "string"
+    default: "other"
+    enum:
+      - build
+      - test
+      - other
+  tier:
+    type: "integer"
+    minimum: 1
+    maximum: 3
+
+  # TODO later
+  coalesced:
+    description: The job guids that were coalesced to this job.
+    title: "coalesced"
+    type: "array"
+    items:
+      title: "job guid"
+      type: "string"
+      pattern: "^[A-Za-z0-9_/+-]+$"
+      minLength: 1
+      maxLength: 50
+
+
+  # time data
+  timeScheduled:
+    type: "string"
+    format: "date-time"
+  timeStarted:
+    type: "string"
+    format: "date-time"
+  timeCompleted:
+    type: "string"
+    format: "date-time"
+
+  labels:
+    title: "labels"
+    description: |
+      Labels are a dimension of a platform.  The values here can vary wildly,
+      so most strings are valid for this.  The list of labels that are used
+      is maleable going forward.
+
+      These were formerly known as "Options" within "Option Collections" but
+      calling labels now so they can be understood to be just strings that
+      denotes a characteristic of the job.
+
+      Some examples of labels that have been used:
+        opt    Optimize Compiler GCC optimize flags
+        debug  Debug flags passed in
+        pgo    Profile Guided Optimization - Like opt, but runs with profiling, then builds again using that profiling
+        asan   Address Sanitizer
+        tsan   Thread Sanitizer Build
+    type: "array"
+    items:
+      type: "string"
+      minLength: 1
+      maxLength: 50
+      pattern: "^[A-Za-z0-9_-]+$"
+
+  owner:
+    description: |
+      Description of who submitted the job: gaia | scheduler name | username | email
+    title: "owner"
+    type: "string"
+    minLength: 1
+    maxLength: 50
+  reason:
+    description: |
+      Examples include:
+      - scheduled
+      - scheduler
+      - Self-serve: Rebuilt by foo@example.com
+      - Self-serve: Requested by foo@example.com
+      - The Nightly scheduler named 'b2g_mozilla-inbound periodic' triggered this build
+      - unknown
+    type: "string"
+    minLength: 1
+    maxLength: 125
+  productName:
+    description: |
+      Examples include:
+      -  'b2g'
+      -  'firefox'
+      -  'taskcluster'
+      -  'xulrunner'
+    type: "string"
+    minLength: 1
+    maxLength: 125
+  buildMachine:
+    $ref: "#/definitions/machine"
+  runMachine:
+    $ref: "#/definitions/machine"
+  jobInfo:
+    description: |
+      Definition of the Job Info for a job.  These are extra data
+      fields that go along with a job that will be displayed in
+      the details panel within Treeherder.
+    id: "jobInfo"
+    type: object
+    properties:
+      summary:
+        type: string
+        description: |
+          Plain text description of the job and its state.  Submitted with
+          the final message about a task.
+      links:
+        type: array
+        items:
+        - type: object
+          description: |
+            List of URLs shown as key/value pairs.  Shown as:
+            "<label>: <linkText>" where linkText will be a link to the url.
+          properties:
+            url:
+              type: string
+              format: url
+            linkText:
+              type: string
+              minLength: 1
+              maxLength: 50
+            label:
+              type: string
+              minLength: 1
+              maxLength: 50
+          additionalProperties: false
+          required:
+          - url
+          - linkText
+          - label
+    additionalProperties: false
+
+  logs:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        url:
+          type: "string"
+          format: "uri"
+          minLength: 1
+          maxLength: 255
+        name:
+          type: "string"
+          minLength: 1
+          maxLength: 50
+        steps:
+          type: array
+          description: |
+            This object defines what is seen in the Treeherder Log Viewer.
+            These values can be submitted here, or they will be generated
+            by Treeherder's internal log parsing process from the
+            submitted log.  If this value is submitted, Treeherder will
+            consider the log already parsed and skip parsing.
+          items:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    line:
+                      type: string
+                      minLength: 1
+                      maxLength: 255
+                    linenumber:
+                      type: integer
+                      minimum: 0
+                  additionalProperties: false
+              name:
+                type: string
+                minLength: 1
+                maxLength: 255
+              timeStarted:
+                type: string
+                format: date-time
+              timeFinished:
+                type: string
+                format: date-time
+              lineStarted:
+                type: integer
+                minimum: 0
+              lineFinished:
+                type: integer
+                minimum: 0
+              result:
+                type: string
+                enum:
+                  - success
+                  - fail
+                  - exception
+                  - canceled
+                  - unknown
+            required:
+            - name
+            - timeStarted
+            - lineStarted
+            - lineFinished
+            - timeFinished
+            - result
+        errorsTruncated:
+          type: boolean
+          description: |
+            If true, indicates that the number of errors in the log was too
+            large and not all of those lines are indicated here.
+      additionalProperties: false
+      required: [url, name]
+
+  extra:
+    type: "object"
+    description: Extra information that Treeherder reads on a best-effort basis
+  version: {$const: message-version}
+
+additionalProperties: false
+required:
+  - taskId
+  - origin
+  - display
+  - state
+  - jobKind
+  - version
+
+definitions:
+  machine:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        pattern: "^[A-Za-z0-9_-]+$"
+        minLength: 1
+        maxLength: 50
+      platform:
+        type: "string"
+        pattern: "^[A-Za-z0-9_-]+$"
+        minLength: 1
+        maxLength: 100
+      os:
+        type: "string"
+        pattern: "^[A-Za-z0-9_-]+$"
+        minLength: 1
+        maxLength: 25
+      architecture:
+        type: "string"
+        pattern: "^[A-Za-z0-9_-]+$"
+        minLength: 1
+        maxLength: 25
+    required:
+      - name
+      - platform
+      - os
+      - architecture

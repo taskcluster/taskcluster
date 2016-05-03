@@ -1,0 +1,24 @@
+defaults:
+  app:
+    # Publish references and schemas
+    publishMetaData:  !env:bool PUBLISH_METADATA
+    # Exchange prefix for exchanges declared
+    exchangePrefix:   v1/
+
+    # Name of component in statistics
+    statsComponent: taskcluster-treeherder
+  pulse:
+    credentials:
+      username: !env PULSE_USERNAME
+      password: !env PULSE_PASSWORD
+    prefetch:   200
+    queueName:  null
+  treeherder:
+    routePrefix: 'treeherder-garndt'
+  aws:
+    # Credentials with access to artifact buckets and
+    # references/schemas.taskcluster.net if you wish to publish meta-data
+    accessKeyId:      !env AWS_ACCESS_KEY_ID
+    secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
+    region:           us-west-2
+    apiVersion:       2014-01-01
