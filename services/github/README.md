@@ -7,7 +7,7 @@ This service monitors all of the repositories associated with an organization fo
 This project is tested in both Travis and Taskcluster.
 
 ###Docs
-See: http://docs.taskcluster.net/services/taskcluster-github/
+See: https://docs.taskcluster.net/manual/vcs/github
 
 ##Components
 
