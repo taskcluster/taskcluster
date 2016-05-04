@@ -161,6 +161,8 @@ and reports back results to the queue.
                                             logs over https. If not set, http will be used.
           livelogKey                        SSL key to be used by livelog for hosting logs
                                             over https. If not set, http will be used.
+          usersDir                          The location where user home directories should be
+                                            created on the worker. [default: C:\Users]
 
     Here is an syntactically valid example configuration file:
 
@@ -242,6 +244,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		ProvisionerId:              "aws-provisioner-v1",
 		LiveLogExecutable:          "livelog",
 		RefreshUrlsPrematurelySecs: 310,
+		UsersDir:                   "C:\\Users",
 	}
 	// try to open config file...
 	configFile, err := os.Open(filename)
@@ -280,6 +283,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
 		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
 		{value: c.Subdomain, name: "subdomain", disallowed: ""},
+		{value: c.UsersDir, name: "usersDir", disallowed: ""},
 	}
 
 	for _, f := range fields {

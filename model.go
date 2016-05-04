@@ -34,6 +34,7 @@ type (
 		WorkerGroup                string `json:"workerGroup"`
 		WorkerId                   string `json:"workerId"`
 		WorkerType                 string `json:"workerType"`
+		UsersDir                   string `json:"usersDir"`
 	}
 
 	// Used for modelling the xml we get back from Azure

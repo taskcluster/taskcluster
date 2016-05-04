@@ -83,7 +83,7 @@ func createNewTaskUser() error {
 	userName := "Task_" + strconv.Itoa((int)(time.Now().Unix()))
 	password := generatePassword()
 	TaskUser = OSUser{
-		HomeDir:  "C:\\Users\\" + userName,
+		HomeDir:  filepath.Join(config.UsersDir, userName),
 		Name:     userName,
 		Password: password,
 	}
@@ -185,9 +185,9 @@ func deleteExistingOSUsers() {
 }
 
 func deleteHomeDirs() {
-	homeDirsParent, err := os.Open("C:\\Users")
+	homeDirsParent, err := os.Open(config.UsersDir)
 	if err != nil {
-		log.Println("WARNING: Could not open C:\\Users directory to find old home directories to delete")
+		log.Println("WARNING: Could not open " + config.UsersDir + " directory to find old home directories to delete")
 		log.Printf("%v", err)
 		return
 	}
@@ -201,7 +201,7 @@ func deleteHomeDirs() {
 	for _, file := range fi {
 		if file.IsDir() {
 			if fileName := file.Name(); strings.HasPrefix(fileName, "Task_") {
-				path := "C:\\Users\\" + fileName
+				path := filepath.Join(config.UsersDir, fileName)
 				// fileName could be <user> or <user>.<hostname>...
 				user := fileName
 				if i := strings.IndexRune(user, '.'); i >= 0 {
