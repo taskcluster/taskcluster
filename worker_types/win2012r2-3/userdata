@@ -21,6 +21,9 @@ Set-ExecutionPolicy Unrestricted -Force -Scope Process
 # install chocolatey package manager
 Invoke-Expression ($client.DownloadString('https://chocolatey.org/install.ps1'))
 
+# install Windows SDK 8.1
+choco install -y windows-sdk-8.1
+
 # install June 2010 DirectX SDK for compatibility with Win XP
 $client.DownloadFile("http://download.microsoft.com/download/A/E/7/AE743F1F-632B-4809-87A9-AA1BB3458E31/DXSDK_Jun10.exe", "C:\DXSDK_Jun10.exe")
 
